@@ -1,0 +1,20 @@
+{
+  "observedAt": "2026-10-17T17:52:51.0088061+00:00",
+  "command": "node scripts/db/check-data-api.mjs",
+  "exitCode": 0,
+  "result": {
+    "check": "data-api-local",
+    "passed": true,
+    "statuses": {
+      "member-app": 200,
+      "nonmember-app": 200,
+      "hidden-ops": 406,
+      "hidden-ingest": 406,
+      "hidden-api": 406,
+      "hidden-private": 406,
+      "email-signup": 400
+    },
+    "cleanup": "OK"
+  },
+  "boundary": "Local REST and disabled-email-signup checks. Short-lived HS256 test JWTs only; no service key or hosted request. Ownership-marked synthetic auth fixtures cleaned; collected intelligence untouched. Google OAuth not exercised."
+}

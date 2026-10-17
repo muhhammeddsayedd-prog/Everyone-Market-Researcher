@@ -1,0 +1,591 @@
+{
+  "milestone": "M01",
+  "environment": "hosted production catalogue/advisor review",
+  "projectRef": "hkiafqrcxaafdbcvjlzv",
+  "reviewedAtUtc": "2026-10-17T23:34:02.004789+00:00",
+  "reviewedAtCairo": "2026-10-18T02:34:02.004789+03:00",
+  "sourceEvidence": {
+    "prod-readback-20261018.json": {
+      "sha256": "1c4cb41f9726bb649fd97cf2d5f634c96a91890940b8e56478c925bf97e2c1bc",
+      "originalReceiptSha256BeforeFormatting": "c7b479b0e8209e3780f315572e2efdace44443a292d7eec317ecdd3114bca53a"
+    },
+    "prod-securityadvisors-20261018.json": {
+      "sha256": "6a6e306320c04023e41e1a763cb5b312d3eeab27f25c304f7b1cff598b379466",
+      "originalReceiptSha256BeforeFormatting": "c604e065d9c3d741f06e049f1d422070e462aa896087a10a722a5eb99683f96c"
+    },
+    "prod-performanceadvisors-20261018.json": {
+      "sha256": "7173432748ea18ae6a3f2d0e50ac6140e64273f7d33b7d98e14c5d75c85059e8",
+      "originalReceiptSha256BeforeFormatting": "e468acc011cdc6cbc0960176e353d420807aefa65832c950f265cc5ca0f87b98"
+    },
+    "dev-security-detail-20261017.json": {
+      "sha256": "e4331a97d7ef34cbffc320aa5c9f1bec986e2736ae29bdc273a086a59fe7579e"
+    },
+    "dev-inventory-20261017.json": {
+      "sha256": "50f74c3f7375b60b67fc8348d4c2cc7536631b0d799ec2fc8fb3eba1e0a80d35"
+    }
+  },
+  "result": "PASS: captured catalogue/services/seeds/advisors; remaining evidence boundaries explicit",
+  "assertionCount": 22,
+  "passedCount": 22,
+  "assertions": [
+    {
+      "check": "fixed production receipt target",
+      "result": "PASS",
+      "actual": {
+        "projectRef": "hkiafqrcxaafdbcvjlzv",
+        "host": "aws-1-eu-central-1.pooler.supabase.com",
+        "port": 5432,
+        "database": "postgres"
+      },
+      "expected": "fixed emr-prod session pooler/database"
+    },
+    {
+      "check": "catalogue native completion",
+      "result": "PASS",
+      "actual": {
+        "nativeStageCount": 6,
+        "allExitZero": true,
+        "allExited": true,
+        "cleanupFailures": []
+      },
+      "expected": "all native stages zero/exited; no cleanup failures"
+    },
+    {
+      "check": "actual owner connection identity",
+      "result": "PASS",
+      "actual": {
+        "currentUser": "postgres",
+        "sessionUser": "postgres",
+        "database": "postgres",
+        "serverVersion": "17.11",
+        "serverMajor": 17
+      },
+      "expected": "postgres current/session user; postgres database; PostgreSQL17 (catalogue identity only)"
+    },
+    {
+      "check": "exact seven version/name/statement-count parity",
+      "result": "PASS",
+      "actual": [
+        {
+          "name": "extensions_schemas_roles",
+          "statementCount": 40,
+          "version": "20261017172928"
+        },
+        {
+          "name": "core_tables",
+          "statementCount": 120,
+          "version": "20261017172931"
+        },
+        {
+          "name": "auth_rls_views",
+          "statementCount": 55,
+          "version": "20261017172934"
+        },
+        {
+          "name": "rpc_pipeline_core",
+          "statementCount": 12,
+          "version": "20261017172937"
+        },
+        {
+          "name": "rpc_app_search",
+          "statementCount": 10,
+          "version": "20261017172940"
+        },
+        {
+          "name": "storage_cron",
+          "statementCount": 3,
+          "version": "20261017172943"
+        },
+        {
+          "name": "seed_taxonomies",
+          "statementCount": 4,
+          "version": "20261017172945"
+        }
+      ],
+      "expected": [
+        {
+          "version": "20261017172928",
+          "name": "extensions_schemas_roles",
+          "statementCount": 40
+        },
+        {
+          "version": "20261017172931",
+          "name": "core_tables",
+          "statementCount": 120
+        },
+        {
+          "version": "20261017172934",
+          "name": "auth_rls_views",
+          "statementCount": 55
+        },
+        {
+          "version": "20261017172937",
+          "name": "rpc_pipeline_core",
+          "statementCount": 12
+        },
+        {
+          "version": "20261017172940",
+          "name": "rpc_app_search",
+          "statementCount": 10
+        },
+        {
+          "version": "20261017172943",
+          "name": "storage_cron",
+          "statementCount": 3
+        },
+        {
+          "version": "20261017172945",
+          "name": "seed_taxonomies",
+          "statementCount": 4
+        }
+      ]
+    },
+    {
+      "check": "36 project tables and complete RLS",
+      "result": "PASS",
+      "actual": {
+        "tables": {
+          "app": 25,
+          "ingest": 1,
+          "ops": 10
+        },
+        "withoutRls": 0
+      },
+      "expected": {
+        "tables": {
+          "app": 25,
+          "ingest": 1,
+          "ops": 10
+        },
+        "withoutRls": 0
+      }
+    },
+    {
+      "check": "nine security-invoker views",
+      "result": "PASS",
+      "actual": [
+        {
+          "name": "briefs_v",
+          "schema": "api",
+          "securityInvoker": true
+        },
+        {
+          "name": "campaigns_v",
+          "schema": "api",
+          "securityInvoker": true
+        },
+        {
+          "name": "competitors_v",
+          "schema": "api",
+          "securityInvoker": true
+        },
+        {
+          "name": "items_v",
+          "schema": "api",
+          "securityInvoker": true
+        },
+        {
+          "name": "news_v",
+          "schema": "api",
+          "securityInvoker": true
+        },
+        {
+          "name": "organizations_v",
+          "schema": "api",
+          "securityInvoker": true
+        },
+        {
+          "name": "people_v",
+          "schema": "api",
+          "securityInvoker": true
+        },
+        {
+          "name": "campaigns_v",
+          "schema": "app",
+          "securityInvoker": true
+        },
+        {
+          "name": "feed_v",
+          "schema": "app",
+          "securityInvoker": true
+        }
+      ],
+      "expected": "nine api/app views, all security_invoker true"
+    },
+    {
+      "check": "function count/definer/security/execute counts",
+      "result": "PASS",
+      "actual": {
+        "count": 23,
+        "counts": {
+          "securityDefiner": 12,
+          "emptySearchPath": 23,
+          "publicExecute": 0,
+          "anonExecute": 0,
+          "authenticatedExecute": 5,
+          "writerExecute": 9,
+          "agentExecute": 3
+        },
+        "definerSchemas": {
+          "ingest": 1,
+          "ops": 8,
+          "private": 3
+        }
+      },
+      "expected": "23 functions;12 non-exposed definers;23 empty search paths;PUBLIC/anon0 authenticated5 writer9 agent3"
+    },
+    {
+      "check": "row-by-row function security parity with dev",
+      "result": "PASS",
+      "actual": {
+        "comparedRows": 23,
+        "comparedFields": [
+          "schema",
+          "name",
+          "securityDefiner",
+          "emptySearchPath",
+          "publicExecute",
+          "anonExecute",
+          "authenticatedExecute",
+          "writerExecute",
+          "agentExecute"
+        ]
+      },
+      "expected": "every captured function security/execute field matches accepted dev inventory"
+    },
+    {
+      "check": "bounded LOGIN role flags and no memberships",
+      "result": "PASS",
+      "actual": {
+        "roles": [
+          {
+            "bypassRls": false,
+            "createDb": false,
+            "createRole": false,
+            "inherit": false,
+            "login": true,
+            "name": "api_agent",
+            "replication": false,
+            "superuser": false
+          },
+          {
+            "bypassRls": false,
+            "createDb": false,
+            "createRole": false,
+            "inherit": false,
+            "login": true,
+            "name": "n8n_writer",
+            "replication": false,
+            "superuser": false
+          }
+        ],
+        "memberships": []
+      },
+      "expected": "LOGIN true;inherit/bypassRls/superuser/createRole/createDb/replication false;no role memberships"
+    },
+    {
+      "check": "schema ACL parity/CREATE and internal-service denial",
+      "result": "PASS",
+      "actual": {
+        "comparedRows": 28,
+        "exactDevMatrixMatch": true,
+        "createGrantRows": 0,
+        "cronPgmqUsageRows": 0
+      },
+      "expected": "28 role/schema entries match dev;CREATE0;cron/pgmq USAGE0 across four application roles"
+    },
+    {
+      "check": "captured project base-table ACL matrix matches dev",
+      "result": "PASS",
+      "actual": {
+        "comparedRows": 144,
+        "comparedFields": ["role", "schema", "table", "select", "insert", "update", "delete", "truncate"],
+        "exactDevMatrixMatch": true,
+        "perRoleSummary": {
+          "anon": {
+            "relationRows": 45,
+            "privilegeCounts": {
+              "select": 0,
+              "insert": 0,
+              "update": 0,
+              "delete": 0,
+              "truncate": 0,
+              "references": 0,
+              "trigger": 0
+            }
+          },
+          "authenticated": {
+            "relationRows": 45,
+            "privilegeCounts": {
+              "select": 27,
+              "insert": 1,
+              "update": 1,
+              "delete": 1,
+              "truncate": 0,
+              "references": 0,
+              "trigger": 0
+            }
+          },
+          "n8n_writer": {
+            "relationRows": 45,
+            "privilegeCounts": {
+              "select": 0,
+              "insert": 0,
+              "update": 0,
+              "delete": 0,
+              "truncate": 0,
+              "references": 0,
+              "trigger": 0
+            }
+          },
+          "api_agent": {
+            "relationRows": 45,
+            "privilegeCounts": {
+              "select": 28,
+              "insert": 0,
+              "update": 0,
+              "delete": 0,
+              "truncate": 0,
+              "references": 0,
+              "trigger": 0
+            }
+          }
+        },
+        "capturedProdTableAndViewRows": 180,
+        "scopeNote": "Prod receipt includes36 base tables+9 views x4roles. Dev detailed table array includes36 base tables plus9 cron/pgmq extension tables x4roles. Compare the144 matching project-base-table rows here; view SELECT parity is asserted separately."
+      },
+      "expected": "144 common project-base-table rows (36 x4roles) with all six captured privilege flags equal to accepted dev detail"
+    },
+    {
+      "check": "no direct machine-role DML or extra references/trigger grants",
+      "result": "PASS",
+      "actual": {
+        "referencesOrTriggerGrantRows": 0,
+        "authenticatedWriteTargets": ["app.saved_views"]
+      },
+      "expected": "machine DML0;REFERENCES/TRIGGER0 for all four roles;authenticated writes only app.saved_views (RLS remains applicable)"
+    },
+    {
+      "check": "all foreign keys have leading indexes",
+      "result": "PASS",
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "check": "baseline seed counts/invite/domain exclusion",
+      "result": "PASS",
+      "actual": {
+        "taxonomies": 120,
+        "settings": 13,
+        "pricePlaceholders": 17,
+        "ownerAdminInvitePresent": true,
+        "domainAutojoinEntries": 0
+      },
+      "expected": {
+        "taxonomies": 120,
+        "settings": 13,
+        "pricePlaceholders": 17,
+        "ownerAdminInvitePresent": true,
+        "domainAutojoinEntries": 0
+      }
+    },
+    {
+      "check": "empty application/collection baseline",
+      "result": "PASS",
+      "actual": {
+        "members": 0,
+        "competitors": 0,
+        "competitorAccounts": 0,
+        "items": 0,
+        "rawItems": 0
+      },
+      "expected": "all0;no fixture/competitor/account imports"
+    },
+    {
+      "check": "three queues",
+      "result": "PASS",
+      "actual": ["ai_extract", "embed", "media"],
+      "expected": ["ai_extract", "embed", "media"]
+    },
+    {
+      "check": "two active reviewed housekeeping jobs/commands",
+      "result": "PASS",
+      "actual": [
+        {
+          "active": true,
+          "name": "emr-archive-queue-cleanup",
+          "reviewedCommandMatches": true,
+          "schedule": "30 3 * * *"
+        },
+        {
+          "active": true,
+          "name": "emr-unlock-stale-accounts",
+          "reviewedCommandMatches": true,
+          "schedule": "15 * * * *"
+        }
+      ],
+      "expected": {
+        "emr-unlock-stale-accounts": "15 * * * *",
+        "emr-archive-queue-cleanup": "30 3 * * *"
+      }
+    },
+    {
+      "check": "public media bucket bounds and no client writes",
+      "result": "PASS",
+      "actual": {
+        "bucket": [
+          {
+            "id": "media",
+            "maxBytes": 5242880,
+            "mimeTypes": ["image/jpeg", "image/png", "image/webp", "image/svg+xml"],
+            "public": true
+          }
+        ],
+        "clientWritePolicies": 0
+      },
+      "expected": {
+        "bucket": [
+          {
+            "id": "media",
+            "public": true,
+            "maxBytes": 5242880,
+            "mimeTypes": ["image/jpeg", "image/png", "image/webp", "image/svg+xml"]
+          }
+        ],
+        "clientWritePolicies": 0
+      }
+    },
+    {
+      "check": "six installed extension versions/placement",
+      "result": "PASS",
+      "actual": {
+        "pg_cron": ["1.6.4", "pg_catalog"],
+        "pg_trgm": ["1.6", "extensions"],
+        "pgcrypto": ["1.3", "extensions"],
+        "pgmq": ["1.5.1", "pgmq"],
+        "unaccent": ["1.1", "extensions"],
+        "vector": ["0.8.2", "extensions"]
+      },
+      "expected": {
+        "pg_cron": ["1.6.4", "pg_catalog"],
+        "pg_trgm": ["1.6", "extensions"],
+        "pgcrypto": ["1.3", "extensions"],
+        "pgmq": ["1.5.1", "pgmq"],
+        "unaccent": ["1.1", "extensions"],
+        "vector": ["0.8.2", "extensions"]
+      }
+    },
+    {
+      "check": "security advisors native completion/no warnings/errors",
+      "result": "PASS",
+      "actual": {
+        "nativeExitZeroAndExited": true,
+        "levels": {
+          "INFO": 11,
+          "WARN": 0,
+          "ERROR": 0
+        },
+        "findingNames": {
+          "rls_enabled_no_policy": 11
+        }
+      },
+      "expected": {
+        "rls_enabled_no_policy": 11
+      }
+    },
+    {
+      "check": "performance advisors native completion/no warnings/errors",
+      "result": "PASS",
+      "actual": {
+        "nativeExitZeroAndExited": true,
+        "levels": {
+          "INFO": 72,
+          "WARN": 0,
+          "ERROR": 0
+        },
+        "findingNames": {
+          "unused_index": 72
+        }
+      },
+      "expected": {
+        "unused_index": 72
+      }
+    },
+    {
+      "check": "captured view SELECT ACLs match dev; no direct view writes",
+      "result": "PASS",
+      "actual": {
+        "comparedRows": 36,
+        "comparedFields": ["role", "schema", "table", "select"],
+        "allViewWriteReferencesTriggerFlagsFalse": true
+      },
+      "expected": "36 view-role SELECT entries match dev view_grants; all direct write/REFERENCES/TRIGGER flags false"
+    }
+  ],
+  "advisors": {
+    "security": {
+      "observedAtUtc": "2026-10-17T23:31:53.6317048Z",
+      "nativeExitZeroAndExited": true,
+      "levels": {
+        "INFO": 11,
+        "WARN": 0,
+        "ERROR": 0
+      },
+      "findingNames": {
+        "rls_enabled_no_policy": 11
+      },
+      "intentionalDenyAllTables": [
+        "ingest.raw_items",
+        "ops.ai_extractions",
+        "ops.api_calls",
+        "ops.api_keys",
+        "ops.apify_runs",
+        "ops.audit_log",
+        "ops.cost_ledger",
+        "ops.price_book",
+        "ops.scrape_run_accounts",
+        "ops.scrape_runs",
+        "ops.settings"
+      ]
+    },
+    "performance": {
+      "observedAtUtc": "2026-10-17T23:31:53.6547036Z",
+      "nativeExitZeroAndExited": true,
+      "levels": {
+        "INFO": 72,
+        "WARN": 0,
+        "ERROR": 0
+      },
+      "findingNames": {
+        "unused_index": 72
+      }
+    },
+    "interpretation": {
+      "security": "Eleven internal ingest/ops tables intentionally have RLS with no user policies; clients have no direct grants. Deny-all INFO findings preserve RPC-only access and are not fixed by adding policies.",
+      "performance": "All72 findings are unused_index INFO on the empty new baseline. Keep required FK/list/search/unique indexes; reassess with real workloads in later milestones.",
+      "devComparison": "Accepted dev MCP performance report also included one Auth-connection allocation INFO. The pinned native production CLI report contains72 unused_index entries only; absence here does not prove the separate Auth allocation finding was resolved."
+    }
+  },
+  "limits": [
+    "This is review of already-captured postgres catalogue/advisor receipts, not actual n8n_writer or api_agent restricted-role authentication. Production role passwords/login checks remain separate.",
+    "Production captures180 project table/view-role rows across36 base tables and9 views. Comparable base-table flags match144 dev detail rows and view SELECT flags match36 dev view_grants rows. REFERENCES/TRIGGER are absent in prod. Column-level grants and sequence grants are not captured in this source and are not claimed verified here.",
+    "Production source omits cron/pgmq extension-table ACL rows that are present in accepted dev detail. All four application roles lack schema USAGE there, but exact extension-table grant parity is not asserted by this review.",
+    "Role default search_path settings, extension-function execute grants and trigger definitions are not captured by this production readback; no claim of full detailed-security parity for those fields.",
+    "Ledger parity verifies seven versions/names and statement counts. This review does not independently hash remote stored SQL statements; sealed file hashes and approved exact-version push are separate evidence.",
+    "Baseline seed cardinalities/owner invite/domain0 are verified. Individual taxonomy/settings/price values are not emitted in this catalogue query; reviewed sealed seed migration evidence remains separate.",
+    "No Data API HTTP exposure, member JWT, OAuth exchange, full browser sign-in, application deployment, merge or M02 acceptance is established by this catalogue review.",
+    "No credentials/private handoffs were read by this reviewer and no database queries or modifications were performed. Root still owns final approved-batch credential deletion."
+  ],
+  "boundaries": {
+    "reviewOnly": true,
+    "sourceReceiptsRead": true,
+    "productionQueriesExecuted": false,
+    "databaseChangesExecuted": false,
+    "privateCredentialAccessed": false,
+    "restrictedRoleAuthenticationClaimed": false,
+    "productionAcceptanceComplete": false,
+    "mergePerformed": false,
+    "m02Started": false
+  },
+  "repositoryFormattingNote": "Original receipt hash retained where formatting changed source bytes. sha256 now identifies the semantically identical formatted repository source. Native private receipts were not modified; see prod-evidence-formatting-20261018.json."
+}

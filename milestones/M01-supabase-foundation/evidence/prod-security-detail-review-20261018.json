@@ -1,0 +1,385 @@
+{
+  "milestone": "M01",
+  "environment": "hosted production supplemental security-catalogue review",
+  "projectRef": "hkiafqrcxaafdbcvjlzv",
+  "reviewedAtUtc": "2026-10-17T23:40:38.883131+00:00",
+  "reviewedAtCairo": "2026-10-18T02:40:38.883131+03:00",
+  "sourceReceipt": {
+    "path": "prod-security-detail-20261018.json",
+    "observedAtUtc": "2026-10-17T23:38:21.3469215Z",
+    "nativeReceiptSha256BeforeRepositoryFormatting": "6f84724cdee2e85de3ac474b84ee22c0c6c7e426e902a836d61e8e5cbc16c447",
+    "hashBoundary": "SHA256 of the native-shaped repository input as read for this review, before root repository formatting. Any later formatted hash must be recorded separately; semantics are the reviewed content."
+  },
+  "comparisonEvidence": [
+    {
+      "path": "dev-security-detail-20261017.json",
+      "repositorySha256AtReview": "e4331a97d7ef34cbffc320aa5c9f1bec986e2736ae29bdc273a086a59fe7579e"
+    },
+    {
+      "path": "dev-inventory-20261017.json",
+      "repositorySha256AtReview": "50f74c3f7375b60b67fc8348d4c2cc7536631b0d799ec2fc8fb3eba1e0a80d35"
+    },
+    {
+      "path": "prod-readback-20261018.json",
+      "repositorySha256AtReview": "c7b479b0e8209e3780f315572e2efdace44443a292d7eec317ecdd3114bca53a"
+    }
+  ],
+  "sealedSourcesReviewed": [
+    {
+      "path": "supabase/migrations/20261017172934_auth_rls_views.sql",
+      "sha256": "8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9"
+    },
+    {
+      "path": "supabase/migrations/20261017172945_seed_taxonomies.sql",
+      "sha256": "af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234"
+    },
+    {
+      "path": "supabase/migrations/20261017172928_extensions_schemas_roles.sql",
+      "sha256": "478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d"
+    },
+    {
+      "path": "supabase/migrations/20261017172937_rpc_pipeline_core.sql",
+      "sha256": "978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803"
+    }
+  ],
+  "result": "PASS: captured supplemental security contracts; role-login and cleanup gates separate",
+  "assertionCount": 15,
+  "passedCount": 15,
+  "assertions": [
+    {
+      "check": "fixed production identity and native completion",
+      "result": "PASS",
+      "actual": {
+        "projectRef": "hkiafqrcxaafdbcvjlzv",
+        "host": "aws-1-eu-central-1.pooler.supabase.com",
+        "port": 5432,
+        "actualCurrentUser": "postgres",
+        "actualSessionUser": "postgres",
+        "serverMajor": 17,
+        "nativeStages": 2,
+        "allExited": true,
+        "cleanupFailures": []
+      },
+      "expected": "fixed prod/PG17 owner catalogue read; two native zero/exited stages; no child cleanup failures"
+    },
+    {
+      "check": "sequence ACLs exact dev parity and single saved-view usage grant",
+      "result": "PASS",
+      "actual": {
+        "rows": 60,
+        "exactDevMatch": true,
+        "nonzeroGrantRows": [
+          {
+            "role": "authenticated",
+            "schema": "app",
+            "select": false,
+            "sequence": "saved_views_id_seq",
+            "update": false,
+            "usage": true
+          }
+        ]
+      },
+      "expected": "15 sequences x4roles; only authenticated USAGE on app.saved_views_id_seq; no machine sequence privileges"
+    },
+    {
+      "check": "no explicit project column ACL entries",
+      "result": "PASS",
+      "actual": {
+        "entries": []
+      },
+      "expected": "zero explicit column ACLs; inherited table grants are reviewed separately"
+    },
+    {
+      "check": "single sealed auth membership trigger binding/security",
+      "result": "PASS",
+      "actual": [
+        {
+          "afterInsertRowOnly": true,
+          "agentExecute": false,
+          "anonExecute": false,
+          "argumentCount": 0,
+          "authenticatedExecute": false,
+          "emptySearchPath": true,
+          "enabledMode": "O",
+          "function": "handle_new_user",
+          "functionSchema": "private",
+          "internal": false,
+          "publicExecute": false,
+          "securityDefiner": true,
+          "trigger": "on_auth_user_created",
+          "writerExecute": false
+        }
+      ],
+      "expected": "auth.users trigger on_auth_user_created: tgtype5 AFTER INSERT ROW, enabledO, private.handle_new_user, no arguments, definer/empty search_path, no PUBLIC/application-role EXECUTE"
+    },
+    {
+      "check": "six sealed TSV trigger bindings with invoker/revoke contract",
+      "result": "PASS",
+      "actual": {
+        "bindings": [
+          {
+            "argumentCount": 0,
+            "enabledMode": "O",
+            "function": "campaigns_tsv",
+            "functionSchema": "private",
+            "schema": "app",
+            "table": "campaigns",
+            "trigger": "campaigns_tsv"
+          },
+          {
+            "argumentCount": 0,
+            "enabledMode": "O",
+            "function": "competitors_tsv",
+            "functionSchema": "private",
+            "schema": "app",
+            "table": "competitors",
+            "trigger": "competitors_tsv"
+          },
+          {
+            "argumentCount": 0,
+            "enabledMode": "O",
+            "function": "items_tsv",
+            "functionSchema": "private",
+            "schema": "app",
+            "table": "items",
+            "trigger": "items_tsv"
+          },
+          {
+            "argumentCount": 0,
+            "enabledMode": "O",
+            "function": "news_tsv",
+            "functionSchema": "private",
+            "schema": "app",
+            "table": "news_articles",
+            "trigger": "news_articles_tsv"
+          },
+          {
+            "argumentCount": 0,
+            "enabledMode": "O",
+            "function": "organizations_tsv",
+            "functionSchema": "private",
+            "schema": "app",
+            "table": "organizations",
+            "trigger": "organizations_tsv"
+          },
+          {
+            "argumentCount": 0,
+            "enabledMode": "O",
+            "function": "people_tsv",
+            "functionSchema": "private",
+            "schema": "app",
+            "table": "people",
+            "trigger": "people_tsv"
+          }
+        ],
+        "allFunctionsInvokerEmptyPathNoApplicationExecute": true
+      },
+      "expected": "six named app TSV triggers; enabledO/zero args; private invoker functions with empty path and all PUBLIC/application EXECUTE revoked"
+    },
+    {
+      "check": "47 RLS policies exact accepted-dev expression and role parity",
+      "result": "PASS",
+      "actual": {
+        "rows": 47,
+        "exactComparedFields": ["schema", "table", "name", "roles", "command", "using", "check"],
+        "exactDevMatch": true,
+        "commands": {
+          "SELECT": 44,
+          "DELETE": 1,
+          "INSERT": 1,
+          "UPDATE": 1
+        },
+        "roles": {
+          "authenticated": 28,
+          "api_agent": 19,
+          "anon": 0,
+          "n8n_writer": 0
+        }
+      },
+      "expected": "all47 policy names/tables/roles/commands/USING/WITH CHECK match accepted dev and sealed auth/RLS migration; allPERMISSIVE"
+    },
+    {
+      "check": "RLS writes limited to active-member owned saved views",
+      "result": "PASS",
+      "actual": [
+        {
+          "check": null,
+          "command": "DELETE",
+          "name": "own views delete",
+          "permissive": "PERMISSIVE",
+          "roles": ["authenticated"],
+          "schema": "app",
+          "table": "saved_views",
+          "using": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))"
+        },
+        {
+          "check": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))",
+          "command": "INSERT",
+          "name": "own views insert",
+          "permissive": "PERMISSIVE",
+          "roles": ["authenticated"],
+          "schema": "app",
+          "table": "saved_views",
+          "using": null
+        },
+        {
+          "check": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))",
+          "command": "UPDATE",
+          "name": "own views update",
+          "permissive": "PERMISSIVE",
+          "roles": ["authenticated"],
+          "schema": "app",
+          "table": "saved_views",
+          "using": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))"
+        }
+      ],
+      "expected": "one each INSERT/UPDATE/DELETE, authenticated app.saved_views only, auth.uid ownership plus private.is_member guard; no user/machine write policies elsewhere"
+    },
+    {
+      "check": "cron/pgmq table grants match dev but schema access remains denied",
+      "result": "PASS",
+      "actual": {
+        "rows": 36,
+        "exactDevMatch": true,
+        "schemaUsageTrueRows": 0,
+        "rawSelectGrantRows": 8,
+        "rawDeleteGrantRows": 4,
+        "rawInsertUpdateTruncateGrantRows": 0
+      },
+      "expected": "nine cron/pgmq tables x4roles; exact comparable dev grants; schemaUSAGE false for all. Raw extension grants are not reachable without USAGE"
+    },
+    {
+      "check": "extension function grants exact dev parity and unreachable",
+      "result": "PASS",
+      "actual": {
+        "rows": 188,
+        "exactDevMatch": true,
+        "rawExecuteTrueRows": 180,
+        "schemaUsageTrueRows": 0,
+        "reachableExecuteTrueRows": 0,
+        "perSchemaRawExecute": {
+          "cron": 20,
+          "pgmq": 160
+        }
+      },
+      "expected": "47 cron/pgmq overloads x4roles; same EXECUTE grants as dev but schemaUSAGE0/reachableEXECUTE0 for every application role"
+    },
+    {
+      "check": "role search-path/timeout contract without relying on read-only defaults",
+      "result": "PASS",
+      "actual": [
+        {
+          "defaultTransactionReadOnlyOn": false,
+          "expectedEmptySearchPath": true,
+          "expectedStatementTimeout": true,
+          "onlyExpectedConfigKeys": true,
+          "role": "api_agent"
+        },
+        {
+          "defaultTransactionReadOnlyOn": false,
+          "expectedEmptySearchPath": true,
+          "expectedStatementTimeout": true,
+          "onlyExpectedConfigKeys": true,
+          "role": "n8n_writer"
+        }
+      ],
+      "expected": "both empty search_path;writer120s/agent15s timeout;only reviewed config-key allowlist;read-only default is not ON. Agent check must set/assert transaction-local read-only"
+    },
+    {
+      "check": "no current-database role setting override",
+      "result": "PASS",
+      "actual": [
+        {
+          "defaultTransactionReadOnlyOn": false,
+          "emptySearchPath": true,
+          "onlyExpectedConfigKeys": true,
+          "role": "api_agent",
+          "scope": "allDatabases"
+        },
+        {
+          "defaultTransactionReadOnlyOn": false,
+          "emptySearchPath": true,
+          "onlyExpectedConfigKeys": true,
+          "role": "n8n_writer",
+          "scope": "allDatabases"
+        }
+      ],
+      "expected": "two expected allDatabases role settings only; no additional currentDatabase override; empty path and bounded config keys"
+    },
+    {
+      "check": "taxonomy groups match sealed seed/development counts and total120",
+      "result": "PASS",
+      "actual": {
+        "groups": {
+          "competitor_category": 13,
+          "content_format": 15,
+          "credit_role": 31,
+          "in_house_capability": 27,
+          "industry": 23,
+          "occasion": 11
+        },
+        "total": 120,
+        "sealedGroupCounts": {
+          "industry": 23,
+          "content_format": 15,
+          "occasion": 11,
+          "competitor_category": 13,
+          "credit_role": 31,
+          "in_house_capability": 27
+        }
+      },
+      "expected": "occasion11 industry23 competitor_category13 in_house_capability27 content_format15 credit_role31"
+    },
+    {
+      "check": "invite-only baseline retains owner invite and domain autojoin0",
+      "result": "PASS",
+      "actual": {
+        "ownerAdminInvitePresent": true,
+        "domainAutojoinEntries": 0
+      },
+      "expected": "owner admin invite present;no allowed domains"
+    },
+    {
+      "check": "implicit future function defaults kept separate from current explicit revokes",
+      "result": "PASS",
+      "actual": {
+        "capturedExplicitDefaultAclRows": 0,
+        "implicitPostgresFunctionPublicExecute": true,
+        "currentProjectFunctionCount": 23,
+        "currentPublicExecuteRows": 0,
+        "sealedSourceDocumentsExplicitRevokeRequirement": true
+      },
+      "expected": "empty explicit defaultACL rows are not a PUBLIC revocation. PostgreSQL implicit future-function PUBLIC EXECUTE remains; all23 CURRENT project functions explicitly deny PUBLIC, and each future migration must explicitly revoke new functions"
+    },
+    {
+      "check": "reviewed supplemental query reports auth tgtype5 and bounded config booleans",
+      "result": "PASS",
+      "actual": {
+        "authType5ComparisonPresent": true,
+        "expectedTimeoutComparisonPresent": true
+      },
+      "expected": "exact source query computes tgtype5 and expected role timeouts; no arbitrary credential/role configuration values selected"
+    }
+  ],
+  "futureFunctionDefaultInterpretation": "Current functions are explicitly revoked from PUBLIC. An empty pg_default_acl result and a schema-level default revoke do not change PostgreSQL implicit global PUBLIC EXECUTE for newly created functions. Preserve the approved sealed migrations; later migrations must repeat explicit revokes. No current grant/default change was performed or requested by this review.",
+  "coverageLimits": [
+    "This review reads captured postgres catalogue receipts and sealed SQL only. It is not actual n8n_writer or api_agent authentication, a permitted-operation receipt, an OAuth exchange or a live HTTP/Data API receipt.",
+    "Explicit column ACL entries are absent; this does not remove inherited table privileges, which are compared in the separate production inventory review.",
+    "Role configuration is captured as bounded booleans for expected values/allowed keys, not arbitrary raw rolconfig values. The allowlist also permits default_transaction_read_only, but its ON comparison is false; the role check explicitly sets transaction-local read-only.",
+    "Auth and TSV trigger bindings match sealed expected names/functions/enabled modes; source function bodies were not downloaded or hashed remotely. Sealed migration files and exact-version push remain separate provenance.",
+    "The explicit future-function default remains implicit PUBLIC; it is not a current-project-function exposure or a reason to modify the approved SQL during acceptance.",
+    "At the earlier cleanup checkpoint, root reported the compound administrator-handoff deletion command was rejected before execution and did not retry by another route. The owner then removed the administrator file. Separate follow-up independent presence checks at23:40:05UTC verify administrator/writer/agent handoffs and writer/agent private SQL absent, nativeCLI0. This reviewer did not inspect or decrypt any credential handoff; final secret scanning remains separate."
+  ],
+  "boundaries": {
+    "sourceReviewOnly": true,
+    "databaseQueriesExecuted": false,
+    "databaseChangesExecuted": false,
+    "privateCredentialAccessed": false,
+    "restrictedRoleAuthenticationClaimed": false,
+    "adminHandoffCleanupComplete": true,
+    "productionAcceptanceComplete": false,
+    "mergePerformed": false,
+    "m02Started": false
+  },
+  "credentialCleanupEvidence": "prod-admin-credential-cleanup-20261018.json#FollowUpIndependentReadback"
+}

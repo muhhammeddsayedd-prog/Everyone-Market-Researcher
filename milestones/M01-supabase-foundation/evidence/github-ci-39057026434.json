@@ -1,0 +1,94 @@
+{
+  "recordedAt": "2026-10-17T18:14:55.5444864+00:00",
+  "runId": 39057026434,
+  "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39057026434",
+  "headSha": "041d971e136bd159a05d41336e4a47bf16981d9a",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "quality",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "unit",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "db-tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "e2e",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "databaseSummary": "10 pgTAP files,242 assertions,PASS; security advisors0warnings/errors; performance0errors",
+  "probes": [
+    {
+      "check": "data-api-local",
+      "passed": true,
+      "statuses": {
+        "member-app": 200,
+        "nonmember-app": 200,
+        "hidden-ops": 406,
+        "hidden-ingest": 406,
+        "hidden-api": 406,
+        "hidden-private": 406,
+        "email-signup": 400
+      },
+      "cleanup": "OK"
+    },
+    {
+      "check": "concurrency-local",
+      "observedAt": "2026-10-17T18:13:43.305Z",
+      "scope": "synthetic-local-fixtures",
+      "passed": true,
+      "checks": {
+        "skipLocked": {
+          "passed": true,
+          "workerAClaims": 1,
+          "workerBClaims": 1,
+          "overlap": 0,
+          "workerARemainedOpen": true
+        },
+        "naturalIdempotency": {
+          "passed": true,
+          "lockBarrierObserved": true,
+          "insertedAcrossWorkers": 1,
+          "rawRows": 1,
+          "shellRows": 1,
+          "aiMessages": 1,
+          "mediaMessages": 1
+        },
+        "contentIdempotency": {
+          "passed": true,
+          "lockBarrierObserved": true,
+          "insertedAcrossWorkers": 1,
+          "duplicates": 1,
+          "rawRows": 2,
+          "shellRows": 2,
+          "aiMessages": 1,
+          "mediaMessages": 1
+        },
+        "websiteOwnership": {
+          "passed": true,
+          "lockBarrierObserved": true,
+          "storedPages": 1,
+          "loserSqlstate": "22023"
+        }
+      },
+      "cleanup": "OK"
+    }
+  ],
+  "boundary": "GitHub-hosted local database verification; no hosted Supabase credentials or deployments. Source commit remains unchanged by subsequent evidence-only updates."
+}

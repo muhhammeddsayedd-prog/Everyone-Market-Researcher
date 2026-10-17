@@ -1,0 +1,27 @@
+{
+  "observedAt": "2026-10-17T17:30:11.7594803+00:00",
+  "command": "Get-NetTCPConnection -State Listen, filtered to default Supabase local ports",
+  "listeners": [
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 54324,
+      "OwningProcess": 29380
+    },
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 54323,
+      "OwningProcess": 29380
+    },
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 54322,
+      "OwningProcess": 29380
+    },
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 54321,
+      "OwningProcess": 29380
+    }
+  ],
+  "scope": "Host listening-port inventory only; no process or container changed."
+}

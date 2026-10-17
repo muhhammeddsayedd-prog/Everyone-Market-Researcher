@@ -1,0 +1,69 @@
+{
+  "milestone": "M01",
+  "environment": "hosted production",
+  "projectName": "emr-prod",
+  "projectRef": "hkiafqrcxaafdbcvjlzv",
+  "dashboardUrl": "https://supabase.com/dashboard/project/hkiafqrcxaafdbcvjlzv/integrations/data_api/settings",
+  "authorization": "Owner-approved exact M01 production-baseline packet; root delegated the exposed-schema update after application-schema migration readback.",
+  "method": "Supabase dashboard identity check, inspect schema checkmarks, add app only, Save once, explicit reload, reopen schema selector and verify the exact persisted selection.",
+  "before": {
+    "observedAt": "2026-10-17T23:32:59Z",
+    "observedAtCairo": "2026-10-18T02:32:59+03:00",
+    "projectIdentityVerified": true,
+    "appSchemaAvailableInSelector": true,
+    "exposedSchemas": ["public", "graphql_public"],
+    "schemaExposureCountLabel": "2 of 7 schemas exposed",
+    "tableExposureCountLabel": "0 of 45 tables exposed",
+    "functionExposureCountLabel": "0 of 23 functions exposed"
+  },
+  "change": {
+    "field": "Exposed schemas",
+    "addedSchemas": ["app"],
+    "removedSchemas": [],
+    "desiredExactSet": ["public", "graphql_public", "app"],
+    "saveClickedOnce": true,
+    "saveActionOccurredBetween": ["2026-10-17T23:33:19Z", "2026-10-17T23:33:26Z"],
+    "blindRetryOrSecondSave": false,
+    "otherControlsChanged": false
+  },
+  "afterExplicitReload": {
+    "verifiedAt": "2026-10-17T23:33:54Z",
+    "verifiedAtCairo": "2026-10-18T02:33:54+03:00",
+    "exposedSchemas": ["public", "graphql_public", "app"],
+    "checkedOptionsInUiDisplayOrder": ["app", "graphql_public", "public"],
+    "schemaExposureCountLabel": "3 of 7 schemas exposed",
+    "uncheckedInternalSchemaOptions": ["api", "ingest", "ops", "private"],
+    "pgmqIncludedInExactSelectedList": false,
+    "saveButtonDisabled": true,
+    "browserScreenshotOfCheckmarksCaptured": true,
+    "result": "PASS: exact saved production exposed-schema list"
+  },
+  "otherUiSettingsPreserved": {
+    "automaticallyExposeNewTables": true,
+    "extraSearchPath": ["public", "extensions"],
+    "maxRows": 1000,
+    "poolSize": "Configured automatically",
+    "tableExposureCountLabel": "0 of 45 tables exposed",
+    "functionExposureCountLabel": "0 of 23 functions exposed",
+    "individualTableOrFunctionControlsTouched": false,
+    "hardenDataApiClicked": false
+  },
+  "evidenceLimits": {
+    "httpRequestsPerformed": false,
+    "httpStatusOrPermissionBoundaryProofClaimed": false,
+    "catalogueGrantVerificationPerformedByThisBrowserAction": false,
+    "note": "This receipt proves dashboard configuration persistence only. Actual HTTP schema exclusions and database grants are separate acceptance checks."
+  },
+  "boundaries": {
+    "apiKeyOrServiceKeyPageOpened": false,
+    "apiKeysAccessedOrRevealed": false,
+    "clientSecretsAccessed": false,
+    "databaseSqlExecuted": false,
+    "googleOrEmailSettingsChanged": false,
+    "githubControlsChanged": false,
+    "billingChanged": false,
+    "devChanged": false,
+    "mergePerformed": false,
+    "m02Started": false
+  }
+}

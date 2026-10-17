@@ -1,0 +1,179 @@
+{
+  "localDate": "2026-10-18",
+  "timezone": "Africa/Cairo",
+  "recordedAtUtc": "2026-10-17T23:31:45Z",
+  "scope": "Pre-use source review and non-secret local validation of the private fixed-production M01 database runner",
+  "runner": {
+    "path": "%LOCALAPPDATA%\\Temp\\emr-m01-prod-cli.ps1",
+    "frozenSha256": "bdec58b44662caa376ab4e4e3d1c7dfefd0ca36ddf3cf7854a77a034bb6726ea",
+    "testSourcePath": "%LOCALAPPDATA%\\Temp\\emr-m01-prod-cli-nonsecret-tests.ps1",
+    "gateExamplePath": "%LOCALAPPDATA%\\Temp\\emr-m01-prod-reviewed-preflight.example.json",
+    "actualGatePath": "%LOCALAPPDATA%\\Temp\\emr-m01-prod-reviewed-preflight.json",
+    "powerShellSyntaxErrors": 0,
+    "fixedTarget": {
+      "projectRef": "hkiafqrcxaafdbcvjlzv",
+      "host": "aws-1-eu-central-1.pooler.supabase.com",
+      "port": 5432,
+      "database": "postgres",
+      "username": "postgres.hkiafqrcxaafdbcvjlzv",
+      "tls": "sslmode=require"
+    },
+    "actions": [
+      "Preflight",
+      "DryRun",
+      "Push",
+      "Readback",
+      "SecurityAdvisors",
+      "PerformanceAdvisors",
+      "GenerateTypes"
+    ]
+  },
+  "localValidation": {
+    "completedAtUtc": "2026-10-17T23:28:22.0241895Z",
+    "environment": "Existing owned local Everyone PostgreSQL 17, not production",
+    "container": "supabase_db_everyone-market-radar",
+    "endpoint": "127.0.0.1:60322",
+    "localTestCredentialOnly": true,
+    "consumerBodyExecuted": false,
+    "method": "Extracted function declarations from the actual runner AST into an isolated test process; the runner body and production DPAPI path were not executed. Native integration cases used only the existing local endpoint and standard local test credential; fake cases replaced the native function in the test process only.",
+    "targetedChecks": {
+      "total": 21,
+      "passed": 21,
+      "failed": 0,
+      "checks": [
+        { "name": "Actual native SELECT JSON object shape", "result": "PASS" },
+        { "name": "Actual native empty snapshot unwrapped", "result": "PASS" },
+        { "name": "Actual native seven-row ledger unwrapped", "result": "PASS" },
+        { "name": "Actual native dry-run flat JSON contract on up-to-date local database", "result": "PASS" },
+        { "name": "Fake empty snapshot unwrapped", "result": "PASS" },
+        { "name": "Fake object snapshot unwrapped", "result": "PASS" },
+        { "name": "Fake array snapshot unwrapped", "result": "PASS" },
+        {
+          "name": "Structured native error rejected",
+          "result": "PASS",
+          "safeReason": "native-structured-error-output-withheld"
+        },
+        { "name": "Malformed JSON rejected", "result": "PASS", "safeReason": "native-json-output-invalid" },
+        { "name": "Exact seven pending migration plan accepted", "result": "PASS" },
+        {
+          "name": "Seed inclusion rejected",
+          "result": "PASS",
+          "safeReason": "dry-run-structured-plan-mismatch"
+        },
+        {
+          "name": "Partial pending migration plan rejected",
+          "result": "PASS",
+          "safeReason": "pending-migration-plan-not-exact-seven"
+        },
+        { "name": "Future receipt rejected", "result": "PASS", "safeReason": "receipt-stale-or-future" },
+        { "name": "Stale receipt rejected", "result": "PASS", "safeReason": "receipt-stale-or-future" },
+        {
+          "name": "Nonempty production-state fixture rejected",
+          "result": "PASS",
+          "safeReason": "production-not-clean-initial-state-reconcile-only"
+        },
+        {
+          "name": "Partial ledger fixture rejected",
+          "result": "PASS",
+          "safeReason": "remote-ledger-count-mismatch-reconcile-only"
+        },
+        { "name": "Complete external review gate fixture accepted", "result": "PASS" },
+        {
+          "name": "Missing recovery review gate rejected",
+          "result": "PASS",
+          "safeReason": "external-root-reviewed-gate-not-satisfied"
+        },
+        {
+          "name": "Wrong project review gate rejected",
+          "result": "PASS",
+          "safeReason": "external-root-reviewed-gate-not-satisfied"
+        },
+        {
+          "name": "Changed dry-run plan rejected",
+          "result": "PASS",
+          "safeReason": "external-root-reviewed-gate-source-or-state-mismatch"
+        },
+        {
+          "name": "Receipt secret-content marker rejected before write",
+          "result": "PASS",
+          "safeReason": "secret-content-guard"
+        }
+      ]
+    },
+    "actualNativeIntegration": {
+      "ownedChildren": 4,
+      "allExited": true,
+      "cleanupFailures": 0,
+      "contractBoundary": "The native local dry run found zero pending migrations because that local database already held the baseline. The exact-seven pending success case is a separate non-secret fake-output guard test, supported by the pinned CLI implementation; it is not presented as a local seven-migration apply or production receipt."
+    },
+    "embeddedSelectValidation": {
+      "transport": "Local Docker psql, ON_ERROR_STOP=1, against owned Everyone PostgreSQL 17",
+      "queryCount": 6,
+      "allNativeExitCodes": 0,
+      "allJsonParsed": true,
+      "queries": [
+        "emrCoreSql",
+        "emrLedgerSql",
+        "emrQueuesSql",
+        "emrCronSql",
+        "emrMediaSql",
+        "emrReadbackSql"
+      ],
+      "changedCronAndReadbackQueriesRecheckedAfterFinalCorrection": true,
+      "reviewedCronCommandsBothMatch": true,
+      "functionsWithoutExpectedEmptySearchPath": 0,
+      "foreignKeysWithoutLeadingIndexes": 0,
+      "fixturesOrGrantsChanged": false,
+      "boundary": "Local SQL syntax and expected catalogue shape do not prove production schema, advisors, migration parity or restricted-role authentication."
+    }
+  },
+  "defectsCaughtBeforeProductionCredentialUse": [
+    {
+      "issue": "Unary-comma wrapping retained a nested array around parsed rows and snapshot arrays, so the snapshot property or empty/seven-row counts could be misread.",
+      "correction": "Both JSON and snapshot-return layers now unwrap through normal PowerShell pipeline enumeration.",
+      "validation": "Actual native and fake object/empty-array/multiple-row cases all passed before production handoff use."
+    },
+    {
+      "issue": "Final serialized receipt guard originally ran after plaintext clearing.",
+      "correction": "The secret-content guard now runs before final plaintext clearing; a non-secret marker regression rejects the write."
+    },
+    {
+      "issue": "Preflight cron command text and arbitrary function configuration values were broader than required non-secret metadata.",
+      "correction": "Cron output contains only reviewed-command equality flags; function configuration output contains only the expected-empty-search-path flag."
+    },
+    {
+      "issue": "Automatic reconciliation could otherwise launch another credential-bearing child after an unconfirmed owned-process cleanup.",
+      "correction": "Cleanup failure suppresses automatic reconciliation and records a manual readback requirement."
+    }
+  ],
+  "independentReviewAndExecutionGates": {
+    "rootReportedIndependentSourceReview": "PASS before actual production preflight and dry run; separate from this author's implementation and local validation",
+    "pushRequires": [
+      "Existing recorded exact-packet owner authorization, hashed into the root review gate",
+      "Verified fixed production dashboard target, backup/recovery disposition and Git automation controls",
+      "Fresh actual clean identity/history/schema/extension preflight",
+      "Exact seven-file dry run with no seeds or roles files and matching migration seals",
+      "Root-written review gate binding runner hash, migration-seal digest, preflight fingerprint and actual dry-run-plan file hash",
+      "Fresh pre-push read-only state and pending-plan recheck",
+      "Exclusive push-attempt sentinel written and dry-run plan consumed before one push launch"
+    ],
+    "ambiguousOrFailedWrite": "Read actual history/schema before any further write; the attempt sentinel blocks replay. No reset, fabricated history, automatic retry, fixture import or grant expansion.",
+    "postWriteAcceptance": "Production catalogue, advisors, types, API/provider settings and restricted-role receipts are separately required; native push success alone does not close M01.",
+    "credentialCleanup": "Each owned native child must exit and lose its password environment. Root removes the retained encrypted prod administrator handoff after the approved DB batch or blocking stop; a child cannot clear a separately configured parent process."
+  },
+  "sourcesReviewed": [
+    "https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/commands/db/query/query.handler.ts",
+    "https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/commands/db/query/query.format.ts",
+    "https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/command-internal/db-push-core.ts",
+    "https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/shared/output/output.layer.ts"
+  ],
+  "authorBoundaries": {
+    "productionCredentialHandoffReadOrDecrypted": false,
+    "productionDatabaseContact": false,
+    "productionConsumerBodyExecuted": false,
+    "productionOperationsOwnedBy": "Root agent; actual production results must be read from its separate execution receipts",
+    "devMigrationsOrWriterProbeReplayed": false,
+    "migrationsOrGrantDefinitionsChanged": false,
+    "prMergeOrM02OrWorkflowActivation": false
+  }
+}

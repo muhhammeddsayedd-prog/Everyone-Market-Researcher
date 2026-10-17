@@ -1,0 +1,28 @@
+{
+  "ObservedAt": "2026-10-17T22:55:37.2829004Z",
+  "ProjectRef": "zmotjsbzhzjvpelxvxlf",
+  "Checks": [
+    {
+      "Role": "api_agent",
+      "ProjectRef": "zmotjsbzhzjvpelxvxlf",
+      "ObservedAt": "2026-10-17T22:55:34.5298652Z",
+      "Result": "OK",
+      "Reason": "verified-query-success",
+      "CliStarted": true,
+      "RawOutputWithheld": true,
+      "HandoffConsumed": true,
+      "HandoffDeleted": true,
+      "ProbeMode": "single-DO-read-only-role-and-view-count",
+      "ExitCode": 0,
+      "CurrentUserVerified": "api_agent",
+      "SessionUserVerified": "api_agent",
+      "Expected42501DenialsVerified": 4,
+      "DirectTableWritePrivilegesAbsent": true,
+      "ProcessExited": true,
+      "FinishedAt": "2026-10-17T22:55:37.2711620Z"
+    }
+  ],
+  "RawOutputWithheld": true,
+  "SecretsWritten": false,
+  "ProductionAccess": false
+}

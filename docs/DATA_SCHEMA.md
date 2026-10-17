@@ -89,21 +89,23 @@ erDiagram
 ### Pipeline (EXECUTE: `n8n_writer`)
 | Function | Milestone | Does |
 |---|---|---|
-| `ops.start_run(workflow, platform, mode, env, execution_id) → uuid` | M03 | Opens a run |
-| `ops.finish_run(run_id, status, error)` | M03 | Closes it with totals and cost |
-| `ops.get_due_accounts(platform, limit, run_id, mode) → rows` | M03 | Claims due accounts (`SKIP LOCKED`) |
-| `ops.report_account_result(run_id, account_id, status, seen, new, error, backfill_done, cursor, p_secondary)` | M03 (p_secondary added in M04) | Per-account result, schedule, failure counter |
-| `ingest.upsert_raw_items(run_id, account_id, items jsonb) → jsonb` | M03 | Single writer path (§5.3 TECHNICAL) |
+| `ops.start_run(workflow, platform, mode, env, execution_id) → uuid` | M01 | Opens a run |
+| `ops.finish_run(run_id, status, error) → jsonb` | M01 | Closes it with totals and cost, returning the n8n summary |
+| `ops.get_due_accounts(platform, limit, run_id, mode) → rows` | M01 | Claims due accounts (`SKIP LOCKED`) |
+| `ops.report_account_result(run_id, account_id, status, seen, new, error, backfill_done, cursor)` | M01 (p_secondary added in M04) | Per-account result, cadence-minus-four-hours schedule, six-hour failure retry |
+| `ingest.upsert_raw_items(run_id, account_id, items jsonb) → jsonb` | M01 | Single writer path (§5.3 TECHNICAL) |
 | `ops.register_apify_run / ops.complete_apify_run` | M03 | Async Apify tracking |
 | `ops.log_cost(entries jsonb)` | M03 | Cost ledger rows |
 | `ops.daily_health() → jsonb`, `ops.accrue_fixed_costs(day)` | M03 | WF-91 |
-| `ops.claim_queue_batch(queue, n, vt) / ops.ack_queue(queue, ids)` | M03 | pgmq wrappers |
-| `ops.diff_website_urls(account_id, urls[]) → new urls[]`, `ops.mark_website_page(...)` | M05 | Website diff |
+| `ops.claim_queue_batch(queue, n, vt) / ops.ack_queue(queue, ids)` | M01 | Allowlisted pgmq wrappers |
+| `ops.diff_website_urls(account_id, urls[]) → uncrawled urls[]` | M01 | Discover URLs and retain retries until crawled; preserve ignored/removed pages |
+| `ops.mark_website_page(...)` | M05 | Website crawl result writer |
 | `ops.save_employee_snapshot(account_id, date, people)` | M05 | LinkedIn employees |
 | `ops.mark_removed(account_id, seen_ids[], p_since date)`, `ops.mark_website_removals(...)`, `ops.get_removal_targets(...)` | M06 | Removal check + weekly metrics refresh for paid sources |
 | `ops.save_media_asset(...)`, `ops.get_media_targets(ids)` | M06 | Media v1 (WF-31) |
 | `ops.save_bakeoff_rows(...)` + table `ops.bakeoff_results`, `ops.set_stories_cadence(...)` | M06 | Stories bake-off |
-| `ops.get_items_for_ai(ids[]) → jsonb`, `ops.apply_extraction(item_id, result, meta) → jsonb` | M07 | AI in/out |
+| `ops.get_items_for_ai(ids[]) → jsonb` | M01 | AI input, including normalized credits text and media URLs |
+| `ops.apply_extraction(item_id, result, meta) → jsonb` | M07 | AI output writer |
 | `ops.upsert_embeddings(rows)`, `ops.enqueue_competitor_embeddings()`, `private.resolve_org`, `private.resolve_person`, `private.norm_alias`, optional `ops.register_ai_batch` + `ops.ai_batches` (Batch API) | M07 | Vectors, entity resolution |
 | `ops.campaign_candidates(ids[]) → jsonb`, `ops.attach_to_campaign(...)` | M08 | Linker |
 | `ops.upsert_news(articles)`, `ops.save_brief(...)`, `ops.get_brief_inputs(...)`, `ops.get_alert_payload(...)`, `ops.match_instant_rules(...)`, `ops.log_alert_sent(...)` + table `ops.alert_log` (unique `dedupe_key`) | M13 | News, briefs, alerts |
@@ -159,6 +161,8 @@ All collectors convert source objects to this shape before calling `ingest.upser
 ```
 
 ## 8. Rules Codex must keep
+
+M01 implementation notes: `competitor_accounts.handle_norm` is generated from lowercase `handle` and is the named unique upsert target. The audit links `competitor_accounts.last_run_id`, `raw_items.run_id` and `items.last_extraction_id` have indexed foreign keys. The migration files under `supabase/migrations/` are executable history; `reference/sql/` remains the original draft. Local `seed.sql` contains only fake C999 data and never runs during hosted `db push`.
 
 1. RLS on every table; a pgTAP test per table proves non-members get zero rows and members get rows.
 2. Every FK has an index; every list query has a supporting index (check with `EXPLAIN`).

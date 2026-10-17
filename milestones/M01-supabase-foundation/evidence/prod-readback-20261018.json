@@ -1,0 +1,3224 @@
+{
+  "ObservedAtUtc": "2026-10-17T23:31:53.5957031Z",
+  "Action": "Readback",
+  "ProjectRef": "hkiafqrcxaafdbcvjlzv",
+  "Host": "aws-1-eu-central-1.pooler.supabase.com",
+  "Port": 5432,
+  "Database": "postgres",
+  "Result": "readback-collected-review-required",
+  "Reason": "catalogue-is-not-restricted-role-authentication",
+  "EncryptedHandoffPresent": true,
+  "HandoffDecrypted": true,
+  "RawOutputWithheld": true,
+  "ProductionWriteAttempted": false,
+  "NoFixtureOrSeedFlag": true,
+  "NativeStages": [
+    {
+      "Stage": "core",
+      "StartedAtUtc": "2026-10-17T23:31:53.9455739Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:56.1064778Z"
+    },
+    {
+      "Stage": "ledger",
+      "StartedAtUtc": "2026-10-17T23:31:56.3029404Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:58.0877745Z"
+    },
+    {
+      "Stage": "queues",
+      "StartedAtUtc": "2026-10-17T23:31:58.1069683Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:32:00.0311044Z"
+    },
+    {
+      "Stage": "cron",
+      "StartedAtUtc": "2026-10-17T23:32:00.0416430Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:32:01.7886871Z"
+    },
+    {
+      "Stage": "media",
+      "StartedAtUtc": "2026-10-17T23:32:01.7986880Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:32:03.5546103Z"
+    },
+    {
+      "Stage": "catalogue-readback",
+      "StartedAtUtc": "2026-10-17T23:32:03.5886148Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:32:05.5700620Z"
+    }
+  ],
+  "CleanupFailures": [],
+  "HandoffDeletionResponsibility": "Root deletes prod encrypted handoff after approved DB batch or blocking stop; never recreate dev/admin/writer credentials for this action.",
+  "MigrationSealsDigest": "c0b70b91a1d631323e2d509513e95513030aa3a5c5a7ea6ab6cfafaa30951b18",
+  "RunnerSha256": "bdec58b44662caa376ab4e4e3d1c7dfefd0ca36ddf3cf7854a77a034bb6726ea",
+  "Snapshot": {
+    "Core": {
+      "availableExtensions": [
+        {
+          "defaultVersion": "1.6.4",
+          "installedVersion": "1.6.4",
+          "name": "pg_cron"
+        },
+        {
+          "defaultVersion": "1.6",
+          "installedVersion": "1.6",
+          "name": "pg_trgm"
+        },
+        {
+          "defaultVersion": "1.3",
+          "installedVersion": "1.3",
+          "name": "pgcrypto"
+        },
+        {
+          "defaultVersion": "1.5.1",
+          "installedVersion": "1.5.1",
+          "name": "pgmq"
+        },
+        {
+          "defaultVersion": "1.1",
+          "installedVersion": "1.1",
+          "name": "unaccent"
+        },
+        {
+          "defaultVersion": "0.8.2",
+          "installedVersion": "0.8.2",
+          "name": "vector"
+        }
+      ],
+      "cronJobPresent": true,
+      "currentUser": "postgres",
+      "database": "postgres",
+      "installedRequiredExtensions": [
+        {
+          "name": "pg_cron",
+          "schema": "pg_catalog",
+          "version": "1.6.4"
+        },
+        {
+          "name": "pg_trgm",
+          "schema": "extensions",
+          "version": "1.6"
+        },
+        {
+          "name": "pgcrypto",
+          "schema": "extensions",
+          "version": "1.3"
+        },
+        {
+          "name": "pgmq",
+          "schema": "pgmq",
+          "version": "1.5.1"
+        },
+        {
+          "name": "unaccent",
+          "schema": "extensions",
+          "version": "1.1"
+        },
+        {
+          "name": "vector",
+          "schema": "extensions",
+          "version": "0.8.2"
+        }
+      ],
+      "machineRoles": [
+        {
+          "bypassRls": false,
+          "createDb": false,
+          "createRole": false,
+          "inherit": false,
+          "login": true,
+          "name": "api_agent",
+          "replication": false,
+          "superuser": false
+        },
+        {
+          "bypassRls": false,
+          "createDb": false,
+          "createRole": false,
+          "inherit": false,
+          "login": true,
+          "name": "n8n_writer",
+          "replication": false,
+          "superuser": false
+        }
+      ],
+      "migrationLedgerPresent": true,
+      "projectRelations": [
+        {
+          "kind": "v",
+          "name": "briefs_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "campaigns_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "competitors_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "items_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "news_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "organizations_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "people_v",
+          "schema": "api"
+        },
+        {
+          "kind": "r",
+          "name": "alert_rules",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "alert_rules_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "allowed_domains",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "briefs",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "campaign_items",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "campaigns",
+          "schema": "app"
+        },
+        {
+          "kind": "v",
+          "name": "campaigns_v",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "competitor_accounts",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "competitors",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "embeddings",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "embeddings_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "employee_snapshots",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "employee_snapshots_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "v",
+          "name": "feed_v",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "item_credits",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "item_credits_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "items",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "media_assets",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "media_assets_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "member_invites",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "members",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "news_articles",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "news_mentions",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "org_aliases",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "org_aliases_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "organizations",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "people",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "person_aliases",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "person_aliases_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "review_tasks",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "review_tasks_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "saved_views",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "saved_views_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "stats_daily",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "taxonomy_terms",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "taxonomy_terms_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "website_pages",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "raw_items",
+          "schema": "ingest"
+        },
+        {
+          "kind": "S",
+          "name": "raw_items_id_seq",
+          "schema": "ingest"
+        },
+        {
+          "kind": "r",
+          "name": "ai_extractions",
+          "schema": "ops"
+        },
+        {
+          "kind": "S",
+          "name": "ai_extractions_id_seq",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "api_calls",
+          "schema": "ops"
+        },
+        {
+          "kind": "S",
+          "name": "api_calls_id_seq",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "api_keys",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "apify_runs",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "audit_log",
+          "schema": "ops"
+        },
+        {
+          "kind": "S",
+          "name": "audit_log_id_seq",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "cost_ledger",
+          "schema": "ops"
+        },
+        {
+          "kind": "S",
+          "name": "cost_ledger_id_seq",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "price_book",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "scrape_run_accounts",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "scrape_runs",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "settings",
+          "schema": "ops"
+        }
+      ],
+      "projectSchemas": ["api", "app", "ingest", "ops", "private"],
+      "queueMetaPresent": true,
+      "serverMajor": 17,
+      "serverVersion": "17.11",
+      "sessionUser": "postgres",
+      "storageBucketsPresent": true
+    },
+    "Ledger": [
+      {
+        "name": "extensions_schemas_roles",
+        "statementCount": 40,
+        "version": "20261017172928"
+      },
+      {
+        "name": "core_tables",
+        "statementCount": 120,
+        "version": "20261017172931"
+      },
+      {
+        "name": "auth_rls_views",
+        "statementCount": 55,
+        "version": "20261017172934"
+      },
+      {
+        "name": "rpc_pipeline_core",
+        "statementCount": 12,
+        "version": "20261017172937"
+      },
+      {
+        "name": "rpc_app_search",
+        "statementCount": 10,
+        "version": "20261017172940"
+      },
+      {
+        "name": "storage_cron",
+        "statementCount": 3,
+        "version": "20261017172943"
+      },
+      {
+        "name": "seed_taxonomies",
+        "statementCount": 4,
+        "version": "20261017172945"
+      }
+    ],
+    "Queues": ["ai_extract", "embed", "media"],
+    "Cron": [
+      {
+        "active": true,
+        "name": "emr-archive-queue-cleanup",
+        "reviewedCommandMatches": true,
+        "schedule": "30 3 * * *"
+      },
+      {
+        "active": true,
+        "name": "emr-unlock-stale-accounts",
+        "reviewedCommandMatches": true,
+        "schedule": "15 * * * *"
+      }
+    ],
+    "Media": [
+      {
+        "id": "media",
+        "maxBytes": 5242880,
+        "mimeTypes": ["image/jpeg", "image/png", "image/webp", "image/svg+xml"],
+        "public": true
+      }
+    ]
+  },
+  "Catalogue": {
+    "competitorAccounts": 0,
+    "competitors": 0,
+    "domainAutojoinEntries": 0,
+    "foreignKeysWithoutLeadingIndexes": 0,
+    "functions": [
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "",
+        "authenticatedExecute": true,
+        "emptySearchPath": true,
+        "name": "me",
+        "publicExecute": false,
+        "schema": "app",
+        "securityDefiner": false,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": true,
+        "anonExecute": false,
+        "arguments": "p_query text, p_embedding vector, p_types text[], p_filters jsonb, p_limit integer",
+        "authenticatedExecute": true,
+        "emptySearchPath": true,
+        "name": "search",
+        "publicExecute": false,
+        "schema": "app",
+        "securityDefiner": false,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": true,
+        "anonExecute": false,
+        "arguments": "p_entity_type text, p_entity_id uuid, p_limit integer",
+        "authenticatedExecute": true,
+        "emptySearchPath": true,
+        "name": "similar",
+        "publicExecute": false,
+        "schema": "app",
+        "securityDefiner": false,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "p_run_id uuid, p_account_id uuid, p_items jsonb",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "upsert_raw_items",
+        "publicExecute": false,
+        "schema": "ingest",
+        "securityDefiner": true,
+        "writerExecute": true
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "p_queue text, p_msg_ids bigint[]",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "ack_queue",
+        "publicExecute": false,
+        "schema": "ops",
+        "securityDefiner": true,
+        "writerExecute": true
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "p_queue text, p_n integer, p_vt_seconds integer",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "claim_queue_batch",
+        "publicExecute": false,
+        "schema": "ops",
+        "securityDefiner": true,
+        "writerExecute": true
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "p_account_id uuid, p_urls text[]",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "diff_website_urls",
+        "publicExecute": false,
+        "schema": "ops",
+        "securityDefiner": true,
+        "writerExecute": true
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "p_run_id uuid, p_status text, p_error text",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "finish_run",
+        "publicExecute": false,
+        "schema": "ops",
+        "securityDefiner": true,
+        "writerExecute": true
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "p_platform app.platform, p_limit integer, p_run_id uuid, p_mode text",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "get_due_accounts",
+        "publicExecute": false,
+        "schema": "ops",
+        "securityDefiner": true,
+        "writerExecute": true
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "p_item_ids uuid[]",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "get_items_for_ai",
+        "publicExecute": false,
+        "schema": "ops",
+        "securityDefiner": true,
+        "writerExecute": true
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "p_run_id uuid, p_account_id uuid, p_status text, p_items_seen integer, p_items_new integer, p_error text, p_backfill_done boolean, p_backfill_cursor jsonb",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "report_account_result",
+        "publicExecute": false,
+        "schema": "ops",
+        "securityDefiner": true,
+        "writerExecute": true
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "p_workflow text, p_platform app.platform, p_mode text, p_env text, p_execution_id text",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "start_run",
+        "publicExecute": false,
+        "schema": "ops",
+        "securityDefiner": true,
+        "writerExecute": true
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "campaigns_tsv",
+        "publicExecute": false,
+        "schema": "private",
+        "securityDefiner": false,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "competitors_tsv",
+        "publicExecute": false,
+        "schema": "private",
+        "securityDefiner": false,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "handle_new_user",
+        "publicExecute": false,
+        "schema": "private",
+        "securityDefiner": true,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "p_min app.member_role",
+        "authenticatedExecute": true,
+        "emptySearchPath": true,
+        "name": "has_role",
+        "publicExecute": false,
+        "schema": "private",
+        "securityDefiner": true,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "",
+        "authenticatedExecute": true,
+        "emptySearchPath": true,
+        "name": "is_member",
+        "publicExecute": false,
+        "schema": "private",
+        "securityDefiner": true,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "items_tsv",
+        "publicExecute": false,
+        "schema": "private",
+        "securityDefiner": false,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "news_tsv",
+        "publicExecute": false,
+        "schema": "private",
+        "securityDefiner": false,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "t text",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "norm",
+        "publicExecute": false,
+        "schema": "private",
+        "securityDefiner": false,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "organizations_tsv",
+        "publicExecute": false,
+        "schema": "private",
+        "securityDefiner": false,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": false,
+        "anonExecute": false,
+        "arguments": "",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "people_tsv",
+        "publicExecute": false,
+        "schema": "private",
+        "securityDefiner": false,
+        "writerExecute": false
+      },
+      {
+        "agentExecute": true,
+        "anonExecute": false,
+        "arguments": "p_scope text",
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "name": "require_api_scope",
+        "publicExecute": false,
+        "schema": "private",
+        "securityDefiner": false,
+        "writerExecute": false
+      }
+    ],
+    "items": 0,
+    "members": 0,
+    "ownerAdminInvitePresent": true,
+    "pricePlaceholders": 17,
+    "rawItems": 0,
+    "roleMemberships": [],
+    "schemaPrivileges": [
+      {
+        "create": false,
+        "role": "anon",
+        "schema": "api",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "anon",
+        "schema": "app",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "anon",
+        "schema": "cron",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "anon",
+        "schema": "ingest",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "anon",
+        "schema": "ops",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "anon",
+        "schema": "private",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "api_agent",
+        "schema": "api",
+        "usage": true
+      },
+      {
+        "create": false,
+        "role": "api_agent",
+        "schema": "app",
+        "usage": true
+      },
+      {
+        "create": false,
+        "role": "api_agent",
+        "schema": "cron",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "api_agent",
+        "schema": "ingest",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "api_agent",
+        "schema": "ops",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "api_agent",
+        "schema": "private",
+        "usage": true
+      },
+      {
+        "create": false,
+        "role": "authenticated",
+        "schema": "api",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "authenticated",
+        "schema": "app",
+        "usage": true
+      },
+      {
+        "create": false,
+        "role": "authenticated",
+        "schema": "cron",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "authenticated",
+        "schema": "ingest",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "authenticated",
+        "schema": "ops",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "authenticated",
+        "schema": "private",
+        "usage": true
+      },
+      {
+        "create": false,
+        "role": "n8n_writer",
+        "schema": "api",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "usage": true
+      },
+      {
+        "create": false,
+        "role": "n8n_writer",
+        "schema": "cron",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "n8n_writer",
+        "schema": "ingest",
+        "usage": true
+      },
+      {
+        "create": false,
+        "role": "n8n_writer",
+        "schema": "ops",
+        "usage": true
+      },
+      {
+        "create": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "usage": false
+      },
+      {
+        "create": false,
+        "role": "n8n_writer",
+        "schema": "private",
+        "usage": false
+      }
+    ],
+    "settings": 13,
+    "storageClientWritePolicies": 0,
+    "tablePrivileges": [
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "api",
+        "select": false,
+        "table": "briefs_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "api",
+        "select": false,
+        "table": "campaigns_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "api",
+        "select": false,
+        "table": "competitors_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "api",
+        "select": false,
+        "table": "items_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "api",
+        "select": false,
+        "table": "news_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "api",
+        "select": false,
+        "table": "organizations_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "api",
+        "select": false,
+        "table": "people_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "alert_rules",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "allowed_domains",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "briefs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "campaign_items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "campaigns",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "campaigns_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "competitor_accounts",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "competitors",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "embeddings",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "employee_snapshots",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "feed_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "item_credits",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "media_assets",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "member_invites",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "members",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "news_articles",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "news_mentions",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "org_aliases",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "organizations",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "people",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "person_aliases",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "review_tasks",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "saved_views",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "stats_daily",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "taxonomy_terms",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "table": "website_pages",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "ingest",
+        "select": false,
+        "table": "raw_items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "table": "ai_extractions",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "table": "api_calls",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "table": "api_keys",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "table": "apify_runs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "table": "audit_log",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "table": "cost_ledger",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "table": "price_book",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "table": "scrape_run_accounts",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "table": "scrape_runs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "table": "settings",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "api",
+        "select": true,
+        "table": "briefs_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "api",
+        "select": true,
+        "table": "campaigns_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "api",
+        "select": true,
+        "table": "competitors_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "api",
+        "select": true,
+        "table": "items_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "api",
+        "select": true,
+        "table": "news_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "api",
+        "select": true,
+        "table": "organizations_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "api",
+        "select": true,
+        "table": "people_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "table": "alert_rules",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "table": "allowed_domains",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "briefs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "campaign_items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "campaigns",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "campaigns_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "competitor_accounts",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "competitors",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "embeddings",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "employee_snapshots",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "feed_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "item_credits",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "media_assets",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "table": "member_invites",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "table": "members",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "news_articles",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "news_mentions",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "org_aliases",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "organizations",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "people",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "person_aliases",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "review_tasks",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "table": "saved_views",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "stats_daily",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": true,
+        "table": "taxonomy_terms",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "table": "website_pages",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "ingest",
+        "select": false,
+        "table": "raw_items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "table": "ai_extractions",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "table": "api_calls",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "table": "api_keys",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "table": "apify_runs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "table": "audit_log",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "table": "cost_ledger",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "table": "price_book",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "table": "scrape_run_accounts",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "table": "scrape_runs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "table": "settings",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "api",
+        "select": false,
+        "table": "briefs_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "api",
+        "select": false,
+        "table": "campaigns_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "api",
+        "select": false,
+        "table": "competitors_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "api",
+        "select": false,
+        "table": "items_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "api",
+        "select": false,
+        "table": "news_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "api",
+        "select": false,
+        "table": "organizations_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "api",
+        "select": false,
+        "table": "people_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "alert_rules",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "allowed_domains",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "briefs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "campaign_items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "campaigns",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "campaigns_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "competitor_accounts",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "competitors",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "embeddings",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "employee_snapshots",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "feed_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "item_credits",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "media_assets",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "member_invites",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "members",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "news_articles",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "news_mentions",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "org_aliases",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "organizations",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "people",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "person_aliases",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "review_tasks",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": true,
+        "insert": true,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "saved_views",
+        "trigger": false,
+        "truncate": false,
+        "update": true
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "stats_daily",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "taxonomy_terms",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "app",
+        "select": true,
+        "table": "website_pages",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "ingest",
+        "select": false,
+        "table": "raw_items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "table": "ai_extractions",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "table": "api_calls",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "table": "api_keys",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "table": "apify_runs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "table": "audit_log",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "table": "cost_ledger",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "table": "price_book",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "table": "scrape_run_accounts",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "table": "scrape_runs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "table": "settings",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "api",
+        "select": false,
+        "table": "briefs_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "api",
+        "select": false,
+        "table": "campaigns_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "api",
+        "select": false,
+        "table": "competitors_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "api",
+        "select": false,
+        "table": "items_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "api",
+        "select": false,
+        "table": "news_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "api",
+        "select": false,
+        "table": "organizations_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "api",
+        "select": false,
+        "table": "people_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "alert_rules",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "allowed_domains",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "briefs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "campaign_items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "campaigns",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "campaigns_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "competitor_accounts",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "competitors",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "embeddings",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "employee_snapshots",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "feed_v",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "item_credits",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "media_assets",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "member_invites",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "members",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "news_articles",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "news_mentions",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "org_aliases",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "organizations",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "people",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "person_aliases",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "review_tasks",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "saved_views",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "stats_daily",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "taxonomy_terms",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "table": "website_pages",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "ingest",
+        "select": false,
+        "table": "raw_items",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "table": "ai_extractions",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "table": "api_calls",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "table": "api_keys",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "table": "apify_runs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "table": "audit_log",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "table": "cost_ledger",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "table": "price_book",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "table": "scrape_run_accounts",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "table": "scrape_runs",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "references": false,
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "table": "settings",
+        "trigger": false,
+        "truncate": false,
+        "update": false
+      }
+    ],
+    "tables": {
+      "app": 25,
+      "ingest": 1,
+      "ops": 10
+    },
+    "tablesWithoutRls": 0,
+    "taxonomies": 120,
+    "views": [
+      {
+        "name": "briefs_v",
+        "schema": "api",
+        "securityInvoker": true
+      },
+      {
+        "name": "campaigns_v",
+        "schema": "api",
+        "securityInvoker": true
+      },
+      {
+        "name": "competitors_v",
+        "schema": "api",
+        "securityInvoker": true
+      },
+      {
+        "name": "items_v",
+        "schema": "api",
+        "securityInvoker": true
+      },
+      {
+        "name": "news_v",
+        "schema": "api",
+        "securityInvoker": true
+      },
+      {
+        "name": "organizations_v",
+        "schema": "api",
+        "securityInvoker": true
+      },
+      {
+        "name": "people_v",
+        "schema": "api",
+        "securityInvoker": true
+      },
+      {
+        "name": "campaigns_v",
+        "schema": "app",
+        "securityInvoker": true
+      },
+      {
+        "name": "feed_v",
+        "schema": "app",
+        "securityInvoker": true
+      }
+    ]
+  },
+  "AllOwnedNativeProcessesExited": true,
+  "FinishedAtUtc": "2026-10-17T23:32:06.1929975Z",
+  "HandoffStillPresentForRootCleanup": true
+}

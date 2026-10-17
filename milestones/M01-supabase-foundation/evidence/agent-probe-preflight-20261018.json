@@ -1,0 +1,140 @@
+{
+  "localDate": "2026-10-18",
+  "timezone": "Africa/Cairo",
+  "recordedAtUtc": "2026-10-17T22:56:27Z",
+  "scope": "Non-secret local validation of the existing private agent-only consumer before hosted handoff consumption",
+  "consumer": {
+    "path": "%LOCALAPPDATA%\\Temp\\emr-m01-check-role-cli.ps1",
+    "reviewedSha256": "f1b5acd7b61882f58026ecc194a67fc4adcdf17bbdae9c3d4b7088b14907bcdd",
+    "powerShellSyntaxErrors": 0,
+    "sqlSource": "Exact emrAgentSql here-string extracted from the actual consumer without executing or dot-sourcing it",
+    "generatedSqlBoundary": "Consumer writes this exact extracted SQL as UTF-8 without BOM to its private SQL path",
+    "roleSelection": "-Role api_agent skips the writer branch before handoff access",
+    "targetReview": {
+      "projectRef": "zmotjsbzhzjvpelxvxlf",
+      "host": "aws-1-eu-central-1.pooler.supabase.com",
+      "port": 6543,
+      "poolMode": "transaction",
+      "database": "postgres",
+      "loginUser": "api_agent.zmotjsbzhzjvpelxvxlf",
+      "tls": "sslmode=require",
+      "fixedEndpointValidation": true,
+      "passwordFreeNativeArguments": true
+    },
+    "safetyReview": {
+      "decryptionConfinedToBoundedConsumer": true,
+      "inheritedPgAndSupabaseEnvironmentScrubbed": true,
+      "passwordPassedOnlyInOwnedNativeChildEnvironment": true,
+      "nativeWaitBoundMilliseconds": 45000,
+      "rawErrorsAndOutputWithheld": true,
+      "successRequiresNativeExitZeroAndExactDoCommandTag": true,
+      "successFlagsWrittenOnlyAfterAllSqlAssertionsComplete": true,
+      "consumedHandoffAndPrivateSqlRemovedInFinally": true,
+      "ownedProcessTerminationAndDisposalInFinally": true
+    }
+  },
+  "localEnvironment": {
+    "container": "supabase_db_everyone-market-radar",
+    "image": "public.ecr.aws/supabase/postgres:17.11.0.004",
+    "dockerLabelsVerified": {
+      "com.docker.compose.project": "everyone-market-radar",
+      "com.supabase.cli.project": "everyone-market-radar",
+      "com.supabase.cli.workdir": "D:\\Everyone\\everyone Market Research\\everyone-market-radar"
+    },
+    "hostBinding": "127.0.0.1:60322 to container port 5432",
+    "serverVersion": "PostgreSQL 17.11",
+    "database": "postgres",
+    "existingMigrationCount": 7,
+    "existingApiAgentRolePresent": true,
+    "sqlTransport": "docker exec -i with local psql -X, ON_ERROR_STOP=1; SQL delivered on standard input",
+    "simulationIdentitySetup": "Local supabase_admin connection followed by SET SESSION AUTHORIZATION api_agent for validation only",
+    "hostedRestrictedAuthenticationProof": false,
+    "baselineDataOrFixturesChanged": false
+  },
+  "firstFullSqlAttempt": {
+    "environment": "owned local PostgreSQL 17",
+    "result": "FAIL before hosted credential consumption",
+    "nativeExitCode": 3,
+    "sqlstate": "42501",
+    "safeErrorCategory": "permission denied for schema ingest during qualified-name-text table privilege lookup",
+    "reached": [
+      "transaction-local read-only setting and verification",
+      "current_user and session_user assertions",
+      "api.competitors_v count read"
+    ],
+    "cause": "has_table_privilege with a qualified relation-name text argument performs namespace lookup; api_agent correctly lacks ingest schema USAGE",
+    "interpretation": "Local helper defect, not hosted password rejection or authorization acceptance"
+  },
+  "correction": {
+    "scope": "Only the agent table-privilege catalogue lookup changed; writer probe preserved",
+    "tableLookup": "pg_class c joined to pg_namespace n by n.oid = c.relnamespace; app/ingest/ops schemas and relkind r/p; has_table_privilege(current_user,c.oid,...) uses the OID overload",
+    "writePrivilegeListPreserved": ["INSERT", "UPDATE", "DELETE", "TRUNCATE", "REFERENCES", "TRIGGER"],
+    "firstExecutableSqlStatement": "perform pg_catalog.set_config('transaction_read_only','on',true);",
+    "settingScope": "Current transaction only; no role or database default changed",
+    "identityAssertions": ["current_user = api_agent", "session_user = api_agent"],
+    "permittedRead": "perform count(*) from api.competitors_v;",
+    "readRowCountCaptured": false,
+    "opsIngestExecuteAbsence": "pg_proc OID scan with has_function_privilege(current_user,p.oid,'EXECUTE')",
+    "requiredPermissionDenials": [
+      "ops.scrape_runs SELECT",
+      "ops.start_run execution",
+      "pgmq.meta SELECT",
+      "cron.job SELECT"
+    ],
+    "denialHandler": "insufficient_privilege only, equivalent to SQLSTATE 42501; each unexpected success raises P0001 and denied count must equal four"
+  },
+  "correctedActualSqlValidation": {
+    "result": "PASS",
+    "helperSha256MatchedReviewedSource": true,
+    "safeCommandTags": ["SET", "DO"],
+    "nativeExitCode": 0,
+    "allSqlAssertionsCompleted": true,
+    "boundary": "Owned local simulation validates SQL order, syntax and guards; it does not establish hosted login or dev acceptance"
+  },
+  "negativeChecks": [
+    {
+      "check": "Wrong identity",
+      "localMutation": "Omitted local SET SESSION AUTHORIZATION api_agent",
+      "nativeExitCode": 3,
+      "sqlstate": "42501",
+      "result": "PASS: identity guard rejected the local test",
+      "authorizationProof": false
+    },
+    {
+      "check": "Read-only error cannot satisfy permission denial",
+      "localMutation": "Replaced first denial statement in an in-memory SQL copy with a deliberate 25006 exception",
+      "nativeExitCode": 3,
+      "sqlstate": "25006",
+      "result": "PASS: exception propagated rather than incrementing the permission-denial count",
+      "authorizationProof": false
+    },
+    {
+      "check": "Missing-object error cannot satisfy permission denial",
+      "localMutation": "Replaced first denial statement in an in-memory SQL copy with a deliberate 42P01 exception",
+      "nativeExitCode": 3,
+      "sqlstate": "42P01",
+      "result": "PASS: exception propagated rather than incrementing the permission-denial count",
+      "authorizationProof": false
+    },
+    {
+      "check": "Read-only assertion remains effective",
+      "localMutation": "Replaced set_config with NULL in an in-memory SQL copy",
+      "nativeExitCode": 3,
+      "sqlstate": "P0001",
+      "result": "PASS: read-only assertion rejected the local test before permitted read and denial checks",
+      "authorizationProof": false
+    }
+  ],
+  "boundaries": {
+    "credentialHandoffsReadOrDecryptedByPreflight": false,
+    "passwordsUsedByPreflight": false,
+    "privateConsumerExecutedByPreflight": false,
+    "fixturesAdded": false,
+    "grantsOrRoleDefaultsChanged": false,
+    "hostedDatabaseOrProviderChanges": false,
+    "writerProbeRerun": false,
+    "productionAccess": false,
+    "rawCredentialBearingErrorsPublished": false,
+    "hostedCompletionEvidence": "agent-pooler-completion-20261018.json records the separate subsequent actual restricted dev login"
+  }
+}

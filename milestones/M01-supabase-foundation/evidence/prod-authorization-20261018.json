@@ -1,0 +1,63 @@
+{
+  "localDate": "2026-10-18",
+  "timezone": "Africa/Cairo",
+  "recordedAtUtc": "2026-10-17T23:15:17Z",
+  "owner": "Mohamed Abdelrahman",
+  "approvalQuote": "Approve the M01 production baseline packet for hkiafqrcxaafdbcvjlzv\n\nAnd you have full authorization to take all these actions.",
+  "target": { "name": "emr-prod", "ref": "hkiafqrcxaafdbcvjlzv" },
+  "approvedPacket": {
+    "path": "hosted-acceptance-20261017.md#production-approval-packet--prepared-gate-still-open",
+    "reviewedHead": "688ec9d6ff3609fb972a75a50432320486075a1b",
+    "versionsAndSha256": "The same seven reviewed migration files and seals in the packet; no new migration content",
+    "includes": [
+      "36 project tables/RLS and reviewed schema/roles/RPCs/views/indexes/extensions",
+      "120 taxonomy terms, 13 settings, 17 price placeholders and owner admin invite",
+      "ai_extract/embed/media queues",
+      "Two named housekeeping jobs and their reviewed schedules",
+      "Public-read media bucket with five-MiB/four-MIME limit and no client writes",
+      "Production preflight, dry-run, one exact-version push and bounded acceptance/recovery checks"
+    ],
+    "excludes": [
+      "supabase/seed.sql and all test/signup/concurrency fixtures",
+      "C999/test-house and real competitors/accounts",
+      "Collection, paid provider calls, backfill or n8n activation",
+      "Application production promotion",
+      "PR4 merge",
+      "M02"
+    ]
+  },
+  "stateAtApproval": {
+    "branch": "m01-supabase-foundation",
+    "head": "688ec9d6ff3609fb972a75a50432320486075a1b",
+    "pr": 4,
+    "draft": true,
+    "ci": 39077278495,
+    "ciConclusion": "success; all five jobs, Vercel also passed",
+    "devAcceptance": "Preserved complete; no dev migration or role probe replay",
+    "prodDatabaseHandoffPresent": false,
+    "productionAuthenticationAttempted": false,
+    "productionWriteAttempted": false
+  },
+  "authorizationBoundary": "Production baseline permission is granted. Credential delivery and current preflight remain execution prerequisites; no repeated general approval is required. Separate PR4 merge approval remains open.",
+  "sourceReview": {
+    "supabaseChangelogHttpStatus": 200,
+    "changelogUrl": "https://supabase.com/changelog.md",
+    "postgres1711Change": {
+      "url": "https://supabase.com/changelog/postgres-15-19-17-11-breaking-changes",
+      "review": "The sealed migrations use pgcrypto digest, not legacy-cipher PGP encryption; they create no ltree/btree_gist indexes or custom selectivity-estimator operators. No related SQL change identified. Actual extension versions remain a preflight/readback check."
+    },
+    "extensionVersions": {
+      "url": "https://supabase.com/changelog/extension-version-pinning-ignored",
+      "review": "The approved files do not pin extension versions; capture actual installed versions without changing the sealed SQL."
+    },
+    "tlsHttpChange": {
+      "url": "https://supabase.com/changelog/cbc-tls-ciphers-deprecated",
+      "review": "HTTP API cipher deprecation is separate from the approved native PostgreSQL connection; no TLS security weakening requested."
+    },
+    "backupDocumentation": {
+      "url": "https://supabase.com/docs/guides/platform/backups",
+      "review": "Listed restore availability is not an exercised recovery receipt. Database backup covers Storage metadata, not Storage objects; custom-role password recovery is separate. No restore or paid PITR add-on authorized/performed by this review."
+    },
+    "cliPushDocumentation": "https://supabase.com/docs/reference/cli/supabase-db-push"
+  }
+}

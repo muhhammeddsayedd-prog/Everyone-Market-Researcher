@@ -1,0 +1,635 @@
+{
+  "ObservedAtUtc": "2026-10-17T23:31:03.9055423Z",
+  "Action": "Push",
+  "ProjectRef": "hkiafqrcxaafdbcvjlzv",
+  "Host": "aws-1-eu-central-1.pooler.supabase.com",
+  "Port": 5432,
+  "Database": "postgres",
+  "Result": "push-complete-exact-ledger-acceptance-pending",
+  "Reason": "seven-original-versions-names-read-back-no-fixtures",
+  "EncryptedHandoffPresent": true,
+  "HandoffDecrypted": true,
+  "RawOutputWithheld": true,
+  "ProductionWriteAttempted": true,
+  "NoFixtureOrSeedFlag": true,
+  "NativeStages": [
+    {
+      "Stage": "core",
+      "StartedAtUtc": "2026-10-17T23:31:04.2485151Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:06.1408156Z"
+    },
+    {
+      "Stage": "media",
+      "StartedAtUtc": "2026-10-17T23:31:06.3050946Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:08.1862511Z"
+    },
+    {
+      "Stage": "pre-push-pending-recheck",
+      "StartedAtUtc": "2026-10-17T23:31:08.2663184Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:09.7868227Z"
+    },
+    {
+      "Stage": "push-once",
+      "StartedAtUtc": "2026-10-17T23:31:09.8383778Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:14.2385102Z"
+    },
+    {
+      "Stage": "core",
+      "StartedAtUtc": "2026-10-17T23:31:14.2451333Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:16.0501737Z"
+    },
+    {
+      "Stage": "ledger",
+      "StartedAtUtc": "2026-10-17T23:31:16.1723582Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:17.9781696Z"
+    },
+    {
+      "Stage": "queues",
+      "StartedAtUtc": "2026-10-17T23:31:18.0013989Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:19.8747315Z"
+    },
+    {
+      "Stage": "cron",
+      "StartedAtUtc": "2026-10-17T23:31:19.8817477Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:21.6429161Z"
+    },
+    {
+      "Stage": "media",
+      "StartedAtUtc": "2026-10-17T23:31:21.6589146Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:23.4384957Z"
+    }
+  ],
+  "CleanupFailures": [],
+  "HandoffDeletionResponsibility": "Root deletes prod encrypted handoff after approved DB batch or blocking stop; never recreate dev/admin/writer credentials for this action.",
+  "MigrationSealsDigest": "c0b70b91a1d631323e2d509513e95513030aa3a5c5a7ea6ab6cfafaa30951b18",
+  "RunnerSha256": "bdec58b44662caa376ab4e4e3d1c7dfefd0ca36ddf3cf7854a77a034bb6726ea",
+  "BeforePush": {
+    "Core": {
+      "availableExtensions": [
+        {
+          "defaultVersion": "1.6.4",
+          "installedVersion": null,
+          "name": "pg_cron"
+        },
+        {
+          "defaultVersion": "1.6",
+          "installedVersion": null,
+          "name": "pg_trgm"
+        },
+        {
+          "defaultVersion": "1.3",
+          "installedVersion": "1.3",
+          "name": "pgcrypto"
+        },
+        {
+          "defaultVersion": "1.5.1",
+          "installedVersion": null,
+          "name": "pgmq"
+        },
+        {
+          "defaultVersion": "1.1",
+          "installedVersion": null,
+          "name": "unaccent"
+        },
+        {
+          "defaultVersion": "0.8.2",
+          "installedVersion": null,
+          "name": "vector"
+        }
+      ],
+      "cronJobPresent": false,
+      "currentUser": "postgres",
+      "database": "postgres",
+      "installedRequiredExtensions": [
+        {
+          "name": "pgcrypto",
+          "schema": "extensions",
+          "version": "1.3"
+        }
+      ],
+      "machineRoles": [],
+      "migrationLedgerPresent": false,
+      "projectRelations": [],
+      "projectSchemas": [],
+      "queueMetaPresent": false,
+      "serverMajor": 17,
+      "serverVersion": "17.11",
+      "sessionUser": "postgres",
+      "storageBucketsPresent": true
+    },
+    "Ledger": [],
+    "Queues": [],
+    "Cron": [],
+    "Media": []
+  },
+  "AfterPush": {
+    "Core": {
+      "availableExtensions": [
+        {
+          "defaultVersion": "1.6.4",
+          "installedVersion": "1.6.4",
+          "name": "pg_cron"
+        },
+        {
+          "defaultVersion": "1.6",
+          "installedVersion": "1.6",
+          "name": "pg_trgm"
+        },
+        {
+          "defaultVersion": "1.3",
+          "installedVersion": "1.3",
+          "name": "pgcrypto"
+        },
+        {
+          "defaultVersion": "1.5.1",
+          "installedVersion": "1.5.1",
+          "name": "pgmq"
+        },
+        {
+          "defaultVersion": "1.1",
+          "installedVersion": "1.1",
+          "name": "unaccent"
+        },
+        {
+          "defaultVersion": "0.8.2",
+          "installedVersion": "0.8.2",
+          "name": "vector"
+        }
+      ],
+      "cronJobPresent": true,
+      "currentUser": "postgres",
+      "database": "postgres",
+      "installedRequiredExtensions": [
+        {
+          "name": "pg_cron",
+          "schema": "pg_catalog",
+          "version": "1.6.4"
+        },
+        {
+          "name": "pg_trgm",
+          "schema": "extensions",
+          "version": "1.6"
+        },
+        {
+          "name": "pgcrypto",
+          "schema": "extensions",
+          "version": "1.3"
+        },
+        {
+          "name": "pgmq",
+          "schema": "pgmq",
+          "version": "1.5.1"
+        },
+        {
+          "name": "unaccent",
+          "schema": "extensions",
+          "version": "1.1"
+        },
+        {
+          "name": "vector",
+          "schema": "extensions",
+          "version": "0.8.2"
+        }
+      ],
+      "machineRoles": [
+        {
+          "bypassRls": false,
+          "createDb": false,
+          "createRole": false,
+          "inherit": false,
+          "login": true,
+          "name": "api_agent",
+          "replication": false,
+          "superuser": false
+        },
+        {
+          "bypassRls": false,
+          "createDb": false,
+          "createRole": false,
+          "inherit": false,
+          "login": true,
+          "name": "n8n_writer",
+          "replication": false,
+          "superuser": false
+        }
+      ],
+      "migrationLedgerPresent": true,
+      "projectRelations": [
+        {
+          "kind": "v",
+          "name": "briefs_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "campaigns_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "competitors_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "items_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "news_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "organizations_v",
+          "schema": "api"
+        },
+        {
+          "kind": "v",
+          "name": "people_v",
+          "schema": "api"
+        },
+        {
+          "kind": "r",
+          "name": "alert_rules",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "alert_rules_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "allowed_domains",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "briefs",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "campaign_items",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "campaigns",
+          "schema": "app"
+        },
+        {
+          "kind": "v",
+          "name": "campaigns_v",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "competitor_accounts",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "competitors",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "embeddings",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "embeddings_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "employee_snapshots",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "employee_snapshots_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "v",
+          "name": "feed_v",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "item_credits",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "item_credits_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "items",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "media_assets",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "media_assets_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "member_invites",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "members",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "news_articles",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "news_mentions",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "org_aliases",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "org_aliases_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "organizations",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "people",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "person_aliases",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "person_aliases_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "review_tasks",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "review_tasks_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "saved_views",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "saved_views_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "stats_daily",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "taxonomy_terms",
+          "schema": "app"
+        },
+        {
+          "kind": "S",
+          "name": "taxonomy_terms_id_seq",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "website_pages",
+          "schema": "app"
+        },
+        {
+          "kind": "r",
+          "name": "raw_items",
+          "schema": "ingest"
+        },
+        {
+          "kind": "S",
+          "name": "raw_items_id_seq",
+          "schema": "ingest"
+        },
+        {
+          "kind": "r",
+          "name": "ai_extractions",
+          "schema": "ops"
+        },
+        {
+          "kind": "S",
+          "name": "ai_extractions_id_seq",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "api_calls",
+          "schema": "ops"
+        },
+        {
+          "kind": "S",
+          "name": "api_calls_id_seq",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "api_keys",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "apify_runs",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "audit_log",
+          "schema": "ops"
+        },
+        {
+          "kind": "S",
+          "name": "audit_log_id_seq",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "cost_ledger",
+          "schema": "ops"
+        },
+        {
+          "kind": "S",
+          "name": "cost_ledger_id_seq",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "price_book",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "scrape_run_accounts",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "scrape_runs",
+          "schema": "ops"
+        },
+        {
+          "kind": "r",
+          "name": "settings",
+          "schema": "ops"
+        }
+      ],
+      "projectSchemas": ["api", "app", "ingest", "ops", "private"],
+      "queueMetaPresent": true,
+      "serverMajor": 17,
+      "serverVersion": "17.11",
+      "sessionUser": "postgres",
+      "storageBucketsPresent": true
+    },
+    "Ledger": [
+      {
+        "name": "extensions_schemas_roles",
+        "statementCount": 40,
+        "version": "20261017172928"
+      },
+      {
+        "name": "core_tables",
+        "statementCount": 120,
+        "version": "20261017172931"
+      },
+      {
+        "name": "auth_rls_views",
+        "statementCount": 55,
+        "version": "20261017172934"
+      },
+      {
+        "name": "rpc_pipeline_core",
+        "statementCount": 12,
+        "version": "20261017172937"
+      },
+      {
+        "name": "rpc_app_search",
+        "statementCount": 10,
+        "version": "20261017172940"
+      },
+      {
+        "name": "storage_cron",
+        "statementCount": 3,
+        "version": "20261017172943"
+      },
+      {
+        "name": "seed_taxonomies",
+        "statementCount": 4,
+        "version": "20261017172945"
+      }
+    ],
+    "Queues": ["ai_extract", "embed", "media"],
+    "Cron": [
+      {
+        "active": true,
+        "name": "emr-archive-queue-cleanup",
+        "reviewedCommandMatches": true,
+        "schedule": "30 3 * * *"
+      },
+      {
+        "active": true,
+        "name": "emr-unlock-stale-accounts",
+        "reviewedCommandMatches": true,
+        "schedule": "15 * * * *"
+      }
+    ],
+    "Media": [
+      {
+        "id": "media",
+        "maxBytes": 5242880,
+        "mimeTypes": ["image/jpeg", "image/png", "image/webp", "image/svg+xml"],
+        "public": true
+      }
+    ]
+  },
+  "AllOwnedNativeProcessesExited": true,
+  "FinishedAtUtc": "2026-10-17T23:31:23.5015037Z",
+  "HandoffStillPresentForRootCleanup": true
+}

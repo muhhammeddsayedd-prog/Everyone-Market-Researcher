@@ -1,0 +1,11 @@
+{
+  "ObservedAtUtc": "2026-10-17T23:31:09.8044772Z",
+  "ProjectRef": "hkiafqrcxaafdbcvjlzv",
+  "Host": "aws-1-eu-central-1.pooler.supabase.com",
+  "Port": 5432,
+  "PreflightFingerprint": "24f8b1b365af93f99b840a4cf4970ba2b7de6f7e780cb4ee70280745b1547a8a",
+  "MigrationSealsDigest": "c0b70b91a1d631323e2d509513e95513030aa3a5c5a7ea6ab6cfafaa30951b18",
+  "RunnerSha256": "bdec58b44662caa376ab4e4e3d1c7dfefd0ca36ddf3cf7854a77a034bb6726ea",
+  "State": "prepared-single-push-no-replay",
+  "RequireActualLedgerReconciliationBeforeAnyFurtherPush": true
+}

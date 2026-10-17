@@ -1,0 +1,18 @@
+Connecting to local database...
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/05_upsert_raw_items.test.sql:2: NOTICE:  extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/05_upsert_raw_items.test.sql .. 
+# Failed test 37: "employee snapshots cannot enter the normalized item pipeline"
+#       caught: no exception
+#       wanted: 22023
+# Looks like you failed 1 test of 40
+Failed 1/40 subtests 
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/06_due_accounts.test.sql:2: NOTICE:  extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/06_due_accounts.test.sql ...... ok
+
+Test Summary Report
+-------------------
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/05_upsert_raw_items.test.sql (Wstat: 0 Tests: 40 Failed: 1)
+  Failed test:  37
+Files=2, Tests=62,  0 wallclock secs ( 0.05 usr  0.02 sys +  0.04 cusr  0.02 csys =  0.13 CPU)
+Result: FAIL
+error running container: exit 1

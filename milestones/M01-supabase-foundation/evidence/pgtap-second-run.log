@@ -1,0 +1,50 @@
+﻿corepack : Connecting to local database...
+At line:2 char:1
++ corepack pnpm exec supabase test db 2>&1 | Out-File -Encoding utf8 mi ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Connecting to local database...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/00_schema.test.sql:2: NOTICE:  extension 
+"pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/00_schema.test.sql ................. ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/01_membership.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/01_membership.test.sql ............. ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/02_rls_members.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/02_rls_members.test.sql ............ ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/03_api_agent.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/03_api_agent.test.sql .............. ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/04_n8n_writer.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/04_n8n_writer.test.sql:7: NOTICE:  role 
+"postgres" has already been granted membership in role "n8n_writer" by role "postgres"
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/04_n8n_writer.test.sql ............. ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/05_upsert_raw_items.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/05_upsert_raw_items.test.sql ....... ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/06_due_accounts.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/06_due_accounts.test.sql ........... ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/07_report_account_result.test.sql:2: 
+NOTICE:  extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/07_report_account_result.test.sql .. ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/08_search.test.sql:2: NOTICE:  extension 
+"pgtap" already exists, skipping
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/08_search.test.sql:8: NOTICE:  role 
+"postgres" has already been granted membership in role "api_agent" by role "postgres"
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/08_search.test.sql:53: NOTICE:  
+text-search query doesn't contain lexemes: ""
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/08_search.test.sql:54: NOTICE:  
+text-search query doesn't contain lexemes: ""
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/08_search.test.sql ................. ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/09_queues_cron_storage.test.sql:2: 
+NOTICE:  extension "pgtap" already exists, skipping
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/09_queues_cron_storage.test.sql:6: 
+NOTICE:  role "postgres" has already been granted membership in role "n8n_writer" by role "postgres"
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/09_queues_cron_storage.test.sql .... ok
+All tests successful.
+Files=10, Tests=238,  2 wallclock secs ( 0.15 usr  0.03 sys +  0.20 cusr  0.14 csys =  0.52 CPU)
+Result: PASS

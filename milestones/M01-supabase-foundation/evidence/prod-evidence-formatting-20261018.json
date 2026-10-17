@@ -1,0 +1,77 @@
+{
+  "LocalDate": "2026-10-18",
+  "ObservedAtUtc": "2026-10-17T23:41:15.5666427Z",
+  "Action": "Prettier formatting of production repository JSON archives for existing CI quality gate",
+  "NativeTemporaryReceiptsModified": false,
+  "AllJsonSemanticallyUnchanged": true,
+  "Records": [
+    {
+      "File": "prod-database-preflight-20261018.json",
+      "BeforeFormattingSha256": "89afa912904cceab12ef624638982851acd3a358bd01e183a2f44d32e4cbb73a",
+      "RepositoryFormattedSha256": "527dfe273361c52f9650be2b4b952a45dfa9dbec631d10dc1cf4582fea58f632",
+      "JsonSemanticallyUnchanged": true
+    },
+    {
+      "File": "prod-dry-run-20261018.json",
+      "BeforeFormattingSha256": "dac811222c55b062736cbda60ae82fc7730998f87a4a5fc76ad4dbb2410e727b",
+      "RepositoryFormattedSha256": "467773559d4f316d2008e49d94de9f1459e2bc2303637a8c0e3a6bddba6f058a",
+      "JsonSemanticallyUnchanged": true
+    },
+    {
+      "File": "prod-generatetypes-20261018.json",
+      "BeforeFormattingSha256": "d39789097d8ffb9cfddf63079d48bad3198d120b469fdb34dd3c14e203070b93",
+      "RepositoryFormattedSha256": "c4f48bdb7d862d65913e8c5657cde9494abae42e41b6327f2253e80bc7fca700",
+      "JsonSemanticallyUnchanged": true
+    },
+    {
+      "File": "prod-performanceadvisors-20261018.json",
+      "BeforeFormattingSha256": "e468acc011cdc6cbc0960176e353d420807aefa65832c950f265cc5ca0f87b98",
+      "RepositoryFormattedSha256": "7173432748ea18ae6a3f2d0e50ac6140e64273f7d33b7d98e14c5d75c85059e8",
+      "JsonSemanticallyUnchanged": true
+    },
+    {
+      "File": "prod-push-20261018.json",
+      "BeforeFormattingSha256": "09868dac3153018acd53a6328c3cf9687eacac83e6f0cc02b073ede4e204eb75",
+      "RepositoryFormattedSha256": "d5890f881d5b2ed8e23d1f322e9ee23c917db9f4ad59dc1b380ed330513150b9",
+      "JsonSemanticallyUnchanged": true
+    },
+    {
+      "File": "prod-readback-20261018.json",
+      "BeforeFormattingSha256": "c7b479b0e8209e3780f315572e2efdace44443a292d7eec317ecdd3114bca53a",
+      "RepositoryFormattedSha256": "1c4cb41f9726bb649fd97cf2d5f634c96a91890940b8e56478c925bf97e2c1bc",
+      "JsonSemanticallyUnchanged": true
+    },
+    {
+      "File": "prod-reviewed-push-gate-20261018.json",
+      "BeforeFormattingSha256": "7c7810b11c0b0358c22c9041fcc97dc1622dd211f0e1eaf3120a86f78bcb27bf",
+      "RepositoryFormattedSha256": "38a38d91c246b2ca3799a386f1ff5991c829014d75d126b10a44a3dce394d34e",
+      "JsonSemanticallyUnchanged": true
+    },
+    {
+      "File": "prod-role-pooler-completion-20261018.json",
+      "BeforeFormattingSha256": "3507ad67ea92fc959ef3b67761620731179a2c0c39333b0d848e267d16f1901f",
+      "RepositoryFormattedSha256": "9803882f406d2d65b20568a42904b0a688b7094ac011bdd670de8fb481a9a810",
+      "JsonSemanticallyUnchanged": true
+    },
+    {
+      "File": "prod-securityadvisors-20261018.json",
+      "BeforeFormattingSha256": "c604e065d9c3d741f06e049f1d422070e462aa896087a10a722a5eb99683f96c",
+      "RepositoryFormattedSha256": "6a6e306320c04023e41e1a763cb5b312d3eeab27f25c304f7b1cff598b379466",
+      "JsonSemanticallyUnchanged": true
+    },
+    {
+      "File": "prod-security-detail-20261018.json",
+      "BeforeFormattingSha256": "6f84724cdee2e85de3ac474b84ee22c0c6c7e426e902a836d61e8e5cbc16c447",
+      "RepositoryFormattedSha256": "72527ae6b907391f7e1d343a2fc2124b15f5f50d9a129c8296bd5d549a915c21",
+      "JsonSemanticallyUnchanged": true
+    },
+    {
+      "File": "prod-single-push-attempt-20261018.json",
+      "BeforeFormattingSha256": "9d80c6a0e587f76281752c25e415d67729a0b0b79de6aaede6ea3af89b139a7f",
+      "RepositoryFormattedSha256": "10b62d34550253891ccee87862241a1d461375574acc16ff797a314f0e117ffb",
+      "JsonSemanticallyUnchanged": true
+    }
+  ],
+  "InventoryReviewSourceHashRefresh": "Original source hashes retained separately; current sha256 now names the formatted source. Assertions unchanged.",
+  "Result": "PASS"
+}

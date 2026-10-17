@@ -1,0 +1,176 @@
+{
+  "observedAt": "2026-10-17T17:28:12.7433947+00:00",
+  "cliVersion": {
+    "command": "docker --version",
+    "exitCode": 0,
+    "output": ["Docker version 29.6.1, build 8900f1d"]
+  },
+  "desktopStatus": {
+    "command": "docker desktop status",
+    "exitCode": 0,
+    "output": ["Name                Value", "Status              running"]
+  },
+  "desktopPlugin": {
+    "command": "docker desktop version",
+    "exitCode": 0,
+    "output": ["Docker Desktop CLI plugin version: v0.4.1"]
+  },
+  "context": {
+    "command": "docker context show",
+    "exitCode": 0,
+    "output": ["desktop-linux"]
+  },
+  "engine": {
+    "command": "docker info --format ServerVersion={{.ServerVersion}} OSType={{.OSType}} OS={{.OperatingSystem}} CPUs={{.NCPU}} MemoryBytes={{.MemTotal}}",
+    "exitCode": 0,
+    "output": [
+      "ServerVersion=29.6.1 OSType=linux OS=Docker Desktop (containerized) CPUs=24 MemoryBytes=16723730432"
+    ]
+  },
+  "runningContainerNames": {
+    "command": "docker ps --format {{.Names}}",
+    "exitCode": 0,
+    "output": [
+      "supabase_db_automation-hub-synthetic-local",
+      "supabase_rest_automation-hub-synthetic-local",
+      "supabase_auth_automation-hub-synthetic-local",
+      "supabase_kong_automation-hub-synthetic-local",
+      "supabase_db_job_radar",
+      "supabase_db_brandl-invoice-cockpit",
+      "supabase_storage_brandl-invoice-cockpit",
+      "supabase_rest_brandl-invoice-cockpit",
+      "supabase_auth_brandl-invoice-cockpit",
+      "supabase_kong_brandl-invoice-cockpit",
+      "supabase_studio_job_radar",
+      "supabase_pg_meta_job_radar",
+      "supabase_storage_job_radar",
+      "supabase_rest_job_radar",
+      "supabase_realtime_job_radar",
+      "supabase_inbucket_job_radar",
+      "supabase_auth_job_radar",
+      "supabase_kong_job_radar",
+      "supabase_db_job_radar_m12_candidate_417982b",
+      "supabase_db_job_radar_m12_ref_417982b",
+      "supabase_studio_job_radar_m12_ref_417982b",
+      "supabase_pg_meta_job_radar_m12_ref_417982b",
+      "supabase_storage_job_radar_m12_ref_417982b",
+      "supabase_rest_job_radar_m12_ref_417982b",
+      "supabase_realtime_job_radar_m12_ref_417982b",
+      "supabase_inbucket_job_radar_m12_ref_417982b",
+      "supabase_auth_job_radar_m12_ref_417982b",
+      "supabase_kong_job_radar_m12_ref_417982b"
+    ]
+  },
+  "allContainerNames": {
+    "command": "docker ps -a --format {{.Names}}",
+    "exitCode": 0,
+    "output": [
+      "supabase_db_automation-hub-synthetic-local",
+      "automation-hub-m09-fixtures",
+      "automation-hub-m07-fixtures",
+      "automation-hub-m06-fixtures",
+      "automation-hub-m06-source",
+      "automation-hub-m05-engine",
+      "automation-hub-m05-metadata",
+      "automation-hub-m05-sink",
+      "supabase_rest_automation-hub-synthetic-local",
+      "supabase_auth_automation-hub-synthetic-local",
+      "supabase_kong_automation-hub-synthetic-local",
+      "rf-m01-postgres-20260918",
+      "supabase_db_job_radar",
+      "supabase_db_brandl-invoice-cockpit",
+      "supabase_storage_brandl-invoice-cockpit",
+      "supabase_rest_brandl-invoice-cockpit",
+      "supabase_auth_brandl-invoice-cockpit",
+      "supabase_kong_brandl-invoice-cockpit",
+      "supabase_studio_job_radar",
+      "supabase_pg_meta_job_radar",
+      "supabase_edge_runtime_job_radar",
+      "supabase_storage_job_radar",
+      "supabase_rest_job_radar",
+      "supabase_realtime_job_radar",
+      "supabase_inbucket_job_radar",
+      "supabase_auth_job_radar",
+      "supabase_kong_job_radar",
+      "supabase_db_job_radar_m12_candidate_417982b",
+      "supabase_db_job_radar_m12_ref_417982b",
+      "supabase_studio_job_radar_m12_ref_417982b",
+      "supabase_pg_meta_job_radar_m12_ref_417982b",
+      "supabase_edge_runtime_job_radar_m12_ref_417982b",
+      "supabase_storage_job_radar_m12_ref_417982b",
+      "supabase_rest_job_radar_m12_ref_417982b",
+      "supabase_realtime_job_radar_m12_ref_417982b",
+      "supabase_inbucket_job_radar_m12_ref_417982b",
+      "supabase_auth_job_radar_m12_ref_417982b",
+      "supabase_kong_job_radar_m12_ref_417982b"
+    ]
+  },
+  "executable": {
+    "FullName": "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe",
+    "ProductVersion": "4.80.0.232116"
+  },
+  "executableOwner": "BUILTIN\\Administrators",
+  "processes": [
+    {
+      "Id": 29380,
+      "ProcessName": "com.docker.backend",
+      "Path": "C:\\Program Files\\Docker\\Docker\\resources\\com.docker.backend.exe",
+      "StartTime": "\/Date(1792258036747)\/"
+    },
+    {
+      "Id": 53180,
+      "ProcessName": "com.docker.backend",
+      "Path": "C:\\Program Files\\Docker\\Docker\\resources\\com.docker.backend.exe",
+      "StartTime": "\/Date(1792258035830)\/"
+    },
+    {
+      "Id": 24580,
+      "ProcessName": "Docker Desktop",
+      "Path": "C:\\Program Files\\Docker\\Docker\\frontend\\Docker Desktop.exe",
+      "StartTime": "\/Date(1792258038284)\/"
+    },
+    {
+      "Id": 31468,
+      "ProcessName": "Docker Desktop",
+      "Path": "C:\\Program Files\\Docker\\Docker\\frontend\\Docker Desktop.exe",
+      "StartTime": "\/Date(1792258039324)\/"
+    },
+    {
+      "Id": 36716,
+      "ProcessName": "Docker Desktop",
+      "Path": "C:\\Program Files\\Docker\\Docker\\frontend\\Docker Desktop.exe",
+      "StartTime": "\/Date(1792258040477)\/"
+    },
+    {
+      "Id": 51396,
+      "ProcessName": "Docker Desktop",
+      "Path": "C:\\Program Files\\Docker\\Docker\\frontend\\Docker Desktop.exe",
+      "StartTime": "\/Date(1792258039276)\/"
+    }
+  ],
+  "service": [
+    {
+      "Name": "com.docker.service",
+      "Status": "Stopped",
+      "StartType": "Manual"
+    }
+  ],
+  "memory": {
+    "TotalVisibleMemorySize": 33468580,
+    "FreePhysicalMemory": 2522636
+  },
+  "disks": [
+    {
+      "Name": "C",
+      "Used": 328589017088,
+      "Free": 182848929792
+    },
+    {
+      "Name": "D",
+      "Used": 104769261568,
+      "Free": 150633496576
+    }
+  ],
+  "boundaries": "Read-only inventory; names only for existing containers. No Supabase start or resources changed by this readback.",
+  "omittedOutput": "Docker Desktop SessionID omitted as a nonessential runtime identifier; recorded status and exit code unchanged."
+}

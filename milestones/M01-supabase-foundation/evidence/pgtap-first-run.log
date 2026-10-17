@@ -1,0 +1,79 @@
+﻿corepack : Connecting to local database...
+At line:2 char:1
++ corepack pnpm exec supabase test db 2>&1 | Out-File -Encoding utf8 mi ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Connecting to local database...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/00_schema.test.sql:2: NOTICE:  extension 
+"pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/00_schema.test.sql ................. ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/01_membership.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/01_membership.test.sql ............. ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/02_rls_members.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/02_rls_members.test.sql ............ ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/03_api_agent.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/03_api_agent.test.sql:8: ERROR:  
+permission denied to set role "api_agent"
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/03_api_agent.test.sql .............. 
+Dubious, test returned 3 (wstat 768, 0x300)
+Failed 10/10 subtests 
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/04_n8n_writer.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/04_n8n_writer.test.sql:14: ERROR:  
+permission denied to set role "n8n_writer"
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/04_n8n_writer.test.sql ............. 
+Dubious, test returned 3 (wstat 768, 0x300)
+Failed 9/10 subtests 
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/05_upsert_raw_items.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/05_upsert_raw_items.test.sql ....... ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/06_due_accounts.test.sql:2: NOTICE:  
+extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/06_due_accounts.test.sql ........... ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/07_report_account_result.test.sql:2: 
+NOTICE:  extension "pgtap" already exists, skipping
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/07_report_account_result.test.sql .. ok
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/08_search.test.sql:2: NOTICE:  extension 
+"pgtap" already exists, skipping
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/08_search.test.sql:49: NOTICE:  
+text-search query doesn't contain lexemes: ""
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/08_search.test.sql:50: NOTICE:  
+text-search query doesn't contain lexemes: ""
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/08_search.test.sql:63: ERROR:  permission 
+denied to set role "api_agent"
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/08_search.test.sql ................. 
+Dubious, test returned 3 (wstat 768, 0x300)
+Failed 4/35 subtests 
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/09_queues_cron_storage.test.sql:2: 
+NOTICE:  extension "pgtap" already exists, skipping
+psql:/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/09_queues_cron_storage.test.sql:6: ERROR: 
+ syntax error at or near ","
+LINE 1: EXECUTE values('ai_extract'::text),('embed'),('media')
+                                          ^
+QUERY:  EXECUTE values('ai_extract'::text),('embed'),('media')
+CONTEXT:  PL/pgSQL function results_eq(text,text,text) line 8 at OPEN
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/09_queues_cron_storage.test.sql .... 
+Dubious, test returned 3 (wstat 768, 0x300)
+Failed 13/13 subtests 
+
+Test Summary Report
+-------------------
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/03_api_agent.test.sql            (Wstat: 768 (exited 3) Tests: 0 Failed: 0)
+  Non-zero exit status: 3
+  Parse errors: Bad plan.  You planned 10 tests but ran 0.
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/04_n8n_writer.test.sql           (Wstat: 768 (exited 3) Tests: 1 Failed: 0)
+  Non-zero exit status: 3
+  Parse errors: Bad plan.  You planned 10 tests but ran 1.
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/08_search.test.sql               (Wstat: 768 (exited 3) Tests: 31 Failed: 0)
+  Non-zero exit status: 3
+  Parse errors: Bad plan.  You planned 35 tests but ran 31.
+/Everyone/everyone Market Research/everyone-market-radar/supabase/tests/09_queues_cron_storage.test.sql  (Wstat: 768 (exited 3) Tests: 0 Failed: 0)
+  Non-zero exit status: 3
+  Parse errors: Bad plan.  You planned 13 tests but ran 0.
+Files=10, Tests=202,  2 wallclock secs ( 0.10 usr  0.05 sys +  0.24 cusr  0.08 csys =  0.47 CPU)
+Result: FAIL
+error running container: exit 1

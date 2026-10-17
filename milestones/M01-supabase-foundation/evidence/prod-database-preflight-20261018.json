@@ -1,0 +1,104 @@
+{
+  "ObservedAtUtc": "2026-10-17T23:30:01.4088503Z",
+  "Action": "Preflight",
+  "ProjectRef": "hkiafqrcxaafdbcvjlzv",
+  "Host": "aws-1-eu-central-1.pooler.supabase.com",
+  "Port": 5432,
+  "Database": "postgres",
+  "Result": "clean-initial-state-verified",
+  "Reason": "read-only-preflight-complete",
+  "EncryptedHandoffPresent": true,
+  "HandoffDecrypted": true,
+  "RawOutputWithheld": true,
+  "ProductionWriteAttempted": false,
+  "NoFixtureOrSeedFlag": true,
+  "NativeStages": [
+    {
+      "Stage": "core",
+      "StartedAtUtc": "2026-10-17T23:30:01.6869203Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:30:03.6655435Z"
+    },
+    {
+      "Stage": "media",
+      "StartedAtUtc": "2026-10-17T23:30:03.8482073Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:30:05.6540018Z"
+    }
+  ],
+  "CleanupFailures": [],
+  "HandoffDeletionResponsibility": "Root deletes prod encrypted handoff after approved DB batch or blocking stop; never recreate dev/admin/writer credentials for this action.",
+  "MigrationSealsDigest": "c0b70b91a1d631323e2d509513e95513030aa3a5c5a7ea6ab6cfafaa30951b18",
+  "RunnerSha256": "bdec58b44662caa376ab4e4e3d1c7dfefd0ca36ddf3cf7854a77a034bb6726ea",
+  "Snapshot": {
+    "Core": {
+      "availableExtensions": [
+        {
+          "defaultVersion": "1.6.4",
+          "installedVersion": null,
+          "name": "pg_cron"
+        },
+        {
+          "defaultVersion": "1.6",
+          "installedVersion": null,
+          "name": "pg_trgm"
+        },
+        {
+          "defaultVersion": "1.3",
+          "installedVersion": "1.3",
+          "name": "pgcrypto"
+        },
+        {
+          "defaultVersion": "1.5.1",
+          "installedVersion": null,
+          "name": "pgmq"
+        },
+        {
+          "defaultVersion": "1.1",
+          "installedVersion": null,
+          "name": "unaccent"
+        },
+        {
+          "defaultVersion": "0.8.2",
+          "installedVersion": null,
+          "name": "vector"
+        }
+      ],
+      "cronJobPresent": false,
+      "currentUser": "postgres",
+      "database": "postgres",
+      "installedRequiredExtensions": [
+        {
+          "name": "pgcrypto",
+          "schema": "extensions",
+          "version": "1.3"
+        }
+      ],
+      "machineRoles": [],
+      "migrationLedgerPresent": false,
+      "projectRelations": [],
+      "projectSchemas": [],
+      "queueMetaPresent": false,
+      "serverMajor": 17,
+      "serverVersion": "17.11",
+      "sessionUser": "postgres",
+      "storageBucketsPresent": true
+    },
+    "Ledger": [],
+    "Queues": [],
+    "Cron": [],
+    "Media": []
+  },
+  "PreflightFingerprint": "24f8b1b365af93f99b840a4cf4970ba2b7de6f7e780cb4ee70280745b1547a8a",
+  "AllOwnedNativeProcessesExited": true,
+  "FinishedAtUtc": "2026-10-17T23:30:05.7757454Z",
+  "HandoffStillPresentForRootCleanup": true
+}

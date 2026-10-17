@@ -1,0 +1,32 @@
+{
+  "check": "concurrency-hardening",
+  "observedAt": "2026-10-17T18:02:53.717Z",
+  "scope": "isolated-child-double-and-rollback-only-local-fixtures",
+  "passed": true,
+  "hungOwnedChild": {
+    "passed": true,
+    "deadlineMs": 1300,
+    "streamsDestroyed": true,
+    "onlyStoredChildSignalled": true
+  },
+  "cleanupGuards": {
+    "passed": true,
+    "negativeCases": [
+      "media-company",
+      "media-item",
+      "employees-null-account",
+      "stats",
+      "receipt-foreign-account",
+      "credit",
+      "campaign-link",
+      "extraction",
+      "cost-company",
+      "cost-item",
+      "embedding-item",
+      "embedding-company"
+    ],
+    "allRejectedSqlstate": "P0001",
+    "cleanFixtureAllowed": true,
+    "transactionsRolledBack": true
+  }
+}

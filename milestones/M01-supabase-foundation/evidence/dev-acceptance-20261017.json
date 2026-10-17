@@ -1,0 +1,263 @@
+{
+  "date": "2026-10-17",
+  "continuationEvidence": {
+    "localDate": "2026-10-18",
+    "roles": "role-pooler-acceptance-20261018.json",
+    "google": "provider-config-20261018.json",
+    "agentCompletion": "agent-pooler-completion-20261018.json",
+    "providerCompletion": "provider-config-completion-20261018.json",
+    "boundary": "The baseline fields and remaining list below are the original 17 October snapshot. Follow-up role/provider status is recorded separately; migration/advisor/type receipts are preserved."
+  },
+  "batchObservedBy": "2026-10-17T19:19:00Z",
+  "project": {
+    "name": "emr-dev",
+    "ref": "zmotjsbzhzjvpelxvxlf",
+    "url": "https://zmotjsbzhzjvpelxvxlf.supabase.co"
+  },
+  "reviewedSource": {
+    "branch": "m01-supabase-foundation",
+    "head": "55738124f4e31931d1ad8528b537fc6ed49d8acf",
+    "pr": 4,
+    "draft": true,
+    "ci": 39059459113,
+    "ciConclusion": "success"
+  },
+  "credentialDelivery": {
+    "initiallyAbsent": true,
+    "ownerClarification": "Password not yet configured; exact command requested",
+    "handoff": "Windows current-user encrypted temporary file outside Git/configuration",
+    "firstDecryptionGuard": "Rejected serialization newline before CLI launch; encrypted text trimmed, actual password unchanged",
+    "actualNativeCliEnvironmentPGPASSWORDPresent": true,
+    "authentication": "Successful dry-run and push over verified dev session pooler",
+    "nativeCli": "Installed pinned CLI2.121.0 executable invoked directly, no package-manager/install process received password",
+    "passwordInArgvOrLogs": false,
+    "oauthSetupRepeated": false,
+    "securitySettingsChanged": false,
+    "encryptedPostgresHandoffDeleted": true,
+    "credentialBearingChildrenExited": true,
+    "parentVSCode": "Password was not injected into parent environment by this method; clearing a child would not clear a separately configured parent"
+  },
+  "migration": {
+    "dryRunAt": "2026-10-17T19:12:26.7461942Z",
+    "dryRunExitCode": 0,
+    "dryRunExactlySevenReviewedFiles": true,
+    "pushAt": "2026-10-17T19:12:36.4070404Z",
+    "pushExitCode": 0,
+    "filesSealedAgainstReviewedSha256": true,
+    "remoteLedger": [
+      {
+        "name": "extensions_schemas_roles",
+        "version": "20261017172928",
+        "statement_count": 40
+      },
+      {
+        "name": "core_tables",
+        "version": "20261017172931",
+        "statement_count": 120
+      },
+      {
+        "name": "auth_rls_views",
+        "version": "20261017172934",
+        "statement_count": 55
+      },
+      {
+        "name": "rpc_pipeline_core",
+        "version": "20261017172937",
+        "statement_count": 12
+      },
+      {
+        "name": "rpc_app_search",
+        "version": "20261017172940",
+        "statement_count": 10
+      },
+      {
+        "name": "storage_cron",
+        "version": "20261017172943",
+        "statement_count": 3
+      },
+      {
+        "name": "seed_taxonomies",
+        "version": "20261017172945",
+        "statement_count": 4
+      }
+    ],
+    "fixtureSeedIncluded": false,
+    "rolesFileIncluded": false,
+    "vaultMaterializationSkipped": true,
+    "adHocSqlOrLedgerRepair": false,
+    "reset": false,
+    "contentEvidence": "Exact local file seals and pinned CLI application from verified repository directory; remote version/name/statement-count inventory. Remote statement arrays are not falsely reported as original file-byte hashes.",
+    "migrationListCommandExitCode": 0,
+    "migrationListTextExtraction": "CLI table format not parsed by ASCII-row filter; parity accepted from direct MCP ledger, not fabricated rows"
+  },
+  "acceptance": {
+    "inventory": "dev-inventory-20261017.json",
+    "securityDetail": "dev-security-detail-20261017.json",
+    "tables": {
+      "app": 25,
+      "ops": 10,
+      "ingest": 1
+    },
+    "projectTablesWithoutRls": 0,
+    "views": 9,
+    "viewsWithoutInvoker": 0,
+    "functions": 23,
+    "definers": 12,
+    "appDefiners": 0,
+    "publicExecutableProjectFunctions": 0,
+    "invalidFunctionSearchPaths": 0,
+    "functionExecuteCounts": {
+      "anon": 0,
+      "authenticated": 5,
+      "n8n_writer": 9,
+      "api_agent": 3
+    },
+    "machineRoleFlags": "LOGIN, NOINHERIT, NOBYPASSRLS; no super/create-role/create-db/replication; no inherited role memberships",
+    "foreignKeysWithoutLeadingIndexes": 0,
+    "projectSchemaCreateGrants": 0,
+    "reachableDirectQueueOrCronFunctions": 0,
+    "extensionPrivilegeNote": "Extension defaults include PUBLIC function/table ACLs, but all four restricted roles lack cron/pgmq schema USAGE. Those ACLs do not confer a reachable direct queue/scheduler path. No extension mutation used as a test.",
+    "sequenceGrants": "Only authenticated USAGE on app.saved_views_id_seq; machine roles none",
+    "domainAutojoinEntries": 0,
+    "emptyCollectedTables": {
+      "competitors": 0,
+      "accounts": 0,
+      "items": 0,
+      "raw_items": 0
+    },
+    "queues": ["ai_extract", "embed", "media"],
+    "housekeepingJobs": 2,
+    "media": {
+      "public": true,
+      "maxBytes": 5242880,
+      "mimeTypes": ["image/jpeg", "image/png", "image/webp", "image/svg+xml"],
+      "clientWritePolicies": 0
+    },
+    "seeds": {
+      "taxonomies": 120,
+      "settings": 13,
+      "pricePlaceholders": 17,
+      "ownerAdminInvite": true
+    },
+    "advisors": {
+      "security": {
+        "warning": 0,
+        "error": 0,
+        "info": 11,
+        "reason": "Intentionally no user policies on ten ops tables and ingest.raw_items"
+      },
+      "performance": {
+        "warning": 0,
+        "error": 0,
+        "info": 73,
+        "unusedIndexes": 72,
+        "authConnectionAllocation": 1,
+        "reason": "Retain required FK/dedup/list/search indexes on fresh empty project; revisit Auth connection allocation when scaling. No acceptance claim based on pre-migration advisors."
+      }
+    }
+  },
+  "dataApi": {
+    "browserSavedAndReloadedBy": "2026-10-17T19:13:55Z",
+    "exposedSchemas": ["public", "graphql_public", "app"],
+    "httpObservedAt": "2026-10-17T19:15:25.424Z",
+    "publishableKeyOnly": true,
+    "keyValueRecorded": false,
+    "profiles": [
+      {
+        "schema": "app",
+        "status": 401,
+        "code": "42501"
+      },
+      {
+        "schema": "ops",
+        "status": 406,
+        "code": "PGRST106"
+      },
+      {
+        "schema": "ingest",
+        "status": 406,
+        "code": "PGRST106"
+      },
+      {
+        "schema": "api",
+        "status": 406,
+        "code": "PGRST106"
+      },
+      {
+        "schema": "private",
+        "status": 406,
+        "code": "PGRST106"
+      },
+      {
+        "schema": "pgmq",
+        "status": 406,
+        "code": "PGRST106"
+      }
+    ],
+    "interpretation": "app routes through PostgREST but anon has no schema usage; internal profiles denied as unexposed. No member browser session is claimed.",
+    "authSettings": {
+      "status": 200,
+      "email": false,
+      "google": false,
+      "disableSignup": false
+    },
+    "readOnlyAuthenticatedNonmemberSql": {
+      "actualRole": "authenticated",
+      "noUserIdentity": true,
+      "visibleTaxonomies": 0,
+      "visibleSearchResults": 0,
+      "me": null,
+      "transactionRolledBack": true,
+      "roleMembershipGranted": false
+    },
+    "signupOrUserFixtureMutation": false,
+    "fullGoogleBrowserSignin": "M09"
+  },
+  "types": {
+    "command": "gen types --db-url <fixed passwordless dev session URI> --lang typescript --schema app,api,ops,ingest",
+    "cliExitCode": 0,
+    "inProcessGeneration": true,
+    "dockerUsed": false,
+    "schemas": ["api", "app", "ingest", "ops"],
+    "tableCounts": {
+      "app": 25,
+      "ops": 10,
+      "ingest": 1,
+      "api": 0
+    },
+    "viewCounts": {
+      "app": 2,
+      "api": 7
+    },
+    "functionCounts": {
+      "app": 3,
+      "ops": 8,
+      "ingest": 1
+    },
+    "parseErrors": 0,
+    "astEquivalentToCheckedIn": true,
+    "checkedInBytesPreserved": true,
+    "workspaceAndRootTypecheck": "PASS",
+    "verificationRecovery": "Four successful CLI generations were initially rejected by a fragile text-format guard; captured TypeScript AST proved complete schema coverage. Failed validation receipts were not reported as failed database authentication or silently treated as passes.",
+    "rawStderrWithheld": true
+  },
+  "remaining": {
+    "MA04": "Resolved",
+    "MA05": "Restricted-role credentials absent; no pooler authentication claimed. PostgreSQL admin password not substituted.",
+    "MA06": "Google disabled; valid private web-client setup required. Email disabled and domain autojoin off remain verified.",
+    "prodBaselineApproval": "OPEN",
+    "pr4MergeApproval": "OPEN",
+    "pr4": "Draft and unmerged",
+    "M02": "Not started"
+  },
+  "scope": {
+    "productionWrites": 0,
+    "competitorOrAccountImport": 0,
+    "localReset": 0,
+    "unrelatedDockerChanges": 0,
+    "workflowOrCollectionActivation": 0,
+    "paidProviderCalls": 0,
+    "unchangedFullLocalTestRun": 0,
+    "usageAndUsdAttributableToThisWork": "Unknown; not measured"
+  }
+}

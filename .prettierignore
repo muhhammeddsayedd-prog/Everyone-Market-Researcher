@@ -10,7 +10,6 @@ data/
 docs/
 templates/
 milestones/**/MILESTONE.md
-milestones/M01-*/
 milestones/M02-*/
 milestones/M03-*/
 milestones/M04-*/

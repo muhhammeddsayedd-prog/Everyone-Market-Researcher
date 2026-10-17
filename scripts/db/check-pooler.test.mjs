@@ -1,0 +1,188 @@
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import test from 'node:test';
+
+const repo = fileURLToPath(new URL('../../', import.meta.url));
+const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : 'bash';
+const marker = 'synthetic-output-must-stay-private';
+const fixturePassword = 'synthetic-pass';
+const writerUrl = `postgresql://n8n_writer.testref:${fixturePassword}@aws-0-test.pooler.supabase.com:5432/postgres?sslmode=require`;
+const readerUrl = `postgresql://api_agent.testref:${fixturePassword}@aws-0-test.pooler.supabase.com:6543/postgres?sslmode=require`;
+const bashPath = (path) =>
+  path.replace(/\\/g, '/').replace(/^([A-Za-z]):/, (_, drive) => `/${drive.toLowerCase()}`);
+
+function fixture(run) {
+  const allowedRoot = realpathSync(tmpdir());
+  const directory = mkdtempSync(join(allowedRoot, 'emr-pooler-test-'));
+  writeFileSync(join(directory, '.owner'), 'emr-pooler-test');
+  const stub = `#!/usr/bin/env bash
+set -eu
+if [[ "\${0##*/}" == psql ]]; then
+  role="\${PGUSER%%.*}"
+  printf '%s\\n' "$@" > "$EMR_TEST_CAPTURE/$role.args"
+  printf '%s\\n' "$PGHOST" "$PGPORT" "$PGUSER" "$PGDATABASE" "$PGSSLMODE" > "$EMR_TEST_CAPTURE/$role.connection"
+  cat > "$EMR_TEST_CAPTURE/$role.sql"
+  [[ "$PGPASSWORD" == synthetic-pass ]] || exit 2
+  printf '${marker}\\n'
+  printf '${marker}\\n' >&2
+  [[ "\${EMR_TEST_FAIL_ROLE:-}" != "$role" ]]
+else
+  if [[ "$1" == --version ]]; then printf '2.121.0\\n'; exit 0; fi
+  printf '%s\\n' "$*" >> "$EMR_TEST_CAPTURE/commands"
+  printf '${marker}\\n'
+  printf '${marker}\\n' >&2
+  phase="$1"
+  if [[ "$1 $2" == 'db reset' ]]; then phase=reset; fi
+  if [[ "$1 $2" == 'test db' ]]; then
+    phase=test
+    printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_TAP_FILES:-10}" "\${EMR_TEST_TAP_COUNT:-200}"
+  fi
+  if [[ "$1 $2" == 'db advisors' ]]; then
+    case "$*" in *'--type security'*) phase=security;; *) phase=performance;; esac
+  fi
+  [[ "\${EMR_TEST_FAIL_PHASE:-}" != "$phase" ]]
+fi
+`;
+  for (const name of ['psql', 'supabase']) writeFileSync(join(directory, name), stub, { mode: 0o700 });
+  try {
+    return run(directory);
+  } finally {
+    const owned = realpathSync(directory);
+    assert.equal(dirname(owned), allowedRoot);
+    assert.ok(owned.startsWith(`${allowedRoot}${sep}emr-pooler-test-`));
+    assert.equal(readFileSync(join(owned, '.owner'), 'utf8'), 'emr-pooler-test');
+    rmSync(owned, { recursive: true });
+  }
+}
+
+function execute(directory, script, overrides = {}, trace = false) {
+  const env = { ...process.env };
+  for (const key of Object.keys(env))
+    if (/^(N8N_WRITER_URL|API_AGENT_URL|EMR_POOLER_ENV|EMR_TEST_)/.test(key)) delete env[key];
+  Object.assign(env, {
+    N8N_WRITER_URL: writerUrl,
+    API_AGENT_URL: readerUrl,
+    EMR_FAKE_BIN: bashPath(directory),
+    EMR_TEST_CAPTURE: bashPath(directory),
+    EMR_TEST_SCRIPT: bashPath(resolve(repo, script)),
+    CI: 'true',
+    GITHUB_ACTIONS: 'true',
+    ...overrides,
+  });
+  const child = spawnSync(
+    bash,
+    ['-c', `export PATH="$EMR_FAKE_BIN:$PATH"; exec bash ${trace ? '-x ' : ''}"$EMR_TEST_SCRIPT"`],
+    {
+      cwd: repo,
+      env,
+      encoding: 'utf8',
+      timeout: 30_000,
+    },
+  );
+  if (child.error) throw child.error;
+  assert.ok(!`${child.stdout}${child.stderr}`.includes(marker), 'private tool output escaped');
+  assert.ok(!`${child.stdout}${child.stderr}`.includes('synthetic-pass'), 'credential escaped');
+  return child;
+}
+
+test('pooler checks pass credentials through libpq environment, verify roles and roll back test writes', () =>
+  fixture((directory) => {
+    const child = execute(directory, 'scripts/db/check-pooler.sh', {}, true);
+    assert.equal(child.status, 0, child.stderr);
+    assert.equal(child.stdout, 'n8n_writer: OK\napi_agent: OK\n');
+    for (const [role, port] of [
+      ['n8n_writer', '5432'],
+      ['api_agent', '6543'],
+    ]) {
+      const args = readFileSync(join(directory, `${role}.args`), 'utf8');
+      assert.ok(!args.includes('postgresql://') && !args.includes('synthetic-pass'));
+      assert.match(args, /ON_ERROR_STOP=1/);
+      assert.match(
+        readFileSync(join(directory, `${role}.connection`), 'utf8'),
+        new RegExp(`${port}\\n${role}\\.testref\\npostgres\\nrequire`),
+      );
+      const sql = readFileSync(join(directory, `${role}.sql`), 'utf8');
+      assert.match(sql, new RegExp(`current_user = '${role}'`));
+      assert.match(sql, /rollback;/i);
+    }
+    const sql = readFileSync(join(directory, 'n8n_writer.sql'), 'utf8');
+    assert.match(sql, /ops\.start_run/);
+    assert.match(sql, /ops\.finish_run/);
+    assert.match(readFileSync(join(directory, 'api_agent.sql'), 'utf8'), /api\.competitors_v/);
+  }));
+
+test('pooler checks fail safely when configuration is missing', () =>
+  fixture((directory) => {
+    const child = execute(directory, 'scripts/db/check-pooler.sh', { N8N_WRITER_URL: '', API_AGENT_URL: '' });
+    assert.equal(child.status, 1);
+    assert.equal(child.stdout, 'n8n_writer: FAIL\napi_agent: FAIL\n');
+    assert.equal(existsSync(join(directory, 'n8n_writer.args')), false);
+  }));
+
+test('pooler checks reject wrong role, port, TLS and connection-override URLs before connecting', () =>
+  fixture((directory) => {
+    for (const invalid of [
+      writerUrl.replace(':5432/', ':6543/'),
+      writerUrl.replace('n8n_writer.', 'postgres.'),
+      writerUrl.replace('sslmode=require', 'sslmode=disable'),
+      `${writerUrl}&sslmode=disable`,
+      `${writerUrl}&host=localhost`,
+    ]) {
+      const child = execute(directory, 'scripts/db/check-pooler.sh', { N8N_WRITER_URL: invalid });
+      assert.equal(child.status, 1);
+      assert.equal(child.stdout, 'n8n_writer: FAIL\napi_agent: OK\n');
+      assert.equal(existsSync(join(directory, 'n8n_writer.args')), false);
+    }
+  }));
+
+test('one pooler failure does not suppress the other role result', () =>
+  fixture((directory) => {
+    const child = execute(directory, 'scripts/db/check-pooler.sh', { EMR_TEST_FAIL_ROLE: 'n8n_writer' });
+    assert.equal(child.status, 1);
+    assert.equal(child.stdout, 'n8n_writer: FAIL\napi_agent: OK\n');
+  }));
+
+test('CI runner uses only explicit local targets and exposes only safe summaries', () =>
+  fixture((directory) => {
+    const child = execute(directory, 'scripts/db/run-local-ci.sh');
+    assert.equal(child.status, 0, child.stderr);
+    assert.match(child.stdout, /pgTAP: 10 files, 200 assertions, PASS/);
+    const commands = readFileSync(join(directory, 'commands'), 'utf8');
+    assert.match(
+      commands,
+      /start --exclude realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor/,
+    );
+    assert.match(commands, /db reset --local/);
+    assert.match(commands, /test db --local/);
+    assert.match(commands, /db advisors --local --type security --level warn --fail-on warn/);
+    assert.match(commands, /db advisors --local --type performance --level warn --fail-on error/);
+    assert.ok(!commands.includes('--linked') && !commands.includes('--db-url'));
+  }));
+
+test('CI runner refuses non-GitHub environments without starting any service', () =>
+  fixture((directory) => {
+    const child = execute(directory, 'scripts/db/run-local-ci.sh', { GITHUB_ACTIONS: '' });
+    assert.equal(child.status, 1);
+    assert.equal(existsSync(join(directory, 'commands')), false);
+  }));
+
+test('CI runner fails closed at each failed phase without leaking captured output', () =>
+  fixture((directory) => {
+    for (const [index, phase] of ['start', 'reset', 'test', 'security', 'performance'].entries()) {
+      writeFileSync(join(directory, 'commands'), '');
+      const child = execute(directory, 'scripts/db/run-local-ci.sh', { EMR_TEST_FAIL_PHASE: phase });
+      assert.equal(child.status, 1);
+      assert.equal(readFileSync(join(directory, 'commands'), 'utf8').trim().split('\n').length, index + 1);
+    }
+  }));
+
+test('CI runner rejects zero assertions or an incomplete SQL suite set', () =>
+  fixture((directory) => {
+    for (const overrides of [{ EMR_TEST_TAP_COUNT: '0' }, { EMR_TEST_TAP_FILES: '9' }]) {
+      assert.equal(execute(directory, 'scripts/db/run-local-ci.sh', overrides).status, 1);
+    }
+  }));

@@ -1,0 +1,128 @@
+{
+  "milestone": "M01",
+  "environment": "hosted production preflight",
+  "projectName": "emr-prod",
+  "projectRef": "hkiafqrcxaafdbcvjlzv",
+  "projectUrl": "https://hkiafqrcxaafdbcvjlzv.supabase.co",
+  "observedAt": "2026-10-17T23:23:06Z",
+  "observedAtCairo": "2026-10-18T02:23:06+03:00",
+  "method": "Read-only browser inspection of the existing signed-in Supabase account. This receipt is a dashboard preflight, not a native database authentication, migration, advisor or post-migration acceptance receipt.",
+  "identity": {
+    "organization": "Everyone",
+    "organizationPlan": "PRO",
+    "projectNameExactMatch": true,
+    "projectRefExactMatch": true,
+    "projectUrlExactMatch": true,
+    "status": "Healthy",
+    "compute": "MICRO",
+    "region": "eu-central-1",
+    "regionLabel": "Central EU (Frankfurt)",
+    "postgresVersion": "17.11.0.003",
+    "authVersion": "2.197.0",
+    "postgrestVersion": "14.18"
+  },
+  "githubIntegration": {
+    "repository": "muhhammeddsayedd-prog/Everyone-Market-Researcher",
+    "repositoryLinked": true,
+    "workingDirectory": ".",
+    "deployToProduction": false,
+    "automaticBranching": false,
+    "productionBranchFieldDisabled": true,
+    "productionBranchFieldEmpty": true,
+    "settingsChanged": false
+  },
+  "databaseBaselineUi": {
+    "overviewLastMigration": "No migrations",
+    "migrationHistoryPage": "Run your first migration",
+    "migrationEntriesVisible": 0,
+    "publicTablesVisible": 0,
+    "schemaSelectorEntries": [
+      "auth",
+      "extensions",
+      "graphql",
+      "graphql_public",
+      "pgbouncer",
+      "public",
+      "realtime",
+      "storage",
+      "vault"
+    ],
+    "appIngestOpsApiPrivateVisible": false,
+    "sqlHistoryOrCatalogueReadExecuted": false,
+    "limitation": "The dashboard shows no project migration entries or application schemas. The root migration subprocess must still inspect actual hosted migration history and catalogues before any write; this UI receipt does not replace that check."
+  },
+  "extensionCatalogueUi": [
+    { "name": "pgmq", "version": "1.5.1", "available": true, "enabled": false, "schema": null },
+    { "name": "pg_cron", "version": "1.6.4", "available": true, "enabled": false, "schema": null },
+    { "name": "vector", "version": "0.8.2", "available": true, "enabled": false, "schema": null },
+    { "name": "pg_trgm", "version": "1.6", "available": true, "enabled": false, "schema": null },
+    { "name": "unaccent", "version": "1.1", "available": true, "enabled": false, "schema": null },
+    { "name": "pgcrypto", "version": "1.3", "available": true, "enabled": true, "schema": "extensions" },
+    { "name": "pgtap", "version": "1.3.3", "available": true, "enabled": false, "schema": null }
+  ],
+  "recovery": {
+    "scheduledBackupsAvailable": true,
+    "scheduledBackupRowsVisible": 1,
+    "latestListedBackupAt": "2026-10-17T17:29:01Z",
+    "latestListedBackupType": "PHYSICAL",
+    "latestListedBackupRestoreActionAvailable": true,
+    "overviewLastBackupLabel": "6 hours ago",
+    "separateSuccessfulStatusLabelVisible": false,
+    "interpretation": "A physical backup is listed with an available Restore action. No separate SUCCESS status was displayed; restoration was not exercised.",
+    "pitrEnabled": false,
+    "pitrPage": "Point in Time Recovery is available as an add-on",
+    "pitrAddOnEnabledOrPurchased": false,
+    "storageObjectRecoveryIncluded": false,
+    "storageRecoveryNotice": "Database backups exclude objects stored via the Storage API; the database includes only their metadata.",
+    "restoreAttempted": false,
+    "newBackupCreated": false,
+    "recoverySettingsChanged": false
+  },
+  "connections": {
+    "session": {
+      "host": "aws-1-eu-central-1.pooler.supabase.com",
+      "port": 5432,
+      "projectRefPresentInDisplayedDetails": true,
+      "sharedIpv4Pooler": true
+    },
+    "transaction": {
+      "host": "aws-1-eu-central-1.pooler.supabase.com",
+      "port": 6543,
+      "projectRefPresentInDisplayedDetails": true,
+      "sharedIpv4Pooler": true,
+      "displaySelection": "Transaction pooler > Use IPv4 connection (uses shared pooler)",
+      "defaultDedicatedIpv6Host": "db.hkiafqrcxaafdbcvjlzv.supabase.co",
+      "defaultDedicatedIpv6Port": 6543
+    },
+    "connectionUriExposed": false,
+    "passwordAccessedOrReset": false,
+    "connectionDrawerClosed": true,
+    "authenticationAttempted": false
+  },
+  "authBeforeBaseline": {
+    "emailProviderEnabled": true,
+    "googleProviderEnabled": false,
+    "allowNewUserSignups": true,
+    "allowManualLinking": false,
+    "allowAnonymousSignIns": false,
+    "confirmEmail": true,
+    "settingsChanged": false,
+    "note": "These are observed preflight settings, not accepted Google-only production configuration. Email disable and any Google production setup must be sequenced separately by the root under the recorded authorization."
+  },
+  "boundaries": {
+    "readOnly": true,
+    "migrationsApplied": false,
+    "sqlExecuted": false,
+    "resourcesCreatedOrChanged": false,
+    "apiKeysAccessed": false,
+    "credentialsAccessedOrReset": false,
+    "newMcpSetupOrAuthFlow": false,
+    "devMcpRepointed": false,
+    "billingChanges": false,
+    "fixturesOrDataInserted": false,
+    "workflowActivated": false,
+    "productionAcceptanceClaimed": false,
+    "mergePerformed": false,
+    "m02Started": false
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "milestone": "M01",
+  "environment": "hosted production",
+  "projectName": "emr-prod",
+  "projectRef": "hkiafqrcxaafdbcvjlzv",
+  "dashboardUrl": "https://supabase.com/dashboard/project/hkiafqrcxaafdbcvjlzv/auth/providers",
+  "authorization": "Owner-approved M01 production-baseline packet and full authorization; root delegated the single Email-provider restriction required by the existing invite-only Google policy.",
+  "previousReadOnlyPreflightRetained": "prod-preflight-20261018.json",
+  "before": {
+    "observedAt": "2026-10-17T23:24:18Z",
+    "observedAtCairo": "2026-10-18T02:24:18+03:00",
+    "emailProviderEnabled": true,
+    "googleProviderEnabled": false,
+    "allowNewUserSignups": true,
+    "allowManualLinking": false,
+    "allowAnonymousSignIns": false,
+    "confirmEmail": true
+  },
+  "change": {
+    "application": "Supabase dashboard",
+    "screen": "emr-prod > Authentication > Sign In / Providers > Email",
+    "field": "Enable email provider",
+    "from": true,
+    "to": false,
+    "saveClicked": true,
+    "saveActionOccurredBetween": ["2026-10-17T23:24:18Z", "2026-10-17T23:24:27Z"],
+    "successfulSaveObservedAt": "2026-10-17T23:24:33Z",
+    "successToast": "Successfully updated settings",
+    "otherSettingsChanged": false,
+    "secondSaveOrBlindRetry": false
+  },
+  "afterExplicitReload": {
+    "verifiedAt": "2026-10-17T23:24:57Z",
+    "verifiedAtCairo": "2026-10-18T02:24:57+03:00",
+    "emailProviderEnabled": false,
+    "googleProviderEnabled": false,
+    "allowNewUserSignups": true,
+    "allowManualLinking": false,
+    "allowAnonymousSignIns": false,
+    "confirmEmail": true,
+    "emailRestrictionResult": "PASS",
+    "browserScreenshotCaptured": true,
+    "screenshotLocation": "CUA observation output; no additional repository image file was created"
+  },
+  "googleProduction": {
+    "configuredAndEnabled": false,
+    "callback": "https://hkiafqrcxaafdbcvjlzv.supabase.co/auth/v1/callback",
+    "callbackExactReadOnlyFieldMatch": true,
+    "callbackDrawerClosedWithCancel": true,
+    "saveClicked": false,
+    "clientSecretValueAccessed": false,
+    "devClientCredentialsCopied": false,
+    "oauthExchangeAttempted": false,
+    "fullBrowserSignInAttempted": false,
+    "remainingGate": "MA-06 production Google client setup and saved provider readback; full browser sign-in remains M09",
+    "exactOwnerAction": "In the Google Cloud project holding the intended Web application OAuth client, add https://hkiafqrcxaafdbcvjlzv.supabase.co/auth/v1/callback to Authorized redirect URIs. In Supabase > emr-prod > Authentication > Sign In / Providers > Google, privately enter valid client ID and secret, enable Google, and Save. Keep Email disabled, signup ON, anonymous/manual linking OFF, confirmEmail ON. Expected result: Google ENABLED / Email DISABLED. Reply: Google saved on emr-prod. Do not send credentials in chat."
+  },
+  "boundaries": {
+    "onlyProductionEmailProviderChanged": true,
+    "databaseSqlExecuted": false,
+    "dataApiSettingsChanged": false,
+    "githubControlsChanged": false,
+    "billingChanged": false,
+    "credentialsChangedOrReset": false,
+    "devChanged": false,
+    "productionMigrationsAppliedByThisAction": false,
+    "productionAcceptanceClaimed": false,
+    "mergePerformed": false,
+    "m02Started": false
+  }
+}
