@@ -41,8 +41,10 @@ hosted gates accurately.
 F3 was addressed after the initial review: the scanner now covers Supabase PATs
 and password-bearing Postgres URIs, with isolated red/green regressions and a
 quality-job step. See `secret-scanner-verification.md`. That extension was
-authored by this reviewer and needs the separate peer readback; the scanner
-remains targeted and its documented limits still apply.
+authored by this reviewer. The schema agent's separate final staged-source
+readback found no remaining required findings after the two parser fixes;
+see `independent-pipeline-security-review.md`. The scanner remains targeted
+and its documented limits still apply.
 
 The earlier local unverified-email signup issue was independently reported by
 the schema agent and fixed by root. The reviewed README and configuration now

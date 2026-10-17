@@ -182,3 +182,43 @@ Evidence read during this checkpoint:
 The concurrency author executed those probes; this reviewer inspected their
 source and recorded receipts. No repeated broad test run or implementation
 mutation was performed during this read-only review.
+
+## Final credential-scanner review checkpoint
+
+Independently reviewed the staged `scripts/check-secrets.mjs` and its new
+isolated Node tests. Verified that the inspected working-tree files match their
+staged blobs. **No unresolved required findings remain.**
+
+The extension retains the existing detectors and index-only `git grep --cached`
+behavior, adds the official CLI's Supabase PAT shape and checks password-bearing
+PostgreSQL URIs, including encoded values and query passwords. Findings contain
+only rule, path and line. There is no general documentation/test-directory
+exemption. A reserved hostname alone cannot excuse a password; named synthetic
+credentials require a reserved/loopback hostname too. Production-shaped hosts
+receive no synthetic-credential exemption. Malformed host/percent parsing
+cannot grant one.
+
+The first readback found two required false negatives. A synthetic-only probe
+against the actual parsing function confirmed both without printing candidate
+values:
+
+- An unrestricted angle-placeholder expression accepted arbitrary angle-wrapped
+  credentials even on production-shaped hosts. The final code allows only
+  explicitly named whole-value password placeholders and variable references.
+- Splitting the authority on `/`, `#` or `?` before locating `@` could discard
+  malformed credential-shaped userinfo. The final code inspects that userinfo
+  first and detects those values instead of treating them as password-free.
+
+The author added two regressions and recorded their true red result: eight tests
+passed and the two new tests failed. After the fixes, all ten scanner tests pass;
+the combined scanner/pooler regressions pass 18/18. The recorded staged scan
+covers 635 files with zero findings. See `secret-scanner-verification.md` for the
+actual commands, historical harness failure, red/green sequence, official PAT
+source and output limits. Those test and full-index outcomes were executed by
+the author/root and read here; this reviewer did not repeat the broad suites.
+
+The tests use synthetic values in separate Git indexes with isolated Git
+configuration. Assertions suppress matching values in both stdout and stderr.
+Recursive fixture cleanup verifies the resolved temp parent, directory shape
+and ownership marker. This remains a targeted text-credential check, not a claim
+that every possible credential format or assembled runtime value is detectable.

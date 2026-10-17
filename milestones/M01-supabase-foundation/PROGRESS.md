@@ -5,16 +5,16 @@
 
 ## Status
 
-**In progress** <!-- Not started · In progress · Blocked: <reason> · In review · Done -->
+**Blocked: waiting on owner — MA-04** <!-- Hosted tool activation; local and GitHub verification passed. -->
 
-| Field        | Value                                                                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Started      | 2026-10-17                                                                                                                            |
-| Last updated | 2026-10-17                                                                                                                            |
-| Finished     | —                                                                                                                                     |
-| Branch / PR  | m01-supabase-foundation / not opened yet                                                                                              |
-| Current task | Publish local foundation and CI; hosted MCP activation                                                                                |
-| Next step    | Refresh/reconnect the authenticated Supabase MCP in Codex; verify dev read-only before hosted migrations. Finish GitHub CI meanwhile. |
+| Field        | Value                                                                                                                                                                                                                                                                               |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Started      | 2026-10-17                                                                                                                                                                                                                                                                          |
+| Last updated | 2026-10-17                                                                                                                                                                                                                                                                          |
+| Finished     | —                                                                                                                                                                                                                                                                                   |
+| Branch / PR  | m01-supabase-foundation / [#4 draft](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4)                                                                                                                                                                    |
+| Current task | Local M01 delivered and CI passed; waiting for active Supabase MCP tools                                                                                                                                                                                                            |
+| Next step    | Refresh/reconnect supabase MCP or restart this session. Verify dev URL, server version, extensions and empty migration history read-only; inspect supported migration tool version handling before applying the seven tested files. Preserve history parity. No hosted SQL has run. |
 
 ## Task checklist
 
@@ -42,7 +42,7 @@
 - [ ] AC1 — Local `supabase db reset --local` passed all seven CLI-generated migrations and seed. Exact versions in [local inventory](evidence/local-inventory.json); dev/prod parity remains unverified.
 - [x] AC2 — Local inventory: app25, ingest1, ops10 tables.
 - [x] AC3 — Local inventory: zero project tables without RLS, zero app/api views without invoker security, zero app definers. Role suites exercise actual restricted roles.
-- [ ] AC4 — Local `supabase test db --local`: ten files,242 assertions, PASS ([final log](evidence/pgtap-final.log)). GitHub CI pending.
+- [x] AC4 — Local and GitHub `supabase test db --local`: ten files,242 assertions, PASS. [CI39057026434](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39057026434) passed all five jobs, including REST/Auth and real two-session concurrency probes. [Receipt](evidence/github-ci-39057026434.json).
 - [ ] AC5 — Local advisors: zero warnings/errors;63 unused-index and11 deny-all internal-table informational findings justified below ([report](evidence/advisors-final.json)). Hosted dev/prod not checked.
 - [x] AC6 — Local seeds:120 taxonomy terms in exact six group counts,13 settings,17 price placeholders, owner admin invite present, domain autojoin empty. No real competitor data.
 - [x] AC7 — Local inventory: three queues, two named active housekeeping jobs, public five-MiB media bucket with four approved MIME types. No client Storage write policies.
@@ -50,7 +50,7 @@
 - [x] AC9 — Actual local HTTP: member app200 seeded fixture, nonmember app200 empty; ops/ingest/api/private406 PGRST106. Email signup400 email_provider_disabled and no user created; cleanupOK. [Receipt](evidence/local-data-api-with-signup.json).
 - [x] AC10 — Types generated from local app/api/ops/ingest and formatted; strict workspace/root typecheck passed. Regenerate from hosted dev after push.
 - [ ] AC11 — Browser verified Google DISABLED on dev; MA-06 remains open.
-- [x] AC12 — Foundation commit504b54a scanned597 indexed files with zero findings. Final implementation index scanned635 files with zero findings; PAT/PostgreSQL-password detectors and18 script regressions pass. Targeted scanning is not an exhaustive credential audit.
+- [x] AC12 — Foundation commit504b54a scanned597 indexed files with zero findings. Final evidence index scanned636 files with zero findings; PAT/PostgreSQL-password detectors and18 script regressions pass. Targeted scanning is not an exhaustive credential audit.
 
 ## Blockers
 
@@ -63,13 +63,13 @@
 
 <!-- Exact steps, why, and where to paste results. The owner ticks them; Codex verifies. -->
 
-| #        | Action                                                                                                                                                                                                                                                                            | Why                                                | Status                               |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------ |
-| MA-03    | Owner created both projects; browser verified identity, Everyone Pro, Frankfurt, healthy status and GitHub link. Hosted PG version and spend cap pending.                                                                                                                         | Intended targets established                       | Identity verified                    |
-| MA-04    | Codex Settings > MCP servers > refresh/reconnect supabase, or restart this session. Server added and OAuth succeeded, but active conversation reports unknown MCP server.                                                                                                         | Load dev-scoped tools, then read-only verification | Waiting for session refresh          |
-| MA-05    | After roles exist, privately set role passwords in Supabase SQL editor; configure N8N_WRITER_URL session5432 and API_AGENT_URL transaction6543. Never paste credentials here. See docs/MANUAL_ACTIONS.md MA-05.                                                                   | Real pooler checks                                 | Pending hosted migrations            |
-| MA-06    | Google Cloud Console > Credentials > OAuth web client: redirect https://zmotjsbzhzjvpelxvxlf.supabase.co/auth/v1/callback. Supabase dev > Authentication > Sign In / Providers > Google: privately enter client values and enable. Disable Email provider for Google-only access. | Provider acceptance, full login M09                | Google disabled; owner setup pending |
-| approval | Approve applying the baseline schema to prod                                                                                                                                                                                                                                      | T13                                                | Not requested yet                    |
+| #        | Action                                                                                                                                                                                                                                                                            | Why                                                                       | Status                               |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------ |
+| MA-03    | Owner created both projects; browser verified identity, Everyone Pro, Frankfurt, healthy status and GitHub link. Hosted PG version and spend cap pending.                                                                                                                         | Intended targets established                                              | Identity verified                    |
+| MA-04    | Codex Settings > MCP servers > refresh/reconnect supabase, or restart this session. Server added and OAuth succeeded, but active conversation reports unknown MCP server.                                                                                                         | Load dev-scoped tools, then read-only verification                        | Waiting for session refresh          |
+| MA-05    | After roles exist, privately set role passwords in Supabase SQL editor; configure N8N_WRITER_URL session5432 and API_AGENT_URL transaction6543. Never paste credentials here. See docs/MANUAL_ACTIONS.md MA-05.                                                                   | Real pooler checks                                                        | Pending hosted migrations            |
+| MA-06    | Google Cloud Console > Credentials > OAuth web client: redirect https://zmotjsbzhzjvpelxvxlf.supabase.co/auth/v1/callback. Supabase dev > Authentication > Sign In / Providers > Google: privately enter client values and enable. Disable Email provider for Google-only access. | Provider acceptance, full login M09                                       | Google disabled; owner setup pending |
+| approval | After dev acceptance, approve the seven reviewed baseline migrations for empty prod hkiafqrcxaafdbcvjlzv, excluding local seed. Then obtain M01 PR merge approval.                                                                                                                | AGENTS hard rule8 and M01 T13; general project access recorded separately | Not requested at action time yet     |
 
 ## Decisions & deviations
 
@@ -90,6 +90,7 @@
 
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
 
+- 2026-10-17 · Published foundation504b54a and CI/scripts/evidence041d971 on draft PR#4. CI39057026434 passed quality,unit,build,e2e,db-tests:242 pgTAP assertions, REST/Auth, concurrency and local advisors. Browser suite4passed; Vercel check green. Peer review cleared final scanner fixes;18 script tests pass, indexed scan635zero. Evidence-only final update follows. Hosted work is blocked solely at tool activation before any database write; MA-05/06 and T13/merge gates remain. M02 not started.
 - 2026-10-17 · Owner created emr-dev zmotjsbzhzjvpelxvxlf and emr-prod hkiafqrcxaafdbcvjlzv and granted access to both. Browser verified Pro/Frankfurt/healthy/GitHub links, no migrations, and Google disabled on dev. Added requested dev-scoped MCP; OAuth success and configuration enabled/OAuth readback. Active conversation still reports unknown server; no hosted SQL. See mcp-setup.json and hosted-preflight.json.
 - 2026-10-17 · All seven migrations replayed from zero after fixes;242 assertions in10 pgTAP files pass. Local advisors zero warnings/errors (74INFO justified); REST/Auth probes and four real two-session concurrency scenarios pass with owned-fixture cleanup. Hardened runner also passes12 rollback-only cleanup rejection cases and bounded hung-child teardown. Unit39, pooler/CI script8 plus scanner10, strict typecheck, lint and Next build pass. Types regenerated after final replay; independent reviews retained. GitHub CI and staged secret review next.
 - 2026-10-17 · First start on56322 failed: unrelated Job Radar Docker binding occupied it, no SQL applied. Checked Docker/host/reserved ranges and selected60321/60322. Restarted only verified Market Radar to disable email signup; preserved28 unrelated containers, zero missing. Config migrations/seed restored enabled before successful resets.

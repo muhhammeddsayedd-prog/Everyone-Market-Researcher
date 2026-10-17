@@ -51,7 +51,9 @@ the complete credential-shaped userinfo made all ten pass. Focused ESLint and
 Prettier passed again. After staging those fixes, the full index contained 635
 files and returned zero findings. The final combined scanner/pooler run passed
 18/18 in about eight seconds; focused formatting and staged whitespace checks
-passed. The peer's final readback is pending at this checkpoint.
+passed. The schema agent's final staged-source readback found no remaining
+required findings and verified the index/worktree blobs match for both scanner
+files; see `independent-pipeline-security-review.md`.
 CI quality runs the scanner regression suite before the actual
 tracked-content scan.
 
