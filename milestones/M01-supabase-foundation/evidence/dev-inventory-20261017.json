@@ -1,0 +1,1699 @@
+{
+  "observedAt": "2026-10-17T19:15:25.424Z",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "sourceHead": "55738124f4e31931d1ad8528b537fc6ed49d8acf",
+  "inventory": {
+    "cron": [
+      {
+        "name": "emr-archive-queue-cleanup",
+        "active": true,
+        "command": "delete from pgmq.a_ai_extract where archived_at < now() - interval '30 days';\n    delete from pgmq.a_embed where archived_at < now() - interval '30 days';\n    delete from pgmq.a_media where archived_at < now() - interval '30 days'",
+        "schedule": "30 3 * * *"
+      },
+      {
+        "name": "emr-unlock-stale-accounts",
+        "active": true,
+        "command": "update app.competitor_accounts set locked_until = null where locked_until < now()",
+        "schedule": "15 * * * *"
+      }
+    ],
+    "items": 0,
+    "roles": [
+      {
+        "name": "api_agent",
+        "login": true,
+        "config": ["statement_timeout=15s", "search_path=\"\""],
+        "inherit": false,
+        "bypass_rls": false
+      },
+      {
+        "name": "n8n_writer",
+        "login": true,
+        "config": ["statement_timeout=120s", "search_path=\"\""],
+        "inherit": false,
+        "bypass_rls": false
+      }
+    ],
+    "queues": ["ai_extract", "embed", "media"],
+    "tables": {
+      "app": 25,
+      "ops": 10,
+      "ingest": 1
+    },
+    "policies": [
+      {
+        "name": "members read alerts",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "alert_rules",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "admins read domains",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "allowed_domains",
+        "using": "( SELECT private.has_role('admin'::app.member_role) AS has_role)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read briefs",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "briefs",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read briefs",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "briefs",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read campaign_items",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "campaign_items",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read campaign_items",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "campaign_items",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read campaigns",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "campaigns",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read campaigns",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "campaigns",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read competitor_accounts",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "competitor_accounts",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read competitor_accounts",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "competitor_accounts",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read competitors",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "competitors",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read competitors",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "competitors",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read embeddings",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "embeddings",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read embeddings",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "embeddings",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read employee_snapshots",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "employee_snapshots",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read employee_snapshots",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "employee_snapshots",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read item_credits",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "item_credits",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read item_credits",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "item_credits",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read items",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "items",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read items",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "items",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read media_assets",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "media_assets",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read media_assets",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "media_assets",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "admins read invites",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "member_invites",
+        "using": "( SELECT private.has_role('admin'::app.member_role) AS has_role)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read members",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "members",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read news_articles",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "news_articles",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read news_articles",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "news_articles",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read news_mentions",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "news_mentions",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read news_mentions",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "news_mentions",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read org_aliases",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "org_aliases",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read org_aliases",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "org_aliases",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read organizations",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "organizations",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read organizations",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "organizations",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read people",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "people",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read people",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "people",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read person_aliases",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "person_aliases",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read person_aliases",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "person_aliases",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read review_tasks",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "review_tasks",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read review",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "review_tasks",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "own views delete",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "saved_views",
+        "using": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))",
+        "schema": "app",
+        "command": "DELETE"
+      },
+      {
+        "name": "own views insert",
+        "check": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))",
+        "roles": ["authenticated"],
+        "table": "saved_views",
+        "using": null,
+        "schema": "app",
+        "command": "INSERT"
+      },
+      {
+        "name": "own views select",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "saved_views",
+        "using": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "own views update",
+        "check": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))",
+        "roles": ["authenticated"],
+        "table": "saved_views",
+        "using": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))",
+        "schema": "app",
+        "command": "UPDATE"
+      },
+      {
+        "name": "api agent read stats_daily",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "stats_daily",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read stats_daily",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "stats_daily",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "api agent read taxonomy_terms",
+        "check": null,
+        "roles": ["api_agent"],
+        "table": "taxonomy_terms",
+        "using": "true",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read taxonomy_terms",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "taxonomy_terms",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      },
+      {
+        "name": "members read website_pages",
+        "check": null,
+        "roles": ["authenticated"],
+        "table": "website_pages",
+        "using": "( SELECT private.is_member() AS is_member)",
+        "schema": "app",
+        "command": "SELECT"
+      }
+    ],
+    "functions": [
+      {
+        "args": "",
+        "name": "me",
+        "config": ["search_path=\"\""],
+        "result": "jsonb",
+        "schema": "app",
+        "definer": false,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": true,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "p_query text, p_embedding vector, p_types text[], p_filters jsonb, p_limit integer",
+        "name": "search",
+        "config": ["search_path=\"\""],
+        "result": "TABLE(entity_type text, entity_id uuid, title text, subtitle text, score double precision)",
+        "schema": "app",
+        "definer": false,
+        "anon_execute": false,
+        "agent_execute": true,
+        "member_execute": true,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "p_entity_type text, p_entity_id uuid, p_limit integer",
+        "name": "similar",
+        "config": ["search_path=\"\""],
+        "result": "TABLE(entity_type text, entity_id uuid, distance double precision)",
+        "schema": "app",
+        "definer": false,
+        "anon_execute": false,
+        "agent_execute": true,
+        "member_execute": true,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "p_run_id uuid, p_account_id uuid, p_items jsonb",
+        "name": "upsert_raw_items",
+        "config": ["search_path=\"\""],
+        "result": "jsonb",
+        "schema": "ingest",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": true
+      },
+      {
+        "args": "p_queue text, p_msg_ids bigint[]",
+        "name": "ack_queue",
+        "config": ["search_path=\"\""],
+        "result": "void",
+        "schema": "ops",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": true
+      },
+      {
+        "args": "p_queue text, p_n integer, p_vt_seconds integer",
+        "name": "claim_queue_batch",
+        "config": ["search_path=\"\""],
+        "result": "TABLE(msg_id bigint, read_ct integer, message jsonb)",
+        "schema": "ops",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": true
+      },
+      {
+        "args": "p_account_id uuid, p_urls text[]",
+        "name": "diff_website_urls",
+        "config": ["search_path=\"\""],
+        "result": "text[]",
+        "schema": "ops",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": true
+      },
+      {
+        "args": "p_run_id uuid, p_status text, p_error text",
+        "name": "finish_run",
+        "config": ["search_path=\"\""],
+        "result": "jsonb",
+        "schema": "ops",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": true
+      },
+      {
+        "args": "p_platform app.platform, p_limit integer, p_run_id uuid, p_mode text",
+        "name": "get_due_accounts",
+        "config": ["search_path=\"\""],
+        "result": "TABLE(account_id uuid, competitor_id uuid, competitor_slug text, handle text, url text, external_id text, uploads_playlist_id text, watermark_published_at timestamp with time zone, watermark_external_id text, backfill_from date, backfill_cursor jsonb)",
+        "schema": "ops",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": true
+      },
+      {
+        "args": "p_item_ids uuid[]",
+        "name": "get_items_for_ai",
+        "config": ["search_path=\"\""],
+        "result": "jsonb",
+        "schema": "ops",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": true
+      },
+      {
+        "args": "p_run_id uuid, p_account_id uuid, p_status text, p_items_seen integer, p_items_new integer, p_error text, p_backfill_done boolean, p_backfill_cursor jsonb",
+        "name": "report_account_result",
+        "config": ["search_path=\"\""],
+        "result": "void",
+        "schema": "ops",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": true
+      },
+      {
+        "args": "p_workflow text, p_platform app.platform, p_mode text, p_env text, p_execution_id text",
+        "name": "start_run",
+        "config": ["search_path=\"\""],
+        "result": "uuid",
+        "schema": "ops",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": true
+      },
+      {
+        "args": "",
+        "name": "campaigns_tsv",
+        "config": ["search_path=\"\""],
+        "result": "trigger",
+        "schema": "private",
+        "definer": false,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "",
+        "name": "competitors_tsv",
+        "config": ["search_path=\"\""],
+        "result": "trigger",
+        "schema": "private",
+        "definer": false,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "",
+        "name": "handle_new_user",
+        "config": ["search_path=\"\""],
+        "result": "trigger",
+        "schema": "private",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "p_min app.member_role",
+        "name": "has_role",
+        "config": ["search_path=\"\""],
+        "result": "boolean",
+        "schema": "private",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": true,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "",
+        "name": "is_member",
+        "config": ["search_path=\"\""],
+        "result": "boolean",
+        "schema": "private",
+        "definer": true,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": true,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "",
+        "name": "items_tsv",
+        "config": ["search_path=\"\""],
+        "result": "trigger",
+        "schema": "private",
+        "definer": false,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "",
+        "name": "news_tsv",
+        "config": ["search_path=\"\""],
+        "result": "trigger",
+        "schema": "private",
+        "definer": false,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "t text",
+        "name": "norm",
+        "config": ["search_path=\"\""],
+        "result": "text",
+        "schema": "private",
+        "definer": false,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "",
+        "name": "organizations_tsv",
+        "config": ["search_path=\"\""],
+        "result": "trigger",
+        "schema": "private",
+        "definer": false,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "",
+        "name": "people_tsv",
+        "config": ["search_path=\"\""],
+        "result": "trigger",
+        "schema": "private",
+        "definer": false,
+        "anon_execute": false,
+        "agent_execute": false,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": false
+      },
+      {
+        "args": "p_scope text",
+        "name": "require_api_scope",
+        "config": ["search_path=\"\""],
+        "result": "void",
+        "schema": "private",
+        "definer": false,
+        "anon_execute": false,
+        "agent_execute": true,
+        "member_execute": false,
+        "public_execute": false,
+        "writer_execute": false
+      }
+    ],
+    "raw_items": 0,
+    "migrations": [
+      {
+        "name": "extensions_schemas_roles",
+        "version": "20261017172928",
+        "statement_count": 40
+      },
+      {
+        "name": "core_tables",
+        "version": "20261017172931",
+        "statement_count": 120
+      },
+      {
+        "name": "auth_rls_views",
+        "version": "20261017172934",
+        "statement_count": 55
+      },
+      {
+        "name": "rpc_pipeline_core",
+        "version": "20261017172937",
+        "statement_count": 12
+      },
+      {
+        "name": "rpc_app_search",
+        "version": "20261017172940",
+        "statement_count": 10
+      },
+      {
+        "name": "storage_cron",
+        "version": "20261017172943",
+        "statement_count": 3
+      },
+      {
+        "name": "seed_taxonomies",
+        "version": "20261017172945",
+        "statement_count": 4
+      }
+    ],
+    "competitors": 0,
+    "media_bucket": {
+      "limit": 5242880,
+      "mimes": ["image/jpeg", "image/png", "image/webp", "image/svg+xml"],
+      "public": true
+    },
+    "table_grants": [
+      {
+        "name": "anon",
+        "readable": 0,
+        "writable": 0
+      },
+      {
+        "name": "api_agent",
+        "readable": 19,
+        "writable": 0
+      },
+      {
+        "name": "authenticated",
+        "readable": 25,
+        "writable": 1
+      },
+      {
+        "name": "n8n_writer",
+        "readable": 0,
+        "writable": 0
+      }
+    ],
+    "view_security": [
+      {
+        "name": "briefs_v",
+        "schema": "api",
+        "options": ["security_invoker=true"]
+      },
+      {
+        "name": "campaigns_v",
+        "schema": "api",
+        "options": ["security_invoker=true"]
+      },
+      {
+        "name": "competitors_v",
+        "schema": "api",
+        "options": ["security_invoker=true"]
+      },
+      {
+        "name": "items_v",
+        "schema": "api",
+        "options": ["security_invoker=true"]
+      },
+      {
+        "name": "news_v",
+        "schema": "api",
+        "options": ["security_invoker=true"]
+      },
+      {
+        "name": "organizations_v",
+        "schema": "api",
+        "options": ["security_invoker=true"]
+      },
+      {
+        "name": "people_v",
+        "schema": "api",
+        "options": ["security_invoker=true"]
+      },
+      {
+        "name": "campaigns_v",
+        "schema": "app",
+        "options": ["security_invoker=true"]
+      },
+      {
+        "name": "feed_v",
+        "schema": "app",
+        "options": ["security_invoker=true"]
+      }
+    ],
+    "settings_count": 13,
+    "taxonomy_counts": {
+      "industry": 23,
+      "occasion": 11,
+      "credit_role": 31,
+      "content_format": 15,
+      "competitor_category": 13,
+      "in_house_capability": 27
+    },
+    "postgres_version": "17.11",
+    "price_placeholders": 17,
+    "tables_without_rls": 0,
+    "competitor_accounts": 0,
+    "owner_invite_present": true,
+    "storage_write_policies": 0,
+    "domain_autojoin_entries": 0
+  },
+  "advisors": {
+    "security": {
+      "lints": [
+        {
+          "name": "rls_enabled_no_policy",
+          "title": "RLS Enabled No Policy",
+          "level": "INFO",
+          "facing": "EXTERNAL",
+          "categories": ["SECURITY"],
+          "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+          "count": 11,
+          "findings": [
+            {
+              "detail": "Table \\`ingest.raw_items\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "raw_items",
+                "type": "table",
+                "schema": "ingest"
+              },
+              "observed_at": "2026-10-17T19:13:02.843Z"
+            },
+            {
+              "detail": "Table \\`ops.ai_extractions\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "ai_extractions",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:02.843Z"
+            },
+            {
+              "detail": "Table \\`ops.api_calls\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "api_calls",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:02.843Z"
+            },
+            {
+              "detail": "Table \\`ops.api_keys\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "api_keys",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:02.843Z"
+            },
+            {
+              "detail": "Table \\`ops.apify_runs\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "apify_runs",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:02.843Z"
+            },
+            {
+              "detail": "Table \\`ops.audit_log\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "audit_log",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:02.843Z"
+            },
+            {
+              "detail": "Table \\`ops.cost_ledger\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "cost_ledger",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:02.843Z"
+            },
+            {
+              "detail": "Table \\`ops.price_book\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "price_book",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:02.843Z"
+            },
+            {
+              "detail": "Table \\`ops.scrape_run_accounts\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "scrape_run_accounts",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:02.843Z"
+            },
+            {
+              "detail": "Table \\`ops.scrape_runs\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "scrape_runs",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:02.843Z"
+            },
+            {
+              "detail": "Table \\`ops.settings\\` has RLS enabled, but no policies exist",
+              "metadata": {
+                "name": "settings",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:02.843Z"
+            }
+          ]
+        }
+      ]
+    },
+    "performance": {
+      "lints": [
+        {
+          "name": "unused_index",
+          "title": "Unused Index",
+          "level": "INFO",
+          "facing": "EXTERNAL",
+          "categories": ["PERFORMANCE"],
+          "description": "Detects if an index has never been used and may be a candidate for removal.",
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index",
+          "count": 72,
+          "findings": [
+            {
+              "detail": "Index \\`competitor_accounts_competitor_id_idx\\` on table \\`app.competitor_accounts\\` has not been used",
+              "metadata": {
+                "name": "competitor_accounts",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`competitor_accounts_last_run_id_idx\\` on table \\`app.competitor_accounts\\` has not been used",
+              "metadata": {
+                "name": "competitor_accounts",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`competitor_accounts_due\\` on table \\`app.competitor_accounts\\` has not been used",
+              "metadata": {
+                "name": "competitor_accounts",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`organizations_kind_status_idx\\` on table \\`app.organizations\\` has not been used",
+              "metadata": {
+                "name": "organizations",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`organizations_merged_into_idx\\` on table \\`app.organizations\\` has not been used",
+              "metadata": {
+                "name": "organizations",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`organizations_search_tsv_idx\\` on table \\`app.organizations\\` has not been used",
+              "metadata": {
+                "name": "organizations",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`organizations_name_idx\\` on table \\`app.organizations\\` has not been used",
+              "metadata": {
+                "name": "organizations",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`member_invites_invited_by_idx\\` on table \\`app.member_invites\\` has not been used",
+              "metadata": {
+                "name": "member_invites",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`members_invited_by_idx\\` on table \\`app.members\\` has not been used",
+              "metadata": {
+                "name": "members",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`competitors_search_tsv_idx\\` on table \\`app.competitors\\` has not been used",
+              "metadata": {
+                "name": "competitors",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`competitors_name_idx\\` on table \\`app.competitors\\` has not been used",
+              "metadata": {
+                "name": "competitors",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`org_aliases_org_id_idx\\` on table \\`app.org_aliases\\` has not been used",
+              "metadata": {
+                "name": "org_aliases",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`org_aliases_alias_normalized_idx\\` on table \\`app.org_aliases\\` has not been used",
+              "metadata": {
+                "name": "org_aliases",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`people_merged_into_idx\\` on table \\`app.people\\` has not been used",
+              "metadata": {
+                "name": "people",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`people_name_idx\\` on table \\`app.people\\` has not been used",
+              "metadata": {
+                "name": "people",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`people_search_tsv_idx\\` on table \\`app.people\\` has not been used",
+              "metadata": {
+                "name": "people",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`person_aliases_person_id_idx\\` on table \\`app.person_aliases\\` has not been used",
+              "metadata": {
+                "name": "person_aliases",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`person_aliases_alias_normalized_idx\\` on table \\`app.person_aliases\\` has not been used",
+              "metadata": {
+                "name": "person_aliases",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_competitor_published\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_platform_published\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_feed\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_ai_status\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_account_id_idx\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_brand_id_idx\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_agency_id_idx\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_production_competitor_id_idx\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_duplicate_of_idx\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_last_extraction_id_idx\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_content_hash_idx\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`items_search_tsv_idx\\` on table \\`app.items\\` has not been used",
+              "metadata": {
+                "name": "items",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`item_credits_item_id_idx\\` on table \\`app.item_credits\\` has not been used",
+              "metadata": {
+                "name": "item_credits",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`item_credits_person_id_idx\\` on table \\`app.item_credits\\` has not been used",
+              "metadata": {
+                "name": "item_credits",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`item_credits_organization_id_idx\\` on table \\`app.item_credits\\` has not been used",
+              "metadata": {
+                "name": "item_credits",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`item_credits_competitor_id_idx\\` on table \\`app.item_credits\\` has not been used",
+              "metadata": {
+                "name": "item_credits",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`media_assets_item_id_idx\\` on table \\`app.media_assets\\` has not been used",
+              "metadata": {
+                "name": "media_assets",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`media_assets_competitor_id_idx\\` on table \\`app.media_assets\\` has not been used",
+              "metadata": {
+                "name": "media_assets",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`campaigns_brand_id_last_seen_at_idx\\` on table \\`app.campaigns\\` has not been used",
+              "metadata": {
+                "name": "campaigns",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`campaigns_production_competitor_id_last_seen_at_idx\\` on table \\`app.campaigns\\` has not been used",
+              "metadata": {
+                "name": "campaigns",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`campaigns_agency_id_idx\\` on table \\`app.campaigns\\` has not been used",
+              "metadata": {
+                "name": "campaigns",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`campaigns_merged_into_idx\\` on table \\`app.campaigns\\` has not been used",
+              "metadata": {
+                "name": "campaigns",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`campaigns_last_seen_at_idx\\` on table \\`app.campaigns\\` has not been used",
+              "metadata": {
+                "name": "campaigns",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`campaigns_search_tsv_idx\\` on table \\`app.campaigns\\` has not been used",
+              "metadata": {
+                "name": "campaigns",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`website_pages_account_id_status_idx\\` on table \\`app.website_pages\\` has not been used",
+              "metadata": {
+                "name": "website_pages",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`website_pages_competitor_id_idx\\` on table \\`app.website_pages\\` has not been used",
+              "metadata": {
+                "name": "website_pages",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`website_pages_item_id_idx\\` on table \\`app.website_pages\\` has not been used",
+              "metadata": {
+                "name": "website_pages",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`employee_snapshots_account_id_idx\\` on table \\`app.employee_snapshots\\` has not been used",
+              "metadata": {
+                "name": "employee_snapshots",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`news_articles_published_at_idx\\` on table \\`app.news_articles\\` has not been used",
+              "metadata": {
+                "name": "news_articles",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`news_articles_search_tsv_idx\\` on table \\`app.news_articles\\` has not been used",
+              "metadata": {
+                "name": "news_articles",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`news_mentions_entity_type_entity_id_idx\\` on table \\`app.news_mentions\\` has not been used",
+              "metadata": {
+                "name": "news_mentions",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`review_open\\` on table \\`app.review_tasks\\` has not been used",
+              "metadata": {
+                "name": "review_tasks",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`review_tasks_entity_type_entity_id_idx\\` on table \\`app.review_tasks\\` has not been used",
+              "metadata": {
+                "name": "review_tasks",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`review_tasks_assigned_to_idx\\` on table \\`app.review_tasks\\` has not been used",
+              "metadata": {
+                "name": "review_tasks",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`review_tasks_resolved_by_idx\\` on table \\`app.review_tasks\\` has not been used",
+              "metadata": {
+                "name": "review_tasks",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`alert_rules_created_by_idx\\` on table \\`app.alert_rules\\` has not been used",
+              "metadata": {
+                "name": "alert_rules",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`saved_views_user_id_idx\\` on table \\`app.saved_views\\` has not been used",
+              "metadata": {
+                "name": "saved_views",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`embeddings_hnsw\\` on table \\`app.embeddings\\` has not been used",
+              "metadata": {
+                "name": "embeddings",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`stats_daily_competitor_id_day_idx\\` on table \\`app.stats_daily\\` has not been used",
+              "metadata": {
+                "name": "stats_daily",
+                "type": "table",
+                "schema": "app"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`raw_items_account_id_idx\\` on table \\`ingest.raw_items\\` has not been used",
+              "metadata": {
+                "name": "raw_items",
+                "type": "table",
+                "schema": "ingest"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`raw_items_run_id_idx\\` on table \\`ingest.raw_items\\` has not been used",
+              "metadata": {
+                "name": "raw_items",
+                "type": "table",
+                "schema": "ingest"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`scrape_runs_started_at_idx\\` on table \\`ops.scrape_runs\\` has not been used",
+              "metadata": {
+                "name": "scrape_runs",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`scrape_runs_workflow_started_at_idx\\` on table \\`ops.scrape_runs\\` has not been used",
+              "metadata": {
+                "name": "scrape_runs",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`scrape_run_accounts_account_id_finished_at_idx\\` on table \\`ops.scrape_run_accounts\\` has not been used",
+              "metadata": {
+                "name": "scrape_run_accounts",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`apify_runs_run_id_idx\\` on table \\`ops.apify_runs\\` has not been used",
+              "metadata": {
+                "name": "apify_runs",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`ai_extractions_item_id_created_at_idx\\` on table \\`ops.ai_extractions\\` has not been used",
+              "metadata": {
+                "name": "ai_extractions",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`cost_ledger_day_provider_idx\\` on table \\`ops.cost_ledger\\` has not been used",
+              "metadata": {
+                "name": "cost_ledger",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`cost_ledger_run_id_idx\\` on table \\`ops.cost_ledger\\` has not been used",
+              "metadata": {
+                "name": "cost_ledger",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`cost_ledger_item_id_idx\\` on table \\`ops.cost_ledger\\` has not been used",
+              "metadata": {
+                "name": "cost_ledger",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`cost_ledger_competitor_id_day_idx\\` on table \\`ops.cost_ledger\\` has not been used",
+              "metadata": {
+                "name": "cost_ledger",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`api_keys_created_by_idx\\` on table \\`ops.api_keys\\` has not been used",
+              "metadata": {
+                "name": "api_keys",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`api_calls_key_id_created_at_idx\\` on table \\`ops.api_calls\\` has not been used",
+              "metadata": {
+                "name": "api_calls",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`audit_log_entity_type_entity_id_idx\\` on table \\`ops.audit_log\\` has not been used",
+              "metadata": {
+                "name": "audit_log",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            },
+            {
+              "detail": "Index \\`audit_log_created_at_idx\\` on table \\`ops.audit_log\\` has not been used",
+              "metadata": {
+                "name": "audit_log",
+                "type": "table",
+                "schema": "ops"
+              },
+              "observed_at": "2026-10-17T19:13:03.009Z"
+            }
+          ]
+        },
+        {
+          "name": "auth_db_connections_absolute",
+          "title": "Auth DB Connection Strategy is not Percentage",
+          "level": "INFO",
+          "facing": "EXTERNAL",
+          "categories": ["PERFORMANCE"],
+          "description": "Using a percentage based allocation connection strategy for Auth can help to improve the server's performance when increasing instance size.",
+          "remediation": "https://supabase.com/docs/guides/deployment/going-into-prod",
+          "count": 1,
+          "findings": [
+            {
+              "detail": "Your project's Auth server is configured to use at most 10 connections. Increasing the instance size without manually adjusting this number will not improve the performance of the Auth server. Switch to a percentage based connection allocation strategy instead.",
+              "metadata": {
+                "type": "auth",
+                "entity": "Auth"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,5 +1,89 @@
 # M01 hosted acceptance resume
 
+## Hosted dev result
+
+The owner completed the encrypted handoff. Actual native-CLI PGPASSWORD presence
+and authentication succeeded; dry-run matched the seven sealed files, then push
+applied them at19:12UTC with their original versions. [Final dev receipt](dev-acceptance-20261017.json),
+[catalogue and advisors](dev-inventory-20261017.json), and
+[detailed privilege matrix](dev-security-detail-20261017.json) contain the results.
+
+Dev now has36 RLS tables, nine invoker views,23 restricted project functions,
+three queues, two housekeeping jobs, the media bucket and baseline seeds.
+Competitors/accounts/items/raw-items remain empty and domain autojoin is off.
+Post-migration advisors have zero WARN/ERROR;11 deny-all security INFO and73
+performance INFO (72 unused required indexes, one Auth connection allocation)
+are retained with justification. All FK leading indexes exist. Extension ACLs
+do not expose a direct machine/client queue or scheduler path: their schemas
+deny USAGE to all four restricted roles.
+
+The dev Data API allowlist was saved/reloaded as public,graphql_public,app.
+Actual HTTP gives app anon401/42501 and all five internal schemas406/PGRST106;
+Auth settings confirm Email/Google disabled. A read-only authenticated SQL probe
+with no user identity returns zero taxonomy/search rows and null me, then rolls
+back. This adds no fixtures, users or role membership; positive membership and
+concurrency proofs remain clearly labelled local/CI evidence.
+
+CLI generated all four requested schemas without Docker or API credentials.
+An initial text-format guard rejected valid raw formatting; TypeScript AST
+inspection confirmed all36 tables, nine views and12 project RPCs across those
+schemas. Hosted types match the checked-in AST; original file bytes were kept
+to avoid formatting-only churn. Workspace and root typecheck passed.
+
+The encrypted postgres handoff was deleted and all credential-bearing children
+exited. No password was injected into parent VS Code. MA-04 is resolved. MA-05
+restricted-role pooler authentication and MA-06 Google remain pending; neither
+uses the postgres password. Production-baseline and PR4 merge gates stay open,
+PR4 stays draft, and M02 has not started. The earlier sections below preserve
+the diagnostic sequence; their empty-state observations are historical.
+
+## Credential handoff follow-up
+
+The next resume verified source/PR head55738124f4e31931d1ad8528b537fc6ed49d8acf,
+green CI39059459113 and all seven unchanged migration seals. Native dev MCP tools
+are now active directly. Fresh URL/history/catalogue reads still show dev17.11
+with no migrations or project objects. Browser reconfirmed the session pooler,
+Email disabled, Google disabled, default-only Data API exposure and both Git
+automation controls OFF. No migration command reached authentication.
+
+The exact migration shell reported PGPASSWORD absent, including without a login
+profile; user/machine environment and an independent runtime child also lacked
+it. No local Codex filter explained this. The owner then clarified that the
+password had **not** been configured and requested an exact command. The
+diagnosis is missing credential delivery, not failed authentication or a proven
+filter problem. [Receipt](credential-delivery-20261017.json).
+
+Owner action: open PowerShell as the same Windows user on this computer and run:
+
+```powershell
+$emrPasswordFile = Join-Path $env:LOCALAPPDATA 'Temp\emr-m01-dev-password.dpapi'
+Read-Host 'emr-dev database password' -AsSecureString |
+  ConvertFrom-SecureString |
+  Set-Content -LiteralPath $emrPasswordFile -Encoding ASCII
+```
+
+Enter the existing dev DB password at the hidden prompt and report readiness
+only. Do not send the value or the file contents. This creates a temporary,
+Windows current-user encrypted handoff outside the repository/configuration;
+it does not set a global environment variable or require restarting VS Code.
+The password-entry PowerShell can close after the command completes.
+
+Codex consumes it only inside an owned dev database child, sets that child's
+PGPASSWORD, verifies presence in the exact environment passed to the pinned
+native CLI, then follows the same passwordless-URI dry-run/push below. The
+installed native2.121.0 binary is invoked directly so no package-manager or
+installation process receives the password. CLI output/errors remain in memory;
+only allowlisted statuses and migration filenames are reported. Types use a
+separate stdout candidate and stderr buffer. Never use this credential for
+role-pooler authentication, prod, unrelated tests, installations or other
+projects. Remove the encrypted file when dev DB operations finish; clear and
+close owned credential children. Child cleanup does not clear a separately
+credential-bearing parent VS Code process. This handoff does not put the secret
+in that parent.
+
+The historical receipt below remains unchanged in meaning; empty-database
+advisors and local types still do not establish hosted baseline acceptance.
+
 Observed 17 October 2026. [Structured receipt](hosted-resume-20261017.json)
 separates database reads, dashboard settings, historical local/CI evidence and
 unperformed acceptance. Earlier `mcp-setup.json` and `hosted-preflight.json`
