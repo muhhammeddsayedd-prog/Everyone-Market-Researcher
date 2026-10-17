@@ -9,3 +9,4 @@ SKILLS_LOCK.json -text
 *.sh text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+milestones/M01-supabase-foundation/evidence/*.log -text -whitespace

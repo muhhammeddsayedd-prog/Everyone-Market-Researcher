@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-17",
+  "method": "Read-only signed-in Supabase dashboard through browser UI",
+  "organization": "Everyone",
+  "planBadge": "PRO",
+  "projects": [
+    {
+      "name": "emr-dev",
+      "ref": "zmotjsbzhzjvpelxvxlf",
+      "status": "Healthy",
+      "region": "eu-central-1",
+      "compute": "MICRO",
+      "lastMigration": "No migrations",
+      "github": "muhhammeddsayedd-prog/Everyone-Market-Researcher"
+    },
+    {
+      "name": "emr-prod",
+      "ref": "hkiafqrcxaafdbcvjlzv",
+      "status": "Healthy",
+      "region": "eu-central-1",
+      "compute": "MICRO",
+      "lastMigration": "No migrations",
+      "github": "muhhammeddsayedd-prog/Everyone-Market-Researcher"
+    }
+  ],
+  "devAuth": { "google": "DISABLED", "email": "ENABLED", "confirmEmail": true, "anonymousSignins": false },
+  "hostedPostgresVersion": "Not established: service-version field did not display a value",
+  "spendCap": "Not verified",
+  "hostedDataApiExposure": "Not verified",
+  "hostedSqlExecuted": false,
+  "ownerAuthorization": "Full access to development and production projects; specific baseline and merge approval gates retained in M01 progress"
+}

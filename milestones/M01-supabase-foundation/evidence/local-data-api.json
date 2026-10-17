@@ -1,0 +1,19 @@
+{
+  "recordedAt": "2026-10-17T17:41:45.4593621+00:00",
+  "command": "node scripts/db/check-data-api.mjs",
+  "exitCode": 0,
+  "result": {
+    "check": "data-api-local",
+    "passed": true,
+    "statuses": {
+      "member-app": 200,
+      "nonmember-app": 200,
+      "hidden-ops": 406,
+      "hidden-ingest": 406,
+      "hidden-api": 406,
+      "hidden-private": 406
+    },
+    "cleanup": "OK"
+  },
+  "boundary": "Observed output from the immediately preceding local run; short-lived HS256 test JWTs only, no service key or hosted request; two owned synthetic auth fixtures removed. OAuth sign-in not exercised."
+}

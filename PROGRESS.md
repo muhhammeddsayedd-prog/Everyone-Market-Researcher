@@ -5,21 +5,21 @@
 
 ## Now
 
-|                       |                                                                       |
-| --------------------- | --------------------------------------------------------------------- |
-| **Current milestone** | M01 — Supabase foundation (not started; awaiting instruction)         |
-| **Status**            | Not started                                                           |
-| **Next step**         | M00 complete. Stop and await the owner's next instruction before M01. |
-| **Waiting on owner**  | New instruction for M01; no M00 owner actions remain                  |
-| **Pilot**             | Not started (begins at the end of M08; runs 14 days)                  |
-| **Last updated**      | 2026-10-17 (M00 completed; M01 not started)                           |
+|                       |                                                                                                                      |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Current milestone** | M01 — Supabase foundation                                                                                            |
+| **Status**            | In progress                                                                                                          |
+| **Next step**         | Publish local M01/CI; refresh the authenticated dev-scoped MCP, then verify and apply hosted dev baseline.           |
+| **Waiting on owner**  | MA-04 MCP refresh, MA-05 role credentials after migrations, MA-06 Google; production baseline and merge gates remain |
+| **Pilot**             | Not started (begins at the end of M08; runs 14 days)                                                                 |
+| **Last updated**      | 2026-10-17 (M01 authorized and started)                                                                              |
 
 ## Milestone board
 
 | ID  | Milestone                                  | Status      | Started    | Done       | Blockers / owner actions                                 | PR                                                                                      |
 | --- | ------------------------------------------ | ----------- | ---------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | M00 | Repo bootstrap & tooling                   | Done        | 2026-10-17 | 2026-10-17 | —                                                        | [#1 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1) |
-| M01 | Supabase foundation                        | Not started |            |            | MA-03…MA-06                                              |                                                                                         |
+| M01 | Supabase foundation                        | In progress | 2026-10-17 |            | MA-03…MA-06; production baseline approval                |                                                                                         |
 | M02 | Seed data & account resolution             | Not started |            |            | MA-07…MA-09                                              |                                                                                         |
 | M03 | n8n foundation                             | Not started |            |            | MA-10…MA-13                                              |                                                                                         |
 | M04 | Collectors I: Vimeo + Instagram            | Not started |            |            | MA-14                                                    |                                                                                         |
@@ -47,6 +47,8 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
 | Production launch     | —          |
 
 ## Log (newest first)
+
+- 2026-10-17 · Owner authorized the next milestone, M01. Branch m01-supabase-foundation from verified main d06dcd9; existing worktree clean. Docker installed but daemon stopped; no scoped Supabase token/project refs in runtime and no connected Supabase tools. CLI/local setup, source review and access discovery started. Production/billing gates remain unapproved.
 
 - 2026-10-17 · M00 Done: owner authorized protection and merge; main requires PRs plus quality/unit/build (admins included). PR #1 merged to 0b71ea9; main CI39052887942 passed quality/unit/build/e2e (39 unit tests, 4 browser/axe checks). All AC1–AC9 pass. Final records published through protected PR workflow. M01 remains Not started and needs a new instruction. No M00 manual action remains.
 

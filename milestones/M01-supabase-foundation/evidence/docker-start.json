@@ -1,0 +1,7 @@
+{
+  "observedAt": "2026-10-17T17:27:15.3917617+00:00",
+  "command": "docker desktop start --timeout 45",
+  "exitCode": 0,
+  "output": ["✓ Starting Docker Desktop"],
+  "bounds": "Start installed Docker Desktop only; no upgrades, terms acceptance, reset, delete, or other service restart."
+}

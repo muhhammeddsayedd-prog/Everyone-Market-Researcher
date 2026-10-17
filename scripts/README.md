@@ -5,5 +5,7 @@
 - `brand-tokens.test.ts`: M00 regression check for canonical CSS/JSON token parity and the app copy.
 - `validate_project_skills.py`: pre-existing project skill integrity validator. Read `SKILLS_SETUP.md`
   before using its optional discovery/setup modes; historical receipts are preserved.
+- `db/`: M01 local CI, Data API exposure and manual pooler-role checks. See
+  [`db/README.md`](db/README.md) for dependencies, private credential handling and scope.
 
 M02 adds seed/account-resolution scripts. M07 adds evaluation scripts. No provider calls run here in M00.

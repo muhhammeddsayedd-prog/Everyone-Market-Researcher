@@ -1,0 +1,77 @@
+﻿1..35
+docker : NOTICE:  role "postgres" has already been granted membership in role "api_agent" by role "postgres"
+At line:2 char:496
++ ...  = $probe | docker exec -i supabase_db_everyone-market-radar psql -U  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (NOTICE:  role "...role "postgres":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ok 1 - item insert populates TSV
+ok 2 - competitor insert populates TSV
+ok 3 - organization insert populates TSV
+ok 4 - person insert populates TSV
+ok 5 - campaign insert populates TSV
+ok 6 - news insert populates TSV
+not ok 7 - member finds seeded Ramadan item
+# Failed test 7: "member finds seeded Ramadan item"
+#         have: 0
+#         want: 1
+not ok 8 - all six keyword source branches work
+# Failed test 8: "all six keyword source branches work"
+#         have: 0
+#         want: 6
+not ok 9 - type filter restricts keyword results
+# Failed test 9: "type filter restricts keyword results"
+#         have: 0
+#         want: 1
+ok 10 - country excludes keyword item
+ok 11 - platform excludes keyword item
+ok 12 - competitor excludes keyword item
+ok 13 - brand excludes keyword item
+ok 14 - from is inclusive lower bound
+ok 15 - to is exclusive upper bound
+ok 16 - content type excludes keyword item
+ok 17 - occasion excludes keyword item
+not ok 18 - all matching filters retain item
+# Failed test 18: "all matching filters retain item"
+#         have: 0
+#         want: 1
+not ok 19 - limit honored
+# Failed test 19: "limit honored"
+#         have: 0
+#         want: 1
+ok 20 - zero limit returns no rows
+ok 21 - empty keyword without embedding returns no rows
+not ok 22 - semantic-only branch excludes removed item
+# Failed test 22: "semantic-only branch excludes removed item"
+#         have: 0
+#         want: 2
+ok 23 - semantic branch shares item filters
+not ok 24 - RRF fuses keyword and semantic ranks
+# Failed test 24: "RRF fuses keyword and semantic ranks"
+#     (test result was NULL)
+not ok 25 - similar excludes source and removed targets
+# Failed test 25: "similar excludes source and removed targets"
+#         have: 0
+#         want: 1
+not ok 26 - non-member keyword search sees nothing
+# Failed test 26: "non-member keyword search sees nothing"
+#         have: 6
+#         want: 0
+NOTICE:  text-search query doesn't contain lexemes: ""
+not ok 27 - non-member semantic search sees nothing
+# Failed test 27: "non-member semantic search sees nothing"
+#         have: 2
+#         want: 0
+not ok 28 - non-member similar sees nothing
+# Failed test 28: "non-member similar sees nothing"
+#         have: 1
+#         want: 0
+ok 29 - TSV updates on change
+ok 30 - anon cannot execute search
+ok 31 - anon cannot execute me
+ok 32 - agent searches through RLS read grants
+ok 33 - all 120 baseline taxonomies seeded
+ok 34 - all thirteen settings seeded
+ok 35 - seventeen price placeholders seeded
+# Looks like you failed 11 tests of 35

@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-17",
+  "authorization": "Owner explicitly requested codex mcp add supabase with the project-scoped URL and OAuth authentication",
+  "server": "supabase",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "transport": "streamable_http",
+  "enabled": true,
+  "features": ["docs", "account", "database", "debugging", "development", "functions", "branching"],
+  "addResult": "Added global MCP server supabase",
+  "loginResult": "Successfully logged in",
+  "listAuthStatus": "o_auth",
+  "activeConversationToolsLoaded": false,
+  "activeConversationResourceProbe": "unknown MCP server supabase",
+  "nextStep": "Refresh or reconnect the MCP server in Codex, or restart this session; then verify the dev project with a read-only tool call before any migration",
+  "boundary": "No OAuth credential, callback URL, auth code or token recorded; no hosted SQL executed; no optional global skill installation"
+}

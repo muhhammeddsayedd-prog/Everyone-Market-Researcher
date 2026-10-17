@@ -1,0 +1,41 @@
+{
+  "check": "concurrency-local",
+  "observedAt": "2026-10-17T17:56:35.880Z",
+  "scope": "synthetic-local-fixtures",
+  "passed": true,
+  "checks": {
+    "skipLocked": {
+      "passed": true,
+      "workerAClaims": 1,
+      "workerBClaims": 1,
+      "overlap": 0,
+      "workerARemainedOpen": true
+    },
+    "naturalIdempotency": {
+      "passed": true,
+      "lockBarrierObserved": true,
+      "insertedAcrossWorkers": 1,
+      "rawRows": 1,
+      "shellRows": 1,
+      "aiMessages": 1,
+      "mediaMessages": 1
+    },
+    "contentIdempotency": {
+      "passed": true,
+      "lockBarrierObserved": true,
+      "insertedAcrossWorkers": 1,
+      "duplicates": 1,
+      "rawRows": 2,
+      "shellRows": 2,
+      "aiMessages": 1,
+      "mediaMessages": 1
+    },
+    "websiteOwnership": {
+      "passed": true,
+      "lockBarrierObserved": true,
+      "storedPages": 1,
+      "loserSqlstate": "22023"
+    }
+  },
+  "cleanup": "OK"
+}
