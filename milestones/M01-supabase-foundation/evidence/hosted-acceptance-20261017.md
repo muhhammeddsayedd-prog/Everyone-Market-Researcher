@@ -1,6 +1,66 @@
 # M01 hosted acceptance resume
 
-## 18 October continuation — restricted logins and Google
+## 18 October dev-gate completion — production approval is next
+
+Resumed clean branch `m01-supabase-foundation` at
+`7aaa2a146f11af03ebe8e9fcad6cf8fa2228ad64`, draft PR4. CI39072134552 passed all
+five jobs and Vercel at that source. Dev MCP reconfirmed the exact project and
+seven original versions/names; local SHA256 seals still match the table below.
+No migration or writer probe was replayed. Existing hosted schema/advisor/type
+and local/CI evidence is preserved rather than relabelled as a fresh run.
+
+Before decryption, the actual consumer and its exact embedded/generated SQL
+were reviewed and exercised on the verified owned local PostgreSQL17 instance.
+That full check caught a qualified-name-text table-privilege lookup which
+required schema USAGE that api_agent correctly lacks. Switching only that
+lookup to the relation-OID overload preserves all write-privilege assertions.
+The corrected full SQL completed locally; wrong identity, read-only `25006`,
+missing-object `42P01` and omitted-setting negative checks all failed as required.
+These are local validation results, not hosted authentication. The final helper
+SHA256 was checked again before the actual agent-only invocation.
+[Preflight details](agent-probe-preflight-20261018.json).
+
+**api_agent PASS**, actual transaction pooler6543, at22:55:34–37 UTC17 October
+(01:55 Cairo18 October). Both `current_user` and `session_user` matched.
+The first DO operation applies transaction-local read-only mode, then asserts
+it before the permitted `api.competitors_v` count read. That read executed;
+the DO command did not emit its scalar count. No fixture was added. OID-based
+catalogue assertions found no direct project-table DML or ops/ingest execution
+privileges. All four expected `42501` denials passed: internal ops table read,
+writer RPC, queue table and scheduler table. Other error classes are not
+accepted as permission evidence. Native exit0 and exact DO tag are required.
+[Native receipt](agent-pooler-completion-20261018.json),
+[combined role acceptance](role-pooler-acceptance-20261018.json).
+
+The consumed agent handoff and generated private SQL were deleted; all owned
+credential-bearing children exited, with zero native CLI processes remaining.
+The writer/admin handoffs remain absent. Saved owner passwords are unchanged;
+no password reset, grants or role/database defaults changed. No password was
+injected into parent VS Code; clearing a child does not clear any independently
+configured parent. MCP readback confirms zero probe runs, competitors/accounts
+and domain-autojoin entries; zero members, owner admin invite present, enabled
+membership trigger and expected RLS/restricted execution remain intact.
+
+**Google saved Supabase configuration PASS**, at22:54:58 UTC: enabled after
+explicit reload, configured Google OAuth-format client ID, occupied masked
+secret field and exact dev callback. Email remains disabled; signup ON,
+anonymous/manual linking OFF, confirmEmail ON, nonce checking preserved and
+users without email disallowed. No secret value was accessed. The
+[provider receipt](provider-config-completion-20261018.json) separates any
+Google Cloud client-metadata limitation from saved Supabase settings. Neither
+configuration nor client metadata proves an OAuth exchange; full signin is M09.
+The earlier disabled-provider and incomplete agent attempts remain below.
+
+AC8 **dev** and AC11 saved-provider configuration are closed. Dev MA-05/06 need
+no further credential handoff or setup action. M01 remains open: production
+baseline approval/acceptance and PR4 merge approval are separate outstanding
+gates. Review the **existing exact production packet below** and reply
+**Approve the M01 production baseline packet for hkiafqrcxaafdbcvjlzv** to
+authorize only that baseline. PR4 stays draft/unmerged; M02, collection,
+paid provider calls and workflows remain unstarted. The existing M00 tooling
+advisory/ESLint follow-up due24October is retained, without a new audit claim.
+
+## Earlier 18 October continuation — before the completed retry
 
 The existing branch and draft PR4 still point to reviewed head
 `41d4801eedf92219688dbfaf13fd49388b9ef318`. CI39062273290 passed all five jobs
@@ -48,8 +108,8 @@ anonymous/manual linkingOFF. Both Git auto controls remain OFF on both projects.
 [Provider receipt](provider-config-20261018.json). No client secret was read,
 configuration saved or OAuth exchange attempted. Full browser signin stays M09.
 
-MA-05 now needs **only** an agent handoff for the corrected probe. In Windows
-PowerShell as the same account, run:
+At this earlier checkpoint, MA-05 needed an agent-only handoff. The following
+historical action is now completed and its handoff deleted; do not repeat it:
 
 ```powershell
 & "$env:LOCALAPPDATA\Temp\emr-m01-store-role-urls.ps1" -Role api_agent
@@ -68,7 +128,7 @@ packet below for separate approval. Its approval and PR4 merge are not inferred
 from credentials or this continuation. Production writes, merge, M02,
 collection and paid provider calls remain untouched.
 
-## Hosted dev result
+## 17 October hosted dev baseline result
 
 The owner completed the encrypted handoff. Actual native-CLI PGPASSWORD presence
 and authentication succeeded; dry-run matched the seven sealed files, then push
@@ -289,10 +349,11 @@ remaining actions; do not recreate the administrator handoff or replay push.
 
 ## Production approval packet — prepared, gate still open
 
-After dev acceptance, the separate T13 decision concerns only
+Dev configuration/pooler acceptance is now recorded above. The separate T13 decision concerns only
 `emr-prod / hkiafqrcxaafdbcvjlzv`, applying exactly the seven versions/hashes
 above. General project access and the earlier M00 merge approval do not approve
-this action. No approval is inferred or requested before dev evidence is ready.
+this action. The packet is ready for the owner's separate decision; no approval
+is inferred from credentials, Google setup or the continuation instruction.
 
 The baseline creates36 project tables with RLS, restricted machine roles and
 RPCs, invoker views and indexes; ensures the six extensions; creates queues

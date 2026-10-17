@@ -165,58 +165,65 @@ The session-pooler `n8n_writer` login passed both `current_user` and
 `session_user`, start/finish RPCs with forced rollback, absent direct table
 privileges and four expected `42501` denial boundaries. Do not repeat it.
 
-The transaction-pooler `api_agent` login authenticated and passed both identity
-assertions, then stopped at an extra read-only transaction assertion before the
-view/denial probes. Server logs identify SQLSTATE `P0001`, inline DO line 9;
-this was not a password rejection. The startup read-only setting did not take
-effect; the precise layer that ignored/overrode it is not established. The
-reviewed correction sets `transaction_read_only=on` locally as the first DO
-operation. A bounded MCP compatibility check passed; it does not replace the
-pending restricted-login retry. See [role acceptance](../milestones/M01-supabase-foundation/evidence/role-pooler-acceptance-20261018.json).
+The transaction-pooler `api_agent` retry also **passed**, at 01:55 Cairo on
+18 October. Direct login at the fixed dev host/port6543 verified both
+`current_user` and `session_user`. The first DO operation sets transaction-local
+read-only mode and verifies it; the permitted `api.competitors_v` count read
+executed successfully. The scalar count was not emitted by DO. Empty-baseline
+reads are valid; no fixture was added. Catalogue checks prove absent direct
+project-table DML and ops/ingest execution privileges. All four expected
+`42501` denials passed: ops table read, writer RPC, queue and scheduler reads.
+The native CLI exited0 with the exact DO command tag.
+
+The earlier authenticated attempt remains recorded as incomplete: it stopped
+at the extra startup-read-only assertion before its read/denial checks. The
+layer that ignored/overrode that option remains unestablished. Before consuming
+the retry handoff, full owned-local PG17 validation found and fixed a further
+name-based privilege lookup that required schema USAGE the role correctly
+lacks. The OID lookup preserves all assertions and grants. The exact corrected
+SQL and four negative checks passed locally before actual hosted execution.
+Local simulation is separate from the real restricted login receipt. See
+[role acceptance](../milestones/M01-supabase-foundation/evidence/role-pooler-acceptance-20261018.json),
+[preflight](../milestones/M01-supabase-foundation/evidence/agent-probe-preflight-20261018.json)
+and [native completion](../milestones/M01-supabase-foundation/evidence/agent-pooler-completion-20261018.json).
 
 Both consumed handoffs and private probe SQL files were removed; owned native
 CLI children exited. Keep the separately saved role passwords for later
 n8n/Vercel setup. No password reset or administrator password is needed.
 
-To finish only the agent check, open **Windows PowerShell as the same Windows
-account** and run:
-
-```powershell
-& "$env:LOCALAPPDATA\Temp\emr-m01-store-role-urls.ps1" -Role api_agent
-```
-
-The reviewed private helper prompts only for the **existing api_agent password**
-with hidden input, safely URI-encodes it and writes one Windows current-user
-encrypted handoff outside Git:
-
-- `%LOCALAPPDATA%\Temp\emr-m01-dev-api-agent-url.dpapi` — `api_agent.zmotjsbzhzjvpelxvxlf`, transaction port 6543.
-
-Expected non-secret result: **Encrypted dev role handoffs saved**. Close the
-PowerShell window and reply **Agent handoff ready**. It uses
-`aws-1-eu-central-1.pooler.supabase.com`, database `postgres` and TLS. Codex will
-review the consumer, decrypt only in the bounded agent-check subprocess and
-inject only its native CLI child's PGPASSWORD. The URL/password never goes in
-arguments, logs or Git. The actual agent identity, permitted view and four
-denials must pass; a zero-row view is valid. Cleanup removes the consumed
-handoff and closes the owned child, regardless of query outcome. The existing
+MA-05 is resolved **on dev only**. No further dev handoff or password action is
+needed. The reviewed runner decrypted the DPAPI handoff only in its bounded
+role-check subprocess and supplied only the native CLI child's PGPASSWORD.
+The host remained `aws-1-eu-central-1.pooler.supabase.com`, database `postgres`
+and TLS; the credential URL/password never entered argv, logs or Git. The
+consumed retry handoff/private SQL were deleted and the owned child exited;
+independent inspection found zero remaining native CLI processes. The existing
 `scripts/db/check-pooler.sh` requires psql, which is currently absent from PATH;
 a reviewed bounded CLI-query alternative can verify the same direct logins.
-Writer acceptance remains valid; agent read/denial acceptance remains pending.
+Writer acceptance was preserved without rerunning it; agent acceptance is now complete.
 OAuth, owner-postgres access, catalogue grants and synthetic script tests do not
 replace restricted-role authentication. This method does not inject a password
 into parent VS Code; clearing a child cannot clear a separately configured
 parent environment.
 Production credentials stay separate and await T13 approval.
 
-MA-06: **Google Cloud Console > the project holding the intended OAuth client >
-Google Auth Platform > Clients > Web application client > Authorized redirect
-URIs**: set the callback to
-`https://zmotjsbzhzjvpelxvxlf.supabase.co/auth/v1/callback`. In **emr-dev >
-Authentication > Sign In / Providers > Google**, privately enter its client ID
-and secret, enable Google and save. Expected result: provider list shows
-**Google ENABLED**, **Email DISABLED**. Reply **Google saved on emr-dev**. Codex will verify
-the enabled state/callback, keep Email disabled and confirm domain autojoin 0.
-The complete browser signin flow remains M09.
+MA-06's saved Supabase provider configuration passed independent readback:
+**Google ENABLED after reload**, one configured Google OAuth-format client ID,
+occupied masked secret field, exact callback
+`https://zmotjsbzhzjvpelxvxlf.supabase.co/auth/v1/callback`, nonce checking
+preserved and users without email disallowed. **Email remains DISABLED**,
+signup ON, anonymous/manual linking OFF, confirmEmail ON. MCP readback confirms
+domain autojoin empty, owner invite present and membership trigger/RLS guards
+intact. No client secret value was accessed. The browser/provider receipt states
+the separate Google Cloud client-metadata verification boundary; saved settings
+do not prove an OAuth exchange. Full browser signin remains M09.
+[Provider configuration receipt](../milestones/M01-supabase-foundation/evidence/provider-config-completion-20261018.json).
+
+The next owner decision is the [existing exact production-baseline packet](../milestones/M01-supabase-foundation/evidence/hosted-acceptance-20261017.md).
+After review, reply **Approve the M01 production baseline packet for
+hkiafqrcxaafdbcvjlzv**. Production role/provider setup and acceptance follow that
+approval. PR4 merge needs a later separate **Approve merging PR #4** after M01
+acceptance and fresh checks. M01 remains open, PR4 draft/unmerged, M02 unstarted.
 
 Local informational advisor findings are intentional deny-all policies on the
 eleven internal tables and unused indexes on a fresh database. Retain required
