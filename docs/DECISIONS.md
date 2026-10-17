@@ -58,5 +58,6 @@ Owner: Mohamed Abdelrahman (mohamed.abdelrahman@everyone.film) — product owner
 
 | Date | Change | Approved by |
 |---|---|---|
+| 2026-10-17 | M01 implementation record: generated `handle_norm` account key; `finish_run` JSON summary; cadence-minus-four-hours success scheduling; preserved normalized credits/media; clean invoker hybrid search. `DATA_SCHEMA.md` RPC milestone labels and `TECHNICAL.md` draft scheduling now match the specific M01 handoff. No binding product, tool, access or production gate changed. | Specified by M01 T4–T7; implementation details recorded for review |
 | 2026-10-17 | Pilot backfills (M04–M06) and the M07 AI backlog run once in **prod** after the owner approves each estimate (MA-14, MA-15, MA-17), to avoid paying twice; prod schedules stay off until M08. Media v1 (WF-31) moves to M06 because story/Instagram CDN URLs expire. Stories bake-off runs 7 days. | Proposed in the handoff pack; owner confirms at MA-14 |
 | 2026-10-17 | Initial decision set from the brainstorm and the architecture doc (rev 95). Ad libraries and LinkedIn jobs moved out of scope; news/awards via SerpAPI; stories only without login. | Owner |

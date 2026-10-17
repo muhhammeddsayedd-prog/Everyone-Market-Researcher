@@ -2,7 +2,7 @@
 
 The internal market-intelligence system for everyone. (Everyone Films). The planned system collects public competitor content, uses OpenAI to identify brands, agencies, credits and campaigns, and serves the results to the team through a web app and to AI agents through REST and MCP.
 
-**M00: repository bootstrap and tooling is complete.** M01 has not started and awaits a new owner instruction. The current app is the everyone. / Market Radar placeholder. Collectors, Supabase, authentication and product screens arrive in later milestones. Read [PROGRESS.md](PROGRESS.md) for current checks, owner actions and hosted acceptance. Toolchain choices and the outstanding dependency advisory are recorded in [M00 toolchain evidence](milestones/M00-repo-bootstrap/evidence/toolchain.md).
+**M00 is complete; M01 Supabase foundation is in progress.** The database foundation is implemented and tested locally; hosted migrations, Google configuration and pooler acceptance still need scoped access and their recorded gates. See [Supabase setup](supabase/README.md) and [PROGRESS.md](PROGRESS.md) for actual evidence and owner actions. The web app remains the everyone. / Market Radar placeholder; collectors and product screens arrive later. Toolchain choices and the outstanding dependency advisory remain in [M00 toolchain evidence](milestones/M00-repo-bootstrap/evidence/toolchain.md).
 
 Owner: Mohamed Abdelrahman · mohamed.abdelrahman@everyone.film · Created 17 Oct 2026.
 
@@ -51,8 +51,8 @@ Dependency lifecycle scripts are blocked by the checked-in install policy. Run p
 
 ```text
 apps/web/          Next.js App Router placeholder, unit tests and Playwright
-packages/shared/  Zod environment helper, slug rules and future database types
-supabase/         M01 database foundation placeholder
+packages/shared/  Zod environment helper, slug rules and generated database types
+supabase/         M01 migrations, RLS/role tests and local fake fixtures
 n8n/              Common helper tests; workflows and actor fixtures from M03–M06
 scripts/          Repository checks; seed and evaluation tooling in later milestones
 .github/          CI, dependency updates and pull request template

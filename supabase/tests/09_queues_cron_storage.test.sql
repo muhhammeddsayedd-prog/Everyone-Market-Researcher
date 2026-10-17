@@ -1,0 +1,30 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+set local search_path = public,extensions;
+select plan(13);
+grant n8n_writer to postgres with inherit false;
+grant n8n_writer to postgres with set true;
+select results_eq($$select queue_name::text from pgmq.list_queues() order by queue_name$$,
+  $$select name from (values('ai_extract'::text),('embed'),('media')) expected(name)$$,'three project queues exist');
+select is((select count(*)::int from cron.job where jobname like 'emr-%'),2,'two housekeeping jobs registered');
+select is((select schedule from cron.job where jobname = 'emr-unlock-stale-accounts'),'15 * * * *','unlock cron schedule');
+select is((select schedule from cron.job where jobname = 'emr-archive-queue-cleanup'),'30 3 * * *','archive cron schedule');
+select ok((select public from storage.buckets where id = 'media'),'media bucket is public');
+select is((select file_size_limit from storage.buckets where id = 'media'),5242880::bigint,'bucket maximum five MiB');
+select is((select allowed_mime_types from storage.buckets where id = 'media'),array['image/jpeg','image/png','image/webp','image/svg+xml'],'bucket allows only approved images');
+select is((select count(*)::int from pg_policies where schemaname = 'storage' and tablename = 'objects'
+  and cmd in ('INSERT','UPDATE','DELETE','ALL') and roles && array['public','anon','authenticated']::name[]),0,'no public user Storage write policy');
+select pgmq.send('embed','{"entity_type":"item","entity_id":"99900000-0000-0000-0000-000000000101"}');
+create temporary table claimed(msg_id bigint,read_ct int,message jsonb);
+grant all on claimed to n8n_writer;
+set local role n8n_writer;
+insert into claimed select * from ops.claim_queue_batch('embed',1);
+select is((select count(*)::int from claimed),1,'writer claims queued message');
+select is((select message->>'entity_type' from claimed),'item','queue message preserved');
+select ops.ack_queue('embed',array(select msg_id from claimed));
+select throws_ok($$select * from ops.claim_queue_batch('unapproved',1)$$,'22023',null,'queue names are allowlisted');
+reset role;
+select is((select count(*)::int from pgmq.q_embed where msg_id in (select msg_id from claimed)),0,'ack removes live message');
+select is((select count(*)::int from pgmq.a_embed where msg_id in (select msg_id from claimed)),1,'ack archives message');
+select * from finish();
+rollback;

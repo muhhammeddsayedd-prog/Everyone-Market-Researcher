@@ -149,7 +149,7 @@ n8n Cloud has a single instance: keep **two copies** of every scheduled workflow
 ### 5.1 Due list
 `ops.get_due_accounts(p_platform app.platform, p_limit int, p_run_id uuid, p_mode text)` returns accounts where `status in ('active','failing')`, `next_due_at <= now()`, not locked by a running job, ordered by priority tier then `next_due_at`. It **claims** them (sets `locked_until = now() + interval '2 hours'`, `last_run_id`) using `FOR UPDATE SKIP LOCKED` so parallel executions never double-process.
 
-`next_due_at` after success = `date_trunc('day', now()) + interval '1 day' + platform offset` (daily) or `+ 7 days` (weekly: LinkedIn employees, news, awards, removal check). Stories: `+ 12 hours` if `ops.settings.stories_twice_daily = true`.
+M01 schedules success at `now() + cadence - interval '4 hours'`, so a daily run at the same Cairo clock time finds the account due across DST changes. A daily cadence therefore becomes due in 20 hours; weekly cadence becomes due in 6 days 20 hours. Failures retry after 6 hours, including unfinished backfills. Successful unfinished backfills remain eligible for the next hourly backfill slot. M06 adds the stories cadence switch.
 
 ### 5.2 Watermarks
 `app.competitor_accounts` stores:
@@ -162,11 +162,13 @@ Collectors request only items after the watermark using, in order of preference:
 ### 5.3 Ingest RPC (single writer path)
 `ingest.upsert_raw_items(p_run_id uuid, p_account_id uuid, p_items jsonb)`:
 1. Inserts each normalized item into `ingest.raw_items` with `ON CONFLICT (platform, external_id) DO NOTHING`.
-2. Computes `content_hash = sha256(lower(caption) || media_url_canonical)`; if another item from the same competitor has the same hash within 30 days, links it as `duplicate_of` and does **not** enqueue AI.
+2. Computes a SHA-256 fingerprint from the lowercase caption, a separator, and thumbnail (or first media URL); if another item from the same competitor has the same hash within 30 days, links it as `duplicate_of` and does **not** enqueue AI. Empty caption/media has no fingerprint. A competitor row lock serializes canonical selection, including duplicates within one batch.
 3. Upserts `app.items` (clean shell with source fields) for the new rows.
-4. Sends the new item IDs to the `ai_extract` pgmq queue.
-5. Updates metrics for already-known items in the batch (latest snapshot) without re-enqueueing.
-6. Advances the account watermark and returns `{inserted, duplicates, metrics_updated, new_item_ids[]}`.
+4. Sends new nonduplicate item IDs to both `ai_extract` and `media`.
+5. Updates unlocked metrics for already-known items within the last 30 days without re-enqueueing. Source fields and human corrections stay intact.
+6. Advances the account watermark monotonically by published time, breaking ties with the external ID in C collation; null/empty batches do not erase it. Returns `{inserted, duplicates, metrics_updated, new_item_ids[]}`.
+
+M01 validates the whole normalized batch before writing and requires the current, unexpired account claim and matching running collection. Website root accounts map to the `website_work_page` collection. Repeated source keys within a batch use the last occurrence. `credits_text` and `media_urls` survive in `raw_items.normalized` and AI context. Account result receipts are first-write-wins: identical status/count/error retries do nothing, conflicting receipt fields fail, and later cursor arguments cannot overwrite the first receipt or release another run's lease.
 
 All collectors map source payloads to the **normalized item contract** (`reference/n8n/normalized_item.schema.json`) before calling the RPC, so the database never sees actor-specific shapes except in `raw_items.payload`.
 
