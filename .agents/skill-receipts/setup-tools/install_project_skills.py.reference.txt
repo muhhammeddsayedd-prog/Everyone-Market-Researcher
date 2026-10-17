@@ -1,0 +1,148 @@
+"""Reviewed one-time local import. Pins are deliberate updates, never auto-refreshes.
+
+Run only for the authorized skill setup. Existing destinations are never replaced.
+This uses the bundled, hash-pinned OpenAI installer, not upstream helper scripts.
+"""
+
+from pathlib import Path
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+RECEIPTS = ROOT / '.agents/skill-receipts'
+DEST = ROOT / '.agents/skills'
+INSTALLER_ROOT = Path('C:/Users/iway/.codex/skills/.system/skill-installer/scripts')
+INSTALLER_HASHES = {
+    'install-skill-from-github.py': '110cc7e4e395c2c9ba070d47db7d21be5164591c35015ae364fc9c9905b08de8',
+    'github_utils.py': '2f9702afb9f0da740181fa4a3214f663e460f80cd5cea2e7dcaab00ad269082e',
+}
+ADDY = '''context-engineering planning-and-task-breakdown incremental-implementation
+test-driven-development source-driven-development debugging-and-error-recovery
+api-and-interface-design security-and-hardening code-review-and-quality
+doubt-driven-development git-workflow-and-versioning ci-cd-and-automation
+documentation-and-adrs observability-and-instrumentation frontend-ui-engineering
+browser-testing-with-devtools performance-optimization code-simplification
+deprecation-and-migration shipping-and-launch spec-driven-development
+constraint-driven-development'''.split()
+SOURCES = [
+    {
+        'repo': 'addyosmani/agent-skills',
+        'commit': 'aeac41d4d005999432bb7312f7ff06383a91d59d',
+        'review_checkout': 'C:/Users/iway/AppData/Local/Temp/emr-skill-review-addy-aeac41d4',
+        'skills': {name: 'skills/' + name for name in ADDY},
+    },
+    {
+        'repo': 'vercel-labs/agent-skills',
+        'commit': '063bee94c3f4df8453406c830b0a7df0f2860278',
+        'review_checkout': 'C:/Users/iway/AppData/Local/Temp/emr-skills-review-20261017-webdb/vercel',
+        'skills': {
+            'vercel-react-best-practices': 'skills/react-best-practices',
+            'vercel-composition-patterns': 'skills/composition-patterns',
+            'web-design-guidelines': 'skills/web-design-guidelines',
+            'vercel-optimize': 'skills/vercel-optimize',
+        },
+    },
+    {
+        'repo': 'supabase/agent-skills',
+        'commit': 'c9be0e931b7930f7d02126d04774d904c381e7d7',
+        'review_checkout': 'C:/Users/iway/AppData/Local/Temp/emr-skills-review-20261017-webdb/supabase',
+        'skills': {
+            'supabase': 'skills/supabase',
+            'supabase-postgres-best-practices': 'skills/supabase-postgres-best-practices',
+        },
+    },
+]
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def main():
+    installer = RECEIPTS / 'installer'
+    installer.mkdir(parents=True, exist_ok=True)
+    for name, expected in INSTALLER_HASHES.items():
+        source = INSTALLER_ROOT / name
+        assert digest(source) == expected, f'Installer changed: {name}'
+        target = installer / name
+        if target.exists():
+            assert digest(target) == expected, f'Installer receipt changed: {name}'
+        else:
+            shutil.copyfile(source, target)
+
+    names = [name for source in SOURCES for name in source['skills']]
+    assert len(names) == len(set(names)) == 28
+    before = json.loads((RECEIPTS / 'before-setup.json').read_text(encoding='utf-8'))
+    collisions = [e for e in before['existing_skill_manifests'] if e['name'] in names]
+    assert not collisions, 'Resolve exact skill-name collisions before importing'
+    env = dict(os.environ)
+    # Public sources need no credentials. Do not pass ambient tokens to the helper.
+    env.pop('GH_TOKEN', None)
+    env.pop('GITHUB_TOKEN', None)
+    env['PYTHONDONTWRITEBYTECODE'] = '1'
+    imported = []
+    for source in SOURCES:
+        checkout = Path(source['review_checkout'])
+        actual = subprocess.run(['git', '-C', str(checkout), 'rev-parse', 'HEAD'],
+                                check=True, capture_output=True, text=True).stdout.strip()
+        assert actual == source['commit'], 'Reviewed source checkout changed'
+        # A separate import is needed when the folder basename and manifest name differ.
+        regular = []
+        for name, path in source['skills'].items():
+            assert (checkout / path / 'SKILL.md').is_file()
+            # Resume only by byte-verifying existing unpatched imports below.
+            # Existing directories are never overwritten or reinstalled.
+            if (DEST / name).exists():
+                continue
+            if Path(path).name == name:
+                regular.append(path)
+            else:
+                subprocess.run([sys.executable, '-X', 'utf8', str(installer / 'install-skill-from-github.py'),
+                                '--repo', source['repo'], '--ref', source['commit'], '--path', path,
+                                '--name', name, '--dest', str(DEST), '--method', 'download'],
+                               check=True, env=env)
+        if regular:
+            subprocess.run([sys.executable, '-X', 'utf8', str(installer / 'install-skill-from-github.py'),
+                            '--repo', source['repo'], '--ref', source['commit'], '--path', *regular,
+                            '--dest', str(DEST), '--method', 'download'], check=True, env=env)
+        for name, path in source['skills'].items():
+            files = []
+            for upstream in sorted((checkout / path).rglob('*')):
+                if not upstream.is_file():
+                    continue
+                local = DEST / name / upstream.relative_to(checkout / path)
+                source_path = upstream.relative_to(checkout).as_posix()
+                blob = subprocess.run(['git', '-C', str(checkout), 'cat-file', 'blob',
+                                       source['commit'] + ':' + source_path],
+                                      check=True, capture_output=True).stdout
+                upstream_hash = hashlib.sha256(blob).hexdigest()
+                assert upstream_hash == digest(local), f'Import mismatch: {local}'
+                files.append({'path': local.relative_to(ROOT).as_posix(),
+                              'source_path': source_path,
+                              'upstream_sha256': upstream_hash})
+            imported.append({'name': name, 'repo': source['repo'], 'commit': source['commit'],
+                             'source_path': path, 'installed_path': '.agents/skills/' + name,
+                             'files': files})
+        license_dir = RECEIPTS / 'licenses' / source['repo'].replace('/', '--')
+        license_dir.mkdir(parents=True, exist_ok=True)
+        for filename in ['LICENSE', 'README.md']:
+            if (checkout / filename).is_file():
+                shutil.copyfile(checkout / filename, license_dir / filename)
+
+    shared = ROOT / '.agents/references'
+    assert not shared.exists(), 'Shared destination exists'
+    shutil.copytree(Path(SOURCES[0]['review_checkout']) / 'references', shared)
+    shutil.copyfile('C:/Users/iway/.codex/attachments/102ea5e1-f6a5-4c62-a7c9-51003f7723bc/Pasted text.txt',
+                    RECEIPTS / 'installation-plan.txt')
+    receipt = {'date': '2026-10-17', 'installer_sha256': INSTALLER_HASHES,
+               'sources': SOURCES, 'imports': imported, 'collision_count': len(collisions)}
+    (RECEIPTS / 'upstream-import.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
+    print(f'Imported and byte-verified {len(imported)} skills; project-local only.')
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-17",
+  "repo": "Leonxlnx/taste-skill",
+  "commit": "f624f37a8c650b9cc550253104925efe4c8de246",
+  "source_path": "skills/taste-skill",
+  "manifest_name": "design-taste-frontend",
+  "archive_sha256": "735d7c893bf5d91095e2a2bdb55d96798b7402261a0a4b0a784f8508198c92f2",
+  "upstream_files": 29,
+  "locally_patched_files": 4,
+  "new_files": [
+    "LICENSE",
+    "agents/openai.yaml"
+  ],
+  "license": "MIT, Copyright (c) 2026 Leonxlnx",
+  "license_sha256": "4575a543ab88dad12ccea7d97e563d0bce5b448b06072e65d3264497dad326df",
+  "reviewed_helpers": {
+    "draw": "Node builtins; local library; direction output and patched local history; explicit paths must remain owned",
+    "lint": "Node builtins; reads UI source; patched JSON/text output omits matched source text",
+    "inspect": "isolated headless browser/temp CDP profile; writes screenshots/report, removes matching old screenshots; local-file server can expose project root; prefer known dev-server URL",
+    "assets": "network fetch to Openverse, Commons, Art Institute Chicago, Met; video routes also Archive/NASA; follows source metadata/redirects; downloads and credits; inactive for project setup"
+  },
+  "scope": "Default single skill only; no other variants, upstream installers, plugins or global settings. Dashboard mode preserves Everyone design, project tests, approved media/tool/provider boundaries.",
+  "checks": "See helper-checks.json for syntax and synthetic patched-helper execution. Network assets and browser inspector unrun."
+}

@@ -1,0 +1,6 @@
+﻿
+> everyone-market-radar@0.0.0 format:check D:\Everyone\everyone Market Research\everyone-market-radar
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!

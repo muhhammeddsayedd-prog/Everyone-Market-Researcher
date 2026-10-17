@@ -1,0 +1,4 @@
+
+> web@0.1.0 typecheck D:\Everyone\everyone Market Research\everyone-market-radar\apps\web
+> tsc --noEmit -p .
+

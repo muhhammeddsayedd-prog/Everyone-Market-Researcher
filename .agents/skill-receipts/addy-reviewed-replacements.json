@@ -1,0 +1,66 @@
+{
+  "source": "https://github.com/addyosmani/agent-skills",
+  "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+  "patches": [
+    {
+      "path": "skills/git-workflow-and-versioning/SKILL.md",
+      "old": "This pattern means you never lose more than one increment of work. If an agent goes off the rails, `git reset --hard HEAD` takes you back to the last successful state.",
+      "new": "Save points preserve completed work. If an increment fails, inspect the current status and diff, then apply a targeted inverse patch only to changes you own. Preserve unrelated staged, unstaged, and untracked work. Do not use a destructive reset or clean as a recovery shortcut; when ownership is uncertain, leave the files intact and record the blocker.",
+      "reason": "Preserve user and concurrent work; remove destructive recovery recommendation."
+    },
+    {
+      "path": "skills/git-workflow-and-versioning/SKILL.md",
+      "old": "git diff --staged | grep -i \"password\\|secret\\|api_key\\|token\"",
+      "new": "# Run the repository's reviewed redacted secret scan (rule IDs and file/line locations only).\n# If no scanner is available, record this check as not run; never print matched values.",
+      "reason": "Remove secret-value-printing command."
+    },
+    {
+      "path": "references/security-checklist.md",
+      "old": "- [ ] No secrets in code (`git diff --cached | grep -i \"password\\|secret\\|api_key\\|token\"`)",
+      "new": "- [ ] No secrets in code, checked with the repository's reviewed redacted scanner. Report rule IDs and file/line locations only; if unavailable, record the check as not run. Never print matching source lines.",
+      "reason": "Remove secret-value-printing command."
+    },
+    {
+      "path": "skills/security-and-hardening/references/hardening-patterns.md",
+      "old": "git diff --cached | grep -i \"password\\|secret\\|api_key\\|token\"",
+      "new": "# Run the repository's reviewed redacted secret scan (rule IDs and file/line locations only).\n# If no scanner is available, record this check as not run; never print matched values.",
+      "reason": "Remove secret-value-printing command."
+    },
+    {
+      "path": "skills/constraint-driven-development/references/floor-guard.md",
+      "old": "const flag = (rule, f, text) => findings.push({ rule, file: f, text: text.trim().slice(0, 120) });",
+      "new": "const flag = (rule, f) => findings.push({ rule, file: f });",
+      "reason": "Avoid storing matched source text in findings."
+    },
+    {
+      "path": "skills/constraint-driven-development/references/floor-guard.md",
+      "old": "for (const f of findings) console.error(`  [${f.rule}] ${f.file}: ${f.text}`);",
+      "new": "for (const f of findings) console.error(`  [${f.rule}] ${f.file}`);",
+      "reason": "Report rule and file only; source text can contain secrets."
+    },
+    {
+      "path": "skills/constraint-driven-development/SKILL.md",
+      "old": "Follow the one-question-at-a-time discipline from `interview-me`, with one change: every question here has a default, so \"I don't know\" is a complete answer that still produces a working config.",
+      "new": "For approved quality-contract work, first read the existing docs/TESTING.md, docs/DECISIONS.md, and current milestone criteria. Reuse those requirements. Ask a focused question only when a material unresolved choice remains; do not require the excluded interview skill or restart a questionnaire. The example defaults below do not become project acceptance criteria.",
+      "reason": "Remove dependency on excluded interview-me; preserve established quality contract."
+    },
+    {
+      "path": "skills/constraint-driven-development/SKILL.md",
+      "old": "- `interview-me` — the one-question-at-a-time discipline this skill's intake borrows",
+      "new": "- Existing project testing and milestone criteria define the quality contract; the excluded interview skill is not a dependency.",
+      "reason": "Remove excluded skill cross-reference."
+    },
+    {
+      "path": "skills/spec-driven-development/SKILL.md",
+      "old": "Execute tasks one at a time following `skills/incremental-implementation/SKILL.md` (`incremental-implementation`) and `skills/test-driven-development/SKILL.md` (`test-driven-development`). Use `skills/context-engineering/SKILL.md` (`context-engineering`) to load the right spec sections and source files at each step rather than flooding the agent with the entire spec.",
+      "new": "Execute tasks one at a time following [incremental-implementation](../incremental-implementation/SKILL.md) and [test-driven-development](../test-driven-development/SKILL.md). Use [context-engineering](../context-engineering/SKILL.md) to load the relevant existing specification and source files for each step.",
+      "reason": "Repair repository-root skill paths to installed sibling-relative paths."
+    },
+    {
+      "path": "skills/doubt-driven-development/SKILL.md",
+      "old": "In Claude Code, the role-based reviewers in `agents/` start with isolated context by design and are usable here — see `agents/` for the roster and per-domain match.",
+      "new": "Use an available native fresh-context reviewer scoped to ARTIFACT + CONTRACT. The upstream agent-persona roster is not installed; do not assume those personas, models, tools, or a different harness are available. Follow the current harness capabilities and project authorization.",
+      "reason": "Remove dependency on omitted upstream agents directory."
+    }
+  ]
+}

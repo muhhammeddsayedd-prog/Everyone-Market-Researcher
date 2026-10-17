@@ -1,0 +1,285 @@
+2026-10-17T17:01:21.1039483Z Current runner version: '2.337.0'
+2026-10-17T17:01:21.1059297Z ##[group]Runner Image Provisioner
+2026-10-17T17:01:21.1059981Z Hosted Compute Agent
+2026-10-17T17:01:21.1060560Z Version: 20261012.601
+2026-10-17T17:01:21.1061123Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-17T17:01:21.1061937Z Build Date: 2026-10-12T17:48:21Z
+2026-10-17T17:01:21.1062607Z Worker ID: {932c1d81-045f-4ec7-9116-004370ee6c0b}
+2026-10-17T17:01:21.1063202Z Region: westus3
+2026-10-17T17:01:21.1063641Z Cloud: Azure
+2026-10-17T17:01:21.1064170Z ##[endgroup]
+2026-10-17T17:01:21.1065244Z ##[group]Operating System
+2026-10-17T17:01:21.1065794Z Ubuntu
+2026-10-17T17:01:21.1066232Z 24.04.5
+2026-10-17T17:01:21.1066655Z LTS
+2026-10-17T17:01:21.1067180Z ##[endgroup]
+2026-10-17T17:01:21.1067630Z ##[group]Runner Image
+2026-10-17T17:01:21.1068148Z Image: ubuntu-24.04
+2026-10-17T17:01:21.1068635Z Version: 20261012.334.1
+2026-10-17T17:01:21.1069696Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-17T17:01:21.1071047Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-17T17:01:21.1072005Z ##[endgroup]
+2026-10-17T17:01:21.1072930Z ##[group]GITHUB_TOKEN Permissions
+2026-10-17T17:01:21.1074466Z Contents: read
+2026-10-17T17:01:21.1074997Z Metadata: read
+2026-10-17T17:01:21.1075497Z ##[endgroup]
+2026-10-17T17:01:21.1077138Z Secret source: Actions
+2026-10-17T17:01:21.1077921Z Cache mode: write
+2026-10-17T17:01:21.1078585Z Prepare workflow directory
+2026-10-17T17:01:21.1384337Z Prepare all required actions
+2026-10-17T17:01:21.1421330Z Getting action download info
+2026-10-17T17:01:21.4347576Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-17T17:01:21.6935863Z Download action repository 'pnpm/action-setup@d9184bf108216479bc5a137cc391f4d7b14c870b' (SHA:d9184bf108216479bc5a137cc391f4d7b14c870b)
+2026-10-17T17:01:22.1718933Z Download action repository 'actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1' (SHA:949feb2413d6458794dcd2491c4babbbce0c15c1)
+2026-10-17T17:01:23.1105195Z Complete job name: quality
+2026-10-17T17:01:23.1823466Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-10-17T17:01:23.1824782Z with:
+2026-10-17T17:01:23.1825391Z   persist-credentials: false
+2026-10-17T17:01:23.1826355Z   repository: muhhammeddsayedd-prog/Everyone-Market-Researcher
+2026-10-17T17:01:23.1832761Z   token: ***
+2026-10-17T17:01:23.1833375Z   ssh-strict: true
+2026-10-17T17:01:23.1834005Z   ssh-user: git
+2026-10-17T17:01:23.1834597Z   clean: true
+2026-10-17T17:01:23.1835230Z   sparse-checkout-cone-mode: true
+2026-10-17T17:01:23.1835992Z   fetch-depth: 1
+2026-10-17T17:01:23.1836601Z   fetch-tags: false
+2026-10-17T17:01:23.1837233Z   show-progress: true
+2026-10-17T17:01:23.1837865Z   lfs: false
+2026-10-17T17:01:23.1838459Z   submodules: false
+2026-10-17T17:01:23.1839114Z   set-safe-directory: true
+2026-10-17T17:01:23.1839862Z   allow-unsafe-pr-checkout: false
+2026-10-17T17:01:23.1840803Z env:
+2026-10-17T17:01:23.1841428Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-17T17:01:23.1842247Z ##[endgroup]
+2026-10-17T17:01:23.2686331Z Syncing repository: muhhammeddsayedd-prog/Everyone-Market-Researcher
+2026-10-17T17:01:23.2689920Z ##[group]Getting Git version info
+2026-10-17T17:01:23.2692186Z Working directory is '/home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher'
+2026-10-17T17:01:23.2695005Z [command]/usr/bin/git version
+2026-10-17T17:01:23.2710674Z git version 2.55.0
+2026-10-17T17:01:23.2731122Z ##[endgroup]
+2026-10-17T17:01:23.2737668Z Temporarily overriding HOME='/home/runner/work/_temp/ed3e9fa5-2b5e-4a35-b479-4265d8ea0194' before making global git config changes
+2026-10-17T17:01:23.2740812Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-17T17:01:23.2743734Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher
+2026-10-17T17:01:23.2852435Z Deleting the contents of '/home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher'
+2026-10-17T17:01:23.2854748Z ##[group]Determining repository object format
+2026-10-17T17:01:23.2856359Z ##[endgroup]
+2026-10-17T17:01:23.2857726Z ##[group]Initializing the repository
+2026-10-17T17:01:23.2861464Z [command]/usr/bin/git init /home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher
+2026-10-17T17:01:23.2931966Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-17T17:01:23.2934496Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-17T17:01:23.2936918Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-17T17:01:23.2938399Z hint: call:
+2026-10-17T17:01:23.2939252Z hint:
+2026-10-17T17:01:23.2940350Z hint: 	git config --global init.defaultBranch <name>
+2026-10-17T17:01:23.2941673Z hint:
+2026-10-17T17:01:23.2942975Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-17T17:01:23.2944576Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-17T17:01:23.2945818Z hint:
+2026-10-17T17:01:23.2946550Z hint: 	git branch -m <name>
+2026-10-17T17:01:23.2947416Z hint:
+2026-10-17T17:01:23.2948976Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-17T17:01:23.2952139Z Initialized empty Git repository in /home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher/.git/
+2026-10-17T17:01:23.2957659Z [command]/usr/bin/git remote add origin https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher
+2026-10-17T17:01:23.2986366Z ##[endgroup]
+2026-10-17T17:01:23.2988002Z ##[group]Disabling automatic garbage collection
+2026-10-17T17:01:23.2989448Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-17T17:01:23.3018779Z ##[endgroup]
+2026-10-17T17:01:23.3020156Z ##[group]Setting up auth
+2026-10-17T17:01:23.3021043Z Removing SSH command configuration
+2026-10-17T17:01:23.3022963Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-17T17:01:23.3054161Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-17T17:01:23.3342044Z Removing HTTP extra header
+2026-10-17T17:01:23.3346824Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-17T17:01:23.3383762Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-17T17:01:23.3576512Z Removing includeIf entries pointing to credentials config files
+2026-10-17T17:01:23.3580622Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-17T17:01:23.3610308Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-17T17:01:23.3802124Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-6869490e-26cf-402e-ae2f-a9f6844db38e.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-17T17:01:23.3835192Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher/.git.path /home/runner/work/_temp/git-credentials-6869490e-26cf-402e-ae2f-a9f6844db38e.config
+2026-10-17T17:01:23.3865034Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-6869490e-26cf-402e-ae2f-a9f6844db38e.config
+2026-10-17T17:01:23.3895976Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-6869490e-26cf-402e-ae2f-a9f6844db38e.config
+2026-10-17T17:01:23.3925445Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-6869490e-26cf-402e-ae2f-a9f6844db38e.config
+2026-10-17T17:01:23.3952808Z ##[endgroup]
+2026-10-17T17:01:23.3953843Z ##[group]Fetching the repository
+2026-10-17T17:01:23.3958040Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +d468b55a47bc771a7b4a180ca7255fb48adf7529:refs/remotes/pull/1/merge
+2026-10-17T17:01:24.6752750Z From https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher
+2026-10-17T17:01:24.6753682Z  * [new ref]         d468b55a47bc771a7b4a180ca7255fb48adf7529 -> pull/1/merge
+2026-10-17T17:01:24.6761369Z ##[endgroup]
+2026-10-17T17:01:24.6774421Z ##[group]Determining the checkout info
+2026-10-17T17:01:24.6775208Z ##[endgroup]
+2026-10-17T17:01:24.6775674Z [command]/usr/bin/git sparse-checkout disable
+2026-10-17T17:01:24.6811226Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-17T17:01:24.6842547Z ##[group]Checking out the ref
+2026-10-17T17:01:24.6846146Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/1/merge
+2026-10-17T17:01:24.7280493Z Note: switching to 'refs/remotes/pull/1/merge'.
+2026-10-17T17:01:24.7280930Z 
+2026-10-17T17:01:24.7282551Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-17T17:01:24.7283381Z changes and commit them, and you can discard any commits you make in this
+2026-10-17T17:01:24.7284108Z state without impacting any branches by switching back to a branch.
+2026-10-17T17:01:24.7284563Z 
+2026-10-17T17:01:24.7284927Z If you want to create a new branch to retain commits you create, you may
+2026-10-17T17:01:24.7285574Z do so (now or later) by using -c with the switch command. Example:
+2026-10-17T17:01:24.7285988Z 
+2026-10-17T17:01:24.7287533Z   git switch -c <new-branch-name>
+2026-10-17T17:01:24.7287874Z 
+2026-10-17T17:01:24.7296917Z Or undo this operation with:
+2026-10-17T17:01:24.7307624Z 
+2026-10-17T17:01:24.7307814Z   git switch -
+2026-10-17T17:01:24.7308192Z 
+2026-10-17T17:01:24.7308900Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-17T17:01:24.7309299Z 
+2026-10-17T17:01:24.7309873Z HEAD is now at d468b55 Merge fe5e0574cfb81ff81dc5d680991d81e55ba8f8f4 into 1946db47c07d013d15e693dbb03b1c72fa431829
+2026-10-17T17:01:24.7311606Z ##[endgroup]
+2026-10-17T17:01:24.7336917Z [command]/usr/bin/git log -1 --format=%H
+2026-10-17T17:01:24.7360685Z d468b55a47bc771a7b4a180ca7255fb48adf7529
+2026-10-17T17:01:24.7368390Z ##[group]Removing auth
+2026-10-17T17:01:24.7368701Z Removing SSH command configuration
+2026-10-17T17:01:24.7372552Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-17T17:01:24.7401954Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-17T17:01:24.7590326Z Removing HTTP extra header
+2026-10-17T17:01:24.7593787Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-17T17:01:24.7623340Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-17T17:01:24.7810210Z Removing includeIf entries pointing to credentials config files
+2026-10-17T17:01:24.7812527Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-17T17:01:24.7837400Z includeif.gitdir:/home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher/.git.path
+2026-10-17T17:01:24.7838205Z includeif.gitdir:/home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher/.git/worktrees/*.path
+2026-10-17T17:01:24.7838701Z includeif.gitdir:/github/workspace/.git.path
+2026-10-17T17:01:24.7839037Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-17T17:01:24.7843994Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher/.git.path
+2026-10-17T17:01:24.7865997Z /home/runner/work/_temp/git-credentials-6869490e-26cf-402e-ae2f-a9f6844db38e.config
+2026-10-17T17:01:24.7873359Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-6869490e\-26cf\-402e\-ae2f\-a9f6844db38e\.config
+2026-10-17T17:01:24.7904419Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher/.git/worktrees/*.path
+2026-10-17T17:01:24.7925802Z /home/runner/work/_temp/git-credentials-6869490e-26cf-402e-ae2f-a9f6844db38e.config
+2026-10-17T17:01:24.7932004Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-6869490e\-26cf\-402e\-ae2f\-a9f6844db38e\.config
+2026-10-17T17:01:24.7962200Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-17T17:01:24.7985178Z /github/runner_temp/git-credentials-6869490e-26cf-402e-ae2f-a9f6844db38e.config
+2026-10-17T17:01:24.7991343Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-6869490e\-26cf\-402e\-ae2f\-a9f6844db38e\.config
+2026-10-17T17:01:24.8021270Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-17T17:01:24.8043403Z /github/runner_temp/git-credentials-6869490e-26cf-402e-ae2f-a9f6844db38e.config
+2026-10-17T17:01:24.8083218Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-6869490e\-26cf\-402e\-ae2f\-a9f6844db38e\.config
+2026-10-17T17:01:24.8128006Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-17T17:01:24.8312015Z Removing credentials config '/home/runner/work/_temp/git-credentials-6869490e-26cf-402e-ae2f-a9f6844db38e.config'
+2026-10-17T17:01:24.8319530Z ##[endgroup]
+2026-10-17T17:01:24.8502602Z ##[group]Run pnpm/action-setup@d9184bf108216479bc5a137cc391f4d7b14c870b
+2026-10-17T17:01:24.8502981Z with:
+2026-10-17T17:01:24.8503192Z   dest: ~/setup-pnpm
+2026-10-17T17:01:24.8503414Z   run_install: null
+2026-10-17T17:01:24.8503618Z   cache: false
+2026-10-17T17:01:24.8503836Z   cache_dependency_path: pnpm-lock.yaml
+2026-10-17T17:01:24.8504111Z   package_json_file: package.json
+2026-10-17T17:01:24.8504348Z   standalone: false
+2026-10-17T17:01:24.8504549Z env:
+2026-10-17T17:01:24.8504754Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-17T17:01:24.8504982Z ##[endgroup]
+2026-10-17T17:01:24.9701396Z ##[group]Running self-installer...
+2026-10-17T17:01:26.9042625Z 
+2026-10-17T17:01:26.9043117Z added 1 package, and audited 2 packages in 1s
+2026-10-17T17:01:26.9043349Z 
+2026-10-17T17:01:26.9043452Z 1 package is looking for funding
+2026-10-17T17:01:26.9043676Z   run `npm fund` for details
+2026-10-17T17:01:26.9049578Z 
+2026-10-17T17:01:26.9049830Z found 0 vulnerabilities
+2026-10-17T17:01:27.3819701Z Checking for updates...
+2026-10-17T17:01:27.5379319Z Switching pnpm from v11.25.0 to v10.34.7...
+2026-10-17T17:01:27.9732664Z .../v11/894-1a14acfb19a-65f58f079c6dcb12 | Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-10-17T17:01:27.9748753Z .../v11/894-1a14acfb19a-65f58f079c6dcb12 |   +1 +
+2026-10-17T17:01:28.2275564Z .../v11/894-1a14acfb19a-65f58f079c6dcb12 | Progress: resolved 1, reused 0, downloaded 1, added 1, done
+2026-10-17T17:01:28.6180044Z [WARN] Detected a pnpm v10 installation layout at PNPM_HOME. The pnpm shims at PNPM_HOME have been refreshed so the new version is active, but pnpm v11 expects bins in PNPM_HOME/bin. Run "pnpm setup" to migrate your PATH to the v11 layout.
+2026-10-17T17:01:28.6205674Z Successfully updated pnpm to v10.34.7
+2026-10-17T17:01:28.6456390Z ##[endgroup]
+2026-10-17T17:01:28.6456644Z Installation Completed!
+2026-10-17T17:01:28.6630474Z ##[group]Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+2026-10-17T17:01:28.6630795Z with:
+2026-10-17T17:01:28.6630971Z   node-version-file: .nvmrc
+2026-10-17T17:01:28.6631168Z   cache: pnpm
+2026-10-17T17:01:28.6631348Z   check-latest: false
+2026-10-17T17:01:28.6633354Z   token: ***
+2026-10-17T17:01:28.6633537Z   package-manager-cache: true
+2026-10-17T17:01:28.6633739Z env:
+2026-10-17T17:01:28.6633900Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-17T17:01:28.6634133Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2026-10-17T17:01:28.6634380Z ##[endgroup]
+2026-10-17T17:01:28.7606972Z Node version file is not TOML file
+2026-10-17T17:01:28.7607829Z Resolved .nvmrc as 24
+2026-10-17T17:01:28.7650710Z Found in cache @ /opt/hostedtoolcache/node/24.21.0/x64
+2026-10-17T17:01:29.8503418Z ##[group]Environment details
+2026-10-17T17:01:31.5062182Z node: v24.21.0
+2026-10-17T17:01:31.5062501Z npm: 11.19.0
+2026-10-17T17:01:31.5062753Z yarn: 1.22.22
+2026-10-17T17:01:31.5063527Z ##[endgroup]
+2026-10-17T17:01:31.5078252Z [command]/home/runner/setup-pnpm/node_modules/.bin/bin/pnpm store path --silent
+2026-10-17T17:01:32.0350485Z /home/runner/setup-pnpm/node_modules/.bin/store/v10
+2026-10-17T17:01:32.2707079Z pnpm cache is not found
+2026-10-17T17:01:32.2810953Z ##[group]Run pnpm install --frozen-lockfile
+2026-10-17T17:01:32.2811287Z [36;1mpnpm install --frozen-lockfile[0m
+2026-10-17T17:01:32.3096760Z shell: /usr/bin/bash -e {0}
+2026-10-17T17:01:32.3097004Z env:
+2026-10-17T17:01:32.3097190Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-17T17:01:32.3097437Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2026-10-17T17:01:32.3097695Z ##[endgroup]
+2026-10-17T17:01:32.5777511Z Scope: all 3 workspace projects
+2026-10-17T17:01:32.6159222Z Lockfile is up to date, resolution step is skipped
+2026-10-17T17:01:32.6706349Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-10-17T17:01:32.7261222Z Packages: +437
+2026-10-17T17:01:32.7292892Z ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2026-10-17T17:01:33.6719906Z Progress: resolved 437, reused 0, downloaded 79, added 34
+2026-10-17T17:01:34.6718365Z Progress: resolved 437, reused 0, downloaded 232, added 168
+2026-10-17T17:01:35.6716840Z Progress: resolved 437, reused 0, downloaded 437, added 436
+2026-10-17T17:01:35.7298615Z Progress: resolved 437, reused 0, downloaded 437, added 437, done
+2026-10-17T17:01:36.1196862Z 
+2026-10-17T17:01:36.1197524Z devDependencies:
+2026-10-17T17:01:36.1197911Z + @types/node 24.19.2
+2026-10-17T17:01:36.1198201Z + eslint 9.39.5
+2026-10-17T17:01:36.1198500Z + eslint-config-next 16.4.2
+2026-10-17T17:01:36.1198825Z + prettier 3.9.10
+2026-10-17T17:01:36.1199103Z + typescript 6.0.3
+2026-10-17T17:01:36.1199396Z + typescript-eslint 8.71.2
+2026-10-17T17:01:36.1199677Z + vitest 5.0.5
+2026-10-17T17:01:36.1199865Z 
+2026-10-17T17:01:36.1299966Z Done in 3.7s using pnpm v10.34.7
+2026-10-17T17:01:36.1990492Z ##[group]Run pnpm lint
+2026-10-17T17:01:36.1990718Z [36;1mpnpm lint[0m
+2026-10-17T17:01:36.2046741Z shell: /usr/bin/bash -e {0}
+2026-10-17T17:01:36.2046951Z env:
+2026-10-17T17:01:36.2047125Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-17T17:01:36.2047370Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2026-10-17T17:01:36.2047621Z ##[endgroup]
+2026-10-17T17:01:36.4656418Z 
+2026-10-17T17:01:36.4657530Z > everyone-market-radar@0.0.0 lint /home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher
+2026-10-17T17:01:36.4658214Z > eslint .
+2026-10-17T17:01:36.4658365Z 
+2026-10-17T17:01:38.3156835Z ##[group]Run pnpm format:check
+2026-10-17T17:01:38.3157088Z [36;1mpnpm format:check[0m
+2026-10-17T17:01:38.3213003Z shell: /usr/bin/bash -e {0}
+2026-10-17T17:01:38.3213216Z env:
+2026-10-17T17:01:38.3213389Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-17T17:01:38.3213641Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2026-10-17T17:01:38.3214072Z ##[endgroup]
+2026-10-17T17:01:38.5628401Z 
+2026-10-17T17:01:38.5629525Z > everyone-market-radar@0.0.0 format:check /home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher
+2026-10-17T17:01:38.5630157Z > prettier --check .
+2026-10-17T17:01:38.5630324Z 
+2026-10-17T17:01:38.6341704Z Checking formatting...
+2026-10-17T17:01:39.1428283Z [[33mwarn[39m] PROGRESS.md
+2026-10-17T17:01:39.1596671Z [[33mwarn[39m] README.md
+2026-10-17T17:01:39.1958812Z [[33mwarn[39m] Code style issues found in 2 files. Run Prettier with --write to fix.
+2026-10-17T17:01:39.2189666Z  ELIFECYCLE  Command failed with exit code 1.
+2026-10-17T17:01:39.4123021Z ##[error]Process completed with exit code 1.
+2026-10-17T17:01:39.4207524Z Post job cleanup.
+2026-10-17T17:01:39.5357936Z Pruning is unnecessary.
+2026-10-17T17:01:39.5490947Z Post job cleanup.
+2026-10-17T17:01:39.6214329Z [command]/usr/bin/git version
+2026-10-17T17:01:39.6265397Z git version 2.55.0
+2026-10-17T17:01:39.6304066Z Temporarily overriding HOME='/home/runner/work/_temp/0dd06b69-6090-4bc7-a9d4-73acc24e3c2a' before making global git config changes
+2026-10-17T17:01:39.6305352Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-17T17:01:39.6324397Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Everyone-Market-Researcher/Everyone-Market-Researcher
+2026-10-17T17:01:39.6364597Z Removing SSH command configuration
+2026-10-17T17:01:39.6372056Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-17T17:01:39.6426509Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-17T17:01:39.6717381Z Removing HTTP extra header
+2026-10-17T17:01:39.6718612Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-17T17:01:39.6752208Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-17T17:01:39.6972382Z Removing includeIf entries pointing to credentials config files
+2026-10-17T17:01:39.6977821Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-17T17:01:39.7010514Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-17T17:01:39.7332248Z Cleaning up orphan processes

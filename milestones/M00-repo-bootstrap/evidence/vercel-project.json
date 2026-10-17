@@ -1,0 +1,13 @@
+{
+  "id": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+  "name": "everyone-market-researcher",
+  "accountId": "team_gboXPxTevpCOZuaA8eY9PmR1",
+  "rootDirectory": "apps/web",
+  "framework": "nextjs",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": null,
+  "nodeVersion": "24.x",
+  "sourceFilesOutsideRootDirectory": true,
+  "repo": "muhhammeddsayedd-prog/Everyone-Market-Researcher",
+  "productionBranch": "main"
+}

@@ -1,0 +1,11 @@
+* text=auto eol=lf
+.agents/** -text
+assets/** -text
+data/** -text
+reference/** -text
+apps/web/styles/tokens.css -text
+apps/web/public/brand/** -text
+SKILLS_LOCK.json -text
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

@@ -1,0 +1,79 @@
+{
+  "name": "item_extraction_v1",
+  "strict": true,
+  "description": "OpenAI Structured Outputs schema for one competitor item. Every property is required (strict mode); use null when unknown. Taxonomy fields accept only codes listed in the prompt (loaded from app.taxonomy_terms at batch start).",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["is_commercial_work", "content_type", "brand", "agency", "production_house", "credits", "campaign_title",
+                 "country", "language", "occasion", "summary_en", "summary_ar", "caption_en", "tags", "needs_vision",
+                 "confidence", "evidence"],
+    "properties": {
+      "is_commercial_work": { "type": ["boolean", "null"], "description": "true = a piece of client work (ad, brand film, campaign content, client project). false = greetings, hiring, BTS without client, company news, memes." },
+      "content_type": { "type": "string", "description": "content_format taxonomy code, e.g. tvc_brand_film" },
+      "brand": {
+        "type": ["object", "null"], "additionalProperties": false,
+        "required": ["name", "handle", "industry", "country"],
+        "properties": {
+          "name": { "type": "string", "description": "Brand/client as it should be displayed, in English if a common English name exists (e.g. 'Vodafone Egypt')" },
+          "handle": { "type": ["string", "null"], "description": "Instagram/LinkedIn handle seen for the brand, without @" },
+          "industry": { "type": ["string", "null"], "description": "industry taxonomy code" },
+          "country": { "type": ["string", "null"], "enum": ["EG", "KSA", "UAE", "OTHER", null] }
+        }
+      },
+      "agency": {
+        "type": ["object", "null"], "additionalProperties": false,
+        "required": ["name", "handle"],
+        "properties": { "name": { "type": "string" }, "handle": { "type": ["string", "null"] } }
+      },
+      "production_house": {
+        "type": "object", "additionalProperties": false,
+        "required": ["is_posting_competitor", "other_name"],
+        "properties": {
+          "is_posting_competitor": { "type": "boolean", "description": "true if the posting competitor produced it (default when they post their own work)" },
+          "other_name": { "type": ["string", "null"], "description": "If another production company is credited as the producer, its name" }
+        }
+      },
+      "credits": {
+        "type": "array",
+        "items": {
+          "type": "object", "additionalProperties": false,
+          "required": ["person_name", "role", "organization"],
+          "properties": {
+            "person_name": { "type": "string" },
+            "role": { "type": "string", "description": "credit_role taxonomy code" },
+            "organization": { "type": ["string", "null"], "description": "Company the person was credited with, if stated" }
+          }
+        }
+      },
+      "campaign_title": { "type": ["string", "null"], "description": "Campaign or film title if stated or obvious (e.g. 'Ramadan 2026 — Together')" },
+      "country": { "type": ["string", "null"], "enum": ["EG", "KSA", "UAE", "OTHER", null], "description": "Market the work targets" },
+      "language": { "type": "string", "enum": ["ar", "en", "mixed", "other"] },
+      "occasion": { "type": ["string", "null"], "description": "occasion taxonomy code" },
+      "summary_en": { "type": "string", "description": "1–2 sentences, factual, English" },
+      "summary_ar": { "type": "string", "description": "1–2 sentences, Modern Standard Arabic" },
+      "caption_en": { "type": ["string", "null"], "description": "English translation of the original caption/description when it is not English; null if already English" },
+      "tags": { "type": "array", "maxItems": 8, "items": { "type": "string" }, "description": "Free tags: creative style, tone, technique (comedy, CGI, celebrity, drone, AI-generated…)" },
+      "needs_vision": { "type": "boolean", "description": "true if the text is too thin to identify the brand and the thumbnail should be checked (first pass only)" },
+      "confidence": {
+        "type": "object", "additionalProperties": false,
+        "required": ["overall", "is_commercial_work", "brand", "agency", "production_house", "credits", "content_type", "country", "occasion"],
+        "properties": {
+          "overall": { "type": "number" }, "is_commercial_work": { "type": "number" }, "brand": { "type": "number" },
+          "agency": { "type": "number" }, "production_house": { "type": "number" }, "credits": { "type": "number" },
+          "content_type": { "type": "number" }, "country": { "type": "number" }, "occasion": { "type": "number" }
+        }
+      },
+      "evidence": {
+        "type": "object", "additionalProperties": false,
+        "required": ["brand", "agency", "credits", "production_house"],
+        "properties": {
+          "brand": { "type": ["string", "null"], "description": "Exact text that supports the brand (e.g. '@vodafoneegypt in caption', 'logo on thumbnail')" },
+          "agency": { "type": ["string", "null"] },
+          "credits": { "type": ["string", "null"] },
+          "production_house": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

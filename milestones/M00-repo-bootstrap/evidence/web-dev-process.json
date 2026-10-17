@@ -1,0 +1,11 @@
+﻿{
+  "observedAt": "2026-10-17T17:01:01.8356969Z",
+  "workingDirectory": "D:\\Everyone\\everyone Market Research\\everyone-market-radar",
+  "command": "pnpm --filter web dev --hostname 127.0.0.1 --port 3000",
+  "observedNextCliProcessId": 51240,
+  "observedListenerProcessId": 28208,
+  "listenerParentProcessId": 51240,
+  "config": "agentRules: false",
+  "generatedAppAgentsFilePresent": false,
+  "port3000ClosedAfterStop": true
+}

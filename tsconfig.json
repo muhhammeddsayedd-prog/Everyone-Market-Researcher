@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "types": ["node"] },
+  "include": [
+    "vitest.config.ts",
+    "scripts/**/*.test.ts",
+    "n8n/normalizers/**/*.ts",
+    "n8n/normalizers/**/*.mts"
+  ]
+}

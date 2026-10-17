@@ -1,0 +1,1873 @@
+{
+  "date": "2026-10-17",
+  "installer_sha256": {
+    "install-skill-from-github.py": "110cc7e4e395c2c9ba070d47db7d21be5164591c35015ae364fc9c9905b08de8",
+    "github_utils.py": "2f9702afb9f0da740181fa4a3214f663e460f80cd5cea2e7dcaab00ad269082e"
+  },
+  "sources": [
+    {
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "review_checkout": "C:/Users/iway/AppData/Local/Temp/emr-skill-review-addy-aeac41d4",
+      "skills": {
+        "context-engineering": "skills/context-engineering",
+        "planning-and-task-breakdown": "skills/planning-and-task-breakdown",
+        "incremental-implementation": "skills/incremental-implementation",
+        "test-driven-development": "skills/test-driven-development",
+        "source-driven-development": "skills/source-driven-development",
+        "debugging-and-error-recovery": "skills/debugging-and-error-recovery",
+        "api-and-interface-design": "skills/api-and-interface-design",
+        "security-and-hardening": "skills/security-and-hardening",
+        "code-review-and-quality": "skills/code-review-and-quality",
+        "doubt-driven-development": "skills/doubt-driven-development",
+        "git-workflow-and-versioning": "skills/git-workflow-and-versioning",
+        "ci-cd-and-automation": "skills/ci-cd-and-automation",
+        "documentation-and-adrs": "skills/documentation-and-adrs",
+        "observability-and-instrumentation": "skills/observability-and-instrumentation",
+        "frontend-ui-engineering": "skills/frontend-ui-engineering",
+        "browser-testing-with-devtools": "skills/browser-testing-with-devtools",
+        "performance-optimization": "skills/performance-optimization",
+        "code-simplification": "skills/code-simplification",
+        "deprecation-and-migration": "skills/deprecation-and-migration",
+        "shipping-and-launch": "skills/shipping-and-launch",
+        "spec-driven-development": "skills/spec-driven-development",
+        "constraint-driven-development": "skills/constraint-driven-development"
+      }
+    },
+    {
+      "repo": "vercel-labs/agent-skills",
+      "commit": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "review_checkout": "C:/Users/iway/AppData/Local/Temp/emr-skills-review-20261017-webdb/vercel",
+      "skills": {
+        "vercel-react-best-practices": "skills/react-best-practices",
+        "vercel-composition-patterns": "skills/composition-patterns",
+        "web-design-guidelines": "skills/web-design-guidelines",
+        "vercel-optimize": "skills/vercel-optimize"
+      }
+    },
+    {
+      "repo": "supabase/agent-skills",
+      "commit": "c9be0e931b7930f7d02126d04774d904c381e7d7",
+      "review_checkout": "C:/Users/iway/AppData/Local/Temp/emr-skills-review-20261017-webdb/supabase",
+      "skills": {
+        "supabase": "skills/supabase",
+        "supabase-postgres-best-practices": "skills/supabase-postgres-best-practices"
+      }
+    }
+  ],
+  "imports": [
+    {
+      "name": "context-engineering",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/context-engineering",
+      "installed_path": ".agents/skills/context-engineering",
+      "files": [
+        {
+          "path": ".agents/skills/context-engineering/SKILL.md",
+          "source_path": "skills/context-engineering/SKILL.md",
+          "upstream_sha256": "8b736cb9e55b82b265ab6ff78349c0e826e8a6df550deddf665b7fb3ff858b63"
+        }
+      ]
+    },
+    {
+      "name": "planning-and-task-breakdown",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/planning-and-task-breakdown",
+      "installed_path": ".agents/skills/planning-and-task-breakdown",
+      "files": [
+        {
+          "path": ".agents/skills/planning-and-task-breakdown/SKILL.md",
+          "source_path": "skills/planning-and-task-breakdown/SKILL.md",
+          "upstream_sha256": "ed0f90cc5951ddd4bcab7f871f64efec93a49af9279ef93bc470da77ad8da3f7"
+        }
+      ]
+    },
+    {
+      "name": "incremental-implementation",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/incremental-implementation",
+      "installed_path": ".agents/skills/incremental-implementation",
+      "files": [
+        {
+          "path": ".agents/skills/incremental-implementation/SKILL.md",
+          "source_path": "skills/incremental-implementation/SKILL.md",
+          "upstream_sha256": "df66536610071727feae1ca95f3c391c248ad828041750ccd3699cce763aa00b"
+        }
+      ]
+    },
+    {
+      "name": "test-driven-development",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/test-driven-development",
+      "installed_path": ".agents/skills/test-driven-development",
+      "files": [
+        {
+          "path": ".agents/skills/test-driven-development/SKILL.md",
+          "source_path": "skills/test-driven-development/SKILL.md",
+          "upstream_sha256": "a3aa6ba95638497025577469eda10ed17918698209615aeafbc26f131bf2469d"
+        }
+      ]
+    },
+    {
+      "name": "source-driven-development",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/source-driven-development",
+      "installed_path": ".agents/skills/source-driven-development",
+      "files": [
+        {
+          "path": ".agents/skills/source-driven-development/SKILL.md",
+          "source_path": "skills/source-driven-development/SKILL.md",
+          "upstream_sha256": "c59faf851377f0eeda45306398d16eb96d77ab1c2fd3e1a7fb58e9a0af33c1e9"
+        }
+      ]
+    },
+    {
+      "name": "debugging-and-error-recovery",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/debugging-and-error-recovery",
+      "installed_path": ".agents/skills/debugging-and-error-recovery",
+      "files": [
+        {
+          "path": ".agents/skills/debugging-and-error-recovery/SKILL.md",
+          "source_path": "skills/debugging-and-error-recovery/SKILL.md",
+          "upstream_sha256": "21f3960f5d7ae2cc95c40896545004dbbcbbd752ea65fc2d53962554d4174220"
+        }
+      ]
+    },
+    {
+      "name": "api-and-interface-design",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/api-and-interface-design",
+      "installed_path": ".agents/skills/api-and-interface-design",
+      "files": [
+        {
+          "path": ".agents/skills/api-and-interface-design/SKILL.md",
+          "source_path": "skills/api-and-interface-design/SKILL.md",
+          "upstream_sha256": "e83d34f52ff12dd8a7c5134cd7e8140ea4541ec65e204f8a1e4cd366e30c4192"
+        }
+      ]
+    },
+    {
+      "name": "security-and-hardening",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/security-and-hardening",
+      "installed_path": ".agents/skills/security-and-hardening",
+      "files": [
+        {
+          "path": ".agents/skills/security-and-hardening/references/hardening-patterns.md",
+          "source_path": "skills/security-and-hardening/references/hardening-patterns.md",
+          "upstream_sha256": "2e1b93a502b4cdb0258404441f3aab029b0cce4003fbbcc61af9a2de18bab9ab"
+        },
+        {
+          "path": ".agents/skills/security-and-hardening/SKILL.md",
+          "source_path": "skills/security-and-hardening/SKILL.md",
+          "upstream_sha256": "2e3fc60eed5aba97fe416f3f3c9317fdb014a682925ec70a733c3ff99e4b9858"
+        }
+      ]
+    },
+    {
+      "name": "code-review-and-quality",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/code-review-and-quality",
+      "installed_path": ".agents/skills/code-review-and-quality",
+      "files": [
+        {
+          "path": ".agents/skills/code-review-and-quality/SKILL.md",
+          "source_path": "skills/code-review-and-quality/SKILL.md",
+          "upstream_sha256": "2db1e850379f255fd3091ef278cde24cd6c7d2ba23e360cc52ea522c40d4396e"
+        }
+      ]
+    },
+    {
+      "name": "doubt-driven-development",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/doubt-driven-development",
+      "installed_path": ".agents/skills/doubt-driven-development",
+      "files": [
+        {
+          "path": ".agents/skills/doubt-driven-development/SKILL.md",
+          "source_path": "skills/doubt-driven-development/SKILL.md",
+          "upstream_sha256": "6fa1fcd8420c28daf7e53c5b08b0f20b907911efd2a6d9bce0b9740da20a4008"
+        }
+      ]
+    },
+    {
+      "name": "git-workflow-and-versioning",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/git-workflow-and-versioning",
+      "installed_path": ".agents/skills/git-workflow-and-versioning",
+      "files": [
+        {
+          "path": ".agents/skills/git-workflow-and-versioning/SKILL.md",
+          "source_path": "skills/git-workflow-and-versioning/SKILL.md",
+          "upstream_sha256": "b7465d187935c52546d39fdc7bd6ac36d94eda25a9500ef8c18b767d2eb116ea"
+        }
+      ]
+    },
+    {
+      "name": "ci-cd-and-automation",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/ci-cd-and-automation",
+      "installed_path": ".agents/skills/ci-cd-and-automation",
+      "files": [
+        {
+          "path": ".agents/skills/ci-cd-and-automation/SKILL.md",
+          "source_path": "skills/ci-cd-and-automation/SKILL.md",
+          "upstream_sha256": "a6ed8ed56456b01ff8314c44eefc69897d9905ae4e06bb2b7036286efb79b5f0"
+        }
+      ]
+    },
+    {
+      "name": "documentation-and-adrs",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/documentation-and-adrs",
+      "installed_path": ".agents/skills/documentation-and-adrs",
+      "files": [
+        {
+          "path": ".agents/skills/documentation-and-adrs/SKILL.md",
+          "source_path": "skills/documentation-and-adrs/SKILL.md",
+          "upstream_sha256": "b60d503925bbaacee7fd63935db70b9ced5b2514ff5a56a672130e01b9690bc5"
+        }
+      ]
+    },
+    {
+      "name": "observability-and-instrumentation",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/observability-and-instrumentation",
+      "installed_path": ".agents/skills/observability-and-instrumentation",
+      "files": [
+        {
+          "path": ".agents/skills/observability-and-instrumentation/SKILL.md",
+          "source_path": "skills/observability-and-instrumentation/SKILL.md",
+          "upstream_sha256": "e7fcb0820306d46268de9594d676ad98e35040858926c412b7000faa52a61f87"
+        }
+      ]
+    },
+    {
+      "name": "frontend-ui-engineering",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/frontend-ui-engineering",
+      "installed_path": ".agents/skills/frontend-ui-engineering",
+      "files": [
+        {
+          "path": ".agents/skills/frontend-ui-engineering/SKILL.md",
+          "source_path": "skills/frontend-ui-engineering/SKILL.md",
+          "upstream_sha256": "29a3e53d57c0a128831a20730ae874a8c4fda40c001fcdc15f8e9ad4b5f72f1b"
+        }
+      ]
+    },
+    {
+      "name": "browser-testing-with-devtools",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/browser-testing-with-devtools",
+      "installed_path": ".agents/skills/browser-testing-with-devtools",
+      "files": [
+        {
+          "path": ".agents/skills/browser-testing-with-devtools/SKILL.md",
+          "source_path": "skills/browser-testing-with-devtools/SKILL.md",
+          "upstream_sha256": "4e3aacd6a380cd25bc6c2d67fdd1c926a9b22535b8a62109ecd33cefd909e3d9"
+        }
+      ]
+    },
+    {
+      "name": "performance-optimization",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/performance-optimization",
+      "installed_path": ".agents/skills/performance-optimization",
+      "files": [
+        {
+          "path": ".agents/skills/performance-optimization/references/optimization-patterns.md",
+          "source_path": "skills/performance-optimization/references/optimization-patterns.md",
+          "upstream_sha256": "fbf724076ffb8ac1a28e1a2773c0b550f5361090024b2dd32e5a682c69b7945f"
+        },
+        {
+          "path": ".agents/skills/performance-optimization/SKILL.md",
+          "source_path": "skills/performance-optimization/SKILL.md",
+          "upstream_sha256": "bd36a30e55a5f84329a6977eba5e1ab7654146e71eaba88e34337d4ee020460f"
+        }
+      ]
+    },
+    {
+      "name": "code-simplification",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/code-simplification",
+      "installed_path": ".agents/skills/code-simplification",
+      "files": [
+        {
+          "path": ".agents/skills/code-simplification/SKILL.md",
+          "source_path": "skills/code-simplification/SKILL.md",
+          "upstream_sha256": "f0c5ed754057eb0c1e027e2587f59de816651feb5e837242296c43ea21cf621d"
+        }
+      ]
+    },
+    {
+      "name": "deprecation-and-migration",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/deprecation-and-migration",
+      "installed_path": ".agents/skills/deprecation-and-migration",
+      "files": [
+        {
+          "path": ".agents/skills/deprecation-and-migration/SKILL.md",
+          "source_path": "skills/deprecation-and-migration/SKILL.md",
+          "upstream_sha256": "6a624f942e09c69863a4219b9bd5d56975026b67b0c70bc83385ffd2120b6142"
+        }
+      ]
+    },
+    {
+      "name": "shipping-and-launch",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/shipping-and-launch",
+      "installed_path": ".agents/skills/shipping-and-launch",
+      "files": [
+        {
+          "path": ".agents/skills/shipping-and-launch/SKILL.md",
+          "source_path": "skills/shipping-and-launch/SKILL.md",
+          "upstream_sha256": "726f3e546369db289160b8d42195590f00b6432887e17bf19070dcc9a347fe39"
+        }
+      ]
+    },
+    {
+      "name": "spec-driven-development",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/spec-driven-development",
+      "installed_path": ".agents/skills/spec-driven-development",
+      "files": [
+        {
+          "path": ".agents/skills/spec-driven-development/SKILL.md",
+          "source_path": "skills/spec-driven-development/SKILL.md",
+          "upstream_sha256": "c4b97ce3d7f24be0e67fd612c7595f65504872e3a9f8d338d098b2363fdb66ef"
+        }
+      ]
+    },
+    {
+      "name": "constraint-driven-development",
+      "repo": "addyosmani/agent-skills",
+      "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "source_path": "skills/constraint-driven-development",
+      "installed_path": ".agents/skills/constraint-driven-development",
+      "files": [
+        {
+          "path": ".agents/skills/constraint-driven-development/references/floor-guard.md",
+          "source_path": "skills/constraint-driven-development/references/floor-guard.md",
+          "upstream_sha256": "59715dc6c3c6c36ec9177f9ced65c379e80a4539b36115456666bfabc43a6a9c"
+        },
+        {
+          "path": ".agents/skills/constraint-driven-development/SKILL.md",
+          "source_path": "skills/constraint-driven-development/SKILL.md",
+          "upstream_sha256": "06479d4305f286d23cfb99f5dc85695896785269664e1f6a8d800e3b71e70c10"
+        }
+      ]
+    },
+    {
+      "name": "vercel-react-best-practices",
+      "repo": "vercel-labs/agent-skills",
+      "commit": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "source_path": "skills/react-best-practices",
+      "installed_path": ".agents/skills/vercel-react-best-practices",
+      "files": [
+        {
+          "path": ".agents/skills/vercel-react-best-practices/AGENTS.md",
+          "source_path": "skills/react-best-practices/AGENTS.md",
+          "upstream_sha256": "fc93e7421177bbf869cce892bc60a6c83a4517d974bc3bf65c4e2c1e58a6ccf6"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/metadata.json",
+          "source_path": "skills/react-best-practices/metadata.json",
+          "upstream_sha256": "c4e18bac3290fbe1b471a605867d4df68b03144ea26b8befdbe8f9d8fd124354"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/README.md",
+          "source_path": "skills/react-best-practices/README.md",
+          "upstream_sha256": "9eafb2123d3b8b2aef41fba0db2648a3f4f49996f8c7c8bb2c86263befd8b48a"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/_sections.md",
+          "source_path": "skills/react-best-practices/rules/_sections.md",
+          "upstream_sha256": "01c59969e4e867f0708c8f8ef9c6d87fab9a07d0586244f429ff84013db8a115"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/_template.md",
+          "source_path": "skills/react-best-practices/rules/_template.md",
+          "upstream_sha256": "99df2a3ea088c6c22de2484ddc7e964d0e9923846f44c63380343ecc64455442"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/advanced-effect-event-deps.md",
+          "source_path": "skills/react-best-practices/rules/advanced-effect-event-deps.md",
+          "upstream_sha256": "55ed8f9f27a1bff803d6fa55828176207714b02123cbb97ddb8a90d88024a723"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/advanced-event-handler-refs.md",
+          "source_path": "skills/react-best-practices/rules/advanced-event-handler-refs.md",
+          "upstream_sha256": "a3097edeecfb2ff6851cd66ed8cdf0617c3c88180504bee824aa6e75a215bbbc"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/advanced-init-once.md",
+          "source_path": "skills/react-best-practices/rules/advanced-init-once.md",
+          "upstream_sha256": "3e4dc22173eb0e2b6dcf583e3babd862b8696328f8f59aee7c4d746c5bc05f6c"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/advanced-use-latest.md",
+          "source_path": "skills/react-best-practices/rules/advanced-use-latest.md",
+          "upstream_sha256": "8a3f64dfe5a77d1564248faf17fe662ae75b55d497a243cb30b38eb07ccbbf9a"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/async-api-routes.md",
+          "source_path": "skills/react-best-practices/rules/async-api-routes.md",
+          "upstream_sha256": "523338540d73427dc14c0cbb19f2741ebccdf8b105a7b2c1b33d2905cf237a42"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/async-cheap-condition-before-await.md",
+          "source_path": "skills/react-best-practices/rules/async-cheap-condition-before-await.md",
+          "upstream_sha256": "03107c1f70a293cd58a8abc5474c5548e20ea4efdf01b6d45aae7ad0ac1cb32c"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/async-defer-await.md",
+          "source_path": "skills/react-best-practices/rules/async-defer-await.md",
+          "upstream_sha256": "f3c142d090615abdcc99d31c123be37b31f0f1ed8d9ec9f7789a3bc6883ae0fb"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/async-dependencies.md",
+          "source_path": "skills/react-best-practices/rules/async-dependencies.md",
+          "upstream_sha256": "16ef469f877e30c6b8e1e1b4bc3e527312fa3c6318cb785a4eca186ea236131a"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/async-parallel.md",
+          "source_path": "skills/react-best-practices/rules/async-parallel.md",
+          "upstream_sha256": "6d2f841896279e976dfcdc1ac89e70771ac188baadfd43c096b5706cb838b961"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/async-suspense-boundaries.md",
+          "source_path": "skills/react-best-practices/rules/async-suspense-boundaries.md",
+          "upstream_sha256": "de05fedac2eb7ae563b887b5a424464ec3dfaf84e5b7797467ebe2a796ac8afc"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/bundle-analyzable-paths.md",
+          "source_path": "skills/react-best-practices/rules/bundle-analyzable-paths.md",
+          "upstream_sha256": "62090b5c815fd71bf1133dce754f51abc16a9456d0ccd025fd627de27726e92a"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/bundle-barrel-imports.md",
+          "source_path": "skills/react-best-practices/rules/bundle-barrel-imports.md",
+          "upstream_sha256": "e648f6d54525f07a691357040ca5bff6ea3424788a91ff63812adb29622a671b"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/bundle-conditional.md",
+          "source_path": "skills/react-best-practices/rules/bundle-conditional.md",
+          "upstream_sha256": "09c8259c3efb04fc0abb8e412ccbda217c222ae8118516283e571c995fe3a7d4"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md",
+          "source_path": "skills/react-best-practices/rules/bundle-defer-third-party.md",
+          "upstream_sha256": "3719fb47b191e8db4fe22686ec88448ad5af9e6838585425abbe103d0b642e37"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/bundle-dynamic-imports.md",
+          "source_path": "skills/react-best-practices/rules/bundle-dynamic-imports.md",
+          "upstream_sha256": "401817a7369f315fc5a68a1095742ff7d53d0461906880dc9d64a41495ee1986"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/bundle-preload.md",
+          "source_path": "skills/react-best-practices/rules/bundle-preload.md",
+          "upstream_sha256": "d1f7cc28da7cd5ab249acd287edc5b761afcfb194e9cb62cd44c5f3543db2de2"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/client-event-listeners.md",
+          "source_path": "skills/react-best-practices/rules/client-event-listeners.md",
+          "upstream_sha256": "242a873349febc1ce685e85617994784dbab92c2eaa68aed7fed5a83e7680e93"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/client-localstorage-schema.md",
+          "source_path": "skills/react-best-practices/rules/client-localstorage-schema.md",
+          "upstream_sha256": "0fb7cdf9dc93fdf22f87e3669f953fb9d4ac9b0be42eec4a29fe9a2560610b88"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/client-passive-event-listeners.md",
+          "source_path": "skills/react-best-practices/rules/client-passive-event-listeners.md",
+          "upstream_sha256": "1f35016f9053de69e884ee9be00654e37979c2ca85f5e57764dc2626ff7acb4b"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/client-swr-dedup.md",
+          "source_path": "skills/react-best-practices/rules/client-swr-dedup.md",
+          "upstream_sha256": "644652c39c6cc00de8d1c77a7273612e868dc3f7edda30764164c12ec0f764a3"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-batch-dom-css.md",
+          "source_path": "skills/react-best-practices/rules/js-batch-dom-css.md",
+          "upstream_sha256": "480b891b9eaf96e929dc1e964274a4828e3a78009b7d00ccd965a0d425215959"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-cache-function-results.md",
+          "source_path": "skills/react-best-practices/rules/js-cache-function-results.md",
+          "upstream_sha256": "3daaa11d24f4295cb6be8bc6f407f2ce83cc7b5bd1f0e68891ea8ab835721dc7"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-cache-property-access.md",
+          "source_path": "skills/react-best-practices/rules/js-cache-property-access.md",
+          "upstream_sha256": "73e47431e74878a927061bf0ddc7cd91a7556cb35d2573f3421e82300d9ae311"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-cache-storage.md",
+          "source_path": "skills/react-best-practices/rules/js-cache-storage.md",
+          "upstream_sha256": "11b826b0433898c1ece2d3547010d8e77db9fb240185748c45db91493de9b6cc"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-combine-iterations.md",
+          "source_path": "skills/react-best-practices/rules/js-combine-iterations.md",
+          "upstream_sha256": "71add08aeeb43091d4ff4c0b2842cce8b4bdef8ad3e732cc034bb5a84827e746"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-early-exit.md",
+          "source_path": "skills/react-best-practices/rules/js-early-exit.md",
+          "upstream_sha256": "925ce5ce87f3347186ca62212f29cc6baa2b8c85a96d2720ad07c3d0abf781c0"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-flatmap-filter.md",
+          "source_path": "skills/react-best-practices/rules/js-flatmap-filter.md",
+          "upstream_sha256": "9e5b166a41914d975bef7635467f8fb32cd98b5c3126c0bc6f163490812fb5f0"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-hoist-regexp.md",
+          "source_path": "skills/react-best-practices/rules/js-hoist-regexp.md",
+          "upstream_sha256": "f9e9aef2f7c2307dd7310f283df85dcada45fc43e9bb941b0c3aa414dec21ec4"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-index-maps.md",
+          "source_path": "skills/react-best-practices/rules/js-index-maps.md",
+          "upstream_sha256": "5df1bdc2cfabb2c98abd55d26762e5c18189535c2e686184f426082e62920391"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-length-check-first.md",
+          "source_path": "skills/react-best-practices/rules/js-length-check-first.md",
+          "upstream_sha256": "8b54a311c826b299272f29187fc58bc55772a04c4a72eeb29456ee96dc9fc624"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-min-max-loop.md",
+          "source_path": "skills/react-best-practices/rules/js-min-max-loop.md",
+          "upstream_sha256": "87dfb67e2f39df6ad8bcfb5b78c5fb364d3c07554ad188a202408d99f3763421"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-request-idle-callback.md",
+          "source_path": "skills/react-best-practices/rules/js-request-idle-callback.md",
+          "upstream_sha256": "ee08f83905b4011abbc33d594033157d77561b5bbd9b36b04f0f409581ffec32"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-set-map-lookups.md",
+          "source_path": "skills/react-best-practices/rules/js-set-map-lookups.md",
+          "upstream_sha256": "a7fd781a6ba9ad49065961b6f9a90ef486bf6b648390e1a08704025f98e1642b"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/js-tosorted-immutable.md",
+          "source_path": "skills/react-best-practices/rules/js-tosorted-immutable.md",
+          "upstream_sha256": "d0a5e1b0fec48a0a81397957e2f068e224329f7c42cb5feeed8aae6fa64025e8"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rendering-activity.md",
+          "source_path": "skills/react-best-practices/rules/rendering-activity.md",
+          "upstream_sha256": "1e5e7eaf3555e61d6a2e900089c676527d26259501db5594f59544b6c664f85a"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rendering-animate-svg-wrapper.md",
+          "source_path": "skills/react-best-practices/rules/rendering-animate-svg-wrapper.md",
+          "upstream_sha256": "9c6ae0ca7a51434e803887c64cded760956579a1452ccb80a461a03f9c937c77"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rendering-conditional-render.md",
+          "source_path": "skills/react-best-practices/rules/rendering-conditional-render.md",
+          "upstream_sha256": "2ec2fa23c4148285144687050c52369adba3da2fbe3d486f8d3e0aad8f06f2bc"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rendering-content-visibility.md",
+          "source_path": "skills/react-best-practices/rules/rendering-content-visibility.md",
+          "upstream_sha256": "64eee6d5b916fe74df33363994b27fc7f71bea3bcedc7ee04bda23107ca3e6e4"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rendering-hoist-jsx.md",
+          "source_path": "skills/react-best-practices/rules/rendering-hoist-jsx.md",
+          "upstream_sha256": "93b229560fae92005ed9a2a829064607b39b2e984e92d221d05b2d41df2b7c0e"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rendering-hydration-no-flicker.md",
+          "source_path": "skills/react-best-practices/rules/rendering-hydration-no-flicker.md",
+          "upstream_sha256": "dc7ab358c67c177bca6e6f360fbc935ebe4efa928c0ba3ebd3f9f3d9e2000ca3"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rendering-hydration-suppress-warning.md",
+          "source_path": "skills/react-best-practices/rules/rendering-hydration-suppress-warning.md",
+          "upstream_sha256": "915bacb934e2927d84b37a3f3d225a47b309ac8f9e494ed2bcb66ce07c5676a2"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rendering-resource-hints.md",
+          "source_path": "skills/react-best-practices/rules/rendering-resource-hints.md",
+          "upstream_sha256": "351b1095d641717b930f1b2253282b7120af3023bc74e06c17675168d4286864"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rendering-script-defer-async.md",
+          "source_path": "skills/react-best-practices/rules/rendering-script-defer-async.md",
+          "upstream_sha256": "4cea07b7875ba7fc2c7465ff23b63a2bb334f90aaf2d9293d38d67b05fdb32ab"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rendering-svg-precision.md",
+          "source_path": "skills/react-best-practices/rules/rendering-svg-precision.md",
+          "upstream_sha256": "ed468533f6e95f622859c884b122cf21f9f593ed6bb3d500a54de4b9f9bcb9fb"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rendering-usetransition-loading.md",
+          "source_path": "skills/react-best-practices/rules/rendering-usetransition-loading.md",
+          "upstream_sha256": "3a1249c3f13026b6f54ab5712c388df219d6af01b12aa542749acd99a46f4bc1"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-defer-reads.md",
+          "source_path": "skills/react-best-practices/rules/rerender-defer-reads.md",
+          "upstream_sha256": "234050a77faf50cb306be10a9e15bd4421134ab5907e75f13e6d78e2bd262dc9"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-dependencies.md",
+          "source_path": "skills/react-best-practices/rules/rerender-dependencies.md",
+          "upstream_sha256": "17eb5830956fb56486fd3cfc7431f5849d39751730c05ad9e77dd4f0c27169c5"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-derived-state-no-effect.md",
+          "source_path": "skills/react-best-practices/rules/rerender-derived-state-no-effect.md",
+          "upstream_sha256": "cb11ec76f50aa7b6847269f02d79b120c889a30d9ecd2c1d578f75144419c77a"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-derived-state.md",
+          "source_path": "skills/react-best-practices/rules/rerender-derived-state.md",
+          "upstream_sha256": "1c326bb67b01fb084eb00c8911b0a7cff54681c2315b629f88e49b64eaa6481d"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-functional-setstate.md",
+          "source_path": "skills/react-best-practices/rules/rerender-functional-setstate.md",
+          "upstream_sha256": "5e68df6b2ae8058e67f476ff1ac67bde159f5a9d18df439e46eabcdeb7b52e58"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-lazy-state-init.md",
+          "source_path": "skills/react-best-practices/rules/rerender-lazy-state-init.md",
+          "upstream_sha256": "4ae844740f266fc8cbf050701230286624a2440ec5be67b9a63d9edc3c580573"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-memo-with-default-value.md",
+          "source_path": "skills/react-best-practices/rules/rerender-memo-with-default-value.md",
+          "upstream_sha256": "81c47476564ad8a79fc68fc442734255ca7d6829424359464503fda0a9f9a0dd"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-memo.md",
+          "source_path": "skills/react-best-practices/rules/rerender-memo.md",
+          "upstream_sha256": "1f258990c2f27ff6256b3cc5c43300631bb3f0d81f749aed08d07fcdcc131dd1"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-move-effect-to-event.md",
+          "source_path": "skills/react-best-practices/rules/rerender-move-effect-to-event.md",
+          "upstream_sha256": "abc2cbf167bee056743023351e96806a411d3398da8802093620aecf0721f029"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-no-inline-components.md",
+          "source_path": "skills/react-best-practices/rules/rerender-no-inline-components.md",
+          "upstream_sha256": "1cc32907a770272524ba682eef9e7efdd8ad4533b6f89b718a1fcd7d1d0eb6a3"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-simple-expression-in-memo.md",
+          "source_path": "skills/react-best-practices/rules/rerender-simple-expression-in-memo.md",
+          "upstream_sha256": "5bdcf2d1558ba5204e643c887b7b4060f89630969425651eb68e96427d97f800"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-split-combined-hooks.md",
+          "source_path": "skills/react-best-practices/rules/rerender-split-combined-hooks.md",
+          "upstream_sha256": "6f45d703343484ef9acef9388397f3642966ae6a5a258899a0cf1f9977cfbf6c"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-transitions.md",
+          "source_path": "skills/react-best-practices/rules/rerender-transitions.md",
+          "upstream_sha256": "60f4033909a62df5e5b8c601494f9e50a562e2f8c1c2d81eac24f38142265f1c"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-use-deferred-value.md",
+          "source_path": "skills/react-best-practices/rules/rerender-use-deferred-value.md",
+          "upstream_sha256": "8c3579576a61a949884167745dcfaf1d5426ba305cc61fd0a79602d70fda4909"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/rerender-use-ref-transient-values.md",
+          "source_path": "skills/react-best-practices/rules/rerender-use-ref-transient-values.md",
+          "upstream_sha256": "f1a649af9d1d0b5c762f6c9c4c1c70c90d7df82aa10296ee87aadb78c1b76c54"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/server-after-nonblocking.md",
+          "source_path": "skills/react-best-practices/rules/server-after-nonblocking.md",
+          "upstream_sha256": "d0b8d24a3db9f0f65f9e2bddbf230b0e03a5f60e1229d93a4a18f5e7a991c7c2"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/server-auth-actions.md",
+          "source_path": "skills/react-best-practices/rules/server-auth-actions.md",
+          "upstream_sha256": "a2ca8aa102839251c7971ec784560fab943c20b36fe6f80365d4110c13260c23"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/server-cache-lru.md",
+          "source_path": "skills/react-best-practices/rules/server-cache-lru.md",
+          "upstream_sha256": "1924b64561841923b88a657085097a0aeba3e0ba2d5470b9f5c15cc10d6ae70f"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/server-cache-react.md",
+          "source_path": "skills/react-best-practices/rules/server-cache-react.md",
+          "upstream_sha256": "fddeea6c870bb3da4134b61d54b7d09b83d2603f929b7547cd3dc1dc269edd5c"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/server-dedup-props.md",
+          "source_path": "skills/react-best-practices/rules/server-dedup-props.md",
+          "upstream_sha256": "c2747424cdac46be62f835f245a0aa887b0090b416d28e2ac8676702645eeb37"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/server-hoist-static-io.md",
+          "source_path": "skills/react-best-practices/rules/server-hoist-static-io.md",
+          "upstream_sha256": "5abea4dd882b13661bd5f7dfb93f9e547d5f08176c61c448ade91b210ed5d49f"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/server-no-shared-module-state.md",
+          "source_path": "skills/react-best-practices/rules/server-no-shared-module-state.md",
+          "upstream_sha256": "4d869bf1cd2f1632e5ca4c0e64b1cf0e71c5f5a0f940bc8a22174d205e735ed7"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/server-parallel-fetching.md",
+          "source_path": "skills/react-best-practices/rules/server-parallel-fetching.md",
+          "upstream_sha256": "569a2e9fc04f9606686cd75c5894ef8781b502786a7fffe241396846c7733472"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/server-parallel-nested-fetching.md",
+          "source_path": "skills/react-best-practices/rules/server-parallel-nested-fetching.md",
+          "upstream_sha256": "ad5d9656984d4a959997a2367bf59cc6632297b4634a1dd13a087939d83f30b3"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/rules/server-serialization.md",
+          "source_path": "skills/react-best-practices/rules/server-serialization.md",
+          "upstream_sha256": "f4c7d68b29c82381baad059c4a7f09e868e71ec9c3115a26ad3ae7d24c0dfe1f"
+        },
+        {
+          "path": ".agents/skills/vercel-react-best-practices/SKILL.md",
+          "source_path": "skills/react-best-practices/SKILL.md",
+          "upstream_sha256": "71ed7794962fa6e803ee83030517b5b93a9f70fbfeb431ec4535c5480a8d8355"
+        }
+      ]
+    },
+    {
+      "name": "vercel-composition-patterns",
+      "repo": "vercel-labs/agent-skills",
+      "commit": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "source_path": "skills/composition-patterns",
+      "installed_path": ".agents/skills/vercel-composition-patterns",
+      "files": [
+        {
+          "path": ".agents/skills/vercel-composition-patterns/AGENTS.md",
+          "source_path": "skills/composition-patterns/AGENTS.md",
+          "upstream_sha256": "89e3ddd58fcf99a53a50e25dfd21b8cde1be5f10b7df6bacd3dfa6796932f516"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/metadata.json",
+          "source_path": "skills/composition-patterns/metadata.json",
+          "upstream_sha256": "49262ed5cb4186f31ee980cf8d990be0170c51efed4908d0464a1cff9905bd05"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/README.md",
+          "source_path": "skills/composition-patterns/README.md",
+          "upstream_sha256": "85915a43a6f0b4efe525e3cf6398dd866166da2025837c4460468a24a940da94"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/rules/_sections.md",
+          "source_path": "skills/composition-patterns/rules/_sections.md",
+          "upstream_sha256": "a174213b87e6911e2b766995a2cbaf8d1534057076e82fb79fe3f0ecb38047df"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/rules/_template.md",
+          "source_path": "skills/composition-patterns/rules/_template.md",
+          "upstream_sha256": "587f7d16b0660eb61fee4a4d3d7df2b3077d6835de170602c7d6e60bee559131"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/rules/architecture-avoid-boolean-props.md",
+          "source_path": "skills/composition-patterns/rules/architecture-avoid-boolean-props.md",
+          "upstream_sha256": "007555ebb020f4d552582a2c4db194db71a1fd33094012e5187bcfa4f8c392d5"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/rules/architecture-compound-components.md",
+          "source_path": "skills/composition-patterns/rules/architecture-compound-components.md",
+          "upstream_sha256": "f246af13dc269b521cf20eb8ad99a0cb645beac381c8c9b117262c34612c8457"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/rules/patterns-children-over-render-props.md",
+          "source_path": "skills/composition-patterns/rules/patterns-children-over-render-props.md",
+          "upstream_sha256": "7c45a0d21b3c4126a32cba916ee31adeae195386ad1dbbe6634aedb7457aa0ad"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/rules/patterns-explicit-variants.md",
+          "source_path": "skills/composition-patterns/rules/patterns-explicit-variants.md",
+          "upstream_sha256": "8c19e596e61807549d01ce8c6954c6358199f97a8511c0c02c625ec0efda8c0e"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/rules/react19-no-forwardref.md",
+          "source_path": "skills/composition-patterns/rules/react19-no-forwardref.md",
+          "upstream_sha256": "881830adb7534c4b2d70db426556646ad9837f5478f744f35641f635ada22227"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/rules/state-context-interface.md",
+          "source_path": "skills/composition-patterns/rules/state-context-interface.md",
+          "upstream_sha256": "09e73afbf9285fa416679cc864a287b9e8b821d0969272ab784295386d8c9bc3"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/rules/state-decouple-implementation.md",
+          "source_path": "skills/composition-patterns/rules/state-decouple-implementation.md",
+          "upstream_sha256": "76a8c1eb29a70d8996ab3f71260345af2f7bc89deab815a421d6c87c6591a9c3"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/rules/state-lift-state.md",
+          "source_path": "skills/composition-patterns/rules/state-lift-state.md",
+          "upstream_sha256": "74c54038a6c554c748fe31cec673b80861b5d920b7553cf78cdf10d18b4b759b"
+        },
+        {
+          "path": ".agents/skills/vercel-composition-patterns/SKILL.md",
+          "source_path": "skills/composition-patterns/SKILL.md",
+          "upstream_sha256": "e38e0eaa609316b10423a9a138ed95e35099accd3f735585295c8a8f165c28a3"
+        }
+      ]
+    },
+    {
+      "name": "web-design-guidelines",
+      "repo": "vercel-labs/agent-skills",
+      "commit": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "source_path": "skills/web-design-guidelines",
+      "installed_path": ".agents/skills/web-design-guidelines",
+      "files": [
+        {
+          "path": ".agents/skills/web-design-guidelines/SKILL.md",
+          "source_path": "skills/web-design-guidelines/SKILL.md",
+          "upstream_sha256": "f4647ca866a3accf763777f83e7682954f0187cd6bea7eea0399796652414e8f"
+        }
+      ]
+    },
+    {
+      "name": "vercel-optimize",
+      "repo": "vercel-labs/agent-skills",
+      "commit": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "source_path": "skills/vercel-optimize",
+      "installed_path": ".agents/skills/vercel-optimize",
+      "files": [
+        {
+          "path": ".agents/skills/vercel-optimize/AGENTS.md",
+          "source_path": "skills/vercel-optimize/AGENTS.md",
+          "upstream_sha256": "922a35993ffd98c923d61fa3d7a722bc1bc17466ea1e0b5828f67de21fbb0e7a"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/CONTRIBUTING.md",
+          "source_path": "skills/vercel-optimize/CONTRIBUTING.md",
+          "upstream_sha256": "4a3c6695f23ada3228582f1062509545dbad485e5011434c12b7ddd81bf1370a"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/auth-route.mjs",
+          "source_path": "skills/vercel-optimize/lib/auth-route.mjs",
+          "upstream_sha256": "c06a222bccd2c57b418b1d935d73f5b81297dac8533c004ec5bb4027cec3307a"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/budget-summary.mjs",
+          "source_path": "skills/vercel-optimize/lib/budget-summary.mjs",
+          "upstream_sha256": "8662a2914940b8c548be164c09ce7706ea261549fb61147d2a7a13af1e3337cc"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/citations.mjs",
+          "source_path": "skills/vercel-optimize/lib/citations.mjs",
+          "upstream_sha256": "41a1bafa7addc4b39d144491f178a159cc23ff779b4803f2c152fe579209b384"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/cost-coverage.mjs",
+          "source_path": "skills/vercel-optimize/lib/cost-coverage.mjs",
+          "upstream_sha256": "483b0f03f5db08e15388e1c047ffad414bb132bb3ce48418defc0d9a70a20e44"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/dedup-recs.mjs",
+          "source_path": "skills/vercel-optimize/lib/dedup-recs.mjs",
+          "upstream_sha256": "5fc631c1f56eea8bf8c59afb773511d9a8f42d29574fa14f03abb60c881206cc"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/deep-dive.mjs",
+          "source_path": "skills/vercel-optimize/lib/deep-dive.mjs",
+          "upstream_sha256": "c86c5ed224c00c2e72a54eef16260b8e7237302a7e69e47310077eae7f65ced1"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/display-labels.mjs",
+          "source_path": "skills/vercel-optimize/lib/display-labels.mjs",
+          "upstream_sha256": "e56e54a0e19ed3ed4f45112cb358c1df5a77caa7411f5c2267c73064f64d1b08"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/extract-claims.mjs",
+          "source_path": "skills/vercel-optimize/lib/extract-claims.mjs",
+          "upstream_sha256": "a3f44334dad0ba743699860d6b83a06e38c7e465f73418749822cf00d563ee2a"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/framework-support.mjs",
+          "source_path": "skills/vercel-optimize/lib/framework-support.mjs",
+          "upstream_sha256": "ed8ef73604d5bd91f4aea6fb0de465079474e00299c23bbdba8b04dd70545364"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/build-minutes-fanout.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/build-minutes-fanout.mjs",
+          "upstream_sha256": "c088ab1f91af8b4e86e8f3f3210c7b625757a3699bd5818c905f66ade92064b1"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/cold-start.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/cold-start.mjs",
+          "upstream_sha256": "40023aae34ebc37df1382c7c4c00efc3864b2c11a8c9ee8cf05f371762680300"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/contract.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/contract.mjs",
+          "upstream_sha256": "e0bd012b53b6a70684279a3ad58598f5a1f79698d0e521d0e9d0994e87b3ae65"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/cwv-poor.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/cwv-poor.mjs",
+          "upstream_sha256": "17ab4ae24b5d0220d941215db8544bed68c1af02e6d5d7aba4ff077a46675fbb"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/external-api-slow.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/external-api-slow.mjs",
+          "upstream_sha256": "12ce4f0cf906e5631170a58307758f095069d3051c16f64ddeec00bb99a66dc9"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/hard-gates.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/hard-gates.mjs",
+          "upstream_sha256": "b31d94495e20721b8ce825bde073ba9a32c14063b0cc711e23e2582fb0ebd677"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/index.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/index.mjs",
+          "upstream_sha256": "d473dfce777f68430d2b68836efb184152a59da97d3b06d37a6f618c7d4c59a6"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/isr-overrevalidation.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/isr-overrevalidation.mjs",
+          "upstream_sha256": "333d2dc8523d5850fddb5c13cd78fe62c0838ffd627c41b374804dca26cc63c6"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/middleware-heavy.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/middleware-heavy.mjs",
+          "upstream_sha256": "1ad98bc73be97254d6131707ed93c72262c071e54ce071a392549df33d0d7ae7"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/observability-events-attribution.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/observability-events-attribution.mjs",
+          "upstream_sha256": "8e465217257c771c0be8580c1b9abcf1defd26e5a70c9559dc10f4cc45527c52"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/platform-bot-protection.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/platform-bot-protection.mjs",
+          "upstream_sha256": "0124cd71876616f7de741d962ff4cbcb79a78654a3026372a18195e2ff99294b"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/platform-fluid-compute.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/platform-fluid-compute.mjs",
+          "upstream_sha256": "de81279134bef9499f1cbe2f38d06bb5caa968daa5438f09c9bad0d2f27efa96"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/region-misconfig.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/region-misconfig.mjs",
+          "upstream_sha256": "0b3976cd50a9fb54601c60ad27c62b64aa7a4eeb338af4226b618ae1d5a9cc4a"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/route-errors.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/route-errors.mjs",
+          "upstream_sha256": "a32a29b683557409b351da84e45ab316818f8a90c5af380ba7efc5366c03129f"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/scanner-driven.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/scanner-driven.mjs",
+          "upstream_sha256": "485313169d009ded7bdb1e4083150919e77eb4373aff0252cd5c0c235f2e8f3b"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/select-candidates.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/select-candidates.mjs",
+          "upstream_sha256": "bde0714be600905caaaa99991d37c31df9e6775b8a107ee2df5eb63ffa9d1e11"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/slow-route.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/slow-route.mjs",
+          "upstream_sha256": "b0d330e4244bd3d2e240f6398ead4b235bb69b72fe585771cde4f11ae8726148"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/types.d.ts",
+          "source_path": "skills/vercel-optimize/lib/gates/types.d.ts",
+          "upstream_sha256": "097ea533204446ccc18798fc01656577df8b864c24b0eda4c66ebc913fa36f31"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/uncached-route.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/uncached-route.mjs",
+          "upstream_sha256": "c4f89fa083f13a9360dd5ec6b45b39db3f480c797193c590bf131f53463388cb"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/gates/usage-spike-triage.mjs",
+          "source_path": "skills/vercel-optimize/lib/gates/usage-spike-triage.mjs",
+          "upstream_sha256": "b8f84b57fe9d41323467c765ef9da4893b0cac6eee31603179cd8cb77ffd7be3"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/grade-recommendation.mjs",
+          "source_path": "skills/vercel-optimize/lib/grade-recommendation.mjs",
+          "upstream_sha256": "e06008677dd1c6a27d767636356b6a68f357a3122b57adca3238bd2ca7576c38"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/impact-label.mjs",
+          "source_path": "skills/vercel-optimize/lib/impact-label.mjs",
+          "upstream_sha256": "4d55baae79025bfa43b829ff291019bb6a1f6d015c72dd44612d8e3afeb60b9f"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/impact-magnitude.mjs",
+          "source_path": "skills/vercel-optimize/lib/impact-magnitude.mjs",
+          "upstream_sha256": "a87cec394f9d853da43e633e8ce2cb9f1f62fb2ae7dd6a58f542a5e7024b2c5b"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/investigation-brief.mjs",
+          "source_path": "skills/vercel-optimize/lib/investigation-brief.mjs",
+          "upstream_sha256": "f41d9354992fb5c7904b8faa1ad1fa457f8b69533d2113ec9c38192c227bf0c7"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/observation-safety.mjs",
+          "source_path": "skills/vercel-optimize/lib/observation-safety.mjs",
+          "upstream_sha256": "540a4c49f10ceab570513f2834b7fbd88b2090c85690ed0f8b5c5bf0e623badd"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/project-facts.mjs",
+          "source_path": "skills/vercel-optimize/lib/project-facts.mjs",
+          "upstream_sha256": "d8b508d1077fdb4bcf5c2f267750cb4a6ca529811eecdadb10f9e632e304f30b"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/queries.mjs",
+          "source_path": "skills/vercel-optimize/lib/queries.mjs",
+          "upstream_sha256": "a747292c7bbc69a245799f846c6d081df44506c5c8e3d245b610c0f32edcea69"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/reconcile-candidates.mjs",
+          "source_path": "skills/vercel-optimize/lib/reconcile-candidates.mjs",
+          "upstream_sha256": "4e02dbc4fba1834192f018b05e9d42723fda13dbecf26a7cc09eacbfe1925b75"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/render-report.mjs",
+          "source_path": "skills/vercel-optimize/lib/render-report.mjs",
+          "upstream_sha256": "35068fb5df2f2b9a89cabf40e050c40da5d8fadeec33cdbd47c8fc995677a127"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/repo-root.mjs",
+          "source_path": "skills/vercel-optimize/lib/repo-root.mjs",
+          "upstream_sha256": "77ce8277fa444dea77cb10c17e7a0d2db98a6cbea6e2df0fa2ff01372b52eb0c"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/route-normalize.mjs",
+          "source_path": "skills/vercel-optimize/lib/route-normalize.mjs",
+          "upstream_sha256": "a2e39b3f653695392f096c1b385e31a9b1452714de4908c1d0e6604626274b5d"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/bot-protection-certainty.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/bot-protection-certainty.mjs",
+          "upstream_sha256": "2edac6df3f4565ec7d2f784db7e660767f8a213bfe9f55f6da14f2517f4a071a"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/cache-tag-invalidation-certainty.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/cache-tag-invalidation-certainty.mjs",
+          "upstream_sha256": "31aec0481e996fd2a9a546c792ff17223747c850806405b2ee3cb95c40e296c0"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/count-correct.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/count-correct.mjs",
+          "upstream_sha256": "cf427876a8c64d9591d89da727a2d4cec9dc0dcd717ffba3f82be52c38c73de3"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/function-duration-invocations.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/function-duration-invocations.mjs",
+          "upstream_sha256": "c745bc90e67722f8584d3d426f28ccc4701504a635dd966cdb8f487ee79eb7b3"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/index.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/index.mjs",
+          "upstream_sha256": "99babb880c7d5e7ac209e7eb1bf26f2ae9ac5a795062d01e15d76c57055247bf"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/middleware-conflict.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/middleware-conflict.mjs",
+          "upstream_sha256": "89fae25e31662ed7f31fef973e7b969271fc061839112adabf253a3e87380b97"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/missing-citation.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/missing-citation.mjs",
+          "upstream_sha256": "431ec0944239d4477556a23808733298ecd5bdfb4a810ab887b83f0266eb5904"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/pre-release.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/pre-release.mjs",
+          "upstream_sha256": "dce1475fd392d245bd4a48e1280c2f0a00fc4dea96cd9f40e4d260fdc0bf5940"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/rate-limit.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/rate-limit.mjs",
+          "upstream_sha256": "42b2a3ecb07443ab5aeb881ab6dea31a92f767b73697fd0529e877084657629c"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/rendering-mode-mislabel.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/rendering-mode-mislabel.mjs",
+          "upstream_sha256": "410c60d8f71250d8b443384098f02869e7a1b4d9dcb3e3ca384ca3b875648788"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/undeclared-dep.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/undeclared-dep.mjs",
+          "upstream_sha256": "bc2a483311a2c44103b15d9498b5d303101724454c114907d23de6d7725e8769"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/vercel-directive-strip.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/vercel-directive-strip.mjs",
+          "upstream_sha256": "b94a6fcd0a03358dcb853b04a392b0946d8a07d8619e86b562b8b38a6cffac85"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/sanitizers/window-units.mjs",
+          "source_path": "skills/vercel-optimize/lib/sanitizers/window-units.mjs",
+          "upstream_sha256": "f7823f1c4705166c313107571f048fd4e7fa160cb982dcbfe07d936ab4cb5a3b"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/cache-components-suspense-dedupe.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/cache-components-suspense-dedupe.mjs",
+          "upstream_sha256": "ca4c643a30b76df0e8728f8b8854167483f746a9d45aafb467c3bec9125b7878"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/edge-heavy-import.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/edge-heavy-import.mjs",
+          "upstream_sha256": "0faacf202542cc6ea37290377a61e9c34a84d3d9439822cd7df09d450ff663a3"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/force-dynamic.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/force-dynamic.mjs",
+          "upstream_sha256": "5f378119f8e6d1961cde57dcd6ccd193cc4a9713068d4828ca4eee724b15095d"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/headers-in-page.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/headers-in-page.mjs",
+          "upstream_sha256": "84f72dcd79631561fa54f6a5128337b6b9317bc9b7c720b709078cf0c2758e7d"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/index.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/index.mjs",
+          "upstream_sha256": "9443d7e055a4b8368973c027b739742bbf5e98de4dbc5078c4cd7fb2677aeeb9"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/large-static-asset.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/large-static-asset.mjs",
+          "upstream_sha256": "5ee29065ae96b7aff236dd3ea9766765a7c48e1bd95008e261837ae42932b783"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/max-age-without-s-maxage.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/max-age-without-s-maxage.mjs",
+          "upstream_sha256": "ec722b65530f428232f2b501f5f52e427cd7218c51cceb4783b5f7b03c3ad577"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/middleware-broad-matcher.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/middleware-broad-matcher.mjs",
+          "upstream_sha256": "e41e07c4fb8d0b6776e5f27609e719ae42c1644b7adcfa2dc1abc90a511c0492"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/missing-cache-headers.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/missing-cache-headers.mjs",
+          "upstream_sha256": "cc4ccea4c4f1d8594a97b18ca39b5212060faa3306dccdea0b2c7645d3f3cf8a"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/prisma-include-tree.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/prisma-include-tree.mjs",
+          "upstream_sha256": "ab107e2732ca1873b4e4ce974e9c08b6ebde83a8f96675b96087213b16aa901e"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/region-pin-in-config.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/region-pin-in-config.mjs",
+          "upstream_sha256": "906f33c344c98910f1148c86a9c5cd5cfbaf84cc8c06d02e3eb257ecd639b0d3"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/source-maps-production.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/source-maps-production.mjs",
+          "upstream_sha256": "f9ab9cf88a22a4c0fa32f73ac39243b6f61a868b81ca55f804d8c33a9341013c"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/sveltekit-prerender-missing.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/sveltekit-prerender-missing.mjs",
+          "upstream_sha256": "ff5380fa9d8a3e77d8ff430e1b7866a0890b50d163bcc2a599f0b30238947999"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/turbo-force-bypass.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/turbo-force-bypass.mjs",
+          "upstream_sha256": "b84a7774f18e1ea86cb19335fd41324b89635ccb43b75f31e0218516fd9363d2"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/unoptimized-image.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/unoptimized-image.mjs",
+          "upstream_sha256": "f2049c073b769838e33f6110f8f139cacd1e8b8a01eda1473ebed0a14ec64b4f"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/scanners/use-cache-date-stamp.mjs",
+          "source_path": "skills/vercel-optimize/lib/scanners/use-cache-date-stamp.mjs",
+          "upstream_sha256": "2d04abd40b888e8c16bccee92dc3423ab86b109551cfab8807367d9cc8ca0878"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/support-topics.mjs",
+          "source_path": "skills/vercel-optimize/lib/support-topics.mjs",
+          "upstream_sha256": "c9ac60070df4e6707299da5ab0d72a9853659ddfcfd4dca29f5803ef3ce41840"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/throttle.mjs",
+          "source_path": "skills/vercel-optimize/lib/throttle.mjs",
+          "upstream_sha256": "1d09d586071838152fe28882cd65f508a508ecd99b59187c84f27b908cc18017"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/util.mjs",
+          "source_path": "skills/vercel-optimize/lib/util.mjs",
+          "upstream_sha256": "431eb675f0a658e19a1b08cdb064e19f96a62d42a35c5f4d962756c8cf97d523"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/vercel.mjs",
+          "source_path": "skills/vercel-optimize/lib/vercel.mjs",
+          "upstream_sha256": "01a7bd818b64bd26143f93e4417f6463199a81c154854e9c60d2fcce3aea2e82"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/verify-claim.mjs",
+          "source_path": "skills/vercel-optimize/lib/verify-claim.mjs",
+          "upstream_sha256": "b7956b5e96e0be7e4ed7a107541d5e4ea11475f9b4e7829c4035769d3a879f71"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/lib/workspace-resolver.mjs",
+          "source_path": "skills/vercel-optimize/lib/workspace-resolver.mjs",
+          "upstream_sha256": "9da10f288418475ab871b5430de38d4b97441794373721844cb540e40986e74c"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/metadata.json",
+          "source_path": "skills/vercel-optimize/metadata.json",
+          "upstream_sha256": "729f7dcb13ebac414d54232e56acaeae4f7ded041947805a0b30a5d8fee59511"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/README.md",
+          "source_path": "skills/vercel-optimize/README.md",
+          "upstream_sha256": "4ebb0ae7c6a2c8cfe7ed8ad26a6bee0be99d8682be331d9d28c1cb81ad3718d0"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/candidates.md",
+          "source_path": "skills/vercel-optimize/references/candidates.md",
+          "upstream_sha256": "1e04722b3924a11a774d87abbf35070cdf480ad02c8487f97a3dd69bb46b59af"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/data-collection.md",
+          "source_path": "skills/vercel-optimize/references/data-collection.md",
+          "upstream_sha256": "dbc013dfc59c29f38f279fbbb422f19d7cc1ba37d17ee02d9c64ea6cb594bd22"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/docs-library.json",
+          "source_path": "skills/vercel-optimize/references/docs-library.json",
+          "upstream_sha256": "287d4dabbb3eab789911a6c2b4aea9ffc57206fa4a8449636358503e32b9542c"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/doctrine.md",
+          "source_path": "skills/vercel-optimize/references/doctrine.md",
+          "upstream_sha256": "4a7eac752141410d134febe786c4b51f4723a55026a5638c38fcb492a1d86df4"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/observability-plus.md",
+          "source_path": "skills/vercel-optimize/references/observability-plus.md",
+          "upstream_sha256": "86b6f6d5bd7f4b9827f70505705ed0f875a0ef2e2cdb85653f0e09f825393333"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/playbooks/ai-application.md",
+          "source_path": "skills/vercel-optimize/references/playbooks/ai-application.md",
+          "upstream_sha256": "e9e353a3f7d5c576e14893ebb0e1eddaa90ee986f0ef3d9edb3be73a2e947ac9"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/playbooks/api-service.md",
+          "source_path": "skills/vercel-optimize/references/playbooks/api-service.md",
+          "upstream_sha256": "f90e2d558ea697dc06f05794ad47770f379e3268321ab8a6a642abd7f2fa7ed3"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/playbooks/content-site.md",
+          "source_path": "skills/vercel-optimize/references/playbooks/content-site.md",
+          "upstream_sha256": "9d4b1a7d1c6eb6f58e94c5df5dc8264c5bd6c877f045c7c81228924cbadc9d37"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/playbooks/ecommerce.md",
+          "source_path": "skills/vercel-optimize/references/playbooks/ecommerce.md",
+          "upstream_sha256": "f44707fac676e67de04b7ddb2f78bc806f286cd324d05d990641acef3097a0e9"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/playbooks/marketing.md",
+          "source_path": "skills/vercel-optimize/references/playbooks/marketing.md",
+          "upstream_sha256": "b7e0ed3de01e95f7776891b6a63e0d2929b066c61ccd9b8ac012b42cbc3e4a19"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/playbooks/README.md",
+          "source_path": "skills/vercel-optimize/references/playbooks/README.md",
+          "upstream_sha256": "9b699bb8d2436b089ced036780cbc108502f3713b15f83440fd042e393487cf3"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/playbooks/saas.md",
+          "source_path": "skills/vercel-optimize/references/playbooks/saas.md",
+          "upstream_sha256": "f23b518dd7c369144813f80abe6eba3e762db3b737b3271bb8b887307fcec387"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/playbooks/sveltekit.md",
+          "source_path": "skills/vercel-optimize/references/playbooks/sveltekit.md",
+          "upstream_sha256": "32db0a70f1217c2e3f750ef5e5671da54a07a510369307e38877e3fd3ad21767"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/recommendations.md",
+          "source_path": "skills/vercel-optimize/references/recommendations.md",
+          "upstream_sha256": "8e65890c1afd942f4bf9dd07ba538b2b9f53a6136ec83e96cc10740c6f8dda87"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/scanner-patterns.md",
+          "source_path": "skills/vercel-optimize/references/scanner-patterns.md",
+          "upstream_sha256": "e160869045f6456d10bd4f1fdeff76d42d8b3e0c50a7212a607603589798bcaa"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/scoring.md",
+          "source_path": "skills/vercel-optimize/references/scoring.md",
+          "upstream_sha256": "44a295b6c65ee5c221815149c7fad1adb02c8ac8750d0604a8dfbfe47d04b6d6"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/astro-edge-middleware-scope.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/astro-edge-middleware-scope.md",
+          "upstream_sha256": "80586e0b110749f2cdd6e56635d6cd88082230b9bd11a8e388ec6d3b280bc65d"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/astro-output-mode-and-isr.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/astro-output-mode-and-isr.md",
+          "upstream_sha256": "6137553e35076795f6c0851b0e93d4686cf937930d35b284567da7c0edfe35ba"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/auth-preserving-parallelization.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/auth-preserving-parallelization.md",
+          "upstream_sha256": "34cfd687cc106ef15696b8f1f155c30f635234e29f3c4db087193c3c2c3c4bac"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/bot-protection-product-guardrails.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/bot-protection-product-guardrails.md",
+          "upstream_sha256": "892d8f32deb5bded86863a513d3799bfd81dc4654ae4fde5a264638cfd86755d"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/build-minutes-monorepo-fanout.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/build-minutes-monorepo-fanout.md",
+          "upstream_sha256": "1f54f0ba4d1b2ab873eb166ca2f1661d39b49e70253dea8ce13a44c2b728ba85"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/cache-components-static-shell-boundaries.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/cache-components-static-shell-boundaries.md",
+          "upstream_sha256": "664a13ced4e985e9b12bdf6730fecccfd79fb715be2998a710068384a0ab4cc0"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/cache-components-suspense-dedupe-pitfall.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/cache-components-suspense-dedupe-pitfall.md",
+          "upstream_sha256": "212f1bedf49c9a1e7aac7745c5b19f57c486456d5e4ef9037fa9689f51930047"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/cdn-cache-auth-safety.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/cdn-cache-auth-safety.md",
+          "upstream_sha256": "5691cd39b3403ef939199c3b9b21e28cb447b2f8d2f6dea6000064e5ef3fdfb5"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/cold-start-initialization-bundle.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/cold-start-initialization-bundle.md",
+          "upstream_sha256": "98961df48eac648e71c73b7dd53a215ac02af62f0bfbc67a1af335e66b8fb7c1"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/core-web-vitals-client-bottlenecks.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/core-web-vitals-client-bottlenecks.md",
+          "upstream_sha256": "05d84906be0f1e26787e871c00cd563f18533a7b12d3383c5cb3557fe01ea768"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/database-egress-pooling-region.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/database-egress-pooling-region.md",
+          "upstream_sha256": "83fa0f1a3ff67b9f149ba39432834bba88437dbdf09d6b5e7a5e3b552ceb473e"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/dynamic-rendering-traps.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/dynamic-rendering-traps.md",
+          "upstream_sha256": "a075a13fc3c40d7d249051519cf2384497a34f3f4a207f757bf4343c3896fd64"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/external-api-critical-path-platform.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/external-api-critical-path-platform.md",
+          "upstream_sha256": "02a7a7e3ba867973c9e45d565e69349cd44a5bdb9e00e6fbbf9c76edd01516e5"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/external-api-critical-path.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/external-api-critical-path.md",
+          "upstream_sha256": "dade955ceba21150590f8606b993881d6f6b20fef32c147b77ce26d9e9931773"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/fast-data-transfer-payloads.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/fast-data-transfer-payloads.md",
+          "upstream_sha256": "d7daca1a05d8f3157aab22b97552247cb0a8f856f08fc49079fd76872f7a50fa"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/fluid-compute-caveats.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/fluid-compute-caveats.md",
+          "upstream_sha256": "3408a19b49a9723cfac1b461babe56dc414f0f1f7561bd7e6f4f7579ab26a13f"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/function-duration-io-and-after.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/function-duration-io-and-after.md",
+          "upstream_sha256": "693c07390d7cf8b4c0a0d0235176a5f452694d1553c33db4fd385f76c94d307d"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/function-invocation-reduction.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/function-invocation-reduction.md",
+          "upstream_sha256": "1e50e0e24299fc08aaf6b81d6673ce24c0bc250883c8ecc76e52d6d1dca989a9"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/function-region-misconfiguration-ttfb.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/function-region-misconfiguration-ttfb.md",
+          "upstream_sha256": "dd5013cf9bd5b3ee7383d3b9835babc6a93b965e07b7093f48d53ce755510326"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/image-optimization-cost-control.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/image-optimization-cost-control.md",
+          "upstream_sha256": "1123f4712ec4a4ff057dadbee25f7de51bc8473862dbb398693f9c091336681c"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/isr-revalidation-static-generation.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/isr-revalidation-static-generation.md",
+          "upstream_sha256": "fafc8585a02b2142b60289177b041d63e1280d1fdccd38a2faa2e89d7c1950cb"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/middleware-proxy-edge-cost.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/middleware-proxy-edge-cost.md",
+          "upstream_sha256": "d1c6f3b0f4ecf3c4d430c2ae3999c9485e8f2115e40d9ba973b637541a5a5f32"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/next-fetch-revalidate-floor.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/next-fetch-revalidate-floor.md",
+          "upstream_sha256": "65897b4111c75457e1fbe16ce6f9716c5fd58365d8defaeb80b5ea0ca4f2a3b0"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/next-font-cls-self-hosting.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/next-font-cls-self-hosting.md",
+          "upstream_sha256": "a06d7f692fc902f41a227f5acb20d694e2d47c3098b1fba354b5413e7df32964"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/next-heavy-ui-lazy-load-boundaries.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/next-heavy-ui-lazy-load-boundaries.md",
+          "upstream_sha256": "f48f1f61626aa313b3e08a6e43a5550bddef278f5c6aa4093b52bee1e9e1d78b"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/next-image-lcp-preload-sizes.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/next-image-lcp-preload-sizes.md",
+          "upstream_sha256": "f176647780339cbd409897cbbaa8666f0dc7c301905651ad39b7feb2a0696a89"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/next-route-handler-get-cache-defaults.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/next-route-handler-get-cache-defaults.md",
+          "upstream_sha256": "2f7e29b85cc1a8a31db214f59524035d3486c3a26c9fb9a39d62f3b834ee0f0c"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/next-script-third-party-strategy.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/next-script-third-party-strategy.md",
+          "upstream_sha256": "413fb8dfdb561ccb5073c89b93c0e28420cfa5125bff89317c699167c3b2f35a"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/nextjs-version-cache-semantics.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/nextjs-version-cache-semantics.md",
+          "upstream_sha256": "e8bf6e27e63841bb49c44e8d0e93d674866ba28f6217d41d5c4de2b51178b8dc"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/not-found-catchall-request-waste.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/not-found-catchall-request-waste.md",
+          "upstream_sha256": "88a9bf8ec200182534957603bda8c3bcc8d9dce8d884ea19c890994424827ab8"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/nuxt-route-rules-cache-isr.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/nuxt-route-rules-cache-isr.md",
+          "upstream_sha256": "639b0a57b50813bfea7f1734a2cb883d8fb756c86a3a4460e08e899d04323cbb"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/observability-events-cost-attribution.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/observability-events-cost-attribution.md",
+          "upstream_sha256": "60b2aea01836d6554b07cc79c9d8d64a4430782a2a4cec2ccd43ad957d69658e"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/post-response-work-waituntil.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/post-response-work-waituntil.md",
+          "upstream_sha256": "da5ff4b2d2a714bc06d2cc4b442e77840b89f9e72e171ec33af4fb95cac8ab26"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/README.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/README.md",
+          "upstream_sha256": "63e2acd6e221ca52355a5f70ff8d9c3d9704600eb7e176d3cb2f4597ad03db4b"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/route-error-durable-offload.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/route-error-durable-offload.md",
+          "upstream_sha256": "2ff21304503673bbeb656d92fd9841f8aa874cd93a5428f14a0f9abb55e49b65"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/route-error-runtime-limits.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/route-error-runtime-limits.md",
+          "upstream_sha256": "e4a70ec3e1112c658e1ce136359c00fcb6c9fb484887efafb3ba3364ebdb70a6"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/runtime-cache-reusable-data.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/runtime-cache-reusable-data.md",
+          "upstream_sha256": "cf59ca89dbfa178d371435e0aa7f5c588c2fc3114b4574049b4d644c63628911"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/sveltekit-isr-prerender-safety.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/sveltekit-isr-prerender-safety.md",
+          "upstream_sha256": "909357c83a7718865cf5e1056653117f08df0042416e17050f22eae7900dfa49"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/sveltekit-split-cold-start-tradeoff.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/sveltekit-split-cold-start-tradeoff.md",
+          "upstream_sha256": "e61fee58a22120acbdfafb2559959749806cf2c1ad242749d30ad6d9f533d5f6"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/usage-spike-triage.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/usage-spike-triage.md",
+          "upstream_sha256": "850ce351c3cbff86a321b349eaa82330a29e08b78a3d255150dc290a7d095015"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/use-cache-date-stamp-isr-write-amplifier.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/use-cache-date-stamp-isr-write-amplifier.md",
+          "upstream_sha256": "45d5381f890b552dd672f6577aad203630f9f0e3caf04f3f2170726c0cea86fb"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/use-cache-remote-shared-origin-data.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/use-cache-remote-shared-origin-data.md",
+          "upstream_sha256": "4e8590e6c3ed65e5ec8811cfad82fcecf3cf5ac797e446bbf00e4498bd7e0d68"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/support-topics/workflow-resumable-stream-routes.md",
+          "source_path": "skills/vercel-optimize/references/support-topics/workflow-resumable-stream-routes.md",
+          "upstream_sha256": "07145dac55800c709a57a1abfbe29e1764ecd6371ff05f342c8f73f69d101257"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/verification.md",
+          "source_path": "skills/vercel-optimize/references/verification.md",
+          "upstream_sha256": "db3ffb183ae3c141eeb980ea3765ff215da01eb4bb8b569c7f86868ec3cfe5a1"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/references/voice.md",
+          "source_path": "skills/vercel-optimize/references/voice.md",
+          "upstream_sha256": "1bd89b7f12f8ce912d0381b9ca7c251f8183f69bae0abf0021391e8397dfef11"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/budget-summary.mjs",
+          "source_path": "skills/vercel-optimize/scripts/budget-summary.mjs",
+          "upstream_sha256": "4dc6cb8ab9278ac9196e4cd70c36ecc1ffe2afeaffe09e99e562de42e62f94ea"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/build-docs.mjs",
+          "source_path": "skills/vercel-optimize/scripts/build-docs.mjs",
+          "upstream_sha256": "ce426e5bb4a803b86981588b733fc97aff13fea1c393d6d6559b97518df31ad8"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/check-citations.mjs",
+          "source_path": "skills/vercel-optimize/scripts/check-citations.mjs",
+          "upstream_sha256": "47acb1d9deba97531ad46ef81cccaa9349bec4a3cf57d8fdc2bd601411b57fdb"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/check-docs-fresh.mjs",
+          "source_path": "skills/vercel-optimize/scripts/check-docs-fresh.mjs",
+          "upstream_sha256": "6c47f5595c6e317426606d67afa53d52d822fcc071fee27885cc25df38e7949e"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/collect-signals.mjs",
+          "source_path": "skills/vercel-optimize/scripts/collect-signals.mjs",
+          "upstream_sha256": "bc1dcba99aa20ad7863450bc1a336d0ec8d78aac0f3f26f8b6be9183e52e944a"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/collect-sub-agent-outputs.mjs",
+          "source_path": "skills/vercel-optimize/scripts/collect-sub-agent-outputs.mjs",
+          "upstream_sha256": "21bd960b11c75711e1f51cb362efb5243f19bc8db65a3bfdab48549bb47bf9fb"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/deep-dive.mjs",
+          "source_path": "skills/vercel-optimize/scripts/deep-dive.mjs",
+          "upstream_sha256": "f90c74b28a1a1580a45d7d12ab64f683c8c6f1b59d32aa7299980e74980550aa"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/gate-investigations.mjs",
+          "source_path": "skills/vercel-optimize/scripts/gate-investigations.mjs",
+          "upstream_sha256": "b30d756a3af5bc1170e4eec95e2fca7241999a516d8871497bd4e5a1cd681535"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/merge-signals.mjs",
+          "source_path": "skills/vercel-optimize/scripts/merge-signals.mjs",
+          "upstream_sha256": "2d16f83d221ea6bb28f1a05f48829c2e67e315d0acc2125fc8b642813a527f06"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/prepare-investigation-brief.mjs",
+          "source_path": "skills/vercel-optimize/scripts/prepare-investigation-brief.mjs",
+          "upstream_sha256": "8a9c9a840e907985f8a84218251c33c38f3dc17956b851a8b5d7e28c56689edc"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/reconcile-candidates.mjs",
+          "source_path": "skills/vercel-optimize/scripts/reconcile-candidates.mjs",
+          "upstream_sha256": "ef8d6ae2f1e7e43c62a46dfe7af14e9618fd2b550724823448f8badf266cccaf"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/render-report.mjs",
+          "source_path": "skills/vercel-optimize/scripts/render-report.mjs",
+          "upstream_sha256": "ab0a3f0188215fe0f9a464858b3a42c74e2d4daea6fe857b6a969595f27ebf5b"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/scan-codebase.mjs",
+          "source_path": "skills/vercel-optimize/scripts/scan-codebase.mjs",
+          "upstream_sha256": "4b5c847899604831aafd3fcdf860968792e99203670a3ba6f3947cb7ae708705"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/verify-and-regen.mjs",
+          "source_path": "skills/vercel-optimize/scripts/verify-and-regen.mjs",
+          "upstream_sha256": "9211268107c17f577d24a8994515946b9fd3a1fc1d2353a79dd0a139df25f706"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/scripts/verify-finding.mjs",
+          "source_path": "skills/vercel-optimize/scripts/verify-finding.mjs",
+          "upstream_sha256": "534590f7900e20648f67cc2d6845502960709ddfeb10cbb6733ade37b2eebe8e"
+        },
+        {
+          "path": ".agents/skills/vercel-optimize/SKILL.md",
+          "source_path": "skills/vercel-optimize/SKILL.md",
+          "upstream_sha256": "95ae2683b30d892d165af92a350c5628b68106f395a59b448857b654e306ed91"
+        }
+      ]
+    },
+    {
+      "name": "supabase",
+      "repo": "supabase/agent-skills",
+      "commit": "c9be0e931b7930f7d02126d04774d904c381e7d7",
+      "source_path": "skills/supabase",
+      "installed_path": ".agents/skills/supabase",
+      "files": [
+        {
+          "path": ".agents/skills/supabase/assets/feedback-issue-template.md",
+          "source_path": "skills/supabase/assets/feedback-issue-template.md",
+          "upstream_sha256": "ea211aa174c5a096fe76461f25143b8bc23f3bde3adc9e727cda38218cc8c282"
+        },
+        {
+          "path": ".agents/skills/supabase/CHANGELOG.md",
+          "source_path": "skills/supabase/CHANGELOG.md",
+          "upstream_sha256": "4b9c9387871d7888f18e9c97a7d5691ea38e333401ccdcb0161d2140cb16b2d8"
+        },
+        {
+          "path": ".agents/skills/supabase/references/skill-feedback.md",
+          "source_path": "skills/supabase/references/skill-feedback.md",
+          "upstream_sha256": "09ad94c0291735dfc04c92557c8734fa259ec39e1d56bf2bd5c6a6529d838717"
+        },
+        {
+          "path": ".agents/skills/supabase/SKILL.md",
+          "source_path": "skills/supabase/SKILL.md",
+          "upstream_sha256": "697e0e949f97621c6fc1784169eb3ccbf673747d6bb8299a52962d3d84d93dc6"
+        }
+      ]
+    },
+    {
+      "name": "supabase-postgres-best-practices",
+      "repo": "supabase/agent-skills",
+      "commit": "c9be0e931b7930f7d02126d04774d904c381e7d7",
+      "source_path": "skills/supabase-postgres-best-practices",
+      "installed_path": ".agents/skills/supabase-postgres-best-practices",
+      "files": [
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/CHANGELOG.md",
+          "source_path": "skills/supabase-postgres-best-practices/CHANGELOG.md",
+          "upstream_sha256": "751ad110037c85d400018c9894716a04fa46357ff55c22b1169b280752e19e88"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/_contributing.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/_contributing.md",
+          "upstream_sha256": "191e039e7d94764e6073410b513b559f9a594e0fdf0252a30c2a2986df2ab3bc"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/_sections.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/_sections.md",
+          "upstream_sha256": "c9e992612b422c7122de0b7542ebc2450db283edaab08cfe86c6d657fcccccd5"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/_template.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/_template.md",
+          "upstream_sha256": "6299954250f212caabe339d752c3e5313a8e07d1a182a4e4b425baee91df1bd2"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/advanced-full-text-search.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/advanced-full-text-search.md",
+          "upstream_sha256": "40c2606bbb4c4dce31308f201b24cc7f58c7df05b1d9c6856fe2b888d3b7cf28"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/advanced-jsonb-indexing.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/advanced-jsonb-indexing.md",
+          "upstream_sha256": "24cacf6a8bc35901dd566d24502ce8e57f810a5c196b897e61d52726e521d106"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/conn-idle-timeout.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/conn-idle-timeout.md",
+          "upstream_sha256": "630588902c00fcec59a5988cc5d042f76dcf2c923a535abfd8c47dca205eaed5"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/conn-limits.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/conn-limits.md",
+          "upstream_sha256": "11b2a67a7c7679cbbc5d807bbb17e69c98484a581d0c8b929c03408f412b81b2"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/conn-pooling.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/conn-pooling.md",
+          "upstream_sha256": "88cf086bf98ba865d2e9d0579974e1366b14157619d6a93e7da77be91084e4a5"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/conn-prepared-statements.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/conn-prepared-statements.md",
+          "upstream_sha256": "174e9332fe3dda5c99b2b00159fb1915ae36c00bab3a7882c14e73e4344e946e"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/data-batch-inserts.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/data-batch-inserts.md",
+          "upstream_sha256": "531933b82d6a622d0fae29e0ea80be6fe5d78655adf2804c271ea84a1930de37"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/data-n-plus-one.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/data-n-plus-one.md",
+          "upstream_sha256": "21a44905e5b16a42741892ec34bb1bfef124d049b140a76934a9acd0f46f5fc2"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/data-pagination.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/data-pagination.md",
+          "upstream_sha256": "73c9fa10a3d439bedea0e11b640bd25bf30dd50f0d9006cf85baf7c3151543fa"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/data-upsert.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/data-upsert.md",
+          "upstream_sha256": "2612af83b20a2701dde30ef1f8d7efd26b7e9eef84717226b8f038a2d2150ff7"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/lock-advisory.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/lock-advisory.md",
+          "upstream_sha256": "c88d259dbf81c3771438f59a165f7eab8acd09999dd370bdf807521c73f35aab"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/lock-deadlock-prevention.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/lock-deadlock-prevention.md",
+          "upstream_sha256": "09aee46f51d7178c8e55fe056cd5a94a64ba2c122fe418e6900cd99f297b2347"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/lock-short-transactions.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/lock-short-transactions.md",
+          "upstream_sha256": "5aa7f61095916986d39644b446cdbcd2bacca7ef698a3bb50b3f82dd60207602"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/lock-skip-locked.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/lock-skip-locked.md",
+          "upstream_sha256": "6c45077f430f29cd9cd8f448c94d578e827e7bd023fcdaf717a756acb116fa4b"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/monitor-explain-analyze.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/monitor-explain-analyze.md",
+          "upstream_sha256": "4cb67ffbf8e57f2e5b380b0beb4242528b513723ce314a2c2ffcf083bd4203d7"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/monitor-pg-stat-statements.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/monitor-pg-stat-statements.md",
+          "upstream_sha256": "89dca99d4e894fcbdcac136be7ad9fbc03d1342904f065c1b198dc9cf495f098"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/monitor-vacuum-analyze.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/monitor-vacuum-analyze.md",
+          "upstream_sha256": "2892272011710eb49b3f185ec12f15ce9ce4c365792c672f6e2a9c90da426a1a"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/query-composite-indexes.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/query-composite-indexes.md",
+          "upstream_sha256": "73e42424e671f0266e74fdb220db3196790f69fb43e2b19c7b9483eb4971b554"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/query-covering-indexes.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/query-covering-indexes.md",
+          "upstream_sha256": "daf2a7f0477fb7357b62b5fb5b185b1995a77a186347e45cb780e25e7a7589b6"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/query-index-types.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/query-index-types.md",
+          "upstream_sha256": "472a74f22c2df203bd0154999b3a5a0187cca2ab3d9a3978e305bb7c32f1a282"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/query-missing-indexes.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/query-missing-indexes.md",
+          "upstream_sha256": "91ad8b0ff4365704b4830a7f077c6f140f7140fd5d3ce5cd0b92b160cf9e25f1"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/query-partial-indexes.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/query-partial-indexes.md",
+          "upstream_sha256": "6448982bc8558c6555284958edc331b29239c6a0130e6b4501dd6d4da607a6dd"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/schema-constraints.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/schema-constraints.md",
+          "upstream_sha256": "90e8efda3e9e81095e642911ad4aae2809d160f29414338fa997253238f510f8"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/schema-data-types.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/schema-data-types.md",
+          "upstream_sha256": "e01b58c14c7f3f65d8ead580b9a4fcf70b83baaab0f9a5f83c569c9fd113e8c8"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/schema-foreign-key-indexes.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/schema-foreign-key-indexes.md",
+          "upstream_sha256": "7587713d12a65a212365459b3d39e4717d8a79e4073b10bd62f1054d8192c0dd"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/schema-lowercase-identifiers.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/schema-lowercase-identifiers.md",
+          "upstream_sha256": "4bc80f70865f2390872591f326c8a6be6456a0aeb5a7e5a2475d7cd9d43059ab"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/schema-partitioning.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/schema-partitioning.md",
+          "upstream_sha256": "541e13fbeaf4bb1485c9059d4c9417dbdb766cf16f4237cd63a04ada7ec45b90"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/schema-primary-keys.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/schema-primary-keys.md",
+          "upstream_sha256": "3c8beabef82066f9a0838b926da0885117fd2d9a263aaf84cb5ca9e5f0d400e9"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/security-privileges.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/security-privileges.md",
+          "upstream_sha256": "095909274a4fb43df785d7144cf674eeb40284d2d45628f14af4108737b93663"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/security-rls-basics.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/security-rls-basics.md",
+          "upstream_sha256": "e04dd1a3a382aafdaaa73fe9f7976352acdde6e90c2a2470d281b94d4f44b096"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/references/security-rls-performance.md",
+          "source_path": "skills/supabase-postgres-best-practices/references/security-rls-performance.md",
+          "upstream_sha256": "2e1faeca7d5746e246b1c78f9492fe2a9cfa41c4d7fa1e23c402d58fa18ea014"
+        },
+        {
+          "path": ".agents/skills/supabase-postgres-best-practices/SKILL.md",
+          "source_path": "skills/supabase-postgres-best-practices/SKILL.md",
+          "upstream_sha256": "ad65e776f45e761bafc609d3f506c77c1032225aa65e0c4c02f241b8071e5855"
+        }
+      ]
+    }
+  ],
+  "collision_count": 0
+}

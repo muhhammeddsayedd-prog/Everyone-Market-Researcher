@@ -1,0 +1,147 @@
+everyone. Market Radar — Codex skills installation plan
+Prepared: 17 October 2026
+Status: recommendation and installation brief only. No skills have been installed into the project. No packages, hooks, helper scripts, workflows, deployments or paid providers were executed for this review.
+Selection: 29 upstream skill entries (22 Addy + 4 Vercel + 2 Supabase + 1 n8n), plus one proposed local delivery skill. The n8n release payload still needs verification.
+Basis and review limits
+This selection is grounded in the four supplied repository descriptions (including the two attached text files), live GitHub catalogs and selected manifests, current official Codex/Supabase documentation, and the existing Market Radar handoff/review baseline. Milestone assignments and install/defer/exclude decisions are project-specific recommendations, not upstream requirements. This was not an exhaustive security audit of every repository file or an execution test of the skills.
+The project remains Next.js/TypeScript/Vercel + Supabase + n8n Cloud, with the approved provider collectors, OpenAI extraction/evaluation, REST/MCP and email. Existing M00–M15 scope, approval boundaries and testing criteria remain the source of truth. Skills do not replace them.
+A. Addy Osmani — select 22 skills
+Source: addyosmani/agent-skills. The upstream catalog lists 25 skills; do not install the complete pack indiscriminately. The project applications below are recommendations.
+#	Exact skill name	Milestones	Market Radar application	Invocation
+1	context-engineering	M00–M15	Load the existing AGENTS.md, decisions, current milestone and evidence without restarting requirements.	normal
+2	planning-and-task-breakdown	M00–M15	Break an approved milestone into internal verifiable tasks; do not introduce a user approval for every task.	normal
+3	incremental-implementation	M00–M15	Build testable vertical slices while delivering the complete approved milestone.	normal
+4	test-driven-development	M00–M15	Regression-first coverage for RPCs, normalizers, queues, callbacks, APIs and UI behavior.	normal
+5	source-driven-development	M00–M15	Verify framework, provider and tool behavior against current official documentation.	normal
+6	debugging-and-error-recovery	M00–M15	Reproduce failures, isolate the cause and preserve valid progress; no blind paid retries.	normal
+7	api-and-interface-design	M01, M03–M08, M14	Define RPC, ingestion, callback, REST and MCP contracts and boundary validation.	normal
+8	security-and-hardening	M01–M15	Review access control, callback authentication, untrusted content, secrets and privileged operations.	normal
+9	code-review-and-quality	M00–M15	Review correctness, maintainability and evidence before milestone acceptance.	normal
+10	doubt-driven-development	M01, M03–M08, M14–M15	Risk-focused adversarial review of locks, checkpoints, deduplication, auth and release decisions; no unapproved cross-model calls.	risk-focused
+11	git-workflow-and-versioning	M00–M15	Use inspectable commits and preserve the established branch/release policy and unrelated work.	normal
+12	ci-cd-and-automation	M00, M09, M15; ongoing	Automate the agreed type, lint, test, database, security and release checks.	normal
+13	documentation-and-adrs	M00–M15	Maintain the existing decisions, progress records, API documentation and handoff evidence.	normal
+14	observability-and-instrumentation	M03–M08, M12–M15	Track runs, queues, outcomes, costs, failures and traces; operational telemetry does not add historical social metrics to v1.	normal
+15	frontend-ui-engineering	M00, M09–M11, M15	Implement Everyone-branded components, responsive layouts, state and accessible interactions.	normal
+16	browser-testing-with-devtools	M00 preview, M09–M11, M14–M15	Use live browser diagnostics when the required DevTools tool exists; preserve Playwright/axe automated acceptance.	tool-dependent
+17	performance-optimization	M09–M12, M15	Measure browser, query and delivery performance before optimizing; avoid speculative rewrites.	normal
+18	code-simplification	M00–M15	Reduce unnecessary complexity without removing recovery records, idempotency, authorization or evidence.	normal
+19	deprecation-and-migration	M01 and later changes	Plan safe schema/API/data changes and compatibility; preserve historical content.	normal
+20	shipping-and-launch	M00 preview; M08, M12, M15	Verify the exact target, approved rollout, observability and rollback; the skill itself grants no deployment authority.	authorization-bound
+21	spec-driven-development	Approved requirement changes only	Check or extend the existing specification for genuine new requirements; never regenerate the whole PRD by default.	explicit-only
+22	constraint-driven-development	Approved quality-contract work only	Turn existing TESTING.md and milestone criteria into enforceable checks; do not restart an interview or silently adopt upstream thresholds.	explicit-only
+
+
+Shared reference dependency: Addy’s README explicitly warns that per-skill CLI installation can omit repository-level references. Preserve the complete selected skill folders and required shared checklists; resolve local references after copying. Copying a checklist to a new folder is not sufficient when the SKILL.md still points to the old relative path. Keep license/provenance records, and record any portability patches. Do not overwrite Market Radar’s root AGENTS.md or import upstream hooks by default.
+Existing project first: spec-driven-development and constraint-driven-development should be explicit-only. Read the current PRD, TESTING.md, decisions and milestone criteria before authoring anything. Do not make a new PRD/constraints questionnaire a prerequisite to continuing implementation. Upstream examples such as a particular test ratio, line-count limit or performance threshold do not silently become our acceptance criteria.
+B. Vercel — select four skills
+Exact manifest name	Upstream directory	Milestones	Application
+vercel-react-best-practices	skills/react-best-practices	M00, M09–M11, M15	React/Next.js data fetching, rendering, bundles and caching. Use the manifest name, not only the directory label.
+vercel-composition-patterns	skills/composition-patterns	M09–M11	Reusable filter bars, cards, dialogs, entity views and review components.
+web-design-guidelines	skills/web-design-guidelines	M09–M11, M15	Accessibility and interaction review without replacing Everyone branding. Review or pin externally fetched guidelines.
+vercel-optimize	skills/vercel-optimize	M12, M15 and post-launch	Metrics-backed Vercel cost/performance audits. Verify project scope and available observability; do not buy an upgrade or query unrelated accounts.
+
+
+The two manifest names beginning with vercel- differ from their README/directory labels. Use installed discovery output to verify identifiers rather than guessing aliases. Keep rule files, references, libraries and reviewed helper scripts alongside the manifests.
+vercel-optimize is for a deployed project with real signals, not a prerequisite for M00. Its inspected manifest has CLI/linkage and observability prerequisites. Treat it as explicit-only; do not enable a paid observability feature, change an account/project, or claim a complete metrics-backed audit when required data is missing.
+C. Supabase — select both skills
+Exact skill name	Milestones	Application
+supabase	M01–M15	Supabase Auth, SSR sessions, Storage, Queues and integration guidance. Keep the project access model and reviewed migration workflow.
+supabase-postgres-best-practices	M01–M15	Schema design, RLS, RPCs, concurrency, pgmq, pgvector, indexing and connection management.
+
+
+These complement one another: service/auth/storage integration versus database authoring/performance/security. Do not infer that both create two databases. Preserve separate dev/prod identities, n8n_writer/api_agent restrictions and the documented shared intelligence visibility. Do not copy a sample per-user ownership policy into every table or use a broad service credential merely because a tutorial does. Schema changes still require the project’s migration history, replay tests, environment checks and approvals.
+D. n8n — one generated reference pack
+Repository: haunchen/n8n-skills
+Documented skill name: n8n-skills (confirm the actual release manifest at installation).
+Use: M03–M08, M13, and workflow maintenance/hardening.
+This is one generated skill pack containing node documentation and templates, not hundreds of independent skills. Install the generated SKILL.md and all resources/guides it references, not the source generator as an application dependency. Do not install every documented community node into n8n Cloud. This repository is not czlonkowski/n8n-skills; do not attribute a different repository’s named skills to it.
+Live release metadata reports v2.22.0, published 30 August 2026, documenting n8n v2.36.8. The current README documents v2.38.7. These are not interchangeable version claims. Confirm the actual hosted runtime and node typeVersions; live schemas and current Cloud restrictions take precedence over a static reference pack.
+The release asset could not be downloaded in this review. Its interior, manifest and digest are therefore not independently verified. The publisher-reported SHA-256 is recorded in the JSON allowlist solely to support a later comparison. Do not mark this entry installed or integrity-checked until the payload is retrieved, inspected and hashed.
+Optional — not in the 29-skill installation target
+Repository catalog label	Reason to defer
+react-view-transitions	Only for specifically approved motion work after checking framework support, performance and reduced-motion behavior; manifest name must be checked before installation.
+writing-guidelines	Optional documentation polish. Everyone voice and existing documentation conventions take precedence; do not rewrite the handoff into a Vercel-specific editorial format.
+
+
+Exclude unchanged
+Skill/catalog label	Reason
+interview-me	The PRD and milestone plan already exist; avoid repeating the requirements interview.
+idea-refine	No need to restart product brainstorming during an approved implementation milestone.
+using-agent-skills	Do not add a competing universal router. Use a focused project-local route that preserves existing decisions and approval boundaries.
+react-native-guidelines (README label; directory react-native-skills)	Market Radar is a Next.js web application, not a React Native/Expo application.
+vercel-deploy-claimable (README label; directory deploy-to-vercel)	Use the already identified owner-controlled Vercel project rather than a new claimable deployment path.
+vercel-cli-with-tokens	Exclude unchanged: its setup examples print VERCEL_TOKEN or token-bearing .env lines; also avoid broad git staging/global tool changes. A reviewed redacted project-specific procedure can replace it.
+
+
+The token-printing finding is a concrete unsafe instruction pattern, not an accusation that the Vercel repository is malicious. No credential values were read or printed during this review.
+One proposed local skill: emr-milestone-delivery
+This is not an existing skill in the four repositories and has not been created. Its purpose is to route work through the existing project record, not to duplicate it or invent another roadmap.
+It should read AGENTS.md, PROGRESS.md, DECISIONS.md, the current milestone, relevant architecture/testing documents and the review findings. It should select technical skills by task; implement the complete approved milestone; record tests actually run, limitations and real external actions; update the existing progress/handoff; preserve completed work; and stop at genuine authorization or milestone boundaries.
+Project-specific checks to route into the relevant tests include durable callback intake/completion, safe watermarks and claim fencing, reliable deduplication, retries for discovered-but-uncrawled pages, partial-observation handling, Cloud-compatible validation, source-domain eligibility, design-token parity, cost-unit consistency and unambiguous schedules. A skill cannot itself prove these are fixed.
+Keep the Everyone design system authoritative. Keep source text untrusted and provenance reviewable. Preserve public-only collection, approved actors, thumbnail-only storage and latest engagement metrics. Operational telemetry is not permission to add a historical engagement dataset.
+Installation rules
+Use project-scoped .agents/skills/ for Codex. Inspect existing project and global skills first for duplicates or name collisions; do not delete or replace them automatically. Do not install the same source through both a plugin and copied folders without resolving duplicate discovery.
+Resolve an immutable source commit or release before each import, preserve upstream licenses, record source paths and file hashes, and record reviewed local patches separately. The main URLs in the allowlist are discovery references, not version locks. Pin the installer itself when it is used.
+Copy complete selected directories and all required resources. Preserve or deliberately repair relative references and test them. Do not import upstream root AGENTS.md, CLAUDE.md, hooks, MCP credentials or broad settings automatically. Prefer copied folders on installations where symlink behavior has not been verified.
+Review helper scripts and external destinations before execution. Do not print tokens, scrape arbitrary credential files, run opaque remote scripts, broaden tool permissions, change paid plans, activate schedules or deploy just because a skill suggests it. Updating skills is a reviewed dependency update, not an automatic step before every session.
+For selected skills requiring explicit invocation, merge the following into agents/openai.yaml, preserving existing metadata and dependencies:
+policy:
+  allow_implicit_invocation: false
+Apply explicit-only policy at least to spec-driven-development, constraint-driven-development and vercel-optimize. This affects skill selection, not authorization: it does not make a paid run, production write or secret access safe by itself.
+Skills versus actual capabilities
+A skill provides procedure; it does not establish authenticated access or install a browser/test runner. Codex still needs the intended repository access, Supabase tooling and correctly scoped environments, n8n tools matching the actual connected server, a verified Vercel target, and the project’s Vitest/Playwright/axe/pgTAP tooling. DevTools-specific inspection requires the relevant browser integration.
+The four catalogs do not supply a dedicated audited skill for every approved Apify actor, OpenAI extraction/evaluation contract, Firecrawl/SerpAPI integration, Resend setup or production MCP server implementation. Use the existing provider specifications and current official documentation. Missing specialized skill names are not permission to fabricate actor inputs or substitute another architecture.
+Codex installation brief
+When the owner sends this plan to Codex with authorization to perform skill setup, use this bounded instruction:
+Set up the project-scoped skill set in this plan and its companion JSON allowlist.
+Work only on skill setup and directly related routing/provenance documentation.
+Do not begin or advance application development as a side effect.
+
+Read the existing AGENTS.md and PROGRESS.md and inspect the current worktree.
+Preserve all application files, decisions, completed work and installed skills.
+Inventory duplicate skill names before making changes.
+
+Import only the 29 selected upstream entries, subject to their stated gates.
+Resolve and record immutable refs, source paths, licenses and file hashes.
+Review manifests, scripts, hooks, external fetches and shared references.
+Keep complete selected skill resources and repair/test relative paths.
+Do not silently install an unreviewed optional or excluded skill.
+
+Treat n8n-skills as pending until its release ZIP, actual frontmatter,
+linked resources and hash are verified against the intended runtime.
+Do not install the upstream generator or community node packages.
+
+Use .agents/skills for Codex. Do not overwrite root AGENTS.md with upstream
+AGENTS.md. Configure spec-driven-development, constraint-driven-development
+and vercel-optimize as explicit-only. Preserve all existing approval boundaries.
+
+Propose the small emr-milestone-delivery routing skill separately if it does
+not exist. Do not create a parallel PRD, roadmap or progress board.
+
+No paid runs, live workflow executions, deployments, hosted changes, emails,
+new provider connections, global settings changes or secret disclosure.
+
+Verify discovery, unique names, local-reference resolution and safe task
+routing with non-executing examples. Report exact installed refs/paths,
+local patches, checks run, entries still blocked and the final diff.
+Do not report a missing tool or unrun test as verified.
+Verification checklist
+Acceptance of setup requires valid frontmatter; expected unique skill names; complete resources; working relative references; preserved licenses/provenance; no secret material; no unreviewed hooks; discovery in Codex; and no unintended application, hosted or global configuration changes. Use safe routing checks such as an RLS migration, a duplicate callback, an accessible filter panel and a proposed production backfill. The first three should select relevant guidance; the last must retain its existing owner approval boundary without starting a provider.
+Sources
+The source URLs below were inspected through connected GitHub reads or official web documentation. No source URL is a claim of a completed full-file security audit.
+- addy_catalog: https://github.com/addyosmani/agent-skills/blob/main/README.md
+- addy_meta: https://github.com/addyosmani/agent-skills/blob/main/skills/using-agent-skills/SKILL.md
+- addy_constraints: https://github.com/addyosmani/agent-skills/blob/main/skills/constraint-driven-development/SKILL.md
+- vercel_catalog: https://github.com/vercel-labs/agent-skills/blob/main/README.md
+- vercel_tree: https://api.github.com/repos/vercel-labs/agent-skills/contents/skills
+- vercel_token_manifest: https://github.com/vercel-labs/agent-skills/blob/main/skills/vercel-cli-with-tokens/SKILL.md
+- vercel_optimize_manifest: https://github.com/vercel-labs/agent-skills/blob/main/skills/vercel-optimize/SKILL.md
+- supabase_docs: https://supabase.com/docs/guides/ai-tools/ai-skills
+- supabase_manifest: https://github.com/supabase/agent-skills/blob/main/skills/supabase/SKILL.md
+- postgres_manifest: https://github.com/supabase/agent-skills/blob/main/skills/supabase-postgres-best-practices/SKILL.md
+- n8n_catalog: https://github.com/haunchen/n8n-skills/blob/main/README.md
+- n8n_release: https://github.com/haunchen/n8n-skills/releases/tag/v2.22.0
+- codex_skills: https://learn.chatgpt.com/docs/build-skills
+- skills_cli: https://github.com/vercel-labs/skills
+Project context: everyone-market-radar-handoff.zip and Everyone_Market_Radar_Development_Baseline_2026-10-17.md supplied in this conversation. Attached source catalogs: Pasted text(1).txt (Addy) and Pasted text (2).txt (n8n).

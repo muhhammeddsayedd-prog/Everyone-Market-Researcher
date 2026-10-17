@@ -1,0 +1,18 @@
+﻿{
+  "status": "passed",
+  "mode": "development",
+  "url": "http://127.0.0.1:3000/",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "httpStatus": 200,
+  "title": "everyone. Market Radar",
+  "visibleHeading": true,
+  "wordmarkLoaded": true,
+  "noindexNofollow": true,
+  "visibleDialogs": 0,
+  "runtimeOrConsoleErrors": [],
+  "failedRequests": [],
+  "screenshot": "web-dev-desktop.png"
+}

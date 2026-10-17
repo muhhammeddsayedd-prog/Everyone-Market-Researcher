@@ -1,0 +1,153 @@
+"""Apply the reviewed Market Radar portability/scope patches exactly once."""
+from pathlib import Path
+import difflib
+import hashlib
+import json
+import shutil
+
+ROOT = Path(__file__).resolve().parents[1]
+AGENTS = ROOT / '.agents'
+RECEIPTS = AGENTS / 'skill-receipts'
+DEST = AGENTS / 'skills'
+
+
+def write(path, text):
+    path.write_text(text, encoding='utf-8', newline='\n')
+
+
+def replace(path, old, new):
+    text = path.read_text(encoding='utf-8')
+    assert text.count(old) == 1, f'Patch must match once: {path}'
+    write(path, text.replace(old, new))
+
+
+def main():
+    receipt = json.loads((RECEIPTS / 'upstream-import.json').read_text(encoding='utf-8'))
+    originals = {}
+    for entry in receipt['imports']:
+        for record in entry['files']:
+            path = ROOT / record['path']
+            raw = path.read_bytes()
+            assert hashlib.sha256(raw).hexdigest() == record['upstream_sha256'], path
+            originals[record['path']] = raw
+    for path in (AGENTS / 'references').glob('*.md'):
+        originals[path.relative_to(ROOT).as_posix()] = path.read_bytes()
+
+    patch_source = Path('C:/Users/iway/AppData/Local/Temp/emr-addy-reviewed-patches-aeac41d4.json')
+    shutil.copyfile(patch_source, RECEIPTS / 'addy-reviewed-replacements.json')
+    for patch in json.loads(patch_source.read_text(encoding='utf-8'))['patches']:
+        path = patch['path']
+        target = AGENTS / path if path.startswith('references/') else DEST / path.removeprefix('skills/')
+        replace(target, patch['old'], patch['new'])
+
+    react = DEST / 'vercel-react-best-practices/AGENTS.md'
+    for filename in ['async-defer-await.md', 'async-cheap-condition-before-await.md', 'server-hoist-static-io.md']:
+        replace(react, '](' + './' + filename + ')', '](./rules/' + filename + ')')
+
+    guidelines = DEST / 'web-design-guidelines/references'
+    guidelines.mkdir()
+    source = Path('C:/Users/iway/AppData/Local/Temp/emr-skills-review-20261017-webdb/guidelines-blobs')
+    assert hashlib.sha256((source / 'command.md').read_bytes()).hexdigest() == 'd246b026f4f29b5823a9cc857f9edf3d2507002e055e32040cadeaf3b38e0234'
+    for name in ['command.md', 'LICENSE']:
+        shutil.copyfile(source / name, guidelines / name)
+    web = DEST / 'web-design-guidelines/SKILL.md'
+    text = web.read_text(encoding='utf-8')
+    start = text.index('## How It Works')
+    write(web, text[:start] + '''## Reviewed guidelines
+
+Read [the local guidelines](references/command.md) and review the requested files.
+Report findings with file/line references. Everyone's design system and the
+project's accessibility/test criteria remain authoritative.
+
+The snapshot is from vercel-labs/web-interface-guidelines at immutable commit
+434b7f91364665f2f733b310ec54809bf8f37937, path command.md. Its MIT license is
+preserved in [references/LICENSE](references/LICENSE). Do not fetch mutable main
+or silently update the rules before a review. Updates require an explicit source
+review and lock refresh. If the task identifies the relevant UI, use that scope;
+ask for files only when the intended review target is genuinely unclear.
+''')
+
+    supabase = DEST / 'supabase/SKILL.md'
+    text = supabase.read_text(encoding='utf-8')
+    start = text.index('### Option A: Declarative schemas')
+    end = text.index('## Debugging', start)
+    text = text[:start] + '''### Market Radar migration workflow
+
+Use the project's existing imperative migration history. Create each file with
+`supabase migration new <name>`, review SQL in that generated file, replay/test
+locally, run `supabase db advisors` (or MCP `get_advisors`) and fix the findings,
+then regenerate types before committing. Verify the dev project first. Do not
+iterate schema changes directly on a hosted database or replace this process
+with `db pull --local`. Production requires its milestone and recorded owner
+approval. Read-only diagnosis does not authorize a schema write.
+
+''' + text[end:]
+    text = text.replace('**5. RLS in exposed schemas.**', '**5. RLS on every project table.**')
+    text = text.replace('For private schemas, prefer RLS as defense in depth.',
+                        'Market Radar also requires RLS and tests on every private-schema table.')
+    text = text.replace('The correct pattern combines `TO authenticated` with an ownership predicate in `USING`:',
+                        'The policy must match the project access matrix. The ownership predicate below is only a tutorial example; Market Radar uses shared intelligence visibility and scoped roles:')
+    write(supabase, text)
+
+    doubt = DEST / 'doubt-driven-development/SKILL.md'
+    text = doubt.read_text(encoding='utf-8')
+    start = text.index('#### Cross-model escalation')
+    end = text.index('### Step 4: RECONCILE', start)
+    text = text[:start] + '''#### Review capabilities and authorization
+
+Use available native review capabilities for material project risks. Do not
+prompt for a cross-model choice on every cycle. No external model/provider CLI
+is authorized by this skill. If a separately authorized external review is used,
+review its data disclosure and command safety first and record its limits.
+
+''' + text[end:]
+    text = text.replace('Offer it every interactive doubt cycle — the user decides whether the artifact warrants it. The agent\'s job is to surface the choice, not to gate it.',
+                        'Use it only when separately authorized; native risk-focused review is the default here.')
+    text = text.replace('- **Silently skipping cross-model in an interactive doubt cycle.** Even when not recommending it, the offer must be visible. Skipping is fine; silent skipping is not.',
+                        '- **Launching an external model/provider without existing authorization.** Record the actual review method and its limits.')
+    text = text.replace('- [ ] In interactive mode, cross-model was **explicitly offered** to the user (regardless of artifact stakes) and the response was acknowledged in the output\n- [ ] In non-interactive mode, cross-model was skipped and the skip was announced',
+                        '- [ ] Review used available native capabilities; any external model/provider call had separate authorization and its limitations were recorded')
+    write(doubt, text)
+
+    explicit = {'spec-driven-development', 'constraint-driven-development', 'vercel-optimize'}
+    special = {
+        'planning-and-task-breakdown': 'Use the current MILESTONE.md as the approved plan and its PROGRESS.md as the task list. Do not create tasks/ files or introduce task-level approval gates for already authorized work.',
+        'incremental-implementation': 'Take slices from the existing current milestone; preserve its full approved scope and progress records.',
+        'spec-driven-development': 'Explicit invocation only for approved new requirement work. Existing PRD/decisions/milestone specs already govern implementation; do not regenerate them or re-request their approval.',
+        'constraint-driven-development': 'Explicit invocation only for approved quality-contract work. Read docs/TESTING.md and current milestone criteria first. No questionnaire or new CONSTRAINTS.md is a prerequisite; upstream numbers are examples.',
+        'browser-testing-with-devtools': 'Use only already available approved browser capabilities. The upstream DevTools MCP setup commands are reference examples, not permission to install/configure tools. Keep Playwright/axe acceptance and report missing DevTools access.',
+        'vercel-optimize': 'Explicit invocation only for a requested deployed-project audit. Verify the intended project and existing observability first. No login/link/account change, paid feature or helper execution is authorized by installation.',
+        'supabase': 'The generated migration-file workflow and project RLS/role/secret restrictions below override generic tutorials. Installation authorizes no MCP setup, new connection, external issue submission or hosted SQL.',
+        'doubt-driven-development': 'Apply to material risks using available native review; no recurring cross-model question, persona dependency or provider CLI call. Current harness delegation rules govern.',
+    }
+    for entry in receipt['imports']:
+        name = entry['name']
+        path = DEST / name / 'SKILL.md'
+        text = path.read_text(encoding='utf-8')
+        marker = text.index('\n---', 4) + 4
+        guard = '\n\n## Market Radar project scope\n\nRead [the project skill rules](../../PROJECT_SKILL_RULES.md) before this procedure. Existing project decisions, milestone scope, tests, design and session authorization govern all examples. Skills grant no hosted or paid action authority.\n'
+        if name in special:
+            guard += '\n' + special[name] + '\n'
+        write(path, text[:marker] + guard + text[marker:])
+        if name in explicit:
+            config = path.parent / 'agents/openai.yaml'
+            assert not config.exists(), 'Preserve and merge existing metadata if present'
+            config.parent.mkdir(exist_ok=True)
+            write(config, 'policy:\n  allow_implicit_invocation: false\n')
+
+    changes = []
+    for relative, raw in originals.items():
+        current = (ROOT / relative).read_bytes()
+        if raw == current:
+            continue
+        diff = ''.join(difflib.unified_diff(raw.decode('utf-8').splitlines(True),
+                                          current.decode('utf-8').splitlines(True),
+                                          fromfile='upstream/' + relative, tofile=relative))
+        changes.append({'path': relative, 'upstream_sha256': hashlib.sha256(raw).hexdigest(),
+                        'installed_sha256': hashlib.sha256(current).hexdigest(), 'diff': diff})
+    write(RECEIPTS / 'local-patches.json', json.dumps(changes, indent=2, ensure_ascii=False) + '\n')
+    print(f'Applied reviewed patches to {len(changes)} upstream files, added 3 explicit-only policies and a pinned guideline dependency.')
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,9 @@
+
+> everyone-market-radar@0.0.0 typecheck D:\Everyone\everyone Market Research\everyone-market-radar
+> pnpm -r typecheck && tsc --noEmit -p tsconfig.json
+
+Scope: 2 of 3 workspace projects
+packages/shared typecheck$ tsc --noEmit -p .
+packages/shared typecheck: Done
+apps/web typecheck$ tsc --noEmit -p .
+apps/web typecheck: Done

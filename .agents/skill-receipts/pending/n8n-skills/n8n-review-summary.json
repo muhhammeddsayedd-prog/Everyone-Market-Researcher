@@ -1,0 +1,67 @@
+{
+  "repository": "haunchen/n8n-skills",
+  "release": "v2.22.0",
+  "commit": "1fe379099249d905e9bd7dfa212e65c8832153a8",
+  "assetId": 536555629,
+  "publishedAt": "2026-08-30T11:52:38Z",
+  "documentedRuntime": "v2.36.8",
+  "actualHostedRuntime": null,
+  "status": "pending-runtime-verification",
+  "assetName": "n8n-skills-2.22.0.zip",
+  "assetBytes": 530228,
+  "sha256": "898eb84f09bc8f59535ee0d6b365e97b61a050ff9cfb77ce313a23ff890e4a6e",
+  "githubAssetDigestMatched": true,
+  "manifestName": "n8n-skills",
+  "manifestVersion": "2.22.0",
+  "manifestLicense": "MIT",
+  "payloadFiles": 126,
+  "payloadDirectories": 14,
+  "payloadBytes": 2796079,
+  "payloadExtensions": [
+    ".md"
+  ],
+  "archivePathsSafe": true,
+  "scriptOrHookFiles": 0,
+  "mainManifestResourceLinksResolve": true,
+  "localMarkdownLinks": 164,
+  "brokenTemplateLinks": [
+    {
+      "source": "resources/templates/ai-chatbots/6270-build-your-first-ai-agent.md",
+      "target": "laHIzhsz12E",
+      "exists": false
+    },
+    {
+      "source": "resources/templates/communication/8237-personal-life-manager-with-telegram-google-services-voice-en.md",
+      "target": "ROgf5dVqYPQ",
+      "exists": false
+    },
+    {
+      "source": "resources/templates/data-processing/5170--learn-json-basics-with-an-interactive-step-by-step-tutorial.md",
+      "target": "PAmgrwYnzWs",
+      "exists": false
+    },
+    {
+      "source": "resources/templates/social-media/5338-generate-ai-viral-videos-with-seedance-and-upload-to-tiktok-.md",
+      "target": "AzOgpdn8ngY",
+      "exists": false
+    }
+  ],
+  "upstreamLicenseSupplement": {
+    "path": "LICENSE",
+    "sha256": "f6188e61e2e6dd3b904db0a464ddfdc45e82daf3e61d7e83e87221ef8b7c3efd"
+  },
+  "upstreamAttributionSupplement": {
+    "path": "ATTRIBUTIONS.md",
+    "sha256": "e845cc4ee50d9fd766cdc9460d25dbdb48750d9b2e0737a45fb7e62f5830a51f"
+  },
+  "manifestSha256": "3cafe184889707d511bbdf6be8962f86828ac15cffc8c362208b55996737a6dc",
+  "findings": [
+    "Release ZIP omits LICENSE and ATTRIBUTIONS.md; both were fetched at the immutable commit for supplemental retention.",
+    "Four template [youtube] links contain bare video IDs and need URL portability patches before any future installed-payload link check can pass.",
+    "Pack includes illustrative templates for out-of-scope platforms, media downloads, emails and third-party paid endpoints; none were executed, imported as workflows, or activated.",
+    "One HS256 JWT-shaped value is upstream tutorial metadata fingerprint (creator/iss/iat claims), not a project credential. Its value was never printed.",
+    "No actual n8n Cloud version or node typeVersions are recorded in the project; M03 T1 and MA-11 access remain unstarted."
+  ],
+  "futureGate": "Verify the actual Cloud runtime, relevant live node schemas/typeVersions and Cloud restrictions at M03 T1; review and record any reference-version mismatch before promoting this archive into .agents/skills.",
+  "externalActions": "Public GitHub metadata and file downloads only; no hosted n8n queries/mutations, upstream code execution, package installation, generator execution or workspace edits."
+}
