@@ -77,8 +77,35 @@ Verified owner-supplied refs: dev `zmotjsbzhzjvpelxvxlf`, prod
 Frankfurt (`eu-central-1`), healthy status, GitHub integration and no migrations.
 Those observations do not establish CLI access, OAuth or a deployed schema.
 
-With owner-scoped credentials supplied privately, verify the intended project
-and Postgres version. Use the explicit dev ref on every command:
+The resumed17October check proved the existing dev-scoped MCP OAuth through a
+fresh official Codex App Server client. Dev PostgreSQL17.11 and an empty baseline
+were verified live. MCP0.14.0 apply cannot accept the existing migration version
+IDs. Reuse OAuth for reads/advisors; preserve exact versions with CLI2.121.0 and
+the verified database URL instead of changing history or extracting OAuth tokens.
+
+Privately configure the existing dev DB password as `PGPASSWORD`. Do not print
+it, place it in arguments, reset it or request a new PAT by default. From the
+repository root, the reviewed future PowerShell workflow is:
+
+```powershell
+if ([string]::IsNullOrEmpty($env:PGPASSWORD)) { throw 'Private dev password missing' }
+$devDbUri = 'postgresql://postgres.zmotjsbzhzjvpelxvxlf@aws-1-eu-central-1.pooler.supabase.com:5432/postgres?sslmode=require'
+corepack pnpm exec supabase migration list --db-url $devDbUri
+corepack pnpm exec supabase db push --db-url $devDbUri --dry-run --skip-vault
+# Verify exactly the seven reviewed versions, hashes and current hosted state.
+corepack pnpm exec supabase db push --db-url $devDbUri --skip-vault --yes
+corepack pnpm exec supabase migration list --db-url $devDbUri
+```
+
+This host was observed in dev's Connect dialog, not inferred from the region.
+The URI has no password component; the explicit URL route uses `PGPASSWORD`
+without API authentication, link or service keys. Omit `--project-ref` with
+`--db-url`; also omit seed/roles/debug flags. Capture raw output privately and
+publish only non-secret receipts. Reconcile actual history after any failure
+before retrying. See the [current source review and acceptance plan](../milestones/M01-supabase-foundation/evidence/hosted-acceptance-20261017.md).
+
+The previously reviewed scoped-token route remains an alternative if those
+credentials are already privately supplied. It is not a new token request:
 
 ```sh
 corepack pnpm exec supabase migration list --linked --project-ref zmotjsbzhzjvpelxvxlf

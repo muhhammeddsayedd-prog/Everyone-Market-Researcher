@@ -1,0 +1,207 @@
+{
+  "date": "2026-10-17",
+  "timestampPrecision": "Read batches and browser batch-end observations; not exact per-click or per-query timestamps",
+  "sourceHead": "8a6502503a0b3108e65c1bfbf6a2a272e2022ebc",
+  "branch": "m01-supabase-foundation",
+  "pr": { "number": 4, "draft": true, "state": "OPEN" },
+  "verifiedSourceCi": {
+    "run": 39057325483,
+    "head": "8a6502503a0b3108e65c1bfbf6a2a272e2022ebc",
+    "quality": "SUCCESS",
+    "unit": "SUCCESS",
+    "build": "SUCCESS",
+    "e2e": "SUCCESS",
+    "db-tests": "SUCCESS",
+    "vercel": "SUCCESS"
+  },
+  "mcp": {
+    "server": "supabase",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "origin": "https://mcp.supabase.com",
+    "serverVersion": "0.14.0",
+    "auth": "Existing OAuth reused; no add/login/removal/scope change",
+    "client": "Official Codex App Server stdio client, ephemeral thread; no turn/start",
+    "modelTurnsStarted": 0,
+    "activeChatNativeCatalogue": "Still lacks supabase; fresh official client has active tools",
+    "hostDiagnosis": {
+      "codexVersion": "0.162.0-alpha.17.2",
+      "hostCreatedAt": "2026-10-17T15:48:44.1690340Z",
+      "mcpConfigModifiedAt": "2026-10-17T18:12:06.5750450Z",
+      "inference": "Retained chat host predates the MCP configuration; fresh client proves working authentication"
+    },
+    "projectUrlReadAt": "2026-10-17T18:36:42.762Z",
+    "projectUrl": "https://zmotjsbzhzjvpelxvxlf.supabase.co",
+    "toolCount": 20,
+    "tools": [
+      "get_project_url",
+      "list_extensions",
+      "apply_migration",
+      "query_logs",
+      "get_edge_function",
+      "search_docs",
+      "delete_branch",
+      "create_branch",
+      "execute_sql",
+      "generate_typescript_types",
+      "deploy_edge_function",
+      "get_advisors",
+      "list_tables",
+      "merge_branch",
+      "list_branches",
+      "list_edge_functions",
+      "rebase_branch",
+      "reset_branch",
+      "list_migrations",
+      "get_publishable_keys"
+    ],
+    "writeRestrictions": "Write tools present; no read_only URL parameter. Database write authorization has not been exercised. Account tools intentionally absent under project scope.",
+    "applyMigrationSchema": {
+      "required": ["name", "query"],
+      "additionalProperties": false,
+      "versionParameter": false
+    },
+    "rawOAuthMaterialAccessed": false,
+    "apiKeysRequested": false
+  },
+  "devDatabase": {
+    "observedAt": "2026-10-17T18:38:40.673Z",
+    "method": "Read-only MCP execute_sql plus migration, extension, table and branch inventory",
+    "postgresVersion": "17.11",
+    "database": "postgres",
+    "connectionRole": "postgres",
+    "migrations": [],
+    "tablesInPublicAppApiIngestOpsPrivate": [],
+    "projectRelationCount": 0,
+    "projectSchemasPresent": [],
+    "machineRoles": [],
+    "mediaBuckets": [],
+    "previewBranches": [],
+    "dataApiRuntimeSchemas": null,
+    "dataApiRoleSettings": [],
+    "requiredExtensionAvailability": {
+      "pgcrypto": { "available": "1.3", "installed": "1.3", "schema": "extensions" },
+      "vector": { "available": "0.8.2", "installed": null },
+      "pg_trgm": { "available": "1.6", "installed": null },
+      "unaccent": { "available": "1.1", "installed": null },
+      "pgmq": { "available": "1.5.1", "installed": null },
+      "pg_cron": { "available": "1.6.4", "installed": null }
+    },
+    "advisorsBeforeMigration": {
+      "security": { "findings": 0 },
+      "performance": {
+        "error": 0,
+        "warning": 0,
+        "info": 1,
+        "finding": "auth_db_connections_absolute",
+        "detail": "Auth configured for maximum 10 connections instead of percentage allocation",
+        "assessment": "Retained INFO; revisit with instance scaling. No baseline schema acceptance implied."
+      }
+    },
+    "types": "Not regenerated: hosted baseline absent. Checked-in local types preserved.",
+    "rlsGrantsRpcQueuesCronSeeds": "Pending baseline; no project objects exist to accept",
+    "domainAutojoin": "Not yet applicable: app.allowed_domains does not exist",
+    "migrationWrites": 0,
+    "fixtureImports": 0
+  },
+  "devDashboard": {
+    "project": "emr-dev",
+    "plan": "Everyone PRO",
+    "region": "eu-central-1",
+    "postgresBuild": "17.11.0.003",
+    "postgrest": "14.18",
+    "authVersion": "2.197.0",
+    "dataApi": {
+      "observedAt": "2026-10-17T18:39:40Z",
+      "enabled": true,
+      "exposedSchemas": ["public", "graphql_public"],
+      "extraSearchPath": ["public", "extensions"],
+      "autoExposeNewTables": true,
+      "maxRows": 1000,
+      "nextStep": "After schema creation set intended public,graphql_public,app list explicitly; keep ingest/ops/api/private/pgmq excluded, then verify hosted REST without signup fixtures"
+    },
+    "auth": {
+      "observedAfterReloadAt": "2026-10-17T18:40:04Z",
+      "google": "DISABLED",
+      "emailBefore": "ENABLED",
+      "emailAfter": "DISABLED",
+      "emailChange": "Explicit resume authorization; saved successfully and verified after reload",
+      "globalNewUserSignup": true,
+      "globalSignupReason": "Google invite-based onboarding needs account creation; email provider disabled independently",
+      "anonymousSignin": false,
+      "manualIdentityLinking": false,
+      "confirmEmail": true,
+      "siteUrl": "http://localhost:3000",
+      "additionalRedirectUrls": [],
+      "requiredGoogleCallback": "https://zmotjsbzhzjvpelxvxlf.supabase.co/auth/v1/callback",
+      "callbackVerifiedInGoogleDrawer": true,
+      "googleClientConfiguration": "Initially empty client fields; subsequent unrelated browser autofill discarded without saving. Google Cloud client existence unknown; no usable configured client verified.",
+      "fullSignInAcceptance": "Deferred to M09"
+    },
+    "poolers": {
+      "method": "Actual Connect dialog; no host constructed from region",
+      "host": "aws-1-eu-central-1.pooler.supabase.com",
+      "sessionPort": 5432,
+      "transactionPort": 6543,
+      "database": "postgres",
+      "migrationUser": "postgres.zmotjsbzhzjvpelxvxlf",
+      "expectedWriterUser": "n8n_writer.zmotjsbzhzjvpelxvxlf",
+      "expectedAgentUser": "api_agent.zmotjsbzhzjvpelxvxlf",
+      "machineUsernamesVerifiedByAuthentication": false
+    }
+  },
+  "githubIntegration": {
+    "repository": "muhhammeddsayedd-prog/Everyone-Market-Researcher",
+    "workingDirectory": ".",
+    "dev": {
+      "deployToProduction": false,
+      "automaticBranching": false,
+      "productionBranch": "Disabled, empty field"
+    },
+    "prod": {
+      "observedAt": "2026-10-17T18:40:21Z",
+      "projectRef": "hkiafqrcxaafdbcvjlzv",
+      "deployToProduction": false,
+      "automaticBranching": false,
+      "productionBranch": "Disabled, empty field"
+    },
+    "settingsChanged": false
+  },
+  "privatePrerequisiteCheck": {
+    "method": "Presence booleans only for process/user environment and expected repository env-file paths; no credential-store read",
+    "PGPASSWORD": false,
+    "SUPABASE_DB_PASSWORD": false,
+    "SUPABASE_DB_PASSWORD_DEV": false,
+    "SUPABASE_ACCESS_TOKEN": false,
+    "N8N_WRITER_URL": false,
+    "API_AGENT_URL": false,
+    "googleClientEnvironment": false,
+    "repositoryRealEnvFiles": false,
+    "nextAction": "MA-04: privately configure existing dev DB password as PGPASSWORD for exact-version CLI push; no PAT/login/reset needed",
+    "MA05": "Owner password creation remains pending until roles exist; direct machine-role authentication untested",
+    "MA06": "No usable configured Google client verified; owner must privately configure a valid existing or new web client. Email provider disable completed."
+  },
+  "observedUsage": {
+    "observedAt": "2026-10-17T18:41:00Z",
+    "method": "Signed-in dashboard, project-filtered usage summary; not attributable to this resume",
+    "plan": "Everyone PRO",
+    "spendCapEnabled": true,
+    "billingCycle": "2026-10-17 to 2026-11-17",
+    "dev": { "microComputeHours": 1, "provisionedDiskGb": 2, "logQueryGbUpcoming": 2.312 },
+    "prod": { "microComputeHours": 1, "provisionedDiskGb": 2, "logQueryGbUpcoming": 1.589 },
+    "otherMetrics": "UI-rounded zero for log ingestion, cached egress, MAU/SSO/third-party users, storage, transforms, Edge invocations, Realtime and log drains. Egress rounded 0 GB while chart showed nonzero KB.",
+    "freshness": "Dashboard warns of one-hour lag, or 24 hours for activity metrics",
+    "usdCharges": "Unknown; no precise USD charge measured",
+    "billingSettingsChanged": false
+  },
+  "boundaries": {
+    "productionBaselineApproved": false,
+    "pr4MergeApproved": false,
+    "productionWrites": 0,
+    "m02Started": false,
+    "localResetThisResume": false,
+    "unrelatedDockerChanges": false,
+    "paidBackfillOrProviderCalls": 0,
+    "hostedReadToolCalls": 8,
+    "hostedBillingAmountForThisWork": "Unknown; not measured"
+  }
+}

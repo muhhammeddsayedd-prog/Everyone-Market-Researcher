@@ -1,0 +1,171 @@
+# M01 hosted acceptance resume
+
+Observed 17 October 2026. [Structured receipt](hosted-resume-20261017.json)
+separates database reads, dashboard settings, historical local/CI evidence and
+unperformed acceptance. Earlier `mcp-setup.json` and `hosted-preflight.json`
+remain unchanged historical records.
+
+## Access and actual state
+
+The existing dev-scoped OAuth works. A fresh official Codex App Server client
+initialized an ephemeral thread, listed the `supabase` tools and directly
+called `get_project_url`, `list_migrations`, `list_extensions`, `list_tables`,
+`execute_sql`, `list_branches` and both advisor types. No `turn/start`, login,
+credential-store read, scope override or API-key request occurred. This starts
+no model turn. The native catalogue retained by this chat still lacks Supabase;
+the successful fresh client is a separate, verified connection.
+
+The retained Codex host started before the MCP configuration changed. This
+supports a stale-host explanation; configuration alone was not accepted as
+proof. App Server methods were checked against its installed protocol schemas
+and [official documentation](https://learn.chatgpt.com/docs/app-server).
+
+Live dev URL is `https://zmotjsbzhzjvpelxvxlf.supabase.co`. PostgreSQL is 17.11,
+matching the recorded local major/minor. All six required extensions are
+available; only pgcrypto is already installed. There are no baseline migrations,
+project relations, machine roles, preview branches or media bucket. No baseline
+DDL/DML or fixture import ran. Pre-migration advisors have zero security findings
+and one performance INFO (`auth_db_connections_absolute`, maximum10). Retain
+that setting for later scaling review; it is not baseline acceptance.
+
+Both projects link this repository at root `.`. Automatic branching and deploy
+to production are OFF; their production-branch fields are disabled and empty.
+No integration setting was changed. Dev Data API currently exposes only
+`public,graphql_public`. After baseline creation, add `app` and verify that
+`ingest,ops,api,private,pgmq` remain excluded. Do not equate an unset SQL runtime
+setting with verified API exposure; the actual list was read in the dashboard.
+
+The authorized dev Email-provider change was saved and independently verified
+after reload: DISABLED. Google remains DISABLED. Global account signup remains
+ON for Google invite onboarding; anonymous signin and manual identity linking
+remain OFF. Site URL is `http://localhost:3000`, with no additional redirects.
+The Google web-client callback was verified in the provider drawer as the dev `/auth/v1/callback`, distinct
+from the application's later post-login redirect. M09 owns full browser signin.
+Domain autojoin cannot yet be checked: `app.allowed_domains` does not exist.
+The Google client fields were initially empty. Unrelated browser autofill then
+appeared; it was cancelled without saving and is not accepted as existing
+Google client configuration. No credential contents were reported.
+
+## Preserve the seven migration versions
+
+Source/PR head inspected before changes:
+`8a6502503a0b3108e65c1bfbf6a2a272e2022ebc`, clean worktree,
+`m01-supabase-foundation`, draft PR4. [CI39057325483](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39057325483)
+passed quality, unit, build, e2e and db-tests at that exact head; Vercel passed.
+Those checks include the existing local242 assertions and concurrency/REST
+coverage. They do not establish hosted deployment. This resume changes evidence
+and instructions only; the seven reviewed SQL files remain byte-for-byte intact.
+
+| Version        | Name                     | SHA-256                                                          |
+| -------------- | ------------------------ | ---------------------------------------------------------------- |
+| 20261017172928 | extensions_schemas_roles | 478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d |
+| 20261017172931 | core_tables              | 4f1be3f6191885add916b164975ba10a8697069a0373a05df4e03fa53ea7cba3 |
+| 20261017172934 | auth_rls_views           | 8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9 |
+| 20261017172937 | rpc_pipeline_core        | 978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803 |
+| 20261017172940 | rpc_app_search           | 6111c5291e9c305e3e713180c0441ff5ffbf52b3b88f589d5d16fee55769171c |
+| 20261017172943 | storage_cron             | 859466fadfd940445ffe4b457e7250a179c93731e1f34736a629fe20df6e9c68 |
+| 20261017172945 | seed_taxonomies          | af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234 |
+
+MCP0.14.0 `apply_migration` accepts only `name,query`, with no version parameter.
+The [pinned implementation](https://github.com/supabase/mcp/blob/f46b3d2996d93baad25cce1b94b46440dcc44ecb/packages/mcp-server-supabase/src/platform/api-platform.ts#L237)
+and [Management API](https://supabase.com/docs/reference/api/v1-apply-a-migration)
+provide no supported version override. Prefixing the name with a timestamp does
+not preserve the separate version field. No apply call was attempted.
+
+The supported exact-version route is installed CLI2.121.0 `db push --db-url`.
+It uses the observed session pooler and a passwordless URI, with the existing
+database password supplied privately as `PGPASSWORD`. This path makes no
+Management API calls and needs no PAT, CLI link or service key. The URI must
+have `user@host`, with no password component or colon after the username.
+Sources: [explicit URL path](https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/command-internal/db-config.layer.ts#L566),
+[libpq password handling](https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/command-internal/db-config.parse.ts#L263),
+[version recorded after successful SQL](https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/command-internal/migration-apply.ts#L414).
+
+Future commands, not execution receipts (PowerShell, repository root):
+
+```powershell
+# Require a nonempty private password; never print it or put it in arguments.
+if ([string]::IsNullOrEmpty($env:PGPASSWORD)) { throw 'Private dev password missing' }
+$devDbUri = 'postgresql://postgres.zmotjsbzhzjvpelxvxlf@aws-1-eu-central-1.pooler.supabase.com:5432/postgres?sslmode=require'
+corepack pnpm exec supabase migration list --db-url $devDbUri
+corepack pnpm exec supabase db push --db-url $devDbUri --dry-run --skip-vault
+# Review the seven versions/hashes and current remote state before this write.
+corepack pnpm exec supabase db push --db-url $devDbUri --skip-vault --yes
+corepack pnpm exec supabase migration list --db-url $devDbUri
+```
+
+Do not pass `--project-ref`, `--include-seed`, `--include-roles`, a password flag
+or debug logging. Do not extract MCP OAuth material for the CLI. Require the
+explicit private password before launching; do not fall back to unrelated saved
+credentials. Retain raw output privately and publish only reviewed outcomes.
+`SUPABASE_DB_PASSWORD` belongs to linked resolution; this explicit URL path uses
+`PGPASSWORD`. In this session both are absent, as are the machine-role URLs,
+Google client environment variables and expected repository real env files.
+
+After push, read back actual ledger and catalogues before further action. On
+failure or ambiguous transport response, reconcile first and continue only the
+missing migrations. Never use ad-hoc SQL plus ledger repair, reset, dropped
+objects or renamed history to conceal a mismatch. Verify RLS, grants, invoker
+views, RPC restrictions, queues, cron, bucket and baseline seeds without hosted
+fixtures. Regenerate hosted types and inspect their schema coverage before
+replacing local types; run workspace typecheck. The MCP type tool has no schema
+selector, so do not assume its default output includes all four project schemas.
+Run post-migration advisors; the pre-migration report cannot substitute for them.
+
+## Remaining owner prerequisites
+
+- MA-04: privately configure the existing dev database password as `PGPASSWORD`
+  in the Codex environment, or run the exact CLI workflow privately and share a
+  non-secret result. This is a precise migration credential gap; MCP works.
+- MA-05: after migration creates the roles, use the dev SQL editor to set strong
+  passwords for `n8n_writer` and `api_agent` as described in MANUAL_ACTIONS.
+  Privately supply `N8N_WRITER_URL` at observed host5432 and `API_AGENT_URL` at
+  observed host6543, with their respective `<role>.zmotjsbzhzjvpelxvxlf` users,
+  database `postgres` and TLS. Run the existing rollback-only pooler script;
+  password creation/rotation remains owner-controlled. No successful role
+  authentication is claimed from OAuth or synthetic script tests.
+- MA-06: complete the existing Google web-client setup, or create a client if
+  none exists, with callback
+  `https://zmotjsbzhzjvpelxvxlf.supabase.co/auth/v1/callback`. Privately configure
+  it in dev Authentication > Sign In / Providers > Google. Then verify enabled
+  state, callback, Email disabled and domain autojoin off after migrations.
+  Full browser signin stays in M09.
+
+## Production approval packet — prepared, gate still open
+
+After dev acceptance, the separate T13 decision concerns only
+`emr-prod / hkiafqrcxaafdbcvjlzv`, applying exactly the seven versions/hashes
+above. General project access and the earlier M00 merge approval do not approve
+this action. No approval is inferred or requested before dev evidence is ready.
+
+The baseline creates36 project tables with RLS, restricted machine roles and
+RPCs, invoker views and indexes; ensures the six extensions; creates queues
+`ai_extract,embed,media`; and seeds120 taxonomy terms,13 settings,17 price-book
+placeholders and the owner admin invite. Domain autojoin remains empty. The
+`media` bucket is public-read, fiveMiB, allowing JPEG/PNG/WebP/SVG, with no client
+write policies. Two active internal housekeeping jobs are created:
+`emr-unlock-stale-accounts` (`15 * * * *`) and `emr-archive-queue-cleanup`
+(`30 3 * * *`). They clear expired locks and queue archives older than30 days;
+they do not activate collectors, AI, workflows or paid backfills.
+
+Exclude `supabase/seed.sql`, all tests, concurrency/signup fixtures, C999,
+test-house and real competitors/accounts. Before any approved prod write,
+verify fresh identity, history, objects, extension compatibility, backup/recovery
+availability and both Git integration controls again. Do not repoint dev MCP.
+Dry-run the exact production-targeted CLI route with private credentials, review
+the seven files, then apply once. On failure stop, read history/catalogues and
+continue missing work only; use a reviewed forward fix if needed. Never reset,
+drop collected data or fabricate an applied receipt. Verify prod migration/hash
+parity, catalogue/grants/RLS, queues/cron/bucket/seeds and zero competitors,
+advisors, Data API exclusions and owner-supplied role pooler connections. Keep
+dev the default afterward. PR4 merge is a further separate open approval gate.
+
+## Usage boundary
+
+The dashboard showed Everyone Pro with spend cap enabled, one Micro compute
+hour and twoGB provisioned disk per project. Upcoming log-query metrics showed
+2.312GB dev and1.589GB prod. These are project totals, may lag one hour or24 hours
+for activity, and are not costs attributable to this work. Rounded zeroGB
+egress coexisted with nonzeroKB in the chart. Exact USD charges are unknown.
+No billing setting, production setting, paid provider call, local reset,
+unrelated Docker project or M02 task changed during this resume.
