@@ -1,0 +1,18 @@
+﻿[
+  {
+    "uid": "dpl_9NPKNzYtzZW4ERNBxXwEVkKst9vc",
+    "url": "everyone-market-researcher-hhy3j3p21-muhammed-abdelrahman.vercel.app",
+    "state": "READY",
+    "target": null,
+    "branch": "m00-bootstrap",
+    "commit": "fe5e0574cfb81ff81dc5d680991d81e55ba8f8f4"
+  },
+  {
+    "uid": "dpl_DpWt3goAgJFJwcLMSbEN5kmtqnv1",
+    "url": "everyone-market-researcher-bl81f6e1k-muhammed-abdelrahman.vercel.app",
+    "state": "READY",
+    "target": "production",
+    "branch": "main",
+    "commit": "1946db47c07d013d15e693dbb03b1c72fa431829"
+  }
+]

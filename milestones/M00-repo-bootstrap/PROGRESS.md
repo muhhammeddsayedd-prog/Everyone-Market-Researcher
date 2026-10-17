@@ -4,16 +4,16 @@
 
 ## Status
 
-**In progress**
+**In review**
 
-| Field        | Value                                                                                     |
-| ------------ | ----------------------------------------------------------------------------------------- |
-| Started      | 2026-10-17                                                                                |
-| Last updated | 2026-10-17                                                                                |
-| Finished     | —                                                                                         |
-| Branch / PR  | `m00-bootstrap` / pending implementation push                                             |
-| Current task | T6 browser checks; T7 CI; T8 preview; T9 documentation                                    |
-| Next step    | Finish browser checks, clean frozen install, independent review; push branch and open PR. |
+| Field        | Value                                                                                                                   |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Started      | 2026-10-17                                                                                                              |
+| Last updated | 2026-10-17                                                                                                              |
+| Finished     | —                                                                                                                       |
+| Branch / PR  | `m00-bootstrap` / [PR #1](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1)                   |
+| Current task | T7 final CI verification; owner MA-01 protection/merge; T9 closeout                                                     |
+| Next step    | Verify the documentation/evidence push checks; owner protects main and approves merge; verify main CI. Stop before M01. |
 
 ## Task checklist
 
@@ -22,24 +22,24 @@
 - [x] T3 — Next.js placeholder; strict TypeScript; build and component test passed.
 - [x] T4 — Shared package; 19 shared tests and 16 canonical helper tests passed.
 - [x] T5 — Lint, formatting, strict typecheck; all passed.
-- [ ] T6 — Root unit suite passed 39 tests / 5 files; built-app Playwright/axe pending.
-- [ ] T7 — CI and repo hygiene implemented; hosted checks pending push/PR.
-- [ ] T8 — Vercel preview (MA-02 configured; preview pending).
-- [ ] T9 — README and hand-off; merge requires explicit owner approval.
+- [x] T6 — 39 unit/component/helper/token tests / 5 files and 4 production Playwright/axe viewport checks passed; separate dev smoke passed.
+- [ ] T7 — CI/hygiene committed fe5e057; PR #1 open. Initial quality failed only uncommitted root-doc formatting; final rerun pending.
+- [x] T8 — MA-02 configured and Git-linked preview READY for fe5e057; browser title, wordmark, label/footer, black background and noindex verified.
+- [ ] T9 — README and local hand-off ready; merge/main CI requires explicit owner approval.
 
 ## Acceptance criteria
 
-| ID  | Result  | Evidence                                                                                                    |
-| --- | ------- | ----------------------------------------------------------------------------------------------------------- |
-| AC1 | PASS    | Handoff, M00–M15 folders, docs/data/reference/assets/skills tracked; `423e301`.                             |
-| AC2 | NOT RUN | Initial install passed; clean checkout frozen install pending.                                              |
-| AC3 | PASS    | `pnpm lint`, `format:check`, `typecheck`, `test`; `evidence/{lint,format,typecheck,unit}.log`; 39/39 tests. |
-| AC4 | NOT RUN | Production build passed (`evidence/build.log`); browser checks pending.                                     |
-| AC5 | NOT RUN | PR/main CI pending; no local result substitutes for hosted checks.                                          |
-| AC6 | NOT RUN | Project configured; preview build/render pending.                                                           |
-| AC7 | PASS    | Targeted index scan before handoff commit: 481 files, 0 findings. Final index scan pending.                 |
-| AC8 | PASS    | `.github/dependabot.yml`, `pull_request_template.md` implemented.                                           |
-| AC9 | BLOCKED | GET main protection returned 404 "Branch not protected"; owner action MA-01.                                |
+| ID  | Result  | Evidence                                                                                                                                                                                                                                                                                             |
+| --- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC1 | PASS    | Handoff, M00–M15 folders, docs/data/reference/assets/skills tracked; `423e301`.                                                                                                                                                                                                                      |
+| AC2 | PASS    | Separate `.m00-clean-20261017` clone of42149c1: no node_modules before install; frozen install0 in11.8s; no tracked changes. `evidence/clean-install.log`.                                                                                                                                           |
+| AC3 | PASS    | `pnpm lint`, `format:check`, `typecheck`, `test`; `evidence/{lint,format,typecheck,unit}.log`; 39/39 tests.                                                                                                                                                                                          |
+| AC4 | PASS    | Fresh production build + Playwright/axe4/4 at320/768/1024/1440; `evidence/web-e2e.log`, `web-*.png`; dev smoke HTTP200/no runtime errors `web-dev-smoke.json`.                                                                                                                                       |
+| AC5 | BLOCKED | [Initial PR run39051922338](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39051922338): unit/build/e2e passed; quality failed only README/board formatting, preserved in `ci-quality-initial.*`. Corrected commit rerun pending. Main CI requires approved merge. |
+| AC6 | PASS    | [Preview](https://everyone-market-researcher-hhy3j3p21-muhammed-abdelrahman.vercel.app) READY, branch m00-bootstrap, commitfe5e0574cfb81ff81dc5d680991d81e55ba8f8f4; CUA Chrome rendering verified, `evidence/preview-readback.json`.                                                                |
+| AC7 | PASS    | Targeted indexed-content scan before CI commit:535 files/0 findings; documented env examples only, real env paths ignored. Final staged scan reruns before delivery.                                                                                                                                 |
+| AC8 | PASS    | `.github/dependabot.yml`, `pull_request_template.md` implemented.                                                                                                                                                                                                                                    |
+| AC9 | BLOCKED | GET main protection returned 404 "Branch not protected"; owner action MA-01.                                                                                                                                                                                                                         |
 
 ## Blockers
 
@@ -48,11 +48,11 @@
 
 ## Manual actions needed from the owner
 
-| ID             | Exact action                                                                                                                                                                                                                   | Status                                                                                                   |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| MA-01          | GitHub repo → Settings → Branches → Add branch protection rule → `main`; require a pull request before merging; require status checks `quality`, `unit`, `build`; save. Confirm here. Do not test by pushing directly to main. | Access verified ADMIN; empty main base explicitly approved/published; protection still owner-controlled. |
-| MA-02          | Owner authorized project creation/linking in this session. No repeat setup requested.                                                                                                                                          | Existing project discovered via authenticated CLI and configured; preview verification pending.          |
-| Merge approval | Review the completed M00 PR and explicitly approve merge.                                                                                                                                                                      | Not requested until implementation/evidence ready.                                                       |
+| ID             | Exact action                                                                                                                                                                                                                   | Status                                                                                                                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| MA-01          | GitHub repo → Settings → Branches → Add branch protection rule → `main`; require a pull request before merging; require status checks `quality`, `unit`, `build`; save. Confirm here. Do not test by pushing directly to main. | Access verified ADMIN; empty main base explicitly approved/published; protection still owner-controlled.                                      |
+| MA-02          | Owner authorized project creation/linking in this session. No repeat setup requested.                                                                                                                                          | Existing project discovered via authenticated CLI and configured; preview READY/rendering verified; no further owner project-creation action. |
+| Merge approval | Review the completed M00 PR and explicitly approve merge.                                                                                                                                                                      | Not requested until implementation/evidence ready.                                                                                            |
 
 ## Decisions & deviations
 
@@ -73,6 +73,7 @@
 
 ## Session log
 
+- 2026-10-17 · T6–T8 evidence: final built-app browser/axe4/4, dev smoke passed; clean frozen install passed. Independent review found no outstanding required code issue (token authoring excluded from reviewer independence); mutation rejected3/14 slug cases. Owned `.m00-clean-review-mutation` cleanup was rejected by automatic approval review; folder left ignored without retry. Existing Vercel project configured and Git preview bound fe5e057 rendered in Chrome. Initial GitHub quality failed because formatted README/board were left out of the first push; fix and original failure evidence retained. PR#1 awaits final checks and owner gates.
 - 2026-10-17 · T2–T5 implementation: workspace/toolchain, web placeholder, shared/env/slug and common normalizers, strict tooling. Initial install0; lint0; format0; typecheck0; 39 unit/component/helper/token tests passed; production build0. Logs in `evidence/`. Sources and exact versions in `evidence/toolchain.md` and `web-implementation.md`.
 - 2026-10-17 · T1 committed `423e301`: preserved handoff/assets/installed skill sources and receipts. Tracked secret pattern scan:481 files/0 findings. Root initialized in place. After explicit owner response, empty main base1946db4 pushed; implementation remains unmerged.
 - 2026-10-17 · Owner authorized M00 only; initial GitHub readback ADMIN/empty repository. Node24.18.0 installed. Local and hosted work proceeding within M00. No essential installed delivery wrapper/baseline report; existing progress structure retained.
@@ -84,4 +85,4 @@
 
 <!-- Filled when Done: what exists now, how to run/verify it, known gaps, what the next milestone should start with. -->
 
-- —
+- Prepared only: workspace and credential-free placeholder, strict tooling, shared helpers, db.types placeholder and commented M01 CI job exist. Run README commands. M00 cannot close until MA-01 protection, explicit merge approval, merged main CI. M01 has not started and needs a separate instruction after M00 closes.

@@ -1,0 +1,27 @@
+{
+  "usageCost": "unknown; no spend/usage receipt available",
+  "deployment": "dpl_9NPKNzYtzZW4ERNBxXwEVkKst9vc",
+  "branch": "m00-bootstrap",
+  "commit": "fe5e0574cfb81ff81dc5d680991d81e55ba8f8f4",
+  "project": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+  "wordmarkNaturalWidth": 519,
+  "hostedActions": [
+    "Approved empty main setup commit pushed",
+    "m00-bootstrap pushed; PR#1 created; CI triggered",
+    "Existing Git-linked Vercel project settings corrected; automatic branch preview built"
+  ],
+  "target": "preview (API target null, non-production Git branch)",
+  "footer": "Internal · everyone.",
+  "title": "everyone. Market Radar",
+  "state": "READY",
+  "background": "rgb(0, 0, 0)",
+  "heading": "Market Radar",
+  "wordmarkLoaded": true,
+  "screenshot": "Displayed in CUA tool output; local web-*.png are separate local test screenshots",
+  "robots": "noindex, nofollow",
+  "production": "Owner-created pre-existing deployment targets empty main1946db4; agent did not promote or merge implementation",
+  "observedAt": "2026-10-17T17:04:58.4149258+00:00",
+  "url": "https://everyone-market-researcher-hhy3j3p21-muhammed-abdelrahman.vercel.app",
+  "browser": "CUA Chrome existing owner session",
+  "team": "team_gboXPxTevpCOZuaA8eY9PmR1"
+}

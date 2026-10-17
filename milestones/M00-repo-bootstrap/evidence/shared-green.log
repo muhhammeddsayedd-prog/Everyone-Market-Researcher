@@ -1,0 +1,27 @@
+2026-10-17 — focused shared package and canonical helper verification
+
+Command: corepack pnpm exec vitest run --config packages/shared/vitest.config.ts
+Vitest: 5.0.5
+Exit: 0
+Test Files: 2 passed (2)
+Tests: 19 passed (19)
+
+Command: corepack pnpm exec vitest run --config n8n/normalizers/vitest.config.mts
+Vitest: 5.0.5
+Exit: 0
+Test Files: 1 passed (1)
+Tests: 16 passed (16)
+
+Command: corepack pnpm --filter @emr/shared typecheck
+Exit: 0
+
+Command: corepack pnpm exec prettier --check packages/shared n8n
+Exit: 0
+All matched files use Prettier code style.
+
+Command: corepack pnpm exec eslint packages/shared n8n
+Exit: 0
+No lint diagnostics.
+
+Scope: local helpers and schema handling only. No actor fixtures or hosted
+n8n workflows were run. Root integrated quality checks are recorded separately.

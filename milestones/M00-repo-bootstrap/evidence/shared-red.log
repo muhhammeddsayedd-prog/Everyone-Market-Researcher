@@ -1,0 +1,17 @@
+2026-10-17 — shared package and canonical helper tests, before implementation
+
+Command: corepack pnpm exec vitest run --project shared --project normalizers
+Vitest: 5.0.5
+Exit: 1
+Test Files: 3 failed (3)
+Tests: no tests (suite imports failed before running individual cases)
+
+Expected failures:
+- shared/src/env.test.ts: Cannot find module './env'
+- shared/src/slug.test.ts: Cannot find module './slug'
+- normalizers/normalizers.test.ts: Cannot find module './_common.js'
+
+The test files were written before these implementations existed.
+The initial run also warned about ESM config syntax inside the normalizer
+CommonJS package boundary. Renaming its config to vitest.config.mts resolved
+that warning on the subsequent focused run.

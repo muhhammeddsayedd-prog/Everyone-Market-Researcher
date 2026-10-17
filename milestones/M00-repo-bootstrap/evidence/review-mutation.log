@@ -1,0 +1,65 @@
+
+ RUN  v5.0.5 D:/Everyone/everyone Market Research/everyone-market-radar
+
+ ❯ .m00-clean-review-mutation/slug.test.ts (14 tests | 3 failed) 21ms
+   ❯ toSlug (14)
+     × matches the CSV slug for Aroma Designs & Solutions / Aroma Studios 10ms
+     × matches the CSV slug for Blue Studio for Voice Over & Dubbing 1ms
+     × separates an ampersand even without surrounding spaces 1ms
+System.Management.Automation.RemoteException
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+System.Management.Automation.RemoteException
+ FAIL  .m00-clean-review-mutation/slug.test.ts > toSlug > matches the CSV slug for Aroma Designs & Solutions / Aroma Studios
+AssertionError: expected 'aroma-designs-solutions-aroma-studios' to be 'aroma-designs-and-solutions-aroma-stu…' // Object.is equality
+System.Management.Automation.RemoteException
+Expected: "aroma-designs-and-solutions-aroma-studios"
+Received: "aroma-designs-solutions-aroma-studios"
+System.Management.Automation.RemoteException
+ ❯ .m00-clean-review-mutation/slug.test.ts:19:26
+     17|     ['2Pure Studios', '2pure-studios'],
+     18|   ])('matches the CSV slug for %s', (name, expected) => {
+     19|     expect(toSlug(name)).toBe(expected);
+       |                          ^
+     20|   });
+     21|
+System.Management.Automation.RemoteException
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+System.Management.Automation.RemoteException
+ FAIL  .m00-clean-review-mutation/slug.test.ts > toSlug > matches the CSV slug for Blue Studio for Voice Over & Dubbing
+AssertionError: expected 'blue-studio-for-voice-over-dubbing' to be 'blue-studio-for-voice-over-and-dubbing' // Object.is equality
+System.Management.Automation.RemoteException
+Expected: "blue-studio-for-voice-over-and-dubbing"
+Received: "blue-studio-for-voice-over-dubbing"
+System.Management.Automation.RemoteException
+ ❯ .m00-clean-review-mutation/slug.test.ts:19:26
+     17|     ['2Pure Studios', '2pure-studios'],
+     18|   ])('matches the CSV slug for %s', (name, expected) => {
+     19|     expect(toSlug(name)).toBe(expected);
+       |                          ^
+     20|   });
+     21|
+System.Management.Automation.RemoteException
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+System.Management.Automation.RemoteException
+ FAIL  .m00-clean-review-mutation/slug.test.ts > toSlug > separates an ampersand even without surrounding spaces
+AssertionError: expected 'film-tv' to be 'film-and-tv' // Object.is equality
+System.Management.Automation.RemoteException
+Expected: "film-and-tv"
+Received: "film-tv"
+System.Management.Automation.RemoteException
+ ❯ .m00-clean-review-mutation/slug.test.ts:27:31
+     25|
+     26|   it('separates an ampersand even without surrounding spaces', () => {
+     27|     expect(toSlug('Film&TV')).toBe('film-and-tv');
+       |                               ^
+     28|   });
+     29|
+System.Management.Automation.RemoteException
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+System.Management.Automation.RemoteException
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 11 passed (14)
+   Start at  20:01:27
+   Duration  449ms (transform 45%, import 25%, tests 15%, worker 13%, environment 1%)
+

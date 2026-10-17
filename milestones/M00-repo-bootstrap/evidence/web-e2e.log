@@ -1,0 +1,49 @@
+﻿
+> everyone-market-radar@0.0.0 test:e2e D:\Everyone\everyone Market Research\everyone-market-radar
+> pnpm --filter web test:e2e
+
+
+> web@0.1.0 test:e2e D:\Everyone\everyone Market Research\everyone-market-radar\apps\web
+> playwright test
+
+pnpm.cmd : [WebServer] (node:11328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:1
++ pnpm.cmd test:e2e 2>&1 | Out-File -FilePath milestones/M00-repo-boots ...
++ ~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([WebServer] (no... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:14696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:23924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:50356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:42276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:39452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:38448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:41544) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 4 workers
+
+(node:35684) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51528) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 [tablet-chromium] › e2e\smoke.spec.ts:4:1 › shows the internal placeholder without runtime or accessibility errors (1.6s)
+  ok 1 [desktop-chromium] › e2e\smoke.spec.ts:4:1 › shows the internal placeholder without runtime or accessibility errors (1.6s)
+  ok 2 [laptop-chromium] › e2e\smoke.spec.ts:4:1 › shows the internal placeholder without runtime or accessibility errors (1.6s)
+  ok 4 [mobile-chromium] › e2e\smoke.spec.ts:4:1 › shows the internal placeholder without runtime or accessibility errors (1.7s)
+
+  4 passed (16.1s)

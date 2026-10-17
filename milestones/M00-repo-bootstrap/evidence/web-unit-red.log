@@ -1,0 +1,253 @@
+
+> web@0.1.0 test D:\Everyone\everyone Market Research\everyone-market-radar\apps\web
+> vitest run
+
+
+ RUN  v5.0.5 D:/Everyone/everyone Market Research/everyone-market-radar/apps/web
+
+ ❯ |web| components/__tests__/placeholder.test.tsx (1 test | 1 failed) 306ms
+   ❯ Market Radar placeholder (1)
+     × identifies the product with an accessible heading and everyone. wordmark 303ms
+pnpm.cmd : 
+At line:3 char:1
++ pnpm.cmd --filter web test 2>&1 | Tee-Object -FilePath milestones/M00 ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| components/__tests__/placeholder.test.tsx > Market Radar placeholder > identifies the product with an 
+accessible heading and everyone. wordmark
+TestingLibraryElementError: Unable to find an accessible element with the role "heading" and name "Market Radar"
+
+Here are the accessible roles:
+
+  main:
+
+  Name "":
+  [36m<main[39m
+    [33mclass[39m=[32m"flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white 
+dark:bg-black sm:items-start"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  img:
+
+  Name "Next.js logo":
+  [36m<img[39m
+    [33malt[39m=[32m"Next.js logo"[39m
+    [33mclass[39m=[32m"dark:invert h-5 w-[100px]"[39m
+    [33mdata-nimg[39m=[32m"1"[39m
+    [33mdecoding[39m=[32m"async"[39m
+    [33mheight[39m=[32m"20"[39m
+    [33msrc[39m=[32m"/next.svg"[39m
+    [33mstyle[39m=[32m"color: transparent;"[39m
+    [33mwidth[39m=[32m"100"[39m
+  [36m/>[39m
+
+  Name "Vercel logomark":
+  [36m<img[39m
+    [33malt[39m=[32m"Vercel logomark"[39m
+    [33mclass[39m=[32m"dark:invert h-[14px] w-4"[39m
+    [33mdata-nimg[39m=[32m"1"[39m
+    [33mdecoding[39m=[32m"async"[39m
+    [33mheight[39m=[32m"14"[39m
+    [33mloading[39m=[32m"lazy"[39m
+    [33msrc[39m=[32m"/vercel.svg"[39m
+    [33mstyle[39m=[32m"color: transparent;"[39m
+    [33mwidth[39m=[32m"16"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "To get started, edit the page.tsx file.":
+  [36m<h1[39m
+    [33mclass[39m=[32m"max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  code:
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Templates":
+  [36m<a[39m
+    [33mclass[39m=[32m"font-medium text-zinc-950 dark:text-zinc-50"[39m
+    [33mhref[39m=[32m"https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-te
+mplate-tw&utm_campaign=create-next-app"[39m
+  [36m/>[39m
+
+  Name "Learning":
+  [36m<a[39m
+    [33mclass[39m=[32m"font-medium text-zinc-950 dark:text-zinc-50"[39m
+    [33mhref[39m=[32m"https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign
+=create-next-app"[39m
+  [36m/>[39m
+
+  Name "Vercel logomarkDeploy Now":
+  [36m<a[39m
+    [33mclass[39m=[32m"flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 
+text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"[39m
+    [33mhref[39m=[32m"https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=c
+reate-next-app"[39m
+    [33mrel[39m=[32m"noopener noreferrer"[39m
+    [33mtarget[39m=[32m"_blank"[39m
+  [36m/>[39m
+
+  Name "Documentation":
+  [36m<a[39m
+    [33mclass[39m=[32m"flex h-12 w-full items-center justify-center rounded-full border border-solid 
+border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] 
+dark:hover:bg-[#1a1a1a] md:w-[158px]"[39m
+    [33mhref[39m=[32m"https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=
+create-next-app"[39m
+    [33mrel[39m=[32m"noopener noreferrer"[39m
+    [33mtarget[39m=[32m"_blank"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black"[39m
+    [36m>[39m
+      [36m<main[39m
+        [33mclass[39m=[32m"flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white 
+dark:bg-black sm:items-start"[39m
+      [36m>[39m
+        [36m<img[39m
+          [33malt[39m=[32m"Next.js logo"[39m
+          [33mclass[39m=[32m"dark:invert h-5 w-[100px]"[39m
+          [33mdata-nimg[39m=[32m"1"[39m
+          [33mdecoding[39m=[32m"async"[39m
+          [33mheight[39m=[32m"20"[39m
+          [33msrc[39m=[32m"/next.svg"[39m
+          [33mstyle[39m=[32m"color: transparent;"[39m
+          [33mwidth[39m=[32m"100"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col items-center gap-6 text-center sm:items-start sm:text-left"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black 
+dark:text-zinc-50"[39m
+          [36m>[39m
+            [0mTo get started, edit the[0m
+            [0m [0m
+            [36m<code[39m
+              [33mclass[39m=[32m"rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] 
+dark:bg-white/[.08]"[39m
+            [36m>[39m
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  19:52:54
+   Duration  40.95s (environment 73%, setup 24%, import 2%, tests 1%)
+
+D:\Everyone\everyone Market Research\everyone-market-radar\apps\web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  web@0.1.0 test: `vitest run`
+Exit status 1
+              [0mpage.tsx[0m
+            [36m</code>[39m
+            [0m [0m
+            [0mfile.[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400"[39m
+          [36m>[39m
+            [0mLooking for a starting point or more instructions? Head over to[0m
+            [0m [0m
+            [36m<a[39m
+              [33mclass[39m=[32m"font-medium text-zinc-950 dark:text-zinc-50"[39m
+              [33mhref[39m=[32m"https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium
+=appdir-template-tw&utm_campaign=create-next-app"[39m
+            [36m>[39m
+              [0mTemplates[0m
+            [36m</a>[39m
+            [0m [0m
+            [0mor the[0m
+            [0m [0m
+            [36m<a[39m
+              [33mclass[39m=[32m"font-medium text-zinc-950 dark:text-zinc-50"[39m
+              [33mhref[39m=[32m"https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&ut
+m_campaign=create-next-app"[39m
+            [36m>[39m
+              [0mLearning[0m
+            [36m</a>[39m
+            [0m [0m
+            [0mcenter.[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-4 text-base font-medium sm:flex-row"[39m
+        [36m>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 
+text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"[39m
+            [33mhref[39m=[32m"https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_ca
+mpaign=create-next-app"[39m
+            [33mrel[39m=[32m"noopener noreferrer"[39m
+            [33mtarget[39m=[32m"_blank"[39m
+          [36m>[39m
+            [36m<img[39m
+              [33malt[39m=[32m"Vercel logomark"[39m
+              [33mclass[39m=[32m"dark:invert h-[14px] w-4"[39m
+              [33mdata-nimg[39m=[32m"1"[39m
+              [33mdecoding[39m=[32m"async"[39m
+              [33mheight[39m=[32m"14"[39m
+              [33mloading[39m=[32m"lazy"[39m
+              [33msrc[39m=[32m"/vercel.svg"[39m
+              [33mstyle[39m=[32m"color: transparent;"[39m
+              [33mwidth[39m=[32m"16"[39m
+            [36m/>[39m
+            [0mDeploy Now[0m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"flex h-12 w-full items-center justify-center rounded-full border border-solid 
+border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] 
+dark:hover:bg-[#1a1a1a] md:w-[158px]"[39m
+            [33mhref[39m=[32m"https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_c
+ampaign=create-next-app"[39m
+            [33mrel[39m=[32m"noopener noreferrer"[39m
+            [33mtarget[39m=[32m"_blank"[39m
+          [36m>[39m
+            [0mDocumentation[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError 
+../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ components/__tests__/placeholder.test.tsx:9:19
+      7|     render(<Page />);
+      8|
+      9|     expect(screen.getByRole('heading', { level: 1, name: 'Market Radar…
+       |                   ^
+     10|     expect(screen.getByRole('img', { name: 'everyone.' })).toHaveAttri…
+     11|       'src',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
