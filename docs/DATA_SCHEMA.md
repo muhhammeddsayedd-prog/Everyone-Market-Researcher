@@ -1,0 +1,169 @@
+# Data schema — everyone. Market Radar
+
+Database: Supabase Postgres (dev + prod). Draft SQL, in apply order: `reference/sql/001…006`. **The draft is a starting point, not a migration.** In M01 Codex creates real migrations with `supabase migration new <name>`, adapts the SQL, completes every function marked SKETCH in its owning milestone, runs `supabase db advisors` and the pgTAP tests, and generates types with `supabase gen types typescript`.
+
+## 1. Schemas and who can touch them
+
+| Schema | Holds | Exposed to Data API? | Who reads | Who writes |
+|---|---|---|---|---|
+| `app` | Clean data: competitors, accounts, items, campaigns, organizations, people, news, briefs, review, taxonomies, embeddings, members | Yes (RLS) | Signed-in members (`authenticated` + `private.is_member()`), `api_agent` | Only through RPCs (pipeline RPCs in `ops`/`ingest`, user RPCs in `app` → private workers) |
+| `ingest` | `raw_items`: untouched source payloads + normalized form | No | Nobody directly (debug via SQL editor as owner) | `n8n_writer` via `ingest.upsert_raw_items` |
+| `ops` | Runs, Apify runs, AI extractions, cost ledger, price book, API keys and calls, audit log, settings, queue RPCs | No | Admin pages through `app.*_summary` RPCs (private workers) | `n8n_writer` via `ops.*` RPCs; API layer for `api_calls` |
+| `api` | Security-invoker views + RPCs for agents | No (reached through the Next.js API with the `api_agent` login role) | `api_agent` | `api_agent` via scoped write RPCs |
+| `private` | `is_member()`, `has_role()`, triggers, workers (`SECURITY DEFINER`) | No | — | — |
+
+## 2. Entity relationships
+
+```mermaid
+erDiagram
+  competitors ||--o{ competitor_accounts : has
+  competitors ||--o{ items : "posted by"
+  competitor_accounts ||--o{ items : "collected from"
+  competitor_accounts ||--o{ website_pages : "work pages"
+  competitors ||--o{ employee_snapshots : "LinkedIn team"
+  items }o--|| organizations : "brand"
+  items }o--o| organizations : "agency"
+  items ||--o{ item_credits : credits
+  item_credits }o--o| people : person
+  item_credits }o--o| organizations : "credited org"
+  items ||--o| campaign_items : "belongs to"
+  campaigns ||--o{ campaign_items : groups
+  campaigns }o--|| organizations : brand
+  campaigns }o--|| competitors : "production house"
+  organizations ||--o{ org_aliases : aliases
+  people ||--o{ person_aliases : aliases
+  items ||--o{ media_assets : thumbnails
+  news_articles ||--o{ news_mentions : mentions
+  items ||--o{ ai_extractions : "AI results (ops)"
+  items ||--o| raw_items : "raw payload (ingest)"
+  review_tasks }o--|| items : "about (polymorphic)"
+  embeddings }o--|| items : "vector (polymorphic)"
+```
+
+## 3. Tables (app)
+
+| Table | Purpose | Key columns / constraints | Notes |
+|---|---|---|---|
+| `members` | App users | `user_id` → auth.users, `email` unique, `role` viewer/analyst/admin, `status` | Created by trigger on first Google sign-in from `member_invites` |
+| `member_invites` | Pre-approved emails | `email` pk (lowercase), `role` | Seed: owner as admin |
+| `allowed_domains` | Optional domain auto-join (off by default) | `domain` pk | |
+| `competitors` | 284 + baseline | `company_code` unique (C000–C284), `slug` unique, `markets[]`, `categories[]`, `in_house[]`, `priority_tier`, `pilot_rank`, `is_baseline` (one only) | Seed from `data/competitors.csv` |
+| `competitor_accounts` | One row per tracked account **and per collection type** | unique `(platform, handle_norm)` (generated `lower(handle)`); watermark columns; `next_due_at`, `locked_until`, `cadence`; `backfill_*` | Instagram gets two rows (`instagram`, `instagram_stories`); LinkedIn gets two (`linkedin`, `linkedin_employees`); websites get `website` (root, for the URL map) and `website_work_page` |
+| `organizations` | Brands, agencies, post houses, media | `kind`, `slug` unique, `industry` (brands), `status` confirmed/unconfirmed/merged, `merged_into` | Created by the AI resolver or humans |
+| `org_aliases` | Every spelling/handle | unique `(alias_normalized, org_id)`, trigram index | Taught by approvals |
+| `people` | Credited professionals | `slug` unique, `primary_role`, `linkedin_public_id` unique | No contact data |
+| `person_aliases` | Name variants (EN/AR) | trigram index | |
+| `items` | Every collected piece | unique `(platform, external_id)`; `published_at`; source text; `metrics` jsonb (latest); `status` active/removed; `content_hash`, `duplicate_of`; AI fields; `locked_fields[]`; `search_tsv` | Keyset index `(competitor_id, published_at desc, id desc)`; partial feed index |
+| `item_credits` | Credits per item | unique `(item_id, person_name_raw, role)`; `person_id`, `organization_id`, `competitor_id` | From AI (captions, Vimeo descriptions, website credits) or humans |
+| `media_assets` | Stored thumbnails/key frames/logos | `storage_path` unique | Bucket `media` |
+| `campaigns` | Grouped work | `brand_id`, `production_competitor_id`, `agency_id`, `first_seen_at`, `last_seen_at`, `platforms[]`, `locked_by_human` | Linker rule D-16 |
+| `campaign_items` | Item ↔ campaign | `item_id` unique (one campaign per item) | |
+| `website_pages` | Known URLs per work page | `url` unique, `status` new/crawled/ignored/removed/failed | Daily diff target |
+| `employee_snapshots` | Weekly LinkedIn team snapshot | unique `(competitor_id, snapshot_date)`; `people`, `joined`, `left_company` jsonb | Growth/hiring signal (D-08: jobs out of scope) |
+| `news_articles` / `news_mentions` | Weekly SerpAPI news and awards | `url` unique; polymorphic mentions | |
+| `briefs` | Weekly AI briefs | unique `(week_start, scope)`; `highlights` with item citations | |
+| `review_tasks` | Human queue | `kind`, polymorphic `entity_type/entity_id`, `suggestion`, `status`, `priority` | Partial index on open |
+| `taxonomy_terms` | Editable lists | unique `(taxonomy, code)` | `docs/TAXONOMIES.md` |
+| `alert_rules` | Email rules | `kind`, `filters`, `recipients[]` | Seeded in **M13**: daily digest + instant launch + budget + failing sources + weekly brief → owner |
+| `saved_views` | Per-user saved filters | owner-only RLS | |
+| `embeddings` | Vectors | unique `(entity_type, entity_id)`; `content_hash` to skip unchanged; HNSW cosine | 1536 dims |
+| `stats_daily` | Dashboard aggregates | pk `(day, competitor_id, platform)` | Refreshed daily |
+
+## 4. Tables (ingest, ops)
+
+| Table | Purpose |
+|---|---|
+| `ingest.raw_items` | Raw payload + normalized JSON per `(platform, external_id)`; insert-only |
+| `ops.scrape_runs`, `ops.scrape_run_accounts` | Run log per workflow run and per account |
+| `ops.apify_runs` | Async Apify run tracking (run ID ↔ scrape run ↔ accounts, dataset, usage USD) |
+| `ops.ai_extractions` | Every AI call: model, prompt/schema version, tokens, cost, output, confidence, vision flag |
+| `ops.price_book` | Unit prices per provider/SKU (dated) |
+| `ops.cost_ledger` | Every paid unit, by day/provider/category/platform/competitor/item/run |
+| `ops.api_keys`, `ops.api_calls` | Agent keys (hashed, scoped) and call log |
+| `ops.audit_log` | Human, API and system changes (before/after) |
+| `ops.settings` | Tunables: `auto_publish_threshold` 0.80, `campaign_window_days` 45, `campaign_similarity_min` 0.82, `alias_trgm_min` 0.6, `alias_embedding_min` 0.85, `daily_budget_usd` (150 during backfill, ~25 steady), `metrics_refresh_days` 30, `removal_window_days` 90, `stories_twice_daily`, `ai_batch_size` |
+| pgmq queues | `ai_extract`, `embed`, `media` |
+
+## 5. RPC catalog
+
+### Pipeline (EXECUTE: `n8n_writer`)
+| Function | Milestone | Does |
+|---|---|---|
+| `ops.start_run(workflow, platform, mode, env, execution_id) → uuid` | M03 | Opens a run |
+| `ops.finish_run(run_id, status, error)` | M03 | Closes it with totals and cost |
+| `ops.get_due_accounts(platform, limit, run_id, mode) → rows` | M03 | Claims due accounts (`SKIP LOCKED`) |
+| `ops.report_account_result(run_id, account_id, status, seen, new, error, backfill_done, cursor, p_secondary)` | M03 (p_secondary added in M04) | Per-account result, schedule, failure counter |
+| `ingest.upsert_raw_items(run_id, account_id, items jsonb) → jsonb` | M03 | Single writer path (§5.3 TECHNICAL) |
+| `ops.register_apify_run / ops.complete_apify_run` | M03 | Async Apify tracking |
+| `ops.log_cost(entries jsonb)` | M03 | Cost ledger rows |
+| `ops.daily_health() → jsonb`, `ops.accrue_fixed_costs(day)` | M03 | WF-91 |
+| `ops.claim_queue_batch(queue, n, vt) / ops.ack_queue(queue, ids)` | M03 | pgmq wrappers |
+| `ops.diff_website_urls(account_id, urls[]) → new urls[]`, `ops.mark_website_page(...)` | M05 | Website diff |
+| `ops.save_employee_snapshot(account_id, date, people)` | M05 | LinkedIn employees |
+| `ops.mark_removed(account_id, seen_ids[], p_since date)`, `ops.mark_website_removals(...)`, `ops.get_removal_targets(...)` | M06 | Removal check + weekly metrics refresh for paid sources |
+| `ops.save_media_asset(...)`, `ops.get_media_targets(ids)` | M06 | Media v1 (WF-31) |
+| `ops.save_bakeoff_rows(...)` + table `ops.bakeoff_results`, `ops.set_stories_cadence(...)` | M06 | Stories bake-off |
+| `ops.get_items_for_ai(ids[]) → jsonb`, `ops.apply_extraction(item_id, result, meta) → jsonb` | M07 | AI in/out |
+| `ops.upsert_embeddings(rows)`, `ops.enqueue_competitor_embeddings()`, `private.resolve_org`, `private.resolve_person`, `private.norm_alias`, optional `ops.register_ai_batch` + `ops.ai_batches` (Batch API) | M07 | Vectors, entity resolution |
+| `ops.campaign_candidates(ids[]) → jsonb`, `ops.attach_to_campaign(...)` | M08 | Linker |
+| `ops.upsert_news(articles)`, `ops.save_brief(...)`, `ops.get_brief_inputs(...)`, `ops.get_alert_payload(...)`, `ops.match_instant_rules(...)`, `ops.log_alert_sent(...)` + table `ops.alert_log` (unique `dedupe_key`) | M13 | News, briefs, alerts |
+| `ops.create_audit_sample()`, `ops.audit_accuracy()` | M12 | Accuracy audit |
+| `ops.activate_wave(...)`, `ops.backfill_progress()`, column `app.competitors.activation_wave` | M15 | Scale-up waves |
+| `ops.refresh_stats_daily(from)` | M10 | Dashboards (`app.stats_daily` primary key gains `country`) |
+| `ops.campaign_candidates_since(ts)`, `ops.get_campaigns_needing_summary()`, `ops.save_campaign_summary(...)`, `ops.link_by_media_urls()`, `ops.last_successful_run_at(workflow)`, `ops.create_review_task(...)` | M08 | Linker helpers |
+| `ops.should_publish(...)` + table `ops.publish_log` | M09 | WF-70 revalidate debounce |
+| `ops.query_embeddings(...)` | M11 | Search query embedding cache |
+
+Additional small helper RPCs used by n8n (settings, price book, error log, taxonomy snapshot, media/embedding targets, news queries, brief inputs, alert payloads, onboarding) are listed per milestone in `docs/N8N_WORKFLOWS.md` §8; they follow the same rules.
+
+### App users (EXECUTE: `authenticated`; role checked inside)
+`app.me`, `app.touch_last_seen`, `app.search`, `app.similar`, `app.compare_competitors` (M10), `app.market_dashboard` (M10), `app.pipeline_summary` (M09), `app.review_reopen`, `app.merge_campaigns`, `app.edit_*`, `app.get_settings`, `app.price_book`, `app.admin_update_price`, `app.admin_list_api_keys`, `app.admin_api_calls`, `app.pipeline_run_detail`, `app.alert_subscribe` / `app.alert_self_subscribe`, `app.admin_activate_wave` (M15), `app.review_resolve`, `app.correct_item`, `app.merge_organizations`, `app.merge_people`, `app.split_campaign`, `app.admin_upsert_competitor`, `app.admin_set_account_status`, `app.admin_request_rescrape`, `app.admin_invite_member`, `app.admin_set_member`, `app.admin_store_api_key`, `app.admin_revoke_api_key`, `app.admin_upsert_taxonomy_term`, `app.admin_upsert_alert_rule`, `app.admin_set_setting`, `app.costs_summary`, `app.pipeline_summary`.
+
+### Agents (EXECUTE: `api_agent`; scope checked inside)
+Read: views `api.items_v` (over `app.feed_v`), `api.competitors_v`, `api.campaigns_v` (over `app.campaigns_v`, which the web app also uses), `api.organizations_v`, `api.people_v`, `api.briefs_v`, `api.news_v`; functions `app.search`, `app.similar`, `api.market_stats`.
+Write: `api.add_competitor` (write), `api.resolve_review` (write), `api.request_rescrape` (admin).
+
+## 6. Seed data
+
+| File | Rows | Loads into |
+|---|---|---|
+| `data/competitors.csv` | 285 (284 + Everyone Films baseline `C000`) | `app.competitors` (`priority_tier`: "A · Pilot"→pilot, "B · Next wave"→next_wave, "C · Adjacent"→adjacent, "Baseline"→baseline; `markets` split on `|`; `hq_country` = first market, owner can correct) |
+| `data/competitor_accounts.csv` | 1,272 links (website 261, instagram 256, linkedin 226, vimeo 202, work page 199, youtube 128) | `app.competitor_accounts`. Each `instagram` row also creates an `instagram_stories` row; each `linkedin` row also creates `linkedin_employees` (cadence 7 days). During the pilot only accounts with `pilot=true` are `active`; the rest are `paused`. |
+| `data/pilot_50.csv` | 50 | Reference list for the pilot (ranks 1–50) |
+| `reference/sql/006_seed_taxonomies_settings.sql` | 120 terms + settings + price book | taxonomies, `ops.settings`, `ops.price_book`, owner invite |
+
+Seeding runs through `scripts/seed-competitors.ts` (M02) using the **secret key or DB owner connection from the owner's machine/CI only**, never from n8n or the web app. It is idempotent on `company_code` and `(platform, handle_norm)`.
+
+## 7. Normalized item contract (collector → DB)
+
+All collectors convert source objects to this shape before calling `ingest.upsert_raw_items`. JSON Schema: `reference/n8n/normalized_item.schema.json`.
+
+```json
+{
+  "platform": "instagram",
+  "external_id": "C9x...shortCode",
+  "actor": "apify/instagram-scraper",
+  "item_type": "reel",
+  "url": "https://www.instagram.com/reel/C9x.../",
+  "published_at": "2026-10-16T18:22:00Z",
+  "title": null,
+  "caption": "...original text...",
+  "hashtags": ["ramadan"],
+  "mentions": ["vodafoneegypt"],
+  "tagged_accounts": ["director.name"],
+  "duration_seconds": 45,
+  "thumbnail_url": "https://...",
+  "metrics": {"likes": 1200, "comments": 40, "views": 56000},
+  "payload": { "...": "untouched source object" }
+}
+```
+
+## 8. Rules Codex must keep
+
+1. RLS on every table; a pgTAP test per table proves non-members get zero rows and members get rows.
+2. Every FK has an index; every list query has a supporting index (check with `EXPLAIN`).
+3. No direct table writes from the web app or n8n; RPCs only.
+4. Never delete items; mark `removed`.
+5. Human-corrected fields (`locked_fields`, `locked_by_human`) are never overwritten by AI.
+6. Migrations are additive and reversible where practical; destructive changes need an owner-approved entry in `docs/DECISIONS.md`.
+7. Regenerate `packages/shared/src/db.types.ts` after every migration and commit it.

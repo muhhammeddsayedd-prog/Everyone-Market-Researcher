@@ -1,0 +1,685 @@
+{
+  "date": "2026-10-17",
+  "initial_project_files": {
+    "AGENTS.md": "4e596be530e88edfcdc90c3c28bd2f80544ef50e37efb1ae0b2747b0f8af21cc",
+    "DESIGN.md": "dde901c071b963b9bbf425d781e37125e6dbfbc902ee65a97f717a3c7f3e8ca1",
+    "PROGRESS.md": "8b6b969d3859f0ab122aaee7712b6944b35289b7020e3788dded874ff04549f1",
+    "README.md": "e262245402f9c6bfbca3b61a6138f8515e9849a3a4acaa4618428d7cb97552a4",
+    "data/competitors.csv": "99c6653d00818b39d04b8f9514d0ae8528038f3230ae11bf1b8613b35b185336",
+    "data/competitor_accounts.csv": "89f305b12cbbf9cad07f28b2464d165f67857882233f4146466ad5c3200e8866",
+    "data/pilot_50.csv": "6aa46f68286ab6d25f9bca34024935991f206de5e9aa195b6970aeed4ac63d39",
+    "data/README.md": "ea3bd73e9eb1f95e529ca0aa67b1c753b3930931ae9b9550bbdeaee0551f1147",
+    "data/test_accounts.csv": "6b96d20fb4a47798da4b5339fea42c43db04281055122290bf384c3cba450d30",
+    "docs/AI_PIPELINE.md": "186e512220e94fc8b5f2a2d629757215840a1ee6b39cd0c836aa37faf510769f",
+    "docs/API_SPEC.md": "feb7c9b1925c147f91f5ea87654425940aa4e49ab007047e8e295ac4244bb3fb",
+    "docs/DATA_SCHEMA.md": "62ea569f4143ec5f6a41de5ff2311c408c4b23b968b89f42e46b464cfcf7b36c",
+    "docs/DECISIONS.md": "5ac88eb3be61aa4587406a19413eca1182ea17794a165e1ba1c1aae299ec2cd7",
+    "docs/DESIGN_STYLE.md": "2b82c7cc952e3f5b09c37b397f841b6a9bfd7d996a0ae1d868c9568dd2811736",
+    "docs/DEVELOPMENT_PLAN.md": "cbfad71970f5fabac664955b113755a8f7f9d75f6e30fbe9ddcd805fb2bdc44d",
+    "docs/ENVIRONMENT.md": "8cffdd4da5a6f7f5b3c746ed21f24f2b0a1c0f2599c984ffa0dd6ac569334714",
+    "docs/MANUAL_ACTIONS.md": "f61796ccb944c28f546750d707eff33357f67d6155b769701c9d0007c63be2da",
+    "docs/N8N_WORKFLOWS.md": "4fedf4e70ef5ed16720a29f539a7c2fc9bb7d18ed9ea1e3a9f966560afaf4eaf",
+    "docs/OPEN_QUESTIONS.md": "ddd399d97acbdeea72d837d24d666352cac515a0c5a06ccb4011ccc789a4313f",
+    "docs/PRD.md": "1c37fb44e1b824a1119e33009c09c2bd2639655f8a25804ac52a568db217d97f",
+    "docs/SCRAPING_SOURCES.md": "8a3800e3b6108a37eabbd62024a26ebf6273ca3772e709547299586253f4f08d",
+    "docs/TAXONOMIES.md": "569346e331f7c95f81785d09cb3c9ed3e32e2cc7cc9bf298dea78dccd0d444a5",
+    "docs/TECHNICAL.md": "2dacc16819b2bcc07ca38d60790c83866eb2b91ca4625a829d0b9a9bb0fc7060",
+    "docs/TESTING.md": "ab51bb7158b5b1c70d5bd7b06efb5f467a7d901801ebd08ce2af19824e7f314f",
+    "reference/apify_actor_research_2026-10-17.md": "94ea09e681a9c3504d66351fb3d92abdcb011cd75fcab80d1538436b6bbe342a",
+    "reference/taxonomies.json": "287101345cdc0a839a1d54ba333cc4f4313a0e2498fac79a5605a1a1e95ba2a7",
+    "templates/.env.example": "35b1cd5d15d2cc4b01372e5790bc60ecfa1d15dd0979005e7039655701081524",
+    "templates/MILESTONE_PROGRESS_TEMPLATE.md": "9e03299c5827f127c9d8cb536bcf971fe0db0f74db174eeebc51dc447a5424eb",
+    "reference/json-schemas/item_extraction.v1.json": "8a743e99e5f48ca9308898faec966165b616e99a65e79b0e21571b09551a9a9b",
+    "reference/json-schemas/weekly_brief.v1.json": "565205716c808580122c50ca105350d16d149e7d76dc28cfa3e24825b8857a0a",
+    "reference/n8n/normalized_item.schema.json": "a0c1738078ba77ec790c242010004b14f1dde0a8f02f0ffa1ede263cfa4a90e1",
+    "reference/prompts/campaign_link.v1.md": "30a502498757cf9adf90c4c44745204ab1c669e35ff6f3dcefb4ed3905b7b15f",
+    "reference/prompts/extract_item.v1.md": "6964d46604fa63a7b7977112f452cd3a40a5d39c34560ea73514bd752f57717e",
+    "reference/prompts/weekly_brief.v1.md": "ff6e28ce8b9c9794dfc0a7468b64ed5ac30aa5d05f3fb541d9caaf5ad0d0adab",
+    "reference/sql/001_extensions_schemas_roles.sql": "9fca37b8edf748305538a2ccb0bcc5601262795e207305029a306a94be0f95cb",
+    "reference/sql/002_core_tables.sql": "81fbcaf29f6d319d84c86b6ee50bfb72c6ce042af662521c696c4c2ec2b93bb4",
+    "reference/sql/003_auth_rls_views.sql": "6d375a70e5e98ad9bcfe116275f44a30e3cc95736475863217530dfe9217a829",
+    "reference/sql/004_rpc_pipeline.sql": "40a770deb74512bd29f04ba10763e1279a005f4bdcc085ad38a5caeae8d1327d",
+    "reference/sql/005_rpc_app_api_search.sql": "7350daa2bba0129a022d9ad7755e007e43edc9ee597c69dbdd6f153a9f0a2f09",
+    "reference/sql/006_seed_taxonomies_settings.sql": "8edfd3e610e1f469b30832b4c90e8f7b7d4c83d08bf6c6d708813ee0b569c3de",
+    "milestones/M00-repo-bootstrap/MILESTONE.md": "ce8a28670a701d34bb73503ee82bf992e3d1182b63377ca84a682ea8e1c85228",
+    "milestones/M00-repo-bootstrap/PROGRESS.md": "4e2fc9378a146613af45d49692a56ee5e56b8aae6965c2ae2363f519c0972e1d",
+    "milestones/M01-supabase-foundation/MILESTONE.md": "8a7fcc5cceeedcb8de8508c2e646cfdb66d36239a4c076ebb0dcfe5e2b837eb7",
+    "milestones/M01-supabase-foundation/PROGRESS.md": "87c967c738d69bcb4dd6990d54803602bbe94bf1cc11674e5dbc65143e7da184",
+    "milestones/M02-seed-data/MILESTONE.md": "96e4cc9576a2c639c5b210e4a59f31634f72f82ecfc532b6d34064401cbb0d08",
+    "milestones/M02-seed-data/PROGRESS.md": "af7711f2b54e4a15890c635f59deea7d552c9e0f620b10e5000e46a9fc8df5a4",
+    "milestones/M03-n8n-foundation/MILESTONE.md": "5751c31a3d879b452b07a27ab3a2f9b063bbeceb4e550b7e7d47f66b82c6887e",
+    "milestones/M03-n8n-foundation/PROGRESS.md": "e123b183a58458ea2d5a88cab47631e8a3d61f65a3e0b13358a7d6955ff252ea",
+    "milestones/M04-collectors-vimeo-instagram/MILESTONE.md": "aee1120e9ee08ca8ad6de1bcb8ac505383712d79a28dff021d5c6c719caab498",
+    "milestones/M04-collectors-vimeo-instagram/PROGRESS.md": "8e6ea27b5543a47ce964d15d263d2c537207aeaf1b39798f33875c5726e65d67",
+    "milestones/M05-collectors-web-youtube-linkedin/MILESTONE.md": "2d7da830af84daa7d38a0f4647b32e869323fd2989e4798ac5ab520dd92e6533",
+    "milestones/M05-collectors-web-youtube-linkedin/PROGRESS.md": "fee41464ef16ab616efc666f2047914665125c7c04222938f6225f14f8fc8c31",
+    "milestones/M06-collectors-stories-upkeep/MILESTONE.md": "21f319ee926e86c9ccf61e093cb972dd32b3b9853470a25d592be37a84ffecf6",
+    "milestones/M06-collectors-stories-upkeep/PROGRESS.md": "606fe830d90b5b8ae3619f14047389cf403041bd4ede3db995e8a20278fe555e",
+    "milestones/M07-ai-understanding/MILESTONE.md": "9ea8610c75d4893dd867bb791aa2df698eddad6e9125d5f10ed592034cbab4d9",
+    "milestones/M07-ai-understanding/PROGRESS.md": "9153fff40a34284185629a2ca82272abfaf55cc1abae571872a9be9a07b9214b",
+    "milestones/M08-campaign-linker-pilot-launch/MILESTONE.md": "ae582adc2005ac4d5f47a87d0ab25496c6b08d63dc37952a2ef1e1181eba7ca0",
+    "milestones/M08-campaign-linker-pilot-launch/PROGRESS.md": "7fd18138b19cfc0f5fbdbbbcd3c5a5e5c165c8b9689af127e8b585a316a40414",
+    "milestones/M09-web-app-foundation/MILESTONE.md": "8ed7899c2ff7116af8866f35145489854718ac85800b310becd2b7ca5898e2a7",
+    "milestones/M09-web-app-foundation/PROGRESS.md": "a36d0189800beb4a2922abaf37aee475dd46c83d9f9e120129c2bd0a368a13ff",
+    "milestones/M10-web-app-entities/MILESTONE.md": "5f2f5ef6ca79a9dd0530424dc811ba69028e75fc96064b0e988e4e2c58425de0",
+    "milestones/M10-web-app-entities/PROGRESS.md": "b8448d150b575b3301ebd243198429d31269e6055f88345c2b0c75eb851a1ddd",
+    "milestones/M11-search-review-admin/MILESTONE.md": "e8544f4946a84e52dc09cb8fa716d729bc3bbbd9aa477a03680b85519e093481",
+    "milestones/M11-search-review-admin/PROGRESS.md": "6bd1923ffcb0a6fc3fe0db349bac734fb6af97d2392182cba573ff9d37a435c1",
+    "milestones/M12-pilot-review-gate/MILESTONE.md": "679d6f4a50bac92a38ecad41d979e6916e4e4f18e762d0712765219d45eacb1c",
+    "milestones/M12-pilot-review-gate/PROGRESS.md": "47e9121536afe9340dee4a55b89440b9f3840c976b2338b2128ee99f34e871f9",
+    "milestones/M13-news-briefs-alerts/MILESTONE.md": "b8ab81673d56fa446454a11bbe80c8762293e0b84527c36f4244784daef385c5",
+    "milestones/M13-news-briefs-alerts/PROGRESS.md": "4aeb2e9ef2ccc68095c2714067eaecbc363459eb587b96805455e468c707e72e",
+    "milestones/M14-agent-api-mcp/MILESTONE.md": "86debc2033e1857710e2eb0f10c9e7b503472b5bf171b6e5f807e4725422e97a",
+    "milestones/M14-agent-api-mcp/PROGRESS.md": "ae27fa2c9db500ff02ec3bdc5de5d94d54caafdaa1d133022c0d5d42abf10a33",
+    "milestones/M15-scale-launch/MILESTONE.md": "3ba93a9ff5415fc91037be0eba36c5145e2c3011192b7788130288cb11a10bb9",
+    "milestones/M15-scale-launch/PROGRESS.md": "5836985d99b57505e42a69805afa032d1c390f26a899ce38de907e94ce774c20",
+    "assets/brand/everyone-logotype.svg": "956befb784a4499230bcb2162660665d95e8e00aa7aa0ba95e2a1bc4cf8d1f4d",
+    "assets/brand/everyone-menu-dots.svg": "d6faa44fcc93295d0b72b2962fc929bb5e2af2389e51326290209bd0c14f66b0",
+    "assets/brand/everyone-wordmark-on-black.png": "9c751250590cd298ca52c1e9a4717e38d17cce297ff50b1c36d01c844fb74e27",
+    "assets/brand/tokens.css": "f6123e51e1fe327083a22f0d00209ef0ed38795a8fc88d4b283e771591ba6780",
+    "assets/brand/tokens.json": "f07f2d7f5b89a7d00e01972200c13ba4c5ea943fbe8a66cf7c1e918d2fcf44fc"
+  },
+  "existing_skill_manifests": [
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\embedded-captions\\SKILL.md",
+      "name": "embedded-captions",
+      "sha256": "a966ebd548e618f410a18b3479934ea45c610c2c1ede230fdb927d9b1fd5a0f5"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\hyperframes\\SKILL.md",
+      "name": "hyperframes",
+      "sha256": "c696f32f2d953d767d847cb5eb7a0a23e0f0e33641f043a3b830c1ea3b721b33"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\hyperframes-animation\\SKILL.md",
+      "name": "hyperframes-animation",
+      "sha256": "69a9903796e65c66edbe9ec9621eca8953c7cc2a93a718687306891daf0463d4"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\hyperframes-audio\\SKILL.md",
+      "name": "hyperframes-audio",
+      "sha256": "350732899d50648f5d287c43fea17b5cfd20643cf30521918c8828c3f919481a"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\hyperframes-cli\\SKILL.md",
+      "name": "hyperframes-cli",
+      "sha256": "433aef24ea350a775cf2aec2d4af7742a017a4d8f729ee538b6c21a629a39a59"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\hyperframes-core\\SKILL.md",
+      "name": "hyperframes-core",
+      "sha256": "5d784d5af66f7230b50dde10bde53cf7c35b6786868783a5a638cf05c988c54f"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\hyperframes-creative\\SKILL.md",
+      "name": "hyperframes-creative",
+      "sha256": "488782fc741a43e002b5c6ac0da69cc2b12abaa42b6c0056df2aa53bea553c16"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\hyperframes-keyframes\\SKILL.md",
+      "name": "hyperframes-keyframes",
+      "sha256": "924d038dc7eb20d16e05fa0e9837fa50bdcac0ce131aee80ebd8188cb67110d1"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\hyperframes-registry\\SKILL.md",
+      "name": "hyperframes-registry",
+      "sha256": "0694f970b3613b9f0a63dc44c06404ea4f6506819f4afdbc9da3323b420cb9ae"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\impeccable\\SKILL.md",
+      "name": "impeccable",
+      "sha256": "a1ea82ce80f4db6f53757a84fc37b639fdc2354ca25e54a30ab6d45dcf944628"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\media-use\\SKILL.md",
+      "name": "media-use",
+      "sha256": "1301ea7cb53a0a44f5c7d62c34cba7e00b9e69b31bed57dc8d645417cea0da7c"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\motion-graphics\\SKILL.md",
+      "name": "motion-graphics",
+      "sha256": "08d8511423df5199871bbea26790858311e17f79b14633e94db86655919ec1d3"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\music-to-video\\SKILL.md",
+      "name": "music-to-video",
+      "sha256": "f1f31bcb7d4fb9af2ecdb69c1e7d512cc0f5f18b2e7c976e11d507a60d70c26b"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\pr-to-video\\SKILL.md",
+      "name": "pr-to-video",
+      "sha256": "a0bca6741123fe685be3b12af18c4785ce0632869e184dc81f5ac9d786ed74c0"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\product-launch-video\\SKILL.md",
+      "name": "product-launch-video",
+      "sha256": "3d080e9c56fde1123f1b30a5db861c5fc9b546f4c923661b93f955a9a399de4f"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\remotion-to-hyperframes\\SKILL.md",
+      "name": "remotion-to-hyperframes",
+      "sha256": "cd901c3b87725a1efa0b30d69e21aeed8b3a8bd771a52618cb961cc4b7b17e99"
+    },
+    {
+      "path": "C:\\Users\\iway\\.agents\\skills\\talking-head-recut\\SKILL.md",
+      "name": "talking-head-recut",
+      "sha256": "0e7675d8b9b5cf7f92e893b527a3380f4bb3b8d6c836cd9fa38c5e9ae2e96fae"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\skills\\.system\\imagegen\\SKILL.md",
+      "name": "imagegen",
+      "sha256": "706d4d96e1d5c9e6023fe3ccabba1bb34b364024d344fd25b8515ec7d28fe3c4"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\skills\\.system\\openai-docs\\SKILL.md",
+      "name": "openai-docs",
+      "sha256": "8ce8021101bcea594ff92ee6cfd8ca7641a49ee66d7bc6070555f1a33fc239d9"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\skills\\.system\\review-agent\\SKILL.md",
+      "name": "review-agent",
+      "sha256": "bb46315f6bc4b7051c05f807d19b1689b20418ac6c42590406d805c10fa2fd1a"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\skills\\.system\\skill-creator\\SKILL.md",
+      "name": "skill-creator",
+      "sha256": "cccd291077ec57c6f50ca6529f0f3fb93212da09473effb2fcec808e81b21288"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\skills\\.system\\skill-installer\\SKILL.md",
+      "name": "skill-installer",
+      "sha256": "2892d8b2fb11631132118f340aed80ae17e59d5a571fc2c4f4a4a7e73f139d52"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-primary-runtime\\template-creator\\26.1013.11914\\skills\\template-creator\\SKILL.md",
+      "name": "template-creator",
+      "sha256": "244bfef01d3e17c6013952ccf34621a90ddfee9c7828058245c3c46f51114944"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-primary-runtime\\spreadsheets\\26.1013.11914\\skills\\excel-live-control\\SKILL.md",
+      "name": "excel-live-control",
+      "sha256": "55335802aeb641f8819f0020d4fa172b069376aaa00ab7934f3426d8a121509a"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-primary-runtime\\spreadsheets\\26.1013.11914\\skills\\spreadsheets\\SKILL.md",
+      "name": "Spreadsheets",
+      "sha256": "b8290a0c6a18182dc1fbb9432aae518a25bf5354978b7d4c60a834d0e79821aa"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-primary-runtime\\presentations\\26.1013.11914\\skills\\presentations\\SKILL.md",
+      "name": "Presentations",
+      "sha256": "97fedde4ba6c9b9aa56e12b05b13acf035c29f9cd2f6906b8f27ceab11aea9a8"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-primary-runtime\\pdf\\26.1013.11914\\skills\\pdf\\SKILL.md",
+      "name": "pdf",
+      "sha256": "5e14b4b8f944dc5e678ee703dfacf583010431d64d5d829902c5b2541f736c89"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-primary-runtime\\documents\\26.1013.11914\\skills\\documents\\SKILL.md",
+      "name": "documents",
+      "sha256": "e3e5486c9e9f8c59ec89dd9de997bb76a4b65db7960d72437df2f5ed26a4df7f"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\work-pets\\0.1.6\\skills\\create-pet\\SKILL.md",
+      "name": "create-pet",
+      "sha256": "841354fb8116f8fdfd3b643b30828f5180196c594d3fed9b669b948b88892af1"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\work-pets\\0.1.6\\skills\\pets\\SKILL.md",
+      "name": "pets",
+      "sha256": "1bf5d45fd6a6390aab777229293fb05cef7cf898aac882f8955e40c378e52fcd"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\work-pets\\0.1.6\\skills\\update-pet\\SKILL.md",
+      "name": "update-pet",
+      "sha256": "c63c98d67b6ad781a72a8f9837ba1fb5e2d2a8054a2562e4025890a97d8a0e67"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\access-protected-vercel-deployment\\SKILL.md",
+      "name": "access-protected-vercel-deployment",
+      "sha256": "24d295fa893a22b318f19d87fc52865fc0e26fe43abea62ce787769d00a79fc6"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\ai-gateway\\SKILL.md",
+      "name": "ai-gateway",
+      "sha256": "f3e5ad702d8eaafb07fb02db81b24d75added47dad1321c90b0f4996cccb41b6"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\ai-sdk\\SKILL.md",
+      "name": "ai-sdk",
+      "sha256": "9d6dd182e5e61afc94f7d3867012cfdc19ebbb634e4370e4ed7782919fc1038a"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\auth\\SKILL.md",
+      "name": "auth",
+      "sha256": "7a1ccb7beecef0959e224fef7de2bcf460e6f58c6685bd3359ec0e6103e063d4"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\bootstrap\\SKILL.md",
+      "name": "bootstrap",
+      "sha256": "2306dbb1343c5acfdf7aedcc5f27751bd73570e2a615e71c873f15f339616d6b"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\build-agents\\SKILL.md",
+      "name": "build-agents",
+      "sha256": "334a5f42b57d7536fae1971191dce34ad47487a17f21cab1cc6709d4119203fb"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\cdn-caching\\SKILL.md",
+      "name": "cdn-caching",
+      "sha256": "10f91d3abe3378046cffeb214871a9bceab3c3a1128015244f99e76fae283a3e"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\chat-sdk\\SKILL.md",
+      "name": "chat-sdk",
+      "sha256": "65b932858227ff89784636bbdf42e3573397175405397644c37310700ee169b1"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\create-a-backend\\SKILL.md",
+      "name": "create-a-backend",
+      "sha256": "0ac49fd640ce4928588b1f9be65c17540dcec0b51f3a6d5b5fad3e6e1074ba86"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\custom-metrics\\SKILL.md",
+      "name": "custom-metrics",
+      "sha256": "dda9871df28f58001367e6ee923912c3b41d3ed77a4ef665ce0552227760d4f1"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\deployments-cicd\\SKILL.md",
+      "name": "deployments-cicd",
+      "sha256": "61c628114c8703a9dc753ca94ee63f5b3d5cbd70fc5caa2b02d9dfd92ea5fa76"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\domains\\SKILL.md",
+      "name": "domains",
+      "sha256": "48d2b24366dae02b0e8bfe989b30127263f99105308687ab541518e96b613e49"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\env-vars\\SKILL.md",
+      "name": "env-vars",
+      "sha256": "081d79b5b046276631c10b3db6ff07dbff4a59c057fc9bbc64aa364f82bb3045"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\eve\\SKILL.md",
+      "name": "eve",
+      "sha256": "5e8f3f3d79569288918a31381301e55a9a686dc92ec053f10eb5eda93d58d037"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\flags-sdk\\SKILL.md",
+      "name": "flags-sdk",
+      "sha256": "2149f8b2ff5ac44022103cd3f36895504bfc436698bd90fa7fe1bcd9b4e99cb4"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\is-agentic\\SKILL.md",
+      "name": "is-agentic",
+      "sha256": "de940bb2d220866c0172f133bb58ed1c0687a858a5d024ef219781a6653b4ee4"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\knowledge-update\\SKILL.md",
+      "name": "knowledge-update",
+      "sha256": "9849b61e6bf847d9dc1f263ea6c7777f4c248ec53c93af43225e15c03f818aad"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\marketplace\\SKILL.md",
+      "name": "marketplace",
+      "sha256": "580f3cd836488f0c09ff092c498cbdfa04cd15f8404e465ae48845b53294300c"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\microfrontends\\SKILL.md",
+      "name": "microfrontends",
+      "sha256": "9dbe1a3db8bfa3441b1412b019f518e3b6af341564a3e84a7b1d0073af8eba05"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\queues\\SKILL.md",
+      "name": "queues",
+      "sha256": "38ad06c8c9785b944ce887a94bdb60511f4f6e8eda3b2fef01cadd5a1b16342b"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\react-best-practices\\SKILL.md",
+      "name": "react-best-practices",
+      "sha256": "5c1b1512e76413a9706309569c4c88827ed86b00dff9338849bf64caae7d3921"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\routing-middleware\\SKILL.md",
+      "name": "routing-middleware",
+      "sha256": "521821d60f7af332239ffcf896151e9eb625334c14202430ff60a91af3248165"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\runtime-cache\\SKILL.md",
+      "name": "runtime-cache",
+      "sha256": "b05ffa80629040a4a736946346befdc777bc0b67bd65838800f0656aca9fcae7"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\vercel-agent\\SKILL.md",
+      "name": "vercel-agent",
+      "sha256": "8e21f56eff1dea900988fddbd13971d21fb61dc692b9b76a102f02297a245144"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\vercel-cli\\SKILL.md",
+      "name": "vercel-cli",
+      "sha256": "6399a7d4f2fc8b7202c46ae4a63380c32ff8a994bd952985ee3f9b0fbf25b756"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\vercel-connect\\SKILL.md",
+      "name": "vercel-connect",
+      "sha256": "07ad7f7cfe4ebd68cebf66c120086de49900381ba0f42a3a822adb13d922c49c"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\vercel-firewall\\SKILL.md",
+      "name": "vercel-firewall",
+      "sha256": "cc490dddcced6d2db0bdaa59aeebd3f38e9108b97ca8e9baae17afee685b3f7d"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\vercel-functions\\SKILL.md",
+      "name": "vercel-functions",
+      "sha256": "ac162ecba80415929a1c40f65beea13cb25f09baf3bfa87ce6d6e404962040c6"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\vercel-sandbox\\SKILL.md",
+      "name": "vercel-sandbox",
+      "sha256": "db68a13177ba78c3eeabbe61256829c9b801d4332a05c8692e0c728124041d20"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\vercel-services\\SKILL.md",
+      "name": "vercel-services",
+      "sha256": "eb82b6a1aef40230c6a24ba58d7a4377e34c274aa83f910ba326992c93b7c384"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\vercel-storage\\SKILL.md",
+      "name": "vercel-storage",
+      "sha256": "b294915c90706b86edfc4f1dca4c33b519ecf5eee8acdbda2d7466f1b0f35bf4"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\verification\\SKILL.md",
+      "name": "verification",
+      "sha256": "1dd50aa65a4f8a287f8d8e2fbbaf4e52a3998451a9011659ab0ab38d19539932"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\vercel\\0.54.1\\skills\\workflow\\SKILL.md",
+      "name": "workflow",
+      "sha256": "23c2875814cbe17ea2f16f0f80b082a05943f59bb09bcc3631d392f6cbe33de3"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\sites\\1.0.1\\skills\\sites\\SKILL.md",
+      "name": "sites",
+      "sha256": "88b4a1b923f34c77443290e4648a5f4b3e959d7628f02e169d984942d2430187"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\plugin-management\\0.1.0\\skills\\plugin-management\\SKILL.md",
+      "name": "plugin-management",
+      "sha256": "653841cc21205269f08b0ce135891e1518dac616a766bcfb0b57d788d3f68b10"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\pages\\0.1.23\\skills\\maintain-space\\SKILL.md",
+      "name": "maintain-space",
+      "sha256": "53570e6cb8663d370dce15ed0d67208876c3b13015832c352daa759213e7378e"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\pages\\0.1.23\\skills\\manage-schedules\\SKILL.md",
+      "name": "manage-schedules",
+      "sha256": "e0a464a83f15a6e896c5536cab775f667ebd0dd61eb64fe3c877a41935d64bd9"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\pages\\0.1.23\\skills\\organize-space\\SKILL.md",
+      "name": "organize-space",
+      "sha256": "dfa8bfae86785a98e43b1ca0af67a9c89b90c658eee7fc7ad4ccfe8cc84a267b"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\pages\\0.1.23\\skills\\write-page\\SKILL.md",
+      "name": "write-page",
+      "sha256": "7a997ccee8cc3214cb1e9af4a5569bddb74499796aff808e94561109e148a658"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-analytics-dashboard\\SKILL.md",
+      "name": "artifact-template-analytics-dashboard",
+      "sha256": "cf5360fd8b197673bb237c52c603c97fa319c875c3dfa2cd8efff52d4422f513"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-business-review\\SKILL.md",
+      "name": "artifact-template-business-review",
+      "sha256": "27721fc1d67d1b41949caa75ac8f94f81952ff124406878af6524047929e60d2"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-design-report\\SKILL.md",
+      "name": "artifact-template-design-report",
+      "sha256": "563722f53854e606f8a9f87e37e72d7ef70a22d46d5836b8e4d6abfb1b79e9e0"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-experiment-analysis\\SKILL.md",
+      "name": "artifact-template-experiment-analysis",
+      "sha256": "0b05effc47df0a14f8e0c3e3597e6722224747435546385d38a2cae279bd20b9"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-financial-budget\\SKILL.md",
+      "name": "artifact-template-financial-budget",
+      "sha256": "c0b6b7a62a15597aaf2b1ec679e21da48f533b756127f0aef957cdfe9f3da738"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-investment-committee-memo\\SKILL.md",
+      "name": "artifact-template-investment-committee-memo",
+      "sha256": "68abd08cfe5e073e3c446a3f675f44c5bf98f57434dba679e8acd8a763379a8b"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-legal-memorandum\\SKILL.md",
+      "name": "artifact-template-legal-memorandum",
+      "sha256": "51fb9d21baf6119c4ccb1903638a6bac0e859210de63460fffa7025d52e997e0"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-market-trends-report\\SKILL.md",
+      "name": "artifact-template-market-trends-report",
+      "sha256": "d58d019b89cb6f292ac3ab991d561489eef477ff53ce05fb024a0c936f5af26a"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-minimal-letterhead\\SKILL.md",
+      "name": "artifact-template-minimal-letterhead",
+      "sha256": "880ef094d4d0c89a7bde5ce9bbe4086625c186651e9e6efc8ba8bdd7cc77f9d5"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-operating-calendar\\SKILL.md",
+      "name": "artifact-template-operating-calendar",
+      "sha256": "33bb660791a0b9a21628a42c34934932220203b6aabd84e98cb1b45327d0384c"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-operating-review\\SKILL.md",
+      "name": "artifact-template-operating-review",
+      "sha256": "6d63c5cd025ffe936e7bab5db3023672bbaec26af55c2bb8b057d38c202c9c32"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-project-kickoff\\SKILL.md",
+      "name": "artifact-template-project-kickoff",
+      "sha256": "aa893ebd89e7c8d1db4261d01cc2b1add35d78d00785871ccaaa5fc8db783ec9"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-project-tracker\\SKILL.md",
+      "name": "artifact-template-project-tracker",
+      "sha256": "d97d5be20189b7f53dd269b6e1c5f694eaf53e5a72f6559fcb1578911b7cda82"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-sales-pipeline\\SKILL.md",
+      "name": "artifact-template-sales-pipeline",
+      "sha256": "15cfeeedf440021f16ed3f3ad8c7c1ef6d48898b9447741e223d2fb41cfc9800"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-simple-dark-mode\\SKILL.md",
+      "name": "artifact-template-simple-dark-mode",
+      "sha256": "b7c8d0c05f75878b9bc21e56a57c41ec1aa29700aca0a24822be0f9f1bd53207"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-simple-light-mode\\SKILL.md",
+      "name": "artifact-template-simple-light-mode",
+      "sha256": "7c68430c6cf57b55b457d4735dbd1a46b889bef135a32222902dd0848b6e1752"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-strategy-memorandum\\SKILL.md",
+      "name": "artifact-template-strategy-memorandum",
+      "sha256": "51d7882ac94e8e57b323394825728c33925af878806e37277217c2dc12a912e5"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-system-design\\SKILL.md",
+      "name": "artifact-template-system-design",
+      "sha256": "87f7b7ed1b0d8410f5e5971cd7f7db9a4165e2f37069e97e52dbfb469b75a57c"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-team-alignment\\SKILL.md",
+      "name": "artifact-template-team-alignment",
+      "sha256": "26d7cafdcd1899a937b325c5d02ac57c162d45002153be33a934d35f81eb6110"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\openai-templates\\0.1.1\\skills\\artifact-template-three-statement-forecast\\SKILL.md",
+      "name": "artifact-template-three-statement-forecast",
+      "sha256": "74f4a5cccec0107b861548b157e04c51d9b58ec13a990c86394b4c529b8ecf41"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\neon-postgres\\2.1.0\\skills\\neon\\SKILL.md",
+      "name": "neon",
+      "sha256": "1071b8789dea0cb41c795059e728821756181ce55ae34f3f904120bfbfa8ff22"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\neon-postgres\\2.1.0\\skills\\neon-ai-gateway\\SKILL.md",
+      "name": "neon-ai-gateway",
+      "sha256": "eab0545d5ee7626847ce5b5cdd5f4f03afad0ca5859ffd281389721b06c2bce0"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\neon-postgres\\2.1.0\\skills\\neon-auth\\SKILL.md",
+      "name": "neon-auth",
+      "sha256": "5f91f328235382f3e9afef449729e304a531848a90c02b40c4fd1192709e0319"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\neon-postgres\\2.1.0\\skills\\neon-functions\\SKILL.md",
+      "name": "neon-functions",
+      "sha256": "ef17cab6c81fba6e5545037205889dcb1b2dcd9748d5fbbf50465ee0a8a88d8d"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\neon-postgres\\2.1.0\\skills\\neon-object-storage\\SKILL.md",
+      "name": "neon-object-storage",
+      "sha256": "fce96952845dfcf4b0c560fcf1ff0d2c0867931fd34ddb3acf0ec24fd118fd11"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\neon-postgres\\2.1.0\\skills\\neon-postgres\\SKILL.md",
+      "name": "neon-postgres",
+      "sha256": "83d3c75651bd81f06e5e8c47ffc306936cc4d2a1ac84d288e8f6a15fcfb724b4"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\neon-postgres\\2.1.0\\skills\\neon-postgres-branches\\SKILL.md",
+      "name": "neon-postgres-branches",
+      "sha256": "9f47d5a49553a465837c1e8b2d90a90aac72a5313a996c081027290f259a8d71"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\neon-postgres\\2.1.0\\skills\\neon-postgres-egress-optimizer\\SKILL.md",
+      "name": "neon-postgres-egress-optimizer",
+      "sha256": "d7536270b6dd59a66fa5daf1578cc55a5b761d7163f6f6b1596662481b8d5d9b"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\google-drive\\0.1.22\\skills\\google-docs\\SKILL.md",
+      "name": "google-docs",
+      "sha256": "1c4f8e6477a61d45370731143fd926d2b8917594982f9cb39677909d645625c1"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\google-drive\\0.1.22\\skills\\google-drive\\SKILL.md",
+      "name": "google-drive",
+      "sha256": "dabae8a192c861b76cf7b5742bdf14f8ed35e67d8e6cacfd5f746ffbefd6da5c"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\google-drive\\0.1.22\\skills\\google-drive-comments\\SKILL.md",
+      "name": "google-drive-comments",
+      "sha256": "a3077375a8f7558b9e052c98047747b8a4a1a90a9a90b552009c28fcdadfe94a"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\google-drive\\0.1.22\\skills\\google-sheets\\SKILL.md",
+      "name": "google-sheets",
+      "sha256": "1851109d8f2c182236d28db136fb161d30c85287e5bc4fa79cf137673184c58d"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\google-drive\\0.1.22\\skills\\google-slides\\SKILL.md",
+      "name": "google-slides",
+      "sha256": "f85bd1d7080becf8c043a3646b6c3a53fbcd6d2a77c62a15112b8d89e01a4b83"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-code-connect\\SKILL.md",
+      "name": "figma-code-connect",
+      "sha256": "87af3996edb167d6aa3c044cb1bbb6a0d8e2d631c731bb896b1e1e8669640415"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-code-workflows\\SKILL.md",
+      "name": "figma-code-workflows",
+      "sha256": "ac69b52d96a5d1b1832be9f0be99c221cfd861f8aad2260a0508386229982c7c"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-create-new-file\\SKILL.md",
+      "name": "figma-create-new-file",
+      "sha256": "bb7bc48c487f0ad7e738c23d0685bad5ec0bbbca8f5b5bb6295dc0666cc9ddf1"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-design-to-code\\SKILL.md",
+      "name": "figma-design-to-code",
+      "sha256": "a6e852421e4db72260b2ca641929b1f84684e5b067aead081e35111f5b5feee4"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-generate-design\\SKILL.md",
+      "name": "figma-generate-design",
+      "sha256": "f4f05f29f69a5b4628d4574359910fea926735af78c5e264a1c4cd16f69315b0"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-generate-diagram\\SKILL.md",
+      "name": "figma-generate-diagram",
+      "sha256": "7297638dbf2130d1b37bfd85df65d290a4dd0b11a11b54abafcf7d07565922b5"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-generate-library\\SKILL.md",
+      "name": "figma-generate-library",
+      "sha256": "b5277050191d1985f59e162e0acc82523a0a39a8cf614069a3d63753d5990f27"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-generative-plugins\\SKILL.md",
+      "name": "figma-generative-plugins",
+      "sha256": "b97eb184a1f6b6545f3b8266a4d1a1e29304888904db7daed2864b9fd036b124"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-implement-motion\\SKILL.md",
+      "name": "figma-implement-motion",
+      "sha256": "2e26e67284d47c6a74aedf9dca7543f4c8817dafc59a11abb156d4f7feedb2c2"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-shaders\\SKILL.md",
+      "name": "figma-shaders",
+      "sha256": "c7e34c5a4eb316cfe84768cb419fe71b3ce840b29561ecd0f90eb402a72e1adf"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-spec\\SKILL.md",
+      "name": "figma-spec",
+      "sha256": "7bc6c406d19906217724279f254d773193bac45d385b35d5db6b58673c73f7e3"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-swiftui\\SKILL.md",
+      "name": "figma-swiftui",
+      "sha256": "868c4defe2c0854f5a3e27594d3fa0f20347c86a9b15d103483b7488bfa8affe"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-use\\SKILL.md",
+      "name": "figma-use",
+      "sha256": "ac385b80a05c850b5abc6bcae7c56625c4576318510545453a568aa5f21b8a95"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-use-figjam\\SKILL.md",
+      "name": "figma-use-figjam",
+      "sha256": "8d566444a1aaf31c122682a5fbe3d6f14c6a844a4e05164cda3de872752cea24"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-use-motion\\SKILL.md",
+      "name": "figma-use-motion",
+      "sha256": "d74fa8c9435a5260f8a61e3a8fbf11c068f940ae3423e9be2efde8b5e785d78c"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-curated-remote\\figma\\16.0.0\\skills\\figma-use-slides\\SKILL.md",
+      "name": "figma-use-slides",
+      "sha256": "0a69a65e686dcc223581afb409a4d31cf318716e2c65cc9c926839a8737e71a4"
+    },
+    {
+      "path": "C:\\Users\\iway\\.codex\\plugins\\cache\\openai-bundled\\visualize\\1.0.49\\skills\\visualize\\SKILL.md",
+      "name": "visualize",
+      "sha256": "f5a095fb4812ad76369f5d2d476099ab2c30246c0bf80af8d49d593fa2713da8"
+    }
+  ],
+  "git_repository": false
+}

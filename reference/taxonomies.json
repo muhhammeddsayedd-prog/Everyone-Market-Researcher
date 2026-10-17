@@ -1,0 +1,614 @@
+{
+ "industry": [
+  {
+   "code": "telecom",
+   "label_en": "Telecom",
+   "label_ar": "الاتصالات"
+  },
+  {
+   "code": "banking_and_fintech",
+   "label_en": "Banking & Fintech",
+   "label_ar": "البنوك والتقنية المالية"
+  },
+  {
+   "code": "insurance",
+   "label_en": "Insurance",
+   "label_ar": null
+  },
+  {
+   "code": "real_estate_and_construction",
+   "label_en": "Real Estate & Construction",
+   "label_ar": "العقارات والإنشاءات"
+  },
+  {
+   "code": "fmcg_food",
+   "label_en": "FMCG — Food",
+   "label_ar": null
+  },
+  {
+   "code": "fmcg_beverages",
+   "label_en": "FMCG — Beverages",
+   "label_ar": null
+  },
+  {
+   "code": "fmcg_home_and_personal_care",
+   "label_en": "FMCG — Home & Personal Care",
+   "label_ar": null
+  },
+  {
+   "code": "retail_and_e_commerce",
+   "label_en": "Retail & E-commerce",
+   "label_ar": null
+  },
+  {
+   "code": "automotive",
+   "label_en": "Automotive",
+   "label_ar": "السيارات"
+  },
+  {
+   "code": "travel_airlines_and_tourism",
+   "label_en": "Travel, Airlines & Tourism",
+   "label_ar": null
+  },
+  {
+   "code": "hospitality_and_fandb_qsr",
+   "label_en": "Hospitality & F&B / QSR",
+   "label_ar": null
+  },
+  {
+   "code": "healthcare_and_pharma",
+   "label_en": "Healthcare & Pharma",
+   "label_ar": null
+  },
+  {
+   "code": "energy_and_utilities",
+   "label_en": "Energy & Utilities",
+   "label_ar": null
+  },
+  {
+   "code": "government_and_public_sector",
+   "label_en": "Government & Public Sector",
+   "label_ar": null
+  },
+  {
+   "code": "giga_projects_and_destinations",
+   "label_en": "Giga-projects & Destinations",
+   "label_ar": null
+  },
+  {
+   "code": "media_and_entertainment",
+   "label_en": "Media & Entertainment",
+   "label_ar": null
+  },
+  {
+   "code": "sports",
+   "label_en": "Sports",
+   "label_ar": "الرياضة"
+  },
+  {
+   "code": "technology_and_apps",
+   "label_en": "Technology & Apps",
+   "label_ar": null
+  },
+  {
+   "code": "education",
+   "label_en": "Education",
+   "label_ar": "التعليم"
+  },
+  {
+   "code": "fashion_beauty_and_luxury",
+   "label_en": "Fashion, Beauty & Luxury",
+   "label_ar": null
+  },
+  {
+   "code": "logistics_and_delivery",
+   "label_en": "Logistics & Delivery",
+   "label_ar": null
+  },
+  {
+   "code": "ngo_and_charity",
+   "label_en": "NGO & Charity",
+   "label_ar": null
+  },
+  {
+   "code": "other",
+   "label_en": "Other",
+   "label_ar": null
+  }
+ ],
+ "content_format": [
+  {
+   "code": "tvc_brand_film",
+   "label_en": "TVC / brand film",
+   "label_ar": null
+  },
+  {
+   "code": "digital_film_online_video",
+   "label_en": "Digital film / online video",
+   "label_ar": null
+  },
+  {
+   "code": "social_reel_short_form",
+   "label_en": "Social reel / short-form",
+   "label_ar": null
+  },
+  {
+   "code": "story",
+   "label_en": "Story",
+   "label_ar": null
+  },
+  {
+   "code": "static_post_carousel",
+   "label_en": "Static post / carousel",
+   "label_ar": null
+  },
+  {
+   "code": "behind_the_scenes",
+   "label_en": "Behind the scenes",
+   "label_ar": null
+  },
+  {
+   "code": "corporate_documentary",
+   "label_en": "Corporate / documentary",
+   "label_ar": null
+  },
+  {
+   "code": "music_video",
+   "label_en": "Music video",
+   "label_ar": null
+  },
+  {
+   "code": "event_coverage",
+   "label_en": "Event coverage",
+   "label_ar": null
+  },
+  {
+   "code": "series_tv_feature",
+   "label_en": "Series / TV / feature",
+   "label_ar": null
+  },
+  {
+   "code": "animation_cgi_vfx_piece",
+   "label_en": "Animation / CGI / VFX piece",
+   "label_ar": null
+  },
+  {
+   "code": "ai_generated_piece",
+   "label_en": "AI-generated piece",
+   "label_ar": null
+  },
+  {
+   "code": "showreel",
+   "label_en": "Showreel",
+   "label_ar": null
+  },
+  {
+   "code": "hiring_company_news",
+   "label_en": "Hiring / company news",
+   "label_ar": null
+  },
+  {
+   "code": "other",
+   "label_en": "Other",
+   "label_ar": null
+  }
+ ],
+ "occasion": [
+  {
+   "code": "ramadan",
+   "label_en": "Ramadan",
+   "label_ar": "رمضان"
+  },
+  {
+   "code": "eid",
+   "label_en": "Eid",
+   "label_ar": "العيد"
+  },
+  {
+   "code": "saudi_national_day",
+   "label_en": "Saudi National Day",
+   "label_ar": "اليوم الوطني السعودي"
+  },
+  {
+   "code": "saudi_founding_day",
+   "label_en": "Saudi Founding Day",
+   "label_ar": "يوم التأسيس"
+  },
+  {
+   "code": "uae_national_day",
+   "label_en": "UAE National Day",
+   "label_ar": "اليوم الوطني الإماراتي"
+  },
+  {
+   "code": "egyptian_national_occasions",
+   "label_en": "Egyptian national occasions",
+   "label_ar": null
+  },
+  {
+   "code": "back_to_school",
+   "label_en": "Back to school",
+   "label_ar": null
+  },
+  {
+   "code": "summer",
+   "label_en": "Summer",
+   "label_ar": null
+  },
+  {
+   "code": "product_launch",
+   "label_en": "Product launch",
+   "label_ar": null
+  },
+  {
+   "code": "always_on",
+   "label_en": "Always-on",
+   "label_ar": null
+  },
+  {
+   "code": "other",
+   "label_en": "Other",
+   "label_ar": null
+  }
+ ],
+ "competitor_category": [
+  {
+   "code": "production",
+   "label_en": "Production",
+   "label_ar": null
+  },
+  {
+   "code": "film_and_tv",
+   "label_en": "Film & TV",
+   "label_ar": null
+  },
+  {
+   "code": "post_production",
+   "label_en": "Post-production",
+   "label_ar": null
+  },
+  {
+   "code": "vfx_cgi",
+   "label_en": "VFX / CGI",
+   "label_ar": null
+  },
+  {
+   "code": "animation_motion",
+   "label_en": "Animation / Motion",
+   "label_ar": null
+  },
+  {
+   "code": "photography",
+   "label_en": "Photography",
+   "label_ar": null
+  },
+  {
+   "code": "digital_and_social",
+   "label_en": "Digital & Social",
+   "label_ar": null
+  },
+  {
+   "code": "production_services",
+   "label_en": "Production services",
+   "label_ar": null
+  },
+  {
+   "code": "events_and_experiential",
+   "label_en": "Events & Experiential",
+   "label_ar": null
+  },
+  {
+   "code": "creative_agency",
+   "label_en": "Creative agency",
+   "label_ar": null
+  },
+  {
+   "code": "equipment_and_studio_rental",
+   "label_en": "Equipment & Studio rental",
+   "label_ar": null
+  },
+  {
+   "code": "ai_production",
+   "label_en": "AI production",
+   "label_ar": null
+  },
+  {
+   "code": "sound_and_music",
+   "label_en": "Sound & Music",
+   "label_ar": null
+  }
+ ],
+ "credit_role": [
+  {
+   "code": "director",
+   "label_en": "Director",
+   "label_ar": "المخرج"
+  },
+  {
+   "code": "co_director",
+   "label_en": "Co-director",
+   "label_ar": null
+  },
+  {
+   "code": "executive_producer",
+   "label_en": "Executive producer",
+   "label_ar": null
+  },
+  {
+   "code": "producer",
+   "label_en": "Producer",
+   "label_ar": "المنتج"
+  },
+  {
+   "code": "line_producer",
+   "label_en": "Line producer",
+   "label_ar": null
+  },
+  {
+   "code": "production_company",
+   "label_en": "Production company",
+   "label_ar": null
+  },
+  {
+   "code": "service_company",
+   "label_en": "Service company",
+   "label_ar": null
+  },
+  {
+   "code": "director_of_photography",
+   "label_en": "Director of photography",
+   "label_ar": null
+  },
+  {
+   "code": "editor",
+   "label_en": "Editor",
+   "label_ar": null
+  },
+  {
+   "code": "colourist",
+   "label_en": "Colourist",
+   "label_ar": null
+  },
+  {
+   "code": "vfx_supervisor",
+   "label_en": "VFX supervisor",
+   "label_ar": null
+  },
+  {
+   "code": "vfx_cgi_studio",
+   "label_en": "VFX / CGI studio",
+   "label_ar": null
+  },
+  {
+   "code": "post_production_house",
+   "label_en": "Post-production house",
+   "label_ar": null
+  },
+  {
+   "code": "sound_design_and_mix",
+   "label_en": "Sound design & mix",
+   "label_ar": null
+  },
+  {
+   "code": "music_composer",
+   "label_en": "Music / composer",
+   "label_ar": null
+  },
+  {
+   "code": "production_designer",
+   "label_en": "Production designer",
+   "label_ar": null
+  },
+  {
+   "code": "art_director",
+   "label_en": "Art director",
+   "label_ar": null
+  },
+  {
+   "code": "stylist",
+   "label_en": "Stylist",
+   "label_ar": null
+  },
+  {
+   "code": "make_up_and_hair",
+   "label_en": "Make-up & hair",
+   "label_ar": null
+  },
+  {
+   "code": "casting",
+   "label_en": "Casting",
+   "label_ar": null
+  },
+  {
+   "code": "talent_cast",
+   "label_en": "Talent / cast",
+   "label_ar": null
+  },
+  {
+   "code": "choreographer",
+   "label_en": "Choreographer",
+   "label_ar": null
+  },
+  {
+   "code": "animator_motion_designer",
+   "label_en": "Animator / motion designer",
+   "label_ar": null
+  },
+  {
+   "code": "ai_artist",
+   "label_en": "AI artist",
+   "label_ar": null
+  },
+  {
+   "code": "photographer",
+   "label_en": "Photographer",
+   "label_ar": null
+  },
+  {
+   "code": "agency",
+   "label_en": "Agency",
+   "label_ar": null
+  },
+  {
+   "code": "creative_director",
+   "label_en": "Creative director",
+   "label_ar": null
+  },
+  {
+   "code": "copywriter",
+   "label_en": "Copywriter",
+   "label_ar": null
+  },
+  {
+   "code": "agency_producer",
+   "label_en": "Agency producer",
+   "label_ar": null
+  },
+  {
+   "code": "client_brand",
+   "label_en": "Client / brand",
+   "label_ar": null
+  },
+  {
+   "code": "other",
+   "label_en": "Other",
+   "label_ar": null
+  }
+ ],
+ "in_house_capability": [
+  {
+   "code": "creative_and_scriptwriting",
+   "label_en": "Creative & scriptwriting",
+   "label_ar": null
+  },
+  {
+   "code": "directors_roster",
+   "label_en": "Directors roster",
+   "label_ar": null
+  },
+  {
+   "code": "line_production",
+   "label_en": "Line production",
+   "label_ar": null
+  },
+  {
+   "code": "casting",
+   "label_en": "Casting",
+   "label_ar": null
+  },
+  {
+   "code": "locations_and_permits",
+   "label_en": "Locations & permits",
+   "label_ar": null
+  },
+  {
+   "code": "camera_and_lighting_kit",
+   "label_en": "Camera & lighting kit",
+   "label_ar": null
+  },
+  {
+   "code": "studio_soundstage",
+   "label_en": "Studio / soundstage",
+   "label_ar": null
+  },
+  {
+   "code": "drone_aerial",
+   "label_en": "Drone / aerial",
+   "label_ar": null
+  },
+  {
+   "code": "set_design_and_art_dept",
+   "label_en": "Set design & art dept",
+   "label_ar": null
+  },
+  {
+   "code": "editing",
+   "label_en": "Editing",
+   "label_ar": null
+  },
+  {
+   "code": "colour_grading",
+   "label_en": "Colour grading",
+   "label_ar": null
+  },
+  {
+   "code": "vfx_cgi",
+   "label_en": "VFX / CGI",
+   "label_ar": null
+  },
+  {
+   "code": "3d_and_animation",
+   "label_en": "3D & animation",
+   "label_ar": null
+  },
+  {
+   "code": "motion_graphics",
+   "label_en": "Motion graphics",
+   "label_ar": null
+  },
+  {
+   "code": "sound_design_and_mix",
+   "label_en": "Sound design & mix",
+   "label_ar": null
+  },
+  {
+   "code": "music_composition",
+   "label_en": "Music composition",
+   "label_ar": null
+  },
+  {
+   "code": "voice_over_dubbing",
+   "label_en": "Voice-over / dubbing",
+   "label_ar": null
+  },
+  {
+   "code": "subtitling_and_localisation",
+   "label_en": "Subtitling & localisation",
+   "label_ar": null
+  },
+  {
+   "code": "ai_generation",
+   "label_en": "AI generation",
+   "label_ar": null
+  },
+  {
+   "code": "virtual_production_led",
+   "label_en": "Virtual production / LED",
+   "label_ar": null
+  },
+  {
+   "code": "photography",
+   "label_en": "Photography",
+   "label_ar": null
+  },
+  {
+   "code": "live_streaming_broadcast",
+   "label_en": "Live streaming / broadcast",
+   "label_ar": null
+  },
+  {
+   "code": "social_media_management",
+   "label_en": "Social media management",
+   "label_ar": null
+  },
+  {
+   "code": "media_buying_distribution",
+   "label_en": "Media buying / distribution",
+   "label_ar": null
+  },
+  {
+   "code": "film_distribution",
+   "label_en": "Film distribution",
+   "label_ar": null
+  },
+  {
+   "code": "other",
+   "label_en": "Other",
+   "label_ar": null
+  },
+  {
+   "code": "not_stated_on_own_site",
+   "label_en": "Not stated on own site",
+   "label_ar": null
+  }
+ ]
+}

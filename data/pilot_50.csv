@@ -1,0 +1,51 @@
+pilot_rank,company_id,slug,name,markets,website,instagram,vimeo,linkedin,youtube
+1,C001,good-people,Good People,EG|UAE,https://goodpeople.film/,https://www.instagram.com/goodpeoplefilms/,https://vimeo.com/goodpeoplefilms,https://www.linkedin.com/company/goodpeoplefilms,
+2,C130,bigfoot-films,Bigfoot Films,EG|KSA|UAE,https://bigfootfilms.tv/,https://www.instagram.com/bigfootfilms/,https://vimeo.com/bigfootfilmseg,https://www.linkedin.com/company/bigfoot-films/,
+3,C270,the-talkies,The Talkies,UAE|EG|KSA,https://thetalkies.com,https://www.instagram.com/thetalkies/,https://vimeo.com/thetalkiesproductionsleb,https://www.linkedin.com/company/the-talkies/,https://www.youtube.com/channel/UCgCkVawenoF_GhUwRx3Ndig
+4,C226,big-kahuna-films,Big Kahuna Films,UAE|KSA,https://www.bigkahunafilms.com/,https://www.instagram.com/bigkahunafilms/,https://vimeo.com/bigkahunafilms,https://www.linkedin.com/company/big-kahuna-films/,
+5,C184,film-pudding,Film Pudding,KSA|UAE,https://www.filmpudding.com,https://www.instagram.com/filmpudding/,https://vimeo.com/filmpudding,https://www.linkedin.com/company/film-pudding/,
+6,C150,lobster-films,Lobster Films,EG,https://lobsterfilms.tv,https://www.instagram.com/lobster_films/,https://vimeo.com/lobsterfilmscairo,https://www.linkedin.com/company/lobsterfilmsegypt/,
+7,C280,vip-films,VIP Films,UAE|KSA,https://vipfilms.com,https://www.instagram.com/vipfilms/,https://vimeo.com/vipfilms,https://www.linkedin.com/company/vip-films/,
+8,C133,cats-films,Cats Films,EG,https://catsfilms.com/,https://www.instagram.com/cats__films/,https://vimeo.com/catsfilm,,
+9,C083,telfaz11,Telfaz11,KSA|UAE,https://telfaz11.com/,https://www.instagram.com/telfaz11/,https://vimeo.com/telfaz11films,https://www.linkedin.com/company/c3-films,https://www.youtube.com/user/telfaz11
+10,C131,butter-films,Butter Films,EG,,https://www.instagram.com/butter__films/,https://vimeo.com/wearebutter,https://www.linkedin.com/company/butterfilms/,
+11,C163,rhino-and-oxpecker-productions,Rhino & Oxpecker Productions,EG|UAE,https://www.rhinoandoxpecker.film,https://www.instagram.com/rhinoproductions/,https://vimeo.com/rhinooxprod,,
+12,C173,aflam-productions,AFLAM Productions,KSA,https://www.aflamproductions.com/,https://www.instagram.com/aflam_productions/,https://vimeo.com/aflamproductions,https://www.linkedin.com/company/aflamproductions/,https://www.youtube.com/@AflamProductions
+13,C139,film-dna,Film DNA,EG,https://www.film-dna.com,https://www.instagram.com/film.dna/,https://vimeo.com/filmdna,https://www.linkedin.com/company/film-dna/,
+14,C228,camouflage-production,Camouflage Production,UAE|KSA,https://www.camouflageproduction.com,https://www.instagram.com/camouflage.productions/,https://vimeo.com/camouflageproductions,https://www.linkedin.com/company/camouflageproductions/,
+15,C179,darb-productions,Darb Productions,KSA|EG|UAE,https://www.darbproductions.com/en,https://www.instagram.com/darb.productions/,https://vimeo.com/darbpro,https://www.linkedin.com/company/darb-productions/,
+16,C170,yellow-duck-films,Yellow Duck Films,EG,,https://www.instagram.com/yellowduckfilms/,https://vimeo.com/yellowduckfilms,,
+17,C186,hekka,Hekka,KSA,https://hekka.sa/,https://www.instagram.com/hekka_sa/,,https://www.linkedin.com/company/hekka-sa/,https://www.youtube.com/@hekka_sa
+18,C149,lighthouse,LightHouse,EG,https://lighthousefilm.com/,https://www.instagram.com/light_housefilm/,https://vimeo.com/lighthouse2020,,
+19,C235,dejavu,Dejavu,UAE|KSA,https://dejavu.ae,https://www.instagram.com/dejavusocial/,https://vimeo.com/dejavureel,https://www.linkedin.com/company/dejavu-dubai/,https://www.youtube.com/@DejavuSocial
+20,C015,maradona-films,Maradona Films,EG,https://maradona.film/,https://www.instagram.com/maradonafilms/,https://vimeo.com/user61852300,https://www.linkedin.com/company/maradona-films,
+21,C146,kay-oh-productions,Kay-Oh Productions,EG,https://www.kay-ohproductions.com/,https://www.instagram.com/kayohproductions/,https://vimeo.com/kayohproductions,,
+22,C193,mid-film,Mid Film,KSA,https://mid-film.com,https://www.instagram.com/mid_film/,https://vimeo.com/user6615380,https://www.linkedin.com/company/mid-film/,
+23,C276,truffle,Truffle,UAE|KSA,https://www.truffle.film,https://www.instagram.com/truffle.film/,https://vimeo.com/trufflefilm,https://www.linkedin.com/company/trufflefilm/,
+24,C155,matchstick,Matchstick,EG,https://matchstick.film,https://www.instagram.com/matchstickfilm/,https://vimeo.com/matchstickfilm,https://www.linkedin.com/company/matchstick-film/,
+25,C230,central-films,Central Films,UAE|KSA,https://centralfilms.com,https://www.instagram.com/centralfilms_uae_ksa/,https://vimeo.com/centralfilmsproduction,https://www.linkedin.com/company/central-films_2/,
+26,C200,octosoup-studio,Octosoup Studio,KSA,https://octosoup.co,https://www.instagram.com/octosoup.co/,https://vimeo.com/octosoupsa,https://www.linkedin.com/company/octosoup/,
+27,C147,key-film-productions,Key Film Productions,EG,https://www.keyfilms.tv,https://www.instagram.com/keyfilms.tv/,https://vimeo.com/keyfilmseg,https://www.linkedin.com/company/key-film-productions/,
+28,C249,joy-films,Joy Films,UAE|KSA,https://www.joyfilmsme.com,https://www.instagram.com/joyfilmsme/,https://vimeo.com/joyfilms,https://www.linkedin.com/company/joy-films-me/,
+29,C112,captains-film,Captains Film,KSA,https://captains.film/,https://www.instagram.com/captains_film/,https://vimeo.com/user257545587,https://www.linkedin.com/company/121454007,
+30,C144,gorilla-productions,Gorilla Productions,EG,https://gorillaproductions.film/,https://www.instagram.com/gorillaproductionseg/,https://vimeo.com/gorillamediaproduction,https://www.linkedin.com/company/gorillaproductionseg/,https://www.youtube.com/@gorillamediaproductions5050
+31,C232,clandestino-films,Clandestino Films,UAE|KSA,https://www.clandestino.film,https://www.instagram.com/clandestinofilms/,https://vimeo.com/clandestinofilm,https://www.linkedin.com/company/clandestino-films/,
+32,C145,incognito-pictures,Incognito Pictures,EG|UAE,https://www.incognito-pictures.com,https://www.instagram.com/incognito.picture/,https://vimeo.com/incognitopictures,https://www.linkedin.com/company/incognito-pictures/,
+33,C208,tasweer-studios,Tasweer Studios,KSA,https://www.studiotasweer.com,https://www.instagram.com/tasweer_studios/,,,https://www.youtube.com/@TasweerStudios
+34,C272,toast-films,Toast Films,UAE,https://www.toast-films.com,https://www.instagram.com/toas.tf.ilms/,https://vimeo.com/toastproductions,https://www.linkedin.com/company/toast-films/,
+35,C004,hama-film-productions,Hama Film Productions,EG,https://hamafilmproductions.com.eg/,,https://vimeo.com/hamafilmproductions,,https://www.youtube.com/user/HamaFilmProductions
+36,C212,verge-film-productions,Verge Film Productions,KSA|UAE,https://www.verge.productions,https://www.instagram.com/verge_film_productions/,https://vimeo.com/vergeproductions,https://www.linkedin.com/company/vergefilmproductions/,
+37,C158,neo-productions,Neo Productions,EG,https://neoproductions.tv,https://www.instagram.com/neoproductionsegypt/,https://vimeo.com/neopro,https://www.linkedin.com/company/neoproductions1/,
+38,C209,thalathat-production,Thalathat Production,KSA,https://www.thalathat.com,https://www.instagram.com/thalathatsa/,,https://www.linkedin.com/company/thalathatsa/,https://www.youtube.com/@Thalathat
+39,C273,tomorrow-film,Tomorrow Film,UAE|KSA,https://www.tomorrow.film,https://www.instagram.com/tomorrow.film/,https://vimeo.com/tomorrowfilm,https://www.linkedin.com/company/tomorrow-film-agency/,
+40,C005,aroma-designs-and-solutions-aroma-studios,Aroma Designs & Solutions / Aroma Studios,EG|UAE|KSA,https://www.aromastudios.com/,https://www.instagram.com/aromastudios/,https://vimeo.com/aromastudios,https://www.linkedin.com/company/aroma-designs&solutions,
+41,C098,daw-production-house,Daw Production House,KSA,https://daw.sa/,https://www.instagram.com/daw_house/,https://vimeo.com/user93606480,https://www.linkedin.com/company/daw-house/,
+42,C269,stoked-films,Stoked Films,UAE,https://www.stokedfilms.com/,https://www.instagram.com/stoked_films/,https://vimeo.com/user18880545,https://www.linkedin.com/company/stoked-films/,
+43,C090,specter-productions,Specter Productions,KSA,https://specter.sa/,https://www.instagram.com/SpecterProd/,https://vimeo.com/specterprod,https://www.linkedin.com/company/specterprod,
+44,C045,electriclime,electriclime°,UAE|KSA,https://www.electriclime.film/,https://www.instagram.com/electriclime.film/,https://vimeo.com/electriclime,https://www.linkedin.com/company/electriclimeo,
+45,C241,epic-films,Epic Films,UAE,https://www.epicfilms.me,https://www.instagram.com/epicfilmsme/,https://vimeo.com/epicfilmsdubai,https://www.linkedin.com/company/epic-films-me/,
+46,C182,engine-film,Engine Film,KSA,https://www.engine.sa,,https://vimeo.com/enginesa,,
+47,C283,wonderful-productions,Wonderful Productions,UAE|KSA,https://www.wprod.tv,https://www.instagram.com/wonderfulprod/,https://vimeo.com/wonderfulprod,https://www.linkedin.com/company/wonderful-productions/,https://www.youtube.com/wonderfulprodbeirut
+48,C120,creative-arrow-productions,Creative Arrow Productions,KSA,https://www.creativearrow.net/,https://www.instagram.com/creativearrowsa/,https://vimeo.com/mohammedalhiniah,,
+49,C242,feel-productions,Feel Productions,UAE,https://feelproductions.com/,https://www.instagram.com/feelproductionsdubai/,https://vimeo.com/feelproductions,https://www.linkedin.com/company/feel-productions-llc/,
+50,C012,arm-arts,ARM ARTS,EG,https://www.armarts.com/,https://www.instagram.com/armartsproduction/,https://vimeo.com/user163427911,https://www.linkedin.com/company/armarts,https://www.youtube.com/@ARMARTS

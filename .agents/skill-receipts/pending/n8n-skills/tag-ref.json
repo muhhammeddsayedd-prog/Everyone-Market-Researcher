@@ -1,0 +1,10 @@
+﻿{
+    "ref":  "refs/tags/v2.22.0",
+    "node_id":  "REF_kwDOQMvpAbFyZWZzL3RhZ3MvdjIuMjIuMA",
+    "url":  "https://api.github.com/repos/haunchen/n8n-skills/git/refs/tags/v2.22.0",
+    "object":  {
+                   "sha":  "1fe379099249d905e9bd7dfa212e65c8832153a8",
+                   "type":  "commit",
+                   "url":  "https://api.github.com/repos/haunchen/n8n-skills/git/commits/1fe379099249d905e9bd7dfa212e65c8832153a8"
+               }
+}

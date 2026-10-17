@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-17",
+  "passed": true,
+  "installed_count": 28,
+  "locked_files": 350,
+  "markdown_local_links": 92,
+  "inline_relative_resources": 20,
+  "explicit_only": [
+    "constraint-driven-development",
+    "spec-driven-development",
+    "vercel-optimize"
+  ],
+  "setup_boundaries_checked": true,
+  "preserved_global_manifests": 120,
+  "initial_project_files": 77,
+  "changed_existing_files": [
+    "AGENTS.md",
+    "PROGRESS.md",
+    "milestones/M00-repo-bootstrap/PROGRESS.md"
+  ],
+  "credential_pattern_scanned_files": 324,
+  "native_discovery_run": true,
+  "native_discovered_count": 28,
+  "routing_examples": "Four non-executing examples reviewed in .agents/PROJECT_SKILL_RULES.md; not application tests.",
+  "pending": [
+    "n8n-skills: actual Cloud runtime/typeVersion gate unverified"
+  ],
+  "unrun": [
+    "application/DB/browser acceptance",
+    "live/paid/provider operations",
+    "imported helper runtime tests",
+    "behavioral implicit-selection test"
+  ],
+  "failures": []
+}

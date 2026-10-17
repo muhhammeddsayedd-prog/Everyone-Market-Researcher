@@ -1,0 +1,27 @@
+{
+  "name": "weekly_brief_v1",
+  "strict": true,
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["title", "headline", "body_md", "highlights", "data_quality_note"],
+    "properties": {
+      "title": { "type": "string", "description": "e.g. 'KSA · Week of 12 Oct 2026'" },
+      "headline": { "type": "string" },
+      "body_md": { "type": "string", "description": "Markdown body following the structure in the prompt; cite as [item:<uuid>] or [campaign:<uuid>]" },
+      "highlights": {
+        "type": "array",
+        "items": {
+          "type": "object", "additionalProperties": false,
+          "required": ["claim", "item_ids", "campaign_ids"],
+          "properties": {
+            "claim": { "type": "string" },
+            "item_ids": { "type": "array", "items": { "type": "string" } },
+            "campaign_ids": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "data_quality_note": { "type": ["string", "null"] }
+    }
+  }
+}

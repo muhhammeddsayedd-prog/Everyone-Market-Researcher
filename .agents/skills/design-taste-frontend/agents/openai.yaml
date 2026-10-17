@@ -1,0 +1,5 @@
+interface:
+  display_name: "Taste Frontend"
+  short_description: "Frontend design and critique within Everyone's design system"
+policy:
+  allow_implicit_invocation: true

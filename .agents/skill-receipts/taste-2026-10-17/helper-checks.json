@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-17",
+  "passed": true,
+  "node_version": "v24.18.0",
+  "syntax_checked": [
+    "scripts/assets.mjs",
+    "scripts/draw.mjs",
+    "scripts/inspect.mjs",
+    "scripts/lint.mjs",
+    "scripts/lib/cdp.mjs",
+    "scripts/lib/probe.mjs",
+    "scripts/lib/rules.mjs",
+    "assets/base.js"
+  ],
+  "lint_fixture": {
+    "json_and_text_redacted": true,
+    "expected_exit_code": 1,
+    "findings": 1
+  },
+  "draw_fixture": {
+    "exit_code": 0,
+    "history_beside_output": true,
+    "seed": 37,
+    "scratch_path": "C:\\Users\\iway\\AppData\\Local\\Temp\\emr-taste-check-23532lf4"
+  },
+  "not_run": [
+    "network asset search/download",
+    "browser inspector",
+    "application or browser acceptance",
+    "hosted/provider actions"
+  ]
+}
