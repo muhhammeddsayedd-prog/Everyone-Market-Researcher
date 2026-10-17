@@ -1,0 +1,18 @@
+{
+  "observedAt": "2026-10-17T17:14:32.7372077+00:00",
+  "authorization": "Owner: Approve merge after protection and checks",
+  "merge": {
+    "headRefOid": "c937119e95f506055b3ee32b67e812daf90762de",
+    "mergeCommit": {
+      "oid": "0b71ea96544b43bb36e605c62d1c042c147b7cba"
+    },
+    "mergedAt": "2026-10-17T17:14:33Z",
+    "state": "MERGED",
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1"
+  },
+  "command": "gh pr merge 1 --merge --match-head-commit c937119e95f506055b3ee32b67e812daf90762de",
+  "bypassUsed": false,
+  "protectionVerifiedBeforeMerge": true,
+  "prCI": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39052443542",
+  "next": "Verify push-triggered main CI before marking M00 Done"
+}

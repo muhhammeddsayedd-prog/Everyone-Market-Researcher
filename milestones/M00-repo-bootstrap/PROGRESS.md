@@ -1,69 +1,69 @@
 # M00 — Repo bootstrap & tooling · PROGRESS
 
-> Read with `MILESTONE.md`; all evidence below belongs to M00 only.
+> Read with `MILESTONE.md`. Historical failures and earlier checkpoints are retained below.
 
 ## Status
 
-**In review**
+**Done**
 
-| Field        | Value                                                                                                                                         |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Started      | 2026-10-17                                                                                                                                    |
-| Last updated | 2026-10-17                                                                                                                                    |
-| Finished     | —                                                                                                                                             |
-| Branch / PR  | `m00-bootstrap` / [PR #1](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1)                                         |
-| Current task | Owner MA-01 protection/merge; T9 closeout                                                                                                     |
-| Next step    | Owner protects main and approves PR #1 merge; verify final documentation-only checks before merge and main checks afterward. Stop before M01. |
+| Field                     | Value                                                                                                       |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Started                   | 2026-10-17                                                                                                  |
+| Last updated              | 2026-10-17                                                                                                  |
+| Finished                  | 2026-10-17                                                                                                  |
+| Branch / PR               | `m00-bootstrap`; [PR #1 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1) |
+| Main implementation merge | `0b71ea96544b43bb36e605c62d1c042c147b7cba`                                                                  |
+| Current task              | M00 complete; publish final closeout record through protected PR                                            |
+| Next step                 | Stop. Await a new owner instruction before starting M01.                                                    |
 
 ## Task checklist
 
-- [x] T1 — Initialize in place and preserve handoff and installed skills (`423e301`); approved empty `main` base `1946db4` published.
-- [x] T2 — Workspace root; Node 24 / pnpm 10.34.7; exact pins and lockfile; install passed.
-- [x] T3 — Next.js placeholder; strict TypeScript; build and component test passed.
-- [x] T4 — Shared package; 19 shared tests and 16 canonical helper tests passed.
-- [x] T5 — Lint, formatting, strict typecheck; all passed.
-- [x] T6 — 39 unit/component/helper/token tests / 5 files and 4 production Playwright/axe viewport checks passed; separate dev smoke passed.
-- [x] T7 — CI/hygiene committed; PR #1 quality/unit/build/e2e green on 4220d62. Initial formatting failure retained; documentation-only receipt commit triggers the same checks again.
-- [x] T8 — MA-02 configured and Git-linked preview READY for 4220d62; browser title, wordmark, label/footer, black background and noindex verified.
-- [ ] T9 — README and local hand-off ready; merge/main CI requires explicit owner approval.
+- [x] T1 — Initialized in place; preserved handoff and installed skills. Empty main base explicitly approved.
+- [x] T2 — Node 24 / pnpm 10.34.7 workspace, exact pins and committed lockfile; clean frozen install passed.
+- [x] T3 — Branded Next.js placeholder, metadata/noindex, system fonts; build/component/browser checks passed.
+- [x] T4 — Shared package and placeholders; 19 shared tests and 16 canonical helper tests passed.
+- [x] T5 — ESLint, Prettier and strict TypeScript passed locally and in PR/main CI.
+- [x] T6 — All 39 unit/component/helper/token tests and 4 Playwright/axe viewport checks passed; separate dev smoke passed.
+- [x] T7 — PR/main quality, unit, build and e2e green; CI, Dependabot, template and main protection verified.
+- [x] T8 — Git-linked Vercel preview READY; actual page verified in Chrome. MA-02 complete.
+- [x] T9 — README and handoff complete; approved PR #1 merged; main CI green.
 
 ## Acceptance criteria
 
-| ID  | Result  | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| --- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC1 | PASS    | Handoff, M00–M15 folders, docs/data/reference/assets/skills tracked; `423e301`.                                                                                                                                                                                                                                                                                                                                                                                                               |
-| AC2 | PASS    | Separate `.m00-clean-20261017` clone of `42149c1`: no node_modules before install; frozen install exit 0 in 11.8s; no tracked changes. `evidence/clean-install.log`.                                                                                                                                                                                                                                                                                                                          |
-| AC3 | PASS    | `pnpm lint`, `format:check`, `typecheck`, `test`; `evidence/{lint,format,typecheck,unit}.log`; 39/39 tests.                                                                                                                                                                                                                                                                                                                                                                                   |
-| AC4 | PASS    | Fresh production build + Playwright/axe 4/4 at 320/768/1024/1440; `evidence/web-e2e.log`, `web-*.png`; dev smoke HTTP 200 / no runtime errors `web-dev-smoke.json`.                                                                                                                                                                                                                                                                                                                           |
-| AC5 | BLOCKED | [Initial PR run 39051922338](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39051922338): unit/build/e2e passed; quality failed only README/board formatting, preserved in `ci-quality-initial.*`. Corrected [PR run 39052213057](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39052213057) on 4220d62 passed quality/unit/build/e2e; `evidence/ci-pass.json` and `ci-validation.log`. Main CI requires approved merge. |
-| AC6 | PASS    | [Preview](https://everyone-market-researcher-7m7y8j9lk-muhammed-abdelrahman.vercel.app) READY, branch m00-bootstrap, commit `4220d627aa4e9495ba30506f5d56bb48f2901399`; CUA Chrome rendering verified, `evidence/preview-readback.json`.                                                                                                                                                                                                                                                      |
-| AC7 | PASS    | Targeted index scan passed 569 files / 0 findings; only templates/.env.example and apps/web/.env.example tracked. Root .env, app .env.local and undocumented examples match ignore rules. Final receipt in evidence/secret-scan.json.                                                                                                                                                                                                                                                         |
-| AC8 | PASS    | `.github/dependabot.yml`, `pull_request_template.md` implemented.                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| AC9 | BLOCKED | GET main protection returned 404 "Branch not protected"; owner action MA-01.                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ID  | Result | Evidence                                                                                                                                                                                                                                                                                                |
+| --- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC1 | PASS   | Handoff, M00–M15, docs/data/reference/assets/skills tracked; initial preservation commit `423e301`.                                                                                                                                                                                                     |
+| AC2 | PASS   | Isolated clone of `42149c1`, no existing node_modules: frozen install exit 0; `evidence/clean-install.log`. Main CI also used frozen installs.                                                                                                                                                          |
+| AC3 | PASS   | Lint, format, types and all 39 tests; local logs and `evidence/main-ci-validation.log`.                                                                                                                                                                                                                 |
+| AC4 | PASS   | Production Playwright/axe 4/4 at 320/768/1024/1440; `web-e2e.log`, `web-*.png`; separate `web-dev-smoke.json`.                                                                                                                                                                                          |
+| AC5 | PASS   | [PR CI](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39052443542) and [main CI](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39052887942) all four jobs passed; `main-ci-pass.json`. Initial failed PR run retained separately. |
+| AC6 | PASS   | [Preview](https://everyone-market-researcher-pvarsvafi-muhammed-abdelrahman.vercel.app) bound to `c937119` and rendered in Chrome; main merge auto-deployment also verified in `main-deployment.json`.                                                                                                  |
+| AC7 | PASS   | Targeted indexed-secret scan and env ignore checks passed; only two documented empty env examples tracked; `secret-scan.json` and main quality job. This is not an exhaustive credential audit.                                                                                                         |
+| AC8 | PASS   | Dependabot, PR template, CODEOWNERS and CI present on merged main.                                                                                                                                                                                                                                      |
+| AC9 | PASS   | Owner delegated MA-01; REST write/readback and independent review verified protection, no direct push test; `main-protection.json`.                                                                                                                                                                     |
 
 ## Blockers
 
-- MA-01: owner-controlled main branch protection must require a PR and `quality`, `unit`, `build` checks after CI appears.
-- Merge approval and post-merge main checks are required before Done. All local implementation work continues.
+None for M00. The documented tooling advisory and temporary ESLint compatibility pin retain their bounded follow-up date of 2026-10-24.
 
 ## Manual actions needed from the owner
 
-| ID             | Exact action                                                                                                                                                                                                                   | Status                                                                                                                                        |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| MA-01          | GitHub repo → Settings → Branches → Add branch protection rule → `main`; require a pull request before merging; require status checks `quality`, `unit`, `build`; save. Confirm here. Do not test by pushing directly to main. | Access verified ADMIN; empty main base explicitly approved/published; protection still owner-controlled.                                      |
-| MA-02          | Owner authorized project creation/linking in this session. No repeat setup requested.                                                                                                                                          | Existing project discovered via authenticated CLI and configured; preview READY/rendering verified; no further owner project-creation action. |
-| Merge approval | Review the completed M00 PR and explicitly approve merge.                                                                                                                                                                      | Requested after green PR CI, local acceptance/review and preview verification; waiting for explicit response.                                 |
+| ID             | Action / verification                                                                                                                                                                                                             | Status   |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| MA-01          | Owner explicitly delegated GitHub protection changes. Main requires a PR and strict quality/unit/build from Actions app 15368; enforced for admins; force pushes/deletions disabled. REST readback and independent review passed. | Complete |
+| MA-02          | Expected owner Vercel project/Git link, apps/web root, Next.js, Node 24 and previews verified through existing authenticated CLI/browser.                                                                                         | Complete |
+| Merge approval | Owner explicitly answered “Approve merge after protection and checks.” PR #1 merged with head pin and without admin bypass; main CI passed.                                                                                       | Complete |
 
 ## Decisions & deviations
 
-- No clone/re-extraction: the existing workspace is the repository root. Empty main `1946db4` was published only after explicit owner approval; all implementation stays on `m00-bootstrap`.
+- No clone/re-extraction: the existing workspace is the repository root. Empty main `1946db4` was published only after explicit owner approval; implementation was reviewed on `m00-bootstrap` and merged only after owner approval.
 - `emr-milestone-delivery` is not installed; existing project rules/milestone records provide its workflow. No separate baseline/review report found; absence did not block work.
 - Verified exact compatible package pins against official docs/registry. TypeScript 6.0.3 meets typescript-eslint's `<6.1` peer range; TypeScript 7 is deferred. ESLint 9.39.5 is deprecated upstream but is the supported intersection for current Next import/React/accessibility plugins; ESLint 10 gave peer incompatibilities and was replaced before delivery. See `evidence/toolchain.md`.
 - Current Vitest `test.projects` replaces deprecated workspace config; normalizer config uses `.mts` within a private CommonJS boundary so canonical plain-JS exports load correctly.
 - M00 system-font fallback avoids requesting absent M09 font files. Copied canonical CSS/SVG bytes are preserved; external SVG rendered white via CSS filter.
 - MR-08 corrected only JSON mirror entries; canonical CSS unchanged. Regression verifies all 136 dark/32 light key-value pairs and app stylesheet copy.
 - Formatting checks cover implementation/active M00 records, preserving handoff docs, reference/seed assets and pinned skills. No binding product/security decision changed.
-- Vercel MCP default-scope readback was incomplete: no projects/teams, user lookup404; creation/link attempt400 (missing GitHub login connection), explicit team read403. Authenticated CLI correctly found the owner's existing project. Project `prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu`, team `team_gboXPxTevpCOZuaA8eY9PmR1`, expected Git repo verified; root `apps/web`, Next.js, Node24, frozen install, outside-root workspace files enabled. No new account or plan.
+- Vercel MCP default-scope readback was incomplete: no projects/teams, user lookup404; creation/link attempt400 (missing GitHub login connection), explicit team read403. Authenticated CLI correctly found the owner's existing project. Project `prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu`, team `team_gboXPxTevpCOZuaA8eY9PmR1`, expected Git repo verified; root `apps/web`, Next.js, Node 24, frozen install, outside-root workspace files enabled. No new account or plan.
 
 ## Risks / notes for the owner
 
@@ -72,6 +72,8 @@
 - n8n skill promotion stays at M03; no live workflow, scraping, database, AI or provider test is authorized/run in M00. M01 has not started.
 
 ## Session log
+
+- 2026-10-17 · M00 closeout: owner explicitly authorized protection and merge. Main protection configured/read back and independently reviewed (PR required, quality/unit/build bound to GitHub Actions 15368, strict, admins enforced, no force pushes/deletions). Initial PUT 422 rejected the redundant contexts+checks shape; checks-only PUT and GET passed. PR #1 merged without bypass at 17:14:33 UTC / 20:14:33 Cairo, merge `0b71ea9`; main CI 39052887942 passed all four jobs, 39 unit tests and 4 browser checks. Existing Git integration deployed only the placeholder; READY/browser rendering verified. All AC1–AC9 pass; closeout documentation uses the same protected PR workflow. M01 remains unstarted.
 
 - 2026-10-17 · Hosted verification: corrected PR CI run 39052213057 (4220d62) passed all four jobs; Git-linked Vercel deployment dpl_HygQjLheahquaGMLNjQJFQcUX11p READY and actual page verified in Chrome. Requested explicit merge approval only after implementation/review/checks passed. MA-01 protection and main checks still open; no merge or M01 work performed. Hosting/CI usage cost is unknown; no paid data/AI/provider tests.
 
@@ -85,6 +87,9 @@
 
 ## Hand-off to next milestone
 
-<!-- Filled when Done: what exists now, how to run/verify it, known gaps, what the next milestone should start with. -->
-
-- Prepared only: workspace and credential-free placeholder, strict tooling, shared helpers, db.types placeholder and commented M01 CI job exist. Run README commands. M00 cannot close until MA-01 protection, explicit merge approval, merged main CI. M01 has not started and needs a separate instruction after M00 closes.
+- M00 is complete on main. README documents credential-free installation, development, builds and all test commands.
+- `apps/web` is only the branded placeholder; `packages/shared` contains tested slug/env helpers and the database-types placeholder. `n8n/normalizers` has local canonical helper tests only.
+- `supabase/README.md`, `packages/shared/src/db.types.ts` and the commented M01 CI job are ready for the next approved milestone. No Supabase project/config/migration, authentication, collector, actor adapter, AI or REST/MCP implementation was added.
+- M01 has not started. A fresh owner instruction must authorize it; then follow M01's own read order and manual gates. No later-milestone credentials are requested here.
+- Follow up the documented lint-only braces advisory and ESLint peer/EOL compatibility by 2026-10-24. Preserve historical receipts and the ignored review scratch folder; no cleanup retry is authorized by this handoff.
+- GitHub Actions and Vercel builds ran through the existing setup; actual charges are unknown. No plan/billing changes, paid data backfills, scraping, AI inference or n8n execution occurred.
