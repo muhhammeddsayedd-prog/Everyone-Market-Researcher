@@ -1,0 +1,5 @@
+﻿unit	Run pnpm test	2026-10-17T17:14:53.4765755Z ^[[2m Test Files ^[[22m ^[[1m^[[32m5 passed^[[39m^[[22m^[[90m (5)^[[39m
+unit	Run pnpm test	2026-10-17T17:14:53.4767454Z ^[[2m      Tests ^[[22m ^[[1m^[[32m39 passed^[[39m^[[22m^[[90m (39)^[[39m
+unit	Run pnpm test	2026-10-17T17:14:53.4773565Z ^[[2m   Duration ^[[22m 1.30s^[[2m (environment 47%, tests 17%, import 15%, setup 10%, transform 9%, worker 2%)^[[22m
+e2e	Run pnpm test:e2e	2026-10-17T17:16:09.5524434Z Running 4 tests using 2 workers
+e2e	Run pnpm test:e2e	2026-10-17T17:16:13.8738309Z   4 passed (10.4s)

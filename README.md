@@ -2,7 +2,7 @@
 
 The internal market-intelligence system for everyone. (Everyone Films). The planned system collects public competitor content, uses OpenAI to identify brands, agencies, credits and campaigns, and serves the results to the team through a web app and to AI agents through REST and MCP.
 
-Development is in **M00: repository bootstrap and tooling**. The current app is the everyone. / Market Radar placeholder. Collectors, Supabase, authentication and product screens arrive in later milestones. Read [PROGRESS.md](PROGRESS.md) for current checks, owner actions and hosted acceptance. Toolchain choices and the outstanding dependency advisory are recorded in [M00 toolchain evidence](milestones/M00-repo-bootstrap/evidence/toolchain.md).
+**M00: repository bootstrap and tooling is complete.** M01 has not started and awaits a new owner instruction. The current app is the everyone. / Market Radar placeholder. Collectors, Supabase, authentication and product screens arrive in later milestones. Read [PROGRESS.md](PROGRESS.md) for current checks, owner actions and hosted acceptance. Toolchain choices and the outstanding dependency advisory are recorded in [M00 toolchain evidence](milestones/M00-repo-bootstrap/evidence/toolchain.md).
 
 Owner: Mohamed Abdelrahman · mohamed.abdelrahman@everyone.film · Created 17 Oct 2026.
 

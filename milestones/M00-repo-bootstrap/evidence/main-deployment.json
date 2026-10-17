@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-10-17T17:17:43.3717161+00:00",
+  "deployment": "dpl_oYoZzBLYQUwKxn1uPtQ9ckkZxw3n",
+  "project": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+  "team": "team_gboXPxTevpCOZuaA8eY9PmR1",
+  "target": "production",
+  "trigger": "Existing Git integration automatically deployed the owner-approved main merge; no manual promotion",
+  "state": "READY",
+  "commit": "0b71ea96544b43bb36e605c62d1c042c147b7cba",
+  "url": "https://everyone-market-researcher-3kgqv5qod-muhammed-abdelrahman.vercel.app",
+  "browser": "CUA Chrome",
+  "renderVerified": true,
+  "title": "everyone. Market Radar",
+  "robots": "noindex, nofollow",
+  "wordmarkLoaded": true,
+  "background": "rgb(0, 0, 0)",
+  "cost": "unknown",
+  "scope": "M00 placeholder only; no auth, data services, scraping, AI, or M01 implementation"
+}
