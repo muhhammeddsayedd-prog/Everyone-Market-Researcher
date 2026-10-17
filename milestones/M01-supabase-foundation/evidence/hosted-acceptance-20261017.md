@@ -1,5 +1,73 @@
 # M01 hosted acceptance resume
 
+## 18 October continuation — restricted logins and Google
+
+The existing branch and draft PR4 still point to reviewed head
+`41d4801eedf92219688dbfaf13fd49388b9ef318`. CI39062273290 passed all five jobs
+and Vercel; those results belong to that head. The working dev MCP reconfirmed
+`zmotjsbzhzjvpelxvxlf` and the same seven applied versions/names. No migration,
+seed, fixture or administrator credential was replayed or requested.
+
+The two owner-supplied Windows-encrypted role handoffs were present under the
+expected Windows account. The actual consumer was reviewed before decryption;
+it uses only the pinned native CLI, fixed dev host/users/ports/database/TLS,
+passwordless argv, child-only PGPASSWORD and bounded cleanup. Its single DO
+asserts both `current_user` and `session_user`; owner-postgres plus SET ROLE is
+not used as a restricted-login receipt.
+
+- **n8n_writer PASS**, session5432, observed21:37:14–18 UTC on17 October
+  (00:37 on18 October Cairo). Both identities matched, start/finish RPCs worked,
+  the exact custom exception forced subtransaction rollback, and four expected
+  `42501` denials passed: direct ops read, direct app write, queue and scheduler
+  reads. The direct-table privilege check also passed.
+- **api_agent authenticated; acceptance INCOMPLETE**, transaction6543,
+  observed21:37:18–20 UTC. Both identity assertions passed before the probe's
+  extra `transaction_read_only` assertion failed. Safe server-log projection
+  identifies api_agent / DO / `P0001` / inline line9. The startup setting did
+  not take effect; the precise layer that ignored/overrode it is unproven. This
+  is not a password rejection. View and denial checks were not reached.
+  The reviewed correction sets read-only mode through live SQL as the first DO
+  operation, transaction-local: `set_config('transaction_read_only','on',true)`.
+  The identity, privilege, read and four-denial assertions remain intact. A
+  bounded dev-MCP compatibility check passed; it is not role acceptance.
+
+[Original role attempt](role-pooler-attempt-20261018.json) and
+[current role acceptance/recovery](role-pooler-acceptance-20261018.json) preserve
+separate results. Both consumed handoffs and generated private SQL files were
+deleted. All owned CLI children exited; independent inspection found zero
+remaining native CLI processes. The administrator handoff remains absent.
+No password was put into parent VS Code; clearing a child cannot clear any
+separately configured parent. The owner's saved role passwords are untouched.
+MCP readback finds zero retained probe runs, competitors, accounts and domain
+autojoin entries. No grants, passwords or database defaults changed.
+
+At21:35 UTC, independent browser readback found **Google DISABLED**, **Email
+DISABLED**, exact dev callback
+`https://zmotjsbzhzjvpelxvxlf.supabase.co/auth/v1/callback`, signupON,
+anonymous/manual linkingOFF. Both Git auto controls remain OFF on both projects.
+[Provider receipt](provider-config-20261018.json). No client secret was read,
+configuration saved or OAuth exchange attempted. Full browser signin stays M09.
+
+MA-05 now needs **only** an agent handoff for the corrected probe. In Windows
+PowerShell as the same account, run:
+
+```powershell
+& "$env:LOCALAPPDATA\Temp\emr-m01-store-role-urls.ps1" -Role api_agent
+```
+
+Enter the existing saved agent password at the hidden prompt. Expected output:
+**Encrypted dev role handoffs saved**. Close that window; reply **Agent handoff
+ready**. Do not reset passwords or repeat the successful writer check.
+MA-06 exact screens/fields/result and readiness reply **Google saved on emr-dev**
+are in [Supabase README](../../../supabase/README.md#owner-actions-for-the-dev-pooler-checks).
+
+M01 remains open at AC8 agent read/denial checks and AC11 Google configuration;
+the completed migration/advisor/type/local/CI evidence below is preserved.
+After both dev gates pass, present the existing exact production-baseline
+packet below for separate approval. Its approval and PR4 merge are not inferred
+from credentials or this continuation. Production writes, merge, M02,
+collection and paid provider calls remain untouched.
+
 ## Hosted dev result
 
 The owner completed the encrypted handoff. Actual native-CLI PGPASSWORD presence
@@ -37,7 +105,7 @@ uses the postgres password. Production-baseline and PR4 merge gates stay open,
 PR4 stays draft, and M02 has not started. The earlier sections below preserve
 the diagnostic sequence; their empty-state observations are historical.
 
-## Credential handoff follow-up
+## Historical credential handoff follow-up — completed, do not repeat
 
 The next resume verified source/PR head55738124f4e31931d1ad8528b537fc6ed49d8acf,
 green CI39059459113 and all seven unchanged migration seals. Native dev MCP tools
@@ -53,7 +121,7 @@ password had **not** been configured and requested an exact command. The
 diagnosis is missing credential delivery, not failed authentication or a proven
 filter problem. [Receipt](credential-delivery-20261017.json).
 
-Owner action: open PowerShell as the same Windows user on this computer and run:
+Completed owner action (historical command, do not run again):
 
 ```powershell
 $emrPasswordFile = Join-Path $env:LOCALAPPDATA 'Temp\emr-m01-dev-password.dpapi'
@@ -196,7 +264,11 @@ replacing local types; run workspace typecheck. The MCP type tool has no schema
 selector, so do not assume its default output includes all four project schemas.
 Run post-migration advisors; the pre-migration report cannot substitute for them.
 
-## Remaining owner prerequisites
+## Historical owner prerequisites before the completed dev baseline
+
+This list records the earlier state. MA-04 is resolved and its temporary file
+was deleted. Use the current 18 October continuation and M01 PROGRESS for
+remaining actions; do not recreate the administrator handoff or replay push.
 
 - MA-04: privately configure the existing dev database password as `PGPASSWORD`
   in the Codex environment, or run the exact CLI workflow privately and share a

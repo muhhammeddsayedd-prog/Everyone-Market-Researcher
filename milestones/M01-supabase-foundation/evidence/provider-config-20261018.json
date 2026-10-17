@@ -1,0 +1,69 @@
+{
+  "localDate": "2026-10-18",
+  "timezone": "Africa/Cairo",
+  "method": "Read-only signed-in Supabase dashboard through the existing Chrome browser session",
+  "timestampMeaning": "Observed-by batch-end UTC clock receipts; not exact timestamps for each UI operation",
+  "devAuth": {
+    "project": "emr-dev",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "url": "https://supabase.com/dashboard/project/zmotjsbzhzjvpelxvxlf/auth/providers",
+    "observedAtUtc": "2026-10-17T21:35:20Z",
+    "googleEnabled": false,
+    "emailEnabled": false,
+    "allowNewUserSignup": true,
+    "allowAnonymousSignin": false,
+    "allowManualIdentityLinking": false,
+    "confirmEmail": true,
+    "googleCallback": {
+      "value": "https://zmotjsbzhzjvpelxvxlf.supabase.co/auth/v1/callback",
+      "verified": true,
+      "method": "Exact equality check against the provider drawer's read-only callback input; no client credential values returned",
+      "drawerClosedWithoutSaving": true
+    },
+    "providerStatesConfirmedAgainByUtc": "2026-10-17T21:35:37Z"
+  },
+  "githubIntegrations": {
+    "dev": {
+      "project": "emr-dev",
+      "projectRef": "zmotjsbzhzjvpelxvxlf",
+      "url": "https://supabase.com/dashboard/project/zmotjsbzhzjvpelxvxlf/settings/integrations",
+      "observedAtUtc": "2026-10-17T21:35:20Z",
+      "deployToProduction": false,
+      "automaticBranching": false,
+      "productionBranch": "Disabled, empty field",
+      "workingDirectory": "."
+    },
+    "prod": {
+      "project": "emr-prod",
+      "projectRef": "hkiafqrcxaafdbcvjlzv",
+      "url": "https://supabase.com/dashboard/project/hkiafqrcxaafdbcvjlzv/settings/integrations",
+      "observedAtUtc": "2026-10-17T21:35:37Z",
+      "deployToProduction": false,
+      "automaticBranching": false,
+      "productionBranch": "Disabled, empty field",
+      "workingDirectory": "."
+    }
+  },
+  "MA06": {
+    "status": "Pending: Google provider remains disabled on dev",
+    "ownerAction": [
+      "Use the intended Google Cloud web OAuth client and ensure its authorized redirect URI is https://zmotjsbzhzjvpelxvxlf.supabase.co/auth/v1/callback.",
+      "In Supabase emr-dev, open Authentication > Sign In / Providers > Google. Configure the valid client ID and client secret privately, enable Sign in with Google, then save. Do not send credentials in chat or commit them.",
+      "Confirm the provider list shows Google enabled and Email disabled. Keep global new-user signup enabled, anonymous sign-in disabled and manual identity linking disabled.",
+      "Reply only: Google saved on emr-dev. The agent will independently verify the saved non-secret state."
+    ],
+    "expectedNonSecretResult": "Google enabled on emr-dev with the exact callback above; Email disabled and the other observed signup controls preserved",
+    "readinessReply": "Google saved on emr-dev",
+    "fullBrowserSigninAcceptance": "Deferred to M09; not attempted or claimed here"
+  },
+  "boundaries": {
+    "configurationChanged": false,
+    "secretClientValuesReadOrReported": false,
+    "credentialFilesOrShellEnvironmentRead": false,
+    "apiKeysAccessed": false,
+    "fullOAuthSigninAttempted": false,
+    "googleClientCreated": false,
+    "productionSqlAttempted": false,
+    "productionConfigurationChanged": false
+  }
+}

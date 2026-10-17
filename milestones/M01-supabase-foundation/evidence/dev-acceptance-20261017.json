@@ -1,5 +1,11 @@
 {
   "date": "2026-10-17",
+  "continuationEvidence": {
+    "localDate": "2026-10-18",
+    "roles": "role-pooler-acceptance-20261018.json",
+    "google": "provider-config-20261018.json",
+    "boundary": "The baseline fields and remaining list below are the original 17 October snapshot. Follow-up role/provider status is recorded separately; migration/advisor/type receipts are preserved."
+  },
   "batchObservedBy": "2026-10-17T19:19:00Z",
   "project": {
     "name": "emr-dev",

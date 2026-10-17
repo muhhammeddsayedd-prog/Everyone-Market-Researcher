@@ -1,0 +1,174 @@
+{
+  "localDate": "2026-10-18",
+  "timezone": "Africa/Cairo",
+  "project": {
+    "name": "emr-dev",
+    "ref": "zmotjsbzhzjvpelxvxlf",
+    "host": "aws-1-eu-central-1.pooler.supabase.com",
+    "database": "postgres",
+    "tls": "sslmode=require"
+  },
+  "reviewedSource": {
+    "branch": "m01-supabase-foundation",
+    "head": "41d4801eedf92219688dbfaf13fd49388b9ef318",
+    "pr": 4,
+    "draft": true,
+    "ci": 39062273290,
+    "ciJobs": ["quality", "unit", "build", "e2e", "db-tests"],
+    "ciConclusion": "success",
+    "vercelCheck": "success",
+    "boundary": "Verified existing source/CI; not evidence for a later documentation commit"
+  },
+  "method": {
+    "consumer": "%LOCALAPPDATA%\\Temp\\emr-m01-check-role-cli.ps1",
+    "nativeCli": "Installed pinned Windows CLI 2.121.0; db query with one DO statement per role",
+    "psqlAvailable": false,
+    "independentReview": "Both actual consumer versions reviewed before use; corrected version not yet retried with agent handoff",
+    "firstConsumerSha256": "efd7f2e83d8e12a67a9df80d7235d0aa5fd0a3f33dd9547cf79afec40423605d",
+    "correctedConsumerSha256": "1dead4b5453d40daa17bc3653538784b91f0ca09943fdff35e7ed91af7bd3515",
+    "ownerHandoffHelperSha256": "9d6119c9b334e1de01108e3729ad69b8e303020288893e3d3efc34d103565af9",
+    "correctedPowerShellParseErrors": 0,
+    "decryption": "Windows current-user DPAPI decrypted only in bounded role-check subprocess; child PGPASSWORD only",
+    "passwordOrConnectionUrlInArgumentsLogsOrGit": false,
+    "rawClientOutputWithheld": true,
+    "administratorOrServiceCredentialSubstitution": false,
+    "ownerPostgresSetRoleUsedAsReceipt": false
+  },
+  "firstAttempt": {
+    "receipt": "role-pooler-attempt-20261018.json",
+    "startedAtUtc": "2026-10-17T21:37:14.9905157Z",
+    "finishedAtUtc": "2026-10-17T21:37:20.6219644Z",
+    "writer": {
+      "role": "n8n_writer",
+      "port": 5432,
+      "mode": "session",
+      "result": "PASS",
+      "nativeExitCode": 0,
+      "commandTag": "DO",
+      "currentUserVerified": "n8n_writer",
+      "sessionUserVerified": "n8n_writer",
+      "permittedRpcOperations": ["ops.start_run", "ops.finish_run success"],
+      "probeRollback": "Exact custom SQLSTATE ZMR01 and message caught after nested subtransaction rollback; outer marker asserted",
+      "directProjectTablePrivilegesAbsent": [
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE",
+        "REFERENCES",
+        "TRIGGER"
+      ],
+      "expected42501Denials": [
+        "ops.scrape_runs SELECT",
+        "app.competitors UPDATE WHERE false",
+        "pgmq.meta SELECT",
+        "cron.job SELECT"
+      ]
+    },
+    "agent": {
+      "role": "api_agent",
+      "port": 6543,
+      "mode": "transaction",
+      "result": "INCOMPLETE: probe assertion failed after authentication",
+      "nativeExitCode": 1,
+      "authenticationVerified": true,
+      "currentUserVerified": "api_agent",
+      "sessionUserVerified": "api_agent",
+      "identityEvidence": "Server log identifies api_agent executing the DO; failure at inline DO line 9 follows both identity assertions",
+      "permittedViewReadVerified": false,
+      "denialProbesVerified": false,
+      "failure": {
+        "sqlstate": "P0001",
+        "raiseLine": 9,
+        "assertion": "transaction_read_only must be on",
+        "safeLogWindowStart": "2026-10-17T21:37:13Z",
+        "safeLogWindowEnd": "2026-10-17T21:37:24Z",
+        "rawLogsReturned": false,
+        "diagnosis": "PGOPTIONS-supplied read-only setting did not take effect; exact layer that ignored or overrode it not established. Not a database password rejection.",
+        "noPersistentProbeWrite": true
+      }
+    }
+  },
+  "correction": {
+    "agentFirstExecutableStatement": "perform pg_catalog.set_config('transaction_read_only','on',true);",
+    "scope": "Current transaction only; no role/database configuration or grant changes",
+    "identityReadOnlyPrivilegeAndFour42501AssertionsRetained": true,
+    "mcpCompatibilityCheck": "PASS: single DO set_config plus actual transaction_read_only assertion; not restricted-role authentication or acceptance",
+    "sources": [
+      "https://www.postgresql.org/docs/17/functions-admin.html#FUNCTIONS-ADMIN-SET",
+      "https://www.postgresql.org/docs/17/sql-set-transaction.html",
+      "https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/commands/variable.c#L544"
+    ],
+    "retry": "Pending agent-only handoff; successful writer will not be replayed",
+    "agentAcceptanceRequires": [
+      "Actual api_agent transaction-pooler login with current_user and session_user matching",
+      "Transaction-local read-only setting asserted",
+      "api.competitors_v read succeeds; zero rows accepted without fixtures",
+      "No direct project-table DML or ops/ingest EXECUTE privileges",
+      "Four expected 42501 denials: ops table read, writer RPC, queue table read, cron table read",
+      "Native exit 0 and exact DO command tag; cleanup confirmed"
+    ]
+  },
+  "postCheckReadback": {
+    "method": "Existing dev-scoped MCP, separate from restricted-login receipts",
+    "retainedM01ProbeRuns": 0,
+    "competitors": 0,
+    "competitorAccounts": 0,
+    "domainAutojoinEntries": 0,
+    "membershipBoundary": {
+      "members": 0,
+      "ownerAdminInvitePresent": true,
+      "authUserMembershipTriggerEnabled": true,
+      "membershipTablesRls": true,
+      "membershipTriggerNotDirectlyExecutableByRestrictedRoles": true,
+      "identityOrInviteFixturesCreated": false
+    },
+    "migrationLedger": "Same seven reviewed versions/names confirmed; no migration replay"
+  },
+  "cleanup": {
+    "writerHandoffConsumedAndDeleted": true,
+    "agentHandoffConsumedAndDeleted": true,
+    "bothGeneratedPrivateSqlFilesDeleted": true,
+    "administratorHandoffAbsent": true,
+    "nativeCliProcessesRemainingAtInspection": 0,
+    "roleCheckSubprocessExited": true,
+    "ownerSeparatelySavedPasswordsUntouched": true,
+    "parentEnvironment": "No password injected into parent VS Code by DPAPI method. Clearing a child does not clear a separately configured parent."
+  },
+  "ownerActions": {
+    "MA05": {
+      "application": "Windows PowerShell under the same Windows account",
+      "command": "& \"$env:LOCALAPPDATA\\Temp\\emr-m01-store-role-urls.ps1\" -Role api_agent",
+      "input": "Existing separately saved api_agent password at hidden prompt; no reset, writer or administrator password",
+      "expectedNonSecretResult": "Encrypted dev role handoffs saved; only the api-agent DPAPI handoff is created",
+      "then": "Close that PowerShell window",
+      "readinessReply": "Agent handoff ready"
+    },
+    "MA06": "Google disabled; exact executable steps and callback in provider-config-20261018.json and supabase/README.md",
+    "productionBaselineApproval": "OPEN; present existing exact production packet only after dev acceptance passes",
+    "pr4MergeApproval": "Separate OPEN gate; PR remains draft and unmerged"
+  },
+  "verification": {
+    "changedJsonParse": "PASS",
+    "changedFileFormattingAndDiffCheck": "PASS",
+    "sevenReviewedMigrationSha256Seals": "PASS",
+    "independentConsumerAndEvidenceReview": "PASS; no blocking issues",
+    "indexedTargetedSecretScan": {
+      "trackedFiles": 645,
+      "violations": 0,
+      "exhaustiveAudit": false
+    },
+    "newHeadCi": "Separate from verified CI39062273290; follow the actual PR head after publication"
+  },
+  "scope": {
+    "migrationReplays": 0,
+    "passwordResets": 0,
+    "grantChanges": 0,
+    "fixturesOrCompetitorDataAdded": 0,
+    "productionWrites": 0,
+    "workflowActivations": 0,
+    "paidProviderCalls": 0,
+    "unchangedFullLocalTestRuns": 0,
+    "M02": "Not started"
+  }
+}

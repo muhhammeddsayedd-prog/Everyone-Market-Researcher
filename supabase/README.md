@@ -160,46 +160,61 @@ document the secret-safe connection checks and their synthetic regressions.
 
 ### Owner actions for the dev pooler checks
 
-MA-05 remains owner-controlled. Open **emr-dev > SQL editor**, choose a strong
-different password for each role privately, replace the placeholders below in
-that editor, and run:
+On 18 October (Cairo), the two supplied role handoffs were consumed separately.
+The session-pooler `n8n_writer` login passed both `current_user` and
+`session_user`, start/finish RPCs with forced rollback, absent direct table
+privileges and four expected `42501` denial boundaries. Do not repeat it.
 
-```sql
-alter role n8n_writer password '<strong writer password>';
-alter role api_agent password '<strong agent password>';
-```
+The transaction-pooler `api_agent` login authenticated and passed both identity
+assertions, then stopped at an extra read-only transaction assertion before the
+view/denial probes. Server logs identify SQLSTATE `P0001`, inline DO line 9;
+this was not a password rejection. The startup read-only setting did not take
+effect; the precise layer that ignored/overrode it is not established. The
+reviewed correction sets `transaction_read_only=on` locally as the first DO
+operation. A bounded MCP compatibility check passed; it does not replace the
+pending restricted-login retry. See [role acceptance](../milestones/M01-supabase-foundation/evidence/role-pooler-acceptance-20261018.json).
 
-Store the passwords privately for later n8n/Vercel setup. Do not send them in
-chat or use the owner-postgres password in place of either role password.
-Then open PowerShell as the same Windows user and run this exact command:
+Both consumed handoffs and private probe SQL files were removed; owned native
+CLI children exited. Keep the separately saved role passwords for later
+n8n/Vercel setup. No password reset or administrator password is needed.
+
+To finish only the agent check, open **Windows PowerShell as the same Windows
+account** and run:
 
 ```powershell
-& "$env:LOCALAPPDATA\Temp\emr-m01-store-role-urls.ps1"
+& "$env:LOCALAPPDATA\Temp\emr-m01-store-role-urls.ps1" -Role api_agent
 ```
 
-The private helper prompts for the two role passwords with hidden input, safely
-URI-encodes them and constructs the verified role-specific dev pooler URLs.
-It writes only Windows current-user encrypted handoffs outside the repository:
+The reviewed private helper prompts only for the **existing api_agent password**
+with hidden input, safely URI-encodes it and writes one Windows current-user
+encrypted handoff outside Git:
 
-- `%LOCALAPPDATA%\Temp\emr-m01-dev-n8n-writer-url.dpapi` — `n8n_writer.zmotjsbzhzjvpelxvxlf`, session port 5432.
 - `%LOCALAPPDATA%\Temp\emr-m01-dev-api-agent-url.dpapi` — `api_agent.zmotjsbzhzjvpelxvxlf`, transaction port 6543.
 
-Both use `aws-1-eu-central-1.pooler.supabase.com`, database `postgres` and TLS.
-Report **MA-05 ready** only. Codex consumes those files only in the owned
-role-check child as N8N_WRITER_URL/API_AGENT_URL, verifies each actual SQL login
-role and the permitted RPC/read boundary, rolls probes back, records safe
-OK/FAIL receipts and removes the temporary handoffs. The existing
+Expected non-secret result: **Encrypted dev role handoffs saved**. Close the
+PowerShell window and reply **Agent handoff ready**. It uses
+`aws-1-eu-central-1.pooler.supabase.com`, database `postgres` and TLS. Codex will
+review the consumer, decrypt only in the bounded agent-check subprocess and
+inject only its native CLI child's PGPASSWORD. The URL/password never goes in
+arguments, logs or Git. The actual agent identity, permitted view and four
+denials must pass; a zero-row view is valid. Cleanup removes the consumed
+handoff and closes the owned child, regardless of query outcome. The existing
 `scripts/db/check-pooler.sh` requires psql, which is currently absent from PATH;
 a reviewed bounded CLI-query alternative can verify the same direct logins.
-No successful pooler check is claimed until it runs. OAuth, owner-postgres
-access, catalogue grants and synthetic script tests do not replace it.
+Writer acceptance remains valid; agent read/denial acceptance remains pending.
+OAuth, owner-postgres access, catalogue grants and synthetic script tests do not
+replace restricted-role authentication. This method does not inject a password
+into parent VS Code; clearing a child cannot clear a separately configured
+parent environment.
 Production credentials stay separate and await T13 approval.
 
-MA-06: Google Cloud Console > APIs & Services > Credentials > use/create a Web
-OAuth client with callback
+MA-06: **Google Cloud Console > the project holding the intended OAuth client >
+Google Auth Platform > Clients > Web application client > Authorized redirect
+URIs**: set the callback to
 `https://zmotjsbzhzjvpelxvxlf.supabase.co/auth/v1/callback`. In **emr-dev >
 Authentication > Sign In / Providers > Google**, privately enter its client ID
-and secret, enable Google and save. Report readiness only. Codex will verify
+and secret, enable Google and save. Expected result: provider list shows
+**Google ENABLED**, **Email DISABLED**. Reply **Google saved on emr-dev**. Codex will verify
 the enabled state/callback, keep Email disabled and confirm domain autojoin 0.
 The complete browser signin flow remains M09.
 
