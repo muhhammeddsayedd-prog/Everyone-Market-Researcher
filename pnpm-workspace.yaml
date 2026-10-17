@@ -1,0 +1,6 @@
+packages:
+  - apps/*
+  - packages/*
+
+# No dependency lifecycle scripts are authorized in this credential-free bootstrap.
+onlyBuiltDependencies: []

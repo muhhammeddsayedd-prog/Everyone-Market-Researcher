@@ -1,70 +1,87 @@
 # M00 — Repo bootstrap & tooling · PROGRESS
 
-> Codex keeps this file current. Read it first in every session; update it after every task.
-> The owner reads it to see where we stand, what's blocked, and what they must do.
+> Read with `MILESTONE.md`; all evidence below belongs to M00 only.
 
 ## Status
-**In progress** <!-- Not started · In progress · Blocked: <reason> · In review · Done -->
 
-| Field | Value |
-|---|---|
-| Started | 2026-10-17 |
-| Last updated | 2026-10-17 |
-| Finished | — |
-| Branch / PR | m00-bootstrap / pending initial main setup |
-| Current task | T1–T6 local bootstrap |
-| Next step | Implement and verify M00; publish review branch. MA-01 empty base and MA-02 project pending owner. |
+**In progress**
+
+| Field        | Value                                                                                     |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| Started      | 2026-10-17                                                                                |
+| Last updated | 2026-10-17                                                                                |
+| Finished     | —                                                                                         |
+| Branch / PR  | `m00-bootstrap` / pending implementation push                                             |
+| Current task | T6 browser checks; T7 CI; T8 preview; T9 documentation                                    |
+| Next step    | Finish browser checks, clean frozen install, independent review; push branch and open PR. |
 
 ## Task checklist
-<!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
-- [ ] T1 — Initialise the repo and copy the handoff pack
-- [ ] T2 — Workspace root
-- [ ] T3 — Next.js app `apps/web`
-- [ ] T4 — Shared package `packages/shared`
-- [ ] T5 — Lint, format and typecheck
-- [ ] T6 — Tests
-- [ ] T7 — CI and repo hygiene
-- [ ] T8 — Vercel preview (needs MA-02)
-- [ ] T9 — README and hand-off
+
+- [x] T1 — Initialize in place and preserve handoff and installed skills (`423e301`); approved empty `main` base `1946db4` published.
+- [x] T2 — Workspace root; Node 24 / pnpm 10.34.7; exact pins and lockfile; install passed.
+- [x] T3 — Next.js placeholder; strict TypeScript; build and component test passed.
+- [x] T4 — Shared package; 19 shared tests and 16 canonical helper tests passed.
+- [x] T5 — Lint, formatting, strict typecheck; all passed.
+- [ ] T6 — Root unit suite passed 39 tests / 5 files; built-app Playwright/axe pending.
+- [ ] T7 — CI and repo hygiene implemented; hosted checks pending push/PR.
+- [ ] T8 — Vercel preview (MA-02 configured; preview pending).
+- [ ] T9 — README and hand-off; merge requires explicit owner approval.
 
 ## Acceptance criteria
-<!-- Mirror of MILESTONE.md; paste evidence (command + output summary, counts, screenshot paths). -->
-- [ ] AC1 — The repo contains the handoff pack at the root — evidence:
-- [ ] AC2 — Install from clean works — evidence:
-- [ ] AC3 — Quality gates pass — evidence:
-- [ ] AC4 — The placeholder page works — evidence:
-- [ ] AC5 — CI is green on the PR and on `main` — evidence:
-- [ ] AC6 — The Vercel preview renders the page — evidence:
-- [ ] AC7 — No secrets are tracked — evidence:
-- [ ] AC8 — Dependabot and the PR template are present — evidence:
-- [ ] AC9 — Branch protection is on (owner) — evidence:
+
+| ID  | Result  | Evidence                                                                                                    |
+| --- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| AC1 | PASS    | Handoff, M00–M15 folders, docs/data/reference/assets/skills tracked; `423e301`.                             |
+| AC2 | NOT RUN | Initial install passed; clean checkout frozen install pending.                                              |
+| AC3 | PASS    | `pnpm lint`, `format:check`, `typecheck`, `test`; `evidence/{lint,format,typecheck,unit}.log`; 39/39 tests. |
+| AC4 | NOT RUN | Production build passed (`evidence/build.log`); browser checks pending.                                     |
+| AC5 | NOT RUN | PR/main CI pending; no local result substitutes for hosted checks.                                          |
+| AC6 | NOT RUN | Project configured; preview build/render pending.                                                           |
+| AC7 | PASS    | Targeted index scan before handoff commit: 481 files, 0 findings. Final index scan pending.                 |
+| AC8 | PASS    | `.github/dependabot.yml`, `pull_request_template.md` implemented.                                           |
+| AC9 | BLOCKED | GET main protection returned 404 "Branch not protected"; owner action MA-01.                                |
 
 ## Blockers
-<!-- What stops progress, since when, what unblocks it. Remove when resolved (keep in log). -->
-- Local M00 is unblocked. Hosted PR requires main in the verified empty repository; preview requires MA-02.
+
+- MA-01: owner-controlled main branch protection must require a PR and `quality`, `unit`, `build` checks after CI appears.
+- Merge approval and post-merge main checks are required before Done. All local implementation work continues.
 
 ## Manual actions needed from the owner
-<!-- Exact steps, why, and where to paste results. The owner ticks them; Codex verifies. -->
-| # | Action | Why | Status |
-|---|---|---|---|
-| MA-01 | Give Codex push/PR rights; protect `main` after CI exists | Codex needs to push; protection after T7 | Not requested yet |
-| MA-02 | Create the Vercel project (root `apps/web`) | Preview deploys (T8) | Not requested yet |
+
+| ID             | Exact action                                                                                                                                                                                                                   | Status                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| MA-01          | GitHub repo → Settings → Branches → Add branch protection rule → `main`; require a pull request before merging; require status checks `quality`, `unit`, `build`; save. Confirm here. Do not test by pushing directly to main. | Access verified ADMIN; empty main base explicitly approved/published; protection still owner-controlled. |
+| MA-02          | Owner authorized project creation/linking in this session. No repeat setup requested.                                                                                                                                          | Existing project discovered via authenticated CLI and configured; preview verification pending.          |
+| Merge approval | Review the completed M00 PR and explicitly approve merge.                                                                                                                                                                      | Not requested until implementation/evidence ready.                                                       |
 
 ## Decisions & deviations
-<!-- Anything that differs from the docs. Also add to docs/DECISIONS.md → Changes if it changes a decision. -->
-- Local M00 is unblocked. Hosted PR requires main in the verified empty repository; preview requires MA-02.
+
+- No clone/re-extraction: the existing workspace is the repository root. Empty main `1946db4` was published only after explicit owner approval; all implementation stays on `m00-bootstrap`.
+- `emr-milestone-delivery` is not installed; existing project rules/milestone records provide its workflow. No separate baseline/review report found; absence did not block work.
+- Verified exact compatible package pins against official docs/registry. TypeScript 6.0.3 meets typescript-eslint's `<6.1` peer range; TypeScript 7 is deferred. ESLint 9.39.5 is deprecated upstream but is the supported intersection for current Next import/React/accessibility plugins; ESLint 10 gave peer incompatibilities and was replaced before delivery. See `evidence/toolchain.md`.
+- Current Vitest `test.projects` replaces deprecated workspace config; normalizer config uses `.mts` within a private CommonJS boundary so canonical plain-JS exports load correctly.
+- M00 system-font fallback avoids requesting absent M09 font files. Copied canonical CSS/SVG bytes are preserved; external SVG rendered white via CSS filter.
+- MR-08 corrected only JSON mirror entries; canonical CSS unchanged. Regression verifies all 136 dark/32 light key-value pairs and app stylesheet copy.
+- Formatting checks cover implementation/active M00 records, preserving handoff docs, reference/seed assets and pinned skills. No binding product/security decision changed.
+- Vercel MCP default-scope readback was incomplete: no projects/teams, user lookup404; creation/link attempt400 (missing GitHub login connection), explicit team read403. Authenticated CLI correctly found the owner's existing project. Project `prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu`, team `team_gboXPxTevpCOZuaA8eY9PmR1`, expected Git repo verified; root `apps/web`, Next.js, Node24, frozen install, outside-root workspace files enabled. No new account or plan.
 
 ## Risks / notes for the owner
-- The owner's separate skill-setup request did not authorize starting M00. T1–T9 and all M00 acceptance criteria remain unchecked. The handoff folder is not a Git repository yet; setup could not be committed without starting repo initialization.
-- n8n skill installation remains pending the actual Cloud runtime/node typeVersion check at M03 T1; payload/license/link evidence is retained locally. This is not a new M00 owner action.
+
+- Full dependency audit reports one high `braces` advisory GHSA-vfj7-8cjw-p6xm with no patched version. Controlled repository-only lint glob path; no public runtime input reaches it. Production-only audit exits0. Mitigation/deferral and review date2026-10-24 in toolchain evidence; no claim the full audit is clean.
+- Initial formatter failed because Windows PowerShell wrote audit JSON as UTF-16; original failure retained in `evidence/format-initial.log`, receipts converted to UTF-8, formatter now passes. Initial lint monorepo-root warning fixed with `settings.next.rootDir` and named PostCSS export.
+- n8n skill promotion stays at M03; no live workflow, scraping, database, AI or provider test is authorized/run in M00. M01 has not started.
 
 ## Session log
-<!-- Newest first. One line per meaningful step: date · what · files · result. -->
-- 2026-10-17 · Owner authorized M00 only. Verified GitHub ADMIN access and empty remote; initialized in place without replacing handoff/skills. Local empty base 1946db4, branch m00-bootstrap, expected origin connected. Node 24.18.0; pnpm 10.34.7 pinned. Vercel readback has no linked project and no teams. Requested MA-01 empty main setup approval and MA-02 project; all local tasks continue. emr-milestone-delivery is not installed (existing project rules cover its intended workflow); no baseline/review report found.
+
+- 2026-10-17 · T2–T5 implementation: workspace/toolchain, web placeholder, shared/env/slug and common normalizers, strict tooling. Initial install0; lint0; format0; typecheck0; 39 unit/component/helper/token tests passed; production build0. Logs in `evidence/`. Sources and exact versions in `evidence/toolchain.md` and `web-implementation.md`.
+- 2026-10-17 · T1 committed `423e301`: preserved handoff/assets/installed skill sources and receipts. Tracked secret pattern scan:481 files/0 findings. Root initialized in place. After explicit owner response, empty main base1946db4 pushed; implementation remains unmerged.
+- 2026-10-17 · Owner authorized M00 only; initial GitHub readback ADMIN/empty repository. Node24.18.0 installed. Local and hosted work proceeding within M00. No essential installed delivery wrapper/baseline report; existing progress structure retained.
 - 2026-10-17 · Separate owner request: installed the single default Taste skill in `.agents/skills/design-taste-frontend/`, added frontend routing in `AGENTS.md`/project rules, retained source/license/patch receipts and refreshed the skill lock/validator. Dashboard mode preserves `DESIGN.md`; patched local history and lint redaction passed synthetic fixtures, and all eight JS module syntax checks passed. Native discovery/integrity evidence is in `.agents/skill-receipts/validation.json`. M00 tasks, criteria, manual actions and next step remain unchanged; no Git repository exists for a commit.
 - 2026-10-17 · Installed 28 upstream skills locally, added project routing/policies, pinned references/licenses and retained n8n as pending; files: `.agents/`, `SKILLS_SETUP.md`, `SKILLS_LOCK.json`, `scripts/validate_project_skills.py`, root `AGENTS.md`/`PROGRESS.md`. Native discovery and static integrity checks are recorded in `.agents/skill-receipts/`; application/hosted tests were not run. Initial byte comparison stopped on a CRLF checkout conversion; verification was corrected to compare against immutable Git blobs, preserving the installed files. M00 status and next step are unchanged.
 - 2026-10-17 · milestone file created (handoff pack)
 
 ## Hand-off to next milestone
+
 <!-- Filled when Done: what exists now, how to run/verify it, known gaps, what the next milestone should start with. -->
+
 - —
