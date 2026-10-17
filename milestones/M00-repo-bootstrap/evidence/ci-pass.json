@@ -1,0 +1,38 @@
+{
+  "observedAt": "2026-10-17T17:08:07.0244172+00:00",
+  "repository": "muhhammeddsayedd-prog/Everyone-Market-Researcher",
+  "runId": 39052213057,
+  "commit": "4220d627aa4e9495ba30506f5d56bb48f2901399",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39052213057",
+  "jobs": [
+    {
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39052213057/job/117452915240"
+    },
+    {
+      "name": "quality",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39052213057/job/117452915361"
+    },
+    {
+      "name": "unit",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39052213057/job/117452915445"
+    },
+    {
+      "name": "e2e",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39052213057/job/117453014956"
+    }
+  ],
+  "scope": "PR only; main has not merged and AC5 remains open",
+  "localUnitTests": 39,
+  "browserTests": 4
+}
