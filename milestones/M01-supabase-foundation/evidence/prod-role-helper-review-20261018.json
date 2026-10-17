@@ -1,0 +1,124 @@
+{
+  "localDate": "2026-10-18",
+  "timezone": "Africa/Cairo",
+  "observedAtUtc": "2026-10-17T23:37:12.3431532Z",
+  "scope": "Private production-role helper source adaptation and non-secret local validation before actual production restricted-role checks",
+  "files": {
+    "store": {
+      "path": "%LOCALAPPDATA%\\Temp\\emr-m01-store-prod-role-urls.ps1",
+      "sha256": "251675433c3455f765430070dace3e1a7963d9c2705089332fa4621ecbe3aee2",
+      "powerShellSyntaxErrors": 0,
+      "reviewedDevSourceSha256": "9d6119c9b334e1de01108e3729ad69b8e303020288893e3d3efc34d103565af9"
+    },
+    "consumer": {
+      "path": "%LOCALAPPDATA%\\Temp\\emr-m01-check-prod-role-cli.ps1",
+      "sha256": "694153192e15ceb3650d791a4b7915488d7788e5b4693c4aa1c09ea684b8a337",
+      "powerShellSyntaxErrors": 0,
+      "reviewedDevSourceSha256": "f1b5acd7b61882f58026ecc194a67fc4adcdf17bbdae9c3d4b7088b14907bcdd"
+    }
+  },
+  "fixedProductionTarget": {
+    "projectRef": "hkiafqrcxaafdbcvjlzv",
+    "host": "aws-1-eu-central-1.pooler.supabase.com",
+    "database": "postgres",
+    "tls": "sslmode=require",
+    "writer": { "role": "n8n_writer", "port": 5432, "poolMode": "session" },
+    "agent": { "role": "api_agent", "port": 6543, "poolMode": "transaction" },
+    "handoffs": ["emr-m01-prod-n8n-writer-url.dpapi", "emr-m01-prod-api-agent-url.dpapi"],
+    "receipt": "emr-m01-check-prod-role-cli-result.json"
+  },
+  "diffAudit": {
+    "storeInverseSubstitutionEqualsOriginalDevBytes": true,
+    "consumerInverseSubstitutionEqualsOriginalDevBytes": true,
+    "devSourcesUnchanged": true,
+    "permittedSubstitutionsOnly": [
+      "Dev project ref replaced by the exact approved production ref",
+      "Dev handoff/private SQL filename prefixes replaced by separate production prefixes",
+      "Consumer receipt renamed to the separate production-role receipt",
+      "Store prompts and success wording identify emr-prod",
+      "Both writer and deliberately denied agent start_run probe arguments use environment prod",
+      "Consumer fixed-endpoint comment identifies production",
+      "Consumer ProductionAccess receipt metadata is true"
+    ],
+    "metadataCorrectionBeforeUse": "Root review caught inherited ProductionAccess=false metadata and the dev endpoint comment; both were corrected before any production consumer execution, with fresh syntax and local SQL checks."
+  },
+  "assertionsPreserved": {
+    "actualCurrentAndSessionUserAssertions": true,
+    "passwordFreeFixedTargetNativeArguments": true,
+    "writerStartFinishAndForcedSubtransactionRollback": true,
+    "writerDirectPrivilegeAndFour42501Denials": true,
+    "agentFirstStatementTransactionLocalReadOnlySetAndAssert": true,
+    "agentPermittedViewReadWithNoNonzeroRequirement": true,
+    "agentOidBasedNoDirectDmlAndNoOpsIngestExecuteAssertions": true,
+    "agentFour42501OnlyDenials": true,
+    "readOnly25006NotAcceptedAsPermissionProof": true,
+    "boundedNativeProcessAndWithheldRawErrors": true,
+    "consumedHandoffAndPrivateSqlCleanup": true
+  },
+  "localSqlValidation": {
+    "environment": "Existing owned local Everyone PostgreSQL 17 container supabase_db_everyone-market-radar",
+    "method": "Exact embedded SQL extracted without executing the consumer; local supabase_admin connection and SET SESSION AUTHORIZATION for the intended restricted role simulate SQL behavior only",
+    "agent": { "nativeExitCode": 0, "commandTags": ["SET", "DO"], "allAssertionsCompleted": true },
+    "writer": {
+      "nativeExitCode": 0,
+      "commandTags": ["SET", "DO"],
+      "allAssertionsCompleted": true,
+      "probeEnvironment": "prod",
+      "retainedM01ProbeRowsAfterRollback": 0
+    },
+    "boundary": "Local session-authorization simulation is not a production restricted-role authentication receipt. Production logins must be verified separately with actual role credentials."
+  },
+  "ownerCommandAfterProductionPasswordsAreSet": {
+    "application": "Windows PowerShell under the same Windows account",
+    "command": "& \"$env:LOCALAPPDATA\\Temp\\emr-m01-store-prod-role-urls.ps1\"",
+    "input": "The existing separately saved production n8n_writer and api_agent passwords at their hidden prompts",
+    "expectedNonSecretResult": "Encrypted prod role handoffs saved",
+    "then": "Close the password-entry PowerShell window; report readiness only, never credential values or encrypted file contents."
+  },
+  "supplementalSecurityQueryLocalValidation": {
+    "path": "%LOCALAPPDATA%\\Temp\\emr-m01-prod-supplemental-security.sql",
+    "sha256": "77d49a706eb5be82c5869f8725ab49137b84edb9ecf87ce840c162f89a25eb5f",
+    "fixedReadOnlySelect": true,
+    "localNativeExitCode": 0,
+    "jsonParsed": true,
+    "sequencePrivilegeEntries": 60,
+    "unexpectedSequenceGrants": 0,
+    "explicitColumnAclEntries": 0,
+    "authUserTriggerBindings": 1,
+    "projectSearchTriggerBindings": 6,
+    "rlsPolicyCount": 47,
+    "reachableDirectQueueOrCronFunctions": 0,
+    "unexpectedRoleConfigChecks": 0,
+    "domainAutojoinEntries": 0,
+    "ownerAdminInvitePresent": true,
+    "rawRoleConfigurationValuesOrFunctionBodiesSelected": false,
+    "boundary": "These are local fixture catalogue results; production results belong to a separate reviewed bounded read-only execution."
+  },
+  "supplementalSecurityWrapperReview": {
+    "path": "%LOCALAPPDATA%\\Temp\\emr-m01-prod-detail-cli.ps1",
+    "sha256": "b2840b3b2c184c77566af6efdaaa004bfb35c8abfa051f965155bd124513ffd7",
+    "powerShellSyntaxErrors": 0,
+    "onlyThreeReviewedEditsExceptBlankLines": true,
+    "edits": [
+      "ValidateSet permits only SecurityDetail, rejecting every other action at parameter binding",
+      "Fixed supplemental SELECT embedded from the reviewed 77d49a706eb5be82c5869f8725ab49137b84edb9ecf87ce840c162f89a25eb5f SQL source",
+      "SecurityDetail switch branch verifies actual current_user/session_user postgres, database postgres and PostgreSQL major 17 before collecting the read-only detail"
+    ],
+    "genericQueryArgument": false,
+    "nativeEnvironmentBoundsErrorAndCleanupCodeUnchanged": true,
+    "rootMayExecuteAfterReview": true,
+    "wrapperExecutedByAuthor": false,
+    "interpretation": "An implicit PUBLIC EXECUTE function default is not an executable grant on existing project functions. Review the actual current function revocations and denied schema paths separately; do not broaden or alter grants to remove an informational default."
+  },
+  "boundaries": {
+    "productionCredentialsReadOrDecryptedByAuthor": false,
+    "productionRoleConsumerExecutedByAuthor": false,
+    "productionDatabaseContactByAuthor": false,
+    "passwordsCreatedOrResetByAuthor": false,
+    "grantsOrDatabaseDefaultsChanged": false,
+    "fixturesAdded": false,
+    "frozenProductionAdminRunnerChanged": false,
+    "frozenProductionAdminRunnerSha256": "bdec58b44662caa376ab4e4e3d1c7dfefd0ca36ddf3cf7854a77a034bb6726ea",
+    "independentRootReviewRequiredBeforeProductionConsumption": true
+  }
+}

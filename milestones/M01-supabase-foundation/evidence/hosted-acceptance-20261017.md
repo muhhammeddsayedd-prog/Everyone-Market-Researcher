@@ -1,6 +1,142 @@
 # M01 hosted acceptance resume
 
-## 18 October dev-gate completion — production approval is next
+## 18 October production baseline acceptance
+
+The approved production packet was applied **once** to
+`emr-prod / hkiafqrcxaafdbcvjlzv`, completing at
+**2026-10-17T23:31:23.5015037Z** (18 October Cairo). Actual native authentication
+through the verified session pooler succeeded as postgres; the initial SQL
+catalogue/history was empty. The dry-run matched all seven original sealed
+files, with no local seed or roles file. A fresh reviewed gate bound the target,
+approval, recovery disposition, source hashes and current state before the
+single-use push. Native exit0 and post-push SQL readback confirm exactly the
+seven original versions/names with statement counts40/120/55/12/10/3/4.
+The consumed push plan and exclusive attempt sentinel prevent blind replay.
+[Database preflight](prod-database-preflight-20261018.json),
+[dry-run](prod-dry-run-20261018.json), [reviewed gate](prod-reviewed-push-gate-20261018.json),
+[push and history](prod-push-20261018.json),
+[single-attempt receipt](prod-single-push-attempt-20261018.json).
+
+Production catalogue readback verifies36 RLS tables, nine invoker views,
+23 project functions/12 sealed definers, expected grants, all required FK
+indexes, baseline120/13/17 seeds and the owner invite, domain-autojoin0 and
+empty competitor/account/item/raw/member tables. Three queues, both exact
+housekeeping jobs and the public media bucket's5MiB/four-MIME bounds with no
+client writes match the packet. No seed.sql, C999/test-house, real competitors,
+accounts or later-milestone fixtures were imported.
+[Native inventory](prod-readback-20261018.json) and
+[independent scoped review](prod-inventory-review-20261018.json) separate
+catalogue assertions from actual restricted-role authentication.
+
+Actual post-migration production CLI advisors exited0 at warning-failure
+threshold: security11 intentional deny-all INFO; performance72 unused-index
+INFO; **zero WARN/ERROR**. The production CLI report has no Auth-allocation
+row; the historical dev MCP report has73 performance INFO. Required indexes
+remain. [Security](prod-securityadvisors-20261018.json),
+[performance](prod-performanceadvisors-20261018.json).
+Production-generated types parse without errors and cover app/api/ops/ingest,
+36 tables/nine views/12 generated RPCs. Their complete normalized AST matches
+the checked-in types, whose bytes were preserved. The initial canonical
+comparison rejected formatter-only parentheses; that failed verifier receipt
+is retained separately from the corrected AST PASS.
+[Native generation](prod-generatetypes-20261018.json),
+[AST verification](prod-type-verification-20261018.json).
+After the credential-bearing native children exited, a targeted fresh
+`corepack pnpm typecheck` completed successfully for both workspace packages
+and the root project. The unchanged full local suite was not repeated.
+
+Saved production Google configuration now passes an explicit reload at
+23:30:21Z: Google enabled, Email disabled, valid Google OAuth-format client ID
+and occupied masked secret field, exact prod callback, nonce checking retained
+and users without email disallowed. Signup remains ON; anonymous/manual linking
+remain OFF. No client secret value was read. The earlier Google-disabled
+readback and cancelled invalid autofill remain in the receipt. Google Cloud
+client-type/redirect-list metadata and an OAuth exchange are not independently
+claimed; full browser sign-in remains M09.
+[Google readback](prod-google-config-20261018.json),
+[authorized Email correction](prod-auth-security-20261018.json).
+
+The Data API exposed-schema list was saved once and explicitly reloaded at
+23:33:54Z as exactly public/graphql_public/app, with all five internal schemas
+excluded and other API settings preserved. This is dashboard configuration
+evidence. Production HTTP checks were not run: the browser tools provide no
+documented private bridge for the public API key. AC9's positive member-JWT
+proof remains the existing local/CI receipt, separate from production settings.
+[Saved allowlist](prod-data-api-20261018.json).
+
+**MA-05 production PASS:** the owner set/supplied distinct role credentials;
+both native restricted logins completed at23:39:48–53Z. Writer session5432
+asserted current_user/session_user n8n_writer, absent direct table privileges,
+four exact42501 denials and start_run/finish_run with a forced nested rollback.
+Agent transaction6543 asserted current_user/session_user api_agent, set and
+verified transaction-local read-only mode first, executed the permitted
+api.competitors_v COUNT read, found no direct project-table DML or ops/ingest
+EXECUTE privileges, and passed all four exact42501 denials. The DO command does
+not emit the scalar count; no nonzero result or fixture is required. Other
+error classes are not accepted as authorization proof. Each native exit was0
+with the exact DO command tag. Owner-postgres plus SET ROLE is not used as a
+restricted-login receipt. Dev probes were not repeated.
+[Actual role completion](prod-role-pooler-completion-20261018.json),
+[reviewed consumer/local validation](prod-role-helper-review-20261018.json),
+[independent role acceptance](prod-role-acceptance-20261018.json).
+
+The final production security-detail SELECT and native identity assertions
+also completed with exit0; its expanded sequence/column/default ACL, trigger,
+policy and queue/cron paths are recorded separately from role authentication.
+[Security detail](prod-security-detail-20261018.json) and
+[independent fifteen-contract review](prod-security-detail-review-20261018.json).
+All owned credential-bearing children exited. Independent checks find zero
+native CLI processes and no consumed administrator/writer/agent handoff or
+generated role SQL file. The first compound administrator cleanup command was
+rejected by automatic approval review before execution without a specific
+reason; the owner removed that handoff using the exact provided command, and
+its absence was independently verified. The blocked attempt remains in
+[credential cleanup](prod-admin-credential-cleanup-20261018.json).
+Saved owner passwords are untouched. No parent VS Code environment was modified;
+clearing a child cannot clear an independently configured parent environment.
+
+M01 stays open and PR4 draft/unmerged pending final checks and separate merge
+approval. The next approval is **Approve merging PR #4** only after current PR
+checks pass; production-baseline approval is already consumed.
+M02, collection, paid calls, application promotion and n8n activation remain
+unstarted.
+
+## 18 October production approval and preflight
+
+The owner explicitly approved the exact packet for
+`emr-prod / hkiafqrcxaafdbcvjlzv`, adding full authorization for those actions.
+[Approval receipt](prod-authorization-20261018.json) and M01 PROGRESS record
+the decision before production writes. No new general approval is required.
+The approval covers the seven sealed migrations, documented baseline seeds,
+queues, housekeeping, media bucket and bounded verification/recovery. PR4 merge,
+application promotion, fixtures/imports, collection, paid calls, workflows and
+M02 remain outside this packet.
+
+Resumed clean source688ec9d; CI39077278495 all five jobs and Vercel verified.
+Dev schema/advisor/type and both restricted-role receipts are preserved. The
+dev MCP remains fixed to dev. Production uses the supported explicit-target
+CLI route; no CLI link, new MCP setup, OAuth material extraction or service key.
+The fresh production-only encrypted handoff was absent at preflight; no
+production database authentication or write had occurred at that point. The
+[exact credential command](../../../supabase/README.md#production-credential-handoff)
+uses only the existing prod database password and has a non-secret readiness
+reply. Approval and credential readiness are separate facts.
+
+Fresh read-only dashboard observations establish the production identity,
+empty application schema/history, required extension availability, Git controls
+OFF and a physical backup listed with a Restore action; availability does not
+prove an exercised restore. Details and limitations are recorded separately in
+[production preflight](prod-preflight-20261018.json). Do not infer successful
+authentication, a dry-run or migration application from browser observations.
+The existing dev runner is not simply retargeted: production requires explicit
+history/schema reads, consumed one-use push planning, fail-closed errors and
+verified cleanup. Exact plan/source seals and recovery review precede any push.
+
+## Historical 18 October dev-gate completion — before production approval
+
+This section retains the earlier as-of checkpoint and its now-completed
+production-approval request. The approval/application above supersedes that
+pending gate; do not request it again.
 
 Resumed clean branch `m01-supabase-foundation` at
 `7aaa2a146f11af03ebe8e9fcad6cf8fa2228ad64`, draft PR4. CI39072134552 passed all
@@ -349,11 +485,11 @@ remaining actions; do not recreate the administrator handoff or replay push.
 
 ## Production approval packet — prepared, gate still open
 
-Dev configuration/pooler acceptance is now recorded above. The separate T13 decision concerns only
-`emr-prod / hkiafqrcxaafdbcvjlzv`, applying exactly the seven versions/hashes
-above. General project access and the earlier M00 merge approval do not approve
-this action. The packet is ready for the owner's separate decision; no approval
-is inferred from credentials, Google setup or the continuation instruction.
+This historical heading is retained for existing packet links. The owner
+explicitly approved this exact T13 packet for `emr-prod / hkiafqrcxaafdbcvjlzv`;
+preflight, credential delivery, one seven-version push and bounded production
+acceptance are now complete as recorded above. Do not replay this packet or
+request its approval again. PR4 merge remains a separate unapproved action.
 
 The baseline creates36 project tables with RLS, restricted machine roles and
 RPCs, invoker views and indexes; ensures the six extensions; creates queues

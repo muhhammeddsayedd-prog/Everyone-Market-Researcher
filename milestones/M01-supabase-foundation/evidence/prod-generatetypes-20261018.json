@@ -1,0 +1,36 @@
+{
+  "ObservedAtUtc": "2026-10-17T23:31:53.6844361Z",
+  "Action": "GenerateTypes",
+  "ProjectRef": "hkiafqrcxaafdbcvjlzv",
+  "Host": "aws-1-eu-central-1.pooler.supabase.com",
+  "Port": 5432,
+  "Database": "postgres",
+  "Result": "types-candidate-generated-awaiting-independent-ast",
+  "Reason": "close-credential-child-before-ast-review-or-typecheck",
+  "EncryptedHandoffPresent": true,
+  "HandoffDecrypted": true,
+  "RawOutputWithheld": true,
+  "ProductionWriteAttempted": false,
+  "NoFixtureOrSeedFlag": true,
+  "NativeStages": [
+    {
+      "Stage": "generate-types",
+      "StartedAtUtc": "2026-10-17T23:31:54.0081002Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:31:56.7178272Z"
+    }
+  ],
+  "CleanupFailures": [],
+  "HandoffDeletionResponsibility": "Root deletes prod encrypted handoff after approved DB batch or blocking stop; never recreate dev/admin/writer credentials for this action.",
+  "MigrationSealsDigest": "c0b70b91a1d631323e2d509513e95513030aa3a5c5a7ea6ab6cfafaa30951b18",
+  "RunnerSha256": "bdec58b44662caa376ab4e4e3d1c7dfefd0ca36ddf3cf7854a77a034bb6726ea",
+  "TypeCandidatePath": "%LOCALAPPDATA%\\Temp\\emr-m01-prod-generated.types.ts",
+  "AstAndSchemaCoverageVerified": false,
+  "AllOwnedNativeProcessesExited": true,
+  "FinishedAtUtc": "2026-10-17T23:31:56.7779942Z",
+  "HandoffStillPresentForRootCleanup": true
+}

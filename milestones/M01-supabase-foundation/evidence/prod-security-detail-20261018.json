@@ -1,0 +1,3612 @@
+{
+  "ObservedAtUtc": "2026-10-17T23:38:21.3469215Z",
+  "Action": "SecurityDetail",
+  "ProjectRef": "hkiafqrcxaafdbcvjlzv",
+  "Host": "aws-1-eu-central-1.pooler.supabase.com",
+  "Port": 5432,
+  "Database": "postgres",
+  "Result": "security-detail-collected-review-required",
+  "Reason": "read-only-catalogue-not-restricted-login",
+  "EncryptedHandoffPresent": true,
+  "HandoffDecrypted": true,
+  "RawOutputWithheld": true,
+  "ProductionWriteAttempted": false,
+  "NoFixtureOrSeedFlag": true,
+  "NativeStages": [
+    {
+      "Stage": "detail-identity",
+      "StartedAtUtc": "2026-10-17T23:38:21.6634663Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:38:23.6101712Z"
+    },
+    {
+      "Stage": "supplemental-security",
+      "StartedAtUtc": "2026-10-17T23:38:23.8568907Z",
+      "CliStarted": true,
+      "PasswordPresentInActualNativeEnvironment": true,
+      "ExitCode": 0,
+      "NativeExited": true,
+      "RawOutputWithheld": true,
+      "FinishedAtUtc": "2026-10-17T23:38:25.8537428Z"
+    }
+  ],
+  "CleanupFailures": [],
+  "HandoffDeletionResponsibility": "Root deletes prod encrypted handoff after approved DB batch or blocking stop; never recreate dev/admin/writer credentials for this action.",
+  "MigrationSealsDigest": "c0b70b91a1d631323e2d509513e95513030aa3a5c5a7ea6ab6cfafaa30951b18",
+  "RunnerSha256": "b2840b3b2c184c77566af6efdaaa004bfb35c8abfa051f965155bd124513ffd7",
+  "Identity": {
+    "availableExtensions": [
+      {
+        "defaultVersion": "1.6.4",
+        "installedVersion": "1.6.4",
+        "name": "pg_cron"
+      },
+      {
+        "defaultVersion": "1.6",
+        "installedVersion": "1.6",
+        "name": "pg_trgm"
+      },
+      {
+        "defaultVersion": "1.3",
+        "installedVersion": "1.3",
+        "name": "pgcrypto"
+      },
+      {
+        "defaultVersion": "1.5.1",
+        "installedVersion": "1.5.1",
+        "name": "pgmq"
+      },
+      {
+        "defaultVersion": "1.1",
+        "installedVersion": "1.1",
+        "name": "unaccent"
+      },
+      {
+        "defaultVersion": "0.8.2",
+        "installedVersion": "0.8.2",
+        "name": "vector"
+      }
+    ],
+    "cronJobPresent": true,
+    "currentUser": "postgres",
+    "database": "postgres",
+    "installedRequiredExtensions": [
+      {
+        "name": "pg_cron",
+        "schema": "pg_catalog",
+        "version": "1.6.4"
+      },
+      {
+        "name": "pg_trgm",
+        "schema": "extensions",
+        "version": "1.6"
+      },
+      {
+        "name": "pgcrypto",
+        "schema": "extensions",
+        "version": "1.3"
+      },
+      {
+        "name": "pgmq",
+        "schema": "pgmq",
+        "version": "1.5.1"
+      },
+      {
+        "name": "unaccent",
+        "schema": "extensions",
+        "version": "1.1"
+      },
+      {
+        "name": "vector",
+        "schema": "extensions",
+        "version": "0.8.2"
+      }
+    ],
+    "machineRoles": [
+      {
+        "bypassRls": false,
+        "createDb": false,
+        "createRole": false,
+        "inherit": false,
+        "login": true,
+        "name": "api_agent",
+        "replication": false,
+        "superuser": false
+      },
+      {
+        "bypassRls": false,
+        "createDb": false,
+        "createRole": false,
+        "inherit": false,
+        "login": true,
+        "name": "n8n_writer",
+        "replication": false,
+        "superuser": false
+      }
+    ],
+    "migrationLedgerPresent": true,
+    "projectRelations": [
+      {
+        "kind": "v",
+        "name": "briefs_v",
+        "schema": "api"
+      },
+      {
+        "kind": "v",
+        "name": "campaigns_v",
+        "schema": "api"
+      },
+      {
+        "kind": "v",
+        "name": "competitors_v",
+        "schema": "api"
+      },
+      {
+        "kind": "v",
+        "name": "items_v",
+        "schema": "api"
+      },
+      {
+        "kind": "v",
+        "name": "news_v",
+        "schema": "api"
+      },
+      {
+        "kind": "v",
+        "name": "organizations_v",
+        "schema": "api"
+      },
+      {
+        "kind": "v",
+        "name": "people_v",
+        "schema": "api"
+      },
+      {
+        "kind": "r",
+        "name": "alert_rules",
+        "schema": "app"
+      },
+      {
+        "kind": "S",
+        "name": "alert_rules_id_seq",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "allowed_domains",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "briefs",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "campaign_items",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "campaigns",
+        "schema": "app"
+      },
+      {
+        "kind": "v",
+        "name": "campaigns_v",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "competitor_accounts",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "competitors",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "embeddings",
+        "schema": "app"
+      },
+      {
+        "kind": "S",
+        "name": "embeddings_id_seq",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "employee_snapshots",
+        "schema": "app"
+      },
+      {
+        "kind": "S",
+        "name": "employee_snapshots_id_seq",
+        "schema": "app"
+      },
+      {
+        "kind": "v",
+        "name": "feed_v",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "item_credits",
+        "schema": "app"
+      },
+      {
+        "kind": "S",
+        "name": "item_credits_id_seq",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "items",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "media_assets",
+        "schema": "app"
+      },
+      {
+        "kind": "S",
+        "name": "media_assets_id_seq",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "member_invites",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "members",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "news_articles",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "news_mentions",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "org_aliases",
+        "schema": "app"
+      },
+      {
+        "kind": "S",
+        "name": "org_aliases_id_seq",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "organizations",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "people",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "person_aliases",
+        "schema": "app"
+      },
+      {
+        "kind": "S",
+        "name": "person_aliases_id_seq",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "review_tasks",
+        "schema": "app"
+      },
+      {
+        "kind": "S",
+        "name": "review_tasks_id_seq",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "saved_views",
+        "schema": "app"
+      },
+      {
+        "kind": "S",
+        "name": "saved_views_id_seq",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "stats_daily",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "taxonomy_terms",
+        "schema": "app"
+      },
+      {
+        "kind": "S",
+        "name": "taxonomy_terms_id_seq",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "website_pages",
+        "schema": "app"
+      },
+      {
+        "kind": "r",
+        "name": "raw_items",
+        "schema": "ingest"
+      },
+      {
+        "kind": "S",
+        "name": "raw_items_id_seq",
+        "schema": "ingest"
+      },
+      {
+        "kind": "r",
+        "name": "ai_extractions",
+        "schema": "ops"
+      },
+      {
+        "kind": "S",
+        "name": "ai_extractions_id_seq",
+        "schema": "ops"
+      },
+      {
+        "kind": "r",
+        "name": "api_calls",
+        "schema": "ops"
+      },
+      {
+        "kind": "S",
+        "name": "api_calls_id_seq",
+        "schema": "ops"
+      },
+      {
+        "kind": "r",
+        "name": "api_keys",
+        "schema": "ops"
+      },
+      {
+        "kind": "r",
+        "name": "apify_runs",
+        "schema": "ops"
+      },
+      {
+        "kind": "r",
+        "name": "audit_log",
+        "schema": "ops"
+      },
+      {
+        "kind": "S",
+        "name": "audit_log_id_seq",
+        "schema": "ops"
+      },
+      {
+        "kind": "r",
+        "name": "cost_ledger",
+        "schema": "ops"
+      },
+      {
+        "kind": "S",
+        "name": "cost_ledger_id_seq",
+        "schema": "ops"
+      },
+      {
+        "kind": "r",
+        "name": "price_book",
+        "schema": "ops"
+      },
+      {
+        "kind": "r",
+        "name": "scrape_run_accounts",
+        "schema": "ops"
+      },
+      {
+        "kind": "r",
+        "name": "scrape_runs",
+        "schema": "ops"
+      },
+      {
+        "kind": "r",
+        "name": "settings",
+        "schema": "ops"
+      }
+    ],
+    "projectSchemas": ["api", "app", "ingest", "ops", "private"],
+    "queueMetaPresent": true,
+    "serverMajor": 17,
+    "serverVersion": "17.11",
+    "sessionUser": "postgres",
+    "storageBucketsPresent": true
+  },
+  "Detail": {
+    "authUserTriggerBindings": [
+      {
+        "afterInsertRowOnly": true,
+        "agentExecute": false,
+        "anonExecute": false,
+        "argumentCount": 0,
+        "authenticatedExecute": false,
+        "emptySearchPath": true,
+        "enabledMode": "O",
+        "function": "handle_new_user",
+        "functionSchema": "private",
+        "internal": false,
+        "publicExecute": false,
+        "securityDefiner": true,
+        "trigger": "on_auth_user_created",
+        "writerExecute": false
+      }
+    ],
+    "defaultAclEntries": [],
+    "defaultAclInterpretation": "Implicit function defaults are separate from the explicit PUBLIC EXECUTE revocations on every current project function.",
+    "domainAutojoinEntries": 0,
+    "explicitColumnAclEntries": [],
+    "extensionFunctionExecuteMatrix": [
+      {
+        "arguments": "job_id bigint, schedule text, command text, database text, username text, active boolean",
+        "execute": false,
+        "function": "alter_job",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "job_cache_invalidate",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "schedule text, command text",
+        "execute": true,
+        "function": "schedule",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text, schedule text, command text",
+        "execute": true,
+        "function": "schedule",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text, schedule text, command text, database text, username text, active boolean",
+        "execute": false,
+        "function": "schedule_in_database",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_id bigint",
+        "execute": true,
+        "function": "unschedule",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text",
+        "execute": true,
+        "function": "unschedule",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "table_name text",
+        "execute": true,
+        "function": "_belongs_to_pgmq",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_ensure_pg_partman_installed",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "extension_name text",
+        "execute": true,
+        "function": "_extension_exists",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "partition_interval text",
+        "execute": true,
+        "function": "_get_partition_col",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_get_pg_partman_major_version",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_get_pg_partman_schema",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint",
+        "execute": true,
+        "function": "archive",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_ids bigint[]",
+        "execute": true,
+        "function": "archive",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "table_name text, partition_interval text, retention_interval text, leading_partition integer",
+        "execute": true,
+        "function": "convert_archive_partitioned",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create_non_partitioned",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, partition_interval text, retention_interval text",
+        "execute": true,
+        "function": "create_partitioned",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create_unlogged",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint",
+        "execute": true,
+        "function": "delete",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_ids bigint[]",
+        "execute": true,
+        "function": "delete",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "detach_archive",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, partitioned boolean",
+        "execute": true,
+        "function": "drop_queue",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "drop_queue",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, prefix text",
+        "execute": true,
+        "function": "format_table_name",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "list_queues",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "metrics",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "metrics_all",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "pop",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "purge_queue",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, vt integer, qty integer, conditional jsonb",
+        "execute": true,
+        "function": "read",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, vt integer, qty integer, max_poll_seconds integer, poll_interval_ms integer, conditional jsonb",
+        "execute": true,
+        "function": "read_with_poll",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb, delay timestamp with time zone",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, delay integer",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, delay timestamp with time zone",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb, delay integer",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[], delay timestamp with time zone",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[]",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[]",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], delay integer",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], delay timestamp with time zone",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[], delay integer",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint, vt integer",
+        "execute": true,
+        "function": "set_vt",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "validate_queue_name",
+        "reachableExecute": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_id bigint, schedule text, command text, database text, username text, active boolean",
+        "execute": false,
+        "function": "alter_job",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "job_cache_invalidate",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "schedule text, command text",
+        "execute": true,
+        "function": "schedule",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text, schedule text, command text",
+        "execute": true,
+        "function": "schedule",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text, schedule text, command text, database text, username text, active boolean",
+        "execute": false,
+        "function": "schedule_in_database",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_id bigint",
+        "execute": true,
+        "function": "unschedule",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text",
+        "execute": true,
+        "function": "unschedule",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "table_name text",
+        "execute": true,
+        "function": "_belongs_to_pgmq",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_ensure_pg_partman_installed",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "extension_name text",
+        "execute": true,
+        "function": "_extension_exists",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "partition_interval text",
+        "execute": true,
+        "function": "_get_partition_col",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_get_pg_partman_major_version",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_get_pg_partman_schema",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint",
+        "execute": true,
+        "function": "archive",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_ids bigint[]",
+        "execute": true,
+        "function": "archive",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "table_name text, partition_interval text, retention_interval text, leading_partition integer",
+        "execute": true,
+        "function": "convert_archive_partitioned",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create_non_partitioned",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, partition_interval text, retention_interval text",
+        "execute": true,
+        "function": "create_partitioned",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create_unlogged",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint",
+        "execute": true,
+        "function": "delete",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_ids bigint[]",
+        "execute": true,
+        "function": "delete",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "detach_archive",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, partitioned boolean",
+        "execute": true,
+        "function": "drop_queue",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "drop_queue",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, prefix text",
+        "execute": true,
+        "function": "format_table_name",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "list_queues",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "metrics",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "metrics_all",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "pop",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "purge_queue",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, vt integer, qty integer, conditional jsonb",
+        "execute": true,
+        "function": "read",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, vt integer, qty integer, max_poll_seconds integer, poll_interval_ms integer, conditional jsonb",
+        "execute": true,
+        "function": "read_with_poll",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb, delay timestamp with time zone",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, delay integer",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, delay timestamp with time zone",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb, delay integer",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[], delay timestamp with time zone",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[]",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[]",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], delay integer",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], delay timestamp with time zone",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[], delay integer",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint, vt integer",
+        "execute": true,
+        "function": "set_vt",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "validate_queue_name",
+        "reachableExecute": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_id bigint, schedule text, command text, database text, username text, active boolean",
+        "execute": false,
+        "function": "alter_job",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "job_cache_invalidate",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "schedule text, command text",
+        "execute": true,
+        "function": "schedule",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text, schedule text, command text",
+        "execute": true,
+        "function": "schedule",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text, schedule text, command text, database text, username text, active boolean",
+        "execute": false,
+        "function": "schedule_in_database",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_id bigint",
+        "execute": true,
+        "function": "unschedule",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text",
+        "execute": true,
+        "function": "unschedule",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "table_name text",
+        "execute": true,
+        "function": "_belongs_to_pgmq",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_ensure_pg_partman_installed",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "extension_name text",
+        "execute": true,
+        "function": "_extension_exists",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "partition_interval text",
+        "execute": true,
+        "function": "_get_partition_col",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_get_pg_partman_major_version",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_get_pg_partman_schema",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint",
+        "execute": true,
+        "function": "archive",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_ids bigint[]",
+        "execute": true,
+        "function": "archive",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "table_name text, partition_interval text, retention_interval text, leading_partition integer",
+        "execute": true,
+        "function": "convert_archive_partitioned",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create_non_partitioned",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, partition_interval text, retention_interval text",
+        "execute": true,
+        "function": "create_partitioned",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create_unlogged",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint",
+        "execute": true,
+        "function": "delete",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_ids bigint[]",
+        "execute": true,
+        "function": "delete",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "detach_archive",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, partitioned boolean",
+        "execute": true,
+        "function": "drop_queue",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "drop_queue",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, prefix text",
+        "execute": true,
+        "function": "format_table_name",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "list_queues",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "metrics",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "metrics_all",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "pop",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "purge_queue",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, vt integer, qty integer, conditional jsonb",
+        "execute": true,
+        "function": "read",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, vt integer, qty integer, max_poll_seconds integer, poll_interval_ms integer, conditional jsonb",
+        "execute": true,
+        "function": "read_with_poll",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb, delay timestamp with time zone",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, delay integer",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, delay timestamp with time zone",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb, delay integer",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[], delay timestamp with time zone",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[]",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[]",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], delay integer",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], delay timestamp with time zone",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[], delay integer",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint, vt integer",
+        "execute": true,
+        "function": "set_vt",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "validate_queue_name",
+        "reachableExecute": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_id bigint, schedule text, command text, database text, username text, active boolean",
+        "execute": false,
+        "function": "alter_job",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "job_cache_invalidate",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "schedule text, command text",
+        "execute": true,
+        "function": "schedule",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text, schedule text, command text",
+        "execute": true,
+        "function": "schedule",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text, schedule text, command text, database text, username text, active boolean",
+        "execute": false,
+        "function": "schedule_in_database",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_id bigint",
+        "execute": true,
+        "function": "unschedule",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "job_name text",
+        "execute": true,
+        "function": "unschedule",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "cron",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "table_name text",
+        "execute": true,
+        "function": "_belongs_to_pgmq",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_ensure_pg_partman_installed",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "extension_name text",
+        "execute": true,
+        "function": "_extension_exists",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "partition_interval text",
+        "execute": true,
+        "function": "_get_partition_col",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_get_pg_partman_major_version",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "_get_pg_partman_schema",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint",
+        "execute": true,
+        "function": "archive",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_ids bigint[]",
+        "execute": true,
+        "function": "archive",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "table_name text, partition_interval text, retention_interval text, leading_partition integer",
+        "execute": true,
+        "function": "convert_archive_partitioned",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create_non_partitioned",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, partition_interval text, retention_interval text",
+        "execute": true,
+        "function": "create_partitioned",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "create_unlogged",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint",
+        "execute": true,
+        "function": "delete",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_ids bigint[]",
+        "execute": true,
+        "function": "delete",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "detach_archive",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, partitioned boolean",
+        "execute": true,
+        "function": "drop_queue",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "drop_queue",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, prefix text",
+        "execute": true,
+        "function": "format_table_name",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "list_queues",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "metrics",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "",
+        "execute": true,
+        "function": "metrics_all",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "pop",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "purge_queue",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, vt integer, qty integer, conditional jsonb",
+        "execute": true,
+        "function": "read",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, vt integer, qty integer, max_poll_seconds integer, poll_interval_ms integer, conditional jsonb",
+        "execute": true,
+        "function": "read_with_poll",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb, delay timestamp with time zone",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, delay integer",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, delay timestamp with time zone",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg jsonb, headers jsonb, delay integer",
+        "execute": true,
+        "function": "send",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[], delay timestamp with time zone",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[]",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[]",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], delay integer",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], delay timestamp with time zone",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msgs jsonb[], headers jsonb[], delay integer",
+        "execute": true,
+        "function": "send_batch",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text, msg_id bigint, vt integer",
+        "execute": true,
+        "function": "set_vt",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      },
+      {
+        "arguments": "queue_name text",
+        "execute": true,
+        "function": "validate_queue_name",
+        "reachableExecute": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false
+      }
+    ],
+    "extensionTablePrivilegeMatrix": [
+      {
+        "delete": false,
+        "insert": false,
+        "role": "anon",
+        "schema": "cron",
+        "schemaUsage": false,
+        "select": true,
+        "table": "job",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": true,
+        "insert": false,
+        "role": "anon",
+        "schema": "cron",
+        "schemaUsage": false,
+        "select": true,
+        "table": "job_run_details",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_ai_extract",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_embed",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_media",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "meta",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_ai_extract",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_embed",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "anon",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_media",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "api_agent",
+        "schema": "cron",
+        "schemaUsage": false,
+        "select": true,
+        "table": "job",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": true,
+        "insert": false,
+        "role": "api_agent",
+        "schema": "cron",
+        "schemaUsage": false,
+        "select": true,
+        "table": "job_run_details",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_ai_extract",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_embed",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_media",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "meta",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_ai_extract",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_embed",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "api_agent",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_media",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "authenticated",
+        "schema": "cron",
+        "schemaUsage": false,
+        "select": true,
+        "table": "job",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": true,
+        "insert": false,
+        "role": "authenticated",
+        "schema": "cron",
+        "schemaUsage": false,
+        "select": true,
+        "table": "job_run_details",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_ai_extract",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_embed",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_media",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "meta",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_ai_extract",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_embed",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "authenticated",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_media",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "n8n_writer",
+        "schema": "cron",
+        "schemaUsage": false,
+        "select": true,
+        "table": "job",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": true,
+        "insert": false,
+        "role": "n8n_writer",
+        "schema": "cron",
+        "schemaUsage": false,
+        "select": true,
+        "table": "job_run_details",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_ai_extract",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_embed",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "a_media",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "meta",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_ai_extract",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_embed",
+        "truncate": false,
+        "update": false
+      },
+      {
+        "delete": false,
+        "insert": false,
+        "role": "n8n_writer",
+        "schema": "pgmq",
+        "schemaUsage": false,
+        "select": false,
+        "table": "q_media",
+        "truncate": false,
+        "update": false
+      }
+    ],
+    "implicitPostgresFunctionDefaultPublicExecute": true,
+    "ownerAdminInvitePresent": true,
+    "projectTriggerBindings": [
+      {
+        "argumentCount": 0,
+        "enabledMode": "O",
+        "function": "campaigns_tsv",
+        "functionSchema": "private",
+        "schema": "app",
+        "table": "campaigns",
+        "trigger": "campaigns_tsv"
+      },
+      {
+        "argumentCount": 0,
+        "enabledMode": "O",
+        "function": "competitors_tsv",
+        "functionSchema": "private",
+        "schema": "app",
+        "table": "competitors",
+        "trigger": "competitors_tsv"
+      },
+      {
+        "argumentCount": 0,
+        "enabledMode": "O",
+        "function": "items_tsv",
+        "functionSchema": "private",
+        "schema": "app",
+        "table": "items",
+        "trigger": "items_tsv"
+      },
+      {
+        "argumentCount": 0,
+        "enabledMode": "O",
+        "function": "news_tsv",
+        "functionSchema": "private",
+        "schema": "app",
+        "table": "news_articles",
+        "trigger": "news_articles_tsv"
+      },
+      {
+        "argumentCount": 0,
+        "enabledMode": "O",
+        "function": "organizations_tsv",
+        "functionSchema": "private",
+        "schema": "app",
+        "table": "organizations",
+        "trigger": "organizations_tsv"
+      },
+      {
+        "argumentCount": 0,
+        "enabledMode": "O",
+        "function": "people_tsv",
+        "functionSchema": "private",
+        "schema": "app",
+        "table": "people",
+        "trigger": "people_tsv"
+      }
+    ],
+    "rlsPolicies": [
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read alerts",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "alert_rules",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "admins read domains",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "allowed_domains",
+        "using": "( SELECT private.has_role(\u0027admin\u0027::app.member_role) AS has_role)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read briefs",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "briefs",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read briefs",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "briefs",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read campaign_items",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "campaign_items",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read campaign_items",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "campaign_items",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read campaigns",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "campaigns",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read campaigns",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "campaigns",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read competitor_accounts",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "competitor_accounts",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read competitor_accounts",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "competitor_accounts",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read competitors",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "competitors",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read competitors",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "competitors",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read embeddings",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "embeddings",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read embeddings",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "embeddings",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read employee_snapshots",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "employee_snapshots",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read employee_snapshots",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "employee_snapshots",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read item_credits",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "item_credits",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read item_credits",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "item_credits",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read items",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "items",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read items",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "items",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read media_assets",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "media_assets",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read media_assets",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "media_assets",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "admins read invites",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "member_invites",
+        "using": "( SELECT private.has_role(\u0027admin\u0027::app.member_role) AS has_role)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read members",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "members",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read news_articles",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "news_articles",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read news_articles",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "news_articles",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read news_mentions",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "news_mentions",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read news_mentions",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "news_mentions",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read org_aliases",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "org_aliases",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read org_aliases",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "org_aliases",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read organizations",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "organizations",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read organizations",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "organizations",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read people",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "people",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read people",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "people",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read person_aliases",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "person_aliases",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read person_aliases",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "person_aliases",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read review_tasks",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "review_tasks",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read review",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "review_tasks",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "DELETE",
+        "name": "own views delete",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "saved_views",
+        "using": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))"
+      },
+      {
+        "check": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))",
+        "command": "INSERT",
+        "name": "own views insert",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "saved_views",
+        "using": null
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "own views select",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "saved_views",
+        "using": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))"
+      },
+      {
+        "check": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))",
+        "command": "UPDATE",
+        "name": "own views update",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "saved_views",
+        "using": "((( SELECT auth.uid() AS uid) = user_id) AND ( SELECT private.is_member() AS is_member))"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read stats_daily",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "stats_daily",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read stats_daily",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "stats_daily",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "api agent read taxonomy_terms",
+        "permissive": "PERMISSIVE",
+        "roles": ["api_agent"],
+        "schema": "app",
+        "table": "taxonomy_terms",
+        "using": "true"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read taxonomy_terms",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "taxonomy_terms",
+        "using": "( SELECT private.is_member() AS is_member)"
+      },
+      {
+        "check": null,
+        "command": "SELECT",
+        "name": "members read website_pages",
+        "permissive": "PERMISSIVE",
+        "roles": ["authenticated"],
+        "schema": "app",
+        "table": "website_pages",
+        "using": "( SELECT private.is_member() AS is_member)"
+      }
+    ],
+    "roleDatabaseSettingChecks": [
+      {
+        "defaultTransactionReadOnlyOn": false,
+        "emptySearchPath": true,
+        "onlyExpectedConfigKeys": true,
+        "role": "api_agent",
+        "scope": "allDatabases"
+      },
+      {
+        "defaultTransactionReadOnlyOn": false,
+        "emptySearchPath": true,
+        "onlyExpectedConfigKeys": true,
+        "role": "n8n_writer",
+        "scope": "allDatabases"
+      }
+    ],
+    "roleDefaultConfigChecks": [
+      {
+        "defaultTransactionReadOnlyOn": false,
+        "expectedEmptySearchPath": true,
+        "expectedStatementTimeout": true,
+        "onlyExpectedConfigKeys": true,
+        "role": "api_agent"
+      },
+      {
+        "defaultTransactionReadOnlyOn": false,
+        "expectedEmptySearchPath": true,
+        "expectedStatementTimeout": true,
+        "onlyExpectedConfigKeys": true,
+        "role": "n8n_writer"
+      }
+    ],
+    "sequencePrivileges": [
+      {
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "sequence": "alert_rules_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "sequence": "embeddings_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "sequence": "employee_snapshots_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "sequence": "item_credits_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "sequence": "media_assets_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "sequence": "org_aliases_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "sequence": "person_aliases_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "sequence": "review_tasks_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "sequence": "saved_views_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "app",
+        "select": false,
+        "sequence": "taxonomy_terms_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "ingest",
+        "select": false,
+        "sequence": "raw_items_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "sequence": "ai_extractions_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "sequence": "api_calls_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "sequence": "audit_log_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "anon",
+        "schema": "ops",
+        "select": false,
+        "sequence": "cost_ledger_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "sequence": "alert_rules_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "sequence": "embeddings_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "sequence": "employee_snapshots_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "sequence": "item_credits_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "sequence": "media_assets_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "sequence": "org_aliases_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "sequence": "person_aliases_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "sequence": "review_tasks_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "sequence": "saved_views_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "app",
+        "select": false,
+        "sequence": "taxonomy_terms_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "ingest",
+        "select": false,
+        "sequence": "raw_items_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "sequence": "ai_extractions_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "sequence": "api_calls_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "sequence": "audit_log_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "api_agent",
+        "schema": "ops",
+        "select": false,
+        "sequence": "cost_ledger_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "app",
+        "select": false,
+        "sequence": "alert_rules_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "app",
+        "select": false,
+        "sequence": "embeddings_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "app",
+        "select": false,
+        "sequence": "employee_snapshots_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "app",
+        "select": false,
+        "sequence": "item_credits_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "app",
+        "select": false,
+        "sequence": "media_assets_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "app",
+        "select": false,
+        "sequence": "org_aliases_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "app",
+        "select": false,
+        "sequence": "person_aliases_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "app",
+        "select": false,
+        "sequence": "review_tasks_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "app",
+        "select": false,
+        "sequence": "saved_views_id_seq",
+        "update": false,
+        "usage": true
+      },
+      {
+        "role": "authenticated",
+        "schema": "app",
+        "select": false,
+        "sequence": "taxonomy_terms_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "ingest",
+        "select": false,
+        "sequence": "raw_items_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "sequence": "ai_extractions_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "sequence": "api_calls_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "sequence": "audit_log_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "authenticated",
+        "schema": "ops",
+        "select": false,
+        "sequence": "cost_ledger_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "sequence": "alert_rules_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "sequence": "embeddings_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "sequence": "employee_snapshots_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "sequence": "item_credits_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "sequence": "media_assets_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "sequence": "org_aliases_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "sequence": "person_aliases_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "sequence": "review_tasks_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "sequence": "saved_views_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "app",
+        "select": false,
+        "sequence": "taxonomy_terms_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "ingest",
+        "select": false,
+        "sequence": "raw_items_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "sequence": "ai_extractions_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "sequence": "api_calls_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "sequence": "audit_log_id_seq",
+        "update": false,
+        "usage": false
+      },
+      {
+        "role": "n8n_writer",
+        "schema": "ops",
+        "select": false,
+        "sequence": "cost_ledger_id_seq",
+        "update": false,
+        "usage": false
+      }
+    ],
+    "taxonomyCounts": {
+      "competitor_category": 13,
+      "content_format": 15,
+      "credit_role": 31,
+      "in_house_capability": 27,
+      "industry": 23,
+      "occasion": 11
+    }
+  },
+  "AllOwnedNativeProcessesExited": true,
+  "FinishedAtUtc": "2026-10-17T23:38:26.5315065Z",
+  "HandoffStillPresentForRootCleanup": true
+}

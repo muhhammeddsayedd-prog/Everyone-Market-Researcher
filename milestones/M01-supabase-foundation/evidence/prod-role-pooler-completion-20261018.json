@@ -1,0 +1,47 @@
+{
+  "ObservedAt": "2026-10-17T23:39:53.3721688Z",
+  "ProjectRef": "hkiafqrcxaafdbcvjlzv",
+  "Checks": [
+    {
+      "Role": "n8n_writer",
+      "ProjectRef": "hkiafqrcxaafdbcvjlzv",
+      "ObservedAt": "2026-10-17T23:39:48.8750498Z",
+      "Result": "OK",
+      "Reason": "verified-query-success",
+      "CliStarted": true,
+      "RawOutputWithheld": true,
+      "HandoffConsumed": true,
+      "HandoffDeleted": true,
+      "ProbeMode": "single-DO-nested-subtransaction-rollback",
+      "ExitCode": 0,
+      "CurrentUserVerified": "n8n_writer",
+      "SessionUserVerified": "n8n_writer",
+      "Expected42501DenialsVerified": 4,
+      "DirectTableWritePrivilegesAbsent": true,
+      "ProcessExited": true,
+      "FinishedAt": "2026-10-17T23:39:51.1815079Z"
+    },
+    {
+      "Role": "api_agent",
+      "ProjectRef": "hkiafqrcxaafdbcvjlzv",
+      "ObservedAt": "2026-10-17T23:39:51.1928161Z",
+      "Result": "OK",
+      "Reason": "verified-query-success",
+      "CliStarted": true,
+      "RawOutputWithheld": true,
+      "HandoffConsumed": true,
+      "HandoffDeleted": true,
+      "ProbeMode": "single-DO-read-only-role-and-view-count",
+      "ExitCode": 0,
+      "CurrentUserVerified": "api_agent",
+      "SessionUserVerified": "api_agent",
+      "Expected42501DenialsVerified": 4,
+      "DirectTableWritePrivilegesAbsent": true,
+      "ProcessExited": true,
+      "FinishedAt": "2026-10-17T23:39:53.3715844Z"
+    }
+  ],
+  "RawOutputWithheld": true,
+  "SecretsWritten": false,
+  "ProductionAccess": true
+}

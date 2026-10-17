@@ -1,0 +1,259 @@
+{
+  "localDate": "2026-10-18",
+  "timezone": "Africa/Cairo",
+  "observedAtUtc": "2026-10-17T23:34:33.009Z",
+  "environment": "Non-secret local AST analysis of separately generated production type candidate",
+  "projectRef": "hkiafqrcxaafdbcvjlzv",
+  "candidatePath": "%LOCALAPPDATA%\\Temp\\emr-m01-prod-generated.types.ts",
+  "referencePath": "packages/shared/src/db.types.ts",
+  "candidateSha256": "449139a3429ad4c2a7713de39116be4248b1022db5b79bd85242896b2075940d",
+  "checkedInSha256": "961d3442a747ae8fbcb2e1b838d6675d0c61d528be56fe9e34555000b4cc2c80",
+  "typeScriptVersion": "6.0.3",
+  "parseErrors": 0,
+  "referenceParseErrors": 0,
+  "schemas": ["api", "app", "ingest", "ops"],
+  "coverage": {
+    "api": {
+      "Tables": {
+        "count": 0,
+        "names": []
+      },
+      "Views": {
+        "count": 7,
+        "names": [
+          "briefs_v",
+          "campaigns_v",
+          "competitors_v",
+          "items_v",
+          "news_v",
+          "organizations_v",
+          "people_v"
+        ]
+      },
+      "Functions": {
+        "count": 0,
+        "names": []
+      }
+    },
+    "app": {
+      "Tables": {
+        "count": 25,
+        "names": [
+          "alert_rules",
+          "allowed_domains",
+          "briefs",
+          "campaign_items",
+          "campaigns",
+          "competitor_accounts",
+          "competitors",
+          "embeddings",
+          "employee_snapshots",
+          "item_credits",
+          "items",
+          "media_assets",
+          "member_invites",
+          "members",
+          "news_articles",
+          "news_mentions",
+          "org_aliases",
+          "organizations",
+          "people",
+          "person_aliases",
+          "review_tasks",
+          "saved_views",
+          "stats_daily",
+          "taxonomy_terms",
+          "website_pages"
+        ]
+      },
+      "Views": {
+        "count": 2,
+        "names": ["campaigns_v", "feed_v"]
+      },
+      "Functions": {
+        "count": 3,
+        "names": ["me", "search", "similar"]
+      }
+    },
+    "ingest": {
+      "Tables": {
+        "count": 1,
+        "names": ["raw_items"]
+      },
+      "Views": {
+        "count": 0,
+        "names": []
+      },
+      "Functions": {
+        "count": 1,
+        "names": ["upsert_raw_items"]
+      }
+    },
+    "ops": {
+      "Tables": {
+        "count": 10,
+        "names": [
+          "ai_extractions",
+          "api_calls",
+          "api_keys",
+          "apify_runs",
+          "audit_log",
+          "cost_ledger",
+          "price_book",
+          "scrape_run_accounts",
+          "scrape_runs",
+          "settings"
+        ]
+      },
+      "Views": {
+        "count": 0,
+        "names": []
+      },
+      "Functions": {
+        "count": 8,
+        "names": [
+          "ack_queue",
+          "claim_queue_batch",
+          "diff_website_urls",
+          "finish_run",
+          "get_due_accounts",
+          "get_items_for_ai",
+          "report_account_result",
+          "start_run"
+        ]
+      }
+    }
+  },
+  "referenceCoverage": {
+    "api": {
+      "Tables": {
+        "count": 0,
+        "names": []
+      },
+      "Views": {
+        "count": 7,
+        "names": [
+          "briefs_v",
+          "campaigns_v",
+          "competitors_v",
+          "items_v",
+          "news_v",
+          "organizations_v",
+          "people_v"
+        ]
+      },
+      "Functions": {
+        "count": 0,
+        "names": []
+      }
+    },
+    "app": {
+      "Tables": {
+        "count": 25,
+        "names": [
+          "alert_rules",
+          "allowed_domains",
+          "briefs",
+          "campaign_items",
+          "campaigns",
+          "competitor_accounts",
+          "competitors",
+          "embeddings",
+          "employee_snapshots",
+          "item_credits",
+          "items",
+          "media_assets",
+          "member_invites",
+          "members",
+          "news_articles",
+          "news_mentions",
+          "org_aliases",
+          "organizations",
+          "people",
+          "person_aliases",
+          "review_tasks",
+          "saved_views",
+          "stats_daily",
+          "taxonomy_terms",
+          "website_pages"
+        ]
+      },
+      "Views": {
+        "count": 2,
+        "names": ["campaigns_v", "feed_v"]
+      },
+      "Functions": {
+        "count": 3,
+        "names": ["me", "search", "similar"]
+      }
+    },
+    "ingest": {
+      "Tables": {
+        "count": 1,
+        "names": ["raw_items"]
+      },
+      "Views": {
+        "count": 0,
+        "names": []
+      },
+      "Functions": {
+        "count": 1,
+        "names": ["upsert_raw_items"]
+      }
+    },
+    "ops": {
+      "Tables": {
+        "count": 10,
+        "names": [
+          "ai_extractions",
+          "api_calls",
+          "api_keys",
+          "apify_runs",
+          "audit_log",
+          "cost_ledger",
+          "price_book",
+          "scrape_run_accounts",
+          "scrape_runs",
+          "settings"
+        ]
+      },
+      "Views": {
+        "count": 0,
+        "names": []
+      },
+      "Functions": {
+        "count": 8,
+        "names": [
+          "ack_queue",
+          "claim_queue_batch",
+          "diff_website_urls",
+          "finish_run",
+          "get_due_accounts",
+          "get_items_for_ai",
+          "report_account_result",
+          "start_run"
+        ]
+      }
+    }
+  },
+  "totals": {
+    "tables": 36,
+    "views": 9,
+    "functions": 12
+  },
+  "schemaCoverageMatches": true,
+  "astEquivalentToCheckedIn": true,
+  "canonicalDifference": null,
+  "sourceBytesUnchanged": true,
+  "method": "Parse Database type alias; exact schema/category counts and names; compare AST kinds, decoded literal/name values and child order while ignoring positions/trivia/property-name quote spelling and ParenthesizedType wrappers. Type operators and their child structure remain preserved.",
+  "initialCanonicalCheck": {
+    "receipt": "prod-type-verification-initial-20261018.json",
+    "result": "Coverage and parsing passed; initial canonical comparison rejected formatting-only ParenthesizedType wrappers. Updated comparison preserves the type-operator tree while ignoring those wrappers. No generated or checked-in type bytes changed."
+  },
+  "boundary": "Twelve generated schema RPCs are distinct from all 23 project catalogue functions. AST coverage/equivalence does not prove restricted-role authentication or provider login. Native production generation provenance belongs to its separate receipt.",
+  "credentialsRead": false,
+  "hostedCalls": false,
+  "checkedInTypesReplaced": false,
+  "workspaceTypecheckRun": false,
+  "result": "PASS"
+}

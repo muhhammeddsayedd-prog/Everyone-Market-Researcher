@@ -35,7 +35,8 @@ Project ID is `everyone-market-radar`. Ports were selected after checking both
 Docker bindings and host listeners; they preserve unrelated local stacks. The
 minimum stack contains DB, Kong, Auth, PostgREST and Storage. Optional Studio,
 Realtime, analytics, mail and edge services are disabled. PostgreSQL17 is the
-local baseline; dev PostgreSQL 17.11 is now verified. Production version/acceptance remains pending.
+local baseline; both hosted projects are verified on PostgreSQL17.11. Both
+production restricted-role login/operation/denial checks now pass.
 
 The Data API exposes `public`, `graphql_public` and `app`; never expose `ingest`,
 `ops`, `api`, `private` or `pgmq`. Machine roles have empty search paths and no
@@ -91,8 +92,10 @@ INFO findings; performance retains 72 unused-index INFO findings and one Auth
 connection-allocation INFO. Preserve required indexes and assess usage again
 when real data exists. Dev Data API was explicitly saved/reloaded to
 `public,graphql_public,app` at 19:13:55 UTC. Anonymous app access returns 401/42501;
-all five internal schemas return 406/PGRST106. Actual Auth settings return 200
-with Email disabled and Google disabled. These are bounded hosted checks;
+all five internal schemas return 406/PGRST106. At that initial 17 October dev
+HTTP checkpoint, Auth settings returned200 with Email and Google disabled;
+the later saved Google-enabled readback below supersedes that provider state.
+These are bounded hosted checks;
 positive member-JWT/full browser signin is not claimed.
 
 Native project-scoped MCP tools now work directly using the existing OAuth.
@@ -142,11 +145,15 @@ CLI 2.121.0 `link` reads revealed API keys and probes with the service-role key;
 M01 uses explicit targets instead of linking or fabricating `.temp` receipts.
 MCP advisors continue with dev as the default. No access broadening is needed.
 
-Production baseline application still requires the separate T13 owner go-ahead.
+The owner approved the exact production baseline on 18 October Cairo.
+The [approval receipt](../milestones/M01-supabase-foundation/evidence/prod-authorization-20261018.json)
+records target/scope before any production write. Production-only credential
+delivery, fresh identity/history/recovery checks and the single exact-version
+push and actual restricted-role login checks are now completed.
 The [production packet](../milestones/M01-supabase-foundation/evidence/hosted-acceptance-20261017.md)
 identifies prod `hkiafqrcxaafdbcvjlzv`, the same seven versions/hashes,
 seeds/queues/cron/public bucket, fixture exclusions, recovery and verification.
-General project access does not approve that write. Keep PR4 draft until actual
+No repeated baseline approval is needed. Keep PR4 draft until actual
 acceptance and its separate merge approval. No collection, paid provider calls,
 workflow activation, application production promotion or M02 work is authorized.
 
@@ -205,7 +212,7 @@ OAuth, owner-postgres access, catalogue grants and synthetic script tests do not
 replace restricted-role authentication. This method does not inject a password
 into parent VS Code; clearing a child cannot clear a separately configured
 parent environment.
-Production credentials stay separate and await T13 approval.
+Production credentials stay separate; T13's exact baseline packet is approved.
 
 MA-06's saved Supabase provider configuration passed independent readback:
 **Google ENABLED after reload**, one configured Google OAuth-format client ID,
@@ -219,11 +226,104 @@ the separate Google Cloud client-metadata verification boundary; saved settings
 do not prove an OAuth exchange. Full browser signin remains M09.
 [Provider configuration receipt](../milestones/M01-supabase-foundation/evidence/provider-config-completion-20261018.json).
 
-The next owner decision is the [existing exact production-baseline packet](../milestones/M01-supabase-foundation/evidence/hosted-acceptance-20261017.md).
-After review, reply **Approve the M01 production baseline packet for
-hkiafqrcxaafdbcvjlzv**. Production role/provider setup and acceptance follow that
-approval. PR4 merge needs a later separate **Approve merging PR #4** after M01
+The [existing exact production-baseline packet](../milestones/M01-supabase-foundation/evidence/hosted-acceptance-20261017.md)
+is approved. Production role/provider setup and acceptance follow that approval.
+PR4 merge needs a later separate **Approve merging PR #4** after M01
 acceptance and fresh checks. M01 remains open, PR4 draft/unmerged, M02 unstarted.
+
+### Production credential handoff
+
+**Completed for this baseline. Do not repeat this administrator-password
+handoff or replay migrations.** The production native login and exact dry-run
+succeeded; all seven original migrations were applied once at23:31UTC17October
+(18October Cairo). History, catalogue/advisors and generated-type AST checks
+pass. Both actual restricted-role checks pass. Saved Google is enabled/Email
+disabled, and Data API exposure is exactly public/graphql_public/app. All three
+temporary encrypted handoffs and generated role SQL are absent, with zero native
+CLI processes remaining. The owner removed the administrator handoff after the
+automatic cleanup rejection; its absence was independently verified. See the
+[current production result](../milestones/M01-supabase-foundation/evidence/hosted-acceptance-20261017.md#18-october-production-baseline-acceptance).
+The command below is retained as the historical delivery procedure, not a new
+owner action. Administrator and machine-role credentials are separate.
+
+The currently connected MCP remains dev-scoped. The approved exact-version
+production CLI path uses the existing **emr-prod database password**, never a
+dev or application-role password. No production authentication is implied by
+the approval or file presence. No new PAT, MCP login, password reset or global
+security change is needed.
+
+Open **Windows PowerShell under the same Windows account**, then run:
+
+```powershell
+$emrProdPasswordFile = Join-Path $env:LOCALAPPDATA 'Temp\emr-m01-prod-password.dpapi'
+$emrProdPassword = Read-Host 'Existing emr-prod database password' -AsSecureString
+try {
+  $emrProdPassword | ConvertFrom-SecureString | Set-Content -LiteralPath $emrProdPasswordFile -Encoding ASCII -ErrorAction Stop
+  Write-Output 'emr-prod encrypted handoff saved'
+} finally {
+  $emrProdPassword.Dispose()
+  $emrProdPassword = $null
+}
+```
+
+Expected result: **emr-prod encrypted handoff saved**. Close that PowerShell
+window, then reply **Prod database handoff ready**. Do not send the value or file
+contents. The Windows current-user encrypted file is outside Git/configuration.
+The reviewed production DB consumer alone may decrypt it, passing PGPASSWORD
+only to its owned pinned native CLI child with a fixed passwordless prod URI.
+Each credential-bearing process must close; remove the handoff after the
+approved DB batch or a blocking stop. No dev credential is reused for prod.
+This method does not inject passwords into parent VS Code; clearing a child
+does not clear any independently configured parent environment.
+
+### Production machine-role handoff
+
+**Completed: do not repeat these password/handoff steps.** Actual production
+`n8n_writer` session5432 and `api_agent` transaction6543 checks both passed at
+23:39UTC17October (18October Cairo), including current/session identities,
+permitted RPC rollback/read, absent direct privileges and four42501 denials
+each. Agent read-only mode was transaction-local and asserted first. Consumed
+handoffs/private SQL were deleted and all owned native children exited. Keep
+the separately saved production role passwords for later integration.
+[Native role receipt](../milestones/M01-supabase-foundation/evidence/prod-role-pooler-completion-20261018.json).
+
+The following is the completed historical delivery procedure. The migrations created
+`n8n_writer` and `api_agent` without passwords. In **Supabase > emr-prod
+(hkiafqrcxaafdbcvjlzv) > SQL Editor > New query**, privately run:
+
+```sql
+alter role n8n_writer password '<distinct prod writer password>';
+alter role api_agent password '<distinct prod agent password>';
+```
+
+Replace the placeholders with two different strong passwords saved in your
+password manager for later MA-11/MA-20. If already set, retain those existing
+production role passwords and skip the SQL. Use neither the postgres password
+nor dev passwords. Expected SQL result: **Success / no rows returned**. Avoid
+saving or sharing the credential-bearing query; do not send it in chat.
+
+Open **Windows PowerShell under the same Windows account** and run the reviewed
+project-specific private helper:
+
+```powershell
+& "$env:LOCALAPPDATA\Temp\emr-m01-store-prod-role-urls.ps1"
+```
+
+At its two hidden prompts, enter the already-set production n8n_writer password
+then the production api_agent password. It writes only current-user encrypted
+temporary handoffs outside Git/configuration:
+
+- `%LOCALAPPDATA%\Temp\emr-m01-prod-n8n-writer-url.dpapi`
+- `%LOCALAPPDATA%\Temp\emr-m01-prod-api-agent-url.dpapi`
+
+Expected output starts **Encrypted prod role handoffs saved.** Close that
+PowerShell window and reply **Prod role handoffs ready**. Never send passwords,
+connection URLs or file contents. Codex will authenticate separately as each role
+through the fixed production session5432/transaction6543 poolers, execute the
+reviewed rollback-only/read-only operations and require four42501 denials per
+role. It will remove consumed temporary credentials/private SQL and close the
+owned children. Keep your separately saved passwords for later integration.
+This does not authorize workflows, production promotion, merge or M02.
 
 Local informational advisor findings are intentional deny-all policies on the
 eleven internal tables and unused indexes on a fresh database. Retain required

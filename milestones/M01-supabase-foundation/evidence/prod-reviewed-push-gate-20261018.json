@@ -1,0 +1,21 @@
+{
+  "SchemaVersion": 1,
+  "ProjectRef": "hkiafqrcxaafdbcvjlzv",
+  "Host": "aws-1-eu-central-1.pooler.supabase.com",
+  "Port": 5432,
+  "Database": "postgres",
+  "OwnerApprovalRecorded": true,
+  "TargetDashboardVerified": true,
+  "RecoveryPreflightReviewed": true,
+  "GitAutomaticBranchingOff": true,
+  "GitDeployToProductionOff": true,
+  "PreflightFingerprint": "24f8b1b365af93f99b840a4cf4970ba2b7de6f7e780cb4ee70280745b1547a8a",
+  "MigrationSealsDigest": "c0b70b91a1d631323e2d509513e95513030aa3a5c5a7ea6ab6cfafaa30951b18",
+  "RunnerSha256": "bdec58b44662caa376ab4e4e3d1c7dfefd0ca36ddf3cf7854a77a034bb6726ea",
+  "DryRunPlanSha256": "eafa690334e3a9d6a775036df6aed04720d57c5bfde8745c83db1fee2d6ac03e",
+  "OwnerApprovalEvidenceSha256": "52c08bff22ce7a288f7087d87ed76c9559c57079a39fc559c2a5822a730f701e",
+  "RecoveryEvidenceRelativePath": "milestones/M01-supabase-foundation/evidence/prod-preflight-20261018.json",
+  "RecoveryEvidenceSha256": "e59c9a8a7bb0448916dd46916f69e0e259f550d71355d4345b8f65678fb872e1",
+  "RecoveryDisposition": "Healthy exact production target, initial app/history/roles empty in direct SQL; physical backup 2026-10-17T17:29:01Z listed with Restore action. No explicit SUCCESS label or exercised restore; PITR disabled. No Storage objects in new media bucket exist yet. On ambiguous result inspect actual ledger/catalogues and continue only reviewed missing work; never reset/replay blindly.",
+  "ReviewedAtUtc": "2026-10-17T23:30:49.4449016Z"
+}
