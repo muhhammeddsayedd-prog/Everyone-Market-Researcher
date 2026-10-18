@@ -93,7 +93,10 @@ public class FixtureCli { public static int Main(string[] args) {
  if(Environment.GetEnvironmentVariable("PGPASSWORD")!="synthetic-m03-dev-password" || Environment.GetEnvironmentVariable("SUPABASE_ACCESS_TOKEN")!=null || Environment.GetEnvironmentVariable("PGOPTIONS")!=null || Environment.GetEnvironmentVariable("NODE_OPTIONS")!=null) { Console.Error.WriteLine("synthetic-private-error-do-not-emit"); return 92; }
  var mode=File.ReadAllText(Path.Combine(dir,"mode.txt"));
  if(joined.Contains(" query ")) { var n=Path.Combine(dir,"queries.txt"); var count=File.Exists(n)?Int32.Parse(File.ReadAllText(n)):0; File.WriteAllText(n,(count+1).ToString()); Console.WriteLine(File.ReadAllText(Path.Combine(dir,count==0?"before.json":"after.json"))); return 0; }
- if(joined.Contains("--dry-run")) { Console.WriteLine(File.ReadAllText(Path.Combine(dir,"dry.json"))); return 0; }
+  // CLI2.121.0 root.ts gives legacy --output json precedence over --output-format json.
+  // Push uses the selected text output layer; query instead writes its own JSON.
+  if(joined.Contains(" push ") && joined.Contains("--output json")) { Console.WriteLine("Finished supabase db push."); return 0; }
+  if(joined.Contains("--dry-run")) { if(mode=="dryNativeFailure") { Console.Error.WriteLine("synthetic-private-error-do-not-emit"); Console.WriteLine("synthetic-private-output-do-not-emit"); return 7; } Console.WriteLine(File.ReadAllText(Path.Combine(dir,"dry.json"))); return 0; }
  if(joined.Contains(" push ")) { if(mode=="timeout")Thread.Sleep(5000); if(mode=="failure"||mode=="partial") { Console.Error.WriteLine("synthetic-private-error-do-not-emit"); Console.WriteLine("synthetic-private-output-do-not-emit"); return 7; } Console.WriteLine(File.ReadAllText(Path.Combine(dir,"push.json"))); return 0; }
  return 93; } }`;
   const sourceFile = put('fixture-cli.cs', csharp);
@@ -338,6 +341,8 @@ describe(
       const r = f.run();
       assert.equal(r.status, 1);
       assert.equal(f.result().status, 'dry_run_rejected');
+      assert.equal(f.result().dryRunNativeExit, 0);
+      assert.equal(f.result().dryRunCheck, 'pending_mismatch');
       assert.equal(f.calls().includes('--dry-run'), true);
       assert.equal(
         f
@@ -348,12 +353,43 @@ describe(
       );
       assert.equal(existsSync(f.handoff), false);
     });
+    it('records a dry-run native failure without echoing private output or admitting a push', () => {
+      const f = consumerFixture('dryNativeFailure');
+      const r = f.run();
+      assert.equal(r.status, 1);
+      const receipt = f.result();
+      assert.equal(receipt.authenticationVerified, true);
+      assert.equal(receipt.status, 'dry_run_rejected');
+      assert.equal(receipt.dryRunNativeExit, 7);
+      assert.equal(receipt.dryRunCheck, 'native_failure');
+      assert.equal(receipt.pushAttempted, false);
+      assert.equal(existsSync(join(f.root, 'scripts/db/out/m03-dev-migration-attempt.json')), false);
+      assert.equal(receipt.childrenClosed, true);
+      assert.equal(receipt.handoffDeleted, true);
+      assert.equal(receipt.scratchDeleted, true);
+      assert.doesNotMatch(r.stdout + r.stderr + JSON.stringify(receipt), /synthetic-private/);
+    });
+    it('distinguishes malformed dry-run JSON from pending migration mismatch without admitting a push', () => {
+      const f = consumerFixture();
+      writeFileSync(join(f.nativeDir, 'dry.json'), 'synthetic-private-malformed-json');
+      const r = f.run();
+      assert.equal(r.status, 1);
+      const receipt = f.result();
+      assert.equal(receipt.status, 'dry_run_rejected');
+      assert.equal(receipt.dryRunNativeExit, 0);
+      assert.equal(receipt.dryRunCheck, 'invalid_json');
+      assert.equal(receipt.pushAttempted, false);
+      assert.equal(existsSync(join(f.root, 'scripts/db/out/m03-dev-migration-attempt.json')), false);
+      assert.doesNotMatch(r.stdout + r.stderr + JSON.stringify(receipt), /synthetic-private/);
+    });
     it('uses only the dev child password, clean public workdir and strict TLS then records exact completion', () => {
       const f = consumerFixture();
       const r = f.run();
       assert.equal(r.status, 0, r.stdout + r.stderr);
       const receipt = f.result();
       assert.equal(receipt.status, 'complete');
+      assert.equal(receipt.dryRunNativeExit, 0);
+      assert.equal(receipt.dryRunCheck, 'matched');
       assert.equal(receipt.historyBefore, 'baseline');
       assert.equal(receipt.historyAfter, 'complete');
       assert.equal(receipt.childrenClosed, true);
@@ -368,6 +404,25 @@ describe(
       assert.match(f.calls(), /sslrootcert=/);
       assert.doesNotMatch(f.calls(), /--linked|--include-seed|--include-roles/);
       assert.equal(existsSync(join(f.root, 'scripts/db/out/m03-dev-migration-attempt.json')), true);
+    });
+    it('uses command-specific output modes so legacy JSON never changes push stdout to human text', () => {
+      const f = consumerFixture();
+      const r = f.run();
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      const receipt = f.result();
+      assert.equal(receipt.dryRunCheck, 'matched');
+      assert.equal(receipt.dryRunNativeExit, 0);
+      assert.equal(receipt.status, 'complete');
+      const commands = f.calls().trim().split('\n');
+      const queries = commands.filter((command) => command.includes(' query '));
+      const pushes = commands.filter((command) => command.includes(' push '));
+      assert.equal(queries.length, 2);
+      assert.equal(pushes.length, 2);
+      for (const query of queries) assert.match(query, /--output json(?: |$)/);
+      for (const push of pushes) {
+        assert.match(push, /--output-format json(?: |$)/);
+        assert.doesNotMatch(push, /--output json(?: |$)/);
+      }
     });
     it('reconciles a failed push without replaying it, suppresses private errors and retains admission', () => {
       const f = consumerFixture('failure');

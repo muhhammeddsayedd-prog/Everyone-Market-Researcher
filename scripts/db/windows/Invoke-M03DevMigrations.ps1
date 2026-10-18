@@ -25,7 +25,7 @@ $sessionLock = $null
 $exitCode = 1
 $receipt = [ordered]@{version=1;runId=$runId;environment='dev';projectRef=$projectRef;host=$poolerHost;port=5432;
   status='preflight_blocked';authenticationAttempted=$false;authenticationVerified=$false;historyBefore='not_checked';historyAfter='not_checked';
-  dryRunMatched=$false;pushAttempted=$false;pushNativeExit=$null;childrenClosed=$true;handoffDeleted=$false;scratchDeleted=$true;
+  dryRunMatched=$false;dryRunCheck='not_attempted';dryRunNativeExit=$null;pushAttempted=$false;pushNativeExit=$null;childrenClosed=$true;handoffDeleted=$false;scratchDeleted=$true;
   pendingVersions=@('20261018034220','20261018035417');observedAt=$null}
 
 function Assert-Keys($Value, [string[]]$Expected) {
@@ -123,7 +123,12 @@ function Invoke-Bounded([string]$Executable, [string[]]$Arguments, [string]$Work
   return [PSCustomObject]@{ok=$valid;started=$started;closed=$closed;nativeExit=$nativeExit;text=$text}
 }
 function Invoke-Cli([string[]]$Arguments, [int]$TimeoutMs) {
-  $result = Invoke-Bounded $cliPath ($Arguments + @('--workdir',$scratch,'--db-url',$dbUri,'--agent','no','--output','json','--output-format','json')) $scratch $TimeoutMs $password
+  if ($Arguments.Count -lt 2 -or $Arguments[0] -cne 'db' -or $Arguments[1] -cnotin @('query','push')) { throw 'blocked' }
+  # CLI2.121.0 gives legacy --output json precedence over --output-format and
+  # selects a text layer. Query has its own legacy formatter; push does not.
+  $outputFlags = @('--output-format','json')
+  if ($Arguments[1] -ceq 'query') { $outputFlags += @('--output','json') }
+  $result = Invoke-Bounded $cliPath ($Arguments + @('--workdir',$scratch,'--db-url',$dbUri,'--agent','no') + $outputFlags) $scratch $TimeoutMs $password
   if (-not $result.closed) { $receipt.childrenClosed = $false }
   return $result
 }
@@ -146,17 +151,27 @@ function History-State($Result) {
     return 'baseline'
   } catch { return 'rejected' }
 }
-function Push-Matches($Result,[bool]$DryRun) {
-  if (-not $Result.ok -or -not $Result.closed) { return $false }
+function Push-Check($Result,[bool]$DryRun) {
+  # This finite public classification never returns CLI errors, output, filenames
+  # or credentials. Native failure and a contract mismatch are different gates.
+  if (-not $Result.started) { return 'child_not_started' }
+  if (-not $Result.closed) { return 'child_not_closed' }
+  if ($Result.nativeExit -ne 0) { return 'native_failure' }
+  if (-not $Result.ok) { return 'output_unavailable' }
+  try { $value = ConvertFrom-Json -InputObject $Result.text -ErrorAction Stop }
+  catch { return 'invalid_json' }
   try {
-    $value = ConvertFrom-Json -InputObject $Result.text -ErrorAction Stop
     Assert-Keys $value @('upToDate','dryRun','migrations','seeds','roles','message')
     if ($value.upToDate -isnot [bool] -or $value.upToDate -ne $false -or $value.dryRun -isnot [bool] -or $value.dryRun -ne $DryRun -or
         $value.message -cne 'Finished supabase db push.' -or $value.migrations -isnot [Array] -or $value.seeds -isnot [Array] -or $value.roles -isnot [Array] -or
-        $value.seeds.Count -ne 0 -or $value.roles.Count -ne 0 -or $value.migrations.Count -ne 2) { throw 'blocked' }
-    for ($i=0; $i -lt 2; $i++) { if ($value.migrations[$i] -cne [IO.Path]::GetFileName($packet.pending[$i].file)) { throw 'blocked' } }
-    return $true
-  } catch { return $false }
+        $value.seeds.Count -ne 0 -or $value.roles.Count -ne 0) { throw 'blocked' }
+  } catch { return 'invalid_shape' }
+  if ($value.migrations.Count -ne 2) { return 'pending_mismatch' }
+  for ($i=0; $i -lt 2; $i++) { if ($value.migrations[$i] -isnot [string] -or $value.migrations[$i] -cne [IO.Path]::GetFileName($packet.pending[$i].file)) { return 'pending_mismatch' } }
+  return 'matched'
+}
+function Push-Matches($Result,[bool]$DryRun) {
+  return (Push-Check $Result $DryRun) -ceq 'matched'
 }
 
 # All preflight checks are public and precede any DPAPI read/decryption.
@@ -291,7 +306,9 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   elseif ($receipt.historyBefore -ne 'baseline') { $receipt.status = 'history_rejected' }
   else {
     $dry = Invoke-Cli @('db','push','--dry-run','--skip-vault') 60000
-    $receipt.dryRunMatched = Push-Matches $dry $true
+    $receipt.dryRunNativeExit = $dry.nativeExit
+    $receipt.dryRunCheck = Push-Check $dry $true
+    $receipt.dryRunMatched = $receipt.dryRunCheck -ceq 'matched'
     $dry.text = $null
     if (-not $receipt.dryRunMatched) { $receipt.status = 'dry_run_rejected' }
     else {

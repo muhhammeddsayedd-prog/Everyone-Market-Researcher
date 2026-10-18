@@ -72,7 +72,7 @@
     }
   ],
   "files": {
-    "scripts/db/windows/Invoke-M03DevMigrations.ps1": "22f89522d81f3590d6a2f2d662d8a22e06e276385449efae055ad57f3fa69930",
+    "scripts/db/windows/Invoke-M03DevMigrations.ps1": "530b7a7395b980b13d77c0254206c6bf9ae65ba653bf7a359f71fd6c3438db35",
     "scripts/db/windows/New-M03DevMigrationHandoff.ps1": "4d304ce88ecc39138a62b5ca0a07c023d79bc383fed565bbecdfd6f7f536ce48",
     "scripts/seed/check-tls.mjs": "497d8ad658f936c1b5f87b5316bbafbcf145f8ae8e01a6184fb80db5ff5e9d07",
     "scripts/seed/certs/supabase-root-2021.json": "86f7da7dbd65b7a97986e7cf859848835b162fb6aec17f09fb8b011d4accf16b",
