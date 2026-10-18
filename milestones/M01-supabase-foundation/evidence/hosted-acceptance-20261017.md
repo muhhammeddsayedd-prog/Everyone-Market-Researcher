@@ -1,5 +1,26 @@
 # M01 hosted acceptance resume
 
+## 18 October merge approval and completed M01
+
+The owner answered **Approve merging PR #4** to the separate merge decision,
+whose stated scope included closing M01 while leaving M02 unstarted. Fresh
+independent readback confirmed exact approved head
+`4ffca85d3dd8966e48bacf5e9d7b34c5cd5948d3`, clean/mergeable status, all five
+[CI39080412075](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39080412075)
+jobs and Vercel green, and unchanged strict/admin main protection. PR4 was marked
+ready, then merged normally with an exact-head guard and no admin bypass.
+GitHub reports **MERGED** at2026-10-17T23:56:30Z
+(18October02:56:30 Cairo), merge commit
+`4702a3155680a22c7654ccf9ba10cb9c91aea465`. The original reviewed commits are
+retained. [Merge receipt](merge-closure-20261018.json).
+
+T14 and M01 are now complete. The protected-main documentation closeout records
+this already-observed merge under the authorization to close M01; it changes no
+implementation, migrations, hosted configuration or acceptance claims. Earlier
+pending states and failed attempts below remain historical. No credentials or
+database operations were needed for the merge. M02, collection, paid calls and
+n8n activation remain unstarted. Full browser Google sign-in remains M09.
+
 ## 18 October production baseline acceptance
 
 The approved production packet was applied **once** to
@@ -95,9 +116,9 @@ its absence was independently verified. The blocked attempt remains in
 Saved owner passwords are untouched. No parent VS Code environment was modified;
 clearing a child cannot clear an independently configured parent environment.
 
-M01 stays open and PR4 draft/unmerged pending final checks and separate merge
-approval. The next approval is **Approve merging PR #4** only after current PR
-checks pass; production-baseline approval is already consumed.
+The later separate merge approval and actual merge recorded above close M01.
+Production-baseline approval was already consumed; do not replay migrations or
+credential handoffs as part of this closure.
 M02, collection, paid calls, application promotion and n8n activation remain
 unstarted.
 
@@ -489,7 +510,9 @@ This historical heading is retained for existing packet links. The owner
 explicitly approved this exact T13 packet for `emr-prod / hkiafqrcxaafdbcvjlzv`;
 preflight, credential delivery, one seven-version push and bounded production
 acceptance are now complete as recorded above. Do not replay this packet or
-request its approval again. PR4 merge remains a separate unapproved action.
+request its approval again. The separate PR4 merge decision was subsequently
+approved and executed as recorded above; the baseline packet alone did not
+grant that merge authority.
 
 The baseline creates36 project tables with RLS, restricted machine roles and
 RPCs, invoker views and indexes; ensures the six extensions; creates queues
@@ -511,7 +534,8 @@ continue missing work only; use a reviewed forward fix if needed. Never reset,
 drop collected data or fabricate an applied receipt. Verify prod migration/hash
 parity, catalogue/grants/RLS, queues/cron/bucket/seeds and zero competitors,
 advisors, Data API exclusions and owner-supplied role pooler connections. Keep
-dev the default afterward. PR4 merge is a further separate open approval gate.
+dev the default afterward. PR4 required a further separate merge approval,
+which was later granted and executed as recorded above.
 
 ## Usage boundary
 

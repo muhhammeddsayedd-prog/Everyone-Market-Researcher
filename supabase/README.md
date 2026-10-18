@@ -4,6 +4,12 @@ M01 owns the seven migrations, local fake fixtures, RLS/role tests, private
 pipeline RPCs, invoker search, queues, cron and Storage. Hosted acceptance is
 tracked in [M01 progress](../milestones/M01-supabase-foundation/PROGRESS.md).
 
+M01 is complete. The owner separately approved PR4's merge, and GitHub confirms
+the exact reviewed head4ffca85 merged as4702a31 at02:56:30 Cairo on18October2026.
+[Merge receipt](../milestones/M01-supabase-foundation/evidence/merge-closure-20261018.json).
+M02 remains unstarted; the completed password handoffs/probes below must not be
+repeated as part of closing M01.
+
 ## Local development
 
 Use Node24, pnpm10 and Docker. The exact CLI 2.121.0 is a root dev dependency;
@@ -153,8 +159,9 @@ push and actual restricted-role login checks are now completed.
 The [production packet](../milestones/M01-supabase-foundation/evidence/hosted-acceptance-20261017.md)
 identifies prod `hkiafqrcxaafdbcvjlzv`, the same seven versions/hashes,
 seeds/queues/cron/public bucket, fixture exclusions, recovery and verification.
-No repeated baseline approval is needed. Keep PR4 draft until actual
-acceptance and its separate merge approval. No collection, paid provider calls,
+No repeated baseline approval is needed. The separate PR4 merge approval was
+later granted and the approved head merged; see the merge receipt above.
+No collection, paid provider calls,
 workflow activation, application production promotion or M02 work is authorized.
 
 ## Poolers and verification boundaries
@@ -228,8 +235,8 @@ do not prove an OAuth exchange. Full browser signin remains M09.
 
 The [existing exact production-baseline packet](../milestones/M01-supabase-foundation/evidence/hosted-acceptance-20261017.md)
 is approved. Production role/provider setup and acceptance follow that approval.
-PR4 merge needs a later separate **Approve merging PR #4** after M01
-acceptance and fresh checks. M01 remains open, PR4 draft/unmerged, M02 unstarted.
+The owner later gave the separate **Approve merging PR #4** decision after
+acceptance and fresh checks. PR4 is merged, M01 is Done and M02 remains unstarted.
 
 ### Production credential handoff
 
