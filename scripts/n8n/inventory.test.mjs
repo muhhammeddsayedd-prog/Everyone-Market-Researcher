@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { inventoryWorkflowNames, runInventory } from './inventory.mjs';
+import { EventEmitter } from 'node:events';
+import {
+  inventoryWorkflowNames,
+  probePublicInventoryTransport,
+  resolveInstance,
+  runInventory,
+} from './inventory.mjs';
 
 const key = 'synthetic-n8n-key-for-local-tests-only';
 const projectId = 'pHvQjDmjxVZ3KQLT';
@@ -49,8 +55,8 @@ const good = {
     data: [
       {
         id: 'syntheticCredential1',
-        name: 'Apify API',
-        type: 'httpHeaderAuth',
+        name: 'Apify account',
+        type: 'apifyApi',
         shared: [{ id: projectId, name: 'synthetic Personal owner name', role: 'credential:owner' }],
         data: { token: 'synthetic-nested-secret' },
       },
@@ -67,6 +73,9 @@ const good = {
 function fixture(overrides = {}) {
   const calls = [];
   const deps = {
+    credentialCandidates: [
+      { key: 'apify', id: 'syntheticCredential1', name: 'Apify account', type: 'apifyApi' },
+    ],
     lookup: async () => [{ address: '8.8.8.8', family: 4 }],
     transport: async (input) => {
       calls.push(input);
@@ -80,6 +89,158 @@ function fixture(overrides = {}) {
   };
   return { calls, deps };
 }
+describe('M03 OS DNS adapter, synthetic callbacks only', () => {
+  it('uses the fixed host/all:true and preserves public IPv4/IPv6 results and pinned first address', async () => {
+    const addresses = [
+      { address: '8.8.8.8', family: 4 },
+      { address: '2606:4700:4700::1111', family: 6 },
+    ];
+    const f = fixture();
+    f.deps.lookup = (signal) =>
+      resolveInstance(signal, (value, options, callback) => {
+        assert.equal(value, host);
+        assert.deepEqual(options, { all: true });
+        callback(null, addresses);
+      });
+    assert.equal((await runInventory(key, f.deps)).status, 'complete');
+    assert.equal(f.calls.length, 4);
+    for (const call of f.calls) assert.deepEqual(call.address, addresses[0]);
+  });
+  for (const [name, answer] of [
+    ['empty', []],
+    ['private', [{ address: '127.0.0.1', family: 4 }]],
+    [
+      'mixed',
+      [
+        { address: '8.8.8.8', family: 4 },
+        { address: '10.0.0.1', family: 4 },
+      ],
+    ],
+    ['wrong family', [{ address: '8.8.8.8', family: 6 }]],
+  ])
+    it(`rejects ${name} OS results before any HTTP request`, async () => {
+      const f = fixture();
+      f.deps.lookup = (signal) =>
+        resolveInstance(signal, (_host, _options, callback) => callback(null, answer));
+      assert.equal((await runInventory(key, f.deps)).status, 'unsafe_dns');
+      assert.equal(f.calls.length, 0);
+    });
+  it('treats ENOTFOUND as no usable addresses without exposing its message', async () => {
+    const f = fixture();
+    f.deps.lookup = (signal) =>
+      resolveInstance(signal, (_host, _options, callback) =>
+        callback(Object.assign(new Error('synthetic-private-DNS'), { code: 'ENOTFOUND' })),
+      );
+    const result = await runInventory(key, f.deps);
+    assert.equal(result.status, 'unsafe_dns');
+    assert.equal(f.calls.length, 0);
+    assert.doesNotMatch(JSON.stringify(result), /synthetic-private/);
+  });
+  it('does not invoke OS lookup after an already-aborted signal', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    let calls = 0;
+    await assert.rejects(
+      resolveInstance(controller.signal, () => {
+        calls++;
+      }),
+      { code: 'timeout' },
+    );
+    assert.equal(calls, 0);
+  });
+  it('ignores a late OS callback after deadline and never starts HTTP', async () => {
+    const f = fixture();
+    f.deps.timeoutMs = 20;
+    let complete;
+    f.deps.lookup = (signal) =>
+      resolveInstance(signal, (_host, _options, callback) => {
+        complete = callback;
+      });
+    const result = await runInventory(key, f.deps);
+    assert.equal(result.status, 'timeout');
+    complete(null, [{ address: '8.8.8.8', family: 4 }]);
+    await new Promise((done) => setImmediate(done));
+    assert.equal(f.calls.length, 0);
+  });
+});
+
+function diagnosticRequestFixture({ close = true, delay = 0 } = {}) {
+  const calls = [];
+  const request = (url, options, responseCallback) => {
+    calls.push({ url, options });
+    const req = new EventEmitter();
+    const socket = new EventEmitter();
+    socket.authorized = true;
+    socket.encrypted = true;
+    req.destroy = () => {
+      if (close) socket.emit('close');
+    };
+    req.end = () => {
+      req.emit('socket', socket);
+      setImmediate(() => {
+        socket.emit('secureConnect');
+        const response = new EventEmitter();
+        response.statusCode = 401;
+        response.headers = {};
+        response.destroy = () => {};
+        responseCallback(response);
+        response.emit('data', Buffer.from('synthetic-private-response-not-projected'));
+        response.emit('end');
+        if (close) setTimeout(() => socket.emit('close'), delay);
+      });
+    };
+    return req;
+  };
+  return { calls, request };
+}
+describe('M03 unauthenticated fixed discovery transport diagnostic, synthetic HTTPS only', () => {
+  it('uses the same strict pinned TLS transport without an API key and waits for socket close', async () => {
+    const f = diagnosticRequestFixture({ delay: 10 });
+    const result = await probePublicInventoryTransport({
+      request: f.request,
+      lookup: async () => [{ address: '8.8.8.8', family: 4 }],
+      closeTimeoutMs: 50,
+    });
+    assert.deepEqual(result, { httpStatus: 401, tlsVerified: true, socketClosed: true });
+    assert.equal(f.calls.length, 1);
+    const { url, options } = f.calls[0];
+    assert.equal(url.href, `https://${host}/api/v1/discover`);
+    assert.equal(options.method, 'GET');
+    assert.equal(options.rejectUnauthorized, true);
+    assert.equal(options.servername, host);
+    assert.equal(options.agent, false);
+    assert.equal(options.family, 4);
+    assert.deepEqual(Object.keys(options.headers).sort(), ['accept', 'user-agent']);
+    let pinned;
+    options.lookup(host, {}, (error, address, family) => {
+      assert.equal(error, null);
+      pinned = { address, family };
+    });
+    assert.deepEqual(pinned, { address: '8.8.8.8', family: 4 });
+    assert.doesNotMatch(JSON.stringify(result), /synthetic-private/);
+  });
+  it('reports a never-closing socket as unverified closure within the bounded wait', async () => {
+    const f = diagnosticRequestFixture({ close: false });
+    const result = await probePublicInventoryTransport({
+      request: f.request,
+      lookup: async () => [{ address: '8.8.8.8', family: 4 }],
+      closeTimeoutMs: 10,
+    });
+    assert.deepEqual(result, { httpStatus: 401, tlsVerified: true, socketClosed: false });
+  });
+  it('rejects mixed private DNS results before creating HTTPS', async () => {
+    const f = diagnosticRequestFixture();
+    const result = await probePublicInventoryTransport({
+      request: f.request,
+      lookup: async () => [
+        { address: '8.8.8.8', family: 4 },
+        { address: '127.0.0.1', family: 4 },
+      ],
+    });
+    assert.deepEqual(result, { httpStatus: null, tlsVerified: false, socketClosed: false });
+    assert.equal(f.calls.length, 0);
+  });
+});
 describe('M03 fixed-instance GET-only n8n inventory, synthetic responses only', () => {
   it('covers all25 canonical binding names without importing dependencies in the private runtime', async () => {
     const { foundationWorkflowNames } = await import('../../packages/shared/src/n8n-bindings.ts');
@@ -110,7 +271,7 @@ describe('M03 fixed-instance GET-only n8n inventory, synthetic responses only', 
     assert.equal(result.resources.workflows.unknownCount, 1);
     assert.equal(result.resources.credentials.unknownCount, 1);
     assert.deepEqual(result.resources.credentials.known, [
-      { name: 'Apify API', id: 'syntheticCredential1', type: 'httpHeaderAuth' },
+      { name: 'Apify account', id: 'syntheticCredential1', type: 'apifyApi' },
     ]);
     assert.equal(result.capabilities.workflowList, true);
     assert.doesNotMatch(
@@ -193,6 +354,8 @@ describe('M03 fixed-instance GET-only n8n inventory, synthetic responses only', 
   it('refuses a known credential in the wrong project or with an unexpected type', async () => {
     for (const change of [
       { type: 'postgres' },
+      { type: 'httpHeaderAuth' },
+      { name: 'Apify API' },
       { shared: [{ id: 'otherProject', role: 'credential:owner' }] },
     ]) {
       const f = fixture({
@@ -206,12 +369,12 @@ describe('M03 fixed-instance GET-only n8n inventory, synthetic responses only', 
       assert.deepEqual(r.resources.credentials.known, []);
     }
   });
-  it('rejects duplicate expected-name matches without guessing which credential to use', async () => {
+  it('rejects duplicate authorized IDs without guessing which credential to use', async () => {
     const f = fixture({
       credentials: {
         status: 200,
         body: bytes({
-          data: [good.credentials.data[0], { ...good.credentials.data[0], id: 'anotherId' }],
+          data: [good.credentials.data[0], good.credentials.data[0]],
           nextCursor: null,
         }),
       },
@@ -219,6 +382,24 @@ describe('M03 fixed-instance GET-only n8n inventory, synthetic responses only', 
     const r = await runInventory(key, f.deps);
     assert.equal(r.resources.credentials.status, 'response_rejected');
     assert.deepEqual(r.resources.credentials.known, []);
+  });
+  it('selects an explicitly authorized ID while an unrelated same-display-name credential stays private', async () => {
+    const f = fixture({
+      credentials: {
+        status: 200,
+        body: bytes({
+          data: [good.credentials.data[0], { ...good.credentials.data[0], id: 'unrelatedSameName' }],
+          nextCursor: null,
+        }),
+      },
+    });
+    const r = await runInventory(key, f.deps);
+    assert.equal(r.resources.credentials.status, 'complete');
+    assert.equal(r.resources.credentials.unknownCount, 1);
+    assert.deepEqual(r.resources.credentials.known, [
+      { id: 'syntheticCredential1', name: 'Apify account', type: 'apifyApi' },
+    ]);
+    assert.ok(!JSON.stringify(r).includes('unrelatedSameName'));
   });
   it('never follows a cursor as a URL and caps pagination at two pages per resource', async () => {
     const f = fixture({

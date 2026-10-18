@@ -1,4 +1,4 @@
-import { Resolver } from 'node:dns/promises';
+import { lookup as osLookup } from 'node:dns';
 import { request } from 'node:https';
 import { isIP } from 'node:net';
 import { resolve } from 'node:path';
@@ -9,13 +9,29 @@ const projectId = 'pHvQjDmjxVZ3KQLT';
 const maxBytes = 4 * 1024 * 1024;
 const record = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const id = (value) => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
-const credentialNames = new Map([
-  ['Supabase Postgres · n8n_writer · dev', 'postgres'],
-  ['Apify API', 'httpHeaderAuth'],
-  ['Vimeo token', 'httpHeaderAuth'],
-  ['YouTube Data API key', 'httpHeaderAuth'],
-  ['OpenAI API', 'httpHeaderAuth'],
-]);
+// Explicit owner-authorized IDs observed in the intended Personal project.
+// Names/types must match readback; native credentials are never relabeled.
+export const inventoryCredentialCandidates = Object.freeze(
+  [
+    {
+      key: 'postgres',
+      id: '3ZZtc9kMDcminv6w',
+      name: 'Supabase Postgres · n8n_writer · dev',
+      type: 'postgres',
+    },
+    { key: 'apify', id: 'EYmaOt0rd45ysq0J', name: 'Apify account', type: 'apifyApi' },
+    { key: 'openai', id: 'e04LREfPBELWQQ9D', name: 'OpenAI account', type: 'openAiApi' },
+    { key: 'vimeo', id: 'HeZBOZhFMeFYOC0N', name: 'Vimeo Token', type: 'httpHeaderAuth' },
+    { key: 'youtube', id: 'ltvBSloVLGVeUjqV', name: 'YouTube Data API key', type: 'httpHeaderAuth' },
+  ].map((value) => Object.freeze(value)),
+);
+const credentialTypes = {
+  postgres: 'postgres',
+  apify: 'apifyApi',
+  openai: 'openAiApi',
+  vimeo: 'httpHeaderAuth',
+  youtube: 'httpHeaderAuth',
+};
 export const inventoryWorkflowNames = Object.freeze([
   'SUB · Start run [dev]',
   'SUB · Finish run [dev]',
@@ -98,33 +114,52 @@ function publicAddress(address) {
     !(a === 0x3fff && b <= 0x0fff)
   );
 }
-async function resolveInstance(signal) {
-  const resolver = new Resolver({ timeout: 10_000, tries: 1 });
-  const cancel = () => resolver.cancel();
-  signal.addEventListener('abort', cancel, { once: true });
-  try {
-    return (
-      await Promise.all(
-        [4, 6].map(async (family) => {
-          try {
-            return (await (family === 4 ? resolver.resolve4(host) : resolver.resolve6(host))).map(
-              (address) => ({ address, family }),
-            );
-          } catch (error) {
-            if (['ENODATA', 'ENOTFOUND'].includes(error?.code)) return [];
-            reject('network_failed');
-          }
-        }),
-      )
-    ).flat();
-  } finally {
-    signal.removeEventListener('abort', cancel);
-    resolver.cancel();
-  }
-}
-function nativeRequest(input) {
+export function resolveInstance(signal, lookup = osLookup) {
+  // The OS operation itself cannot be cancelled. The callback guard and the
+  // existing overall deadline prevent late results from starting a request;
+  // the bounded Windows consumer also owns the native process lifetime.
   return new Promise((done, fail) => {
-    const req = request(
+    let settled = false;
+    const finish = (error, addresses) => {
+      if (settled) return;
+      settled = true;
+      signal.removeEventListener('abort', abort);
+      if (error) fail(error);
+      else done(addresses);
+    };
+    const abort = () => finish(new InventoryError('timeout'));
+    if (signal.aborted) {
+      abort();
+      return;
+    }
+    signal.addEventListener('abort', abort, { once: true });
+    try {
+      lookup(host, { all: true }, (error, addresses) => {
+        if (error) {
+          if (['ENODATA', 'ENOTFOUND'].includes(error.code)) finish(null, []);
+          else finish(new InventoryError('network_failed'));
+        } else finish(null, addresses);
+      });
+    } catch {
+      finish(new InventoryError('network_failed'));
+    }
+  });
+}
+function validatedAddresses(addresses) {
+  if (
+    !Array.isArray(addresses) ||
+    addresses.length === 0 ||
+    addresses.length > 100 ||
+    addresses.some(
+      (entry) => !record(entry) || entry.family !== isIP(entry.address) || !publicAddress(entry.address),
+    )
+  )
+    reject('unsafe_dns');
+  return addresses;
+}
+function nativeRequest(input, requestImpl = request) {
+  return new Promise((done, fail) => {
+    const req = requestImpl(
       input.url,
       {
         method: 'GET',
@@ -165,9 +200,91 @@ function nativeRequest(input) {
         response.once('aborted', () => fail(new InventoryError('network_failed')));
       },
     );
+    if (input.onTlsVerified || input.onSocketClosed) {
+      req.once('socket', (socket) => {
+        socket.once('secureConnect', () =>
+          input.onTlsVerified?.(socket.encrypted === true && socket.authorized === true),
+        );
+        socket.once('close', () => input.onSocketClosed?.());
+      });
+    }
     req.once('error', () => fail(new InventoryError('network_failed')));
     req.end();
   });
+}
+
+// Credential-free, fixed-route transport proof. This does not call runInventory
+// or establish API authentication. Normal keyed-reader routes/counts are intact.
+export async function probePublicInventoryTransport(dependencies = {}) {
+  const controller = new AbortController();
+  const result = { httpStatus: null, tlsVerified: false, socketClosed: false };
+  const deadlineMs =
+    Number.isInteger(dependencies.timeoutMs) && dependencies.timeoutMs > 0 && dependencies.timeoutMs <= 10_000
+      ? dependencies.timeoutMs
+      : 10_000;
+  const closeMs =
+    Number.isInteger(dependencies.closeTimeoutMs) &&
+    dependencies.closeTimeoutMs > 0 &&
+    dependencies.closeTimeoutMs <= 5000
+      ? dependencies.closeTimeoutMs
+      : 5000;
+  let requestIssued = false;
+  let resolveClosed;
+  const closed = new Promise((done) => {
+    resolveClosed = done;
+  });
+  const timer = setTimeout(() => controller.abort(), deadlineMs);
+  const timeout = new Promise((_, fail) =>
+    controller.signal.addEventListener('abort', () => fail(new InventoryError('timeout')), { once: true }),
+  );
+  const operation = async () => {
+    const addresses = validatedAddresses(await (dependencies.lookup ?? resolveInstance)(controller.signal));
+    if (controller.signal.aborted) reject('timeout');
+    requestIssued = true;
+    const response = await nativeRequest(
+      {
+        url: new URL(`https://${host}/api/v1/discover`),
+        headers: {
+          accept: 'application/json',
+          'user-agent': 'everyone-market-radar-m03-public-transport-check/1',
+        },
+        address: addresses[0],
+        signal: controller.signal,
+        onTlsVerified: (verified) => {
+          result.tlsVerified = verified;
+        },
+        onSocketClosed: () => {
+          result.socketClosed = true;
+          resolveClosed();
+        },
+      },
+      dependencies.request ?? request,
+    );
+    if (Number.isInteger(response.status) && response.status >= 100 && response.status <= 599)
+      result.httpStatus = response.status;
+  };
+  try {
+    await Promise.race([operation(), timeout]);
+  } catch {
+    /* Fixed booleans/null only; no body, headers or raw errors. */
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
+    if (requestIssued && !result.socketClosed) {
+      let closeTimer;
+      try {
+        await Promise.race([
+          closed,
+          new Promise((done) => {
+            closeTimer = setTimeout(done, closeMs);
+          }),
+        ]);
+      } finally {
+        clearTimeout(closeTimer);
+      }
+    }
+  }
+  return result;
 }
 function listPage(value) {
   if (
@@ -224,7 +341,7 @@ function projectBound(row, resource) {
     )
   );
 }
-function projectRows(resource, rows, seen) {
+function projectRows(resource, rows, seen, candidates) {
   const known = [];
   let unknownCount = 0;
   for (const row of rows) {
@@ -238,13 +355,19 @@ function projectRows(resource, rows, seen) {
       } else unknownCount++;
     } else if (resource === 'credentials') {
       if (typeof row.type !== 'string' || row.type.length > 128) reject();
-      if (!credentialNames.has(row.name)) {
+      const candidate = candidates.get(row.id);
+      if (!candidate) {
         unknownCount++;
         continue;
       }
-      if (row.type !== credentialNames.get(row.name) || !projectBound(row, resource) || seen.has(row.name))
+      if (
+        row.name !== candidate.name ||
+        row.type !== candidate.type ||
+        !projectBound(row, resource) ||
+        seen.has(row.id)
+      )
         reject();
-      seen.add(row.name);
+      seen.add(row.id);
       known.push({ name: row.name, id: row.id, type: row.type });
     } else {
       if (typeof row.active !== 'boolean' || typeof row.isArchived !== 'boolean') reject();
@@ -288,6 +411,36 @@ export async function runInventory(key, dependencies = {}) {
     result.status = 'invalid_key';
     return result;
   }
+  // Tests may supply synthetic candidates alongside synthetic transport. The
+  // sealed CLI entry point accepts no arguments and always uses the fixed list.
+  const supplied = dependencies.credentialCandidates ?? inventoryCredentialCandidates;
+  const candidates = new Map(),
+    services = new Set();
+  if (!Array.isArray(supplied) || supplied.length > 5) {
+    result.status = 'invalid_options';
+    return result;
+  }
+  for (const candidate of supplied) {
+    if (
+      !record(candidate) ||
+      Object.keys(candidate).length !== 4 ||
+      !['key', 'id', 'name', 'type'].every((k) => Object.hasOwn(candidate, k)) ||
+      !Object.hasOwn(credentialTypes, candidate.key) ||
+      candidate.type !== credentialTypes[candidate.key] ||
+      !id(candidate.id) ||
+      typeof candidate.name !== 'string' ||
+      candidate.name.length < 1 ||
+      candidate.name.length > 200 ||
+      /[\x00-\x1f\x7f]/.test(candidate.name) ||
+      candidates.has(candidate.id) ||
+      services.has(candidate.key)
+    ) {
+      result.status = 'invalid_options';
+      return result;
+    }
+    candidates.set(candidate.id, candidate);
+    services.add(candidate.key);
+  }
   const timeoutMs = dependencies.timeoutMs ?? 60_000;
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 60_000) {
     result.status = 'invalid_options';
@@ -303,17 +456,8 @@ export async function runInventory(key, dependencies = {}) {
     controller.signal.addEventListener('abort', () => fail(new InventoryError('timeout')), { once: true }),
   );
   const operation = async () => {
-    const addresses = await (dependencies.lookup ?? resolveInstance)(controller.signal);
+    const addresses = validatedAddresses(await (dependencies.lookup ?? resolveInstance)(controller.signal));
     if (controller.signal.aborted) reject('timeout');
-    if (
-      !Array.isArray(addresses) ||
-      addresses.length === 0 ||
-      addresses.length > 100 ||
-      addresses.some(
-        (entry) => !record(entry) || entry.family !== isIP(entry.address) || !publicAddress(entry.address),
-      )
-    )
-      reject('unsafe_dns');
     const get = async (resource, cursor) => {
       const url = new URL(`https://${host}/api/v1/${resource}`);
       if (resource !== 'discover') url.searchParams.set('limit', '100');
@@ -387,7 +531,7 @@ export async function runInventory(key, dependencies = {}) {
             break;
           }
           const value = listPage(response.value);
-          const projected = projectRows(resource, value.data, seen);
+          const projected = projectRows(resource, value.data, seen, candidates);
           section.count += value.data.length;
           section.known.push(...projected.known);
           section.unknownCount += projected.unknownCount;

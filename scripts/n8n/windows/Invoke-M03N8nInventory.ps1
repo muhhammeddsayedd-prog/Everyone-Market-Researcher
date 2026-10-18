@@ -8,7 +8,13 @@ $projectId = 'pHvQjDmjxVZ3KQLT'
 $files = @('scripts/n8n/windows/New-M03N8nApiHandoff.ps1','scripts/n8n/windows/Invoke-M03N8nInventory.ps1','scripts/n8n/inventory.mjs')
 $childTimeoutMs = 75000
 $middleDot = [string][char]0x00b7
-$credentialNames = @("Supabase Postgres $middleDot n8n_writer $middleDot dev",'Apify API','Vimeo token','YouTube Data API key','OpenAI API')
+$credentialCandidates = @(
+  [PSCustomObject]@{key='postgres';id='3ZZtc9kMDcminv6w';name="Supabase Postgres $middleDot n8n_writer $middleDot dev";type='postgres'},
+  [PSCustomObject]@{key='apify';id='EYmaOt0rd45ysq0J';name='Apify account';type='apifyApi'},
+  [PSCustomObject]@{key='openai';id='e04LREfPBELWQQ9D';name='OpenAI account';type='openAiApi'},
+  [PSCustomObject]@{key='vimeo';id='HeZBOZhFMeFYOC0N';name='Vimeo Token';type='httpHeaderAuth'},
+  [PSCustomObject]@{key='youtube';id='ltvBSloVLGVeUjqV';name='YouTube Data API key';type='httpHeaderAuth'}
+)
 $workflowNames = @("SUB $middleDot Start run [dev]","SUB $middleDot Finish run [dev]","SUB $middleDot Ingest items [dev]","SUB $middleDot Log cost [dev]","SUB $middleDot Notify [dev]",
   "WF-00 $middleDot Orchestrator [dev]","WF-19 $middleDot Apify run callback [dev]","WF-90 $middleDot Error handler [dev]","WF-91 $middleDot Health & cost [dev]","WF-99 $middleDot Foundation smoke test [dev]",
   "WF-10 $middleDot Vimeo collector [dev]","WF-11 $middleDot Instagram posts/reels collector [dev]","WF-12 $middleDot Instagram stories collector [dev]","WF-13 $middleDot YouTube collector [dev]",
@@ -58,8 +64,8 @@ function Validate-Inventory($Value) {
         if ($row.id -cne $projectId -or $row.type -cne 'personal') { throw 'blocked' }
       } elseif ($resource -eq 'credentials') {
         Assert-Keys $row @('name','id','type')
-        if ($row.name -cnotin $credentialNames -or ($row.name -ceq $credentialNames[0] -and $row.type -cne 'postgres') -or
-            ($row.name -cne $credentialNames[0] -and $row.type -cne 'httpHeaderAuth')) { throw 'blocked' }
+        $candidate = @($credentialCandidates | Where-Object { $_.id -ceq $row.id })
+        if ($candidate.Count -ne 1 -or $row.name -cne $candidate[0].name -or $row.type -cne $candidate[0].type) { throw 'blocked' }
       } else {
         Assert-Keys $row @('name','id','active','archived')
         if ($row.name -cnotin $workflowNames -or $row.active -isnot [bool] -or $row.archived -isnot [bool]) { throw 'blocked' }

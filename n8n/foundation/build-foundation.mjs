@@ -25,6 +25,7 @@ const expectedVersions = Object.freeze({
   if: 2.3,
   scheduleTrigger: 1.4,
   switch: 3.4,
+  httpRequest: 4.5,
 });
 const actualProbe = JSON.parse(
   readFileSync(

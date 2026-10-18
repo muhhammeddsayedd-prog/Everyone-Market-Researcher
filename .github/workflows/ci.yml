@@ -53,7 +53,7 @@ jobs:
       - name: Check bounded YouTube response diagnostics
         run: node --test scripts/seed/diagnose-youtube.test.mjs
       - name: Check native n8n foundation and read-only API contracts
-        run: node --test n8n/foundation/*.test.mjs scripts/n8n/inventory.test.mjs
+        run: node --test n8n/foundation/*.test.mjs scripts/n8n/inventory.test.mjs scripts/n8n/check-dns.test.mjs
 
   build:
     runs-on: ubuntu-latest

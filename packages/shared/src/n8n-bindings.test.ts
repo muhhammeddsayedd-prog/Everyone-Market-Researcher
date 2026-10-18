@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { parseN8nBindings, parseCollectorStubInput, parseHealthInput } from './n8n-bindings';
+import {
+  parseN8nBindings,
+  parseCollectorStubInput,
+  parseHealthInput,
+  httpCredentialBinding,
+} from './n8n-bindings';
 
 const fixture = () => ({
   runtimeVersion: '2.43.5',
@@ -8,6 +13,61 @@ const fixture = () => ({
   projectId: 'pHvQjDmjxVZ3KQLT',
   workflowRefs: { 'WF-90': { id: 'SyntheticWf90Id', name: 'WF-90 · Error handler [dev]' } },
   tagRefs: { 'env:dev': { id: 'SyntheticDevTag', name: 'env:dev' } },
+});
+
+describe('M03 logical native credential compatibility', () => {
+  const providers = () => ({
+    apify: { id: 'SyntheticApify', name: 'Apify account', type: 'apifyApi', environment: 'dev' },
+    openai: { id: 'SyntheticOpenAI', name: 'Existing OpenAI account', type: 'openAiApi', environment: 'dev' },
+    vimeo: { id: 'SyntheticVimeo', name: 'Vimeo Token', type: 'httpHeaderAuth', environment: 'dev' },
+    youtube: {
+      id: 'SyntheticYouTube',
+      name: 'YouTube Data API key',
+      type: 'httpHeaderAuth',
+      environment: 'dev',
+    },
+  });
+  it('preserves actual native types and display names rather than requiring a replacement Header Auth credential', () => {
+    const b = { ...fixture(), credentials: providers() };
+    expect(parseN8nBindings(b).credentials?.apify?.name).toBe('Apify account');
+    for (const service of ['apify', 'openai'] as const) {
+      const p = providers()[service],
+        auth = httpCredentialBinding(b, service);
+      expect(auth.parameters).toEqual({
+        authentication: 'predefinedCredentialType',
+        nodeCredentialType: p.type,
+      });
+      expect(auth.credentials).toEqual({ [p.type]: { id: p.id, name: p.name } });
+      expect('httpHeaderAuth' in auth.credentials).toBe(false);
+    }
+    for (const service of ['vimeo', 'youtube'] as const)
+      expect(httpCredentialBinding(b, service).parameters).toEqual({
+        authentication: 'genericCredentialType',
+        genericAuthType: 'httpHeaderAuth',
+      });
+  });
+  it('rejects type mismatches, secret-bearing properties and duplicate logical credential IDs', () => {
+    for (const service of ['apify', 'openai', 'vimeo', 'youtube'] as const) {
+      const p = providers();
+      expect(() =>
+        parseN8nBindings({
+          ...fixture(),
+          credentials: { ...p, [service]: { ...p[service], type: 'httpQueryAuth' } },
+        }),
+      ).toThrow(/^EMR_N8N_BINDINGS_INVALID$/);
+      expect(() =>
+        parseN8nBindings({
+          ...fixture(),
+          credentials: { ...p, [service]: { ...p[service], apiKey: 'SYNTHETIC_PRIVATE_MARKER' } },
+        }),
+      ).toThrow(/^EMR_N8N_BINDINGS_INVALID$/);
+    }
+    const p = providers();
+    expect(() =>
+      parseN8nBindings({ ...fixture(), credentials: { ...p, youtube: { ...p.youtube, id: p.vimeo.id } } }),
+    ).toThrow(/^EMR_N8N_BINDINGS_INVALID$/);
+    expect(() => httpCredentialBinding(fixture(), 'apify')).toThrow(/^EMR_N8N_BINDING_MISSING$/);
+  });
 });
 
 describe('M03 non-secret dev binding manifest boundary', () => {

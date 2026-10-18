@@ -4,7 +4,7 @@
   "projectId": "pHvQjDmjxVZ3KQLT",
   "files": {
     "scripts/n8n/windows/New-M03N8nApiHandoff.ps1": "c8c9d34855ef55c5391f5b14c80a7768b51761a149982f4917b910c391c788e2",
-    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "06e28e11db31c8adc53af27c28c98fcfb4634a5b39d6a57237889e80258bac59",
-    "scripts/n8n/inventory.mjs": "a964466ab6c33328c42b4e574384b9c7eb50840b24913514f999658a44c855af"
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "86d63ccf1707e34853bd5527d4a4f53630f65b61b067c315e8e42e337556e805",
+    "scripts/n8n/inventory.mjs": "46b36ece01e294e221cb851c62127b720196fc3c82a560c9416ecb3aa5958acc"
   }
 }

@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { after, describe, it } from 'node:test';
-import { inventoryWorkflowNames } from './inventory.mjs';
+import { inventoryWorkflowNames, inventoryCredentialCandidates } from './inventory.mjs';
 
 const powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
 const roots = [];
@@ -84,7 +84,13 @@ function fixture(mode = 'success') {
     httpStatus: 200,
     count: 1,
     unknownCount: 0,
-    known: [{ name: 'Supabase Postgres · n8n_writer · dev', id: 'syntheticCredential1', type: 'postgres' }],
+    known: [
+      Object.fromEntries(
+        Object.entries(inventoryCredentialCandidates.find((c) => c.key === 'postgres')).filter(
+          ([k]) => k !== 'key',
+        ),
+      ),
+    ],
   };
   result.resources.workflows = {
     status: 'complete',
@@ -106,6 +112,19 @@ function fixture(mode = 'success') {
         archived: false,
       })),
     };
+  if (['nativeProviders', 'wrongNativeType', 'wrongCandidateName', 'wrongCandidateId'].includes(mode)) {
+    result.resources.credentials = {
+      status: 'complete',
+      httpStatus: 200,
+      count: 5,
+      unknownCount: 0,
+      known: inventoryCredentialCandidates.map(({ id, name, type }) => ({ id, name, type })),
+    };
+    const apify = result.resources.credentials.known.find((c) => c.type === 'apifyApi');
+    if (mode === 'wrongNativeType') apify.type = 'httpHeaderAuth';
+    if (mode === 'wrongCandidateName') apify.name = 'Apify API';
+    if (mode === 'wrongCandidateId') apify.id = 'unapprovedSyntheticId';
+  }
   if (mode === 'reflectedKey') result.resources.credentials.known[0].id = 'synthetic-n8n-key-for-test-only';
   const code = `import {writeFileSync} from 'node:fs';
  const good=process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS;
@@ -212,7 +231,26 @@ describe(
       assert.equal(r.status, 0, r.stdout + r.stderr);
       assert.equal(JSON.parse(r.stdout).inventory.resources.workflows.known.length, 25);
     });
-    for (const mode of ['badJson', 'unsafeSchema', 'failure', 'timeout', 'reflectedKey', 'failedStart'])
+    it('accepts allfive exact authorized credential ID/name/type triples including native Apify and OpenAI', () => {
+      const f = fixture('nativeProviders'),
+        r = f.run();
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      const receipt = JSON.parse(r.stdout);
+      assert.equal(receipt.inventory.resources.credentials.known.length, 5);
+      assert.equal(receipt.childClosed, true);
+      assert.equal(receipt.handoffDeleted, true);
+    });
+    for (const mode of [
+      'badJson',
+      'unsafeSchema',
+      'failure',
+      'timeout',
+      'reflectedKey',
+      'failedStart',
+      'wrongNativeType',
+      'wrongCandidateName',
+      'wrongCandidateId',
+    ])
       it(`suppresses ${mode} child output, closes it and cleans consumed credentials`, () => {
         const f = fixture(mode);
         const r = f.run();

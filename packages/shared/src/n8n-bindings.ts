@@ -127,6 +127,25 @@ const postgresReference = reference.extend({
   environment: z.literal('dev'),
   projectRef: z.literal('zmotjsbzhzjvpelxvxlf'),
 });
+// These logical services bind the owner's existing credential IDs/types. Display
+// names are observed metadata, not instructions to rename or duplicate them.
+// Provider environment describes this binding's use; it does not attest the
+// external key's project, budget or scopes. Those remain separate live gates.
+const providerReference = reference.extend({ environment: z.literal('dev') });
+export const logicalCredentialTypes = {
+  postgres: 'postgres',
+  apify: 'apifyApi',
+  openai: 'openAiApi',
+  vimeo: 'httpHeaderAuth',
+  youtube: 'httpHeaderAuth',
+} as const;
+export const logicalCredentialSchemas = {
+  postgres: postgresReference,
+  apify: providerReference.extend({ type: z.literal('apifyApi') }),
+  openai: providerReference.extend({ type: z.literal('openAiApi') }),
+  vimeo: providerReference.extend({ type: z.literal('httpHeaderAuth') }),
+  youtube: providerReference.extend({ type: z.literal('httpHeaderAuth') }),
+};
 
 export const n8nBindingsSchema = z
   .strictObject({
@@ -136,7 +155,15 @@ export const n8nBindingsSchema = z
     projectId: z.literal('pHvQjDmjxVZ3KQLT'),
     workflowRefs: z.record(z.string(), reference),
     tagRefs: z.partialRecord(z.enum(foundationTagNames), reference),
-    credentials: z.strictObject({ postgres: postgresReference.optional() }).optional(),
+    credentials: z
+      .strictObject({
+        postgres: logicalCredentialSchemas.postgres.optional(),
+        apify: logicalCredentialSchemas.apify.optional(),
+        openai: logicalCredentialSchemas.openai.optional(),
+        vimeo: logicalCredentialSchemas.vimeo.optional(),
+        youtube: logicalCredentialSchemas.youtube.optional(),
+      })
+      .optional(),
   })
   .superRefine((value, ctx) => {
     const workflowIds = new Set<string>();
@@ -151,6 +178,11 @@ export const n8nBindingsSchema = z
         ctx.addIssue({ code: 'custom', message: 'invalid reference' });
       if (ref) tagIds.add(ref.id);
     }
+    const credentialIds = new Set<string>();
+    for (const ref of Object.values(value.credentials ?? {})) {
+      if (ref && credentialIds.has(ref.id)) ctx.addIssue({ code: 'custom', message: 'invalid reference' });
+      if (ref) credentialIds.add(ref.id);
+    }
   });
 
 export type N8nBindings = z.infer<typeof n8nBindingsSchema>;
@@ -161,4 +193,22 @@ export function parseN8nBindings(input: unknown): N8nBindings {
   const result = n8nBindingsSchema.safeParse(input);
   if (!result.success) throw new Error('EMR_N8N_BINDINGS_INVALID');
   return result.data;
+}
+
+export type HttpCredentialService = Exclude<keyof typeof logicalCredentialTypes, 'postgres'>;
+
+// Pinned HTTP Request4.5 uses a predefined credential with an authenticate()
+// contract directly. Never treat native Apify/OpenAI as Header Auth or extract
+// their API keys into node parameters.
+export function httpCredentialBinding(input: unknown, service: HttpCredentialService) {
+  const b = parseN8nBindings(input);
+  if (!['apify', 'openai', 'vimeo', 'youtube'].includes(service))
+    throw new Error('EMR_N8N_CREDENTIAL_INCOMPATIBLE');
+  const credential = b.credentials?.[service];
+  if (!credential) throw new Error('EMR_N8N_BINDING_MISSING');
+  const parameters =
+    credential.type === 'httpHeaderAuth'
+      ? { authentication: 'genericCredentialType', genericAuthType: credential.type }
+      : { authentication: 'predefinedCredentialType', nodeCredentialType: credential.type };
+  return { parameters, credentials: { [credential.type]: { id: credential.id, name: credential.name } } };
 }
