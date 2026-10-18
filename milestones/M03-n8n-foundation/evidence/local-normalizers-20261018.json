@@ -57,14 +57,20 @@
         "testsPassed": 96,
         "testsFailed": 5,
         "result": "Independent-review client_secret and recursively encoded credential-query regressions failed before the shared bounded query screen was implemented."
+      },
+      {
+        "nativeExit": 1,
+        "testsPassed": 101,
+        "testsFailed": 2,
+        "result": "Cross-component review caught missing metrics:{} in the actual normalizer; exact item and processor-required-key regressions failed before explicit empty metrics were added."
       }
     ],
     "finalGreen": {
       "nativeExit": 0,
-      "testsPassed": 102,
+      "testsPassed": 103,
       "testsFailed": 0,
       "existingTests": 16,
-      "newTests": 86,
+      "newTests": 87,
       "testFilesPassed": 1
     }
   },
@@ -86,6 +92,7 @@
   "contractEvidence": {
     "website": [
       "Fixed website_work_page / project_page / apify/website-content-crawler schema.",
+      "Explicit empty metrics object; static cross-component check compares the actual prepared normalizer item keys against the atomic SQL processor required key list.",
       "SHA256 canonical dataset URL identity, first32 hex characters; path case preserved; no alternate hash fallback.",
       "HTTPS canonical URL with query and fragment removed; unsafe lexical hosts, IPs, credentials, userinfo and malformed authorities rejected.",
       "Metadata title capped at2000; Markdown capped at8000; published_at null. Truncation does not split an ending Unicode surrogate pair.",

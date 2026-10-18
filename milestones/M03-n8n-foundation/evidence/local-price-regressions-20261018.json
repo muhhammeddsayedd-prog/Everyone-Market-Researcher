@@ -1,0 +1,58 @@
+{
+  "ObservedAt": "2026-10-18T04:01:37.0131123Z",
+  "Environment": "owned-local-PG17-rollback-only",
+  "PriceMigrationSha256": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd",
+  "Cases": [
+    {
+      "Case": "retained_17_oct_history",
+      "ExpectedNativeExit": 0,
+      "ActualNativeExit": 0,
+      "Sqlstate": null,
+      "Pass": true
+    },
+    {
+      "Case": "fresh_same_day_18_oct",
+      "ExpectedNativeExit": 0,
+      "ActualNativeExit": 0,
+      "Sqlstate": null,
+      "Pass": true
+    },
+    {
+      "Case": "fresh_future_day_19_oct",
+      "ExpectedNativeExit": 0,
+      "ActualNativeExit": 0,
+      "Sqlstate": null,
+      "Pass": true
+    },
+    {
+      "Case": "same_day_operator_price_conflict",
+      "ExpectedNativeExit": 3,
+      "ActualNativeExit": 3,
+      "Sqlstate": "55000",
+      "Pass": true
+    },
+    {
+      "Case": "future_day_operator_price_conflict",
+      "ExpectedNativeExit": 3,
+      "ActualNativeExit": 3,
+      "Sqlstate": "55000",
+      "Pass": true
+    },
+    {
+      "Case": "operator_unit_conflict",
+      "ExpectedNativeExit": 3,
+      "ActualNativeExit": 3,
+      "Sqlstate": "55000",
+      "Pass": true
+    },
+    {
+      "Case": "operator_budget_conflict",
+      "ExpectedNativeExit": 3,
+      "ActualNativeExit": 3,
+      "Sqlstate": "55000",
+      "Pass": true
+    }
+  ],
+  "AllPassed": true,
+  "HostedChanges": false
+}

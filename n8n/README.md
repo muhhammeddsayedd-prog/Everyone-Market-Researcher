@@ -53,7 +53,10 @@ until M08. Unpin test data before exporting; preserve safe credential references
 and actual workflow IDs. Every changed hosted workflow must have a sanitized
 export under `workflows/`. There are no verified M03 hosted exports yet: access
 and live node schemas remain gates, so speculative JSON is not committed as an
-actual export.
+actual export. The actual 2.43.5 core-node probe now supplies observed versions
+and field controls, and was archived without execution. Its sanitized JSON is
+capability evidence only. Native blueprints under `foundation/` remain separate
+from changed hosted exports and require actual bindings plus deployment checks.
 
 ## Callback safety
 

@@ -1,0 +1,168 @@
+{
+    "milestone":  "M03-n8n-foundation",
+    "recordedAt":  "2026-10-18T03:42:06Z",
+    "purpose":  "T1 runtime/plan readback and T2 access boundary; read-only inspection only",
+    "status":  "BROWSER_SIGNED_IN_RUNTIME_PARTIALLY_VERIFIED_CONNECTOR_INTERNAL_ERROR",
+    "updatedAt":  "2026-10-18T04:14:11Z",
+    "initialStatus":  "BLOCKED_INTENDED_INSTANCE_NOT_IDENTIFIED",
+    "provenance":  {
+                       "actualBrowser":  "Existing Chrome browser 1 / Person 1 through CUA",
+                       "browserInventory":  "No n8n instance or Cloud admin tab was present. Unrelated user tabs were left untouched.",
+                       "navigation":  "One agent-created tab opened https://app.n8n.cloud/ and reached https://app.n8n.cloud/login.",
+                       "visibleResult":  "Go to your instance; enter the name of your n8n Cloud instance; Instance name; Sign in.",
+                       "identityBoundary":  "A remembered instance-name value was visible but established neither Everyone ownership nor the intended Market Radar project. It was not submitted or followed.",
+                       "observedTimeBoundary":  "recordedAt is the local evidence-recording time after the browser observation; the page exposed no server observation timestamp.",
+                       "screenshotsSaved":  false,
+                       "privateMaterialRead":  false,
+                       "credentialValuesRead":  false,
+                       "loginSubmitted":  false,
+                       "workflowCreatedChangedActivatedExecuted":  false,
+                       "settingsChanged":  false,
+                       "nodeInstalled":  false,
+                       "providerCalls":  0
+                   },
+    "actualIntendedRuntime":  {
+                                  "instanceUrl":  "https://muhhammedsayed.app.n8n.cloud",
+                                  "instanceUrlProvenance":  "Owner supplied intended URL; after Workflows visible in Person1 reply, root observed the authenticated Overview and Cloud Manage page. Earlier failed observations below remain historical.",
+                                  "projectName":  "Personal",
+                                  "projectId":  "pHvQjDmjxVZ3KQLT",
+                                  "everyoneIdentityVerified":  true,
+                                  "version":  "2.43.5",
+                                  "planName":  "Pro (Monthly)",
+                                  "monthlyExecutionAllowance":  50000,
+                                  "monthlyExecutionsShownUsed":  11001,
+                                  "timezone":  "Africa/Cairo",
+                                  "workflowInventoryBeforeProbe":  47,
+                                  "existingUnrelatedWorkflowsChanged":  false,
+                                  "verifiedCommunityNodesEnabled":  true,
+                                  "allCommunityNodesDisabled":  false,
+                                  "maximumExecutionTimeoutSeconds":  null,
+                                  "subworkflowQuotaTreatment":  null,
+                                  "variablesAvailable":  null,
+                                  "verifiedApifyNodeAvailable":  null,
+                                  "verifiedApifyNodeInstalled":  null,
+                                  "postgresQueryParametersVisible":  null,
+                                  "relevantLiveNodeSchemasAndTypeVersions":  null
+                              },
+    "intendedInstanceFollowup":  {
+                                     "recordedAt":  "2026-10-18T03:45:38Z",
+                                     "requestedUrl":  "https://muhhammedsayed.app.n8n.cloud/home/workflows",
+                                     "observedUrl":  "https://muhhammedsayed.app.n8n.cloud/signin?redirect=%252Fhome%252Fworkflows",
+                                     "visibleResult":  "Sign in form with Email, Password and Sign in controls; no Overview/workflow list or project identity visible.",
+                                     "signedIn":  false,
+                                     "loginSubmitted":  false,
+                                     "credentialFieldsReadOrFilled":  false,
+                                     "runtimeOrCredentialMetadataAvailable":  false,
+                                     "browserTab":  "1091382936",
+                                     "tabKeptForOwnerPrivateSignIn":  true,
+                                     "previousObservationPreserved":  "The earlier Cloud landing /login result and initial unknown-instance status above remain historical evidence; the owner-supplied URL resolves only the destination gap."
+                                 },
+    "ownerReportedSignInFollowup":  {
+                                        "recordedAt":  "2026-10-18T03:48:31Z",
+                                        "ownerReported":  "n8n signed in on muhhammedsayed",
+                                        "actualVerification":  "The kept tab still showed Sign in. Navigating once to the exact owner-supplied /home/workflows URL again redirected to the same instance /signin form with Email/Password controls.",
+                                        "filteredTabInventory":  "Only the intended instance Sign in tab and a user-opened https://app.n8n.cloud/magic-link tab were current n8n application surfaces; no signed-in editor Overview was available.",
+                                        "signedInEditorVerified":  false,
+                                        "magicLinkTabInspectedOrSubmitted":  false,
+                                        "privateFieldsReadOrFilled":  false,
+                                        "acceptanceBoundary":  "Owner-reported readiness does not replace a signed-in editor readback. The owner may still be completing Cloud-admin magic-link access, which is separate from the instance editor session.",
+                                        "nextAction":  "Finish the existing instance-editor sign-in privately at https://muhhammedsayed.app.n8n.cloud/signin, leave /home/workflows visibly open in connected Chrome, then reply n8n editor Overview open. No password reset, new instance or new MCP setup is requested."
+                                    },
+    "mcpBoundary":  {
+                        "afterVerifiedBrowserSignIn":  "SDK reference, suggested nodes and project inventory were retried once after actual authenticated Overview verification; all still returned -32603 Internal error. This is an independent connector failure, not a remaining browser-login request or established password rejection.",
+                        "reportedBy":  "Parent agent /root in the delegated task",
+                        "reportedResult":  "Project, workflow and credential list tools each returned MCP -32603 Internal error.",
+                        "independentlyRepeatedHere":  false,
+                        "setupLoginOrCredentialQueryAttemptedHere":  false,
+                        "conclusion":  "The reported connector failures establish neither current intended-instance identity nor successful create/update/run/export access. No unchanged MCP retries or new setup were attempted."
+                    },
+    "officialDocumentationSupplement":  {
+                                            "retrievedAt":  "2026-10-18T03:42:06Z",
+                                            "boundary":  "Current official documentation describes general product behavior. It is not a receipt for the owner\u0027s actual instance, subscription, enabled features or live node schema.",
+                                            "facts":  [
+                                                          {
+                                                              "topic":  "Maximum workflow execution timeout",
+                                                              "source":  "https://docs.n8n.io/build/manage-workflows/configure-workflow-settings.md",
+                                                              "documented":  "Workflow settings exposes Timeout Workflow / Timeout After; Cloud enforces a plan maximum.",
+                                                              "actualPlanVerified":  false
+                                                          },
+                                                          {
+                                                              "topic":  "Public Cloud execution-duration tiers",
+                                                              "source":  "https://n8n.io/pricing/",
+                                                              "documented":  "Public comparison lists Starter 5 minutes, Pro 40 minutes and Enterprise 40 minutes. Trial lists 180 seconds.",
+                                                              "actualPlanVerified":  false
+                                                          },
+                                                          {
+                                                              "topic":  "Sub-workflow monthly execution quota",
+                                                              "source":  "https://docs.n8n.io/build/understand-workflows/understand-executions.md#how-executions-count-towards-quotas",
+                                                              "documented":  "Paid-plan sub-workflow calls through Execute Sub-workflow do not count separately; only the top-level parent execution counts.",
+                                                              "actualPlanVerified":  false
+                                                          },
+                                                          {
+                                                              "topic":  "Variables",
+                                                              "source":  "https://docs.n8n.io/build/code-in-n8n/define-custom-variables.md",
+                                                              "documented":  "Custom variables are documented for Cloud Pro and Enterprise. Owners/admins create them. Project scope is documented from n8n 1.118.0.",
+                                                              "actualInstanceVerified":  false
+                                                          },
+                                                          {
+                                                              "topic":  "Verified community node availability",
+                                                              "source":  "https://docs.n8n.io/integrations/community-nodes/installation-and-management/install-verified-community-nodes.md",
+                                                              "documented":  "Owners/admins can install verified nodes from the canvas node panel. Cloud owner controls verified-node visibility in Cloud Admin.",
+                                                              "actualInstanceVerified":  false
+                                                          },
+                                                          {
+                                                              "topic":  "Apify verified package",
+                                                              "source":  "https://docs.apify.com/integrations/n8n",
+                                                              "documented":  "Apify documents its @apify/n8n-nodes-apify integration and Cloud installation through the canvas registry; verified-node visibility must be enabled.",
+                                                              "actualInstanceVerified":  false,
+                                                              "installationPerformed":  false
+                                                          },
+                                                          {
+                                                              "topic":  "Postgres prepared query parameters",
+                                                              "source":  "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.postgres",
+                                                              "documented":  "Execute Query supports $1/$2 placeholders and Options \u003e Query Parameters, with fixed or expression-provided values.",
+                                                              "actualLiveNodeVerified":  false
+                                                          },
+                                                          {
+                                                              "topic":  "Queue mode versus ordinary Cloud concurrency",
+                                                              "source":  "https://docs.n8n.io/deploy/use-n8n-cloud/understand-concurrency.md",
+                                                              "documented":  "Cloud queue mode is documented as Enterprise-only and enabled through n8n. Regular-mode concurrency queues do not establish queue-mode entitlement.",
+                                                              "actualInstanceVerified":  false
+                                                          }
+                                                      ]
+                                        },
+    "pendingSkill":  {
+                         "receipt":  ".agents/skill-receipts/pending/n8n-skills/PENDING.md",
+                         "referenceRelease":  "haunchen/n8n-skills v2.22.0",
+                         "referenceDocumentedRuntime":  "2.36.8",
+                         "promoted":  false,
+                         "reason":  "Actual runtime2.43.5, live core-node versions and Cloud feature facts are now separately observed. Promotion remains deferred until the complete relevant schema/restriction mapping is reviewed; static upstream runtime2.36.8 is not a current instance receipt."
+                     },
+    "acceptance":  {
+                       "t1":  "Partial, substantially observed: actual2.43.5/Pro Monthly, upgraded50K allowance/11001 shown used, Cairo, Variables controls, installed verified Apify package, Postgres query parameters and saved900s probe timeout. Exact sources and per-fact acceptance are in the node-capability evidence.",
+                       "t2":  "Partial: authenticated browser access verified. Connector SDK/suggested/project calls still return internal errors; create/update/run/export API acceptance remains unverified.",
+                       "noProviderOrWorkflowExecutionAcceptanceClaimed":  true
+                   },
+    "nextOwnerAction":  {
+                            "manualActionId":  "MA-11",
+                            "application":  "Chrome / owner-confirmed muhhammedsayed n8n Cloud instance",
+                            "steps":  [
+                                          "Browser sign-in is now verified complete. Do not repeat login or request the supplied instance URL again.",
+                                          "Canonical Market Radar credentials are absent from the visible14-credential inventory. Exact private entry steps are being prepared; the existing shared Supabase API credential must never substitute for n8n_writer.",
+                                          "Root performed read-only access/plan/credential-name readback. A separate bounded unused dev node-capability probe is recorded in its own evidence, not as a foundation/provider execution."
+                                      ],
+                            "expectedNonSecretResult":  "Already observed: authenticated workflow Overview and Pro Monthly Cloud Manage page.",
+                            "readinessReply":  "Workflows visible in Person 1 (verified)",
+                            "whyNeeded":  "Historical sign-in failures above are retained. Remaining gates are connector capability, complete node/plan facts, dev credentials, reviewed dev database deployment and actual smoke acceptance."
+                        },
+    "ownerPlanUpgradeFollowup":  {
+                                     "ownerReported":  "Upgraded to higher plan with40-50K executions",
+                                     "actualBrowserReadback":  "Cloud dashboard October11,001/50,000; instance Online2.43.5",
+                                     "previousQuotaObservation":  {
+                                                                      "shownUsed":  10000,
+                                                                      "allowance":  10000
+                                                                  },
+                                     "executionAttribution":  "No M03 workflow was executed. The displayed usage difference is not attributed to M03.",
+                                     "settingsChangedByCodex":  false
+                                 }
+}

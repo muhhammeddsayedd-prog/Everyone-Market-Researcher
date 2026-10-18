@@ -36,7 +36,7 @@ Every workflow the pipeline needs, node by node. Platform inputs and field mappi
 | `Apify API` | Apify API (community node) or Header Auth `Authorization: Bearer <token>` | collectors, WF-19 |
 | `OpenAI API` | Header Auth `Authorization: Bearer …` (HTTP Request to Responses/Embeddings API) | WF-30, 32, 33, 50 |
 | `Vimeo token` | Header Auth `Authorization: bearer …` | WF-10 |
-| `YouTube Data API key` | Query Auth `key=…` | WF-13 |
+| `YouTube Data API key` | Header Auth `X-Goog-Api-Key`; restrict domain to `www.googleapis.com` | WF-13 |
 | `Firecrawl` | Header Auth `Authorization: Bearer …` | WF-21 |
 | `SerpAPI` | Query Auth `api_key=…` | WF-22, 23 |
 | `Email (Resend)` | Header Auth `Authorization: Bearer …` (or SMTP credential) | WF-80, 90, 91 |
@@ -249,6 +249,39 @@ Optional wrapper: the normalizer JS (§7) lives in a Code node **inside** each c
 
 ### WF-19 · Apify run callback
 - **Trigger:** Webhook `POST /webhook/emr-apify-callback`, Respond: "Immediately" with 200 (Apify retries non-2xx; process after responding).
+- **M03 safety correction:** the early-completion sequence below is superseded
+  for the foundation smoke path. A processed flag around separate ingestion,
+  report and cost nodes is insufficient: a partial retry can lose item counts,
+  release a lease before retry or double-log cost. M03 uses one bounded atomic
+  `ops.process_apify_run` transaction plus `apify_runs.processing_result`. See
+  `DECISIONS.md` → M03 callback persistence correction and `DATA_SCHEMA.md` §5.
+- **Foundation contract / local implementation and deployment gated:**
+  1. Accept only a syntactically valid run-ID hint from the callback. Lookup the
+     registered row first; unknown IDs log a fixed rejection and perform no
+     actor/dataset reads or registration. Use its stored parent/accounts/purpose.
+  2. Authenticated Apify GET of that exact run must match its ID/actor and have
+     final status. Use only this response's status, default dataset and usage;
+     callback-supplied `emr`/actor/dataset/usage never authorize persistence.
+  3. For M03 only, fetch and normalize the one-page approved website crawler
+     result for the dedicated dev C999 account/own-page URL. Empty results are
+     an explicit empty group; malformed/unsupported branches fail closed. Other
+     collector normalizers below are future milestone specifications.
+  4. One Postgres call to `ops.process_apify_run` atomically ingests/reports,
+     records keyed actual cost, saves its stable receipt, completes the actor
+     registry and finishes the single-actor parent. It serializes concurrent
+     attempts; replay returns the saved counts with `updated:false` and
+     `finished_now:false`. A differing replay is rejected.
+  5. First-transition output may call the M03 AI/publish stubs. It is not a
+     durable external-delivery guarantee; real later dispatch needs an outbox.
+     Retryable callback failures must preserve the running parent for recovery
+     (diagnostic parent ID in metadata, not terminal-error `run_id`).
+  6. After registering the original start response, the collector independently
+     reconciles that same known run ID. This recovers early/lost callbacks and
+     work failing after HTTP200. Ambiguous launch responses are reconciled
+     before any retry; unknown callbacks never launch work.
+- **Future multi-account/multi-actor collector outline:** requires durable
+  per-chunk receipts and a launch-closed barrier before extending M03's bound.
+  Do not implement the following early `complete_apify_run` call as written.
 - **Steps:**
   1. Code: parse `eventType`, `resource.id` (run id), `resource.defaultDatasetId`, `resource.actId`, `resource.usageTotalUsd`, `resource.status`, `emr` context.
   2. Verify: HTTP `GET https://api.apify.com/v2/actor-runs/{resource.id}` (Apify credential) → must exist, status final; Postgres `select ops.get_apify_run($1)` (add in M03: returns the registered row or null) → must exist and `processed_at is null`. Else stop (log to WF-90 as `security`).
@@ -259,7 +292,9 @@ Optional wrapper: the normalizer JS (§7) lives in a Code node **inside** each c
   7. Branch: `linkedin_employees` → snapshot path (WF-18b); `website_work_page` → also `ops.mark_website_page(url, 'crawled', item_id)` after ingest using `new_item_ids` (match by external_id); others → `SUB · Ingest items` (`backfill_done` true when mode backfill and the actor returned fewer than `resultsLimit` per account or the oldest item ≤ `backfill_from`).
   8. `SUB · Log cost`: provider `apify`, category `scrape`, `cost_usd = usageTotalUsd`, split per account evenly (quantity = results for that account), `meta = {actor, apify_run_id}`.
   9. Postgres `select ops.apify_runs_pending($1::uuid);` (add in M03: count of registered, unprocessed runs for `run_id`) → if 0 → `SUB · Finish run`.
-- **Idempotency:** `processed_at` guard; Apify retries are dropped.
+- **Idempotency:** M03 uses the atomic saved receipt described above. The
+  historical early `processed_at` guard in the future outline is not a safe
+  implementation or an acceptance claim.
 - **Acceptance:** a forged POST with an unknown run id ingests nothing; a retried webhook is ignored; failed run marks accounts failed; cost row equals Apify usage.
 
 ### WF-21 · Websites collector

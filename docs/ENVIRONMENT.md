@@ -44,7 +44,7 @@ Where every secret lives, who creates it, and which milestone needs it. **Never 
 | `SerpAPI` | Query/Header auth | |
 | `Firecrawl` | Header Auth (`Authorization: Bearer`) | |
 | `Vimeo token` | Header Auth (`Authorization: bearer <token>`) | |
-| `YouTube Data API key` | Query Auth (`key=`) | key restricted to YouTube Data API v3 |
+| `YouTube Data API key` | Header Auth (`X-Goog-Api-Key`) | key restricted to YouTube Data API v3; Allowed Domains `www.googleapis.com`; never put the key in a URL |
 | `Email (Resend)` | Resend Header Auth (or SMTP) | |
 | `EMR internal secret` | Header Auth | `x-emr-secret: <INTERNAL_WEBHOOK_SECRET>` for calls to Vercel internal routes and revalidate |
 | `EMR webhook in · Apify` / `EMR webhook in · App` | Header Auth (webhook nodes) | verify inbound calls to WF-19 / WF-60 |

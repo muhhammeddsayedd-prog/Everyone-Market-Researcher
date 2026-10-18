@@ -155,6 +155,7 @@ function normalizeSmokeWebsite(row) {
       published_at: null,
       title,
       caption,
+      metrics: {},
       // M03-only public snapshot: unknown actor request/header/cookie fields
       // never enter the ingest payload. Real capture evidence stays separate.
       payload: { url, markdown: caption, metadata: { title } },

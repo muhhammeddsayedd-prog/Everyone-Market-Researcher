@@ -1,0 +1,99 @@
+{
+  "ObservedAt": "2026-10-18T04:01:14.5317356Z",
+  "Environment": "owned-local-PG17-rollback-only",
+  "RpcMigrationSha256": "457ad4351b08c47b996ae67062ed701efb7d5ef63ea7658d20931f2d5dc5d3fd",
+  "PriceMigrationSha256": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd",
+  "Results": [
+    {
+      "File": "00_schema.test.sql",
+      "NativeExit": 0,
+      "Passed": 21,
+      "Failed": 0,
+      "Planned": 21,
+      "Complete": true
+    },
+    {
+      "File": "01_membership.test.sql",
+      "NativeExit": 0,
+      "Passed": 15,
+      "Failed": 0,
+      "Planned": 15,
+      "Complete": true
+    },
+    {
+      "File": "02_rls_members.test.sql",
+      "NativeExit": 0,
+      "Passed": 63,
+      "Failed": 0,
+      "Planned": 63,
+      "Complete": true
+    },
+    {
+      "File": "03_api_agent.test.sql",
+      "NativeExit": 0,
+      "Passed": 10,
+      "Failed": 0,
+      "Planned": 10,
+      "Complete": true
+    },
+    {
+      "File": "04_n8n_writer.test.sql",
+      "NativeExit": 0,
+      "Passed": 10,
+      "Failed": 0,
+      "Planned": 10,
+      "Complete": true
+    },
+    {
+      "File": "05_upsert_raw_items.test.sql",
+      "NativeExit": 0,
+      "Passed": 40,
+      "Failed": 0,
+      "Planned": 40,
+      "Complete": true
+    },
+    {
+      "File": "06_due_accounts.test.sql",
+      "NativeExit": 0,
+      "Passed": 22,
+      "Failed": 0,
+      "Planned": 22,
+      "Complete": true
+    },
+    {
+      "File": "07_report_account_result.test.sql",
+      "NativeExit": 0,
+      "Passed": 13,
+      "Failed": 0,
+      "Planned": 13,
+      "Complete": true
+    },
+    {
+      "File": "08_search.test.sql",
+      "NativeExit": 0,
+      "Passed": 35,
+      "Failed": 0,
+      "Planned": 35,
+      "Complete": true
+    },
+    {
+      "File": "09_queues_cron_storage.test.sql",
+      "NativeExit": 0,
+      "Passed": 13,
+      "Failed": 0,
+      "Planned": 13,
+      "Complete": true
+    },
+    {
+      "File": "10_n8n_foundation.test.sql",
+      "NativeExit": 0,
+      "Passed": 137,
+      "Failed": 0,
+      "Planned": 137,
+      "Complete": true
+    }
+  ],
+  "TotalPassed": 379,
+  "TotalFailed": 0,
+  "Complete": true
+}

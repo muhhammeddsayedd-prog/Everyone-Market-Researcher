@@ -7,8 +7,20 @@ tracked in [M01 progress](../milestones/M01-supabase-foundation/PROGRESS.md).
 M01 is complete. The owner separately approved PR4's merge, and GitHub confirms
 the exact reviewed head4ffca85 merged as4702a31 at02:56:30 Cairo on18October2026.
 [Merge receipt](../milestones/M01-supabase-foundation/evidence/merge-closure-20261018.json).
-M02 remains unstarted; the completed password handoffs/probes below must not be
-repeated as part of closing M01.
+M02 is also complete (PR6 and protected closure PR7). M03 is in progress. The
+completed M01/M02 password handoffs/probes below are historical and must not be
+reused or replayed.
+
+M03 adds CLI-generated `20261018034220_rpc_n8n_foundation` and
+`20261018035417_price_book_plan`. They have been applied **locally only** with
+`supabase migration up --local`, preserving all seven original versions and
+the existing Test House rows. Local11-suite pgTAP379/379, both advisors with no
+WARN/ERROR, generated four-schema types and workspace typecheck pass. Hosted
+dev still has the original seven versions at the current readback; production
+is untouched. See [M03 progress](../milestones/M03-n8n-foundation/PROGRESS.md).
+Never run reset or seed to apply these changes, and do not treat local types as
+proof of hosted deployment. A new bounded M03 dev-only consumer is being
+prepared; its private credential step will follow review, not an old handoff.
 
 ## Local development
 

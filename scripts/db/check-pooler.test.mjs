@@ -50,7 +50,7 @@ else
   if [[ "$1 $2" == 'db reset' ]]; then phase=reset; fi
   if [[ "$1 $2" == 'test db' ]]; then
     phase=test
-    printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_TAP_FILES:-10}" "\${EMR_TEST_TAP_COUNT:-200}"
+    printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_TAP_FILES:-11}" "\${EMR_TEST_TAP_COUNT:-200}"
   fi
   if [[ "$1 $2" == 'db advisors' ]]; then
     case "$*" in *'--type security'*) phase=security;; *) phase=performance;; esac
@@ -162,7 +162,7 @@ test('CI runner uses only explicit local targets and exposes only safe summaries
   fixture((directory) => {
     const child = execute(directory, 'scripts/db/run-local-ci.sh');
     assert.equal(child.status, 0, child.stderr);
-    assert.match(child.stdout, /pgTAP: 10 files, 200 assertions, PASS/);
+    assert.match(child.stdout, /pgTAP: 11 files, 200 assertions, PASS/);
     const commands = readFileSync(join(directory, 'commands'), 'utf8');
     assert.match(
       commands,
@@ -203,7 +203,7 @@ test('CI runner fails closed at each failed phase without leaking captured outpu
 
 test('CI runner rejects zero assertions or an incomplete SQL suite set', () =>
   fixture((directory) => {
-    for (const overrides of [{ EMR_TEST_TAP_COUNT: '0' }, { EMR_TEST_TAP_FILES: '9' }]) {
+    for (const overrides of [{ EMR_TEST_TAP_COUNT: '0' }, { EMR_TEST_TAP_FILES: '10' }]) {
       assert.equal(execute(directory, 'scripts/db/run-local-ci.sh', overrides).status, 1);
     }
   }));

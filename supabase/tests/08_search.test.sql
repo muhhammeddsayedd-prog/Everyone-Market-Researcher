@@ -68,7 +68,18 @@ set local role api_agent;
 select is((select count(*)::int from app.search('ramadan',p_types => array['news'])),1,'agent searches through RLS read grants');
 reset role;
 select is((select count(*)::int from app.taxonomy_terms),120,'all 120 baseline taxonomies seeded');
-select is((select count(*)::int from ops.settings),13,'all thirteen settings seeded');
-select is((select count(*)::int from ops.price_book),17,'seventeen price placeholders seeded');
+select is((select count(*)::int from ops.settings where key = any(array[
+  'auto_publish_threshold','campaign_window_days','campaign_similarity_min',
+  'alias_trgm_min','alias_embedding_min','daily_budget_usd','metrics_refresh_days',
+  'removal_window_days','stories_twice_daily','ai_batch_size','vision_max_share',
+  'stats_daily_enabled','ai_batch_mode'])),13,'all thirteen original settings retained after M03 adds verification metadata');
+select is((select count(distinct (provider,sku))::int from ops.price_book where sku = any(array[
+  'apify/instagram-scraper:result','data-slayer/instagram-stories-scraper:result',
+  'igview-owner/instagram-story-viewer:result','louisdeconinck/instagram-story-details-scraper:profile',
+  'goat255/vimeo-scraper:video','dltik/vimeo-scraper:video','apify/website-content-crawler:cu',
+  'harvestapi/linkedin-company-posts:post','harvestapi/linkedin-company-employees:short_profile',
+  'streamers/youtube-scraper:video','search','credit','extract_model:input',
+  'extract_model:output','brief_model:input','brief_model:output','text-embedding-3-small'])),17,
+  'all seventeen original price SKUs retained across dated M03 price revisions');
 select * from finish();
 rollback;

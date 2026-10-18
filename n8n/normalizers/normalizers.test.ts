@@ -30,6 +30,7 @@ type NormalizedItem = {
   payload: Record<string, unknown>;
   title?: string | null;
   caption?: string;
+  metrics?: Record<string, number | null>;
 };
 type PreparedGroup = {
   account_id: string;
@@ -87,6 +88,7 @@ describe('M03 synthetic website crawler contract, not hosted capture', () => {
       published_at: null,
       title: 'Synthetic everyone. smoke contract',
       caption: fixture.row.markdown,
+      metrics: {},
       payload: {
         url: normalized.matchKey,
         markdown: fixture.row.markdown,
@@ -104,6 +106,18 @@ describe('M03 synthetic website crawler contract, not hosted capture', () => {
         .external_id,
     ).not.toBe(item().external_id);
     expect(item().external_id).toMatch(/^[a-f0-9]{32}$/);
+  });
+  it('matches the actual atomic M03 processor required keys before producing a callback DTO', () => {
+    const sql = readFileSync(
+      new URL('../../supabase/migrations/20261018034220_rpc_n8n_foundation.sql', import.meta.url),
+      'utf8',
+    );
+    const requiredKeys = /not\(\(v_items->0\)\s*\?&\s*array\[([\s\S]*?)\]\)/.exec(sql);
+    expect(requiredKeys, 'actual M03 processor key contract must be reviewable').not.toBeNull();
+    const keys = [...requiredKeys![1]!.matchAll(/'([^']+)'/g)].map((match) => match[1]!);
+    const prepared = ingestion.prepareIngestGroups([group([item()])])[0]!;
+    expect(Object.keys(prepared.items[0]!).sort()).toEqual(keys.sort());
+    expect(prepared.items[0]!.metrics).toEqual({});
   });
   it('ignores untrusted metadata canonical URL and keeps only the M03 public snapshot', () => {
     const row = {

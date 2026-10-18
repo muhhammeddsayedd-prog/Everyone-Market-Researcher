@@ -49,8 +49,8 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     verdict=PASS
   fi
 done <"$private_log"
-if [[ "$files" != 10 || "$assertions" -eq 0 || "$verdict" != PASS ]]; then
-  printf 'pgTAP: FAIL (expected ten files, nonzero assertions and PASS).\n' >&2
+if [[ "$files" != 11 || "$assertions" -eq 0 || "$verdict" != PASS ]]; then
+  printf 'pgTAP: FAIL (expected eleven files, nonzero assertions and PASS).\n' >&2
   exit 1
 fi
 printf 'pgTAP: %s files, %s assertions, PASS\n' "$files" "$assertions"

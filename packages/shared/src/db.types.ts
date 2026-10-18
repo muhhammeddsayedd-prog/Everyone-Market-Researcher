@@ -2326,6 +2326,7 @@ export type Database = {
           dataset_id: string | null;
           finished_at: string | null;
           processed_at: string | null;
+          processing_result: Json | null;
           purpose: string;
           run_id: string | null;
           started_at: string;
@@ -2340,6 +2341,7 @@ export type Database = {
           dataset_id?: string | null;
           finished_at?: string | null;
           processed_at?: string | null;
+          processing_result?: Json | null;
           purpose: string;
           run_id?: string | null;
           started_at?: string;
@@ -2353,6 +2355,7 @@ export type Database = {
           dataset_id?: string | null;
           finished_at?: string | null;
           processed_at?: string | null;
+          processing_result?: Json | null;
           purpose?: string;
           run_id?: string | null;
           started_at?: string;
@@ -2609,7 +2612,9 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      accrue_fixed_costs: { Args: { p_day: string }; Returns: number };
       ack_queue: { Args: { p_msg_ids: number[]; p_queue: string }; Returns: undefined };
+      apify_runs_pending: { Args: { p_run_id: string }; Returns: number };
       claim_queue_batch: {
         Args: { p_n: number; p_queue: string; p_vt_seconds?: number };
         Returns: {
@@ -2618,8 +2623,15 @@ export type Database = {
           read_ct: number;
         }[];
       };
+      complete_apify_run: {
+        Args: { p_apify_run_id: string; p_dataset_id: string; p_status: string; p_usage_usd: number };
+        Returns: Json;
+      };
+      daily_health: { Args: Record<PropertyKey, never>; Returns: Json };
       diff_website_urls: { Args: { p_account_id: string; p_urls: string[] }; Returns: string[] };
+      error_count_24h: { Args: { p_claim_notify?: boolean; p_workflow: string }; Returns: number };
       finish_run: { Args: { p_error?: string; p_run_id: string; p_status: string }; Returns: Json };
+      get_apify_run: { Args: { p_apify_run_id: string }; Returns: Json };
       get_due_accounts: {
         Args: {
           p_limit: number;
@@ -2642,6 +2654,30 @@ export type Database = {
         }[];
       };
       get_items_for_ai: { Args: { p_item_ids: string[] }; Returns: Json };
+      get_price_book: { Args: Record<PropertyKey, never>; Returns: Json };
+      get_setting: { Args: { p_key: string }; Returns: Json };
+      log_cost: { Args: { p_entries: Json }; Returns: number };
+      log_workflow_error: { Args: { p: Json }; Returns: undefined };
+      process_apify_run: {
+        Args: {
+          p_apify_run_id: string;
+          p_dataset_id: string;
+          p_groups: Json;
+          p_status: string;
+          p_usage_usd: number;
+        };
+        Returns: Json;
+      };
+      register_apify_run: {
+        Args: {
+          p_account_ids: string[];
+          p_actor_id: string;
+          p_apify_run_id: string;
+          p_purpose: string;
+          p_run_id: string;
+        };
+        Returns: undefined;
+      };
       report_account_result: {
         Args: {
           p_account_id: string;

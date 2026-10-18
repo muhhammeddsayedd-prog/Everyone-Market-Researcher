@@ -1,0 +1,173 @@
+{
+  "milestone": "M03",
+  "recordedAt": "2026-10-18T03:55:52Z",
+  "status": "LOCAL_REFUSAL_CHECKS_PASS_POSITIVE_REHEARSAL_PENDING",
+  "scope": "Local smoke-script admission/refusal checks only; not hosted fixture, callback, replay or provider acceptance",
+  "environment": {
+    "target": "Owned local container supabase_db_everyone-market-radar; database postgres",
+    "client": "Container psql through docker exec -i; native Windows psql was absent",
+    "identity": "Explicit local --username postgres --dbname postgres; no hosted connection or credential handoff",
+    "commandShape": "Get-Content -Raw -Encoding UTF8 <script> | docker exec -i supabase_db_everyone-market-radar psql --no-psqlrc --username postgres --dbname postgres -v ON_ERROR_STOP=1 [non-secret psql vars]",
+    "serverIdentityBoundary": "A supplied emr_project_ref is an admission guard. Hosted use still requires the independently reviewed dev connection/preflight; the variable alone does not prove server project identity.",
+    "existingFixture": "The local M01 C999/Test House fixture was retained and correctly refused; it was not renamed, deleted, rearmed or overwritten.",
+    "privateCredentialsRead": false,
+    "hostedWrites": 0,
+    "providerCalls": 0
+  },
+  "historicalRed": {
+    "case": "Setup with missing project ref",
+    "initialCode": "psql meta-command \\quit 3",
+    "actualExitCode": 0,
+    "actualMessage": "\\quit: extra argument \"3\" ignored",
+    "wrapperExitCode": 1,
+    "correction": "Missing-variable gates now raise a fixed 22023 SQL error under ON_ERROR_STOP, producing native exit3. No fixture write was attempted in the failed admission implementation."
+  },
+  "cases": [
+    {
+      "case": "setup missing ref",
+      "script": "scripts/assert/m03_smoke_setup.sql",
+      "nativeExitCode": 3,
+      "messageObserved": "M03_SMOKE_PROJECT_REF_REQUIRED",
+      "expectedSqlstate": "22023",
+      "sqlstateProof": "Explicit code in reviewed RAISE; initial six-case output used default verbosity and did not emit SQLSTATE"
+    },
+    {
+      "case": "setup prod ref refused",
+      "script": "scripts/assert/m03_smoke_setup.sql",
+      "nativeExitCode": 3,
+      "messageObserved": "M03 smoke requires the reviewed dev postgres owner context",
+      "expectedSqlstate": "42501",
+      "sqlstateProof": "Also independently asserted in the later exact-SQLSTATE guard recheck"
+    },
+    {
+      "case": "teardown prod ref refused",
+      "script": "scripts/assert/m03_smoke_teardown.sql",
+      "nativeExitCode": 3,
+      "messageObserved": "M03 smoke teardown requires the reviewed dev postgres owner context",
+      "expectedSqlstate": "42501",
+      "sqlstateProof": "Also independently asserted in the later exact-SQLSTATE guard recheck"
+    },
+    {
+      "case": "assert prod ref refused",
+      "script": "scripts/assert/m03_smoke_assert.sql",
+      "nativeExitCode": 3,
+      "messageObserved": "M03 smoke assertions require the reviewed dev postgres owner context",
+      "expectedSqlstate": "42501",
+      "sqlstateProof": "Also independently asserted in the later exact-SQLSTATE guard recheck"
+    },
+    {
+      "case": "setup preserves existing local C999",
+      "script": "scripts/assert/m03_smoke_setup.sql",
+      "nativeExitCode": 3,
+      "messageObserved": "C999 or smoke slug belongs to another fixture",
+      "expectedSqlstate": "55000",
+      "sqlstateProof": "Explicit code in reviewed RAISE; initial six-case output used default verbosity and did not emit SQLSTATE"
+    },
+    {
+      "case": "teardown preserves existing local C999",
+      "script": "scripts/assert/m03_smoke_teardown.sql",
+      "nativeExitCode": 3,
+      "messageObserved": "No exact owned M03 fixture is available to archive",
+      "expectedSqlstate": "55000",
+      "sqlstateProof": "Explicit code in reviewed RAISE; initial six-case output used default verbosity and did not emit SQLSTATE"
+    },
+    {
+      "case": "setup invalid rollback mode",
+      "script": "scripts/assert/m03_smoke_setup.sql",
+      "nativeExitCode": 3,
+      "observedSqlstate": "22023",
+      "sqlstateAsserted": true,
+      "messageObserved": null,
+      "expectedMessageFromSource": "Smoke rollback mode must be exactly true or false"
+    },
+    {
+      "case": "teardown invalid rollback mode",
+      "script": "scripts/assert/m03_smoke_teardown.sql",
+      "nativeExitCode": 3,
+      "observedSqlstate": "22023",
+      "sqlstateAsserted": true,
+      "messageObserved": null,
+      "expectedMessageFromSource": "Smoke rollback mode must be exactly true or false"
+    },
+    {
+      "case": "assert missing run ID",
+      "script": "scripts/assert/m03_smoke_assert.sql",
+      "nativeExitCode": 3,
+      "observedSqlstate": "22023",
+      "sqlstateAsserted": true,
+      "messageObserved": null,
+      "expectedMessageFromSource": "M03_SMOKE_RUN_ID_REQUIRED"
+    },
+    {
+      "case": "assert missing actor ID",
+      "script": "scripts/assert/m03_smoke_assert.sql",
+      "nativeExitCode": 3,
+      "observedSqlstate": "22023",
+      "sqlstateAsserted": true,
+      "messageObserved": null,
+      "expectedMessageFromSource": "M03_SMOKE_APIFY_RUN_ID_REQUIRED"
+    },
+    {
+      "case": "assert missing expected new count",
+      "script": "scripts/assert/m03_smoke_assert.sql",
+      "nativeExitCode": 3,
+      "observedSqlstate": "22023",
+      "sqlstateAsserted": true,
+      "messageObserved": null,
+      "expectedMessageFromSource": "M03_SMOKE_EXPECTED_ITEMS_NEW_REQUIRED"
+    }
+  ],
+  "guardRechecks": {
+    "reason": "Recheck all three fixed project guards after pinning search_path to pg_catalog",
+    "nonSecretInputs": {
+      "emr_project_ref": "hkiafqrcxaafdbcvjlzv",
+      "emr_smoke_rollback": "true",
+      "emr_run_id": "00000000-0000-4000-8000-000000000001",
+      "emr_apify_run_id": "synthetic",
+      "emr_expected_items_new": "1"
+    },
+    "important": "The production project ref was only a rejected test value against the local container; no production connection was made.",
+    "results": [
+      { "script": "m03_smoke_setup.sql", "nativeExitCode": 3, "observedSqlstate": "42501", "sqlstateAsserted": true },
+      { "script": "m03_smoke_assert.sql", "nativeExitCode": 3, "observedSqlstate": "42501", "sqlstateAsserted": true },
+      { "script": "m03_smoke_teardown.sql", "nativeExitCode": 3, "observedSqlstate": "42501", "sqlstateAsserted": true }
+    ]
+  },
+  "preservationProof": {
+    "capturedAround": "The initial six-case green batch, after the quit/exit correction",
+    "method": "Before/after comparison of MD5(JSONB aggregate of complete rows ordered by id), separately for app.competitors, app.competitor_accounts and app.items; also compared count of m03_smoke_fixture_created audit rows",
+    "competitorDigestMatched": true,
+    "accountDigestMatched": true,
+    "itemDigestMatched": true,
+    "creationReceiptCountMatched": true,
+    "actualDigestStringsRetained": false,
+    "digestBoundary": "The bounded PowerShell child compared the values without printing them. Its variables were not persisted. This record retains the actual successful equality assertion, not fabricated hash values.",
+    "observedSuccess": "M03_SMOKE_NEGATIVE_GATES_6_PASS_BASELINE_UNCHANGED"
+  },
+  "currentSourceSeals": {
+    "capturedAt": "2026-10-18T03:55:52Z",
+    "boundary": "Current final source bytes after all edits; historical check stages are not claimed to have run against byte-identical final files. The last added teardown running-parent refusal has only static review here.",
+    "files": [
+      { "path": "scripts/assert/m03_smoke_setup.sql", "bytes": 6693, "sha256": "328b209facd51e6e9620390652bc10cbc042c370ea1498706644dec1aee8cb39" },
+      { "path": "scripts/assert/m03_smoke_assert.sql", "bytes": 11672, "sha256": "9ab852e73ca6088ec49e9bea61037b683870c48b25176fb58e99e24b216391d0" },
+      { "path": "scripts/assert/m03_smoke_teardown.sql", "bytes": 4716, "sha256": "7410f5957e4fb1ceec20db90e01135c4417eeff2d7f60ec1f89d13d0a18f11f9" }
+    ]
+  },
+  "validationSummary": {
+    "distinctRefusalCasesPassed": 11,
+    "additionalProjectGuardRechecksPassed": 3,
+    "greenBatchWrapperExitCodes": [0, 0, 0],
+    "gitDiffCheck": "PASS",
+    "sqlFormatter": "Unavailable: explicit Prettier check returned no parser for SQL; no formatting pass claimed",
+    "unchangedChecksRerunToWriteThisRecord": false
+  },
+  "remaining": {
+    "positiveLocalFixtureRehearsal": "Pending: no isolated local 285/1754 empty-item baseline was available; do not alter retained M01 C999 or weaken setup guards to obtain a pass",
+    "positiveCasesNotExecuted": ["fresh fixture creation", "owned active setup reuse", "atomic successful receipt assertions", "new-run no-new-item assertions", "owned archive/pause", "archived fixture refusal", "pending-work teardown refusal"],
+    "hostedFixtureSetup": "Not executed",
+    "hostedCallbackAndReplay": "Not executed",
+    "hostedTeardown": "Not executed",
+    "migrationDeployment": "Not performed by this worker",
+    "independentSourceReview": "Requested from agent_probe_review; not claimed complete in this record"
+  }
+}

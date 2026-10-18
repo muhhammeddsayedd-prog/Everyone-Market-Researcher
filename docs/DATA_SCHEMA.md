@@ -95,6 +95,7 @@ erDiagram
 | `ops.report_account_result(run_id, account_id, status, seen, new, error, backfill_done, cursor)` | M01 (p_secondary added in M04) | Per-account result, cadence-minus-four-hours schedule, six-hour failure retry |
 | `ingest.upsert_raw_items(run_id, account_id, items jsonb) → jsonb` | M01 | Single writer path (§5.3 TECHNICAL) |
 | `ops.register_apify_run / ops.complete_apify_run` | M03 | Async Apify tracking |
+| `ops.process_apify_run(apify_run_id, status, dataset_id, usage_usd, groups) → jsonb` | M03 | Atomic development-only one-page website callback; persisted `ops.apify_runs.processing_result` receipt, replay-safe ingest/report/cost/complete/finish. Existing M01 signatures unchanged; other branches remain gated. |
 | `ops.log_cost(entries jsonb)` | M03 | Cost ledger rows |
 | `ops.daily_health() → jsonb`, `ops.accrue_fixed_costs(day)` | M03 | WF-91 |
 | `ops.claim_queue_batch(queue, n, vt) / ops.ack_queue(queue, ids)` | M01 | Allowlisted pgmq wrappers |
@@ -117,6 +118,16 @@ erDiagram
 | `ops.query_embeddings(...)` | M11 | Search query embedding cache |
 
 Additional small helper RPCs used by n8n (settings, price book, error log, taxonomy snapshot, media/embedding targets, news queries, brief inputs, alert payloads, onboarding) are listed per milestone in `docs/N8N_WORKFLOWS.md` §8; they follow the same rules.
+
+M03 callback correction: never set `processed_at` in an earlier workflow node.
+The one-page website processor locks the parent and registry row, validates the
+registered account/actor/environment, persists all effects and a stable result
+in one transaction, then completes/finishes. Replays return the saved counts
+without another queue send or cost; conflicting inputs fail closed. The SQL
+caller is the restricted trusted writer, and actual authenticated Apify HTTP
+verification remains a separate workflow responsibility. Current implementation
+and local/hosted/type/advisor acceptance are recorded in M03 progress; this
+contract alone is not deployment proof.
 
 ### App users (EXECUTE: `authenticated`; role checked inside)
 `app.me`, `app.touch_last_seen`, `app.search`, `app.similar`, `app.compare_competitors` (M10), `app.market_dashboard` (M10), `app.pipeline_summary` (M09), `app.review_reopen`, `app.merge_campaigns`, `app.edit_*`, `app.get_settings`, `app.price_book`, `app.admin_update_price`, `app.admin_list_api_keys`, `app.admin_api_calls`, `app.pipeline_run_detail`, `app.alert_subscribe` / `app.alert_self_subscribe`, `app.admin_activate_wave` (M15), `app.review_resolve`, `app.correct_item`, `app.merge_organizations`, `app.merge_people`, `app.split_campaign`, `app.admin_upsert_competitor`, `app.admin_set_account_status`, `app.admin_request_rescrape`, `app.admin_invite_member`, `app.admin_set_member`, `app.admin_store_api_key`, `app.admin_revoke_api_key`, `app.admin_upsert_taxonomy_term`, `app.admin_upsert_alert_rule`, `app.admin_set_setting`, `app.costs_summary`, `app.pipeline_summary`.

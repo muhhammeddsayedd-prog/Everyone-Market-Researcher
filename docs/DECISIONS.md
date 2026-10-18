@@ -57,6 +57,47 @@ Owner: Mohamed Abdelrahman (mohamed.abdelrahman@everyone.film) — product owner
 
 ## Changes
 
+### M03 callback persistence correction — 18 October 2026
+
+Within the owner's M03 development authorization, callback verification uses
+option (b): registered-run context plus authenticated Apify run readback; the
+callback body supplies only an ID hint. The original early `processed_at` step
+could discard failed ingestion, and separate retryable RPC nodes could lose
+insertion counts or duplicate costs. M03 therefore adds one atomic, bounded
+`ops.process_apify_run` transaction and a saved receipt for the one-account,
+one-page, development-only website smoke path. Existing M01 interfaces and
+seven applied migration files stay intact. Processed replays return durable
+counts; mismatches fail closed. Standalone completion must not bypass a durable
+receipt. Unsupported platforms/multiple actor registrations remain closed
+until later collector milestones implement durable chunk/dispatch barriers.
+
+The collector must reconcile the original returned actor-run ID after
+registration even when a webhook arrived early or work failed after HTTP200;
+it must not blindly launch another actor. A database first-transition flag is
+not an exactly-once external-delivery guarantee. M03 notifications default to
+audit logging, and WF-00 stays inactive. This is a safety/idempotency correction,
+not production, paid-run, merge or later-milestone approval. The local migration,
+advisors, generated types, hosted deployment and end-to-end acceptance have
+separate evidence gates in M03 progress.
+
+M03 credential setup uses domain-restricted Header Auth for the official
+YouTube API (`X-Goog-Api-Key` to `www.googleapis.com`), matching the M02
+origin-bound client. This supersedes the older Query Auth example and keeps
+keys out of URLs. App/internal secrets remain deferred until their first
+integration milestone; M03 uses callback verification (b) and log-only Notify.
+The owner enters credentials privately in the intended instance; existing
+shared credentials and workflows remain unchanged.
+
+The WF-70 and WF-80 stubs keep the standard four dispatch inputs and explicitly
+add optional `tags` and `kind`, respectively, for their documented callers.
+SUB Finish accepts an optional verified atomic `completion` receipt. Only a
+matching first-transition receipt permits downstream stub dispatch; without
+one it returns the stored finish summary without dispatch. This avoids treating
+a repeated M01 `finish_run` total as a new transition. It does not establish
+exactly-once external delivery; later live consumers require a durable delivery
+design. WF-90 uses trusted workflow ID mapping and fixed classified messages;
+it does not invent a parent run ID from an unverified Error Trigger payload.
+
 M02 closed after the owner separately approved **Approve merging PR #6**
 (`call_e5871c933ab04e8fad11f15a51a82b4c`). The exact reviewed head
 `8ecb87cb75bc895491c815c575816cb8bab26649` passed all five CI39093312511 jobs

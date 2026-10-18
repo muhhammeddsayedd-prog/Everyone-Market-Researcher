@@ -26,7 +26,18 @@ counts, unknown-run rejection, post-registration recovery, error throttle,
 manual slot dispatch and health output. An immediate200 is acknowledgement,
 not ingestion proof; local pgTAP or pinned workflows are separate evidence.
 
-M03's dedicated C999 setup/assert/teardown scripts and actual captured actor
-fixture are not ready yet. Do not use the local M01 C999/Test House fixture or
-seeded pilot accounts to make hosted acceptance pass. Teardown must archive
-the owned smoke competitor/pause its account and retain collected data.
+M03's dedicated `scripts/assert/m03_smoke_setup.sql`, `m03_smoke_assert.sql`
+and `m03_smoke_teardown.sql` have tested refusal/admission guards. Positive
+fixture/receipt/archive rehearsal and an actual captured actor fixture remain
+pending. Run only with an independently verified dev connection; the supplied
+`emr_project_ref` psql variable is an admission guard, not server identity proof.
+Setup/teardown take `-v emr_project_ref=zmotjsbzhzjvpelxvxlf` and optional
+`-v emr_smoke_rollback=true`. Assertions also require `emr_run_id`,
+`emr_apify_run_id` and `emr_expected_items_new` (1 first insert,0 a separate
+second run of the same page). A replay of the first saved receipt still reports
+its original1. No field should be guessed from an acknowledgement response.
+
+Never use the local M01 C999/Test House fixture or seeded pilot accounts to
+make hosted acceptance pass. Setup refuses an existing unowned C999; teardown
+only archives/pauses the receipt-owned fixture and retains all collected rows.
+See the [local refusal receipt](../../milestones/M03-n8n-foundation/evidence/local-smoke-sql-20261018.json).
