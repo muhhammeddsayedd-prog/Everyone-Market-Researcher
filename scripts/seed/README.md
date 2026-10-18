@@ -315,12 +315,28 @@ remaining stage. A new credential handoff does not resolve an ambiguous write.
 Dev acceptance and MA-09 are complete. M02 stays open for production parity;
 merge and the next milestone remain separate decisions.
 
-## Separate production seed — approval required
+## Separate production seed — exact packet approved
+
+The approved batch completed on18October2026 with native exit0:285 competitors,
+1,754 accounts, an actual zero-change second import and257 public-byte-verified
+logos (1,560,325 uploaded bytes). Both consumed handoffs were removed and the
+owned credential processes closed. [Actual receipt](../../milestones/M02-seed-data/evidence/prod-main-batch-receipt-20261018.json),
+[parity reconciliation](../../milestones/M02-seed-data/evidence/prod-reconciliation-20261018.json)
+and [cleanup](../../milestones/M02-seed-data/evidence/prod-execution-completion-20261018.json)
+are separate from local/CI checks and advisor evidence.
+
+**Do not replenish credentials or invoke this batch again.** The commands below
+describe the completed delivery procedure. Keep the permanent production admission
+and ownership manifests in `out/`; the successful write-pending gate is absent.
+If an artifact is lost, reconcile the actual target instead of adopting rows or
+reconstructing ownership. PR6 merge and M03 remain separate gates.
 
 Review the [exact production packet](../../milestones/M02-seed-data/evidence/prod-seed-packet-20261018.md)
 and committed `prod-seed-packet.json`, `prod-payload.json` and
-`prod-logo-manifest.json`. The production packet remains `approved:false` until
-the owner explicitly approves M02 production seeding. The runtime imports the
+`prod-logo-manifest.json`. The owner approved the exact reviewed packet with
+`approved: seed prod` at head `a17f7e25369abc5f71aab0196a4f2e7d5f3cc614`;
+[the authorization receipt](../../milestones/M02-seed-data/evidence/prod-authorization-20261018.json)
+records the separate production decision and unchanged limits. The runtime imports the
 accepted public configuration and exact257 dev logo objects; it makes zero new
 provider or competitor-origin requests. No bulk logo fetch is authorized merely
 by preparing these files. Existing dev admissions and manifests remain unchanged.

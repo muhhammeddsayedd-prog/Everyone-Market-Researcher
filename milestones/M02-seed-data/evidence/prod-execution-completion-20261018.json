@@ -1,0 +1,89 @@
+{
+  "environment": "prod",
+  "projectRef": "hkiafqrcxaafdbcvjlzv",
+  "runId": "b762a06e-5fe9-4c3c-a1c3-819f0c4a60f9",
+  "startedAt": "2026-10-18T03:00:17.624Z",
+  "observedCompletionAt": "2026-10-18T03:13:42.353Z",
+  "actualNativeExit": 0,
+  "nativeExitSource": "Owned Invoke-M02Prod.ps1 subprocess completion returned exit_code 0; native child also reported exit 0.",
+  "credentialChildClosed": true,
+  "consumerPowerShellClosed": true,
+  "cleanup": {
+    "handoffs": [
+      {
+        "name": "emr-m02-prod-db-password.dpapi",
+        "present": false
+      },
+      {
+        "name": "emr-m02-prod-storage-key.dpapi",
+        "present": false
+      }
+    ],
+    "privateSqlCreated": false,
+    "ownerSavedOriginalsRetained": true,
+    "parentVsCodeEnvironmentCleared": false,
+    "parentNote": "The DPAPI handoff flow injects secrets only into its bounded child. No parent VS Code environment clearance is claimed."
+  },
+  "durableState": [
+    {
+      "name": "prod-seed-admission.json",
+      "present": true
+    },
+    {
+      "name": "prod-write-pending.json",
+      "present": false
+    },
+    {
+      "name": "prod-seed-manifest.json",
+      "present": true
+    },
+    {
+      "name": "prod-logo-manifest.json",
+      "present": true
+    }
+  ],
+  "stages": [
+    {
+      "name": "database_identity",
+      "status": "completed"
+    },
+    {
+      "name": "empty_production_preflight",
+      "status": "completed"
+    },
+    {
+      "name": "frozen_dev_public_logos",
+      "status": "completed"
+    },
+    {
+      "name": "seed_and_frozen_configuration",
+      "status": "completed"
+    },
+    {
+      "name": "second_seed_noop",
+      "status": "completed"
+    },
+    {
+      "name": "production_logos",
+      "status": "completed"
+    },
+    {
+      "name": "reviewed_read_only_assertions",
+      "status": "completed"
+    },
+    {
+      "name": "final_report_and_parity",
+      "status": "completed"
+    }
+  ],
+  "productionRequestTotals": {
+    "devPublicGets": 257,
+    "prodStoragePosts": 257,
+    "prodPublicGets": 257,
+    "uploadedBytes": 1560325,
+    "source": "Derived from successful sealed single-attempt loops and all257 public-byte receipts, not a separate packet capture.",
+    "newProviderOrCompetitorOriginCalls": 0,
+    "incrementalProviderUsd": 0
+  },
+  "remainingAtReceipt": "Fresh populated-production advisors and final evidence/PR delivery; separate merge approval required. M03/collection/paid calls/n8n remain unstarted."
+}

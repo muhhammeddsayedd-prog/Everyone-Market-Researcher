@@ -1,0 +1,2153 @@
+{
+  "environment": "prod",
+  "projectRef": "hkiafqrcxaafdbcvjlzv",
+  "runId": "b762a06e-5fe9-4c3c-a1c3-819f0c4a60f9",
+  "observedAt": "2026-10-18T03:00:17.624Z",
+  "databaseAuthentication": "postgres_authenticated_to_verified_prod_pooler",
+  "stages": [
+    {
+      "name": "database_identity",
+      "status": "completed",
+      "result": {
+        "current_user": "postgres",
+        "session_user": "postgres",
+        "database": "postgres",
+        "originalMigrations": 7
+      }
+    },
+    {
+      "name": "empty_production_preflight",
+      "status": "completed",
+      "result": {
+        "counts": [
+          {
+            "name": "competitors",
+            "count": "0"
+          },
+          {
+            "name": "accounts",
+            "count": "0"
+          },
+          {
+            "name": "media_assets",
+            "count": "0"
+          },
+          {
+            "name": "items",
+            "count": "0"
+          },
+          {
+            "name": "raw_items",
+            "count": "0"
+          },
+          {
+            "name": "website_pages",
+            "count": "0"
+          },
+          {
+            "name": "employee_snapshots",
+            "count": "0"
+          },
+          {
+            "name": "scrape_runs",
+            "count": "0"
+          },
+          {
+            "name": "scrape_run_accounts",
+            "count": "0"
+          },
+          {
+            "name": "apify_runs",
+            "count": "0"
+          },
+          {
+            "name": "ai_extractions",
+            "count": "0"
+          },
+          {
+            "name": "campaigns",
+            "count": "0"
+          },
+          {
+            "name": "news_articles",
+            "count": "0"
+          },
+          {
+            "name": "briefs",
+            "count": "0"
+          },
+          {
+            "name": "logo_objects",
+            "count": "0"
+          },
+          {
+            "name": "other_media_objects",
+            "count": "0"
+          }
+        ],
+        "mediaBucketPublic": true
+      }
+    },
+    {
+      "name": "frozen_dev_public_logos",
+      "status": "completed",
+      "result": {
+        "verifiedObjects": 257,
+        "verifiedBytes": 1560325
+      }
+    },
+    {
+      "name": "seed_and_frozen_configuration",
+      "status": "completed",
+      "result": {
+        "stats": {
+          "competitorsInserted": 285,
+          "competitorsUpdated": 0,
+          "accountsInserted": 1754,
+          "accountsUpdated": 0
+        },
+        "frozen": {
+          "updated": 371,
+          "unchanged": 1383
+        },
+        "issues": 10
+      }
+    },
+    {
+      "name": "second_seed_noop",
+      "status": "completed",
+      "result": {
+        "stats": {
+          "competitorsInserted": 0,
+          "competitorsUpdated": 0,
+          "accountsInserted": 0,
+          "accountsUpdated": 0
+        },
+        "frozen": {
+          "updated": 0,
+          "unchanged": 1754
+        }
+      }
+    },
+    {
+      "name": "production_logos",
+      "status": "completed",
+      "result": {
+        "uploadedBytes": 1560325,
+        "publicByteHashes": [
+          {
+            "company_code": "C000",
+            "path": "logos/everyone-films.svg",
+            "sha256": "956befb784a4499230bcb2162660665d95e8e00aa7aa0ba95e2a1bc4cf8d1f4d",
+            "bytes": 3803
+          },
+          {
+            "company_code": "C001",
+            "path": "logos/good-people.webp",
+            "sha256": "715f7679ff9fc28b7ec15637cf0be1a594a4bcc36d4e26f3ee0c9b9ee164aba3",
+            "bytes": 2744
+          },
+          {
+            "company_code": "C002",
+            "path": "logos/film-clinic.webp",
+            "sha256": "c66e0d632ce30603c3fe58ce1ebee5350cffe95d128543863f342cabdfef7dd3",
+            "bytes": 5292
+          },
+          {
+            "company_code": "C003",
+            "path": "logos/new-century-production.webp",
+            "sha256": "427f16c4b7c37fc71a4c4003dd43749b5a3f16d7f5c76c88af79b8e86d920a6a",
+            "bytes": 3964
+          },
+          {
+            "company_code": "C004",
+            "path": "logos/hama-film-productions.webp",
+            "sha256": "56499397dc3b31e52925544cbe9117356e397b9c9eff3185467f80c24821dd05",
+            "bytes": 4794
+          },
+          {
+            "company_code": "C005",
+            "path": "logos/aroma-designs-and-solutions-aroma-studios.webp",
+            "sha256": "e45030fc27f62dc4bab2f0a656dec7b50d655c4c72b80b8f5ce1166188c62f85",
+            "bytes": 4036
+          },
+          {
+            "company_code": "C006",
+            "path": "logos/o2-media.webp",
+            "sha256": "5543ff2c9e0b25de53f327e5a8b8708a7c914e9b7aac127868841f4be75579fa",
+            "bytes": 2610
+          },
+          {
+            "company_code": "C007",
+            "path": "logos/essence-adverts.webp",
+            "sha256": "dd3e0ff12c5af722943461a5d4f61f26ddf0b6d5fb8a06326fd9ddd31a73b20a",
+            "bytes": 4856
+          },
+          {
+            "company_code": "C009",
+            "path": "logos/glydrs.webp",
+            "sha256": "392472ecce7b97e2671a178a1de62ddb25d0193359953b49fc76e828196f3738",
+            "bytes": 12158
+          },
+          {
+            "company_code": "C010",
+            "path": "logos/elephant-phunk.webp",
+            "sha256": "07e0174726b85557717db5f36c1c665e18294f59a295d3910a6584ea15e1a757",
+            "bytes": 5438
+          },
+          {
+            "company_code": "C011",
+            "path": "logos/pimula-agency.webp",
+            "sha256": "6f7d0a6667e924401728f32c237855820a83e6ff4c3ed7559c850717566137ac",
+            "bytes": 5662
+          },
+          {
+            "company_code": "C012",
+            "path": "logos/arm-arts.webp",
+            "sha256": "b896086fd892f2b8d7de36b3ed2b37a45f52491f30434d1ff7311a9e9ef40f8a",
+            "bytes": 12896
+          },
+          {
+            "company_code": "C014",
+            "path": "logos/orion-productions.webp",
+            "sha256": "b848abb693b90eaa9a127f09a42e13a7e9bde91906d7fe55768dc949046fbd31",
+            "bytes": 7528
+          },
+          {
+            "company_code": "C015",
+            "path": "logos/maradona-films.webp",
+            "sha256": "e910237251e41ce821e5f5e24cecf5e08160db94f0e910b807a7a42292f8c962",
+            "bytes": 7776
+          },
+          {
+            "company_code": "C016",
+            "path": "logos/admepro-advertising-agency.webp",
+            "sha256": "c57cab2b025bd83036d483b5a194e36c104b3095dd92370b35e93bb0f91999d3",
+            "bytes": 3596
+          },
+          {
+            "company_code": "C017",
+            "path": "logos/icon-creations.webp",
+            "sha256": "8a7ee76bac873c7ee7591885ed6aebea71fb555fd116f284e8f9cb5dbd18cbb4",
+            "bytes": 3678
+          },
+          {
+            "company_code": "C018",
+            "path": "logos/neutlex-media.webp",
+            "sha256": "b36430f4ad32b1821a97a44bd19f86c6ffc1af3ed624a1b01b6192714ace8788",
+            "bytes": 2272
+          },
+          {
+            "company_code": "C020",
+            "path": "logos/age-language.webp",
+            "sha256": "bab84aa2d7e955f0fb1c881f127362a9ad4c95c1ffad432137b2a73196e472c0",
+            "bytes": 14056
+          },
+          {
+            "company_code": "C021",
+            "path": "logos/geometric-studios.webp",
+            "sha256": "0c6b395f5e26acfd4cbb2b6cddc4c521472b34ec2327fe3981612de6695b056c",
+            "bytes": 2592
+          },
+          {
+            "company_code": "C022",
+            "path": "logos/studio-7.webp",
+            "sha256": "f89088ed4dcbd8dec308222edb3697e5e3799e7fe5389a071b1e178e8487248f",
+            "bytes": 1402
+          },
+          {
+            "company_code": "C023",
+            "path": "logos/content-plus.webp",
+            "sha256": "bf501efecda1548d38d25cfb7d8799aa21abb113f2a43aa2116d1ed0536a066d",
+            "bytes": 2798
+          },
+          {
+            "company_code": "C024",
+            "path": "logos/marketing-house-agency.webp",
+            "sha256": "e8290532e84258a9e92fd415157f98e25e6757c95b7f7ecab8c7046826f53264",
+            "bytes": 4136
+          },
+          {
+            "company_code": "C025",
+            "path": "logos/fisheye-solutions.webp",
+            "sha256": "c5488c51357f34ab77edad2510c426acdd25107c50d7672fae57f237c9cdec59",
+            "bytes": 8132
+          },
+          {
+            "company_code": "C026",
+            "path": "logos/ma-projects.webp",
+            "sha256": "a74a24ac3240f3f2c8437fbf25fd808135efc6f4665f55ec4065d06c980bafb5",
+            "bytes": 2094
+          },
+          {
+            "company_code": "C027",
+            "path": "logos/the-why-not-ai.webp",
+            "sha256": "f600ee98387566cd102780c3a9161f4cdf46501f69383d107d95336a5f45ed78",
+            "bytes": 5502
+          },
+          {
+            "company_code": "C028",
+            "path": "logos/tacc-network.webp",
+            "sha256": "eff4d25680263a900844add209e4a5701231733e176f72c798a39797353c3785",
+            "bytes": 9358
+          },
+          {
+            "company_code": "C029",
+            "path": "logos/vertex-media-pro.webp",
+            "sha256": "056127887eb860d442d23d24d675f55c91c98db1a2150bf13b6f865ddae33562",
+            "bytes": 8016
+          },
+          {
+            "company_code": "C030",
+            "path": "logos/spinzomedia-llc.webp",
+            "sha256": "77d3f0b40a64f0c7224a918e453c1f2ed15cb98c3c86e46ff92c4ed50f23f704",
+            "bytes": 5758
+          },
+          {
+            "company_code": "C031",
+            "path": "logos/jenica-agency.webp",
+            "sha256": "b841f210c98019468bda23be4428e64422f8c6c86317456bc877df02cfe0eb2a",
+            "bytes": 1884
+          },
+          {
+            "company_code": "C033",
+            "path": "logos/ilike-agency.webp",
+            "sha256": "c61fde789c0347dec162d671d8f5b2bb2cc66edc885bb5b7efd56f58257d8558",
+            "bytes": 2218
+          },
+          {
+            "company_code": "C034",
+            "path": "logos/dma-agency.webp",
+            "sha256": "0b88867a35ffdb5975fe735dd7faf5f2a41e395c87c72c5e74b731317f387d14",
+            "bytes": 3288
+          },
+          {
+            "company_code": "C035",
+            "path": "logos/kollectiv.webp",
+            "sha256": "b8c8c18cbb65f5ea631dc4b2219d6470351aa4f90a35c882ee83fdc0d257ee8d",
+            "bytes": 4818
+          },
+          {
+            "company_code": "C036",
+            "path": "logos/xact-for-marketing-services.webp",
+            "sha256": "30bc6538c75a4012a714c082aee608d9874f23fce97dace70d9bc3729a941896",
+            "bytes": 6334
+          },
+          {
+            "company_code": "C037",
+            "path": "logos/cactus-marketing-agency.webp",
+            "sha256": "2a2f27f52ea47fe332e9ff15f747b4df35d8a5a21f1c266abdde5c3b4dd2c5b2",
+            "bytes": 6696
+          },
+          {
+            "company_code": "C039",
+            "path": "logos/al-arabia-cinema.webp",
+            "sha256": "0ef04a8408226a9c651596bfd383bc8ee1b8ac491b1282750aeeaeb3def13779",
+            "bytes": 4752
+          },
+          {
+            "company_code": "C040",
+            "path": "logos/egyptian-production-house-eph-advertising-agency.webp",
+            "sha256": "2b091a3f33476cb034b662826566602ef495c2735f6b25f1d061f201d0333e4e",
+            "bytes": 5284
+          },
+          {
+            "company_code": "C041",
+            "path": "logos/image-nation-studios-formerly-image-nation-abu-dhabi.webp",
+            "sha256": "ff47a288ba8b41b8c64e33a55f485ec8da15783af1620f4330654727eddbaf58",
+            "bytes": 3210
+          },
+          {
+            "company_code": "C042",
+            "path": "logos/filmworks-group.webp",
+            "sha256": "87586fdffcb5976c8b48ee267be510ae3425d170f68b8ebf84448f8d8d39ff9a",
+            "bytes": 2966
+          },
+          {
+            "company_code": "C043",
+            "path": "logos/boomtown-productions.webp",
+            "sha256": "a7e907f9d5738af61b99a4ca7b045b6fa571ab54fe16a8666bf6e1a57562d7c7",
+            "bytes": 2826
+          },
+          {
+            "company_code": "C044",
+            "path": "logos/barajoun-studios.webp",
+            "sha256": "ea267d70b051f242db7c0318bd02949e4a52f16aef13b98d88f2aef7b5564e95",
+            "bytes": 2682
+          },
+          {
+            "company_code": "C045",
+            "path": "logos/electriclime.webp",
+            "sha256": "1816052a6b7fb6e291c493b98c7c5f59243172fd0c393f8ffb5dc5f6704e53d9",
+            "bytes": 4722
+          },
+          {
+            "company_code": "C046",
+            "path": "logos/hi-hat-productions.webp",
+            "sha256": "bed9d114d069b8549f1690760f0d59bba4b244594c4ad14068532f662f171d6f",
+            "bytes": 3544
+          },
+          {
+            "company_code": "C047",
+            "path": "logos/anamya-productions.webp",
+            "sha256": "7e55d5c5d14b6eb7fe2dfd6c3a1fd79ebb68da10ff9a565ecfa1d6fc4e5637e5",
+            "bytes": 4936
+          },
+          {
+            "company_code": "C048",
+            "path": "logos/j-cut-production.webp",
+            "sha256": "0894f9500ad19a03890df189573c237521c26780625e8007e167324f15046de7",
+            "bytes": 1984
+          },
+          {
+            "company_code": "C049",
+            "path": "logos/shoot-at-sight.webp",
+            "sha256": "2c6f813f05499f55b806fe298d571204b72661ab5c953491cd612146edf69d3c",
+            "bytes": 5186
+          },
+          {
+            "company_code": "C050",
+            "path": "logos/studio52-arts-production-llc.webp",
+            "sha256": "09620e94ecf4ad4ed55b404ffdd53bfb7609fc1646ec6bc2f500b91bd46bf2fc",
+            "bytes": 12582
+          },
+          {
+            "company_code": "C051",
+            "path": "logos/sahal-production.webp",
+            "sha256": "d8ca916a3ff8796b3af17d0d58a1e1f9da1cc2aeb25d09d599971a345aaee58d",
+            "bytes": 5176
+          },
+          {
+            "company_code": "C052",
+            "path": "logos/poddster.webp",
+            "sha256": "6bc6db7a83d7ff7709022203aab11ad6a9cf6e965aa9c1d60c1cb8fffd44a885",
+            "bytes": 7068
+          },
+          {
+            "company_code": "C053",
+            "path": "logos/doleep-studios.webp",
+            "sha256": "09b5e70934feaa2b638c2b536c5534019f45b10640ec40e0f9dcad9e531d75a7",
+            "bytes": 9446
+          },
+          {
+            "company_code": "C054",
+            "path": "logos/pixels-production.webp",
+            "sha256": "07dbaba27d1d671af1f849074eb7ecc4949a4183ac461a21678ff14555d59b5b",
+            "bytes": 3990
+          },
+          {
+            "company_code": "C055",
+            "path": "logos/hyperjump-productions.webp",
+            "sha256": "19d9368b4cf7eec05568797b7670f857fe1e69db60ec333312ef75a71ed087ee",
+            "bytes": 4168
+          },
+          {
+            "company_code": "C056",
+            "path": "logos/thecompanyfilms.webp",
+            "sha256": "9909a6f6f6b0ec25e0e0ff45630a31dbbe9883c5bbeb7915482fb8709de02791",
+            "bytes": 6568
+          },
+          {
+            "company_code": "C057",
+            "path": "logos/al-zawiya-films-production.webp",
+            "sha256": "7c0338c896e19abd566a04470ae78a860b105e7c2693a627dc1703d30778ae4c",
+            "bytes": 8104
+          },
+          {
+            "company_code": "C058",
+            "path": "logos/film-district-dubai.webp",
+            "sha256": "40a54741e8eb124cbc75b120e4025493b46102599fc9dadae7365516f55bb327",
+            "bytes": 8656
+          },
+          {
+            "company_code": "C059",
+            "path": "logos/panda-creations-productions.webp",
+            "sha256": "2d626d676be2fe8a45cbf15e80e060e3ee663f4dab61b09e82661a41b7b3447a",
+            "bytes": 1542
+          },
+          {
+            "company_code": "C060",
+            "path": "logos/we-are-alive-studio.webp",
+            "sha256": "751b5767f5899a6dd629a6c02ad214f4c65fa29289cd5fddec9902fed73f5439",
+            "bytes": 6778
+          },
+          {
+            "company_code": "C061",
+            "path": "logos/zaini-media.webp",
+            "sha256": "d34761b7e293a2754934d17067c0dad39c87ff1d3b62b327e7bc1337c8de6afe",
+            "bytes": 4892
+          },
+          {
+            "company_code": "C062",
+            "path": "logos/tamseel-production.webp",
+            "sha256": "558563db7d3dbc3748508eb608de3ee8b9e88785d05d6a2e5c41f4a78f3b17b1",
+            "bytes": 4720
+          },
+          {
+            "company_code": "C063",
+            "path": "logos/d-box-creatives.webp",
+            "sha256": "e3be753046ab7468daf6dd9c8f5035e4cd563b5a78d5f166af64c2f856115244",
+            "bytes": 1254
+          },
+          {
+            "company_code": "C064",
+            "path": "logos/sensa-productions.webp",
+            "sha256": "ffed8281c149be9c3a59cb607c5d59a0f5d961fb0a136d9e1dfcdaebe1e29c54",
+            "bytes": 3576
+          },
+          {
+            "company_code": "C067",
+            "path": "logos/trendz-agency.webp",
+            "sha256": "242937cc29d5bc3133e1bc98189e06de530dbeef0ba87d483140bd2b62e8516d",
+            "bytes": 1510
+          },
+          {
+            "company_code": "C069",
+            "path": "logos/rabbit-and-carrot.webp",
+            "sha256": "de194d301bc74ad3a3469fc0e82aa6857009f9bb21b46bc2285652604c5ecc5a",
+            "bytes": 5368
+          },
+          {
+            "company_code": "C070",
+            "path": "logos/interactivv-animation-studio.webp",
+            "sha256": "3255ef55bdba71da3a32af1b18d6cb24e6e0da77194acc0a2385f8bc53ec1ed6",
+            "bytes": 4906
+          },
+          {
+            "company_code": "C071",
+            "path": "logos/mwig-tech.webp",
+            "sha256": "2f4fdbb9a727dc8fac639dc92f53979943ba6608bef3a9d7b607a64aa7badfc4",
+            "bytes": 19054
+          },
+          {
+            "company_code": "C072",
+            "path": "logos/social-garage-media-production-and-marketing.webp",
+            "sha256": "bc38774a50c370deca38a185d22f9f3413b768498bfc24082ef7110af621f052",
+            "bytes": 4704
+          },
+          {
+            "company_code": "C073",
+            "path": "logos/prism-digital.webp",
+            "sha256": "ca36f9b96976b5dba6846921e9e40ceb40c71295ab7a1890ba260dfd809845b4",
+            "bytes": 4664
+          },
+          {
+            "company_code": "C074",
+            "path": "logos/jj-agency.webp",
+            "sha256": "d23d3a40f023dd0d8257946d842e64c2460447673004aefb5074ea10064a2c7f",
+            "bytes": 490
+          },
+          {
+            "company_code": "C076",
+            "path": "logos/media-mavericks.webp",
+            "sha256": "e6392203dc296e42458673bb62a3882697a222b25aca046d34d8894ac8af1823",
+            "bytes": 12040
+          },
+          {
+            "company_code": "C077",
+            "path": "logos/mile-studios.webp",
+            "sha256": "7deeaf4ab4e6a743737150a892538cdcfcca5bc0b0863b9a8aa7d0f13185b6af",
+            "bytes": 8292
+          },
+          {
+            "company_code": "C079",
+            "path": "logos/media-partners-middle-east.webp",
+            "sha256": "1bb934d6c02217b763fd5835e2483fc42f1bf3681d164463f7f42add6251f86c",
+            "bytes": 5872
+          },
+          {
+            "company_code": "C080",
+            "path": "logos/fas-media.webp",
+            "sha256": "074f21028ebd7362b3671e5b12a463ddb8ca83fd52b052397ab0c9b05ca212ce",
+            "bytes": 10562
+          },
+          {
+            "company_code": "C081",
+            "path": "logos/m4b-media.webp",
+            "sha256": "38b37606620ea549a3860b5e5b8e6c7c6d06c7044178089f4d48158d584dcf2c",
+            "bytes": 5452
+          },
+          {
+            "company_code": "C083",
+            "path": "logos/telfaz11.webp",
+            "sha256": "e7d13ff1c4b389c7e70675877bc4812bd60a39a02f77eee41d34326a47697f1e",
+            "bytes": 2078
+          },
+          {
+            "company_code": "C084",
+            "path": "logos/mbc-studios.webp",
+            "sha256": "bca0495bd5f81cdd263d52822f06cfa0960edbf4e73e9edaae8dc84aaf783da2",
+            "bytes": 5858
+          },
+          {
+            "company_code": "C085",
+            "path": "logos/arabia-pictures.webp",
+            "sha256": "9c378344c2c7f3e449c8c835212b00e771a4aa5d4c18645d5eff725456e3620b",
+            "bytes": 2452
+          },
+          {
+            "company_code": "C090",
+            "path": "logos/specter-productions.webp",
+            "sha256": "a41e040ea329dfa3fa0cbad378aad160535d647923f9ec384056178b6fddae13",
+            "bytes": 3278
+          },
+          {
+            "company_code": "C091",
+            "path": "logos/aura-productions.webp",
+            "sha256": "3c8f783bb356a6e73958d4629d1be5c8d49f5aea83f4e057c184fa1420259239",
+            "bytes": 1572
+          },
+          {
+            "company_code": "C092",
+            "path": "logos/insight-studios.webp",
+            "sha256": "e36b5b2fe7631ea0770a1f3a299a101d385d314d93b59a7508e6d4533853e797",
+            "bytes": 5810
+          },
+          {
+            "company_code": "C093",
+            "path": "logos/direct-group-ltd.webp",
+            "sha256": "5332357fda1970cbc84c9d5ad01cdbde980a4782fbe0517510b3fc9aba14dd5f",
+            "bytes": 2826
+          },
+          {
+            "company_code": "C094",
+            "path": "logos/medialogy.webp",
+            "sha256": "72e51bb15b7a72ebed376b2383043dced19457c7a99e99732e5cbcf2a64cc6f1",
+            "bytes": 2916
+          },
+          {
+            "company_code": "C095",
+            "path": "logos/useffilms-production-house.webp",
+            "sha256": "c7dbb114e1722b8b65e3df42e7c7adfcde511f5a30110c10f38b078e44b1b659",
+            "bytes": 2642
+          },
+          {
+            "company_code": "C096",
+            "path": "logos/versana-productions.webp",
+            "sha256": "c9004e9efecfa366743a4d7a5bfa5481b67b533d7e0cc30c520e129fae237468",
+            "bytes": 2232
+          },
+          {
+            "company_code": "C097",
+            "path": "logos/elite-design-studio.webp",
+            "sha256": "f72fd2dfe6ca9ceb846b03c091ac349c45412549425693dbcd18f99102f6b22e",
+            "bytes": 8134
+          },
+          {
+            "company_code": "C098",
+            "path": "logos/daw-production-house.webp",
+            "sha256": "b3e591ccd8a2b3994a4ad74542810a52f788bb3bad41b2931c391715f14c0af0",
+            "bytes": 17006
+          },
+          {
+            "company_code": "C099",
+            "path": "logos/framedkeys-entertainment.webp",
+            "sha256": "7ca383ed22604763c07f3f8f0124777a02500e3fba89c92f6677f996304efd27",
+            "bytes": 3948
+          },
+          {
+            "company_code": "C100",
+            "path": "logos/five-colors-inc.webp",
+            "sha256": "31a714731aeaee5e22f1f73cedd0c8088118c55b2b9a50ab8409594b11475a87",
+            "bytes": 2842
+          },
+          {
+            "company_code": "C101",
+            "path": "logos/artrabia-uav-services.webp",
+            "sha256": "ead4dc0c4a10c12f83ae1b3d04d54c2342f0a888c65de920ad46f02f803766c7",
+            "bytes": 4768
+          },
+          {
+            "company_code": "C102",
+            "path": "logos/multivision-media-production.webp",
+            "sha256": "9d3d870416b4475e05218e4c7bae0407d40de8361efa0a50b80141b7666dcb9e",
+            "bytes": 16676
+          },
+          {
+            "company_code": "C103",
+            "path": "logos/timeline-production-and-events.webp",
+            "sha256": "afa8d660bf905da39e435992042cf340ab038af08e7a5b61b897a2977d2b6562",
+            "bytes": 3736
+          },
+          {
+            "company_code": "C105",
+            "path": "logos/jether-production.webp",
+            "sha256": "08c180795f2aa63f4f9b8aa720a9d932234fedb332fc123bdce38d92f64fe716",
+            "bytes": 8966
+          },
+          {
+            "company_code": "C107",
+            "path": "logos/design-matters-productions.webp",
+            "sha256": "e67b3e151051a4ff3c829ae9e56d52ab85485560c24bde8843b670b62cefd6d1",
+            "bytes": 21528
+          },
+          {
+            "company_code": "C108",
+            "path": "logos/contrast-studio.webp",
+            "sha256": "d5b14fe163d4d7ebc54beeebb1bddf2a2346490bf6e70bb140fb94c056574a39",
+            "bytes": 3940
+          },
+          {
+            "company_code": "C109",
+            "path": "logos/sabbar-media-production.webp",
+            "sha256": "580f0fed5fbcb9abfc06ff601ab692b8692a0625d1f61d149133f54aaa2e9668",
+            "bytes": 5424
+          },
+          {
+            "company_code": "C110",
+            "path": "logos/sadara-studio.webp",
+            "sha256": "0e7c9a83f9635de897efa74c95373bf55b6e274f89eb892419753d372b137bad",
+            "bytes": 9024
+          },
+          {
+            "company_code": "C112",
+            "path": "logos/captains-film.webp",
+            "sha256": "80769e91164a1697c1a84b0500b386118d0e70ec38e2cccd23de479865f79cf3",
+            "bytes": 9374
+          },
+          {
+            "company_code": "C114",
+            "path": "logos/moonmarc-com.webp",
+            "sha256": "8690e81f93ad85fcf702fa36efb8ee9308202a191d762dc5c83edb679ae0b836",
+            "bytes": 7910
+          },
+          {
+            "company_code": "C115",
+            "path": "logos/creative-blend.webp",
+            "sha256": "db7851c9b99457c5fba012a97190e4c284a600391c8fd769f6eb062e3b1200c8",
+            "bytes": 1510
+          },
+          {
+            "company_code": "C116",
+            "path": "logos/upt-house.webp",
+            "sha256": "0ca4caaac6192eb0264b707aa0c83b77f35269e09ef96106a371b5d32a68faf3",
+            "bytes": 4038
+          },
+          {
+            "company_code": "C118",
+            "path": "logos/indie-creative.webp",
+            "sha256": "b03a8a13295ecc96f108f6e9f196c4112cfba54c3e10b1928b55a53c734a1931",
+            "bytes": 7418
+          },
+          {
+            "company_code": "C119",
+            "path": "logos/big-creative-boutique.webp",
+            "sha256": "7bcff0ed4c840f7fcc33c9217e05f62466ed4ab6f9895244c7a6bda782438f74",
+            "bytes": 9094
+          },
+          {
+            "company_code": "C120",
+            "path": "logos/creative-arrow-productions.webp",
+            "sha256": "716bf1b25c25e70356a36e84b1b8acecd3e4ce666ec7a7aaf8b7580cbfd745d4",
+            "bytes": 20176
+          },
+          {
+            "company_code": "C121",
+            "path": "logos/hive-studio.webp",
+            "sha256": "b348d1e5a20bc13c3a47423f099ad84d20c912016ddf8d939fd19bb873ea2df8",
+            "bytes": 8990
+          },
+          {
+            "company_code": "C122",
+            "path": "logos/the-onle-a-strategic-creative-company.webp",
+            "sha256": "853846e884b76550062fa5cd66a67f1fdffd14d66c2892654de2f78f0fca4502",
+            "bytes": 2654
+          },
+          {
+            "company_code": "C123",
+            "path": "logos/media-craft-audio-and-video-production.webp",
+            "sha256": "54edd5178c95b6ff404c6cdb78eb6f3644361a74dcf4fee94ca86af471771720",
+            "bytes": 11844
+          },
+          {
+            "company_code": "C124",
+            "path": "logos/saudi-film-permit.webp",
+            "sha256": "33fdba9bb135e727e0252bd8adaa565c1a2db71ad9524d94b143e93f5b408574",
+            "bytes": 3818
+          },
+          {
+            "company_code": "C125",
+            "path": "logos/synergism-agency.webp",
+            "sha256": "ca36b69eca8439ca9a8c2076d0c9d0dbd5d28380290a0ddcc37ba155a826bed3",
+            "bytes": 24514
+          },
+          {
+            "company_code": "C126",
+            "path": "logos/asap-productions.webp",
+            "sha256": "6b40f8ce18fc569cd961503d73b17da7921d1daba0862330f3b4a647d241c478",
+            "bytes": 7094
+          },
+          {
+            "company_code": "C127",
+            "path": "logos/banban-films.webp",
+            "sha256": "08bb3e7739a4cf22e0fbdd51803c7ed7099e1f1f2c22b181cea442cc9aca5b9d",
+            "bytes": 2556
+          },
+          {
+            "company_code": "C128",
+            "path": "logos/bedouin-films.webp",
+            "sha256": "87d06a8434a47cc5374e3c2dd171cf28a49a87171e32665dd7897dbef0302271",
+            "bytes": 5912
+          },
+          {
+            "company_code": "C129",
+            "path": "logos/bee-media-productions.webp",
+            "sha256": "c5a3b51307aaf7a76f36654be587caf7c1a6e068a8fc1834a10beface96e34cf",
+            "bytes": 2058
+          },
+          {
+            "company_code": "C130",
+            "path": "logos/bigfoot-films.webp",
+            "sha256": "020169e7e5d444be2ae23e77b04070c84ee124b3d4d4789c147a58b47bd4888f",
+            "bytes": 3006
+          },
+          {
+            "company_code": "C131",
+            "path": "logos/butter-films.webp",
+            "sha256": "9a9f6de72606875ffb00830662abf60e2003456cf2c48987898f68ee8d905b91",
+            "bytes": 4942
+          },
+          {
+            "company_code": "C132",
+            "path": "logos/cairo-film-production.webp",
+            "sha256": "98dff5501e95fc4d968f94aa19eb276d71a0303e55226cfccc48004a2cb6c596",
+            "bytes": 19610
+          },
+          {
+            "company_code": "C133",
+            "path": "logos/cats-films.webp",
+            "sha256": "3f08085e43c94d8616d7c8c181be490a20afcf965a50c0c66a1bce1223578721",
+            "bytes": 13614
+          },
+          {
+            "company_code": "C134",
+            "path": "logos/cema-media-production-studio.webp",
+            "sha256": "392eb37c46756dc6b531322ba9f98046ef65eb355c3cdc65503f2bff02d381fd",
+            "bytes": 2378
+          },
+          {
+            "company_code": "C135",
+            "path": "logos/cinegate-film-productions.webp",
+            "sha256": "ecab8547091e19b406bd033b0258964e0aa3f08ec7d258aa5b3c14b0577c8d31",
+            "bytes": 1828
+          },
+          {
+            "company_code": "C136",
+            "path": "logos/cinegram.webp",
+            "sha256": "d2bb6ad71a7cddf58cc1a0e2df8eac5e813576d468ddbf5c27d954d73293818a",
+            "bytes": 9368
+          },
+          {
+            "company_code": "C138",
+            "path": "logos/egypt-productions.webp",
+            "sha256": "e76ae02b27f82a2598c798013c7712ffcdd0e9beb7468229c92f25930dfdc091",
+            "bytes": 5278
+          },
+          {
+            "company_code": "C139",
+            "path": "logos/film-dna.webp",
+            "sha256": "7610ca79744f9b86fb61765311bf60abf47c3ab4ddddd02ed03bc9c7d27bf881",
+            "bytes": 12690
+          },
+          {
+            "company_code": "C140",
+            "path": "logos/filmedia-production.webp",
+            "sha256": "7a9b89053b9d2e301127660deb0e2a303fec3efdad5f37a3e075eb0857cd2fcc",
+            "bytes": 2340
+          },
+          {
+            "company_code": "C142",
+            "path": "logos/gearbox-studios.webp",
+            "sha256": "6235e144f8b94d4eecb038a3a3c57403a86cb244051b63fc550b38a19401fdc5",
+            "bytes": 7456
+          },
+          {
+            "company_code": "C143",
+            "path": "logos/global-untold-story.webp",
+            "sha256": "e358211759bc268a93ee77a5c06037855e8ff11b0bdc453602eca283b196387d",
+            "bytes": 6830
+          },
+          {
+            "company_code": "C144",
+            "path": "logos/gorilla-productions.webp",
+            "sha256": "2822351c36d4ec02cd777135e99011fc5ab6d622a241e47c5af6ac311bb1fa2f",
+            "bytes": 18726
+          },
+          {
+            "company_code": "C145",
+            "path": "logos/incognito-pictures.webp",
+            "sha256": "557a34f929b315c90f24a66ab82c231ea1b07b460114d908af3eae70abf14ce8",
+            "bytes": 6614
+          },
+          {
+            "company_code": "C146",
+            "path": "logos/kay-oh-productions.webp",
+            "sha256": "f18ec1b2fd498fd392faca2edbbc000cd69dc1cc28fafebccc7a56fcc7def085",
+            "bytes": 4086
+          },
+          {
+            "company_code": "C147",
+            "path": "logos/key-film-productions.webp",
+            "sha256": "88848dc2d9a25061e4fd5d6331129322e116748a649aea8778a35698beb87026",
+            "bytes": 5268
+          },
+          {
+            "company_code": "C148",
+            "path": "logos/kino-films.webp",
+            "sha256": "00385f39c8b07a4c77df674357f498d133448799f1246ebf837e774905c40b40",
+            "bytes": 7628
+          },
+          {
+            "company_code": "C149",
+            "path": "logos/lighthouse.webp",
+            "sha256": "231d8a4c06f2844de655e6fc74858f99159a8f584f922f71ed80b36a243eea1f",
+            "bytes": 3444
+          },
+          {
+            "company_code": "C150",
+            "path": "logos/lobster-films.webp",
+            "sha256": "c061291ab016bf85abcdd31cd40b4d42c8958836389c18889b6bebfc0a570b65",
+            "bytes": 5432
+          },
+          {
+            "company_code": "C151",
+            "path": "logos/lumiere-film-production.webp",
+            "sha256": "2ea0bed60149232f89019f8680f5f5498bb3baad2d130455c3f7514a474bfa70",
+            "bytes": 3386
+          },
+          {
+            "company_code": "C152",
+            "path": "logos/made-in-earth-mie.webp",
+            "sha256": "99e154aacdafd1dbd1d53feab1ce9d4059a841aa6d2799f0d531bad86e3f56bd",
+            "bytes": 2986
+          },
+          {
+            "company_code": "C153",
+            "path": "logos/mango-films.webp",
+            "sha256": "b2da7df8bdbb54e15760fb7411b9c3047f41e9b7ae037ce2db58e9251e8a5d36",
+            "bytes": 3634
+          },
+          {
+            "company_code": "C154",
+            "path": "logos/marquista-production-house.webp",
+            "sha256": "3d787b64b79a27404076b9fba068359f5b831f7c15f7454dc7e05d11e593e0bd",
+            "bytes": 3094
+          },
+          {
+            "company_code": "C155",
+            "path": "logos/matchstick.webp",
+            "sha256": "6de6148c79152b52f430cbe9046f7eb05e627047edb0e7d7986a9c74d96702ad",
+            "bytes": 6564
+          },
+          {
+            "company_code": "C156",
+            "path": "logos/mirror-production-house.webp",
+            "sha256": "ac5fc7f4722c376e63e310358945e386776d38853ea4f5a6aaa3e5dcae37b103",
+            "bytes": 2610
+          },
+          {
+            "company_code": "C158",
+            "path": "logos/neo-productions.webp",
+            "sha256": "a823bb6269ce75bf9a8463748d42b9f5b489c3abde27ab405568cc229176b8d3",
+            "bytes": 5442
+          },
+          {
+            "company_code": "C159",
+            "path": "logos/nojara.webp",
+            "sha256": "64962867c305871efe5ae3e963517d662a1763c76e7e39d64aa53b8f63dd9349",
+            "bytes": 2394
+          },
+          {
+            "company_code": "C160",
+            "path": "logos/novas-creative-house.webp",
+            "sha256": "7cedf61f4afb1563c183507f08a777a3b35f05eb5a8c4df3a50d819ac26b510b",
+            "bytes": 3124
+          },
+          {
+            "company_code": "C161",
+            "path": "logos/patchwork-productions.webp",
+            "sha256": "9caad86f049be7900f8d7b1231573033756a75f9323d95f570c81b12b7a788a4",
+            "bytes": 7452
+          },
+          {
+            "company_code": "C162",
+            "path": "logos/pmc-egypt.webp",
+            "sha256": "c11849018b2f7dcdc998d2b43ff8d0d3f818ed9ffe27c02ab10b442fd39ebe07",
+            "bytes": 3006
+          },
+          {
+            "company_code": "C163",
+            "path": "logos/rhino-and-oxpecker-productions.webp",
+            "sha256": "7a5a975c13c9a5170d3825c99be432865ccfbe504758dbb6b9cd6a048a976f59",
+            "bytes": 13382
+          },
+          {
+            "company_code": "C164",
+            "path": "logos/rock-media-production.webp",
+            "sha256": "df6add6c7cfc5c8002e49bb8cf495d04e75f178aba5a4ed9ba4dfd6ec7151d71",
+            "bytes": 5326
+          },
+          {
+            "company_code": "C165",
+            "path": "logos/snap14-production.webp",
+            "sha256": "ebb0ec8dcf24012e21e1cc30bf6dec12983171381db2ce77ddf7fd3f5af5b61a",
+            "bytes": 3264
+          },
+          {
+            "company_code": "C166",
+            "path": "logos/tarek-nour-communications-tnp-the-kitchen-tn-content.webp",
+            "sha256": "0f22631576ad491c57e116accf249876ad4bd0b39c4de129d8d507a126559529",
+            "bytes": 5262
+          },
+          {
+            "company_code": "C167",
+            "path": "logos/teamwork-productions.webp",
+            "sha256": "200274e2bbe6e70d73d58d55432999608c60e4c235aa4f422ccb55c65b97c4c9",
+            "bytes": 8908
+          },
+          {
+            "company_code": "C168",
+            "path": "logos/the-producers-films.webp",
+            "sha256": "50726a98812da52f780b58db37f7b0b97cb8073a2d069fc04fb301d62010dda0",
+            "bytes": 5230
+          },
+          {
+            "company_code": "C169",
+            "path": "logos/twooneeighty-productions.webp",
+            "sha256": "6431d9829f68ba606619136329a49cceb7a4b35260501c4fedd9c24ef99e9943",
+            "bytes": 4256
+          },
+          {
+            "company_code": "C170",
+            "path": "logos/yellow-duck-films.webp",
+            "sha256": "9331c8da8b5619e108b2dc58391872c53791a8d474f1e94d6f62e23b7106b72a",
+            "bytes": 5158
+          },
+          {
+            "company_code": "C171",
+            "path": "logos/2pure-studios.webp",
+            "sha256": "119fbf892bd98a017a55dbea23ff83bedb5c6f5343b283607f56a7f781f9e808",
+            "bytes": 2526
+          },
+          {
+            "company_code": "C172",
+            "path": "logos/3d-production.webp",
+            "sha256": "1974526691149bf9b32916af67fec4ecfd82f7473d4cdb1533f9efb05b664341",
+            "bytes": 2994
+          },
+          {
+            "company_code": "C173",
+            "path": "logos/aflam-productions.webp",
+            "sha256": "218138298bb4e779e94b07e3010a513fefeb936d5b851acc277b080e22974a21",
+            "bytes": 3040
+          },
+          {
+            "company_code": "C174",
+            "path": "logos/bigz-productionz.webp",
+            "sha256": "26f82b39a971e9947bea7fd82a9b3a696b3f95a67ef62e4ec2e8d287266744ad",
+            "bytes": 15372
+          },
+          {
+            "company_code": "C175",
+            "path": "logos/black-panther-studios.webp",
+            "sha256": "a9116ccb2121f7055159566a7d1a95df13aec89556f64131765058f66f6c99cb",
+            "bytes": 8040
+          },
+          {
+            "company_code": "C176",
+            "path": "logos/bynunc.webp",
+            "sha256": "d57e2267e111c8a8184295d6320183113c716bd55ad4d5ba2327175347deb234",
+            "bytes": 1518
+          },
+          {
+            "company_code": "C177",
+            "path": "logos/crafters.webp",
+            "sha256": "e9bdf2ec3b488448ab640efcef2cd670c5936c2ace2012fab9302937e4901161",
+            "bytes": 3668
+          },
+          {
+            "company_code": "C178",
+            "path": "logos/dahsha-media-productions.webp",
+            "sha256": "768aa613fd6237e9ec133523f8460f5d1d8c0e62ba094cc24e0af266e75ba598",
+            "bytes": 5744
+          },
+          {
+            "company_code": "C179",
+            "path": "logos/darb-productions.webp",
+            "sha256": "8e5e9a20ca4c4c8f0f8a563f261874266c6648d8c64302cf711dc08110a57788",
+            "bytes": 2860
+          },
+          {
+            "company_code": "C180",
+            "path": "logos/done-production-house.webp",
+            "sha256": "e343cd37fc42914d1750119ff6450bc2eaaeef7732b0c99a7e894186dc667011",
+            "bytes": 3686
+          },
+          {
+            "company_code": "C181",
+            "path": "logos/dreambox-films.webp",
+            "sha256": "6e71ea6987f24b1868179c706f209e4d67f48c079b7a71a257a779de5eb1b40e",
+            "bytes": 2518
+          },
+          {
+            "company_code": "C182",
+            "path": "logos/engine-film.webp",
+            "sha256": "8ca1e128ab13ae87c5fa18c42ed057c016e24acad56d2bec1f44a439cb99df51",
+            "bytes": 1370
+          },
+          {
+            "company_code": "C183",
+            "path": "logos/fazaa-production.webp",
+            "sha256": "88ddaf9dfd5dfd69d34a5f33d6c02dd39c46cf0d04414aeba3d88caa2d28a3ae",
+            "bytes": 19292
+          },
+          {
+            "company_code": "C184",
+            "path": "logos/film-pudding.webp",
+            "sha256": "8a036b36be121c780649253f7adcb9edd6cf1ca21a80918ee80c0ceb598d427e",
+            "bytes": 4270
+          },
+          {
+            "company_code": "C185",
+            "path": "logos/filmology-productions.webp",
+            "sha256": "5cc544609916c63b4cb4b88ccb9818d614f0279eac9fb2d4ed4bffa26704c1be",
+            "bytes": 5340
+          },
+          {
+            "company_code": "C186",
+            "path": "logos/hekka.webp",
+            "sha256": "1b480910e8f2905b19dc4add4b96c61eadb68039f73a5e312bf7c24a6c512060",
+            "bytes": 4500
+          },
+          {
+            "company_code": "C187",
+            "path": "logos/hoopoe-studio.webp",
+            "sha256": "95d8fa1ad9dd2b6cb62ba21a3478127b8e55978c1925f6ea78d3d8f6eb8a3248",
+            "bytes": 15640
+          },
+          {
+            "company_code": "C188",
+            "path": "logos/infni.webp",
+            "sha256": "9b1343112fc96e715667babb69774ceaa93d13608e40b672955de90728ad2720",
+            "bytes": 1792
+          },
+          {
+            "company_code": "C189",
+            "path": "logos/jump.webp",
+            "sha256": "cbba38035a606fcc7d3f217df82ac352018e5c7cee94004230f223badef321c9",
+            "bytes": 2586
+          },
+          {
+            "company_code": "C190",
+            "path": "logos/kingdom-video-production.webp",
+            "sha256": "9f260ddd592fa80993f6bafaee98834417f519934426b3151f55c85dfbfbd18d",
+            "bytes": 6608
+          },
+          {
+            "company_code": "C191",
+            "path": "logos/lettergray.webp",
+            "sha256": "5e9d519a91aa5e705aa1aa3138faaedab1ce9e195cedf8ad2dff1dea70c7bd11",
+            "bytes": 2424
+          },
+          {
+            "company_code": "C192",
+            "path": "logos/masshouse.webp",
+            "sha256": "73b8b4baa230c6206af08098165ec4dacbe56cfbab7e384bac6fdf3bda3f4e43",
+            "bytes": 3968
+          },
+          {
+            "company_code": "C193",
+            "path": "logos/mid-film.webp",
+            "sha256": "04904809b7ab8e0540065bbc792de7f132f349c904faa36cad2c6e54b49503ea",
+            "bytes": 1996
+          },
+          {
+            "company_code": "C194",
+            "path": "logos/mjhr-production.webp",
+            "sha256": "edf89261a4e848816370c7442bf902160e03660e8dc7914a3d51b1d5cbd397b7",
+            "bytes": 6454
+          },
+          {
+            "company_code": "C196",
+            "path": "logos/naqrah-media-production.webp",
+            "sha256": "04566886ae2e8d762046a6c374b2d2685d5ae788c1ce2354759404472ac47114",
+            "bytes": 9090
+          },
+          {
+            "company_code": "C197",
+            "path": "logos/nebras-films.webp",
+            "sha256": "a3231f7f353b366a808e025f34fe564ac40304c6b96eee6b97a34ccc63879a0b",
+            "bytes": 7900
+          },
+          {
+            "company_code": "C198",
+            "path": "logos/needafixer.webp",
+            "sha256": "319c1c4af9ec55098c11f99cabb968244b731cf31a98d4fe0c8077558e0cf1c4",
+            "bytes": 4936
+          },
+          {
+            "company_code": "C199",
+            "path": "logos/next-productions.webp",
+            "sha256": "90fedc96279a00175f3cdb6d570182ab2f9c4272535c0109160d2fc12dc69a76",
+            "bytes": 15878
+          },
+          {
+            "company_code": "C200",
+            "path": "logos/octosoup-studio.webp",
+            "sha256": "9cbfc9c4a50a10db4778e64d7f3435c8e90fce7f4e26b60b10e69a503d6a8387",
+            "bytes": 2882
+          },
+          {
+            "company_code": "C201",
+            "path": "logos/prism-productions.webp",
+            "sha256": "df8c3f11bf62bf5ac0d738546a40113b4203a0f80b77f08a06a9629213c8cf85",
+            "bytes": 1230
+          },
+          {
+            "company_code": "C202",
+            "path": "logos/production-service-network-saudi-arabia.webp",
+            "sha256": "4191804ea3a1b1b09cc0ba4d107742c9bc6d876dc17135c76f3c3d5369b72645",
+            "bytes": 15788
+          },
+          {
+            "company_code": "C203",
+            "path": "logos/proeffect.webp",
+            "sha256": "33d05eae26b241c8df6848619f900ef6bf9f8e9b192774ce732d9214f814fad8",
+            "bytes": 1858
+          },
+          {
+            "company_code": "C204",
+            "path": "logos/sadu-media.webp",
+            "sha256": "6ec09f4d21d0bcb20917738b5c9ef4073ea8f86fe86b6fb94c3ba4844a175708",
+            "bytes": 2838
+          },
+          {
+            "company_code": "C205",
+            "path": "logos/silvergrey-picture-and-sound.webp",
+            "sha256": "7e4fad7abf4c81120bcac7c2b989779c1e0555846ad83f92b5d1b8ddc5fdcc19",
+            "bytes": 4188
+          },
+          {
+            "company_code": "C206",
+            "path": "logos/soul-vision.webp",
+            "sha256": "225d3444b4f5db48ad1cd42f37bc9e075b40996024ed8d8faeb0deceace4c119",
+            "bytes": 15654
+          },
+          {
+            "company_code": "C207",
+            "path": "logos/spotlight-fox-media-company.webp",
+            "sha256": "612fc191228a06974bca43265d586d36c9c612343aa94c538e145582a8d2c56d",
+            "bytes": 14788
+          },
+          {
+            "company_code": "C208",
+            "path": "logos/tasweer-studios.webp",
+            "sha256": "b0c3692c2d9e2352d8698feac7ff91cc79b6f611eba6d62f95f013579d3a342f",
+            "bytes": 2004
+          },
+          {
+            "company_code": "C209",
+            "path": "logos/thalathat-production.webp",
+            "sha256": "453bad9ed0ec5cde1ae76518f4beb2a9cf597ef2768e3a0d2f552f6ac2792ee8",
+            "bytes": 3230
+          },
+          {
+            "company_code": "C210",
+            "path": "logos/the-idea-factory-films.webp",
+            "sha256": "8ba14a0e6fae2160352f3badfb65fc3712d60d484d54e4f7082ab786520f713b",
+            "bytes": 4474
+          },
+          {
+            "company_code": "C212",
+            "path": "logos/verge-film-productions.webp",
+            "sha256": "0b5e8a4daa2602153f57f7b05a1558f6d8cf5bf9b0186eca6f55d2189eae895b",
+            "bytes": 3010
+          },
+          {
+            "company_code": "C213",
+            "path": "logos/whizz-film.webp",
+            "sha256": "4c21606f44f46c3825c0feed08861ed35e9e786dd8dc8a38b577618896fe9741",
+            "bytes": 17048
+          },
+          {
+            "company_code": "C214",
+            "path": "logos/world-edge.webp",
+            "sha256": "99452eb06bbde6c16ffda402f2cfe23e6c4cbf3801cef967a964befbc80d1a27",
+            "bytes": 3254
+          },
+          {
+            "company_code": "C215",
+            "path": "logos/1505-studio.webp",
+            "sha256": "fd68e29d2941700a995ebcf1fbd661d114e6a04198a4cc786c5c09f64348b973",
+            "bytes": 3628
+          },
+          {
+            "company_code": "C216",
+            "path": "logos/815-studios.webp",
+            "sha256": "6a973c38303184805fa53d32a5d0b47d573b1b370db64d6b9108dd34fd4d37c6",
+            "bytes": 3718
+          },
+          {
+            "company_code": "C217",
+            "path": "logos/a-k-a-media.webp",
+            "sha256": "b4ef9007d67cc1cc4ebfa92d58d53096d1aa3c76fe7f424fed1323f488e07cb7",
+            "bytes": 2776
+          },
+          {
+            "company_code": "C218",
+            "path": "logos/action-filmz-productions.webp",
+            "sha256": "b16f42d1cb8e8eef4f04aa1c4a441b922d17fcf7f26ef4b665f45e1ddeb0b69c",
+            "bytes": 8322
+          },
+          {
+            "company_code": "C220",
+            "path": "logos/alm-media.webp",
+            "sha256": "f02e53e2783cfc4fe3ee340e88f8c8b4aab516ded07a40f08ee8dd802036d9f3",
+            "bytes": 3282
+          },
+          {
+            "company_code": "C221",
+            "path": "logos/armonica-film.webp",
+            "sha256": "cd1dee81375bc9988d06111defda051305f5831a0ecdc48d4122b005b71a0f67",
+            "bytes": 5314
+          },
+          {
+            "company_code": "C222",
+            "path": "logos/artology-creative.webp",
+            "sha256": "8b93f91de14dd728a24afe8fc0f551db0fade10b66a0c92f3e5cc7840247baaf",
+            "bytes": 6296
+          },
+          {
+            "company_code": "C223",
+            "path": "logos/at-your-service-productions.webp",
+            "sha256": "f9e4cb4a0662b9537e636ef58aad931e749880a3f5e4ce10200eafd243b68d43",
+            "bytes": 5778
+          },
+          {
+            "company_code": "C224",
+            "path": "logos/backyard-studio.webp",
+            "sha256": "4c90839394d328cfd2b6a607e8bbb5debc584d3508e903e6ccce0772252485ca",
+            "bytes": 36200
+          },
+          {
+            "company_code": "C225",
+            "path": "logos/bazooka-films.webp",
+            "sha256": "0811addb51c5767afe113a27c8d9a8f3653751d959cab93cb1ecab8f003c99a8",
+            "bytes": 2862
+          },
+          {
+            "company_code": "C226",
+            "path": "logos/big-kahuna-films.webp",
+            "sha256": "2f437f4b84ee9f661f9acc740b3b5b9a93b2a578c3b6fe783f681d8c416ddc6b",
+            "bytes": 1498
+          },
+          {
+            "company_code": "C227",
+            "path": "logos/breakout-films.webp",
+            "sha256": "bb57089c3acd1f198516ef58cd85ff9f660f79a10d6b8bd3cb6fa6ee755fc3fe",
+            "bytes": 3034
+          },
+          {
+            "company_code": "C228",
+            "path": "logos/camouflage-production.webp",
+            "sha256": "2ed16fad23d5f0c36f1a6c81bf77098b32ee420d8db7f5901386a3b30865ca51",
+            "bytes": 9560
+          },
+          {
+            "company_code": "C229",
+            "path": "logos/ccp-dxb.webp",
+            "sha256": "64009c726d91ef30dc10f61a0cb04017aebf3a7b2512bf4428edd797dd930fb5",
+            "bytes": 6074
+          },
+          {
+            "company_code": "C230",
+            "path": "logos/central-films.webp",
+            "sha256": "25fb104d21f7c6c12bd6ee08adc2850574843309659f8ee6fa17e2d2ad0221bf",
+            "bytes": 2918
+          },
+          {
+            "company_code": "C231",
+            "path": "logos/cityfilms-prod.webp",
+            "sha256": "2584bc413fb86a12d8b1bac409a4136e9994729f34c100515dcdf48edb3457ec",
+            "bytes": 1982
+          },
+          {
+            "company_code": "C232",
+            "path": "logos/clandestino-films.webp",
+            "sha256": "d873a9043b0b8736abb07463a3ee6a973d57167a73332d1e3943e5dee4e39a89",
+            "bytes": 2718
+          },
+          {
+            "company_code": "C233",
+            "path": "logos/create-production.webp",
+            "sha256": "ea9e598fb6a8505946c3d38e66a01e7703bf83c88e8591ef4b86537652ac0a13",
+            "bytes": 1894
+          },
+          {
+            "company_code": "C234",
+            "path": "logos/crisp-arthouse.webp",
+            "sha256": "deb2b094d4a2ae981c5b393e3bfbfac70cb8d5c1884c56ce6dde5aeb697d7ad2",
+            "bytes": 5068
+          },
+          {
+            "company_code": "C235",
+            "path": "logos/dejavu.webp",
+            "sha256": "3611a3c991a995af91fd0a8140f3d7ed9e7c0c4d5b514bb94423fd7a790ee5e9",
+            "bytes": 2840
+          },
+          {
+            "company_code": "C236",
+            "path": "logos/disruptive.webp",
+            "sha256": "ab406d9071de1c21d94ac9a97d0205c653469abb7b447c0606f29a2b987a81b6",
+            "bytes": 2990
+          },
+          {
+            "company_code": "C237",
+            "path": "logos/dot-motions-dmcc.webp",
+            "sha256": "3e9f9b110118a99293ac4c0a7549a64375960fac2260ff7b826b46548cc710e1",
+            "bytes": 3642
+          },
+          {
+            "company_code": "C238",
+            "path": "logos/dreambox-creative-consultants.webp",
+            "sha256": "dba9de186b743256c72bb63390e831138551b73461da6f0e69a33037ad576817",
+            "bytes": 1760
+          },
+          {
+            "company_code": "C239",
+            "path": "logos/dubai-film.webp",
+            "sha256": "b00f203c1fa7444c7cab3d16a536da10c9468b74a4ba07e21d620175f4aaea74",
+            "bytes": 3398
+          },
+          {
+            "company_code": "C240",
+            "path": "logos/electric-films.webp",
+            "sha256": "8c6ce07b02cb15bd53211453b9a94033041020b13d6062b529072980407bc1c1",
+            "bytes": 4682
+          },
+          {
+            "company_code": "C241",
+            "path": "logos/epic-films.webp",
+            "sha256": "d6b5ed698698b4a35688b94a6dd1cbe782bc385ab3318a5a7be419eec01ad54c",
+            "bytes": 1666
+          },
+          {
+            "company_code": "C242",
+            "path": "logos/feel-productions.webp",
+            "sha256": "319d40eb9cf14891ffdc18bf1233d46334054535596c26899026f55e7c7f513e",
+            "bytes": 3812
+          },
+          {
+            "company_code": "C243",
+            "path": "logos/film-dojo.webp",
+            "sha256": "e413ee3c0aad50ebd2b770a20f8125e90417e01cfa8ee0038be7c1fcccf36053",
+            "bytes": 2498
+          },
+          {
+            "company_code": "C244",
+            "path": "logos/framez-house.webp",
+            "sha256": "4d76aac5eaed4c52b4fed4a0380777de22f15f9572e1d5b7c3c242189f0c5466",
+            "bytes": 6940
+          },
+          {
+            "company_code": "C245",
+            "path": "logos/ften-productions.webp",
+            "sha256": "767ee0fe208d5b8e0a460c9fa05f2f818996b80248b5dc7fcc177666df36fb51",
+            "bytes": 6582
+          },
+          {
+            "company_code": "C246",
+            "path": "logos/fuelcontent.webp",
+            "sha256": "8384f4513e3dc37859a4e832e29f034a75c776406d388cf7f7351d7a49cdee96",
+            "bytes": 1112
+          },
+          {
+            "company_code": "C247",
+            "path": "logos/hexadecimal-films.webp",
+            "sha256": "5e6ae93c8caef88c7bd31609d1c1b8e3247578e21da4398244e3ced85d27d332",
+            "bytes": 4614
+          },
+          {
+            "company_code": "C248",
+            "path": "logos/icon-art-production.webp",
+            "sha256": "f2d6971ceacaa4713f03e19524fb3d31909dcfa8b53eddef815d22367c99564a",
+            "bytes": 6676
+          },
+          {
+            "company_code": "C249",
+            "path": "logos/joy-films.webp",
+            "sha256": "26258d8aeba14e2dbeee317dd9df05a9e44b8cdb18c325f05c9338c20f3a2678",
+            "bytes": 6392
+          },
+          {
+            "company_code": "C250",
+            "path": "logos/kkdd-films.webp",
+            "sha256": "b6892edc9e9c34fe50470183ba27bffb88368df3a4f9488730e2eef3ab215f9a",
+            "bytes": 20246
+          },
+          {
+            "company_code": "C251",
+            "path": "logos/kkompany-media-solutions.webp",
+            "sha256": "8eae6ca5e52f031624b2b769a629b9201024762274d951bee30bb19a702d4f62",
+            "bytes": 2230
+          },
+          {
+            "company_code": "C253",
+            "path": "logos/magnet.webp",
+            "sha256": "cd571b883ca8e615c6dcf8ba82e1ccfccc3de78d65c5b52199fe725bbc0e7d67",
+            "bytes": 35422
+          },
+          {
+            "company_code": "C254",
+            "path": "logos/meraki-production.webp",
+            "sha256": "2a49558426ff6d417dd54da6cb20373b0247fa19696824c9f190487a8e63e104",
+            "bytes": 1290
+          },
+          {
+            "company_code": "C255",
+            "path": "logos/milkshake-media.webp",
+            "sha256": "20535b08d24e0d8f89187d13f4d46451f9e020916cab33328d532637fa95cfb5",
+            "bytes": 5714
+          },
+          {
+            "company_code": "C256",
+            "path": "logos/munch-videos.webp",
+            "sha256": "cbe1200370435438ec7323e1af485bdeec3399669bddf82346bdcef26161814c",
+            "bytes": 5462
+          },
+          {
+            "company_code": "C257",
+            "path": "logos/orbis-films.webp",
+            "sha256": "09dbd0e3d5ec426321a9257778c0390679a7c29f45216d156173221990aeb2b8",
+            "bytes": 6438
+          },
+          {
+            "company_code": "C258",
+            "path": "logos/p3-films.webp",
+            "sha256": "8c9f51b878f69adaea78fed98acf2147c07d3242e9329f3d537ee71cd6458b80",
+            "bytes": 9260
+          },
+          {
+            "company_code": "C259",
+            "path": "logos/phenomena-productions.webp",
+            "sha256": "76ff024f834c450b6c4f5464ea0d2b4473f6f8749330dc16399bb5d057aa7a29",
+            "bytes": 1776
+          },
+          {
+            "company_code": "C260",
+            "path": "logos/phoenix-film.webp",
+            "sha256": "c86e5af39482fbc0b18649f29524f6b0ef4b681b103e7ee708d24c612d024f36",
+            "bytes": 2646
+          },
+          {
+            "company_code": "C261",
+            "path": "logos/piqu-production.webp",
+            "sha256": "f535e52932d14e64a0503f001e19c36b5b255205ba612979fe5706ccc4de4f45",
+            "bytes": 1934
+          },
+          {
+            "company_code": "C263",
+            "path": "logos/production-by-nomad.webp",
+            "sha256": "5db657bdde5abb5538c94f2f738929c1a8953ac8137460922b68394269a2487e",
+            "bytes": 1352
+          },
+          {
+            "company_code": "C264",
+            "path": "logos/qasdeer.webp",
+            "sha256": "45653b42a09650919f118eafb633d9cf50de9c069bbec91dff827563f80b80e7",
+            "bytes": 17226
+          },
+          {
+            "company_code": "C265",
+            "path": "logos/ravix-media-production-house.webp",
+            "sha256": "156c012347278cd7d8ec4b810c692f86792f48a714e2e547c8f9a38e7d8e228a",
+            "bytes": 3150
+          },
+          {
+            "company_code": "C266",
+            "path": "logos/redpepper-films.webp",
+            "sha256": "bd26f74b7942e11c63a153f6c2225d736885e66be92da6bc4c8e8e196455187d",
+            "bytes": 9986
+          },
+          {
+            "company_code": "C267",
+            "path": "logos/saluki-media.webp",
+            "sha256": "34d6d20b1509564c063e90bdfac10e62f99be55811fecedf2482f1e6c4f25b00",
+            "bytes": 4096
+          },
+          {
+            "company_code": "C268",
+            "path": "logos/singularity.webp",
+            "sha256": "6679b9188ff1951ff89632b8b0e387605f961fa9913011f8225bf8b76efb9b5f",
+            "bytes": 14332
+          },
+          {
+            "company_code": "C269",
+            "path": "logos/stoked-films.webp",
+            "sha256": "cc933114847234eed208e463b6ebd1f178543275daa98749a2f6d09ef8526af1",
+            "bytes": 3396
+          },
+          {
+            "company_code": "C270",
+            "path": "logos/the-talkies.webp",
+            "sha256": "3e5d0d2f1df990dd5930ef4e583bbf24844f4391413d15a8596dd24833add2db",
+            "bytes": 6890
+          },
+          {
+            "company_code": "C271",
+            "path": "logos/ti22-films.webp",
+            "sha256": "d34f5aece8f98cf3852e7930b9744c417850251c5722fed10dcd04276dfafb7e",
+            "bytes": 1616
+          },
+          {
+            "company_code": "C272",
+            "path": "logos/toast-films.webp",
+            "sha256": "e51bf729155483e789e1837e8a3c647a549b3a79d5f5dfbf18a001ec7e323038",
+            "bytes": 3246
+          },
+          {
+            "company_code": "C273",
+            "path": "logos/tomorrow-film.webp",
+            "sha256": "43a9b333c9b1a5df65ddb49b174f7118bf55be8717eaa0a9ca4266680282a4cb",
+            "bytes": 746
+          },
+          {
+            "company_code": "C274",
+            "path": "logos/toosuns-creative-production.webp",
+            "sha256": "a437f90aab64beef12511cc60a81c660e54ea0b7b730c3bb12ea5069445d10e4",
+            "bytes": 5046
+          },
+          {
+            "company_code": "C275",
+            "path": "logos/tres-content.webp",
+            "sha256": "1b1e9e2e816fdc801418622587811be7b832464693bd6b6b994a5f796dad6746",
+            "bytes": 21078
+          },
+          {
+            "company_code": "C276",
+            "path": "logos/truffle.webp",
+            "sha256": "57603656558446eb76caf00a3ebbe65e492d3ecd51ceb325088cb9aa8481a42d",
+            "bytes": 3404
+          },
+          {
+            "company_code": "C277",
+            "path": "logos/urban-edge-films.webp",
+            "sha256": "bce5a2dc7137e74ad00f1297dc6c7a249b09b75e21eed357df56a30196075caa",
+            "bytes": 7126
+          },
+          {
+            "company_code": "C278",
+            "path": "logos/vertigo-films.webp",
+            "sha256": "28929722f8de15fb0e995c2ecb351f90c77eb66fd81e8326207b4972b4408a72",
+            "bytes": 5492
+          },
+          {
+            "company_code": "C279",
+            "path": "logos/viola-producers.webp",
+            "sha256": "233c8f46b502588c0291fbcef4e9990966c1dab7a9b9521512caca85f57ef62c",
+            "bytes": 4552
+          },
+          {
+            "company_code": "C280",
+            "path": "logos/vip-films.webp",
+            "sha256": "17a5a933c48ced830f581f055a92442bfedfb6a83f1032785798097beaedb6c6",
+            "bytes": 3120
+          },
+          {
+            "company_code": "C281",
+            "path": "logos/what-if-creative-studio.webp",
+            "sha256": "5dbec6858903c24df1f0199cd0a0e5cb901f50fc7116d6acc95691653e68be2e",
+            "bytes": 1810
+          },
+          {
+            "company_code": "C282",
+            "path": "logos/wild-media.webp",
+            "sha256": "0c2969f4460ed14be6594d40b9f29c0dd4e037c8c3386756e3d4c2c305df5e9d",
+            "bytes": 10780
+          },
+          {
+            "company_code": "C283",
+            "path": "logos/wonderful-productions.webp",
+            "sha256": "916a0b0095ea566a5d1d13898fce822040f7faaa893b03569e6d561b0a4bdf64",
+            "bytes": 4456
+          },
+          {
+            "company_code": "C284",
+            "path": "logos/zooxel.webp",
+            "sha256": "cf28ae211ecf1e72f75dead516c9295fbf05231430bed1e844f83a61c1a72137",
+            "bytes": 6882
+          }
+        ]
+      }
+    },
+    {
+      "name": "reviewed_read_only_assertions",
+      "status": "completed",
+      "result": {
+        "assertions": [
+          {
+            "criterion": "AC1_competitors_and_tiers",
+            "actual": {
+              "pilot": 50,
+              "total": 285,
+              "adjacent": 60,
+              "baseline": 1,
+              "next_wave": 174,
+              "baseline_flags": 1,
+              "everyone_baseline": 1
+            },
+            "expected": {
+              "pilot": 50,
+              "total": 285,
+              "adjacent": 60,
+              "baseline": 1,
+              "next_wave": 174,
+              "baseline_flags": 1,
+              "everyone_baseline": 1
+            },
+            "passed": true,
+            "evidence_limit": "Original CSV baseline; any override-driven count change needs an explicit documented deviation."
+          },
+          {
+            "criterion": "AC2_primary_instagram",
+            "actual": 256,
+            "expected": 256,
+            "passed": true,
+            "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+          },
+          {
+            "criterion": "AC2_primary_linkedin",
+            "actual": 226,
+            "expected": 226,
+            "passed": true,
+            "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+          },
+          {
+            "criterion": "AC2_primary_vimeo",
+            "actual": 202,
+            "expected": 202,
+            "passed": true,
+            "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+          },
+          {
+            "criterion": "AC2_primary_website",
+            "actual": 261,
+            "expected": 261,
+            "passed": true,
+            "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+          },
+          {
+            "criterion": "AC2_primary_website_work_page",
+            "actual": 199,
+            "expected": 199,
+            "passed": true,
+            "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+          },
+          {
+            "criterion": "AC2_primary_youtube",
+            "actual": 128,
+            "expected": 128,
+            "passed": true,
+            "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+          },
+          {
+            "criterion": "AC3_derived_instagram_stories",
+            "actual": 256,
+            "expected": 256,
+            "passed": true,
+            "evidence_limit": "Derived identities remain separate platform rows."
+          },
+          {
+            "criterion": "AC3_derived_linkedin_employees",
+            "actual": 226,
+            "expected": 226,
+            "passed": true,
+            "evidence_limit": "Derived identities remain separate platform rows."
+          },
+          {
+            "criterion": "AC3_total_accounts",
+            "actual": 1754,
+            "expected": 1754,
+            "passed": true,
+            "evidence_limit": "Original total; a committed override/deviation must explain every difference."
+          },
+          {
+            "criterion": "AC4_active_instagram",
+            "actual": 49,
+            "expected": 49,
+            "passed": true,
+            "evidence_limit": "Original targets retained. YouTube has one specifically approved invalid pilot exclusion; exact identity/state guard must pass."
+          },
+          {
+            "criterion": "AC4_active_instagram_stories",
+            "actual": 49,
+            "expected": 49,
+            "passed": true,
+            "evidence_limit": "Original targets retained. YouTube has one specifically approved invalid pilot exclusion; exact identity/state guard must pass."
+          },
+          {
+            "criterion": "AC4_active_linkedin",
+            "actual": 42,
+            "expected": 42,
+            "passed": true,
+            "evidence_limit": "Original targets retained. YouTube has one specifically approved invalid pilot exclusion; exact identity/state guard must pass."
+          },
+          {
+            "criterion": "AC4_active_linkedin_employees",
+            "actual": 42,
+            "expected": 42,
+            "passed": true,
+            "evidence_limit": "Original targets retained. YouTube has one specifically approved invalid pilot exclusion; exact identity/state guard must pass."
+          },
+          {
+            "criterion": "AC4_active_vimeo",
+            "actual": 48,
+            "expected": 48,
+            "passed": true,
+            "evidence_limit": "Original targets retained. YouTube has one specifically approved invalid pilot exclusion; exact identity/state guard must pass."
+          },
+          {
+            "criterion": "AC4_active_website",
+            "actual": 11,
+            "expected": 11,
+            "passed": true,
+            "evidence_limit": "Original targets retained. YouTube has one specifically approved invalid pilot exclusion; exact identity/state guard must pass."
+          },
+          {
+            "criterion": "AC4_active_website_work_page",
+            "actual": 38,
+            "expected": 38,
+            "passed": true,
+            "evidence_limit": "Original targets retained. YouTube has one specifically approved invalid pilot exclusion; exact identity/state guard must pass."
+          },
+          {
+            "criterion": "AC4_active_youtube",
+            "actual": {
+              "active": 10,
+              "owner_excluded_pilot": 1
+            },
+            "expected": {
+              "eligible_active_target": 10,
+              "original_active_target": 11
+            },
+            "passed": true,
+            "evidence_limit": "Original targets retained. YouTube has one specifically approved invalid pilot exclusion; exact identity/state guard must pass."
+          },
+          {
+            "criterion": "AC4_pilot_gating_violations",
+            "actual": 0,
+            "expected": 0,
+            "passed": true,
+            "evidence_limit": "Only pilot/baseline may be active; roots with a work page stay paused or explicitly invalid."
+          },
+          {
+            "criterion": "AC5_vimeo_pilot_resolution",
+            "actual": {
+              "total": 202,
+              "pending": 0,
+              "platform": "vimeo",
+              "resolved": 202,
+              "pilot_total": 48,
+              "bad_resolved": 0,
+              "eligible_total": 202,
+              "owner_excluded": 0,
+              "pilot_resolved": 48,
+              "eligible_resolved": 202,
+              "eligible_pilot_total": 48,
+              "owner_excluded_pilot": 0,
+              "eligible_pilot_resolved": 48
+            },
+            "expected": {
+              "pending": 0,
+              "bad_resolved": 0,
+              "pilot_minimum_rate": 0.95
+            },
+            "passed": true,
+            "evidence_limit": "Valid numeric user/resource IDs required; failed/transient/zero-ID rows do not count as resolved."
+          },
+          {
+            "criterion": "AC5_youtube_owner_exclusions",
+            "actual": {
+              "matched_sources": 7,
+              "approved_sources": 7,
+              "matched_companies": 7,
+              "matched_pilot_sources": 1,
+              "approved_pilot_sources": 1,
+              "valid_excluded_sources": 7,
+              "unexpected_ineligible_sources": 0
+            },
+            "expected": {
+              "matched_sources": 7,
+              "approved_sources": 7,
+              "matched_companies": 7,
+              "matched_pilot_sources": 1,
+              "approved_pilot_sources": 1,
+              "valid_excluded_sources": 7,
+              "unexpected_ineligible_sources": 0
+            },
+            "passed": true,
+            "evidence_limit": "MA-09 approved seven exact listed sources as invalid/failed, with null IDs and no collection. No company-wide absence claim or blanket invalid-account exemption."
+          },
+          {
+            "criterion": "AC5_youtube_resolution",
+            "actual": {
+              "total": 128,
+              "pending": 0,
+              "platform": "youtube",
+              "resolved": 121,
+              "pilot_total": 11,
+              "bad_resolved": 0,
+              "eligible_total": 121,
+              "owner_excluded": 7,
+              "pilot_resolved": 10,
+              "eligible_resolved": 121,
+              "eligible_pilot_total": 10,
+              "owner_excluded_pilot": 1,
+              "eligible_pilot_resolved": 10
+            },
+            "expected": {
+              "pending": 0,
+              "bad_resolved": 0,
+              "eligible_total": 121,
+              "original_total": 128,
+              "owner_excluded": 7,
+              "eligible_pilot_total": 10,
+              "original_pilot_total": 11,
+              "owner_excluded_pilot": 1,
+              "eligible_resolution_rate": 1,
+              "all_original_minimum_rate": 0.9
+            },
+            "passed": true,
+            "evidence_limit": "Raw 121/128 and 10/11 remain visible. Eligible 121/121 and 10/10 require the exact seven owner exclusions and valid UC/UU identifiers; no guessed resolution."
+          },
+          {
+            "criterion": "AC6_backfill_and_cadence_violations",
+            "actual": 0,
+            "expected": 0,
+            "passed": true,
+            "evidence_limit": "Primary rows pending from 2024-01-01; stories/employees not_applicable; employee cadence seven days."
+          },
+          {
+            "criterion": "AC7_idempotency_requires_second_run",
+            "actual": null,
+            "expected": {
+              "second_run_updated": 0,
+              "second_run_inserted": 0
+            },
+            "passed": null,
+            "evidence_limit": "Cannot be established from one SELECT snapshot. Attach the real second-run receipt and unchanged counts."
+          },
+          {
+            "criterion": "AC8_logo_storage_metadata",
+            "actual": {
+              "source_total": 267,
+              "source_stored": 256,
+              "baseline_total": 1,
+              "baseline_stored": 1
+            },
+            "expected": {
+              "baseline_total": 1,
+              "baseline_stored": 1,
+              "source_minimum_rate": 0.95
+            },
+            "passed": true,
+            "evidence_limit": "Partial AC8 evidence only: public Storage HTTP visibility is a separate live verification."
+          },
+          {
+            "criterion": "fixture_exclusions",
+            "actual": 0,
+            "expected": 0,
+            "passed": true,
+            "evidence_limit": "C999 and test-house are not M02 production/dev seed competitors."
+          }
+        ]
+      }
+    },
+    {
+      "name": "final_report_and_parity",
+      "status": "completed",
+      "result": {
+        "counts": {
+          "competitors": 285,
+          "accounts": 1754,
+          "tiers": {
+            "baseline": 1,
+            "pilot": 50,
+            "next_wave": 174,
+            "adjacent": 60
+          },
+          "platforms": {
+            "vimeo": 202,
+            "instagram": 256,
+            "instagram_stories": 256,
+            "website": 261,
+            "website_work_page": 199,
+            "linkedin": 226,
+            "linkedin_employees": 226,
+            "youtube": 128
+          },
+          "platformStatuses": {
+            "vimeo": {
+              "paused": 154,
+              "active": 48
+            },
+            "instagram": {
+              "paused": 207,
+              "active": 49
+            },
+            "instagram_stories": {
+              "paused": 207,
+              "active": 49
+            },
+            "website": {
+              "paused": 250,
+              "active": 11
+            },
+            "website_work_page": {
+              "paused": 161,
+              "active": 38
+            },
+            "linkedin": {
+              "paused": 184,
+              "active": 42
+            },
+            "linkedin_employees": {
+              "paused": 184,
+              "active": 42
+            },
+            "youtube": {
+              "paused": 111,
+              "invalid": 7,
+              "active": 10
+            }
+          },
+          "resolveStatuses": {
+            "resolved": 323,
+            "not_needed": 1424,
+            "failed": 7
+          },
+          "backfillStatuses": {
+            "pending": 1272,
+            "not_applicable": 482
+          },
+          "providerErrors": {
+            "yt_not_found": 3,
+            "yt_custom_url_unresolved": 1
+          },
+          "resolution": {
+            "vimeo": {
+              "total": 202,
+              "resolved": 202,
+              "pending": 0,
+              "failed": 0,
+              "missingIdentifiers": 0,
+              "pilot": {
+                "total": 48,
+                "resolved": 48
+              }
+            },
+            "youtube": {
+              "total": 128,
+              "resolved": 121,
+              "pending": 0,
+              "failed": 7,
+              "missingIdentifiers": 0,
+              "pilot": {
+                "total": 11,
+                "resolved": 10
+              }
+            }
+          },
+          "logos": {
+            "sourceTotal": 267,
+            "sourceCopied": 256,
+            "missingSourceCopy": 11,
+            "baselineTotal": 1,
+            "baselineCopied": 1,
+            "noSource": 17,
+            "mediaMetadataMissing": 0
+          },
+          "duplicateKeys": 0,
+          "sourceIssues": 10,
+          "reviewItems": 79
+        },
+        "state": [
+          {
+            "name": "competitors",
+            "count": "285"
+          },
+          {
+            "name": "accounts",
+            "count": "1754"
+          },
+          {
+            "name": "media_assets",
+            "count": "257"
+          },
+          {
+            "name": "items",
+            "count": "0"
+          },
+          {
+            "name": "raw_items",
+            "count": "0"
+          },
+          {
+            "name": "website_pages",
+            "count": "0"
+          },
+          {
+            "name": "employee_snapshots",
+            "count": "0"
+          },
+          {
+            "name": "scrape_runs",
+            "count": "0"
+          },
+          {
+            "name": "scrape_run_accounts",
+            "count": "0"
+          },
+          {
+            "name": "apify_runs",
+            "count": "0"
+          },
+          {
+            "name": "ai_extractions",
+            "count": "0"
+          },
+          {
+            "name": "campaigns",
+            "count": "0"
+          },
+          {
+            "name": "news_articles",
+            "count": "0"
+          },
+          {
+            "name": "briefs",
+            "count": "0"
+          },
+          {
+            "name": "logo_objects",
+            "count": "257"
+          },
+          {
+            "name": "other_media_objects",
+            "count": "0"
+          }
+        ],
+        "rawPilotYouTube": {
+          "resolved": 10,
+          "total": 11
+        },
+        "eligiblePilotYouTube": {
+          "resolved": 10,
+          "total": 10
+        },
+        "advisors": "separate_hosted_readback_required"
+      }
+    }
+  ],
+  "nativeCompletion": "success"
+}

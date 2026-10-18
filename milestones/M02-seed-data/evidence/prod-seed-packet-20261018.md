@@ -1,6 +1,6 @@
 # M02 production seed — exact approval packet
 
-State: **production seed approved; hosted acceptance in progress**. Prepared18October2026 Cairo for
+State: **approved production seed completed; dev/prod acceptance passed**. Prepared18October2026 Cairo for
 emr-prod / `hkiafqrcxaafdbcvjlzv`. The production runtime, immutable public
 payload and two-input private consumer are implemented. No production connection,
 credential read, logo download/upload or provider request was made during this
@@ -8,8 +8,9 @@ preparation. The owner separately approved this exact packet at reviewed head
 `a17f7e25369abc5f71aab0196a4f2e7d5f3cc614` with **`approved: seed prod`**
 (call `call_0f2dd5cc1f3e4a6780c5feba0ca21225`). The machine packet now records
 that approval; immutable input hashes and all limits are unchanged. The two
-production-only handoffs passed the sealed presence check; authentication is a
-separate execution gate. [Authorization receipt](prod-authorization-20261018.json).
+production-only handoffs passed the sealed presence check and were later consumed
+by the successful bounded run. Actual authentication/cleanup are separate receipts.
+[Authorization receipt](prod-authorization-20261018.json).
 
 The approval covers only this packet.
 Source/runner seals and focused checks are recorded in [local readiness](prod-local-readiness-20261018.json),
@@ -21,6 +22,30 @@ that separate from hosted acceptance. Later documentation uses normal PR CI. PR6
 M03, collection, paid calls, n8n execution and schedule activation remain separate.
 
 ## Exact payload, request bounds and cost
+
+The approved execution has now completed native0 with all eight stages complete.
+Actual production authentication and the seven original migration versions passed;
+285 competitors/1,754 accounts were inserted, followed by a real second seed/import
+with all four insert/update counters0 and1,754 unchanged account configurations.
+All257 public logo hashes matched; uploaded bytes total1,560,325. Actual dev/prod
+SQL assertions and catalog/account reconciliation have0 mismatches; collection
+tables/fixtures remain empty and operational defaults pass. Both consumed DPAPI
+files are absent and the owned credential processes closed. Permanent admission
+and ownership manifests are retained, so do not invoke the completed batch again.
+[Native receipt](prod-main-batch-receipt-20261018.json),
+[reconciliation](prod-reconciliation-20261018.json),
+[cleanup](prod-execution-completion-20261018.json).
+Fresh production advisors are recorded separately; these results do not grant
+PR6 merge or M03 authorization.
+The [fresh production advisor readback](prod-post-seed-advisors-20261018.json)
+has0 warnings/errors:11 informational internal deny-all RLS findings,67
+informational unused-index findings and1 informational Auth connection-allocation
+finding. After the initial Refresh readback, the explicit **Rerun linter** action
+completed for Security at03:18:20UTC and Performance at03:18:44UTC with those same
+results. The dashboard exposes no backend execution timestamp; this is observed
+post-seed UI rerun completion, not a CLI/MCP execution claim.
+No policy, index, grant or auth setting was
+changed to obtain acceptance. PR6 stays draft pending its separate merge approval.
 
 Promote the accepted dev seed configuration and verified public account IDs.
 Download only the exact257 already verified public dev Storage objects, verify

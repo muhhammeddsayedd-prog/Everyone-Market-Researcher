@@ -1,0 +1,198 @@
+{
+  "observedAt": "2026-10-18T03:19:22Z",
+  "localDate": "2026-10-18",
+  "timezone": "Africa/Cairo",
+  "environment": "prod",
+  "projectRef": "hkiafqrcxaafdbcvjlzv",
+  "projectName": "emr-prod",
+  "branch": "main PRODUCTION",
+  "source": "existing_signed_in_chrome_supabase_dashboard",
+  "browserTabId": "1091382926",
+  "initialRefreshReadback": {
+    "observedAt": "2026-10-18T03:15:04Z",
+    "browserTabId": "1091382924",
+    "rerunLinterClicked": false,
+    "securityLevels": { "ERROR": 0, "WARN": 0, "INFO": 11 },
+    "performanceLevels": { "ERROR": 0, "WARN": 0, "INFO": 68 },
+    "boundary": "Initial completed Refresh/readback only. Its backend cache age was not established. The explicit per-category Rerun linter actions below supplement this earlier observation."
+  },
+  "postSeedBoundary": {
+    "catalogCommittedAtUtc": "2026-10-18T03:07:39Z",
+    "rootConfirmedBeforeAdvisorRefresh": [
+      "285 competitors and 1754 accounts committed with accepted frozen configuration",
+      "actual second seed/import had zero mutation counters",
+      "all 257 production logo uploads and public byte-hash checks completed",
+      "26 production SQL assertions completed with zero false results",
+      "only read-only final parity remained at the first advisor refresh"
+    ],
+    "rootSubsequentlyConfirmed": "native exit 0, final parity, reconciliation and credential cleanup completed before final advisor evidence was recorded",
+    "allSeedStagesCompleteBeforeExplicitReruns": true
+  },
+  "method": {
+    "targetVerifiedVisibly": [
+      "Dashboard project name emr-prod",
+      "main PRODUCTION branch",
+      "project URL contains hkiafqrcxaafdbcvjlzv",
+      "project status Healthy"
+    ],
+    "securityUrl": "https://supabase.com/dashboard/project/hkiafqrcxaafdbcvjlzv/advisors/security",
+    "performanceUrl": "https://supabase.com/dashboard/project/hkiafqrcxaafdbcvjlzv/advisors/performance",
+    "actions": [
+      "Opened separate signed-in Chrome tab; no login or connection setup",
+      "After full-logo completion cue, clicked Security Refresh and observed disabled-to-enabled completion",
+      "Read severity tabs and all 11 Security INFO rows",
+      "Clicked Performance Refresh and observed disabled-to-enabled completion",
+      "Read severity tabs, traversed the virtualized INFO table, and collected all 68 distinct aria-rowindex positions 2 through 69 with no gaps",
+      "Opened the Auth INFO detail to read its maximum-10-connection explanation",
+      "After native seed completion and cleanup, reopened the same verified production project in a separate tab",
+      "Clicked the explicit Security Rerun linter control; observed both analysis controls disabled, then re-enabled; reread zero ERROR, zero WARN and all 11 unchanged INFO findings",
+      "Clicked the explicit Performance Rerun linter control; observed both analysis controls disabled, then re-enabled; reread zero ERROR, zero WARN and all 68 INFO virtual rows with no position gaps",
+      "Reopened the post-rerun Auth INFO detail and verified the same maximum-10-connections explanation"
+    ],
+    "rerunLinterClicked": true,
+    "observedRerunSemantics": {
+      "controlLabel": "Rerun linter",
+      "sectionLabel": "Reset suggestions",
+      "explanation": "Consider resetting the analysis after making any changes",
+      "generatorLabel": "splinter (Supabase Postgres LINTER)",
+      "confirmationDialogShown": false,
+      "completionSignal": "Rerun linter and Refresh became disabled during each request, then re-enabled with severity tabs and findings available",
+      "backendExecutionTimestampExposed": false,
+      "nativeCliExitCodeClaimed": false
+    },
+    "reruns": [
+      {
+        "category": "security",
+        "requestedAfterUtc": "2026-10-18T03:18:06Z",
+        "completionAndFindingsObservedByUtc": "2026-10-18T03:18:20Z",
+        "uiCompletionObserved": true,
+        "levels": { "ERROR": 0, "WARN": 0, "INFO": 11 },
+        "findingCounts": { "rls_enabled_no_policy": 11 },
+        "allInfoRowsRead": true
+      },
+      {
+        "category": "performance",
+        "requestedAfterUtc": "2026-10-18T03:18:28Z",
+        "completionAndSeverityCountsObservedByUtc": "2026-10-18T03:18:44Z",
+        "allInfoRowsAndAuthDetailObservedByUtc": "2026-10-18T03:19:22Z",
+        "uiCompletionObserved": true,
+        "levels": { "ERROR": 0, "WARN": 0, "INFO": 68 },
+        "findingCounts": { "unused_index": 67, "auth_db_connections_absolute": 1 },
+        "allInfoRowsRead": true,
+        "firstAriaRowIndex": 2,
+        "lastAriaRowIndex": 69,
+        "missingRowIndices": []
+      }
+    ],
+    "databaseCommandsExecuted": false,
+    "mcpUsed": false,
+    "credentialsRead": false,
+    "settingsChanged": false,
+    "policiesOrIndexesChanged": false
+  },
+  "security": {
+    "levels": { "ERROR": 0, "WARN": 0, "INFO": 11 },
+    "findings": [
+      {
+        "name": "rls_enabled_no_policy",
+        "title": "RLS Enabled No Policy",
+        "level": "INFO",
+        "count": 11,
+        "entities": [
+          "ingest.raw_items",
+          "ops.ai_extractions",
+          "ops.api_calls",
+          "ops.api_keys",
+          "ops.apify_runs",
+          "ops.audit_log",
+          "ops.cost_ledger",
+          "ops.price_book",
+          "ops.scrape_run_accounts",
+          "ops.scrape_runs",
+          "ops.settings"
+        ],
+        "review": "Same intentional backend-only default-deny tables as the accepted M01 baseline. No policies were added merely to suppress INFO findings."
+      }
+    ]
+  },
+  "performance": {
+    "levels": { "ERROR": 0, "WARN": 0, "INFO": 68 },
+    "virtualizedRowCoverage": {
+      "observedRows": 68,
+      "firstAriaRowIndex": 2,
+      "lastAriaRowIndex": 69,
+      "missingRowIndices": []
+    },
+    "findings": [
+      {
+        "name": "unused_index",
+        "title": "Unused Index",
+        "level": "INFO",
+        "count": 67,
+        "entityCounts": {
+          "ingest.raw_items": 2,
+          "ops.scrape_runs": 2,
+          "ops.scrape_run_accounts": 1,
+          "ops.apify_runs": 1,
+          "ops.ai_extractions": 1,
+          "ops.cost_ledger": 3,
+          "ops.api_keys": 1,
+          "ops.api_calls": 1,
+          "ops.audit_log": 2,
+          "app.website_pages": 3,
+          "app.members": 1,
+          "app.member_invites": 1,
+          "app.alert_rules": 1,
+          "app.saved_views": 1,
+          "app.competitors": 2,
+          "app.organizations": 4,
+          "app.org_aliases": 2,
+          "app.people": 3,
+          "app.person_aliases": 2,
+          "app.items": 12,
+          "app.item_credits": 4,
+          "app.media_assets": 1,
+          "app.campaigns": 6,
+          "app.employee_snapshots": 1,
+          "app.news_articles": 2,
+          "app.news_mentions": 1,
+          "app.stats_daily": 1,
+          "app.embeddings": 1,
+          "app.review_tasks": 4
+        },
+        "review": "Required FK/list/search indexes remain. INFO usage observations are not permission to drop indexes; no indexes were changed."
+      },
+      {
+        "name": "auth_db_connections_absolute",
+        "title": "Auth Absolute Connection Management Strategy",
+        "level": "INFO",
+        "count": 1,
+        "entity": "Auth",
+        "maximumConnections": 10,
+        "review": "The UI describes the existing absolute allocation and recommends percentage allocation when increasing instance size. This is informational; no Auth or compute setting was changed."
+      }
+    ]
+  },
+  "comparison": {
+    "historicalM01Production": {
+      "observedAtUtc": "2026-10-17T23:31:53Z",
+      "source": "native CLI using the now-deleted M01 production handoff",
+      "security": { "ERROR": 0, "WARN": 0, "INFO": 11, "rls_enabled_no_policy": 11 },
+      "performance": { "ERROR": 0, "WARN": 0, "INFO": 72, "unused_index": 72 }
+    },
+    "result": "No production advisor WARN or ERROR after the populated M02 seed. The same 11 intentional security INFO remain; 67 unused-index INFO and one Auth-allocation INFO are visible.",
+    "sourceDifference": "Historical production CLI results contained database lints only and did not include the Auth-allocation row. Current UI includes that row. This does not establish that Auth allocation changed or regressed. Historical dev MCP also retained the maximum-10 Auth INFO."
+  },
+  "limitations": [
+    "The dashboard exposes no analysis-generated-at timestamp or native CLI exit code. The final receipt records the explicit advertised Rerun linter action and observed UI completion for each category, followed by rereading every INFO row; it is not merely the earlier Refresh readback. It does not claim an uncached CLI/MCP command or independently inspect the dashboard's internal backend/cache mechanism.",
+    "All 68 INFO issue rows and their types/entities were traversed. Individual unused-index detail drawers were not opened, so this receipt does not enumerate each index name.",
+    "Advisor results do not replace migration, schema/grant/RLS, data-parity, real no-op, public-byte, native-completion or credential-cleanup receipts.",
+    "No OAuth journey, production workflow, collection, paid provider call or merge occurred in this advisor inspection."
+  ],
+  "acceptance": {
+    "zeroWarningsAndErrors": true,
+    "populatedProductionReadback": true,
+    "explicitSecurityAndPerformanceLinterRerunsCompleted": true,
+    "infoFindingsRetained": true
+  }
+}
