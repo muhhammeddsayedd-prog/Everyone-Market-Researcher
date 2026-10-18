@@ -1,241 +1,67 @@
-# M03 native workflow preparation
+﻿# M03 foundation workflow source
 
-These modules build **inactive native JSON blueprints**, using the observed
-n8n 2.43.5 node versions and pinned official source. They do not call n8n, run
-SQL, authenticate providers or write actual exports. The actual capability
-probe is recorded separately in M03 evidence. That original unused probe was
-archived without execution; later credential checks have their own receipts.
+`buildFoundationGatewayWorkflows(bindings, transport)` is the current preparation entry point. It builds exactly 25 inactive workflows: five SUBs, WF-00/19/90/91/99 and 15 explicit stubs. It performs no network request, credential read, deployment or execution. All generated workflows disable successful/error/manual execution storage and progress storage. GW-01 remains closed and is never an input to this builder.
 
-- `buildCollectorStubs`: the 15 named T8 collector/AI/publish/alert stubs.
-- `buildSharedWorkflows`: Start, Finish, bounded atomic Ingest, keyed Log cost
-  and log-only Notify.
-- `buildErrorHandler`: WF-90, safe classification and six-hour log-only
-  notification claim.
-- `buildOrchestrator`: WF-00, all Cairo clocks, static child references and
-  disabled PM/backfill gates. The workflow remains inactive.
-- `buildHealthWorkflow`: WF-91, Cairo-yesterday accrual, checked health output,
-  log-only notifications and publish/alert stubs. Stats refresh fails closed
-  while its later RPC is unavailable.
+`bindings.dev.json` retains the five actual provider/role references and intentionally has no invented workflow or tag IDs. A full build requires the real IDs from safe provisioning/readback. Unit tests use synthetic references only. Generated blueprints and proposed release graphs are not saved Cloud definitions or actual exports.
 
-Full WF-19 and WF-99 workflows remain incomplete. The readback component and
-launch descriptor below are source preparation, with explicit remaining gates.
+## Fixed HTTPS transport
 
-## Binding and output boundary
+`build-foundation-gateway.mjs` compiles a closed list of reviewed legacy database-node definitions into fixed operations on `/api/internal/n8n/foundation`. Final graphs contain no SQL, RPC/schema/role selector, Postgres node or Postgres credential. The old native builders remain local source/contract history, not a runtime fallback. A changed or unknown source query/replacement is rejected at compilation.
 
-Every builder accepts a manifest validated by
-`packages/shared/src/n8n-bindings.ts`: fixed dev instance/project/runtime,
-canonical workflow and tag names, actual non-secret reference IDs, and logical
-credential references where needed. Credentials retain their actual ID, display
-name and type: native `apifyApi` and `openAiApi` use predefined HTTP authentication;
-existing Vimeo/YouTube Header Auth stays `httpHeaderAuth`. Do not rename,
-duplicate or convert native credentials to satisfy a canonical display name.
-No production bindings or credential values are accepted. Schema validation
-does not establish that a reference exists on the server; actual UI/API readback
-must supply and verify those IDs. Synthetic IDs occur only in unit tests, never
-in prepared import artifacts.
+The proposed source profile is `df4f29ec-e2dc-4d82-a276-62a4e695e6f9`, with a maximum 256 admitted requests, 60 minutes and two concurrent requests. This constant creates no hosted authority or approval. It is distinct from the closed 100-request GW-01 window; unused GW-01 allowance cannot transfer.
 
-There is no real `bindings.dev.json` yet. Do not invent one to get a build.
-These are preparation functions, not a deployment CLI. Native API deployment
-must project the allowed API request shape and apply tags separately as required
-by the pinned API; do not blindly POST this blueprint wrapper. Save only actual
-changed, read-back hosted workflow exports under `../workflows/`.
+Each fixed operation sends one original request and then one durable status read with deterministic, distinct UUIDs derived from the actual native execution and fixed node identity. There are no automatic HTTP retries. Responses must match the original operation, new window, exact audience, open lifetime and durable-replay marker. Unknown writes stop or reconcile the original registry; they do not get new business IDs. Launch additionally requires a fresh native first-authorization response, equality with its durable receipt and at least six minutes remaining. A cached authorization or status read alone never permits an actor POST.
 
-## Temporary credential probes
+The protected Preview and new dedicated machine credential are future acceptance bindings. They are not GW-01's removed credential/bypass or either old deployment. The default source has all workflows inactive and both launch controls disabled. The third local-builder argument `{launchEnabled:true}` can materialize a reviewable release graph; it is not approval to save, activate or execute that graph.
 
-`buildCredentialProbe` creates separate manual-only, inactive probes for the
-five logical credentials. The files in `prepared/credential-probe-*.dev.json`
-contain the authorized credential references supplied by actual UI readback.
-They have no saved workflow IDs and are prepared imports, not hosted exports.
-The explicit temporary-probe exception omits WF-90 routing and external
-notifications; it does not close a foundation acceptance criterion.
+## Workflow readiness
 
-Each execution permits one identity SELECT or one fixed metadata GET, with no
-automatic retry. HTTP requests use a 60-second timeout, certificate verification,
-no redirects and no body. The final Code node emits only fixed verification and
-failure flags. A workflow that continues after a native error can show Success
-while its receipt says `authenticationVerified:false`; inspect the receipt.
-Postgres additionally requires both native identities to be `n8n_writer` and
-database `postgres` on PostgreSQL 17. That identity alone does not attest the
-saved host/project, which must be checked separately.
+Every row below is local source readiness. There are no actual Cloud foundation IDs/exports in the current empty `workflowRefs`. Actual probe and GW-01 exports retain their own historical scopes.
 
-Apify uses authenticated [`/v2/users/me/limits`](https://docs.apify.com/api/v2/users-me-limits-get)
-because the full profile endpoint can return a proxy password. OpenAI reads
-`/v1/models`; Vimeo and YouTube read the fixed public account/channel metadata
-endpoints from T3. Their projected results contain no profile, model list,
-financial metadata, response headers or raw error text. These probes do not
-start actors, call inference, collect content or establish a project spend cap.
+| Workflow                      | Fixed operations / behavior                                                                                                                          | Local coverage                                                                                         | Remaining actual proof                                                            |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| SUB Start                     | `run.start`; fixed caller/environment, typed platform/mode, stable acknowledgement                                                                   | Legacy input tests plus compiled gateway graph/status tests                                            | Restricted writer RPC through the distinct foundation runtime                     |
+| SUB Finish                    | `run.finish`; compares original durable completion before downstream stub dispatch                                                                   | Completion/replay tests, typed graph compilation                                                       | Actual first dispatch and replay suppression                                      |
+| SUB Ingest                    | `apify.process`; one original registered account/page, atomic item/account/cost/result/finish                                                        | Existing recovery/atomic tests and compiled transport                                                  | Approved first item, second genuine run adds zero items with separate actual cost |
+| SUB Log cost                  | `cost.log`; at most two known actual Apify ledger entries, four safe attribution fields                                                              | Positive actual-entry shape and invalid metadata/provider tests                                        | Idempotent replay of the actual callback cost, not a fabricated row               |
+| SUB Notify                    | `error.log` with notify; log only, no delivery credentials                                                                                           | Existing safe input and compiled transport                                                             | Actual audit row, no external notification                                        |
+| WF-00                         | Cairo slots and static references; unknown slot uses `error.log`; PM/backfill stay disabled                                                          | Existing schedule/dispatch tests and complete final graph references                                   | Manual slot dispatch readback, including both Saturday 04:00 jobs                 |
+| WF-19                         | `apify.read`, two `apify.terminal.read`, bounded `apify.dataset.read`, `apify.process`, `apify.completion.read`, SUB Finish; exact `callback.reject` | Callback/recovery/normalizer tests, all denial branches and ambiguous-write routing                    | Actual webhook, settlement, replay/forgery/race/interruption and atomic receipts  |
+| WF-90                         | `error.log`, `error.count` with atomic cooldown claim, log-only Notify                                                                               | Existing error classification and new fixed transport                                                  | Automatically triggered dev Error Trigger; a manual mock is insufficient          |
+| WF-91                         | `health.guard`, `fees.accrue`, `health.read`; Cairo yesterday, log-only notifications/stubs                                                          | Existing health/idempotency tests and compiled graph                                                   | Actual repeated accrual and health result; stats flag remains false               |
+| WF-99                         | Pre-read original launch, SUB Start, `launch.authorize`, exactly one async native actor POST, `launch.reconcile`, `launch.read`, WF-19 recovery      | Exact build/input/limits, disabled controls, ambiguous POST, original-ID and first-authorization tests | Separate approval and actual two sequential actor starts                          |
+| WF-10 / WF-11 / WF-12 / WF-13 | Vimeo / Instagram posts-reels / Stories / YouTube explicit stubs                                                                                     | Existing stub validation, fixed child references                                                       | Actual dispatch only; no collector behavior claimed                               |
+| WF-18 / WF-18b / WF-21        | LinkedIn posts / employees / website stubs                                                                                                           | Same local stub/graph checks                                                                           | Actual dispatch only                                                              |
+| WF-22 / WF-23                 | News / awards stubs; separate Sunday 07:00/07:30 clocks                                                                                              | Existing schedule/stub checks                                                                          | Actual dispatch only                                                              |
+| WF-30 / WF-32 / WF-50         | AI / linker / briefs stubs                                                                                                                           | Existing stub checks                                                                                   | Actual dispatch only; no model calls                                              |
+| WF-40 / WF-70 / WF-80         | Removal / publish / alert stubs; publish tags and alert kind typed                                                                                   | Existing stub checks                                                                                   | Actual dispatch only; no media, removal or notification consumer                  |
 
-## Source-only Apify slice
+SUB Ingest uses one atomic bounded processor instead of independently retryable chunks. This is the exact single-page M03 smoke, not a general crawler or a later-collector chunk/outbox implementation. SQL already finishes the parent; completion recovery never issues a replacement finish write. Stored replay receipts suppress downstream dispatch. First-transition delivery to stubs is at least once, not an exactly-once external outbox.
 
-`packages/shared/src/n8n-apify-contracts.ts` is also exported through the shared
-package index. It validates the notified run ID, the registered single-account
-smoke context and the authenticated terminal response. Callback-supplied
-accounts, actor, dataset, status and cost are discarded. Only the documented wire
-status `TIMED-OUT` is mapped to SQL `TIMED_OUT`; intermediate statuses and a
-missing `usageTotalUsd` fail closed. Anonymous run reads can omit that cost.
+## Actor and ingestion bounds
 
-`settledTerminalRun` requires two matching snapshots at least ten seconds apart.
-This follows the provider's settling guidance; it does not guarantee that a
-provider can never adjust billing later. `smokeLaunchDescriptor` describes one
-async POST with `waitForFinish:0`, explicit build, timeout, memory, ad-hoc webhook
-and a supplied two-run cap policy. It makes no request and always reports
-`spendAdmissionVerified:false`. A nonblank reference or an `approved:true` field
-is not owner approval. Verify the actual actor build, cap support/minimum,
-current price book, total ceiling and durable run admission before any paid use;
-the descriptor does not invent those facts or replace an ambiguous POST.
+The disabled async POST reuses existing `Apify account` / `EYmaOt0rd45ysq0J` / native `apifyApi` through HTTP Request Predefined Credential Type. It does not extract or duplicate that credential. Actor `aYG0l9s7dbB7j3gbS` / `apify/website-content-crawler` is pinned to successful immutable build `0.3.99` / `BdKJRCYsnmlzPfH3n`. Public build readback at 18 October 2026 23:24:21.499 UTC had a 1 MiB streaming ceiling and started no actor.
 
-`buildCallbackReadbackComponent` emits native nodes for notification validation,
-registered-run lookup and one authenticated first terminal GET. Its output is a
-component with `runnableWorkflow:false`, not a runnable WF-19 export. Unknown
-runs stop before provider reads. Already processed runs stop for the still
-missing saved-receipt replay branch. The component does not ingest, log costs,
-complete a run or claim callback acceptance.
+The exact input is the Everyone-owned `https://everyone.film/about-everyone`, Cheerio, depth 0, one page/result/concurrent request, Markdown on, files/linked content/sitemaps/llms.txt/summarization off, zero request retries/session rotations, valid HTTPS and robots.txt respected. Run options are async (`waitForFinish=0`), no restart, memory 1024 MiB, timeout 300 seconds and `maxTotalChargeUsd=1`. Current [Run Actor API](https://docs.apify.com/api/v2/actors-runs-post) documents the charge option; its actual enforcement and eventual invoice are not established by this source. The separate two-run application approval/reserve remains required.
 
-The remaining full-workflow gates are:
+The existing installed native integrations cannot impose a pre-download byte ceiling: pinned [n8n 2.43.5 HTTP parameters](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/HttpRequest/V3/Description.ts) and [execution code](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/HttpRequest/V3/HttpRequestV3.node.ts) expose no response-byte option. Native [Apify 0.6.10 dataset parameters](https://github.com/apify/n8n-nodes-apify/blob/8edec8b87b811c0e85286b6f56e0124c021e26b5/nodes/Apify/resources/datasets/get-items/properties.ts) offer row/field selection, not byte bounds. That package's helper retries HTTP 429/5xx, including POST, so it is not the bounded launch implementation. Top-level field selection and a post-download size check would not close this gap.
 
-- Native webhook/response contracts and the required durable
-  `apify_callback_rejected` audit path. The current generic logger produces a
-  different action and is not substituted as AC7 evidence.
-- A bounded delayed reread, saved-receipt replay and bounded dataset projection
-  wired to the verified exact-page adapter below. The general URL parser has no
-  Cloud runtime pass.
-- Atomic persistence/finish wiring, original-run registration-race recovery and
-  the reviewed paid batch admission. No automatic POST retry is permitted.
-- Strict restricted Postgres access, actual saved bindings/exports and native
-  end-to-end verification.
+The new server reader therefore requires a separate dev read-only provider token at the next approval boundary. It never extracts the existing n8n token. It uses only fixed `api.apify.com` HTTPS GETs, all-answer public DNS screening with a pinned selected address, normal hostname/certificate validation, no redirects/compression/retry and closed sockets. Limits before concatenation/parsing: run metadata 64 KiB, original `INPUT` 4 KiB, dataset 256 KiB. An external abort cancels the owned request and waits for socket closure; the absolute deadline also bounds DNS/slow streaming. The actor POST itself remains the native predefined-credential request with a 15-second timeout and no retries; n8n does not expose a byte limit for its small run-start acknowledgement. This distinction remains explicit in the live packet.
 
-## Safety corrections
+Registration readback authenticates the exact original actor ID, build ID/number, start time, memory/timeout/charge options and original INPUT. A POST acknowledgement without its original ID remains unresolved and forbids a replacement actor; no candidate is guessed from a time window. Callback processing reads only registered context, obtains two authenticated terminal snapshots at least ten seconds apart and compares the dataset reader's third snapshot against that settled context. The bounded reader projects one exact-page row before n8n receives it; Cloud normalizer Code uses the proven narrow adapter and no global URL constructor. Metadata can never supply arbitrary accounts, datasets, URLs or SQL.
 
-Start has no automatic retry because the existing M01 `ops.start_run` inserts
-a new run on every call. A lost response requires reconciliation. Notification
-claims also have no automatic retry because a second claim can return zero
-after a successful but unacknowledged first claim. Keyed cost logging and
-atomic receipt persistence retain their idempotent boundaries.
+Unknown/mismatched callback paths durably invoke the exact `apify_callback_rejected` audit alias with bounded execution/run-ID/reason fields. They do not ingest, charge, update accounts or notify. Unknown atomic acknowledgements proceed to the original registry/completion readback; no new run, actor or business ID is used.
 
-Ingest wraps `ops.process_apify_run` for the one-account, one-page M03 dev smoke
-contract. It does not split ingest/report/cost/completion into independently
-retryable nodes. It cannot prove that the caller authenticated Apify readback.
-Later collectors need their own durable chunk/dispatch design. Log cost accepts
-only `meta.cost_key`; arbitrary request/provider context is rejected. The atomic
-processor and fixed-cost accrual create their own reviewed database metadata.
+## Verification and saved definitions
 
-Finish with a completion reads its saved registry receipt and compares all
-durable fields; a matching first-transition receipt permits downstream stubs.
-A replay receipt with `finished_now:false` does not dispatch. Supplying the same
-original first receipt again is still an at-least-once delivery boundary;
-neither a flag nor a sub-workflow call is an exactly-once external outbox.
-
-WF-90 maps only known source workflow IDs and drops raw messages/stacks. Normal
-errors use the actual originating execution ID. Trigger/activation errors lack
-that ID; they use `handler-<actual error-handler execution ID>` and node
-`Trigger activation`, explicitly identifying handler correlation. No parent
-run ID is guessed or terminally failed from unverified payload data. Manual
-Error Trigger mock data does not prove automatic error routing.
-
-The native schedule uses separate Sunday 07:00 news and 07:30 awards triggers,
-avoiding an assumed 30-minute Wait inside a 15-minute workflow. Manual `news`
-tests WF-22; manual `awards` tests WF-23. The shared logical planner still
-records a 30-minute delayed awards call. One daily 04:00 trigger lets the Code
-adapter select both LinkedIn and Saturday removal without duplicate dispatch.
-PM/backfill nodes and Config flags remain disabled regardless of database flags.
-
-## Targeted local checks
-
-`bindings.dev.json` contains the five actual, reviewed dev credential bindings.
-It intentionally has no invented workflow/tag IDs; it is not a full deployment
-manifest. Builders requiring foundation references continue to fail closed.
-Saved settings, successful provider metadata and strict native database login
-remain separate evidence in M03 progress.
+Focused commands, all local and synthetic/localhost only:
 
 ```powershell
-node --test n8n/foundation/*.test.mjs
-pnpm.cmd exec vitest run packages/shared/src/n8n-bindings.test.ts packages/shared/src/n8n-apify-contracts.test.ts
+node --test n8n/foundation/build-foundation-gateway.test.mjs n8n/foundation/build-foundation-completion.test.mjs
+pnpm.cmd --filter web exec vitest run server/n8n-worker/apify-reader.test.ts --maxWorkers=1
+pnpm.cmd --filter @emr/shared exec vitest run src/n8n-apify-recovery.test.ts
 ```
 
-The foundation package's `test` script discovers its local tests. CI's unit job
-already includes `n8n/foundation/*.test.mjs`, so the credential-probe and Apify
-preflight regressions run with normal PR CI; these tests make no API calls.
+CI already discovers `n8n/foundation/*.test.mjs` and web/shared Vitest tests. Tests execute generated Code without a URL global and inspect graph/HTTP contracts. The bounded reader tests use actual local HTTP sockets with injected transport, plus synthetic DNS/abort/provider data. They do not establish live Apify authentication, deployed TLS, actual n8n node execution, saved definitions or final acceptance.
 
-The tests execute generated validation/dispatch Code and inspect native graph,
-mapper and query contracts with synthetic inputs. They do not execute the real
-Postgres, Set, Switch, Schedule, Error Trigger or Execute Workflow nodes. Hosted
-import, references, TLS, RPC login, callback, automatic errors and actual child
-dispatch remain separate M03 acceptance gates.
-
-## Observed Cloud normalizer boundary
-
-The archived temporary runtime probe has three saved manual executions. Global
-URL parsing and both `url`/`node:url` constructor imports failed. Crypto SHA-256,
-Buffer, TextEncoder and the common helpers passed. Its native success status
-means the diagnostic returned fixed booleans; the general website normalizer
-did not pass. The original diagnostic's incorrect 33-character expected item
-ID is preserved separately and was corrected before the follow-up.
-
-`normalizers/smoke_website_m03.js` supplies a separate exact-page adapter for
-`https://everyone.film/about-everyone`. It rejects every nonexact requested URL
-and permits associated URLs only from the explicit Everyone root/about list.
-It adds no parser, shim, dependency or security exception. Compose its factory
-with the shared `validateSmokeWebsiteRow`, `buildSmokeWebsiteSnapshot` and
-`invalidWebsiteRow` function declarations; omit the local CommonJS export blocks
-from pasted Code. The adapter preserves the existing ten-field snapshot, caps,
-SHA-256 identity and `smoke_website_stub.v1` output contract. The same reviewed
-source passed one Cloud execution with synthetic public input and six fixed
-positive/denial/bounds booleans; 21 local adapter tests and the existing 103
-normalizer tests pass.
-
-The generic `prepare_ingest_groups.js` helper still uses a URL constructor. The
-native SUB Ingest builder does not call that helper: it validates bounded JSON
-and submits the atomic RPC. Neither this distinction nor the exact-page probe
-establishes native database execution, real actor capture or full callback
-acceptance. The three `M03-runtime-capability-probe.*.dev.json` files are actual
-temporary probe exports, kept inactive and archived with recoverable history.
-Their default saved settings are diagnostic evidence, not foundation settings
-acceptance. See the milestone's `runtime-capability-20261018.json` receipt.
-
-## Local callback and original-run recovery
-
-`packages/shared/src/n8n-apify-recovery.ts` is a pure, dependency-free runtime
-factory after TypeScript erasure. Generated Code uses that same factory; local
-tests cross-check its terminal projection against the existing Zod contract.
-It validates the single registered M03 account, exact normalized page, delayed
-cost settlement and complete atomic SQL receipt. It performs no requests,
-timers, database calls, actor launches, audits or notification delivery.
-
-A processed registry returns its saved receipt with both transition flags false
-before any provider read. An ambiguous atomic response requires actual registry
-readback. A saved-only result suppresses dispatch and explicitly reports
-`payloadEqualityVerified:false`: the PostgreSQL JSONB digest establishes the
-saved receipt, but it cannot independently prove the attempted groups matched.
-An observed native SQL receipt must match that durable receipt before its first
-transition can remain eligible for downstream stubs. SQL already finishes the
-parent in the atomic transaction; recovery never issues another finish write.
-
-Registration recovery uses the original returned actor-run ID and the known
-parent/account context. It can describe registering that same original ID after
-a proven absent readback, or processing an already matching registration. An
-ambiguous actor POST without its original ID stops; it never launches a
-replacement. This handles the callback-before-registration race through
-collector recovery, without trusting metadata from the rejected webhook.
-
-The pure settlement planner allows at most four terminal observations within
-180 seconds. The native callback blueprint deliberately uses two authenticated
-GETs separated by a ten-second Wait and stops if cost or identity changes.
-Neither a stable pair nor local tests establish final provider billing forever.
-
-The new callback/smoke builders produce inactive source blueprints only. Real
-workflow/tag IDs remain required. WF99 is recovery-only while durable spend
-admission is unavailable. Unknown callbacks stop at the missing exact rejection
-audit gate; a generic WF90 error is not that audit. The success dataset path has
-a throwing release gate until actual actor output and execution-storage privacy
-are reviewed. Its top-level projection and post-response byte check do not prove
-a streaming transport bound or that raw nested metadata contains no secrets.
-Webhook, Wait and Respond node versions have pinned-source provenance, separate
-from actual native import/execution verification. No foundation export, actor
-execution, complete callback acceptance or AC7 pass follows from these builders.
-
-Focused local checks (synthetic input only):
-
-```powershell
-pnpm.cmd --filter @emr/shared exec vitest run src/n8n-apify-contracts.test.ts src/n8n-apify-recovery.test.ts
-node --test n8n/foundation/build-apify-callback.test.mjs n8n/foundation/build-apify-smoke.test.mjs
-```
+Provisioning must use the reviewed supported API consumer with allowlisted projections, ledger-backed owned IDs and inactive readback. No broad editor/context snapshot, screenshot, autocomplete/Variables-value enumeration, browser-storage read or raw credential-bearing export is permitted. Store only actual read-back sanitized definitions under `n8n/workflows/`; blueprints stay source preparation. Unknown fees remain unknown, the $25/day default remains, `stats_daily_enabled=false`, and the 24 October tooling follow-up is preserved.

@@ -659,6 +659,7 @@ export function createApifyRecoveryRuntime() {
   }
   return {
     registry,
+    validateTerminal: terminal,
     savedReplay,
     projectTerminal,
     settle,

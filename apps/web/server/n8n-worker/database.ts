@@ -5,8 +5,9 @@ import { join } from 'node:path';
 import { checkServerIdentity, type ConnectionOptions } from 'node:tls';
 import { Pool, type PoolClient, type PoolConfig } from 'pg';
 import { attachDatabasePool } from '@vercel/functions';
-import { gatewayIdentity, type GatewayRequest } from '@emr/shared';
+import { gatewayIdentity, type GatewayRequest, type FoundationRequest } from '@emr/shared';
 import type { GatewayConfig } from './auth';
+import type { FoundationConfig } from './foundation';
 import { WorkerFailure } from './errors';
 
 export const poolerHost = 'aws-1-eu-central-1.pooler.supabase.com';
@@ -52,6 +53,51 @@ export async function dispatchDatabase(
   config: GatewayConfig,
   signal: AbortSignal,
 ): Promise<unknown> {
+  return dispatchBoundDatabase(pool, input, config, signal, 'gw01');
+}
+type BoundConfig = Omit<GatewayConfig, 'windowId'> & { windowId: string };
+type ExternalRead = (
+  registry: unknown,
+  operation: 'apify.dataset.read' | 'apify.terminal.read' | 'launch.reconcile',
+  signal: AbortSignal,
+) => Promise<unknown>;
+export async function dispatchFoundationDatabase(
+  pool: WorkerPool,
+  input: FoundationRequest,
+  config: FoundationConfig,
+  signal: AbortSignal,
+  read: ExternalRead,
+): Promise<unknown> {
+  return dispatchBoundDatabase(pool, input, config, signal, 'foundation', read);
+}
+async function dispatchBoundDatabase(
+  pool: WorkerPool,
+  input: GatewayRequest | FoundationRequest,
+  config: BoundConfig,
+  signal: AbortSignal,
+  profile: 'gw01' | 'foundation',
+  read?: ExternalRead,
+): Promise<unknown> {
+  // The selector is supplied only by the two server entry points, never HTTP
+  // args. Every SQL statement remains a closed literal with bound values.
+  const sqls =
+    profile === 'gw01'
+      ? {
+          identity: identitySql,
+          inspect:
+            "select ops.worker_gateway_admit($1::uuid,$2::uuid,'identity.read','{}'::jsonb,'inspect') as receipt",
+          admit: 'select ops.worker_gateway_admit($1::uuid,$2::uuid,$3::text,$4::jsonb) as receipt',
+          status: 'select ops.worker_gateway_status($1::uuid,$2::uuid) as receipt',
+          execute: 'select ops.worker_gateway_execute($1::uuid,$2::uuid,$3::text,$4::jsonb) as receipt',
+        }
+      : {
+          identity: identitySql.replace('emr-gw01-dev', 'emr-m03-foundation-dev'),
+          inspect:
+            "select ops.foundation_gateway_admit($1::uuid,$2::uuid,'identity.read','{}'::jsonb,'inspect') as receipt",
+          admit: 'select ops.foundation_gateway_admit($1::uuid,$2::uuid,$3::text,$4::jsonb) as receipt',
+          status: 'select ops.foundation_gateway_status($1::uuid,$2::uuid) as receipt',
+          execute: 'select ops.foundation_gateway_execute($1::uuid,$2::uuid,$3::text,$4::jsonb) as receipt',
+        };
   if (signal.aborted) throw new WorkerFailure('outcome_unknown', 503);
   const client = await pool.connect();
   let released = false;
@@ -104,18 +150,13 @@ export async function dispatchDatabase(
   }
   try {
     await begin();
-    const native = (await query(identitySql)).rows[0];
+    const native = (await query(sqls.identity)).rows[0];
     // This SELECT executes before every SECURITY DEFINER admission/operation.
     const identity = gatewayIdentity.safeParse({ ...native, projectRef: 'zmotjsbzhzjvpelxvxlf' });
     if (!identity.success) throw new WorkerFailure('identity_denied', 403);
     await commit();
     await begin();
-    const binding = (
-      await query(
-        "select ops.worker_gateway_admit($1::uuid,$2::uuid,'identity.read','{}'::jsonb,'inspect') as receipt",
-        [config.windowId, input.requestId],
-      )
-    ).rows[0]?.receipt;
+    const binding = (await query(sqls.inspect, [config.windowId, input.requestId])).rows[0]?.receipt;
     await commit();
     if (
       !binding ||
@@ -133,9 +174,7 @@ export async function dispatchDatabase(
       throw new WorkerFailure('deployment_denied', 403);
     await begin();
     const params = [config.windowId, input.requestId, input.operation, JSON.stringify(input.args)];
-    const admitted = (
-      await query('select ops.worker_gateway_admit($1::uuid,$2::uuid,$3::text,$4::jsonb) as receipt', params)
-    ).rows[0]?.receipt;
+    const admitted = (await query(sqls.admit, params)).rows[0]?.receipt;
     // Separate commit is essential: failed/unknown business execution still counts.
     await commit();
     if (!admitted || typeof admitted !== 'object' || !('state' in admitted))
@@ -160,11 +199,38 @@ export async function dispatchDatabase(
       return value;
     };
     if (admitted.state !== 'admitted') return withIdentity(admitted);
+    if (
+      profile === 'foundation' &&
+      (input.operation === 'apify.dataset.read' ||
+        input.operation === 'apify.terminal.read' ||
+        input.operation === 'launch.reconcile')
+    ) {
+      if (!read) throw new WorkerFailure('unavailable', 503);
+      await begin();
+      const externalId = input.args.apifyRunId;
+      const context = (
+        await query('select ops.foundation_gateway_read_context($1::uuid,$2::uuid,$3::text) as context', [
+          config.windowId,
+          input.requestId,
+          externalId,
+        ])
+      ).rows[0]?.context;
+      // Persist the one-shot read intent BEFORE either authenticated HTTP GET.
+      await commit();
+      const result = await read(context, input.operation, signal);
+      if (signal.aborted) throw new WorkerFailure('outcome_unknown', 503);
+      await begin();
+      const completed = (
+        await query(
+          'select ops.foundation_gateway_complete_read($1::uuid,$2::uuid,$3::text,$4::jsonb) as receipt',
+          [config.windowId, input.requestId, externalId, JSON.stringify(result)],
+        )
+      ).rows[0]?.receipt;
+      await commit();
+      return completed;
+    }
     await begin();
-    const sql =
-      input.operation === 'request.status'
-        ? 'select ops.worker_gateway_status($1::uuid,$2::uuid) as receipt'
-        : 'select ops.worker_gateway_execute($1::uuid,$2::uuid,$3::text,$4::jsonb) as receipt';
+    const sql = input.operation === 'request.status' ? sqls.status : sqls.execute;
     const values =
       input.operation === 'request.status' ? [config.windowId, input.args.targetRequestId] : params;
     const result = (await query(sql, values)).rows[0]?.receipt;
@@ -190,6 +256,31 @@ export async function dispatchDatabase(
     }
     if (!closed) throw new WorkerFailure('cleanup_unverified', 503);
   }
+}
+let foundationPool: Pool | undefined;
+export async function dispatchFoundationWorkerDatabase(
+  input: FoundationRequest,
+  config: FoundationConfig,
+  signal: AbortSignal,
+  read: ExternalRead,
+) {
+  if (!foundationPool) {
+    const ca = readFileSync(join(process.cwd(), 'server/n8n-worker/certs/supabase-root-2021.crt'));
+    foundationPool = new Pool({
+      ...databaseConfig(config.password, ca),
+      application_name: 'emr-m03-foundation-dev',
+    });
+    foundationPool.on('error', () => {});
+    foundationPool.on('connect', (client) => client.on('error', () => {}));
+    attachDatabasePool(foundationPool);
+  }
+  return dispatchFoundationDatabase(
+    { connect: async () => (await foundationPool!.connect()) as PoolClient },
+    input,
+    config,
+    signal,
+    read,
+  );
 }
 let cachedPool: Pool | undefined;
 export async function dispatchWorkerDatabase(

@@ -27,6 +27,7 @@ const normalizer = [
 ]
   .map((fn) => fn.toString())
   .join('\n\n');
+export const cloudSmokeNormalizerSource = normalizer;
 
 // These three types have pinned official-source provenance, not an actual
 // instance import/execution receipt. No existing observed-type guard is relaxed.

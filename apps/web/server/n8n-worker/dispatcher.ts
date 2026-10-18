@@ -15,7 +15,7 @@ interface Dependencies {
   log: (record: SafeLog) => void;
   deadlineMs?: number;
 }
-async function readBody(request: Request, signal: AbortSignal) {
+export async function readBody(request: Request, signal: AbortSignal) {
   if (request.headers.get('content-encoding')) throw new WorkerFailure('unsupported_encoding', 415);
   if (!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(request.headers.get('content-type') ?? ''))
     throw new WorkerFailure('invalid_content_type', 415);
@@ -52,7 +52,7 @@ async function readBody(request: Request, signal: AbortSignal) {
     reader.releaseLock();
   }
 }
-function response(value: unknown, status: number) {
+export function response(value: unknown, status: number) {
   return Response.json(value, {
     status,
     headers: { 'cache-control': 'no-store, private', 'x-content-type-options': 'nosniff' },

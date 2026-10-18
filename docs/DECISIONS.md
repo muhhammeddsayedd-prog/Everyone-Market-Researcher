@@ -169,3 +169,37 @@ Owner approved the exact strict-TLS packet at100290a291530d30d0387269c1a0805ad4f
 Includes one additive admission/idempotency dev migration, branch-specific Preview credentials, new owned trial-only custom authentication/bypass entries and cleanup, inactive owned M03 adapters, and one persisted100-total-attempt/two-concurrent/30-minute connection trial with USD1 planning reserve (not an enforced invoice cap). Invalid requests, retries, status and shutdown checks count. Clock starts only after local/preview/delivery readiness; counters/window are never replaced/reset across deployments. Bind the reviewed exact deployment URL/SHA/ID once before admission; use immutable Vercel metadata, not caller headers or a mutable alias.
 
 Existing nine migrations, seeded data, exclusions, logos and provider credentials remain intact. No arbitrary SQL/host/role/RPC, administrator/service credential in runtime, raw-ingestion bypass or new Data API exposure. Gateway-only identity/read/retained acknowledgement acceptance is separate from live callback/actor acceptance. Production, incident remediation, actor/model calls, collection, recurring activation, notification, PR8 merge/M03 closure and M04 remain unapproved.
+
+## M03 full-foundation source continuation — 19 October 2026
+
+The owner's attached continuation authorizes local M03 source/adapters/tests,
+necessary **forward-migration source**, and safe owned **inactive dev** workflow
+provisioning through supported access. It preserves the completed GW-01 trial
+as a closed historical exception. This is not approval for a new hosted window,
+migration push, actor start, multi-workflow batch, production operation or merge.
+
+The current source uses a separate fixed-alias HTTPS foundation route and actual
+restricted `n8n_writer` authentication with strict CA/hostname checks. It does not
+silently return to the failing native Postgres node or expose SQL/RPC/host/role
+selection. Its new window is never derived from GW-01 or its remaining allowance.
+No source migration creates an active approval. The exact four forward versions
+and proposed lifecycle are listed in the existing
+[live-acceptance packet](../milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md).
+
+Pinned n8n 2.43.5 HTTP/Apify node schemas cannot enforce a streaming response-byte
+limit. The smallest M03 transport addition is therefore a server reader for the
+registered original run, original INPUT and one exact Everyone page, with fixed
+origins, hard streaming bounds and allowlisted output. A genuinely new dev
+read-scoped provider token is a later approval/credential gate; the existing
+shared native Apify token is never extracted or duplicated. Existing native
+Apify credentials remain the disabled asynchronous launch binding. Two starts
+maximum, separate actual cost per run, first-response-only durable admission,
+original-ID reconciliation and permanent closeout are required.
+
+All 25 generated definitions are inactive, retain no execution data and keep
+launch controls disabled. Saved native IDs/exports and future live results must
+be recorded separately from source/local/CI evidence. No whole-editor/context
+snapshot, Variables enumeration, browser storage read or raw sensitive export
+is an acceptable verification path. Unknown fees, the USD 25 alert default and
+the 24 October tooling follow-up remain unchanged. Private incident preparation
+and production decisions stay outside this source authorization.

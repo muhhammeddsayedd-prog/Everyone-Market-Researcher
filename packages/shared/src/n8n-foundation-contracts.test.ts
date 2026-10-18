@@ -13,6 +13,31 @@ const window = {
   boundDeploymentId: 'dpl_example',
 };
 describe('separate bounded M03 foundation protocol', () => {
+  it('permits only measured keyed Apify cost replay, including nullable optional attribution', () => {
+    const e = {
+      provider: 'apify',
+      category: 'scrape',
+      quantity: 1,
+      unit: 'result',
+      cost_usd: 1.01,
+      run_id: requestId,
+      competitor_id: requestId,
+      platform: 'website_work_page',
+      item_id: null,
+      day: null,
+      meta: {
+        actor: 'apify/website-content-crawler',
+        apify_run_id: 'originalRun',
+        account_id: requestId,
+        cost_key: 'apify:originalRun:' + requestId,
+      },
+    };
+    const make = (entry: unknown) =>
+      foundationRequest({ version: 1, requestId, operation: 'cost.log', args: { entries: [entry] } });
+    expect(make(e).args).toEqual({ entries: [e] });
+    expect(() => make({ ...e, meta: { ...e.meta, token: 'private' } })).toThrow('invalid_request');
+    expect(() => make({ ...e, provider: 'openai' })).toThrow('invalid_request');
+  });
   it('permits fixed operations but rejects arbitrary SQL, hosts, roles and extra arguments', () => {
     const make = (operation: string, args: unknown) =>
       foundationRequest({ version: 1, requestId, operation, args });
@@ -38,6 +63,19 @@ describe('separate bounded M03 foundation protocol', () => {
       operation: 'run.start',
     };
     expect(foundationReceipt(r, 'request.status')).toEqual(r);
+    expect(
+      foundationReceipt(
+        {
+          ...r,
+          state: 'closed',
+          code: 'window_closed',
+          result: null,
+          operation: 'request.status',
+          replayed: false,
+        },
+        'request.status',
+      ).state,
+    ).toBe('closed');
     expect(() => foundationReceipt({ ...r, operation: 'identity.read' }, 'request.status')).toThrow(
       'invalid_result',
     );

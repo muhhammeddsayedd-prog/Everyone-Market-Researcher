@@ -112,10 +112,14 @@ const entry = z
     category: z.literal('scrape'),
     quantity: z.number().int().min(0).max(1),
     unit: z.literal('result'),
-    cost_usd: z.number().nonnegative().max(1),
+    // Equal replay of measured cost must remain possible even if a provider's
+    // later accounting exceeds the requested cap; that event stops new starts.
+    cost_usd: money,
     run_id: id,
     competitor_id: id,
     platform: z.literal('website_work_page'),
+    item_id: z.null().optional(),
+    day: z.null().optional(),
     meta: z.strictObject({
       actor: z.literal('apify/website-content-crawler'),
       apify_run_id: identifier,
@@ -253,14 +257,12 @@ const registry = z.strictObject({
   processed_at: timestamp.nullable(),
   processing_result: completion.nullable(),
 });
-const launchReceipt = launch
-  .omit({})
-  .extend({
-    ordinal: z.number().int().min(1).max(2),
-    post_intent_at: timestamp,
-    apify_run_id: identifier.nullable(),
-    reconciled_at: timestamp.nullable(),
-  });
+const launchReceipt = launch.omit({}).extend({
+  ordinal: z.number().int().min(1).max(2),
+  post_intent_at: timestamp,
+  apify_run_id: identifier.nullable(),
+  reconciled_at: timestamp.nullable(),
+});
 export const foundationTerminal = z
   .strictObject({
     apifyRunId: identifier,
@@ -376,7 +378,9 @@ export function foundationReceipt(value: unknown, operation: FoundationOperation
   if (!p.success) throw Error('invalid_result');
   const r = p.data;
   if (operation === 'request.status') {
-    if (!r.replayed || (r.state === 'completed' && r.operation === 'request.status'))
+    const admissionDenied =
+      r.operation === 'request.status' && ['closed', 'limited', 'rejected'].includes(r.state);
+    if ((!r.replayed && !admissionDenied) || (r.state === 'completed' && r.operation === 'request.status'))
       throw Error('invalid_result');
   } else if (r.operation !== operation) throw Error('invalid_result');
   if (r.state === 'completed') {
