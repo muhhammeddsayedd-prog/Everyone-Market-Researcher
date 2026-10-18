@@ -1,0 +1,31 @@
+{
+    "observedAt":  "2026-10-18T04:33:15.5443675Z",
+    "environment":  "Local Node24 generated-code and synthetic API responses",
+    "codeHead":  "6e6db7ead293f7835d165c8ae574c8888ba7c41a",
+    "command":  "node --test n8n/foundation/build-foundation.test.mjs n8n/foundation/build-health.test.mjs n8n/foundation/build-orchestrator.test.mjs n8n/foundation/health-orchestrator.test.mjs scripts/n8n/inventory.test.mjs",
+    "nativeExit":  0,
+    "tests":  {
+                  "total":  48,
+                  "orchestrator":  10,
+                  "crossAdapter":  1,
+                  "passed":  48,
+                  "foundation":  14,
+                  "skipped":  0,
+                  "inventory":  18,
+                  "health":  5,
+                  "failed":  0
+              },
+    "targetedLint":  "PASS",
+    "targetedFormatting":  "PASS",
+    "separateBindingTests":  {
+                                 "scope":  "Vitest shared binding schemas; not included in48",
+                                 "reportedBy":  "implementation agent",
+                                 "failed":  0,
+                                 "passed":  15
+                             },
+    "hostedAcceptance":  false,
+    "realCredentialsRead":  false,
+    "providerCalls":  0,
+    "workflowExecutions":  0,
+    "boundary":  "Generated Code executes in local VM with synthetic data. Postgres/Set/Switch/Schedule/ErrorTrigger/ExecuteWorkflow native node execution, hosted bindings, API authentication and live provider/callback acceptance are not established."
+}

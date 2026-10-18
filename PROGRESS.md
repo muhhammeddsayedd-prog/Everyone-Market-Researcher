@@ -5,14 +5,14 @@
 
 ## Now
 
-|                       |                                                                                                                                                                                                                     |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                |
-| **Status**            | Blocked on exact M03 dev credential actions; local database and native preparation reviewed.                                                                                                                        |
-| **Next step**         | Verify new dev migration/API handoffs and canonical n8n credentials; apply two pending dev versions once, then actual workflow bindings and acceptance.                                                             |
-| **Waiting on owner**  | MA-04 M03 dev handoff, MA-11 canonical credentials/API handoff, MA-12 project key/cap. Exact commands and fields are linked in M03 progress; no further sign-in or fee questionnaire.                               |
-| **Pilot**             | Not started (begins at the end of M08; runs 14 days)                                                                                                                                                                |
-| **Last updated**      | 2026-10-18 Cairo: n8n 50K allowance verified; draft PR8, all-five CI39096921840 passed on41d1aad. Local379 SQL tests/advisors/types and48 new native/API checks passed; no hosted M03 migration/provider execution. |
+|                       |                                                                                                                                                                                                                                     |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                |
+| **Status**            | Blocked on exact M03 dev credential actions; local database and native preparation reviewed.                                                                                                                                        |
+| **Next step**         | Verify new dev migration/API handoffs and canonical n8n credentials; apply two pending dev versions once, then actual workflow bindings and acceptance.                                                                             |
+| **Waiting on owner**  | MA-04 M03 dev handoff, MA-11 canonical credentials/API handoff, MA-12 project key/cap. Exact commands and fields are linked in M03 progress; no further sign-in or fee questionnaire.                                               |
+| **Pilot**             | Not started (begins at the end of M08; runs 14 days)                                                                                                                                                                                |
+| **Last updated**      | 2026-10-18 Cairo: n8n 50K allowance verified; draft PR8, all-five CI39097436130 and Vercel passed on code6e6db7e. Local379 SQL tests/advisors/types and48 new native/API checks passed; no hosted M03 migration/provider execution. |
 
 ## Milestone board
 
