@@ -59,7 +59,9 @@ export function readCredentialProvenance(ownership, key, audience) {
     intent.kind !== 'intent' ||
     intent.windowId !== '76c2ad42-c094-4ba4-9a0b-566e19b97780' ||
     intent.projectId !== 'pHvQjDmjxVZ3KQLT' ||
-    intent.audience !== audience ||
+    (audience !== undefined && intent.audience !== audience) ||
+    typeof intent.audience !== 'string' ||
+    !/^https:\/\/everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(intent.audience) ||
     intent.id !== ids[key] ||
     intent.name !== names[key] ||
     intent.type !== 'httpCustomAuth' ||
@@ -81,13 +83,16 @@ export function readCredentialProvenance(ownership, key, audience) {
 export function credentialOwnership(root) {
   const directory = resolve(root, 'scripts/n8n/out');
   function path(key) {
-    if (!Object.hasOwn(ids, key)) reject();
+    if (!Object.hasOwn(ids, key) && key !== 'environment') reject();
     for (let p = directory; ; p = dirname(p)) {
       if (existsSync(p) && lstatSync(p).isSymbolicLink()) reject();
       if (dirname(p) === p) break;
     }
     if (!existsSync(directory)) mkdirSync(directory, { recursive: true });
-    const target = join(directory, `gw01-credential-${ids[key]}.jsonl`);
+    const target = join(
+      directory,
+      key === 'environment' ? 'gw01-environment-delivery.jsonl' : `gw01-credential-${ids[key]}.jsonl`,
+    );
     if (existsSync(target) && lstatSync(target).isSymbolicLink()) reject();
     return target;
   }

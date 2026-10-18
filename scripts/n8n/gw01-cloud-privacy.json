@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "instanceHost": "muhhammedsayed.app.n8n.cloud",
+  "ownedWorkflowId": "p8GikCM8C9Tq3lo4",
+  "credentialCanaryVerified": true,
+  "executionCanaryVerified": true,
+  "exportCanaryVerified": true,
+  "logCanaryVerified": false,
+  "passed": false,
+  "observedAt": "2026-10-18T08:21:41.595563+00:00",
+  "executionId": "12674",
+  "credentialId": "EmrGw01Canary18",
+  "credentialType": "httpCustomAuth",
+  "httpStatusCode": 401,
+  "sourceDefaultsRepresentationCorrectionReviewed": true,
+  "retentionRestoredOff": true,
+  "actualGatewayDatabaseIdentityVerified": false,
+  "evidence": "milestones/M03-n8n-foundation/evidence/gw01-preflight-20261018.json",
+  "boundary": "CloudA only; disabled handler503 and actual captured log privacy remain required before Writer/Machine handoffs/runtime delivery."
+}

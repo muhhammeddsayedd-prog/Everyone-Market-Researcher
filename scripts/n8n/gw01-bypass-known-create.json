@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "windowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+  "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+  "note": "M03 GW-01 dev trial 76c2ad42",
+  "intentCreatedAt": 1792311754557,
+  "originalCli": {
+    "mode": "Create",
+    "nativeExit": 0,
+    "childClosed": true,
+    "ownEntryPresent": true,
+    "status": "stopped_reconcile",
+    "code": "GW01_BYPASS_DEFAULT_UNVERIFIED",
+    "toolRef": "6fe636"
+  }
+}

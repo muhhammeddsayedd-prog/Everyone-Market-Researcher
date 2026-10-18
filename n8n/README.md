@@ -98,6 +98,22 @@ or forwarded. The M03 logger uses safe summaries and optional UUID correlation,
 superseding the draft's raw-stack storage. Diagnose private raw executions in
 the n8n editor when necessary.
 
+## GW-01 development connection trial
+
+The approved GW-01 work adds a development-only worker gateway and a separate
+inactive native adapter in `foundation/build-worker-rpc.mjs`. It does not
+activate foundation workflows or launch actors. The adapter makes one explicit
+HTTP attempt using an `httpCustomAuth` credential reference; an ambiguous result
+produces a fresh `request.status` descriptor for the original request ID. Status
+readback never repeats the business write. The current schema includes immutable
+deployment binding in the response window.
+
+[The GW-01 helper instructions](../scripts/n8n/GW01.md) describe the separate
+temporary handoffs, privacy gates, one-use delivery receipts, durable trial
+counter, direct restricted-writer controls and cleanup. Local tests and inactive
+blueprints are preparation evidence; actual Cloud privacy, deployment, restricted
+login, trial and cleanup receipts remain separate acceptance requirements.
+
 See [M03 tests](tests/README.md), [the callback review](../milestones/M03-n8n-foundation/evidence/callback-review-20261018.md)
 and [M03 progress](../milestones/M03-n8n-foundation/PROGRESS.md) for exact gates.
 

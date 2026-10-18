@@ -1,0 +1,223 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T07:51:24Z",
+  "lastUpdatedAt": "2026-10-18T08:02:49Z",
+  "environment": "local Windows/Node24 synthetic fixtures only",
+  "scope": "GW-01 fixed Preview gateway transport, privacy log reader and bounded Windows Protection/Machine consumer",
+  "sourceHashes": {
+    "scripts/n8n/gw01-gateway-transport.mjs": "b300942732557c2b8591a851b3829f9f6c687d9a747d79ae9731bcc2260c27a6",
+    "scripts/n8n/gw01-gateway-transport.test.mjs": "dca9f10a21568be4b85dcc4e7f594d2fe25341ee67b0a62b36ed545af34582a4",
+    "scripts/n8n/gw01-gateway-logs.mjs": "d82eddabbe7b7593cda0c0bcba662d9434d6f0f0cf9eb8280914e0c5869d9b76",
+    "scripts/n8n/gw01-gateway-logs.test.mjs": "6b130a8ac7122b2ad68b3324bf03d88cf5c78a1b9428fc97b4ca70931b13935f",
+    "scripts/n8n/gw01-private-gateway.test.mjs": "5d679809f75c026ce84c0ffb9972118f12e2adf8d1d3cc609d1d7ca0d43a621c",
+    "scripts/n8n/windows/Invoke-M03GW01Gateway.ps1": "943e2441ba5fcb935a48a41a8001f237acdf3e1385ca1940a7f3ebcf706e773a"
+  },
+  "authorization": "Existing owner-approved GW-01 dev connection-trial implementation. This receipt records no hosted use.",
+  "redGreen": [
+    {
+      "command": "node --test scripts/n8n/gw01-gateway-transport.test.mjs",
+      "red": "Missing new module, native1",
+      "green": "37 initial tests, native0"
+    },
+    {
+      "command": "node --test --test-name-pattern \"initial Probe|private value colliding\" scripts/n8n/gw01-gateway-transport.test.mjs",
+      "red": "2/2 fail: circular disabled-proof precondition and private correlation persistence",
+      "green": "2/2 pass after allowing the unverified flag only for Probe and rejecting private/public collisions before the journal"
+    },
+    {
+      "command": "node --test --test-name-pattern \"private value equal\" scripts/n8n/gw01-gateway-transport.test.mjs",
+      "red": "1/1 fail: fixed diagnostic could equal a private token",
+      "green": "1/1 pass after final private-value projection guard"
+    },
+    {
+      "command": "node --test scripts/n8n/gw01-gateway-logs.test.mjs",
+      "red": "Missing new module, native1",
+      "green": "15/15 pass"
+    },
+    {
+      "command": "node --test --test-name-pattern \"Probe phase|normal Request never\" scripts/n8n/gw01-gateway-transport.test.mjs",
+      "red": "2/2 fail: missing phase integration",
+      "green": "2/2 pass;503 remains separate from pending log capture and normal requests do not read platform logs"
+    },
+    {
+      "command": "node --test scripts/n8n/gw01-private-gateway.test.mjs",
+      "red": "Missing new Windows consumer, native1",
+      "green": "12 initial synthetic DPAPI/process fixtures pass"
+    },
+    {
+      "command": "node --test --test-name-pattern \"shared dependency junction\" scripts/n8n/gw01-private-gateway.test.mjs",
+      "red": "1/1 fail: an unused sealed dependency copy could pass before checking the actual shared import junction",
+      "green": "Wrong-target fixture passes after guard. Positive fixture then exposed absolute-target path joining; fixed with System.IO.Path.Combine; positive/negative2/2 pass."
+    }
+  ],
+  "finalChecks": [
+    {
+      "command": "node --test scripts/n8n/gw01-gateway-transport.test.mjs scripts/n8n/gw01-gateway-logs.test.mjs",
+      "passed": 57,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "transportAndPhaseTests": 42,
+      "logTests": 15
+    },
+    {
+      "command": "node --test scripts/n8n/gw01-private-gateway.test.mjs",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "durationMs": 59651,
+      "fixtureBoundary": "Only new isolated temporary synthetic DPAPI files, fake CLI/runtime files and child processes; no actual handoff files or network"
+    },
+    {
+      "command": "pnpm.cmd exec eslint scripts/n8n/gw01-gateway-transport.mjs scripts/n8n/gw01-gateway-transport.test.mjs scripts/n8n/gw01-gateway-logs.mjs scripts/n8n/gw01-gateway-logs.test.mjs scripts/n8n/gw01-private-gateway.test.mjs",
+      "nativeExit": 0,
+      "initialFinding": "Two lint errors (unused import and conditional expression) corrected;57 tests rerun against final source"
+    },
+    {
+      "command": "pnpm.cmd exec prettier --check scripts/n8n/gw01-gateway-transport.mjs scripts/n8n/gw01-gateway-transport.test.mjs scripts/n8n/gw01-gateway-logs.mjs scripts/n8n/gw01-gateway-logs.test.mjs scripts/n8n/gw01-private-gateway.test.mjs",
+      "nativeExit": 0
+    },
+    {
+      "command": "Windows PowerShell5.1 Language.Parser.ParseFile on Invoke-M03GW01Gateway.ps1; git diff --check on owned files",
+      "parserErrors": 0,
+      "nativeExit": 0
+    }
+  ],
+  "capabilities": {
+    "fixedHttpsPost": "Only reviewed Preview /api/internal/n8n/rpc, exact project/team/branch metadata, public-only bounded OS lookup, pin selected address with original TLS hostname, rejectUnauthorized true, minimumTLS1.2, no redirects/retry",
+    "accounting": "Frozen createTrialCoordinator reserve before every gateway attempt including denial/status/shutdown/preflight; durable100attempt cap/two in-flight; no journal preparation/reset by consumer",
+    "probe": "Only existing ProtectionBypass plus fixed public synthetic Authorization; valid identity.read body. Exact503/unavailable verifies disabled route only, never database identity. routeDisabledVerified may initially be false.",
+    "request": "Machine+Protection only after complete Cloudprivacy and prior disabled-route verification; shared request/receipt schemas via plain Node24 native TypeScript stripping; no writer/admin credential",
+    "lostAcknowledgement": "before_send_abort and cancellation after200headers record unknown, do not interpret body or retry original request. Status requires a fresh correlation ID.",
+    "logs": "Exact pinned CLI56.5.0 direct-JS JSONL request protocol; fixed deployment/project/preview,100-record/1MiB cap, Probe time window,15s child deadline plus5s closure. Full returned text remains private. Verified requires captured matching POST503 metadata, fewer than100records, and no public-auth/body-ID/own-bypass markers in raw text or decoded JSON keys/strings, or any truncation.",
+    "partialProof": "Probe503 remains recorded when logs are unavailable/no matching capture; Windows status privacy_pending/native1 does not authorize fullprivacy or writer delivery.",
+    "processBoundary": "Public source/privacy/target/dependency seals plus public Node validation before DPAPI decryption. Private values via bounded child stdin only, sparse OS environment, hidden windows, rawstderr discarded, strict final projection; encrypted handoffs retained for root-owned multi-phase cleanup.",
+    "sourceIntegrity": "Before actual use, root must create reviewed gw01-gateway-seal.json with exact project files, all physical Zod4.6.7 JavaScript/package hashes and actual shared junction binding, plus Vercel56.5.0 package/dist runtime inventory."
+  },
+  "primarySources": [
+    "https://nodejs.org/docs/latest-v24.x/api/https.html#httpsrequestoptions-callback",
+    "https://nodejs.org/docs/latest-v24.x/api/tls.html#tlsconnectoptions-callback",
+    "https://vercel.com/docs/cli/logs"
+  ],
+  "installedCliProtocol": {
+    "version": "56.5.0",
+    "source": "Existing installed public dist/commands-bulk.js, request-log projection and JSONL writer; dist/vc.js may delegate an optional native child, so scanner uses sealed dist/index.js directly.",
+    "helpCommand": "node <existing Vercel dist/vc.js> logs runtime --help",
+    "helpNativeExit": 0,
+    "noLogOrApiCall": true,
+    "documentationDifference": "Current web docs describe newer {type,data}/summary output. The reviewed decoder uses actual installed56.5.0 direct JSONL request fields and fails closed for an incompatible format."
+  },
+  "automaticReviewBoundary": {
+    "tool": "exec_command",
+    "interpreter": "Windows PowerShell",
+    "workdir": "D:\\Everyone\\everyone Market Research\\everyone-market-radar",
+    "command": [
+      "Remove-Item Env:PGPASSWORD -ErrorAction SilentlyContinue",
+      "$emrLink=Get-Item -LiteralPath 'packages/shared/node_modules/zod' -Force",
+      "$emrTarget=@($emrLink.Target)[0]",
+      "[PSCustomObject]@{TargetType=$emrTarget.GetType().FullName;TargetCount=@($emrLink.Target).Count;Rooted=[IO.Path]::IsPathRooted($emrTarget);JoinedEquals=([IO.Path]::GetFullPath((Join-Path (Join-Path (Get-Location).Path 'packages/shared/node_modules') $emrTarget))).Equals([IO.Path]::GetFullPath((Join-Path (Get-Location).Path 'node_modules/.pnpm/zod@4.6.7/node_modules/zod')),[StringComparison]::OrdinalIgnoreCase)}|ConvertTo-Json -Compress"
+    ],
+    "reasonText": "blocked by policy",
+    "outcome": "Automatically rejected before execution. No further reason was supplied.",
+    "preserved": "No retry of this inspection through another shell, launcher, wrapper or equivalent actual-dependency read. The Path.Combine guard correction was verified only through isolated synthetic fixtures."
+  },
+  "peerCorrections": {
+    "reviewedAt": "2026-10-18T07:54:34Z",
+    "findings": [
+      "Raw-only substring checks missed Unicode-escaped JSON keys/values",
+      "Exactly100returned records concealed whether the requested log window was complete"
+    ],
+    "redCommand": "node --test --test-name-pattern \"decoded JSON|100-record\" scripts/n8n/gw01-gateway-logs.test.mjs",
+    "red": {
+      "failed": 7,
+      "nativeExit": 1
+    },
+    "green": {
+      "passed": 7,
+      "nativeExit": 0
+    },
+    "fix": "Bounded iterative scan of every parsed key/string in addition to raw text;100records marks truncated/unverified. Only log scanner/source tests changed.",
+    "affectedChecks": [
+      {
+        "command": "node --test scripts/n8n/gw01-gateway-logs.test.mjs",
+        "passed": 22,
+        "failed": 0,
+        "nativeExit": 0
+      },
+      {
+        "command": "node --test --test-name-pattern \"Probe phase|normal Request never\" scripts/n8n/gw01-gateway-transport.test.mjs",
+        "passed": 2,
+        "failed": 0,
+        "nativeExit": 0
+      },
+      {
+        "command": "pnpm.cmd exec eslint; pnpm.cmd exec prettier --check on the two affected log files",
+        "nativeExit": 0
+      }
+    ],
+    "evidenceBoundary": "The earlier57combined checks preceded these corrections. The22logs and2affected phase checks pass against the updated source; unchanged Windows16 evidence is preserved without rerunning it. Independent reviewer selected7newregressions pass and fullsource review is clear."
+  },
+  "independentReview": {
+    "status": "clear",
+    "sourceFrozen": true,
+    "reviewer": "/root/agent_probe_review",
+    "logDelta": {
+      "sourceSha256": "d82eddabbe7b7593cda0c0bcba662d9434d6f0f0cf9eb8280914e0c5869d9b76",
+      "testSha256": "6b130a8ac7122b2ad68b3324bf03d88cf5c78a1b9428fc97b4ca70931b13935f",
+      "selectedRegressionsPassed": 7,
+      "nativeExit": 0,
+      "sourceReview": "Decoded key/value reflection and100-record completeness fixes independently reviewed; no remaining P0/P1/P2 in reviewed scope."
+    },
+    "transportAndWrapper": {
+      "sourceSha256": "b300942732557c2b8591a851b3829f9f6c687d9a747d79ae9731bcc2260c27a6",
+      "wrapperSha256": "943e2441ba5fcb935a48a41a8001f237acdf3e1385ca1940a7f3ebcf706e773a",
+      "method": "Independent read-only source review of complete transport and wrapper",
+      "result": "clear; no new P0/P1/P2"
+    },
+    "boundaries": "Reviewer performed no live/network/private operation or blocked dependency inspection. Deployment/path/method/status/time matching is not a separately proven unique platform trace-ID correlation."
+  },
+  "actualEnvironment": {
+    "realHandoffPresenceChecked": false,
+    "realDpapiRead": false,
+    "realSecretsDecrypted": false,
+    "realGatewayRequests": 0,
+    "realLogReads": 0,
+    "hostedAcceptance": false,
+    "sourceSealCreated": false,
+    "productionActions": 0,
+    "migrationWrites": 0,
+    "providerOrModelCalls": 0
+  },
+  "remaining": "Independent source review is complete. Public sealing and positive actual-repository guard verification remain gates before private gateway invocation; the overlapping policy-rejected dependency read was not retried. Cloud privacy, restricted-writer delivery/bind and bounded live gateway acceptance remain distinct actual gates.",
+  "guardValidation": {
+    "actualRepositoryPositiveGuard": "not verified",
+    "actualCheckOnly": "not run",
+    "reason": "The legitimate consumer CheckOnly performs the same actual shared-Zod link/target read as the rejected diagnostic. It is not a genuinely distinct way to complete that missing inspection, so it was not invoked.",
+    "alreadyVerified": "Source review and16synthetic Windows fixtures include both positive and wrong-target dependency guards. These do not prove the actual workstation dependency target or an actual CheckOnly pass.",
+    "ownerProcedure": {
+      "prerequisites": "After actual CloudA proof and GET-only recovered sole ProtectionBypass ownership. Owner-only public sealer creates the exact source/runtime inventory and invokes the pinned CheckOnly; root has not performed the overlapping policy-rejected dependency read.",
+      "application": "Windows PowerShell under the same Windows account",
+      "commands": [
+        "& 'D:\\Everyone\\everyone Market Research\\everyone-market-radar\\scripts\\n8n\\windows\\New-M03GW01GatewayPublicSeal.ps1'",
+        "$LASTEXITCODE"
+      ],
+      "expected": {
+        "status": "check_only_ready",
+        "privateRead": false,
+        "rootChildClosed": true,
+        "nativeExit": null,
+        "handoffsRetained": true,
+        "result": null,
+        "outerExitCode": 0
+      },
+      "readinessReply": "GW-01 public CheckOnly ready; privateRead false; exit0",
+      "ifBlocked": "Retain the safe preflight_blocked result and stop. Do not remove assertions, alter the dependency target, weaken security settings or supply another password to force a pass.",
+      "historicalDirectCheckOnlyCommands": [
+        "& 'D:\\Everyone\\everyone Market Research\\everyone-market-radar\\scripts\\n8n\\windows\\Invoke-M03GW01Gateway.ps1' -Mode Probe -CheckOnly",
+        "$LASTEXITCODE"
+      ],
+      "procedure": "scripts/n8n/windows/GW01-PUBLIC-SEAL.md"
+    }
+  }
+}

@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { deliverGatewayCredentials, gatewayCredentialIds, vercelEnvArguments } from './gw01-delivery.mjs';
+import {
+  deliverGatewayCredentials,
+  gatewayCredentialIds,
+  vercelEnvArguments,
+  deliveryFailureReceipt,
+} from './gw01-delivery.mjs';
 const canary = 'SYNTHETIC_PRIVATE_GW01_CANARY';
 const config = () => ({
   audience: 'https://everyone-market-researcher-synthetic.vercel.app',
@@ -54,12 +59,10 @@ test('synthetic canary credential uses supported fixed API endpoint/type/project
 test('private values travel solely in native request headers/body orCLIstdin; no values/verifier in args or public result', async () => {
   const p = ports(),
     out = await deliverGatewayCredentials(
-      'Runtime',
+      'Environment',
       {
-        management: canary,
         writer: canary + 'writer',
         machine: canary + 'machine',
-        protection: canary + 'bypass',
       },
       config(),
       p,
@@ -77,14 +80,14 @@ test('private values travel solely in native request headers/body orCLIstdin; no
 test('runtime delivery stops before private port calls without actual privacy gate or if administrator input is supplied', async () => {
   for (const [secrets, conf] of [
     [
-      { management: canary, writer: canary, machine: canary, protection: canary },
+      { writer: canary, machine: canary },
       { ...config(), privacyVerified: false },
     ],
-    [{ management: canary, writer: canary, machine: canary, protection: canary, admin: canary }, config()],
+    [{ writer: canary, machine: canary, admin: canary }, config()],
   ]) {
     const p = ports();
     await assert.rejects(
-      deliverGatewayCredentials('Runtime', secrets, conf, p),
+      deliverGatewayCredentials('Environment', secrets, conf, p),
       /^Error: GW01_DELIVERY_REJECTED$/,
     );
     assert.equal(p.calls.length, 0);
@@ -213,16 +216,88 @@ test('unknown native child cleanup blocks credential POST and does not claim Ver
   const p = ports();
   p.environment = async () => ({ ok: false, childClosed: false, code: 'GW01_CHILD_CLEANUP_UNVERIFIED' });
   await assert.rejects(
-    deliverGatewayCredentials(
-      'Runtime',
-      { management: canary, writer: canary + 'w', machine: canary + 'm', protection: canary + 'b' },
-      config(),
-      p,
-    ),
+    deliverGatewayCredentials('Environment', { writer: canary + 'w', machine: canary + 'm' }, config(), p),
     /^Error: GW01_CHILD_CLEANUP_UNVERIFIED$/,
   );
   assert.equal(
     p.calls.some((c) => c.method === 'POST'),
     false,
   );
+});
+test('environment and runtime credential phases are separate, source-owned and cannot redeploy into an old credentialdomain', async () => {
+  const p = ports();
+  const before = config();
+  await deliverGatewayCredentials('Environment', { writer: canary + 'w', machine: canary + 'm' }, before, p);
+  assert.equal(
+    p.calls.some((c) => c.method),
+    false,
+  );
+  assert.equal(p.calls.length, 2);
+  const count = p.calls.length;
+  await assert.rejects(
+    deliverGatewayCredentials('Environment', { writer: canary + 'w', machine: canary + 'm' }, before, p),
+    /^Error: GW01_DELIVERY_RECONCILE$/,
+  );
+  assert.equal(p.calls.length, count);
+  const fresh = { ...before, audience: 'https://everyone-market-researcher-newbuild.vercel.app' };
+  const out = await deliverGatewayCredentials(
+    'RuntimeCredential',
+    { management: canary, machine: canary + 'm', protection: canary + 'p' },
+    fresh,
+    p,
+  );
+  assert.equal(out.credential.id, 'EmrGw01Machine18');
+  assert.equal(p.calls.filter((c) => c.name).length, 2);
+  assert.equal(
+    p.calls.find((c) => c.method === 'POST').body.data.allowedDomains,
+    'everyone-market-researcher-newbuild.vercel.app',
+  );
+});
+test('privacy diagnostics project only fixed enum/error class, never native error properties', async () => {
+  const p = ports(),
+    target = { workflowId: 'SyntheticOwned', executionId: '123', audience: config().audience };
+  p.management = async () => ({ status: 200, body: { unexpected: canary } });
+  let error;
+  try {
+    await deliverGatewayCredentials(
+      'PrivacyReadRetainedCanary',
+      { management: canary },
+      { ...config(), privacyTarget: target },
+      p,
+    );
+  } catch (caught) {
+    error = caught;
+  }
+  const receipt = deliveryFailureReceipt(error);
+  assert.equal(receipt.code, 'GW01_DELIVERY_RESPONSE_REJECTED');
+  assert.equal(receipt.privacyStage, 'management_reflection');
+  assert.doesNotMatch(JSON.stringify(receipt), new RegExp(canary));
+  const unsafe = Error(canary);
+  unsafe.privacyStage = canary;
+  unsafe.headers = { Authorization: canary };
+  const safe = deliveryFailureReceipt(unsafe);
+  assert.equal(safe.code, 'GW01_DELIVERY_UNKNOWN');
+  assert.equal(safe.privacyStage, null);
+  assert.equal(safe.privacyParameterDiagnostic, null);
+  assert.doesNotMatch(JSON.stringify(safe), new RegExp(canary));
+  const parameterError = Error('GW01_DELIVERY_RESPONSE_REJECTED');
+  parameterError.privacyStage = 'executed_snapshot_parameters';
+  parameterError.privacyParameterDiagnostic = {
+    paths: ['jsonBody'],
+    jsonBodyTextDifferent: true,
+    jsonBodySemanticEqual: true,
+    nativeSchema: ['manual', 'http', 'receipt'].map((node) => ({
+      node,
+      identityMatched: true,
+      differences: [],
+      unclassifiedDifference: false,
+    })),
+  };
+  assert.deepEqual(
+    deliveryFailureReceipt(parameterError).privacyParameterDiagnostic,
+    parameterError.privacyParameterDiagnostic,
+  );
+  parameterError.privacyParameterDiagnostic.paths = [canary];
+  assert.equal(deliveryFailureReceipt(parameterError).privacyParameterDiagnostic, null);
+  assert.doesNotMatch(JSON.stringify(deliveryFailureReceipt(parameterError)), new RegExp(canary));
 });

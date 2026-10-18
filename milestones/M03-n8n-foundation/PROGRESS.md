@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress — completed dev evidence preserved; GW-01 dev implementation/trial approved; local gateway verified; new dev migration applied; Cloud privacy and restricted trial pending**
+**Blocked: waiting on owner - MA-11 public CheckOnly. Dev migration and CloudA verified; CloudB/restricted trial pending.**
 
 | Field | Value |
 | --- | --- |
@@ -13,8 +13,9 @@
 | Finished | — |
 | Branch / PR | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; preserved reviewed `100290a291530d30d0387269c1a0805ad4f86fcc` and earlier evidence, no reset |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
-| Current task | Implement the approved fixed gateway, one new admission migration, inactive adapter and private delivery tools. Current24local HTTP/DB/TLS tests pass; independent review hardens close/expiry, physical connection cleanup and one-time deployment binding. New dev migration20261018070042 applied once/native0; exact9?10history and Admin cleanup verified. Management presence/lease only; no gateway requests. |
-| Next step | Complete reviewed implementation/helper/SQL tests, seal delivery against the disabled Preview, prove synthetic Cloud privacy, then direct writer/protected-preview trial. Do not restart native TLS, replay existing migrations or use the incident entry. |
+| GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
+| Current task | GW-01 migration/schema verified; existing fake execution12674 now passes CloudA export/execution privacy after strict source-default representation correction. Its401 is protection denial, not DB identity. Fresh GET-only recovery verified owned sole/defaulttrue bypass and separately recorded recovered provenance; no creation replay. All children closed; journal1/100, no clock/server admissions. |
+| Next step | Sole-owned bypass recovery is complete/native0. Owner runs exact public sealer/CheckOnly under MA-11; no secrets/network. Then one counted CloudB503/log probe, full privacy before Writer/Machine handoffs, exact target binding and one bounded trial. Never replay migration/execution or reset counters. |
 
 ## Task checklist
 <!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
@@ -47,7 +48,7 @@
 ## Blockers
 
 - Strict n8n Postgres TLS remains unresolved. Actual saved host/session port5432/user/database/max5/SSL Require/Ignore SSL off/SSH off match. One credential Retry and one native Postgres2.7 SELECT encounter a self-signed-chain error; restricted current_user/session_user are not established. Preserve password/security. The owner declined the support-contact path; no contact action or new writer credential is requested. [Actual receipt](evidence/credential-readback-20261018.json), [retained source review](evidence/postgres-cloud-ca-review-20261018.md).
-- [GW-01](evidence/strict-tls-connection-proposal-20261018.md) dev exception is APPROVED by owner for reviewed100290a with bounded-trial clarifications. [Authorization](evidence/gw01-authorization-20261018.json). Implementation and local review are underway; new20261018070042 applied once to dev/native0 with exact9?10history; nine old files/history preserved. Management is not decrypted and no gateway request/clock started. Gateway restricted-login acceptance remains distinct from native Postgres failure.
+- [GW-01](evidence/strict-tls-connection-proposal-20261018.md) dev exception is APPROVED by owner for reviewed100290a with bounded-trial clarifications. [Authorization](evidence/gw01-authorization-20261018.json). Implementation and independent local review are complete; actual public CheckOnly, CloudB and restricted trial remain pending. New20261018070042 applied once to dev/native0 with exact nine-to-ten history; nine old files/history preserved. Management later authenticated for fake-only canary and readback; one protection401 attempt counted, no trial clock. Gateway restricted-login acceptance remains distinct from native Postgres failure.
 - INC-M03-20261018-01: open private remediation approval gate. Owner identification and safe metadata checks are recorded privately; no rotation, erasure or absence-of-misuse claim. No details in this public repository beyond reference/status.
 - M03 database deployment is RESOLVED. The third bounded attempt completed native0 with exact dry-run/push/history parity; two earlier failures remain accurately preserved. The second established native0+invalid_json; immutable CLI source reproduced conflicting output flags and the corrected command-specific helper passed regression/review. All nine versions/hashes match,12 RPC ACLs and receipt/indexes pass, budget25,17 Apify prices,285 competitors/1754 accounts/257 logos/seven owner exclusions unchanged, no collected items/runs or fixtures. Fresh hosted advisors have0 WARN/ERROR. Public-only MCP types were not substituted for the checked-in four-schema types. [Completion](evidence/dev-migration-completion-20261018.json), [schema](evidence/dev-post-migration-schema-20261018.json). Preserve the durable successful admission; never replay this packet.
 - API DNS is RESOLVED by bounded OS lookup with every-address screening/pinning/strict TLS. A credential-free401/socket-close test passed. The next keyed attempt authenticated, discovery advertised capabilities and Personal list returned200; workflow-list transport failed before a complete inventory, and the credential-list resource was not attempted. Both consumed API handoffs were deleted/children closed. Exact later transport cause remains unestablished; no further key/discovery loop is requested. Browser sign-in is already verified and connector errors do not invalidate it. [Actual API attempts](evidence/n8n-api-attempt-20261018.json), [DNS](evidence/n8n-dns-boundary-20261018.json).
@@ -62,13 +63,36 @@
 | MA-04 M03 dev | Both approved versions applied successfully; independent history/schema/advisor/data readback passes. Handoff/scratch deleted; children closed; successful admission retained. | None. No new database handoff or replay. |
 | MA-10 / MA-11 providers | Existing Apify/OpenAI/Vimeo/YouTube ID/type bindings and four metadata tests verified. Saved writer port5432 is correct; strict native TLS remains open. | No credential recreation/reset/rename, no writer handoff, no SSL weakening. Owner declined contact; do not request it again. |
 | MA-11 / INC-M03-20261018-01 | Open; private identification and targeted remediation packet prepared. | Review the private owner packet, confirm remaining consumer coverage and maintenance/canary scope, then give specific remediation approval. No secret values or blanket rotation. |
-| MA-11 / GW-01 | Owner approved exact100290a packet plus clarifications; authorization in evidence/gw01-authorization-20261018.json. | No further internal task approval. Management is present/leased, not decrypted. New dev migration/Admin cleanup complete. Writer/Machine only after Cloud privacy. One immutable100-total-attempt/two-concurrent/30-minute dev window, cleanup included. |
+| MA-11 / GW-01 | Owner approved exact100290a packet plus clarifications; authorization in evidence/gw01-authorization-20261018.json. | No further internal task approval. CloudA now passes; original failures/cleanup correction preserved. Run the exact public CheckOnly below; no credential delivery. New dev migration/Admin cleanup complete. Full CloudB precedes Writer/Machine delivery and one immutable100-attempt/two-concurrent/30-minute window, cleanup included. |
 | MA-11 API | Existing key authenticated; Personal list200; later workflow transport incomplete. Consumed key handoffs deleted. | None now. Do not request another key or repeat login/discovery to rediscover the transport failure. |
 | MA-12 | Authorized existing OpenAI credential works for Models read. Project cap is unverified; no model calls. | No new credential requested; keep cap evidence distinct. |
 | MA-13 / fees | Actual dev alert budget25. Subscription/other unknown prices remain unknown. | None; do not restart billing questions or alter shared budgets. |
 | M03 live acceptance | [Outline](evidence/live-acceptance-outline-20261018.md) remains preparation only until exact graph IDs/source seals/request counts/price/caps are filled and technical gates pass. | No batch approval requested yet. Present the concrete packet before any actor/multi-workflow test batch. |
 
-### Current exact Management handoff (no new key)
+### MA-11 GW-01 public runtime check - pending
+
+Automatic approval review rejected the earlier public dependency-link inspection
+before execution with generic reason `blocked by policy`. Automation has not
+retried it through another launcher or this helper. This is not authentication.
+The complete reviewed owner procedure is
+[GW01-PUBLIC-SEAL.md](../../scripts/n8n/windows/GW01-PUBLIC-SEAL.md).
+
+In Windows PowerShell under this Windows account, run:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03GW01GatewayPublicSeal.ps1'
+$LASTEXITCODE
+```
+
+Expected: `PUBLIC_SEAL_READY`, safe JSON `status:"check_only_ready"`,
+`privateRead:false`, and exit `0`. Reply `GW-01 public CheckOnly ready` with
+that non-secret JSON. Fixed BLOCKED output means stop and report only the code.
+No secret input, decryption, network request or trial clock start occurs.
+The generated public runtime inventory stays local and is not committed.
+
+### Management handoff helper (existing encrypted handoff and original lease present08:01UTC; no replenishment requested)
+
+Reference only: do not replenish while the existing original lease remains valid.
 
 In Windows PowerShell under this Windows account, run:
 
@@ -78,7 +102,7 @@ In Windows PowerShell under this Windows account, run:
 
 Enter the existing saved management API key for muhhammedsayed.app.n8n.cloud at the hidden prompt. Expected result: `GW01_ENCRYPTED_HANDOFF_READY: Management.` Close that PowerShell window, retain the original and reply `GW-01 management handoff ready`; send no values/files. The new encrypted temporary handoff has a two-hour lease for bounded owned-trial credential/workflow/privacy operations. The old inventory consumer remains GET-only. Creation is not authentication or readiness proof; consume only after complete consumer review/seal. Management presence and valid lease were verified after owner readiness; this remains distinct from authentication. Admin was delivered/consumed only for the completed new migration and deleted; Writer/Machine wait for actual Cloud privacy.
 
-### Current exact administrator handoff (ONE new migration only)
+### Administrator handoff consumed/deleted (historical command; do not repeat)
 
 Run in Windows PowerShell under the same account:
 
@@ -86,7 +110,7 @@ Run in Windows PowerShell under the same account:
 & 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03GW01Handoff.ps1' -Kind Admin
 ```
 
-Hidden input: EXISTING emr-dev postgres password, only for the approved exact migration20261018070042. Expected `GW01_ENCRYPTED_HANDOFF_READY: Admin.` Close the shell and reply `GW-01 Admin ready`. No value/file contents, reset, writer/admin substitution or runtime delivery. Consumer review and17 isolated DPAPI/native-CLI cases pass; exact9+1packet is sealed. Do not rerun the spent old two-migration consumer.
+Completed native0 with exact10-version parity; no new Admin delivery or replay is needed. Historical hidden input was EXISTING emr-dev postgres password, only for approved migration20261018070042. Expected `GW01_ENCRYPTED_HANDOFF_READY: Admin.` Close the shell and reply `GW-01 Admin ready`. No value/file contents, reset, writer/admin substitution or runtime delivery. Consumer review and17 isolated DPAPI/native-CLI cases pass; exact9+1packet is sealed. Do not rerun the spent old two-migration consumer.
 
 ## Decisions & deviations
 <!-- Anything that differs from the docs. Also add to docs/DECISIONS.md → Changes if it changes a decision. -->
@@ -167,3 +191,17 @@ concurrency setting was changed.
 - 2026-10-18 Cairo ? GW-01 implementation checkpoint:24 scoped gateway tests including5 real local TLS cases,17 isolated migration-consumer cases,102 gateway pgTAP assertions,19 real local process/concurrency checks and8 checker regressions pass. Build/type/lint and traced public CA verified. Offline pinned CLI parser matches all9 existing history digests and derives18 statements/new digest53ceb5? without a ledger edit. [Gateway evidence](evidence/local-gw01-gateway-20261018.json), [DB evidence](evidence/local-gw01-db-20261018.json). Management presence/lease only; Admin requested for one new migration. Trial0requests/clock stopped; no hosted role acceptance or production change.24October tooling follow-up retained.
 
 - 2026-10-18 Cairo ? Approved GW-01 migration run e3693aa9-be79-4f24-be54-bf743045c77d completed07:31:09UTC: actual devpostgres authentication, exact9baseline?10complete fingerprint parity, matching one-filedryrun/native0 and onepush/native0. Only20261018070042; no seeds/roles/replay. Credential-bearing children closed; consumed Admin DPAPI and private scratch deleted. [Completion](evidence/dev-gw01-migration-completion-20261018.json). Independent scoped MCP confirms10digests, RLS/ACL/type parity, preparedunbound0admission and unchanged baseline; advisors0WARN/ERROR. [Hosted readback](evidence/dev-gw01-post-migration-20261018.json). Gateway trial0requests/clock stopped; Management remained encrypted.
+
+- 2026-10-18 Cairo ? GW-01 disabled Preview4d4d13e/dpl_34mF18oQnjrqS67pdXMBsChLfV7g verified READY/Preview/FRA1/Node24/30s; branchenvlsnone. Existing Management key authenticated and created ONLY public fake httpCustomAuth EmrGw01Canary18. Owned inactive3node workflowp8GikCM8C9Tq3lo4, synthetic execution12674 returned actualHTTP401(nativeworkflowSuccess), no DB identity. Journal1/100,0inflight/clockstopped/server0admission. Restoredallretentionoff and exported actualclean graph. Actual boundedPrivacyReadRetainedCanary FAILED native1 RESPONSE_REJECTED; exactpredicateunknown, privacyNOTpassed; consumedManagement DPAPI deleted/childclosed. No writer/machine/bypass delivery. Diagnosingexistingfakeexecution only, no rerun. [Actual preflight](evidence/gw01-preflight-20261018.json). CI39108227413fourjobsPASS/dbfailedstaleops count10vs13; testonlycorrectionlocal21/21PASS, nextnormalCIpending.
+
+- 2026-10-18 Cairo ? Cleanup correction: the initial failed PrivacyRead receipt reported handoffsRetained:false, but independent presence-only verification at08:01:25UTC found both the Management DPAPI handoff and original lease. Management-only filename concatenation caused the inaccurate report. Corrected consumer uses an explicit filename array and verifies actual absence before reporting deletion; targeted regressions/review precede a GET-only read of existing execution12674. No credential contents read for this presence check, no credential replenishment or workflow rerun, no trial clock start.
+
+- 2026-10-18 Cairo ? Existing execution12674 CloudA PASS/native0 after fixed finite diagnostics established source-defined defaults. Reviewed correction adds only missing version-specific defaults on both compared graphs; exact bodies/credentials/security fields/unknown values/connections remain strict. Earlier actual failures and false cleanup receipt correction retained; no native workflow rerun or assertion removal. All credential-bearing children closed. Fresh bounded Vercel readback: new GW01 entry is sole, flagtrue, scope/note/time verified, zero other entries. No second Generate or default update; separate recovered readback provenance under review. Owner-only public seal helper14 synthetic Windows cases/source review clear, actual workstation guard remains owner action because automatic review rejected its earlier read. Gateway1/100/clockstopped, no Writer/Machine delivery or DB identity. [Actual preflight](evidence/gw01-preflight-20261018.json), [bypass](evidence/gw01-bypass-20261018.json), [public step](../../scripts/n8n/windows/GW01-PUBLIC-SEAL.md).
+
+### 2026-10-18 08:40UTC - sole bypass recovery complete
+
+Fresh sealed `RecoverSoleCreated` performed GET only and returned native0/complete with child closed, matching ownership metadata, default flagtrue and zero other entries. It saved separate `recovered_sole_readback` provenance; the missing original created-receipt file remains absent. No new token or default update occurred. [Actual receipt](evidence/gw01-bypass-20261018.json). Thirty isolated Windows cases plus five independent critical cases pass. Protection handoff is retained for the approved continuation; cleanup/revocation is pending actual trial closeout. The valid original Management lease remains available, Admin is deleted, and no Writer/Machine delivery is requested before CloudB. No trial clock or additional gateway attempt started.
+
+### 2026-10-18 - writer manifest compatibility corrected locally
+
+Independent review found the future writer consumer still expected five manifest fields while the shared reviewed Preview has ten. It now validates the strict ten-field metadata before TLS/private reads and sends only the existing five-field database contract. Author16 affected Windows tests and independent10 new cases pass/native0; root source review is clear. [Local-only receipt](evidence/local-gw01-writer-manifest-20261018.json). No actual writer login, handoff read, seal creation or network request occurred. Full CloudB still gates delivery.

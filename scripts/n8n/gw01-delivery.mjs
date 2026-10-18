@@ -8,7 +8,13 @@ import {
   credentialOwnership,
   readCredentialProvenance,
 } from './gw01-credential-ownership.mjs';
-import { privacyTarget, readGatewayPrivacy } from './gw01-privacy-read.mjs';
+import {
+  privacyTarget,
+  readGatewayPrivacy,
+  readRetainedGatewayCanary,
+  safePrivacyStage,
+  safePrivacyParameterDiagnostic,
+} from './gw01-privacy-read.mjs';
 
 export const gatewayCredentialIds = Object.freeze({ canary: 'EmrGw01Canary18', machine: 'EmrGw01Machine18' });
 const credentialNames = { canary: 'M03 GW-01 privacy canary [dev]', machine: 'M03 GW-01 machine [dev]' };
@@ -26,6 +32,16 @@ const safeCode = (error) =>
   )
     ? error.message
     : 'GW01_DELIVERY_UNKNOWN';
+export function deliveryFailureReceipt(error) {
+  return {
+    version: 1,
+    status: 'stopped_reconcile',
+    privateDetailsWithheld: true,
+    code: safeCode(error),
+    privacyStage: safePrivacyStage(error),
+    privacyParameterDiagnostic: safePrivacyParameterDiagnostic(error),
+  };
+}
 export function vercelEnvArguments(name) {
   if (!['EMR_WORKER_DB_PASSWORD', 'EMR_WORKER_GATEWAY_TOKEN_SHA256'].includes(name))
     fail('GW01_DELIVERY_REJECTED');
@@ -58,10 +74,19 @@ function reflected(value, secrets) {
 // No credential test, list, update, transfer or arbitrary endpoint is exposed.
 export async function deliverGatewayCredentials(mode, secrets, config, ports) {
   if (
-    !['Canary', 'Runtime', 'ReconcileCanary', 'ReconcileRuntime', 'PrivacyRead', 'Cleanup'].includes(mode) ||
+    ![
+      'Canary',
+      'Environment',
+      'RuntimeCredential',
+      'ReconcileCanary',
+      'ReconcileRuntime',
+      'PrivacyRead',
+      'PrivacyReadRetainedCanary',
+      'Cleanup',
+    ].includes(mode) ||
     !exact(
       config,
-      mode === 'PrivacyRead'
+      mode.startsWith('PrivacyRead')
         ? ['audience', 'privacyVerified', 'privacyTarget']
         : ['audience', 'privacyVerified'],
     ) ||
@@ -88,17 +113,26 @@ export async function deliverGatewayCredentials(mode, secrets, config, ports) {
     !u.hostname.endsWith('.vercel.app')
   )
     fail('GW01_DELIVERY_REJECTED');
-  const expected = mode === 'Runtime' ? ['management', 'writer', 'machine', 'protection'] : ['management'];
+  const expected =
+    mode === 'Environment'
+      ? ['writer', 'machine']
+      : mode === 'RuntimeCredential'
+        ? ['management', 'machine', 'protection']
+        : ['management'];
   if (
     !exact(secrets, expected) ||
     !expected.every((k) => privateValue(secrets[k])) ||
-    (mode === 'Runtime' && !config.privacyVerified)
+    (['Environment', 'RuntimeCredential'].includes(mode) && !config.privacyVerified)
   )
     fail('GW01_DELIVERY_REJECTED');
   const values = Object.values(secrets),
-    hash = mode === 'Runtime' ? createHash('sha256').update(secrets.machine).digest('hex') : null;
+    hash = mode === 'Environment' ? createHash('sha256').update(secrets.machine).digest('hex') : null;
   const guard = (value) => {
-    if (reflected(value, [...values, hash])) fail('GW01_DELIVERY_RESPONSE_REJECTED');
+    if (reflected(value, [...values, hash])) {
+      const error = Error('GW01_DELIVERY_RESPONSE_REJECTED');
+      if (mode.startsWith('PrivacyRead')) error.privacyStage = 'management_reflection';
+      throw error;
+    }
     return value;
   };
   let requestCount = 0;
@@ -116,11 +150,48 @@ export async function deliverGatewayCredentials(mode, secrets, config, ports) {
     return r;
   }
   const metadata = assertCredentialMetadata;
-  if (mode === 'PrivacyRead') {
+  if (mode.startsWith('PrivacyRead')) {
     const target = privacyTarget(config.privacyTarget);
     if (target.audience !== config.audience) fail('GW01_DELIVERY_REJECTED');
-    const privacy = await readGatewayPrivacy(target, api);
+    const privacy = await (
+      mode === 'PrivacyReadRetainedCanary' ? readRetainedGatewayCanary : readGatewayPrivacy
+    )(target, api);
     return { version: 1, status: 'complete', mode, managementRequests: requestCount, privacy };
+  }
+  if (mode === 'Environment') {
+    if (ports.ownership.read('environment') !== null) fail('GW01_DELIVERY_RECONCILE');
+    ports.ownership.begin('environment', {
+      version: 1,
+      kind: 'environment_intent',
+      windowId: '76c2ad42-c094-4ba4-9a0b-566e19b97780',
+      projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
+      branch: 'm03-n8n-foundation',
+      createdAt: new Date().toISOString(),
+    });
+    for (const [name, value] of [
+      ['EMR_WORKER_DB_PASSWORD', secrets.writer],
+      ['EMR_WORKER_GATEWAY_TOKEN_SHA256', hash],
+    ]) {
+      let result;
+      try {
+        result = await ports.environment(name, value);
+      } catch (error) {
+        fail(safeCode(error));
+      }
+      if (!exact(result, ['ok', 'childClosed', 'code']) || result.childClosed !== true)
+        fail('GW01_CHILD_CLEANUP_UNVERIFIED');
+      if (result.ok !== true) fail(safeCode({ message: result.code }));
+      ports.ownership.append('environment', { kind: 'environment_delivered', name });
+    }
+    return {
+      version: 1,
+      status: 'complete',
+      mode,
+      managementRequests: 0,
+      vercelCommands: 2,
+      branch: 'm03-n8n-foundation',
+      previewOnly: true,
+    };
   }
   if (mode.startsWith('Reconcile')) {
     const key = mode === 'ReconcileCanary' ? 'canary' : 'machine',
@@ -149,7 +220,7 @@ export async function deliverGatewayCredentials(mode, secrets, config, ports) {
     const deleted = [];
     for (const key of ['canary', 'machine']) {
       if (ports.ownership.read(key) === null) continue;
-      const owned = readCredentialProvenance(ports.ownership, key, config.audience);
+      const owned = readCredentialProvenance(ports.ownership, key, undefined);
       if (owned.deleted) continue;
       if (!owned.created) fail('GW01_DELIVERY_OWNERSHIP_UNVERIFIED');
       const id = gatewayCredentialIds[key],
@@ -177,6 +248,30 @@ export async function deliverGatewayCredentials(mode, secrets, config, ports) {
   const key = mode === 'Canary' ? 'canary' : 'machine',
     id = gatewayCredentialIds[key];
   if (ports.ownership.read(key) !== null) fail('GW01_DELIVERY_RECONCILE');
+  if (mode === 'RuntimeCredential') {
+    const env = ports.ownership.read('environment');
+    if (
+      !Array.isArray(env) ||
+      env.length !== 3 ||
+      !exact(env[0], ['version', 'kind', 'windowId', 'projectId', 'branch', 'createdAt']) ||
+      env[0].version !== 1 ||
+      env[0].kind !== 'environment_intent' ||
+      env[0].windowId !== '76c2ad42-c094-4ba4-9a0b-566e19b97780' ||
+      env[0].projectId !== 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' ||
+      env[0].branch !== 'm03-n8n-foundation' ||
+      typeof env[0].createdAt !== 'string' ||
+      !Number.isFinite(Date.parse(env[0].createdAt)) ||
+      !env
+        .slice(1)
+        .every(
+          (r, i) =>
+            exact(r, ['kind', 'name']) &&
+            r.kind === 'environment_delivered' &&
+            r.name === ['EMR_WORKER_DB_PASSWORD', 'EMR_WORKER_GATEWAY_TOKEN_SHA256'][i],
+        )
+    )
+      fail('GW01_DELIVERY_RECONCILE');
+  }
   const schema = await api('GET', '/api/v1/credentials/schema/httpCustomAuth', null);
   if (
     schema.status !== 200 ||
@@ -199,24 +294,6 @@ export async function deliverGatewayCredentials(mode, secrets, config, ports) {
     type: 'httpCustomAuth',
     createdAt: new Date().toISOString(),
   });
-  if (mode === 'Runtime') {
-    // ExistingCLI authentication is used by its supported public executable.
-    // Values/verifier exist only in memory and child stdin, never argv/output.
-    for (const [name, value] of [
-      ['EMR_WORKER_DB_PASSWORD', secrets.writer],
-      ['EMR_WORKER_GATEWAY_TOKEN_SHA256', hash],
-    ]) {
-      let result;
-      try {
-        result = await ports.environment(name, value);
-      } catch (error) {
-        fail(safeCode(error));
-      }
-      if (!exact(result, ['ok', 'childClosed', 'code']) || result.childClosed !== true)
-        fail('GW01_CHILD_CLEANUP_UNVERIFIED');
-      if (result.ok !== true) fail(safeCode({ message: result.code }));
-    }
-  }
   const json = JSON.stringify({
     headers: {
       Authorization: 'Bearer ' + (mode === 'Canary' ? 'GW01_SYNTHETIC_AUTH_CANARY_ONLY' : secrets.machine),
@@ -285,24 +362,16 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const input = JSON.parse(Buffer.concat(chunks).toString('utf8'));
     if (!exact(input, ['mode', 'secrets', 'config'])) fail('GW01_DELIVERY_REJECTED');
     const result = await deliverGatewayCredentials(input.mode, input.secrets, input.config, {
-      management:
-        input.mode === 'PrivacyRead'
-          ? managementTransport({ owned: privacyTarget(input.config?.privacyTarget) })
-          : nativeManagementRequest,
+      management: input.mode?.startsWith('PrivacyRead')
+        ? managementTransport({ owned: privacyTarget(input.config?.privacyTarget) })
+        : nativeManagementRequest,
       environment: nativeVercelEnvironment,
       ownership: credentialOwnership(resolve('.')),
     });
     process.stdout.write(JSON.stringify(result));
     exit = 0;
   } catch (error) {
-    process.stdout.write(
-      JSON.stringify({
-        version: 1,
-        status: 'stopped_reconcile',
-        privateDetailsWithheld: true,
-        code: safeCode(error),
-      }),
-    );
+    process.stdout.write(JSON.stringify(deliveryFailureReceipt(error)));
   }
   process.exitCode = exit;
 }

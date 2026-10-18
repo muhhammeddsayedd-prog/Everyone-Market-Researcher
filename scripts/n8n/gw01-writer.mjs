@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { checkServerIdentity } from 'node:tls';
 
 const windowId = '76c2ad42-c094-4ba4-9a0b-566e19b97780';
 const projectRef = 'zmotjsbzhzjvpelxvxlf';
@@ -114,6 +115,7 @@ export async function checkGatewayWriter(input, createClient = nativeWriterClien
     const preview = writerPreview(input.preview);
     phase = 'GW01_WRITER_CONNECTION';
     client = createClient(input.password);
+    if (typeof client.on === 'function') client.on('error', () => {});
     out.connectionClosed = false;
     await client.connect();
     phase = 'GW01_WRITER_IDENTITY';
@@ -231,6 +233,8 @@ export function nativeWriterClient(password) {
     ssl: {
       ca: ca.toString('ascii'),
       rejectUnauthorized: true,
+      minVersion: 'TLSv1.2',
+      checkServerIdentity,
       servername: 'aws-1-eu-central-1.pooler.supabase.com',
     },
     connectionTimeoutMillis: 10000,

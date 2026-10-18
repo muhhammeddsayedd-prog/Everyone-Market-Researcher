@@ -119,7 +119,7 @@ export function createWorkerAdapterRuntime(expectedAudience = null) {
       !exact(value, ['requestId', 'reconcileRequestId', 'operation', 'args']) ||
       !uuid(value.requestId) ||
       !uuid(value.reconcileRequestId) ||
-      value.requestId === value.reconcileRequestId ||
+      value.requestId.toLowerCase() === value.reconcileRequestId.toLowerCase() ||
       !operations.includes(value.operation) ||
       !object(value.args)
     )
@@ -131,8 +131,8 @@ export function createWorkerAdapterRuntime(expectedAudience = null) {
       op === 'request.status' &&
       (!exact(a, ['targetRequestId']) ||
         !uuid(a.targetRequestId) ||
-        a.targetRequestId === value.requestId ||
-        a.targetRequestId === value.reconcileRequestId)
+        a.targetRequestId.toLowerCase() === value.requestId.toLowerCase() ||
+        a.targetRequestId.toLowerCase() === value.reconcileRequestId.toLowerCase())
     )
       bad();
     if (

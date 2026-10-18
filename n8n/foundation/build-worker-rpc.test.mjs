@@ -168,3 +168,25 @@ test('partial health-shaped response cannot pass complete typed health verificat
   );
   assert.equal(out.outcome, 'unknown');
 });
+
+test('UUID correlations are distinct by identity even when letter case differs', () => {
+  const r = createWorkerAdapterRuntime(),
+    x = 'e62e7289-28ca-4387-a071-6f327837ea01',
+    y = 'a11b7289-28ca-4387-a071-6f327837ea02';
+  for (const value of [
+    { requestId: x, reconcileRequestId: x.toUpperCase(), operation: 'identity.read', args: {} },
+    {
+      requestId: x,
+      reconcileRequestId: y,
+      operation: 'request.status',
+      args: { targetRequestId: x.toUpperCase() },
+    },
+    {
+      requestId: x,
+      reconcileRequestId: y,
+      operation: 'request.status',
+      args: { targetRequestId: y.toUpperCase() },
+    },
+  ])
+    assert.throws(() => r.prepare(value), /^Error: GW01_ADAPTER_INPUT_INVALID$/);
+});

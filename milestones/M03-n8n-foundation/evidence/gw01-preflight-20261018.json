@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-18T07:49:54.904123+00:00",
+  "environment": "dev_preview_preflight_only",
+  "commitSha": "4d4d13ebf241f12df64de772b0024bf6d5a067e0",
+  "deploymentId": "dpl_34mF18oQnjrqS67pdXMBsChLfV7g",
+  "audience": "https://everyone-market-researcher-7k5et630y-muhammed-abdelrahman.vercel.app",
+  "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+  "branch": "m03-n8n-foundation",
+  "previewReadback": {
+    "state": "READY",
+    "environment": "Preview",
+    "region": "FRA1",
+    "runtime": "Node24",
+    "maxDurationSeconds": 30,
+    "branchEnvNamesObserved": [],
+    "routeDisabledByMissingConfig": true,
+    "handler503NotYetVerified": true
+  },
+  "managementCanaryCreation": {
+    "nativeExit": 0,
+    "managementRequests": 3,
+    "credentialId": "EmrGw01Canary18",
+    "type": "httpCustomAuth",
+    "createdAt": "2026-10-18T07:37:27.704Z",
+    "childClosed": true,
+    "values": "PUBLIC synthetic strings only; no writer or machine credential"
+  },
+  "nativeN8nCanary": {
+    "workflowId": "p8GikCM8C9Tq3lo4",
+    "executionId": "12674",
+    "inactive": true,
+    "nodes": 3,
+    "actualHttpTypeVersion": 4.5,
+    "observedHttpStatus": 401,
+    "statusVerifiedFrom": "Exact native execution output statusCode DOM field; body/headers not exposed",
+    "nativeWorkflowSucceeded": true,
+    "restrictedDatabaseIdentityVerified": false,
+    "retentionDuringSyntheticOnly": {
+      "error": "all",
+      "success": "all",
+      "manual": true,
+      "progress": false
+    },
+    "retentionAfter": {
+      "error": "none",
+      "success": "none",
+      "manual": false,
+      "progress": false
+    },
+    "actualFinalExport": "n8n/workflows/GW01-acceptance-dev.json"
+  },
+  "connectorExactExecutionRead": {
+    "attempts": 1,
+    "isError": true,
+    "setupOrLoginRepeated": false
+  },
+  "trial": {
+    "windowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+    "totalNetworkAttempts": 1,
+    "remaining": 99,
+    "inFlight": 0,
+    "clockStarted": false,
+    "databaseWindowBound": false,
+    "serverAdmissions": 0
+  },
+  "delivery": {
+    "administratorOnlyForNewMigration": "consumed/deleted/childrenclosed",
+    "management": "Existing encrypted handoff and original lease actually present at08:01:25Z; prior failed reader cleanup report inaccurate; bounded reconciliation pending.",
+    "writerDelivered": false,
+    "machineCreated": false,
+    "bypassCreated": false
+  },
+  "boundaries": {
+    "productionChanged": false,
+    "actorOrModelCalled": false,
+    "collectionStarted": false,
+    "recurringActivated": false,
+    "merged": false,
+    "m04Started": false
+  },
+  "failuresRetained": [
+    "Browser file upload blocked by extension file-URL permission; setting unchanged, imported public synthetic graph via supported clipboard",
+    "Download event observer timed out; actual saved export reconciled before any retry",
+    "Privacy gate actual response rejected; no runtime credentials delivered"
+  ],
+  "privacyReconciliationAttempts": [
+    {
+      "observedAt": "2026-10-18T08:04:49.315088+00:00",
+      "mode": "PrivacyReadRetainedCanary",
+      "consumerPowerShellSha256": "f7418a2d40d66c37fe442860f0facc7146a64fb40334c734db2427f55214ea82",
+      "nativeExit": 1,
+      "code": "GW01_DELIVERY_RESPONSE_REJECTED",
+      "privacyStage": "executed_snapshot",
+      "rootChildClosed": true,
+      "encryptedManagementRetainedUnderOriginalLease": true,
+      "newGatewayAttempts": 0,
+      "newExecution": false,
+      "evidenceBoundary": "Current workflow checks passed; executed snapshot identity/count/binding mismatch unresolved. No privacy acceptance inferred; no values exposed."
+    },
+    {
+      "observedAt": "2026-10-18T08:08:00.923056+00:00",
+      "mode": "PrivacyReadRetainedCanary",
+      "consumerPowerShellSha256": "ec805ca9a7af9d7acfec820cc6a37270f15591f9d5964c967285a42d3b538045",
+      "nativeExit": 1,
+      "code": "GW01_DELIVERY_RESPONSE_REJECTED",
+      "privacyStage": "executed_snapshot_parameters",
+      "rootChildClosed": true,
+      "encryptedManagementRetainedUnderOriginalLease": true,
+      "newGatewayAttempts": 0,
+      "newExecution": false,
+      "evidenceBoundary": "Workflow/snapshot identity, exact HTTP node identity, name, type and typeVersion passed. Parameter inequality is not yet diagnosed; assertions remain unchanged."
+    },
+    {
+      "observedAt": "2026-10-18T08:13:55.941815+00:00",
+      "mode": "PrivacyReadRetainedCanary",
+      "consumerPowerShellSha256": "d7edeb6ebd4b9ef9fbdc88dd63aab003b0d3a67e8b44a262d97655625f476373",
+      "nativeExit": 1,
+      "code": "GW01_DELIVERY_RESPONSE_REJECTED",
+      "privacyStage": "executed_snapshot_parameters",
+      "privacyParameterDiagnostic": {
+        "paths": [
+          "parameters_other"
+        ],
+        "jsonBodyTextDifferent": false,
+        "jsonBodySemanticEqual": true
+      },
+      "rootChildClosed": true,
+      "encryptedManagementRetainedUnderOriginalLease": true,
+      "newGatewayAttempts": 0,
+      "newExecution": false,
+      "evidenceBoundary": "All fixed known security leaves and exact body text match; residual fields remain unidentified. Official constructor supports default filling, but its actual use here has not been established."
+    },
+    {
+      "observedAt": "2026-10-18T08:18:44.274922+00:00",
+      "mode": "PrivacyReadRetainedCanary",
+      "consumerPowerShellSha256": "32f30b243dde49dd4d416b6970b64d92c1fab991eaf677f87465e4b3c1e25c2b",
+      "nativeExit": 1,
+      "code": "GW01_DELIVERY_RESPONSE_REJECTED",
+      "privacyStage": "executed_snapshot_parameters",
+      "rootChildClosed": true,
+      "encryptedManagementRetainedUnderOriginalLease": true,
+      "newGatewayAttempts": 0,
+      "newExecution": false,
+      "nativeSchema": {
+        "manual": {
+          "identityMatched": true,
+          "sourceExactDefaultAdditions": [
+            "notice"
+          ],
+          "unclassifiedDifference": false
+        },
+        "http": {
+          "identityMatched": true,
+          "sourceExactDefaultAdditions": [
+            "curlImport",
+            "provideSslCertificates",
+            "sendQuery",
+            "sendHeaders",
+            "contentType",
+            "infoMessage"
+          ],
+          "remainingContainerDifference": "options.response",
+          "allPreviousSecurityLeavesAndExactBodyMatch": true,
+          "unclassifiedDifference": false
+        },
+        "receipt": {
+          "identityMatched": true,
+          "sourceExactDefaultAdditions": [
+            "mode",
+            "duplicateItem",
+            "includeOtherFields"
+          ],
+          "unclassifiedDifference": false
+        }
+      },
+      "evidenceBoundary": "Exact observed default additions, not proof of the mutation layer. Nested response difference still must match the fixed source default under the reviewed correction; original assertion failure preserved."
+    },
+    {
+      "observedAt": "2026-10-18T08:21:41.595563+00:00",
+      "mode": "PrivacyReadRetainedCanary",
+      "nativeExit": 0,
+      "status": "complete",
+      "managementRequests": 2,
+      "workflowId": "p8GikCM8C9Tq3lo4",
+      "executionId": "12674",
+      "exportCanaryVerified": true,
+      "executionCanaryVerified": true,
+      "httpStatusCode": 401,
+      "rootChildClosed": true,
+      "encryptedManagementRetainedUnderOriginalLease": true,
+      "consumerPrivacySha256": "a8ead692dd3dd9b80c9877e36275eeb420e30ca858793f59de3af853e979c5ec",
+      "consumerPowerShellSha256": "32f30b243dde49dd4d416b6970b64d92c1fab991eaf677f87465e4b3c1e25c2b",
+      "newExecution": false,
+      "newGatewayAttempts": 0,
+      "evidenceBoundary": "Exact same execution. Source-defined missing defaults accounted for identically on saved/executed graphs; all other values, body text, credentials, connections and actual HTTP task match. No inference of a mutation layer, restricted DB identity or handler503/log privacy."
+    }
+  ],
+  "savedPublicExportComparison": {
+    "beforeExecutionSha256": "2057cb88c9a3df436258a3462ff61a76287450ccc98732829dcde9fe4d00dc07",
+    "afterExecutionSha256": "677448a0cc4f317fe32831e8cfd668b3b8c8dc1a6475d2821eaeef61ca06e60d",
+    "sameWorkflowId": true,
+    "sameHttpNodeId": true,
+    "allHttpParametersEqual": true,
+    "retentionSettingsEqual": false,
+    "evidenceBoundary": "Saved export comparison only; does not identify the execution-side transformation or establish snapshot acceptance."
+  },
+  "initialPrivacyReadback": {
+    "mode": "PrivacyReadRetainedCanary",
+    "nativeExit": 1,
+    "status": "stopped_reconcile",
+    "code": "GW01_DELIVERY_RESPONSE_REJECTED",
+    "childClosed": true,
+    "managementHandoffDeleted": false,
+    "privacyPassed": false,
+    "exactRejectedPredicate": "unknown; diagnostic correction pending; no inference of leak or successful redaction",
+    "initialReceiptReportedHandoffsRetained": false,
+    "cleanupReceiptCorrection": {
+      "observedAt": "2026-10-18T08:01:25Z",
+      "managementHandoffPresent": true,
+      "managementLeasePresent": true,
+      "cause": "Management-only cleanup list became a scalar string; lease append concatenated filenames. Original reported cleanup was inaccurate. No credential contents read for presence verification.",
+      "next": "Corrected filename array, explicit absence check and targeted regressions before GET-only reconciliation of execution12674; preserve original lease."
+    }
+  },
+  "actualPrivacyReadback": {
+    "observedAt": "2026-10-18T08:21:41.595563+00:00",
+    "mode": "PrivacyReadRetainedCanary",
+    "nativeExit": 0,
+    "status": "complete",
+    "managementRequests": 2,
+    "workflowId": "p8GikCM8C9Tq3lo4",
+    "executionId": "12674",
+    "exportCanaryVerified": true,
+    "executionCanaryVerified": true,
+    "httpStatusCode": 401,
+    "rootChildClosed": true,
+    "encryptedManagementRetainedUnderOriginalLease": true,
+    "consumerPrivacySha256": "a8ead692dd3dd9b80c9877e36275eeb420e30ca858793f59de3af853e979c5ec",
+    "consumerPowerShellSha256": "32f30b243dde49dd4d416b6970b64d92c1fab991eaf677f87465e4b3c1e25c2b",
+    "newExecution": false,
+    "newGatewayAttempts": 0,
+    "evidenceBoundary": "Exact same execution. Source-defined missing defaults accounted for identically on saved/executed graphs; all other values, body text, credentials, connections and actual HTTP task match. No inference of a mutation layer, restricted DB identity or handler503/log privacy."
+  },
+  "cloudAComplete": true,
+  "cloudBComplete": false
+}

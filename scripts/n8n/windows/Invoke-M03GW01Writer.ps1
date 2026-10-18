@@ -8,7 +8,7 @@ $stream=$null;$secure=$null;$bstr=[IntPtr]::Zero;$password=$null;$bytes=$null;$p
 $receipt=[ordered]@{version=1;mode=$Mode;status='preflight_blocked';privateRead=$false;rootChildClosed=$true;handoffRetained=$true;nativeExit=$null;result=$null}
 function Safe-Path([string]$Path){$absolute=[IO.Path]::GetFullPath($Path);$cursor=$absolute;while($null -ne $cursor){$entry=Get-Item -LiteralPath $cursor -Force;if(($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'blocked'};$parent=[IO.Directory]::GetParent($cursor);$cursor=if($null -eq $parent){$null}else{$parent.FullName}};return $absolute}
 function Json([string]$Relative){$file=Safe-Path (Join-Path $repo $Relative);if((Get-Item -LiteralPath $file).Length -gt 65536){throw 'blocked'};return ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($file))}
-function Keys($Value,[string[]]$Expected){if($Value -isnot [PSCustomObject] -or @(Compare-Object -ReferenceObject @($Expected|Sort-Object) -DifferenceObject @($Value.PSObject.Properties.Name|Sort-Object)).Count -ne 0){throw 'blocked'}}
+function Keys($Value,[string[]]$Expected){if($Value -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive -ReferenceObject @($Expected|Sort-Object) -DifferenceObject @($Value.PSObject.Properties.Name|Sort-Object)).Count -ne 0){throw 'blocked'}}
 function Run([string[]]$Arguments,[string]$InputText,[int]$Timeout){
   $start=$null;$child=$null;$started=$false;$closed=$true;$buffer=$null;$memory=$null;$stdout=$null;$stderr=$null;$text=$null;$native=$null
   try{
@@ -28,8 +28,11 @@ function Run([string[]]$Arguments,[string]$InputText,[int]$Timeout){
   };return [PSCustomObject]@{closed=$closed;native=$native;text=$text}
 }
 try{
-  $null=Safe-Path $repo;$preview=Json 'scripts/n8n/gw01-reviewed-preview.json';Keys $preview @('audience','commitSha','deploymentId','projectId','branch')
-  if($preview.projectId -cne 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' -or $preview.branch -cne 'm03-n8n-foundation' -or $preview.audience -cnotmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$' -or $preview.commitSha -cnotmatch '^[a-f0-9]{40}$' -or $preview.deploymentId -cnotmatch '^dpl_[A-Za-z0-9]{16,80}$'){throw 'blocked'}
+  $null=Safe-Path $repo;$reviewedPreview=Json 'scripts/n8n/gw01-reviewed-preview.json';Keys $reviewedPreview @('version','projectId','teamId','branch','commitSha','deploymentId','audience','target','protection','routeDisabledVerified')
+  foreach($name in @('projectId','teamId','branch','commitSha','deploymentId','audience','target','protection')){if($reviewedPreview.$name -isnot [string]){throw 'blocked'}}
+  if($reviewedPreview.version -isnot [int] -or $reviewedPreview.version -ne 1 -or $reviewedPreview.projectId -cne 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' -or $reviewedPreview.teamId -cne 'team_gboXPxTevpCOZuaA8eY9PmR1' -or $reviewedPreview.branch -cne 'm03-n8n-foundation' -or $reviewedPreview.audience -cnotmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$' -or $reviewedPreview.commitSha -cnotmatch '^[a-f0-9]{40}$' -or $reviewedPreview.deploymentId -cnotmatch '^dpl_[A-Za-z0-9]{16,80}$' -or $reviewedPreview.target -cne 'preview' -or $reviewedPreview.protection -cne 'all_except_custom_domains' -or $reviewedPreview.routeDisabledVerified -isnot [bool]){throw 'blocked'}
+  # The shared manifest stays strict; the database consumer receives its closed five-field contract.
+  $preview=[PSCustomObject]@{audience=$reviewedPreview.audience;commitSha=$reviewedPreview.commitSha;deploymentId=$reviewedPreview.deploymentId;projectId=$reviewedPreview.projectId;branch=$reviewedPreview.branch}
   $local=Json 'scripts/n8n/gw01-local-privacy.json';foreach($name in @('passed','consumerReviewed','canaryTestsPassed')){if($local.$name -isnot [bool] -or -not $local.$name){throw 'blocked'}}
   $cloud=Json 'scripts/n8n/gw01-cloud-privacy.json';if($cloud.version -ne 1 -or $cloud.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $cloud.instanceHost -cne 'muhhammedsayed.app.n8n.cloud'){throw 'blocked'};foreach($name in @('passed','credentialCanaryVerified','executionCanaryVerified','exportCanaryVerified','logCanaryVerified')){if($cloud.$name -isnot [bool] -or -not $cloud.$name){throw 'blocked'}}
   $seal=Json 'scripts/n8n/gw01-writer-seal.json';Keys $seal @('version','files');if($seal.version -ne 1){throw 'blocked'};Keys $seal.files $required
@@ -49,7 +52,10 @@ try{
   Keys $v @('version','status','mode','code','identity','authorizationDenials','window','connectionClosed')
   if($v.version -ne 1 -or $v.mode -cne $Mode -or $v.status -cnotin @('complete','stopped_reconcile') -or $v.connectionClosed -isnot [bool] -or $v.authorizationDenials -lt 0 -or $v.authorizationDenials -gt 4 -or ($null -ne $v.code -and $v.code -cnotmatch '^GW01_WRITER_(INPUT|IDENTITY|AUTHORIZATION|CONTROL|CONNECTION|CLEANUP)$')){throw 'blocked'}
   if($null -ne $v.identity){Keys $v.identity @('currentUser','sessionUser','database','projectRef');if($v.identity.currentUser -cne 'n8n_writer' -or $v.identity.sessionUser -cne 'n8n_writer' -or $v.identity.database -cne 'postgres' -or $v.identity.projectRef -cne 'zmotjsbzhzjvpelxvxlf'){throw 'blocked'}}
-  if($null -ne $v.window){Keys $v.window @('id','startsAt','expiresAt','closed','totalAdmitted','boundAudience','boundCommitSha','boundDeploymentId');if($v.window.id -cne '76c2ad42-c094-4ba4-9a0b-566e19b97780' -or $v.window.closed -isnot [bool] -or $v.window.totalAdmitted -lt 0 -or $v.window.totalAdmitted -gt 100){throw 'blocked'}}
+  if($null -ne $v.window){Keys $v.window @('id','startsAt','expiresAt','closed','totalAdmitted','boundAudience','boundCommitSha','boundDeploymentId');if($v.window.id -cne '76c2ad42-c094-4ba4-9a0b-566e19b97780' -or $v.window.closed -isnot [bool] -or $v.window.totalAdmitted -lt 0 -or $v.window.totalAdmitted -gt 100 -or ($null -eq $v.window.startsAt) -ne ($null -eq $v.window.expiresAt)){throw 'blocked'}
+    foreach($time in @($v.window.startsAt,$v.window.expiresAt)){if($null -ne $time -and ($time -isnot [string] -or $time -cnotmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?(?:Z|[+-]\d\d:\d\d)$')){throw 'blocked'}}
+    if($null -eq $v.window.boundAudience){if($null -ne $v.window.boundCommitSha -or $null -ne $v.window.boundDeploymentId){throw 'blocked'}}elseif($v.window.boundAudience -cnotmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$' -or $v.window.boundCommitSha -cnotmatch '^[a-f0-9]{40}$' -or $v.window.boundDeploymentId -cnotmatch '^dpl_[A-Za-z0-9]{16,80}$'){throw 'blocked'}
+  }
   if($v.status -ceq 'complete' -and ($null -eq $v.identity -or $null -eq $v.window -or -not $v.connectionClosed -or $r.native -ne 0 -or ($Mode -ceq 'Verify' -and $v.authorizationDenials -ne 4) -or ($Mode -ceq 'Close' -and -not $v.window.closed))){throw 'blocked'}
   $receipt.result=$v;$receipt.status=$v.status
 }catch{$receipt.status='stopped_reconcile'}finally{

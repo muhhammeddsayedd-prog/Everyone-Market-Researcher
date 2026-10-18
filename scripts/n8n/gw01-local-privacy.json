@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "passed": true,
+  "consumerReviewed": true,
+  "canaryTestsPassed": true,
+  "observedAt": "2026-10-18T07:37:10.163618+00:00",
+  "scope": "Local only: independent transport/provenance/privacy review plus71 focused synthetic tests. Does not establish actual Cloud privacy.",
+  "gatewayNetworkAttempts": 0,
+  "clockStarted": false
+}

@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { writerPreview } from './gw01-writer.mjs';
 const roots = [],
   ps = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
   canary = 'SYNTHETIC_WRITER_PRIVATE_GW01';
@@ -55,11 +56,16 @@ function fixture(mode = 'success') {
   put(
     'scripts/n8n/gw01-reviewed-preview.json',
     JSON.stringify({
+      version: 1,
       audience: 'https://everyone-market-researcher-synthetic.vercel.app',
       commitSha: 'a'.repeat(40),
       deploymentId: 'dpl_SyntheticOwnedDeployment123',
       projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
+      teamId: 'team_gboXPxTevpCOZuaA8eY9PmR1',
       branch: 'm03-n8n-foundation',
+      target: 'preview',
+      protection: 'all_except_custom_domains',
+      routeDisabledVerified: false,
     }),
   );
   put('scripts/seed/certs/supabase-root-2021.crt', 'PUBLIC_SYNTHETIC_CA');
@@ -81,11 +87,11 @@ function fixture(mode = 'success') {
   };
   put(
     'scripts/seed/check-tls.mjs',
-    `process.stdout.write(JSON.stringify(${JSON.stringify(mode === 'tlsfailure' ? { ...tls, status: 'failed' } : tls)}));`,
+    `import {writeFileSync} from 'node:fs';writeFileSync('synthetic-tls-started.json','true');process.stdout.write(JSON.stringify(${JSON.stringify(mode === 'tlsfailure' ? { ...tls, status: 'failed' } : tls)}));`,
   );
   put(
     'scripts/n8n/gw01-writer.mjs',
-    `let text='';for await(const c of process.stdin)text+=c;const input=JSON.parse(text);${mode === 'hang' ? 'setInterval(()=>{},1000);' : `const result={version:1,status:'complete',mode:input.mode,code:null,identity:{currentUser:'n8n_writer',sessionUser:'n8n_writer',database:'postgres',projectRef:'zmotjsbzhzjvpelxvxlf'},authorizationDenials:4,window:{id:'76c2ad42-c094-4ba4-9a0b-566e19b97780',startsAt:null,expiresAt:null,closed:input.mode==='Close',totalAdmitted:0,boundAudience:null,boundCommitSha:null,boundDeploymentId:null},connectionClosed:true};${mode === 'reflection' ? 'result.identity.currentUser=input.password;' : ''}${mode === 'stderr' ? 'process.stderr.write(input.password);' : ''}process.stdout.write(JSON.stringify(result));`}`,
+    `import {writeFileSync} from 'node:fs';let text='';for await(const c of process.stdin)text+=c;const input=JSON.parse(text);writeFileSync('synthetic-writer-preview.json',JSON.stringify(input.preview));${mode === 'hang' ? 'setInterval(()=>{},1000);' : `const result={version:1,status:'complete',mode:input.mode,code:null,identity:{currentUser:'n8n_writer',sessionUser:'n8n_writer',database:'postgres',projectRef:'zmotjsbzhzjvpelxvxlf'},authorizationDenials:4,window:{id:'76c2ad42-c094-4ba4-9a0b-566e19b97780',startsAt:null,expiresAt:null,closed:input.mode==='Close',totalAdmitted:0,boundAudience:null,boundCommitSha:null,boundDeploymentId:null},connectionClosed:true};${mode === 'reflection' ? 'result.identity.currentUser=input.password;' : ''}${mode === 'stderr' ? 'process.stderr.write(input.password);' : ''}process.stdout.write(JSON.stringify(result));`}`,
   );
   const paths = [
     'scripts/n8n/gw01-writer.mjs',
@@ -131,6 +137,17 @@ function fixture(mode = 'success') {
   return {
     root,
     local,
+    mutatePreview(change) {
+      const relative = 'scripts/n8n/gw01-reviewed-preview.json',
+        file = join(root, relative),
+        preview = JSON.parse(readFileSync(file, 'utf8'));
+      change(preview);
+      writeFileSync(file, JSON.stringify(preview));
+      const sealFile = join(root, 'scripts/n8n/gw01-writer-seal.json'),
+        seal = JSON.parse(readFileSync(sealFile, 'utf8'));
+      seal.files[relative] = createHash('sha256').update(readFileSync(file)).digest('hex');
+      writeFileSync(sealFile, JSON.stringify(seal));
+    },
     run: (args = []) =>
       spawnSync(ps, ['-NoProfile', '-NonInteractive', '-File', consumer, ...args], {
         env,
@@ -140,6 +157,92 @@ function fixture(mode = 'success') {
       }),
   };
 }
+test('writer accepts shared ten-field manifest and sends the exact five-field JavaScript contract', () => {
+  const f = fixture(),
+    r = f.run(['-Mode', 'Inspect']);
+  assert.equal(r.status, 0, r.stdout);
+  const preview = JSON.parse(readFileSync(join(f.root, 'synthetic-writer-preview.json'), 'utf8'));
+  assert.deepEqual(Object.keys(preview).sort(), [
+    'audience',
+    'branch',
+    'commitSha',
+    'deploymentId',
+    'projectId',
+  ]);
+  assert.deepEqual(writerPreview(preview), preview);
+  assert.equal(JSON.parse(r.stdout).rootChildClosed, true);
+  assert.doesNotMatch(r.stdout + r.stderr, new RegExp(canary));
+});
+
+for (const [label, change] of [
+  [
+    'unknown field',
+    (p) => {
+      p.unapproved = true;
+    },
+  ],
+  [
+    'missing field',
+    (p) => {
+      delete p.teamId;
+    },
+  ],
+  [
+    'wrong-case key',
+    (p) => {
+      p.Version = p.version;
+      delete p.version;
+    },
+  ],
+  [
+    'version string',
+    (p) => {
+      p.version = '1';
+    },
+  ],
+  [
+    'version boolean',
+    (p) => {
+      p.version = true;
+    },
+  ],
+  [
+    'route flag string',
+    (p) => {
+      p.routeDisabledVerified = 'false';
+    },
+  ],
+  [
+    'wrong team',
+    (p) => {
+      p.teamId = 'team_Unapproved';
+    },
+  ],
+  [
+    'production target',
+    (p) => {
+      p.target = 'production';
+    },
+  ],
+  [
+    'different protection',
+    (p) => {
+      p.protection = 'none';
+    },
+  ],
+])
+  test('writer rejects ten-field manifest ' + label + ' before TLS or private consumption', () => {
+    const f = fixture();
+    f.mutatePreview(change);
+    const r = f.run();
+    assert.equal(r.status, 1);
+    assert.match(r.stdout, /GW01_WRITER_PREFLIGHT_BLOCKED/);
+    assert.doesNotMatch(r.stdout + r.stderr, new RegExp(canary));
+    assert.equal(existsSync(join(f.root, 'synthetic-tls-started.json')), false);
+    assert.equal(existsSync(join(f.root, 'synthetic-writer-preview.json')), false);
+    assert.ok(existsSync(join(f.local, 'Temp/emr-m03-gw01-dev-writer.dpapi')));
+  });
+
 test('writer private subprocess completes boundedcheck thenretains encryptedhandoff for envdelivery/bind/close', () => {
   const f = fixture(),
     r = f.run(['-Mode', 'Verify']);
