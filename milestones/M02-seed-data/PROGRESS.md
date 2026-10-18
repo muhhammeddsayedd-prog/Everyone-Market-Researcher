@@ -5,25 +5,41 @@
 
 ## Status
 
-> Before-execution authorization snapshot (18 October 2026): owner approved the exact production seed packet at a17f7e25369abc5f71aab0196a4f2e7d5f3cc614 with `approved: seed prod` (call_0f2dd5cc1f3e4a6780c5feba0ca21225), then supplied the two production-only handoffs. Actual sealed presence check passed native0; no authentication yet at that entry. Bounded execution was authorized at that entry; execution is now spent, see the completion receipts below. PR6 merge and M03 are not approved. [Receipt](evidence/prod-authorization-20261018.json).
+> Before-execution authorization snapshot (18 October 2026): owner approved the exact production seed packet at a17f7e25369abc5f71aab0196a4f2e7d5f3cc614 with `approved: seed prod` (call_0f2dd5cc1f3e4a6780c5feba0ca21225), then supplied the two production-only handoffs. Actual sealed presence check passed native0; no authentication yet at that entry. Bounded execution was authorized at that entry; execution is now spent, see the completion receipts below. PR6 merge and M03 were not approved at that snapshot; the later separate PR6 merge is recorded below. [Receipt](evidence/prod-authorization-20261018.json).
 
-**In review — dev/prod acceptance complete; PR6 draft/unmerged pending separate merge approval**
+**Done — exact approved PR6 head merged18October2026; M03 Not started**
 
 | Field        | Value                                                                                                                                                                                                               |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Started      | 2026-10-18 Cairo                                                                                                                                                                                                    |
 | Last updated | 2026-10-18 Cairo                                                                                                                                                                                                    |
-| Finished     | —                                                                                                                                                                                                                   |
-| Branch / PR  | m02-seed-data; PR6 OPEN/DRAFT. Code31477d8 / CI39092145700 all five jobs green; final evidence/docs use normal PR CI. Exact production approval at a17f7e2 and earlier source/CI receipts remain historical. |
-| Current task | Dev/prod acceptance complete: production native0/eight stages,285/1,754 configuration parity, actual second no-op,257 public logo hashes, fresh populated advisors and credential cleanup passed. Finish final evidence delivery/current-head CI and the separate PR6 merge decision. |
-| Next step | Publish final evidence/docs and verify normal PR CI, then request **Approve merging PR #6** separately. Do not rerun the spent consumer or remove permanent admissions/manifests. No new credentials needed; M03, collection, paid providers and n8n remain unstarted. |
+| Finished     | 2026-10-18 Cairo; actual PR6 merge06:28:57Cairo /03:28:57UTC |
+| Branch / PR  | m02-seed-data; [PR6 MERGED](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6). Exact approved head8ecb87cb75bc895491c815c575816cb8bab26649; CI39093312511 all five jobs and Vercel passed before normal main merge2ee25d3442dc20e5967914c875685bcec35eddfc. |
+| Current task | M02 complete after actual approved PR6 merge. Dev/prod/native/parity/no-op/logo/advisor/cleanup evidence preserved. Main postmerge CI39093772843 passed all five jobs; publish mechanical closure docs through normal protected PR checks without claiming that later PR merged. |
+| Next step | Publish the closure record through the same existing milestone branch/ordinary protected PR workflow, then await a separate owner instruction for M03. Never rerun the spent consumer or remove permanent admissions/manifests. No further M02 owner approval or credential action. |
 
 The owner instructed **Proceed with the next milestone** after M01 merged.
 Started from clean main a74459d082ba5d1f0445652d7d12f8d2079da945 and preserved
 M01's seven versions/hashes, hosted acceptance and credential cleanup. M02
 development and dev seeding are in scope. The separate exact production seed
 approval is recorded below; actual production acceptance has now completed.
-PR6 merge, collection, paid providers, n8n and M03 remain separate and unstarted.
+PR6 was separately approved and is now merged; collection, paid providers,
+n8n and M03 remain unstarted pending their later authorization.
+
+## Separate merge approval and M02 closure
+
+The owner replied **Approve merging PR #6** and authorized closing M02
+(`call_e5871c933ab04e8fad11f15a51a82b4c`) for exact head
+`8ecb87cb75bc895491c815c575816cb8bab26649`. All five jobs in
+[CI39093312511](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39093312511)
+and Vercel passed before the actual normal merge at2026-10-18T03:28:57Z
+(06:28:57Cairo). Main is verified at
+`2ee25d3442dc20e5967914c875685bcec35eddfc`.
+[Closure receipt](evidence/merge-closure-20261018.json).
+Main CI39093772843 passed quality, unit, build, e2e and db-tests. Mechanical closure
+documentation uses the ordinary protected PR workflow on the same existing
+branch and is not claimed already merged by this record. M03 is next/current,
+**Not started**, awaiting a later owner instruction.
 
 ## Production approval and reported readiness — before execution
 
@@ -45,7 +61,7 @@ handoffs present; that check performs no private read, TLS or authentication.
 File presence and the owner's readiness report did not prove credentials or
 database access at that checkpoint. Actual authentication/imports/parity/native
 completion/cleanup subsequently passed in the separate production receipts below.
-PR6 merge still needs its later separate decision.
+The later separate exact-head PR6 approval and actual merge are recorded above.
 
 ## Task checklist
 
@@ -61,7 +77,7 @@ PR6 merge still needs its later separate decision.
 - [x] T8 — Copy logos — actual257 public-byte hashes verified,1,560,325 bytes;256/267 source logos (95.88%) plus baseline1.11 source failures use fallback tiles;17 have no source.
 - [x] T9 — MA-09 owner decisions recorded for all41 rows; seven exact invalid overrides persist the policy,23 website flags retained and11 initials fallbacks accepted. Actual dev already matches, so no seed/resolve replay or new credential handoff.
 - [x] T10 — Approved exact production import completed native0/eight stages; actual285/1,754/257 configuration/byte parity, second no-op/defaults, populated advisors and cleanup passed.
-- [x] T11 — Decisions, progress and hand-off record actual dev/prod acceptance and retained limits; final evidence/docs use normal PR CI. PR6 merge remains separate.
+- [x] T11 — Decisions/progress/hand-off complete; owner approved exact PR6 head, premerge CI/Vercel passed and PR6 actually merged. M02 Done; mechanical closure docs use normal protected PR checks, M03 Not started.
 
 ## Acceptance criteria
 
@@ -77,7 +93,7 @@ PR6 merge still needs its later separate decision.
 - [x] AC8 — Dev/prod256/267 source copies (95.88%) plus baseline1:257 objects/1,560,325 bytes, each actual public hash verified. Production copied the frozen dev bytes without new logo-origin lookup/re-encoding.11 accepted source failures plus17 no-source fallbacks retain null paths. [Dev Storage](evidence/dev-storage-readback-20261018.json), [prod completion](evidence/prod-execution-completion-20261018.json).
 - [x] AC9 — Owner sign-off recorded18October: skip the seven reviewed unavailable/unverified YouTube sources, retain23 website flags and accept11 logo fallbacks. All41 CSV decisions recorded; no proven-absence claim. [Dispositions](evidence/ma09-owner-dispositions-20261018.json).
 - [x] AC10 — Actual production native0/eight stages;285 competitors/1,754 accounts/257 public hashes match accepted dev,0 mismatches/default violations;25 SQL criteria true and AC7null supplemented by actual no-op. Explicit post-seed UI Rerun linter completed both categories:11 deny-all security INFO;67 unused-index+1 Auth-allocation performance INFO,0 WARN/ERROR. Both handoffs absent and credential children closed. [Reconciliation](evidence/prod-reconciliation-20261018.json), [advisors](evidence/prod-post-seed-advisors-20261018.json), [acceptance review](evidence/prod-acceptance-review-20261018.json).
-- [x] AC11 — Local/CI receipts remain separate from actual hosted acceptance. Code31477d8 / CI39092145700 all five jobs green; final evidence/docs use normal PR CI. Historical recovery CI39088023934, local checks and actual dev preservation receipts retained. No unchanged full local suite rerun. [Earlier CI delivery](evidence/dev-recovery-ci-delivery-20261018.json).
+- [x] AC11 — Local/CI receipts remain separate from hosted acceptance: exact approved8ecb87c passed CI39093312511 all five jobs plus Vercel before actual PR6 merge. Earlier31477d8/39092145700 and recovery/local receipts retained; main postmerge CI39093772843 all five jobs passed. Mechanical closure docs use normal PR checks; no unchanged full local suite rerun. [Earlier CI delivery](evidence/dev-recovery-ci-delivery-20261018.json).
 
 ## Actual production completion — reviewed import and bytes
 
@@ -165,7 +181,7 @@ new source rather than reopening spent work.
 - Production acceptance now passes actual native completion, dev/prod parity, executed second no-op, public logo hashes, populated advisors and cleanup; no approval/readiness-only inference. [Acceptance review](evidence/prod-acceptance-review-20261018.json) retains the independent evidence limits.
 - No dev/prod credential batch is running. Consumed handoffs are absent and bounded credential children closed. Permanent admissions/manifests and original failed receipts are preserved; do not replay successful operations or reopen spent gates.
 - Explicit post-seed UI Rerun linter completed for both prod advisor categories:11 deny-all security INFO,67 unused-index+1 Auth-allocation performance INFO(max10),0 WARN/ERROR; historical Refresh/dev11/69 INFO snapshots remain separate. No backend analysis timestamp or CLI/MCP rerun proof claimed. Policies/required indexes retained; no schema/type change,24October M01 tooling follow-up open.
-- Only final evidence/current-head PR checks and the separate PR6 merge decision remain. PR6 stays draft/unmerged. M03, collection, paid provider calls and n8n remain unstarted.
+- No M02 blocker remains: exact-head PR6 approval, premerge checks and actual merge are complete. Main postmerge CI39093772843 all five jobs passed; mechanical closure-doc delivery follows normal protected PR checks and its future merge is not claimed. M03, collection, paid provider calls and n8n remain unstarted.
 
 ## Manual actions needed from the owner
 
@@ -176,13 +192,14 @@ new source rather than reopening spent work.
 | MA-09        | Owner directed skipping unavailable social sources and accepted23 website flags/11 logo fallbacks. All41 exact dispositions recorded.             | Complete; verified by read-only D-27 assertions                    |
 | dev handoffs | All consumed temporary files removed and bounded child closed; original saved credentials retained.                                               | Complete; no action                                                |
 | production   | Exact a17f7e2 packet approved and actual bounded production acceptance/cleanup complete; no further handoff/provider action. | Complete: native0/eight stages, actual parity/no-op/public hashes/advisors; consumed handoffs absent, children closed |
-| merge        | Separate PR6 merge decision after production parity and all milestone gates.                                                                      | PR6 OPEN/DRAFT; not requested                                      |
+| merge        | Completed: **Approve merging PR #6**, exact8ecb87cb75bc895491c815c575816cb8bab26649 and close-M02 authorization, `call_e5871c933ab04e8fad11f15a51a82b4c`. | Actual PR6 normal merge2ee25d3442dc20e5967914c875685bcec35eddfc at03:28:57UTC /06:28:57Cairo; premerge CI39093312511 all five jobs/Vercel passed |
 
 No credential/provider owner action remains. Actual production acceptance and
 cleanup passed; preserve separately saved originals for later integration and
-never rerun the spent consumer. After final evidence delivery and current-head
-CI, the separate remaining owner decision is **Approve merging PR #6**. Keep PR6
-draft/unmerged until that approval; M02 is In review, not Done. M03 is unstarted.
+never rerun the spent consumer. Exact PR6 merge and M02 closure were approved and
+completed; no further M02 owner action is needed. Publish the mechanical closure
+record through ordinary protected PR checks. M03 is next/current but Not started;
+await a later owner instruction before any setup or workflow work.
 
 ## Decisions & deviations
 
@@ -200,9 +217,13 @@ draft/unmerged until that approval; M02 is In review, not Done. M03 is unstarted
 ## Risks / notes for the owner
 
 - A valid credential, local test or native completion is not hosted acceptance. Provider/Storage blockers are independent; remaining stages can complete without turning missing credentials into account failures.
-- Production and PR merge approvals remain separate. M03/collectors/paid providers/n8n remain unstarted.
+- The separate M02 production and exact-head PR6 merge approvals are both recorded and completed. M03/collectors/paid providers/n8n remain unstarted pending later authorization.
 
 ## Session log
+
+- 2026-10-18 Cairo · Actual main merge2ee25d3 passed all five jobs in postmerge CI39093772843. This later observed success supplements the initial queued observation retained below. Mechanical closeout remains a documentation-only protected PR; no future merge or M03 start is claimed.
+
+- 2026-10-18 Cairo · M02 Done after actual [PR6 merge](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6) at2026-10-18T03:28:57Z (06:28:57Cairo). Owner **Approve merging PR #6**/close-M02 authorization (`call_e5871c933ab04e8fad11f15a51a82b4c`) covered exact8ecb87cb75bc895491c815c575816cb8bab26649; live CI39093312511 all five jobs and Vercel passed before normal main merge2ee25d3442dc20e5967914c875685bcec35eddfc. Main ref verified; same existing m02-seed-data branch fast-forwarded without reset/delete/force. [Closure receipt](evidence/merge-closure-20261018.json). Main postmerge CI39093772843 queued, not passed; later mechanical closure PR uses ordinary protection and is not claimed already merged. All acceptance/native/parity/no-op/cost/cleanup/owner-disposition evidence and before-execution/failed-attempt history preserved; permanent admissions remain spent, never replay. M03 is next/current but Not started/no start date, awaiting later owner go-ahead. No runtime/DB/provider/test/collection/paid/workflow actions in this closure;24October tooling follow-up remains.
 
 - 2026-10-18 Cairo · Approved production run b762a06e-5fe9-4c3c-a1c3-819f0c4a60f9 completed03:13:42.353UTC native0/all eight stages. Actual prod postgres/seven migrations/empty16-count preflight passed, then285 competitor/1,754 account inserts and371 frozen updates/1,383 unchanged. Immediate second seed all four counters0; frozen second0 updated/1,754 unchanged. Independent reconciliation0 mismatches/default violations across285 competitors/1,754 accounts/257 actual public logo hashes;26 SQL criteria compare25true/one AC7null with actual no-op proof separate.257 uploads/1,560,325 bytes, no new provider/competitor-origin calls. Explicit post-seed UI Rerun linter completed Security03:18:20UTC/Performance03:18:44UTC:11 intentional deny-all security INFO,67 unused-index+1 Auth-allocation performance INFO(max10),0WARN/ERROR; all68 performance rows rechecked. Earlier Refresh snapshot retained; backend analysis timestamp unavailable, no CLI/MCP receipt or index drops claimed. Both consumed prod handoffs absent, Node/PowerShell children closed, pending marker absent; durable admission/manifests retained, never reopen/replay. Prod79 reason rows/sourceissues10 versus historical dev72/3 reflect seven accepted overrides, not new MA-09 findings; seven exclusions/23 website flags/11+17 fallbacks preserved. [Completion](evidence/prod-execution-completion-20261018.json), [parity](evidence/prod-reconciliation-20261018.json), [advisors](evidence/prod-post-seed-advisors-20261018.json), [acceptance review](evidence/prod-acceptance-review-20261018.json). All T1–T11/AC1–AC11 passed within distinct local/CI/dev/prod scopes. Code31477d8/CI39092145700 all five jobs green; final docs use normal CI. M02 In review, PR6 draft/unmerged pending separate merge approval; M03/collection/paid/n8n unstarted. No schema/types/newprovider/collectedfixture changes;24October tooling follow-up retained.
 
@@ -261,7 +282,10 @@ invent IDs or expand exclusions. Collection/backfill has not started.
 Never rerun the spent consumer or remove permanent admissions/manifests. All
 temporary handoffs are deleted and credential children closed; owner-saved
 credentials remain for later integration. Preserve failure history and the
-24October tooling advisory/ESLint follow-up. Finish final evidence/current-head
-PR CI, then obtain separate **Approve merging PR #6**. M02 remains In review;
-PR6 draft/unmerged and M03 Not started. Do not begin collection, paid provider
-calls or n8n workflows from this hand-off.
+24October tooling advisory/ESLint follow-up. M02 is Done: owner-approved exact
+PR6 head merged after premerge CI39093312511/all five jobs and Vercel passed.
+[Closure receipt](evidence/merge-closure-20261018.json) separates actual merge2ee25d3
+from later mechanical closure-doc delivery. Main postmerge CI39093772843 all five
+jobs passed; a later closeout PR is not claimed merged. M03 is next/current but
+**Not started**, with no start date. Await the owner's later go-ahead; do not begin
+setup, collection, paid provider calls or n8n workflows from this hand-off.

@@ -45,7 +45,9 @@ completed for Security at03:18:20UTC and Performance at03:18:44UTC with those sa
 results. The dashboard exposes no backend execution timestamp; this is observed
 post-seed UI rerun completion, not a CLI/MCP execution claim.
 No policy, index, grant or auth setting was
-changed to obtain acceptance. PR6 stays draft pending its separate merge approval.
+changed to obtain acceptance. After separate owner approval, PR6 merged at
+`2ee25d3442dc20e5967914c875685bcec35eddfc`; M02 is complete and M03 unstarted.
+[Merge receipt](merge-closure-20261018.json).
 
 Promote the accepted dev seed configuration and verified public account IDs.
 Download only the exact257 already verified public dev Storage objects, verify

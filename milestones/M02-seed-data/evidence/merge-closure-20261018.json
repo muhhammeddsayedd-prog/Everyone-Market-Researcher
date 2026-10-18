@@ -1,0 +1,94 @@
+{
+  "localDate": "2026-10-18",
+  "timezone": "Africa/Cairo",
+  "recordedAtUtc": "2026-10-18T03:29:58.070Z",
+  "owner": "Mohamed Abdelrahman",
+  "ownerApprovalQuote": "Approve merging PR #6",
+  "approvalReference": "call_e5871c933ab04e8fad11f15a51a82b4c",
+  "approvalScope": "Make PR6 ready, merge its exact approved head and close M02. M03, collection, paid provider calls, n8n workflows and schedules remain unstarted.",
+  "approvedHead": "8ecb87cb75bc895491c815c575816cb8bab26649",
+  "actualPullRequest": {
+    "number": 6,
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6",
+    "state": "MERGED",
+    "isDraft": false,
+    "headRefOid": "8ecb87cb75bc895491c815c575816cb8bab26649",
+    "mergeCommit": "2ee25d3442dc20e5967914c875685bcec35eddfc",
+    "mergedAtUtc": "2026-10-18T03:28:57Z",
+    "mergedAtCairo": "2026-10-18T06:28:57+03:00"
+  },
+  "approvedHeadCi": {
+    "runId": 39093312511,
+    "head": "8ecb87cb75bc895491c815c575816cb8bab26649",
+    "conclusion": "success",
+    "allFiveJobsPassed": true,
+    "jobs": [
+      "quality",
+      "unit",
+      "build",
+      "e2e",
+      "db-tests"
+    ],
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39093312511",
+    "vercel": "SUCCESS before merge"
+  },
+  "postMergeMainCiAtInitialRead": {
+    "runId": 39093772843,
+    "head": "2ee25d3442dc20e5967914c875685bcec35eddfc",
+    "status": "queued",
+    "conclusion": "not_yet_observed",
+    "evidenceLimit": "This field preserves the initial readback. Later protected closeout/current-main checks are separate."
+  },
+  "postMergeMainCiVerified": {
+    "observedAtUtc": "2026-10-18T03:32:56Z",
+    "runId": 39093772843,
+    "head": "2ee25d3442dc20e5967914c875685bcec35eddfc",
+    "conclusion": "success",
+    "allFiveJobsPassed": true,
+    "jobs": ["quality", "unit", "build", "e2e", "db-tests"],
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39093772843"
+  },
+  "documentationEditSafety": {
+    "compoundShellEditRejectedBeforeExecution": true,
+    "reasonSupplied": "blocked by policy; no specific reason",
+    "noFilesChangedByRejectedCommand": true,
+    "saferCompletion": "Explicit reviewable diffs updated only the three named records. No security settings were changed."
+  },
+  "mergeMethod": "Normal merge commit retaining reviewed source history",
+  "headGuard": "--match-head-commit 8ecb87cb75bc895491c815c575816cb8bab26649",
+  "draftToReadyVerified": true,
+  "adminBypass": false,
+  "protectionWeakened": false,
+  "mainProtection": {
+    "requiredPullRequest": true,
+    "requiredChecks": [
+      "quality",
+      "unit",
+      "build"
+    ],
+    "strict": true,
+    "enforceAdmins": true,
+    "requiredReviewCount": 0,
+    "allowForcePushes": false,
+    "allowDeletions": false
+  },
+  "independentPreflight": {
+    "reviewer": "m02_review",
+    "result": "Clear: exact approved head/current main base, clean worktree, mergeable/CLEAN, all five CI jobs and Vercel passed; no remaining acceptance-review P0/P1/P2.",
+    "base": "a74459d082ba5d1f0445652d7d12f8d2079da945"
+  },
+  "ambiguousReadyResponse": "Ready command returned ambiguous native completion; actual PR readback confirmed isDraft=false and unchanged head before merge. Ready was not blindly repeated.",
+  "documentationCloseout": {
+    "reason": "Protected main requires an ordinary PR for mechanical progress/instruction/receipt updates that close the already-approved M02 milestone.",
+    "branch": "Same existing m02-seed-data fast-forwarded to actual merged main; no reset, force push or branch deletion.",
+    "scope": "Progress, current completion instructions and this non-secret actual merge receipt only.",
+    "futureCloseoutMergeClaimed": false
+  },
+  "acceptanceBoundary": "Existing local/CI/dev/prod receipts, actual production run, public hashes, advisor reruns, cleanup and historical failures remain unchanged. This merge-only task does not rerun hosted acceptance or credential cleanup.",
+  "databaseOperationsRun": false,
+  "providerCredentialHandoffsConsumed": false,
+  "collectionOrPaidCallsRun": false,
+  "n8nWorkflowsActivated": false,
+  "M03Started": false,
+  "result": "Exact approved PR6 merged; M02 closure documentation follows ordinary protected PR checks."
+}
