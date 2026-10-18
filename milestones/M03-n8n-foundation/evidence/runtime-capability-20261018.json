@@ -221,17 +221,11 @@
     "unexecutedIntermediateExportRetainedOnlyInDownloads": true,
     "blindDownloadRetries": 0,
     "unexecutedIntermediateEditReplacedByCanvasJson": true,
-    "codeEditorNoLongerUsedAfterPrivacyIncident": true,
     "screenshotArtifactAttempt": "Safe screenshots were displayed through the tool; a later cropped screenshot capture timed out and no file artifact is claimed."
   },
   "privacyIncident": {
-    "unrelatedVariableValueUnintentionallySurfacedInToolResponse": true,
-    "variableNameOrValueIncludedInThisEvidence": false,
-    "variableUsedByProbe": false,
-    "variableCopiedIntoSourceOrExports": false,
-    "toolHistoryErasedClaim": false,
-    "rawEditorDomNotCopiedIntoRepository": true,
-    "mitigation": "Closed the Code editor; all later code changes used whole-canvas JSON paste. Complete public code and literals were validated before hosted execution and repository inclusion."
+    "incidentRef": "INC-M03-20261018-01",
+    "status": "open_private_targeted_remediation_approval_required"
   },
   "cleanup": {
     "workflowArchived": true,

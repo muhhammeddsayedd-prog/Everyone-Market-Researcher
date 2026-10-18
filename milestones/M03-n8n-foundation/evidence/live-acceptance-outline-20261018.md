@@ -106,8 +106,19 @@ Never replay successful side effects or delete collected data to restore a
 clean test. Unpublish only the owned callback when the bounded check ends;
 leave WF-00 inactive and preserve owner passwords and unrelated resources.
 
-Still required locally before this becomes approval-ready: finish and review
-the WF-19/WF-99 native builders, current wire schema/cost-stability tests and
-all final saved-graph execution/request limits; pass strict PostgreSQL access;
-fill actual host IDs, run price-book/cap preflight, seal sources, then obtain
-the distinct bounded batch approval. No paid start is implied by readiness.
+Local WF19 and recovery-only WF99 generators now have reviewed synthetic tests;
+they are inactive source blueprints with explicit blocking gates, not hosted
+exports or a complete actor-launch path. Native settlement uses exactly two
+GETs ten seconds apart; the separate pure planner allows at most four terminal
+observations in180s. Dataset fields are top-level only: the proposed local
+path selects url,markdown,metadata,crawl,error to retain associated-URL and
+failed-row checks. Raw response/execution-storage privacy and an actual
+streaming transport byte bound remain unverified, so its live gate throws.
+
+Before this becomes approval-ready: finish durable spend admission and exact
+unknown-callback audit, resolve the separately proposed strict-TLS design,
+verify native schemas/bindings and actual output/privacy/transport behavior,
+fill exact saved-graph execution/request limits and real host IDs, run the
+price-book/cap preflight, seal sources, then obtain distinct batch approval.
+The Everyone exact-page adapter does not establish general URL support. No
+paid start, architecture approval or hosted acceptance follows from local tests.
