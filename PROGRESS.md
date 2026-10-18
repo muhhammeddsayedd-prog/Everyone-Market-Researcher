@@ -5,22 +5,22 @@
 
 ## Now
 
-|                       |                                                                                                                                                              |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Current milestone** | M01 — Supabase foundation                                                                                                                                    |
-| **Status**            | Done — M01 merged after separate owner approval                                                                                                              |
-| **Next step**         | M01 complete. Await the owner's explicit instruction to begin M02; M02 remains Not started. Preserve acceptance evidence and the24October tooling follow-up. |
-| **Waiting on owner**  | No M01 actions or approvals remain. Starting M02 requires a separate instruction.                                                                            |
-| **Pilot**             | Not started (begins at the end of M08; runs 14 days)                                                                                                         |
-| **Last updated**      | 2026-10-18 Cairo (approved PR4 merged at02:56:30Cairo as4702a31; exact head4ffca85 / CI39080412075 all five jobs and Vercel green)                           |
+|                       |                                                                                                                                                                   |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Current milestone** | M02 — Seed data & account resolution                                                                                                                              |
+| **Status**            | In progress — owner authorized the next milestone                                                                                                                 |
+| **Next step**         | Finish the tested owner-run seed/resolution commands, then the bounded dev import and live checks. Preserve M01 and the 24 October tooling follow-up.             |
+| **Waiting on owner**  | MA-07 Vimeo public token, MA-08 restricted YouTube key, executable dev credential handoff and subsequent MA-09 review. Production seed approval remains separate. |
+| **Pilot**             | Not started (begins at the end of M08; runs 14 days)                                                                                                              |
+| **Last updated**      | 2026-10-18 Cairo — M02 started from a74459d; main CI39081374568 passed all five jobs                                                                              |
 
 ## Milestone board
 
 | ID  | Milestone                                  | Status      | Started    | Done       | Blockers / owner actions                                 | PR                                                                                      |
 | --- | ------------------------------------------ | ----------- | ---------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | M00 | Repo bootstrap & tooling                   | Done        | 2026-10-17 | 2026-10-17 | —                                                        | [#1 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1) |
-| M01 | Supabase foundation                        | Done        | 2026-10-17 | 2026-10-18 | None for M01; M02 remains unstarted                      | [#4 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4) |
-| M02 | Seed data & account resolution             | Not started |            |            | MA-07…MA-09                                              |                                                                                         |
+| M01 | Supabase foundation                        | Done        | 2026-10-17 | 2026-10-18 | None for M01                                             | [#4 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4) |
+| M02 | Seed data & account resolution             | In progress | 2026-10-18 |            | MA-07…MA-09; separate production seed approval           |                                                                                         |
 | M03 | n8n foundation                             | Not started |            |            | MA-10…MA-13                                              |                                                                                         |
 | M04 | Collectors I: Vimeo + Instagram            | Not started |            |            | MA-14                                                    |                                                                                         |
 | M05 | Collectors II: Websites, YouTube, LinkedIn | Not started |            |            | MA-15                                                    |                                                                                         |
@@ -47,6 +47,8 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
 | Production launch     | —          |
 
 ## Log (newest first)
+
+- 2026-10-18 Cairo · Owner instructed “Proceed with the next milestone.” Created m02-seed-data from clean a74459d; main CI39081374568 all five jobs passed. M02 CSV plan is 285 competitors / 1,754 accounts with zero canonical collisions and three reviewable legacy YouTube URLs. Actual local rollback tests verify idempotency and preservation of human/operational data. No dev import, provider calls, production seed, collector or n8n action yet. M01 evidence and 24 October tooling follow-up remain intact.
 
 - 2026-10-18 Cairo · Owner separately approved PR4 merge and closing M01. Fresh independent/root preflight confirmed exact4ffca85, CI39080412075 all five jobs/Vercel green and unchanged strict/admin protection. Normal exact-head guarded merge completed23:56:30UTC17October/02:56:30Cairo18October as4702a3155680a22c7654ccf9ba10cb9c91aea465. No admin bypass. T14 complete/M01 Done. Protected-main documentation closeout records this observed merge; no new code/DB/credentials or M02 action. Historical receipts and24October tooling follow-up preserved. [Actual merge receipt](milestones/M01-supabase-foundation/evidence/merge-closure-20261018.json).
 
