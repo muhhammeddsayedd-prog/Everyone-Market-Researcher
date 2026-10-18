@@ -1,0 +1,74 @@
+{
+  "observedAt": "2026-10-18T00:43:39.2979804Z",
+  "dateCairo": "2026-10-18",
+  "environment": "local-only",
+  "hostedAcceptance": false,
+  "normalization": {
+    "command": "pnpm.cmd --filter @emr/shared test",
+    "exitCode": 0,
+    "passed": 135,
+    "files": 3,
+    "newCases": 116,
+    "actualCsvInputs": 38,
+    "contract": [
+      "Synchronous Error on invalid input without reflecting it",
+      "Instagram lowercase handle, no @",
+      "Vimeo kind plus prefixed non-user identity; alphanumeric vanity may begin with a digit; numeric-only clip URLs rejected",
+      "YouTube lowercase handle/user/c identities without prefix; opaque UC channel ID case preserved",
+      "LinkedIn safe company/showcase/school slug parsed; T7 policy independently reports suspects",
+      "Website HTTPS full path retained; domain without www; query and fragment removed",
+      "Strict platform hosts, no credentials/IP/private host suffixes/protocol abuse/content URLs/traversal"
+    ],
+    "redEvidence": [
+      "Initial new suite failed collection because handles module did not exist; existing 19 tests passed",
+      "YouTube user/videos and c/featured regressions failed before account-position suffix fix",
+      "Discarded encoded tracking and bare @./@.. tests failed before correction",
+      "Two real CSV digit-leading Vimeo vanities failed before first-letter restriction removed"
+    ]
+  },
+  "logos": {
+    "command": "pnpm.cmd --filter @emr/scripts exec vitest run seed/copy-logos.test.ts",
+    "exitCode": 0,
+    "passed": 55,
+    "files": 1,
+    "contract": [
+      "Only PNG/JPEG/WebP magic plus MIME accepted for raster decoding",
+      "5 MiB payload and 16 million input-pixel limits; failOn warning",
+      "Raster output WebP <=256 px per side without enlargement",
+      "Conservative static SVG allowlist rejects scripts/events/foreignObject/entities/DOCTYPE/CSS/URL references and unknown features",
+      "Actual baseline everyone-logotype.svg preserved byte-for-byte at519x87",
+      "Fractional SVG dimensions recorded as integer ceiling bounds; original SVG bytes untouched",
+      "Stable logos/slug.webp or .svg; create-only adapter; no delete or replacement",
+      "Existing current path requires ownership receipt; actual stored bytes hash and same competitor/kind/source/itemId-null metadata verified",
+      "Orphan existing storage path can repair DB only after exact bytes match; mismatching bytes or ownership fail collision",
+      "Atomic DB expectedLogoPath compare-and-set delegated to reviewed repository adapter",
+      "Only one same-source 403 retry with explicit public HTTPS website origin; no credentials or arbitrary Referer path/query"
+    ],
+    "redEvidence": [
+      "Initial suite failed collection because copy-logos did not exist",
+      "Bounded Referer retry and unsafe website rejection failed six tests before correction",
+      "Prototype-named SVG constructor attribute returned raw TypeError before own-property guard",
+      "Fractional SVG dimensions and null database website failed two regressions before correction",
+      "Item-linked owned unchanged logo incorrectly returned unchanged before itemId-null assertion"
+    ],
+    "actualBaselineBytes": "Read only as local public asset in tests; no Storage request performed"
+  },
+  "checks": {
+    "scriptsTypecheck": "PASS",
+    "targetedEslint": "PASS",
+    "targetedPrettier": "PASS",
+    "whitespace": "PASS"
+  },
+  "sourceDocs": [
+    "https://help.vimeo.com/hc/en-us/articles/12425669540113-About-managing-your-Vimeo-profile-page",
+    "https://sharp.pixelplumbing.com/api-constructor/",
+    "https://sharp.pixelplumbing.com/api-resize/",
+    "https://supabase.com/docs/reference/javascript/storage-from-upload",
+    "https://supabase.com/docs/guides/storage/uploads/standard-uploads"
+  ],
+  "limits": [
+    "No live provider request, logo fetch, Storage upload, real credential file read or hosted DB write in this receipt",
+    "Normalization is lexical only; DNS and redirect checks belong to network adapter",
+    "Local library tests do not establish live URL validity, logo success percentage or hosted acceptance"
+  ]
+}

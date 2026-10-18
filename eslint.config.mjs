@@ -12,6 +12,7 @@ export default defineConfig([
     '**/test-results/**',
     '.agents/**',
     '.m00-clean-*/**',
+    'scripts/seed/out/**',
   ]),
   ...tseslint.configs.recommended,
   ...nextVitals.map((config) => ({ ...config, files: ['apps/web/**/*.{ts,tsx,js,mjs}'] })),

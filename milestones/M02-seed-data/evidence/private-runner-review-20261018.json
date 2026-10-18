@@ -1,0 +1,73 @@
+{
+  "observedAt": "2026-10-18T00:43:39.0945163Z",
+  "dateCairo": "2026-10-18",
+  "scope": "Independent local M02 Windows credential-consumer and target-configuration review; no actual handoff read or hosted authentication",
+  "windowsPowerShellVersion": "5.1.19041.6456",
+  "sourceSha256": {
+    "scripts/seed/windows/Invoke-M02Dev.ps1": "bcc3e68a8952e0c06bd814a92bce8dc2ac090dec49b8684f172acfed74a6463a",
+    "scripts/seed/config.ts": "469deea8086e93c342d1065bceef975baddc05bcd8f43d6e628ba10417f3f583",
+    "scripts/seed/private-runner.test.ts": "f8def68e11941e38aff6e3f12378596e5f0ab3a3c7ff8d5fe73b2954430eb1c2",
+    "scripts/seed/windows/New-M02DevHandoff.ps1": "55cebe3f6563f14fe38aafa7b28130a990bdeb22a995ab5500cb1e8c3b0502d9",
+    "scripts/seed/config.test.ts": "445b688aacd5b26ba7a96a3cc5fb0647f3898db3178fb81e9e8a2d88b7a5eb63"
+  },
+  "red": {
+    "command": "pnpm.cmd --filter @emr/scripts exec vitest run seed/config.test.ts seed/private-runner.test.ts",
+    "failed": 6,
+    "passed": 30,
+    "findings": [
+      "Direct databaseConfig production gate absent",
+      "Transformation loader launched in credential environment",
+      "Runner/source seal absent",
+      "Start failure could interrupt cleanup via HasExited",
+      "DPAPI Set-Content newline decode failed locally before process start",
+      "Unbounded raw-output collection and pipe drain"
+    ]
+  },
+  "green": {
+    "command": "pnpm.cmd --filter @emr/scripts exec vitest run seed/config.test.ts seed/private-runner.test.ts",
+    "exitCode": 0,
+    "files": 2,
+    "passed": 42,
+    "configCases": 28,
+    "windowsCases": 14
+  },
+  "runtimeChecks": [
+    "Both real helpers parsed under Windows PowerShell 5 without executing them",
+    "Isolated fixture DPAPI encrypted/decrypted non-secret sentinel under same Windows account",
+    "Real plain-Node fixture child native completion; inherited NODE_OPTIONS and unrelated Supabase token absent; only fixture database secret forwarded",
+    "Fixture stdout and stderr discarded without displaying or persisting raw contents",
+    "Forced Start failure still removed consumed fixture handoff with no raw stderr",
+    "Changed source, new unsealed source and parent traversal rejected before handoff decryption",
+    "Bounded timeout killed the owned fixture Node process; subsequent process-existence check failed as expected; fixture handoff removed",
+    "All eight supplemental public seed/packet/baseline inputs covered by the source seal",
+    "Unapproved concrete batch rejected before decryption; presence-only CheckOnly explicitly reports approval pending and authentication not tested",
+    "Both absent optional provider handoffs reported as exact filenames with False; fixture database-only probe completed without needing either provider",
+    "Handoff creator supports granular Vimeo and YouTube hidden prompts without requiring the other provider",
+    "Absent storage credential does not block the fixture accept-dev child; CLI independently records real missing-stage blockers"
+  ],
+  "fixes": [
+    "Production blocked in command parser and direct databaseConfig",
+    "Plain node seed/out/runner.mjs only; bundle/source hashes and complete source inventory verified before credentials",
+    "Absolute path confinement and reparse-point rejection for hash readers",
+    "Fresh child environment allowlist; ProcessStartInfo environment cleared immediately after Start",
+    "SecureString/BSTR bounded disposal and ciphertext newline trim",
+    "Constant-memory Stream.Null output drains; 5-second drain/cleanup waits",
+    "Tracked process start and exit confirmation; cleanup individually guarded; no unconditional closed claim on unconfirmed exit",
+    "Creator uses exclusive CreateNew ciphertext file write without newline",
+    "Fixed dev approval packet checked before any private read for non-report operations",
+    "Independent optional provider file presence and granular creator choices"
+  ],
+  "validation": {
+    "targetedEslint": "PASS",
+    "targetedPrettier": "PASS",
+    "whitespace": "PASS",
+    "scriptsTypecheck": "PASS: pnpm.cmd --filter @emr/scripts typecheck, native exit 0 after integration fixes"
+  },
+  "limits": [
+    "Synthetic fixture credentials only; no actual dev/provider/production credential files read",
+    "No database authentication, hosted write, live provider call, upload, installation or real account acceptance performed",
+    "Full CLI/storage operational review is separate",
+    "Rebuild the source seal after any reviewed source change",
+    "Temporary test workspaces were removed by fixture afterAll cleanup"
+  ]
+}
