@@ -62,10 +62,12 @@ printf 'Performance advisors: no errors; warnings require the milestone review\n
 
 # These files use a fixed local test password only inside their owned Node clients.
 # Seed/production-component fixtures roll back; owner-exclusion fixtures are SELECT-only CTEs in read-only transactions.
+# Shared fixed fixture keys and lock upgrades require serial files. Explicit
+# collector contention is verified separately by check-concurrency.mjs.
 # An unset/invalid target or a missing/skipped test is not acceptance.
 run_private 'M02 PostgreSQL acceptance' env \
   M02_TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:60322/postgres \
-  pnpm --filter @emr/scripts exec vitest run seed/seed-competitors.integration.test.ts seed/database.test.ts seed/owner-exclusions.integration.test.ts seed/prod-operations.integration.test.ts --reporter=json --outputFile "$private_report"
+  pnpm --filter @emr/scripts exec vitest run seed/seed-competitors.integration.test.ts seed/database.test.ts seed/owner-exclusions.integration.test.ts seed/prod-operations.integration.test.ts --no-file-parallelism --reporter=json --outputFile "$private_report"
 node --input-type=module - "$private_report" <<'NODE'
 import { readFileSync } from 'node:fs';
 let report;

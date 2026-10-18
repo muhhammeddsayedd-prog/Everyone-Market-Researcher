@@ -197,6 +197,11 @@ uses explicit local fake DB/network modules, not actual production authenticatio
 Normal PR CI, final source seal and independent review are separate receipts at
 the final reviewable head.
 
+The four shared-fixture PostgreSQL files run serially in CI. Both the original
+parallel invocation and the serialized invocation passed42/42 locally; no
+deadlock is claimed. [Isolation evidence](prod-ci-fixture-isolation-20261018.json)
+records the lock/fixture scheduling reason and preserved rollback boundaries.
+
 Clean-checkout CI39090441239 exposed a missing test output parent and an older
 LF Git representation of the reviewed CRLF CSVs. The corrected CLI suite passes7/7,
 including an initially failing cold-parent regression. The [byte-delivery proof](prod-source-byte-delivery-20261018.json)

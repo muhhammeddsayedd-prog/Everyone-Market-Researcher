@@ -174,7 +174,7 @@ test('CI runner uses only explicit local targets and exposes only safe summaries
     assert.match(commands, /db advisors --local --type performance --level warn --fail-on error/);
     assert.match(
       commands,
-      /--filter @emr\/scripts exec vitest run seed\/seed-competitors.integration.test.ts seed\/database.test.ts seed\/owner-exclusions.integration.test.ts seed\/prod-operations.integration.test.ts --reporter=json/,
+      /--filter @emr\/scripts exec vitest run seed\/seed-competitors.integration.test.ts seed\/database.test.ts seed\/owner-exclusions.integration.test.ts seed\/prod-operations.integration.test.ts --no-file-parallelism --reporter=json/,
     );
     assert.equal(
       readFileSync(join(directory, 'm02.target'), 'utf8').trim(),
