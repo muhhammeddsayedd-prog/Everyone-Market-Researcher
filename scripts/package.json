@@ -1,0 +1,32 @@
+{
+  "name": "@emr/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run",
+    "seed:build": "node seed/build-runner.mjs",
+    "seed:plan": "tsx seed/cli.ts plan",
+    "seed:dev": "node seed/out/runner.mjs seed --target dev --apply",
+    "resolve:dev": "node seed/out/runner.mjs resolve --target dev --apply",
+    "websites:dev": "node seed/out/runner.mjs websites --target dev --apply",
+    "logos:dev": "node seed/out/runner.mjs logos --target dev --apply",
+    "report:dev": "node seed/out/runner.mjs report --target dev"
+  },
+  "dependencies": {
+    "@emr/shared": "workspace:*",
+    "@supabase/supabase-js": "2.118.0",
+    "csv-parse": "7.0.3",
+    "postgres": "3.4.9",
+    "sharp": "0.35.5",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  }
+}

@@ -6,6 +6,7 @@ export default defineConfig({
       './packages/shared/vitest.config.ts',
       './apps/web/vitest.config.ts',
       './n8n/normalizers/vitest.config.mts',
+      './scripts/vitest.config.ts',
       {
         test: {
           name: 'brand-tokens',
