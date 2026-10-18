@@ -182,5 +182,6 @@ if (typeof module !== 'undefined') {
     validateSmokeWebsiteRow,
     buildSmokeWebsiteSnapshot,
     invalidWebsiteRow,
+    smokeBoundedText,
   };
 }

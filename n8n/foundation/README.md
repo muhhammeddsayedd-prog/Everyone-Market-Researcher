@@ -191,3 +191,51 @@ acceptance. The three `M03-runtime-capability-probe.*.dev.json` files are actual
 temporary probe exports, kept inactive and archived with recoverable history.
 Their default saved settings are diagnostic evidence, not foundation settings
 acceptance. See the milestone's `runtime-capability-20261018.json` receipt.
+
+## Local callback and original-run recovery
+
+`packages/shared/src/n8n-apify-recovery.ts` is a pure, dependency-free runtime
+factory after TypeScript erasure. Generated Code uses that same factory; local
+tests cross-check its terminal projection against the existing Zod contract.
+It validates the single registered M03 account, exact normalized page, delayed
+cost settlement and complete atomic SQL receipt. It performs no requests,
+timers, database calls, actor launches, audits or notification delivery.
+
+A processed registry returns its saved receipt with both transition flags false
+before any provider read. An ambiguous atomic response requires actual registry
+readback. A saved-only result suppresses dispatch and explicitly reports
+`payloadEqualityVerified:false`: the PostgreSQL JSONB digest establishes the
+saved receipt, but it cannot independently prove the attempted groups matched.
+An observed native SQL receipt must match that durable receipt before its first
+transition can remain eligible for downstream stubs. SQL already finishes the
+parent in the atomic transaction; recovery never issues another finish write.
+
+Registration recovery uses the original returned actor-run ID and the known
+parent/account context. It can describe registering that same original ID after
+a proven absent readback, or processing an already matching registration. An
+ambiguous actor POST without its original ID stops; it never launches a
+replacement. This handles the callback-before-registration race through
+collector recovery, without trusting metadata from the rejected webhook.
+
+The pure settlement planner allows at most four terminal observations within
+180 seconds. The native callback blueprint deliberately uses two authenticated
+GETs separated by a ten-second Wait and stops if cost or identity changes.
+Neither a stable pair nor local tests establish final provider billing forever.
+
+The new callback/smoke builders produce inactive source blueprints only. Real
+workflow/tag IDs remain required. WF99 is recovery-only while durable spend
+admission is unavailable. Unknown callbacks stop at the missing exact rejection
+audit gate; a generic WF90 error is not that audit. The success dataset path has
+a throwing release gate until actual actor output and execution-storage privacy
+are reviewed. Its top-level projection and post-response byte check do not prove
+a streaming transport bound or that raw nested metadata contains no secrets.
+Webhook, Wait and Respond node versions have pinned-source provenance, separate
+from actual native import/execution verification. No foundation export, actor
+execution, complete callback acceptance or AC7 pass follows from these builders.
+
+Focused local checks (synthetic input only):
+
+```powershell
+pnpm.cmd --filter @emr/shared exec vitest run src/n8n-apify-contracts.test.ts src/n8n-apify-recovery.test.ts
+node --test n8n/foundation/build-apify-callback.test.mjs n8n/foundation/build-apify-smoke.test.mjs
+```

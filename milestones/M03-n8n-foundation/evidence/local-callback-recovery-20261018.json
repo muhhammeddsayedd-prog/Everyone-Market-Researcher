@@ -1,0 +1,81 @@
+{
+  "observedAt": "2026-10-18T06:20:37Z",
+  "scope": "Local deterministic M03 single-account, exact-page recovery and inactive native blueprints only",
+  "hostedAcceptance": false,
+  "credentialsRead": false,
+  "networkCalls": 0,
+  "databaseCalls": 0,
+  "migrationsChanged": false,
+  "workflowsImportedOrExecuted": false,
+  "gatewayImplemented": false,
+  "testEvidence": {
+    "shared": {
+      "command": "pnpm.cmd --filter @emr/shared exec vitest run src/n8n-apify-contracts.test.ts src/n8n-apify-recovery.test.ts",
+      "passed": 80,
+      "newRecoveryTests": 55,
+      "existingContractTests": 25,
+      "nativeExit": 0,
+      "redEvidence": [
+        "Initial recovery suite could not load the not-yet-created module, native exit 1.",
+        "Four edge cases failed before processed-registry, calendar-time and stored-receipt invariants were corrected.",
+        "An early supplied settlement response failed the strengthened test before uncounted early observations were rejected.",
+        "Two proof-boundary tests failed before saved-only reconciliation explicitly reported payloadEqualityVerified:false."
+      ]
+    },
+    "nativeBuilders": {
+      "authorFinalCommand": "node --test n8n/foundation/build-apify-callback.test.mjs n8n/foundation/build-apify-smoke.test.mjs",
+      "authorFinalPassed": 9,
+      "authorNativeExit": 0,
+      "independentEarlierCompleteRunPassed": 9,
+      "independentFinalChangedPathCommand": "node --test --test-name-pattern=\"unknown callbacks|atomic response\" n8n/foundation/build-apify-callback.test.mjs",
+      "independentFinalChangedPathPassed": 2,
+      "independentFinalNativeExit": 0,
+      "notes": "The final two independently rerun cases include proof-flag propagation and ambiguous SQL-response durable readback. Node test selection reported two tests and zero skipped tests. These are VM/native-JSON tests, not real n8n-node execution.",
+      "redEvidence": "The generator author observed the missing/ambiguous atomic response case fail before changing the graph to read durable state instead of throwing before readback."
+    },
+    "sharedTypecheckNativeExit": 0,
+    "targetedEslintNativeExit": 0,
+    "formatting": "Owned shared files and README were formatted; final scoped Prettier check passed. Generator author separately reported final four-file Prettier success."
+  },
+  "verifiedLocalBehavior": [
+    "The generic website normalizer has one additive CommonJS smokeBoundedText export so the generator can compose the existing helper declaration. No normalizer function body changed; the earlier Cloud runtime file hash remains historical.",
+    "Registry is looked up and bound before authenticated provider read descriptors can be emitted; callback-supplied account/status/cost/context is discarded.",
+    "A processed registered run returns its complete saved SQL receipt with updated:false and finished_now:false before provider reads or repeat persistence.",
+    "Terminal samples require the registered original run and approved actor, actual authenticated usage amount, terminal wire status, dataset binding and real ISO date. TIMED-OUT maps to SQL TIMED_OUT.",
+    "Native callback source uses two authenticated GETs separated by a ten-second Wait and rejects unstable identity/cost. The pure planner separately bounds changing-cost samples to four total observations within 180 seconds.",
+    "Exact-page groups permit one successful normalized item or an empty failed-terminal group; unsupported URL/hash/field changes, overflow, malformed Unicode and JSONB-incompatible NUL text fail before a persistence descriptor.",
+    "The generated success dataset path has a throwing live-release gate. The source-only continuation uses supported top-level fields url,markdown,metadata,crawl,error and accepts exactly one row from a request limited to two.",
+    "Applied atomic SQL remains the single ingest/report/stable-cost/completion/parent-finish transaction. The new graph does not split those writes or issue another finish_run call.",
+    "Missing or malformed native SQL receipts always proceed to registry/pending readback after raw errors are discarded. A committed saved result without a native acknowledgement suppresses dispatch; an unprocessed readback stops for manual same-argument reconciliation.",
+    "Observed native receipts must match the complete durable saved receipt, including SQL JSONB digest, item IDs, totals and six-decimal rounded cost. No client JSON.stringify digest is substituted for PostgreSQL JSONB canonical text.",
+    "Saved-only reconciliation is authoritative for original-run completion but reports payloadEqualityVerified:false; it does not claim that the attempted groups produced that receipt.",
+    "Registration reconciliation uses the same original returned actor-run ID and known parent/account context. A missing original ID after ambiguous launch is blocked without a replacement actor POST.",
+    "WF99 source is recovery-only and contains no actor POST or start_run. Missing workflow/tag references fail generation; local tests use explicitly synthetic references."
+  ],
+  "independentReview": {
+    "reviewer": "agent_probe_review",
+    "scope": "Selected shared registry, settlement, decimal rounding, receipt, proof-boundary and original-registration paths; no live checks",
+    "sourceSha256": "8ba9639061a1665ef694ea91d36df294d43fc89df7ec0a3e30d0ad6e10cb7e62",
+    "remainingP0P1P2FindingsInReviewedScope": 0
+  },
+  "remainingGates": [
+    "Exact durable unknown-callback rejection audit is unavailable in the existing RPC contract. The unknown branch fails closed; generic WF90 logging is not AC7 proof.",
+    "Durable paid spend admission and the separately reviewed live foundation batch are unavailable. No launch path is released.",
+    "Actual actor output shape and raw HTTP/webhook execution-storage privacy are unverified. The local minimal snapshot is not proof that raw nested metadata or errors contain no secrets.",
+    "The one-MiB dataset size assertion is post-parse, not an enforced streaming transport limit. transportDatasetBytesVerified remains false.",
+    "Wait1.1, Webhook2.2 and Respond1.5 have pinned official-source provenance only; actual native import/schema execution remains pending.",
+    "Strict native restricted Postgres TLS/login, real saved bindings/exports, complete callback and automatic error routing remain separate hosted acceptance.",
+    "Downstream stubs remain at-least-once. No exactly-once external delivery or notification outbox is claimed."
+  ],
+  "workingTreeSourceHashes": {
+    "packages/shared/src/n8n-apify-recovery.ts": "8ba9639061a1665ef694ea91d36df294d43fc89df7ec0a3e30d0ad6e10cb7e62",
+    "packages/shared/src/n8n-apify-recovery.test.ts": "85117e1c11c6326e7da83c9ac59ad64db88bfa6ffaebb3cc1bb436ef6d2ecbf1",
+    "packages/shared/src/index.ts": "2984593cddfda2cbf141abbc72031bc96f9cbfa19638db77bb09bd20e5a9a89a",
+    "n8n/foundation/build-apify-callback.mjs": "c8b4edbc8bf858ff70cf957b1cb50c25c51616c79d68922a442eb11f44b2c492",
+    "n8n/foundation/build-apify-callback.test.mjs": "daaad1dc2594faaabb632df4216225cc49502f3c037278e2a4e0688a42585920",
+    "n8n/foundation/build-apify-smoke.mjs": "f3130dc5bf1fc61f5fb8dafdaf13c16238fe07793cd39abb6791ceae582fe930",
+    "n8n/foundation/build-apify-smoke.test.mjs": "90159c105f66cb23f5713d64afa64bdc2f49e5b0e4bf73794cad1f862f120841",
+    "n8n/normalizers/smoke_website_stub.js": "817fbbdd93912f55bbda797799563ed0da0c31df9e728f14d4e2c69321296474",
+    "n8n/foundation/README.md": "7a232d03175a877c98b3c5e1aeec205dad7dbdbdd0396f117d5cef1fa266b7f7"
+  }
+}
