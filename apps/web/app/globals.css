@@ -18,18 +18,19 @@
   --color-accent-soft: var(--color-accent-soft);
   --color-on-accent: var(--color-text-on-accent);
   --color-success: var(--color-success);
+  --color-success-soft: var(--color-success-soft);
   --color-warning: var(--color-warning);
+  --color-warning-soft: var(--color-warning-soft);
   --color-danger: var(--color-danger);
+  --color-danger-soft: var(--color-danger-soft);
   --color-info: var(--color-info);
+  --color-info-soft: var(--color-info-soft);
   --color-vimeo: var(--platform-vimeo);
   --color-instagram: var(--platform-instagram);
   --color-website: var(--platform-website);
   --color-linkedin: var(--platform-linkedin);
   --color-youtube: var(--platform-youtube);
   --color-news: var(--platform-news);
-  --font-sans: var(--font-placeholder);
-  --font-arabic: var(--font-arabic);
-  --font-mono: var(--font-mono);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-full: var(--radius-full);
@@ -43,59 +44,249 @@
 }
 
 :root {
-  /* M00 uses the token stack's system fallback; brand font files arrive in M09. */
-  --font-placeholder: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --placeholder-wordmark-width: 240px;
+  /* General Sans is provisioned per environment (its licence forbids repository redistribution);
+     without it the system stack is used. IBM Plex Sans Arabic (OFL) is always self-hosted. */
+  --font-ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'IBM Plex Sans Arabic', sans-serif;
+}
+
+:root[data-brand-font='1'] {
+  --font-ui: var(--font-sans);
+}
+
+html {
+  background: var(--color-bg);
 }
 
 body {
-  margin: var(--space-0);
+  margin: 0;
+  min-height: 100svh;
   background: var(--color-bg);
   color: var(--color-text-primary);
-  font-family: var(--font-placeholder);
+  font-family: var(--font-ui);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
   font-weight: var(--weight-medium);
   -webkit-font-smoothing: antialiased;
 }
 
-.placeholder {
-  display: grid;
-  grid-template-rows: 1fr auto 1fr;
-  min-height: 100svh;
-  padding: max(var(--space-6), env(safe-area-inset-top)) max(var(--space-6), env(safe-area-inset-right))
-    max(var(--space-6), env(safe-area-inset-bottom)) max(var(--space-6), env(safe-area-inset-left));
-  text-align: center;
+:lang(ar) {
+  font-family: var(--font-arabic);
+  line-height: calc(var(--leading-body) + 0.15);
 }
 
-.placeholder-main {
-  grid-row: 2;
-  display: grid;
-  justify-items: center;
-  gap: var(--space-6);
-  min-width: 0;
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
-.placeholder-wordmark {
-  width: min(var(--placeholder-wordmark-width), 100%);
-  height: auto;
-  /* External SVG currentColor defaults to black. Keep the supplied paths intact. */
-  filter: brightness(0) invert(1);
+::selection {
+  background: var(--color-accent-soft);
 }
 
-.placeholder-label {
-  margin: var(--space-0);
-  color: var(--color-text-label);
+/* Focused targets are never hidden under the sticky topbar. */
+[id] {
+  scroll-margin-top: calc(var(--topbar-height) + var(--space-4));
+}
+
+/* Skip link: the first focusable element on every page. */
+.skip-link {
+  position: fixed;
+  inset-inline-start: var(--space-4);
+  top: var(--space-2);
+  z-index: var(--z-toast);
+  transform: translateY(-200%);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* ── Type utilities (DESIGN.md §4) ── */
+@utility type-display {
+  font-size: var(--text-display);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
+  font-weight: var(--weight-semibold);
+}
+@utility type-h1 {
+  font-size: var(--text-h1);
+  line-height: var(--leading-h1);
+  letter-spacing: var(--tracking-h1);
+  font-weight: var(--weight-semibold);
+}
+@utility type-h2 {
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-semibold);
+}
+@utility type-h3 {
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-semibold);
+}
+@utility type-body-lg {
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body-lg);
+}
+@utility type-body {
   font-size: var(--text-body);
-  font-weight: var(--weight-medium);
   line-height: var(--leading-body);
-  letter-spacing: var(--tracking-micro);
-  text-transform: uppercase;
-  text-wrap: balance;
 }
-
-.placeholder-footer {
-  grid-row: 3;
-  align-self: end;
-  color: var(--color-text-label);
+@utility type-small {
   font-size: var(--text-small);
   line-height: var(--leading-small);
+}
+@utility type-micro {
+  font-size: var(--text-micro);
+  line-height: var(--leading-micro);
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+}
+@utility type-kpi {
+  font-size: var(--text-kpi);
+  line-height: var(--leading-kpi);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Motion: every duration comes from tokens, which become 0 under reduced motion. ── */
+@utility motion-colors {
+  transition-property: color, background-color, border-color, box-shadow, opacity;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-standard);
+}
+
+/* Wordmark SVG uses currentColor; as an <img> it renders black, so it is inverted on dark. */
+.wordmark {
+  height: auto;
+  filter: brightness(0) invert(1);
+}
+:root[data-theme='light'] .wordmark {
+  filter: none;
+}
+
+/* Skeletons: shown only after 150 ms; shimmer off under reduced motion. */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+  animation: skeleton-shimmer 1.2s infinite;
+}
+@keyframes skeleton-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+.skeleton-delay {
+  animation: skeleton-appear 0s linear 150ms both;
+}
+@keyframes skeleton-appear {
+  from {
+    visibility: hidden;
+  }
+  to {
+    visibility: visible;
+  }
+}
+
+/* Dialogs, sheets and menus (Radix data-state). */
+.sheet-overlay[data-state='open'] {
+  animation: fade-in var(--duration-slow) var(--ease-enter);
+}
+.sheet-overlay[data-state='closed'] {
+  animation: fade-out var(--duration-base) var(--ease-exit);
+}
+.sheet-panel[data-state='open'] {
+  animation: sheet-in var(--duration-slow) var(--ease-enter);
+}
+.sheet-panel[data-state='closed'] {
+  animation: fade-out var(--duration-base) var(--ease-exit);
+}
+.pop-panel[data-state='open'] {
+  animation: pop-in var(--duration-base) var(--ease-enter);
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
+@keyframes pop-in {
+  from {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+}
+
+/* Login hero only: display lines reveal from label gray to white (DESIGN.md §7). */
+.reveal-line {
+  color: var(--color-text-primary);
+  animation: reveal-line var(--duration-slow) var(--ease-standard) 120ms both;
+}
+.reveal-line-2 {
+  animation-delay: 360ms;
+}
+@keyframes reveal-line {
+  from {
+    color: var(--color-text-label);
+  }
+}
+
+/* Card media scales on hover only (DESIGN.md §7); no lift, no shadow. */
+.card-media {
+  transition: transform var(--duration-slow) var(--ease-standard);
+}
+.card-link:hover .card-media {
+  transform: scale(1.02);
+}
+
+/* Horizontal scrollers (tabs, wide tables) fade at the edges instead of overflowing the page. */
+.scroll-fade {
+  mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton::after,
+  .reveal-line {
+    animation: none !important;
+  }
+  .skeleton::after {
+    display: none;
+  }
+  .card-link:hover .card-media {
+    transform: none;
+  }
 }
