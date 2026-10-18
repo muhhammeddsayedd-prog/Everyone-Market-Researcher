@@ -454,8 +454,8 @@ test('invalid target and unknown error attributes cannot escape the closed diagn
   assert.equal(safePrivacyStage({ privacyStage: 'SYNTHETIC_PRIVATE_DIAGNOSTIC' }), null);
   assert.ok(Object.isFrozen(privacyFailureStages));
 });
-test('saved actual current export passes current assertions locally without suggesting execution acceptance', async () => {
-  const actual = JSON.parse(readFileSync('n8n/workflows/GW01-acceptance-dev.json', 'utf8'));
+test('historical CloudA saved export passes canary assertions without claiming current runtime or execution acceptance', async () => {
+  const actual = JSON.parse(readFileSync('n8n/fixtures/GW01-cloud-a-saved-export.json', 'utf8'));
   const http = actual.nodes.find((n) => n.type === 'n8n-nodes-base.httpRequest'),
     url = http.parameters.url;
   const actualTarget = {

@@ -32,6 +32,8 @@ DESIGN.md
 assets/brand/tokens.css
 apps/web/styles/tokens.css
 n8n/workflows/*.json
+# Preserve the historical CloudA export as exact Git blob bytes.
+n8n/fixtures/GW01-cloud-a-saved-export.json
 .m00-clean-*/
 
 # Locally generated public runtime inventory; byte form is checked by its owner-only sealer.
@@ -45,3 +47,5 @@ scripts/n8n/gw01-public-config-seal.json
 scripts/n8n/gw01-public-config-proof.json
 scripts/n8n/gw01-shutdown-packet.json
 scripts/n8n/gw01-shutdown-seal.json
+scripts/n8n/gw01-preview-read-packet.json
+scripts/n8n/gw01-preview-read-seal.json

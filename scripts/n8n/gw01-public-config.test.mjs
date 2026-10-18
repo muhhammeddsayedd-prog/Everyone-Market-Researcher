@@ -535,6 +535,48 @@ test('unclosed writer receipt cannot authorize a configuration mutation', async 
   await assert.rejects(runPublicConfiguration('Disable', packet, f.ports), /GW01_PUBLIC_CONFIG_CLOSED/);
   assert.equal(f.calls.length, before);
 });
+test('PostgreSQL closeout accepts untouched microsecond offset timestamps for the exact thirty-minute window', async () => {
+  const f = await readyFixture(),
+    window = f.ports.proof.writerCloseReceipt.result.window;
+  window.startsAt = '2026-10-18T10:00:00.123456+00:00';
+  window.expiresAt = '2026-10-18T10:30:00.123456+00:00';
+  const original = structuredClone(f.ports.proof.writerCloseReceipt);
+  assert.equal((await runPublicConfiguration('Disable', packet, f.ports)).status, 'disabled');
+  assert.equal((await runPublicConfiguration('Cleanup', packet, f.ports)).status, 'cleanup_complete');
+  assert.deepEqual(f.ports.proof.writerCloseReceipt, original);
+});
+test('PostgreSQL closeout still accepts canonical UTC milliseconds', async () => {
+  const f = await readyFixture(),
+    window = f.ports.proof.writerCloseReceipt.result.window;
+  window.startsAt = '2026-10-18T10:00:00.123Z';
+  window.expiresAt = '2026-10-18T10:30:00.123Z';
+  assert.equal((await runPublicConfiguration('Disable', packet, f.ports)).status, 'disabled');
+});
+for (const [label, start, end] of [
+  ['different microsecond duration', '2026-10-18T10:00:00.123456+00:00', '2026-10-18T10:30:00.123457+00:00'],
+  ['wrong millisecond duration', '2026-10-18T10:00:00.123Z', '2026-10-18T10:29:59.123Z'],
+  ['reversed window', '2026-10-18T10:30:00.123456+00:00', '2026-10-18T10:00:00.123456+00:00'],
+  ['impossible calendar date', '2026-02-30T10:00:00.123456+00:00', '2026-02-30T10:30:00.123456+00:00'],
+  ['extra precision', '2026-10-18T10:00:00.1234567+00:00', '2026-10-18T10:30:00.1234567+00:00'],
+  ['missing timezone', '2026-10-18T10:00:00.123456', '2026-10-18T10:30:00.123456'],
+  ['invalid offset', '2026-10-18T10:00:00.123456+14:01', '2026-10-18T10:30:00.123456+14:01'],
+  ['mixed null bounds', null, '2026-10-18T10:30:00.123456+00:00'],
+])
+  test('PostgreSQL closeout rejects ' + label + ' before API access', async () => {
+    const f = await readyFixture(),
+      window = f.ports.proof.writerCloseReceipt.result.window;
+    window.startsAt = start;
+    window.expiresAt = end;
+    const before = f.calls.length;
+    await assert.rejects(runPublicConfiguration('Disable', packet, f.ports), /GW01_PUBLIC_CONFIG_CLOSED/);
+    assert.equal(f.calls.length, before);
+  });
+test('PostgreSQL closeout change does not relax the canonical Environment ledger timestamp', async () => {
+  const f = fixture();
+  f.ports.proof.environmentLedger[0].createdAt = '2026-10-18T10:00:00.123456+00:00';
+  await assert.rejects(runPublicConfiguration('Verify', packet, f.ports), /GW01_PUBLIC_CONFIG_OWNERSHIP/);
+  assert.equal(f.calls.length, 0);
+});
 for (const [label, change] of [
   [
     'native failure',
@@ -726,6 +768,21 @@ test('closeout uses the documented v9 entry routes and only fixed false PATCH or
   const expected = `/v9/projects/${packet.projectId}/env/owned_entry?teamId=${packet.teamId}`;
   assert.equal(publicConfigApiArguments('PATCH', 'entry', 'owned_entry')[1], expected);
   assert.equal(publicConfigApiArguments('DELETE', 'entry', 'owned_entry')[1], expected);
+  assert.ok(
+    publicConfigApiArguments('DELETE', 'entry', 'owned_entry').includes('--dangerously-skip-permissions'),
+  );
+  for (const [method, kind] of [
+    ['GET', 'project'],
+    ['GET', 'envs'],
+    ['POST', 'envs'],
+    ['PATCH', 'entry'],
+  ])
+    assert.equal(
+      publicConfigApiArguments(method, kind, kind === 'entry' ? 'owned_entry' : null).includes(
+        '--dangerously-skip-permissions',
+      ),
+      false,
+    );
   const patch = fakeNative('{}');
   await nativePublicConfigRequest(
     'synthetic-cli.js',
@@ -761,3 +818,161 @@ test('closeout uses the documented v9 entry routes and only fixed false PATCH or
   );
   assert.equal(deletion.calls(), 1);
 });
+async function pendingCleanupFixture() {
+  const f = await readyFixture();
+  await runPublicConfiguration('Disable', packet, f.ports);
+  const request = f.ports.request;
+  f.ports.request = async (...args) => {
+    if (args[0] === 'DELETE') throw Error('SYNTHETIC_CLI_CONFIRMATION_REQUIRED');
+    return request(...args);
+  };
+  await assert.rejects(runPublicConfiguration('Cleanup', packet, f.ports), /GW01_PUBLIC_CONFIG_NATIVE/);
+  f.ports.request = request;
+  return f;
+}
+test('explicit ResumeCleanup preserves failed intent and records one readback-bound resumed delete before second fresh intent', async () => {
+  const f = await pendingCleanupFixture();
+  const original = structuredClone(f.events.find((e) => e.kind === 'delete_intent'));
+  const r = await runPublicConfiguration('ResumeCleanup', packet, f.ports);
+  assert.equal(r.status, 'cleanup_complete');
+  assert.deepEqual(
+    f.events.find((e) => e.kind === 'delete_intent'),
+    original,
+  );
+  assert.equal(f.events.filter((e) => e.kind === 'delete_resumed_after_readback').length, 1);
+  assert.equal(f.events.filter((e) => e.kind === 'delete_intent').length, 2);
+  assert.equal(f.calls.filter((c) => c.method === 'DELETE').length, 2);
+  assert.equal(f.events.filter((e) => e.kind === 'deleted').length, 2);
+  await assert.rejects(
+    runPublicConfiguration('ResumeCleanup', packet, f.ports),
+    /GW01_PUBLIC_CONFIG_(OWNERSHIP|RECONCILE)/,
+  );
+});
+for (const [label, change] of [
+  [
+    'absent pending row',
+    (f) => {
+      f.rows().splice(
+        f.rows().findIndex((r) => r.key === sensitive[0]),
+        1,
+      );
+    },
+  ],
+  [
+    'different ID',
+    (f) => {
+      f.rows().find((r) => r.key === sensitive[0]).id = 'changed_id';
+    },
+  ],
+  [
+    'different creation time',
+    (f) => {
+      f.rows().find((r) => r.key === sensitive[0]).createdAt++;
+    },
+  ],
+  [
+    'different branch',
+    (f) => {
+      f.rows().find((r) => r.key === sensitive[0]).gitBranch = 'main';
+    },
+  ],
+  [
+    'different type',
+    (f) => {
+      f.rows().find((r) => r.key === sensitive[0]).type = 'plain';
+    },
+  ],
+  [
+    'duplicate pending intent',
+    (f) => {
+      f.events.push(structuredClone(f.events.find((e) => e.kind === 'delete_intent')));
+    },
+  ],
+  [
+    'conflicting deleted marker',
+    (f) => {
+      const e = f.events.find((e) => e.kind === 'delete_intent');
+      f.events.push({ ...e, kind: 'deleted' });
+    },
+  ],
+  [
+    'unknown event kind',
+    (f) => {
+      const e = f.events[0];
+      f.events.push({ ...e, kind: 'unapproved_cleanup_override' });
+    },
+  ],
+  [
+    'incompatible disable ordering',
+    (f) => {
+      const i = f.events.findIndex((e) => e.kind === 'disabled');
+      f.events.splice(i, 1);
+    },
+  ],
+])
+  test('ResumeCleanup refuses ' + label + ' without DELETE', async () => {
+    const f = await pendingCleanupFixture();
+    change(f);
+    const before = f.calls.filter((c) => c.method === 'DELETE').length;
+    await assert.rejects(
+      runPublicConfiguration('ResumeCleanup', packet, f.ports),
+      /GW01_PUBLIC_CONFIG_(OWNERSHIP|CONFLICT|RECONCILE)/,
+    );
+    assert.equal(f.calls.filter((c) => c.method === 'DELETE').length, before);
+  });
+test('ambiguous resumed DELETE is never resumed again and GET-only reconciliation preserves a remaining owned row', async () => {
+  const f = await pendingCleanupFixture(),
+    base = f.ports.request;
+  f.ports.request = async (...args) => {
+    const r = await base(...args);
+    if (args[0] === 'DELETE') throw Error('SYNTHETIC_LOST_ACK');
+    return r;
+  };
+  await assert.rejects(runPublicConfiguration('ResumeCleanup', packet, f.ports), /GW01_PUBLIC_CONFIG_NATIVE/);
+  await assert.rejects(
+    runPublicConfiguration('ResumeCleanup', packet, f.ports),
+    /GW01_PUBLIC_CONFIG_RECONCILE/,
+  );
+  const before = f.calls.length;
+  await runPublicConfiguration('ReconcileCleanup', packet, f.ports);
+  assert.ok(f.calls.slice(before).every((c) => c.method === 'GET'));
+  f.ports.request = base;
+  assert.equal((await runPublicConfiguration('Cleanup', packet, f.ports)).status, 'cleanup_complete');
+  assert.equal(f.calls.filter((c) => c.method === 'DELETE').length, 2);
+});
+for (const response of [
+  null,
+  [],
+  [null, { key: 'OWNED', type: 'sensitive', value: 'PRIVATE_DELETE_RESPONSE' }],
+  { key: 'OWNED', type: 'sensitive', value: 'PRIVATE_DELETE_RESPONSE' },
+])
+  test(
+    'documented successful DELETE response is opaque and still requires separate absence readback ' +
+      (response === null ? 'null' : Array.isArray(response) ? 'array' : 'object'),
+    async () => {
+      const f = fakeNative(JSON.stringify(response));
+      const r = await nativePublicConfigRequest(
+        'synthetic-cli.js',
+        'DELETE',
+        publicConfigApiArguments('DELETE', 'entry', 'owned_entry')[1],
+        null,
+        { spawn: f.spawn },
+      );
+      assert.deepEqual(r, { deleted: true });
+      assert.doesNotMatch(JSON.stringify(r), /PRIVATE_DELETE_RESPONSE/);
+    },
+  );
+for (const response of [true, 123, 'private', [true], { error: { message: 'PRIVATE_API_ERROR' } }])
+  test('unsupported DELETE response fails closed without values ' + typeof response, async () => {
+    const f = fakeNative(JSON.stringify(response));
+    await assert.rejects(
+      nativePublicConfigRequest(
+        'synthetic-cli.js',
+        'DELETE',
+        publicConfigApiArguments('DELETE', 'entry', 'owned_entry')[1],
+        null,
+        { spawn: f.spawn },
+      ),
+      /^Error: GW01_PUBLIC_CONFIG_NATIVE$/,
+    );
+  });

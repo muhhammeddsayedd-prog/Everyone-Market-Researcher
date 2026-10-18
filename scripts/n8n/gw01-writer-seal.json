@@ -4,9 +4,9 @@
     "scripts/n8n/gw01-writer.mjs": "fb65e1bfd3cdc5b7fae07fabe40079daf764a5d948ffce3a19fed153fc828827",
     "scripts/n8n/windows/Invoke-M03GW01Writer.ps1": "3baaee25fdfef213c22b701e3d800de65694f3fa2f84d54a672e2004997addd6",
     "scripts/n8n/windows/New-M03GW01Handoff.ps1": "e7e46ba59016a5ee5fc0ff8ee9cf5d886f9e244824b00a97179b204d87ea6ab4",
-    "scripts/n8n/gw01-reviewed-preview.json": "0c87a4d6069e9b9be1d9eff659db94c4c97141327aa5a340e71bb737b8977684",
+    "scripts/n8n/gw01-reviewed-preview.json": "b11dcdbb4fc069ffeab01ce01abc1dc3bc99d9f5a75749a87e2ed412ffe7c9f6",
     "scripts/n8n/gw01-local-privacy.json": "39e49afd4ca883f3d05a8ea9006ebc0cd2682115b7c6e6140b9cc9198f27661f",
-    "scripts/n8n/gw01-cloud-privacy.json": "d702549c57bafebb8373b616ec8e7ddd633803329084a9fee3fc7287d680ad96",
+    "scripts/n8n/gw01-cloud-privacy.json": "87092f6ed46616a1552d32ff3ee35c9b0a3022ae929b73282ebd045177d1993b",
     "scripts/seed/check-tls.mjs": "497d8ad658f936c1b5f87b5316bbafbcf145f8ae8e01a6184fb80db5ff5e9d07",
     "scripts/seed/certs/supabase-root-2021.crt": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
     "scripts/seed/certs/supabase-root-2021.json": "86f7da7dbd65b7a97986e7cf859848835b162fb6aec17f09fb8b011d4accf16b"

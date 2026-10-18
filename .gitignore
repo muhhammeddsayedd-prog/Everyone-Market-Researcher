@@ -30,3 +30,5 @@ scripts/n8n/gw01-public-config-seal.json
 scripts/n8n/gw01-public-config-proof.json
 scripts/n8n/gw01-shutdown-packet.json
 scripts/n8n/gw01-shutdown-seal.json
+scripts/n8n/gw01-preview-read-packet.json
+scripts/n8n/gw01-preview-read-seal.json

@@ -30,5 +30,99 @@
     "deploymentId": "dpl_34mF18oQnjrqS67pdXMBsChLfV7g",
     "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
     "branch": "m03-n8n-foundation"
+  },
+  "runtimePhase": {
+    "version": 1,
+    "cloudBTarget": {
+      "audience": "https://everyone-market-researcher-7k5et630y-muhammed-abdelrahman.vercel.app",
+      "commitSha": "4d4d13ebf241f12df64de772b0024bf6d5a067e0",
+      "deploymentId": "dpl_34mF18oQnjrqS67pdXMBsChLfV7g",
+      "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+      "branch": "m03-n8n-foundation"
+    },
+    "target": {
+      "audience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+      "commitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+      "deploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA",
+      "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+      "branch": "m03-n8n-foundation"
+    },
+    "sourceObjects": {
+      "apps/web": {
+        "kind": "tree",
+        "cloudB": "ceedfcc695e210d5f14025d9cfd47f17c55d6f2a",
+        "runtime": "ceedfcc695e210d5f14025d9cfd47f17c55d6f2a"
+      },
+      "packages/shared": {
+        "kind": "tree",
+        "cloudB": "fc0684990fd7df9260c1deeda7ca18dcdb99651a",
+        "runtime": "fc0684990fd7df9260c1deeda7ca18dcdb99651a"
+      },
+      "pnpm-lock.yaml": {
+        "kind": "blob",
+        "cloudB": "41a2d27d4ac2c16d033930475aa400884562cefb",
+        "runtime": "41a2d27d4ac2c16d033930475aa400884562cefb"
+      },
+      "package.json": {
+        "kind": "blob",
+        "cloudB": "f34d32bdf8fc7b09ea45f6560e79ae3da94efd10",
+        "runtime": "f34d32bdf8fc7b09ea45f6560e79ae3da94efd10"
+      },
+      "pnpm-workspace.yaml": {
+        "kind": "blob",
+        "cloudB": "8f91bfb10cdd8d3cfe706adf080b9f6b22b0387e",
+        "runtime": "8f91bfb10cdd8d3cfe706adf080b9f6b22b0387e"
+      }
+    },
+    "rootVercelJson": "absent",
+    "environment": {
+      "recordRef": "scripts/n8n/out/gw01-environment-delivery.jsonl",
+      "records": [
+        {
+          "version": 1,
+          "kind": "environment_intent",
+          "windowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+          "branch": "m03-n8n-foundation",
+          "createdAt": "2026-10-18T09:56:11.378Z"
+        },
+        {
+          "kind": "environment_delivered",
+          "name": "EMR_WORKER_DB_PASSWORD"
+        },
+        {
+          "kind": "environment_delivered",
+          "name": "EMR_WORKER_GATEWAY_TOKEN_SHA256"
+        }
+      ]
+    },
+    "readback": {
+      "evidenceRef": "milestones/M03-n8n-foundation/evidence/gw01-runtime-readback-20261018.json",
+      "kind": "vercel_runtime_preview",
+      "nativeExit": 0,
+      "teamId": "team_gboXPxTevpCOZuaA8eY9PmR1",
+      "environment": "preview",
+      "readyState": "READY",
+      "autoExposeSystemEnvs": true,
+      "target": {
+        "audience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+        "commitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+        "deploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA",
+        "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+        "branch": "m03-n8n-foundation"
+      },
+      "createdAt": "2026-10-18T10:06:12.079Z",
+      "observedAt": "2026-10-18T10:14:06.622Z",
+      "configuration": {
+        "target": "preview",
+        "gitBranch": "m03-n8n-foundation",
+        "values": {
+          "EMR_WORKER_GATEWAY_ENABLED": "true",
+          "EMR_WORKER_GATEWAY_AUDIENCE": "vercel-deployment",
+          "EMR_WORKER_GATEWAY_WINDOW_ID": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "EMR_WORKER_GATEWAY_COMMIT_SHA": "3d141fb9d971d39237e744f2770cf42e425f0420"
+        }
+      }
+    }
   }
 }

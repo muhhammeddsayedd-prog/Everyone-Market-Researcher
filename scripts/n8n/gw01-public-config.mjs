@@ -19,7 +19,7 @@ const projectId = 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
 const secretNames = ['EMR_WORKER_DB_PASSWORD', 'EMR_WORKER_GATEWAY_TOKEN_SHA256'];
 const enabledName = 'EMR_WORKER_GATEWAY_ENABLED',
   windowId = '76c2ad42-c094-4ba4-9a0b-566e19b97780';
-const closingModes = ['Disable', 'Cleanup', 'ReconcileCleanup'];
+const closingModes = ['Disable', 'Cleanup', 'ReconcileCleanup', 'ResumeCleanup'];
 const exact = (v, keys) =>
   v !== null &&
   typeof v === 'object' &&
@@ -160,7 +160,7 @@ export function publicConfigApiArguments(method, kind, id = null) {
     ...(['POST', 'PATCH'].includes(method)
       ? ['--input', '-', '--yes']
       : method === 'DELETE'
-        ? ['--yes']
+        ? ['--dangerously-skip-permissions']
         : []),
     '--scope',
     'muhammed-abdelrahman',
@@ -182,6 +182,24 @@ async function inspect(packet, ports, phase = 'delivery') {
 }
 const iso = (v) =>
   typeof v === 'string' && Number.isFinite(Date.parse(v)) && new Date(Date.parse(v)).toISOString() === v;
+// Database JSONB preserves timestamptz precision and its explicit offset. Keep
+// the original receipt bytes; use exact microseconds only for this window check.
+function postgresWindowTime(value) {
+  if (typeof value !== 'string') return null;
+  const match = /^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)(?:\.(\d{1,6}))?(Z|([+-])(\d\d):(\d\d))$/.exec(value);
+  if (!match || match[1].startsWith('0000-')) return null;
+  const hours = Number(match[5] ?? 0),
+    minutes = Number(match[6] ?? 0);
+  if (hours > 14 || minutes > 59 || (hours === 14 && minutes !== 0)) return null;
+  const offset = (match[4] === '-' ? -1 : 1) * (hours * 60 + minutes),
+    milliseconds = Date.parse(match[1] + '.000' + match[3]);
+  if (
+    !Number.isFinite(milliseconds) ||
+    new Date(milliseconds + offset * 60000).toISOString().slice(0, 19) !== match[1]
+  )
+    return null;
+  return BigInt(milliseconds) * 1000n + BigInt((match[2] ?? '').padEnd(6, '0'));
+}
 function proofCheck(proof) {
   if (
     !exact(proof, ['version', 'environmentReceipt', 'environmentLedger', 'writerCloseReceipt']) ||
@@ -318,11 +336,12 @@ function closedProof(proof) {
     w.totalAdmitted > 100
   )
     fail('CLOSED');
-  if (
-    (w.startsAt === null) !== (w.expiresAt === null) ||
-    (w.startsAt !== null && (!iso(w.startsAt) || !iso(w.expiresAt)))
-  )
-    fail('CLOSED');
+  if ((w.startsAt === null) !== (w.expiresAt === null)) fail('CLOSED');
+  if (w.startsAt !== null) {
+    const start = postgresWindowTime(w.startsAt),
+      end = postgresWindowTime(w.expiresAt);
+    if (start === null || end === null || end - start !== 1800000000n) fail('CLOSED');
+  }
   if (
     w.boundAudience === null
       ? w.boundCommitSha !== null || w.boundDeploymentId !== null
@@ -340,8 +359,91 @@ function sameMetadata(a, b) {
     JSON.stringify(a.target) === JSON.stringify(b.target)
   );
 }
+function resumePendingKey(events, packet) {
+  if (events.some((e) => e.kind === 'delete_resumed_after_readback')) fail('RECONCILE');
+  let phase = 'initial',
+    missing = [],
+    lastAt = -1;
+  const created = new Set(),
+    intents = new Set(),
+    deleted = new Set();
+  let environment = false;
+  for (const e of events) {
+    if (!Number.isSafeInteger(e.at) || e.at < lastAt) fail('OWNERSHIP');
+    lastAt = e.at;
+    const shape = (keys) => {
+      if (!exact(e, ['kind', 'binding', 'at', ...keys])) fail('OWNERSHIP');
+    };
+    if (e.kind === 'plan') {
+      shape(['fingerprint', 'sensitiveMetadataAbsent']);
+      if (
+        phase !== 'initial' ||
+        e.sensitiveMetadataAbsent !== true ||
+        typeof e.fingerprint !== 'string' ||
+        !/^[a-f0-9]{64}$/.test(e.fingerprint)
+      )
+        fail('OWNERSHIP');
+      phase = 'planned';
+    } else if (e.kind === 'apply_intent') {
+      shape(['missingPublic']);
+      if (
+        phase !== 'planned' ||
+        !Array.isArray(e.missingPublic) ||
+        !e.missingPublic.includes(enabledName) ||
+        new Set(e.missingPublic).size !== e.missingPublic.length ||
+        e.missingPublic.some((n) => !Object.hasOwn(publicConfigValues(packet), n))
+      )
+        fail('OWNERSHIP');
+      missing = e.missingPublic;
+      phase = 'applying';
+    } else if (e.kind === 'public_created') {
+      shape(['metadata']);
+      const key = e.metadata?.key;
+      if (phase !== 'applying' || !missing.includes(key) || created.has(key)) fail('OWNERSHIP');
+      created.add(key);
+    } else if (e.kind === 'complete') {
+      shape([]);
+      if (phase !== 'applying' || created.size !== missing.length) fail('OWNERSHIP');
+      phase = 'complete';
+    } else if (e.kind === 'environment_owned') {
+      shape(['provenance', 'environmentFingerprint', 'metadata']);
+      if (
+        phase !== 'complete' ||
+        environment ||
+        e.provenance !== 'recovered_get_after_native_environment' ||
+        typeof e.environmentFingerprint !== 'string' ||
+        !/^[a-f0-9]{64}$/.test(e.environmentFingerprint) ||
+        !exact(e.metadata, secretNames)
+      )
+        fail('OWNERSHIP');
+      environment = true;
+    } else if (e.kind === 'disable_intent') {
+      shape([]);
+      if (phase !== 'complete') fail('OWNERSHIP');
+      phase = 'disabling';
+    } else if (e.kind === 'disabled') {
+      shape([]);
+      if (phase !== 'disabling') fail('OWNERSHIP');
+      phase = 'disabled';
+    } else if (e.kind === 'delete_intent' || e.kind === 'deleted') {
+      shape(['key']);
+      if (phase !== 'disabled' || !secretNames.includes(e.key)) fail('OWNERSHIP');
+      if (e.kind === 'delete_intent') {
+        if (intents.has(e.key)) fail('OWNERSHIP');
+        intents.add(e.key);
+      } else {
+        if (!intents.has(e.key) || deleted.has(e.key)) fail('OWNERSHIP');
+        deleted.add(e.key);
+      }
+    } else fail('OWNERSHIP');
+  }
+  const pending = [...intents].filter((key) => !deleted.has(key));
+  if (phase !== 'disabled' || !environment || pending.length !== 1) fail('RECONCILE');
+  return pending[0];
+}
 async function closeConfiguration(mode, packet, ports, events, binding) {
   closedProof(ports.proof);
+  const resumeKey = mode === 'ResumeCleanup' ? resumePendingKey(events ?? [], packet) : null;
   const own = events?.filter((e) => e.kind === 'public_created' && e.metadata?.key === enabledName);
   if (!own || own.length !== 1) fail('OWNERSHIP');
   const get = () => inspect(packet, ports, 'closeout');
@@ -367,6 +469,13 @@ async function closeConfiguration(mode, packet, ports, events, binding) {
   };
   const has = (kind, name) => events.some((e) => e.kind === kind && (name === undefined || e.key === name));
   const enabled = current.configuration?.values[enabledName];
+  if (
+    resumeKey &&
+    (!ownedSecrets.length ||
+      !current.metadata[resumeKey] ||
+      !sameMetadata(ownedSecrets[0].metadata[resumeKey], current.metadata[resumeKey]))
+  )
+    fail('OWNERSHIP');
   if (mode === 'ReconcileCleanup') {
     if (enabled === 'false' && has('disable_intent') && !has('disabled')) append({ kind: 'disabled' });
     for (const name of secretNames)
@@ -392,7 +501,8 @@ async function closeConfiguration(mode, packet, ports, events, binding) {
   } else {
     if (enabled !== 'false' || !has('disabled')) fail('RECONCILE');
     for (const name of secretNames) {
-      if (has('delete_intent', name) && !has('deleted', name)) fail('RECONCILE');
+      const pending = has('delete_intent', name) && !has('deleted', name);
+      if (pending && resumeKey !== name) fail('RECONCILE');
       current = await get();
       if (
         !sameMetadata(own[0].metadata, current.metadata[enabledName]) ||
@@ -412,7 +522,8 @@ async function closeConfiguration(mode, packet, ports, events, binding) {
       }
       if (!ownedSecrets.length || !sameMetadata(ownedSecrets[0].metadata[name], row) || has('deleted', name))
         fail('OWNERSHIP');
-      append({ kind: 'delete_intent', key: name });
+      if (pending) append({ kind: 'delete_resumed_after_readback', key: name, metadata: row });
+      else append({ kind: 'delete_intent', key: name });
       try {
         await ports.request('DELETE', publicConfigApiArguments('DELETE', 'entry', row.id)[1], null);
       } catch (error) {
@@ -671,8 +782,23 @@ export function nativePublicConfigRequest(cli, method, path, body, dependencies 
       try {
         if (!closed || failed) fail('NATIVE');
         const text = new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks));
-        value = method === 'DELETE' && !text.trim() ? { deleted: true } : JSON.parse(text);
-        if (!object(value) || value.error) fail('NATIVE');
+        const parsed = method === 'DELETE' && !text.trim() ? null : JSON.parse(text);
+        if (method === 'DELETE') {
+          // The documented 200 body may be an object, nullable object, or array.
+          // Discard every returned variable field; only the following GET may
+          // establish absence and authorize the durable "deleted" marker.
+          if (parsed !== null && !object(parsed) && !Array.isArray(parsed)) fail('NATIVE');
+          if (object(parsed) && parsed.error) fail('NATIVE');
+          if (
+            Array.isArray(parsed) &&
+            (parsed.length > 1000 || parsed.some((row) => row !== null && (!object(row) || row.error)))
+          )
+            fail('NATIVE');
+          value = { deleted: true };
+        } else {
+          if (!object(parsed) || parsed.error) fail('NATIVE');
+          value = parsed;
+        }
       } catch {
         failed = true;
       }

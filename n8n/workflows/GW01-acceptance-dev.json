@@ -15,12 +15,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://everyone-market-researcher-7k5et630y-muhammed-abdelrahman.vercel.app/api/internal/n8n/rpc",
+        "url": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app/api/internal/n8n/rpc",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpCustomAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "{\"version\":1,\"requestId\":\"d53e13f3-ae8c-4227-a02c-cd67a6c8e9e2\",\"operation\":\"identity.read\",\"args\":{}}",
+        "jsonBody": "{\"version\":1,\"requestId\":\"3a564cef-0e96-4a09-a412-cd948002a4d0\",\"operation\":\"identity.read\",\"args\":{}}",
         "options": {
           "allowUnauthorizedCerts": false,
           "redirect": {
@@ -50,10 +50,11 @@
       "retryOnFail": false,
       "credentials": {
         "httpCustomAuth": {
-          "id": "EmrGw01Canary18",
-          "name": "M03 GW-01 privacy canary [dev]"
+          "id": "EmrGw01Machine18",
+          "name": "M03 GW-01 machine [dev]"
         }
       },
+      "disabled": true,
       "onError": "continueRegularOutput"
     },
     {
@@ -62,7 +63,7 @@
           "assignments": [
             {
               "id": "0b55293e-9c57-40da-a264-3956a48accf2",
-              "name": "syntheticOnly",
+              "name": "connectionOnly",
               "type": "boolean",
               "value": true
             }
@@ -118,7 +119,7 @@
     "executionTimeout": 30,
     "availableInMCP": false
   },
-  "versionId": "73248101-7e12-424c-8af2-9837bb09feef",
+  "versionId": "54817414-05dd-426b-995e-559104681b3b",
   "meta": {
     "instanceId": "fe5facdb5abbccc9433fc2854c55f8eda5bd15bbdaa2eb5873e386d9cc9b2495"
   },

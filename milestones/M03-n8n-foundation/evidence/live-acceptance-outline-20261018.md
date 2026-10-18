@@ -6,6 +6,52 @@ fill exact workflow/binding IDs, final source seals, current hosted price-book
 receipt and dollar caps before presenting the executable batch for approval.
 This outline does not authorize production, schedules, M04 collection or merge.
 
+## Post-GW-01 draft checkpoint, 18 October 2026
+
+This remains a source-only draft, with no paid execution approval requested.
+The bounded connection trial now has actual gateway HTTP identity and one
+native n8n HTTP-node identity receipt as `n8n_writer` on emr-dev. Replay,
+same-ID/different-args conflict, two concurrent duplicates, status recovery
+after two deliberately unknown client outcomes and missing/invalid-auth
+denials were checked. The same window is closed, the dedicated bypass was
+revoked and both known immutable deployments rejected public unauthenticated
+POSTs. The owned canary/machine credentials and temporary handoffs were removed.
+The initial owned Environment cleanup failed before confirmed deletion and
+GET-only reconciliation still found both sensitive entries. The independently
+reviewed one-time ResumeCleanup then verified both entries absent and enabled
+false at 10:30:38.409 UTC, preserving the failed intent and readback. All owned
+connection-trial closeout is now complete, separate from full M03 preparation.
+[Connection trial and closeout](gw01-trial-closeout-20261018.json).
+
+The native n8n Postgres-node certificate-chain failure remains historical and
+unresolved. GW-01 was a temporary seven-operation connection exception, now
+closed; it does not provide a reusable full-backbone transport. Full manual
+workflow completion was not independently classified: only the native HTTP
+node's successful typed response is claimed. No actor, model, provider billing,
+foundation smoke or production result follows from the connection trial.
+
+The next concrete packet must resolve these technical gates before owner
+approval or any paid start:
+
+| Gate | Current evidence | Required next proof |
+| --- | --- | --- |
+| Full backbone transport | Native Postgres TLS failed; the separately approved GW-01 safe connection trial succeeded and closed | Select and approve any continued architecture scope, then prove verified hostname/chain, actual restricted identity, complete required RPC surface and bounded pooling for that exact route. Do not reopen or repurpose the closed GW-01 window. |
+| Durable actor-spend admission | `build-apify-smoke.mjs` generates original-run recovery only; no start POST while admission is absent | Implement and test an atomic spend/window claim plus ambiguity-safe original-run registration before a reviewed actor-launch path. |
+| Exact unknown-callback audit | `build-apify-callback.mjs` stops at the missing durable rejection-audit gate | A fixed, durable rejection record and tests proving unknown callback produces no item, run-context, cost or notification mutation. Generic workflow-error logging is insufficient. |
+| Live dataset privacy and bounds | The local success path has an unconditional release gate; top-level field selection and post-response byte checks are not streaming/storage proof | Review actual supported native schemas, enforce a real bounded transport and retention/privacy policy, then obtain the first sanitized actual actor fixture under the separately approved smoke. No fabricated live capture. |
+| Actual native foundation bindings | Existing provider credential IDs are recorded, but `bindings.dev.json` still has empty workflow/tag maps; generated graphs are inactive blueprints | Create/import only the owned inactive dev graphs after transport decisions, read back exact real IDs/node versions/settings/retention and export credential-reference-only saved JSON. Preserve shared credentials. |
+| Settlement, replay and interrupted processing | Local SQL/planner/generator tests and unchanged hosted schema evidence exist | Prove actual callback-before-registration recovery, terminal usage settlement, atomic receipt and interruption recovery with the original actor/run IDs; no replacement actor POST after ambiguity. |
+| Full acceptance batch counts and caps | Exact saved graph/request IDs and actor caps remain unset in this draft | Fill all workflow IDs/source seals; enumerate every launch, provider read, webhook, SQL call and n8n execution; read current price/cap support and state the two-run estimate plus hard supported ceiling before a distinct batch approval. |
+
+The proposed smoke uses only the already approved actor on the exact Everyone
+about page below, with two sequential runs and at most one distinct new item.
+The temporary connection
+proposal's USD1 reserve is neither an invoiced cost nor a verified billing cap.
+No actor/model calls have been made by GW-01. Unknown fixed fees remain unknown;
+the USD25 daily value is an alert threshold. Preserve the existing 24 October
+tooling-advisory follow-up. INC-M03-20261018-01 remains a separate production
+gate; no private incident content belongs in this packet.
+
 ## Prerequisites that must pass before a paid start
 
 1. Confirm intended dev n8n instance/runtime and saved actual workflow IDs;
@@ -13,7 +59,8 @@ This outline does not authorize production, schedules, M04 collection or merge.
    Apify/OpenAI credentials by ID without extracting or duplicating secrets.
 2. Resolve the restricted `n8n_writer` PostgreSQL certificate-chain failure with
    certificate and hostname verification enabled. Verify direct restricted
-   identity, required RPC signatures and the exact nine dev migration versions.
+   identity and required RPC signatures. Preserve all ten current dev migration
+   versions/hashes, including the additive GW-01 migration; do not replay them.
    Do not replace it with postgres or service-role access.
 3. Complete bounded manual GET-only credential probes. Use Apify
    `/v2/users/me/limits`, OpenAI `/v1/models`, official Vimeo and YouTube
