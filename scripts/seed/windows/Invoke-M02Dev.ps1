@@ -69,7 +69,12 @@ if ($Action -ne 'report' -and -not $packet.approved -and -not $CheckOnly) {
 }
 
 $needed = @{ PGPASSWORD='emr-m02-dev-db-password.dpapi' }
-if ($Action -in @('probe','resolve','accept-dev')) {
+if ($Action -eq 'resolve') {
+  # The reviewed post-batch continuation uses only YouTube. Do not load a stale
+  # Vimeo or Storage handoff, and stop before decrypting DB if the key is absent.
+  $needed.YOUTUBE_API_KEY='emr-m02-youtube-api-key.dpapi'
+}
+if ($Action -in @('probe','accept-dev')) {
   $providers = @{ VIMEO_TOKEN='emr-m02-vimeo-token.dpapi'; YOUTUBE_API_KEY='emr-m02-youtube-api-key.dpapi' }
   foreach ($name in $providers.Keys) {
     $providerFile = Join-Path $env:LOCALAPPDATA ('Temp\' + $providers[$name])

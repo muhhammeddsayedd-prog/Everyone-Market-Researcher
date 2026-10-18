@@ -1,0 +1,134 @@
+{
+  "archivedAt": "2026-10-18T01:43:49.385682Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "sourcePath": "scripts/seed/out/dev-report-recovery.json",
+  "sourceSha256": "d74211d3b6266d692ee479fb1780bef971602b29be75191b6a8d2a8e0910cc64",
+  "archiveScope": "Public operational receipt only; contains no passwords, connection URLs, keys or raw credential-bearing errors. Original file is unmodified.",
+  "receipt": {
+    "environment": "dev",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "source": "dev_scoped_supabase_mcp_readback",
+    "operation": "local_report_recovery",
+    "snapshotObservedAt": "2026-10-18T01:38:11Z",
+    "renderedAt": "2026-10-18T01:38:31.552Z",
+    "inputFile": "scripts/seed/out/dev-mcp-snapshot.json",
+    "inputSha256": "2b8e2770d5eb9c2aaa795402f40d3b878723737ad772674ca9250a0d89e49456",
+    "nativeCompletion": "success",
+    "databaseConnectionAttempted": false,
+    "providerCallsMade": false,
+    "storageOperationsTaken": false,
+    "seedReplayed": false,
+    "originalBatchReceiptModified": false,
+    "runnerSealModified": false,
+    "pendingMarkersModified": false,
+    "outputs": [
+      "scripts/seed/out/report-mcp-recovery-2026-10-18T01-38-31.552Z.md",
+      "scripts/seed/out/unresolved.csv",
+      "scripts/seed/out/dev-report.json"
+    ],
+    "counts": {
+      "competitors": 285,
+      "accounts": 1754,
+      "tiers": {
+        "baseline": 1,
+        "pilot": 50,
+        "next_wave": 174,
+        "adjacent": 60
+      },
+      "platforms": {
+        "linkedin_employees": 226,
+        "youtube": 128,
+        "vimeo": 202,
+        "website": 261,
+        "instagram_stories": 256,
+        "instagram": 256,
+        "linkedin": 226,
+        "website_work_page": 199
+      },
+      "platformStatuses": {
+        "linkedin_employees": {
+          "paused": 184,
+          "active": 42
+        },
+        "youtube": {
+          "paused": 115,
+          "active": 10,
+          "invalid": 3
+        },
+        "vimeo": {
+          "paused": 154,
+          "active": 48
+        },
+        "website": {
+          "paused": 250,
+          "active": 11
+        },
+        "instagram_stories": {
+          "paused": 207,
+          "active": 49
+        },
+        "instagram": {
+          "paused": 207,
+          "active": 49
+        },
+        "linkedin": {
+          "paused": 184,
+          "active": 42
+        },
+        "website_work_page": {
+          "paused": 161,
+          "active": 38
+        }
+      },
+      "resolveStatuses": {
+        "not_needed": 1424,
+        "pending": 125,
+        "resolved": 202,
+        "failed": 3
+      },
+      "backfillStatuses": {
+        "not_applicable": 482,
+        "pending": 1272
+      },
+      "providerErrors": {},
+      "resolution": {
+        "vimeo": {
+          "total": 202,
+          "resolved": 202,
+          "pending": 0,
+          "failed": 0,
+          "missingIdentifiers": 0,
+          "pilot": {
+            "total": 48,
+            "resolved": 48
+          }
+        },
+        "youtube": {
+          "total": 128,
+          "resolved": 0,
+          "pending": 125,
+          "failed": 3,
+          "missingIdentifiers": 0,
+          "pilot": {
+            "total": 11,
+            "resolved": 0
+          }
+        }
+      },
+      "logos": {
+        "sourceTotal": 267,
+        "sourceCopied": 256,
+        "missingSourceCopy": 11,
+        "baselineTotal": 1,
+        "baselineCopied": 1,
+        "noSource": 17,
+        "mediaMetadataMissing": 0
+      },
+      "duplicateKeys": 0,
+      "sourceIssues": 3,
+      "reviewItems": 185
+    }
+  },
+  "historicalFailureReceipt": "milestones/M02-seed-data/evidence/dev-main-batch-receipt-20261018.json"
+}

@@ -1,0 +1,1934 @@
+{
+  "observedAt": "2026-10-18T01:47:24.409215Z",
+  "clientDate": "2026-10-18",
+  "clientTimezone": "Africa/Cairo",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "operation": "read_only_dev_mcp_and_local_artifact_reconciliation",
+  "snapshotObservedAt": "2026-10-18T01:38:11Z",
+  "snapshotSource": "dev_scoped_supabase_mcp_readback",
+  "auditResult": "pass",
+  "checks": [
+    {
+      "check": "exact_dev_snapshot_provenance",
+      "pass": true
+    },
+    {
+      "check": "exact_manifest_targets",
+      "pass": true
+    },
+    {
+      "check": "original_native_failure_preserved",
+      "pass": true
+    },
+    {
+      "check": "recovered_report_input_seal",
+      "pass": true
+    },
+    {
+      "check": "exact_pending_run_and_source",
+      "pass": true
+    },
+    {
+      "check": "manifest_and_snapshot_counts",
+      "pass": true
+    },
+    {
+      "check": "complete_competitor_id_parity",
+      "pass": true
+    },
+    {
+      "check": "complete_account_id_parity",
+      "pass": true
+    },
+    {
+      "check": "competitor_identity_and_available_seed_fields",
+      "pass": true
+    },
+    {
+      "check": "account_owner_platform_exact_handle_and_norm_parity",
+      "pass": true
+    },
+    {
+      "check": "account_changes_are_only_expected_resolution_or_same_domain_website_urls",
+      "pass": true
+    },
+    {
+      "check": "vimeo_resolution_fully_accounted",
+      "pass": true
+    },
+    {
+      "check": "youtube_withheld_writes_preserved",
+      "pass": true
+    },
+    {
+      "check": "logo_manifest_path_owner_kind_source_parity",
+      "pass": true
+    },
+    {
+      "check": "logo_counts_and_no_unmanifested_paths",
+      "pass": true
+    },
+    {
+      "check": "all_logo_hashes_are_sha256_format",
+      "pass": true
+    },
+    {
+      "check": "recorded_public_hash_receipt_count_matches_manifests",
+      "pass": true
+    },
+    {
+      "check": "recorded_second_seed_is_noop",
+      "pass": true
+    },
+    {
+      "check": "recovery_report_counts_match_snapshot",
+      "pass": true
+    },
+    {
+      "check": "audited_inputs_unchanged_during_readonly_audit",
+      "pass": true
+    },
+    {
+      "check": "storage_provenance_and_public_bucket",
+      "pass": true
+    },
+    {
+      "check": "exact_storage_object_manifest_path_parity",
+      "pass": true
+    },
+    {
+      "check": "storage_total_bytes_match_main_batch_receipt",
+      "pass": true
+    },
+    {
+      "check": "no_items_raw_fixtures_or_other_objects",
+      "pass": true
+    },
+    {
+      "check": "full_curated_readback_exact_dev_source",
+      "pass": true
+    },
+    {
+      "check": "full_readback_complete_unique_manifest_id_sets",
+      "pass": true
+    },
+    {
+      "check": "all_competitor_seed_owned_fields_exact",
+      "pass": true
+    },
+    {
+      "check": "all_account_seed_owned_fields_exact_except_expected_runtime_changes",
+      "pass": true
+    },
+    {
+      "check": "operational_schedule_and_default_invariants_untouched",
+      "pass": true
+    },
+    {
+      "check": "runtime_identifiers_and_cursor_metadata_are_only_reviewed_vimeo_resolution",
+      "pass": true
+    },
+    {
+      "check": "recovery_snapshot_overlapping_values_unchanged_in_full_readback",
+      "pass": true
+    },
+    {
+      "check": "direct_fresh_logo_item_link_readback",
+      "pass": true
+    }
+  ],
+  "failedChecks": [],
+  "inputs": [
+    {
+      "path": "scripts/seed/out/dev-latest.json",
+      "sha256": "0e204b526450bd34a62c5db6bdd357ca72388d9020d263c05dfa1db3d5d7fe37"
+    },
+    {
+      "path": "scripts/seed/out/dev-seed-manifest.json",
+      "sha256": "8709e8d6b5817773b61e7cc0067439e83b0ac897335d5ee3a3e58e78fe08457b"
+    },
+    {
+      "path": "scripts/seed/out/dev-logo-manifest.json",
+      "sha256": "a783124776887d6da68f0b2bef5d7e37b9f3dba563a610765500babde9def1e5"
+    },
+    {
+      "path": "scripts/seed/out/dev-mcp-snapshot.json",
+      "sha256": "2b8e2770d5eb9c2aaa795402f40d3b878723737ad772674ca9250a0d89e49456"
+    },
+    {
+      "path": "scripts/seed/out/dev-report-recovery.json",
+      "sha256": "d74211d3b6266d692ee479fb1780bef971602b29be75191b6a8d2a8e0910cc64"
+    },
+    {
+      "path": "scripts/seed/out/dev-write-pending.json",
+      "sha256": "adeceda5abba85b9d53cb1039f98f074b19e8529e65b76fe457fb250a4ffe992"
+    }
+  ],
+  "competitors": {
+    "manifest": 285,
+    "snapshot": 285,
+    "idAndCompanyCodeParity": true,
+    "availableSeedFieldsCompared": [
+      "company_code",
+      "is_baseline",
+      "logo_url",
+      "name",
+      "pilot_rank",
+      "priority_tier",
+      "slug"
+    ],
+    "seedFieldsNotPresentInRecoverySnapshot": [],
+    "availableFieldDifferences": [],
+    "protectedFieldEntries": 0,
+    "allSeedOwnedFieldsCompared": [
+      "categories",
+      "company_code",
+      "hq_country",
+      "in_house",
+      "is_baseline",
+      "logo_url",
+      "markets",
+      "name",
+      "notes",
+      "pilot_rank",
+      "priority_tier",
+      "slug",
+      "source_sheet_row",
+      "status",
+      "website_url"
+    ],
+    "allSeedOwnedFieldsExact": true,
+    "fullFieldDifferences": [],
+    "coverageNote": "Initial report recovery snapshot was supplemented with a fresh paginated curated dev MCP readback of every seed-owned competitor field, including markets, taxonomy arrays, notes and sheet provenance."
+  },
+  "accounts": {
+    "manifest": 1754,
+    "snapshot": 1754,
+    "idOwnerPlatformExactHandleAndNormParity": true,
+    "fieldDifferenceCounts": {
+      "resolve_status": 202,
+      "url": 21
+    },
+    "websiteUrlChanges": [
+      {
+        "company_code": "C012",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C023",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C017",
+        "platform": "website_work_page",
+        "same_domain": true
+      },
+      {
+        "company_code": "C014",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C089",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C112",
+        "platform": "website_work_page",
+        "same_domain": true
+      },
+      {
+        "company_code": "C093",
+        "platform": "website_work_page",
+        "same_domain": true
+      },
+      {
+        "company_code": "C106",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C088",
+        "platform": "website_work_page",
+        "same_domain": true
+      },
+      {
+        "company_code": "C105",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C057",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C041",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C145",
+        "platform": "website_work_page",
+        "same_domain": true
+      },
+      {
+        "company_code": "C181",
+        "platform": "website_work_page",
+        "same_domain": true
+      },
+      {
+        "company_code": "C182",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C182",
+        "platform": "website_work_page",
+        "same_domain": true
+      },
+      {
+        "company_code": "C183",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C189",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C200",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C207",
+        "platform": "website",
+        "same_domain": true
+      },
+      {
+        "company_code": "C209",
+        "platform": "website_work_page",
+        "same_domain": true
+      }
+    ],
+    "vimeoResolved": 202,
+    "youtubeResolutionStatuses": {
+      "pending": 125,
+      "failed": 3
+    },
+    "protectedFieldEntries": 0,
+    "allSeedOwnedFieldsCompared": [
+      "backfill_from",
+      "backfill_status",
+      "cadence",
+      "competitor_id",
+      "handle",
+      "platform",
+      "resolve_status",
+      "status",
+      "url"
+    ],
+    "allSeedOwnedFieldDifferences": [
+      {
+        "company_code": "C000",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C016",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C012",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C012",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C005",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C023",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C007",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C002",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C021",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C009",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C001",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C004",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C017",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C017",
+        "platform": "website_work_page",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C031",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C035",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C015",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C024",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C018",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C006",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C014",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C011",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C028",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C027",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C091",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C119",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C089",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C089",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C112",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C112",
+        "platform": "website_work_page",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C108",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C120",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C115",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C063",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C098",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C093",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C093",
+        "platform": "website_work_page",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C117",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C106",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C106",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C100",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C099",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C088",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C088",
+        "platform": "website_work_page",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C121",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C118",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C092",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C105",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C105",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C114",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C109",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C110",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C090",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C113",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C083",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C103",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C096",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C057",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C057",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C044",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C043",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C053",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C045",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C058",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C042",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C055",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C041",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C041",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C070",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C048",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C074",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C081",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C076",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C077",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C059",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C052",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C073",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C069",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C051",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C064",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C049",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C050",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C056",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C067",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C060",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C061",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C126",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C127",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C129",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C130",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C131",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C132",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C133",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C134",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C135",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C136",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C137",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C139",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C140",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C142",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C143",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C144",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C145",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C145",
+        "platform": "website_work_page",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C146",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C147",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C148",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C149",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C150",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C151",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C152",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C153",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C154",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C155",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C156",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C158",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C159",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C160",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C161",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C162",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C163",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C167",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C168",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C169",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C170",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C172",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C173",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C174",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C177",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C178",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C179",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C180",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C181",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C181",
+        "platform": "website_work_page",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C182",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C182",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C182",
+        "platform": "website_work_page",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C183",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C183",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C184",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C185",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C189",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C191",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C192",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C193",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C194",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C197",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C198",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C200",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C200",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C201",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C202",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C204",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C205",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C206",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C207",
+        "platform": "website",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C207",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C209",
+        "platform": "website_work_page",
+        "field": "url",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C212",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C213",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C214",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C215",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C216",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C217",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C218",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C221",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C222",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C223",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C224",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C225",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C226",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C228",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C229",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C230",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C231",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C232",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C233",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C234",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C235",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C236",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C237",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C238",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C239",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C240",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C241",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C242",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C243",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C244",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C245",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C246",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C247",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C249",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C250",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C251",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C253",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C254",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C255",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C256",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C257",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C258",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C259",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C260",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C262",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C263",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C264",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C265",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C267",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C268",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C269",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C270",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C271",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C272",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C273",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C274",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C275",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C276",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C278",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C279",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C280",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C281",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C282",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C283",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      },
+      {
+        "company_code": "C284",
+        "platform": "vimeo",
+        "field": "resolve_status",
+        "expectedRuntimeChange": true
+      }
+    ],
+    "allSeedOwnedFieldsExactExceptExpectedRuntimeChanges": true,
+    "sourceKeyOwnerMismatches": [],
+    "operationalInvariants": {
+      "locked_until": {
+        "null": 1754,
+        "nonNull": 0
+      },
+      "last_run_id": {
+        "null": 1754,
+        "nonNull": 0
+      },
+      "last_success_at": {
+        "null": 1754,
+        "nonNull": 0
+      },
+      "last_error_at": {
+        "null": 1754,
+        "nonNull": 0
+      },
+      "last_item_published_at": {
+        "null": 1754,
+        "nonNull": 0
+      },
+      "last_external_id": {
+        "null": 1754,
+        "nonNull": 0
+      },
+      "consecutive_failures": {
+        "zero": 1754,
+        "nonzero": 0
+      },
+      "items_count": {
+        "zero": 1754,
+        "nonzero": 0
+      },
+      "next_due_matches_created": {
+        "true": 1754,
+        "false": 0
+      }
+    },
+    "nonNullBackfillCursorCount": 0,
+    "unexpectedCursorCount": 0,
+    "unexpectedIdentifierCount": 0,
+    "operationalScope": "Fresh values match unchanged seed scheduling/default invariants. The manifest does not store historical timestamps; next_due_at=created_at, zero counters, absent locks/run/watermarks and no items/raw establish the current no-collection state. Vimeo resolution identifiers and optional endpoint-only cursor metadata are the reviewed runtime exception."
+  },
+  "logos": {
+    "manifest": 257,
+    "snapshotMediaAssets": 257,
+    "snapshotCompetitorPaths": 257,
+    "mismatchedOwnerPathKindSource": [],
+    "validSha256Format": 257,
+    "originalBatchPublicByteHashVerified": 257,
+    "hashScope": "The original batch receipt records live public-byte equality checks for all 257 copied objects. This audit validates manifest hash format and receipt count only: media_assets has no hash column and the recovery snapshot contains no object bytes, so asset bytes were not independently fetched or rehashed.",
+    "itemLinkScope": "The report recovery snapshot omitted item_id. A separate fresh direct dev MCP query supplied by the root verifies 257 logo assets and zero non-null item links.",
+    "itemLinkReadback": {
+      "path": "milestones/M02-seed-data/evidence/dev-logo-item-link-readback-20261018.json",
+      "sha256": "063e196fa40e1b50e490a530716ebc6aace37d19ec0ce1b47c4a1a13c10a1206",
+      "observedAtApproximate": "2026-10-18T01:48Z",
+      "logoAssets": 257,
+      "itemLinkedLogoAssets": 0
+    }
+  },
+  "originalBatch": {
+    "nativeCompletion": "failed",
+    "reportFailureCode": "M02_REPORT_FAILED",
+    "recoveredReportNativeCompletion": "success",
+    "historicalFailureRewritten": false,
+    "successfulDatabaseStagesReplayed": false
+  },
+  "pendingMarker": {
+    "path": "scripts/seed/out/dev-write-pending.json",
+    "runId": "e6a7e79c-4d48-45ef-9139-cd83db362f43",
+    "action": "accept-dev",
+    "sourceSha256": "135e6b24c632bb931b54025a09941963b777ada87ba25c58306a430756d32f66",
+    "sha256": "adeceda5abba85b9d53cb1039f98f074b19e8529e65b76fe457fb250a4ffe992",
+    "observedOutcome": "unreconciled",
+    "modifiedByAudit": false,
+    "releaseRecommendation": "All required database, ownership, Storage-path and recovery reconciliation checks pass. Root may reconcile and release only exact run e6a7e79c-4d48-45ef-9139-cd83db362f43 after verifying its current marker seal. Preserve original failed receipt and separate recovered report; do not rerun accept-dev."
+  },
+  "boundaries": {
+    "credentialFilesRead": false,
+    "credentialEnvironmentValuesRead": false,
+    "databaseConnectionsMade": true,
+    "providerOrStorageNetworkCallsMade": false,
+    "sourceArtifactsOrMarkersMutated": false,
+    "productionActionsTaken": false,
+    "databaseConnectionScope": "Read-only dev-scoped MCP get_project_url and curated SELECTs only; no password or application credential use.",
+    "databaseWritesMade": false
+  },
+  "storage": {
+    "readbackFile": "milestones/M02-seed-data/evidence/dev-storage-readback-20261018.json",
+    "sha256": "f97c15070f7516445a40d348d490f2f05c6f3018b387916a7b5b9aeb5aa4e288",
+    "observedAt": "2026-10-18 01:42:59 UTC",
+    "bucket": "media",
+    "public": true,
+    "objectCount": 257,
+    "objectPathsMatchLogoManifestExactly": true,
+    "missingManifestPaths": [],
+    "unmanifestedStoragePaths": [],
+    "bytes": 1560325,
+    "matchesMainBatchUploadedBytes": true,
+    "otherObjects": 0,
+    "items": 0,
+    "rawItems": 0,
+    "fixtureCompetitors": 0,
+    "originalVersions": [
+      "20261017172928",
+      "20261017172931",
+      "20261017172934",
+      "20261017172937",
+      "20261017172940",
+      "20261017172943",
+      "20261017172945"
+    ],
+    "scopeLimit": "Storage metadata establishes object paths, byte sizes and MIME metadata. This audit makes no additional public HTTP or byte-hash calls."
+  },
+  "archivedReceipts": [
+    "milestones/M02-seed-data/evidence/dev-main-batch-receipt-20261018.json",
+    "milestones/M02-seed-data/evidence/dev-report-recovery-20261018.json"
+  ],
+  "fullSeedReadback": {
+    "path": "scripts/seed/out/dev-full-seed-readback.json",
+    "sha256": "1acc8c0cf8e49300b3f223c4548c812af655281ca6f8b19f5c4ad80f64b23bcb",
+    "observedAt": "2026-10-18 01:45:41 UTC",
+    "source": "dev_scoped_supabase_mcp_readback",
+    "verifiedProjectUrl": "https://zmotjsbzhzjvpelxvxlf.supabase.co",
+    "pages": [
+      {
+        "kind": "competitors",
+        "offset": 0,
+        "limit": 100,
+        "count": 100
+      },
+      {
+        "kind": "competitors",
+        "offset": 100,
+        "limit": 100,
+        "count": 100
+      },
+      {
+        "kind": "competitors",
+        "offset": 200,
+        "limit": 100,
+        "count": 85
+      },
+      {
+        "kind": "accounts",
+        "offset": 0,
+        "limit": 250,
+        "count": 250
+      },
+      {
+        "kind": "accounts",
+        "offset": 250,
+        "limit": 250,
+        "count": 250
+      },
+      {
+        "kind": "accounts",
+        "offset": 500,
+        "limit": 250,
+        "count": 250
+      },
+      {
+        "kind": "accounts",
+        "offset": 750,
+        "limit": 250,
+        "count": 250
+      },
+      {
+        "kind": "accounts",
+        "offset": 1000,
+        "limit": 250,
+        "count": 250
+      },
+      {
+        "kind": "accounts",
+        "offset": 1250,
+        "limit": 250,
+        "count": 250
+      },
+      {
+        "kind": "accounts",
+        "offset": 1500,
+        "limit": 250,
+        "count": 250
+      },
+      {
+        "kind": "accounts",
+        "offset": 1750,
+        "limit": 250,
+        "count": 4
+      }
+    ],
+    "competitorColumns": [
+      "id",
+      "company_code",
+      "slug",
+      "name",
+      "markets",
+      "hq_country",
+      "categories",
+      "in_house",
+      "logo_url",
+      "website_url",
+      "priority_tier",
+      "pilot_rank",
+      "is_baseline",
+      "status",
+      "notes",
+      "source_sheet_row"
+    ],
+    "accountColumns": [
+      "id",
+      "competitor_id",
+      "platform",
+      "handle",
+      "handle_norm",
+      "url",
+      "cadence",
+      "status",
+      "resolve_status",
+      "backfill_from",
+      "backfill_status",
+      "external_id",
+      "uploads_playlist_id",
+      "last_error",
+      "backfill_cursor",
+      "locked_until",
+      "last_run_id",
+      "last_success_at",
+      "last_error_at",
+      "consecutive_failures",
+      "last_item_published_at",
+      "last_external_id",
+      "items_count",
+      "next_due_at",
+      "created_at",
+      "updated_at",
+      "next_due_matches_created"
+    ],
+    "paginationScope": "Read-only pages ordered by UUID; not claimed as one MVCC transaction. Complete unique ID parity, exact seed-field expectations and unchanged overlapping recovery values were checked.",
+    "enumArrayHandling": "markets was selected with to_json(markets) because MCP otherwise serializes this enum array as PostgreSQL array text. No data conversion was written to the database.",
+    "retrievalCorrection": "The first local result parser matched an instructional inline boundary tag and rejected every page; no partial acceptance was claimed. Corrected line-boundary parsing and fresh read-only pages produced this complete result."
+  },
+  "inputStabilityAfterFullReadback": {
+    "allStable": true,
+    "files": [
+      "dev-latest.json",
+      "dev-seed-manifest.json",
+      "dev-logo-manifest.json",
+      "dev-mcp-snapshot.json",
+      "dev-report-recovery.json",
+      "dev-write-pending.json"
+    ],
+    "scope": "All six hashes were independently rechecked after full-field readback and matched the recorded input seals. No input or pending marker was modified by this audit."
+  }
+}

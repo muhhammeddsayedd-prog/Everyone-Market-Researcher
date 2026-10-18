@@ -1,0 +1,109 @@
+{
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "originalRunId": "e6a7e79c-4d48-45ef-9139-cd83db362f43",
+  "decision": "preserve_successful_effects_and_continue_youtube_only",
+  "authorization": "Existing owner-approved bounded M02 dev packet; no production or merge authorization inferred.",
+  "originalBatch": {
+    "nativeExitCode": 1,
+    "nativeCompletion": "failed",
+    "failedStage": "report",
+    "receiptArchive": "milestones/M02-seed-data/evidence/dev-main-batch-receipt-20261018.json",
+    "receiptArchiveSha256": "0b087acfd3361ef76cd455e39f0c0dbe15131ee3fc9811141bd0129ea8fb7862"
+  },
+  "reconciliation": {
+    "checksPassed": 32,
+    "checksFailed": 0,
+    "path": "milestones/M02-seed-data/evidence/dev-reconciliation-20261018.json",
+    "sha256": "7d48710fe937336379ea08a61449f3b855b003fa769c52ff7c5dbe5aea3986a5"
+  },
+  "reportRecovery": {
+    "nativeExitCode": 0,
+    "nativeCompletion": "success",
+    "databaseOrProviderOrStorageOperations": false,
+    "evidence": "milestones/M02-seed-data/evidence/dev-report-recovery-20261018.json"
+  },
+  "permanentInitialBudgetRecord": {
+    "path": "scripts/seed/out/dev-initial-provider-admission.json",
+    "record": {
+      "version": 1,
+      "projectRef": "zmotjsbzhzjvpelxvxlf",
+      "target": "supabase:zmotjsbzhzjvpelxvxlf:postgres",
+      "action": "accept-dev",
+      "sourceSha256": "135e6b24c632bb931b54025a09941963b777ada87ba25c58306a430756d32f66",
+      "runId": "e6a7e79c-4d48-45ef-9139-cd83db362f43",
+      "startedAt": "2026-10-18T01:12:06.577Z",
+      "outcome": "recovered",
+      "originalOutcome": "unreconciled",
+      "initialBudgetConsumed": true,
+      "originalNativeExitCode": 1,
+      "originalNativeCompletion": "failed",
+      "recoveredAt": "2026-10-18T01:49:22Z",
+      "readbackEvidence": "milestones/M02-seed-data/evidence/dev-reconciliation-20261018.json",
+      "readbackEvidenceSha256": "7d48710fe937336379ea08a61449f3b855b003fa769c52ff7c5dbe5aea3986a5",
+      "originalReceiptArchive": "milestones/M02-seed-data/evidence/dev-main-batch-receipt-20261018.json",
+      "originalReceiptArchiveSha256": "0b087acfd3361ef76cd455e39f0c0dbe15131ee3fc9811141bd0129ea8fb7862"
+    }
+  },
+  "gateRelease": {
+    "checkedAt": "2026-10-18T01:50:06.5299793Z",
+    "originalPendingSha256": "adeceda5abba85b9d53cb1039f98f074b19e8529e65b76fe457fb250a4ffe992",
+    "exactOriginalRunReleased": "e6a7e79c-4d48-45ef-9139-cd83db362f43",
+    "globalWritePendingPresent": false,
+    "permanentBudgetRecordPresent": true,
+    "youtubeContinuationAdmissionPresent": false,
+    "originalChildAlive": false,
+    "allFourConsumedHandoffsAbsent": true,
+    "privateRead": false,
+    "hostedOperation": false
+  },
+  "localPreflight": {
+    "finalPersistedSchemaScopeAssertions": "pass_native_0",
+    "initialFailures": [
+      "inline tsx argument lost quotes in Windows cmd/pnpm boundary before module execution",
+      "file-based public checker initially resolved repository root one directory too high; corrected before successful pure assertions"
+    ],
+    "privateCredentialsConsumed": false,
+    "admissionOrHostedOperationsPerformed": false
+  },
+  "continuation": {
+    "action": "resolve",
+    "youtubeMaximumAttempts": 1,
+    "maximumAdditionalRequests": 129,
+    "priorConservativeYoutubeCeiling": 284,
+    "cumulativeConservativeYoutubeCeiling": 413,
+    "originalApprovedYoutubeCeiling": 516,
+    "cumulativeConservativeAllProviderCeiling": 1225,
+    "originalApprovedAllProviderCeiling": 1328,
+    "incrementalUsd": 0,
+    "requires": [
+      "existing emr-dev database password",
+      "existing YouTube-restricted key"
+    ],
+    "repeatsSeed": false,
+    "repeatsVimeo": false,
+    "repeatsWebsites": false,
+    "repeatsLogos": false
+  },
+  "verification": {
+    "independentReview": "clear_no_remaining_P0_P1_P2",
+    "providerAndReportTests": 70,
+    "budgetAndContinuationTests": 27,
+    "resolveOrchestrationTests": 11,
+    "windowsConsumerTests": 19,
+    "nodeDiagnosticTests": 14,
+    "windowsDiagnosticTests": 13,
+    "typecheck": "pass",
+    "focusedEslint": "pass",
+    "diffCheck": "pass",
+    "ci": "new_commit_pending_normal_PR_CI"
+  },
+  "excluded": [
+    "production seeding",
+    "PR merge",
+    "M03",
+    "collection",
+    "paid provider calls",
+    "n8n activation"
+  ]
+}

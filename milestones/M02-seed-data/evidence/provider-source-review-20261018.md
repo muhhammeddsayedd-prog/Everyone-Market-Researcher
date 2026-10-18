@@ -63,10 +63,28 @@ are distinct from a 404; only the latter marks the account invalid.
   query-string example. This preserves the same API operation and quota.
 
 A `/c/name` URL makes only the specified `forHandle=@name` attempt. A valid empty
-200 response is reported unresolved/invalid; an HTTP failure, absent `items`,
-malformed channel ID, missing uploads ID or multiple unexpected items is never
-converted into an empty success. Authentication, quota and retryable failure
-codes remain distinguishable for the orchestration layer to stop safely.
+200 response is reported unresolved/invalid. After the first dev batch, a narrow
+correction requests `pageInfo.totalResults`: omitted `items` can represent zero
+results only when an HTTP200 response explicitly reports total0, passes the
+strict schema and contains no contradictory/error fields. Missing items without
+that evidence, HTTP failures, malformed IDs, missing uploads IDs or unexpected
+multiple items remain blocked. The official response contract documents zero or
+more channels and totalResults; this is parser behavior, not proof of C142's
+original unrecorded response shape. Authentication, quota and retryable errors
+remain separate. The bounded continuation uses one attempt per lookup, including
+its known-account probe; no retry or content listing is introduced.
+
+## Report recovery follow-up
+
+The first populated dev report rejected a PostgreSQL bigint media ID because it
+expected a JavaScript number. The installed postgres.js driver returns int8 as a
+decimal string by default, consistent with its primary
+[Numbers, bigint, numeric documentation](https://github.com/porsager/postgres#numbers-bigint-numeric).
+The correction accepts safe integer numbers or lossless nonnegative decimal
+strings within PostgreSQL int8 range; malformed, imprecise and overflowing values
+still fail validation. It never coerces those strings through Number. The
+original native1 report failure is preserved; a separate local render from
+actual dev MCP readback succeeded without replaying any hosted stage.
 
 ## Network boundary
 

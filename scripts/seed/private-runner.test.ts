@@ -274,6 +274,33 @@ describe.runIf(process.platform === 'win32')('bounded Windows M02 credential con
     expect(creator).toMatch(/\$Kind -in @\('Vimeo','Providers','All'\)/);
     expect(creator).toMatch(/\$Kind -in @\('YouTube','Providers','All'\)/);
   });
+  it('requires the YouTube continuation handoff before consuming the database handoff', () => {
+    const test = fixture();
+    const result = spawnSync(
+      powershell,
+      ['-NoProfile', '-NonInteractive', '-File', test.file, '-Action', 'resolve'],
+      { env: test.env, encoding: 'utf8', timeout: 20_000, windowsHide: true },
+    );
+    expect(result.status).toBe(2);
+    expect(result.stdout).toContain('required encrypted handoff missing: emr-m02-youtube-api-key.dpapi');
+    expect(existsSync(test.handoff)).toBe(true);
+  });
+  it('excludes unrelated Vimeo handoffs from the YouTube-only presence check', () => {
+    const test = fixture();
+    const temp = dirname(test.handoff);
+    const vimeo = join(temp, 'emr-m02-vimeo-token.dpapi');
+    writeFileSync(vimeo, 'unreadable synthetic unrelated handoff');
+    writeFileSync(join(temp, 'emr-m02-youtube-api-key.dpapi'), 'presence-only synthetic handoff');
+    const result = spawnSync(
+      powershell,
+      ['-NoProfile', '-NonInteractive', '-File', test.file, '-Action', 'resolve', '-CheckOnly'],
+      { env: test.env, encoding: 'utf8', timeout: 20_000, windowsHide: true },
+    );
+    expect(result.status).toBe(0);
+    expect(result.stdout).not.toContain('emr-m02-vimeo-token.dpapi');
+    expect(existsSync(vimeo)).toBe(true);
+    expect(existsSync(test.handoff)).toBe(true);
+  });
   it('allows dev acceptance to finish independent database stages when storage is missing', () => {
     const test = fixture();
     const result = spawnSync(

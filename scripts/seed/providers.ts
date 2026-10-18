@@ -24,10 +24,39 @@ export interface ProviderDependencies {
   now?: () => number;
   signal?: AbortSignal;
   maxWaitMs?: number;
+  /** Default four total attempts; bounded continuations can allow exactly one. */
+  youtubeMaxAttempts?: number;
+  onYouTubeBadResponse?: (shape: YouTubeBadResponseShape) => void;
+}
+
+export type YouTubeBadResponseReason =
+  'invalid_schema' | 'missing_items_without_zero' | 'contradictory_count' | 'channel_mismatch';
+export interface YouTubeBadResponseShape {
+  reason: YouTubeBadResponseReason;
+  httpStatus: 200;
+  jsonParsed: boolean;
+  totalResults: number | null;
+  itemCount: number | null;
+  topLevelObject: boolean;
+  pageInfoPresent: boolean;
+  itemsPresent: boolean;
+  itemsArray: boolean;
+  idString: boolean;
+  idMatchesCurrentPattern: boolean;
+  contentDetailsObject: boolean;
+  relatedPlaylistsObject: boolean;
+  uploadsPresent: boolean;
+  uploadsString: boolean;
+  uploadsMatchesCurrentPattern: boolean;
+  unexpectedTopLevelFields: boolean;
+  unexpectedItemFields: boolean;
+  unexpectedContentDetailsFields: boolean;
+  unexpectedRelatedPlaylistFields: boolean;
 }
 
 const userAgent = 'everyone-market-radar-seed/0.1 (public account resolution)';
 const youtubeResponse = z.strictObject({
+  pageInfo: z.strictObject({ totalResults: z.number().int().nonnegative().max(1_000_000) }).optional(),
   items: z
     .array(
       z.strictObject({
@@ -39,7 +68,8 @@ const youtubeResponse = z.strictObject({
         }),
       }),
     )
-    .max(1),
+    .max(1)
+    .optional(),
 });
 const youtubeError = z.object({
   error: z.object({ errors: z.array(z.object({ reason: z.string() })).optional() }),
@@ -72,6 +102,49 @@ function tokenValid(token: string): boolean {
   return token.length > 0 && token.length <= 8192 && !/[\s\0]/.test(token);
 }
 
+function youTubeBadResponseShape(body: unknown, reason: YouTubeBadResponseReason): YouTubeBadResponseShape {
+  const record = (value: unknown): Record<string, unknown> | undefined =>
+    value !== null && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : undefined;
+  const own = (value: Record<string, unknown> | undefined, key: string) =>
+    value !== undefined && Object.hasOwn(value, key);
+  const extras = (value: Record<string, unknown> | undefined, allowed: string[]) =>
+    value !== undefined && Object.keys(value).some((key) => !allowed.includes(key));
+  const top = record(body);
+  const page = record(top?.pageInfo);
+  const items = Array.isArray(top?.items) ? (top.items as unknown[]) : undefined;
+  const first = record(items?.[0]);
+  const content = record(first?.contentDetails);
+  const related = record(content?.relatedPlaylists);
+  const total = page?.totalResults;
+  const validTotal =
+    typeof total === 'number' && Number.isSafeInteger(total) && total >= 0 && total <= 1_000_000;
+  return {
+    reason,
+    httpStatus: 200,
+    jsonParsed: body !== undefined,
+    totalResults: validTotal ? total : null,
+    itemCount: items?.length ?? null,
+    topLevelObject: top !== undefined,
+    pageInfoPresent: own(top, 'pageInfo'),
+    itemsPresent: own(top, 'items'),
+    itemsArray: items !== undefined,
+    idString: typeof first?.id === 'string',
+    idMatchesCurrentPattern: typeof first?.id === 'string' && /^UC[A-Za-z0-9_-]{22}$/.test(first.id),
+    contentDetailsObject: content !== undefined,
+    relatedPlaylistsObject: related !== undefined,
+    uploadsPresent: own(related, 'uploads'),
+    uploadsString: typeof related?.uploads === 'string',
+    uploadsMatchesCurrentPattern:
+      typeof related?.uploads === 'string' && /^UU[A-Za-z0-9_-]{22}$/.test(related.uploads),
+    unexpectedTopLevelFields: extras(top, ['pageInfo', 'items']),
+    unexpectedItemFields: extras(first, ['id', 'contentDetails']),
+    unexpectedContentDetailsFields: extras(content, ['relatedPlaylists']),
+    unexpectedRelatedPlaylistFields: extras(related, ['uploads']),
+  };
+}
+
 class Limit {
   private active = 0;
   private waiting: Array<() => void> = [];
@@ -99,8 +172,21 @@ export function createProviderResolvers(dependencies: ProviderDependencies = {})
   const maxWaitMs = dependencies.maxWaitMs ?? 120_000;
   if (!Number.isInteger(maxWaitMs) || maxWaitMs < 0 || maxWaitMs > 300_000)
     throw new Error('invalid_wait_budget');
+  const youtubeMaxAttempts = dependencies.youtubeMaxAttempts ?? 4;
+  if (!Number.isInteger(youtubeMaxAttempts) || youtubeMaxAttempts < 1 || youtubeMaxAttempts > 4)
+    throw new Error('invalid_youtube_attempt_budget');
   const vimeoLimit = new Limit(2);
   let vimeoBlockedUntil = 0;
+
+  function badYouTubeResponse(body: unknown, reason: YouTubeBadResponseReason): ResolutionPatch {
+    // The callback gets a closed shape, never payload values, IDs, URLs or errors.
+    try {
+      dependencies.onYouTubeBadResponse?.(youTubeBadResponseShape(body, reason));
+    } catch {
+      /* Diagnostics cannot change the account outcome or expose callback errors. */
+    }
+    return fail('yt_bad_response');
+  }
 
   async function wait(ms: number): Promise<boolean> {
     if (!Number.isFinite(ms) || ms < 0 || ms > maxWaitMs || signal?.aborted) return false;
@@ -220,10 +306,13 @@ export function createProviderResolvers(dependencies: ProviderDependencies = {})
       return fail('yt_invalid_format', true);
     const url = new URL('https://www.googleapis.com/youtube/v3/channels');
     url.searchParams.set('part', 'id,contentDetails,snippet');
-    url.searchParams.set('fields', 'items(id,contentDetails/relatedPlaylists/uploads)');
+    url.searchParams.set(
+      'fields',
+      'pageInfo(totalResults),items(id,contentDetails/relatedPlaylists/uploads)',
+    );
     const filter = input.kind === 'channel' ? 'id' : input.kind === 'user' ? 'forUsername' : 'forHandle';
     url.searchParams.set(filter, filter === 'forHandle' ? `@${input.value.replace(/^@/, '')}` : input.value);
-    for (let attempt = 0; attempt <= 3; attempt += 1) {
+    for (let attempt = 0; attempt < youtubeMaxAttempts; attempt += 1) {
       if (signal?.aborted) return fail('yt_aborted');
       let response: NetworkResponse;
       try {
@@ -237,13 +326,16 @@ export function createProviderResolvers(dependencies: ProviderDependencies = {})
         });
       } catch (error) {
         const code = networkCode(error);
-        if (attempt < 3 && ['network', 'timeout'].includes(code)) {
+        if (attempt + 1 < youtubeMaxAttempts && ['network', 'timeout'].includes(code)) {
           if (!(await wait(1_000 * (attempt + 1)))) return fail('yt_aborted');
           continue;
         }
         return fail(`yt_${code}`);
       }
-      if ((response.status === 429 || (response.status >= 500 && response.status <= 599)) && attempt < 3) {
+      if (
+        (response.status === 429 || (response.status >= 500 && response.status <= 599)) &&
+        attempt + 1 < youtubeMaxAttempts
+      ) {
         const retryAfter = response.headers.get('retry-after');
         const seconds = retryAfter ? Number(retryAfter) : Number.NaN;
         const retryMs = Number.isFinite(seconds) ? Math.max(1_000, seconds * 1_000) : 1_000 * (attempt + 1);
@@ -263,11 +355,20 @@ export function createProviderResolvers(dependencies: ProviderDependencies = {})
       }
       if (response.status === 429) return fail('yt_rate_limited');
       if (response.status !== 200) return fail(`yt_http_${response.status}`);
-      const parsed = youtubeResponse.safeParse(json(response));
-      if (!parsed.success) return fail('yt_bad_response');
-      const channel = parsed.data.items[0];
+      const body = json(response);
+      const parsed = youtubeResponse.safeParse(body);
+      if (!parsed.success) return badYouTubeResponse(body, 'invalid_schema');
+      const totalResults = parsed.data.pageInfo?.totalResults;
+      const items = parsed.data.items;
+      // Missing projection fields are not an empty success without explicit zero evidence.
+      if (items === undefined && totalResults !== 0)
+        return badYouTubeResponse(body, 'missing_items_without_zero');
+      if (items !== undefined && totalResults !== undefined && totalResults !== items.length)
+        return badYouTubeResponse(body, 'contradictory_count');
+      const channel = items?.[0];
       if (!channel) return fail(input.kind === 'c' ? 'yt_custom_url_unresolved' : 'yt_not_found', true);
-      if (input.kind === 'channel' && channel.id !== input.value) return fail('yt_bad_response');
+      if (input.kind === 'channel' && channel.id !== input.value)
+        return badYouTubeResponse(body, 'channel_mismatch');
       return {
         resolve_status: 'resolved',
         external_id: channel.id,

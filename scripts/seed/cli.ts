@@ -1,6 +1,7 @@
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { randomUUID } from 'node:crypto';
 import postgres, { type Sql } from 'postgres';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
@@ -24,6 +25,14 @@ import { restrictedStorageFetch, storageHooks } from './storage';
 import { scopedAccounts, scopedLogos } from './scope';
 import { databaseFailure } from './database-failure';
 import { validateDevCa } from './database-ca';
+import { createProviderResolvers, type YouTubeBadResponseShape } from './providers';
+import { assertYouTubeContinuationScope, youtubeContinuationBudget } from './youtube-continuation';
+import {
+  admitProviderBudgetAction,
+  approvedOriginalRunId,
+  assertProviderBudgetAction,
+  providerBudgetEvidencePaths,
+} from './provider-budget';
 
 declare const EMR_REPO_ROOT: string | undefined;
 const root =
@@ -127,6 +136,36 @@ async function main() {
         remoteLogos: plan.competitors.filter((row) => row.logo_url).length,
       },
     );
+  // Capture the prior manifest at entry. A missing recovery record must never
+  // reopen the already spent initial budget or repeat successful stages.
+  const initialAdmissionPath = join(out, 'dev-initial-provider-admission.json');
+  const continuationAdmissionPath = join(out, 'dev-youtube-continuation-admission.json');
+  const budgetContext = {
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    target: 'supabase:zmotjsbzhzjvpelxvxlf:postgres',
+    sourceSha256: sources.sourceSha256,
+    seedManifestPresent: (await readOptionalJson(join(out, 'dev-seed-manifest.json'))) !== undefined,
+    initialAdmission: await readOptionalJson(initialAdmissionPath),
+    originalRunId: approvedOriginalRunId,
+    ...(command.action === 'resolve'
+      ? {
+          recoveryProof: {
+            readbackEvidenceSha256: sha256(
+              await readFile(join(root, providerBudgetEvidencePaths.readbackEvidence)),
+            ),
+            originalReceiptArchiveSha256: sha256(
+              await readFile(join(root, providerBudgetEvidencePaths.originalReceiptArchive)),
+            ),
+          },
+        }
+      : {}),
+  };
+  const budgetMode = assertProviderBudgetAction(command.action, budgetContext);
+  const admissionOptions = {
+    initialAdmissionPath,
+    continuationAdmissionPath,
+    runId: randomUUID(),
+  };
   const ca = validateDevCa(
     await readFile(join(root, 'scripts/seed/certs/supabase-root-2021.crt')),
     await readOptionalJson(join(root, 'scripts/seed/certs/supabase-root-2021.json')),
@@ -194,6 +233,8 @@ async function main() {
           sourceSha256: sources.sourceSha256,
         })
       : undefined;
+    if (budgetMode === 'initial_provider')
+      await admitProviderBudgetAction(command.action, budgetContext, admissionOptions);
     const seed = async () => {
       const pending = join(out, 'dev-seed-pending.json');
       if (await readOptionalJson(pending)) throw new SeedRuntimeError('M02_SEED_RECONCILIATION_REQUIRED');
@@ -240,7 +281,25 @@ async function main() {
     if (['resolve', 'accept-dev'].includes(command.action))
       await stage(
         'resolution',
-        () => managedAccounts().then((rows) => resolveAccounts(sql, rows, credentials, { signal })),
+        async () => {
+          const rows = await managedAccounts();
+          const continuation = command.action === 'resolve';
+          if (continuation) {
+            assertYouTubeContinuationScope(rows);
+            await admitProviderBudgetAction(command.action, budgetContext, admissionOptions);
+          }
+          const badResponseShapes: YouTubeBadResponseShape[] = [];
+          const maximumAttempts = continuation ? youtubeContinuationBudget.youtubeMaximumAttempts : 4;
+          const resolvers = createProviderResolvers({
+            signal,
+            youtubeMaxAttempts: maximumAttempts,
+            onYouTubeBadResponse: (shape) => {
+              if (badResponseShapes.length < 4) badResponseShapes.push(shape);
+            },
+          });
+          const result = await resolveAccounts(sql, rows, credentials, { signal, resolvers });
+          return { ...result, youtubeMaximumAttempts: maximumAttempts, badResponseShapes };
+        },
         (result) => result.blocked.length > 0,
       );
     if (['websites', 'accept-dev'].includes(command.action))

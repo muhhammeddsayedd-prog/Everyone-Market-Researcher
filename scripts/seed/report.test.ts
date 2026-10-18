@@ -7,6 +7,7 @@ import {
   type ReportCompetitor,
   type ReportSnapshot,
 } from './report';
+import { validateMcpReportEnvelope } from './render-mcp-report';
 
 const competitor = (changes: Partial<ReportCompetitor> = {}): ReportCompetitor => ({
   id: '00000000-0000-4000-8000-000000000001',
@@ -54,6 +55,21 @@ const snapshot = (changes: Partial<ReportSnapshot> = {}): ReportSnapshot => ({
 const options = { environment: 'local' as const, target: 'fixture-only', observedAt: '2026-10-18T00:00:00Z' };
 
 describe('M02 snapshot report', () => {
+  it.each([
+    { projectRef: 'hkiafqrcxaafdbcvjlzv', source: 'dev_scoped_supabase_mcp_readback' },
+    { projectRef: 'zmotjsbzhzjvpelxvxlf', source: 'local_fixture' },
+  ])('rejects recovery metadata from another target or source', ({ projectRef, source }) => {
+    expect(() =>
+      validateMcpReportEnvelope({
+        environment: 'dev',
+        projectRef,
+        source,
+        observedAt: options.observedAt,
+        snapshot: snapshot(),
+        issues: [{}, {}, {}],
+      }),
+    ).toThrow('M02_MCP_REPORT_ENVELOPE_REJECTED');
+  });
   it('groups tiers, platform statuses, resolution/backfill and actual pilot denominators', () => {
     const result = buildReport(
       snapshot({
@@ -186,6 +202,30 @@ describe('M02 snapshot report', () => {
     expect(result.reviewItems.map((row) => row.reason)).toContain('missing_logo_media_asset');
     expect(result.summaryMarkdown).toContain('Public logo HTTP visibility requires a separate live check');
   });
+  it('accepts the lossless decimal-string bigint IDs returned by the native PostgreSQL adapter', () => {
+    const input = snapshot();
+    const native = { ...input, mediaAssets: input.mediaAssets.map((asset) => ({ ...asset, id: '1' })) };
+    const result = buildReport(native, options);
+    expect(result.counts.logos.mediaMetadataMissing).toBe(0);
+    expect(result.counts.logos.baselineCopied).toBe(1);
+  });
+  it('keeps maximum PostgreSQL bigint identifiers lossless instead of converting them to Number', () => {
+    const input = snapshot();
+    const native = {
+      ...input,
+      mediaAssets: input.mediaAssets.map((asset) => ({ ...asset, id: '9223372036854775807' })),
+    };
+    expect(buildReport(native, options).counts.logos.mediaMetadataMissing).toBe(0);
+    expect(native.mediaAssets[0]?.id).toBe('9223372036854775807');
+  });
+  it.each(['-1', '1.2', '1e3', '9223372036854775808', 'not-an-id', Number.MAX_SAFE_INTEGER + 1])(
+    'rejects malformed, overflow or imprecise media identifiers: %s',
+    (id) => {
+      const input = snapshot();
+      const native = { ...input, mediaAssets: input.mediaAssets.map((asset) => ({ ...asset, id })) };
+      expect(() => buildReport(native, options)).toThrow('Invalid report snapshot');
+    },
+  );
 
   it('finds cross-owner duplicates using the actual case-insensitive key without merging owners', () => {
     const other = competitor({

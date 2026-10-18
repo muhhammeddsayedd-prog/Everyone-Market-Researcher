@@ -11,6 +11,14 @@ session pooler `aws-1-eu-central-1.pooler.supabase.com:5432`, database `postgres
 login `postgres.zmotjsbzhzjvpelxvxlf` and verified TLS. The URI contains no password.
 Restricted `n8n_writer`/`api_agent` credentials cannot perform this owner seed.
 
+The initial approved dev batch has already run. **Do not run `accept-dev`, seed,
+websites or logos again.** Its successful effects remain in dev; its original
+native1 report failure and the separate successful report recovery are retained
+in the milestone evidence. All four original handoffs were consumed/deleted.
+The remaining continuation is `resolve` for YouTube only, after actual-state
+reconciliation and review. It requires exactly Database and YouTube handoffs;
+Vimeo and Storage handoffs are excluded from that consumer action.
+
 TLS uses the public Supabase root certificate in `certs/supabase-root-2021.crt`,
 with its official source and public SHA256 in `certs/supabase-root-2021.json`.
 Both files are included in the source seal. This CA is scoped to the dev database
@@ -187,7 +195,7 @@ owned logos are preserved. The narrower consumer actions are:
 | ---------- | ---------------------------------------------------------- | --------------------------------------- |
 | `seed`     | Seed and verify no-change second run                       | Dev database                            |
 | `probe`    | Public known-account authorization probes; no DB writes    | Dev database; present provider handoffs |
-| `resolve`  | Probe then resolve eligible Vimeo/YouTube accounts         | Dev database; present provider handoffs |
+| `resolve`  | One reviewed post-batch YouTube-only continuation          | Dev database; required YouTube handoff  |
 | `websites` | Website reachability and format-only IG/LinkedIn checks    | Dev database                            |
 | `logos`    | Create-only logo upload, metadata and public byte readback | Dev database; dev Storage key           |
 | `report`   | Read-only hosted snapshot report                           | Dev database                            |
@@ -195,6 +203,47 @@ owned logos are preserved. The narrower consumer actions are:
 All non-report hosted actions remain packet-gated. The runtime rejects prod even
 if `--target prod` is supplied. No production key or password belongs in any M02
 dev handoff.
+
+### Remaining YouTube continuation
+
+The original consumption/recovery record is permanent. An existing seed
+manifest independently prevents an alternate action from replaying the initial
+batch, even if that record is missing. `resolve` requires the exact reviewed
+source/target/run-bound recovery and evidence hashes. The exclusive
+`dev-youtube-continuation-admission.json` is also permanent after success or
+failure: another invocation cannot silently reuse the same budget. Do not remove
+either record to retry.
+
+The continuation verifies all202 Vimeo rows are already resolved and the managed
+YouTube population is128. It allows one attempt per lookup, including the known
+account probe: at most129 additional requests, USD0. The conservative combined
+YouTube ceiling is413 units versus the original516-unit allowance; all-provider
+ceiling1,225 requests versus1,328. These are bounds, not measured request counts.
+It does not run the seed, website or logo stages. Three original legacy invalid
+YouTube URLs stay for MA-09; no fixture or guessed handle is added.
+
+Only after the correction is reviewed, built and source-sealed, replenish the
+two consumed inputs from the separately saved originals in Windows PowerShell:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\seed\windows\New-M02DevHandoff.ps1' -Kind Database
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\seed\windows\New-M02DevHandoff.ps1' -Kind YouTube
+```
+
+Use the EXISTING emr-dev database password at the first hidden prompt and the
+existing YouTube-restricted key at the second. Expected final lines contain
+`M02 encrypted dev handoffs saved: Database.` and
+`M02 encrypted dev handoffs saved: YouTube.` Close that PowerShell window and
+reply `M02 Database and YouTube ready`. Do not send secret values or file contents.
+No reset, Vimeo/Storage handoff, production credential or new batch approval is
+needed. File presence still does not prove authentication.
+
+Codex then runs only the existing consumer `-Action resolve -CheckOnly`, followed
+by one `-Action resolve` invocation after all gates pass. On any failure, reconcile
+actual state before deciding what remains; the retained admission record prevents
+a blind repeat. The diagnostic consumer pinned to the original child7492 has
+expired and must not be relaxed or reused; its attempted admission made no API
+call and read no credential.
 
 Expected completion prints the native exit code and the sanitized receipt path
 `scripts/seed/out/dev-latest.json`, followed by child/temporary-file cleanup state.

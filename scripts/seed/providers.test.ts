@@ -198,6 +198,9 @@ describe('YouTube one-unit channels lookup', () => {
       const url = new URL(request.mock.calls[0]![0]);
       expect(url.pathname).toBe('/youtube/v3/channels');
       expect(url.searchParams.get(filter)).toBe(expected);
+      expect(url.searchParams.get('fields')).toBe(
+        'pageInfo(totalResults),items(id,contentDetails/relatedPlaylists/uploads)',
+      );
       expect(url.searchParams.has('key')).toBe(false);
       expect(request.mock.calls[0]?.[1]?.headers).toMatchObject({ 'x-goog-api-key': 'TEST_ONLY_KEY' });
     },
@@ -225,6 +228,151 @@ describe('YouTube one-unit channels lookup', () => {
         { resolve_status: 'failed', last_error },
       );
     }
+  });
+
+  it('recognizes an explicit HTTP200 zero-total projection without items as not-found', async () => {
+    // A documented zero-result projection case; C142's original response shape
+    // remains unestablished because its bounded live diagnostic never ran.
+    const { resolveYouTube } = createProviderResolvers({
+      request: async () => jsonReply({ pageInfo: { totalResults: 0 } }),
+    });
+    expect(await resolveYouTube({ kind: 'handle', value: 'Gearbox-channel' }, 'TEST_ONLY_KEY')).toEqual({
+      resolve_status: 'failed',
+      status: 'invalid',
+      last_error: 'yt_not_found',
+    });
+  });
+
+  it.each([
+    {},
+    { pageInfo: { totalResults: 1 } },
+    { pageInfo: { totalResults: -1 } },
+    { pageInfo: { totalResults: '0' } },
+    { pageInfo: { totalResults: 0 }, items: null },
+    { pageInfo: { totalResults: 0 }, items: '[]' },
+    { pageInfo: { totalResults: 0 }, items: [youtubeChannel.items[0]] },
+    { pageInfo: { totalResults: 1 }, items: [] },
+    { pageInfo: { totalResults: 0 }, error: { code: 403 } },
+    { error: { code: 403 } },
+  ])('keeps an unproven or contradictory zero-result projection blocked', async (body) => {
+    const { resolveYouTube } = createProviderResolvers({ request: async () => jsonReply(body) });
+    expect(await resolveYouTube({ kind: 'handle', value: 'Gearbox-channel' }, 'TEST_ONLY_KEY')).toEqual({
+      resolve_status: 'failed',
+      last_error: 'yt_bad_response',
+    });
+  });
+
+  it('accepts consistent pageInfo with one valid item or an explicit empty list', async () => {
+    const success = createProviderResolvers({
+      request: async () => jsonReply({ pageInfo: { totalResults: 1 }, ...youtubeChannel }),
+    });
+    expect(
+      (await success.resolveYouTube({ kind: 'handle', value: 'teststudio' }, 'TEST_ONLY_KEY')).resolve_status,
+    ).toBe('resolved');
+    const empty = createProviderResolvers({
+      request: async () => jsonReply({ pageInfo: { totalResults: 0 }, items: [] }),
+    });
+    expect(await empty.resolveYouTube({ kind: 'c', value: 'missing' }, 'TEST_ONLY_KEY')).toEqual({
+      resolve_status: 'failed',
+      status: 'invalid',
+      last_error: 'yt_custom_url_unresolved',
+    });
+  });
+
+  it.each([0, 5, 1.5, Number.NaN])('rejects invalid YouTube attempt budget %s', (youtubeMaxAttempts) => {
+    expect(() => createProviderResolvers({ youtubeMaxAttempts })).toThrow('invalid_youtube_attempt_budget');
+  });
+
+  it('honors a one-attempt YouTube continuation budget without retrying or waiting', async () => {
+    const request = vi.fn<SafeRequest>().mockResolvedValue(jsonReply({}, 503));
+    const sleep = vi.fn(async () => undefined);
+    const { resolveYouTube } = createProviderResolvers({ request, sleep, youtubeMaxAttempts: 1 });
+    expect(await resolveYouTube({ kind: 'handle', value: 'teststudio' }, 'TEST_ONLY_KEY')).toEqual({
+      resolve_status: 'failed',
+      last_error: 'yt_http_503',
+    });
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
+  });
+
+  it('also bounds one-attempt continuations for rate-limit and transport failures', async () => {
+    for (const transportFailure of [false, true]) {
+      const request = vi.fn<SafeRequest>(async () => {
+        if (transportFailure) throw new Error('withheld transport details');
+        return jsonReply({}, 429);
+      });
+      const sleep = vi.fn(async () => undefined);
+      const { resolveYouTube } = createProviderResolvers({ request, sleep, youtubeMaxAttempts: 1 });
+      expect(
+        (await resolveYouTube({ kind: 'handle', value: 'teststudio' }, 'TEST_ONLY_KEY')).last_error,
+      ).toBe(transportFailure ? 'yt_network' : 'yt_rate_limited');
+      expect(request).toHaveBeenCalledTimes(1);
+      expect(sleep).not.toHaveBeenCalled();
+    }
+  });
+
+  it('retains the default four-attempt budget for YouTube transient failures', async () => {
+    const request = vi.fn<SafeRequest>().mockResolvedValue(jsonReply({}, 503));
+    const { resolveYouTube } = createProviderResolvers({ request, sleep: async () => undefined });
+    await resolveYouTube({ kind: 'handle', value: 'teststudio' }, 'TEST_ONLY_KEY');
+    expect(request).toHaveBeenCalledTimes(4);
+  });
+
+  it('emits only fixed safe shape telemetry on a bad successful response', async () => {
+    const onYouTubeBadResponse = vi.fn();
+    const { resolveYouTube } = createProviderResolvers({
+      request: async () =>
+        jsonReply({
+          pageInfo: { totalResults: 1 },
+          items: [
+            {
+              id: youtubeChannel.items[0]!.id,
+              contentDetails: { relatedPlaylists: { uploads: 'UNPROVEN_OPAQUE_ID' } },
+              rawSecret: 'TEST_ONLY_KEY',
+            },
+          ],
+        }),
+      onYouTubeBadResponse,
+    });
+    expect((await resolveYouTube({ kind: 'handle', value: 'teststudio' }, 'TEST_ONLY_KEY')).last_error).toBe(
+      'yt_bad_response',
+    );
+    expect(onYouTubeBadResponse).toHaveBeenCalledTimes(1);
+    const telemetry = onYouTubeBadResponse.mock.calls[0]?.[0];
+    expect(telemetry).toMatchObject({
+      reason: 'invalid_schema',
+      httpStatus: 200,
+      jsonParsed: true,
+      totalResults: 1,
+      itemCount: 1,
+      uploadsString: true,
+      uploadsMatchesCurrentPattern: false,
+      unexpectedItemFields: true,
+    });
+    const rendered = JSON.stringify(telemetry);
+    expect(rendered).not.toContain('TEST_ONLY_KEY');
+    expect(rendered).not.toContain(youtubeChannel.items[0]!.id);
+    expect(rendered).not.toContain('UNPROVEN_OPAQUE_ID');
+    expect(rendered).not.toContain('rawSecret');
+  });
+
+  it('never turns a non200 zero-looking payload into not-found and isolates telemetry callback failures', async () => {
+    const forbidden = createProviderResolvers({
+      request: async () => jsonReply({ pageInfo: { totalResults: 0 } }, 403),
+    });
+    expect(await forbidden.resolveYouTube({ kind: 'handle', value: 'teststudio' }, 'TEST_ONLY_KEY')).toEqual({
+      resolve_status: 'failed',
+      last_error: 'yt_forbidden',
+    });
+    const callbackFailure = createProviderResolvers({
+      request: async () => jsonReply({}),
+      onYouTubeBadResponse: () => {
+        throw new Error('withheld callback value');
+      },
+    });
+    expect(
+      await callbackFailure.resolveYouTube({ kind: 'handle', value: 'teststudio' }, 'TEST_ONLY_KEY'),
+    ).toEqual({ resolve_status: 'failed', last_error: 'yt_bad_response' });
   });
 
   it('requires channel and uploads IDs and rejects unexpectedly multiple or malformed items', async () => {

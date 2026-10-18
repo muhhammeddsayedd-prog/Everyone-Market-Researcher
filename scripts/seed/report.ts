@@ -34,8 +34,11 @@ export type ReportAccount = Pick<
 >;
 export type ReportMediaAsset = Pick<
   Tables['media_assets']['Row'],
-  'id' | 'competitor_id' | 'kind' | 'storage_path' | 'source_url'
->;
+  'competitor_id' | 'kind' | 'storage_path' | 'source_url'
+> & {
+  /** postgres.js preserves PostgreSQL bigint IDs as decimal strings by default. */
+  id: number | string;
+};
 export interface ReportSnapshot {
   competitors: readonly ReportCompetitor[];
   accounts: readonly ReportAccount[];
@@ -90,6 +93,13 @@ export interface ReportCounts {
 const text = z.string().max(8192);
 const id = z.string().uuid();
 const nullableText = text.nullable();
+const mediaAssetId = z.union([
+  z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  z
+    .string()
+    .regex(/^(?:0|[1-9]\d{0,18})$/)
+    .refine((value) => value.length < 19 || (value.length === 19 && value <= '9223372036854775807')),
+]);
 const snapshotSchema = z.object({
   competitors: z.array(
     z.object({
@@ -134,7 +144,7 @@ const snapshotSchema = z.object({
   ),
   mediaAssets: z.array(
     z.object({
-      id: z.number().int().nonnegative(),
+      id: mediaAssetId,
       competitor_id: id.nullable(),
       kind: text,
       storage_path: text,
