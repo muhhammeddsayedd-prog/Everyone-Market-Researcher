@@ -36,15 +36,22 @@ Where every secret lives, who creates it, and which milestone needs it. **Never 
 | `N8N_WEBHOOK_SECRET` | **no** | header value the app sends to the WF-60 onboarding webhook; WF-60 verifies it (credential `EMR webhook in · App`) | M11 / M15 |
 
 ### n8n Cloud (credentials + variables)
+
+Credential names below are logical labels. M03 reuses the owner's existing
+credentials by actual ID and supported type, including native `apifyApi` and
+`openAiApi` through HTTP Request Predefined Credential Type. Do not rename,
+duplicate or change shared credentials. Actual mappings and separately observed
+saved-state/endpoint results are in M03's credential evidence.
+
 | Credential / variable | Type | Notes |
 |---|---|---|
 | `Supabase Postgres · n8n_writer · dev` / `· prod` | Postgres | Host: Supavisor **session** pooler (IPv4), port 5432, user `n8n_writer.<project-ref>`, SSL required |
-| `Apify API` | Apify API (community node) or Header Auth | API token |
+| `Apify API` | Native `apifyApi` via HTTP Predefined Credential Type, or a compatible existing Header Auth | Reuse actual ID; never extract or duplicate its token |
 | `OpenAI API` | OpenAI / Header Auth | project key; models via `OPENAI_MODEL_EXTRACT`, `OPENAI_MODEL_REASON`, `OPENAI_MODEL_BRIEF`, `OPENAI_MODEL_EMBED` (n8n Variables or CONFIG node) |
 | `SerpAPI` | Query/Header auth | |
 | `Firecrawl` | Header Auth (`Authorization: Bearer`) | |
 | `Vimeo token` | Header Auth (`Authorization: bearer <token>`) | |
-| `YouTube Data API key` | Header Auth (`X-Goog-Api-Key`) | key restricted to YouTube Data API v3; Allowed Domains `www.googleapis.com`; never put the key in a URL |
+| `YouTube Data API key` | Header Auth (`X-Goog-Api-Key`) | key restricted to YouTube Data API v3; fixed `www.googleapis.com` requests/no redirects, preserve shared domain settings; never put the key in a URL |
 | `Email (Resend)` | Resend Header Auth (or SMTP) | |
 | `EMR internal secret` | Header Auth | `x-emr-secret: <INTERNAL_WEBHOOK_SECRET>` for calls to Vercel internal routes and revalidate |
 | `EMR webhook in · Apify` / `EMR webhook in · App` | Header Auth (webhook nodes) | verify inbound calls to WF-19 / WF-60 |

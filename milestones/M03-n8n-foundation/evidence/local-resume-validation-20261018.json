@@ -1,0 +1,95 @@
+{
+  "observedAt": "2026-10-18T05:46:25.388172+00:00",
+  "scope": "Targeted local checks; Cloud, hosted SQL, provider GET and CI receipts remain separate.",
+  "sourceHead": "954d9efe489c97b1b8f3bd8343d4a78d6a1fb2a8",
+  "checks": [
+    {
+      "command": "node --test n8n/foundation/*.test.mjs scripts/n8n/inventory.test.mjs scripts/n8n/check-dns.test.mjs",
+      "passed": 71,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "checkpoint": "Before later exact-page adapter; these sources unchanged afterwards"
+    },
+    {
+      "command": "pnpm.cmd exec vitest run packages/shared/src/n8n-bindings.test.ts packages/shared/src/n8n-apify-contracts.test.ts",
+      "passed": 42,
+      "failed": 0,
+      "nativeExit": 0
+    },
+    {
+      "command": "pnpm.cmd exec vitest run --project normalizers n8n/normalizers/normalizers.test.ts n8n/normalizers/smoke-website-m03.test.ts",
+      "passed": 124,
+      "failed": 0,
+      "nativeExit": 0,
+      "observedAtCairo": "2026-10-18T08:44:35+03:00"
+    },
+    {
+      "command": "pnpm.cmd typecheck",
+      "nativeExit": 0,
+      "checkpoint": "After exact-page change; shared/scripts/web and root TypeScript"
+    },
+    {
+      "command": "pnpm.cmd lint",
+      "nativeExit": 0,
+      "checkpoint": "Before later exact-page change"
+    },
+    {
+      "command": "pnpm.cmd exec eslint n8n/normalizers/smoke_website_stub.js n8n/normalizers/smoke_website_m03.js n8n/normalizers/smoke-website-m03.test.ts",
+      "nativeExit": 0,
+      "checkpoint": "Later adapter sources"
+    },
+    {
+      "command": "git diff --check",
+      "nativeExit": 0
+    },
+    {
+      "command": "node scripts/check-secrets.mjs",
+      "scannedTrackedFiles": 895,
+      "violations": 0,
+      "nativeExit": 0,
+      "checkpoint": "Before evidence staging; final index scan follows"
+    }
+  ],
+  "formatBoundary": "Normal formatting covers source/root progress. Native exports and milestone evidence are excluded by existing rules. Exploratory forced formatting check reported style-only warnings in excluded artifacts; historical/raw hash-sealed bytes retained.",
+  "independentReviews": [
+    "local-m03-migration-classification-review-20261018.md",
+    "local-m03-inventory-review-20261018.md",
+    "local-apify-preflight-review-20261018.md",
+    "local-m03-exact-normalizer-review-20261018.md"
+  ],
+  "finalRecordReview": "Independent review verified runtime and credential export seals, migration/current-budget/provider/API boundaries. Corrected stale API credential-read provenance, initial-capability wording and historical handoff label.",
+  "retainedLocalSqlEvidence": {
+    "assertions": 379,
+    "files": 11,
+    "rerunThisContinuation": false,
+    "boundary": "Unchanged SQL; local/CI receipts preserved. Hosted metadata/advisors are not hosted pgTAP."
+  },
+  "cleanupRecheck": {
+    "observedAt": "2026-10-18T05:45:10.7021993Z",
+    "devMigrationHandoffPresent": false,
+    "n8nApiHandoffPresent": false,
+    "successfulScratchPresent": false,
+    "successfulAdmissionPresent": true,
+    "childCompletion": "Consumers recorded childrenClosed true. No credential-bearing child remains from these consumers; owner originals retained."
+  },
+  "unchangedMigrationFiles": {
+    "supabase/migrations/20261017172928_extensions_schemas_roles.sql": "478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d",
+    "supabase/migrations/20261017172931_core_tables.sql": "4f1be3f6191885add916b164975ba10a8697069a0373a05df4e03fa53ea7cba3",
+    "supabase/migrations/20261017172934_auth_rls_views.sql": "8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9",
+    "supabase/migrations/20261017172937_rpc_pipeline_core.sql": "978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803",
+    "supabase/migrations/20261017172940_rpc_app_search.sql": "6111c5291e9c305e3e713180c0441ff5ffbf52b3b88f589d5d16fee55769171c",
+    "supabase/migrations/20261017172943_storage_cron.sql": "859466fadfd940445ffe4b457e7250a179c93731e1f34736a629fe20df6e9c68",
+    "supabase/migrations/20261017172945_seed_taxonomies.sql": "af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234",
+    "supabase/migrations/20261018034220_rpc_n8n_foundation.sql": "457ad4351b08c47b996ae67062ed701efb7d5ef63ea7658d20931f2d5dc5d3fd",
+    "supabase/migrations/20261018035417_price_book_plan.sql": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd"
+  },
+  "acceptanceBoundary": "Exact two dev migrations, schema/advisors/type coverage, four provider GETs and pure Code checks have separate actual receipts. Strict native writer login and full foundation acceptance remain open.",
+  "productionChanges": false,
+  "recurringActivation": false,
+  "actorStarts": 0,
+  "modelCalls": 0,
+  "externalNotifications": 0,
+  "merge": false,
+  "M04Started": false
+}

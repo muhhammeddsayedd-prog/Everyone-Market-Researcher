@@ -1,0 +1,254 @@
+{
+  "observedAt": "2026-10-18T05:41:50.557Z",
+  "scope": "One owned temporary manual-only inactive runtime capability workflow; three separately authorized pure Code executions. No HTTP, database, actor, model, collection, notification or paid provider calls.",
+  "environment": {
+    "instance": "https://muhhammedsayed.app.n8n.cloud",
+    "project": "pHvQjDmjxVZ3KQLT",
+    "browser": "Chrome 1 / Person 1",
+    "workflowId": "B6Bpuo31PAw68vj5",
+    "workflowName": "M03 · Runtime capability probe [dev]",
+    "runtimeVersion": "2.43.5",
+    "runtimeVersionSource": "Existing actual-instance capability evidence; no runtime upgrade performed during this probe",
+    "manualTriggerVersion": 1,
+    "codeVersion": 2
+  },
+  "hostedExecutions": [
+    {
+      "executionId": "12005",
+      "startedAtCairo": "2026-10-18T08:29:03+03:00",
+      "nativeStatus": "Succeeded",
+      "nativeDurationMs": 70,
+      "editorEndToEndDurationMs": 1424,
+      "codeDurationMs": 13,
+      "sourceExport": "original",
+      "result": {
+        "probe": "m03_runtime_capability",
+        "synthetic_only": true,
+        "external_calls": false,
+        "url_global": false,
+        "url_search_params": false,
+        "crypto_require": true,
+        "sha256_matches": true,
+        "buffer_utf8": true,
+        "text_encoder_utf8": true,
+        "common_helpers": true,
+        "smoke_normalizer": false,
+        "smoke_error_code": "normalizer_runtime_failed"
+      },
+      "interpretation": "The URL parse/searchParams operations failed. The normalizer entered its fixed runtime-failure catch. Native success means the diagnostic returned a result, not normalizer acceptance.",
+      "probeComparisonDefect": "The original probe compared external_id against a 33-character literal rather than 32. Preserved in the original export. Local execution with URL available reports normalizer_result_mismatch; this defect was corrected before the separately authorized URL-module follow-up. It does not invalidate the independently failed URL-operation booleans."
+    },
+    {
+      "executionId": "12036",
+      "startedAtCairo": "2026-10-18T08:35:36+03:00",
+      "nativeStatus": "Succeeded",
+      "nativeDurationMs": 1777,
+      "editorEndToEndDurationMs": 1900,
+      "codeDurationMs": 1725,
+      "sourceExport": "url_modules",
+      "result": {
+        "probe": "m03_url_module_followup",
+        "synthetic_only": true,
+        "external_calls": false,
+        "url_module_constructor": false,
+        "node_url_module_constructor": false,
+        "selected_constructor": "none",
+        "smoke_normalizer": false,
+        "smoke_error_code": "not_run_no_supported_constructor"
+      },
+      "interpretation": "Both module-constructor operations failed. No usable constructor was selected and the normalizer was safely skipped. No global, dependency, environment or security setting was changed."
+    },
+    {
+      "executionId": "12052",
+      "startedAtCairo": "2026-10-18T08:38:40+03:00",
+      "nativeStatus": "Succeeded",
+      "nativeDurationMs": 1868,
+      "editorEndToEndDurationMs": 2212,
+      "codeDurationMs": 1821,
+      "sourceExport": "exact_page",
+      "result": {
+        "probe": "m03_exact_page_adapter",
+        "synthetic_only": true,
+        "external_calls": false,
+        "normalized": true,
+        "hash_matches": true,
+        "snapshot_minimized": true,
+        "query_rejected": true,
+        "associated_url_rejected": true,
+        "unicode_bounds": true,
+        "error_code": "none"
+      },
+      "interpretation": "PASS for the reviewed M03 exact about-page adapter on fixed synthetic public inputs. No actual provider row or complete callback graph was executed."
+    }
+  ],
+  "exports": [
+    {
+      "label": "original",
+      "path": "n8n/workflows/M03-runtime-capability-probe.original.dev.json",
+      "nativeDownloadSha256BeforeRepositoryFormatting": "f4385c6e0680d0cb53571d0fc4368b5c09cd9df7002b51b630ec7b71937ed341",
+      "repositoryEvidenceSha256": "f4385c6e0680d0cb53571d0fc4368b5c09cd9df7002b51b630ec7b71937ed341",
+      "jsonSemanticEquality": true,
+      "codeSha256": "4fcc58073777508af2f5d9d95c87d3047f60243d4ea0532fa4f7d737bcca6055",
+      "credentialNodes": 0,
+      "pinnedDataKeys": 0,
+      "metadataKeys": [
+        "instanceId"
+      ],
+      "active": false,
+      "nodeCount": 2
+    },
+    {
+      "label": "url_modules",
+      "path": "n8n/workflows/M03-runtime-capability-probe.url-modules.dev.json",
+      "nativeDownloadSha256BeforeRepositoryFormatting": "24a754021dad06ec89bb6ae5b66359770cd0058f8280468bef000f5fade6a6a0",
+      "repositoryEvidenceSha256": "24a754021dad06ec89bb6ae5b66359770cd0058f8280468bef000f5fade6a6a0",
+      "jsonSemanticEquality": true,
+      "codeSha256": "4c8448108e4c436df6de175d3ad55003763b572816264a8aaa7990c9f03d54c0",
+      "credentialNodes": 0,
+      "pinnedDataKeys": 0,
+      "metadataKeys": [
+        "instanceId"
+      ],
+      "active": false,
+      "nodeCount": 2
+    },
+    {
+      "label": "exact_page",
+      "path": "n8n/workflows/M03-runtime-capability-probe.exact-page.dev.json",
+      "nativeDownloadSha256BeforeRepositoryFormatting": "1e067feaf023eb4cfe02868dae4e27522bf0b814ba711b1abeddbe609ba6c068",
+      "repositoryEvidenceSha256": "1e067feaf023eb4cfe02868dae4e27522bf0b814ba711b1abeddbe609ba6c068",
+      "jsonSemanticEquality": true,
+      "codeSha256": "c8fbea66fbdc9d2ef66084a7feb1b8b9f6d35b5a07cabfd78c80c2115d39e3a6",
+      "credentialNodes": 0,
+      "pinnedDataKeys": 0,
+      "metadataKeys": [
+        "instanceId"
+      ],
+      "active": false,
+      "nodeCount": 2
+    }
+  ],
+  "sourceVerification": {
+    "originalAndFollowup": {
+      "receipt": "runtime-probe-local-validation-20261018.json",
+      "observedAt": "2026-10-18T05:35:24.695Z",
+      "functionAstEquivalence": true,
+      "originalGeneralFunctions": 5,
+      "originalCommonHelpers": 9,
+      "parserDiagnostics": 0,
+      "normalizations": "Whitespace/comments and redundant one-statement if braces only; identifiers, literals, operators and declarations retained",
+      "noVariablesEnvironmentOrNetworkReferences": true,
+      "onlyReviewedPublicStringLiterals": true,
+      "completeDiagnosticBodiesMatchIntendedPublicAst": true
+    },
+    "exactPage": {
+      "preparedCodeSha256": "c8fbea66fbdc9d2ef66084a7feb1b8b9f6d35b5a07cabfd78c80c2115d39e3a6",
+      "exportedCodeEqualsPreparedCodeByteForByte": true,
+      "extractedActualFunctions": 5,
+      "commonJsImportAndExportsExcluded": true,
+      "noUrlGlobalOrUrlModule": true,
+      "onlyRequiredModule": "crypto",
+      "localVmWithoutUrlOrModulePassed": true
+    }
+  },
+  "localImplementation": {
+    "files": [
+      {
+        "path": "n8n/normalizers/smoke_website_stub.js",
+        "sha256": "e68644fb2d5634f61152a01a132e61d97951c7fa46aa354a0f71a44a0f9adf50"
+      },
+      {
+        "path": "n8n/normalizers/smoke_website_m03.js",
+        "sha256": "fad4505d4a3ed21a879800c07d4ca2c86c6ef3c140dda0b9a17b773a44c6cbdf"
+      },
+      {
+        "path": "n8n/normalizers/smoke-website-m03.test.ts",
+        "sha256": "521531cdeeeb7ae461c256536e75c877b40f6ed41467d7e51ce0d4a22e6ddc51"
+      }
+    ],
+    "red": {
+      "newTests": 21,
+      "failed": 21,
+      "reason": "New adapter did not exist"
+    },
+    "green": {
+      "newTests": 21,
+      "existingAffectedTests": 103,
+      "passed": 124,
+      "failed": 0
+    },
+    "targetedEslintExit": 0,
+    "formatExit": 0,
+    "diffCheckExit": 0,
+    "independentReview": "local-m03-exact-normalizer-review-20261018.md",
+    "independentNewTestsPassed": 21,
+    "generalCanonicalWebsiteUrlUnchanged": true,
+    "sharedRowAndSnapshotMappingFactored": true,
+    "adapterRequestedUrl": "https://everyone.film/about-everyone",
+    "associatedLiteralAllowlist": [
+      "https://everyone.film",
+      "https://everyone.film/",
+      "https://everyone.film/about-everyone"
+    ],
+    "normalizerVersionForSameOutputContract": "smoke_website_stub.v1"
+  },
+  "sourcePolicy": [
+    {
+      "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.code/",
+      "finding": "Official Cloud documentation lists crypto and moment; arbitrary module installation/import is not assumed."
+    },
+    {
+      "url": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/%40n8n/task-runner/src/js-task-runner/js-task-runner.ts",
+      "finding": "Pinned getNativeVariables exposes Buffer/TextEncoder; URL is absent from that explicit list. This supports, but does not replace, the actual operation results."
+    },
+    {
+      "url": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/%40n8n/task-runner/src/js-task-runner/require-resolver.ts",
+      "finding": "Pinned resolver checks requested built-in module names against the configured allowlist. No allowlist change or import workaround was made."
+    }
+  ],
+  "attemptsAndLimits": {
+    "clipboardWorkflowSettingsIgnored": true,
+    "actualExportedSettings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate"
+    },
+    "cairoAnd900TimeoutSavedOnProbe": false,
+    "workflowSettingsAcceptanceClaim": false,
+    "defaultCodeMode": "runOnceForAllItems; native export omits the default mode property",
+    "downloadObserverTimeouts": 4,
+    "downloadsReconciledBeforeAnyRetry": true,
+    "exportClicks": 4,
+    "unexecutedIntermediateExportRetainedOnlyInDownloads": true,
+    "blindDownloadRetries": 0,
+    "unexecutedIntermediateEditReplacedByCanvasJson": true,
+    "codeEditorNoLongerUsedAfterPrivacyIncident": true,
+    "screenshotArtifactAttempt": "Safe screenshots were displayed through the tool; a later cropped screenshot capture timed out and no file artifact is claimed."
+  },
+  "privacyIncident": {
+    "unrelatedVariableValueUnintentionallySurfacedInToolResponse": true,
+    "variableNameOrValueIncludedInThisEvidence": false,
+    "variableUsedByProbe": false,
+    "variableCopiedIntoSourceOrExports": false,
+    "toolHistoryErasedClaim": false,
+    "rawEditorDomNotCopiedIntoRepository": true,
+    "mitigation": "Closed the Code editor; all later code changes used whole-canvas JSON paste. Complete public code and literals were validated before hosted execution and repository inclusion."
+  },
+  "cleanup": {
+    "workflowArchived": true,
+    "archivedReadbackVerified": true,
+    "unarchiveControlObserved": true,
+    "unarchiveNotActivated": true,
+    "permanentDeleteNotActivated": true,
+    "ownedBrowserTabClosed": true,
+    "existingWorkflowsAndSharedCredentialsNotMutated": true,
+    "workflowRemainedInactive": true,
+    "executionHistoryRetained": true,
+    "exportRawDownloadsRetained": true
+  },
+  "remainingGates": [
+    "The general URL-dependent normalizer and optional prepare_ingest_groups helper have no Cloud runtime pass from this probe.",
+    "The native SUB Ingest Code uses bounded JSON/RPC parameters and does not call prepare_ingest_groups; it is not declared failed by this URL probe. Its database execution remains separately gated by strict TLS.",
+    "A real one-page actor capture, exact dataset shape, full callback/replay/error path and paid admission are separate acceptance gates.",
+    "No provider credentials, database migrations, production changes, schedule activation or later milestone acceptance were performed by this task."
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "name": "M03 · Runtime capability probe [dev]",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "0b42dd49-15d6-4a1a-a495-a0c34c0413fc",
+      "name": "Manual runtime probe",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function invalidWebsiteRow() {\n  throw new Error('contract_drift: invalid website crawler row');\n}\n\nfunction smokeBoundedText(input, limit) {\n  const bounded = input.slice(0, limit);\n  // Avoid producing invalid JSON Unicode when a truncation cuts an emoji pair.\n  const last = bounded.charCodeAt(bounded.length - 1);\n  return last >= 0xd800 && last <= 0xdbff ? bounded.slice(0, -1) : bounded;\n}\n\nfunction validateSmokeWebsiteRow(row) {\n  if (\n    !row ||\n    typeof row !== 'object' ||\n    Array.isArray(row) ||\n    row.error !== undefined ||\n    (row.markdown !== undefined && row.markdown !== null && typeof row.markdown !== 'string') ||\n    (row.metadata !== undefined &&\n      row.metadata !== null &&\n      (typeof row.metadata !== 'object' || Array.isArray(row.metadata))) ||\n    (row.metadata?.title !== undefined &&\n      row.metadata?.title !== null &&\n      typeof row.metadata.title !== 'string')\n  ) {\n    return invalidWebsiteRow();\n  }\n}\n\nfunction buildSmokeWebsiteSnapshot(row, url) {\n  const title = row.metadata?.title ? smokeBoundedText(row.metadata.title, 2000) : null;\n  const caption = smokeBoundedText(row.markdown || '', 8000);\n  let hash;\n  try {\n    if (typeof require !== 'function') throw new Error('unavailable');\n    // n8n Cloud exposes crypto via require inside its plain JavaScript Code node.\n    // eslint-disable-next-line @typescript-eslint/no-require-imports\n    hash = require('crypto').createHash('sha256').update(url, 'utf8').digest('hex');\n    if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('unavailable');\n  } catch {\n    throw new Error('sha256_unavailable');\n  }\n  return {\n    json: {\n      platform: 'website_work_page',\n      external_id: hash.slice(0, 32),\n      actor: 'apify/website-content-crawler',\n      item_type: 'project_page',\n      url,\n      published_at: null,\n      title,\n      caption,\n      metrics: {},\n      // M03-only public snapshot: unknown actor request/header/cookie fields\n      // never enter the ingest payload. Real capture evidence stays separate.\n      payload: { url, markdown: caption, metadata: { title } },\n    },\n    matchKey: url,\n  };\n}\n\nfunction createM03SmokeWebsiteNormalizer(validateRow, buildSnapshot, invalidRow) {\n  if (\n    typeof validateRow !== 'function' ||\n    typeof buildSnapshot !== 'function' ||\n    typeof invalidRow !== 'function'\n  ) {\n    throw new Error('smoke_adapter_helpers_unavailable');\n  }\n\n  return function normalizeM03SmokeWebsite(row) {\n    validateRow(row);\n    const requestedUrl = 'https://everyone.film/about-everyone';\n    if (row.url !== requestedUrl) return invalidRow();\n\n    const associatedUrls = ['https://everyone.film', 'https://everyone.film/', requestedUrl];\n    for (const associatedUrl of [row.crawl?.loadedUrl, row.crawl?.referrerUrl, row.metadata?.canonicalUrl]) {\n      if (\n        associatedUrl !== undefined &&\n        associatedUrl !== null &&\n        associatedUrl !== '' &&\n        !associatedUrls.includes(associatedUrl)\n      ) {\n        return invalidRow();\n      }\n    }\n\n    return buildSnapshot(row, requestedUrl);\n  };\n}\nconst result={probe:'m03_exact_page_adapter',synthetic_only:true,external_calls:false,normalized:false,hash_matches:false,snapshot_minimized:false,query_rejected:false,associated_url_rejected:false,unicode_bounds:false,error_code:'not_run'};\ntry{\n  const normalize=createM03SmokeWebsiteNormalizer(validateSmokeWebsiteRow,buildSmokeWebsiteSnapshot,invalidWebsiteRow);\n  const normalized=normalize({url:'https://everyone.film/about-everyone',markdown:'Synthetic runtime capability text',metadata:{title:'Synthetic runtime probe',canonicalUrl:'https://everyone.film/about-everyone'},crawl:{loadedUrl:'https://everyone.film/about-everyone',referrerUrl:'https://everyone.film/'}});\n  result.normalized=normalized.matchKey==='https://everyone.film/about-everyone'&&Object.keys(normalized.json).length===10;\n  result.hash_matches=normalized.json.external_id==='e4d69e3fb0d821183258d75248f9df24';\n  result.snapshot_minimized=JSON.stringify(normalized.json.payload)===JSON.stringify({url:'https://everyone.film/about-everyone',markdown:'Synthetic runtime capability text',metadata:{title:'Synthetic runtime probe'}});\n  try{normalize({url:'https://everyone.film/about-everyone?public=1'});}catch{result.query_rejected=true;}\n  try{normalize({url:'https://everyone.film/about-everyone',crawl:{loadedUrl:'https://other.film/'}});}catch{result.associated_url_rejected=true;}\n  const bounded=normalize({url:'https://everyone.film/about-everyone',markdown:'x'.repeat(7999)+'😀',metadata:{title:'t'.repeat(1999)+'😀'}});\n  result.unicode_bounds=bounded.json.caption==='x'.repeat(7999)&&bounded.json.title==='t'.repeat(1999);\n  result.error_code='none';\n}catch(e){result.error_code=e&&e.message==='sha256_unavailable'?'sha256_unavailable':'adapter_runtime_failed';}\nreturn[{json:result}];\n"
+      },
+      "id": "1bde3ef5-b3ef-4368-8a2a-81d5c0d0552d",
+      "name": "Runtime capability checks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        32
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual runtime probe": {
+      "main": [
+        [
+          {
+            "node": "Runtime capability checks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "83710ea7-c14e-4ef9-82bb-70fd1e6a0a9e",
+  "meta": {
+    "instanceId": "fe5facdb5abbccc9433fc2854c55f8eda5bd15bbdaa2eb5873e386d9cc9b2495"
+  },
+  "nodeGroups": [],
+  "id": "B6Bpuo31PAw68vj5",
+  "tags": []
+}

@@ -80,13 +80,19 @@ not production, paid-run, merge or later-milestone approval. The local migration
 advisors, generated types, hosted deployment and end-to-end acceptance have
 separate evidence gates in M03 progress.
 
-M03 credential setup uses domain-restricted Header Auth for the official
-YouTube API (`X-Goog-Api-Key` to `www.googleapis.com`), matching the M02
-origin-bound client. This supersedes the older Query Auth example and keeps
-keys out of URLs. App/internal secrets remain deferred until their first
-integration milestone; M03 uses callback verification (b) and log-only Notify.
-The owner enters credentials privately in the intended instance; existing
-shared credentials and workflows remain unchanged.
+M03 reuses the owner's existing credentials by actual ID and compatible type,
+without requiring canonical display names or changing shared credentials.
+HTTP Request uses Predefined Credential Type for native `apifyApi` and
+`openAiApi`; it must not extract tokens or duplicate them as Header Auth.
+Vimeo and YouTube reuse Header Auth, with `Authorization` and
+`X-Goog-Api-Key` respectively. Market Radar requests constrain fixed HTTPS
+origins and reject redirects; shared domain settings are preserved.
+YouTube's header replaces the older Query Auth example and keeps keys out of
+URLs. The Apify metadata test uses the authenticated limits endpoint because
+`users/me` includes a proxy password. No actor/model call is a credential test.
+App/internal secrets remain deferred; M03 uses callback verification (b) and
+log-only Notify. The saved dev Postgres port is5432; an observed strict TLS
+chain failure must not be bypassed by Ignore SSL Issues or another login.
 
 The WF-70 and WF-80 stubs keep the standard four dispatch inputs and explicitly
 add optional `tags` and `kind`, respectively, for their documented callers.

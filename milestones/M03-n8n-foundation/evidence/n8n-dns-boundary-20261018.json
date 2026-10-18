@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T05:18:10Z",
+  "environment": "Local Windows / actual fixed n8n Cloud hostname; DNS only",
+  "host": "muhhammedsayed.app.n8n.cloud",
+  "originalInventoryAttempt": {
+    "reportedBy": "Root, from the actual bounded consumer invocation",
+    "nativeExit": 1,
+    "inventoryStatus": "network_failed",
+    "requestCount": 0,
+    "authenticationVerified": false,
+    "allResourcesNotAttempted": true,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "boundary": "The original failure is preserved. No credential retry or key request was performed for this diagnostic."
+  },
+  "sourceBeforeCorrection": {
+    "scripts/n8n/inventory.mjs": "43279581d017003ff9deacdafe9914139aa9dcb2da1edb5aff1736e501539d01",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "86d63ccf1707e34853bd5527d4a4f53630f65b61b067c315e8e42e337556e805",
+    "scripts/n8n/m03-inventory-seal.json": "41a1fa59b7c55aa7b7e1624ea77cd92d391d1b678bd3161358b341ceea6dc405"
+  },
+  "actualDnsCheck": {
+    "command": "node scripts/n8n/check-dns.mjs",
+    "nativeExit": 0,
+    "freshChildEnvironment": "Exactly SystemRoot, WINDIR, PATH, TEMP, TMP, LOCALAPPDATA, APPDATA and USERPROFILE when present; no API key, password, proxy variable or Node options forwarded",
+    "resolver": "Same inventory dns.promises.Resolver options: timeout10000ms, tries1; one resolve4 plus one resolve6; one dns.lookup all:true comparison in the same bounded child",
+    "outerChildTimeoutMs": 15000,
+    "result": {
+      "status": "DNS_CHECK_COMPLETE",
+      "success": true,
+      "results": {
+        "resolve4": {"success": false, "code": "ECONNREFUSED"},
+        "resolve6": {"success": false, "code": "ECONNREFUSED"},
+        "osLookup": {"success": true, "code": "RESOLVED"}
+      },
+      "credentialSupplied": false,
+      "apiRequests": 0
+    },
+    "scripts/n8n/check-dns.mjs": "9389848715be8aae3e88c9341d256c4278cf18be262730825a849119cc166dbf",
+    "scripts/n8n/check-dns.test.mjs": "e8b53a57edac43d6b181c1ac8bafa7c9f2abf591eaa1c5b8ac4fadc36eb78982"
+  },
+  "diagnosis": {
+    "confirmed": "The direct DNS resolver path returns ECONNREFUSED for both address families in an equivalent sanitized child, while the operating-system lookup succeeds. The current resolver converts ECONNREFUSED to network_failed before requestCount increments. This reproduces the pre-HTTP failure boundary.",
+    "notEstablished": "The original exception was not retained, so this does not retroactively prove its exact code. The underlying reason for refused direct DNS queries (network/server/firewall configuration) is not established. No DNS, firewall, TLS, proxy or security settings were changed.",
+    "proposedCorrection": "Use bounded operating-system lookup all:true for the fixed hostname, with callback abort/late-result guards. Keep validation of every returned address, rejection of mixed/private results, first approved-address pinning, strict hostname/CA verification, no redirects and the existing global deadline. No API credential retry until local checks, independent review and a refreshed source seal."
+  },
+  "localSyntheticChecks": {
+    "red": "node --test scripts/n8n/check-dns.test.mjs: native1 / ERR_MODULE_NOT_FOUND before diagnostic module existed",
+    "green": "Same command: 4/4 passed, native0; duration175.3704ms",
+    "eslintNativeExit": 0,
+    "formatNativeExit": 0,
+    "boundary": "Injected resolvers only; no DNS or API call in tests"
+  },
+  "reviewedCorrection": {
+    "scripts/n8n/inventory.mjs": "46b36ece01e294e221cb851c62127b720196fc3c82a560c9416ecb3aa5958acc",
+    "scripts/n8n/inventory.test.mjs": "bae781d687b40e851f7731070b66ece1e51c3734f09be03e06c8de3b7b361709",
+    "change": "Replace direct DNS Resolver with fixed-host OS lookup all:true, callback settlement and late-result/abort guards. Reuse the unchanged address rules through shared validation of every returned address; pin the first validated public address and retain the existing 60s inventory deadline, strict TLS host verification and no redirects. Keyed inventory routes/request counts and response projections are unchanged.",
+    "osCancellationLimit": "OS getaddrinfo cannot be cancelled by the JavaScript AbortSignal. Abort prevents a late callback from starting HTTP, and the existing bounded Windows consumer owns final native child termination.",
+    "red": "node --test scripts/n8n/inventory.test.mjs: native1 / missing new diagnostic export before implementation; duration184.0898ms",
+    "green": "Same command: 30/30 passed (11 new DNS/probe cases and19 retained reader cases), native0; duration566.4599ms",
+    "eslintNativeExit": 0,
+    "formatNativeExit": 0,
+    "independentReview": "m02_prod_packet: no P0/P1/P2 in source46b36ece; independently ran11 new DNS/probe cases, all passed native0. Also read-only reviewed the bounded public driver691cea07 with no finding; no live request or credential read by reviewer."
+  },
+  "actualUnauthenticatedTransportCheck": {
+    "recordedAt": "2026-10-18T05:22:13Z",
+    "command": "node scripts/n8n/check-transport.mjs",
+    "scripts/n8n/check-transport.mjs": "691cea0718737f68a7ab01c5338178968a502f3f6e3931d43e7265f56fae23f8",
+    "nativeExit": 0,
+    "request": "Exactly one GET https://muhhammedsayed.app.n8n.cloud/api/v1/discover; Accept/User-Agent only, no API key or authentication header, no redirects",
+    "environment": "Fresh OS-only plain Node child; no private file, API key, password, proxy variable or Node options forwarded",
+    "result": {"httpStatus": 401, "tlsVerified": true, "socketClosed": true},
+    "bounds": "10s operation plus up to5s socket-close wait; hard20s child timeout/SIGKILL,8192-byte output cap, stderr discarded; native child closed normally",
+    "proofBoundary": "This verifies fixed-instance public connectivity, strict TLS certificate/hostname verification and observed socket closure under the corrected resolver. HTTP401 is expected without a key and does not establish API authentication, credential metadata access or any workflow operation. Original failed keyed receipt remains requestCount0 and is not rewritten."
+  },
+  "nextGate": "Root must refresh the public source seal and separately coordinate any new API handoff. No keyed retry, new key request, credential test, workflow write/execution or DNS/security-setting change was performed by this task.",
+  "primarySource": "https://nodejs.org/download/release/v24.18.0/docs/api/dns.html#implementation-considerations"
+}

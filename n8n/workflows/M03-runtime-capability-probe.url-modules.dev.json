@@ -1,0 +1,55 @@
+{
+  "name": "M03 · Runtime capability probe [dev]",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d3671297-67d2-4a01-bb7d-67dbe6e5f838",
+      "name": "Manual runtime probe",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result={probe:'m03_url_module_followup',synthetic_only:true,external_calls:false,url_module_constructor:false,node_url_module_constructor:false,selected_constructor:'none',smoke_normalizer:false,smoke_error_code:'not_run_no_supported_constructor'};\nlet URL;\ntry{const Candidate=require('url').URL;const parsed=new Candidate('https://everyone.film/about-everyone?public=1#probe');result.url_module_constructor=typeof Candidate==='function'&&parsed.hostname==='everyone.film'&&[...parsed.searchParams.keys()].join(',')==='public';if(result.url_module_constructor){URL=Candidate;result.selected_constructor='url';}}catch{}\ntry{const Candidate=require('node:url').URL;const parsed=new Candidate('https://everyone.film/about-everyone?public=1#probe');result.node_url_module_constructor=typeof Candidate==='function'&&parsed.hostname==='everyone.film'&&[...parsed.searchParams.keys()].join(',')==='public';if(!URL&&result.node_url_module_constructor){URL=Candidate;result.selected_constructor='node:url';}}catch{}\nfunction invalidWebsiteRow(){throw new Error('contract_drift: invalid website crawler row');}\nfunction smokeBoundedText(input,limit){const bounded=input.slice(0,limit);const last=bounded.charCodeAt(bounded.length-1);return last>=0xd800&&last<=0xdbff?bounded.slice(0,-1):bounded;}\nfunction hasSensitiveUrlQuery(url){const credentialKeys=['accesstoken','refreshtoken','idtoken','apikey','clientsecret','clientpassword','accesskey','password','passwd','pwd','secret','token','auth','authorization','credential','credentials','signature','sig','key','xgoogapikey','xamzcredential','xamzsignature','xamzsecuritytoken'];for(const rawKey of url.searchParams.keys()){let key=rawKey;for(let pass=0;pass<2&&key.includes('%');pass+=1){try{key=decodeURIComponent(key);}catch{return true;}}if(key.includes('%')||credentialKeys.includes(key.toLowerCase().replace(/[-_]/g,'')))return true;}return false;}\nfunction canonicalWebsiteUrl(input){if(typeof input!=='string'||!input||input.length>8192||!/^https?:\\/\\/[^/?#]/i.test(input)||/^https?:\\/\\/[^/?#]*@/i.test(input)||/[\\s\\u0000-\\u001f\\u007f\\\\]/u.test(input))return invalidWebsiteRow();let url;try{url=new URL(input);}catch{return invalidWebsiteRow();}if(!['http:','https:'].includes(url.protocol)||url.username||url.password||url.port)return invalidWebsiteRow();if(hasSensitiveUrlQuery(url))return invalidWebsiteRow();const labels=url.hostname.split('.');const suffix=labels[labels.length-1];const privateSuffixes=['arpa','example','home','internal','invalid','lan','local','localdomain','localhost','onion','test'];if(labels.length<2||/^[\\d.]+$/.test(url.hostname)||privateSuffixes.includes(suffix)||!/^[a-z][a-z\\d-]*$/i.test(suffix)||labels.some(label=>!/^[a-z\\d](?:[a-z\\d-]{0,61}[a-z\\d])?$/i.test(label)))return invalidWebsiteRow();url.protocol='https:';url.search='';url.hash='';return url.href;}\nfunction normalizeSmokeWebsite(row){if(!row||typeof row!=='object'||Array.isArray(row)||row.error!==undefined||(row.markdown!==undefined&&row.markdown!==null&&typeof row.markdown!=='string')||(row.metadata!==undefined&&row.metadata!==null&&(typeof row.metadata!=='object'||Array.isArray(row.metadata)))||(row.metadata?.title!==undefined&&row.metadata?.title!==null&&typeof row.metadata.title!=='string'))return invalidWebsiteRow();const url=canonicalWebsiteUrl(row.url);for(const retainedUrl of[row.crawl?.loadedUrl,row.crawl?.referrerUrl,row.metadata?.canonicalUrl]){if(retainedUrl!==undefined&&retainedUrl!==null&&retainedUrl!=='')canonicalWebsiteUrl(retainedUrl);}const title=row.metadata?.title?smokeBoundedText(row.metadata.title,2000):null;const caption=smokeBoundedText(row.markdown||'',8000);let hash;try{if(typeof require!=='function')throw new Error('unavailable');hash=require('crypto').createHash('sha256').update(url,'utf8').digest('hex');if(!/^[a-f0-9]{64}$/.test(hash))throw new Error('unavailable');}catch{throw new Error('sha256_unavailable');}return{json:{platform:'website_work_page',external_id:hash.slice(0,32),actor:'apify/website-content-crawler',item_type:'project_page',url,published_at:null,title,caption,metrics:{},payload:{url,markdown:caption,metadata:{title}}},matchKey:url};}\nif(URL){try{const normalized=normalizeSmokeWebsite({url:'https://everyone.film/about-everyone?public=1#probe',markdown:'Synthetic runtime capability text',metadata:{title:'Synthetic runtime probe'}});result.smoke_normalizer=normalized.matchKey==='https://everyone.film/about-everyone'&&normalized.json.external_id==='e4d69e3fb0d821183258d75248f9df24'&&normalized.json.payload.markdown==='Synthetic runtime capability text'&&Object.keys(normalized.json).length===10;result.smoke_error_code=result.smoke_normalizer?'none':'normalizer_result_mismatch';}catch(e){result.smoke_error_code=e&&e.message==='sha256_unavailable'?'sha256_unavailable':'normalizer_runtime_failed';}}return[{json:result}];"
+      },
+      "id": "25352760-50fd-4a06-a248-ca9eb3e01d0a",
+      "name": "Runtime capability checks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        32
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual runtime probe": {
+      "main": [
+        [
+          {
+            "node": "Runtime capability checks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "32bf572c-aad0-4b29-8704-67a19161b55c",
+  "meta": {
+    "instanceId": "fe5facdb5abbccc9433fc2854c55f8eda5bd15bbdaa2eb5873e386d9cc9b2495"
+  },
+  "nodeGroups": [],
+  "id": "B6Bpuo31PAw68vj5",
+  "tags": []
+}

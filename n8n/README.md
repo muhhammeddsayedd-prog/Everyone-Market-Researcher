@@ -41,6 +41,15 @@ parameterized Postgres queries (`$1`, `$2`, Query Parameters), never string
 interpolation or table-write nodes. Only `Supabase Postgres · n8n_writer · dev`
 may call pipeline RPCs. Supabase secret/admin credentials are not substitutes.
 
+Use actual credential IDs and compatible types; logical names do not require
+renaming shared credentials. M03 reuses `Apify account` (`apifyApi`) and
+`OpenAI account` (`openAiApi`) through HTTP Request Predefined Credential Type,
+plus existing Vimeo/YouTube Header Auth. Keep asynchronous actor starts,
+callbacks and recovery; the installed native Apify operation's synchronous
+default is not a substitute. Never extract a token into a duplicate credential.
+The temporary manual-only credential probes are explicitly separate from
+foundation workflow/error-routing acceptance. They make no actor/model calls.
+
 Use credential references only. HTTP timeout is 60 seconds, OpenAI 120 seconds;
 node retry defaults are three attempts / five seconds, with 429 backoff thirty
 seconds. The intended workflow timeout is fifteen minutes **only if the actual

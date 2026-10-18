@@ -29,14 +29,24 @@ Every workflow the pipeline needs, node by node. Platform inputs and field mappi
 - **prod:** the pilot runs in **prod** (real data from M08 on). Prod copies are created from dev exports in M08 and kept in sync after every change.
 - **Config:** if Variables exist on the plan, set `EMR_ENV`, `EMR_APP_URL`, `EMR_N8N_WEBHOOK_BASE`. Otherwise every workflow starts with a **Set node "Config"** (`env`, `app_url`, `webhook_base`) — the only node that differs between dev and prod copies. Never point a dev workflow at prod credentials.
 
-### 1.2 Credentials (create once per env)
+### 1.2 Credential bindings (reuse compatible existing credentials)
+
+The names below describe logical bindings. Use actual credential IDs/types;
+display names may differ. The M03 owner authorized reuse of `Apify account`
+(`apifyApi`), `OpenAI account` (`openAiApi`), `Vimeo Token` and the existing
+YouTube Header Auth credential. HTTP Request supports native credentials via
+Predefined Credential Type. Preserve shared credential values/domain settings;
+constrain the Market Radar request origins instead. Never duplicate a native
+token as Header Auth or replace asynchronous Apify launches with synchronous
+native-node operations. Actual IDs and test results are in M03 evidence.
+
 | Credential name | Type | Used by |
 |---|---|---|
 | `Supabase Postgres · n8n_writer · dev` / `· prod` | Postgres: Supavisor **session** pooler host (IPv4), port 5432, database `postgres`, user `n8n_writer.<project-ref>`, SSL `require`, max connections 5 | all |
-| `Apify API` | Apify API (community node) or Header Auth `Authorization: Bearer <token>` | collectors, WF-19 |
-| `OpenAI API` | Header Auth `Authorization: Bearer …` (HTTP Request to Responses/Embeddings API) | WF-30, 32, 33, 50 |
+| `Apify API` | Native `apifyApi` through HTTP Request Predefined Credential Type, or a compatible existing Header Auth | collectors, WF-19 |
+| `OpenAI API` | Native `openAiApi` through HTTP Request Predefined Credential Type, or a compatible existing Header Auth | WF-30, 32, 33, 50 |
 | `Vimeo token` | Header Auth `Authorization: bearer …` | WF-10 |
-| `YouTube Data API key` | Header Auth `X-Goog-Api-Key`; restrict domain to `www.googleapis.com` | WF-13 |
+| `YouTube Data API key` | Header Auth `X-Goog-Api-Key`; fixed `www.googleapis.com` requests, no redirects; preserve shared settings | WF-13 |
 | `Firecrawl` | Header Auth `Authorization: Bearer …` | WF-21 |
 | `SerpAPI` | Query Auth `api_key=…` | WF-22, 23 |
 | `Email (Resend)` | Header Auth `Authorization: Bearer …` (or SMTP credential) | WF-80, 90, 91 |

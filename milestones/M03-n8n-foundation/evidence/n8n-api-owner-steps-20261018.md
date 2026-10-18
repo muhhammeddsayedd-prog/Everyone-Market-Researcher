@@ -13,7 +13,21 @@ Radar names/IDs and unrelated counts, never workflow bodies, credential values
 or raw errors. It does not create, update, publish, run, test or delete anything.
 Incremental provider spend is USD0; no provider endpoints are contacted.
 
-## Exact owner action
+## Current result — no new API-key action requested
+
+The owner supplied the existing management key through the reviewed handoff.
+The first attempt stopped before HTTP at DNS. A source-reviewed OS-resolver
+correction passed a credential-free strict-TLS401/socket-close check. The next
+keyed attempt authenticated: discovery and the actual Personal project list
+returned200. The later workflow-list request failed at transport, so the full
+inventory and credential-list resource remain unaccepted. Both consumed
+handoffs were deleted and children closed. [Actual receipts](n8n-api-attempt-20261018.json)
+and [DNS diagnosis](n8n-dns-boundary-20261018.json) preserve the distinction.
+Do not ask for another key, login or credential recreation to rediscover that
+unresolved transport failure. The four native provider probes and browser
+credential metadata are separate, successful evidence.
+
+## Existing helper reference — only when a reviewed continuation needs it
 
 1. Open <https://muhhammedsayed.app.n8n.cloud/settings/api> (**Settings → n8n
    API**). The actual page shows **Create API key**. If you already have a valid
@@ -41,8 +55,9 @@ The helper writes only the new temporary same-account DPAPI file
 public source-seal verification, a bounded child receives the key privately.
 The consumer deletes consumed ciphertext and closes the child even on failure.
 Only fixed projected receipts are returned. File presence is not authentication.
-The actual public seal check found this new handoff absent; no private file was
-read and no API request was sent.
+Earlier public seal checks found it absent. Later presence and actual private
+consumption results are recorded above; do not overwrite those receipts with
+the earlier absence claim.
 
 ## Reviewed boundaries
 

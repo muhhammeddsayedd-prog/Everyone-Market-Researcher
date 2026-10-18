@@ -4,24 +4,24 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Blocked: waiting on owner — MA-04 (M03 dev), MA-11, MA-12**
+**In progress — exact dev migrations and provider metadata verified; strict native Postgres TLS and foundation workflow acceptance remain open**
 
 | Field | Value |
-|---|---|
+| --- | --- |
 | Started | 2026-10-18 Cairo |
 | Last updated | 2026-10-18 Cairo |
 | Finished | — |
-| Branch / PR | `m03-n8n-foundation` from main `dc146f8`; [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged |
-| Verified code head / CI | `6e6db7ead293f7835d165c8ae574c8888ba7c41a`; [CI39097436130](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39097436130), all five jobs and Vercel passed. Later evidence-only commits do not replace this code checkpoint. |
-| Current task | T1 and AC12 complete. Local database, 23 inactive native blueprints and bounded GET-only API consumer are reviewed; actual dev database/n8n credentials and IDs are the next gates. |
-| Next step | Verify the new M03 dev migration handoff when supplied, apply the two pending versions once, then hosted readback/advisors/types. Independently verify canonical n8n credentials and finish the foundation. |
+| Branch / PR | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; preserved reviewed `ab9c3c620e0367c258ad1560e3c3063db7164557` and newer work |
+| Prior CI checkpoint | [CI39097738601](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39097738601), all five jobs and Vercel passed on `ab9c3c6`; new changes require their own normal PR CI |
+| Current task | Saved writer port5432/security fields match, but native TLS fails before verified identity. All four existing provider metadata GETs pass. Corrected CLI applies the exact two approved dev migrations; nine-version parity, private RPC ACLs, preserved seeds/logos, advisors and type coverage verified. Actual credential bindings and a strict exact-page Cloud normalizer are verified separately from full workflow acceptance. |
+| Next step | Finish targeted delivery checks and normal PR CI. Resolve strict native writer TLS without weakening settings or requesting the declined contact path. Complete inactive foundation bindings/graphs (including required rejection audit, replay/recovery and cost settlement) and present a fully specified live packet before any actor/multi-workflow batch. No further database handoff or migration replay is needed. |
 
 ## Task checklist
 <!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
 - [x] T1 — Five plan facts recorded below; actual UI capability evidence and current official plan/billing rules are distinguished. No execution/billing experiment claimed.
-- [ ] T2 — n8n MCP/API access + repo conventions (needs MA-11)
-- [ ] T3 — Credentials (MA-10, MA-11, MA-12)
-- [ ] T4 — Migration: local complete (12 RPCs incl atomic callback,137 new/379 total SQL tests, advisors/types); hosted dev pending. Known Scale prices/budget25 local; fixed fees explicitly unknown.
+- [ ] T2 — Conventions complete; API authentication/discovery/Personal list200 and owned probe create/archive verified. Full API inventory stopped at workflow transport. No repeat login/key request.
+- [ ] T3 — All five actual IDs/types reused; four provider metadata GETs pass. Writer saved settings match but native TLS/identity remain open; OpenAI cap is not inferred from Models access.
+- [ ] T4 — Exact two dev migrations applied/native0:12 restricted RPCs, receipt/indexes,17 Apify prices, budget25, fresh advisors0 WARN/ERROR and schema/type coverage verified. Local379 unchanged-source SQL results preserved. Fixed-fee/unknown-price coverage stays explicitly unknown, with no questionnaire.
 - [ ] T5 — Shared sub-workflows (dev)
 - [ ] T6 — WF-90 · Error handler (dev)
 - [ ] T7 — WF-19 · Apify run callback (dev)
@@ -32,37 +32,37 @@
 ## Acceptance criteria
 <!-- Mirror of MILESTONE.md; paste evidence (command + output summary, counts, screenshot paths). -->
 - [x] AC1 — Plan facts recorded — actual n8n 2.43.5, paid Cloud plan, upgraded 50,000 allowance; the five facts and evidence boundaries are recorded below.
-- [ ] AC2 — Credentials work — evidence:
-- [ ] AC3 — RPCs implemented and tested — evidence:
-- [ ] AC4 — Price book + budget set — evidence:
+- [ ] AC2 — Credentials work — four actual provider metadata GETs pass using existing native/Header Auth IDs; saved dev Postgres port5432/security exact, but credential Retry and native SELECT fail TLS chain validation, so current_user/session_user are unverified. [Actual readback](evidence/credential-readback-20261018.json).
+- [x] AC3 — Reused actual local379 pgTAP assertions in11 files on unchanged SQL; hosted nine-version/statement-hash parity,12 restricted RPCs and fresh advisors0 WARN/ERROR verified. [Schema](evidence/dev-post-migration-schema-20261018.json), [advisors](evidence/dev-post-migration-advisors-20261018.json). No hosted pgTAP or native n8n writer login claim.
+- [ ] AC4 — Actual dev17 reviewed Apify prices and daily alert budget25 verified. Three fixed-fee amounts and other documented unknown prices remain unknown under the owner's instruction; no false zero fees or shared-service budget change. [Readback](evidence/dev-post-migration-schema-20261018.json).
 - [ ] AC5 — Smoke path end to end — evidence:
 - [ ] AC6 — Idempotency — evidence:
 - [ ] AC7 — Forged callback rejected — evidence:
 - [ ] AC8 — Error routing — evidence:
 - [ ] AC9 — Orchestrator dispatch — evidence:
 - [ ] AC10 — Health — evidence:
-- [ ] AC11 — Exports clean — evidence:
+- [ ] AC11 — Actual inactive credential/runtime probe snapshots retained, reviewed without credentials/pinned execution data and recoverably archived. Full foundation exports remain pending. Current index secret scan passes; final delivery receipt records new-head checks.
 - [x] AC12 — Budget documented — conservative steady-state estimate 160/day pilot and 181/day full scope, both below 200/day; shared quota and billing-rule boundaries below.
 
 ## Blockers
-<!-- What stops progress, since when, what unblocks it. Remove when resolved (keep in log). -->
-- Browser sign-in is RESOLVED: after owner replied “Workflows visible in Person1”, root observed the actual Overview, Personal project and n8n2.43.5/Pro Monthly/Cairo/community-nodes ON. Earlier failed observations remain historical. SDK/suggested-node/project calls still return `-32603` after actual authenticated verification; this is an independent connector failure. Do not request another sign-in or repeat MCP setup. [Readback](evidence/n8n-runtime-access-20261018.json).
-- The new M03 dev migration handoff and the separate n8n API handoff were absent when their reviewed consumers performed public seal/presence checks. No private file was read, authentication attempted or hosted M03 migration applied. Exact commands are below. Actual canonical credential tests and bindings also remain pending; local native blueprints are not hosted exports. WF-19/WF-99 provider/launch work remains gated by that verified connection and bounded live-smoke preparation.
-- Owner upgraded the plan during this work. Actual Cloud Dashboard subsequently shows 11,001/50,000 October executions and Online 2.43.5. Prior 10,000/10,000 is historical; the difference is not attributed to M03. The temporary unused node probe encountered Connection lost during the upgrade; its first JSON export was downloaded despite an observer timeout and reconciled before any retry. The probe is now archived recoverably, with a fresh Archived/Unarchive readback. It was never executed or published. [Capability and cleanup evidence](evidence/n8n-node-capability-20261018.json).
-- MA-10 tier is owner-reported Scale; provider credential metadata/test calls and MA-12 remain unverified. Exact monthly fees are unknown; owner said tool costs do not matter, so do not keep requesting them or fabricate fees. Use Q-07 steady-state USD25/day default for the pending plan migration; current hosted budget remains150 until applied/read back. No old handoff was requested or consumed.
+
+- Strict n8n Postgres TLS remains unresolved. Actual saved host/session port5432/user/database/max5/SSL Require/Ignore SSL off/SSH off match. One credential Retry and one native Postgres2.7 SELECT encounter a self-signed-chain error; restricted current_user/session_user are not established. Preserve password/security. The owner declined the support-contact path; no contact action or new writer credential is requested. [Actual receipt](evidence/credential-readback-20261018.json), [retained source review](evidence/postgres-cloud-ca-review-20261018.md).
+- M03 database deployment is RESOLVED. The third bounded attempt completed native0 with exact dry-run/push/history parity; two earlier failures remain accurately preserved. The second established native0+invalid_json; immutable CLI source reproduced conflicting output flags and the corrected command-specific helper passed regression/review. All nine versions/hashes match,12 RPC ACLs and receipt/indexes pass, budget25,17 Apify prices,285 competitors/1754 accounts/257 logos/seven owner exclusions unchanged, no collected items/runs or fixtures. Fresh hosted advisors have0 WARN/ERROR. Public-only MCP types were not substituted for the checked-in four-schema types. [Completion](evidence/dev-migration-completion-20261018.json), [schema](evidence/dev-post-migration-schema-20261018.json). Preserve the durable successful admission; never replay this packet.
+- API DNS is RESOLVED by bounded OS lookup with every-address screening/pinning/strict TLS. A credential-free401/socket-close test passed. The next keyed attempt authenticated, discovery advertised capabilities and Personal list returned200; workflow-list transport failed before a complete inventory, and the credential-list resource was not attempted. Both consumed API handoffs were deleted/children closed. Exact later transport cause remains unestablished; no further key/discovery loop is requested. Browser sign-in is already verified and connector errors do not invalidate it. [Actual API attempts](evidence/n8n-api-attempt-20261018.json), [DNS](evidence/n8n-dns-boundary-20261018.json).
+- All five existing provider/database credential IDs and native types are mapped in [actual partial bindings](../../n8n/foundation/bindings.dev.json); no fake workflow/tag IDs. Apify/OpenAI use HTTP Predefined Credential Type; Vimeo/YouTube reuse Header Auth. All four actual provider metadata GETs pass, with no actor/inference/embeddings. Shared names/passwords/domain settings were preserved. No credential recreation, login/MCP setup or billing questionnaire is needed.
+- The original general URL-dependent smoke normalizer fails in actual Cloud Code2 because URL is unavailable. A separately reviewed M03 exact-owned-page adapter passes a pure Cloud execution without adding dependencies or weakening validation. General URL/generic grouping support remains separate; the current native atomic SUB Ingest input Code itself does not use URL. Full callback/rejection-audit/replay/settlement/recovery/paid admission and actual foundation graphs remain incomplete; local components are not runnable WF19/WF99 exports.
+- OpenAI Models access does not establish its project spend cap. Unknown fees/prices remain unknown; USD25/day is an alert threshold, not a provider cap. The owner deprioritized fee reporting, so no further questionnaire. Shared plan allowance50K/runtime facts and the historical code/local/CI evidence are preserved.
 
 ## Manual actions needed from the owner
-<!-- Exact steps, why, and where to paste results. The owner ticks them; Codex verifies. -->
-| # | Action | Why | Status |
-|---|---|---|---|
-| MA-10 | Scale already supplied. Follow the exact `Apify API` Header Auth fields in [the owner steps](evidence/credential-owner-steps-20261018.md). | T3/T4 prices | Private entry requested; authentication pending |
-| MA-11 | Personal → Credentials → Add credential; create the five exact dev names using [the reviewed fields](evidence/credential-owner-steps-20261018.md). Postgres uses the existing M01 dev writer password, SSL Require, Ignore SSL Issues off, max 5. Header Auth uses explicit allowed domains. Reply `M03 credentials saved` with any missing names. No further sign-in or shared-credential changes. | T3; saved credentials are separate from actual endpoint checks. Connector internal errors remain an independent T2 gate. | Exact action requested; no private values read |
-| MA-11 (API) | Settings → n8n API at the verified instance; reuse a saved valid key or create `Market Radar M03 temporary` with short expiry. In Windows PowerShell run `& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03N8nApiHandoff.ps1'`, enter that key at the hidden prompt, close the window, then reply `M03 n8n API handoff ready`. Expected output starts `M03 n8n encrypted handoff saved.` [Exact fields, bounds and cleanup](evidence/n8n-api-owner-steps-20261018.md). | Read-only public-API fallback; at most seven fixed-instance GETs, no provider calls or workflow writes. Pro key is account-wide; consumer is narrowly constrained. | Public seal verified; new handoff absent, no API request |
-| MA-12 | market-radar project API key → `OpenAI API`; Models read suffices for M03. Project settings → Limits → Spend → Edit spend limit → choose monthly USD cap → Enforce a hard limit → Save. See [exact steps](evidence/credential-owner-steps-20261018.md); report only the non-secret cap. | T3; no paid model call or Vercel secret yet | Private entry requested; actual test pending |
-| MA-13 | Documented Q-07 USD25/day steady-state default selected after owner deprioritized fees. It is an alert threshold, not a provider cap. | T4 budget alert | Local migration/readback25 complete; hosted150 unchanged |
-| MA-04 (M03 dev) | In Windows PowerShell run `& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\db\windows\New-M03DevMigrationHandoff.ps1'`; enter the existing emr-dev administrator database password at the hidden prompt, close the window and reply `M03 dev migration handoff ready`. Expected output starts `M03 dev migration encrypted handoff saved.` [Exact packet and recovery steps](evidence/dev-migration-packet-20261018.md). | Credential delivery for the already-authorized two additive dev migrations; no old handoff, reset or general dev approval | Public packet/seals checked; new handoff absent, no decryption/authentication |
-| info | Examples were not actual fees. Preserve unknown monthly fees rather than writing zero/example values. Record verified fees later if visible; no further questionnaire requested. | Honest fixed-cost reporting | Owner deprioritized fees; AC4 fixed-cost coverage remains explicitly incomplete |
-| optional | Use log-only notification for M03; SMTP is not required. | T5 Notify | No owner action needed |
+
+| ID | Current state | Owner action |
+| --- | --- | --- |
+| MA-04 M03 dev | Both approved versions applied successfully; independent history/schema/advisor/data readback passes. Handoff/scratch deleted; children closed; successful admission retained. | None. No new database handoff or replay. |
+| MA-10 / MA-11 providers | Existing Apify/OpenAI/Vimeo/YouTube ID/type bindings and four metadata tests verified. Saved writer port5432 is correct; strict native TLS remains open. | No credential recreation/reset/rename, no writer handoff, no SSL weakening. Owner declined contact; do not request it again. |
+| MA-11 API | Existing key authenticated; Personal list200; later workflow transport incomplete. Consumed key handoffs deleted. | None now. Do not request another key or repeat login/discovery to rediscover the transport failure. |
+| MA-12 | Authorized existing OpenAI credential works for Models read. Project cap is unverified; no model calls. | No new credential requested; keep cap evidence distinct. |
+| MA-13 / fees | Actual dev alert budget25. Subscription/other unknown prices remain unknown. | None; do not restart billing questions or alter shared budgets. |
+| M03 live acceptance | [Outline](evidence/live-acceptance-outline-20261018.md) remains preparation only until exact graph IDs/source seals/request counts/price/caps are filled and technical gates pass. | No batch approval requested yet. Present the concrete packet before any actor/multi-workflow test batch. |
 
 ## Decisions & deviations
 <!-- Anything that differs from the docs. Also add to docs/DECISIONS.md → Changes if it changes a decision. -->
@@ -82,9 +82,9 @@ This is the shared instance allowance, not a dedicated Market Radar reservation.
 | --- | --- |
 | Execution timeout | The actual unused workflow saved 900 seconds successfully. Current [Cloud pricing](https://n8n.io/pricing/) documents 40 minutes for Pro/Enterprise; the instance's hard maximum was not experimentally tested. M03 keeps 15 minutes. |
 | Sub-workflow quota | Current [execution documentation](https://docs.n8n.io/build/understand-workflows/understand-executions.md#how-executions-count-towards-quotas) says Execute Sub-workflow calls do not count separately; only the top-level production execution counts. Manual and error executions are also excluded by the documented rule. This is the rule for the observed paid plan, not an independently measured billing experiment. |
-| Variables | Personal Variables page shows Create variable and Edit/Delete controls. Names/values were not read; no variable was changed. |
+| Variables | Initial T1 inspection established Create variable and Edit/Delete controls without reading names/values or changing a variable. During a later runtime edit, autocomplete unintentionally surfaced an unrelated value in a tool response; it was not used or copied into source/exports. Later edits used whole-canvas JSON. See the sanitized [runtime receipt](evidence/runtime-capability-20261018.json). |
 | Verified Apify node | Actual picker shows installed/verified Apify package version 0.6.10 (Legacy), update available. No install/update or actor execution occurred. HTTP Request remains the reviewed API path; a current Apify node schema is not assumed. |
-| Postgres parameters | Actual Postgres 2.7 offers Options → Query Parameters (`options.queryReplacement`) and `$1/$2/$3` help. No connection was made. |
+| Postgres parameters | Initial capability inspection found Postgres 2.7 Options → Query Parameters (`options.queryReplacement`) and `$1/$2/$3` help without connecting. The later native identity attempt failed strict TLS, as recorded separately above. |
 
 The [live capability receipt](evidence/n8n-node-capability-20261018.json) records
 12 exported node versions and the archived unused probe. It is not a foundation
@@ -113,6 +113,10 @@ concurrency setting was changed.
 - none
 
 ## Session log
+
+- 2026-10-18 Cairo · Delivery code checkpoint954d9ef: targeted71 Node and42 shared contract tests pass; later exact-page mapper124 affected tests pass, root/workspace typecheck and affected ESLint native0. Independent artifact/source review clear after provenance corrections. All nine migration file hashes reconfirmed unchanged. Temporary dev DB/API handoffs and successful private scratch absent at05:45:10UTC; durable successful push admission retained. [Local receipt](evidence/local-resume-validation-20261018.json), [runtime receipt](evidence/runtime-capability-20261018.json). Final evidence/index scan and normal PR CI follow; no full unchanged local suite rerun.
+
+- 2026-10-18 Cairo · Current resumption: preserved ab9c3c6 and successful CI39097738601; actual clean branch inspected before changes. Existing five credential IDs/types mapped; four actual metadata GETs pass, native writer still fails strict TLS on saved5432. Actual probes exported/archived; no shared credential mutation. Both temporary handoffs initially ready; first DB dry-run rejection preserved, secondnative0/invalid_json preserved; exact pinned CLI source reveals legacy output flag precedence. Corrected command-specific flags pass RED→GREEN/review, actual third once-only run03a85d53 native0 and exact nine-history parity. Independent schema/advisor/type/data/exclusion/logo readback passes (links above); local379 unchanged SQL tests remain separate from hosted metadata/advisors. Daily dev budget25, unknown fees not fabricated. API DNS fixed/tested/reviewed; actual key authenticates and Personal list200, later workflow resource transport fails; no credential-list/full-inventory pass claimed. All consumed handoffs/scratch deleted/children closed; keep durable push admission and owner originals. Source-only Apify trust/async/spend boundaries tested; fullWF19/WF99 incomplete. Pure Cloud probe proves globalURL/modules unsupported; strict exact-owned-page adapter passes separately, general/grouping support not claimed. Root targeted71Node+42Vitest, lint/typecheck pass before the later mapper change; its affected checks are recorded separately. No replay, production, activation, actor/model/paid call, notification, merge or M04. Owner declined contact; no further credential action is needed. Final delivery checks/normal PR CI pending.
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
 - 2026-10-18 · Local native preparation now covers 15 stubs, five SUBs, WF-90, WF-00 and WF-91 (23 blueprints), all inactive and requiring actual bindings. Root's combined changed-code check passed 48/48: 30 foundation/graph/clock/cross-adapter checks plus 18 API-reader checks; binding tests separately 15/15. Targeted lint/format passed. No actual bindings file, hosted workflow export or execution is claimed. Independent review caught/fixed blind Start/claim retries, key reflection, credential project metadata, Cost context and activation-error correlation before live use. [Native review](evidence/native-foundation-review-20261018.json), [API local receipt](evidence/local-n8n-inventory-consumer-20261018.json).
 - 2026-10-18 · Code head `6e6db7ead293f7835d165c8ae574c8888ba7c41a` passed actual CI39097436130: quality, unit (including the 48 native/API checks), build, e2e and db-tests; Vercel preview SUCCESS. [CI receipt](evidence/ci-6e6db7e-20261018.json), [root local check](evidence/local-native-api-20261018.json). Both temporary M03 handoffs remain unconsumed and no hosted credential/provider/migration/workflow result is claimed. Three exact owner actions are pending above; no further sign-in, reset, general dev or merge approval is requested. Production, schedules and M04 stay untouched.

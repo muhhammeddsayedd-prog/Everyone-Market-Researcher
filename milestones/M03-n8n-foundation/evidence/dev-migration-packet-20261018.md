@@ -5,6 +5,24 @@ Authorization: owner's 18 October **Proceed with the next milestone**. This is
 the reviewed implementation/credential-delivery record, not a new general dev
 approval request.
 
+## Completed dev deployment — do not replay
+
+The corrected bounded consumer completed native0 as
+`03a85d53-9ad2-4d42-abb0-08945872e707`. Exact two-version dry-run, push and
+nine-version history match passed. Independent dev MCP verifies12 restricted
+RPCs, receipt/indexes,17 reviewed prices, daily alert budget25, preserved
+285 competitors/1754 accounts/seven owner exclusions/257 logos and no smoke
+fixture or collection. Fresh advisors report0 WARN/ERROR. The handoff/scratch
+were deleted, credential-bearing children closed, successful admission retained.
+No further database handoff or execution is needed. [Completion](dev-migration-completion-20261018.json),
+[schema/type coverage](dev-post-migration-schema-20261018.json),
+[advisors](dev-post-migration-advisors-20261018.json).
+
+Both earlier failed attempts remain in [the actual history](dev-migration-attempt-20261018.json).
+The pinned CLI output-flag conflict and command-specific correction have
+[source reproduction and review](cli-output-protocol-20261018.json). The first
+discarded failure remains unknown; successful completion does not rewrite it.
+
 ## Exact changes
 
 The [public machine packet](../../../scripts/db/m03-dev-migration-packet.json)
@@ -48,7 +66,7 @@ TLS verifies the exact pooler hostname with the pinned CA before decryption.
 The public seal check completed and found the **new M03 handoff absent**; no
 decryption or authentication occurred. Old milestone handoffs remain untouched.
 
-## Exact private delivery
+## Historical private delivery reference — already completed
 
 In **Windows PowerShell under the same Windows account**, run:
 
