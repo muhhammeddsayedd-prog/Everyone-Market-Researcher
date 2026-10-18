@@ -4,16 +4,16 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress — local implementation verified; dev bulk/credentials pending; PR delivery next**
+**Blocked: waiting on owner — MA-07/MA-08, dev seed handoffs and bounded dev packet approval**
 
 | Field | Value |
 |---|---|
 | Started | 2026-10-18 Cairo |
 | Last updated | 2026-10-18 Cairo |
 | Finished | — |
-| Branch / PR | m02-seed-data; PR not yet opened |
-| Current task | T1 committed; T2–T8 scripts, bounded private runner, real-DB rollback tests and independent review complete locally. Draft PR/normal CI next. No hosted import or live provider calls. |
-| Next step | Publish the reviewable implementation, verify normal PR CI, then consume only owner-confirmed available handoffs after the exact USD0 dev packet approval. Verify actual dev results/advisors and prepare MA-09 from them. |
+| Branch / PR | m02-seed-data; [PR6 draft](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6), code head35990bd27e762de21714b719c78e72210636c7f7 |
+| Current task | Local implementation and code-head CI complete. PR6 remains draft/unmerged; dev import/live acceptance await owner actions. |
+| Next step | After owner-confirmed available handoffs and **Approve M02 dev batch**, record actual approval, rebuild source seal in a credential-free process, then run the reviewed bounded dev consumer. Inspect receipt/schema/counts/IDs/logos/advisors; never retry an ambiguous write without reconciliation. Prepare MA-09 from actual results. |
 
 The owner instructed **Proceed with the next milestone** after M01 merged.
 Started from clean main a74459d082ba5d1f0445652d7d12f8d2079da945 and preserved
@@ -47,7 +47,7 @@ specific approval; collection, paid providers, n8n and M03 remain unstarted.
 - [ ] AC8 — Logos — local processing/ownership/actual SDK fake-transport checks pass; hosted Storage/public byte visibility pending.
 - [ ] AC9 — Owner sign-off — MA-09 awaits the actual post-check review list.
 - [ ] AC10 — Prod mirrors dev — production seeding unapproved and unperformed.
-- [ ] AC11 — Tests — shared135 / scripts236 local tests pass, 15 PG tests skipped in ordinary unit invocation and separately executed15/15 PASS against the verified local stack; normal PR CI pending.
+- [x] AC11 — Tests — shared135 / scripts236 local tests pass;15 PG tests skipped in ordinary unit invocation and separately executed15/15 PASS against the verified local stack. [CI39084190118](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39084190118) all five jobs PASS at35990bd; Vercel SUCCESS. CI DB:242 pgTAP +15 mandatory M02 rollback assertions. [Delivery receipt](evidence/ci-delivery-20261018.json). No hosted acceptance inferred.
 
 ## Blockers
 <!-- What stops progress, since when, what unblocks it. Remove when resolved (keep in log). -->
@@ -84,6 +84,8 @@ Granular `-Kind Database`, `Vimeo`, `YouTube`, `Storage` can supply available
 credentials independently without replacing existing files. Consumed temporary
 files are removed after the bounded runner; separately saved originals remain.
 No M02 real handoff has been consumed or authentication attempted yet.
+The actual sealed consumer's presence-only check found all four handoffs absent:
+DB, Vimeo, YouTube and Storage. It stopped before private reads/authentication.
 
 ## Decisions & deviations
 <!-- Anything that differs from the docs. Also add to docs/DECISIONS.md → Changes if it changes a decision. -->
@@ -101,6 +103,8 @@ No M02 real handoff has been consumed or authentication attempted yet.
 
 ## Session log
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
+- 2026-10-18 Cairo · Code head35990bd / CI39084190118 all five jobs PASS, Vercel SUCCESS. Isolated CI DB reports10pgTAP files/242assertions and15 mandatory M02 rollback assertions; no warning/error security advisor and no error performance advisor. AC11 complete within local/CI scope. Documentation-only receipt uses normal PR CI; hosted AC1–10 remain unaccepted. No credential or bulk approval reply yet, so runtime `approved:false` stays; no dev/production write, provider/collector/n8n action or merge. M02 blocked on exact owner steps above.
+- 2026-10-18 Cairo · Published draft PR6 at35990bd; CI39084190118 running. Final727-file index scan initially flagged a synthetic password URL in a negative report test; fixture now uses the URL API, targeted report15/15 and unchanged scanner0 PASS. Credential-free sealed build/native0; actual consumer CheckOnly verified source seal and found all four handoffs absent, no private read or authentication. Owner steps/approval remain pending; no hosted or provider action.
 - 2026-10-18 Cairo · Completed tested T2–T8 implementation and bounded private runner; [independent review](evidence/independent-review-20261018.md) found preservation, recovery, source-binding and credential-boundary issues, all fixed with focused regressions before live use. Shared135 / scripts236 tests PASS, separate actual local PG15/15 PASS with rollback+no C999 changes, CI safety9/9 PASS, root typecheck/lint/format PASS. [Windows/credential review](evidence/private-runner-review-20261018.json) uses synthetic handoffs only. Requested exact dev packet approval and executable MA-07/08/dev-owner credential delivery; no real handoff consumed, hosted import or provider request. Normal PR CI pending.
 - 2026-10-18 Cairo · Reused working dev-scoped MCP; project URL confirmed zmotjsbzhzjvpelxvxlf. Seven original versions and empty baseline preserved. [Read-only count assertions](evidence/dev-preflight-20261018.json) execute semantically against dev but seeded ACs remain false before import;17 price-book rows read, no direct free-API SKU/paid usage. No migration or schema change.
 - 2026-10-18 Cairo · T1 implemented in shared handles library: synchronous platform/host/URL validation, canonicalization and real CSV cases; 135 shared tests and strict typecheck PASS. Digit-leading Vimeo vanity profiles retained; numeric clip URLs rejected. Full plan remains 285 competitors / 1,754 accounts, zero canonical collisions, 289 active / 1,462 paused / three invalid legacy YouTube URLs (C102 pilot, C245, C283). No provider or hosted write performed.

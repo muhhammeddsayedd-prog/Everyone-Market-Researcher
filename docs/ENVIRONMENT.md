@@ -56,9 +56,22 @@ Where every secret lives, who creates it, and which milestone needs it. **Never 
 | `SUPABASE_ACCESS_TOKEN` | Codex env + GitHub Actions secret | **Scoped** personal access token (dev project; prod only when the owner allows) |
 | `SUPABASE_DB_PASSWORD_DEV` / `_PROD` | local only | for `supabase db push` |
 | `SUPABASE_PROJECT_REF_DEV` / `_PROD` | repo variable | not secret |
-| `SEED_DATABASE_URL` | local only | owner/postgres connection for `scripts/seed-*.ts` |
+| `SEED_DATABASE_URL` | bounded owner seed child only | Password-free, fixed-project session-pooler URI for M02; never an application-role URL |
+| `PGPASSWORD` | bounded owner seed child only | Existing dev DB password decrypted from the M02 temporary Windows DPAPI handoff; no parent environment, `.env`, arguments or CI secret |
+| `SUPABASE_URL` | M02 owner seed child | Non-secret verified dev URL used by the logo Storage client |
+| `SUPABASE_SECRET_KEY` | M02 owner seed child only | Dev secret key for owner-run logo seed; separate from the later Vercel media-route configuration |
+| `VIMEO_TOKEN` / `YOUTUBE_API_KEY` | M02 owner seed child only | Public-scope Vimeo token / YouTube Data API v3 restricted key; retain originals for later n8n setup |
 | `N8N_API_KEY` / n8n MCP config | Codex MCP config | to create/update workflows |
 | `VERCEL_TOKEN` | optional | only if Codex deploys via CLI |
+
+M02's exact private delivery commands and cleanup are in
+[`scripts/seed/README.md`](../scripts/seed/README.md). The Windows helper stores
+only temporary DPAPI ciphertext under the current user's local Temp directory.
+The reviewed consumer verifies the source/data/packet seal before decryption,
+starts a bounded plain-Node process, removes consumed handoffs and confirms child
+exit. Build/test/install processes receive no live credentials. File presence is
+not authentication. Production seeding requires its separate M02 approval; a
+database password is not a restricted application-role credential.
 
 ## 3. Generating secrets
 
