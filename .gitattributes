@@ -3,6 +3,9 @@
 assets/** -text
 scripts/seed/certs/*.crt -text
 data/** -text
+# Reviewed seed CSV bytes are CRLF; preserve them exactly across clean checkouts.
+data/competitors.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/competitor_accounts.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 reference/** -text
 apps/web/styles/tokens.css -text
 apps/web/public/brand/** -text

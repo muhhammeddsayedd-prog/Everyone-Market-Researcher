@@ -1,4 +1,4 @@
-import { copyFile, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, readdir, realpath, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -33,6 +33,10 @@ const publicFiles = [
   'scripts/assert/m02_counts.sql',
 ];
 let fixture: string, artifact: string, guard: string, packet: Record<string, unknown>;
+async function newArtifactDirectory(parent: string) {
+  await mkdir(parent, { recursive: true });
+  return mkdtemp(join(parent, 'prod-cli-test-'));
+}
 async function setPacket(value: Record<string, unknown>) {
   await writeFile(join(fixture, 'scripts/seed/prod-seed-packet.json'), JSON.stringify(value, null, 2) + '\n');
   const seal = JSON.parse(await readFile(join(artifact, 'prod-runner-seal.json'), 'utf8'));
@@ -56,7 +60,7 @@ function run(action: string, extra: Record<string, string> = {}, runner = 'prod-
 }
 beforeAll(async () => {
   fixture = await mkdtemp(join(tmpdir(), 'emr-m02-prod-cli-'));
-  artifact = await mkdtemp(join(root, 'scripts/seed/out/prod-cli-test-'));
+  artifact = await newArtifactDirectory(join(root, 'scripts/seed/out'));
   for (const path of publicFiles) {
     const destination = join(fixture, path);
     await mkdir(dirname(destination), { recursive: true });
@@ -140,6 +144,15 @@ afterAll(async () => {
     }
 });
 describe('actual sealed production CLI, isolated public fixture and network denied', () => {
+  it('creates a usable artifact directory when its isolated parent is cold', async () => {
+    const coldParent = join(fixture, 'cold-artifact-parent', 'out');
+    await expect(stat(coldParent)).rejects.toMatchObject({ code: 'ENOENT' });
+    const created = await newArtifactDirectory(coldParent);
+    expect(await realpath(dirname(created))).toBe(resolve(coldParent));
+    const artifactPath = join(created, 'public-fixture.mjs');
+    await writeFile(artifactPath, '// public temporary artifact\n');
+    expect(await readFile(artifactPath, 'utf8')).toBe('// public temporary artifact\n');
+  });
   it('preflight validates public payload offline and reports current false approval', () => {
     const result = run('preflight');
     expect(result.status).toBe(0);

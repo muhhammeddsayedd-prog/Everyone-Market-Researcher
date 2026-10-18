@@ -1,4 +1,4 @@
-﻿{
+{
   "observedAt": "2026-10-18T02:30:26Z",
   "environment": "Local preparation only; no production authentication or transfer",
   "targetProjectRef": "hkiafqrcxaafdbcvjlzv",
@@ -121,5 +121,23 @@
       "gitBlob": "861161dd65e50e7f50dc53e334988fc3fe0abd7d",
       "exactIndexedWorkingBytes": true
     }
-  ]
+  ],
+  "deliveryCorrection": {
+    "failedCiHead": "e349a087a41c3a9e0148626860b6971f1eb1e29e",
+    "failedCiRun": "39090441239",
+    "sourceByteEvidence": "prod-source-byte-delivery-20261018.json",
+    "frozenHashesOrRowValuesChanged": false,
+    "correctedCliSuite": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "reportedBy": "m02_prod_packet",
+      "coldParentRegressionFailedBeforeFix": true
+    },
+    "currentDistinctCoreCases": 38,
+    "executionBoundary": "The earlier consolidated37 run and later corrected7 CLI run are separate. New normal clean-checkout CI must pass; historical failed CI is retained.",
+    "runtimeChanged": false,
+    "productionOperations": 0
+  }
 }

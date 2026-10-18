@@ -203,6 +203,81 @@
     "exactExcludedSources": ["C102", "C142", "C218", "C231", "C233", "C245", "C283"],
     "noCompanyWideAbsenceClaim": true
   },
+  "ciPortabilityFollowup": {
+    "recordedAt": "2026-10-18T02:41:19.230Z",
+    "failedCiRun": "39090441239",
+    "failedCiHead": "e349a087a41c3a9e0148626860b6971f1eb1e29e",
+    "failedUnitJob": "117565838722",
+    "officialLog": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39090441239/job/117565838722",
+    "diagnosisSource": "Independently retrieved official GitHub CLI failed-job log and independently compared working/index/prior-HEAD public source bytes.",
+    "actualFailures": [
+      {
+        "file": "scripts/seed/prod-cli.test.ts:59",
+        "error": "ENOENT mkdtemp under missing scripts/seed/out",
+        "cause": "Ignored output parent absent on clean checkout; fixture setup depended on another build creating it."
+      },
+      {
+        "file": "scripts/seed/prod-inputs.test.ts:11",
+        "error": "M02_PROD_PACKET_HASH_MISMATCH",
+        "cause": "Committed CSV bytes differed from reviewed CRLF working bytes."
+      },
+      {
+        "file": "scripts/seed/prod-model.test.ts:202",
+        "error": "M02_PROD_PAYLOAD_REJECTED at source-hash check",
+        "cause": "The same committed-versus-working byte mismatch changed the source seal."
+      }
+    ],
+    "originalUnitResult": {
+      "failedFiles": 3,
+      "failedTests": 2,
+      "passedTests": 487,
+      "skippedTests": 112,
+      "cliCasesSkippedAfterSetupFailure": 6
+    },
+    "correctionsReviewed": [
+      "Actual artifact setup helper creates its parent recursively before mkdtemp; a regression uses a genuinely missing owned temporary parent and writes/reads a usable artifact.",
+      "Only two CSVs are re-added under existing -text rules, preserving reviewed CRLF bytes; narrow cr-at-eol attributes retain normal whitespace checks.",
+      "No CSV row/value, production runtime, hash algorithm, packet/payload/logo hash or successful dev operation changed."
+    ],
+    "publicByteProof": "milestones/M02-seed-data/evidence/prod-source-byte-delivery-20261018.json",
+    "independentIndexVerification": {
+      "allFourSourceFilesIndexMatchWorking": true,
+      "normalizedContentMatchesPriorHead": true,
+      "cachedIgnoreSpaceAtEolContentDiffEmpty": true,
+      "competitors": {
+        "blobId": "5726e0d5f3274d71759220d0558903928a1f2903",
+        "sha256": "99c6653d00818b39d04b8f9514d0ae8528038f3230ae11bf1b8613b35b185336",
+        "crlfLines": 286
+      },
+      "accounts": {
+        "blobId": "c804679b5b2b9ac7fde164dc6984a6d55170807f",
+        "sha256": "89f305b12cbbf9cad07f28b2464d165f67857882233f4146466ad5c3200e8866",
+        "crlfLines": 1273
+      },
+      "previousCommittedSourceSha256": "20308d8122d9b8e30b56e250c969645c1556d20f81851fa36d8eba028aaba98f",
+      "correctedIndexAndReviewedWorkingSourceSha256": "b3cf64b90058b5c786513c4fed9ebbe9d9bb092ec3a916744c944faeb826a17b"
+    },
+    "independentRegression": {
+      "command": "pnpm.cmd --filter @emr/scripts exec vitest run seed/prod-cli.test.ts -t 'parent is cold'",
+      "passed": 1,
+      "failed": 0,
+      "filteredSkipped": 6
+    },
+    "separatelyReportedRegression": {
+      "reportedBy": "m02_prod_packet",
+      "command": "Full updated prod-cli.test.ts",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "status": "Observed CI causes corrected locally; replacement Linux CI remains a required, unclaimed gate.",
+    "remainingFindingsInCorrection": [],
+    "productionApproved": false,
+    "hostedDatabaseOperations": 0,
+    "realPrivateCredentialOperations": 0,
+    "providerRequests": 0,
+    "githubTransportHandling": "Subsequent GitHub CLI stderr is withheld to prevent transient transport errors printing short-lived signed download URLs."
+  },
   "remainingFindings": [],
   "remainingGates": [
     "Final credential-free runner/source seal and Git-byte proof at the delivered head; existing development artifacts do not supply this.",

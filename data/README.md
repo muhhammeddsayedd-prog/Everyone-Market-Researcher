@@ -11,6 +11,7 @@ Exported from the competitor master sheet (Google Sheet `1z3q_g0-5hQpNOpdTvVhOR9
 
 Notes:
 
+- The two seed-input CSVs preserve their reviewed CRLF bytes under `.gitattributes -text`. On18October M02 CI exposed older LF Git blobs despite CRLF working files; re-adding the exact reviewed bytes corrected checkout/hash parity without changing a row or value. See [the public byte proof](../milestones/M02-seed-data/evidence/prod-source-byte-delivery-20261018.json).
 - Links the sheet marked "Not verified" are excluded (empty).
 - Per D-27 and the owner's18October2026 MA-09 response, an unavailable/unverified social source is skipped; no account is invented for a missing platform. The seven reviewed YouTube sources are retained as invalid via `scripts/seed/overrides.csv`. Original counts stay128 YouTube rows/11 pilot; resolved coverage is121/128 raw and10/11 raw pilot, or121/121 and10/10 among eligible accounts. A failed source lookup is not proof the company has no channel.
 - Reference-only platforms are kept for context and are **never scraped** (D-07).

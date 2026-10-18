@@ -184,7 +184,7 @@ delete collected rows.
 
 ## Readiness evidence and remaining gates
 
-Focused local results:37 core checks, including6 actual plain-Node CLI checks
+Focused local results:38 distinct core checks, including7 actual plain-Node CLI checks
 in isolated public fixtures with network denied;3 offline CA checks;32 synthetic
 Windows-consumer checks;6 actual local PostgreSQL rollback-only component checks.
 The latter use five fixture competitors/11 accounts and preserve C999/all prior
@@ -192,6 +192,14 @@ rows; they do not claim a full285-row production rehearsal. CLI fault injection
 uses explicit local fake DB/network modules, not actual production authentication.
 Normal PR CI, final source seal and independent review are separate receipts at
 the final reviewable head.
+
+Clean-checkout CI39090441239 exposed a missing test output parent and an older
+LF Git representation of the reviewed CRLF CSVs. The corrected CLI suite passes7/7,
+including an initially failing cold-parent regression. The [byte-delivery proof](prod-source-byte-delivery-20261018.json)
+shows all four indexed source inputs exactly match the reviewed working bytes;
+only line endings changed relative to the earlier two CSV blobs. The reviewed
+source/payload/logo hashes above and all rows/values remain unchanged. That
+failed CI is preserved; a new clean-checkout CI pass is required before approval.
 
 No logo bytes were bulk-downloaded during preparation. Actual production
 preflight/import/transfers, populated advisors and AC10 remain unperformed pending
