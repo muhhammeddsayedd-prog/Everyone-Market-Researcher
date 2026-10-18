@@ -31,7 +31,7 @@ if [[ "\${0##*/}" == pnpm ]]; then
     shift
   done
   [[ -n "$report" ]] || exit 1
-  node --input-type=module -e 'const make=(name,count)=>({name:"/repo/scripts/seed/"+name,assertionResults:Array.from({length:count},()=>({status:process.env.EMR_TEST_M02_SKIPPED?"pending":"passed"}))});console.log(JSON.stringify({success:true,numFailedTests:0,numPendingTests:process.env.EMR_TEST_M02_SKIPPED?1:0,testResults:[make("seed-competitors.integration.test.ts",10),make("database.test.ts",5)]}));' > "$report"
+  node --input-type=module -e 'const make=(name,count)=>({name:"/repo/scripts/seed/"+name,assertionResults:Array.from({length:count},()=>({status:process.env.EMR_TEST_M02_SKIPPED||(name==="owner-exclusions.integration.test.ts"&&process.env.EMR_TEST_M02_OWNER_SKIPPED)?"pending":"passed"}))});const owner=process.env.EMR_TEST_M02_OWNER_MISSING?[]:[make("owner-exclusions.integration.test.ts",21)];console.log(JSON.stringify({success:true,numFailedTests:0,numPendingTests:process.env.EMR_TEST_M02_SKIPPED||process.env.EMR_TEST_M02_OWNER_SKIPPED?1:0,testResults:[make("seed-competitors.integration.test.ts",10),make("database.test.ts",5),...owner]}));' > "$report"
 elif [[ "\${0##*/}" == psql ]]; then
   role="\${PGUSER%%.*}"
   printf '%s\\n' "$@" > "$EMR_TEST_CAPTURE/$role.args"
@@ -174,13 +174,13 @@ test('CI runner uses only explicit local targets and exposes only safe summaries
     assert.match(commands, /db advisors --local --type performance --level warn --fail-on error/);
     assert.match(
       commands,
-      /--filter @emr\/scripts exec vitest run seed\/seed-competitors.integration.test.ts seed\/database.test.ts --reporter=json/,
+      /--filter @emr\/scripts exec vitest run seed\/seed-competitors.integration.test.ts seed\/database.test.ts seed\/owner-exclusions.integration.test.ts --reporter=json/,
     );
     assert.equal(
       readFileSync(join(directory, 'm02.target'), 'utf8').trim(),
       'postgresql://postgres@127.0.0.1:60322/postgres',
     );
-    assert.match(child.stdout, /M02 PostgreSQL rollback acceptance: 15 assertions, PASS/);
+    assert.match(child.stdout, /M02 PostgreSQL acceptance: 36 assertions, PASS/);
     assert.ok(!commands.includes('--linked') && !commands.includes('--db-url'));
   }));
 
@@ -214,4 +214,18 @@ test('CI runner rejects skipped M02 PostgreSQL assertions', () =>
     assert.equal(child.status, 1);
     assert.match(child.stderr, /missing, skipped or failed assertions/);
     assert.ok(!child.stdout.includes(marker) && !child.stderr.includes(marker));
+  }));
+
+test('CI runner rejects a missing owner-exclusion SQL suite', () =>
+  fixture((directory) => {
+    const child = execute(directory, 'scripts/db/run-local-ci.sh', { EMR_TEST_M02_OWNER_MISSING: '1' });
+    assert.equal(child.status, 1);
+    assert.match(child.stderr, /missing, skipped or failed assertions/);
+  }));
+
+test('CI runner rejects a skipped owner-exclusion SQL suite while other suites pass', () =>
+  fixture((directory) => {
+    const child = execute(directory, 'scripts/db/run-local-ci.sh', { EMR_TEST_M02_OWNER_SKIPPED: '1' });
+    assert.equal(child.status, 1);
+    assert.match(child.stderr, /missing, skipped or failed assertions/);
   }));

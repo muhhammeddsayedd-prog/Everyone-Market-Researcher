@@ -3,7 +3,21 @@
 -- document the exact overrides/deviation before changing an expected count.
 -- AC7 needs a second-run write receipt; MA-09 and production approval are never inferred.
 -- AC8 storage metadata is not proof of public HTTP visibility.
+-- 2026-10-18 MA-09: the owner excluded these seven unavailable/unverified listed
+-- YouTube sources from collection. This does not prove that a company has no channel.
+-- Raw CSV totals stay 128 / 11 pilot; only these exact invalid identities are exempt.
 with
+owner_exclusions(company_code, platform, handle_norm, url, expected_pilot) as (
+  values
+    ('C102', 'youtube', 'mvmpro', 'https://www.youtube.com/mvmpro', false),
+    ('C142', 'youtube', '@gearbox-channel', 'https://www.youtube.com/@gearbox-channel', false),
+    ('C218', 'youtube', 'c/actionfilmzstudiodubaiproductions_rentals_events',
+      'https://www.youtube.com/c/actionfilmzstudiodubaiproductions_rentals_events', false),
+    ('C231', 'youtube', 'user/cityfilmsbeirut', 'https://www.youtube.com/user/cityfilmsbeirut', false),
+    ('C233', 'youtube', '@createproductiondxb5110', 'https://www.youtube.com/@createproductiondxb5110', false),
+    ('C245', 'youtube', 'firstandtenproductions', 'https://www.youtube.com/firstandtenproductions', false),
+    ('C283', 'youtube', 'wonderfulprodbeirut', 'https://www.youtube.com/wonderfulprodbeirut', true)
+),
 expected_platforms(platform, expected_count, is_primary, expected_active) as (
   values
     ('website', 261, true, 11),
@@ -36,6 +50,8 @@ company_counts as (
 account_scope as (
   select a.*, c.company_code, c.priority_tier,
     c.priority_tier in ('pilot', 'baseline') as pilot_or_baseline,
+    e.company_code is not null as owner_excluded,
+    e.expected_pilot as approved_exclusion_pilot,
     exists (
       select 1 from app.competitor_accounts work
       where work.competitor_id = a.competitor_id and work.platform = 'website_work_page'
@@ -54,6 +70,27 @@ account_scope as (
     end as identifiers_valid
   from app.competitor_accounts a
   join app.competitors c on c.id = a.competitor_id
+  left join owner_exclusions e on e.company_code = c.company_code
+    and e.platform = a.platform::text and e.handle_norm = a.handle_norm and e.url = a.url
+),
+owner_exclusion_counts as (
+  select (select count(*)::integer from owner_exclusions) as approved_sources,
+    (select count(*)::integer from owner_exclusions where expected_pilot) as approved_pilot_sources,
+    count(*) filter (where owner_excluded)::integer as matched_sources,
+    count(distinct company_code) filter (where owner_excluded)::integer as matched_companies,
+    count(*) filter (where owner_excluded and status = 'invalid' and resolve_status = 'failed'
+      and external_id is null and uploads_playlist_id is null
+      and pilot_or_baseline = approved_exclusion_pilot)::integer as valid_excluded_sources,
+    count(*) filter (where owner_excluded and pilot_or_baseline)::integer as matched_pilot_sources,
+    count(*) filter (where platform = 'youtube' and not owner_excluded
+      and status not in ('active', 'paused'))::integer as unexpected_ineligible_sources
+  from account_scope
+),
+owner_policy as (
+  select p.*, (approved_sources = 7 and approved_pilot_sources = 1
+    and matched_sources = 7 and matched_companies = 7 and valid_excluded_sources = 7
+    and matched_pilot_sources = 1 and unexpected_ineligible_sources = 0) as passed
+  from owner_exclusion_counts p
 ),
 resolution as (
   select platform::text as platform,
@@ -61,6 +98,13 @@ resolution as (
     count(*) filter (where resolve_status = 'resolved' and identifiers_valid)::integer as resolved,
     count(*) filter (where pilot_or_baseline)::integer as pilot_total,
     count(*) filter (where pilot_or_baseline and resolve_status = 'resolved' and identifiers_valid)::integer as pilot_resolved,
+    count(*) filter (where owner_excluded)::integer as owner_excluded,
+    count(*) filter (where owner_excluded and pilot_or_baseline)::integer as owner_excluded_pilot,
+    count(*) filter (where not owner_excluded)::integer as eligible_total,
+    count(*) filter (where not owner_excluded and resolve_status = 'resolved' and identifiers_valid)::integer as eligible_resolved,
+    count(*) filter (where not owner_excluded and pilot_or_baseline)::integer as eligible_pilot_total,
+    count(*) filter (where not owner_excluded and pilot_or_baseline
+      and resolve_status = 'resolved' and identifiers_valid)::integer as eligible_pilot_resolved,
     count(*) filter (where resolve_status = 'pending')::integer as pending,
     count(*) filter (where resolve_status = 'resolved' and not identifiers_valid)::integer as bad_resolved
   from account_scope where platform in ('vimeo', 'youtube')
@@ -127,9 +171,15 @@ results as (
     'Only pilot/baseline may be active; roots with a work page stay paused or explicitly invalid.'
   from gating
   union all
-  select 'AC4_active_' || platform, to_jsonb(actual_active), to_jsonb(expected_active), actual_active = expected_active,
-    'Original active targets; invalid/owner-reviewed accounts may explain a lower count, never an unrecorded pass.'
-  from platform_counts
+  select 'AC4_active_' || platform,
+    case when platform = 'youtube' then jsonb_build_object('active', actual_active,
+      'owner_excluded_pilot', p.matched_pilot_sources) else to_jsonb(actual_active) end,
+    case when platform = 'youtube' then jsonb_build_object('original_active_target', expected_active,
+      'eligible_active_target', expected_active - p.approved_pilot_sources) else to_jsonb(expected_active) end,
+    case when platform = 'youtube' then p.passed and actual_active = expected_active - p.approved_pilot_sources
+      else actual_active = expected_active end,
+    'Original targets retained. YouTube has one specifically approved invalid pilot exclusion; exact identity/state guard must pass.'
+  from platform_counts cross join owner_policy p
   union all
   select 'AC5_vimeo_pilot_resolution',
     coalesce((select to_jsonb(r) from resolution r where platform = 'vimeo'), '{}'::jsonb),
@@ -138,13 +188,25 @@ results as (
       and pending = 0 and bad_resolved = 0 from resolution where platform = 'vimeo'), false),
     'Valid numeric user/resource IDs required; failed/transient/zero-ID rows do not count as resolved.'
   union all
+  select 'AC5_youtube_owner_exclusions', to_jsonb(p) - 'passed',
+    jsonb_build_object('approved_sources', 7, 'approved_pilot_sources', 1, 'matched_sources', 7,
+      'matched_companies', 7, 'valid_excluded_sources', 7, 'matched_pilot_sources', 1,
+      'unexpected_ineligible_sources', 0), p.passed,
+    'MA-09 approved seven exact listed sources as invalid/failed, with null IDs and no collection. No company-wide absence claim or blanket invalid-account exemption.'
+  from owner_policy p
+  union all
   select 'AC5_youtube_resolution',
     coalesce((select to_jsonb(r) from resolution r where platform = 'youtube'), '{}'::jsonb),
-    jsonb_build_object('pilot_rate', 1.0, 'all_minimum_rate', 0.90, 'pending', 0, 'bad_resolved', 0),
-    coalesce((select pilot_total > 0 and pilot_resolved = pilot_total and total > 0
+    jsonb_build_object('original_total', 128, 'original_pilot_total', 11, 'owner_excluded', 7,
+      'owner_excluded_pilot', 1, 'eligible_total', 121, 'eligible_pilot_total', 10,
+      'eligible_resolution_rate', 1.0, 'all_original_minimum_rate', 0.90, 'pending', 0, 'bad_resolved', 0),
+    coalesce((select p.passed and total = 128 and pilot_total = 11
+      and owner_excluded = 7 and owner_excluded_pilot = 1
+      and eligible_total = 121 and eligible_resolved = eligible_total
+      and eligible_pilot_total = 10 and eligible_pilot_resolved = eligible_pilot_total
       and resolved >= ceil(total * 0.90) and pending = 0 and bad_resolved = 0
-      from resolution where platform = 'youtube'), false),
-    'Both UC channel and UU uploads IDs are required; no search.list or empty-on-error substitution.'
+      from resolution cross join owner_policy p where platform = 'youtube'), false),
+    'Raw 121/128 and 10/11 remain visible. Eligible 121/121 and 10/10 require the exact seven owner exclusions and valid UC/UU identifiers; no guessed resolution.'
   union all
   select 'AC6_backfill_and_cadence_violations', to_jsonb(violations), to_jsonb(0), violations = 0,
     'Primary rows pending from 2024-01-01; stories/employees not_applicable; employee cadence seven days.'

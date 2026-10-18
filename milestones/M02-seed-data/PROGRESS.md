@@ -5,16 +5,16 @@
 
 ## Status
 
-**Blocked: waiting on owner — MA-09 decisions; dev technical batch complete**
+**In progress — dev acceptance complete under D-27; production packet preparation**
 
-| Field        | Value                                                                                                                                                                                                                                                                                              |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Started      | 2026-10-18 Cairo                                                                                                                                                                                                                                                                                   |
-| Last updated | 2026-10-18 Cairo                                                                                                                                                                                                                                                                                   |
-| Finished     | —                                                                                                                                                                                                                                                                                                  |
-| Branch / PR  | m02-seed-data; PR6 OPEN/DRAFT. Code head d5171fe9f119e1703cc9e9371579f0b29a0becad; CI39088023934 all five jobs/Vercel PASS. Documentation-only delivery follows normal CI.                                                                                                                         |
-| Current task | YouTube-only continuation completed native0 at01:53UTC;121/128 resolved,0 pending,7 failed/invalid. Independent22/22 preservation checks pass. Report completed; handoffs removed/child closed. MA-09 review issued.                                                                               |
-| Next step    | Wait for exact MA-09 decisions in the linked Markdown/CSV or chat. C283 Wonderful Productions (pilot rank47) needs a correct public YouTube URL or explicit exception. Review/apply only approved corrections; no batch replay or new credentials now. Production and merge remain separate gates. |
+| Field        | Value                                                                                                                                                                                                                                     |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Started      | 2026-10-18 Cairo                                                                                                                                                                                                                          |
+| Last updated | 2026-10-18 Cairo                                                                                                                                                                                                                          |
+| Finished     | —                                                                                                                                                                                                                                         |
+| Branch / PR  | m02-seed-data; PR6 OPEN/DRAFT. Code head d5171fe9f119e1703cc9e9371579f0b29a0becad; CI39088023934 all five jobs/Vercel PASS. Documentation-only delivery follows normal CI.                                                                |
+| Current task | Owner MA-09 decisions recorded: seven reviewed YouTube sources excluded,23 website flags/11 logo fallbacks accepted. Fresh dev read-only assertions all pass (AC7 uses the original actual second-run receipt). No hosted write or retry. |
+| Next step    | Finish the separate guarded production runner, frozen accepted public payload, targeted tests and independent review. Then present the exact production seed packet for separate approval; keep PR6 draft and M03 stopped.                |
 
 The owner instructed **Proceed with the next milestone** after M01 merged.
 Started from clean main a74459d082ba5d1f0445652d7d12f8d2079da945 and preserved
@@ -28,13 +28,13 @@ specific approval; collection, paid providers, n8n and M03 remain unstarted.
 
 - [x] T1 — Handle normalization library — 135 shared tests pass; strict typecheck passes (local).
 - [x] T2 — Seed competitors — dev285; tiers50/174/60/1; C000 baseline1; second seed0 inserts/updates.
-- [ ] T3 — Seed accounts/gating — all1,754 identities/platform/derived/cadence counts pass. Pilot YouTube10 active vs11 requires C283 owner correction or explicit documented exception.
+- [x] T3 — Dev accounts/gating —1,754 identities and all platform/derived/cadence counts pass;289 active/1,458 paused/seven invalid. Exact seven owner exclusions include C283; eligible YouTube active10 matches10.
 - [x] T4 — Report script — original native1/report validation failure preserved. Fixed lossless bigint validation (25 tests); separate credential-free report from actual dev MCP readback succeeded native0.
 - [x] T5 — Resolve Vimeo (MA-07) — actual202/202 resolved, pilot/baseline48/48. No rerun needed.
-- [ ] T6 — YouTube — actual continuation completed native0:121/128 resolved (94.53%),0 pending,7 failed/invalid. Pilot10/11; C283 Wonderful Productions remains for MA-09. Six non-pilot failures need explicit owner decisions.
+- [x] T6 — Dev YouTube —121/128 raw resolved (94.53%),0 pending; eligible121/121 and eligible pilot10/10. Seven exact sources are invalid/failed and owner-excluded under D-27; raw pilot10/11 remains visible.
 - [x] T7 — Instagram, LinkedIn, website checks — actual1,424 format/reachability checks,44 updates,1,380 unchanged;23 unreachable website flags retained without changing gating.
 - [x] T8 — Copy logos — actual257 public-byte hashes verified,1,560,325 bytes;256/267 source logos (95.88%) plus baseline1.11 source failures use fallback tiles;17 have no source.
-- [ ] T9 — Owner review (MA-09)
+- [x] T9 — MA-09 owner decisions recorded for all41 rows; seven exact invalid overrides persist the policy,23 website flags retained and11 initials fallbacks accepted. Actual dev already matches, so no seed/resolve replay or new credential handoff.
 - [ ] T10 — Seed prod (owner OK)
 - [ ] T11 — Docs and hand-off
 
@@ -45,84 +45,76 @@ specific approval; collection, paid providers, n8n and M03 remain unstarted.
 - [x] AC1 — Dev285; tiers50/174/60/1; C000 baseline1. Independent [actual assertions](evidence/dev-counts-after-batch-20261018.json).
 - [x] AC2 — Dev primary1,272: website261, work pages199, Instagram256, Vimeo202, YouTube128, LinkedIn226. Same actual assertions.
 - [x] AC3 — Dev stories256/employees226; total1,754; derived cadence/backfill checks pass. Same actual assertions.
-- [ ] AC4 — Dev gating violations0; all active-platform targets pass except YouTube10 vs11. Actual unresolved pilot is C283 Wonderful Productions, not C102; see the correction below.
-- [ ] AC5 — Dev Vimeo202/202, pilot48/48 PASS. YouTube121/128 (94.53%),0 pending, valid UC/UU IDs; pilot10/11 FAIL pending C283 correction/explicit exception. [Fresh actual assertions](evidence/dev-counts-after-youtube-20261018.json).
+- [x] AC4 — Dev gating passes under D-27: original YouTube target11 shown, exact excluded pilot1 (C283), eligible active target10/actual10;0 overall gating violations. The identity/state exclusion guard passes, rather than exempting arbitrary invalids.
+- [x] AC5 — Dev Vimeo202/202 and pilot48/48; YouTube121/128 raw,10/11 raw pilot,121/121 eligible and10/10 eligible pilot,0 pending/bad IDs. All seven exact owner-excluded sources remain invalid/failed with null IDs. [Actual D-27 assertions](evidence/dev-counts-after-ma09-20261018.json).
 - [x] AC6 — Dev backfill/cadence/root gating assertions report0 violations. Primary1,272 pending; derived482 not_applicable. [Actual assertions](evidence/dev-counts-after-batch-20261018.json).
 - [x] AC7 — Idempotent (dev) — actual full second seed reports competitorsInserted0 / competitorsUpdated0 / accountsInserted0 / accountsUpdated0. Independent before/after continuation counts remain285/1,754. The original batch native1 and later successful resolution are separate receipts; prod is unseeded.
 - [x] AC8 — Dev256/267 source logos (95.88%) plus baseline1; actual257 public-byte hashes verified. Fresh [Storage readback](evidence/dev-storage-readback-20261018.json):257 matching objects/1,560,325 bytes, media bucket public; no other media objects. Production separate.
-- [ ] AC9 — Owner sign-off — actual41-row MA-09 list is issued and independently verified against the72 raw report reasons. All41 decisions remain blank; await explicit owner decisions, then apply/review any approved corrections.
+- [x] AC9 — Owner sign-off recorded18October: skip the seven reviewed unavailable/unverified YouTube sources, retain23 website flags and accept11 logo fallbacks. All41 CSV decisions recorded; no proven-absence claim. [Dispositions](evidence/ma09-owner-dispositions-20261018.json).
 - [ ] AC10 — Prod mirrors dev — production seeding unapproved and unperformed.
 - [x] AC11 — Historical local/CI evidence preserved. Recovery code d5171fe / CI39088023934 all five jobs and Vercel PASS; focused local/parser/report/budget/Windows checks reviewed separately. Actual dev continuation native0 plus independent22/22 preservation checks; these are distinct from CI. [CI delivery](evidence/dev-recovery-ci-delivery-20261018.json).
 
-## Actual dev report — MA-09 pending
+## Actual dev report — owner decisions verified
 
-The final report observed01:53:59.364UTC was generated by the corrected driver
-against actual dev after the successful continuation. Its full counts and72
-raw reason rows are preserved in [the actual report](evidence/dev-final-report-20261018.json).
-The original batch native1 and separate report recovery remain historical.
+The actual driver report observed01:53:59.364UTC remains unchanged, including
+its72 raw reason rows. The original native1 batch failure and separate successful
+report recovery are retained. [Raw report](evidence/dev-final-report-20261018.json).
 
-| Check                          | Actual dev result                                                         |
-| ------------------------------ | ------------------------------------------------------------------------- |
-| Competitors / accounts         | 285 / 1,754; primary1,272 + stories256 + employees226                     |
-| Tiers                          | pilot50 / next_wave174 / adjacent60 / baseline1                           |
-| Vimeo                          | 202/202 resolved, pilot/baseline48/48                                     |
-| YouTube                        | 121/128 resolved (94.53%);0 pending;7 failed/invalid; pilot10/11          |
-| Backfill                       | primary1,272 pending; derived482 not_applicable;0 cadence/flag violations |
-| Logos                          | 256/267 source copied (95.88%) + baseline1;257 public hashes verified     |
-| Duplicates / collected content | 0 duplicate keys;0 items /0 raw items                                     |
+| Check                     | Actual dev result                                                             |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| Competitors / accounts    | 285 /1,754; same source identities and platform counts                        |
+| Vimeo                     | 202/202 resolved; pilot/baseline48/48                                         |
+| YouTube raw coverage      | 121/128 resolved (94.53%); raw pilot10/11;0 pending                           |
+| Owner exclusions          | Exactly7 reviewed identities, including pilot C283, invalid/failed and no IDs |
+| YouTube eligible coverage | 121/121 and pilot10/10 resolved under D-27                                    |
+| Statuses                  | 289 active /1,458 paused /7 invalid                                           |
+| Logos                     | 256/267 source copies +baseline1;257 actual public hashes verified            |
+| Collected data / fixtures | 0 items,0 raw items,0 C999/test-house                                         |
 
-The [MA-09 Markdown](evidence/ma09-owner-review-20261018.md) and
-[editable CSV](evidence/ma09-owner-review-20261018.csv) deduplicate72 raw reasons
-into41 decisions:7 YouTube /23 website flags /11 missing source-logo copies.
-The17 no-source logos use the expected initials fallback.
+The owner supplied all41 decisions: seven listed unavailable/unverified YouTube
+sources are skipped,23 website flags are retained and11 missing source logos use
+initials. The17 no-source logos keep the expected fallback. Recorded decisions:
+[Markdown](evidence/ma09-owner-review-20261018.md),
+[CSV](evidence/ma09-owner-review-20261018.csv),
+[owner response](evidence/ma09-owner-dispositions-20261018.json).
 
-**Factual correction:** direct source and hosted readback identify **C283
-Wonderful Productions, pilot rank47**, as the only unresolved pilot. C102
-MultiVision and C245 FTEN are next wave. Earlier prose in the initial packet and
-session log mislabeled C102; the CSV hashes, actual data, gating code and approved
-request bounds did not change. [Independent22-check readback](evidence/dev-youtube-continuation-reconciliation-20261018.json).
+Fresh [read-only D-27 assertions](evidence/dev-counts-after-ma09-20261018.json)
+have no failed criterion. AC7 remains a separate actual second-run receipt, not
+a fact inferred from SELECT. All seven rows already matched the new overrides,
+so no hosted write, seed replay, API retry or credential handoff was needed.
+The [local plan check](evidence/ma09-reviewed-plan-20261018.json) preserves all
+1,754 source keys and uses exact original CSV URLs, including source case.
+
+C283 Wonderful Productions is the excluded pilot(rank47); C102/C245 are next
+wave. Earlier prose mislabeled C102. Original source CSVs/counts and historical
+receipts remain unchanged; the new invalid overrides are deliberately a new
+source seal. The consumed original dev packet remains frozen and rejects that
+new source rather than reopening spent work.
 
 ## Blockers
 
-- MA-09 is the remaining dev gate: seven YouTube decisions,23 website flags and11 missing-logo decisions. C283 needs a correct supported public URL for the existing11/11 pilot criterion, or an explicit documented owner exception; invalid alone does not pass AC4/AC5.
-- No technical batch is running. All consumed Database/YouTube handoffs and the earlier Vimeo/Storage handoffs are absent; the credential child closed with native0. No new credential handoff or reset is needed.
-- Original report failure is preserved; separate recovery succeeded. The exact reconciled original global lock was released after32/32 checks. The successful YouTube continuation released its own global write lock, while permanent initial/continuation admission records remain to prevent another invocation.
-- Independent22/22 post-continuation checks preserve all285 competitors,1,626 non-YouTube rows, three pre-invalid YouTube rows,257 assets/Storage paths, original7 migrations, empty collected tables and fixture exclusions. [Receipt](evidence/dev-youtube-continuation-receipt-20261018.json), [cleanup](evidence/dev-youtube-continuation-cleanup-20261018.json), [preservation](evidence/dev-youtube-continuation-reconciliation-20261018.json).
-- Populated dev advisors remain11 security INFO /69 performance INFO, zero WARN/ERROR. No schema migration or generated-type change was made. The24October M01 tooling follow-up stays open.
-- M02 production seeding and merge approvals are separate and unrequested until dev/MA-09 pass. M03, collection, paid provider calls and n8n remain unstarted.
+- Dev acceptance and MA-09 are complete under the owner's D-27 rule. No further company/channel decisions or dev credentials are required.
+- Production preparation is local only: a separate fixed-target runner, sealed public configuration/257-object logo manifest, targeted tests and independent review must be ready before requesting the exact M02 production seed approval. Production has not been seeded.
+- No dev batch is running. Temporary handoffs are absent and the credential child closed. Permanent initial/continuation admission records and the original failed receipt are preserved; do not replay successful operations.
+- Actual dev populated advisors remain11 security INFO /69 performance INFO, zero WARN/ERROR. No schema migration or generated-type change was made. The24October M01 tooling follow-up stays open.
+- M02 production seed and merge approvals remain separate. PR6 stays draft. M03, collection, paid provider calls and n8n remain unstarted.
 
 ## Manual actions needed from the owner
 
-| ID                | Exact action                                                                                      | Status / expected result                                                                   |
-| ----------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| MA-07             | Retain the original public-only Vimeo token for later integration. No new handoff.                | Actual202/202 resolved, pilot48/48; completed                                              |
-| MA-08             | Retain the existing YouTube-restricted key for later integration. No new handoff.                 | Known-account probe and remaining125-row continuation completed;121/128 resolved,0 pending |
-| MA-09             | Review the linked41-row Markdown/CSV and record decisions below.                                  | Pending explicit decisions; blank is not approval                                          |
-| dev handoffs      | Keep saved originals; all temporary handoffs have been deleted and the bounded child closed.      | Verified01:54:34UTC; no owner action                                                       |
-| dev bulk approval | Existing exact USD0 dev packet remains the authority; permanent admission records prevent replay. | Approved18October; both bounded invocations consumed                                       |
-| public dev CA     | Supplied public certificate/pin; strict scoped TLS passed before decryption.                      | Complete; no global trust change                                                           |
-| production        | Separate exact M02 packet and `approved: seed prod` after dev acceptance.                         | Not requested or performed                                                                 |
-| merge             | Separate PR6 merge approval after all milestone gates.                                            | PR6 remains OPEN/DRAFT                                                                     |
+| ID           | Action / result                                                                                                                       | Status                                          |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| MA-07        | Public-only Vimeo token verified by202/202 resolutions; saved original retained.                                                      | Complete; no handoff needed                     |
+| MA-08        | YouTube key verified;121 resolved and seven reviewed sources excluded; saved original retained.                                       | Complete; no handoff needed                     |
+| MA-09        | Owner directed skipping unavailable social sources and accepted23 website flags/11 logo fallbacks. All41 exact dispositions recorded. | Complete; verified by read-only D-27 assertions |
+| dev handoffs | All consumed temporary files removed and bounded child closed; original saved credentials retained.                                   | Complete; no action                             |
+| production   | Exact reviewed M02 seed packet for hkiafqrcxaafdbcvjlzv will be presented after local implementation/payload/tests/review finish.     | Not yet requested or performed                  |
+| merge        | Separate PR6 merge decision after production parity and all milestone gates.                                                          | PR6 OPEN/DRAFT; not requested                   |
 
-Open this exact file in your editor:
-`D:\Everyone\everyone Market Research\everyone-market-radar\milestones\M02-seed-data\evidence\ma09-owner-review-20261018.csv`
-(or its Markdown companion). Fill `owner_decision` with `fix: https://...`,
-`invalid` or `ok`, or reply with company code + platform + decision in chat.
-Read the linked public URL/reason for each row. A batch reply
-`All listed website flags: ok; all11 missing logos: ok` accepts retained flags
-and initials fallback, not successful HTTP checks.
-
-Seven YouTube decisions are needed: C102 MultiVision, C142 Gearbox, C218 Action
-Filmz, C231 CityFilms, C233 Create Production, C245 FTEN, and **C283 Wonderful
-Productions (pilot)**. For C283 supply the correct supported public YouTube URL;
-if none exists, say `C283 invalid; request pilot exception` explicitly. That
-requires a documented criterion exception, not a fabricated resolved ID.
-
-Expected non-secret result: all41 deduplicated rows have explicit decisions.
-After file edits reply **MA-09 decisions ready**. Codex will record/apply only
-the approved corrections, review their bounded verification and regenerate the
-report. **Do not run seed/resolve or deliver more credentials now.** No
-production or merge approval is inferred from MA-09.
+No owner action is needed during local production-packet preparation. The
+prototype packet is explicitly unapproved; it does not grant a production
+connection, upload or write. Do not send credentials or run the old dev helper.
+When the exact packet is ready, the owner will receive a concrete bounded
+production approval request. M02 remains open for that gate and merge.
 
 ## Decisions & deviations
 
@@ -144,6 +136,8 @@ production or merge approval is inferred from MA-09.
 ## Session log
 
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
+
+- 2026-10-18 Cairo · Owner MA-09 response directs skipping unavailable social sources and explicitly accepts23 website flags/11 missing-logo fallbacks. Recorded all41 dispositions, seven exact source-case invalid overrides and D-27 criterion amendment. Fresh dev read-only assertions pass with exact7 invalid/failed/null-ID matches,1 pilot exclusion,0 unexpected ineligible sources; raw121/128 and10/11 retained, eligible121/121 and10/10. Local planner preserves285/1,754/all source keys (289 active/1,458 paused/7 invalid), new sourceb3cf64..., old spent packet remains135... and rejects changed source. Existing claim logic excludes invalid rows. No hosted write, seed replay, provider request, extra credentials or row deletion. New21 real-PG read-only policy regressions and11 CI safety checks pass; full CI follows commit. Separate unapproved production packet/local runner is in preparation; no production/M03/merge action.
 
 - 2026-10-18 Cairo · Owner replenished only Database+YouTube; actual sealed presence check passed with Vimeo/Storage absent. Invoked resolve once at01:53:27.873UTC; strict TLS/dev postgres identity and seven versions passed. Actual125 attempted/125 updated,121 resolved/four new terminal invalid;205 skipped (202 resolved Vimeo+three pre-invalid). Native0/success, report completed, no bad-response blockers. Fresh dev assertions confirm121/128 YouTube,0 pending,10/11pilot. Independent22/22 checks preserve every competitor/non-YouTube row, three old invalids, logos/Storage/migrations and empty collected tables. All handoffs absent01:54:34UTC; child closed; global write lock absent, permanent budget records retained. Direct pilot readback corrects earlier prose: only C283 Wonderful Productions rank47 is unresolved; C102/C245 are next wave. MA-09 packet issued:41 deduplicated decisions (7YT/23web/11logos),17 expected no-source fallbacks. Code d5171fe / CI39088023934 all five jobs/Vercel PASS. No further credentials, run, production, merge, M03, collection, paid calls or n8n. [Actual continuation](evidence/dev-youtube-continuation-receipt-20261018.json), [preservation](evidence/dev-youtube-continuation-reconciliation-20261018.json), [owner review](evidence/ma09-owner-review-20261018.md).
 

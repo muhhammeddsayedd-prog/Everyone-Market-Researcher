@@ -60,29 +60,34 @@ printf 'Security advisors: no warnings or errors\n'
 run_private 'Performance advisors' supabase db advisors --local --type performance --level warn --fail-on error
 printf 'Performance advisors: no errors; warnings require the milestone review\n'
 
-# Both files use a fixed local test password only inside their owned Node clients.
-# Their fixtures always roll back; an unset/invalid target or skipped test is not acceptance.
-run_private 'M02 PostgreSQL rollback acceptance' env \
+# These files use a fixed local test password only inside their owned Node clients.
+# Seed fixtures roll back; owner-exclusion fixtures are SELECT-only CTEs in read-only transactions.
+# An unset/invalid target or a missing/skipped test is not acceptance.
+run_private 'M02 PostgreSQL acceptance' env \
   M02_TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:60322/postgres \
-  pnpm --filter @emr/scripts exec vitest run seed/seed-competitors.integration.test.ts seed/database.test.ts --reporter=json --outputFile "$private_report"
+  pnpm --filter @emr/scripts exec vitest run seed/seed-competitors.integration.test.ts seed/database.test.ts seed/owner-exclusions.integration.test.ts --reporter=json --outputFile "$private_report"
 node --input-type=module - "$private_report" <<'NODE'
 import { readFileSync } from 'node:fs';
 let report;
 try { report = JSON.parse(readFileSync(process.argv[2], 'utf8')); }
-catch { console.error('M02 PostgreSQL rollback acceptance: FAIL (invalid private test report).'); process.exit(1); }
-const expected = new Map([['seed-competitors.integration.test.ts', 10], ['database.test.ts', 5]]);
+catch { console.error('M02 PostgreSQL acceptance: FAIL (invalid private test report).'); process.exit(1); }
+const expected = new Map([
+  ['seed-competitors.integration.test.ts', 10],
+  ['database.test.ts', 5],
+  ['owner-exclusions.integration.test.ts', 21],
+]);
 const files = report.testResults ?? [];
 let assertions = 0;
 for (const [name, minimum] of expected) {
   const file = files.find((item) => item.name?.replaceAll('\\', '/').endsWith(`/seed/${name}`));
   const tests = file?.assertionResults ?? [];
   if (tests.length < minimum || tests.some((item) => item.status !== 'passed')) {
-    console.error('M02 PostgreSQL rollback acceptance: FAIL (missing, skipped or failed assertions).'); process.exit(1);
+    console.error('M02 PostgreSQL acceptance: FAIL (missing, skipped or failed assertions).'); process.exit(1);
   }
   assertions += tests.length;
 }
 if (!report.success || report.numFailedTests !== 0 || report.numPendingTests !== 0) {
-  console.error('M02 PostgreSQL rollback acceptance: FAIL.'); process.exit(1);
+  console.error('M02 PostgreSQL acceptance: FAIL.'); process.exit(1);
 }
-console.log(`M02 PostgreSQL rollback acceptance: ${assertions} assertions, PASS`);
+console.log(`M02 PostgreSQL acceptance: ${assertions} assertions, PASS`);
 NODE

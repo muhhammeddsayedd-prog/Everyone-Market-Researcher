@@ -5,6 +5,7 @@
 ## 1. Goal and outcome
 
 When M02 is done, dev (and, after the owner's OK, prod) Supabase holds:
+
 - **Competitors:** all **284 competitors + the Everyone Films baseline (C000)** in `app.competitors`, with markets, categories, in-house capabilities, tier, pilot rank, notes and logo.
 - **Accounts:** every tracked account in `app.competitor_accounts`:
   - 261 `website`, 199 `website_work_page`, 256 `instagram`, 202 `vimeo`, 128 `youtube` and 226 `linkedin` rows from `data/competitor_accounts.csv`;
@@ -25,13 +26,14 @@ The scripts are **idempotent**: re-running changes nothing unless the CSV change
 - **Tier mapping:**
 
   | `priority_tier` in CSV | `app.priority_tier` |
-  |---|---|
-  | `A · Pilot` | `pilot` |
-  | `B · Next wave` | `next_wave` |
-  | `C · Adjacent` | `adjacent` |
-  | `Baseline` | `baseline` |
+  | ---------------------- | ------------------- |
+  | `A · Pilot`            | `pilot`             |
+  | `B · Next wave`        | `next_wave`         |
+  | `C · Adjacent`         | `adjacent`          |
+  | `Baseline`             | `baseline`          |
 
   Expected counts: 50 / 174 / 60 / 1.
+
 - **Markets:** `EG`, `KSA` and `UAE` map to `app.country_code`. `hq_country` = `hq_country_guess`; the owner can correct it later.
 - **Categories:** keep the 13 competitor-category labels as `code`s from `docs/TAXONOMIES.md` (e.g. `Production` → `production`, `Post-production` → `post_production`, `VFX / CGI` → `vfx_cgi`). In-house capabilities map to `in_house_capability` codes. Any value not in the taxonomy (e.g. "Podcast studios (13)") maps to `other`, with the original text appended to `notes` as `In-house (other): …`.
 - **Platforms tracked** (D-07): only these. Reference-only URLs (facebook, tiktok, behance, …) are **not** turned into accounts. They can stay in `notes` or be dropped. Never scrape them.
@@ -43,18 +45,37 @@ The scripts are **idempotent**: re-running changes nothing unless the CSV change
 
 ## 3. Prerequisites
 
-| Item | Needed when |
-|---|---|
-| M01 Done (tables, `media` bucket, types) | Start |
-| `SEED_DATABASE_URL` for dev (owner connection string, local only) | T2 |
-| **MA-07**: `VIMEO_TOKEN` (Vimeo developer app, scope `public`) | T5 |
-| **MA-08**: `YOUTUBE_API_KEY` (restricted to YouTube Data API v3) | T6 |
-| **MA-09**: owner review of the unresolved/suspect list | T9 |
-| Owner OK to seed prod | T10 |
+### Owner amendment —18October2026 (D-27)
+
+The owner directed that unavailable social sources be skipped: “If a company
+doesn't have a social don't scrap it. If it doesn't have youtube don't scrap it.”
+For the seven already reviewed YouTube identities, retain invalid/failed rows
+and observed reasons, and exclude them from collection. Do not claim that a
+failed URL lookup proves the company has no channel. All other company sources
+remain in scope. Exact invalid overrides record C102, C142, C218, C231, C233,
+C245 and C283; C283 is the one pilot exclusion.
+
+The original128 YouTube rows and11 pilot rows remain visible. Raw resolution
+is121/128 and10/11 pilot. Eligible resolution is121/121 and10/10 pilot. AC4/AC5
+now require those eligible targets plus an exact seven-identity exclusion check
+(one pilot, invalid/failed, no identifiers); unexpected invalids or pending rows
+cannot silently become exempt. Historical failed original-target receipts stay
+unchanged. The same owner response accepted all23 website error flags and11
+missing source-logo initials fallbacks. It does not approve production or merge.
+
+| Item                                                              | Needed when |
+| ----------------------------------------------------------------- | ----------- |
+| M01 Done (tables, `media` bucket, types)                          | Start       |
+| `SEED_DATABASE_URL` for dev (owner connection string, local only) | T2          |
+| **MA-07**: `VIMEO_TOKEN` (Vimeo developer app, scope `public`)    | T5          |
+| **MA-08**: `YOUTUBE_API_KEY` (restricted to YouTube Data API v3)  | T6          |
+| **MA-09**: owner review of the unresolved/suspect list            | T9          |
+| Owner OK to seed prod                                             | T10         |
 
 ## 4. Scope
 
 **In:**
+
 - Seed script for competitors and accounts.
 - Handle normalization.
 - Resolution script (Vimeo, YouTube, LinkedIn/Instagram/website normalization + reachability).
@@ -64,6 +85,7 @@ The scripts are **idempotent**: re-running changes nothing unless the CSV change
 - Seeding prod after the owner's OK.
 
 **Out:**
+
 - Any collection of content (M04+).
 - n8n (M03).
 - Admin UI for editing competitors (M11).
@@ -80,31 +102,32 @@ The scripts are **idempotent**: re-running changes nothing unless the CSV change
 
 ## 6. Deliverables
 
-| Path | What |
-|---|---|
+| Path                                                   | What                                                                                                                                                                                                                                                                                                                                              |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/shared/src/handles.ts` (+ `handles.test.ts`) | Pure functions: `normalizeInstagram(url)`, `normalizeVimeo(url)` → `{kind:'user'\|'channel'\|'showcase'\|'group', handle}`, `normalizeYouTube(url)` → `{kind:'handle'\|'channel'\|'user'\|'c', value}`, `normalizeLinkedIn(url)` → `{kind:'company'\|'showcase'\|'school', slug}`, `normalizeWebsite(url)` → `{domain, url}`, `canonicalUrl(url)` |
-| `scripts/seed/seed-competitors.ts` | Idempotent upsert of competitors + accounts (+ derived stories/employees rows) |
-| `scripts/seed/resolve-accounts.ts` | Vimeo/YouTube ID resolution; reachability checks; writes `external_id`, `uploads_playlist_id`, `resolve_status`, `status` |
-| `scripts/seed/copy-logos.ts` | Downloads logo URLs, resizes (max 256 px, keeps SVG as-is), uploads to `media/logos/{slug}.{ext}`, sets `logo_path` |
-| `scripts/seed/report.ts` | Prints counts per tier/platform/status, and writes `scripts/seed/out/unresolved.csv` (git-ignored) plus a markdown summary for PROGRESS |
-| `scripts/README.md` | How to run each script and which env vars it needs (names only) |
-| `scripts/assert/m02_counts.sql` | SQL assertions used for the ACs |
+| `scripts/seed/seed-competitors.ts`                     | Idempotent upsert of competitors + accounts (+ derived stories/employees rows)                                                                                                                                                                                                                                                                    |
+| `scripts/seed/resolve-accounts.ts`                     | Vimeo/YouTube ID resolution; reachability checks; writes `external_id`, `uploads_playlist_id`, `resolve_status`, `status`                                                                                                                                                                                                                         |
+| `scripts/seed/copy-logos.ts`                           | Downloads logo URLs, resizes (max 256 px, keeps SVG as-is), uploads to `media/logos/{slug}.{ext}`, sets `logo_path`                                                                                                                                                                                                                               |
+| `scripts/seed/report.ts`                               | Prints counts per tier/platform/status, and writes `scripts/seed/out/unresolved.csv` (git-ignored) plus a markdown summary for PROGRESS                                                                                                                                                                                                           |
+| `scripts/README.md`                                    | How to run each script and which env vars it needs (names only)                                                                                                                                                                                                                                                                                   |
+| `scripts/assert/m02_counts.sql`                        | SQL assertions used for the ACs                                                                                                                                                                                                                                                                                                                   |
 
 Script runtime: Node 24 with `tsx`. Dependencies: `postgres` (postgres.js) for the DB, `csv-parse`, `sharp` for resizing, and `@supabase/supabase-js` (Storage upload with the secret key, or signed upload URLs). All run as `pnpm --filter scripts <name>`, or add `scripts/package.json` as a workspace package `@emr/scripts`.
 
 ## 7. Tasks
 
 ### T1: Handle normalization library
+
 Rules (lowercase handles, no `@`, canonical https URL without query or tracking params):
 
-| Platform | Accepts | Output `handle` | Account `url` |
-|---|---|---|---|
-| instagram | `instagram.com/<user>/`, `…/<user>?hl=en`, `@user` | `<user>` (lowercase; strip `reels/`, `p/…` → invalid) | `https://www.instagram.com/<user>/` |
-| vimeo | `vimeo.com/<vanity>`, `vimeo.com/user123`, `vimeo.com/channels/<x>`, `vimeo.com/showcase/<id>`, `vimeo.com/groups/<x>` | `<vanity>` or `channels/<x>` / `showcase/<id>` / `groups/<x>` | canonical `https://vimeo.com/...` (drop `?fl=…&fe=…`) |
-| youtube | `youtube.com/@h`, `/channel/UC…`, `/user/u`, `/c/name` (+ `/videos`, `/featured`) | `@h` / `channel/UC…` / `user/u` / `c/name` | `https://www.youtube.com/<form>` |
-| linkedin | `linkedin.com/company/<slug>/`, `/showcase/<slug>`, `/school/<slug>`; locale subdomains | `<slug>` | `https://www.linkedin.com/company/<slug>/` (keep the kind) |
-| website | any URL | domain without `www.` | the URL as given, normalized (https, no fragment) |
-| website_work_page | any URL | the full canonical URL (unique per page) | the same |
+| Platform          | Accepts                                                                                                                | Output `handle`                                               | Account `url`                                              |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------- |
+| instagram         | `instagram.com/<user>/`, `…/<user>?hl=en`, `@user`                                                                     | `<user>` (lowercase; strip `reels/`, `p/…` → invalid)         | `https://www.instagram.com/<user>/`                        |
+| vimeo             | `vimeo.com/<vanity>`, `vimeo.com/user123`, `vimeo.com/channels/<x>`, `vimeo.com/showcase/<id>`, `vimeo.com/groups/<x>` | `<vanity>` or `channels/<x>` / `showcase/<id>` / `groups/<x>` | canonical `https://vimeo.com/...` (drop `?fl=…&fe=…`)      |
+| youtube           | `youtube.com/@h`, `/channel/UC…`, `/user/u`, `/c/name` (+ `/videos`, `/featured`)                                      | `@h` / `channel/UC…` / `user/u` / `c/name`                    | `https://www.youtube.com/<form>`                           |
+| linkedin          | `linkedin.com/company/<slug>/`, `/showcase/<slug>`, `/school/<slug>`; locale subdomains                                | `<slug>`                                                      | `https://www.linkedin.com/company/<slug>/` (keep the kind) |
+| website           | any URL                                                                                                                | domain without `www.`                                         | the URL as given, normalized (https, no fragment)          |
+| website_work_page | any URL                                                                                                                | the full canonical URL (unique per page)                      | the same                                                   |
 
 `instagram_stories` rows reuse the Instagram handle. `linkedin_employees` rows reuse the LinkedIn slug. Both are separate rows, because the unique key includes `platform`.
 
@@ -113,7 +136,9 @@ Write ≥ 25 table-driven tests in `handles.test.ts` using real URLs from `data/
 **Done when:** `pnpm --filter @emr/shared test` passes.
 
 ### T2: Seed competitors
+
 In `scripts/seed/seed-competitors.ts`:
+
 1. Read `data/competitors.csv`.
 2. Map each row:
    - `company_code` = `company_id`;
@@ -136,6 +161,7 @@ In `scripts/seed/seed-competitors.ts`:
 **Done when:** `select count(*) from app.competitors` = 285 and the tier counts are 50/174/60/1.
 
 ### T3: Seed accounts (+ derived rows, pilot gating)
+
 1. Read `data/competitor_accounts.csv`, join to competitors by `company_id`, and normalize with T1.
 2. For each row, create a `competitor_accounts` row:
    - `platform`, `handle`, `url`;
@@ -155,7 +181,9 @@ In `scripts/seed/seed-competitors.ts`:
 **Done when:** the counts below match (AC2/AC3).
 
 ### T4: Report script
+
 `scripts/seed/report.ts` prints:
+
 - the counts by `priority_tier`;
 - the counts by `platform` × `status`;
 - the counts by `resolve_status`;
@@ -166,7 +194,9 @@ It writes `scripts/seed/out/report-<date>.md`; paste a copy into PROGRESS.
 **Done when:** the report runs after T2/T3.
 
 ### T5: Resolve Vimeo (needs MA-07)
+
 For each `vimeo` account (all tiers; resolution is cheap):
+
 1. By kind:
    - `user` kind: `GET https://api.vimeo.com/users/{handle}?fields=uri,name,link` with header `Authorization: bearer $VIMEO_TOKEN` and `Accept: application/vnd.vimeo.*+json;version=3.4`. Set `external_id` = the last segment of `uri`.
    - `channels/x`: `GET /channels/{x}?fields=uri,name`.
@@ -182,7 +212,9 @@ The live Vimeo docs could not be machine-read during research. Verify the endpoi
 **Done when:** ≥ 95% of pilot Vimeo accounts are `resolved` (target: 47 of 48 incl. baseline).
 
 ### T6: Resolve YouTube (needs MA-08)
+
 For each `youtube` account:
+
 1. By kind (cost: 1 quota unit each):
    - `@h`: `GET https://www.googleapis.com/youtube/v3/channels?part=id,contentDetails,snippet&forHandle=@h&key=$YOUTUBE_API_KEY`.
    - `channel/UC…`: `…&id=UC…`.
@@ -193,9 +225,10 @@ For each `youtube` account:
 
 This uses about 130 units of the 10,000/day quota. Never use `search.list`.
 
-**Done when:** ≥ 90% of YouTube accounts are resolved (pilot: all 11).
+**Done when:** ≥ 90% of the original128 YouTube accounts are resolved; all eligible pilot accounts are resolved (10/10 after the exact owner-reviewed C283 exclusion; raw10/11 still shown). All seven exact exclusions must remain invalid/failed without fabricated IDs. No additional invalid/pending account is silently exempt (D-27).
 
 ### T7: Instagram, LinkedIn, website checks (no APIs)
+
 1. **Instagram:** handle-format validation only (`^[a-z0-9._]{1,30}$`). There is no network check: IG blocks anonymous requests, and the real check happens in M04 with the actor. Invalid format → `status = 'invalid'`.
 2. **LinkedIn:** slug format; `kind` must be `company` or `showcase`. School pages or personal `/in/` URLs → `invalid` (they should not be in the CSV; report any).
 3. **Websites:** an HTTP `HEAD` (or `GET` if HEAD isn't allowed) with a 10 s timeout and a desktop UA. Follow redirects and store the final URL in `url` if the domain is the same.
@@ -205,6 +238,7 @@ This uses about 130 units of the 10,000/day quota. Never use `search.list`.
 **Done when:** the report lists all invalid and unreachable rows.
 
 ### T8: Copy logos to Storage (Q-10 default)
+
 1. For each competitor with a `logo_url`:
    - download it (10 s timeout, max 5 MB);
    - rasters (png/jpg/webp) → resize with sharp to max 256 px width, as `webp`;
@@ -220,6 +254,7 @@ For the baseline (C000, which has no `logo_url`), upload `assets/brand/everyone-
 **Done when:** ≥ 95% of the 267 competitors with a `logo_url` have `logo_path`, plus the baseline. The remaining 17 rows have no logo URL and show the initials tile.
 
 ### T9: Owner review (MA-09)
+
 1. Post the report summary in PROGRESS:
    - counts;
    - unresolved Vimeo/YouTube accounts;
@@ -231,47 +266,49 @@ For the baseline (C000, which has no `logo_url`), upload `assets/brand/everyone-
 3. The seed script applies `overrides.csv` (columns `company_id`, `platform`, `url`, `action` = `replace` | `invalid` | `add`) on every run, so fixes survive re-seeds.
 4. Re-run seed + resolve + report.
 
-**Done when:** the owner has signed off, and the pilot has no unresolved Vimeo/YouTube accounts and no invalid accounts without a decision.
+**Done when:** the owner has signed off, the eligible pilot has no unresolved Vimeo/YouTube accounts, and every excluded/invalid account has an explicit decision. The18October owner reply supplies the seven YouTube exclusion decisions and accepts23 website flags/11 missing-logo fallbacks under D-27; verify the already-invalid hosted state rather than replaying successful jobs.
 
 ### T10: Seed prod (owner OK)
+
 1. After the owner writes "approved: seed prod", run T2–T8 against prod with `SEED_DATABASE_URL` for prod.
 2. Run `scripts/assert/m02_counts.sql` on both projects and paste the results.
 
 **Done when:** prod counts = dev counts.
 
 ### T11: Docs and hand-off
+
 1. Update `data/README.md` if any counts changed after the overrides.
 2. Note the deviations in DECISIONS → Changes (e.g. accounts dropped).
 3. Fill in the hand-off and update the root board.
 
 ## 8. Interfaces & contracts touched
 
-| Contract | Detail |
-|---|---|
-| `app.competitors` | `company_code` C000–C284 stable forever (referenced by sheet + app) |
+| Contract                  | Detail                                                                                                                                                               |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app.competitors`         | `company_code` C000–C284 stable forever (referenced by sheet + app)                                                                                                  |
 | `app.competitor_accounts` | Unique `(platform, handle_norm)`; `external_id` (Vimeo numeric id / YouTube UC id), `uploads_playlist_id` (UU…), `backfill_cursor.endpoint` for Vimeo non-user kinds |
-| Pilot gating | Active = tier `pilot` or `baseline`; everything else `paused` until M15 waves |
-| Storage | `media/logos/{slug}.{webp\|svg}` |
-| Overrides | `scripts/seed/overrides.csv` (company_id, platform, url, action) |
-| Env (names only) | `SEED_DATABASE_URL`, `SUPABASE_SECRET_KEY` (scripts only), `NEXT_PUBLIC_SUPABASE_URL` (for Storage client), `VIMEO_TOKEN`, `YOUTUBE_API_KEY` |
+| Pilot gating              | Active = tier `pilot` or `baseline`; everything else `paused` until M15 waves                                                                                        |
+| Storage                   | `media/logos/{slug}.{webp\|svg}`                                                                                                                                     |
+| Overrides                 | `scripts/seed/overrides.csv` (company_id, platform, url, action)                                                                                                     |
+| Env (names only)          | `SEED_DATABASE_URL`, `SUPABASE_SECRET_KEY` (scripts only), `NEXT_PUBLIC_SUPABASE_URL` (for Storage client), `VIMEO_TOKEN`, `YOUTUBE_API_KEY`                         |
 
 ## 9. Acceptance criteria
 
 Write these as SQL in `scripts/assert/m02_counts.sql`. Expected values are from the CSVs; any deviation must be explained by `overrides.csv`.
 
-| # | Criterion | Check (expected) |
-|---|---|---|
-| AC1 | Competitors loaded | `select count(*) from app.competitors` = **285**; by tier: pilot 50, next_wave 174, adjacent 60, baseline 1; exactly one `is_baseline` (`C000` Everyone Films) |
-| AC2 | Primary accounts loaded | `select platform, count(*) … group by 1` → website **261**, website_work_page **199**, instagram **256**, vimeo **202**, youtube **128**, linkedin **226** (total 1,272) |
-| AC3 | Derived accounts | instagram_stories **256**, linkedin_employees **226** (cadence `7 days`); total accounts **1,754** |
-| AC4 | Pilot gating | `status='active'` only where the competitor tier is pilot/baseline: primary-platform active ≈ **161 + 38 work pages** (website roots 11 — the other 38 pilot roots are `paused` because those competitors have a work page — instagram 49, vimeo 48, linkedin 42, youtube 11, website_work_page 38) + stories 49 + employees 42; every other account `paused` (or `invalid`) |
-| AC5 | Resolution | Pilot Vimeo resolved ≥ 95%; pilot YouTube resolved 100% (11/11); all Vimeo/YouTube rows have `resolve_status` ≠ `pending` |
-| AC6 | Backfill flags | Primary content accounts (vimeo, instagram, youtube, linkedin, website_work_page) `backfill_status='pending'`, `backfill_from='2024-01-01'`; stories and employees `not_applicable`; `website` roots `paused` when the competitor has a work page, else `pending` (and active only for pilot + baseline) |
-| AC7 | Idempotent | Running `seed-competitors.ts` a second time reports `0 inserted, 0 updated` and the counts are unchanged |
-| AC8 | Logos | ≥ 95% of competitors with a source `logo_url` have `logo_path`; files are visible at the public Storage URL |
-| AC9 | Owner sign-off | MA-09 ticked in PROGRESS; overrides applied |
-| AC10 | Prod mirrors dev | AC1–AC6 queries return the same numbers on prod |
-| AC11 | Tests | `handles.test.ts` ≥ 25 cases pass; CI green |
+| #    | Criterion               | Check (expected)                                                                                                                                                                                                                                                                                                                                                                              |
+| ---- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC1  | Competitors loaded      | `select count(*) from app.competitors` = **285**; by tier: pilot 50, next_wave 174, adjacent 60, baseline 1; exactly one `is_baseline` (`C000` Everyone Films)                                                                                                                                                                                                                                |
+| AC2  | Primary accounts loaded | `select platform, count(*) … group by 1` → website **261**, website_work_page **199**, instagram **256**, vimeo **202**, youtube **128**, linkedin **226** (total 1,272)                                                                                                                                                                                                                      |
+| AC3  | Derived accounts        | instagram_stories **256**, linkedin_employees **226** (cadence `7 days`); total accounts **1,754**                                                                                                                                                                                                                                                                                            |
+| AC4  | Pilot gating            | `status='active'` only for eligible pilot/baseline sources. Active targets: website roots11 (work-page roots paused), Instagram49, Vimeo48, LinkedIn42, YouTube10 (original target11 minus exact owner-excluded C283), work pages38, stories49, employees42. Exact seven reviewed YouTube identities remain invalid and unclaimable; no other invalid or pending row is automatically exempt. |
+| AC5  | Resolution              | Pilot Vimeo resolved ≥95% (48/48 actual). YouTube ≥90% of original128 resolved, no pending or invalid resolved IDs; all eligible pilot accounts resolved10/10. Preserve raw121/128 and10/11. Exact seven owner exclusions (one pilot) must match their reviewed source identities, remain invalid/failed and have no IDs; reject missing, drifting or additional exclusions (D-27).           |
+| AC6  | Backfill flags          | Primary content accounts (vimeo, instagram, youtube, linkedin, website_work_page) `backfill_status='pending'`, `backfill_from='2024-01-01'`; stories and employees `not_applicable`; `website` roots `paused` when the competitor has a work page, else `pending` (and active only for pilot + baseline)                                                                                      |
+| AC7  | Idempotent              | Running `seed-competitors.ts` a second time reports `0 inserted, 0 updated` and the counts are unchanged                                                                                                                                                                                                                                                                                      |
+| AC8  | Logos                   | ≥ 95% of competitors with a source `logo_url` have `logo_path`; files are visible at the public Storage URL                                                                                                                                                                                                                                                                                   |
+| AC9  | Owner sign-off          | MA-09 ticked in PROGRESS; overrides applied                                                                                                                                                                                                                                                                                                                                                   |
+| AC10 | Prod mirrors dev        | AC1–AC6 queries return the same numbers on prod                                                                                                                                                                                                                                                                                                                                               |
+| AC11 | Tests                   | `handles.test.ts` ≥ 25 cases pass; CI green                                                                                                                                                                                                                                                                                                                                                   |
 
 ## 10. Tests to write
 
@@ -281,12 +318,12 @@ Write these as SQL in `scripts/assert/m02_counts.sql`. Expected values are from 
 
 ## 11. Manual actions from the owner
 
-| MA | What | When | How Codex verifies |
-|---|---|---|---|
-| MA-07 | Vimeo developer app + access token (scope **public**) → give `VIMEO_TOKEN` to Codex's local env; it goes into n8n in M03 | Before T5 | `GET /users/everyonefilms` returns 200 |
-| MA-08 | Google Cloud: enable YouTube Data API v3, create an API key restricted to it → `YOUTUBE_API_KEY` | Before T6 | `channels.list forHandle=@AflamProductions` returns 1 item |
-| MA-09 | Review the unresolved/suspect list; reply `ok` / `invalid` / `fix: <url>` per row | T9 | `overrides.csv` committed; re-run report clean |
-| (approval) | "approved: seed prod" | T10 | Written in PROGRESS |
+| MA         | What                                                                                                                     | When      | How Codex verifies                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------ | --------- | ---------------------------------------------------------- |
+| MA-07      | Vimeo developer app + access token (scope **public**) → give `VIMEO_TOKEN` to Codex's local env; it goes into n8n in M03 | Before T5 | `GET /users/everyonefilms` returns 200                     |
+| MA-08      | Google Cloud: enable YouTube Data API v3, create an API key restricted to it → `YOUTUBE_API_KEY`                         | Before T6 | `channels.list forHandle=@AflamProductions` returns 1 item |
+| MA-09      | Review the unresolved/suspect list; reply `ok` / `invalid` / `fix: <url>` per row                                        | T9        | `overrides.csv` committed; re-run report clean             |
+| (approval) | "approved: seed prod"                                                                                                    | T10       | Written in PROGRESS                                        |
 
 ## 12. Risks & gotchas
 
