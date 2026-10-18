@@ -1,9 +1,9 @@
 # Font licences
 
-| Family | Files | Licence | In this repository? |
-|---|---|---|---|
-| IBM Plex Sans Arabic | `IBMPlexSansArabic-{Regular,Medium,SemiBold}.woff2` from npm `@ibm/plex-sans-arabic@1.1.0` | SIL Open Font License 1.1 (`IBMPlexSansArabic-OFL.txt`) | Yes |
-| General Sans | `GeneralSans-{Medium,Semibold,BoldItalic}.woff2` from Fontshare | ITF Free Font License 2.0 | **No** |
+| Family               | Files                                                                                      | Licence                                                 | In this repository? |
+| -------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------- | ------------------- |
+| IBM Plex Sans Arabic | `IBMPlexSansArabic-{Regular,Medium,SemiBold}.woff2` from npm `@ibm/plex-sans-arabic@1.1.0` | SIL Open Font License 1.1 (`IBMPlexSansArabic-OFL.txt`) | Yes                 |
+| General Sans         | `GeneralSans-{Medium,Semibold,BoldItalic}.woff2` from Fontshare                            | ITF Free Font License 2.0                               | **No**              |
 
 ## Why General Sans is not committed
 

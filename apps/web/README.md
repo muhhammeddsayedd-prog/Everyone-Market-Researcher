@@ -35,20 +35,20 @@ Source text, URLs and images are treated as untrusted:
 
 ## Page and dependency map
 
-| Route | Milestone | State | Real data from | Still needs |
-|---|---|---|---|---|
-| `/login`, `/auth/callback`, `/no-access` | M09 | Built | Supabase Auth, `app.me()` | MA-19 redirect URLs; owner sign-in on dev |
-| App shell (sidebar / rail / bottom nav, ⌘K notice, market switcher, user menu, theme) | M09 | Built | `app.me()` role | Date range and pipeline dot wait for activity data and `app.pipeline_summary` |
-| `/competitors` (grid/list, search, tier/category/capability/status, market, 4 sorts, keyset pages) | M10 | Built | `app.competitors` + embedded `competitor_accounts` | Activity sort/sparkline need `stats_daily` / `competitor_overview_v` |
-| `/competitors/[slug]` Overview | M10 | Built (facts, notes, sources summary) | `app.competitors`, `competitor_accounts` | KPI tiles and charts need `stats_daily`, `feed_v`, `campaigns_v` |
-| `/competitors/[slug]/accounts` (Sources) | M10 | Built | `competitor_accounts` | Admin pause/resume/re-scrape: M11 contracts |
-| `/competitors/[slug]/capabilities` | M10 | Built | `competitors.in_house`, `taxonomy_terms` | — |
-| `/competitors/[slug]/{campaigns,posts,clients,agencies,people,team,news}` | M10 | Unavailable state | — | M04–M08 collection and AI outputs |
-| `/coverage` | M10 | Built | All visible companies and sources | — |
-| `/` Pulse, `/feed`, `/campaigns`, `/briefs`, `/news`, `/brands`, `/agencies`, `/people`, `/markets`, `/compare` | M09/M10/M12 | ComingSoon page naming its dependency | — | See `lib/nav/registry.ts` |
-| `/search` | M11 | ComingSoon | — | Hybrid search (no embedding calls are made) |
-| `/review` (analyst+), `/admin/*` (admin) | M11 | ComingSoon, role-gated (404 otherwise) | — | Review and admin mutation contracts |
-| `/settings`, `/docs/api` | M11/M14 | ComingSoon | — | Alert rules and API |
+| Route                                                                                                           | Milestone   | State                                  | Real data from                                     | Still needs                                                                   |
+| --------------------------------------------------------------------------------------------------------------- | ----------- | -------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `/login`, `/auth/callback`, `/no-access`                                                                        | M09         | Built                                  | Supabase Auth, `app.me()`                          | MA-19 redirect URLs; owner sign-in on dev                                     |
+| App shell (sidebar / rail / bottom nav, ⌘K notice, market switcher, user menu, theme)                           | M09         | Built                                  | `app.me()` role                                    | Date range and pipeline dot wait for activity data and `app.pipeline_summary` |
+| `/competitors` (grid/list, search, tier/category/capability/status, market, 4 sorts, keyset pages)              | M10         | Built                                  | `app.competitors` + embedded `competitor_accounts` | Activity sort/sparkline need `stats_daily` / `competitor_overview_v`          |
+| `/competitors/[slug]` Overview                                                                                  | M10         | Built (facts, notes, sources summary)  | `app.competitors`, `competitor_accounts`           | KPI tiles and charts need `stats_daily`, `feed_v`, `campaigns_v`              |
+| `/competitors/[slug]/accounts` (Sources)                                                                        | M10         | Built                                  | `competitor_accounts`                              | Admin pause/resume/re-scrape: M11 contracts                                   |
+| `/competitors/[slug]/capabilities`                                                                              | M10         | Built                                  | `competitors.in_house`, `taxonomy_terms`           | —                                                                             |
+| `/competitors/[slug]/{campaigns,posts,clients,agencies,people,team,news}`                                       | M10         | Unavailable state                      | —                                                  | M04–M08 collection and AI outputs                                             |
+| `/coverage`                                                                                                     | M10         | Built                                  | All visible companies and sources                  | —                                                                             |
+| `/` Pulse, `/feed`, `/campaigns`, `/briefs`, `/news`, `/brands`, `/agencies`, `/people`, `/markets`, `/compare` | M09/M10/M12 | ComingSoon page naming its dependency  | —                                                  | See `lib/nav/registry.ts`                                                     |
+| `/search`                                                                                                       | M11         | ComingSoon                             | —                                                  | Hybrid search (no embedding calls are made)                                   |
+| `/review` (analyst+), `/admin/*` (admin)                                                                        | M11         | ComingSoon, role-gated (404 otherwise) | —                                                  | Review and admin mutation contracts                                           |
+| `/settings`, `/docs/api`                                                                                        | M11/M14     | ComingSoon                             | —                                                  | Alert rules and API                                                           |
 
 `lib/nav/registry.ts` is the source of this map. The app renders it in navigation and on each
 planned page.
