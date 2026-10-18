@@ -273,7 +273,9 @@ describe('M02 snapshot report', () => {
   });
 
   it('rejects a credential-bearing target and malformed snapshot without reflecting its contents', () => {
-    expect(() => buildReport(snapshot(), { ...options, target: 'postgres://user:secret@host/db' })).toThrow(
+    const target = new URL('postgresql://fixture@db.example.invalid/test');
+    target.password = 'test-only-fixture';
+    expect(() => buildReport(snapshot(), { ...options, target: target.href })).toThrow(
       'Invalid report options',
     );
     expect(() =>
