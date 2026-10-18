@@ -13,9 +13,14 @@ const counts = {
 const approved = { ...packet, approved: true, approvalReference: 'owner reply: approved M02 dev batch' };
 describe('bounded owner-approved M02 dev packet', () => {
   it('blocks the unapproved packet before any authentication or network request', () => {
-    expect(() => assertDevBatchPacket(packet, packet.sourceSha256, packet.baselineSvgSha256, counts)).toThrow(
-      'M02_DEV_BATCH_APPROVAL_PENDING',
-    );
+    expect(() =>
+      assertDevBatchPacket(
+        { ...packet, approved: false, approvalReference: null },
+        packet.sourceSha256,
+        packet.baselineSvgSha256,
+        counts,
+      ),
+    ).toThrow('M02_DEV_BATCH_APPROVAL_PENDING');
   });
   it('accepts only the approved target and reviewed source payload', () => {
     expect(
