@@ -115,3 +115,7 @@ jobs:
         run: node scripts/db/check-data-api.mjs
       - name: Verify concurrent collector claims and deduplication
         run: node scripts/db/check-concurrency.mjs
+      - name: Verify M03 keyed cost concurrency
+        run: |
+          node --test scripts/db/check-m03-concurrency.test.mjs
+          node scripts/db/check-m03-concurrency.mjs

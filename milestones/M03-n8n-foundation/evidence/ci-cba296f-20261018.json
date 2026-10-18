@@ -1,0 +1,56 @@
+{
+    "recordedAt":  "2026-10-18T04:22:29.7690096Z",
+    "environment":  "GitHub hosted CI and Vercel preview",
+    "head":  "cba296fcef692ad3d29d25a06cdfdf4b15a38f15",
+    "pr":  {
+               "number":  8,
+               "url":  "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8",
+               "draft":  true
+           },
+    "ci":  {
+               "status":  "completed",
+               "url":  "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39096684492",
+               "conclusion":  "success",
+               "id":  39096684492,
+               "jobs":  [
+                            {
+                                "name":  "unit",
+                                "status":  "completed",
+                                "conclusion":  "success",
+                                "completedAt":  "2026-10-18T04:20:01Z"
+                            },
+                            {
+                                "name":  "build",
+                                "status":  "completed",
+                                "conclusion":  "success",
+                                "completedAt":  "2026-10-18T04:19:56Z"
+                            },
+                            {
+                                "name":  "quality",
+                                "status":  "completed",
+                                "conclusion":  "success",
+                                "completedAt":  "2026-10-18T04:20:13Z"
+                            },
+                            {
+                                "name":  "db-tests",
+                                "status":  "completed",
+                                "conclusion":  "success",
+                                "completedAt":  "2026-10-18T04:21:57Z"
+                            },
+                            {
+                                "name":  "e2e",
+                                "status":  "completed",
+                                "conclusion":  "success",
+                                "completedAt":  "2026-10-18T04:21:03Z"
+                            }
+                        ]
+           },
+    "vercel":  [
+                   {
+                       "context":  "Vercel",
+                       "state":  "SUCCESS",
+                       "targetUrl":  "https://vercel.com/muhammed-abdelrahman/everyone-market-researcher/FoMLvcfyjtcuiL5rfJvcTWqiDQpV"
+                   }
+               ],
+    "boundary":  "This receipt covers cba296f only. It does not prove hosted dev migration, API/provider credentials, native workflow execution or later concurrency-check code."
+}
