@@ -5,17 +5,17 @@
 
 ## Status
 
-**In review: dev/prod acceptance and CI passed; separate PR4 merge approval open**
+**Done — PR4 merged after separate owner approval**
 
-| Field           | Value                                                                                                                                                                                                                                                                                                                                                                                     |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Started         | 2026-10-17                                                                                                                                                                                                                                                                                                                                                                                |
-| Last updated    | 2026-10-18 Cairo                                                                                                                                                                                                                                                                                                                                                                          |
-| Finished        | —                                                                                                                                                                                                                                                                                                                                                                                         |
-| Branch / PR     | m01-supabase-foundation / [#4 draft](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4)                                                                                                                                                                                                                                                                          |
-| Current task    | Dev/prod baseline, both actual restricted roles, saved providers/Data API, security/advisors/types, credential cleanup and targeted checks passed. Evidence published; normal CI39080163046 passed all five jobs at bdf8ef7, Vercel green. T14 merge approval is the remaining owner gate.                                                                                                |
-| Verified source | bdf8ef7196b67c41d7993c7bac613ee038f913b4; [CI39080163046](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39080163046) all five jobs and Vercel green. Current indexed674-file scan0/JSON/format/diff/seals/typecheck PASS. This final docs receipt is subject to the normal live PR checks before merge. Previous source/CI receipts remain historical. |
-| Next step       | Owner reviews draft PR4 and replies **Approve merging PR #4**. Verify current-head required checks before an approved merge; then finish T14 and mark M01 Done. No credential/provider action remains. Do not begin M02.                                                                                                                                                                  |
+| Field           | Value                                                                                                                                                                                                                                                                                                                                                      |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Started         | 2026-10-17                                                                                                                                                                                                                                                                                                                                                 |
+| Last updated    | 2026-10-18 Cairo                                                                                                                                                                                                                                                                                                                                           |
+| Finished        | 2026-10-18 Cairo                                                                                                                                                                                                                                                                                                                                           |
+| Branch / PR     | m01-supabase-foundation / [#4 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4)                                                                                                                                                                                                                                          |
+| Current task    | Complete: scoped M01 acceptance passed; separately approved PR4 actually merged at02:56:30Cairo18October as4702a31. T14 complete. Documentation closeout only; M02 remains Not started.                                                                                                                                                                    |
+| Verified source | Approved4ffca85d3dd8966e48bacf5e9d7b34c5cd5948d3 / [CI39080412075](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39080412075) all five jobs/Vercel green; actual main merge4702a3155680a22c7654ccf9ba10cb9c91aea465. Prior CI receipts remain historical. Targeted674-file scan0/type/JSON/format/diff/seals preserved. |
+| Next step       | No M01 action remains. Await explicit instruction to begin M02; preserve receipts and24October tooling follow-up. No collection, paid calls or n8n activation.                                                                                                                                                                                             |
 
 ## Production approval — recorded before execution
 
@@ -38,7 +38,7 @@ On 18 October Cairo, Mohamed approved: **Approve the M01 production baseline pac
 - [x] T11 — Saved dev and prod Google provider configurations enabled after reload with exact callbacks; Email disabled and restrictions preserved (MA-06 resolved for both); OAuth exchange/full browser sign-in remains M09
 - [x] T12 — Dev migration/catalogue/advisor/type evidence preserved; actual writer and agent pooler identity, permitted operations and denial checks passed (MA-05 dev resolved)
 - [x] T13 — Exact seven-version production baseline applied once; catalogue/advisors/types/provider configuration, supplemental security and both actual machine-role pooler checks passed; credential cleanup verified
-- [ ] T14 — Evidence/docs and delivery CI passed; PR4 remains draft/unmerged pending separate owner approval. Done only after approved merge; M02 unstarted
+- [x] T14 — Docs/hand-off complete after separately approved PR4 merge; actual GitHub MERGED state and SHA verified. M01 Done; M02 unstarted
 
 ## Acceptance criteria
 
@@ -72,19 +72,18 @@ Those UTC observations fall on 17 October; the local session date is 18 October.
 | AC11 Google        | Not simulated                                                                                                                                              | No hosted login claim                  | PASS dev saved configuration at 22:54:58 UTC: Google ENABLED after reload, one Google-format client ID and masked secret presence, exact dev callback, nonce/email checks retained. Email disabled; signup ON, anonymous/manual linking OFF, confirmEmail ON, domain autojoin 0. Google Cloud Web-client type/authorized-redirect metadata not independently verified; no OAuth exchange/full browser sign-in (M09)                                                                                                                                        | PASS saved configuration after follow-up reload23:30:21UTC: Google ENABLED, Email OFF, valid-format configured client/masked-secret presence, exact prod callback and preserved signup/nonce/email restrictions. Earlier disabled/autofill discrepancy retained; Cloud metadata/OAuth exchange/full browser sign-in not claimed                                                                                                                                 |
 | AC12 secrets       | Prior indexed 636-file scan zero; PAT/password detectors +18 script regressions passed                                                                     | PASS: source quality checks at 7aaa2a1 | PASS credential cleanup: agent-only consumed handoff/private SQL deleted; native CLI exited and owned native CLI count 0. Prior writer/admin cleanup preserved; owner's separately saved passwords untouched. No decrypted credential/URL/raw native error output. Indexed648-file targeted secret scan, changed JSON/format/diff checks and all seven SHA256 seals PASS; new-head CI remains separate, not an exhaustive audit                                                                                                                            | Cleanup PASS: after owner removed admin handoff following rejected automatic cleanup, independent follow-up confirms admin/writer/agent handoffs and private role SQL absent/nativeCLI0. Prior blocked state retained; saved passwords untouched. Current indexed674-file targeted secret scan0, JSON/format/diff/seal checks PASS; delivery CI39080163046 all five jobs PASS at bdf8ef7; verify final docs head checks before merge; no exhaustive audit claim |
 
-M01 is not Done: dev and production acceptance checks are verified within their
-recorded limits, including both actual production restricted-role logins.
-Credential cleanup, final targeted checks, evidence publication and delivery CI passed. Only T14, the separate owner approval and PR4 merge, remains open.
-Unperformed production HTTP/member-JWT/OAuth journeys are not claimed; local
-positive RLS tests and persisted hosted configuration remain separate evidence.
-Earlier CI results are not relabelled as a new head.
+M01 is Done. Scoped dev/production acceptance, targeted checks and all five
+approved-head CI jobs passed. The owner separately approved PR4; GitHub confirmed
+the exact-head merge as4702a31. T14 is complete. Production HTTP/member-JWT/OAuth
+journeys remain unperformed scope limits. Local positive RLS tests, persisted
+hosted configuration and historical failed attempts retain their own evidence.
 
 ## Blockers
 
 - MA-04 resolved for dev and prod: their separate native credentials authenticated and each approved exact-version baseline push completed. Dev cleanup was already complete. The automatic production admin-handoff deletion command was rejected before execution; no alternate retry occurred. The owner removed that file, then independent readback verified admin/writer/agent encrypted handoffs and private role SQL absent, nativeCLI0. The earlier blocked state is retained in its cleanup receipt.
 - MA-05 resolved for dev and prod: all four actual restricted-role receipts passed; each environment keeps its own writer/session5432 and agent/transaction6543 evidence. Production completed23:39:48-53UTC with both identities, permitted operations, four exact42501 denials and native0/DO. Do not repeat successful probes, reset passwords or substitute postgres/service credentials. Owner's separately saved role passwords remain for later integrations.
 - MA-06 resolved saved configuration on dev and prod: Google ENABLED/Email DISABLED after reload, exact callbacks and signup/nonce/email restrictions preserved; domain autojoin0. Production's earlier disabled/autofill discrepancy and later successful saved readback remain separate. No independent Cloud-client metadata/OAuth exchange/full browser sign-in claim; full sign-in remains M09.
-- T13 production approval and baseline/role acceptance are complete. Supplemental security review15/15 and inventory review22/22 passed. Production Data API three-schema list persisted; HTTP/member-JWT requests remain unperformed limits, not relabelled from local tests. Final targeted secret/format/JSON/seal checks and normal new-head CI remain before separate PR4 merge approval. Keep PR4 draft; no M02.
+- T13/T14 complete: production acceptance, targeted checks and all five approved-head CI jobs passed. Owner separately approved PR4; actual merge4702a31 completed. No M01 blocker remains. M02, collection, paid calls and workflows stay unstarted.
 
 ## Manual actions needed from the owner
 
@@ -94,13 +93,13 @@ Earlier CI results are not relabelled as a new head.
 | MA-04 prod   | Completed: distinct production database handoff authenticated; approved seven-version push and post-migration checks passed. No further database-password handoff requested.                                                                                                         | Cleanup now verified after owner removal: administrator handoff absent; earlier automatic-review rejection retained, no alternate deletion retry.                                     |
 | MA-05 prod   | Completed: both direct production restricted-role logins and bounded RPC/read/denial checks passed. No further password SQL, handoff or successful-probe replay needed. Preserve separately saved passwords for later integration.                                                   | Writer session5432 and agent transaction6543 each verified current_user/session_user, permitted operations, four exact42501 denials/native0DO; consumed handoffs/private SQL deleted. |
 | MA-06 prod   | No further setup action: latest saved provider readback confirms **Google ENABLED / Email DISABLED** after explicit reload, exact callback `https://hkiafqrcxaafdbcvjlzv.supabase.co/auth/v1/callback`, signup ON, anonymous/manual linking OFF, confirmEmail/nonce checks retained. | Resolved saved Supabase configuration after follow-up update; original disabled/autofill discrepancy retained. OAuth exchange/full browser sign-in remains M09.                       |
-| T13 approval | APPROVED in this chat: exact packet for hkiafqrcxaafdbcvjlzv. See production approval receipt above. No repeated permission request.                                                                                                                                                 | APPROVED; exact single push and bounded production acceptance checks passed. Final evidence/CI and later PR4 merge stay separate.                                                     |
-| PR4 approval | After M01 acceptance and fresh checks, review [GitHub PR4](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4) and reply **Approve merging PR #4**. Keep PR4 draft until acceptance.                                                                         | OPEN; no merge or application production promotion                                                                                                                                    |
+| T13 approval | APPROVED and completed: exact single production push and bounded acceptance; original receipt retained.                                                                                                                                                                              | Later separate PR4 approval granted and actual merge verified.                                                                                                                        |
+| PR4 approval | APPROVED: owner replied **Approve merging PR #4** after complete acceptance/fresh checks.                                                                                                                                                                                            | CLOSED: exact4ffca85 merged as4702a31 at02:56:30Cairo18October; no admin bypass.                                                                                                      |
 
-All credential/provider owner actions are complete. Earlier exact setup commands
-remain in Supabase README/history for provenance; do not rerun them for this
-acceptance. After final targeted checks and fresh CI, the only remaining owner
-approval is **Approve merging PR #4**. Keep PR4 draft until that approval.
+All M01 owner actions and approvals are complete, including PR4's separate
+merge approval. Earlier setup commands remain historical; do not repeat the
+password handoffs, successful probes or seven migrations. M02 remains
+Not started pending a separate owner instruction.
 
 ## Decisions & deviations
 
@@ -123,6 +122,8 @@ approval is **Approve merging PR #4**. Keep PR4 draft until that approval.
 - Preserve M00's tooling-advisory follow-up: dev-only `braces` advisory GHSA-vfj7-8cjw-p6xm and ESLint compatibility review due 2026-10-24. This continuation did not fix dependencies or perform a fresh full dependency audit.
 
 ## Session log
+
+- 2026-10-18 Cairo · Owner separately approved PR4 merge and closing M01. Fresh independent/root preflight confirmed exact4ffca85, CI39080412075 all five jobs/Vercel green and unchanged strict/admin protection. Normal exact-head guarded merge completed23:56:30UTC17October/02:56:30Cairo18October as4702a3155680a22c7654ccf9ba10cb9c91aea465. No admin bypass. T14 complete/M01 Done. Protected-main documentation closeout records this observed merge; no new code/DB/credentials or M02 action. Historical receipts and24October tooling follow-up preserved. [Actual merge receipt](evidence/merge-closure-20261018.json).
 
 - 2026-10-18 Cairo · Production acceptance committed/pushed bdf8ef7196b67c41d7993c7bac613ee038f913b4; [CI39080163046](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39080163046) PASS quality/unit/build/e2e/db-tests; Vercel SUCCESS. Targeted scan674files0, types/seals/JSON/format/diff and independent reviews PASS. Existing strict/admin main protection verified unchanged (PR + quality/unit/build required, no force push/delete). All M01 acceptance evidence complete within separate environment/coverage limits; T14 remains open solely for separate owner PR4 merge approval. Final documentation receipt follows normal PR CI; no merge/M02/application promotion/paid/workflows.
 
@@ -156,14 +157,13 @@ approval is **Approve merging PR #4**. Keep PR4 draft until that approval.
 
 ## Hand-off to next milestone
 
-M01 remains In review, not Done. Dev and production baseline, restricted-role,
-provider and captured security acceptance passed. All credential/provider owner
-actions and temporary-handoff cleanup are complete; preserve the separate
-receipts, original failed attempts, single production push and seven seals.
+M01 Done on18October2026 after the separately approved actual PR4 merge.
+Approved head4ffca85, CI39080412075 all five jobs/Vercel green; merge4702a31.
+Preserve separate dev/prod baseline, role, provider, security/advisor/type and
+cleanup receipts, including original failed attempts and all seven seals.
 
-Current targeted checks and evidence-head CI passed;
-verify live checks before an approved merge. Obtain the separate owner reply
-**Approve merging PR #4**. Keep PR4 draft/unmerged until that approval. Production
-HTTP/member-JWT/OAuth journeys remain unperformed and are not claimed from local
-proof or saved settings; full browser sign-in remains M09. Do not begin M02,
-collection, paid provider calls or workflows.
+M02 remains **Not started**, with no start date or implementation. Wait for the
+owner's instruction before following its existing plan and MA-07–09. No
+collection, paid calls or n8n activation. Full Google browser sign-in stays M09;
+production HTTP/member-JWT/OAuth limits remain explicit. Preserve the existing
+tooling-advisory/ESLint follow-up due24October.

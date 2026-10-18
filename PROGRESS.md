@@ -5,35 +5,35 @@
 
 ## Now
 
-|                       |                                                                                                                                                                                                                                                     |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Current milestone** | M01 — Supabase foundation                                                                                                                                                                                                                           |
-| **Status**            | In review: dev/prod acceptance and CI passed; separate PR4 merge approval open                                                                                                                                                                      |
-| **Next step**         | Owner reviews PR4 and replies **Approve merging PR #4**. Verify live required checks on the current head before an approved merge. All credential/provider and baseline acceptance actions are complete; keep PR4 draft/unmerged and M02 unstarted. |
-| **Waiting on owner**  | Separate **Approve merging PR #4** only. Production packet, credential delivery, Google setup and both restricted-role checks are complete; no further password/provider action.                                                                    |
-| **Pilot**             | Not started (begins at the end of M08; runs 14 days)                                                                                                                                                                                                |
-| **Last updated**      | 2026-10-18 Cairo (production baseline and targeted checks passed; evidence bdf8ef7 / CI39080163046 all five jobs and Vercel green; T14 merge approval open)                                                                                         |
+|                       |                                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Current milestone** | M01 — Supabase foundation                                                                                                                                    |
+| **Status**            | Done — M01 merged after separate owner approval                                                                                                              |
+| **Next step**         | M01 complete. Await the owner's explicit instruction to begin M02; M02 remains Not started. Preserve acceptance evidence and the24October tooling follow-up. |
+| **Waiting on owner**  | No M01 actions or approvals remain. Starting M02 requires a separate instruction.                                                                            |
+| **Pilot**             | Not started (begins at the end of M08; runs 14 days)                                                                                                         |
+| **Last updated**      | 2026-10-18 Cairo (approved PR4 merged at02:56:30Cairo as4702a31; exact head4ffca85 / CI39080412075 all five jobs and Vercel green)                           |
 
 ## Milestone board
 
-| ID  | Milestone                                  | Status      | Started    | Done       | Blockers / owner actions                                          | PR                                                                                      |
-| --- | ------------------------------------------ | ----------- | ---------- | ---------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| M00 | Repo bootstrap & tooling                   | Done        | 2026-10-17 | 2026-10-17 | —                                                                 | [#1 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1) |
-| M01 | Supabase foundation                        | In review   | 2026-10-17 |            | Dev/prod acceptance + CI passed; separate PR4 merge approval OPEN | [#4 draft](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4)  |
-| M02 | Seed data & account resolution             | Not started |            |            | MA-07…MA-09                                                       |                                                                                         |
-| M03 | n8n foundation                             | Not started |            |            | MA-10…MA-13                                                       |                                                                                         |
-| M04 | Collectors I: Vimeo + Instagram            | Not started |            |            | MA-14                                                             |                                                                                         |
-| M05 | Collectors II: Websites, YouTube, LinkedIn | Not started |            |            | MA-15                                                             |                                                                                         |
-| M06 | Collectors III: Stories + upkeep           | Not started |            |            | MA-16, MA-20 (first Vercel env vars for the media route)          |                                                                                         |
-| M07 | AI understanding                           | Not started |            |            | MA-17                                                             |                                                                                         |
-| M08 | Campaign linker + pilot launch             | Not started |            |            | MA-04 (prod token), MA-18                                         |                                                                                         |
-| M09 | Web app foundation                         | Not started |            |            | MA-19, MA-20                                                      |                                                                                         |
-| M10 | Web app entities                           | Not started |            |            | —                                                                 |                                                                                         |
-| M11 | Search, review, admin                      | Not started |            |            | MA-20, MA-21                                                      |                                                                                         |
-| M12 | Pilot review & tuning (gate)               | Not started |            |            | MA-22 (go/no-go)                                                  |                                                                                         |
-| M13 | News, briefs, alerts                       | Not started |            |            | MA-23, MA-24                                                      |                                                                                         |
-| M14 | Agent API + MCP                            | Not started |            |            | MA-20, MA-25                                                      |                                                                                         |
-| M15 | Scale & launch                             | Not started |            |            | MA-26…MA-28                                                       |                                                                                         |
+| ID  | Milestone                                  | Status      | Started    | Done       | Blockers / owner actions                                 | PR                                                                                      |
+| --- | ------------------------------------------ | ----------- | ---------- | ---------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| M00 | Repo bootstrap & tooling                   | Done        | 2026-10-17 | 2026-10-17 | —                                                        | [#1 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1) |
+| M01 | Supabase foundation                        | Done        | 2026-10-17 | 2026-10-18 | None for M01; M02 remains unstarted                      | [#4 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4) |
+| M02 | Seed data & account resolution             | Not started |            |            | MA-07…MA-09                                              |                                                                                         |
+| M03 | n8n foundation                             | Not started |            |            | MA-10…MA-13                                              |                                                                                         |
+| M04 | Collectors I: Vimeo + Instagram            | Not started |            |            | MA-14                                                    |                                                                                         |
+| M05 | Collectors II: Websites, YouTube, LinkedIn | Not started |            |            | MA-15                                                    |                                                                                         |
+| M06 | Collectors III: Stories + upkeep           | Not started |            |            | MA-16, MA-20 (first Vercel env vars for the media route) |                                                                                         |
+| M07 | AI understanding                           | Not started |            |            | MA-17                                                    |                                                                                         |
+| M08 | Campaign linker + pilot launch             | Not started |            |            | MA-04 (prod token), MA-18                                |                                                                                         |
+| M09 | Web app foundation                         | Not started |            |            | MA-19, MA-20                                             |                                                                                         |
+| M10 | Web app entities                           | Not started |            |            | —                                                        |                                                                                         |
+| M11 | Search, review, admin                      | Not started |            |            | MA-20, MA-21                                             |                                                                                         |
+| M12 | Pilot review & tuning (gate)               | Not started |            |            | MA-22 (go/no-go)                                         |                                                                                         |
+| M13 | News, briefs, alerts                       | Not started |            |            | MA-23, MA-24                                             |                                                                                         |
+| M14 | Agent API + MCP                            | Not started |            |            | MA-20, MA-25                                             |                                                                                         |
+| M15 | Scale & launch                             | Not started |            |            | MA-26…MA-28                                              |                                                                                         |
 
 Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In review` · `Done` · `Parallel-OK`
 
@@ -47,6 +47,8 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
 | Production launch     | —          |
 
 ## Log (newest first)
+
+- 2026-10-18 Cairo · Owner separately approved PR4 merge and closing M01. Fresh independent/root preflight confirmed exact4ffca85, CI39080412075 all five jobs/Vercel green and unchanged strict/admin protection. Normal exact-head guarded merge completed23:56:30UTC17October/02:56:30Cairo18October as4702a3155680a22c7654ccf9ba10cb9c91aea465. No admin bypass. T14 complete/M01 Done. Protected-main documentation closeout records this observed merge; no new code/DB/credentials or M02 action. Historical receipts and24October tooling follow-up preserved. [Actual merge receipt](milestones/M01-supabase-foundation/evidence/merge-closure-20261018.json).
 
 - 2026-10-18 Cairo · Published production acceptance at bdf8ef7196b67c41d7993c7bac613ee038f913b4; [CI39080163046](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39080163046) all five jobs PASS, Vercel SUCCESS. Main protection still requires PR + quality/unit/build, strict/admin enforcement, no force push/delete. All AC1-AC12 evidence and MA-04/05/06 actions complete within recorded scopes. T14 remains open solely for explicit PR4 merge approval; this final documentation receipt uses normal PR CI. No merge, application promotion, M02, collection, paid calls or workflows.
 

@@ -1,0 +1,91 @@
+{
+  "LocalDate": "2026-10-18",
+  "Timezone": "Africa/Cairo",
+  "RecordedAtUtc": "2026-10-17T23:57:33.5405441Z",
+  "Owner": "Mohamed Abdelrahman",
+  "OwnerApprovalQuote": "Approve merging PR #4",
+  "ApprovalQuestionScope": "Merging PR4 and closing M01; M02, collection, paid calls and n8n activation remain unstarted",
+  "ApprovedHead": "4ffca85d3dd8966e48bacf5e9d7b34c5cd5948d3",
+  "ActualPullRequest": {
+    "headRefOid": "4ffca85d3dd8966e48bacf5e9d7b34c5cd5948d3",
+    "isDraft": false,
+    "mergeCommit": {
+      "oid": "4702a3155680a22c7654ccf9ba10cb9c91aea465"
+    },
+    "mergedAt": "2026-10-17T23:56:30Z",
+    "number": 4,
+    "state": "MERGED",
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4"
+  },
+  "MergedAtCairo": "2026-10-18T02:56:30+03:00",
+  "ApprovedHeadCi": {
+    "RunId": 39080412075,
+    "Head": "4ffca85d3dd8966e48bacf5e9d7b34c5cd5948d3",
+    "Conclusion": "success",
+    "Url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39080412075",
+    "Jobs": [
+      {
+        "Name": "build",
+        "Conclusion": "success"
+      },
+      {
+        "Name": "db-tests",
+        "Conclusion": "success"
+      },
+      {
+        "Name": "quality",
+        "Conclusion": "success"
+      },
+      {
+        "Name": "unit",
+        "Conclusion": "success"
+      },
+      {
+        "Name": "e2e",
+        "Conclusion": "success"
+      }
+    ],
+    "Vercel": "SUCCESS before merge"
+  },
+  "PostMergeMainCi": {
+    "RunId": 39080915048,
+    "HeadSha": "4702a3155680a22c7654ccf9ba10cb9c91aea465",
+    "Conclusion": "success",
+    "Jobs": ["quality", "unit", "build", "e2e", "db-tests"],
+    "AllFiveJobsPassed": true,
+    "Url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39080915048"
+  },
+  "MergeMethod": "Normal merge commit retaining reviewed source history",
+  "HeadGuard": "--match-head-commit 4ffca85d3dd8966e48bacf5e9d7b34c5cd5948d3",
+  "DraftToReadyCompleted": true,
+  "AdminBypass": false,
+  "ProtectionWeakened": false,
+  "MainProtection": {
+    "RequiredPullRequest": true,
+    "RequiredChecks": ["quality", "unit", "build"],
+    "Strict": true,
+    "EnforceAdmins": true,
+    "RequiredReviewCount": 0,
+    "AllowForcePushes": false,
+    "AllowDeletions": false
+  },
+  "IndependentPreflight": "Fresh independent agent and root readback: exact approved head, clean worktree, no newer work, all five jobs and Vercel green, current main base and mergeable clean",
+  "DocumentationCloseout": {
+    "Reason": "Protected main requires a PR; mechanical records of the already-observed approved merge are part of closing M01",
+    "Branch": "Same existing m01-supabase-foundation fast-forwarded to merged main; no reset, force push or branch deletion",
+    "Changes": "Progress, current instructions and this non-secret actual merge receipt only",
+    "FutureMergeClaimed": false
+  },
+  "DocumentationEditSafety": {
+    "CompoundShellEditRejectedBeforeExecution": true,
+    "ReasonSupplied": "blocked by policy; no specific reason",
+    "NoFilesChangedByRejectedCommand": true,
+    "SaferCompletion": "Two named progress files were updated through a directly reviewable apply_patch diff, removing the compound PowerShell/inline-Python mutation wrapper. No security settings were changed."
+  },
+  "AcceptanceBoundary": "All existing local/CI/dev/prod receipts and earlier failures retained. No new hosted acceptance or credential cleanup claimed by this merge-only action. Production HTTP/member-JWT and Google OAuth exchange remain unperformed scope limits; full sign-in M09.",
+  "DatabaseOrCredentialOperationsRun": false,
+  "M02Started": false,
+  "CollectionOrPaidCallsRun": false,
+  "N8nWorkflowsActivated": false,
+  "Result": "PASS: exact approved PR4 actually merged; T14 completed; documentation closeout uses ordinary protected PR checks"
+}
