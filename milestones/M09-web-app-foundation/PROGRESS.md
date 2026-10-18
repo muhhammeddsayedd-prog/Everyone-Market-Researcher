@@ -14,7 +14,7 @@
 | Finished | — |
 | Branch / PR | `m09-frontend-company-browsing` (frontend track, draft PR) |
 | Current task | Company-browsing journey built and tested on an isolated local stack; real dev reads blocked on MA-19 (local) |
-| Next step | Owner completes MA-19 (local) below; then verify the journey on dev and record observed counts; then the next frontend group |
+| Next step | Owner tests the Vercel preview (`https://everyone-market-researcher-git-m09-80aab7-muhammed-abdelrahman.vercel.app`) after adding its redirect URL in dev Auth; then verify the journey on dev and record observed counts |
 | Caching option (A shared reader / B per-user) | **B per-user** for the frontend track (owner: no `api_agent`/service role for app reads). Codex to record in DECISIONS. |
 
 ## Early parallel frontend track (owner-authorized 18 Oct 2026)
@@ -171,6 +171,8 @@ caused by this track. CI's Linux `unit` job passes.
 | MA-19 | Supabase Auth URL configuration (Site URL + redirect URLs for localhost, Vercel previews, production) + matching Google OAuth redirect domains; confirm first users to invite | Google sign-in on preview and production | **Local part requested 18 Oct** (next row); preview/prod parts later |
 | MA-19 (local) | 1) Supabase dashboard → project **emr-dev** (`zmotjsbzhzjvpelxvxlf`) → Authentication → URL Configuration → Redirect URLs → **Add URL** `http://localhost:3000/**` → Save. Do not change the Site URL, providers or users. 2) Project Settings → API Keys → copy the **publishable** key (`sb_publishable_…`; it is safe for browsers and is not a secret). 3) In the frontend worktree, create `apps/web/.env.local` with `NEXT_PUBLIC_SUPABASE_URL=https://zmotjsbzhzjvpelxvxlf.supabase.co`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<that key>` and `NEXT_PUBLIC_SITE_URL=http://localhost:3000` (or send Claude the publishable key to do it). 4) Run `pnpm dev`, open `http://localhost:3000` and sign in with your invited Google account. The existing invite trigger creates your membership; no policy changes. 5) Reply **"Dev sign-in done"**. | Real authenticated dev reads for the company journey. Google already redirects to the Supabase callback, so nothing changes in Google Cloud. | Requested 18 Oct |
 | Font (no MA id yet; Codex to assign) | Decide how General Sans reaches builds: (a) a build step downloads it from Fontshare into `apps/web/public/fonts/` (gitignored); or (b) keep it in a private store. Until then the app uses system fonts. | The ITF licence forbids redistributing the files through this **public** repository | Requested 18 Oct |
+| MA-20 (branch preview) | Done 18 Oct by Claude at the owner's request: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `NEXT_PUBLIC_SITE_URL` set for **Preview, branch `m09-frontend-company-browsing` only** (emr-dev). No server secrets set. | Testable preview of the frontend track | Done |
+| MA-19 (preview) | Supabase emr-dev → Authentication → URL Configuration → Redirect URLs → add `https://everyone-market-researcher-git-m09-80aab7-muhammed-abdelrahman.vercel.app/**` | Google sign-in on the branch preview | Owner adding (18 Oct) |
 | MA-20 | Vercel env vars: Preview = dev, Production = prod (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SITE_URL`, `INTERNAL_WEBHOOK_SECRET`, `API_AGENT_DATABASE_URL` if Option A) | Builds and data access | Not requested yet |
 | — | Run `scripts/copy-pilot-slice.ts` (prod → dev, no raw payloads/costs/keys/members) | Realistic previews | Not requested yet |
 
@@ -191,6 +193,7 @@ caused by this track. CI's Linux `unit` job passes.
 
 ## Session log
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
+- 2026-10-18 · At the owner's request, deployed the frontend for testing on a Vercel **Preview** (dev data only; Production untouched). Set 3 public env vars scoped to Preview + branch `m09-frontend-company-browsing` (Supabase URL and publishable key for emr-dev, plus the branch preview URL as the site URL). Checked the key read-only: dev Auth reports Google on and email off, and anonymous `app.competitors` returns 401. Redeployed head `448229b` and the build passed. Vercel SSO protection is unchanged, so testers must be logged into Vercel. The owner is adding the preview redirect URL in dev Auth.
 - 2026-10-18 · Fixed an Arabic-text fallback that requested the unprovisioned General Sans file (failed only in CI). PR #9 CI is all green at `1cb83b2` (run 39109220989). The Vercel preview is behind the existing SSO deployment protection; it was not changed.
 - 2026-10-18 · Early frontend track (Claude): shell, auth gate, company directory/profile/sources/coverage, fail-closed config, isolated-stack e2e plus CI job `web-auth-e2e` · `apps/web/**`, `.github/workflows/ci.yml` · lint/format/typecheck/secrets pass; web unit 65/65; fail-closed e2e 12/12; authenticated e2e 76 pass / 0 fail. Real dev reads blocked on MA-19 (local).
 - 2026-10-17 · milestone file created (handoff pack)
