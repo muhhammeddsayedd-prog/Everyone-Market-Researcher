@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { safeNextPath } from './auth/next-path';
+import { authOrigin } from './auth/origin';
 import { parsePublicEnv } from './env';
 import { initialsFor, logoSrc } from './view/logo';
 import { safeExternalUrl } from './view/safe-url';
@@ -114,5 +115,25 @@ describe('parsePublicEnv (fails closed)', () => {
 
   it('rejects non-http URLs', () => {
     expect(parsePublicEnv({ ...valid, siteUrl: 'javascript:alert(1)' }).ok).toBe(false);
+  });
+});
+
+describe('authOrigin (OAuth return host)', () => {
+  const site = 'https://everyone-market-researcher-git-m09-80aab7-team.vercel.app';
+  it('returns to the Vercel host the user started from', () => {
+    expect(authOrigin(site, 'everyone-market-researcher-aithmf50y-team.vercel.app', 'https')).toBe(
+      'https://everyone-market-researcher-aithmf50y-team.vercel.app',
+    );
+    expect(authOrigin(site, '127.0.0.1:3100', 'http')).toBe('http://127.0.0.1:3100');
+    expect(authOrigin(site, 'localhost:3000', 'http')).toBe('http://localhost:3000');
+  });
+
+  it('falls back to the configured site for untrusted or malformed hosts', () => {
+    for (const host of ['evil.example', 'evil.example/vercel.app', 'a b', '', null])
+      expect(authOrigin(site, host, 'https')).toBe(site);
+  });
+
+  it('never downgrades a remote host to http', () => {
+    expect(authOrigin(site, 'x.vercel.app', 'http')).toBe('https://x.vercel.app');
   });
 });

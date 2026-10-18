@@ -61,6 +61,8 @@
 
 html {
   background: var(--color-bg);
+  /* Overrides Tailwind's preflight, which would otherwise name the unprovisioned brand font. */
+  font-family: var(--font-ui);
 }
 
 body {
