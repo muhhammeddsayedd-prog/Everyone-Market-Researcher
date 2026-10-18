@@ -3,7 +3,8 @@
 These modules build **inactive native JSON blueprints**, using the observed
 n8n 2.43.5 node versions and pinned official source. They do not call n8n, run
 SQL, authenticate providers or write actual exports. The actual capability
-probe is recorded separately in M03 evidence and was archived without execution.
+probe is recorded separately in M03 evidence. That original unused probe was
+archived without execution; later credential checks have their own receipts.
 
 - `buildCollectorStubs`: the 15 named T8 collector/AI/publish/alert stubs.
 - `buildSharedWorkflows`: Start, Finish, bounded atomic Ingest, keyed Log cost
@@ -16,25 +17,91 @@ probe is recorded separately in M03 evidence and was archived without execution.
   log-only notifications and publish/alert stubs. Stats refresh fails closed
   while its later RPC is unavailable.
 
-WF-19 and WF-99 remain unbuilt. Their authenticated provider and launch/recovery
-contracts must be completed against the verified credential/API connection;
-no fictional provider output or successful journey is represented here.
+Full WF-19 and WF-99 workflows remain incomplete. The readback component and
+launch descriptor below are source preparation, with explicit remaining gates.
 
 ## Binding and output boundary
 
 Every builder accepts a manifest validated by
 `packages/shared/src/n8n-bindings.ts`: fixed dev instance/project/runtime,
-canonical workflow and tag names, actual non-secret reference IDs, and the
-restricted dev Postgres credential reference where needed. No production
-bindings, credential values or placeholder IDs are accepted. Schema validation
+canonical workflow and tag names, actual non-secret reference IDs, and logical
+credential references where needed. Credentials retain their actual ID, display
+name and type: native `apifyApi` and `openAiApi` use predefined HTTP authentication;
+existing Vimeo/YouTube Header Auth stays `httpHeaderAuth`. Do not rename,
+duplicate or convert native credentials to satisfy a canonical display name.
+No production bindings or credential values are accepted. Schema validation
 does not establish that a reference exists on the server; actual UI/API readback
-must supply and verify those IDs. Synthetic IDs occur only in unit tests.
+must supply and verify those IDs. Synthetic IDs occur only in unit tests, never
+in prepared import artifacts.
 
 There is no real `bindings.dev.json` yet. Do not invent one to get a build.
 These are preparation functions, not a deployment CLI. Native API deployment
 must project the allowed API request shape and apply tags separately as required
 by the pinned API; do not blindly POST this blueprint wrapper. Save only actual
 changed, read-back hosted workflow exports under `../workflows/`.
+
+## Temporary credential probes
+
+`buildCredentialProbe` creates separate manual-only, inactive probes for the
+five logical credentials. The files in `prepared/credential-probe-*.dev.json`
+contain the authorized credential references supplied by actual UI readback.
+They have no saved workflow IDs and are prepared imports, not hosted exports.
+The explicit temporary-probe exception omits WF-90 routing and external
+notifications; it does not close a foundation acceptance criterion.
+
+Each execution permits one identity SELECT or one fixed metadata GET, with no
+automatic retry. HTTP requests use a 60-second timeout, certificate verification,
+no redirects and no body. The final Code node emits only fixed verification and
+failure flags. A workflow that continues after a native error can show Success
+while its receipt says `authenticationVerified:false`; inspect the receipt.
+Postgres additionally requires both native identities to be `n8n_writer` and
+database `postgres` on PostgreSQL 17. That identity alone does not attest the
+saved host/project, which must be checked separately.
+
+Apify uses authenticated [`/v2/users/me/limits`](https://docs.apify.com/api/v2/users-me-limits-get)
+because the full profile endpoint can return a proxy password. OpenAI reads
+`/v1/models`; Vimeo and YouTube read the fixed public account/channel metadata
+endpoints from T3. Their projected results contain no profile, model list,
+financial metadata, response headers or raw error text. These probes do not
+start actors, call inference, collect content or establish a project spend cap.
+
+## Source-only Apify slice
+
+`packages/shared/src/n8n-apify-contracts.ts` is also exported through the shared
+package index. It validates the notified run ID, the registered single-account
+smoke context and the authenticated terminal response. Callback-supplied
+accounts, actor, dataset, status and cost are discarded. Only the documented wire
+status `TIMED-OUT` is mapped to SQL `TIMED_OUT`; intermediate statuses and a
+missing `usageTotalUsd` fail closed. Anonymous run reads can omit that cost.
+
+`settledTerminalRun` requires two matching snapshots at least ten seconds apart.
+This follows the provider's settling guidance; it does not guarantee that a
+provider can never adjust billing later. `smokeLaunchDescriptor` describes one
+async POST with `waitForFinish:0`, explicit build, timeout, memory, ad-hoc webhook
+and a supplied two-run cap policy. It makes no request and always reports
+`spendAdmissionVerified:false`. A nonblank reference or an `approved:true` field
+is not owner approval. Verify the actual actor build, cap support/minimum,
+current price book, total ceiling and durable run admission before any paid use;
+the descriptor does not invent those facts or replace an ambiguous POST.
+
+`buildCallbackReadbackComponent` emits native nodes for notification validation,
+registered-run lookup and one authenticated first terminal GET. Its output is a
+component with `runnableWorkflow:false`, not a runnable WF-19 export. Unknown
+runs stop before provider reads. Already processed runs stop for the still
+missing saved-receipt replay branch. The component does not ingest, log costs,
+complete a run or claim callback acceptance.
+
+The remaining full-workflow gates are:
+
+- Native webhook/response contracts and the required durable
+  `apify_callback_rejected` audit path. The current generic logger produces a
+  different action and is not substituted as AC7 evidence.
+- A bounded delayed reread, saved-receipt replay, bounded dataset projection and
+  actual Cloud URL/crypto/normalizer support.
+- Atomic persistence/finish wiring, original-run registration-race recovery and
+  the reviewed paid batch admission. No automatic POST retry is permitted.
+- Strict restricted Postgres access, actual saved bindings/exports and native
+  end-to-end verification.
 
 ## Safety corrections
 
@@ -74,9 +141,13 @@ PM/backfill nodes and Config flags remain disabled regardless of database flags.
 ## Targeted local checks
 
 ```powershell
-node --test n8n/foundation/build-foundation.test.mjs n8n/foundation/build-orchestrator.test.mjs n8n/foundation/build-health.test.mjs n8n/foundation/health-orchestrator.test.mjs
-pnpm.cmd exec vitest run packages/shared/src/n8n-bindings.test.ts
+node --test n8n/foundation/*.test.mjs
+pnpm.cmd exec vitest run packages/shared/src/n8n-bindings.test.ts packages/shared/src/n8n-apify-contracts.test.ts
 ```
+
+The foundation package's `test` script discovers its local tests. CI's unit job
+already includes `n8n/foundation/*.test.mjs`, so the credential-probe and Apify
+preflight regressions run with normal PR CI; these tests make no API calls.
 
 The tests execute generated validation/dispatch Code and inspect native graph,
 mapper and query contracts with synthetic inputs. They do not execute the real

@@ -2,6 +2,14 @@ export { parseEnv } from './env';
 export { toSlug } from './slug';
 export { dispatchSlot, scheduledSlots } from './n8n-schedule';
 export {
+  callbackRunId,
+  registeredSmokeRun,
+  trustedTerminalRun,
+  settledTerminalRun,
+  smokeLaunchDescriptor,
+} from './n8n-apify-contracts';
+export type { TrustedTerminalSnapshot } from './n8n-apify-contracts';
+export {
   canonicalUrl,
   normalizeInstagram,
   normalizeLinkedIn,
