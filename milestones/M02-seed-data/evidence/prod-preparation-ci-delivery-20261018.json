@@ -1,0 +1,57 @@
+{
+  "observedAtUtc": "2026-10-18T02:44:48.2536386Z",
+  "environment": "GitHub CI and Vercel status only",
+  "codeHead": "96e8740c996f674a8c63a2c016c979cb7935d033",
+  "ciRunId": 39091012665,
+  "ciUrl": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39091012665",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "unit",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "quality",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "db-tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "e2e",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "mandatoryPostgresAssertions": 42,
+  "localWindowsChecks": 32,
+  "currentCoreCases": 38,
+  "prDraft": true,
+  "prState": "OPEN",
+  "vercel": [
+    {
+      "context": "Vercel",
+      "state": "SUCCESS",
+      "targetUrl": "https://vercel.com/muhammed-abdelrahman/everyone-market-researcher/8CpRPtZQbosocXYpZdSeRprZ9ZpY"
+    }
+  ],
+  "sourceByteProof": "prod-source-byte-delivery-20261018.json",
+  "originalFailedRun": 39090441239,
+  "originalFailedHead": "e349a087a41c3a9e0148626860b6971f1eb1e29e",
+  "productionApproved": false,
+  "productionOperations": 0,
+  "publicObjectDownloads": 0,
+  "realCredentialHandoffsConsumed": 0,
+  "mergeApproved": false,
+  "m03Started": false,
+  "limit": "CI and offline/local tests do not establish actual production acceptance; separate owner packet approval remains required."
+}

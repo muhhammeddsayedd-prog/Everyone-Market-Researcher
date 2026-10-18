@@ -5,16 +5,16 @@
 
 ## Status
 
-**In progress — dev accepted; exact production packet reviewed locally, delivery CI next**
+**Blocked: waiting on owner — M02 T10 production seed approval**
 
-| Field        | Value                                                                                                                                                                                                       |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Started      | 2026-10-18 Cairo                                                                                                                                                                                            |
-| Last updated | 2026-10-18 Cairo                                                                                                                                                                                            |
-| Finished     | —                                                                                                                                                                                                           |
-| Branch / PR  | m02-seed-data; PR6 OPEN/DRAFT. MA-09 bb52d471c3757455f549c72decab51d099aeda79 / CI39089732685 all five jobs/Vercel PASS. Production preparation follows normal delivery CI.                                 |
-| Current task | Dev and MA-09 complete. Exact production packet,54-file source seal, public payload,37 core/32 Windows/6 PG/3 CA/13 CI-safety checks and independent review complete locally. No production action.         |
-| Next step    | Verify final delivery CI, then request approved: seed prod for the exact linked packet. After approval only, supply two production-only handoffs and run the bounded consumer once. PR6 draft; M03 stopped. |
+| Field        | Value                                                                                                                                                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Started      | 2026-10-18 Cairo                                                                                                                                                                                                    |
+| Last updated | 2026-10-18 Cairo                                                                                                                                                                                                    |
+| Finished     | —                                                                                                                                                                                                                   |
+| Branch / PR  | m02-seed-data; PR6 OPEN/DRAFT. Code96e8740c996f674a8c63a2c016c979cb7935d033 / CI39091012665 all five jobs/Vercel PASS. Later documentation uses normal CI.                                                          |
+| Current task | Dev/MA-09 complete; exact production packet,54-file source seal,38 distinct core/32 Windows/6 PG/3 CA/13 CI-safety cases and independent review complete. Corrected clean-checkout CI all five jobs PASS.           |
+| Next step    | Owner reply approved: seed prod for the exact linked packet. Then record that approval, rebuild credential-free, request two production-only handoffs and invoke the bounded consumer once. PR6 draft; M03 stopped. |
 
 The owner instructed **Proceed with the next milestone** after M01 merged.
 Started from clean main a74459d082ba5d1f0445652d7d12f8d2079da945 and preserved
@@ -94,23 +94,23 @@ new source rather than reopening spent work.
 ## Blockers
 
 - Dev acceptance and MA-09 are complete under the owner's D-27 rule. No further company/channel decisions or dev credentials are required.
-- The [exact production packet](evidence/prod-seed-packet-20261018.md) is implemented and independently reviewed, still `approved:false`. Local checks pass:37 core/CLI,32 Windows,6 PostgreSQL rollback components,3 offline CA and13 CI-safety checks; type/lint/format pass. Final source/index proof and normal delivery CI precede the owner request. Production has not been connected or seeded for M02.
+- The [exact production packet](evidence/prod-seed-packet-20261018.md) is implemented and independently reviewed, still `approved:false`. Local38 distinct core/CLI,32 Windows,6 PostgreSQL rollback components,3 offline CA and13 CI-safety cases pass; type/lint/format/source/index checks pass. Corrected code96e8740 / CI39091012665 all five jobs and Vercel PASS. Only separate owner approval remains before two production-only handoffs and actual execution. Production has not been connected or seeded for M02.
 - No dev batch is running. Temporary handoffs are absent and the credential child closed. Permanent initial/continuation admission records and the original failed receipt are preserved; do not replay successful operations.
 - Actual dev populated advisors remain11 security INFO /69 performance INFO, zero WARN/ERROR. No schema migration or generated-type change was made. The24October M01 tooling follow-up stays open.
 - M02 production seed and merge approvals remain separate. PR6 stays draft. M03, collection, paid provider calls and n8n remain unstarted.
 
 ## Manual actions needed from the owner
 
-| ID           | Action / result                                                                                                                                                                | Status                                          |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| MA-07        | Public-only Vimeo token verified by202/202 resolutions; saved original retained.                                                                                               | Complete; no handoff needed                     |
-| MA-08        | YouTube key verified;121 resolved and seven reviewed sources excluded; saved original retained.                                                                                | Complete; no handoff needed                     |
-| MA-09        | Owner directed skipping unavailable social sources and accepted23 website flags/11 logo fallbacks. All41 exact dispositions recorded.                                          | Complete; verified by read-only D-27 assertions |
-| dev handoffs | All consumed temporary files removed and bounded child closed; original saved credentials retained.                                                                            | Complete; no action                             |
-| production   | Review [exact packet](evidence/prod-seed-packet-20261018.md), then reply approved: seed prod after delivery CI is green. Two production-only credential steps follow approval. | Not approved or performed                       |
-| merge        | Separate PR6 merge decision after production parity and all milestone gates.                                                                                                   | PR6 OPEN/DRAFT; not requested                   |
+| ID           | Action / result                                                                                                                                   | Status                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| MA-07        | Public-only Vimeo token verified by202/202 resolutions; saved original retained.                                                                  | Complete; no handoff needed                                        |
+| MA-08        | YouTube key verified;121 resolved and seven reviewed sources excluded; saved original retained.                                                   | Complete; no handoff needed                                        |
+| MA-09        | Owner directed skipping unavailable social sources and accepted23 website flags/11 logo fallbacks. All41 exact dispositions recorded.             | Complete; verified by read-only D-27 assertions                    |
+| dev handoffs | All consumed temporary files removed and bounded child closed; original saved credentials retained.                                               | Complete; no action                                                |
+| production   | Review [exact packet](evidence/prod-seed-packet-20261018.md) and reply approved: seed prod. Two production-only credential steps follow approval. | Awaiting explicit approval; approvedfalse, no production operation |
+| merge        | Separate PR6 merge decision after production parity and all milestone gates.                                                                      | PR6 OPEN/DRAFT; not requested                                      |
 
-The next owner action, after delivery CI is verified, is to review
+The next owner action is to review
 [this exact packet](evidence/prod-seed-packet-20261018.md) and reply
 **`approved: seed prod`**. It covers285 competitors/1,754 accounts and257 logos,
 at most771 Storage requests and1,560,325 upload bytes, USD0 incremental provider
@@ -146,6 +146,8 @@ acceptance and the later separate merge decision.
 ## Session log
 
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
+
+- 2026-10-18 Cairo · Corrected code96e8740c996f674a8c63a2c016c979cb7935d033 passed CI39091012665 quality/unit/build/e2e/db-tests; Vercel SUCCESS. All42 PostgreSQL CI assertions are mandatory; no missing/skipped production suite is accepted. Exact public source/payload/logo seals and all54 local source fingerprints match; independent review clear. M02 dev/MA-09 accepted; exact production packet is ready for separate `approved: seed prod`. Set waiting-owner status; AC10/T10 and T11 remain open until actual production acceptance. Documentation delivery uses normal PR CI. No production authentication/TLS/transfer/private handoff, dev replay, merge, M03, collection, paid provider or n8n action. [Code CI delivery](evidence/prod-preparation-ci-delivery-20261018.json).
 
 - 2026-10-18 Cairo · Production-preparation CI39090441239 on e349a08 failed unit on three files: ignored `out/` parent absent at CLI `mkdtemp`, and two raw source-hash checks exposed CRLF local CSVs versus older LF Git blobs. Created the parent before temporary artifacts; cold-parent regression failed before fix, then full CLI7/7 PASS. Re-added only the exact reviewed CRLF CSV bytes under existing `-text`, with explicit CR-at-EOL whitespace recognition; four indexed source files now exactly match working files and sourceb3cf64..., normalized previous/current content identical. No rows/values, hash algorithm, frozen payload/logo seals, spent dev packet, hosted effects or runtime changed. Source-index proof and independent review recorded; new normal CI follows the correction. The previous37 core checks and corrected7 CLI checks cover38 distinct cases. [Public source bytes](evidence/prod-source-byte-delivery-20261018.json).
 

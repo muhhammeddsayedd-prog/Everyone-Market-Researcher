@@ -82,7 +82,7 @@
     "previousPolicyHead": "bb52d471c3757455f549c72decab51d099aeda79",
     "previousPolicyRun": "39089732685",
     "previousPolicyResult": "All five jobs passed; Vercel SUCCESS",
-    "productionPreparationDelivery": "Normal PR CI follows commit; not inferred from local checks"
+    "productionPreparationDelivery": "Code96e8740c996f674a8c63a2c016c979cb7935d033 / CI39091012665 all five jobs passed; Vercel SUCCESS. See prod-preparation-ci-delivery-20261018.json. Later documentation uses normal CI."
   },
   "localTestReceiptCleanup": "An early unapproved CLI test had created a zero-stage/not_attempted failed receipt in the real local out directory. Verified those exact properties and preserved it separately as out/prod-rejected-local-test-20261018.json. Corrected CLI tests use isolated public fixtures and cannot overwrite real run receipts.",
   "scope": {
@@ -99,9 +99,8 @@
     "m03Started": false
   },
   "remainingGates": [
-    "Final source/index proof and normal PR CI",
     "Owner approval of the exact M02 production packet",
-    "Two new production-only credential handoffs after approval",
+    "Two production-only credential handoffs after approval",
     "Actual production preflight/import/transfers/no-op/readback/advisors/cleanup and AC10",
     "Separate PR6 merge and next-milestone authorization"
   ],

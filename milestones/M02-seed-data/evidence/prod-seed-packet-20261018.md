@@ -8,8 +8,12 @@ preparation. The machine packet remains `approved:false`, approval reference nul
 M01's production approval does not authorize M02 seeding.
 
 The next owner decision is **`approved: seed prod`**, covering only this packet.
-Final source/runner seals, [independent review](prod-preparation-review-20261018.json),
-focused checks and normal PR CI must be recorded before presenting it. PR6 merge,
+Source/runner seals and focused checks are recorded in [local readiness](prod-local-readiness-20261018.json),
+with [independent review](prod-preparation-review-20261018.json). Code head
+`96e8740c996f674a8c63a2c016c979cb7935d033` passed all five jobs in
+[CI39091012665](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39091012665)
+and Vercel; [delivery evidence](prod-preparation-ci-delivery-20261018.json) keeps
+that separate from hosted acceptance. Later documentation uses normal PR CI. PR6 merge,
 M03, collection, paid calls, n8n execution and schedule activation remain separate.
 
 ## Exact payload, request bounds and cost
@@ -199,7 +203,7 @@ including an initially failing cold-parent regression. The [byte-delivery proof]
 shows all four indexed source inputs exactly match the reviewed working bytes;
 only line endings changed relative to the earlier two CSV blobs. The reviewed
 source/payload/logo hashes above and all rows/values remain unchanged. That
-failed CI is preserved; a new clean-checkout CI pass is required before approval.
+failed CI is preserved; corrected clean-checkout CI39091012665 now passes all five jobs.
 
 No logo bytes were bulk-downloaded during preparation. Actual production
 preflight/import/transfers, populated advisors and AC10 remain unperformed pending
