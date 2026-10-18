@@ -9,6 +9,7 @@ export {
   smokeLaunchDescriptor,
 } from './n8n-apify-contracts';
 export type { TrustedTerminalSnapshot } from './n8n-apify-contracts';
+export { createApifyRecoveryRuntime } from './n8n-apify-recovery';
 export {
   canonicalUrl,
   normalizeInstagram,
