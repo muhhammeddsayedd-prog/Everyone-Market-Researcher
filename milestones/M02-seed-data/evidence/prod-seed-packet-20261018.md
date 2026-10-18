@@ -1,13 +1,17 @@
 # M02 production seed — exact approval packet
 
-State: **production approval pending**. Prepared18October2026 Cairo for
+State: **production seed approved; hosted acceptance in progress**. Prepared18October2026 Cairo for
 emr-prod / `hkiafqrcxaafdbcvjlzv`. The production runtime, immutable public
 payload and two-input private consumer are implemented. No production connection,
 credential read, logo download/upload or provider request was made during this
-preparation. The machine packet remains `approved:false`, approval reference null.
-M01's production approval does not authorize M02 seeding.
+preparation. The owner separately approved this exact packet at reviewed head
+`a17f7e25369abc5f71aab0196a4f2e7d5f3cc614` with **`approved: seed prod`**
+(call `call_0f2dd5cc1f3e4a6780c5feba0ca21225`). The machine packet now records
+that approval; immutable input hashes and all limits are unchanged. The two
+production-only handoffs passed the sealed presence check; authentication is a
+separate execution gate. [Authorization receipt](prod-authorization-20261018.json).
 
-The next owner decision is **`approved: seed prod`**, covering only this packet.
+The approval covers only this packet.
 Source/runner seals and focused checks are recorded in [local readiness](prod-local-readiness-20261018.json),
 with [independent review](prod-preparation-review-20261018.json). Code head
 `96e8740c996f674a8c63a2c016c979cb7935d033` passed all five jobs in
@@ -23,7 +27,7 @@ Download only the exact257 already verified public dev Storage objects, verify
 their frozen hashes, then copy unchanged bytes to production. Do not repeat
 Vimeo/YouTube lookups, website checks or competitor-logo-source downloads.
 
-This is the proposed T10 deviation recorded in `docs/DECISIONS.md`: promote
+This is the approved T10 deviation recorded in `docs/DECISIONS.md`: promote
 reviewed T2–T8 results instead of repeating external discovery. Approval of this
 packet covers that approach. Dev receipts prove the earlier provider verification;
 production receipts prove imported configuration/bytes, not a new provider exchange.
@@ -210,7 +214,7 @@ only line endings changed relative to the earlier two CSV blobs. The reviewed
 source/payload/logo hashes above and all rows/values remain unchanged. That
 failed CI is preserved; corrected clean-checkout CI39091012665 now passes all five jobs.
 
-No logo bytes were bulk-downloaded during preparation. Actual production
-preflight/import/transfers, populated advisors and AC10 remain unperformed pending
-**`approved: seed prod`** and two production-only handoffs. This packet does not
-merge PR6 or start M03.
+No logo bytes were bulk-downloaded during preparation. The owner has now
+approved this exact packet and supplied both production-only handoffs; actual
+bounded execution and post-seed acceptance are recorded separately from these
+local preparation checks. This packet does not merge PR6 or start M03.

@@ -5,22 +5,46 @@
 
 ## Status
 
-**Blocked: waiting on owner — M02 T10 production seed approval**
+> Current authorization (18 October 2026): owner approved the exact production seed packet at a17f7e25369abc5f71aab0196a4f2e7d5f3cc614 with `approved: seed prod` (call_0f2dd5cc1f3e4a6780c5feba0ca21225), then supplied the two production-only handoffs. Actual sealed presence check passed native0; no authentication yet at this entry. Bounded approved execution may proceed; PR6 merge and M03 are not approved. [Receipt](evidence/prod-authorization-20261018.json).
+
+**In progress — M02 production acceptance; exact T10 packet approved, actual results pending**
 
 | Field        | Value                                                                                                                                                                                                               |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Started      | 2026-10-18 Cairo                                                                                                                                                                                                    |
 | Last updated | 2026-10-18 Cairo                                                                                                                                                                                                    |
 | Finished     | —                                                                                                                                                                                                                   |
-| Branch / PR  | m02-seed-data; PR6 OPEN/DRAFT. Code96e8740c996f674a8c63a2c016c979cb7935d033 / CI39091012665 all five jobs/Vercel PASS. Later documentation uses normal CI.                                                          |
-| Current task | Dev/MA-09 complete; exact production packet,54-file source seal,38 distinct core/32 Windows/6 PG/3 CA/13 CI-safety cases and independent review complete. Corrected clean-checkout CI all five jobs PASS.           |
-| Next step    | Owner reply approved: seed prod for the exact linked packet. Then record that approval, rebuild credential-free, request two production-only handoffs and invoke the bounded consumer once. PR6 draft; M03 stopped. |
+| Branch / PR  | m02-seed-data; PR6 OPEN/DRAFT. Exact production packet approved at reviewed head a17f7e25369abc5f71aab0196a4f2e7d5f3cc614. Earlier code96e8740 / CI39091012665 all five jobs/Vercel PASS remains historical; current changes use normal CI. |
+| Current task | Dev/MA-09 complete. Owner approved exact production packet and reported both handoffs ready; CheckOnly native0 verifies54 seals/two files present without private read. Credential-free rebuild/public preflight/verified TLS pass; authentication and actual production results remain unverified. |
+| Next step    | Invoke the approved bounded production consumer once, record actual identity/seed/idempotency/configuration and logo parity/native completion/cleanup. Do not request another general approval or handoff from the readiness report. On failure reconcile actual state before retry. PR6 draft; merge and M03 separate. |
 
 The owner instructed **Proceed with the next milestone** after M01 merged.
 Started from clean main a74459d082ba5d1f0445652d7d12f8d2079da945 and preserved
 M01's seven versions/hashes, hosted acceptance and credential cleanup. M02
-development and dev seeding are in scope. Production seeding needs its later
-specific approval; collection, paid providers, n8n and M03 remain unstarted.
+development and dev seeding are in scope. The separate exact production seed
+approval is now recorded below; actual production acceptance remains in progress.
+PR6 merge, collection, paid providers, n8n and M03 remain separate and unstarted.
+
+## Production approval and reported readiness — before execution
+
+On18October2026 Cairo, the owner replied **approved: seed prod** for the exact
+packet reviewed at `a17f7e25369abc5f71aab0196a4f2e7d5f3cc614`
+(`call_0f2dd5cc1f3e4a6780c5feba0ca21225`), then **M02 prod handoffs ready**
+(`call_516b09d2e7d04a2786cd55db086c2d08`).
+[Authorization receipt](evidence/prod-authorization-20261018.json).
+The machine packet has `approved:true` and a nonblank exact approval reference.
+The reviewed scope is285 competitors/1,754 accounts and257 frozen logo objects,
+at most771 Storage requests/1,560,325 upload bytes, USD0 incremental provider
+cost, and zero provider/competitor-origin calls. It approves importing accepted
+public dev configuration/bytes with fresh prod IDs and defaults, not operational
+state, credentials, new lookups, schema/auth/grant changes, collection or M03.
+
+Credential-free rebuild/public preflight and password-free verified TLS passed.
+Actual CheckOnly native0 verified54 sealed files and both encrypted production
+handoffs present; that check performs no private read, TLS or authentication.
+File presence and the owner's readiness report do not prove credentials or
+database access. Actual consumer authentication, imports, parity, native outcome
+and credential cleanup remain pending. PR6 merge needs its later separate decision.
 
 ## Task checklist
 
@@ -35,7 +59,7 @@ specific approval; collection, paid providers, n8n and M03 remain unstarted.
 - [x] T7 — Instagram, LinkedIn, website checks — actual1,424 format/reachability checks,44 updates,1,380 unchanged;23 unreachable website flags retained without changing gating.
 - [x] T8 — Copy logos — actual257 public-byte hashes verified,1,560,325 bytes;256/267 source logos (95.88%) plus baseline1.11 source failures use fallback tiles;17 have no source.
 - [x] T9 — MA-09 owner decisions recorded for all41 rows; seven exact invalid overrides persist the policy,23 website flags retained and11 initials fallbacks accepted. Actual dev already matches, so no seed/resolve replay or new credential handoff.
-- [ ] T10 — Seed prod (owner OK)
+- [ ] T10 — Exact production packet APPROVED; two handoffs owner-reported ready and presence/seals verified. Actual bounded production acceptance in progress, not passed.
 - [ ] T11 — Docs and hand-off
 
 ## Acceptance criteria
@@ -48,10 +72,10 @@ specific approval; collection, paid providers, n8n and M03 remain unstarted.
 - [x] AC4 — Dev gating passes under D-27: original YouTube target11 shown, exact excluded pilot1 (C283), eligible active target10/actual10;0 overall gating violations. The identity/state exclusion guard passes, rather than exempting arbitrary invalids.
 - [x] AC5 — Dev Vimeo202/202 and pilot48/48; YouTube121/128 raw,10/11 raw pilot,121/121 eligible and10/10 eligible pilot,0 pending/bad IDs. All seven exact owner-excluded sources remain invalid/failed with null IDs. [Actual D-27 assertions](evidence/dev-counts-after-ma09-20261018.json).
 - [x] AC6 — Dev backfill/cadence/root gating assertions report0 violations. Primary1,272 pending; derived482 not_applicable. [Actual assertions](evidence/dev-counts-after-batch-20261018.json).
-- [x] AC7 — Idempotent (dev) — actual full second seed reports competitorsInserted0 / competitorsUpdated0 / accountsInserted0 / accountsUpdated0. Independent before/after continuation counts remain285/1,754. The original batch native1 and later successful resolution are separate receipts; prod is unseeded.
+- [x] AC7 — Idempotent (dev) — actual full second seed reports competitorsInserted0 / competitorsUpdated0 / accountsInserted0 / accountsUpdated0. Independent before/after continuation counts remain285/1,754. The original batch native1 and later successful resolution are separate receipts; production idempotency remains unverified.
 - [x] AC8 — Dev256/267 source logos (95.88%) plus baseline1; actual257 public-byte hashes verified. Fresh [Storage readback](evidence/dev-storage-readback-20261018.json):257 matching objects/1,560,325 bytes, media bucket public; no other media objects. Production separate.
 - [x] AC9 — Owner sign-off recorded18October: skip the seven reviewed unavailable/unverified YouTube sources, retain23 website flags and accept11 logo fallbacks. All41 CSV decisions recorded; no proven-absence claim. [Dispositions](evidence/ma09-owner-dispositions-20261018.json).
-- [ ] AC10 — Prod mirrors dev — production seeding unapproved and unperformed.
+- [ ] AC10 — Prod mirrors dev — exact production packet approved; rebuild/preflight/TLS and CheckOnly seal/presence pass. Actual production authentication/import/parity and cleanup remain pending; no hosted acceptance inferred.
 - [x] AC11 — Historical local/CI evidence preserved. Recovery code d5171fe / CI39088023934 all five jobs and Vercel PASS; focused local/parser/report/budget/Windows checks reviewed separately. Actual dev continuation native0 plus independent22/22 preservation checks; these are distinct from CI. [CI delivery](evidence/dev-recovery-ci-delivery-20261018.json).
 
 ## Actual dev report — owner decisions verified
@@ -94,10 +118,10 @@ new source rather than reopening spent work.
 ## Blockers
 
 - Dev acceptance and MA-09 are complete under the owner's D-27 rule. No further company/channel decisions or dev credentials are required.
-- The [exact production packet](evidence/prod-seed-packet-20261018.md) is implemented and independently reviewed, still `approved:false`. Local38 distinct core/CLI,32 Windows,6 PostgreSQL rollback components,3 offline CA and13 CI-safety cases pass; type/lint/format/source/index checks pass. Corrected code96e8740 / CI39091012665 all five jobs and Vercel PASS. Only separate owner approval remains before two production-only handoffs and actual execution. Production has not been connected or seeded for M02.
-- No dev batch is running. Temporary handoffs are absent and the credential child closed. Permanent initial/continuation admission records and the original failed receipt are preserved; do not replay successful operations.
+- The [exact production packet](evidence/prod-seed-packet-20261018.md) is APPROVED at reviewed a17f7e2; machine approval/reference set, credential-free rebuilt and public preflight/verified TLS complete without authentication. Actual CheckOnly native0 confirms54 source seals/both handoffs present without private read/TLS/auth in that check. Production authentication/seed/idempotency/parity/native completion/cleanup remain to be proved by the bounded run. Existing local38 core/32 Windows/6 PG/3 CA/13 CI-safety and code96e8740 / CI39091012665 receipts stay separate from actual acceptance; do not repeat approval or infer authentication from readiness.
+- No dev batch is running. Dev temporary handoffs are absent and the dev credential child closed; production handoff presence/consumption/cleanup is tracked separately above. Permanent initial/continuation admission records and the original failed receipt are preserved; do not replay successful operations.
 - Actual dev populated advisors remain11 security INFO /69 performance INFO, zero WARN/ERROR. No schema migration or generated-type change was made. The24October M01 tooling follow-up stays open.
-- M02 production seed and merge approvals remain separate. PR6 stays draft. M03, collection, paid provider calls and n8n remain unstarted.
+- M02 production seed approval is complete; actual production acceptance and later separate PR6 merge decision remain open. PR6 stays draft. M03, collection, paid provider calls and n8n remain unstarted.
 
 ## Manual actions needed from the owner
 
@@ -107,23 +131,17 @@ new source rather than reopening spent work.
 | MA-08        | YouTube key verified;121 resolved and seven reviewed sources excluded; saved original retained.                                                   | Complete; no handoff needed                                        |
 | MA-09        | Owner directed skipping unavailable social sources and accepted23 website flags/11 logo fallbacks. All41 exact dispositions recorded.             | Complete; verified by read-only D-27 assertions                    |
 | dev handoffs | All consumed temporary files removed and bounded child closed; original saved credentials retained.                                               | Complete; no action                                                |
-| production   | Review [exact packet](evidence/prod-seed-packet-20261018.md) and reply approved: seed prod. Two production-only credential steps follow approval. | Awaiting explicit approval; approvedfalse, no production operation |
+| production   | Owner approved **approved: seed prod** for exact a17f7e2 packet and reported **M02 prod handoffs ready**; no repeat approval or handoff request. | Approval complete; CheckOnly verifies54 seals/two handoffs present. Actual authentication and bounded production acceptance pending |
 | merge        | Separate PR6 merge decision after production parity and all milestone gates.                                                                      | PR6 OPEN/DRAFT; not requested                                      |
 
-The next owner action is to review
-[this exact packet](evidence/prod-seed-packet-20261018.md) and reply
-**`approved: seed prod`**. It covers285 competitors/1,754 accounts and257 logos,
-at most771 Storage requests and1,560,325 upload bytes, USD0 incremental provider
-cost and zero provider/competitor-origin calls. This also approves promoting the
-accepted public configuration rather than repeating lookups. AGENTS.md rules8/9
-and M02 T10 require this separate production/bulk decision.
-
-After that approval, use only the two-input production helper documented in the
-packet; existing prod database password and prod Secret key, hidden prompts,
-expected `M02 encrypted prod handoffs saved: All.`, close PowerShell, readiness
-reply `M02 prod handoffs ready`. No dev credential, writer/agent password or
-deleted M01 handoff is requested. M02 remains open for actual production
-acceptance and the later separate merge decision.
+No further owner approval or credential delivery is requested for this approved
+batch. The exact production approval and readiness replies are recorded above;
+presence/seal checks passed but actual credentials/authentication are not yet
+verified. Use the existing reviewed two-input bounded consumer once. Do not
+request dev or deleted M01/machine-role handoffs. Keep separately saved originals;
+record consumed-file cleanup and closed credential-bearing children after the
+actual run. M02 remains open for production acceptance and the later separate
+PR6 merge decision; M03 is unstarted.
 
 ## Decisions & deviations
 
@@ -144,6 +162,8 @@ acceptance and the later separate merge decision.
 - Production and PR merge approvals remain separate. M03/collectors/paid providers/n8n remain unstarted.
 
 ## Session log
+
+- 2026-10-18 Cairo · Exact M02 prod packet reviewed at a17f7e25369abc5f71aab0196a4f2e7d5f3cc614 approved by owner **approved: seed prod** (`call_0f2dd5cc1f3e4a6780c5feba0ca21225`); later **M02 prod handoffs ready** (`call_516b09d2e7d04a2786cd55db086c2d08`). [Authorization](evidence/prod-authorization-20261018.json) records285/1,754/257 frozen configuration/logo imports,771 max Storage requests/1,560,325 upload bytes, USD0 and zero external-provider/competitor-origin calls. Machine approvedtrue/nonblank reference; credential-free build/public preflight/verified TLS passed without auth. Actual CheckOnly native0 verifies54 sealed sources/both handoffs present; no private read/TLS/auth in CheckOnly. Bounded production acceptance is in progress, not passed: actual identity/import/second no-op/configuration+byte parity/native completion/cleanup remain unverified. Dev/MA-09/local/CI receipts and historical failures preserved; no new general approval/handoff requested, PR6 draft, separate merge/M03/collection/paid/n8n gates unchanged.
 
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
 
@@ -182,4 +202,9 @@ acceptance and the later separate merge decision.
 
 <!-- Filled when Done: what exists now, how to run/verify it, known gaps, what the next milestone should start with. -->
 
-- —
+Not ready: exact M02 production seed approval and reported handoff readiness are
+recorded, with source/presence/public TLS preflight complete. Actual production
+authentication/import/idempotency/configuration and logo parity/native outcome/
+cleanup remain unverified. Preserve completed dev/MA-09 and local/CI evidence.
+PR6 stays draft for its later separate merge decision; do not begin M03,
+collection, paid provider calls or n8n workflows.

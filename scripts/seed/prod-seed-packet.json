@@ -1,8 +1,8 @@
 {
   "version": 1,
   "target": "hkiafqrcxaafdbcvjlzv",
-  "approved": false,
-  "approvalReference": null,
+  "approved": true,
+  "approvalReference": "call_0f2dd5cc1f3e4a6780c5feba0ca21225: approved: seed prod; reviewed head a17f7e25369abc5f71aab0196a4f2e7d5f3cc614",
   "sourceSha256": "b3cf64b90058b5c786513c4fed9ebbe9d9bb092ec3a916744c944faeb826a17b",
   "payloadSha256": "5d5e8089bebe184cccaccdb7ceefe5d6e3ba40b83dedfa494913c468af36102d",
   "logoManifestSha256": "b1885fdd3dab4ec4f06ceaeaad59ae0f85bf8b73400b82a29f178f89a302bb80",

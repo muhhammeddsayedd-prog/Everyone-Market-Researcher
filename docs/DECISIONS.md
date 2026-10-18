@@ -57,18 +57,27 @@ Owner: Mohamed Abdelrahman (mohamed.abdelrahman@everyone.film) — product owner
 
 ## Changes
 
-Pending M02 T10 approval: the separate production packet proposes importing the
-accepted public dev account configuration and exact257 logo objects, rather
-than repeating T2–T8 external lookups. This avoids new provider/competitor-origin
-calls and preserves the reviewed results, including D-27 exclusions and accepted
-website/logo findings. Production gets new row IDs and operational defaults;
-dev UUIDs, timestamps, collection state and credentials are not promoted. This
-implementation choice is part of the exact production seed approval request,
-not authorization to connect, seed or upload. See
-[the packet](../milestones/M02-seed-data/evidence/prod-seed-packet-20261018.md).
+M02 T10 exact packet approval is recorded: on18October2026 the owner replied
+**approved: seed prod** for reviewed head
+`a17f7e25369abc5f71aab0196a4f2e7d5f3cc614`
+(`call_0f2dd5cc1f3e4a6780c5feba0ca21225`), then reported
+**M02 prod handoffs ready** (`call_516b09d2e7d04a2786cd55db086c2d08`).
+The approved method imports accepted public dev account configuration and
+exact257 frozen logo objects, rather than repeating T2–T8 external lookups.
+It preserves D-27 exclusions and accepted website/logo findings; production
+gets fresh row IDs and operational defaults. Dev UUIDs, timestamps, collection
+state and credentials are not promoted. Limits remain285 competitors/1,754
+accounts/257 logos,771 Storage requests/1,560,325 upload bytes, USD0 incremental
+provider cost and zero provider/competitor-origin calls. This approves only the
+bounded M02 production seed/configuration/byte-verification path. The readiness
+reply and verified handoff presence are not authentication or acceptance; actual
+production results remain pending. PR6 merge, M03, collection, paid provider
+calls and n8n remain separate. See [the packet](../milestones/M02-seed-data/evidence/prod-seed-packet-20261018.md)
+and [authorization receipt](../milestones/M02-seed-data/evidence/prod-authorization-20261018.json).
 
 | Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Approved by                                                                                                                                                                       |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-18 | M02 T10 exact production packet approved: promote accepted public dev configuration and257 sealed logo objects with fresh prod IDs/defaults, no new provider lookups or operational state/credential promotion. Preserve seven exact D-27 exclusions,23 accepted website flags and11 source-logo fallbacks. Actual production authentication/import/parity/native completion/cleanup is pending; owner-reported readiness and presence checks do not establish acceptance. Separate PR6 merge and M03 gates remain. | Owner **approved: seed prod**, `call_0f2dd5cc1f3e4a6780c5feba0ca21225`, exact reviewed a17f7e25369abc5f71aab0196a4f2e7d5f3cc614; readiness **M02 prod handoffs ready**, `call_516b09d2e7d04a2786cd55db086c2d08` |
 | 2026-10-18 | D-27 records the owner's rule to skip unavailable social sources. MA-09 closes the seven listed YouTube sources as owner-excluded and accepts23 retained website error flags plus11 initials-logo fallbacks. M02 AC4/AC5 distinguish original coverage from eligible coverage:128 original YouTube rows, seven exact invalid exclusions (one pilot),121/121 eligible resolved and10/10 eligible pilot resolved. No row deletion, false absence/resolution claim, additional provider run, production or merge approval. | Owner reply to MA-09: “If a company doesn't have a social don't scrap it. If it doesn't have youtube don't scrap it.” and “All listed website flags: ok; all11 missing logos: ok” |
 | 2026-10-18 | M02 implementation: owner seed uses source-bound ownership/CAS and an encrypted Windows handoff to a sealed plain-Node child. Existing fields without ownership stay protected. Google API keys use an origin-bound header; numeric Vimeo profile IDs use `/users/<id>`; vanity/showcase acceptance still needs live verification. No new actor, product scope, access privilege or production authorization.                                                                                                           | M02 development authorized by owner; conservative implementation details/source corrections recorded for review                                                                   |
 | 2026-10-17 | M01 implementation record: generated `handle_norm` account key; `finish_run` JSON summary; cadence-minus-four-hours success scheduling; preserved normalized credits/media; clean invoker hybrid search. `DATA_SCHEMA.md` RPC milestone labels and `TECHNICAL.md` draft scheduling now match the specific M01 handoff. No binding product, tool, access or production gate changed.                                                                                                                                     | Specified by M01 T4–T7; implementation details recorded for review                                                                                                                |
