@@ -16,9 +16,9 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Actual gateway/native HTTP-node identities, duplicate/replay/conflict, auth denials and lost-ack reconciliation pass. Trial closed at 23/100 local attempts and 17 SQL admissions including one Close, zero leases, baseline unchanged. Dedicated bypass/owned n8n credentials/handoffs removed; one-time ResumeCleanup verified both sensitive project entries absent and enabled false. [Actual trial/closeout](evidence/gw01-trial-closeout-20261018.json). |
-| Next step | Complete independent review/sealing of the bounded inactive provisioning consumer, obtain one genuinely missing existing-key Management handoff after preparation, and save/read back the 25 inactive full definitions. Fill actual references in the [existing live packet](evidence/live-acceptance-outline-20261018.md) before asking for its separate approval. No new hosted migration/window or paid execution now. |
-| Current source continuation | Reviewed `f43c5e5` / CI39119760390 retained; new source work begins at `8746eef`. Four forward versions have local-only evidence; all remain pending hosted approval. Local SQL/app results, graph tests, native saved state and future live acceptance are separate. |
+| Current task | Full 25-definition source, typed fixed transport, durable actor admission/recovery, exact callback audit and bounded reader implemented. Focused local tests and current runtime CI pass. Final review of inactive-only provisioning precedes one existing-key handoff; actual Cloud definitions and full live acceptance are not claimed. Historical [GW-01 closeout](evidence/gw01-trial-closeout-20261018.json) remains closed and untouched. |
+| Next step | Independent review and actual public seal/CheckOnly passed. One new purpose-bound handoff of the existing Management key is requested below; on readiness, consume it through the reviewed bounded All entrypoint and save/read back the 25 inactive full definitions. Fill actual references in the [existing live packet](evidence/live-acceptance-outline-20261018.md) before separate live approval. No hosted migration/window or paid execution now. |
+| Current source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. Private provisioning/helper changes receive normal new-head CI. |
 
 ## 19 October continuation — finite completion matrix
 
@@ -84,10 +84,43 @@ expired. No production remediation has been authorized.
 - M03 database deployment is RESOLVED. The third bounded attempt completed native0 with exact dry-run/push/history parity; two earlier failures remain accurately preserved. The second established native0+invalid_json; immutable CLI source reproduced conflicting output flags and the corrected command-specific helper passed regression/review. All nine versions/hashes match,12 RPC ACLs and receipt/indexes pass, budget25,17 Apify prices,285 competitors/1754 accounts/257 logos/seven owner exclusions unchanged, no collected items/runs or fixtures. Fresh hosted advisors have0 WARN/ERROR. Public-only MCP types were not substituted for the checked-in four-schema types. [Completion](evidence/dev-migration-completion-20261018.json), [schema](evidence/dev-post-migration-schema-20261018.json). Preserve the durable successful admission; never replay this packet.
 - API DNS is RESOLVED by bounded OS lookup with every-address screening/pinning/strict TLS. A credential-free401/socket-close test passed. The next keyed attempt authenticated, discovery advertised capabilities and Personal list returned200; workflow-list transport failed before a complete inventory, and the credential-list resource was not attempted. Both consumed API handoffs were deleted/children closed. Exact later transport cause remains unestablished; no further key/discovery loop is requested. Browser sign-in is already verified and connector errors do not invalidate it. [Actual API attempts](evidence/n8n-api-attempt-20261018.json), [DNS](evidence/n8n-dns-boundary-20261018.json).
 - All five existing provider/database credential IDs and native types are mapped in [actual partial bindings](../../n8n/foundation/bindings.dev.json); no fake workflow/tag IDs. Apify/OpenAI use HTTP Predefined Credential Type; Vimeo/YouTube reuse Header Auth. All four actual provider metadata GETs pass, with no actor/inference/embeddings. Shared names/passwords/domain settings were preserved. No credential recreation, login/MCP setup or billing questionnaire is needed.
-- The original general URL-dependent smoke normalizer fails in actual Cloud Code2 because URL is unavailable. A separately reviewed M03 exact-owned-page adapter passes a pure Cloud execution without adding dependencies or weakening validation. General URL/generic grouping support remains separate; the current native atomic SUB Ingest input Code itself does not use URL. Full callback/rejection-audit/replay/settlement/recovery/paid admission and actual foundation graphs remain incomplete; local components are not runnable WF19/WF99 exports.
+- The original general URL-dependent smoke normalizer fails in actual Cloud Code2 because URL is unavailable. A separately reviewed M03 exact-owned-page adapter passes a pure Cloud execution without adding dependencies or weakening validation. General URL/generic grouping support remains separate; the current native atomic SUB Ingest input Code itself does not use URL. Full callback/rejection-audit/replay/settlement/recovery/paid-admission source and generated WF19/WF99 graphs now pass local tests; actual saved Cloud definitions and live acceptance remain incomplete. See the 19 October source/readiness matrix above.
 - OpenAI Models access does not establish its project spend cap. Unknown fees/prices remain unknown; USD25/day is an alert threshold, not a provider cap. The owner deprioritized fee reporting, so no further questionnaire. Shared plan allowance50K/runtime facts and the historical code/local/CI evidence are preserved.
 
 ## Manual actions needed from the owner
+
+### Current: MA-11 inactive foundation delivery only
+
+The existing provider/database setup and all GW-01 handoffs remain completed;
+do not recreate them. Presence-only read `aaeb97` verified the **new** foundation
+Management handoff and lease absent, with `privateRead:false`. Independent final
+review found no P1/P2 in the inactive provisioner, physical runtime closure,
+operation lock, lease and cleanup. The public delivery packet names the verified
+disabled Preview from `9719cc8`; actual Cloud definitions remain pending.
+
+The actual reviewed public seal/CheckOnly passed native0 (`59330c`), with 32
+project inputs, 840 physical dependency files, no private read or network. One
+handoff request was sent after that completed preparation. The sole credential delivery
+needed is the **existing saved n8n management API key** for
+`muhhammedsayed.app.n8n.cloud`. In Windows PowerShell under this Windows account:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03FoundationHandoff.ps1'
+```
+
+Enter that existing key at the hidden prompt. Expected result starts
+`M03_FOUNDATION_MANAGEMENT_READY`; close the PowerShell window, retain the saved
+original and reply **M03 foundation Management ready**. Send no value/file.
+This creates two-hour purpose-bound temporary encrypted files, not a new key.
+The reviewed All consumer permits at most **185** sequential management calls
+to save/read back 25 owned inactive definitions, 13 canonical tags and one new
+dedicated Machine credential. It performs **zero executions, actor/model calls,
+gateway admissions, environment changes or production operations**, and deletes
+the consumed Management handoff/lease after child closure. Scoped pending
+Machine storage, if created, is retained encrypted for the separate runtime
+decision and explicitly recorded. [Exact procedure](../../scripts/n8n/foundation-provision.md).
+
+The following rows preserve prior completed actions and separate later gates.
 
 | ID | Current state | Owner action |
 | --- | --- | --- |
@@ -197,6 +230,17 @@ Run in Windows PowerShell under the same account:
 Completed native0 with exact10-version parity; no new Admin delivery or replay is needed. Historical hidden input was EXISTING emr-dev postgres password, only for approved migration20261018070042. Expected `GW01_ENCRYPTED_HANDOFF_READY: Admin.` Close the shell and reply `GW-01 Admin ready`. No value/file contents, reset, writer/admin substitution or runtime delivery. Consumer review and17 isolated DPAPI/native-CLI cases pass; exact9+1packet is sealed. Do not rerun the spent old two-migration consumer.
 
 ## Decisions & deviations
+
+- 2026-10-19 Cairo: Implemented/reviewed the finite inactive delivery consumer,
+  public physical source/Node/Zod closure, operation lock, lease and no-retry
+  ownership journals. Public seal/CheckOnly passed native0; existing Management
+  key requested once only after preparation. New code is included in normal CI.
+  Runtime `9719cc8` passed all five jobs, including actual isolated database
+  concurrency. Local fixtures, runtime CI, actual Preview metadata and future
+  Cloud saved-state acceptance are separate in
+  [preparation evidence](evidence/inactive-foundation-preparation-20261019.json).
+  No real credential consumed or Cloud provisioning performed at this checkpoint.
+  GW-01, production, merge and M04 remain untouched.
 <!-- Anything that differs from the docs. Also add to docs/DECISIONS.md → Changes if it changes a decision. -->
 - Callback spec correction under review: marking `processed_at` before ingest loses work after partial failure. Reordering alone is insufficient because chunk inserts, account receipts and costs need a durable atomic callback receipt. M03 will use a bounded atomic persistence RPC for the one-page website smoke branch; unsupported later collector branches fail closed. Existing M01 interfaces/seven migration versions remain intact.
 - Default callback verification is option (b), registered-run lookup plus authenticated Apify run readback. Callback-supplied context, dataset IDs, actor/status/usage are never trusted for persistence.

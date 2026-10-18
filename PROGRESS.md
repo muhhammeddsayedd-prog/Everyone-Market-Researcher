@@ -5,14 +5,14 @@
 
 ## Now
 
-|                       |                                                                                                                                                                                                                                                                                                                                                                                                            |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                                                                                                                                                                                       |
-| **Status**            | In progress: the bounded GW-01 connection trial and owned closeout are complete. Its window stays closed; full M03 backbone transport, callback/spend/privacy/native acceptance gates remain open.                                                                                                                                                                                                         |
-| **Next step**         | Continue the source-only full M03 technical packet and unblocked local work before a concrete paid-smoke approval packet. Preserve the closed trial, all receipts and remaining acceptance gates; no replay, reset, production or merge.                                                                                                                                                                   |
-| **Waiting on owner**  | None. Owned n8n credentials, dedicated bypass, both sensitive project Environment entries and all six checked temporary paths were removed; children closed. INC-M03-20261018-01 owner inputs are ready; production remains separate.                                                                                                                                                                      |
-| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                                                                                                                                                                                                    |
-| **Last updated**      | 18 October 2026 Cairo: gateway/native HTTP-node connection trial passed; final 23/100 local attempts, closed SQL window with 17 admissions including one Close, zero leases and unchanged baseline. Both snapshots reject public POSTs. Reviewed one-time ResumeCleanup verified both owned sensitive entries absent and enabled false at 10:30:38 UTC, preserving the earlier failure and reconciliation. |
+|                       |                                                                                                                                                                                                                                                                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                                                                                                         |
+| **Status**            | In progress: full M03 foundation source and focused local/CI checks pass. Saving the 25 inactive Cloud definitions and separate live acceptance remain pending. GW-01 stays closed.                                                                                                                                          |
+| **Next step**         | Complete final private-consumer review/public sealing, then obtain one existing-key handoff for bounded inactive-only provisioning. Advance the existing live packet with actual IDs before its separate approval.                                                                                                           |
+| **Waiting on owner**  | No repeated password/provider setup. One purpose-bound existing n8n Management key will be requested after preparation. Private incident R2 is held separately; production remains unauthorized.                                                                                                                             |
+| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                                                                                                                      |
+| **Last updated**      | 19 October 2026 Cairo: source9719cc8 passed CI39177818722 all five jobs, including actual local actor/gateway concurrency. Verified immutable Preview dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb; activation remains disabled. Four forward migrations are local-only. Historical GW-01 closeout and seeded hosted baseline preserved. |
 
 ## Milestone board
 
@@ -47,6 +47,17 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
 | Production launch     | —          |
 
 ## Log (newest first)
+
+- 2026-10-19 Cairo: Full M03 source/25 inactive definitions, bounded authenticated
+  dataset reader, durable admission/settlement/recovery and exact rejection audit
+  implemented. Runtime `9719cc8` passed [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722)
+  all five jobs. Four new migrations are local-only. Independent inactive-consumer
+  review and actual public sealing passed without private reads/network; one
+  existing-key Management handoff requested for bounded inactive provisioning.
+  [Current preparation](milestones/M03-n8n-foundation/evidence/inactive-foundation-preparation-20261019.json).
+  Actual saved Cloud definitions/full live acceptance remain separate. Existing
+  live outline advanced; private incident R2 held outside Git. GW-01 stays closed,
+  PR8 draft, no production, live batch, merge or M04.
 
 - 2026-10-18 Cairo: Final owned Environment ResumeCleanup 4fc1ec completed native 0 once; mandatory final GET at 10:30:38.409 UTC verified enabled false and both sensitive entries absent. The 15-event ledger preserves the original failed intent, GET-only reconciliation, one resumed-readback marker and two deletions. [Trial/closeout](milestones/M03-n8n-foundation/evidence/gw01-trial-closeout-20261018.json), [local correction](milestones/M03-n8n-foundation/evidence/local-gw01-environment-cleanup-20261018.json). All owned GW-01 closeout is verified; window closed, 23/100 attempts, zero leases, owned n8n credentials/bypass/temporary handoffs removed and final workflow inactive with HTTP disabled/retention off. Full M03 technical gates remain open in the source-only draft packet. No owner action, trial replay/reset, actor/model call, production, merge or M04.
 

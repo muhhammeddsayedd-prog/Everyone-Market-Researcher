@@ -56,6 +56,8 @@ jobs:
         run: node --test n8n/foundation/*.test.mjs scripts/n8n/inventory.test.mjs scripts/n8n/inventory-diagnostics.test.mjs scripts/n8n/check-dns.test.mjs
       - name: Check bounded GW-01 trial and private delivery contracts
         run: node --test scripts/n8n/gw01-trial.test.mjs scripts/n8n/gw01-delivery.test.mjs scripts/n8n/gw01-delivery-transport.test.mjs scripts/n8n/gw01-privacy-read.test.mjs scripts/n8n/gw01-writer.test.mjs scripts/n8n/gw01-gateway-transport.test.mjs scripts/n8n/gw01-gateway-logs.test.mjs scripts/n8n/gw01-log-read.test.mjs scripts/n8n/gw01-public-config.test.mjs scripts/n8n/gw01-vercel-no-retry.test.mjs scripts/n8n/gw01-shutdown-read.test.mjs scripts/n8n/gw01-preview-read.test.mjs
+      - name: Check owned inactive M03 foundation provisioning
+        run: node --test scripts/n8n/foundation-*.test.mjs
 
   build:
     runs-on: ubuntu-latest
@@ -112,7 +114,7 @@ jobs:
         with:
           version: 2.121.0
       - name: Check database script safety regressions
-        run: node --test scripts/db/check-pooler.test.mjs
+        run: node --test scripts/db/check-pooler.test.mjs scripts/db/check-m03-foundation-concurrency.test.mjs
       - name: Start isolated local stack, replay migrations, test and run advisors
         run: bash scripts/db/run-local-ci.sh
       - name: Verify local Data API exposure

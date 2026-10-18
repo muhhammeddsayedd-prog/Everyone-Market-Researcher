@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T23:54:06Z",
+  "environment": "local-public-preparation-and-read-only-preview-metadata",
+  "status": "ready-for-existing-management-key-handoff",
+  "runtimeSourceCommitSha": "9719cc849f35f7a0e19dc826a022f4a845192433",
+  "runtimeCi": {
+    "id": 39177818722,
+    "quality": "success",
+    "unit": "success",
+    "build": "success",
+    "e2e": "success",
+    "db-tests": "success",
+    "helperChangesCoveredByThisHistoricalRun": false
+  },
+  "previewReadback": {
+    "connector": "403-forbidden-no-metadata",
+    "fallback": "scoped-read-only-vercel-inspect-and-api-GET",
+    "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+    "repository": "muhhammeddsayedd-prog/Everyone-Market-Researcher",
+    "branch": "m03-n8n-foundation",
+    "deploymentId": "dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb",
+    "audience": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app",
+    "state": "READY",
+    "environment": "preview",
+    "activationAuthorized": false,
+    "runtimeOrSecretInstallationClaimed": false
+  },
+  "localVerification": {
+    "fullProvisioningSuite": {
+      "toolReceipt": "ead89f",
+      "tests": 50,
+      "passed": 49,
+      "conditionalSkipped": 1,
+      "nativeExit": 0,
+      "scope": "synthetic API, isolated fake Windows handoffs, no real credential or network"
+    },
+    "replacementForConditionalSkip": {
+      "toolReceipt": "b7f083",
+      "alwaysRunsOnEveryPlatform": true,
+      "passed": 1,
+      "nativeExit": 0,
+      "scope": "actual CLI copied into isolated public fixture without packet; rejects before stdin/private read"
+    },
+    "independentReview": {
+      "toolReceipt": "061889",
+      "testsPassed": 45,
+      "remainingP1": 0,
+      "remainingP2": 0,
+      "scope": "frozen runtime consumer, public physical closure, lock, lease, graph allowlist, actual native socket closure and cleanup; synthetic/public checks only"
+    },
+    "windowsPublicClosureCases": 16,
+    "powershellParserErrors": 0,
+    "lint": "pass",
+    "format": "pass",
+    "databaseConcurrencyGuardTests": 5,
+    "normalCiIncludesProvisioningGlobAndDatabaseGuardTests": true
+  },
+  "actualPublicSealAndCheckOnly": {
+    "toolReceipts": ["9a0bec", "59330c", "d8658b"],
+    "nativeExit": 0,
+    "version": 2,
+    "projectFiles": 32,
+    "physicalZodFiles": 840,
+    "selectedNodePathAndBytesPinned": true,
+    "sanitizedProbeAndPackageResolutionPinned": true,
+    "privateRead": false,
+    "networkRequests": 0,
+    "nodeExecutedByPublicSealer": false,
+    "finalBindingReady": true
+  },
+  "boundedInactiveDelivery": {
+    "maximumManagementRequests": 185,
+    "maximumOwnedWorkflows": 25,
+    "maximumCanonicalTagCreates": 13,
+    "maximumDedicatedCredentialCreates": 1,
+    "maximumExecutions": 0,
+    "maximumProviderRequests": 0,
+    "gatewayAdmissions": 0,
+    "temporaryManagementLeaseMinutes": 120,
+    "minimumRemainingLeaseBeforePrivateReadMinutes": 41,
+    "childMaximumMinutes": 40,
+    "blindMutationRetries": 0,
+    "actualDeliveryPerformed": false,
+    "actualSavedIdsOrExportsClaimed": false
+  },
+  "actualHandoffPresenceOnly": {
+    "toolReceipt": "aaeb97",
+    "managementDpapiPresent": false,
+    "managementLeasePresent": false,
+    "pendingMachinePresent": false,
+    "privateRead": false,
+    "existingSavedManagementKeyRequestedOnceAfterPreparation": true
+  },
+  "remainingGates": [
+    "actual inactive workflow/tag/machine ID and sanitized full-definition readback",
+    "final supported native execution control and immutable runtime delivery/shutdown packet",
+    "fresh actual price-book readback",
+    "separate final live approval, including four hosted-pending forward migrations and distinct window",
+    "private incident R2 production decision remains separate and held"
+  ],
+  "boundaries": {
+    "gw01": "permanently closed and untouched",
+    "hostedDatabaseWrites": 0,
+    "actorStarts": 0,
+    "modelCalls": 0,
+    "productionChanges": 0,
+    "merge": false,
+    "m04": "not started"
+  }
+}

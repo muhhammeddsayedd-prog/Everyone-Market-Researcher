@@ -37,8 +37,17 @@ admissions plus one Close. Its unused 77 attempts cannot transfer.
   silently rewriting their history. No hosted application was performed.
 - Proposed route `/api/internal/n8n/foundation` uses a new protected immutable
   Preview from the reviewed source; production and mutable aliases are denied.
-  Its exact URL/deployment ID/SHA must be read back, sealed and bound before any
-  admission. Source flags default off; no runtime secrets are installed now.
+  Actual read-only CLI metadata verified source
+  `9719cc849f35f7a0e19dc826a022f4a845192433`, branch
+  `m03-n8n-foundation`, project `prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu`, READY Preview
+  `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb` at
+  `https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app`.
+  [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722)
+  passed all five jobs. The connector metadata read returned403; the documented
+  scoped read-only CLI fallback supplied the metadata. This public inactive
+  delivery packet has `activationAuthorized:false`; runtime secrets, SQL binding
+  and admission remain absent. A later runtime delivery creates another exact
+  immutable snapshot, which must be read back and bound before any admission.
 
 ### Distinct proposed window and hard limits
 
@@ -94,7 +103,7 @@ SQL; it did not establish current prices and was not retried as a setup loop.
 | Forged/unrelated callback | Exact durable `apify_callback_rejected`; bounded run/execution/reason only, no item/account/cost/run-context or notification mutation |
 | Registration race | Early unregistered callback safely rejects; original-ID registration/recovery path then processes the same run. Exhaustive race interleavings remain local/CI fixtures; do not buy another actor merely to force a race |
 | Interrupted atomic acknowledgement | Fresh status/registry read of the original request/run before continuing; no new business ID, replacement POST, reset or successful-operation replay |
-| Error Trigger/cooldown | Four owned forced errors, automatically invoking WF-90; third produces exactly one log-only notification, fourth within six hours produces none. A manually mocked handler is not this proof |
+| Error Trigger/cooldown | Exactly four sequential JSON `{}` POSTs to the owned WF-19 callback, no provider ID/token/retries. Validate callback source fails before registry/provider work; correlate each real failed WF-19 execution to automatic WF-90. With a verified clean count/cooldown baseline, third produces one log-only notification, fourth produces none. Nine native executions and nine business operations/eighteen gateway attempts are included in whole-batch caps; a manually mocked handler is not proof |
 | Dispatch | Every documented slot to its exact stub; separate Sunday news/awards clocks, both Saturday 04:00 jobs, disabled PM/backfill and one unknown-slot audit; no collector functionality claimed |
 | Health/accrual | WF-91 twice, all health keys, Cairo yesterday, stable fixed-fee key/no second accrual, unknown fees preserved, `stats_daily_enabled=false` |
 | Privacy/saved state | Sanitized actual exports for all 25, credential references only, retention/progress off; synthetic privacy canary via bounded projected API read, never whole editor/context/Variables/storage |
@@ -104,6 +113,19 @@ any different C999, including local TestHouse. Preserve 285 real competitors,
 1,754 real accounts, 257 logos and seven exclusions using before/after digests.
 Pause/archive only the owned fixture after acceptance; retain and label its
 item/raw snapshot/queue/cost/audit evidence. Never delete collected data.
+
+The Error Trigger case preflight must verify zero owned WF-19 errors in the
+24-hour count and no claimed/logged notification within six hours. If that
+baseline is not clean, stop/wait for review; never delete audit to manufacture
+it. Verify the saved WF-19 error-workflow points to the actual owned WF-90 and
+retention is off. POST only `Content-Type: application/json` with exact body
+`{}` (two bytes) to `/webhook/emr-apify-callback` after the separately approved
+temporary native callback publication. Wait for each failure and its automatic
+handler before the next POST. Expected audit delta is four `workflow_error`,
+one `workflow_notify_claimed` and one `notify_logged`; no actor, provider,
+ingest, account, run or cost effect. HTTP failure alone does not prove a native
+Error Trigger. These nine executions comprise four WF-19, four WF-90 and one
+SUB-NOTIFY; each business operation includes the unconditional status read.
 
 ### Shutdown and unknown outcomes — prepared before credentials
 

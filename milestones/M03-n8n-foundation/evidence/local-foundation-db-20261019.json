@@ -1,7 +1,7 @@
 {
   "version": 1,
   "capturedAt": "2026-10-18T23:40:25.808Z",
-  "status": "verified_local_pending_ci_and_hosted_acceptance",
+  "status": "verified_local_and_ci_pending_hosted_acceptance",
   "environment": {
     "kind": "existing-owned-local-stack",
     "projectId": "everyone-market-radar",
@@ -39,7 +39,62 @@
       "20261018233338"
     ],
     "seedReplayed": false,
-    "resetPerformed": false
+    "resetPerformed": false,
+    "originalTenVersions": [
+      {
+        "name": "20261017172928_extensions_schemas_roles.sql",
+        "sha256": "478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d"
+      },
+      {
+        "name": "20261017172931_core_tables.sql",
+        "sha256": "4f1be3f6191885add916b164975ba10a8697069a0373a05df4e03fa53ea7cba3"
+      },
+      {
+        "name": "20261017172934_auth_rls_views.sql",
+        "sha256": "8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9"
+      },
+      {
+        "name": "20261017172937_rpc_pipeline_core.sql",
+        "sha256": "978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803"
+      },
+      {
+        "name": "20261017172940_rpc_app_search.sql",
+        "sha256": "6111c5291e9c305e3e713180c0441ff5ffbf52b3b88f589d5d16fee55769171c"
+      },
+      {
+        "name": "20261017172943_storage_cron.sql",
+        "sha256": "859466fadfd940445ffe4b457e7250a179c93731e1f34736a629fe20df6e9c68"
+      },
+      {
+        "name": "20261017172945_seed_taxonomies.sql",
+        "sha256": "af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234"
+      },
+      {
+        "name": "20261018034220_rpc_n8n_foundation.sql",
+        "sha256": "457ad4351b08c47b996ae67062ed701efb7d5ef63ea7658d20931f2d5dc5d3fd"
+      },
+      {
+        "name": "20261018035417_price_book_plan.sql",
+        "sha256": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd"
+      },
+      {
+        "name": "20261018070042_n8n_worker_gateway_admission.sql",
+        "sha256": "98ebdfad9fffa819773fdbee5e3b9b8374be8a6f58497593084aed4077e9b856"
+      }
+    ],
+    "originalTenSourceComparison": {
+      "reference": "f43c5e5",
+      "result": "git diff lists only the four new forward files; original ten unchanged",
+      "currentSourceReference": "9719cc849f35f7a0e19dc826a022f4a845192433",
+      "currentSourceDiff": "no migration differences",
+      "hashKind": "actual checked-out file bytes SHA256"
+    },
+    "localHistoryProvenance": {
+      "verifiedAt": "2026-10-18T23:40:25.808Z",
+      "total": 14,
+      "scope": "existing owned local stack only; seven M01 + two M03 foundation + one closed-GW01 + four new forward versions",
+      "hostedHistoryClaim": false
+    }
   },
   "preserved": {
     "localCompetitors": 1,
@@ -166,7 +221,7 @@
   ],
   "sourceReview": {
     "rootFinalFourthReview": "completed before fourth local apply; independent workflow/SQL review remains separate",
-    "ciActorPath": "source prepared; actual result pending normal PR CI"
+    "ciActorPath": "Actual CI39177818722 validated all eight SQL concurrency observations with its owned no-seed fixture; no provider POST, no restricted network-login claim."
   },
   "boundaries": {
     "noCredentialsRead": true,
@@ -177,5 +232,97 @@
     "noWorkflowActivation": true,
     "noMerge": true,
     "noM04": true
+  },
+  "ci": {
+    "runId": 39177818722,
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722",
+    "headSha": "9719cc849f35f7a0e19dc826a022f4a845192433",
+    "status": "completed",
+    "conclusion": "success",
+    "ownerRootObservedAtUtc": "2026-10-18 23:50 UTC",
+    "jobs": [
+      {
+        "name": "quality",
+        "conclusion": "success"
+      },
+      {
+        "name": "unit",
+        "conclusion": "success"
+      },
+      {
+        "name": "build",
+        "conclusion": "success"
+      },
+      {
+        "name": "e2e",
+        "conclusion": "success"
+      },
+      {
+        "name": "db-tests",
+        "conclusion": "success",
+        "jobId": 117824026905
+      }
+    ],
+    "environment": "ephemeral isolated GitHub Actions local Supabase; not hosted development or production",
+    "database": {
+      "migrationReplay": "all fourteen source versions; isolated CI reset only",
+      "gatewayAndActorConcurrency": {
+        "nativeExit": 0,
+        "observedSummaryAt": "2026-10-18T23:47:00.0729202Z",
+        "source": "sanitized CI success summary; private JSON checked by the fail-closed runner, not re-exposed",
+        "scope": "ci-owned-no-seed-local-fixture",
+        "actorConcurrency": "executed SQL admission race; no provider POST",
+        "requiredObservedChecks": [
+          "maxTwoReservations",
+          "overlappingDuplicateSingleSideEffect",
+          "committedResultRecoveredByReadback",
+          "overlappingActorOnePostPermit",
+          "unknownOriginalPreventsAnotherLaunch",
+          "closedNeverReopens",
+          "ownedFixtureRemovedAndBaselinePreserved",
+          "databaseClientsClosed"
+        ],
+        "principalBoundary": "local-session-authorization simulation; not a restricted network-login receipt"
+      },
+      "retainedPgTap": {
+        "files": 11,
+        "assertions": 379,
+        "result": "PASS",
+        "observedAt": "2026-10-18T23:47:27.4449221Z"
+      },
+      "closedGw01PgTap": {
+        "files": 1,
+        "assertions": 102,
+        "result": "PASS",
+        "observedAt": "2026-10-18T23:47:28.8209438Z",
+        "scope": "local session simulation; not trial replay"
+      },
+      "foundationPgTap": {
+        "files": 3,
+        "assertions": 173,
+        "result": "PASS",
+        "observedAt": "2026-10-18T23:47:30.3988323Z"
+      },
+      "actualSqlAppContract": {
+        "result": "PASS",
+        "observedAt": "2026-10-18T23:47:31.6888682Z",
+        "rollbackOnly": true
+      },
+      "securityAdvisors": {
+        "result": "no warnings or errors",
+        "observedAt": "2026-10-18T23:47:32.5998566Z"
+      },
+      "performanceAdvisors": {
+        "result": "no errors; warnings require milestone review",
+        "observedAt": "2026-10-18T23:47:33.5056478Z"
+      },
+      "m02PostgresAcceptance": {
+        "assertions": 42,
+        "result": "PASS",
+        "observedAt": "2026-10-18T23:47:37.1769077Z"
+      }
+    },
+    "hostedAcceptance": false,
+    "actorProviderExecution": false
   }
 }

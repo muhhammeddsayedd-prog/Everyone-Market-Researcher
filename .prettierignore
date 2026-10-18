@@ -49,3 +49,6 @@ scripts/n8n/gw01-shutdown-packet.json
 scripts/n8n/gw01-shutdown-seal.json
 scripts/n8n/gw01-preview-read-packet.json
 scripts/n8n/gw01-preview-read-seal.json
+
+# Public foundation closure inventory is published by its reviewed owner-only sealer.
+scripts/n8n/foundation-provision-seal.json
