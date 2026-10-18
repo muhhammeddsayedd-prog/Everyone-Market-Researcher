@@ -1,5 +1,6 @@
 export { parseEnv } from './env';
 export { toSlug } from './slug';
+export { dispatchSlot, scheduledSlots } from './n8n-schedule';
 export {
   canonicalUrl,
   normalizeInstagram,

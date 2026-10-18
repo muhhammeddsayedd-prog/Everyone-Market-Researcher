@@ -1,0 +1,21 @@
+{
+  "fixtureProvenance": {
+    "kind": "synthetic_local_contract",
+    "actualActorCapture": false,
+    "sourceDocumentation": "https://apify.com/apify/website-content-crawler",
+    "note": "Constructed from documented output fields. This is not a first-run or hosted smoke receipt."
+  },
+  "row": {
+    "url": "https://everyone.film/about-everyone?synthetic=1#team",
+    "crawl": {
+      "loadedUrl": "https://everyone.film/about-everyone",
+      "depth": 0
+    },
+    "metadata": {
+      "title": "Synthetic everyone. smoke contract",
+      "canonicalUrl": "https://everyone.film/about-everyone"
+    },
+    "text": "Synthetic local content, not collected from the website.",
+    "markdown": "# Synthetic local smoke contract\n\nThis text was constructed for a unit test."
+  }
+}

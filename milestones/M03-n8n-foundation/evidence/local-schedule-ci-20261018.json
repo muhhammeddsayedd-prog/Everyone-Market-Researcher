@@ -1,0 +1,41 @@
+{
+  "milestone": "M03",
+  "scope": "local pure dispatch plans and credential-free CI-runner regression tests",
+  "sourceBase": "dc146f8c41e22f0e2d8624d96d2f5082296ece18",
+  "schedule": {
+    "command": "pnpm.cmd --filter @emr/shared exec vitest run src/n8n-schedule.test.ts",
+    "red": "Missing module; then unknown-setting-key echo regression failed1/21 before fixed safeParse boundary",
+    "green": {
+      "tests": 21,
+      "passed": 21,
+      "exitCode": 0
+    },
+    "review": "Independent review found unsafe ZodError key echo; fixed summary and regression now pass",
+    "runtime": "Node24 local Intl Africa/Cairo; not n8n Cloud execution"
+  },
+  "ciRunner": {
+    "command": "node --test scripts/db/check-pooler.test.mjs",
+    "red": "Updated11-suite mocks reject old10-file guard,8 failures/13; no live DB or credentials",
+    "green": {
+      "tests": 13,
+      "passed": 13,
+      "exitCode": 0
+    },
+    "purpose": "Require all11 pgTAP files and nonzero assertions/PASS, preserve isolation/redaction/negative checks"
+  },
+  "quality": {
+    "eslint": "Targeted changedJS/TS/MJS PASS",
+    "formatting": "Targeted Prettier PASS",
+    "sharedTypecheck": "PASS",
+    "indexedSecretScan": {
+      "files": 825,
+      "violations": 0
+    }
+  },
+  "boundaries": {
+    "workflowCreated": 0,
+    "providerCalls": 0,
+    "hostedMutations": 0,
+    "productionTouched": false
+  }
+}

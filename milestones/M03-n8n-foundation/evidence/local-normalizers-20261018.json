@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "date": "2026-10-18",
+  "environment": "local_windows_node24",
+  "scope": "M03 pure website normalizer and pre-RPC group contract",
+  "files": [
+    "n8n/normalizers/smoke_website_stub.js",
+    "n8n/normalizers/prepare_ingest_groups.js",
+    "n8n/normalizers/normalizers.test.ts",
+    "n8n/normalizers/fixtures/website-content-crawler/synthetic-smoke-contract.json"
+  ],
+  "tdd": {
+    "command": "pnpm.cmd test --project normalizers",
+    "red": [
+      {
+        "nativeExit": 1,
+        "result": "Suite cannot load the not-yet-created smoke_website_stub.js implementation."
+      },
+      {
+        "nativeExit": 1,
+        "testsPassed": 71,
+        "testsFailed": 1,
+        "result": "Initial drift-boundary fixture reused the same account twice; fixture corrected to distinct account UUIDs, preserving duplicate-account rejection."
+      },
+      {
+        "nativeExit": 1,
+        "testsPassed": 74,
+        "testsFailed": 1,
+        "result": "New cyclic/nonfinite JSON payload regression failed before the JSON guard was implemented."
+      },
+      {
+        "nativeExit": 1,
+        "testsPassed": 75,
+        "testsFailed": 5,
+        "result": "New empty-userinfo and malformed HTTP authority regressions failed before strict authority guards were implemented."
+      },
+      {
+        "nativeExit": 1,
+        "testsPassed": 80,
+        "testsFailed": 4,
+        "result": "Independent-review regressions proved int4 duration overflow, year0000 and excessive timezone offsets were accepted before the PostgreSQL-compatible guard fix."
+      },
+      {
+        "nativeExit": 1,
+        "testsPassed": 84,
+        "testsFailed": 9,
+        "result": "Credential query parameters in documented URL fields were accepted before the credential-parameter guard."
+      },
+      {
+        "nativeExit": 1,
+        "testsPassed": 91,
+        "testsFailed": 5,
+        "result": "M03 public-snapshot regressions failed before raw payload minimization, title2000 bounds and Unicode-safe truncation were implemented."
+      },
+      {
+        "nativeExit": 1,
+        "testsPassed": 96,
+        "testsFailed": 5,
+        "result": "Independent-review client_secret and recursively encoded credential-query regressions failed before the shared bounded query screen was implemented."
+      }
+    ],
+    "finalGreen": {
+      "nativeExit": 0,
+      "testsPassed": 102,
+      "testsFailed": 0,
+      "existingTests": 16,
+      "newTests": 86,
+      "testFilesPassed": 1
+    }
+  },
+  "checks": [
+    {
+      "command": "pnpm.cmd exec eslint n8n/normalizers/smoke_website_stub.js n8n/normalizers/prepare_ingest_groups.js n8n/normalizers/normalizers.test.ts",
+      "nativeExit": 0,
+      "note": "Documented single-line exceptions permit n8n crypto require and a local CommonJS import of the identical pure query guard; no global rule change."
+    },
+    {
+      "command": "pnpm.cmd exec tsc --noEmit -p tsconfig.json",
+      "nativeExit": 0
+    },
+    {
+      "command": "pnpm.cmd exec prettier --check n8n/normalizers/smoke_website_stub.js n8n/normalizers/prepare_ingest_groups.js n8n/normalizers/normalizers.test.ts n8n/normalizers/fixtures/website-content-crawler/synthetic-smoke-contract.json",
+      "nativeExit": 0
+    }
+  ],
+  "contractEvidence": {
+    "website": [
+      "Fixed website_work_page / project_page / apify/website-content-crawler schema.",
+      "SHA256 canonical dataset URL identity, first32 hex characters; path case preserved; no alternate hash fallback.",
+      "HTTPS canonical URL with query and fragment removed; unsafe lexical hosts, IPs, credentials, userinfo and malformed authorities rejected.",
+      "Metadata title capped at2000; Markdown capped at8000; published_at null. Truncation does not split an ending Unicode surrogate pair.",
+      "Page-controlled metadata.canonicalUrl does not replace dataset URL identity.",
+      "Credential-like query parameters in row.url, crawl.loadedUrl, crawl.referrerUrl and metadata.canonicalUrl are rejected before producing the public snapshot.",
+      "M03-only documented payload minimization: exact public snapshot {url:canonicalUrl,markdown:caption,metadata:{title}}; request/header/cookie/unknown actor fields are omitted. Raw actor capture evidence remains separate and unverified.",
+      "One shared query screen rejects client_secret and credential variants after URLSearchParams plus at most two extra decode levels; residual/malformed encoding fails closed. Both the normalizer and pre-RPC URL validation use it."
+    ],
+    "ingestion": [
+      "RPC-compatible required and optional field checks, finite integer metrics, duration no greater than2147483647, years1-9999, valid calendar dates, timezone offsets no greater than14:00 and JSON payloads.",
+      "Strict group envelopes, unique account UUIDs, original seen count and explicit dropped count.",
+      "Exactly20 percent dropped retains accepted rows; greater than20 percent marks failed and emits no ingest batches.",
+      "Batches limited to500; failed/skipped groups produce no ingest batches or completed backfill.",
+      "Contract-drift samples contain only known schema key names, never arbitrary payload keys or values."
+    ]
+  },
+  "fixtureBoundary": {
+    "kind": "synthetic_local_contract",
+    "actualActorCapture": false,
+    "firstRunFixtureCaptured": false,
+    "hostedSmokeAccepted": false
+  },
+  "officialSources": [
+    {
+      "url": "https://apify.com/apify/website-content-crawler",
+      "verifiedOn": "2026-10-18",
+      "supports": "Current documented output url, crawl, metadata.title and markdown fields."
+    },
+    {
+      "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.code/",
+      "verifiedOn": "2026-10-18",
+      "supports": "Code node JavaScript and documented crypto module availability on n8n Cloud."
+    }
+  ],
+  "remainingRuntimeGates": [
+    "Actual connected Cloud Code runtime URL and crypto behavior must pass before deployment.",
+    "The ingestion Code adapter must paste the canonical hasSensitiveUrlQuery helper before prepare_ingest_groups.js; composition without CommonJS globals passes a local VM contract check, not a Cloud runtime check.",
+    "The normalizer performs lexical URL validation only; request nodes must enforce public DNS and redirect rules independently.",
+    "The M03 adapter and atomic SQL must bind the canonical normalized URL to the expected own-site smoke page; this generic local normalizer accepts arbitrary public website origins.",
+    "Real actor capture, callback handling, RPC ingestion, native workflow execution and hosted smoke acceptance remain unverified."
+  ],
+  "externalActions": {
+    "credentialsRead": false,
+    "actorRuns": 0,
+    "providerCalls": 0,
+    "databaseWrites": 0,
+    "hostedWorkflowsChanged": 0
+  }
+}
