@@ -35,8 +35,25 @@ describe('plain Node M02 entrypoint without credentials', () => {
     expect(summary.mode).toBe('local-plan-only');
     expect(summary.counts.plannedCompetitors).toBe(285);
     expect(summary.counts.plannedAccounts).toBe(1754);
-    expect(summary.counts.statuses).toEqual({ active: 289, paused: 1462, invalid: 3 });
-    expect(summary.issues).toBe(3);
+    expect(summary.counts.statuses).toEqual({ active: 289, paused: 1458, invalid: 7 });
+    expect(summary.issues).toBe(10); // Three original URL findings plus seven explicit owner exclusions.
+    const plan = JSON.parse(readFileSync(join(scripts, 'seed/out/plan.json'), 'utf8')) as {
+      issues: { code: string; company_code: string; platform: string }[];
+    };
+    expect(
+      plan.issues
+        .filter((issue) => issue.code === 'owner_invalid')
+        .map((issue) => `${issue.company_code}:${issue.platform}`)
+        .sort(),
+    ).toEqual([
+      'C102:youtube',
+      'C142:youtube',
+      'C218:youtube',
+      'C231:youtube',
+      'C233:youtube',
+      'C245:youtube',
+      'C283:youtube',
+    ]);
   });
   it('rejects production at argument parsing without loading a credential', () => {
     const result = run(['seed/out/runner.mjs', 'seed', '--target', 'prod', '--apply']);
