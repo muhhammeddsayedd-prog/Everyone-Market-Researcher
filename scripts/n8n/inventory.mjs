@@ -7,6 +7,45 @@ import { fileURLToPath } from 'node:url';
 const host = 'muhhammedsayed.app.n8n.cloud';
 const projectId = 'pHvQjDmjxVZ3KQLT';
 const maxBytes = 4 * 1024 * 1024;
+export const inventoryDiagnosticVersion = 1;
+function requestDiagnostic(resource, page) {
+  return {
+    resource,
+    page,
+    tcpConnected: null,
+    tlsVerified: null,
+    httpStatus: null,
+    bodyRead: 'not_observed',
+    jsonParsed: false,
+    schemaValidated: false,
+    socketClosed: false,
+    failureStage: 'none',
+    failureCode: 'none',
+  };
+}
+function diagnosticFailure(diagnostic, stage, code) {
+  if (diagnostic && diagnostic.failureStage === 'none') {
+    diagnostic.failureStage = stage;
+    diagnostic.failureCode = code;
+  }
+}
+function safeTransportCode(error) {
+  const codes = {
+    ECONNREFUSED: 'connection_refused',
+    ECONNRESET: 'connection_reset',
+    ETIMEDOUT: 'timeout',
+    ABORT_ERR: 'timeout',
+    SELF_SIGNED_CERT_IN_CHAIN: 'tls_untrusted',
+    DEPTH_ZERO_SELF_SIGNED_CERT: 'tls_untrusted',
+    UNABLE_TO_VERIFY_LEAF_SIGNATURE: 'tls_untrusted',
+    UNABLE_TO_GET_ISSUER_CERT_LOCALLY: 'tls_untrusted',
+    CERT_HAS_EXPIRED: 'tls_expired',
+    ERR_TLS_CERT_ALTNAME_INVALID: 'tls_hostname',
+  };
+  return typeof error?.code === 'string' && Object.hasOwn(codes, error.code)
+    ? codes[error.code]
+    : 'network_failed';
+}
 const record = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const id = (value) => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 // Explicit owner-authorized IDs observed in the intended Personal project.
@@ -159,6 +198,24 @@ function validatedAddresses(addresses) {
 }
 function nativeRequest(input, requestImpl = request) {
   return new Promise((done, fail) => {
+    const diagnostic = input.diagnostic;
+    let settled = false;
+    let abort;
+    const finish = (value) => {
+      if (!settled) {
+        settled = true;
+        if (abort) input.signal.removeEventListener('abort', abort);
+        done(value);
+      }
+    };
+    const failed = (stage, code, bodyState) => {
+      if (settled) return;
+      settled = true;
+      if (abort) input.signal.removeEventListener('abort', abort);
+      if (diagnostic && bodyState) diagnostic.bodyRead = bodyState;
+      diagnosticFailure(diagnostic, stage, code);
+      fail(new InventoryError(code === 'body_too_large' ? 'body_too_large' : 'network_failed'));
+    };
     const req = requestImpl(
       input.url,
       {
@@ -172,17 +229,34 @@ function nativeRequest(input, requestImpl = request) {
         lookup: (_name, _options, callback) => callback(null, input.address.address, input.address.family),
       },
       (response) => {
-        const status = response.statusCode ?? 0;
-        if (status >= 300 && status < 400) {
+        if (settled) {
           response.destroy();
-          req.destroy();
-          done({ status, body: new Uint8Array() });
           return;
         }
-        if (Number(response.headers['content-length']) > maxBytes) {
+        const status = response.statusCode ?? 0;
+        if (diagnostic) {
+          diagnostic.httpStatus = Number.isInteger(status) && status >= 100 && status <= 599 ? status : null;
+          diagnostic.bodyRead = 'reading';
+        }
+        if (status >= 300 && status < 400) {
+          diagnosticFailure(diagnostic, 'status', 'redirect_refused');
           response.destroy();
           req.destroy();
-          fail(new InventoryError('body_too_large'));
+          finish({ status, body: new Uint8Array() });
+          return;
+        }
+        const declared =
+          response.headers['content-length'] === undefined
+            ? null
+            : Number(response.headers['content-length']);
+        if (declared !== null && (!Number.isSafeInteger(declared) || declared < 0 || declared > maxBytes)) {
+          failed(
+            'body_read',
+            declared > maxBytes ? 'body_too_large' : 'body_failed',
+            declared > maxBytes ? 'too_large' : 'failed',
+          );
+          response.destroy();
+          req.destroy();
           return;
         }
         const chunks = [];
@@ -190,26 +264,81 @@ function nativeRequest(input, requestImpl = request) {
         response.on('data', (chunk) => {
           size += chunk.length;
           if (size > maxBytes) {
+            failed('body_read', 'body_too_large', 'too_large');
             response.destroy();
             req.destroy();
-            fail(new InventoryError('body_too_large'));
           } else chunks.push(chunk);
         });
-        response.once('end', () => done({ status, body: Buffer.concat(chunks) }));
-        response.once('error', () => fail(new InventoryError('network_failed')));
-        response.once('aborted', () => fail(new InventoryError('network_failed')));
+        response.once('end', () => {
+          if (response.complete === false || (declared !== null && size !== declared)) {
+            failed('body_read', 'body_truncated', 'truncated');
+            req.destroy();
+            return;
+          }
+          if (!settled && diagnostic) diagnostic.bodyRead = 'complete';
+          finish({ status, body: Buffer.concat(chunks) });
+        });
+        response.once('error', () => {
+          failed('body_read', 'body_failed', 'failed');
+          req.destroy();
+        });
+        response.once('aborted', () => {
+          failed('body_read', 'body_aborted', 'aborted');
+          req.destroy();
+        });
       },
     );
-    if (input.onTlsVerified || input.onSocketClosed) {
+    if (diagnostic || input.onTlsVerified || input.onSocketClosed) {
       req.once('socket', (socket) => {
-        socket.once('secureConnect', () =>
-          input.onTlsVerified?.(socket.encrypted === true && socket.authorized === true),
-        );
-        socket.once('close', () => input.onSocketClosed?.());
+        if (diagnostic) {
+          diagnostic.tcpConnected = false;
+          diagnostic.tlsVerified = false;
+        }
+        socket.once('connect', () => {
+          if (!settled && diagnostic) diagnostic.tcpConnected = true;
+        });
+        socket.once('secureConnect', () => {
+          const verified = socket.encrypted === true && socket.authorized === true;
+          if (!settled && diagnostic) diagnostic.tlsVerified = verified;
+          if (!settled) input.onTlsVerified?.(verified);
+        });
+        socket.once('close', () => {
+          if (diagnostic) diagnostic.socketClosed = true;
+          input.onSocketClosed?.();
+        });
       });
     }
-    req.once('error', () => fail(new InventoryError('network_failed')));
-    req.end();
+    req.once('error', (error) => {
+      const code = safeTransportCode(error);
+      const stage = code.startsWith('tls_')
+        ? 'tls'
+        : diagnostic?.httpStatus !== null && diagnostic?.httpStatus !== undefined
+          ? 'body_read'
+          : diagnostic?.tlsVerified
+            ? 'status'
+            : diagnostic?.tcpConnected
+              ? 'tls'
+              : 'connect';
+      failed(stage, code, stage === 'body_read' ? (code === 'timeout' ? 'timed_out' : 'failed') : undefined);
+      req.destroy();
+    });
+    abort = () => {
+      const stage =
+        diagnostic?.httpStatus !== null && diagnostic?.httpStatus !== undefined
+          ? 'body_read'
+          : diagnostic?.tlsVerified
+            ? 'status'
+            : diagnostic?.tcpConnected
+              ? 'tls'
+              : diagnostic?.tcpConnected === false
+                ? 'connect'
+                : 'unknown';
+      failed(stage, 'timeout', stage === 'body_read' ? 'timed_out' : undefined);
+      req.destroy();
+    };
+    input.signal.addEventListener('abort', abort, { once: true });
+    if (input.signal.aborted) abort();
+    else req.end();
   });
 }
 
@@ -396,6 +525,7 @@ export async function runInventory(key, dependencies = {}) {
     projectVerified: false,
     capabilities: Object.fromEntries(Object.keys(routes).map((name) => [name, false])),
     manualExecutionSupportedByReviewedPublicApi: false,
+    diagnostics: { version: inventoryDiagnosticVersion, dns: 'not_attempted', requests: [] },
     resources: Object.fromEntries(
       ['projects', 'workflows', 'credentials'].map((name) => [
         name,
@@ -456,8 +586,10 @@ export async function runInventory(key, dependencies = {}) {
     controller.signal.addEventListener('abort', () => fail(new InventoryError('timeout')), { once: true }),
   );
   const operation = async () => {
+    result.diagnostics.dns = 'resolving';
     const addresses = validatedAddresses(await (dependencies.lookup ?? resolveInstance)(controller.signal));
     if (controller.signal.aborted) reject('timeout');
+    result.diagnostics.dns = 'complete';
     const get = async (resource, cursor) => {
       const url = new URL(`https://${host}/api/v1/${resource}`);
       if (resource !== 'discover') url.searchParams.set('limit', '100');
@@ -466,8 +598,16 @@ export async function runInventory(key, dependencies = {}) {
         url.searchParams.set('excludePinnedData', 'true');
       }
       if (cursor) url.searchParams.set('cursor', cursor);
+      const diagnostic = requestDiagnostic(
+        resource,
+        1 + result.diagnostics.requests.filter((row) => row.resource === resource).length,
+      );
+      result.diagnostics.requests.push(diagnostic);
       result.requestCount++;
-      const response = await (dependencies.transport ?? nativeRequest)({
+      const transport = dependencies.request
+        ? (input) => nativeRequest(input, dependencies.request)
+        : (dependencies.transport ?? nativeRequest);
+      const response = await transport({
         url,
         method: 'GET',
         headers: {
@@ -480,6 +620,7 @@ export async function runInventory(key, dependencies = {}) {
         maxBytes,
         rejectUnauthorized: true,
         servername: host,
+        diagnostic,
       });
       if (controller.signal.aborted) reject('timeout');
       if (
@@ -489,15 +630,31 @@ export async function runInventory(key, dependencies = {}) {
         response.status > 599
       )
         reject();
-      if (response.status >= 300 && response.status < 400) reject('redirect_refused');
-      if (response.status === 401) reject('unauthorized');
-      if (!(response.body instanceof Uint8Array) || response.body.byteLength > maxBytes)
+      diagnostic.httpStatus = response.status;
+      if (response.status >= 300 && response.status < 400) {
+        diagnosticFailure(diagnostic, 'status', 'redirect_refused');
+        reject('redirect_refused');
+      }
+      if (response.status === 401) {
+        diagnosticFailure(diagnostic, 'status', 'unauthorized');
+        reject('unauthorized');
+      }
+      if (!(response.body instanceof Uint8Array) || response.body.byteLength > maxBytes) {
+        diagnosticFailure(diagnostic, 'body_read', 'body_too_large');
+        diagnostic.bodyRead = 'too_large';
         reject('body_too_large');
-      if (response.status !== 200) return { status: response.status, value: null };
+      }
+      diagnostic.bodyRead = 'complete';
+      if (response.status !== 200) {
+        diagnosticFailure(diagnostic, 'status', 'http_failed');
+        return { status: response.status, value: null, diagnostic };
+      }
       let value;
       try {
         value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(response.body));
+        diagnostic.jsonParsed = true;
       } catch {
+        diagnosticFailure(diagnostic, 'parse', 'invalid_json');
         reject();
       }
       // Fail closed if a response reflects this request's private key into an
@@ -507,16 +664,20 @@ export async function runInventory(key, dependencies = {}) {
       while (pending.length) {
         if (++visited > 100_000) reject();
         const item = pending.pop();
-        if (typeof item === 'string' && item.includes(key)) reject('confidentiality_rejected');
+        if (typeof item === 'string' && item.includes(key)) {
+          diagnosticFailure(diagnostic, 'schema', 'confidentiality_rejected');
+          reject('confidentiality_rejected');
+        }
         if (Array.isArray(item)) pending.push(...item);
         else if (record(item)) pending.push(...Object.values(item));
       }
       result.authenticationVerified = true;
-      return { status: response.status, value };
+      return { status: response.status, value, diagnostic };
     };
     const discovered = await get('discover');
     if (discovered.status !== 200) reject('http_failed');
     inspectCapabilities(discovered.value, result.capabilities);
+    discovered.diagnostic.schemaValidated = true;
     for (const resource of ['projects', 'workflows', 'credentials']) {
       const section = result.resources[resource];
       const seen = new Set();
@@ -532,6 +693,8 @@ export async function runInventory(key, dependencies = {}) {
           }
           const value = listPage(response.value);
           const projected = projectRows(resource, value.data, seen, candidates);
+          if (value.nextCursor !== null && cursors.has(value.nextCursor)) reject();
+          response.diagnostic.schemaValidated = true;
           section.count += value.data.length;
           section.known.push(...projected.known);
           section.unknownCount += projected.unknownCount;
@@ -539,12 +702,18 @@ export async function runInventory(key, dependencies = {}) {
             section.status = 'complete';
             break;
           }
-          if (cursors.has(value.nextCursor)) reject();
           cursors.add(value.nextCursor);
           cursor = value.nextCursor;
           section.status = 'page_limit';
         }
       } catch (error) {
+        const last = result.diagnostics.requests.at(-1);
+        if (last?.failureStage === 'none')
+          diagnosticFailure(
+            last,
+            last.jsonParsed ? 'schema' : 'unknown',
+            last.jsonParsed ? 'invalid_schema' : 'network_failed',
+          );
         if (
           [
             'redirect_refused',
@@ -571,6 +740,28 @@ export async function runInventory(key, dependencies = {}) {
   try {
     await Promise.race([operation(), timeout]);
   } catch (error) {
+    if (result.diagnostics.dns === 'resolving') result.diagnostics.dns = timedOut ? 'timeout' : 'failed';
+    const last = result.diagnostics.requests.at(-1);
+    if (last?.failureStage === 'none') {
+      const stage =
+        last.httpStatus !== null && last.bodyRead !== 'complete'
+          ? 'body_read'
+          : last.jsonParsed
+            ? 'schema'
+            : last.tlsVerified
+              ? 'status'
+              : last.tcpConnected
+                ? 'tls'
+                : last.tcpConnected === false
+                  ? 'connect'
+                  : 'unknown';
+      diagnosticFailure(
+        last,
+        stage,
+        timedOut ? 'timeout' : stage === 'schema' ? 'invalid_schema' : 'network_failed',
+      );
+      if (timedOut && last.bodyRead === 'reading') last.bodyRead = 'timed_out';
+    }
     result.status = timedOut
       ? 'timeout'
       : [

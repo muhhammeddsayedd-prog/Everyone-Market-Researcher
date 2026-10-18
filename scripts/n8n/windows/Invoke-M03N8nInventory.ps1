@@ -39,12 +39,29 @@ function Confined-File([string]$Root,[string]$Relative) {
   if ($entry.PSIsContainer) { throw 'blocked' }
   return $file
 }
+function Validate-Diagnostics($Value,[int]$RequestCount) {
+  Assert-Keys $Value @('version','dns','requests')
+  if ($Value.version -ne 1 -or $Value.dns -cnotin @('not_attempted','resolving','complete','failed','timeout') -or
+      $Value.requests -isnot [Array] -or $Value.requests.Count -ne $RequestCount -or $Value.requests.Count -gt 7) { throw 'blocked' }
+  foreach ($row in $Value.requests) {
+    Assert-Keys $row @('resource','page','tcpConnected','tlsVerified','httpStatus','bodyRead','jsonParsed','schemaValidated','socketClosed','failureStage','failureCode')
+    if ($row.resource -cnotin @('discover','projects','workflows','credentials') -or $row.page -isnot [int] -or $row.page -lt 1 -or $row.page -gt 2 -or
+        ($null -ne $row.tcpConnected -and $row.tcpConnected -isnot [bool]) -or ($null -ne $row.tlsVerified -and $row.tlsVerified -isnot [bool]) -or
+        ($null -ne $row.httpStatus -and ($row.httpStatus -isnot [int] -or $row.httpStatus -lt 100 -or $row.httpStatus -gt 599)) -or
+        $row.bodyRead -cnotin @('not_observed','reading','complete','aborted','truncated','failed','too_large','timed_out') -or
+        $row.jsonParsed -isnot [bool] -or $row.schemaValidated -isnot [bool] -or $row.socketClosed -isnot [bool] -or
+        $row.failureStage -cnotin @('none','unknown','connect','tls','status','body_read','parse','schema') -or
+        $row.failureCode -cnotin @('none','connection_refused','connection_reset','timeout','tls_untrusted','tls_expired','tls_hostname','network_failed','body_too_large','body_failed','body_aborted','body_truncated','invalid_json','invalid_schema','redirect_refused','unauthorized','http_failed','confidentiality_rejected') -or
+        ($row.schemaValidated -and (-not $row.jsonParsed -or $row.httpStatus -ne 200)) -or ($row.jsonParsed -and $row.bodyRead -cne 'complete')) { throw 'blocked' }
+  }
+}
 function Validate-Inventory($Value) {
-  Assert-Keys $Value @('version','environment','host','projectId','status','requestCount','authenticationVerified','projectVerified','capabilities','manualExecutionSupportedByReviewedPublicApi','resources')
+  Assert-Keys $Value @('version','environment','host','projectId','status','requestCount','authenticationVerified','projectVerified','capabilities','manualExecutionSupportedByReviewedPublicApi','resources','diagnostics')
   if ($Value.version -ne 1 -or $Value.environment -cne 'dev' -or $Value.host -cne $fixedHost -or $Value.projectId -cne $projectId -or
       $Value.status -cnotin @('complete','partial','missing_key','invalid_key','invalid_options','unsafe_dns','timeout','unauthorized','redirect_refused','response_rejected','network_failed','http_failed','body_too_large','confidentiality_rejected') -or
       $Value.requestCount -isnot [int] -or $Value.requestCount -lt 0 -or $Value.requestCount -gt 7 -or $Value.authenticationVerified -isnot [bool] -or $Value.projectVerified -isnot [bool] -or
       $Value.manualExecutionSupportedByReviewedPublicApi -isnot [bool] -or $Value.manualExecutionSupportedByReviewedPublicApi) { throw 'blocked' }
+  Validate-Diagnostics $Value.diagnostics $Value.requestCount
   Assert-Keys $Value.capabilities $capabilityNames
   foreach ($name in $capabilityNames) { if ($Value.capabilities.$name -isnot [bool]) { throw 'blocked' } }
   Assert-Keys $Value.resources @('projects','workflows','credentials')
