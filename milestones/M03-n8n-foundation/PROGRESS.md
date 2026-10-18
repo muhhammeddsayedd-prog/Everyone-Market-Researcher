@@ -19,6 +19,34 @@
 | Current task | Actual gateway/native HTTP-node identities, duplicate/replay/conflict, auth denials and lost-ack reconciliation pass. Trial closed at 23/100 local attempts and 17 SQL admissions including one Close, zero leases, baseline unchanged. Dedicated bypass/owned n8n credentials/handoffs removed; one-time ResumeCleanup verified both sensitive project entries absent and enabled false. [Actual trial/closeout](evidence/gw01-trial-closeout-20261018.json). |
 | Next step | Continue the [source-only full M03 draft packet](evidence/live-acceptance-outline-20261018.md) and unblocked local gates: full restricted transport, durable spend admission, exact rejection audit, privacy/bounds/native bindings and concrete two-run caps. No trial replay/window reset or premature paid approval. |
 
+## 19 October continuation — finite completion matrix
+
+The owner authorized local full-foundation implementation and owned inactive dev
+provisioning. This does not authorize another gateway window, migration push,
+actor start, batch execution, production action or merge. The existing GW-01
+window stays permanently closed (23 coordinated attempts; 16 SQL admissions and
+one Close). Its runtime source remains `3d141fb9`; reviewed source `f43c5e5` and
+CI `39119760390` are separate historical evidence.
+
+| Task / criteria | Preserved evidence | Remaining implementation / acceptance |
+| --- | --- | --- |
+| T1 / AC1, AC12 | Runtime 2.43.5, 50K allowance, documented execution estimate | No renewed plan or billing investigation |
+| T2 | Existing authenticated browser and partial API receipts | Reviewed bounded owned-workflow provisioning; no broad editor read |
+| T3 / AC2 | Five existing credential IDs/types, four metadata successes, separate gateway identity success | Bind full foundation to its own disabled transport; native Postgres TLS remains a historical failure |
+| T4 / AC3–4 | Ten applied dev migrations, original hashes, schema/advisors/types, budget 25 | New forward source only: durable launch/callback audit and foundation admission; local tests/advisors/types before any proposed hosted application; unknown fees remain unknown |
+| T5 | Existing five SUB blueprints and local tests | Complete typed gateway operations, real references, sanitized saved definitions; later live proof |
+| T6 / AC8 | Existing error/cooldown SQL tests | Full log-only WF-90 transport; later automatic Error Trigger and cooldown test |
+| T7 / AC6–7 | Recovery and stable-settlement local evidence | Exact rejection audit, byte-bounded authenticated dataset reader, atomic processing and durable status recovery; later callback batch |
+| T8 / AC9 | Existing Cairo schedule/PM/backfill guards | Full gateway dispatch graph and 15 explicit stubs, including both Saturday 04:00 jobs; schedules inactive |
+| T9 / AC5, AC10 | Existing health SQL and recovery-only smoke source | Functional disabled one-shot async launch, original-run reconciliation, health/accrual idempotency; later two genuine runs with separate costs |
+| T10 / AC11 | Historical sanitized probe exports | Generated graph matrix, actual inactive IDs/exports where accessible, one exact final live packet; no M03 closure yet |
+
+Source-only forward changes and their local tests are not hosted acceptance.
+The final live packet must use a distinct foundation window and credentials;
+the unused GW-01 allowance cannot be transferred. Private incident R2 preparation
+continues separately, with horizon **None** and the former maintenance window
+expired. No production remediation has been authorized.
+
 ## Task checklist
 <!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
 - [x] T1 — Five plan facts recorded below; actual UI capability evidence and current official plan/billing rules are distinguished. No execution/billing experiment claimed.
@@ -216,6 +244,15 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-19 Cairo: Added the finite T1–T10/AC1–AC12 completion matrix and a
+  separate strict foundation request/result contract. Local red-to-green proof:
+  missing-module RED, then three focused contract assertions PASS; web handler
+  and transaction-adapter tests pass separately. Actual rollback-only SQL to
+  application validation also passes for twelve fixed operations, cached/status
+  receipts and closure; it is local session simulation, not hosted login proof.
+  New window/source constants do not provision or activate anything. GW-01 stays
+  closed, PR #8 draft, production and M04 untouched.
 
 - 2026-10-18 Cairo: Final ResumeCleanup 4fc1ec completed native 0 once and final GET verified both sensitive project entries absent/enabled false at 10:30:38.409 UTC. Original failed cleanup and GET-only still-present readback remain preserved; ledger has 15 events, one resumed-readback and two deleted markers. [Actual trial/closeout](evidence/gw01-trial-closeout-20261018.json), [local correction/review](evidence/local-gw01-environment-cleanup-20261018.json). Owned closeout complete: trial window closed at 23/100 local attempts, zero leases, no baseline change, dedicated bypass/owned n8n credentials/checked temporary paths removed; saved export inactive with HTTP disabled/retention off. Full M03 transport/spend/audit/privacy/native gates remain; no premature paid packet, production, merge or M04.
 

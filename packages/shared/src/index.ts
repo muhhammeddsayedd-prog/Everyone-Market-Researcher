@@ -23,6 +23,15 @@ export {
 } from './n8n-worker-contracts';
 export type { GatewayRequest, GatewayReceipt, GatewayOperation } from './n8n-worker-contracts';
 export {
+  foundationRequest,
+  foundationReceipt,
+  foundationWindowId,
+  foundationOperations,
+  foundationSmokeInput,
+  foundationTerminal,
+} from './n8n-foundation-contracts';
+export type { FoundationRequest, FoundationReceipt, FoundationOperation } from './n8n-foundation-contracts';
+export {
   canonicalUrl,
   normalizeInstagram,
   normalizeLinkedIn,

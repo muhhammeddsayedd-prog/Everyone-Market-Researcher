@@ -234,6 +234,11 @@ const resultSchemas: Partial<Record<GatewayOperation, z.ZodType>> = {
   'error.log': z.strictObject({ acknowledged: z.literal(true) }),
   'error.count': z.strictObject({ count }),
 };
+// Pure result validation shared with the separate foundation protocol. This
+// grants no operation, window or credential authority to either transport.
+export function gatewayBusinessResult(value: unknown, operation: GatewayOperation): boolean {
+  return resultSchemas[operation]?.safeParse(value).success === true;
+}
 export function gatewayReceipt(value: unknown, operation: GatewayOperation): GatewayReceipt {
   const p = receipt.safeParse(value);
   if (!p.success) throw new Error('invalid_result');
