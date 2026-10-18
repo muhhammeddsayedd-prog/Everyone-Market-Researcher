@@ -1,0 +1,283 @@
+{
+  "observedAt": "2026-10-18T01:56:11.202259Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "source": "dev_scoped_supabase_mcp_readback",
+  "operation": "read_only_youtube_continuation_reconciliation",
+  "auditResult": "pass",
+  "checks": [
+    {
+      "check": "exact_dev_mcp_readback_scope",
+      "pass": true
+    },
+    {
+      "check": "source_and_target_entity_id_sets_unchanged",
+      "pass": true
+    },
+    {
+      "check": "every_curated_competitor_field_and_logo_path_unchanged",
+      "pass": true
+    },
+    {
+      "check": "all_1626_non_youtube_curated_rows_unchanged",
+      "pass": true
+    },
+    {
+      "check": "three_preexisting_invalid_youtube_rows_unchanged",
+      "pass": true
+    },
+    {
+      "check": "only_125_previously_pending_youtube_rows_changed",
+      "pass": true
+    },
+    {
+      "check": "youtube_deltas_confined_to_resolution_fields_and_reviewed_invalid_statuses",
+      "pass": true
+    },
+    {
+      "check": "youtube_identifiers_valid_and_resolved_gating_preserved",
+      "pass": true
+    },
+    {
+      "check": "seven_failed_zero_pending_youtube_rows",
+      "pass": true
+    },
+    {
+      "check": "four_new_terminal_findings_match_native_receipt",
+      "pass": true
+    },
+    {
+      "check": "vimeo_all_202_rows_remain_unchanged_and_resolved",
+      "pass": true
+    },
+    {
+      "check": "logo_asset_metadata_and_ids_unchanged",
+      "pass": true
+    },
+    {
+      "check": "storage_object_paths_sizes_and_mimes_unchanged",
+      "pass": true
+    },
+    {
+      "check": "media_bucket_public_and_no_extra_objects",
+      "pass": true
+    },
+    {
+      "check": "original_seven_migration_versions_preserved",
+      "pass": true
+    },
+    {
+      "check": "no_items_raw_data_or_test_fixtures",
+      "pass": true
+    },
+    {
+      "check": "seed_logo_manifests_and_frozen_before_readback_unchanged",
+      "pass": true
+    },
+    {
+      "check": "original_reconciliation_proof_bytes_frozen",
+      "pass": true
+    },
+    {
+      "check": "native_continuation_only_identity_resolution_report_and_success",
+      "pass": true
+    },
+    {
+      "check": "native_continuation_counts_and_no_blocked_provider",
+      "pass": true
+    },
+    {
+      "check": "new_native_report_matches_actual_readback",
+      "pass": true
+    },
+    {
+      "check": "direct_pilot_readback_confirms_c283_as_only_unresolved_pilot",
+      "pass": true
+    }
+  ],
+  "failedChecks": [],
+  "inputs": [
+    {
+      "path": "scripts/seed/out/dev-full-seed-readback.json",
+      "sha256": "1acc8c0cf8e49300b3f223c4548c812af655281ca6f8b19f5c4ad80f64b23bcb"
+    },
+    {
+      "path": "scripts/seed/out/dev-youtube-continuation-readback.json",
+      "sha256": "ea1d463a027c210648a3b2bee3035d41a243ce98c5f1a5a64a51f3291f20f2b9"
+    },
+    {
+      "path": "scripts/seed/out/dev-youtube-pilot-readback.json",
+      "sha256": "7064b40bdcc41fa30433991ebf002b52ce65ff3ff6b8565f079baf1387ee2010"
+    },
+    {
+      "path": "scripts/seed/out/dev-latest.json",
+      "sha256": "cff7185998e395fa31450145159a74d6fc01da3a5543a86420a7911a389b9d28"
+    },
+    {
+      "path": "scripts/seed/out/dev-report.json",
+      "sha256": "a79445dfa25b4122532badef4d331532e47ae94476a2fe12cea9e2d113fc2349"
+    }
+  ],
+  "preservation": {
+    "competitors": 285,
+    "nonYoutubeAccounts": 1626,
+    "nonYoutubeRowDifferences": [],
+    "preexistingInvalidYoutubeRowDifferences": [],
+    "vimeoResolvedUnchanged": 202,
+    "logoAssets": 257,
+    "logoAssetsItemLinked": 0,
+    "storageObjects": 257,
+    "storageBytes": 1560325,
+    "assetMetadataDifferences": [],
+    "seedAndLogoManifestStability": [
+      {
+        "file": "dev-seed-manifest.json",
+        "unchanged": true,
+        "sha256": "8709e8d6b5817773b61e7cc0067439e83b0ac897335d5ee3a3e58e78fe08457b"
+      },
+      {
+        "file": "dev-logo-manifest.json",
+        "unchanged": true,
+        "sha256": "a783124776887d6da68f0b2bef5d7e37b9f3dba563a610765500babde9def1e5"
+      },
+      {
+        "file": "dev-full-seed-readback.json",
+        "unchanged": true,
+        "sha256": "1acc8c0cf8e49300b3f223c4548c812af655281ca6f8b19f5c4ad80f64b23bcb"
+      }
+    ],
+    "frozenPriorReconciliationSha256": "7d48710fe937336379ea08a61449f3b855b003fa769c52ff7c5dbe5aea3986a5",
+    "frozenPriorReconciliationUnmodified": true
+  },
+  "youtube": {
+    "total": 128,
+    "previouslyPending": 125,
+    "changed": 125,
+    "resolved": 121,
+    "failed": 7,
+    "pending": 0,
+    "fieldDeltaCounts": {
+      "resolve_status": 125,
+      "external_id": 121,
+      "uploads_playlist_id": 121,
+      "updated_at": 125,
+      "status": 4,
+      "last_error": 4
+    },
+    "unexpectedFieldDeltas": [],
+    "newTerminalFindings": {
+      "C218": "yt_custom_url_unresolved",
+      "C231": "yt_not_found",
+      "C233": "yt_not_found",
+      "C142": "yt_not_found"
+    },
+    "pilot": {
+      "total": 11,
+      "resolved": 10,
+      "remaining": [
+        {
+          "company_code": "C283",
+          "name": "Wonderful Productions",
+          "priority_tier": "pilot",
+          "pilot_rank": 47,
+          "account_id": "a8a9699f-6e56-49ae-ad22-6fbd98c49a4a",
+          "handle": "wonderfulprodbeirut",
+          "url": "https://www.youtube.com/wonderfulprodbeirut",
+          "status": "invalid",
+          "resolve_status": "failed",
+          "external_id": null,
+          "uploads_playlist_id": null,
+          "last_error": null
+        }
+      ],
+      "directReadbackObservedAt": "2026-10-18 01:55:22 UTC"
+    }
+  },
+  "erratum": {
+    "earlierLabel": "Earlier conversational summaries incorrectly called C102 the unresolved pilot YouTube account.",
+    "correctedFacts": [
+      {
+        "company_code": "C102",
+        "name": "MultiVision Media Production",
+        "priority_tier": "next_wave"
+      },
+      {
+        "company_code": "C245",
+        "name": "FTEN Productions",
+        "priority_tier": "next_wave"
+      },
+      {
+        "company_code": "C283",
+        "name": "Wonderful Productions",
+        "priority_tier": "pilot",
+        "pilot_rank": 47
+      }
+    ],
+    "scope": "The actual CSV, gating and database rows already had the correct tiers. This corrects text labels only; prior evidence bytes remain frozen."
+  },
+  "nativeContinuation": {
+    "nativeCompletion": "success",
+    "action": "resolve",
+    "stages": [
+      {
+        "name": "database_identity",
+        "status": "completed"
+      },
+      {
+        "name": "resolution",
+        "status": "completed"
+      },
+      {
+        "name": "report",
+        "status": "completed"
+      }
+    ],
+    "resolution": {
+      "attempted": 125,
+      "updated": 125,
+      "unchanged": 0,
+      "preserved": 0,
+      "skipped": 205,
+      "blocked": [],
+      "issues": [
+        {
+          "company_code": "C142",
+          "platform": "youtube",
+          "code": "yt_not_found"
+        },
+        {
+          "company_code": "C218",
+          "platform": "youtube",
+          "code": "yt_custom_url_unresolved"
+        },
+        {
+          "company_code": "C231",
+          "platform": "youtube",
+          "code": "yt_not_found"
+        },
+        {
+          "company_code": "C233",
+          "platform": "youtube",
+          "code": "yt_not_found"
+        }
+      ],
+      "youtubeMaximumAttempts": 1,
+      "badResponseShapes": []
+    }
+  },
+  "scopeLimits": [
+    "Readback pages are not claimed as one MVCC transaction; complete ID sets and before/after expectations were verified.",
+    "No new public logo-byte hashes were fetched; original live-byte proof plus fresh exact Storage metadata parity is preserved.",
+    "Owner MA-09 decisions and separate production/merge gates remain open."
+  ],
+  "boundaries": {
+    "credentialsRead": false,
+    "databaseWritesMade": false,
+    "providerCallsMade": false,
+    "storageObjectHttpCallsMade": false,
+    "seedReplayed": false,
+    "oldProofModified": false,
+    "markersModified": false,
+    "productionActionsTaken": false
+  }
+}

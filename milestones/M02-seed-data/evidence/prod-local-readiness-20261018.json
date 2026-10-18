@@ -1,0 +1,142 @@
+{
+  "observedAt": "2026-10-18T02:30:26Z",
+  "environment": "Local preparation only; no production authentication or transfer",
+  "targetProjectRef": "hkiafqrcxaafdbcvjlzv",
+  "baseHead": "bb52d471c3757455f549c72decab51d099aeda79",
+  "approval": {
+    "approved": false,
+    "approvalReference": null,
+    "ownerDecisionRequired": "approved: seed prod"
+  },
+  "publicInputs": {
+    "sourceSha256": "b3cf64b90058b5c786513c4fed9ebbe9d9bb092ec3a916744c944faeb826a17b",
+    "payloadSha256": "5d5e8089bebe184cccaccdb7ceefe5d6e3ba40b83dedfa494913c468af36102d",
+    "logoManifestSha256": "b1885fdd3dab4ec4f06ceaeaad59ae0f85bf8b73400b82a29f178f89a302bb80",
+    "approvalPacketSha256": "0530cdd64b361a26eb66c04fc0ec468697d9982c12cd7ba5c4c9e26f0a107363"
+  },
+  "localArtifact": {
+    "runner": "scripts/seed/out/prod-runner.mjs",
+    "runnerSha256": "257f45a217cefa219bab1c774ea2f707b62d1cff6630132050486a4873825190",
+    "sourceSeal": "scripts/seed/out/prod-runner-seal.json",
+    "sourceSealSha256": "7f88bc8e2721df3684b18dbd1df5e026433fafcc72d00d1cf8e72763f6f61cea",
+    "sealedSourceFiles": 54,
+    "buildNativeExit": 0,
+    "preflightNativeExit": 0,
+    "preflight": {
+      "status": "verified",
+      "environment": "prod",
+      "projectRef": "hkiafqrcxaafdbcvjlzv",
+      "approved": false
+    },
+    "preflightLimit": "Local files only. No database connection, TLS handshake, secret read or Storage request. Approval changes require a fresh credential-free build.",
+    "allSourceHashesRechecked": "All54 current source hashes and runner hash verified after final formatting; no network/private read."
+  },
+  "checks": {
+    "rootCoreUnitAndIsolatedCli": {
+      "passed": 37,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "rootWindowsConsumer": {
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "durationSeconds": 72.61,
+      "syntheticCredentialsOnly": true
+    },
+    "workerPostgresComponents": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "target": "127.0.0.1:60322",
+      "fixtureCompetitors": 5,
+      "fixtureAccounts": 11,
+      "priorRowsIncludingC999Preserved": true,
+      "mandatoryRollback": true,
+      "full285ProductionRehearsal": false
+    },
+    "independentOfflineCa": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "networkCalls": 0
+    },
+    "rootCiSafety": {
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "newMissingAndSkippedSuiteRegressionsFailedBeforeGuard": true,
+      "mandatoryCiAssertions": 42
+    },
+    "rootWorkspaceTypecheckNativeExit": 0,
+    "rootScopedEslintNativeExit": 0,
+    "rootFormatCheckNativeExit": 0,
+    "independentReview": "prod-preparation-review-20261018.json"
+  },
+  "ci": {
+    "previousPolicyHead": "bb52d471c3757455f549c72decab51d099aeda79",
+    "previousPolicyRun": "39089732685",
+    "previousPolicyResult": "All five jobs passed; Vercel SUCCESS",
+    "productionPreparationDelivery": "Code96e8740c996f674a8c63a2c016c979cb7935d033 / CI39091012665 all five jobs passed; Vercel SUCCESS. See prod-preparation-ci-delivery-20261018.json. Later documentation uses normal CI."
+  },
+  "localTestReceiptCleanup": "An early unapproved CLI test had created a zero-stage/not_attempted failed receipt in the real local out directory. Verified those exact properties and preserved it separately as out/prod-rejected-local-test-20261018.json. Corrected CLI tests use isolated public fixtures and cannot overwrite real run receipts.",
+  "scope": {
+    "realPrivateCredentialsRead": 0,
+    "realPrivateHandoffsConsumed": 0,
+    "productionDatabaseOperations": 0,
+    "productionTlsHandshakes": 0,
+    "publicLogoDownloads": 0,
+    "storageUploads": 0,
+    "providerCalls": 0,
+    "devReplays": 0,
+    "schemaChanges": 0,
+    "mergeApproved": false,
+    "m03Started": false
+  },
+  "remainingGates": [
+    "Owner approval of the exact M02 production packet",
+    "Two production-only credential handoffs after approval",
+    "Actual production preflight/import/transfers/no-op/readback/advisors/cleanup and AC10",
+    "Separate PR6 merge and next-milestone authorization"
+  ],
+  "publicIndexByteProof": [
+    {
+      "path": "scripts/seed/prod-payload.json",
+      "gitBlob": "0a5789c0a4dc6b214c61b8543d00b657e92648ff",
+      "exactIndexedWorkingBytes": true
+    },
+    {
+      "path": "scripts/seed/prod-logo-manifest.json",
+      "gitBlob": "befafe212cbeeec2ce4d4cc9c4197d4249981ea9",
+      "exactIndexedWorkingBytes": true
+    },
+    {
+      "path": "scripts/seed/prod-seed-packet.json",
+      "gitBlob": "861161dd65e50e7f50dc53e334988fc3fe0abd7d",
+      "exactIndexedWorkingBytes": true
+    }
+  ],
+  "deliveryCorrection": {
+    "failedCiHead": "e349a087a41c3a9e0148626860b6971f1eb1e29e",
+    "failedCiRun": "39090441239",
+    "sourceByteEvidence": "prod-source-byte-delivery-20261018.json",
+    "frozenHashesOrRowValuesChanged": false,
+    "correctedCliSuite": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "reportedBy": "m02_prod_packet",
+      "coldParentRegressionFailedBeforeFix": true
+    },
+    "currentDistinctCoreCases": 38,
+    "executionBoundary": "The earlier consolidated37 run and later corrected7 CLI run are separate. New normal clean-checkout CI must pass; historical failed CI is retained.",
+    "runtimeChanged": false,
+    "productionOperations": 0
+  }
+}

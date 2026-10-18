@@ -1,0 +1,70 @@
+{
+  "observedAt": "2026-10-18 00:53:03 UTC",
+  "scope": "M02 local/CI delivery only; no hosted seed/provider acceptance",
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 39084190118,
+    "headSha": "35990bd27e762de21714b719c78e72210636c7f7",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "build",
+        "status": "completed",
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39084190118/job/117547210590"
+      },
+      {
+        "conclusion": "success",
+        "name": "db-tests",
+        "status": "completed",
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39084190118/job/117547210762"
+      },
+      {
+        "conclusion": "success",
+        "name": "unit",
+        "status": "completed",
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39084190118/job/117547210790"
+      },
+      {
+        "conclusion": "success",
+        "name": "quality",
+        "status": "completed",
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39084190118/job/117547210799"
+      },
+      {
+        "conclusion": "success",
+        "name": "e2e",
+        "status": "completed",
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39084190118/job/117547298741"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39084190118"
+  },
+  "vercel": [
+    {
+      "__typename": "StatusContext",
+      "context": "Vercel",
+      "startedAt": "2026-10-18T00:49:45Z",
+      "state": "SUCCESS",
+      "targetUrl": "https://vercel.com/muhammed-abdelrahman/everyone-market-researcher/7fW41xUE4kCp5nkcuxdrpdJy5ano"
+    }
+  ],
+  "pr": {
+    "number": 6,
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6",
+    "state": "OPEN",
+    "isDraft": true,
+    "headRefOid": "35990bd27e762de21714b719c78e72210636c7f7"
+  },
+  "dbJobSafeSummaries": [
+    "pgTAP: 10 files, 242 assertions, PASS",
+    "Security advisors: no warnings or errors",
+    "Performance advisors: no errors; warnings require the milestone review",
+    "M02 PostgreSQL rollback acceptance: 15 assertions, PASS"
+  ],
+  "limits": [
+    "CI database is a new isolated local stack; its migrations/fixtures/advisors do not apply to hosted dev or production.",
+    "Local PowerShell synthetic handoff checks are separate from CI and real credential delivery.",
+    "The following documentation-only receipt commit uses normal PR CI; this file records its tested parent code head."
+  ]
+}

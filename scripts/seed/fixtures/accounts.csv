@@ -1,0 +1,9 @@
+company_id,competitor_slug,platform,url,handle,tracked,pilot
+C000,everyone-films,website,https://everyone.film/,everyone.film,true,true
+C000,everyone-films,website_work_page,https://everyone.film/by-everyone,https://everyone.film/by-everyone,true,true
+C001,pilot-one,instagram,https://www.instagram.com/Pilot.One/,Pilot.One,true,true
+C001,pilot-one,linkedin,https://www.linkedin.com/company/pilot-one/,pilot-one,true,true
+C002,pilot-two,website,https://pilot-two.com/,pilot-two.com,true,true
+C002,pilot-two,youtube,https://www.youtube.com/channel/UCihEH7Bk23zVkIYMCBqvjgQ,channel/UCihEH7Bk23zVkIYMCBqvjgQ,true,true
+C003,next-wave,vimeo,https://vimeo.com/nextwave,nextwave,true,false
+C004,adjacent,instagram,https://www.instagram.com/adjacent/,adjacent,true,false

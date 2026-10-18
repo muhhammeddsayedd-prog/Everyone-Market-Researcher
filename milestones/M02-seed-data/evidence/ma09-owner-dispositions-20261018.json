@@ -1,0 +1,45 @@
+{
+  "clientDate": "2026-10-18",
+  "clientTimezone": "Africa/Cairo",
+  "questionReference": "call_d706ee2db9124de880065c1f47a22eef",
+  "ownerReplies": [
+    "If a company doesn't have a social don't scrap it. If it doesn't have youtube don't scrap it.",
+    "All listed website flags: ok; all11 missing logos: ok"
+  ],
+  "interpretation": "Skip the seven listed unavailable or unverified YouTube source identities; retain invalid/failed rows and observed evidence. This is not proof that those companies lack a YouTube channel.",
+  "youtube": {
+    "ownerExcluded": ["C102", "C142", "C218", "C231", "C233", "C245", "C283"],
+    "totalOriginal": 128,
+    "rawResolved": 121,
+    "rawPilotTotal": 11,
+    "rawPilotResolved": 10,
+    "eligibleTotal": 121,
+    "eligibleResolved": 121,
+    "eligiblePilotTotal": 10,
+    "eligiblePilotResolved": 10,
+    "pilotExclusion": "C283"
+  },
+  "websiteDecisions": {
+    "accepted": 23,
+    "observedErrorsRetained": true,
+    "retryAuthorized": false
+  },
+  "logoDecisions": {
+    "acceptedInitialsFallbacks": 11,
+    "expectedNoSourceFallbacks": 17,
+    "retryAuthorized": false
+  },
+  "decisionRows": 41,
+  "pendingDecisionRows": 0,
+  "persistence": "Seven invalid overrides use exact original source CSV URLs, including original case for C142 and C218. Hosted rows already match; fresh read-only verification is required, not reseeding.",
+  "bindingDecision": "docs/DECISIONS.md D-27",
+  "scope": {
+    "devReview": true,
+    "hostedWritesTakenByRecording": false,
+    "rowsDeleted": false,
+    "providerCallsTakenByRecording": false,
+    "productionApproved": false,
+    "mergeApproved": false,
+    "nextMilestoneApproved": false
+  }
+}

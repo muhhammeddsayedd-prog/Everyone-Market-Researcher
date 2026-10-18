@@ -1,0 +1,7 @@
+{
+  "competitor_category": [{ "code": "production", "label_en": "Production" }],
+  "in_house_capability": [
+    { "code": "editing", "label_en": "Editing" },
+    { "code": "other", "label_en": "Other" }
+  ]
+}

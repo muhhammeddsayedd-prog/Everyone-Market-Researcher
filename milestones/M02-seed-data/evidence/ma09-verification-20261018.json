@@ -1,0 +1,53 @@
+{
+  "recordedAt": "2026-10-18T02:17:27Z",
+  "scope": "MA-09 owner decisions and dev-only acceptance; production preparation is separate",
+  "ownerDecisionReference": "call_d706ee2db9124de880065c1f47a22eef",
+  "bindingDecision": "docs/DECISIONS.md D-27",
+  "local": {
+    "ownerExclusionPostgresChecks": {
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExitCode": 0,
+      "target": "127.0.0.1:60322",
+      "fixtureMode": "SELECT-only JSON CTEs inside read-only transactions"
+    },
+    "ciSafetyChecks": { "passed": 11, "failed": 0, "skipped": 0, "nativeExitCode": 0 },
+    "plan": "ma09-reviewed-plan-20261018.json",
+    "unchangedFullSuiteRerun": false
+  },
+  "dev": {
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "readback": "dev-counts-after-ma09-20261018.json",
+    "falseAssertions": 0,
+    "secondRunIdempotency": "Preserved original actual seed receipt; AC7 is not inferred from this read-only query",
+    "rawYoutubeResolved": "121/128",
+    "rawYoutubePilotResolved": "10/11",
+    "eligibleYoutubeResolved": "121/121",
+    "eligibleYoutubePilotResolved": "10/10",
+    "exactExcludedSources": 7,
+    "excludedPilotSources": 1,
+    "unexpectedIneligibleSources": 0,
+    "hostedWrites": 0,
+    "providerRequests": 0,
+    "privateCredentialsConsumed": 0
+  },
+  "review": {
+    "independent": true,
+    "remainingP0P1P2": 0,
+    "scope": "Policy, exact overrides, SQL guards, tests, dispositions and current progress; excludes unfinished production code"
+  },
+  "ci": {
+    "preservedHead": "b2aa927953c588c31f25d92f28969ee35d62b803",
+    "preservedRun": "39088469683",
+    "preservedResult": "All five jobs passed",
+    "currentPolicyHead": "bb52d471c3757455f549c72decab51d099aeda79",
+    "currentPolicyRun": "39089732685",
+    "currentPolicyResult": "All five jobs passed; Vercel SUCCESS",
+    "deliveryEvidence": "ma09-ci-delivery-20261018.json",
+    "correctedFailureRun": "39089584942"
+  },
+  "productionApproved": false,
+  "mergeApproved": false,
+  "m03Started": false
+}

@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-10-18T01:06:31.376Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "host": "aws-1-eu-central-1.pooler.supabase.com",
+  "port": 5432,
+  "status": "verified",
+  "phase": "tls_handshake",
+  "code": "TLS_VERIFIED",
+  "rejectUnauthorized": true,
+  "exactServerName": true,
+  "scopedCaVerified": true,
+  "startupMessageSent": false,
+  "authenticationAttempted": false,
+  "socketsClosed": true,
+  "nativeExitCode": 0,
+  "nativeProcessExited": true,
+  "privateEnvironment": "cleared_then_OS_allowlist_only",
+  "publicCaPin": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+  "publicCaProvenance": "Owner-provided public artifact/pin; the reviewed probe checks pinned bytes, CA constraints/self-signature/dates before strict scoped TLS. No global trust or server setting changed."
+}

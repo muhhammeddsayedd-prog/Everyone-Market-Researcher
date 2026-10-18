@@ -1,0 +1,40 @@
+{
+  "environment": "github_actions_and_vercel_preview",
+  "codeHead": "d5171fe9f119e1703cc9e9371579f0b29a0becad",
+  "branch": "m02-seed-data",
+  "pr": 6,
+  "isDraft": true,
+  "runId": 39088023934,
+  "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39088023934",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "quality",
+      "conclusion": "success"
+    },
+    {
+      "name": "unit",
+      "conclusion": "success"
+    },
+    {
+      "name": "build",
+      "conclusion": "success"
+    },
+    {
+      "name": "e2e",
+      "conclusion": "success"
+    },
+    {
+      "name": "db-tests",
+      "conclusion": "success"
+    }
+  ],
+  "vercel": "success",
+  "localVerification": "Targeted parser/report70, budget/continuation27, resolver11, Windows consumer19 and Node diagnostic14 tests; diagnostic Windows13 reviewed separately. No unchanged full local suite rerun.",
+  "secretsScan": {
+    "trackedFiles": 766,
+    "violations": 0
+  },
+  "boundaries": "CI checks do not establish provider acceptance; actual dev continuation has its separate native0 receipt. M01 tooling advisory remains due24October."
+}

@@ -11,6 +11,8 @@ fi
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.."
 [[ -f supabase/config.toml ]] || { printf 'Local database configuration missing.\n' >&2; exit 1; }
 unset SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD N8N_WRITER_URL API_AGENT_URL
+unset PGHOST PGPORT PGUSER PGPASSWORD PGDATABASE PGSERVICE PGSERVICEFILE
+unset SEED_DATABASE_URL SUPABASE_SECRET_KEY VIMEO_TOKEN YOUTUBE_API_KEY M02_TEST_DATABASE_URL
 if [[ "$(supabase --version 2>/dev/null)" != 2.121.0 ]]; then
   printf 'Expected the pinned Supabase CLI version.\n' >&2
   exit 1
@@ -18,7 +20,8 @@ fi
 
 umask 077
 private_log="$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/emr-db-ci.XXXXXX")"
-trap 'rm -f -- "$private_log"' EXIT
+private_report="$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/emr-db-ci-report.XXXXXX")"
+trap 'rm -f -- "$private_log" "$private_report"' EXIT
 
 run_private() {
   local label="$1"
@@ -56,3 +59,38 @@ run_private 'Security advisors' supabase db advisors --local --type security --l
 printf 'Security advisors: no warnings or errors\n'
 run_private 'Performance advisors' supabase db advisors --local --type performance --level warn --fail-on error
 printf 'Performance advisors: no errors; warnings require the milestone review\n'
+
+# These files use a fixed local test password only inside their owned Node clients.
+# Seed/production-component fixtures roll back; owner-exclusion fixtures are SELECT-only CTEs in read-only transactions.
+# Shared fixed fixture keys and lock upgrades require serial files. Explicit
+# collector contention is verified separately by check-concurrency.mjs.
+# An unset/invalid target or a missing/skipped test is not acceptance.
+run_private 'M02 PostgreSQL acceptance' env \
+  M02_TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:60322/postgres \
+  pnpm --filter @emr/scripts exec vitest run seed/seed-competitors.integration.test.ts seed/database.test.ts seed/owner-exclusions.integration.test.ts seed/prod-operations.integration.test.ts --no-file-parallelism --reporter=json --outputFile "$private_report"
+node --input-type=module - "$private_report" <<'NODE'
+import { readFileSync } from 'node:fs';
+let report;
+try { report = JSON.parse(readFileSync(process.argv[2], 'utf8')); }
+catch { console.error('M02 PostgreSQL acceptance: FAIL (invalid private test report).'); process.exit(1); }
+const expected = new Map([
+  ['seed-competitors.integration.test.ts', 10],
+  ['database.test.ts', 5],
+  ['owner-exclusions.integration.test.ts', 21],
+  ['prod-operations.integration.test.ts', 6],
+]);
+const files = report.testResults ?? [];
+let assertions = 0;
+for (const [name, minimum] of expected) {
+  const file = files.find((item) => item.name?.replaceAll('\\', '/').endsWith(`/seed/${name}`));
+  const tests = file?.assertionResults ?? [];
+  if (tests.length < minimum || tests.some((item) => item.status !== 'passed')) {
+    console.error('M02 PostgreSQL acceptance: FAIL (missing, skipped or failed assertions).'); process.exit(1);
+  }
+  assertions += tests.length;
+}
+if (!report.success || report.numFailedTests !== 0 || report.numPendingTests !== 0) {
+  console.error('M02 PostgreSQL acceptance: FAIL.'); process.exit(1);
+}
+console.log(`M02 PostgreSQL acceptance: ${assertions} assertions, PASS`);
+NODE

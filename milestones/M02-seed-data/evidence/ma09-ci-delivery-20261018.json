@@ -1,0 +1,51 @@
+{
+  "observedAtUtc": "2026-10-18T02:23:20.2066408Z",
+  "environment": "GitHub CI and Vercel deployment status only",
+  "head": "bb52d471c3757455f549c72decab51d099aeda79",
+  "runId": 39089732685,
+  "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39089732685",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "db-tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "unit",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "quality",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "e2e",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "prDraft": true,
+  "prState": "OPEN",
+  "vercel": [
+    {
+      "context": "Vercel",
+      "state": "SUCCESS",
+      "targetUrl": "https://vercel.com/muhammed-abdelrahman/everyone-market-researcher/8m1B8e2DKeBRqB5UuhNZvTA97Svd"
+    }
+  ],
+  "correctedFailureRun": 39089584942,
+  "targetedCliFix": "4/4 passed locally; exact seven owner-exclusion identities asserted",
+  "hostedRunInferredFromCi": false,
+  "productionApproved": false,
+  "mergeApproved": false,
+  "m03Started": false
+}

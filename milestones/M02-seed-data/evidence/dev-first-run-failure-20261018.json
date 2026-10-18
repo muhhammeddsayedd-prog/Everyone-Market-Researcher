@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "action": "accept-dev",
+  "approval": {
+    "status": "already_approved",
+    "reference": "Owner reply on 2026-10-18: Approve M02 dev batch (call_0e6df79cdf024f3b99d026f52e3a6ff5)",
+    "packet": "scripts/seed/dev-batch-packet.json",
+    "sourceSha256": "135e6b24c632bb931b54025a09941963b777ada87ba25c58306a430756d32f66",
+    "baselineSvgSha256": "956befb784a4499230bcb2162660665d95e8e00aa7aa0ba95e2a1bc4cf8d1f4d",
+    "scope": "Approved bounded M02 dev packet only; production seed and PR6 merge remain separate."
+  },
+  "originalReceipt": {
+    "source": "scripts/seed/out/receipt-2026-10-18T00-56-45.298Z.json",
+    "matchingLatest": "scripts/seed/out/dev-latest.json",
+    "bothFileSha256": "264729cdd111750ba63d622e41e67df284dda1b256dedda45c2106d507059523",
+    "content": {
+      "environment": "dev",
+      "projectRef": "zmotjsbzhzjvpelxvxlf",
+      "observedAt": "2026-10-18T00:56:44.765Z",
+      "action": "accept-dev",
+      "databaseAuthentication": "not_attempted",
+      "stages": [
+        {
+          "name": "database_identity",
+          "status": "blocked",
+          "code": "M02_DATABASE_IDENTITY_FAILED"
+        }
+      ],
+      "nativeCompletion": "failed"
+    }
+  },
+  "boundedConsumerCompletion": {
+    "nativeExitCode": 1,
+    "source": "Root observed the bounded Windows consumer completion output.",
+    "credentialChildExited": true,
+    "rawErrorsAndPrivateOutput": "withheld"
+  },
+  "interpretation": {
+    "databaseAuthentication": "unestablished_for_the_failed_accept_dev_attempt",
+    "receiptFieldLimit": "not_attempted is the receipt initializer left unchanged when database_identity failed. It is preserved verbatim and does not establish whether database authentication was attempted, accepted or rejected.",
+    "passwordRejectionEstablished": false,
+    "postIdentityStagesStarted": false,
+    "seedWrites": 0,
+    "providerRequests": 0,
+    "logoRequestsAndUploads": 0,
+    "retryPerformed": false
+  },
+  "presenceOnlyCleanupVerification": {
+    "observedAt": "2026-10-18T01:04:58.5841523Z",
+    "credentialContentsRead": false,
+    "handoffsPresent": {
+      "emr-m02-dev-db-password.dpapi": false,
+      "emr-m02-vimeo-token.dpapi": false,
+      "emr-m02-youtube-api-key.dpapi": false,
+      "emr-m02-dev-storage-key.dpapi": false
+    },
+    "devWritePendingPresent": false,
+    "devSeedPendingPresent": false,
+    "ownerSavedOriginals": "retained; no password reset or key rotation requested"
+  },
+  "independentDevReadback": {
+    "observedAt": "2026-10-18T01:05:06Z",
+    "source": "Root observed a fresh read-only dev-scoped Supabase MCP execute_sql reconciliation and relayed the exact result.",
+    "competitors": 0,
+    "competitorAccounts": 0,
+    "mediaAssets": 0,
+    "mediaObjects": 0,
+    "migrationVersions": [
+      "20261017172928",
+      "20261017172931",
+      "20261017172934",
+      "20261017172937",
+      "20261017172940",
+      "20261017172943",
+      "20261017172945"
+    ]
+  },
+  "separatePublicTlsDiagnostics": {
+    "initialEvidence": "dev-tls-handshake-20261018.json",
+    "initialObservedAt": "2026-10-18T00:58:58.044Z",
+    "initialCode": "SELF_SIGNED_CERT_IN_CHAIN",
+    "initialPostgresStartupMessageSent": false,
+    "initialAuthenticationAttempted": false,
+    "initialSocketsClosed": true,
+    "caAttemptEvidence": "dev-tls-ca-attempt-native-exit-20261018.json",
+    "caAttemptObservedAt": "2026-10-18T01:04:06.325Z",
+    "caAttemptStatus": "abnormal_native_exit",
+    "caAttemptPhase": "unestablished_between_ca_validation_and_tls",
+    "caAttemptNativeExitCode": -1073741819,
+    "caAttemptNativeProcessExited": true,
+    "caAttemptSocketsClosed": null,
+    "expectedPublicCaSha256": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+    "publicCaProvenance": "Owner copied the public certificate and supplied its public SHA256; the failed native CA probe did not establish runtime validation.",
+    "rejectUnauthorized": true,
+    "exactServerName": true,
+    "credentialUse": "none; diagnostic child environment cleared then restricted to OS allowlist",
+    "caAndTlsAcceptance": "Initial attempts failed; the later scoped password-free TLS verification below passed. No authenticated retry."
+  },
+  "laterScopedTlsVerification": {
+    "evidence": "dev-tls-handshake-verified-20261018.json",
+    "observedAt": "2026-10-18T01:06:31.376Z",
+    "host": "aws-1-eu-central-1.pooler.supabase.com",
+    "port": 5432,
+    "status": "verified",
+    "code": "TLS_VERIFIED",
+    "rejectUnauthorized": true,
+    "exactServerName": true,
+    "scopedCaVerified": true,
+    "publicCaPin": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+    "startupMessageSent": false,
+    "authenticationAttempted": false,
+    "socketsClosed": true,
+    "nativeExitCode": 0,
+    "nativeProcessExited": true,
+    "scopeLimit": "Verified scoped public CA and strict dev hostname TLS only; no Postgres startup/authentication and no proof that the original password was accepted or rejected."
+  },
+  "remainingWork": [
+    "Preserve the initial failed and abnormal-exit probes alongside the later successful scoped public CA/TLS receipt.",
+    "Review affected runtime changes and rebuild the sealed runner in a credential-free process.",
+    "Only then provide exact bounded handoff replenishment instructions; no new private handoff is requested during fix review and rebuild.",
+    "Resume only the still-pending approved dev operations after actual-state reconciliation; preserve successful M01 migrations and existing local/CI evidence."
+  ],
+  "deliveryAndAffectedLocalChecks": {
+    "source": "Root relayed fresh GitHub readback and affected local check results.",
+    "publishedHead": "b88f19315044d7069cb2f6883442f1284065daf9",
+    "pr6State": "OPEN_DRAFT",
+    "ciRunId": 39084641029,
+    "ciJobs": "quality/unit/build/e2e/db-tests all SUCCESS",
+    "vercel": "SUCCESS",
+    "previousCodeHead": "35990bd27e762de21714b719c78e72210636c7f7",
+    "previousCiRunId": 39084190118,
+    "affectedLocalCaRuntimeTests": "51 targeted checks and strict typecheck passed; independent review in progress",
+    "scopeLimit": "The local explicit-CA/strict-hostname runtime fixes are later work and are not established by the earlier published-head CI. The later password-free TLS probe passed; authenticated execution remains unperformed."
+  },
+  "unchangedGates": {
+    "hostedM02Acceptance": "incomplete",
+    "ma07VimeoAuthentication": "unverified",
+    "ma08YouTubeAuthentication": "unverified",
+    "ma09": "awaits concrete live unresolved report",
+    "productionSeed": "unapproved_and_unperformed",
+    "pr6": "draft_unmerged",
+    "m03CollectionPaidCallsN8n": "unstarted"
+  }
+}

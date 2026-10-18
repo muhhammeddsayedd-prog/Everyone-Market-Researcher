@@ -48,6 +48,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
+      - name: Check credential-free seed TLS regressions
+        run: node --test scripts/seed/check-tls.test.mjs scripts/seed/prod-check-tls.test.mjs
+      - name: Check bounded YouTube response diagnostics
+        run: node --test scripts/seed/diagnose-youtube.test.mjs
 
   build:
     runs-on: ubuntu-latest

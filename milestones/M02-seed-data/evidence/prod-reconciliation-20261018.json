@@ -1,0 +1,54 @@
+{
+  "environment": "prod",
+  "projectRef": "hkiafqrcxaafdbcvjlzv",
+  "runId": "b762a06e-5fe9-4c3c-a1c3-819f0c4a60f9",
+  "observedAt": "2026-10-18T03:13:42.185Z",
+  "operation": "credential_free_actual_public_receipt_reconciliation",
+  "checks": {
+    "nativeReceiptComplete": true,
+    "immutableArchiveMatchesLatest": true,
+    "competitorsCompared": 285,
+    "competitorFieldsCompared": [
+      "company_code",
+      "slug",
+      "name",
+      "priority_tier",
+      "is_baseline",
+      "pilot_rank",
+      "logo_url",
+      "logo_path"
+    ],
+    "accountsCompared": 1754,
+    "accountFieldsCompared": [
+      "platform",
+      "handle",
+      "handle_norm",
+      "url",
+      "status",
+      "resolve_status",
+      "external_id",
+      "uploads_playlist_id",
+      "backfill_status",
+      "backfill_from",
+      "cadence",
+      "last_error"
+    ],
+    "mismatches": 0,
+    "freshProductionRowIds": true,
+    "publicLogoHashesCompared": 257,
+    "uploadedBytes": 1560325,
+    "fullRuntimeConfigurationAndMetadataVerified": true,
+    "operationalDefaultViolations": 0,
+    "devProdSqlAssertionsCompared": 26,
+    "sqlFailures": 0,
+    "actualSecondSeedCountersAllZero": true,
+    "frozenSecondImportUpdated": 0,
+    "evidenceLimit": "Independent file reconciliation uses the actual historical accepted dev full snapshot plus fresh dev SQL assertions and actual production driver snapshot/receipts. Full backfill_cursor/competitor-field/media-ownership/default assertions ran inside the reviewed production repeatable-read transaction. SQL AC7 null uses the separate actual no-op stage. Public hashes were actually fetched during the approved batch; this reconciliation sends no requests or credentials."
+  },
+  "publicFileHashes": {
+    "nativeReceiptSha256": "dac75884d661b8983d8b29ac66ac596a2e4c7d63139cc09bae3c242d405f3002",
+    "finalSnapshotSha256": "9f18cbeebdd115b95c07091877271e44188e1e0cc2e345bb39f65ce35f5b25b7",
+    "acceptedDevSnapshotSha256": "ea1d463a027c210648a3b2bee3035d41a243ce98c5f1a5a64a51f3291f20f2b9",
+    "productionAssertionsSha256": "09ce1c5e0534bcf45ccc94d0a99302e4b8ee66992a857ecedbaae66de9127e1b"
+  }
+}

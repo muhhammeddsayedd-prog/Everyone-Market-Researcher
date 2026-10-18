@@ -1,0 +1,59 @@
+{
+  "observedAt": "2026-10-18T02:40:09.422Z",
+  "environment": "Local public file/Git-index comparison only",
+  "failedCiHead": "e349a087a41c3a9e0148626860b6971f1eb1e29e",
+  "failedCiRun": "39090441239",
+  "diagnosis": "Two CSV working files were CRLF while prior Git blobs were LF. Existing -text attributes did not retroactively change stored blobs. Linux source hash therefore differed from the exact reviewed Windows/dev input hash.",
+  "correction": "Explicitly re-add only those two CSVs under -text; preserve their reviewed CRLF bytes and recognize CR-at-EOL in whitespace checks. Do not change row values, source-hash algorithm, packet hashes or successful dev operations.",
+  "publicFileComparison": [
+    {
+      "path": "data/competitors.csv",
+      "priorHeadSha256": "fbe5deba26068d200310e5a3b5f05d87bebb49f53b935bedf6849feb19ee4c09",
+      "indexedSha256": "99c6653d00818b39d04b8f9514d0ae8528038f3230ae11bf1b8613b35b185336",
+      "workingSha256": "99c6653d00818b39d04b8f9514d0ae8528038f3230ae11bf1b8613b35b185336",
+      "exactIndexWorkingBytes": true,
+      "priorHeadDiffersOnlyByLineEndings": true,
+      "currentCrlfLines": 286
+    },
+    {
+      "path": "data/competitor_accounts.csv",
+      "priorHeadSha256": "c86351d72ebb3d452546e93e83ce1e030ad28c0f5a395f748ac9187180d08432",
+      "indexedSha256": "89f305b12cbbf9cad07f28b2464d165f67857882233f4146466ad5c3200e8866",
+      "workingSha256": "89f305b12cbbf9cad07f28b2464d165f67857882233f4146466ad5c3200e8866",
+      "exactIndexWorkingBytes": true,
+      "priorHeadDiffersOnlyByLineEndings": true,
+      "currentCrlfLines": 1273
+    },
+    {
+      "path": "reference/taxonomies.json",
+      "priorHeadSha256": "287101345cdc0a839a1d54ba333cc4f4313a0e2498fac79a5605a1a1e95ba2a7",
+      "indexedSha256": "287101345cdc0a839a1d54ba333cc4f4313a0e2498fac79a5605a1a1e95ba2a7",
+      "workingSha256": "287101345cdc0a839a1d54ba333cc4f4313a0e2498fac79a5605a1a1e95ba2a7",
+      "exactIndexWorkingBytes": true,
+      "priorHeadDiffersOnlyByLineEndings": true,
+      "currentCrlfLines": 0
+    },
+    {
+      "path": "scripts/seed/overrides.csv",
+      "priorHeadSha256": "edbe9b8d5487e8b31fe33809e376180dd2cadf3dca29366d86c4bff6f099ae9f",
+      "indexedSha256": "edbe9b8d5487e8b31fe33809e376180dd2cadf3dca29366d86c4bff6f099ae9f",
+      "workingSha256": "edbe9b8d5487e8b31fe33809e376180dd2cadf3dca29366d86c4bff6f099ae9f",
+      "exactIndexWorkingBytes": true,
+      "priorHeadDiffersOnlyByLineEndings": true,
+      "currentCrlfLines": 0
+    }
+  ],
+  "cleanIndexSourceSha256": "b3cf64b90058b5c786513c4fed9ebbe9d9bb092ec3a916744c944faeb826a17b",
+  "reviewedWorkingSourceSha256": "b3cf64b90058b5c786513c4fed9ebbe9d9bb092ec3a916744c944faeb826a17b",
+  "cleanIndexExactlyReproducesReviewedSource": true,
+  "previousCommittedSourceSha256": "20308d8122d9b8e30b56e250c969645c1556d20f81851fa36d8eba028aaba98f",
+  "frozenPayloadSha256": "5d5e8089bebe184cccaccdb7ceefe5d6e3ba40b83dedfa494913c468af36102d",
+  "frozenLogoManifestSha256": "b1885fdd3dab4ec4f06ceaeaad59ae0f85bf8b73400b82a29f178f89a302bb80",
+  "oldSpentDevPacketUnmodified": true,
+  "sourceRowsOrValuesChanged": false,
+  "schemaChanges": 0,
+  "hostedOperations": 0,
+  "providerRequests": 0,
+  "privateCredentialsRead": 0,
+  "separateCliFailure": "Ignored out parent was missing on clean checkout; beforeAll mkdtemp failed. Test-only parent creation/cold-parent regression tracked separately."
+}

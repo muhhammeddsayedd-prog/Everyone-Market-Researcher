@@ -1,0 +1,97 @@
+{
+  "observedAt": "2026-10-18T01:13:46Z",
+  "clientDate": "2026-10-18",
+  "clientTimezone": "Africa/Cairo",
+  "scope": "GitHub delivery and credential-free TLS regression evidence only",
+  "pullRequest": {
+    "number": 6,
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6",
+    "state": "OPEN",
+    "isDraft": true,
+    "headRefName": "m02-seed-data",
+    "headRefOid": "27b4390ef6c5e59aa37ef9ae9f7a43f2d35e453a"
+  },
+  "workflow": {
+    "databaseId": 39085545138,
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39085545138",
+    "headSha": "27b4390ef6c5e59aa37ef9ae9f7a43f2d35e453a",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "quality",
+        "databaseId": 117551190704,
+        "status": "completed",
+        "conclusion": "success",
+        "completedAt": "2026-10-18T01:11:34Z",
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39085545138/job/117551190704"
+      },
+      {
+        "name": "unit",
+        "databaseId": 117551190993,
+        "status": "completed",
+        "conclusion": "success",
+        "completedAt": "2026-10-18T01:11:29Z",
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39085545138/job/117551190993"
+      },
+      {
+        "name": "build",
+        "databaseId": 117551190569,
+        "status": "completed",
+        "conclusion": "success",
+        "completedAt": "2026-10-18T01:11:31Z",
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39085545138/job/117551190569"
+      },
+      {
+        "name": "e2e",
+        "databaseId": 117551284573,
+        "status": "completed",
+        "conclusion": "success",
+        "completedAt": "2026-10-18T01:12:18Z",
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39085545138/job/117551284573"
+      },
+      {
+        "name": "db-tests",
+        "databaseId": 117551190741,
+        "status": "completed",
+        "conclusion": "success",
+        "completedAt": "2026-10-18T01:13:16Z",
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39085545138/job/117551190741"
+      }
+    ]
+  },
+  "credentialFreeTlsRegression": {
+    "job": "unit",
+    "stepNumber": 7,
+    "stepName": "Check credential-free seed TLS regressions",
+    "status": "completed",
+    "conclusion": "success",
+    "completedAt": "2026-10-18T01:11:26Z",
+    "logSummary": {
+      "tests": 12,
+      "pass": 12,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "logHandling": "Only whitelisted numeric test summaries from this named step were emitted; raw GitHub logs were not retained or printed."
+  },
+  "vercel": {
+    "context": "Vercel",
+    "state": "SUCCESS",
+    "startedAt": "2026-10-18T01:11:18Z",
+    "targetUrl": "https://vercel.com/muhammed-abdelrahman/everyone-market-researcher/GDxGi1njC9mfg6Q9eZm4w9HAvoZv",
+    "previewCommentsCheck": "SUCCESS",
+    "scopeLimit": "GitHub rollup verification only; no application UI or hosted database acceptance is inferred."
+  },
+  "boundaries": {
+    "ciRerunLaunched": false,
+    "providerCallsMade": false,
+    "databaseActionsTaken": false,
+    "privateHandoffFilesRead": false,
+    "productionActionsTaken": false,
+    "merged": false,
+    "m01ToolingAdvisoryFollowUp": "2026-10-24; preserved and not reclassified by this CI result"
+  }
+}

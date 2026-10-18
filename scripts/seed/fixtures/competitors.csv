@@ -1,0 +1,6 @@
+company_id,slug,name,markets,hq_country_guess,is_baseline,pilot_rank,priority_tier,categories,in_house_capabilities,logo_url,website,notes,sheet_row
+C000,everyone-films,Everyone Films,EG|KSA|UAE,EG,true,,Baseline,Production,,,https://everyone.film/,Baseline,
+C001,pilot-one,Pilot One,EG,EG,false,1,A · Pilot,Production,Podcast studios,,,Note,7
+C002,pilot-two,Pilot Two,KSA,KSA,false,2,A · Pilot,Production,Editing,,,,8
+C003,next-wave,Next Wave,UAE,UAE,false,,B · Next wave,Production,,,,,9
+C004,adjacent,Adjacent,EG,EG,false,,C · Adjacent,Production,,,,,10

@@ -1,0 +1,16 @@
+{
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "source": "dev_scoped_supabase_mcp_readback",
+  "observedBy": "root agent through the dev-scoped Supabase MCP",
+  "observedAtApproximate": "2026-10-18T01:48Z",
+  "timestampPrecision": "Minute approximate; the root supplied this direct query result without a precise second.",
+  "query": "select count(*) as logo_assets, count(*) filter (where item_id is not null) as logo_assets_linked_to_items from app.media_assets where kind = 'logo'",
+  "result": {
+    "logo_assets": 257,
+    "logo_assets_linked_to_items": 0
+  },
+  "scope": "Direct app.media_assets item-link verification, separate from the earlier report snapshot which omitted item_id.",
+  "databaseWritesMade": false,
+  "providerOrStorageObjectCallsMade": false
+}

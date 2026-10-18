@@ -1,0 +1,273 @@
+{
+  "archivedAt": "2026-10-18T01:43:49.385682Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "sourcePath": "scripts/seed/out/dev-latest.json",
+  "sourceSha256": "0e204b526450bd34a62c5db6bdd357ca72388d9020d263c05dfa1db3d5d7fe37",
+  "archiveScope": "Public operational receipt only; contains no passwords, connection URLs, keys or raw credential-bearing errors. Original file is unmodified.",
+  "receipt": {
+    "environment": "dev",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "observedAt": "2026-10-18T01:12:05.595Z",
+    "action": "accept-dev",
+    "databaseAuthentication": "postgres_authenticated_to_verified_dev_pooler",
+    "stages": [
+      {
+        "name": "database_identity",
+        "status": "completed",
+        "result": {
+          "current_user": "postgres",
+          "session_user": "postgres",
+          "database": "postgres",
+          "originalMigrations": 7
+        }
+      },
+      {
+        "name": "seed_and_idempotency",
+        "status": "completed",
+        "result": {
+          "sourceSha256": "135e6b24c632bb931b54025a09941963b777ada87ba25c58306a430756d32f66",
+          "first": {
+            "competitorsInserted": 285,
+            "competitorsUpdated": 0,
+            "accountsInserted": 1754,
+            "accountsUpdated": 0
+          },
+          "second": {
+            "competitorsInserted": 0,
+            "competitorsUpdated": 0,
+            "accountsInserted": 0,
+            "accountsUpdated": 0
+          },
+          "issues": 3
+        }
+      },
+      {
+        "name": "resolution",
+        "status": "blocked",
+        "code": "M02_REQUIRED_CONFIGURATION_PENDING",
+        "result": {
+          "attempted": 272,
+          "updated": 202,
+          "unchanged": 0,
+          "preserved": 0,
+          "skipped": 3,
+          "blocked": [
+            "youtube"
+          ],
+          "issues": [
+            {
+              "company_code": "C142",
+              "platform": "youtube",
+              "code": "yt_bad_response"
+            }
+          ]
+        }
+      },
+      {
+        "name": "website_and_format_checks",
+        "status": "completed",
+        "result": {
+          "attempted": 1424,
+          "updated": 44,
+          "unchanged": 1380,
+          "preserved": 0,
+          "skipped": 0,
+          "blocked": [],
+          "issues": [
+            {
+              "company_code": "C015",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C018",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C036",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C030",
+              "platform": "website_work_page",
+              "code": "unreachable_timeout"
+            },
+            {
+              "company_code": "C065",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C068",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C072",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C085",
+              "platform": "website_work_page",
+              "code": "unreachable_404"
+            },
+            {
+              "company_code": "C084",
+              "platform": "website",
+              "code": "unreachable_404"
+            },
+            {
+              "company_code": "C057",
+              "platform": "website_work_page",
+              "code": "unreachable_timeout"
+            },
+            {
+              "company_code": "C100",
+              "platform": "website",
+              "code": "unreachable_400"
+            },
+            {
+              "company_code": "C104",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C107",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C113",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C117",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C120",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C137",
+              "platform": "website",
+              "code": "unreachable_network"
+            },
+            {
+              "company_code": "C134",
+              "platform": "website_work_page",
+              "code": "unreachable_timeout"
+            },
+            {
+              "company_code": "C183",
+              "platform": "website_work_page",
+              "code": "unreachable_500"
+            },
+            {
+              "company_code": "C203",
+              "platform": "website_work_page",
+              "code": "unreachable_404"
+            },
+            {
+              "company_code": "C243",
+              "platform": "website",
+              "code": "unreachable_timeout"
+            },
+            {
+              "company_code": "C277",
+              "platform": "website",
+              "code": "unreachable_404"
+            },
+            {
+              "company_code": "C277",
+              "platform": "website_work_page",
+              "code": "unreachable_404"
+            }
+          ]
+        }
+      },
+      {
+        "name": "logos",
+        "status": "completed",
+        "result": {
+          "counts": {
+            "copied": 257,
+            "recovered": 0,
+            "unchanged": 0,
+            "skipped": 15,
+            "failed": 13,
+            "uploadedBytes": 1560325
+          },
+          "failures": [
+            {
+              "company_code": "C038",
+              "code": "download_failed"
+            },
+            {
+              "company_code": "C075",
+              "code": "invalid_input"
+            },
+            {
+              "company_code": "C088",
+              "code": "invalid_mime"
+            },
+            {
+              "company_code": "C089",
+              "code": "invalid_input"
+            },
+            {
+              "company_code": "C104",
+              "code": "invalid_input"
+            },
+            {
+              "company_code": "C106",
+              "code": "invalid_input"
+            },
+            {
+              "company_code": "C113",
+              "code": "invalid_input"
+            },
+            {
+              "company_code": "C117",
+              "code": "invalid_input"
+            },
+            {
+              "company_code": "C137",
+              "code": "invalid_input"
+            },
+            {
+              "company_code": "C157",
+              "code": "invalid_mime"
+            },
+            {
+              "company_code": "C211",
+              "code": "invalid_input"
+            },
+            {
+              "company_code": "C252",
+              "code": "invalid_image"
+            },
+            {
+              "company_code": "C262",
+              "code": "download_failed"
+            }
+          ],
+          "publicByteHashVerified": 257
+        }
+      },
+      {
+        "name": "report",
+        "status": "blocked",
+        "code": "M02_REPORT_FAILED"
+      }
+    ],
+    "nativeCompletion": "failed"
+  }
+}

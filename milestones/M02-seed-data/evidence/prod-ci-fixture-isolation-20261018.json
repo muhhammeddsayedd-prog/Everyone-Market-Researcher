@@ -1,0 +1,53 @@
+{
+  "environment": "Local PostgreSQL and CI configuration only",
+  "date": "2026-10-18",
+  "reason": "The seed/database/production-component suites share fixed C000-C004 fixture IDs. Vitest5.0.5 defaults fileParallelism to true, and production-component cases upgrade table locks after inserting. Concurrent files can create a unique-key/table-lock wait cycle. Serialize this shared-fixture cohort.",
+  "observedDatabaseDeadlock": false,
+  "change": "scripts/db/run-local-ci.sh now passes --no-file-parallelism for its four mandatory PostgreSQL test files. The separate explicit collector-concurrency check remains unchanged.",
+  "actualLocalRuns": [
+    {
+      "reportedBy": "m02_prod_windows",
+      "startedAtCairo": "2026-10-18T05:49:36+03:00",
+      "fileParallelism": true,
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "durationSeconds": 2.57
+    },
+    {
+      "reportedBy": "m02_prod_windows",
+      "startedAtCairo": "2026-10-18T05:50:00+03:00",
+      "fileParallelism": false,
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "durationSeconds": 7.16
+    }
+  ],
+  "actualLocalTarget": "postgresql://postgres@127.0.0.1:60322/postgres",
+  "files": [
+    "seed/seed-competitors.integration.test.ts",
+    "seed/database.test.ts",
+    "seed/owner-exclusions.integration.test.ts",
+    "seed/prod-operations.integration.test.ts"
+  ],
+  "fixtures": "Mandatory rollback; prior competitor/account/media rows including C999 preserved. No reset or seed replay outside fixture transactions.",
+  "ciSafetyRegression": {
+    "reportedBy": "root",
+    "existingExactCommandAssertionFailedBeforeFlag": true,
+    "fullSafetySuitePassedAfterFlag": 13,
+    "failed": 0,
+    "skipped": 0,
+    "nativeExit": 0
+  },
+  "runtimeOrPayloadChanged": false,
+  "sourceHashAlgorithmChanged": false,
+  "productionOperations": 0,
+  "realCredentialOperations": 0,
+  "providerRequests": 0,
+  "schemaChanges": 0,
+  "approvalState": "Production packet remains approved:false; separate owner approval required.",
+  "delivery": "Normal PR CI follows this bounded test-isolation change; the prior code and documentation heads already passed all five jobs separately."
+}

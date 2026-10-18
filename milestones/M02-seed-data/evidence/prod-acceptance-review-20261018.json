@@ -1,0 +1,225 @@
+{
+  "operation": "independent_review_of_actual_production_public_artifacts",
+  "reviewedAt": "2026-10-18T03:16:55.444Z",
+  "environment": "prod",
+  "projectRef": "hkiafqrcxaafdbcvjlzv",
+  "runId": "b762a06e-5fe9-4c3c-a1c3-819f0c4a60f9",
+  "approval": {
+    "reference": "call_0f2dd5cc1f3e4a6780c5feba0ca21225",
+    "ownerReply": "approved: seed prod",
+    "reviewedHead": "a17f7e25369abc5f71aab0196a4f2e7d5f3cc614",
+    "scope": "Exact approved M02 frozen-payload production batch; merge and M03 remain separate."
+  },
+  "verdict": "No P0/P1/P2 found in the actual saved public receipts, configuration/byte reconciliation, report or completed advisor evidence.",
+  "findings": [],
+  "independentlyVerifiedPublicEvidence": {
+    "completedStages": 8,
+    "runTargetAndIdConsistent": true,
+    "authenticatedIdentityRecorded": "postgres_authenticated_to_verified_prod_pooler",
+    "originalMigrationVersionsVerifiedByReviewedRuntime": 7,
+    "initialEmptyCounters": 16,
+    "initialEmptyCountersAllZero": true,
+    "existingPublicMediaBucketRecorded": true,
+    "firstSeed": {
+      "stats": {
+        "competitorsInserted": 285,
+        "competitorsUpdated": 0,
+        "accountsInserted": 1754,
+        "accountsUpdated": 0
+      },
+      "frozen": {
+        "updated": 371,
+        "unchanged": 1383
+      },
+      "issues": 10
+    },
+    "secondSeed": {
+      "stats": {
+        "competitorsInserted": 0,
+        "competitorsUpdated": 0,
+        "accountsInserted": 0,
+        "accountsUpdated": 0
+      },
+      "frozen": {
+        "updated": 0,
+        "unchanged": 1754
+      }
+    },
+    "sql": {
+      "compared": 26,
+      "passed": 25,
+      "unknownOnly": "AC7_idempotency_requires_second_run",
+      "failed": 0
+    },
+    "sqlActualValuesMatchFreshDevAssertions": true,
+    "ac7Limit": "SELECT leaves AC7 null. The actual immediate second-seed receipt independently supplies all four zero mutation counters and frozen updated0/unchanged1754.",
+    "competitorRowsCompared": 285,
+    "competitorFieldsCompared": [
+      "company_code",
+      "slug",
+      "name",
+      "markets",
+      "hq_country",
+      "categories",
+      "in_house",
+      "logo_url",
+      "logo_path",
+      "website_url",
+      "priority_tier",
+      "pilot_rank",
+      "is_baseline",
+      "status",
+      "notes",
+      "source_sheet_row"
+    ],
+    "accountRowsCompared": 1754,
+    "accountFieldsCompared": [
+      "platform",
+      "handle",
+      "handle_norm",
+      "url",
+      "status",
+      "resolve_status",
+      "external_id",
+      "uploads_playlist_id",
+      "backfill_status",
+      "backfill_from",
+      "cadence",
+      "last_error"
+    ],
+    "rowIdentityMismatches": 0,
+    "productionIdsDifferFromCorrespondingDevIds": true,
+    "logoPublicHashesComparedWithApprovedManifest": 257,
+    "logoAssetOwnershipAndMetadataRowsCompared": 257,
+    "storageObjectSizeAndMimeRowsCompared": 257,
+    "uploadedBytes": 1560325,
+    "operationalDefaultViolationsReportedByExactRuntimeSnapshot": 0,
+    "immutableNativeArchiveMatchesPublishedReceiptBytes": true,
+    "reconciliationReferencedFileHashesMatch": true,
+    "publicDurableStateIndependentlyObserved": {
+      "prod-seed-admission.json": true,
+      "prod-write-pending.json": false,
+      "prod-seed-manifest.json": true,
+      "prod-logo-manifest.json": true
+    }
+  },
+  "coverage": {
+    "competitors": 285,
+    "accounts": 1754,
+    "vimeoResolved": {
+      "resolved": 202,
+      "total": 202,
+      "pilotResolved": 48,
+      "pilotTotal": 48
+    },
+    "youtubeRaw": {
+      "resolved": 121,
+      "total": 128,
+      "pilotResolved": 10,
+      "pilotTotal": 11,
+      "pending": 0,
+      "invalidFailed": 7
+    },
+    "youtubeEligible": {
+      "resolved": 121,
+      "total": 121,
+      "pilotResolved": 10,
+      "pilotTotal": 10
+    },
+    "exactOwnerExclusions": [
+      "C102",
+      "C142",
+      "C218",
+      "C231",
+      "C233",
+      "C245",
+      "C283"
+    ],
+    "unexpectedIneligibleYouTubeSources": 0,
+    "sourceLogosCopied": {
+      "copied": 256,
+      "total": 267
+    },
+    "baselineLogosCopied": 1,
+    "nullLogoFallbacks": 28,
+    "collectedRowsAndFixtures": 0
+  },
+  "reportInterpretation": {
+    "historicalDevReasonRows": 72,
+    "productionReasonRows": 79,
+    "historicalSourceIssues": 3,
+    "productionSourceIssues": 10,
+    "extraRows": "Exactly seven owner_invalid reasons for the already approved D-27 identities; every historical dev reason row is retained.",
+    "newProviderObservations": 0,
+    "newMA09DecisionsRequired": false,
+    "limit": "Historical report metadata is not claimed identical. Blank raw report decision cells do not revoke the separately recorded MA-09 dispositions or prove a company has no channel."
+  },
+  "completionAndCleanup": {
+    "source": "prod-execution-completion-20261018.json, recorded by the owning executor; independently checked for consistency with this run.",
+    "startedAt": "2026-10-18T03:00:17.624Z",
+    "observedCompletionAt": "2026-10-18T03:13:42.353Z",
+    "actualNativeExitRecorded": 0,
+    "credentialChildClosedRecorded": true,
+    "consumerPowerShellClosedRecorded": true,
+    "bothConsumedHandoffsAbsentRecorded": true,
+    "ownerSavedOriginalsRetainedRecorded": true,
+    "parentVsCodeEnvironmentClearanceClaimed": false,
+    "limit": "Reviewer did not inspect private handoff paths or processes. Native completion/closure/private-file absence are owning-executor observations, not inferred from receipt.nativeCompletion alone."
+  },
+  "advisorEvidence": {
+    "artifact": "prod-post-seed-advisors-20261018.json",
+    "observedAt": "2026-10-18T03:19:22Z",
+    "reviewUpdatedAt": "2026-10-18T03:20:24.514Z",
+    "observedBy": "Separate independent advisor agent in the existing signed-in Supabase dashboard",
+    "initialRefreshObservedAt": "2026-10-18T03:15:04Z",
+    "explicitRerunLinterCompletedAfterSeed": true,
+    "securityRerunCompletionObservedByUtc": "2026-10-18T03:18:20Z",
+    "performanceRerunCompletionObservedByUtc": "2026-10-18T03:18:44Z",
+    "allPerformanceRowsAndAuthDetailObservedByUtc": "2026-10-18T03:19:22Z",
+    "completionSignal": "For each explicit Rerun linter action, analysis controls became disabled then re-enabled; severity counts and all INFO rows were reread.",
+    "security": {
+      "error": 0,
+      "warn": 0,
+      "info": 11
+    },
+    "performance": {
+      "error": 0,
+      "warn": 0,
+      "info": 68,
+      "unusedIndex": 67,
+      "authAbsoluteConnectionAllocation": 1
+    },
+    "allInfoRowsCovered": true,
+    "policiesIndexesAndSettingsChanged": false,
+    "limitation": "Explicit advertised Rerun linter actions completed for both categories after seed/native completion, with full row readback. The dashboard exposes no backend analysis timestamp or native CLI exit code; no uncached CLI/MCP execution or inspection of its internal backend/cache mechanism is claimed. The earlier Refresh observation is preserved separately. The Auth-allocation INFO is not claimed to be a new setting or regression."
+  },
+  "requestAndCostBoundary": {
+    "derivedDevPublicGets": 257,
+    "derivedProductionStoragePosts": 257,
+    "derivedProductionPublicGets": 257,
+    "storageRequestTotal": 771,
+    "uploadedBytes": 1560325,
+    "newProviderOrCompetitorOriginCalls": 0,
+    "incrementalProviderUsd": 0,
+    "limit": "Counts derive from the completed sealed single-attempt loops and257 public-byte receipts, not independent packet capture. No new provider exchange or current website reachability is claimed."
+  },
+  "publicArtifactSha256": {
+    "prod-main-batch-receipt-20261018.json": "dac75884d661b8983d8b29ac66ac596a2e4c7d63139cc09bae3c242d405f3002",
+    "prod-counts-after-batch-20261018.json": "09ce1c5e0534bcf45ccc94d0a99302e4b8ee66992a857ecedbaae66de9127e1b",
+    "prod-report-20261018.json": "c056406118b11ddad2e970c9b504502adc11baabf968ea92561fede6e5e09981",
+    "prod-reconciliation-20261018.json": "8e693abfbbf88e47a0ff93ba3a29c4fd4198ee2109a24080ebf32858c197620b",
+    "prod-execution-completion-20261018.json": "2dc6d1cb223124d4b89de0afe3655bbf28777761782f0aecd14d521938635dad",
+    "dev-parity-readback-20261018.json": "c6b807726e75228e294e112879bf53e043feaba700435b2e21852ed687912704"
+  },
+  "limitations": [
+    "This reviewer read and compared recorded public files only; no hosted query, browser action, authentication, network request, secret read or test was performed.",
+    "Full backfill_cursor and operational-default assertions were executed inside the reviewed runtime; the reviewer checked its saved exact-configuration/default result and exported account fields, without a fresh database query.",
+    "Accepted dev full-row comparison uses the historical reconciled snapshot observed01:54:53UTC plus fresh dev SQL assertions observed03:01:37UTC; it is not a new full dev row export.",
+    "Production seeded configuration and public bytes are accepted within the approved M02 scope. Final documentation/CI delivery and separate merge/M03 decisions remain."
+  ],
+  "remainingGates": [
+    "Final milestone documentation, evidence delivery and normal CI.",
+    "Separate PR6 merge approval; no merge inferred.",
+    "M03, collectors, backfills, paid calls, n8n and schedules require their own milestone authorization."
+  ]
+}

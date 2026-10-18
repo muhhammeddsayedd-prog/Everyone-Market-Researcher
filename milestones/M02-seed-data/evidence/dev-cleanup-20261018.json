@@ -1,0 +1,30 @@
+{
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "checkedAt": "2026-10-18T01:43:14.2031921Z",
+  "originalBatchRunId": "e6a7e79c-4d48-45ef-9139-cd83db362f43",
+  "nativeExitCode": 1,
+  "nativeCompletion": "failed",
+  "failedStage": "report",
+  "originalChildPid": 7492,
+  "originalChildAlive": false,
+  "handoffs": [
+    { "file": "emr-m02-dev-db-password.dpapi", "present": false },
+    { "file": "emr-m02-vimeo-token.dpapi", "present": false },
+    { "file": "emr-m02-youtube-api-key.dpapi", "present": false },
+    { "file": "emr-m02-dev-storage-key.dpapi", "present": false }
+  ],
+  "ownerSavedOriginalsRetained": true,
+  "globalWritePendingRetainedAtCheck": true,
+  "seedPendingPresent": false,
+  "youtubeContinuationAdmissionPresent": false,
+  "privateValuesReadByThisCheck": false,
+  "scope": "File-presence and exact owned-process readback only. No environment dump or credential validation. The bounded consumer closed and cleared its own child; this does not assert that a separately configured parent VS Code environment has been cleared.",
+  "unrelatedLocalCleanup": {
+    "emptyTestDirectory": "C:\\Users\\iway\\AppData\\Local\\Temp\\emr-yt-admission-PL7eHT",
+    "deletionAttempt": "automatic approval review rejected the command; generic reason blocked by policy",
+    "deleted": false,
+    "containsCredentials": false,
+    "requiredForAcceptance": false
+  }
+}

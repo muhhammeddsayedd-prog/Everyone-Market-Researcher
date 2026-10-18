@@ -1,0 +1,47 @@
+{
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "phase": "after_seed_commit_during_provider_resolution",
+  "seededCountsIndependentlyRead": {
+    "competitors": 285,
+    "accounts": 1754,
+    "items": 0,
+    "rawItems": 0
+  },
+  "security": {
+    "observedAt": "2026-10-18T01:17:24.694Z",
+    "lints": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "count": 11
+      }
+    ],
+    "warningFindings": 0,
+    "errorFindings": 0
+  },
+  "performance": {
+    "observedAt": "2026-10-18T01:17:24.373Z",
+    "lints": [
+      {
+        "name": "unused_index",
+        "level": "INFO",
+        "count": 68
+      },
+      {
+        "name": "auth_db_connections_absolute",
+        "level": "INFO",
+        "count": 1
+      }
+    ],
+    "warningFindings": 0,
+    "errorFindings": 0
+  },
+  "interpretation": [
+    "No security or performance WARN/ERROR returned on the populated dev schema.",
+    "Backend ops/ingest tables intentionally retain default-deny RLS with no direct policies; restricted RPC acceptance is preserved from M01.",
+    "Unused indexes remain for later workload evidence; no indexes or policies changed.",
+    "The informational fixed Auth connection allocation remains a separate existing platform setting.",
+    "No hosted provider, public-logo, production or browser acceptance is inferred from advisors."
+  ]
+}

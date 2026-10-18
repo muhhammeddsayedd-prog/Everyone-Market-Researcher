@@ -1,0 +1,65 @@
+{
+  "observedAt": "2026-10-18 00:47:58 UTC",
+  "environment": "local-only",
+  "branch": "m02-seed-data",
+  "base": "a74459d082ba5d1f0445652d7d12f8d2079da945",
+  "commands": [
+    {
+      "command": "corepack pnpm --filter @emr/shared test",
+      "exitCode": 0,
+      "testsPassed": 135
+    },
+    {
+      "command": "corepack pnpm --filter @emr/scripts test",
+      "exitCode": 0,
+      "filesPassed": 13,
+      "filesSkipped": 2,
+      "testsPassed": 236,
+      "testsSkipped": 15,
+      "limit": "Ordinary unit invocation skips hosted/local DB tests without explicit target. Separate real local receipt below."
+    },
+    {
+      "command": "M02_TEST_DATABASE_URL=<password-free verified local endpoint>; corepack pnpm --filter @emr/scripts exec vitest run seed/seed-competitors.integration.test.ts seed/database.test.ts",
+      "exitCode": 0,
+      "filesPassed": 2,
+      "testsPassed": 15,
+      "target": "127.0.0.1:60322/postgres",
+      "rollbackOnly": true,
+      "fixturesAbsentAfterward": true,
+      "c999Unchanged": true
+    },
+    {
+      "command": "node --test scripts/db/check-pooler.test.mjs",
+      "exitCode": 0,
+      "testsPassed": 9
+    },
+    {
+      "command": "corepack pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm lint",
+      "exitCode": 0
+    },
+    {
+      "command": "corepack pnpm format:check",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "reusedEvidence": [
+    "M01 seven original migration/schema/advisor/generated-type receipts, not rerun/reapplied."
+  ],
+  "preGreenFindings": [
+    "Generated runner was initially included by ESLint; ignored generated output only, source rules unchanged.",
+    "A storage test needed formatting; corrected and root formatting check passed."
+  ],
+  "noClaims": [
+    "No hosted data import, real credential consumption, provider authorization, logo HTTP visibility, dev idempotence or production parity has been established.",
+    "No unchanged local web browser/e2e suite rerun; normal PR CI will run existing jobs.",
+    "Existing braces dev-tool advisory and ESLint support/peer follow-up remain due 2026-10-24; no new audit-clean claim."
+  ]
+}

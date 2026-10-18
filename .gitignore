@@ -17,3 +17,4 @@ supabase/.temp/
 *.key
 __pycache__/
 .m00-clean-*/
+scripts/seed/out/

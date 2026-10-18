@@ -1,7 +1,11 @@
 * text=auto eol=lf
 .agents/** -text
 assets/** -text
+scripts/seed/certs/*.crt -text
 data/** -text
+# Reviewed seed CSV bytes are CRLF; preserve them exactly across clean checkouts.
+data/competitors.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/competitor_accounts.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 reference/** -text
 apps/web/styles/tokens.css -text
 apps/web/public/brand/** -text
@@ -10,3 +14,8 @@ SKILLS_LOCK.json -text
 *.yml text eol=lf
 *.yaml text eol=lf
 milestones/M01-supabase-foundation/evidence/*.log -text -whitespace
+# Frozen public recovery receipts are hashed byte-for-byte by the bounded runner.
+milestones/M02-seed-data/evidence/dev-reconciliation-20261018.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+milestones/M02-seed-data/evidence/dev-main-batch-receipt-20261018.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+milestones/M02-seed-data/evidence/dev-report-recovery-20261018.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+milestones/M02-seed-data/evidence/dev-youtube-continuation-reconciliation-20261018.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

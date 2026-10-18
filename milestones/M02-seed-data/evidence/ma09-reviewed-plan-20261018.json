@@ -1,0 +1,94 @@
+{
+  "environment": "local_plan_only",
+  "clientDate": "2026-10-18",
+  "clientTimezone": "Africa/Cairo",
+  "sourceSha256": "b3cf64b90058b5c786513c4fed9ebbe9d9bb092ec3a916744c944faeb826a17b",
+  "originalSpentPacketSourceSha256": "135e6b24c632bb931b54025a09941963b777ada87ba25c58306a430756d32f66",
+  "exactOriginalSourceUrlsMatched": true,
+  "invalidOverrides": [
+    {
+      "company_code": "C102",
+      "platform": "youtube",
+      "sourceKey": "C102:youtube:0",
+      "status": "invalid",
+      "resolve_status": "failed"
+    },
+    {
+      "company_code": "C142",
+      "platform": "youtube",
+      "sourceKey": "C142:youtube:0",
+      "status": "invalid",
+      "resolve_status": "failed"
+    },
+    {
+      "company_code": "C218",
+      "platform": "youtube",
+      "sourceKey": "C218:youtube:0",
+      "status": "invalid",
+      "resolve_status": "failed"
+    },
+    {
+      "company_code": "C231",
+      "platform": "youtube",
+      "sourceKey": "C231:youtube:0",
+      "status": "invalid",
+      "resolve_status": "failed"
+    },
+    {
+      "company_code": "C233",
+      "platform": "youtube",
+      "sourceKey": "C233:youtube:0",
+      "status": "invalid",
+      "resolve_status": "failed"
+    },
+    {
+      "company_code": "C245",
+      "platform": "youtube",
+      "sourceKey": "C245:youtube:0",
+      "status": "invalid",
+      "resolve_status": "failed"
+    },
+    {
+      "company_code": "C283",
+      "platform": "youtube",
+      "sourceKey": "C283:youtube:0",
+      "status": "invalid",
+      "resolve_status": "failed"
+    }
+  ],
+  "counts": {
+    "inputCompetitors": 285,
+    "inputAccounts": 1272,
+    "plannedCompetitors": 285,
+    "plannedAccounts": 1754,
+    "tiers": {
+      "baseline": 1,
+      "adjacent": 60,
+      "next_wave": 174,
+      "pilot": 50
+    },
+    "platforms": {
+      "website": 261,
+      "instagram": 256,
+      "instagram_stories": 256,
+      "vimeo": 202,
+      "linkedin": 226,
+      "linkedin_employees": 226,
+      "website_work_page": 199,
+      "youtube": 128
+    },
+    "statuses": {
+      "paused": 1458,
+      "active": 289,
+      "invalid": 7
+    }
+  },
+  "identitiesUnchanged": true,
+  "oldSpentPacketRejectsNewSource": true,
+  "databaseOperation": false,
+  "providerOperation": false,
+  "storageOperation": false,
+  "credentialsRead": false,
+  "seedReplayed": false,
+  "originalManifestsRewritten": false
+}

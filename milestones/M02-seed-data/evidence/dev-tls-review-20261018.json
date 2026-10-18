@@ -1,0 +1,108 @@
+{
+  "observedAt": "2026-10-18T01:09:57.612Z",
+  "dateCairo": "2026-10-18",
+  "scope": "Public TLS diagnostics and pre-decryption credential-consumer guard only; no database StartupMessage, authentication or real credential file reads",
+  "sourceSha256": {
+    "scripts/seed/check-tls.mjs": "497d8ad658f936c1b5f87b5316bbafbcf145f8ae8e01a6184fb80db5ff5e9d07",
+    "scripts/seed/check-tls.test.mjs": "5c18e9e6192c65859274463e806df5884640e4ba792fce775d32bc5f2beb38c0",
+    "scripts/seed/windows/Invoke-M02Dev.ps1": "4a375bc1d17dc50c35b085378838f06bc988102a736afbcc06754db3ee611bb3",
+    "scripts/seed/private-runner.test.ts": "ed50d93d67e68e9f35ba28a607c3e4195c371dac4b1e30be27df3fad4070bf22",
+    "scripts/seed/certs/supabase-root-2021.json": "86f7da7dbd65b7a97986e7cf859848835b162fb6aec17f09fb8b011d4accf16b"
+  },
+  "metadataFields": ["version", "projectRef", "host", "sourceUrl", "sha256"],
+  "publicCaPin": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+  "provenance": "Owner copied the certificate downloaded by the dashboard Download certificate action to the fixed repository path and supplied the public certificate hash. Earlier automatic-review blocks were retained; no alternative certificate copy/download was performed by this agent.",
+  "nativeFindings": [
+    {
+      "receipt": "dev-tls-handshake-20261018.json",
+      "result": "Default-trust strict TLS independently failed SELF_SIGNED_CERT_IN_CHAIN; this does not establish the exact cause of the earlier generic SQL attempt failure."
+    },
+    {
+      "receipt": "dev-tls-ca-attempt-native-exit-20261018.json",
+      "result": "First CA-backed public probe exited -1073741819 without JSON; validation was not claimed."
+    },
+    {
+      "receipt": "dev-tls-ca-phase-isolation-20261018.json",
+      "result": "Metadata, pinned bytes, X509 CA/self-signature/dates completed; native crash followed TLS start."
+    },
+    {
+      "receipt": "dev-tls-ca-network-isolation-20261018.json",
+      "result": "Node v24.18.0 x64 reached tls_secure_connect then cleanup_start before -1073741819. The probe destroyed the underlying plain socket before the owning TLS wrapper."
+    },
+    {
+      "receipt": "dev-tls-handshake-verified-20261018.json",
+      "result": "After owner-only destruction fix: strict scoped CA/chain/hostname verified; TLS_VERIFIED, socket closure and native exit0; no login. Subsequent cleanup-wait refinement is covered by focused tests; root performs final actual public recheck."
+    },
+    {
+      "receipt": "dev-tls-handshake-final-20261018.json",
+      "result": "Root performed the final-source public TLS recheck after cleanup-wait changes: native exit0, socket closure confirmed, no StartupMessage/authentication; observed01:09:26.295Z."
+    }
+  ],
+  "tests": {
+    "publicProbe": {
+      "command": "node --test scripts/seed/check-tls.test.mjs",
+      "exitCode": 0,
+      "passed": 12,
+      "red": "Missing module/export and incorrect cleanup order/error code failed before their fixes.",
+      "cases": [
+        "Only exact 8-byte SSLRequest is sent",
+        "No plaintext fallback",
+        "CA passed only to scoped TLS with rejectUnauthorized true and exact SNI",
+        "Whitelisted error codes; unknown errors redacted",
+        "Bounded timeout and actual owner-close confirmation",
+        "Raw destroy zero after wrapper ownership; raw destroy one when tlsConnect throws before returning a wrapper",
+        "Delayed owner close awaited; detached raw object needs no second close event",
+        "Never-closing owner reports TLS_CLEANUP_INCOMPLETE within bound",
+        "Null/invalid/wrong-target/extra-field public CA pin rejected"
+      ]
+    },
+    "windowsExisting": {
+      "command": "pnpm.cmd --filter @emr/scripts exec vitest run seed/private-runner.test.ts",
+      "passed": 15,
+      "exitCode": 0,
+      "scope": "Existing suite passed before the final added two defensive cases; root retained its broader 73 targeted-check receipt."
+    },
+    "windowsAdded": {
+      "command": "pnpm.cmd --filter @emr/scripts exec vitest run seed/private-runner.test.ts -t TLS invalid-json|TLS native-failure",
+      "exitCode": 0,
+      "passed": 2,
+      "notSelected": 15,
+      "result": "Both invalid JSON and native nonzero preserve fixture handoff and never create the private-child-started marker."
+    }
+  },
+  "consumer": {
+    "preflight": "Fixed plain-Node public TLS child in an OS-only environment; before any DPAPI read; CheckOnly remains offline presence-only",
+    "bounds": "15-second native wait, fixed 4096-byte stdout buffer, stderr discarded, 5-second drain/cleanup waits",
+    "requiredResult": "Verified exact dev pooler/5432/SNI, rejectUnauthorized true, scopedCaVerified true, no StartupMessage/auth, confirmed owner socket close and native0",
+    "sealSupplemental": "Both fixed public CA .crt and public metadata .json included, alongside complete code and seed-input inventory"
+  },
+  "sources": [
+    "https://supabase.com/docs/guides/database/connecting-to-postgres",
+    "https://supabase.com/docs/guides/platform/ssl-enforcement",
+    "https://nodejs.org/api/tls.html#tlsconnectoptions-callback"
+  ],
+  "limits": [
+    "Public shared-pooler TLS proves the endpoint trust and hostname only; project routing, database authentication and application-role acceptance remain separate.",
+    "No global trust-store, NODE_TLS, server SSL setting, password, production or hosted schema change.",
+    "No real DPAPI handoff read by these diagnostics."
+  ],
+  "finalSourceNativeRecheck": {
+    "observedAt": "2026-10-18T01:09:26.295Z",
+    "environment": "dev",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "host": "aws-1-eu-central-1.pooler.supabase.com",
+    "port": 5432,
+    "rejectUnauthorized": true,
+    "exactServerName": true,
+    "startupMessageSent": false,
+    "authenticationAttempted": false,
+    "status": "verified",
+    "phase": "tls_handshake",
+    "code": "TLS_VERIFIED",
+    "socketsClosed": true,
+    "scopedCaVerified": true,
+    "nativeExitCode": 0,
+    "nativeProcessExited": true,
+    "privateEnvironment": "cleared_then_OS_allowlist_only"
+  }
+}

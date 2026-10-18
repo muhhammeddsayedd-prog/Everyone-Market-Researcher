@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "target": "hkiafqrcxaafdbcvjlzv",
+  "approved": true,
+  "approvalReference": "call_0f2dd5cc1f3e4a6780c5feba0ca21225: approved: seed prod; reviewed head a17f7e25369abc5f71aab0196a4f2e7d5f3cc614",
+  "sourceSha256": "b3cf64b90058b5c786513c4fed9ebbe9d9bb092ec3a916744c944faeb826a17b",
+  "payloadSha256": "5d5e8089bebe184cccaccdb7ceefe5d6e3ba40b83dedfa494913c468af36102d",
+  "logoManifestSha256": "b1885fdd3dab4ec4f06ceaeaad59ae0f85bf8b73400b82a29f178f89a302bb80",
+  "baselineSvgSha256": "956befb784a4499230bcb2162660665d95e8e00aa7aa0ba95e2a1bc4cf8d1f4d",
+  "limits": {
+    "competitors": 285,
+    "accounts": 1754,
+    "logos": 257,
+    "uploadedBytes": 1560325,
+    "devPublicGets": 257,
+    "prodPublicGets": 257,
+    "storageUploads": 257
+  },
+  "expectedIncrementalUsd": 0,
+  "paidProviderCalls": 0,
+  "externalProviderCalls": 0
+}

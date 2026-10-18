@@ -1,0 +1,25 @@
+{
+  "observedAtUtc": "2026-10-18 01:33:37 UTC",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "companyCode": "C142",
+  "diagnostic": "single_official_channels_list_shape",
+  "sourceHeadForOriginalBatch": "27b4390ef6c5e59aa37ef9ae9f7a43f2d35e453a",
+  "originalRunId": "e6a7e79c-4d48-45ef-9139-cd83db362f43",
+  "nativeConsumerExit": 1,
+  "result": {
+    "status": "blocked",
+    "code": "DIAGNOSTIC_PREFLIGHT_BLOCKED",
+    "childClosed": true,
+    "nativeExit": null,
+    "handoffDeletionOwner": "original_parent",
+    "diagnostic": null
+  },
+  "maximumAdditionalRequests": 1,
+  "expectedIncrementalUsd": 0,
+  "credentialBoundary": "The reviewed consumer was designed to use only the existing YouTube handoff. This invocation stopped at the public preflight: no credential read or child launch occurred.",
+  "actualAdditionalApiRequests": 0,
+  "diagnosticAdmissionMarkerPresent": false,
+  "closureReconciliation": "Original parent closed after the successful presence-only check and before the attempted invocation. It removed all four consumed handoffs. The diagnostic correctly refused the changed state; it was not retried.",
+  "scopeLimit": "Response-shape diagnostic only; no database mutation, key reset, account invalidation or completed M02 acceptance."
+}
