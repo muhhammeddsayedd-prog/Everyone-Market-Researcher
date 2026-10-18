@@ -41,7 +41,11 @@
     "preservedHead": "b2aa927953c588c31f25d92f28969ee35d62b803",
     "preservedRun": "39088469683",
     "preservedResult": "All five jobs passed",
-    "currentPolicyHead": "Pending commit and normal PR CI"
+    "currentPolicyHead": "bb52d471c3757455f549c72decab51d099aeda79",
+    "currentPolicyRun": "39089732685",
+    "currentPolicyResult": "All five jobs passed; Vercel SUCCESS",
+    "deliveryEvidence": "ma09-ci-delivery-20261018.json",
+    "correctedFailureRun": "39089584942"
   },
   "productionApproved": false,
   "mergeApproved": false,

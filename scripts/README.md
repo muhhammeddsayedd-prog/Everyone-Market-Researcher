@@ -12,11 +12,13 @@
   checks, bounded logo copy and environment-labelled reports. Read
   [`seed/README.md`](seed/README.md) for the exact private Windows handoff,
   credential-free runner build, dev packet approval and durable recovery rules.
-  Production is currently blocked by the runtime; no content collection or n8n
-  activation is part of these scripts.
-- `assert/m02_counts.sql`: read-only original-baseline count and acceptance
+  The completed dev action stays blocked against replay. The separate production
+  runner requires its own exact approved packet; it cannot use the dev approval.
+  No content collection or n8n activation is part of these scripts.
+- `assert/m02_counts.sql`: read-only count and acceptance
   snapshot. Reported exceptions, idempotency and public logo visibility require
-  their separate receipts; a passing count is not owner sign-off.
+  their separate receipts; a passing count is not owner sign-off. D-27 excludes
+  only seven exact owner-reviewed YouTube identities and retains raw denominators.
 
 M07 adds evaluation scripts. M00/M01 evidence remains in the corresponding
 milestone records; local checks and hosted/provider results stay distinct.

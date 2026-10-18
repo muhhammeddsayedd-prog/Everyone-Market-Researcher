@@ -2,10 +2,11 @@
 
 These tools import the approved competitor CSVs, resolve public account IDs,
 check public website reachability and copy bounded logos. They do not collect
-content, start n8n, enable schedules or begin M03. Production is rejected by the
-current runtime; M01 production approval does not approve M02 production seeding.
+content, start n8n, enable schedules or begin M03. The existing dev runtime rejects
+production. The separate frozen-payload production runner requires its own exact
+M02 packet approval; M01 production approval does not approve M02 seeding.
 
-The only hosted target currently accepted is **emr-dev**, project
+The dev runtime's only hosted target is **emr-dev**, project
 `zmotjsbzhzjvpelxvxlf`. Its owner database connection uses the verified Frankfurt
 session pooler `aws-1-eu-central-1.pooler.supabase.com:5432`, database `postgres`,
 login `postgres.zmotjsbzhzjvpelxvxlf` and verified TLS. The URI contains no password.
@@ -19,8 +20,12 @@ The reviewed `resolve` continuation has also completed native0:121/128 YouTube
 accounts resolved, zero pending and seven failed/invalid; pilot10/11 with C283
 remaining. Its Database+YouTube handoffs were deleted and the child closed.
 **Do not run resolve or replenish credentials again.** The permanent admissions
-are retained. Next is [MA-09 owner review](../../milestones/M02-seed-data/evidence/ma09-owner-review-20261018.md);
-any approved correction needs its own reviewed bounded continuation.
+are retained. [MA-09 owner review](../../milestones/M02-seed-data/evidence/ma09-owner-review-20261018.md)
+is now complete: skip the seven listed unavailable/unverified YouTube sources,
+retain23 website flags and accept11 missing-logo fallbacks. The seven exact
+`invalid` overrides match actual dev rows; no replay or new dev credentials are
+needed. Raw121/128 and10/11 remain visible; eligible121/121 and10/10 pass D-27.
+Next is the separate production seed approval below.
 
 TLS uses the public Supabase root certificate in `certs/supabase-root-2021.crt`,
 with its official source and public SHA256 in `certs/supabase-root-2021.json`.
@@ -212,7 +217,8 @@ dev handoff.
 Completed18October2026 at code head `d5171fe`; native0 and independent22/22
 preservation checks pass. The instructions below describe that completed
 continuation. They are not a request for another handoff or invocation. The
-current next action is MA-09, with no credential delivery needed.
+current next action is the separate production seed approval, with no further dev
+credential delivery needed.
 
 The original consumption/recovery record is permanent. An existing seed
 manifest independently prevents an alternate action from replaying the initial
@@ -282,10 +288,11 @@ The initial local plan has three invalid legacy YouTube URLs: **C102** and
 **C245** (next wave), and **C283** (pilot). Earlier prose incorrectly called C102
 the pilot exception; the CSV and actual hosted tiers agree on C283. These are
 source-format findings, not API password failures.
-The eventual concrete live report, including these and any other unresolved
-accounts, goes to MA-09 for owner decisions. Do not infer sign-off now. Put
-approved URL fixes/invalid/add decisions in `overrides.csv`, then review/reseal
-the changed source packet before the corresponding rerun.
+The actual MA-09 report now contains the owner's decisions for all41 listed rows.
+All seven YouTube rows remain invalid/failed with null IDs, including C283; this
+does not establish company-wide channel absence. The exact source-case overrides
+change the current plan source seal, while the old spent dev packet is preserved
+and rejects that changed source. Do not refresh that packet or replay the batch.
 
 `dev-seed-manifest.json` and `dev-logo-manifest.json` retain target-bound ownership
 receipts. A seed updates only fields still owned by its prior receipt; operational
@@ -305,9 +312,70 @@ receipts. Record the observed outcome and a reviewed recovery decision; only
 then manually release the specific reconciled gate or resume the verified
 remaining stage. A new credential handoff does not resolve an ambiguous write.
 
-M02 stays open until hosted criteria and MA-09 pass. Prod needs its own reviewed
-M02 packet and separate owner approval after dev acceptance; merge and the next
-milestone remain separate decisions.
+Dev acceptance and MA-09 are complete. M02 stays open for production parity;
+merge and the next milestone remain separate decisions.
+
+## Separate production seed — approval required
+
+Review the [exact production packet](../../milestones/M02-seed-data/evidence/prod-seed-packet-20261018.md)
+and committed `prod-seed-packet.json`, `prod-payload.json` and
+`prod-logo-manifest.json`. The production packet remains `approved:false` until
+the owner explicitly approves M02 production seeding. The runtime imports the
+accepted public configuration and exact257 dev logo objects; it makes zero new
+provider or competitor-origin requests. No bulk logo fetch is authorized merely
+by preparing these files. Existing dev admissions and manifests remain unchanged.
+
+Local public validation/build commands, in a credential-free process:
+
+```powershell
+node scripts/seed/prod-build-runner.mjs
+node scripts/seed/out/prod-runner.mjs preflight
+```
+
+Expected: `M02 production plain-Node runner built and source-sealed. No credentials
+loaded.` followed by JSON with `status: verified`, `environment: prod`, target
+`hkiafqrcxaafdbcvjlzv` and the actual approval boolean. This preflight reads local
+files only; it does not authenticate or prove production acceptance.
+
+After the exact packet is approved, the only credential delivery command is:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\seed\windows\New-M02ProdHandoff.ps1' -Kind All
+```
+
+Enter the EXISTING emr-prod database password and then its Supabase secret key
+from Supabase → emr-prod (`hkiafqrcxaafdbcvjlzv`) → Project Settings → API Keys →
+Secret keys, at the two hidden prompts. No dev/machine-role password, Vimeo token
+or YouTube key is needed. Keep originals in the password manager. Expected final
+line starts `M02 encrypted prod handoffs saved: All.` Close that PowerShell
+window and reply `M02 prod handoffs ready`; never send values or file contents.
+
+Only after approval and readiness, Codex uses the reviewed consumer:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\seed\windows\Invoke-M02Prod.ps1' -CheckOnly
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\seed\windows\Invoke-M02Prod.ps1'
+```
+
+`CheckOnly` checks seals and file presence without reading private contents or
+authenticating. The live consumer validates the sealed local payload and strict
+password-free TLS before decryption, then starts one bounded plain-Node child
+with only the two production secrets in its minimal environment. The intended
+login is `postgres.hkiafqrcxaafdbcvjlzv` through the session pooler on port5432;
+actual login/database, seven migration versions and empty baseline must pass
+before any write. Database and Storage raw output is withheld.
+
+Expected completion prints the native exit code and sanitized
+`scripts/seed/out/prod-latest.json` path, followed by child/temporary-file cleanup.
+Native0 alone does not replace actual count, ownership, byte-hash and advisor
+readback. The two consumed handoffs use exclusive delete-on-close handles;
+unconsumed files are preserved. Report any incomplete cleanup, and keep separately
+saved originals. No parent VS Code environment clearance is inferred.
+
+The permanent `prod-seed-admission.json` prevents replay after success or
+ambiguity. `prod-write-pending.json` remains on failure. Preserve effects,
+receipts/manifests and both gates; reconcile actual production before a reviewed
+remaining-stage recovery. Never reset, delete rows/objects or blindly rerun.
 
 ## Primary references
 

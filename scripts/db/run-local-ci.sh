@@ -61,11 +61,11 @@ run_private 'Performance advisors' supabase db advisors --local --type performan
 printf 'Performance advisors: no errors; warnings require the milestone review\n'
 
 # These files use a fixed local test password only inside their owned Node clients.
-# Seed fixtures roll back; owner-exclusion fixtures are SELECT-only CTEs in read-only transactions.
+# Seed/production-component fixtures roll back; owner-exclusion fixtures are SELECT-only CTEs in read-only transactions.
 # An unset/invalid target or a missing/skipped test is not acceptance.
 run_private 'M02 PostgreSQL acceptance' env \
   M02_TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:60322/postgres \
-  pnpm --filter @emr/scripts exec vitest run seed/seed-competitors.integration.test.ts seed/database.test.ts seed/owner-exclusions.integration.test.ts --reporter=json --outputFile "$private_report"
+  pnpm --filter @emr/scripts exec vitest run seed/seed-competitors.integration.test.ts seed/database.test.ts seed/owner-exclusions.integration.test.ts seed/prod-operations.integration.test.ts --reporter=json --outputFile "$private_report"
 node --input-type=module - "$private_report" <<'NODE'
 import { readFileSync } from 'node:fs';
 let report;
@@ -75,6 +75,7 @@ const expected = new Map([
   ['seed-competitors.integration.test.ts', 10],
   ['database.test.ts', 5],
   ['owner-exclusions.integration.test.ts', 21],
+  ['prod-operations.integration.test.ts', 6],
 ]);
 const files = report.testResults ?? [];
 let assertions = 0;

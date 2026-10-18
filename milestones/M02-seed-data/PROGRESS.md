@@ -5,16 +5,16 @@
 
 ## Status
 
-**In progress — dev acceptance complete under D-27; production packet preparation**
+**In progress — dev accepted; exact production packet reviewed locally, delivery CI next**
 
-| Field        | Value                                                                                                                                                                                                                                     |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Started      | 2026-10-18 Cairo                                                                                                                                                                                                                          |
-| Last updated | 2026-10-18 Cairo                                                                                                                                                                                                                          |
-| Finished     | —                                                                                                                                                                                                                                         |
-| Branch / PR  | m02-seed-data; PR6 OPEN/DRAFT. Code head d5171fe9f119e1703cc9e9371579f0b29a0becad; CI39088023934 all five jobs/Vercel PASS. Documentation-only delivery follows normal CI.                                                                |
-| Current task | Owner MA-09 decisions recorded: seven reviewed YouTube sources excluded,23 website flags/11 logo fallbacks accepted. Fresh dev read-only assertions all pass (AC7 uses the original actual second-run receipt). No hosted write or retry. |
-| Next step    | Finish the separate guarded production runner, frozen accepted public payload, targeted tests and independent review. Then present the exact production seed packet for separate approval; keep PR6 draft and M03 stopped.                |
+| Field        | Value                                                                                                                                                                                                       |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Started      | 2026-10-18 Cairo                                                                                                                                                                                            |
+| Last updated | 2026-10-18 Cairo                                                                                                                                                                                            |
+| Finished     | —                                                                                                                                                                                                           |
+| Branch / PR  | m02-seed-data; PR6 OPEN/DRAFT. MA-09 bb52d471c3757455f549c72decab51d099aeda79 / CI39089732685 all five jobs/Vercel PASS. Production preparation follows normal delivery CI.                                 |
+| Current task | Dev and MA-09 complete. Exact production packet,54-file source seal, public payload,37 core/32 Windows/6 PG/3 CA/13 CI-safety checks and independent review complete locally. No production action.         |
+| Next step    | Verify final delivery CI, then request approved: seed prod for the exact linked packet. After approval only, supply two production-only handoffs and run the bounded consumer once. PR6 draft; M03 stopped. |
 
 The owner instructed **Proceed with the next milestone** after M01 merged.
 Started from clean main a74459d082ba5d1f0445652d7d12f8d2079da945 and preserved
@@ -94,27 +94,36 @@ new source rather than reopening spent work.
 ## Blockers
 
 - Dev acceptance and MA-09 are complete under the owner's D-27 rule. No further company/channel decisions or dev credentials are required.
-- Production preparation is local only: a separate fixed-target runner, sealed public configuration/257-object logo manifest, targeted tests and independent review must be ready before requesting the exact M02 production seed approval. Production has not been seeded.
+- The [exact production packet](evidence/prod-seed-packet-20261018.md) is implemented and independently reviewed, still `approved:false`. Local checks pass:37 core/CLI,32 Windows,6 PostgreSQL rollback components,3 offline CA and13 CI-safety checks; type/lint/format pass. Final source/index proof and normal delivery CI precede the owner request. Production has not been connected or seeded for M02.
 - No dev batch is running. Temporary handoffs are absent and the credential child closed. Permanent initial/continuation admission records and the original failed receipt are preserved; do not replay successful operations.
 - Actual dev populated advisors remain11 security INFO /69 performance INFO, zero WARN/ERROR. No schema migration or generated-type change was made. The24October M01 tooling follow-up stays open.
 - M02 production seed and merge approvals remain separate. PR6 stays draft. M03, collection, paid provider calls and n8n remain unstarted.
 
 ## Manual actions needed from the owner
 
-| ID           | Action / result                                                                                                                       | Status                                          |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| MA-07        | Public-only Vimeo token verified by202/202 resolutions; saved original retained.                                                      | Complete; no handoff needed                     |
-| MA-08        | YouTube key verified;121 resolved and seven reviewed sources excluded; saved original retained.                                       | Complete; no handoff needed                     |
-| MA-09        | Owner directed skipping unavailable social sources and accepted23 website flags/11 logo fallbacks. All41 exact dispositions recorded. | Complete; verified by read-only D-27 assertions |
-| dev handoffs | All consumed temporary files removed and bounded child closed; original saved credentials retained.                                   | Complete; no action                             |
-| production   | Exact reviewed M02 seed packet for hkiafqrcxaafdbcvjlzv will be presented after local implementation/payload/tests/review finish.     | Not yet requested or performed                  |
-| merge        | Separate PR6 merge decision after production parity and all milestone gates.                                                          | PR6 OPEN/DRAFT; not requested                   |
+| ID           | Action / result                                                                                                                                                                | Status                                          |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| MA-07        | Public-only Vimeo token verified by202/202 resolutions; saved original retained.                                                                                               | Complete; no handoff needed                     |
+| MA-08        | YouTube key verified;121 resolved and seven reviewed sources excluded; saved original retained.                                                                                | Complete; no handoff needed                     |
+| MA-09        | Owner directed skipping unavailable social sources and accepted23 website flags/11 logo fallbacks. All41 exact dispositions recorded.                                          | Complete; verified by read-only D-27 assertions |
+| dev handoffs | All consumed temporary files removed and bounded child closed; original saved credentials retained.                                                                            | Complete; no action                             |
+| production   | Review [exact packet](evidence/prod-seed-packet-20261018.md), then reply approved: seed prod after delivery CI is green. Two production-only credential steps follow approval. | Not approved or performed                       |
+| merge        | Separate PR6 merge decision after production parity and all milestone gates.                                                                                                   | PR6 OPEN/DRAFT; not requested                   |
 
-No owner action is needed during local production-packet preparation. The
-prototype packet is explicitly unapproved; it does not grant a production
-connection, upload or write. Do not send credentials or run the old dev helper.
-When the exact packet is ready, the owner will receive a concrete bounded
-production approval request. M02 remains open for that gate and merge.
+The next owner action, after delivery CI is verified, is to review
+[this exact packet](evidence/prod-seed-packet-20261018.md) and reply
+**`approved: seed prod`**. It covers285 competitors/1,754 accounts and257 logos,
+at most771 Storage requests and1,560,325 upload bytes, USD0 incremental provider
+cost and zero provider/competitor-origin calls. This also approves promoting the
+accepted public configuration rather than repeating lookups. AGENTS.md rules8/9
+and M02 T10 require this separate production/bulk decision.
+
+After that approval, use only the two-input production helper documented in the
+packet; existing prod database password and prod Secret key, hidden prompts,
+expected `M02 encrypted prod handoffs saved: All.`, close PowerShell, readiness
+reply `M02 prod handoffs ready`. No dev credential, writer/agent password or
+deleted M01 handoff is requested. M02 remains open for actual production
+acceptance and the later separate merge decision.
 
 ## Decisions & deviations
 
@@ -127,6 +136,7 @@ production approval request. M02 remains open for that gate and merge.
 - Provider/API-source deviations and limits are recorded in [source review](evidence/provider-source-review-20261018.md). Google keys use an origin-bound header rather than a query URL; numeric Vimeo profiles use `/users/<id>`. Actual input Vimeo202/202 resolved. YouTube's documented totalResults is now requested; omitted items is accepted only with explicit zero total and no contradictions. C142's original body shape was not retained, so that specific cause is unestablished.
 - Every write action holds an exclusive durable pending marker through DB shutdown and final receipt persistence. Source/data/baseline/packet seals and exact managed identities bound live work; ambiguous operations stop for actual-state reconciliation. No reset, history repair or blind replay.
 - Existing M01 tooling advisory remains open for24October; no fresh dependency-audit-clean claim is made.
+- Proposed T10 promotion uses the exact accepted public dev IDs/configuration and unchanged257 logo objects instead of repeating T2–T8 external discovery. This is explicitly part of the separate production packet approval, not a new binding authorization. New production IDs/defaults are generated; dev IDs, operational timestamps/collection state and credentials are excluded.
 
 ## Risks / notes for the owner
 
@@ -136,6 +146,8 @@ production approval request. M02 remains open for that gate and merge.
 ## Session log
 
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
+
+- 2026-10-18 Cairo · Delivered local production preparation: separate fixed-target owner-run CLI, public payload/257-object byte manifest, source seals, strict approval/reference/TLS gates, two-input DPAPI consumer, fresh-only seed/configuration import plus real second no-op, exact-byte create-only Storage, full configuration/default/media parity and non-destructive recovery. Source/payload hashes independently match all1,754 actual dev accounts/257 logos; no remaining review P0/P1/P2. Local37 core/CLI,32 Windows,6 actual rollback-only PG components,3 offline CA,13 CI-safety checks pass; full typecheck/focused lint/format pass. CI now mandates42 PostgreSQL assertions and rejects missing/skipped production components. Native build/preflight0, approvedfalse,54 source files sealed; final delivery CI follows. No production/private credential read, TLS, download/upload, provider call, dev replay, schema change, merge or M03. [Local readiness](evidence/prod-local-readiness-20261018.json), [review](evidence/prod-preparation-review-20261018.json). MA-09 code bb52d47 / CI39089732685 all five jobs/Vercel PASS; earlier unit failure retained in evidence.
 
 - 2026-10-18 Cairo · Normal CI39089584942 on MA-09 head e7efc39 caught a stale CLI test expectation (three original invalids instead of the seven owner exclusions). Reproduced locally: one of four failed. Updated the expectation to289 active/1,458 paused/7 invalid plus10 reported issues (three original URL findings and seven owner decisions), and added an exact seven company/platform assertion. Targeted CLI suite now4/4 PASS. No runtime/hosted change; CI failure is preserved rather than reported green. Other completed checks and dev acceptance remain separate; normal PR CI follows the fix.
 

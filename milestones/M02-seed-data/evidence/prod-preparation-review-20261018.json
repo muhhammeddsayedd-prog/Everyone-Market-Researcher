@@ -1,0 +1,227 @@
+{
+  "operation": "independent_local_production_preparation_review",
+  "reviewedAt": "2026-10-18T02:29:35.449Z",
+  "clientDate": "2026-10-18",
+  "clientTimezone": "Africa/Cairo",
+  "reviewer": "m02_review",
+  "baseGitHead": "bb52d471c3757455f549c72decab51d099aeda79",
+  "reviewState": "Uncommitted production preparation source, public inputs and final approval packet reviewed; final delivery/build/CI receipts are separate.",
+  "verdict": "No remaining P0/P1/P2 in the reviewed local preparation scope. Production execution remains unapproved.",
+  "productionApproved": false,
+  "productionTarget": "hkiafqrcxaafdbcvjlzv",
+  "sourceProject": "zmotjsbzhzjvpelxvxlf",
+  "scope": [
+    "scripts/seed/prod-*.ts, prod-*.mjs and public production JSON inputs",
+    "scripts/seed/windows/Invoke-M02Prod.ps1 and New-M02ProdHandoff.ps1",
+    "Production unit, isolated CLI, fake Storage, Windows fixture and rollback-only PostgreSQL test sources",
+    "scripts/db/run-local-ci.sh and check-pooler.test.mjs mandatory 42-assertion guard",
+    "milestones/M02-seed-data/evidence/prod-seed-packet-20261018.md"
+  ],
+  "independentPublicComparisons": {
+    "sourceSnapshot": "scripts/seed/out/dev-youtube-continuation-readback.json",
+    "sourceSnapshotObservedAt": "2026-10-18 01:54:53 UTC",
+    "sourceSnapshotSha256": "ea1d463a027c210648a3b2bee3035d41a243ce98c5f1a5a64a51f3291f20f2b9",
+    "sourceSha256": "b3cf64b90058b5c786513c4fed9ebbe9d9bb092ec3a916744c944faeb826a17b",
+    "payloadSha256": "5d5e8089bebe184cccaccdb7ceefe5d6e3ba40b83dedfa494913c468af36102d",
+    "logoManifestSha256": "b1885fdd3dab4ec4f06ceaeaad59ae0f85bf8b73400b82a29f178f89a302bb80",
+    "machinePacketSha256": "0530cdd64b361a26eb66c04fc0ec468697d9982c12cd7ba5c4c9e26f0a107363",
+    "devLogoOwnershipManifestSha256": "a783124776887d6da68f0b2bef5d7e37b9f3dba563a610765500babde9def1e5",
+    "baselineSvgSha256": "956befb784a4499230bcb2162660665d95e8e00aa7aa0ba95e2a1bc4cf8d1f4d",
+    "publicCaSha256": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+    "accountsCompared": 1754,
+    "accountIdentity": "Company code, platform and normalized handle; model validation separately binds every source key/original identity to the current CSV plan.",
+    "accountFieldsCompared": [
+      "handle",
+      "url",
+      "status",
+      "resolve_status",
+      "external_id",
+      "uploads_playlist_id",
+      "backfill_cursor",
+      "last_error"
+    ],
+    "accountMismatches": 0,
+    "logosCompared": 257,
+    "logoFieldsCompared": [
+      "company_code",
+      "slug",
+      "owner",
+      "storagePath",
+      "sourceUrl",
+      "sha256",
+      "mime",
+      "width",
+      "height",
+      "byteLength",
+      "item_id null",
+      "kind logo"
+    ],
+    "logoComparisonSources": "Dev ownership manifest plus reconciled snapshot competitor/media-asset/Storage metadata.",
+    "logoMismatches": 0,
+    "logoBytes": 1560325,
+    "currentPayloadUrlQueries": 0,
+    "limitation": "Local comparison of recorded public evidence. No new provider lookup, object download or hosted observation was performed."
+  },
+  "independentlyExecutedChecks": [
+    {
+      "command": "node --test scripts/seed/prod-check-tls.test.mjs",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "limit": "Offline CA and blocked-environment fixtures; no TLS connection."
+    },
+    {
+      "command": "pnpm.cmd --filter @emr/scripts exec vitest run seed/prod-private-runner.test.ts -t 'approval reference|unsupported action|fixed prod identity|public TLS failure|owned-child lifetime'",
+      "passed": 8,
+      "failed": 0,
+      "filteredSkipped": 24,
+      "limit": "Synthetic Windows handoffs and fake public preflight/TLS children only."
+    },
+    {
+      "command": "pnpm.cmd --filter @emr/scripts exec vitest run seed/prod-model.test.ts seed/prod-inputs.test.ts seed/prod-operations.test.ts seed/prod-storage.test.ts",
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0,
+      "limit": "Before the final positive-numeric Vimeo/channel-binding model delta; other files unchanged."
+    },
+    {
+      "command": "pnpm.cmd --filter @emr/scripts exec vitest run seed/prod-cli.test.ts",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "limit": "Actual isolated plain-Node artifact with network denied; post-admission failure uses explicit local fake DB/network modules."
+    },
+    {
+      "command": "pnpm.cmd --filter @emr/scripts exec vitest run seed/prod-model.test.ts",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "limit": "Latest model after final validation delta; includes actual frozen public inputs."
+    }
+  ],
+  "separatelyReportedChecks": [
+    {
+      "reportedBy": "root",
+      "command": "Full final prod-private-runner.test.ts",
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 72.61,
+      "limit": "Synthetic local Windows execution, not production credentials."
+    },
+    {
+      "reportedBy": "root",
+      "command": "Final five core production unit/CLI files",
+      "passed": 37,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "reportedBy": "m02_prod_windows",
+      "command": "M02_TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:60322/postgres; prod-operations.integration.test.ts",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "limit": "Actual local PostgreSQL component rehearsal; five fixture competitors/11 accounts; mandatory rollback preserves prior competitor/account/media rows including C999. Test source independently reviewed; not rerun by reviewer."
+    },
+    {
+      "reportedBy": "root",
+      "command": "node --test scripts/db/check-pooler.test.mjs",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "limit": "CI safety fixtures. Not a fresh full local DB reset/42-assertion CI run."
+    },
+    {
+      "reportedBy": "root",
+      "command": "Workspace typecheck and scoped ESLint",
+      "nativeExit": 0
+    }
+  ],
+  "findingsResolved": [
+    {
+      "priority": "P1",
+      "finding": "Approved true with absent/blank approval reference could reach decryption before runtime rejection.",
+      "correction": "Strict model approval/reference invariant and Windows nonblank string check before the private path.",
+      "regression": "Actual isolated CLI and synthetic Windows null/empty/whitespace cases pass."
+    },
+    {
+      "priority": "P1",
+      "finding": "Rejected replay could replace the original failed latest receipt; failed admitted runs lacked immutable archives.",
+      "correction": "Early rejection does not persist a replacement run receipt; staged failures receive create-only run-ID archives and retain durable gates.",
+      "regression": "Actual isolated CLI preserves original pending/latest bytes and archives simulated post-admission failure."
+    },
+    {
+      "priority": "P2",
+      "finding": "Final website URL query screening missed normalized and repeatedly encoded private key names.",
+      "correction": "Repeated key decoding and normalized private-key denylist reject before import.",
+      "regression": "Same-domain client_secret/clientsecret/encoded-key fixtures pass; actual payload has no query strings."
+    },
+    {
+      "priority": "P2",
+      "finding": "Vimeo validator accepted zero/leading-zero IDs that SQL acceptance rejects.",
+      "correction": "Canonical positive numeric validation before authentication.",
+      "regression": "Latest 17 model cases include 0, 00 and 0123 rejection and actual 202 Vimeo entries."
+    },
+    {
+      "priority": "P1",
+      "reportedBy": "m02_prod_windows",
+      "finding": "PowerShell simple scripts silently accepted unknown action/target arguments.",
+      "correction": "Both production helpers reject nonempty remaining arguments before private/file operations.",
+      "regression": "Independent unsupported-arguments case and root full 32-case suite pass."
+    }
+  ],
+  "additionalProtectionReviewed": [
+    "Production target, owner identity, seven migration versions, scoped CA and strict TLS are fixed; dev CLI production rejection remains separate.",
+    "Any prior durable production state blocks replay; exclusive pending and permanent one-use admission precede object requests/writes.",
+    "Fresh-only transactional import, strict verification before second seed/import and row-version CAS preserve divergent human/operational state.",
+    "Create-only exact-byte uploads, fixed public Storage origins, per-path one-attempt guards and atomic same-owner logo metadata commits.",
+    "Pending release follows DB shutdown and completion receipt persistence; ambiguous effects require actual-state reconciliation.",
+    "Final parity checks cover seed-owned competitor fields, account configuration/defaults, media ownership and Storage metadata."
+  ],
+  "packetClaimsChecked": {
+    "storageHttpMaximum": 771,
+    "devPublicGetsMaximum": 257,
+    "productionUploadsMaximum": 257,
+    "productionPublicGetsMaximum": 257,
+    "uploadBytes": 1560325,
+    "expectedVerifiedContentBytesAcrossThreeTransfers": 4680975,
+    "providerCalls": 0,
+    "expectedIncrementalProviderUsd": 0,
+    "rawYouTube": {
+      "resolved": 121,
+      "total": 128,
+      "pilotResolved": 10,
+      "pilotTotal": 11
+    },
+    "eligibleYouTube": {
+      "resolved": 121,
+      "total": 121,
+      "pilotResolved": 10,
+      "pilotTotal": 10
+    },
+    "exactExcludedSources": ["C102", "C142", "C218", "C231", "C233", "C245", "C283"],
+    "noCompanyWideAbsenceClaim": true
+  },
+  "remainingFindings": [],
+  "remainingGates": [
+    "Final credential-free runner/source seal and Git-byte proof at the delivered head; existing development artifacts do not supply this.",
+    "Normal PR CI at the final reviewable head.",
+    "Explicit owner approval of this exact M02 production packet, followed by two production-only handoffs.",
+    "Actual production authentication/empty preflight/import/transfers/readback/advisors/native completion/cleanup and AC10.",
+    "Separate PR merge and M03 authorization."
+  ],
+  "limits": {
+    "realCredentialsRead": false,
+    "realPrivateHandoffsReadOrCreated": false,
+    "syntheticPrivateFixturesUsed": true,
+    "hostedDatabaseOperations": 0,
+    "providerRequests": 0,
+    "publicObjectDownloads": 0,
+    "storageUploads": 0,
+    "productionTlsHandshakePerformed": false,
+    "fullProductionRehearsalClaimed": false,
+    "productionParityClaimed": false,
+    "approvalGrantedByReview": false
+  }
+}

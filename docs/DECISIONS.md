@@ -57,6 +57,16 @@ Owner: Mohamed Abdelrahman (mohamed.abdelrahman@everyone.film) — product owner
 
 ## Changes
 
+Pending M02 T10 approval: the separate production packet proposes importing the
+accepted public dev account configuration and exact257 logo objects, rather
+than repeating T2–T8 external lookups. This avoids new provider/competitor-origin
+calls and preserves the reviewed results, including D-27 exclusions and accepted
+website/logo findings. Production gets new row IDs and operational defaults;
+dev UUIDs, timestamps, collection state and credentials are not promoted. This
+implementation choice is part of the exact production seed approval request,
+not authorization to connect, seed or upload. See
+[the packet](../milestones/M02-seed-data/evidence/prod-seed-packet-20261018.md).
+
 | Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Approved by                                                                                                                                                                       |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-10-18 | D-27 records the owner's rule to skip unavailable social sources. MA-09 closes the seven listed YouTube sources as owner-excluded and accepts23 retained website error flags plus11 initials-logo fallbacks. M02 AC4/AC5 distinguish original coverage from eligible coverage:128 original YouTube rows, seven exact invalid exclusions (one pilot),121/121 eligible resolved and10/10 eligible pilot resolved. No row deletion, false absence/resolution claim, additional provider run, production or merge approval. | Owner reply to MA-09: “If a company doesn't have a social don't scrap it. If it doesn't have youtube don't scrap it.” and “All listed website flags: ok; all11 missing logos: ok” |
