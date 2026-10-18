@@ -1,0 +1,164 @@
+{
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "observedAt": "2026-10-18T01:53:27.873Z",
+  "action": "resolve",
+  "databaseAuthentication": "postgres_authenticated_to_verified_dev_pooler",
+  "stages": [
+    {
+      "name": "database_identity",
+      "status": "completed",
+      "result": {
+        "current_user": "postgres",
+        "session_user": "postgres",
+        "database": "postgres",
+        "originalMigrations": 7
+      }
+    },
+    {
+      "name": "resolution",
+      "status": "completed",
+      "result": {
+        "attempted": 125,
+        "updated": 125,
+        "unchanged": 0,
+        "preserved": 0,
+        "skipped": 205,
+        "blocked": [],
+        "issues": [
+          {
+            "company_code": "C142",
+            "platform": "youtube",
+            "code": "yt_not_found"
+          },
+          {
+            "company_code": "C218",
+            "platform": "youtube",
+            "code": "yt_custom_url_unresolved"
+          },
+          {
+            "company_code": "C231",
+            "platform": "youtube",
+            "code": "yt_not_found"
+          },
+          {
+            "company_code": "C233",
+            "platform": "youtube",
+            "code": "yt_not_found"
+          }
+        ],
+        "youtubeMaximumAttempts": 1,
+        "badResponseShapes": []
+      }
+    },
+    {
+      "name": "report",
+      "status": "completed",
+      "result": {
+        "competitors": 285,
+        "accounts": 1754,
+        "tiers": {
+          "baseline": 1,
+          "pilot": 50,
+          "next_wave": 174,
+          "adjacent": 60
+        },
+        "platforms": {
+          "instagram": 256,
+          "instagram_stories": 256,
+          "website": 261,
+          "website_work_page": 199,
+          "linkedin": 226,
+          "linkedin_employees": 226,
+          "vimeo": 202,
+          "youtube": 128
+        },
+        "platformStatuses": {
+          "instagram": {
+            "paused": 207,
+            "active": 49
+          },
+          "instagram_stories": {
+            "paused": 207,
+            "active": 49
+          },
+          "website": {
+            "paused": 250,
+            "active": 11
+          },
+          "website_work_page": {
+            "paused": 161,
+            "active": 38
+          },
+          "linkedin": {
+            "paused": 184,
+            "active": 42
+          },
+          "linkedin_employees": {
+            "paused": 184,
+            "active": 42
+          },
+          "vimeo": {
+            "paused": 154,
+            "active": 48
+          },
+          "youtube": {
+            "paused": 111,
+            "active": 10,
+            "invalid": 7
+          }
+        },
+        "resolveStatuses": {
+          "not_needed": 1424,
+          "resolved": 323,
+          "failed": 7
+        },
+        "backfillStatuses": {
+          "pending": 1272,
+          "not_applicable": 482
+        },
+        "providerErrors": {
+          "yt_not_found": 3,
+          "yt_custom_url_unresolved": 1
+        },
+        "resolution": {
+          "vimeo": {
+            "total": 202,
+            "resolved": 202,
+            "pending": 0,
+            "failed": 0,
+            "missingIdentifiers": 0,
+            "pilot": {
+              "total": 48,
+              "resolved": 48
+            }
+          },
+          "youtube": {
+            "total": 128,
+            "resolved": 121,
+            "pending": 0,
+            "failed": 7,
+            "missingIdentifiers": 0,
+            "pilot": {
+              "total": 11,
+              "resolved": 10
+            }
+          }
+        },
+        "logos": {
+          "sourceTotal": 267,
+          "sourceCopied": 256,
+          "missingSourceCopy": 11,
+          "baselineTotal": 1,
+          "baselineCopied": 1,
+          "noSource": 17,
+          "mediaMetadataMissing": 0
+        },
+        "duplicateKeys": 0,
+        "sourceIssues": 3,
+        "reviewItems": 72
+      }
+    }
+  ],
+  "nativeCompletion": "success"
+}

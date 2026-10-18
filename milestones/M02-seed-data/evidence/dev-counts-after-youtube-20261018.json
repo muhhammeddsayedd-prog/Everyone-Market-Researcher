@@ -1,0 +1,236 @@
+{
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "observedAt": "2026-10-18 01:56:09 UTC",
+  "source": "scripts/assert/m02_counts.sql via dev_scoped_supabase_mcp",
+  "rows": [
+    {
+      "criterion": "AC1_competitors_and_tiers",
+      "actual": {
+        "pilot": 50,
+        "total": 285,
+        "adjacent": 60,
+        "baseline": 1,
+        "next_wave": 174,
+        "baseline_flags": 1,
+        "everyone_baseline": 1
+      },
+      "expected": {
+        "pilot": 50,
+        "total": 285,
+        "adjacent": 60,
+        "baseline": 1,
+        "next_wave": 174,
+        "baseline_flags": 1,
+        "everyone_baseline": 1
+      },
+      "passed": true,
+      "evidence_limit": "Original CSV baseline; any override-driven count change needs an explicit documented deviation."
+    },
+    {
+      "criterion": "AC2_primary_instagram",
+      "actual": 256,
+      "expected": 256,
+      "passed": true,
+      "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+    },
+    {
+      "criterion": "AC2_primary_linkedin",
+      "actual": 226,
+      "expected": 226,
+      "passed": true,
+      "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+    },
+    {
+      "criterion": "AC2_primary_vimeo",
+      "actual": 202,
+      "expected": 202,
+      "passed": true,
+      "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+    },
+    {
+      "criterion": "AC2_primary_website",
+      "actual": 261,
+      "expected": 261,
+      "passed": true,
+      "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+    },
+    {
+      "criterion": "AC2_primary_website_work_page",
+      "actual": 199,
+      "expected": 199,
+      "passed": true,
+      "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+    },
+    {
+      "criterion": "AC2_primary_youtube",
+      "actual": 128,
+      "expected": 128,
+      "passed": true,
+      "evidence_limit": "Per-platform original CSV count; no cross-owner duplicate is silently merged."
+    },
+    {
+      "criterion": "AC3_derived_instagram_stories",
+      "actual": 256,
+      "expected": 256,
+      "passed": true,
+      "evidence_limit": "Derived identities remain separate platform rows."
+    },
+    {
+      "criterion": "AC3_derived_linkedin_employees",
+      "actual": 226,
+      "expected": 226,
+      "passed": true,
+      "evidence_limit": "Derived identities remain separate platform rows."
+    },
+    {
+      "criterion": "AC3_total_accounts",
+      "actual": 1754,
+      "expected": 1754,
+      "passed": true,
+      "evidence_limit": "Original total; a committed override/deviation must explain every difference."
+    },
+    {
+      "criterion": "AC4_active_instagram",
+      "actual": 49,
+      "expected": 49,
+      "passed": true,
+      "evidence_limit": "Original active targets; invalid/owner-reviewed accounts may explain a lower count, never an unrecorded pass."
+    },
+    {
+      "criterion": "AC4_active_instagram_stories",
+      "actual": 49,
+      "expected": 49,
+      "passed": true,
+      "evidence_limit": "Original active targets; invalid/owner-reviewed accounts may explain a lower count, never an unrecorded pass."
+    },
+    {
+      "criterion": "AC4_active_linkedin",
+      "actual": 42,
+      "expected": 42,
+      "passed": true,
+      "evidence_limit": "Original active targets; invalid/owner-reviewed accounts may explain a lower count, never an unrecorded pass."
+    },
+    {
+      "criterion": "AC4_active_linkedin_employees",
+      "actual": 42,
+      "expected": 42,
+      "passed": true,
+      "evidence_limit": "Original active targets; invalid/owner-reviewed accounts may explain a lower count, never an unrecorded pass."
+    },
+    {
+      "criterion": "AC4_active_vimeo",
+      "actual": 48,
+      "expected": 48,
+      "passed": true,
+      "evidence_limit": "Original active targets; invalid/owner-reviewed accounts may explain a lower count, never an unrecorded pass."
+    },
+    {
+      "criterion": "AC4_active_website",
+      "actual": 11,
+      "expected": 11,
+      "passed": true,
+      "evidence_limit": "Original active targets; invalid/owner-reviewed accounts may explain a lower count, never an unrecorded pass."
+    },
+    {
+      "criterion": "AC4_active_website_work_page",
+      "actual": 38,
+      "expected": 38,
+      "passed": true,
+      "evidence_limit": "Original active targets; invalid/owner-reviewed accounts may explain a lower count, never an unrecorded pass."
+    },
+    {
+      "criterion": "AC4_active_youtube",
+      "actual": 10,
+      "expected": 11,
+      "passed": false,
+      "evidence_limit": "Original active targets; invalid/owner-reviewed accounts may explain a lower count, never an unrecorded pass."
+    },
+    {
+      "criterion": "AC4_pilot_gating_violations",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "evidence_limit": "Only pilot/baseline may be active; roots with a work page stay paused or explicitly invalid."
+    },
+    {
+      "criterion": "AC5_vimeo_pilot_resolution",
+      "actual": {
+        "total": 202,
+        "pending": 0,
+        "platform": "vimeo",
+        "resolved": 202,
+        "pilot_total": 48,
+        "bad_resolved": 0,
+        "pilot_resolved": 48
+      },
+      "expected": {
+        "pending": 0,
+        "bad_resolved": 0,
+        "pilot_minimum_rate": 0.95
+      },
+      "passed": true,
+      "evidence_limit": "Valid numeric user/resource IDs required; failed/transient/zero-ID rows do not count as resolved."
+    },
+    {
+      "criterion": "AC5_youtube_resolution",
+      "actual": {
+        "total": 128,
+        "pending": 0,
+        "platform": "youtube",
+        "resolved": 121,
+        "pilot_total": 11,
+        "bad_resolved": 0,
+        "pilot_resolved": 10
+      },
+      "expected": {
+        "pending": 0,
+        "pilot_rate": 1,
+        "bad_resolved": 0,
+        "all_minimum_rate": 0.9
+      },
+      "passed": false,
+      "evidence_limit": "Both UC channel and UU uploads IDs are required; no search.list or empty-on-error substitution."
+    },
+    {
+      "criterion": "AC6_backfill_and_cadence_violations",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "evidence_limit": "Primary rows pending from 2024-01-01; stories/employees not_applicable; employee cadence seven days."
+    },
+    {
+      "criterion": "AC7_idempotency_requires_second_run",
+      "actual": null,
+      "expected": {
+        "second_run_updated": 0,
+        "second_run_inserted": 0
+      },
+      "passed": null,
+      "evidence_limit": "Cannot be established from one SELECT snapshot. Attach the real second-run receipt and unchanged counts."
+    },
+    {
+      "criterion": "AC8_logo_storage_metadata",
+      "actual": {
+        "source_total": 267,
+        "source_stored": 256,
+        "baseline_total": 1,
+        "baseline_stored": 1
+      },
+      "expected": {
+        "baseline_total": 1,
+        "baseline_stored": 1,
+        "source_minimum_rate": 0.95
+      },
+      "passed": true,
+      "evidence_limit": "Partial AC8 evidence only: public Storage HTTP visibility is a separate live verification."
+    },
+    {
+      "criterion": "fixture_exclusions",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "evidence_limit": "C999 and test-house are not M02 production/dev seed competitors."
+    }
+  ]
+}

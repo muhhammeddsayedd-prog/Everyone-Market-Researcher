@@ -12,18 +12,23 @@ gate is the concrete bulk estimate required by [AGENTS.md rule 9](../../../AGENT
 
 ## Exact payload and bounds
 
-| Operation | Reviewed amount and boundary |
-| --- | --- |
-| Competitors | 285; baseline1 / pilot50 / next_wave174 / adjacent60 |
-| Accounts | 1,272 primary +256 stories +226 employees =1,754 |
-| Dev seed | One transactional import, then a second seed proving zero inserts/updates; no fixture or test-house import |
-| Vimeo | Up to202 public account lookups; concurrency2; bounded retries/cooldowns; known C000 public probe first |
-| YouTube | Up to128 account lookups; `channels.list` only; about130 free quota units expected, at most516 units including conservative probe/retry allowance; no `search.list` |
-| Websites | 460 root/work-page reachability checks; concurrency5; 10s per request; GET only after405/501; bounded same-domain redirects |
-| Instagram / LinkedIn | Format validation only; zero anonymous social requests |
-| Logos | 267 source URLs plus the checked-in C000 SVG; 5MiB per download, one403 Referer retry; create-only public media objects; **20MiB cumulative upload ceiling** |
-| Paid providers | Zero Apify, Firecrawl, SerpAPI or OpenAI calls |
-| Production / workflows | Zero production writes, migrations, collection, n8n executions or schedule changes |
+18October factual correction: the paragraph below originally mislabeled C102 as
+pilot. Actual immutable CSV and hosted tiers identify **C283 Wonderful
+Productions** as pilot; C102 and C245 are next wave. The original approved input
+hashes, population, gating implementation and request bounds are unchanged.
+
+| Operation              | Reviewed amount and boundary                                                                                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Competitors            | 285; baseline1 / pilot50 / next_wave174 / adjacent60                                                                                                                |
+| Accounts               | 1,272 primary +256 stories +226 employees =1,754                                                                                                                    |
+| Dev seed               | One transactional import, then a second seed proving zero inserts/updates; no fixture or test-house import                                                          |
+| Vimeo                  | Up to202 public account lookups; concurrency2; bounded retries/cooldowns; known C000 public probe first                                                             |
+| YouTube                | Up to128 account lookups; `channels.list` only; about130 free quota units expected, at most516 units including conservative probe/retry allowance; no `search.list` |
+| Websites               | 460 root/work-page reachability checks; concurrency5; 10s per request; GET only after405/501; bounded same-domain redirects                                         |
+| Instagram / LinkedIn   | Format validation only; zero anonymous social requests                                                                                                              |
+| Logos                  | 267 source URLs plus the checked-in C000 SVG; 5MiB per download, one403 Referer retry; create-only public media objects; **20MiB cumulative upload ceiling**        |
+| Paid providers         | Zero Apify, Firecrawl, SerpAPI or OpenAI calls                                                                                                                      |
+| Production / workflows | Zero production writes, migrations, collection, n8n executions or schedule changes                                                                                  |
 
 Direct provider requests have at most four attempts each. The conservative API
 ceiling is `(202 +128 +2 probes) ×4 =1,328` requests. The ordinary plan currently

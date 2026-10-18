@@ -15,9 +15,12 @@ The initial approved dev batch has already run. **Do not run `accept-dev`, seed,
 websites or logos again.** Its successful effects remain in dev; its original
 native1 report failure and the separate successful report recovery are retained
 in the milestone evidence. All four original handoffs were consumed/deleted.
-The remaining continuation is `resolve` for YouTube only, after actual-state
-reconciliation and review. It requires exactly Database and YouTube handoffs;
-Vimeo and Storage handoffs are excluded from that consumer action.
+The reviewed `resolve` continuation has also completed native0:121/128 YouTube
+accounts resolved, zero pending and seven failed/invalid; pilot10/11 with C283
+remaining. Its Database+YouTube handoffs were deleted and the child closed.
+**Do not run resolve or replenish credentials again.** The permanent admissions
+are retained. Next is [MA-09 owner review](../../milestones/M02-seed-data/evidence/ma09-owner-review-20261018.md);
+any approved correction needs its own reviewed bounded continuation.
 
 TLS uses the public Supabase root certificate in `certs/supabase-root-2021.crt`,
 with its official source and public SHA256 in `certs/supabase-root-2021.json`.
@@ -204,7 +207,12 @@ All non-report hosted actions remain packet-gated. The runtime rejects prod even
 if `--target prod` is supplied. No production key or password belongs in any M02
 dev handoff.
 
-### Remaining YouTube continuation
+### Completed YouTube continuation — historical procedure
+
+Completed18October2026 at code head `d5171fe`; native0 and independent22/22
+preservation checks pass. The instructions below describe that completed
+continuation. They are not a request for another handoff or invocation. The
+current next action is MA-09, with no credential delivery needed.
 
 The original consumption/recovery record is permanent. An existing seed
 manifest independently prevents an alternate action from replaying the initial
@@ -270,8 +278,10 @@ separate from a stored `logo_path`; public-account resolution is separate from a
 provider token's presence. [`../assert/m02_counts.sql`](../assert/m02_counts.sql)
 is read-only and deliberately reports AC7 and public-logo visibility limitations.
 
-The initial local plan has three invalid legacy YouTube URLs: **C102** (pilot),
-**C245** and **C283**. These are source-format findings, not API password failures.
+The initial local plan has three invalid legacy YouTube URLs: **C102** and
+**C245** (next wave), and **C283** (pilot). Earlier prose incorrectly called C102
+the pilot exception; the CSV and actual hosted tiers agree on C283. These are
+source-format findings, not API password failures.
 The eventual concrete live report, including these and any other unresolved
 accounts, goes to MA-09 for owner decisions. Do not infer sign-off now. Put
 approved URL fixes/invalid/add decisions in `overrides.csv`, then review/reseal

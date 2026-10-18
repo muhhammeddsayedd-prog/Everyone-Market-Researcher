@@ -1,0 +1,36 @@
+{
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "action": "resolve",
+  "startedAt": "2026-10-18T01:53:27.873Z",
+  "sourceHead": "d5171fe9f119e1703cc9e9371579f0b29a0becad",
+  "nativeExitCode": 0,
+  "nativeCompletion": "success",
+  "closureEvidence": "Bounded consumer printed native child exit0 and completed its finally block with child exit confirmed. Raw child stdout/stderr were withheld.",
+  "filePresenceCheckedAt": "2026-10-18T01:54:34.9779609Z",
+  "consumedHandoffsAbsent": [
+    "emr-m02-dev-db-password.dpapi",
+    "emr-m02-youtube-api-key.dpapi"
+  ],
+  "unrelatedHandoffsAbsent": [
+    "emr-m02-vimeo-token.dpapi",
+    "emr-m02-dev-storage-key.dpapi"
+  ],
+  "globalWritePendingPresent": false,
+  "seedPendingPresent": false,
+  "permanentInitialBudgetRecordPresent": true,
+  "permanentYoutubeContinuationAdmissionPresent": true,
+  "ownerSavedOriginalsRetained": true,
+  "parentVsCodeEnvironmentCleared": false,
+  "parentEnvironmentScope": "No parent credential environment was configured by this DPAPI flow. Child cleanup does not attest to any separately configured parent environment.",
+  "credentialValuesLogged": false,
+  "replayedSuccessfulStages": false,
+  "stagesExecuted": [
+    "database_identity",
+    "resolution",
+    "report"
+  ],
+  "productionTouched": false,
+  "prMerged": false,
+  "m03Started": false
+}

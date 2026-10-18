@@ -1,0 +1,615 @@
+{
+  "observedAt": "2026-10-18T01:53:59.364Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "counts": {
+    "competitors": 285,
+    "accounts": 1754,
+    "tiers": {
+      "baseline": 1,
+      "pilot": 50,
+      "next_wave": 174,
+      "adjacent": 60
+    },
+    "platforms": {
+      "instagram": 256,
+      "instagram_stories": 256,
+      "website": 261,
+      "website_work_page": 199,
+      "linkedin": 226,
+      "linkedin_employees": 226,
+      "vimeo": 202,
+      "youtube": 128
+    },
+    "platformStatuses": {
+      "instagram": {
+        "paused": 207,
+        "active": 49
+      },
+      "instagram_stories": {
+        "paused": 207,
+        "active": 49
+      },
+      "website": {
+        "paused": 250,
+        "active": 11
+      },
+      "website_work_page": {
+        "paused": 161,
+        "active": 38
+      },
+      "linkedin": {
+        "paused": 184,
+        "active": 42
+      },
+      "linkedin_employees": {
+        "paused": 184,
+        "active": 42
+      },
+      "vimeo": {
+        "paused": 154,
+        "active": 48
+      },
+      "youtube": {
+        "paused": 111,
+        "active": 10,
+        "invalid": 7
+      }
+    },
+    "resolveStatuses": {
+      "not_needed": 1424,
+      "resolved": 323,
+      "failed": 7
+    },
+    "backfillStatuses": {
+      "pending": 1272,
+      "not_applicable": 482
+    },
+    "providerErrors": {
+      "yt_not_found": 3,
+      "yt_custom_url_unresolved": 1
+    },
+    "resolution": {
+      "vimeo": {
+        "total": 202,
+        "resolved": 202,
+        "pending": 0,
+        "failed": 0,
+        "missingIdentifiers": 0,
+        "pilot": {
+          "total": 48,
+          "resolved": 48
+        }
+      },
+      "youtube": {
+        "total": 128,
+        "resolved": 121,
+        "pending": 0,
+        "failed": 7,
+        "missingIdentifiers": 0,
+        "pilot": {
+          "total": 11,
+          "resolved": 10
+        }
+      }
+    },
+    "logos": {
+      "sourceTotal": 267,
+      "sourceCopied": 256,
+      "missingSourceCopy": 11,
+      "baselineTotal": 1,
+      "baselineCopied": 1,
+      "noSource": 17,
+      "mediaMetadataMissing": 0
+    },
+    "duplicateKeys": 0,
+    "sourceIssues": 3,
+    "reviewItems": 72
+  },
+  "reviewItems": [
+    {
+      "company_code": "C008",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C013",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C015",
+      "platform": "website",
+      "url": "https://maradona.film/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C018",
+      "platform": "website",
+      "url": "https://neutlex.com/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C019",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C030",
+      "platform": "website_work_page",
+      "url": "https://www.spinzomedia.com/portfolio/",
+      "reason": "unreachable_timeout",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C032",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C036",
+      "platform": "website",
+      "url": "https://www.xact-eg.com/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C038",
+      "platform": "logo",
+      "url": "https://graph.facebook.com/PriveProductionHouse/picture",
+      "reason": "missing_logo",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C057",
+      "platform": "website_work_page",
+      "url": "https://zawiyafilms.com/our-works/",
+      "reason": "unreachable_timeout",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C065",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C065",
+      "platform": "website",
+      "url": "https://awaagency.ae/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C066",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C068",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C068",
+      "platform": "website",
+      "url": "https://videopanda.io/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C072",
+      "platform": "website",
+      "url": "https://socialgarage.agency/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C075",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C078",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C082",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C084",
+      "platform": "website",
+      "url": "https://www.mbc.net/en/corporate/about-us.html",
+      "reason": "unreachable_404",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C085",
+      "platform": "website_work_page",
+      "url": "https://arabiapictures.com/projects",
+      "reason": "unreachable_404",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C086",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C087",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C088",
+      "platform": "logo",
+      "url": "https://hashtag-me.com/wp-content/uploads/2024/06/hashtag-logo-english.gif",
+      "reason": "missing_logo",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C089",
+      "platform": "logo",
+      "url": "https://blackbird.ae/images/logo-icon.png",
+      "reason": "missing_logo",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C100",
+      "platform": "website",
+      "url": "https://fivecolors.com/en/",
+      "reason": "unreachable_400",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C102",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/mvmpro",
+      "reason": "invalid_account",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C102",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/mvmpro",
+      "reason": "invalid_url: Platform URL/handle failed normalization; retained invalid for owner review",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C102",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/mvmpro",
+      "reason": "youtube_resolve_failed",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C104",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C104",
+      "platform": "website",
+      "url": "https://www.imm-sa.com/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C106",
+      "platform": "logo",
+      "url": "https://i.vimeocdn.com/portrait/92379499_300x300",
+      "reason": "missing_logo",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C107",
+      "platform": "website",
+      "url": "https://dmproductions.tv/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C111",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C113",
+      "platform": "logo",
+      "url": "https://i.vimeocdn.com/portrait/70324326_300x300.jpg",
+      "reason": "missing_logo",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C113",
+      "platform": "website",
+      "url": "https://www.studiolens.co/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C117",
+      "platform": "logo",
+      "url": "https://yt3.googleusercontent.com/Fd_YvjnKK69nj8UDGgBfjTSdzWa9ylCOV1IQZXsQUdecjYDr67DdABjpcHAOpHw7nocU4Er-LA=s900-c-k-c0x00ffffff-no-rj",
+      "reason": "missing_logo",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C117",
+      "platform": "website",
+      "url": "https://www.dunia.com.sa/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C120",
+      "platform": "website",
+      "url": "https://www.creativearrow.net/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C134",
+      "platform": "website_work_page",
+      "url": "https://cema.ae/case-studies/",
+      "reason": "unreachable_timeout",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C137",
+      "platform": "logo",
+      "url": "https://i.vimeocdn.com/portrait/9131410_300x300.jpg",
+      "reason": "missing_logo",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C137",
+      "platform": "website",
+      "url": "https://www.crowproductions.tv/",
+      "reason": "unreachable_network",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C141",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C142",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/@gearbox-channel",
+      "reason": "invalid_account",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C142",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/@gearbox-channel",
+      "reason": "youtube_resolve_failed",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C142",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/@gearbox-channel",
+      "reason": "yt_not_found",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C157",
+      "platform": "logo",
+      "url": "https://mtc-films.com/apple-touch-icon.png",
+      "reason": "missing_logo",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C183",
+      "platform": "website_work_page",
+      "url": "https://www.fazaa.sa/en/projects/",
+      "reason": "unreachable_500",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C195",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C203",
+      "platform": "website_work_page",
+      "url": "https://www.proeffect.sa/work",
+      "reason": "unreachable_404",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C211",
+      "platform": "logo",
+      "url": "https://tmp.com.sa/icon-192.png",
+      "reason": "missing_logo",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C218",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/c/actionfilmzstudiodubaiproductions_rentals_events",
+      "reason": "invalid_account",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C218",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/c/actionfilmzstudiodubaiproductions_rentals_events",
+      "reason": "youtube_resolve_failed",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C218",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/c/actionfilmzstudiodubaiproductions_rentals_events",
+      "reason": "yt_custom_url_unresolved",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C219",
+      "platform": "logo",
+      "url": "",
+      "reason": "no_logo_source",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C231",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/user/cityfilmsbeirut",
+      "reason": "invalid_account",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C231",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/user/cityfilmsbeirut",
+      "reason": "youtube_resolve_failed",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C231",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/user/cityfilmsbeirut",
+      "reason": "yt_not_found",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C233",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/@createproductiondxb5110",
+      "reason": "invalid_account",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C233",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/@createproductiondxb5110",
+      "reason": "youtube_resolve_failed",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C233",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/@createproductiondxb5110",
+      "reason": "yt_not_found",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C243",
+      "platform": "website",
+      "url": "https://www.thefilmdojo.com/",
+      "reason": "unreachable_timeout",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C245",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/firstandtenproductions",
+      "reason": "invalid_account",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C245",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/firstandtenproductions",
+      "reason": "invalid_url: Platform URL/handle failed normalization; retained invalid for owner review",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C245",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/firstandtenproductions",
+      "reason": "youtube_resolve_failed",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C252",
+      "platform": "logo",
+      "url": "https://lejionmedia.com/wp-content/uploads/2025/05/Logo_Redesign-1.png",
+      "reason": "missing_logo",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C262",
+      "platform": "logo",
+      "url": "https://publicisproduction.com/wp-content/uploads/2025/09/PP-Logo.png",
+      "reason": "missing_logo",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C277",
+      "platform": "website",
+      "url": "https://urbanedgefilms.me/",
+      "reason": "unreachable_404",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C277",
+      "platform": "website_work_page",
+      "url": "https://urbanedgefilms.me/commercials",
+      "reason": "unreachable_404",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C283",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/wonderfulprodbeirut",
+      "reason": "invalid_account",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C283",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/wonderfulprodbeirut",
+      "reason": "invalid_url: Platform URL/handle failed normalization; retained invalid for owner review",
+      "owner_decision": ""
+    },
+    {
+      "company_code": "C283",
+      "platform": "youtube",
+      "url": "https://www.youtube.com/wonderfulprodbeirut",
+      "reason": "youtube_resolve_failed",
+      "owner_decision": ""
+    }
+  ]
+}

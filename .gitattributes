@@ -15,3 +15,4 @@ milestones/M01-supabase-foundation/evidence/*.log -text -whitespace
 milestones/M02-seed-data/evidence/dev-reconciliation-20261018.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 milestones/M02-seed-data/evidence/dev-main-batch-receipt-20261018.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 milestones/M02-seed-data/evidence/dev-report-recovery-20261018.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+milestones/M02-seed-data/evidence/dev-youtube-continuation-reconciliation-20261018.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
