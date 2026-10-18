@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "observedDate": "2026-10-18",
+  "reviewer": "/root/m02_handles",
+  "reviewBoundary": "Independent static review and focused synthetic VM tests of inactive local native JSON blueprints; no live workflow/credential/SQL/provider action",
+  "checkpoint": {
+    "n8n/foundation/build-foundation.mjs": "772c8de187407238908b81ef98e50466f07c8d5dd40d4edb51c2813588f1e5ce",
+    "n8n/foundation/build-health.mjs": "9e2c71b3fb15a632cf28b85037b06fb19c44f4d4a44d727b6527281ea8d99249",
+    "packages/shared/src/n8n-bindings.ts": "0778797e6452f5ecde4c6a3e40007b8d662f281038558b8ca1a604ceaa7da523",
+    "n8n/foundation/health-orchestrator.test.mjs": "fc22631bb38a21deda43d464644622c19a60e7256b57d6fe819bf552b9a63cd9"
+  },
+  "result": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "scope": "Reviewed source checkpoint only; local source may proceed through normal CI/review. Hosted acceptance remains pending."
+  },
+  "resolvedFindings": [
+    {
+      "finding": "WF90 previously required a failed source execution ID even for native trigger/activation failures that have no source execution.",
+      "resolution": "A bound workflow plus native trigger object now uses handler- followed by the actual error-handler execution ID, fixed Trigger activation/workflow_failed classification, and no inferred originating run or execution. Missing handler identity fails closed.",
+      "sources": [
+        "https://docs.n8n.io/build/flow-logic/handle-errors-gracefully.md",
+        "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/ErrorTrigger/ErrorTrigger.node.ts"
+      ]
+    },
+    {
+      "finding": "Generic SUB Log cost metadata could forward accidental credential/provider context; no current M03 provider-flow leak was observed.",
+      "resolution": "The M03 adapter now accepts only a bounded stable cost_key string in metadata. Atomic callback and fixed-fee RPCs construct their own attribution metadata. This structural minimization does not claim generic secret detection."
+    }
+  ],
+  "reviewedPaths": [
+    "Fifteen collector stubs remain inactive and contain no collection, HTTP, database write, schedule or provider operation.",
+    "All database nodes bind only the restricted dev writer credential and parameterized ops RPCs, with no service/admin substitution or direct project-table DML.",
+    "Start has no automatic retry; ambiguous native starts require history reconciliation. Idempotent cost/atomic callback paths use bounded existing RPC contracts.",
+    "Finish with an atomic completion reads the saved registry receipt, verifies durable identity/counts/summary and does not finish the run again. False replay flags do not dispatch; first-receipt resubmission remains explicitly at-least-once for harmless M03 stubs.",
+    "Notifications are log-only and use fixed summaries; arbitrary subject/HTML/provider messages and raw stacks are not persisted or sent.",
+    "WF91 binds Cairo yesterday explicitly for accrual, uses idempotent fixed-fee RPCs, rejects a changed day before notification dispatch, and fails before writes if the unsupported stats-refresh setting is enabled.",
+    "WF91 preserves budget/failing-source branch routing, distinct safe notification IDs and the stats publish stub; unknown fixed fees remain unpriced rather than fabricated."
+  ],
+  "reviewerExecutedChecks": [
+    {
+      "command": "node --test --test-name-pattern=\"Cost validates|WF90 activation\" n8n/foundation/build-foundation.test.mjs",
+      "passed": 2,
+      "failed": 0,
+      "nativeExit": 0,
+      "durationMs": 454.5025,
+      "boundary": "Only the affected final changed paths; the author's unchanged full suite was not rerun"
+    },
+    {
+      "command": "node --test n8n/foundation/health-orchestrator.test.mjs",
+      "passed": 1,
+      "failed": 0,
+      "nativeExit": 0,
+      "durationMs": 491.9059,
+      "boundary": "Three scenarios inside one independent cross-adapter case: manual health override, winter Cairo09:15 and summer Cairo09:15"
+    },
+    {
+      "command": "pnpm.cmd exec eslint n8n/foundation/health-orchestrator.test.mjs",
+      "nativeExit": 0
+    }
+  ],
+  "crossAdapterDetails": {
+    "mapper": "The actual WF00 Config object expression, Which slot Code and Call WF-91 Execute Workflow resource mapper are evaluated against the actual WF91 declared trigger, Zod parser and Validate dev input Code.",
+    "checks": "Exact four field names/types, actual bound target ID, dev environment and daily mode match in all three scenarios.",
+    "testHarnessCorrection": "The first run failed because the independent VM harness parsed a native object expression as a statement block. Parenthesizing the expression corrected the harness; no generator behavior was changed."
+  },
+  "authorEvidenceKeptSeparate": {
+    "foundationCases": 14,
+    "healthCases": 5,
+    "bindingCases": 15,
+    "status": "Author-reported PASS at the frozen checkpoint, plus lint/typecheck; distinct from the reviewer's focused executions above"
+  },
+  "remainingLiveGates": [
+    "Actual credential references, workflow creation/import/export and Cloud execution remain unverified by this review.",
+    "ErrorTrigger manual execution emits vendor example data and does not prove automatic error routing; actual error-workflow acceptance needs a genuine automatic failure path.",
+    "Downstream exactly-once paid dispatch/outbox behavior remains a later gate; M03 dispatch targets are inactive harmless stubs.",
+    "Production and later milestone activation remain outside this source review."
+  ]
+}

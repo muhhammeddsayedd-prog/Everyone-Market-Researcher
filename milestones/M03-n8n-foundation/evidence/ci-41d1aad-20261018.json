@@ -1,0 +1,68 @@
+{
+    "recordedAt":  "2026-10-18T04:29:34.3086646Z",
+    "environment":  "GitHub owned disposable local database, not hosted dev",
+    "head":  "41d1aad2ae39be179436749039cc5454713bea72",
+    "ci":  {
+               "status":  "completed",
+               "url":  "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39096921840",
+               "conclusion":  "success",
+               "id":  39096921840,
+               "jobs":  [
+                            {
+                                "name":  "unit",
+                                "status":  "completed",
+                                "conclusion":  "success"
+                            },
+                            {
+                                "name":  "quality",
+                                "status":  "completed",
+                                "conclusion":  "success"
+                            },
+                            {
+                                "name":  "db-tests",
+                                "status":  "completed",
+                                "conclusion":  "success"
+                            },
+                            {
+                                "name":  "build",
+                                "status":  "completed",
+                                "conclusion":  "success"
+                            },
+                            {
+                                "name":  "e2e",
+                                "status":  "completed",
+                                "conclusion":  "success"
+                            }
+                        ]
+           },
+    "costConcurrency":  {
+                            "passed":  true,
+                            "cleanup":  "OK",
+                            "check":  "m03-cost-concurrency",
+                            "checks":  {
+                                           "equalSingleKey":  {
+                                                                  "passed":  true,
+                                                                  "barrierObserved":  true,
+                                                                  "receipts":  [
+                                                                                   1,
+                                                                                   0
+                                                                               ],
+                                                                  "rows":  1
+                                                              },
+                                           "reversedEqualBatch":  {
+                                                                      "passed":  true,
+                                                                      "barriersObserved":  2,
+                                                                      "laterKeysHeldBeforeFirstKey":  0,
+                                                                      "receipts":  [
+                                                                                       0,
+                                                                                       2
+                                                                                   ],
+                                                                      "rows":  2
+                                                                  }
+                                       },
+                            "checksCompleted":  2,
+                            "atomicCallbackRace":  "not-covered: requires independent disposable C999/emr-smoke-test database",
+                            "retainedCatalogAndTestHouseUnchanged":  true
+                        },
+    "boundary":  "Actual PostgreSQL keyed cost concurrency is verified here; atomic callback two-session racing, hosted deployment and workflow/provider execution are not covered."
+}

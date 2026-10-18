@@ -164,5 +164,13 @@
                                                                   },
                                      "executionAttribution":  "No M03 workflow was executed. The displayed usage difference is not attributed to M03.",
                                      "settingsChangedByCodex":  false
+                                 },
+    "postUpgradeConnectorRead":  {
+                                     "recordedAt":  "2026-10-18T04:25:53.9430137Z",
+                                     "reason":  "One bounded read after actual50K/Online changed state",
+                                     "operation":  "search_projects personal limit10",
+                                     "result":  "MCP -32603 Internal error",
+                                     "noFurtherRetriesOrLogin":  true,
+                                     "authenticationFailureEstablished":  false
                                  }
 }

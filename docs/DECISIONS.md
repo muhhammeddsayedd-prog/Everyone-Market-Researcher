@@ -98,6 +98,19 @@ exactly-once external delivery; later live consumers require a durable delivery
 design. WF-90 uses trusted workflow ID mapping and fixed classified messages;
 it does not invent a parent run ID from an unverified Error Trigger payload.
 
+The native WF-00 adapter uses separate Sunday 07:00 news and 07:30 awards
+clocks. This preserves the requested timings without assuming that a 30-minute
+Wait is compatible with the reviewed 15-minute workflow timeout. Manual slot
+tests use `news` for WF-22 and `awards` for WF-23; the existing shared logical
+planner keeps its delayed awards representation. PM/backfill trigger nodes and
+Config flags remain disabled. Start run and notification claims have no blind
+automatic retry; ambiguous responses need reconciliation. SUB Log cost accepts
+only keyed metadata, while the atomic processor/accrual own their safe metadata.
+Known-source trigger errors without an originating execution ID correlate with
+the actual error-handler execution, explicitly prefixed `handler-`, without
+inventing a parent run. Automatic Error Trigger acceptance requires an actual
+automatic dev failure; manual mock execution is not that proof.
+
 M02 closed after the owner separately approved **Approve merging PR #6**
 (`call_e5871c933ab04e8fad11f15a51a82b4c`). The exact reviewed head
 `8ecb87cb75bc895491c815c575816cb8bab26649` passed all five CI39093312511 jobs

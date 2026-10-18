@@ -41,3 +41,15 @@ Never use the local M01 C999/Test House fixture or seeded pilot accounts to
 make hosted acceptance pass. Setup refuses an existing unowned C999; teardown
 only archives/pauses the receipt-owned fixture and retains all collected rows.
 See the [local refusal receipt](../../milestones/M03-n8n-foundation/evidence/local-smoke-sql-20261018.json).
+
+Native inactive blueprints and their targeted local checks are documented in
+[`foundation/README.md`](../foundation/README.md). They are not hosted exports.
+
+For AC8, use a reviewed, bounded **automatic dev failure** path. Current
+[Error Trigger documentation](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.errortrigger/)
+says manual workflow runs do not invoke the error workflow. The node's manual
+example payload and direct manual WF-90 invocation can test mapping, but cannot
+prove error routing, a native originating execution or the third/fourth-error
+throttle. No automatic failure probe has been published or run yet. Keep any
+future test isolated to owned dev workflows, close its trigger after testing,
+and leave WF-00 inactive and all unrelated workflows unchanged.
