@@ -1,0 +1,23 @@
+{
+  "observedAt": "2026-10-18T01:04:43.3625698Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "phases": [
+    "metadata_read",
+    "ca_read",
+    "ca_hash",
+    "ca_parse",
+    "ca_constraints",
+    "ca_public_key",
+    "ca_self_signature",
+    "ca_validity",
+    "tls_start"
+  ],
+  "final": null,
+  "nativeExitCode": -1073741819,
+  "nativeProcessExited": true,
+  "startupMessageSent": false,
+  "authenticationAttempted": false,
+  "privateEnvironment": "OS_allowlist_only",
+  "rawErrors": "withheld"
+}

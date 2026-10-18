@@ -22,6 +22,8 @@ import { checkAccounts, probeProviders, resolveAccounts } from './resolve-accoun
 import { copyLogo, LogoError, type LogoOwnership } from './copy-logos';
 import { restrictedStorageFetch, storageHooks } from './storage';
 import { scopedAccounts, scopedLogos } from './scope';
+import { databaseFailure } from './database-failure';
+import { validateDevCa } from './database-ca';
 
 declare const EMR_REPO_ROOT: string | undefined;
 const root =
@@ -125,7 +127,11 @@ async function main() {
         remoteLogos: plan.competitors.filter((row) => row.logo_url).length,
       },
     );
-  const config = databaseConfig(command.target, process.env);
+  const ca = validateDevCa(
+    await readFile(join(root, 'scripts/seed/certs/supabase-root-2021.crt')),
+    await readOptionalJson(join(root, 'scripts/seed/certs/supabase-root-2021.json')),
+  );
+  const config = databaseConfig(command.target, process.env, ca);
   // Credentials are never retained in process.env or passed to another executable.
   const credentials = { vimeoToken: process.env.VIMEO_TOKEN, youtubeApiKey: process.env.YOUTUBE_API_KEY };
   let storageKey = process.env.SUPABASE_SECRET_KEY;
@@ -142,7 +148,17 @@ async function main() {
   let issues: SeedIssue[] = [...plan.issues];
   try {
     await stage('database_identity', async () => {
-      const [identity] = await sql`select current_user,session_user,current_database() as database`;
+      receipt.databaseAuthentication = 'connection_attempted_identity_unverified';
+      await saveReceipt();
+      const identity = await (async () => {
+        try {
+          return (await sql`select current_user,session_user,current_database() as database`)[0];
+        } catch (error) {
+          const failure = databaseFailure(error);
+          receipt.databaseAuthentication = failure.authentication;
+          throw new SeedRuntimeError(failure.code);
+        }
+      })();
       if (
         identity?.current_user !== 'postgres' ||
         identity.session_user !== 'postgres' ||

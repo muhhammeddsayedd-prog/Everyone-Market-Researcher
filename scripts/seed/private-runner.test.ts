@@ -36,6 +36,8 @@ function fixture(
   source = consumer,
   runner = "process.stderr.write('test-only-private-sentinel'); process.exit(0);",
   approved = true,
+  tlsVerified = true,
+  tlsMode: 'normal' | 'invalid-json' | 'native-failure' = 'normal',
 ) {
   const root = mkdtempSync(join(tmpdir(), 'emr-m02-runner-test-'));
   roots.push(root);
@@ -49,6 +51,25 @@ function fixture(
   const file = join(windows, 'Invoke-M02Dev.ps1');
   writeFileSync(file, source);
   writeFileSync(join(root, 'scripts/seed/cli.ts'), '// non-secret test fixture');
+  const tlsReceipt = {
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    host: 'aws-1-eu-central-1.pooler.supabase.com',
+    port: 5432,
+    status: tlsVerified ? 'verified' : 'failed',
+    phase: 'tls_handshake',
+    code: tlsVerified ? 'TLS_VERIFIED' : 'SELF_SIGNED_CERT_IN_CHAIN',
+    rejectUnauthorized: true,
+    exactServerName: true,
+    scopedCaVerified: true,
+    startupMessageSent: false,
+    authenticationAttempted: false,
+    socketsClosed: true,
+  };
+  writeFileSync(
+    join(root, 'scripts/seed/check-tls.mjs'),
+    `if(process.env.PGPASSWORD||process.env.SUPABASE_SECRET_KEY||process.env.VIMEO_TOKEN||process.env.YOUTUBE_API_KEY)process.exit(4);process.stdout.write(${tlsMode === 'invalid-json' ? "'invalid-public-json'" : `JSON.stringify(${JSON.stringify(tlsReceipt)})`});process.exit(${tlsMode === 'native-failure' || !tlsVerified ? 1 : 0});`,
+  );
   mkdirSync(join(root, 'packages/shared/src'), { recursive: true });
   writeFileSync(join(root, 'scripts/package.json'), '{}');
   writeFileSync(join(root, 'pnpm-lock.yaml'), '# fixture');
@@ -63,6 +84,14 @@ function fixture(
     'reference/taxonomies.json': '{}',
     'scripts/seed/overrides.csv': 'company_id,platform,url,action\n',
     'assets/brand/everyone-logotype.svg': '<svg xmlns="http://www.w3.org/2000/svg"/>',
+    'scripts/seed/certs/supabase-root-2021.crt': 'test-only-public-certificate',
+    'scripts/seed/certs/supabase-root-2021.json': JSON.stringify({
+      version: 1,
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      host: 'aws-1-eu-central-1.pooler.supabase.com',
+      sourceUrl: 'https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt',
+      sha256: hash('test-only-public-certificate'),
+    }),
   };
   for (const [path, contents] of Object.entries(supplemental)) {
     mkdirSync(dirname(join(root, path)), { recursive: true });
@@ -73,6 +102,7 @@ function fixture(
   for (const path of [
     'scripts/seed/windows/Invoke-M02Dev.ps1',
     'scripts/seed/cli.ts',
+    'scripts/seed/check-tls.mjs',
     'scripts/package.json',
     'pnpm-lock.yaml',
     ...Object.keys(supplemental),
@@ -255,4 +285,37 @@ describe.runIf(process.platform === 'win32')('bounded Windows M02 credential con
     expect(result.stdout).toContain('emr-m02-dev-storage-key.dpapi = False');
     expect(existsSync(test.handoff)).toBe(false);
   });
+  it('stops before decryption when the public TLS preflight fails', () => {
+    const test = fixture(consumer, 'process.exit(0)', true, false);
+    const result = spawnSync(
+      powershell,
+      ['-NoProfile', '-NonInteractive', '-File', test.file, '-Action', 'seed'],
+      { env: test.env, encoding: 'utf8', timeout: 20_000, windowsHide: true },
+    );
+    expect(result.status).toBe(4);
+    expect(result.stdout).toContain('SELF_SIGNED_CERT_IN_CHAIN');
+    expect(result.stdout).toContain('No decryption');
+    expect(existsSync(test.handoff)).toBe(true);
+  });
+  it.each(['invalid-json', 'native-failure'] as const)(
+    'preserves the handoff and never starts the private child after TLS %s',
+    (tlsMode) => {
+      const test = fixture(
+        consumer,
+        "import{writeFileSync}from'node:fs';writeFileSync('seed/out/private-child-started','unexpected');process.exit(0);",
+        true,
+        true,
+        tlsMode,
+      );
+      const result = spawnSync(
+        powershell,
+        ['-NoProfile', '-NonInteractive', '-File', test.file, '-Action', 'seed'],
+        { env: test.env, encoding: 'utf8', timeout: 20_000, windowsHide: true },
+      );
+      expect(result.status).toBe(4);
+      expect(result.stdout).toContain('No decryption');
+      expect(existsSync(test.handoff)).toBe(true);
+      expect(existsSync(join(test.out, 'private-child-started'))).toBe(false);
+    },
+  );
 });

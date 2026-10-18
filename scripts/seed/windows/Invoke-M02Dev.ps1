@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $supplementalFiles = @('scripts/package.json','pnpm-lock.yaml','scripts/seed/dev-batch-packet.json',
   'data/competitors.csv','data/competitor_accounts.csv','reference/taxonomies.json',
-  'scripts/seed/overrides.csv','assets/brand/everyone-logotype.svg')
+  'scripts/seed/overrides.csv','assets/brand/everyone-logotype.svg','scripts/seed/certs/supabase-root-2021.crt','scripts/seed/certs/supabase-root-2021.json')
 
 function Assert-ConfinedFile([string]$Relative) {
   if ([IO.Path]::IsPathRooted($Relative) -or $Relative -match '(?:^|/|\\)\.\.(?:/|\\|$)' -or
@@ -97,6 +97,70 @@ if ($CheckOnly) {
   if ($Action -ne 'report' -and -not $packet.approved) { Write-Output 'M02 dev batch approval pending; presence check only.' }
   Write-Output 'M02 runner/source seal and required handoff files verified; authentication not tested.'
   exit 0
+}
+
+# Public SSLRequest/TLS only, before any private handoff read. A missing or invalid
+# scoped CA must not consume another credential handoff or reach database login.
+$tlsStart = $null; $tlsChild = $null; $tlsMemory = $null
+$tlsStarted = $false; $tlsExited = $false; $tlsVerified = $false
+$tlsPhase = 'preflight_process'; $tlsCode = 'TLS_PREFLIGHT_FAILED'
+try {
+  $tlsNode = (Get-Command node.exe -CommandType Application -ErrorAction Stop).Source
+  $tlsStart = New-Object Diagnostics.ProcessStartInfo
+  $tlsStart.FileName = $tlsNode
+  $tlsStart.WorkingDirectory = Join-Path $repo 'scripts'
+  $tlsStart.Arguments = '"seed/check-tls.mjs"'
+  $tlsStart.UseShellExecute = $false; $tlsStart.CreateNoWindow = $true
+  $tlsStart.RedirectStandardOutput = $true; $tlsStart.RedirectStandardError = $true
+  $tlsStart.EnvironmentVariables.Clear()
+  foreach ($name in @('SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA','APPDATA','USERPROFILE')) {
+    $value = [Environment]::GetEnvironmentVariable($name, 'Process')
+    if ($null -ne $value) { $tlsStart.EnvironmentVariables[$name] = $value }
+  }
+  $tlsChild = New-Object Diagnostics.Process
+  $tlsChild.StartInfo = $tlsStart
+  $tlsStarted = $tlsChild.Start()
+  if (-not $tlsStarted) { throw 'TLS preflight start failed' }
+  $tlsStart.EnvironmentVariables.Clear()
+  $tlsBuffer = New-Object byte[] 4096
+  $tlsMemory = [IO.MemoryStream]::new([byte[]]$tlsBuffer, $true)
+  $tlsStdout = $tlsChild.StandardOutput.BaseStream.CopyToAsync($tlsMemory)
+  $tlsStderr = $tlsChild.StandardError.BaseStream.CopyToAsync([IO.Stream]::Null)
+  if (-not $tlsChild.WaitForExit(15000)) { throw 'TLS preflight timeout' }
+  $tlsExited = $true
+  $tlsDrained = [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($tlsStdout,$tlsStderr))
+  if (-not $tlsDrained.Wait(5000)) { throw 'TLS preflight drain timeout' }
+  $tlsText = [Text.Encoding]::UTF8.GetString($tlsBuffer, 0, [int]$tlsMemory.Position)
+  $tlsReceipt = $tlsText | ConvertFrom-Json -ErrorAction Stop
+  if ($tlsReceipt.phase -in @('tcp_connect','ssl_request','tls_handshake','ca_load')) { $tlsPhase = $tlsReceipt.phase }
+  if ($tlsReceipt.code -in @('TLS_VERIFIED','TLS_UNAUTHORIZED','TLS_ERROR','TLS_CLEANUP_INCOMPLETE','NETWORK_ERROR','TIMEOUT','CONNECTION_CLOSED','SSL_NOT_SUPPORTED','SSL_RESPONSE_REJECTED','PUBLIC_CA_UNAVAILABLE_OR_INVALID','SELF_SIGNED_CERT_IN_CHAIN','DEPTH_ZERO_SELF_SIGNED_CERT','UNABLE_TO_VERIFY_LEAF_SIGNATURE','UNABLE_TO_GET_ISSUER_CERT','UNABLE_TO_GET_ISSUER_CERT_LOCALLY','CERT_HAS_EXPIRED','CERT_NOT_YET_VALID','ERR_TLS_CERT_ALTNAME_INVALID','ECONNRESET','ECONNREFUSED','ENOTFOUND','EAI_AGAIN','EHOSTUNREACH','ENETUNREACH','ETIMEDOUT')) { $tlsCode = $tlsReceipt.code }
+  $tlsVerified = $tlsChild.ExitCode -eq 0 -and $tlsReceipt.status -eq 'verified' -and
+    $tlsReceipt.phase -eq 'tls_handshake' -and $tlsReceipt.code -eq 'TLS_VERIFIED' -and
+    $tlsReceipt.environment -eq 'dev' -and $tlsReceipt.projectRef -eq 'zmotjsbzhzjvpelxvxlf' -and
+    $tlsReceipt.host -eq 'aws-1-eu-central-1.pooler.supabase.com' -and $tlsReceipt.port -eq 5432 -and
+    $tlsReceipt.rejectUnauthorized -eq $true -and $tlsReceipt.exactServerName -eq $true -and
+    $tlsReceipt.scopedCaVerified -eq $true -and
+    $tlsReceipt.startupMessageSent -eq $false -and $tlsReceipt.authenticationAttempted -eq $false -and
+    $tlsReceipt.socketsClosed -eq $true
+} catch { $tlsVerified = $false } finally {
+  if ($null -ne $tlsChild) {
+    if ($tlsStarted -and -not $tlsExited) {
+      try {
+        if (-not $tlsChild.WaitForExit(0)) { $tlsChild.Kill() }
+        $tlsExited = $tlsChild.WaitForExit(5000)
+      } catch { $tlsExited = $false }
+    }
+    try { $tlsChild.Dispose() } catch { $tlsVerified = $false }
+  }
+  if ($null -ne $tlsStart) { $tlsStart.EnvironmentVariables.Clear() }
+  if ($null -ne $tlsMemory) { $tlsMemory.Dispose() }
+  $tlsBuffer = $null; $tlsText = $null; $tlsReceipt = $null
+  $tlsStdout = $null; $tlsStderr = $null; $tlsDrained = $null; $tlsStart = $null; $tlsChild = $null
+}
+Write-Output ('M02 public TLS preflight: ' + $tlsPhase + ' / ' + $tlsCode + '. Database authentication not attempted by this preflight.')
+if (-not $tlsVerified -or ($tlsStarted -and -not $tlsExited)) {
+  Write-Output 'M02 public TLS preflight did not pass. No decryption or database authentication attempted; all handoffs preserved.'
+  exit 4
 }
 
 $child = $null; $start = $null

@@ -51,7 +51,7 @@ export function parseCommand(args: string[]): { action: SeedAction; target: Seed
 }
 
 /** Password is passed only in the owner's bounded child environment, never in this URI. */
-export function databaseConfig(target: SeedTarget, env: Record<string, string | undefined>) {
+export function databaseConfig(target: SeedTarget, env: Record<string, string | undefined>, ca?: string) {
   if (target !== 'dev') return reject('M02_PRODUCTION_NOT_APPROVED');
   const selected = seedTargets[target];
   if (!env.SEED_DATABASE_URL) return reject('M02_DATABASE_URL_NOT_PRESENT');
@@ -76,13 +76,14 @@ export function databaseConfig(target: SeedTarget, env: Record<string, string | 
     return reject('M02_DATABASE_TARGET_REJECTED');
   }
   if (!env.PGPASSWORD) return reject('M02_PASSWORD_NOT_PRESENT');
+  if (!ca) return reject('M02_PUBLIC_CA_NOT_PRESENT');
   const options: Options<Record<string, never>> = {
     host: selected.host,
     port: 5432,
     username: `postgres.${selected.ref}`,
     database: 'postgres',
     password: env.PGPASSWORD,
-    ssl: { rejectUnauthorized: true },
+    ssl: { ca, rejectUnauthorized: true, servername: selected.host, minVersion: 'TLSv1.2' },
     max: 1,
     prepare: false,
     connect_timeout: 15,

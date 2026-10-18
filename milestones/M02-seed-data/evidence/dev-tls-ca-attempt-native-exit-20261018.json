@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-10-18T01:04:06.325Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "host": "aws-1-eu-central-1.pooler.supabase.com",
+  "port": 5432,
+  "status": "abnormal_native_exit",
+  "phase": "unestablished_between_ca_validation_and_tls",
+  "code": "NATIVE_ACCESS_VIOLATION",
+  "rejectUnauthorized": true,
+  "exactServerName": true,
+  "scopedCaVerified": false,
+  "startupMessageSent": false,
+  "authenticationAttempted": false,
+  "socketsClosed": null,
+  "nativeExitCode": -1073741819,
+  "nativeProcessExited": true,
+  "privateEnvironment": "cleared_then_OS_allowlist_only",
+  "publicCaPin": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+  "publicCaProvenance": "Owner attested the copied public certificate and supplied its public SHA256. Runtime verification was not established: the process exited abnormally without a JSON result."
+}

@@ -1,6 +1,7 @@
 * text=auto eol=lf
 .agents/** -text
 assets/** -text
+scripts/seed/certs/*.crt -text
 data/** -text
 reference/** -text
 apps/web/styles/tokens.css -text

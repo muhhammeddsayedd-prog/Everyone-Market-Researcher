@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-10-18T01:09:26.295Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "host": "aws-1-eu-central-1.pooler.supabase.com",
+  "port": 5432,
+  "rejectUnauthorized": true,
+  "exactServerName": true,
+  "startupMessageSent": false,
+  "authenticationAttempted": false,
+  "status": "verified",
+  "phase": "tls_handshake",
+  "code": "TLS_VERIFIED",
+  "socketsClosed": true,
+  "scopedCaVerified": true,
+  "nativeExitCode": 0,
+  "nativeProcessExited": true,
+  "privateEnvironment": "cleared_then_OS_allowlist_only"
+}

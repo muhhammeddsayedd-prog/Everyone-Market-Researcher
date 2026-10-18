@@ -53,6 +53,8 @@ for (const path of [
   'reference/taxonomies.json',
   'scripts/seed/overrides.csv',
   'assets/brand/everyone-logotype.svg',
+  'scripts/seed/certs/supabase-root-2021.crt',
+  'scripts/seed/certs/supabase-root-2021.json',
 ])
   files[path] = digest(await readFile(join(root, path)));
 await writeFile(

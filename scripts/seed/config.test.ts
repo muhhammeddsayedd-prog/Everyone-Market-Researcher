@@ -29,7 +29,11 @@ describe('owner-run seed command boundaries', () => {
     expect(() => parseCommand(args)).toThrow(/^M02_/);
   });
   it('uses a password-free URI plus the private child password', () => {
-    const config = databaseConfig('dev', { SEED_DATABASE_URL: url, PGPASSWORD: 'test-only-sentinel' });
+    const config = databaseConfig(
+      'dev',
+      { SEED_DATABASE_URL: url, PGPASSWORD: 'test-only-sentinel' },
+      'test-only-public-ca',
+    );
     expect(config.target).toBe('supabase:zmotjsbzhzjvpelxvxlf:postgres');
     expect(config.options).toMatchObject({
       host: seedTargets.dev.host,
@@ -38,7 +42,12 @@ describe('owner-run seed command boundaries', () => {
       username: 'postgres.zmotjsbzhzjvpelxvxlf',
       max: 1,
       prepare: false,
-      ssl: { rejectUnauthorized: true },
+      ssl: {
+        ca: 'test-only-public-ca',
+        rejectUnauthorized: true,
+        servername: seedTargets.dev.host,
+        minVersion: 'TLSv1.2',
+      },
       password: 'test-only-sentinel',
     });
   });
@@ -65,6 +74,11 @@ describe('owner-run seed command boundaries', () => {
   it('distinguishes missing private password from database authentication', () => {
     expect(() => databaseConfig('dev', { SEED_DATABASE_URL: url })).toThrow('M02_PASSWORD_NOT_PRESENT');
     expect(() => databaseConfig('dev', {})).toThrow('M02_DATABASE_URL_NOT_PRESENT');
+  });
+  it('requires the reviewed public CA without falling back to weaker TLS', () => {
+    expect(() => databaseConfig('dev', { SEED_DATABASE_URL: url, PGPASSWORD: 'test-only-sentinel' })).toThrow(
+      'M02_PUBLIC_CA_NOT_PRESENT',
+    );
   });
   it('rejects production even when databaseConfig is called directly', () => {
     expect(() =>

@@ -11,6 +11,13 @@ session pooler `aws-1-eu-central-1.pooler.supabase.com:5432`, database `postgres
 login `postgres.zmotjsbzhzjvpelxvxlf` and verified TLS. The URI contains no password.
 Restricted `n8n_writer`/`api_agent` credentials cannot perform this owner seed.
 
+TLS uses the public Supabase root certificate in `certs/supabase-root-2021.crt`,
+with its official source and public SHA256 in `certs/supabase-root-2021.json`.
+Both files are included in the source seal. This CA is scoped to the dev database
+client: certificate-chain and exact hostname verification remain enabled. No
+Windows/global trust setting or server SSL setting is changed. The `.crt` file
+is stored byte-for-byte so checkout line endings cannot invalidate its public pin.
+
 ## Inputs and local checks
 
 - `data/competitors.csv`: 285 competitors, including the C000 baseline; tiers
@@ -154,8 +161,15 @@ After the exact packet is approved and the handoffs are ready, Codex runs:
 & 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\seed\windows\Invoke-M02Dev.ps1' -Action accept-dev
 ```
 
-The consumer verifies the source inventory/seals before decrypting only the
-credentials needed by the selected action. It starts one hidden plain-Node child
+The consumer verifies the source inventory/seals, then runs a credential-free
+Postgres SSLRequest/TLS preflight with the scoped public CA before reading any
+private handoff. The preflight sends no StartupMessage or login. It must verify
+the fixed dev hostname and close its sockets with native exit0. Any failed or
+ambiguous preflight preserves every private handoff and stops before decryption.
+`CheckOnly` remains a presence/seal check and does not run TLS or authenticate.
+
+After that preflight, the consumer decrypts only the credentials needed by the
+selected action. It starts one hidden plain-Node child
 with a minimal environment, fixed password-free dev URI and the private values
 only in that child's environment. Raw stdout/stderr are discarded; no provider
 body, credential-bearing connection URL or raw error is printed. The CLI verifies
@@ -244,3 +258,4 @@ milestone remain separate decisions.
   and [Google API key restrictions](https://docs.cloud.google.com/api-keys/docs/add-restrictions-api-keys).
 - [Supabase API keys](https://supabase.com/docs/guides/api/api-keys) and the
   project's binding [M02 milestone](../../milestones/M02-seed-data/MILESTONE.md).
+- [Supabase certificate-chain and hostname verification](https://supabase.com/docs/guides/platform/ssl-enforcement).
