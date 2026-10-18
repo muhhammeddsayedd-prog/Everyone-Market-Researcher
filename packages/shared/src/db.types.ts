@@ -2318,6 +2318,114 @@ export type Database = {
         };
         Relationships: [];
       };
+      apify_launch_admissions: {
+        Row: {
+          account_id: string;
+          actor_build: string;
+          actor_id: string;
+          apify_run_id: string | null;
+          execution_id: string;
+          input: NonNullable<Json>;
+          launch_id: string;
+          max_total_charge_usd: number;
+          ordinal: number;
+          post_intent_at: string;
+          reconciled_at: string | null;
+          run_id: string;
+          window_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          account_id: string;
+          actor_build: string;
+          actor_id: string;
+          apify_run_id?: string | null;
+          execution_id: string;
+          input: NonNullable<Json>;
+          launch_id: string;
+          max_total_charge_usd: number;
+          ordinal: number;
+          post_intent_at?: string;
+          reconciled_at?: string | null;
+          run_id: string;
+          window_id: string;
+        };
+        Update: {
+          account_id?: string;
+          actor_build?: string;
+          actor_id?: string;
+          apify_run_id?: string | null;
+          execution_id?: string;
+          input?: NonNullable<Json>;
+          launch_id?: string;
+          max_total_charge_usd?: number;
+          ordinal?: number;
+          post_intent_at?: string;
+          reconciled_at?: string | null;
+          run_id?: string;
+          window_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'apify_launch_admissions_apify_run_id_fkey';
+            columns: ['apify_run_id'];
+            isOneToOne: true;
+            referencedRelation: 'apify_runs';
+            referencedColumns: ['apify_run_id'];
+          },
+          {
+            foreignKeyName: 'apify_launch_admissions_run_id_fkey';
+            columns: ['run_id'];
+            isOneToOne: true;
+            referencedRelation: 'scrape_runs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'apify_launch_admissions_window_id_fkey';
+            columns: ['window_id'];
+            isOneToOne: false;
+            referencedRelation: 'apify_launch_approvals';
+            referencedColumns: ['window_id'];
+          },
+        ];
+      };
+      apify_launch_approvals: {
+        Row: {
+          actor_build: string;
+          approval_reference: string;
+          batch_max_usd: number;
+          closed_at: string | null;
+          expires_at: string;
+          max_total_charge_usd: number;
+          not_before: string;
+          project_ref: string;
+          window_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          actor_build: string;
+          approval_reference: string;
+          batch_max_usd: number;
+          closed_at?: string | null;
+          expires_at: string;
+          max_total_charge_usd: number;
+          not_before: string;
+          project_ref: string;
+          window_id: string;
+        };
+        Update: {
+          actor_build?: string;
+          approval_reference?: string;
+          batch_max_usd?: number;
+          closed_at?: string | null;
+          expires_at?: string;
+          max_total_charge_usd?: number;
+          not_before?: string;
+          project_ref?: string;
+          window_id?: string;
+        };
+        Relationships: [];
+      };
       apify_runs: {
         Row: {
           account_ids: string[];
@@ -2463,6 +2571,189 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'scrape_runs';
             referencedColumns: ['id'];
+          },
+        ];
+      };
+      foundation_gateway_leases: {
+        Row: {
+          expires_at: string | null;
+          request_id: string | null;
+          slot: number;
+          window_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          expires_at?: string | null;
+          request_id?: string | null;
+          slot: number;
+          window_id: string;
+        };
+        Update: {
+          expires_at?: string | null;
+          request_id?: string | null;
+          slot?: number;
+          window_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'foundation_gateway_leases_window_id_fkey';
+            columns: ['window_id'];
+            isOneToOne: false;
+            referencedRelation: 'foundation_gateway_rate_windows';
+            referencedColumns: ['window_id'];
+          },
+          {
+            foreignKeyName: 'foundation_gateway_leases_window_id_request_id_fkey';
+            columns: ['window_id', 'request_id'];
+            isOneToOne: false;
+            referencedRelation: 'foundation_gateway_requests';
+            referencedColumns: ['window_id', 'request_id'];
+          },
+        ];
+      };
+      foundation_gateway_rate_windows: {
+        Row: {
+          admitted_count: number;
+          bound_audience: string | null;
+          bound_commit_sha: string | null;
+          bound_deployment_id: string | null;
+          close_count: number;
+          closed_at: string | null;
+          day_count: number;
+          day_start: string | null;
+          environment: string;
+          expires_at: string | null;
+          minute_count: number;
+          minute_start: string | null;
+          namespace: string;
+          project_ref: string;
+          starts_at: string | null;
+          window_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          admitted_count?: number;
+          bound_audience?: string | null;
+          bound_commit_sha?: string | null;
+          bound_deployment_id?: string | null;
+          close_count?: number;
+          closed_at?: string | null;
+          day_count?: number;
+          day_start?: string | null;
+          environment: string;
+          expires_at?: string | null;
+          minute_count?: number;
+          minute_start?: string | null;
+          namespace: string;
+          project_ref: string;
+          starts_at?: string | null;
+          window_id: string;
+        };
+        Update: {
+          admitted_count?: number;
+          bound_audience?: string | null;
+          bound_commit_sha?: string | null;
+          bound_deployment_id?: string | null;
+          close_count?: number;
+          closed_at?: string | null;
+          day_count?: number;
+          day_start?: string | null;
+          environment?: string;
+          expires_at?: string | null;
+          minute_count?: number;
+          minute_start?: string | null;
+          namespace?: string;
+          project_ref?: string;
+          starts_at?: string | null;
+          window_id?: string;
+        };
+        Relationships: [];
+      };
+      foundation_gateway_requests: {
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          error_code: string | null;
+          lease_expires_at: string;
+          operation: string;
+          payload_sha256: string;
+          read_apify_run_id: string | null;
+          read_launch_id: string | null;
+          read_started: boolean;
+          request_id: string;
+          result: Json | null;
+          state: string;
+          window_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          error_code?: string | null;
+          lease_expires_at: string;
+          operation: string;
+          payload_sha256: string;
+          read_apify_run_id?: string | null;
+          read_launch_id?: string | null;
+          read_started?: boolean;
+          request_id: string;
+          result?: Json | null;
+          state: string;
+          window_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          error_code?: string | null;
+          lease_expires_at?: string;
+          operation?: string;
+          payload_sha256?: string;
+          read_apify_run_id?: string | null;
+          read_launch_id?: string | null;
+          read_started?: boolean;
+          request_id?: string;
+          result?: Json | null;
+          state?: string;
+          window_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'foundation_gateway_requests_window_id_fkey';
+            columns: ['window_id'];
+            isOneToOne: false;
+            referencedRelation: 'foundation_gateway_rate_windows';
+            referencedColumns: ['window_id'];
+          },
+        ];
+      };
+      foundation_gateway_run_bindings: {
+        Row: {
+          run_id: string;
+          window_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          run_id: string;
+          window_id: string;
+        };
+        Update: {
+          run_id?: string;
+          window_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'foundation_gateway_run_bindings_run_id_fkey';
+            columns: ['run_id'];
+            isOneToOne: true;
+            referencedRelation: 'scrape_runs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'foundation_gateway_run_bindings_window_id_fkey';
+            columns: ['window_id'];
+            isOneToOne: false;
+            referencedRelation: 'foundation_gateway_rate_windows';
+            referencedColumns: ['window_id'];
           },
         ];
       };
@@ -2758,6 +3049,7 @@ export type Database = {
       accrue_fixed_costs: { Args: { p_day: string }; Returns: number };
       ack_queue: { Args: { p_msg_ids: number[]; p_queue: string }; Returns: undefined };
       apify_runs_pending: { Args: { p_run_id: string }; Returns: number };
+      authorize_apify_launch: { Args: { p: Json }; Returns: Json };
       claim_queue_batch: {
         Args: { p_n: number; p_queue: string; p_vt_seconds?: number };
         Returns: {
@@ -2774,6 +3066,53 @@ export type Database = {
       diff_website_urls: { Args: { p_account_id: string; p_urls: string[] }; Returns: string[] };
       error_count_24h: { Args: { p_claim_notify?: boolean; p_workflow: string }; Returns: number };
       finish_run: { Args: { p_error?: string; p_run_id: string; p_status: string }; Returns: Json };
+      foundation_gateway_admit: {
+        Args: {
+          p_args: Json;
+          p_mode?: string;
+          p_operation: string;
+          p_request_id: string;
+          p_window_id: string;
+        };
+        Returns: Json;
+      };
+      foundation_gateway_complete_read: {
+        Args: { p_apify_run_id: string; p_request_id: string; p_result: Json; p_window_id: string };
+        Returns: Json;
+      };
+      foundation_gateway_execute: {
+        Args: { p_args: Json; p_operation: string; p_request_id: string; p_window_id: string };
+        Returns: Json;
+      };
+      foundation_gateway_process: { Args: { p_args: Json; p_window_id: string }; Returns: Json };
+      foundation_gateway_provision: { Args: { p: Json }; Returns: undefined };
+      foundation_gateway_read_context: {
+        Args: { p_apify_run_id: string; p_request_id: string; p_window_id: string };
+        Returns: Json;
+      };
+      foundation_gateway_registered: { Args: { p_apify_run_id: string; p_window_id: string }; Returns: Json };
+      foundation_gateway_replay_costs: { Args: { p_entries: Json; p_window_id: string }; Returns: number };
+      foundation_gateway_response: {
+        Args: {
+          p_code: string;
+          p_operation: string;
+          p_replayed?: boolean;
+          p_result: Json;
+          p_state: string;
+          p_window_id: string;
+        };
+        Returns: Json;
+      };
+      foundation_gateway_status: {
+        Args: { p_target_request_id: string; p_window_id: string };
+        Returns: Json;
+      };
+      foundation_gateway_validate: {
+        Args: { p_args: Json; p_operation: string; p_request_id: string; p_window_id: string };
+        Returns: undefined;
+      };
+      foundation_gateway_workflow: { Args: { p: string }; Returns: boolean };
+      get_apify_launch: { Args: { p_launch_id: string }; Returns: Json };
       get_apify_run: { Args: { p_apify_run_id: string }; Returns: Json };
       get_due_accounts: {
         Args: {
@@ -2801,6 +3140,7 @@ export type Database = {
       get_setting: { Args: { p_key: string }; Returns: Json };
       log_cost: { Args: { p_entries: Json }; Returns: number };
       log_workflow_error: { Args: { p: Json }; Returns: undefined };
+      m03_smoke_launch_input: { Args: Record<PropertyKey, never>; Returns: Json };
       process_apify_run: {
         Args: {
           p_apify_run_id: string;
@@ -2811,6 +3151,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      reconcile_apify_launch: { Args: { p: Json }; Returns: Json };
       register_apify_run: {
         Args: {
           p_account_ids: string[];
@@ -2821,6 +3162,7 @@ export type Database = {
         };
         Returns: undefined;
       };
+      reject_apify_callback: { Args: { p: Json }; Returns: Json };
       report_account_result: {
         Args: {
           p_account_id: string;

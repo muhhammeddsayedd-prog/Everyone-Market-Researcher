@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "capturedAt": "2026-10-18T23:40:25.808Z",
+  "status": "verified_local_pending_ci_and_hosted_acceptance",
+  "environment": {
+    "kind": "existing-owned-local-stack",
+    "projectId": "everyone-market-radar",
+    "host": "127.0.0.1",
+    "port": 60322,
+    "postgresMajor": 17,
+    "hostedChanges": false
+  },
+  "migrations": {
+    "createdByPinnedCli": true,
+    "originalTenFilesUnchanged": true,
+    "localHistoryCount": 14,
+    "newLocalVersions": [
+      {
+        "name": "20261018231756_m03_actor_launch_admission.sql",
+        "sha256": "fc6955938bba3d08b6a1140258a1db2d0569a5f441c8cc5c934847eb84116600"
+      },
+      {
+        "name": "20261018232014_m03_foundation_gateway.sql",
+        "sha256": "ea1385b734e243bed4dea0030f4975a81d38d41338cb8d94d6086dd83916d334"
+      },
+      {
+        "name": "20261018232922_m03_foundation_safety_receipts.sql",
+        "sha256": "dffa2c23d0102bb7382106c9800e05b5806a1eee89580794aa87bdd63a7f05a5"
+      },
+      {
+        "name": "20261018233338_m03_foundation_boundary_hardening.sql",
+        "sha256": "bf930602b402ef0b4649e9399ed2dcb9d6f2bf576a08d9313f352ccfab4d6c90"
+      }
+    ],
+    "hostedPending": [
+      "20261018231756",
+      "20261018232014",
+      "20261018232922",
+      "20261018233338"
+    ],
+    "seedReplayed": false,
+    "resetPerformed": false
+  },
+  "preserved": {
+    "localCompetitors": 1,
+    "localAccounts": 3,
+    "localItems": 10,
+    "localC999": "Test House / test-house",
+    "historicalHostedBaseline": "285 competitors / 1754 accounts / 257 logos / seven exclusions; not re-read by this local evidence",
+    "gw01HostedWindow": "closed; untouched",
+    "gw01LocalPreparedWindow": "unchanged; not a hosted-trial status claim",
+    "finalFoundationWindows": 0,
+    "finalFoundationRequests": 0,
+    "finalFoundationLeases": 0,
+    "finalLaunchApprovals": 0,
+    "finalLaunchAdmissions": 0
+  },
+  "tests": {
+    "newPgTap": {
+      "nativeExit": 0,
+      "files": 3,
+      "assertions": 173,
+      "suites": [
+        {
+          "name": "12_m03_launch_admission.test.sql",
+          "assertions": 62
+        },
+        {
+          "name": "13_m03_foundation_gateway.test.sql",
+          "assertions": 92
+        },
+        {
+          "name": "14_m03_foundation_boundaries.test.sql",
+          "assertions": 19
+        }
+      ],
+      "rollbackOnly": true,
+      "terminalDelayBoundary": "explicit local timestamp fixtures; not observed provider settlement"
+    },
+    "retainedPgTap": {
+      "originalElevenFileRun": {
+        "assertions": 379,
+        "initialFailure": "one stale ops-table count13 after six additional tables",
+        "otherTenFiles": "passed in that actual post-migration run"
+      },
+      "correctedSchemaSuite": {
+        "nativeExit": 0,
+        "assertions": 21,
+        "expectedOpsTables": 19
+      },
+      "originalGw01Suite": {
+        "nativeExit": 0,
+        "assertions": 102,
+        "sessionBoundary": "local supabase_admin/session-authorization simulation"
+      }
+    },
+    "actualSqlAppBoundary": {
+      "nativeExit": 0,
+      "files": 1,
+      "assertions": 1,
+      "explicitOptIn": "EMR_M03_LOCAL_SQL_TEST=true",
+      "rollbackOnly": true,
+      "runAfterFourthMigration": true
+    },
+    "helperUnit": {
+      "nativeExit": 0,
+      "assertions": 5
+    },
+    "ciSafetyMocks": {
+      "nativeExit": 0,
+      "assertions": 15,
+      "hostedOrDbAcceptance": false
+    },
+    "gatewayConcurrency": {
+      "nativeExit": 0,
+      "observedAt": "2026-10-18T23:36:00.468Z",
+      "scope": "local-gateway-only",
+      "observedOverlap": true,
+      "thirdReservationDenied": true,
+      "duplicateAuditRows": 1,
+      "committedResultRecoveredByStatus": true,
+      "closedNeverReopens": true,
+      "ownedTemporaryRowsRemoved": true,
+      "retainedDataHistorySnapshotUnchanged": true,
+      "clientsClosed": true,
+      "actorRace": "not-run locally; existing C999 preserved; required in no-seed CI fixture",
+      "principalBoundary": "session-authorization simulation, not restricted network-login proof"
+    }
+  },
+  "localAdvisors": {
+    "security": {
+      "nativeExit": 0,
+      "warnings": 0,
+      "errors": 0
+    },
+    "performance": {
+      "nativeExit": 0,
+      "warnings": 0,
+      "errors": 0
+    },
+    "hostedAdvisorsRerun": false
+  },
+  "generatedTypes": {
+    "source": "supabase gen types --local --lang typescript --schema app,api,ops,ingest",
+    "sha256": "7e488378849c695f5f2460319076e2539519369e7005461e8c3d0c75d339691a",
+    "parseDiagnostics": 0,
+    "tables": 45,
+    "views": 9,
+    "functions": 46,
+    "schemas": [
+      "api",
+      "app",
+      "ingest",
+      "ops"
+    ],
+    "sharedTypecheckNativeExit": 0,
+    "hostedParityClaim": false
+  },
+  "historicalFailuresPreserved": [
+    "Missing-entry-point RED: launch pgTAP4/4, foundation pgTAP5/5 failed before migration application.",
+    "First local migration application committed launch version once; foundation version failed SQL CASE parsing and rolled back. History/schema were reconciled; only still-pending corrected version was applied.",
+    "Initial foundation suite79 assertions had one incorrect price-key test assumption; the test was corrected to an existing documented key.",
+    "Forward clock/outside-window/cost regressions failed3/86 before safety-receipts version; then passed.",
+    "Final strict JSON boundary regressions failed6/19 and trusted-read/Close regressions failed3/92 before fourth version; then passed.",
+    "Inline Windows node-e AST command failed quoting; corrected stdin-based AST verification passed without schema changes."
+  ],
+  "sourceReview": {
+    "rootFinalFourthReview": "completed before fourth local apply; independent workflow/SQL review remains separate",
+    "ciActorPath": "source prepared; actual result pending normal PR CI"
+  },
+  "boundaries": {
+    "noCredentialsRead": true,
+    "noHostedMutation": true,
+    "noActorStart": true,
+    "noProviderRequestFromDbWork": true,
+    "noProductionChange": true,
+    "noWorkflowActivation": true,
+    "noMerge": true,
+    "noM04": true
+  }
+}

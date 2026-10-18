@@ -34,11 +34,32 @@ run_private() {
 run_private 'Local Supabase start' supabase start --exclude \
   realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
 printf 'Local Supabase start: OK\n'
+# Actor-admission concurrency needs an independent empty C999 namespace. This
+# reset belongs only to this already-guarded ephemeral GitHub job. Ordinary
+# resumes use --local --gateway-only and never reset or alter C999/Test House.
+run_private 'Foundation no-seed fixture' supabase db reset --local --no-seed
+printf 'Foundation no-seed fixture: OK\n'
+run_private 'Foundation concurrent SQL' node scripts/db/check-m03-foundation-concurrency.mjs --ci
+node --input-type=module - "$private_log" <<'NODE'
+import {readFileSync} from 'node:fs';
+let r;
+try {r=JSON.parse(readFileSync(process.argv[2],'utf8'));} catch {console.error('Foundation concurrent SQL: FAIL (invalid bounded receipt).');process.exit(1);}
+const required=['maxTwoReservations','overlappingDuplicateSingleSideEffect','committedResultRecoveredByReadback',
+  'overlappingActorOnePostPermit','unknownOriginalPreventsAnotherLaunch','closedNeverReopens',
+  'ownedFixtureRemovedAndBaselinePreserved','databaseClientsClosed'];
+if(r.passed!==true || r.scope!=='ci-owned-no-seed-local-fixture' || r.actorConcurrency!=='executed' || required.some(k=>r.checks?.[k]!==true)) {
+  console.error('Foundation concurrent SQL: FAIL (missing required observations).');process.exit(1);
+}
+console.log('Foundation concurrent SQL: PASS (owned no-seed fixture, eight observed checks)');
+NODE
 run_private 'Local database reset' supabase db reset --local
 printf 'Local database reset: OK\n'
 old_suites=()
 for suite in supabase/tests/*.sql; do
-  [[ "$suite" == supabase/tests/11_worker_gateway.test.sql ]] || old_suites+=("$suite")
+  case "$suite" in
+    supabase/tests/11_worker_gateway.test.sql|supabase/tests/12_m03_launch_admission.test.sql|supabase/tests/13_m03_foundation_gateway.test.sql|supabase/tests/14_m03_foundation_boundaries.test.sql) ;;
+    *) old_suites+=("$suite") ;;
+  esac
 done
 [[ "${#old_suites[@]}" == 11 ]] || { printf 'Expected eleven retained SQL suites.\n' >&2; exit 1; }
 run_private 'pgTAP' supabase test db --local "${old_suites[@]}"
@@ -77,6 +98,32 @@ if [[ "$files" != 1 || "$assertions" != 102 || "$verdict" != PASS ]]; then
   printf 'GW-01 pgTAP: FAIL (expected one file,102 assertions and PASS).\n' >&2; exit 1
 fi
 printf 'GW-01 pgTAP: %s files, %s assertions, PASS (local session simulation)\n' "$files" "$assertions"
+
+foundation_suites=(supabase/tests/12_m03_launch_admission.test.sql supabase/tests/13_m03_foundation_gateway.test.sql supabase/tests/14_m03_foundation_boundaries.test.sql)
+for suite in "${foundation_suites[@]}"; do [[ -f "$suite" ]] || { printf 'Foundation pgTAP: FAIL (missing suite).\n' >&2; exit 1; }; done
+run_private 'Foundation pgTAP' env PGPASSWORD=postgres supabase test db \
+  --db-url postgresql://supabase_admin@127.0.0.1:60322/postgres "${foundation_suites[@]}"
+files=0 assertions=0 verdict=''
+while IFS= read -r line || [[ -n "$line" ]]; do
+  line="${line%$'\r'}"
+  if [[ "$line" =~ ^Files=([0-9]+),[[:space:]]*Tests=([0-9]+), ]]; then files="${BASH_REMATCH[1]}"; assertions="${BASH_REMATCH[2]}";
+  elif [[ "$line" == 'Result: PASS' ]]; then verdict=PASS; fi
+done <"$private_log"
+if [[ "$files" != 3 || "$assertions" -lt 173 || "$verdict" != PASS ]]; then
+  printf 'Foundation pgTAP: FAIL (expected three files, at least173 assertions and PASS).\n' >&2; exit 1
+fi
+printf 'Foundation pgTAP: %s files, %s assertions, PASS (local session simulation)\n' "$files" "$assertions"
+run_private 'Foundation SQL/app contract' env EMR_M03_LOCAL_SQL_TEST=true pnpm --filter web exec vitest run server/n8n-worker/foundation-sql.integration.test.ts --reporter=json --outputFile "$private_report"
+node --input-type=module - "$private_report" <<'NODE'
+import {readFileSync} from 'node:fs';
+let r;
+try {r=JSON.parse(readFileSync(process.argv[2],'utf8'));} catch {console.error('Foundation SQL/app contract: FAIL (invalid private report).');process.exit(1);}
+const f=r.testResults?.find(v=>v.name?.replaceAll('\\','/').endsWith('/server/n8n-worker/foundation-sql.integration.test.ts'));
+if(!r.success || r.numFailedTests!==0 || r.numPendingTests!==0 || !f?.assertionResults?.length || f.assertionResults.some(v=>v.status!=='passed')) {
+  console.error('Foundation SQL/app contract: FAIL (missing, skipped or failed assertions).');process.exit(1);
+}
+console.log('Foundation SQL/app contract: PASS (actual rollback-only result decoding)');
+NODE
 
 run_private 'Security advisors' supabase db advisors --local --type security --level warn --fail-on warn
 printf 'Security advisors: no warnings or errors\n'

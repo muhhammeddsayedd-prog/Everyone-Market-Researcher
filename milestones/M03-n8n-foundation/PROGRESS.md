@@ -4,12 +4,12 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: bounded GW-01 connection trial and owned closeout completed. The window stays closed; full M03 technical and acceptance gates remain open.**
+**In progress: full M03 source and local database/graph/reader checks completed. Saved inactive definitions and the separate live acceptance remain pending. GW-01 stays closed.**
 
 | Field | Value |
 | --- | --- |
 | Started | 2026-10-18 Cairo |
-| Last updated | 2026-10-18 Cairo |
+| Last updated | 2026-10-19 Cairo |
 | Finished | — |
 | Branch / PR | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; preserved reviewed `100290a291530d30d0387269c1a0805ad4f86fcc` and earlier evidence, no reset |
 | Selected runtime source | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
@@ -17,7 +17,8 @@
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
 | Current task | Actual gateway/native HTTP-node identities, duplicate/replay/conflict, auth denials and lost-ack reconciliation pass. Trial closed at 23/100 local attempts and 17 SQL admissions including one Close, zero leases, baseline unchanged. Dedicated bypass/owned n8n credentials/handoffs removed; one-time ResumeCleanup verified both sensitive project entries absent and enabled false. [Actual trial/closeout](evidence/gw01-trial-closeout-20261018.json). |
-| Next step | Continue the [source-only full M03 draft packet](evidence/live-acceptance-outline-20261018.md) and unblocked local gates: full restricted transport, durable spend admission, exact rejection audit, privacy/bounds/native bindings and concrete two-run caps. No trial replay/window reset or premature paid approval. |
+| Next step | Complete independent review/sealing of the bounded inactive provisioning consumer, obtain one genuinely missing existing-key Management handoff after preparation, and save/read back the 25 inactive full definitions. Fill actual references in the [existing live packet](evidence/live-acceptance-outline-20261018.md) before asking for its separate approval. No new hosted migration/window or paid execution now. |
+| Current source continuation | Reviewed `f43c5e5` / CI39119760390 retained; new source work begins at `8746eef`. Four forward versions have local-only evidence; all remain pending hosted approval. Local SQL/app results, graph tests, native saved state and future live acceptance are separate. |
 
 ## 19 October continuation — finite completion matrix
 
@@ -53,11 +54,11 @@ expired. No production remediation has been authorized.
 - [ ] T2 — Historical API authentication/discovery/Personal list200 retained; later workflow failure stage remains unknown. New safe stage diagnostics44 Node/17 isolated Windows fixtures pass; helper resealed after independent review. No live inventory retry/key request. [Local receipt](evidence/local-api-stage-diagnostics-20261018.json).
 - [ ] T3 — All five actual IDs/types reused; four provider metadata GETs pass. Native Postgres-node TLS remains open; separate approved GW-01 direct Writer Verify and actual gateway/native HTTP-node identities now pass. The temporary connection trial is closed, not full backbone acceptance; OpenAI cap is not inferred from Models access.
 - [ ] T4 — Exact two dev migrations applied/native0:12 restricted RPCs, receipt/indexes,17 Apify prices, budget25, fresh advisors0 WARN/ERROR and schema/type coverage verified. Local379 unchanged-source SQL results preserved. Fixed-fee/unknown-price coverage stays explicitly unknown, with no questionnaire.
-- [ ] T5 — Shared sub-workflows (dev)
-- [ ] T6 — WF-90 · Error handler (dev)
-- [ ] T7 — Local inactive WF19 generator and deterministic recovery/settlement implemented/tested; hosted deployment/audit/privacy/transport gates remain. [Local callback receipt](evidence/local-callback-recovery-20261018.json).
-- [ ] T8 — WF-00 · Orchestrator + collector stubs (dev, inactive)
-- [ ] T9 — Existing local WF91 preserved. New WF99 generator is original-run recovery only; paid launch is absent until durable spend admission and the exact live packet. No hosted smoke acceptance.
+- [ ] T5 — Five SUB implementations now compile to typed fixed HTTPS operations; local source/tests complete. Actual saved inactive IDs/exports and native proof remain pending.
+- [ ] T6 — WF-90 source now uses the distinct fixed gateway, bounded safe errors and atomic log-only threshold/cooldown. Actual automatically triggered dev acceptance remains pending.
+- [ ] T7 — Functional WF-19 source now has exact durable rejection audit, registered authenticated metadata, streaming-bounded dataset transport, settlement, atomic persistence and original-ID recovery. New local SQL/graph/reader tests pass; actual saved/hosted/privacy/callback acceptance remains pending.
+- [ ] T8 — WF-00 and 15 explicit stubs compile to inactive full definitions; Cairo/PM/backfill guards and both Saturday 04:00 jobs retained. Actual saved references and manual dispatch proof remain pending.
+- [ ] T9 — Functional disabled one-shot asynchronous WF-99 launch and original-run reconciliation implemented; WF-91 transport complete. Immutable actor build 0.3.99 verified publicly without starting it. Separate final live approval and actual smoke/health proof remain pending.
 - [ ] T10 — Export, document, hand-off
 
 ## Acceptance criteria
@@ -68,7 +69,7 @@ expired. No production remediation has been authorized.
 - [ ] AC4 — Actual dev17 reviewed Apify prices and daily alert budget25 verified. Three fixed-fee amounts and other documented unknown prices remain unknown under the owner's instruction; no false zero fees or shared-service budget change. [Readback](evidence/dev-post-migration-schema-20261018.json).
 - [ ] AC5 — End-to-end smoke remains unrun. Local graph9/9 and shared80/80 (55 new recovery cases) pass; new generator source is not an actual saved Cloud export or actor receipt.
 - [ ] AC6 — Local saved replay, early registration, stable cost and ambiguous-write recovery pass. Saved-only recovery reports payloadEqualityVerified:false and suppresses dispatch; no fake SQL JSONB digest or exactly-once external delivery. Hosted duplicate/interruption acceptance remains pending.
-- [ ] AC7 — Unknown callback fails closed at the missing exact durable-audit gate. Generic workflow_error logging is not apify_callback_rejected or AC7 proof.
+- [ ] AC7 — Exact durable `apify_callback_rejected` source and rollback-only denial/zero-side-effect tests pass. Actual hosted forged/unrelated callback receipt remains pending; generic workflow-error logging is not substituted.
 - [ ] AC8 — Error routing — evidence:
 - [ ] AC9 — Orchestrator dispatch — evidence:
 - [ ] AC10 — Health — evidence:
@@ -244,6 +245,17 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-19 Cairo: Local database continuation complete without reset/seed
+  replay: four CLI-generated forward versions, 173 new rollback assertions,
+  retained 102 GW-01 assertions, corrected schema-count assertion, clean local
+  advisors and regenerated four-schema types. Actual two-session gateway
+  admission/duplicate/lost-ack/Close checks pass and cleanup preserves TestHouse
+  and baseline data. Full actor-race execution remains isolated-CI-only and is
+  not claimed locally. Actual SQL/application contract readback passes after
+  the final migration. [Dated evidence](evidence/local-foundation-db-20261019.json).
+  These four versions remain pending hosted approval; original ten files and
+  prior hosted evidence are preserved.
 
 - 2026-10-19 Cairo: Added the finite T1–T10/AC1–AC12 completion matrix and a
   separate strict foundation request/result contract. Local red-to-green proof:

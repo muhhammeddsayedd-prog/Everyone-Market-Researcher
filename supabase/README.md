@@ -21,7 +21,39 @@ and [M03 progress](../milestones/M03-n8n-foundation/PROGRESS.md). Never replay t
 completed M03 consumer, reset/seed an existing stack to resume, or treat local
 types as proof of hosted deployment.
 
-## GW-01 dev connection layer — local checkpoint
+## 19 October — full M03 source, local acceptance only
+
+The actual GW-01 dev connection trial and cleanup are complete; its window is
+permanently closed. Preserve the ten applied hosted versions, original hashes
+and all successful/failed trial receipts. The following GW-01 section is the
+historical pretrial source checkpoint, not a request to rerun or reopen it.
+
+Four new CLI-created forward versions add durable one-shot actor admission,
+exact callback-rejection audit, a separate fixed-alias foundation lifecycle and
+typed/read-proof/Close hardening. They were applied once to the existing local
+stack, without reset or seed replay. Local history now has 14 versions; these
+four are **not applied to hosted dev or production**:
+
+- `20261018231756_m03_actor_launch_admission.sql`;
+- `20261018232014_m03_foundation_gateway.sql`;
+- `20261018232922_m03_foundation_safety_receipts.sql`;
+- `20261018233338_m03_foundation_boundary_hardening.sql`.
+
+[Local database evidence](../milestones/M03-n8n-foundation/evidence/local-foundation-db-20261019.json)
+records 173 new rollback pgTAP assertions, retained-suite results, actual local
+concurrent gateway checks, clean local advisors and regenerated four-schema
+types. C999/TestHouse and the existing local data were preserved. SQL session
+simulation is not a new hosted restricted-login receipt. Full actor concurrency
+is reserved for the separately guarded empty CI fixture; an ordinary developer
+resume never resets its stack to manufacture that condition.
+
+No active foundation window or actor approval row is seeded. The
+[existing final-batch preparation packet](../milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md)
+must be completed with actual saved bindings and separately approved before any
+hosted application/window, actor or multi-workflow batch. No administrator,
+Writer or provider password is needed merely to repeat completed evidence.
+
+## GW-01 dev connection layer — historical local checkpoint
 
 The owner approved the separate
 [strict-TLS dev gateway packet](../milestones/M03-n8n-foundation/evidence/strict-tls-connection-proposal-20261018.md)
