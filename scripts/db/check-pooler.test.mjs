@@ -21,7 +21,18 @@ function fixture(run) {
   writeFileSync(join(directory, '.owner'), 'emr-pooler-test');
   const stub = `#!/usr/bin/env bash
 set -eu
-if [[ "\${0##*/}" == psql ]]; then
+if [[ "\${0##*/}" == pnpm ]]; then
+  printf '%s\\n' "$*" >> "$EMR_TEST_CAPTURE/commands"
+  printf '%s\\n' "\${M02_TEST_DATABASE_URL:-}" > "$EMR_TEST_CAPTURE/m02.target"
+  [[ "\${EMR_TEST_FAIL_PHASE:-}" != m02 ]] || { printf '${marker}\\n'; exit 1; }
+  report=''
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == --outputFile ]]; then report="$2"; break; fi
+    shift
+  done
+  [[ -n "$report" ]] || exit 1
+  node --input-type=module -e 'const make=(name,count)=>({name:"/repo/scripts/seed/"+name,assertionResults:Array.from({length:count},()=>({status:process.env.EMR_TEST_M02_SKIPPED?"pending":"passed"}))});console.log(JSON.stringify({success:true,numFailedTests:0,numPendingTests:process.env.EMR_TEST_M02_SKIPPED?1:0,testResults:[make("seed-competitors.integration.test.ts",10),make("database.test.ts",5)]}));' > "$report"
+elif [[ "\${0##*/}" == psql ]]; then
   role="\${PGUSER%%.*}"
   printf '%s\\n' "$@" > "$EMR_TEST_CAPTURE/$role.args"
   printf '%s\\n' "$PGHOST" "$PGPORT" "$PGUSER" "$PGDATABASE" "$PGSSLMODE" > "$EMR_TEST_CAPTURE/$role.connection"
@@ -47,7 +58,8 @@ else
   [[ "\${EMR_TEST_FAIL_PHASE:-}" != "$phase" ]]
 fi
 `;
-  for (const name of ['psql', 'supabase']) writeFileSync(join(directory, name), stub, { mode: 0o700 });
+  for (const name of ['psql', 'supabase', 'pnpm'])
+    writeFileSync(join(directory, name), stub, { mode: 0o700 });
   try {
     return run(directory);
   } finally {
@@ -160,6 +172,15 @@ test('CI runner uses only explicit local targets and exposes only safe summaries
     assert.match(commands, /test db --local/);
     assert.match(commands, /db advisors --local --type security --level warn --fail-on warn/);
     assert.match(commands, /db advisors --local --type performance --level warn --fail-on error/);
+    assert.match(
+      commands,
+      /--filter @emr\/scripts exec vitest run seed\/seed-competitors.integration.test.ts seed\/database.test.ts --reporter=json/,
+    );
+    assert.equal(
+      readFileSync(join(directory, 'm02.target'), 'utf8').trim(),
+      'postgresql://postgres@127.0.0.1:60322/postgres',
+    );
+    assert.match(child.stdout, /M02 PostgreSQL rollback acceptance: 15 assertions, PASS/);
     assert.ok(!commands.includes('--linked') && !commands.includes('--db-url'));
   }));
 
@@ -172,7 +193,7 @@ test('CI runner refuses non-GitHub environments without starting any service', (
 
 test('CI runner fails closed at each failed phase without leaking captured output', () =>
   fixture((directory) => {
-    for (const [index, phase] of ['start', 'reset', 'test', 'security', 'performance'].entries()) {
+    for (const [index, phase] of ['start', 'reset', 'test', 'security', 'performance', 'm02'].entries()) {
       writeFileSync(join(directory, 'commands'), '');
       const child = execute(directory, 'scripts/db/run-local-ci.sh', { EMR_TEST_FAIL_PHASE: phase });
       assert.equal(child.status, 1);
@@ -185,4 +206,12 @@ test('CI runner rejects zero assertions or an incomplete SQL suite set', () =>
     for (const overrides of [{ EMR_TEST_TAP_COUNT: '0' }, { EMR_TEST_TAP_FILES: '9' }]) {
       assert.equal(execute(directory, 'scripts/db/run-local-ci.sh', overrides).status, 1);
     }
+  }));
+
+test('CI runner rejects skipped M02 PostgreSQL assertions', () =>
+  fixture((directory) => {
+    const child = execute(directory, 'scripts/db/run-local-ci.sh', { EMR_TEST_M02_SKIPPED: '1' });
+    assert.equal(child.status, 1);
+    assert.match(child.stderr, /missing, skipped or failed assertions/);
+    assert.ok(!child.stdout.includes(marker) && !child.stderr.includes(marker));
   }));
