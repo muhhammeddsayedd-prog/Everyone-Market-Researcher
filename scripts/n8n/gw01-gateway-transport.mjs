@@ -1,8 +1,8 @@
 import { lookup as osLookup } from 'node:dns';
 import { request as httpsRequest } from 'node:https';
 import { isIP } from 'node:net';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, lstatSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   gatewayRequest,
@@ -13,7 +13,25 @@ import { createTrialCoordinator } from './gw01-trial.mjs';
 import { scanGatewayLogs } from './gw01-gateway-logs.mjs';
 
 const syntheticAuth = 'GW01_SYNTHETIC_AUTH_CANARY_ONLY_0123456789';
+// Original prepared audiences have no deployment tuple in the historical
+// journal. Keep that reviewed identity fixed; later identities come exclusively
+// from validated, append-only deployment events.
+const initialDeployment = Object.freeze({
+  audience: 'https://everyone-market-researcher-7k5et630y-muhammed-abdelrahman.vercel.app',
+  commitSha: '4d4d13ebf241f12df64de772b0024bf6d5a067e0',
+  deploymentId: 'dpl_34mF18oQnjrqS67pdXMBsChLfV7g',
+  projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
+  branch: 'm03-n8n-foundation',
+});
 const path = '/api/internal/n8n/rpc';
+const bindingKeys = ['audience', 'commitSha', 'deploymentId', 'projectId', 'branch'];
+const sourceObjects = Object.freeze({
+  'apps/web': ['tree', 'ceedfcc695e210d5f14025d9cfd47f17c55d6f2a'],
+  'packages/shared': ['tree', 'fc0684990fd7df9260c1deeda7ca18dcdb99651a'],
+  'pnpm-lock.yaml': ['blob', '41a2d27d4ac2c16d033930475aa400884562cefb'],
+  'package.json': ['blob', 'f34d32bdf8fc7b09ea45f6560e79ae3da94efd10'],
+  'pnpm-workspace.yaml': ['blob', '8f91bfb10cdd8d3cfe706adf080b9f6b22b0387e'],
+});
 const exact = (v, names) =>
   v !== null &&
   typeof v === 'object' &&
@@ -112,8 +130,7 @@ function input(value) {
         value.authorization !== 'synthetic' ||
         value.fault !== 'none')) ||
     (value.mode === 'Request' &&
-      (!preview.routeDisabledVerified ||
-        value.kind === 'preflight' ||
+      (value.kind === 'preflight' ||
         (value.kind === 'status') !== (request.operation === 'request.status') ||
         (value.authorization !== 'machine' && value.kind !== 'denial'))) ||
     !exact(value.secrets, value.mode === 'Probe' ? ['protection'] : ['protection', 'machine'])
@@ -130,6 +147,167 @@ function input(value) {
   });
   if (Object.values(value.secrets).some((secret) => publicInput.includes(secret))) reject();
   return { ...value, preview, request };
+}
+const sameBinding = (value, expected) =>
+  exact(value, bindingKeys) && bindingKeys.every((key) => value[key] === expected[key]);
+const canonicalTime = (value) =>
+  typeof value === 'string' &&
+  Number.isFinite(Date.parse(value)) &&
+  new Date(Date.parse(value)).toISOString() === value;
+
+/** A sealed, public root-reviewed handoff links actual OLD CloudB acceptance to
+ * one NEW deployment. Git object IDs/readback records are evidence declarations,
+ * not another claim that the runtime deployment itself returned the old503. */
+export function assertRuntimePhase(preview, context) {
+  gatewayPreview(preview);
+  if (preview.routeDisabledVerified !== false || !exact(context, ['cloud', 'environment'])) reject();
+  const { cloud, environment } = context;
+  if (
+    cloud?.version !== 1 ||
+    cloud.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+    cloud.instanceHost !== 'muhhammedsayed.app.n8n.cloud' ||
+    cloud.ownedWorkflowId !== 'p8GikCM8C9Tq3lo4' ||
+    ![
+      'passed',
+      'credentialCanaryVerified',
+      'executionCanaryVerified',
+      'exportCanaryVerified',
+      'logCanaryVerified',
+    ].every((key) => cloud[key] === true) ||
+    cloud.disabledProbeHttpStatus !== 503 ||
+    cloud.disabledProbeRequestId !== '80162039-6088-4011-bdf1-a2a7b5ec11cb' ||
+    !sameBinding(cloud.cloudBTarget, initialDeployment) ||
+    !Number.isInteger(cloud.logsScanned) ||
+    cloud.logsScanned < 1 ||
+    cloud.logsScanned >= 100 ||
+    cloud.logReadEvidence !== 'milestones/M03-n8n-foundation/evidence/gw01-log-read-20261018.json'
+  )
+    reject();
+  const phase = cloud.runtimePhase;
+  if (
+    !exact(phase, [
+      'version',
+      'cloudBTarget',
+      'target',
+      'sourceObjects',
+      'rootVercelJson',
+      'environment',
+      'readback',
+    ]) ||
+    phase.version !== 1 ||
+    !sameBinding(phase.cloudBTarget, initialDeployment) ||
+    !sameBinding(phase.target, preview) ||
+    phase.target.audience === initialDeployment.audience ||
+    phase.target.deploymentId === initialDeployment.deploymentId ||
+    phase.rootVercelJson !== 'absent' ||
+    !exact(phase.sourceObjects, Object.keys(sourceObjects))
+  )
+    reject();
+  for (const [name, [kind, id]] of Object.entries(sourceObjects)) {
+    const entry = phase.sourceObjects[name];
+    if (
+      !exact(entry, ['kind', 'cloudB', 'runtime']) ||
+      entry.kind !== kind ||
+      entry.cloudB !== id ||
+      entry.runtime !== id
+    )
+      reject();
+  }
+  if (
+    !exact(phase.environment, ['recordRef', 'records']) ||
+    phase.environment.recordRef !== 'scripts/n8n/out/gw01-environment-delivery.jsonl' ||
+    !Array.isArray(environment) ||
+    environment.length !== 3 ||
+    !Array.isArray(phase.environment.records) ||
+    phase.environment.records.length !== 3
+  )
+    reject();
+  const first = environment[0];
+  if (
+    !exact(first, ['version', 'kind', 'windowId', 'projectId', 'branch', 'createdAt']) ||
+    first.version !== 1 ||
+    first.kind !== 'environment_intent' ||
+    first.windowId !== '76c2ad42-c094-4ba4-9a0b-566e19b97780' ||
+    first.projectId !== preview.projectId ||
+    first.branch !== preview.branch ||
+    !canonicalTime(first.createdAt)
+  )
+    reject();
+  for (let i = 0; i < 3; i++) {
+    const record = environment[i],
+      embedded = phase.environment.records[i],
+      keys = i === 0 ? ['version', 'kind', 'windowId', 'projectId', 'branch', 'createdAt'] : ['kind', 'name'];
+    if (!exact(record, keys) || !exact(embedded, keys) || !keys.every((key) => record[key] === embedded[key]))
+      reject();
+    if (
+      i > 0 &&
+      (!exact(record, ['kind', 'name']) ||
+        record.kind !== 'environment_delivered' ||
+        record.name !== ['EMR_WORKER_DB_PASSWORD', 'EMR_WORKER_GATEWAY_TOKEN_SHA256'][i - 1])
+    )
+      reject();
+  }
+  const r = phase.readback;
+  if (
+    !exact(r, [
+      'evidenceRef',
+      'kind',
+      'nativeExit',
+      'teamId',
+      'environment',
+      'readyState',
+      'autoExposeSystemEnvs',
+      'target',
+      'createdAt',
+      'observedAt',
+      'configuration',
+    ]) ||
+    r.evidenceRef !== 'milestones/M03-n8n-foundation/evidence/gw01-runtime-readback-20261018.json' ||
+    r.kind !== 'vercel_runtime_preview' ||
+    r.nativeExit !== 0 ||
+    r.teamId !== 'team_gboXPxTevpCOZuaA8eY9PmR1' ||
+    r.environment !== 'preview' ||
+    r.readyState !== 'READY' ||
+    r.autoExposeSystemEnvs !== true ||
+    !sameBinding(r.target, preview) ||
+    !canonicalTime(r.createdAt) ||
+    !canonicalTime(r.observedAt) ||
+    Date.parse(r.createdAt) < Date.parse(first.createdAt) ||
+    Date.parse(r.observedAt) < Date.parse(r.createdAt)
+  )
+    reject();
+  const config = r.configuration,
+    values = config?.values;
+  if (
+    !exact(config, ['target', 'gitBranch', 'values']) ||
+    config.target !== 'preview' ||
+    config.gitBranch !== preview.branch ||
+    !exact(values, [
+      'EMR_WORKER_GATEWAY_ENABLED',
+      'EMR_WORKER_GATEWAY_AUDIENCE',
+      'EMR_WORKER_GATEWAY_WINDOW_ID',
+      'EMR_WORKER_GATEWAY_COMMIT_SHA',
+    ]) ||
+    values.EMR_WORKER_GATEWAY_ENABLED !== 'true' ||
+    values.EMR_WORKER_GATEWAY_AUDIENCE !== 'vercel-deployment' ||
+    values.EMR_WORKER_GATEWAY_WINDOW_ID !== '76c2ad42-c094-4ba4-9a0b-566e19b97780' ||
+    values.EMR_WORKER_GATEWAY_COMMIT_SHA !== preview.commitSha
+  )
+    reject();
+  return true;
+}
+export function checkPublicGateway(raw, coordinator, runtimeContext) {
+  const value = input(raw),
+    target = Object.fromEntries(
+      ['audience', 'commitSha', 'deploymentId', 'projectId', 'branch'].map((key) => [
+        key,
+        value.preview[key],
+      ]),
+    );
+  if (value.mode === 'Request') assertRuntimePhase(value.preview, runtimeContext);
+  coordinator.assertDeployment(target, initialDeployment);
+  coordinator.snapshot();
+  return { version: 1, status: 'public_ready', networkRequests: 0, privateRead: false };
 }
 // Conservative public-only literals; mixed/private answers never fall back to a
 // different address. The selected public answer is pinned to the TLS hostname.
@@ -434,6 +612,7 @@ export async function sendGatewayAttempt(raw, dependencies = {}) {
   let reservation, value, controller, timer;
   try {
     value = input(raw);
+    if (value.mode === 'Request') assertRuntimePhase(value.preview, dependencies.runtimeContext);
     out.requestId = value.request.requestId;
     out.operation = value.request.operation;
     out.kind = value.kind;
@@ -539,11 +718,34 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const value = JSON.parse(Buffer.concat(chunks).toString('utf8'));
     const config = JSON.parse(readFileSync(resolve('scripts/n8n/gw01-trial-config.json'), 'utf8'));
     const coordinator = createTrialCoordinator(resolve('scripts/n8n/out/gw01'), config);
-    if (process.argv[2] === '--check-public') {
-      input(value);
-      coordinator.snapshot();
-      out = { version: 1, status: 'public_ready', networkRequests: 0, privateRead: false };
-    } else out = await runGatewayPhase(value, { coordinator });
+    let runtimeContext;
+    if (value.mode === 'Request') {
+      const publicText = (relative) => {
+        const file = resolve(relative);
+        for (let cursor = file; ; cursor = dirname(cursor)) {
+          const s = lstatSync(cursor);
+          if (s.isSymbolicLink() || (cursor === file ? !s.isFile() || s.size > 65536 : !s.isDirectory()))
+            reject();
+          if (dirname(cursor) === cursor) break;
+        }
+        return readFileSync(file, 'utf8');
+      };
+      if (existsSync(resolve('vercel.json'))) reject();
+      const cloud = JSON.parse(publicText('scripts/n8n/gw01-cloud-privacy.json'));
+      if (!cloud.runtimePhase) reject();
+      const text = publicText('scripts/n8n/out/gw01-environment-delivery.jsonl');
+      if (!text.endsWith('\n')) reject();
+      runtimeContext = {
+        cloud,
+        environment: text
+          .trimEnd()
+          .split('\n')
+          .map((line) => JSON.parse(line)),
+      };
+    }
+    const readiness = checkPublicGateway(value, coordinator, runtimeContext);
+    if (process.argv[2] === '--check-public') out = readiness;
+    else out = await runGatewayPhase(value, { coordinator, runtimeContext });
   } catch {
     out = { version: 1, status: 'stopped_reconcile', code: 'GW01_GATEWAY_INPUT' };
   }

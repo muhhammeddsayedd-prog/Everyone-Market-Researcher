@@ -6,9 +6,9 @@
   "credentialCanaryVerified": true,
   "executionCanaryVerified": true,
   "exportCanaryVerified": true,
-  "logCanaryVerified": false,
-  "passed": false,
-  "observedAt": "2026-10-18T08:21:41.595563+00:00",
+  "logCanaryVerified": true,
+  "passed": true,
+  "observedAt": "2026-10-18T09:09:41.890412+00:00",
   "executionId": "12674",
   "credentialId": "EmrGw01Canary18",
   "credentialType": "httpCustomAuth",
@@ -17,5 +17,18 @@
   "retentionRestoredOff": true,
   "actualGatewayDatabaseIdentityVerified": false,
   "evidence": "milestones/M03-n8n-foundation/evidence/gw01-preflight-20261018.json",
-  "boundary": "CloudA only; disabled handler503 and actual captured log privacy remain required before Writer/Machine handoffs/runtime delivery."
+  "boundary": "CloudA plus captured CLI log privacy and disabled-handler503 verified. Restricted database identity and live bounded trial remain unverified. Log matching uses exact deployment/domain/path/method/status/time, without asserting equality to a separately captured platform trace ID or unseen provider storage.",
+  "cloudAObservedAt": "2026-10-18T08:21:41.595563+00:00",
+  "disabledProbeHttpStatus": 503,
+  "disabledProbeRequestId": "80162039-6088-4011-bdf1-a2a7b5ec11cb",
+  "logObservedAt": "2026-10-18T08:55:45.763Z",
+  "logsScanned": 1,
+  "logReadEvidence": "milestones/M03-n8n-foundation/evidence/gw01-log-read-20261018.json",
+  "cloudBTarget": {
+    "audience": "https://everyone-market-researcher-7k5et630y-muhammed-abdelrahman.vercel.app",
+    "commitSha": "4d4d13ebf241f12df64de772b0024bf6d5a067e0",
+    "deploymentId": "dpl_34mF18oQnjrqS67pdXMBsChLfV7g",
+    "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+    "branch": "m03-n8n-foundation"
+  }
 }

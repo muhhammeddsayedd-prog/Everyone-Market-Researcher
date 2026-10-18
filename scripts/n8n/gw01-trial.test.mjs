@@ -235,6 +235,40 @@ test('new reviewed deployments append targets without replenishing attempts or c
   });
   assert.equal(c.snapshot().unverifiedAudiences.length, 3);
 });
+
+test('read-only deployment guard binds later targets exactly without changing initial config or journal', () => {
+  const f = fixture(),
+    c = f.coordinator();
+  c.prepare();
+  const initial = {
+    audience: f.config.audiences[0],
+    commitSha: 'a'.repeat(40),
+    deploymentId: 'dpl_SyntheticInitialDeployment123',
+    projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
+    branch: 'm03-n8n-foundation',
+  };
+  const target = {
+    ...initial,
+    audience: 'https://everyone-market-researcher-second.vercel.app',
+    deploymentId: 'dpl_SyntheticSecondDeployment123',
+  };
+  c.registerDeployment(target);
+  const path = join(f.path, 'gw01-trial.jsonl'),
+    before = readFileSync(path);
+  assert.equal(c.assertDeployment(initial, initial), true);
+  assert.equal(f.coordinator().assertDeployment(target, initial), true);
+  for (const altered of [
+    { ...target, commitSha: 'b'.repeat(40) },
+    { ...target, deploymentId: 'dpl_UnregisteredDeployment123' },
+    { ...target, audience: 'https://everyone-market-researcher-unregistered.vercel.app' },
+    { ...initial, commitSha: 'b'.repeat(40) },
+  ])
+    assert.throws(() => c.assertDeployment(altered, initial), /GW01_DEPLOYMENT_REJECTED/);
+  assert.deepEqual(readFileSync(path), before);
+  assert.equal(c.snapshot().attempts, 0);
+  assert.equal(c.snapshot().startedAt, null);
+  assert.deepEqual(f.config.audiences, [initial.audience]);
+});
 test('separate plainNode subprocess observes the same two persisted leases and budget', () => {
   const f = fixture(),
     c = f.coordinator();

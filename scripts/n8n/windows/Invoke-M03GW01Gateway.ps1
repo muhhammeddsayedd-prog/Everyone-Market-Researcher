@@ -41,7 +41,8 @@ try{
   $null=Safe-Path $repo
   $preview=Json 'scripts/n8n/gw01-reviewed-preview.json';Keys $preview @('version','projectId','teamId','branch','commitSha','deploymentId','audience','target','protection','routeDisabledVerified')
   if($preview.version -ne 1 -or $preview.projectId -cne 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' -or $preview.teamId -cne 'team_gboXPxTevpCOZuaA8eY9PmR1' -or $preview.branch -cne 'm03-n8n-foundation' -or $preview.commitSha -cnotmatch '^[a-f0-9]{40}$' -or $preview.deploymentId -cnotmatch '^dpl_[A-Za-z0-9]{16,80}$' -or $preview.audience -cnotmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$' -or $preview.target -cne 'preview' -or $preview.protection -cne 'all_except_custom_domains' -or $preview.routeDisabledVerified -isnot [bool]){throw 'blocked'}
-  if($Mode -ceq 'Request' -and -not $preview.routeDisabledVerified){throw 'blocked'}
+  # Request readiness is checked by the sealed public runtime-phase validator
+  # below. A new enabled deployment must not inherit the old disabled-route flag.
   $local=Json 'scripts/n8n/gw01-local-privacy.json';if($local.version -ne 1){throw 'blocked'};foreach($name in @('passed','consumerReviewed','canaryTestsPassed')){if($local.$name -isnot [bool] -or -not $local.$name){throw 'blocked'}}
   $cloud=Json 'scripts/n8n/gw01-cloud-privacy.json'
   if($cloud.version -ne 1 -or $cloud.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $cloud.instanceHost -cne 'muhhammedsayed.app.n8n.cloud' -or $cloud.ownedWorkflowId -cnotmatch '^[A-Za-z0-9_-]{1,128}$'){throw 'blocked'}
@@ -81,7 +82,7 @@ try{
   }}
   if('dist/index.js' -cnotin $vercelRequired){throw 'blocked'};Keys $seal.vercelFiles $vercelRequired
   foreach($relative in $vercelRequired){$hash=$seal.vercelFiles.$relative;if($hash -isnot [string] -or $hash -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath (Safe-Path (Join-Path $vercelRoot $relative)) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $hash){throw 'blocked'}}
-  $config=Json 'scripts/n8n/gw01-trial-config.json';Keys $config @('windowId','audiences');if($config.windowId -cne '76c2ad42-c094-4ba4-9a0b-566e19b97780' -or $preview.audience -cnotin $config.audiences){throw 'blocked'}
+  $config=Json 'scripts/n8n/gw01-trial-config.json';Keys $config @('windowId','audiences');if($config.windowId -cne '76c2ad42-c094-4ba4-9a0b-566e19b97780'){throw 'blocked'}
   $journal=Safe-Path (Join-Path $repo 'scripts/n8n/out/gw01/gw01-trial.jsonl');if((Get-Item -LiteralPath $journal).Length -gt 1048576){throw 'blocked'}
   if($Mode -ceq 'Probe'){
     $request=[PSCustomObject]@{version=1;requestId=[Guid]::NewGuid().ToString();operation='identity.read';args=[PSCustomObject]@{}};$actualKind='preflight';$actualAuth='synthetic';$actualFault='none';$names=@('protection')

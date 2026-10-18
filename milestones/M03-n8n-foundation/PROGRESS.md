@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Blocked: waiting on owner - MA-11 public CheckOnly. Dev migration and CloudA verified; CloudB/restricted trial pending.**
+**In progress: Writer direct login and authorization passed; Writer/Machine handoffs are ready. Runtime checks and the public-settings helper precede Environment delivery. Gateway HTTP identity and the trial remain pending.**
 
 | Field | Value |
 | --- | --- |
@@ -14,14 +14,14 @@
 | Branch / PR | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; preserved reviewed `100290a291530d30d0387269c1a0805ad4f86fcc` and earlier evidence, no reset |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | GW-01 migration/schema verified; existing fake execution12674 now passes CloudA export/execution privacy after strict source-default representation correction. Its401 is protection denial, not DB identity. Fresh GET-only recovery verified owned sole/defaulttrue bypass and separately recorded recovered provenance; no creation replay. All children closed; journal1/100, no clock/server admissions. |
-| Next step | Sole-owned bypass recovery is complete/native0. Owner runs exact public sealer/CheckOnly under MA-11; no secrets/network. Then one counted CloudB503/log probe, full privacy before Writer/Machine handoffs, exact target binding and one bounded trial. Never replay migration/execution or reset counters. |
+| Current task | Writer/Machine handoffs are ready. Direct Writer Verify fd8497 passed with native exit 0, strict TLS, both n8n_writer identities and four exact 42501 rollback denials. The connection and child closed; Writer was retained and Machine is unused. CloudA/B are preserved. There are 2/100 attempts, the clock is stopped and the server is prepared, unbound and at zero admissions. |
+| Next step | The runtime guard passed source review and 26 fresh targeted tests; its actual runtime phase remains absent. Finish validation and review of the helper for four public settings before Environment. Then deliver branch Preview values, review and register the fresh deployment, and bind the same window before gateway HTTP identity and the trial. No handoff recreation, Probe replay or counter reset. |
 
 ## Task checklist
 <!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
 - [x] T1 — Five plan facts recorded below; actual UI capability evidence and current official plan/billing rules are distinguished. No execution/billing experiment claimed.
 - [ ] T2 — Historical API authentication/discovery/Personal list200 retained; later workflow failure stage remains unknown. New safe stage diagnostics44 Node/17 isolated Windows fixtures pass; helper resealed after independent review. No live inventory retry/key request. [Local receipt](evidence/local-api-stage-diagnostics-20261018.json).
-- [ ] T3 — All five actual IDs/types reused; four provider metadata GETs pass. Writer saved settings match but native TLS/identity remain open; OpenAI cap is not inferred from Models access.
+- [ ] T3 — All five actual IDs/types reused; four provider metadata GETs pass. Native n8n TLS/identity remain open; separate approved GW-01 direct Writer Verify now passes both identities/four42501 denials. Gateway HTTP identity/trial remain pending; OpenAI cap is not inferred from Models access.
 - [ ] T4 — Exact two dev migrations applied/native0:12 restricted RPCs, receipt/indexes,17 Apify prices, budget25, fresh advisors0 WARN/ERROR and schema/type coverage verified. Local379 unchanged-source SQL results preserved. Fixed-fee/unknown-price coverage stays explicitly unknown, with no questionnaire.
 - [ ] T5 — Shared sub-workflows (dev)
 - [ ] T6 — WF-90 · Error handler (dev)
@@ -33,7 +33,7 @@
 ## Acceptance criteria
 <!-- Mirror of MILESTONE.md; paste evidence (command + output summary, counts, screenshot paths). -->
 - [x] AC1 — Plan facts recorded — actual n8n 2.43.5, paid Cloud plan, upgraded 50,000 allowance; the five facts and evidence boundaries are recorded below.
-- [ ] AC2 — Credentials work — four actual provider metadata GETs pass using existing native/Header Auth IDs; saved dev Postgres port5432/security exact, but credential Retry and native SELECT fail TLS chain validation, so current_user/session_user are unverified. [Actual readback](evidence/credential-readback-20261018.json).
+- [ ] AC2 — Credentials work — four provider metadata GETs pass. Native n8n credential Retry/SELECT still fail TLS chain validation. Separate approved [direct Writer Verify](evidence/gw01-writer-verify-20261018.json) now proves dev session5432 strict TLS, current_user/session_user=n8n_writer and four42501 rollback denials. This is neither gateway HTTP identity nor native n8n TLS success; those acceptance boundaries remain separate. [Native readback](evidence/credential-readback-20261018.json).
 - [x] AC3 — Reused actual local379 pgTAP assertions in11 files on unchanged SQL; hosted nine-version/statement-hash parity,12 restricted RPCs and fresh advisors0 WARN/ERROR verified. [Schema](evidence/dev-post-migration-schema-20261018.json), [advisors](evidence/dev-post-migration-advisors-20261018.json). No hosted pgTAP or native n8n writer login claim.
 - [ ] AC4 — Actual dev17 reviewed Apify prices and daily alert budget25 verified. Three fixed-fee amounts and other documented unknown prices remain unknown under the owner's instruction; no false zero fees or shared-service budget change. [Readback](evidence/dev-post-migration-schema-20261018.json).
 - [ ] AC5 — End-to-end smoke remains unrun. Local graph9/9 and shared80/80 (55 new recovery cases) pass; new generator source is not an actual saved Cloud export or actor receipt.
@@ -47,9 +47,9 @@
 
 ## Blockers
 
-- Strict n8n Postgres TLS remains unresolved. Actual saved host/session port5432/user/database/max5/SSL Require/Ignore SSL off/SSH off match. One credential Retry and one native Postgres2.7 SELECT encounter a self-signed-chain error; restricted current_user/session_user are not established. Preserve password/security. The owner declined the support-contact path; no contact action or new writer credential is requested. [Actual receipt](evidence/credential-readback-20261018.json), [retained source review](evidence/postgres-cloud-ca-review-20261018.md).
-- [GW-01](evidence/strict-tls-connection-proposal-20261018.md) dev exception is APPROVED by owner for reviewed100290a with bounded-trial clarifications. [Authorization](evidence/gw01-authorization-20261018.json). Implementation and independent local review are complete; actual public CheckOnly, CloudB and restricted trial remain pending. New20261018070042 applied once to dev/native0 with exact nine-to-ten history; nine old files/history preserved. Management later authenticated for fake-only canary and readback; one protection401 attempt counted, no trial clock. Gateway restricted-login acceptance remains distinct from native Postgres failure.
-- INC-M03-20261018-01: open private remediation approval gate. Owner identification and safe metadata checks are recorded privately; no rotation, erasure or absence-of-misuse claim. No details in this public repository beyond reference/status.
+- Strict native n8n Postgres TLS remains unresolved. Actual saved host/session port5432/user/database/max5/SSL Require/Ignore SSL off/SSH off match. Its credential Retry/native Postgres2.7 SELECT encountered a self-signed-chain error, so native Cloud identity is not established. Separate GW-01 direct Writer Verify now passes actual restricted authentication/strict TLS/four42501 rollback denials; it does not relabel the native result. Preserve credentials/security and the declined support-contact boundary. [Native receipt](evidence/credential-readback-20261018.json), [direct Writer receipt](evidence/gw01-writer-verify-20261018.json), [source review](evidence/postgres-cloud-ca-review-20261018.md).
+- [GW-01](evidence/strict-tls-connection-proposal-20261018.md) dev exception is APPROVED by the owner for reviewed 100290a with bounded-trial clarifications. [Authorization](evidence/gw01-authorization-20261018.json). Full Cloud privacy passes via the [503 Probe](evidence/gw01-probe-20261018.json) and [GET-only captured-log continuation](evidence/gw01-log-read-20261018.json); metadata/time matching does not claim a separately captured platform trace ID or unseen storage. Actual [direct Writer login](evidence/gw01-writer-verify-20261018.json) passes; Machine is unused. Local runtime checks and the four-public-settings helper precede Environment delivery, exact target binding and the gateway HTTP trial. [Public transitions](evidence/gw01-public-seal-transitions-20261018.json) reconcile the uncaptured second completion; intents alone do not prove success. There are 2/100 attempts, the clock is stopped and the server is unbound with zero admissions; migration/history/data are unchanged. Only the confirmed-expired Management cleanup and existing-key redelivery action below is requested. No Admin or repeated Writer/Machine handoff.
+- INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 - M03 database deployment is RESOLVED. The third bounded attempt completed native0 with exact dry-run/push/history parity; two earlier failures remain accurately preserved. The second established native0+invalid_json; immutable CLI source reproduced conflicting output flags and the corrected command-specific helper passed regression/review. All nine versions/hashes match,12 RPC ACLs and receipt/indexes pass, budget25,17 Apify prices,285 competitors/1754 accounts/257 logos/seven owner exclusions unchanged, no collected items/runs or fixtures. Fresh hosted advisors have0 WARN/ERROR. Public-only MCP types were not substituted for the checked-in four-schema types. [Completion](evidence/dev-migration-completion-20261018.json), [schema](evidence/dev-post-migration-schema-20261018.json). Preserve the durable successful admission; never replay this packet.
 - API DNS is RESOLVED by bounded OS lookup with every-address screening/pinning/strict TLS. A credential-free401/socket-close test passed. The next keyed attempt authenticated, discovery advertised capabilities and Personal list returned200; workflow-list transport failed before a complete inventory, and the credential-list resource was not attempted. Both consumed API handoffs were deleted/children closed. Exact later transport cause remains unestablished; no further key/discovery loop is requested. Browser sign-in is already verified and connector errors do not invalidate it. [Actual API attempts](evidence/n8n-api-attempt-20261018.json), [DNS](evidence/n8n-dns-boundary-20261018.json).
 - All five existing provider/database credential IDs and native types are mapped in [actual partial bindings](../../n8n/foundation/bindings.dev.json); no fake workflow/tag IDs. Apify/OpenAI use HTTP Predefined Credential Type; Vimeo/YouTube reuse Header Auth. All four actual provider metadata GETs pass, with no actor/inference/embeddings. Shared names/passwords/domain settings were preserved. No credential recreation, login/MCP setup or billing questionnaire is needed.
@@ -61,46 +61,85 @@
 | ID | Current state | Owner action |
 | --- | --- | --- |
 | MA-04 M03 dev | Both approved versions applied successfully; independent history/schema/advisor/data readback passes. Handoff/scratch deleted; children closed; successful admission retained. | None. No new database handoff or replay. |
-| MA-10 / MA-11 providers | Existing Apify/OpenAI/Vimeo/YouTube ID/type bindings and four metadata tests verified. Saved writer port5432 is correct; strict native TLS remains open. | No credential recreation/reset/rename, no writer handoff, no SSL weakening. Owner declined contact; do not request it again. |
-| MA-11 / INC-M03-20261018-01 | Open; private identification and targeted remediation packet prepared. | Review the private owner packet, confirm remaining consumer coverage and maintenance/canary scope, then give specific remediation approval. No secret values or blanket rotation. |
-| MA-11 / GW-01 | Owner approved exact100290a packet plus clarifications; authorization in evidence/gw01-authorization-20261018.json. | No further internal task approval. CloudA now passes; original failures/cleanup correction preserved. Run the exact public CheckOnly below; no credential delivery. New dev migration/Admin cleanup complete. Full CloudB precedes Writer/Machine delivery and one immutable100-attempt/two-concurrent/30-minute window, cleanup included. |
+| MA-10 / MA-11 providers | Existing provider ID/type bindings/four metadata tests preserved. Native n8n TLS remains open; approved GW-01 direct Writer login/authorization now pass. | None now. No native credential recreation/reset/rename/SSL weakening or repeat declined contact request. |
+| MA-11 / INC-M03-20261018-01 | Owner inputs ready; separate production gate remains. | No further input requested here. Production gate remains separate; details stay private. |
+| MA-11 / GW-01 | Writer/Machine are ready. Direct Writer Verify passed with native exit 0, both identities and four 42501 denials; Machine is unused. CloudA/B are verified, with 2/100 attempts, a stopped clock and an unbound server at zero admissions. | No repeated Writer/Machine action. Finish local runtime and public-settings helper review before Environment; no Admin, Probe replay or counter reset. |
+| MA-11 / Management refresh | Read de6b5b confirmed the original lease is expired and still present; expiry 09:22:05.538867 UTC. Agent deletion was rejected before execution; neither file is reported deleted. | One exact cleanup and redelivery action below: remove only the two expired Management temporary files and rerun Kind Management with the existing saved key. This creates a new two-hour delivery lease, with no key reset or repeated Writer/Machine handoff. |
 | MA-11 API | Existing key authenticated; Personal list200; later workflow transport incomplete. Consumed key handoffs deleted. | None now. Do not request another key or repeat login/discovery to rediscover the transport failure. |
 | MA-12 | Authorized existing OpenAI credential works for Models read. Project cap is unverified; no model calls. | No new credential requested; keep cap evidence distinct. |
 | MA-13 / fees | Actual dev alert budget25. Subscription/other unknown prices remain unknown. | None; do not restart billing questions or alter shared budgets. |
 | M03 live acceptance | [Outline](evidence/live-acceptance-outline-20261018.md) remains preparation only until exact graph IDs/source seals/request counts/price/caps are filled and technical gates pass. | No batch approval requested yet. Present the concrete packet before any actor/multi-workflow test batch. |
 
-### MA-11 GW-01 public runtime check - pending
+### MA-11 GW-01 public runtime check - completed
 
-Automatic approval review rejected the earlier public dependency-link inspection
-before execution with generic reason `blocked by policy`. Automation has not
-retried it through another launcher or this helper. This is not authentication.
-The complete reviewed owner procedure is
-[GW01-PUBLIC-SEAL.md](../../scripts/n8n/windows/GW01-PUBLIC-SEAL.md).
+The unchanged reviewed helper387d7147 ran successfully through the normal tool
+after the owner's later explicit request. Actual receipts6bd081/1c9c4a record
+`PUBLIC_SEAL_READY`, `check_only_ready`, `privateRead:false`, closed child,
+retained handoffs and outer exit0. No network or clock start occurred in this
+public check. The runtime inventory stays local. [Actual receipt](evidence/gw01-workstation-check-20261018.json).
 
-In Windows PowerShell under this Windows account, run:
+The earlier standalone dependency-link diagnostic remains an unexecuted
+`blocked by policy` result. The owner's reported error was not reproduced and
+its cause remains unknown. Earlier local-only evidence is preserved without
+rewriting its false actual-operation fields. The
+[public procedure](../../scripts/n8n/windows/GW01-PUBLIC-SEAL.md) remains reference
+only; no repeat public check or secret input for that public step is requested.
+
+### MA-11 Writer/Machine handoffs - ready; direct Writer verified
+
+Owner reported both handoffs ready. Direct Writer Verify fd8497 then passed
+with native exit 0, both identities and four exact 42501 rollback denials. It
+retained Writer and closed the connection and child. Machine is unused. See
+[actual Writer receipt](evidence/gw01-writer-verify-20261018.json). Do not recreate
+either handoff or repeat this successful verification. The commands below are
+historical reference only:
 
 ```powershell
-& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03GW01GatewayPublicSeal.ps1'
-$LASTEXITCODE
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03GW01Handoff.ps1' -Kind Writer
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03GW01Handoff.ps1' -Kind Machine
 ```
 
-Expected: `PUBLIC_SEAL_READY`, safe JSON `status:"check_only_ready"`,
-`privateRead:false`, and exit `0`. Reply `GW-01 public CheckOnly ready` with
-that non-secret JSON. Fixed BLOCKED output means stop and report only the code.
-No secret input, decryption, network request or trial clock start occurs.
-The generated public runtime inventory stays local and is not committed.
+Writer used the existing emr-dev n8n_writer password at a hidden prompt; Machine
+generated its token privately. Creation itself was not authentication; the
+separate actual Verify receipt supplies that Writer evidence. No postgres,
+production or api_agent password substitution/reset occurred.
 
-### Management handoff helper (existing encrypted handoff and original lease present08:01UTC; no replenishment requested)
+The retained encrypted handoff filenames are
+`%LOCALAPPDATA%\Temp\emr-m03-gw01-dev-writer.dpapi` and
+`%LOCALAPPDATA%\Temp\emr-m03-gw01-dev-machine.dpapi`. Keep the owner's separately
+saved original password. No further readiness reply, value, file contents, URL
+or environment output is requested. Environment delivery has not run; local
+runtime-phase and four-public-config helper review comes first.
 
-Reference only: do not replenish while the existing original lease remains valid.
+### Management handoff refresh - requested after confirmed expiry
 
-In Windows PowerShell under this Windows account, run:
+The original expiry is 09:22:05.538867 UTC. The 09:21:55 UTC read showed
+present:true/expired:false; later read de6b5b confirms present:true/expired:true.
+This is the existing key's expired delivery lease, not a rejected password or a
+request to recreate the API key.
+
+Root's conditional expired-handoff/lease deletion was rejected before execution
+with generic `blocked by policy`. No private read, decryption, authentication or
+deletion occurred, and no alternate deletion retry was made. Do not mark either
+file missing/deleted from that rejection. The following exact owner action is
+now requested because expiry and the bounded phase need are confirmed.
+
+In Windows PowerShell under this same Windows account, run this one action:
 
 ```powershell
+Remove-Item -LiteralPath "$env:LOCALAPPDATA\Temp\emr-m03-gw01-dev-management.dpapi", "$env:LOCALAPPDATA\Temp\emr-m03-gw01-dev-management.lease.json" -ErrorAction Stop
 & 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03GW01Handoff.ps1' -Kind Management
 ```
 
-Enter the existing saved management API key for muhhammedsayed.app.n8n.cloud at the hidden prompt. Expected result: `GW01_ENCRYPTED_HANDOFF_READY: Management.` Close that PowerShell window, retain the original and reply `GW-01 management handoff ready`; send no values/files. The new encrypted temporary handoff has a two-hour lease for bounded owned-trial credential/workflow/privacy operations. The old inventory consumer remains GET-only. Creation is not authentication or readiness proof; consume only after complete consumer review/seal. Management presence and valid lease were verified after owner readiness; this remains distinct from authentication. Admin was delivered/consumed only for the completed new migration and deleted; Writer/Machine wait for actual Cloud privacy.
+Enter the existing saved Management API key for muhhammedsayed.app.n8n.cloud at
+the hidden prompt. Expected result begins
+`GW01_ENCRYPTED_HANDOFF_READY: Management.` with a new two-hour delivery lease. Close
+that PowerShell window, keep the original saved key and reply **GW-01 Management
+handoff refreshed**. Send no value/file contents. This does not authenticate or
+recreate the key. Writer/Machine remain ready; no Admin, Writer or Machine
+command is requested. The exact owner cleanup is necessary because automatic
+approval review rejected the agent's conditional deletion before execution with
+generic `blocked by policy`; no alternate deletion was attempted.
 
 ### Administrator handoff consumed/deleted (historical command; do not repeat)
 
@@ -130,7 +169,7 @@ This is the shared instance allowance, not a dedicated Market Radar reservation.
 | --- | --- |
 | Execution timeout | The actual unused workflow saved 900 seconds successfully. Current [Cloud pricing](https://n8n.io/pricing/) documents 40 minutes for Pro/Enterprise; the instance's hard maximum was not experimentally tested. M03 keeps 15 minutes. |
 | Sub-workflow quota | Current [execution documentation](https://docs.n8n.io/build/understand-workflows/understand-executions.md#how-executions-count-towards-quotas) says Execute Sub-workflow calls do not count separately; only the top-level production execution counts. Manual and error executions are also excluded by the documented rule. This is the rule for the observed paid plan, not an independently measured billing experiment. |
-| Variables | Initial T1 controls verified. Incident INC-M03-20261018-01 remains open; identification/remediation is tracked privately outside this repository. |
+| Variables | Initial T1 controls verified. INC-M03-20261018-01 owner inputs ready; separate production gate remains. Details stay private. |
 | Verified Apify node | Actual picker shows installed/verified Apify package version 0.6.10 (Legacy), update available. No install/update or actor execution occurred. HTTP Request remains the reviewed API path; a current Apify node schema is not assumed. |
 | Postgres parameters | Initial capability inspection found Postgres 2.7 Options → Query Parameters (`options.queryReplacement`) and `$1/$2/$3` help without connecting. The later native identity attempt failed strict TLS, as recorded separately above. |
 
@@ -158,9 +197,21 @@ ordinary Cloud execution with asynchronous actor callbacks; no queue-mode or
 concurrency setting was changed.
 
 ## Risks / notes for the owner
-- INC-M03-20261018-01: open private identification/remediation gate. No disposition, revocation or erasure is claimed. Details remain outside the public repository.
+- INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-18 Cairo: Local runtime-phase guard frozen/review clear; author69 affected transport cases including26 new phase/native-public-CLI and2 selected sealer cases pass. Independent reviewer reran only the26 new cases/native0, including strict system-env exposure negatives; root8 earlier critical cases remain historical before the final field addition. [Local receipt](evidence/local-runtime-phase-20261018.json). Actual runtimePhase remains absent/new enabled target not ready; completed Probe/log/source-advance receipts are preserved, no private/helper/network operation by reviewers. Four-public-config helper remains a pre-Environment gate; no actual runtime identity/activation/paid/production claim.
+
+- 2026-10-18 Cairo: Readde6b5b now confirms original Management lease expired:true/present:true at expiry09:22:05.538867UTC; earlier09:21:55 expired:false remains historical. The blocked deletion was never executed and no alternate retry occurred. One owner cleanup+existing-key redelivery action is requested for a new2h delivery lease; no key recreation/reset and no repeat Writer/Machine action.
+
+- 2026-10-18 Cairo: Conditional Management DPAPI/lease cleanup was rejected before execution with generic blocked by policy; no private read/decryption/auth/deletion and no alternate retry. Read-only lease metadata at09:21:55UTC still showed present:true/expired:false, expiry09:22:05.538867UTC. No missing/deleted claim. Exact owner cleanup/refresh will be requested only after actual expiry is confirmed and the bounded phase needs the existing key; no new key recreation is implied.
+
+- 2026-10-18 Cairo: Writer/Machine readiness received; actual direct Writer Verify fd8497 passed native0/strict dev session5432 TLS/current_user=session_user=n8n_writer/databasepostgres/projectref exact, plus four rollback-only42501 denials. Prepared window closedfalse/startsAt/expiresAt/bindingnull/totalAdmitted0; connection/root child closed and encrypted Writer retained, Machine unconsumed. [Actual receipt](evidence/gw01-writer-verify-20261018.json). This is not gateway HTTP identity or native n8n Cloud TLS success. Status returns In progress while local runtime-phase guard and missing four-public-config helper are implemented/reviewed before Environment delivery. CloudA/B preserved, journal2/100/clock off; no credential replay or further owner action now. Management original lease09:22:05.538867UTC was not renewed; request only if actually expired and needed. INC-M03-20261018-01 owner inputs ready/separate production gate; PR8 draft/M03 open, no actor/paid/workflow/production/merge/M04.
+
+- 2026-10-18 Cairo: GET-only LogRead d9983c passed native0/privateRead:true/closed child/retained handoff, with0 gateway requests and one CLI invocation. The existing request80162039-6088-4011-bdf1-a2a7b5ec11cb/attempt66233386-4962-44fe-b499-df973fde25c9 yielded one matching log at08:55:45.763UTC, no auth/body/bypass markers or truncation; exact metadata/time scope, no unique trace-ID/unseen-storage claim. CloudA/B now verified, restricted DB identity/binding/trial still pending. Journal2/100/clock stopped/server unbound0. Source seal advance native0/public CheckOnly; second proof/config advance original native completion uncaptured, separately reconciled current seal/archive/backup and fresh CheckOnly native0 without reinstall. [Logs](evidence/gw01-log-read-20261018.json), [transitions](evidence/gw01-public-seal-transitions-20261018.json), [local reader](evidence/local-gw01-log-read-20261018.json), [local transition](evidence/local-gw01-seal-advance-20261018.json). Fresh public lease read corrected09:05UTC to09:22:05.538867UTC without renewal. Only existing Writer password and generated Machine handoffs requested; no Admin/new Management key. INC-M03-20261018-01 owner inputs ready; separate production gate. PR8 draft/M03 open; no actors, paid calls, workflows, production, merge or M04.
+
+- 2026-10-18 Cairo: Actual unchanged workstation sealer/CheckOnly passed native0 after later explicit request; its public check read/decrypted no handoff and made no network request. Prior policy rejection and un-reproduced owner error preserved, cause unknown. Actual Probe request80162039-6088-4011-bdf1-a2a7b5ec11cb then returned503/unavailable with strict TLS/sockets closed/disabledRouteVerified:true and identityVerified:false. Log scan returned GW01_LOGS_NO_CAPTURE/0, so privacy_pending/native1 is retained; no full CloudB or restricted identity pass. Journal2/100, clock stopped, server unbound/admissions0; both owned children closed, encrypted handoffs retained. GET-only log continuation is unblocked, no repeated POST or new Writer/Admin/Machine request. [Public check](evidence/gw01-workstation-check-20261018.json), [Probe](evidence/gw01-probe-20261018.json). INC-M03-20261018-01 owner inputs ready; separate production gate. No production, paid/provider calls, activation, merge or M04.
 
 - 18 October2026 Cairo ? Resumed clean100290a/CI39104226437; owner approved exact GW-01 dev packet plus isolation/privacy/cleanup clarifications. Nine prior migrations/data/provider receipts preserved. Root local22gateway/DB/TLS tests pass; initial failed assertions and fixture fixes retained in tool receipts. New CLI-generated20261018070042 local-only source/pgTAP/types/advisors and multiprocess tests are under review; further binding/close-race hardening is in progress before dev seal. Source/core/helper work continues; no real credential handoff consumed, hosted change or trial clock started. INC-M03-20261018-01 private decision updated separately; no production authority.
 

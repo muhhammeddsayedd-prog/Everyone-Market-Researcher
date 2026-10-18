@@ -8,5 +8,5 @@
   "teamId": "team_gboXPxTevpCOZuaA8eY9PmR1",
   "target": "preview",
   "protection": "all_except_custom_domains",
-  "routeDisabledVerified": false
+  "routeDisabledVerified": true
 }

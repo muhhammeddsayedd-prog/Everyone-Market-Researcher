@@ -160,6 +160,7 @@ export function createTrialCoordinator(path, config, clock = () => Date.now()) {
     const inFlight = new Map(),
       ids = new Set(),
       rejected = new Set(),
+      deployments = new Map(),
       targets = new Set(audiences);
     for (let index = 1; index < events.length; index++) {
       const e = events[index];
@@ -175,6 +176,7 @@ export function createTrialCoordinator(path, config, clock = () => Date.now()) {
           fail('GW01_STATE_REJECTED');
         const target = deployment(e.target);
         targets.add(target.audience);
+        deployments.set(target.audience, target);
       } else if (e.type === 'started') {
         if (!exact(e, ['seq', 'type', 'at']) || startedAt !== null || closed || inFlight.size !== 0)
           fail('GW01_STATE_REJECTED');
@@ -252,6 +254,7 @@ export function createTrialCoordinator(path, config, clock = () => Date.now()) {
       inFlight,
       verifiedRejectedAudiences: [...rejected],
       audiences: [...targets],
+      deployments,
     };
   }
   function append(state, event) {
@@ -393,6 +396,21 @@ export function createTrialCoordinator(path, config, clock = () => Date.now()) {
       return snapshot();
     });
   }
+  function assertDeployment(value, initialBinding) {
+    const target = deployment(value),
+      s = load(),
+      expected = audiences.includes(target.audience)
+        ? deployment(initialBinding)
+        : s.deployments.get(target.audience);
+    if (
+      !expected ||
+      !['audience', 'commitSha', 'deploymentId', 'projectId', 'branch'].every(
+        (key) => target[key] === expected[key],
+      )
+    )
+      fail('GW01_DEPLOYMENT_REJECTED');
+    return true;
+  }
   async function attempt(value, send) {
     if (typeof send !== 'function') fail('GW01_INPUT_REJECTED');
     const reservation = reserve(value);
@@ -418,5 +436,6 @@ export function createTrialCoordinator(path, config, clock = () => Date.now()) {
     snapshot,
     attempt,
     registerDeployment,
+    assertDeployment,
   };
 }

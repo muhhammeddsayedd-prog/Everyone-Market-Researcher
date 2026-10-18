@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { after, test } from 'node:test';
 import { EventEmitter } from 'node:events';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { createTrialCoordinator, GW01_WINDOW_ID } from './gw01-trial.mjs';
-import { sendGatewayAttempt } from './gw01-gateway-transport.mjs';
+import { assertRuntimePhase, checkPublicGateway, sendGatewayAttempt } from './gw01-gateway-transport.mjs';
 
 const roots = [],
   audience = 'https://everyone-market-researcher-synthetic.vercel.app',
@@ -36,13 +38,103 @@ function fixture(mode = 'Probe') {
         audience,
         target: 'preview',
         protection: 'all_except_custom_domains',
-        routeDisabledVerified: true,
+        routeDisabledVerified: false,
       },
       request: { version: 1, requestId: randomUUID(), operation: 'identity.read', args: {} },
       kind: mode === 'Probe' ? 'preflight' : 'ordinary',
       authorization: mode === 'Probe' ? 'synthetic' : 'machine',
       fault: 'none',
       secrets: mode === 'Probe' ? { protection } : { protection, machine },
+    },
+  };
+}
+function runtimeContext(preview) {
+  const target = Object.fromEntries(
+    ['audience', 'commitSha', 'deploymentId', 'projectId', 'branch'].map((key) => [key, preview[key]]),
+  );
+  const environment = [
+    {
+      version: 1,
+      kind: 'environment_intent',
+      windowId: GW01_WINDOW_ID,
+      projectId: preview.projectId,
+      branch: preview.branch,
+      createdAt: '2026-10-18T10:00:00.000Z',
+    },
+    { kind: 'environment_delivered', name: 'EMR_WORKER_DB_PASSWORD' },
+    { kind: 'environment_delivered', name: 'EMR_WORKER_GATEWAY_TOKEN_SHA256' },
+  ];
+  const sourceObjects = Object.fromEntries(
+    [
+      ['apps/web', 'tree', 'ceedfcc695e210d5f14025d9cfd47f17c55d6f2a'],
+      ['packages/shared', 'tree', 'fc0684990fd7df9260c1deeda7ca18dcdb99651a'],
+      ['pnpm-lock.yaml', 'blob', '41a2d27d4ac2c16d033930475aa400884562cefb'],
+      ['package.json', 'blob', 'f34d32bdf8fc7b09ea45f6560e79ae3da94efd10'],
+      ['pnpm-workspace.yaml', 'blob', '8f91bfb10cdd8d3cfe706adf080b9f6b22b0387e'],
+    ].map(([path, kind, id]) => [path, { kind, cloudB: id, runtime: id }]),
+  );
+  return {
+    environment,
+    cloud: {
+      version: 1,
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      instanceHost: 'muhhammedsayed.app.n8n.cloud',
+      ownedWorkflowId: 'p8GikCM8C9Tq3lo4',
+      credentialCanaryVerified: true,
+      executionCanaryVerified: true,
+      exportCanaryVerified: true,
+      logCanaryVerified: true,
+      passed: true,
+      disabledProbeHttpStatus: 503,
+      disabledProbeRequestId: '80162039-6088-4011-bdf1-a2a7b5ec11cb',
+      logsScanned: 1,
+      logReadEvidence: 'milestones/M03-n8n-foundation/evidence/gw01-log-read-20261018.json',
+      cloudBTarget: {
+        audience: 'https://everyone-market-researcher-7k5et630y-muhammed-abdelrahman.vercel.app',
+        commitSha: '4d4d13ebf241f12df64de772b0024bf6d5a067e0',
+        deploymentId: 'dpl_34mF18oQnjrqS67pdXMBsChLfV7g',
+        projectId: preview.projectId,
+        branch: preview.branch,
+      },
+      runtimePhase: {
+        version: 1,
+        cloudBTarget: {
+          audience: 'https://everyone-market-researcher-7k5et630y-muhammed-abdelrahman.vercel.app',
+          commitSha: '4d4d13ebf241f12df64de772b0024bf6d5a067e0',
+          deploymentId: 'dpl_34mF18oQnjrqS67pdXMBsChLfV7g',
+          projectId: preview.projectId,
+          branch: preview.branch,
+        },
+        target,
+        sourceObjects,
+        rootVercelJson: 'absent',
+        environment: {
+          recordRef: 'scripts/n8n/out/gw01-environment-delivery.jsonl',
+          records: structuredClone(environment),
+        },
+        readback: {
+          evidenceRef: 'milestones/M03-n8n-foundation/evidence/gw01-runtime-readback-20261018.json',
+          kind: 'vercel_runtime_preview',
+          nativeExit: 0,
+          teamId: 'team_gboXPxTevpCOZuaA8eY9PmR1',
+          environment: 'preview',
+          readyState: 'READY',
+          autoExposeSystemEnvs: true,
+          target: structuredClone(target),
+          createdAt: '2026-10-18T10:01:00.000Z',
+          observedAt: '2026-10-18T10:02:00.000Z',
+          configuration: {
+            target: 'preview',
+            gitBranch: preview.branch,
+            values: {
+              EMR_WORKER_GATEWAY_ENABLED: 'true',
+              EMR_WORKER_GATEWAY_AUDIENCE: 'vercel-deployment',
+              EMR_WORKER_GATEWAY_WINDOW_ID: GW01_WINDOW_ID,
+              EMR_WORKER_GATEWAY_COMMIT_SHA: preview.commitSha,
+            },
+          },
+        },
+      },
     },
   };
 }
@@ -69,6 +161,7 @@ function network(f, scenario = 'success', options = {}) {
     written;
   const deps = {
     coordinator: f.coordinator,
+    runtimeContext: runtimeContext(f.input.preview),
     timeoutMs: 50,
     closeTimeoutMs: 20,
     lookup: (_host, settings, callback) => {
@@ -153,6 +246,254 @@ function safe(result) {
   assert.doesNotMatch(JSON.stringify(result), new RegExp(machine + '|' + protection));
   return result;
 }
+
+test('runtime phase admits truthful enabled-target false flag using old CloudB and exact source/config lineage', () => {
+  const f = fixture('Request'),
+    context = runtimeContext(f.input.preview);
+  assert.equal(assertRuntimePhase(f.input.preview, context), true);
+  assert.equal(f.input.preview.routeDisabledVerified, false);
+  assert.notEqual(context.cloud.runtimePhase.cloudBTarget.audience, f.input.preview.audience);
+});
+for (const [label, mutate] of [
+  [
+    'absent phase',
+    (p, c) => {
+      delete c.cloud.runtimePhase;
+    },
+  ],
+  [
+    'copied disabled flag',
+    (p) => {
+      p.routeDisabledVerified = true;
+    },
+  ],
+  [
+    'missing log acceptance',
+    (p, c) => {
+      c.cloud.logCanaryVerified = false;
+    },
+  ],
+  [
+    'different old target',
+    (p, c) => {
+      c.cloud.runtimePhase.cloudBTarget.commitSha = 'b'.repeat(40);
+    },
+  ],
+  [
+    'contradicting top-level CloudB target',
+    (p, c) => {
+      c.cloud.cloudBTarget.deploymentId = 'dpl_ContradictingOldDeployment123';
+    },
+  ],
+  [
+    'different old request',
+    (p, c) => {
+      c.cloud.disabledProbeRequestId = randomUUID();
+    },
+  ],
+  [
+    'wrong target tuple',
+    (p, c) => {
+      c.cloud.runtimePhase.target.deploymentId = 'dpl_DifferentRuntimeDeployment123';
+    },
+  ],
+  [
+    'changed runtime source',
+    (p, c) => {
+      c.cloud.runtimePhase.sourceObjects['apps/web'].runtime = '0'.repeat(40);
+    },
+  ],
+  [
+    'wrong source tree',
+    (p, c) => {
+      c.cloud.runtimePhase.sourceObjects['apps/web'].cloudB = '0'.repeat(40);
+    },
+  ],
+  [
+    'extra source path',
+    (p, c) => {
+      c.cloud.runtimePhase.sourceObjects.extra = {
+        kind: 'blob',
+        cloudB: '0'.repeat(40),
+        runtime: '0'.repeat(40),
+      };
+    },
+  ],
+  [
+    'new root configuration',
+    (p, c) => {
+      c.cloud.runtimePhase.rootVercelJson = 'present';
+    },
+  ],
+  [
+    'incomplete environment ledger',
+    (p, c) => {
+      c.environment.pop();
+    },
+  ],
+  [
+    'different embedded ledger',
+    (p, c) => {
+      c.cloud.runtimePhase.environment.records[1].name = 'OTHER';
+    },
+  ],
+  [
+    'wrong ledger reference',
+    (p, c) => {
+      c.cloud.runtimePhase.environment.recordRef = 'outside.jsonl';
+    },
+  ],
+  [
+    'wrong readback reference',
+    (p, c) => {
+      c.cloud.runtimePhase.readback.evidenceRef = 'other.json';
+    },
+  ],
+  [
+    'unready deployment',
+    (p, c) => {
+      c.cloud.runtimePhase.readback.readyState = 'BUILDING';
+    },
+  ],
+  [
+    'system environment exposure disabled',
+    (p, c) => {
+      c.cloud.runtimePhase.readback.autoExposeSystemEnvs = false;
+    },
+  ],
+  [
+    'coercible system environment exposure',
+    (p, c) => {
+      c.cloud.runtimePhase.readback.autoExposeSystemEnvs = 'true';
+    },
+  ],
+  [
+    'different readback target',
+    (p, c) => {
+      c.cloud.runtimePhase.readback.target.commitSha = 'b'.repeat(40);
+    },
+  ],
+  [
+    'coercible native exit',
+    (p, c) => {
+      c.cloud.runtimePhase.readback.nativeExit = false;
+    },
+  ],
+  [
+    'wrong config scope',
+    (p, c) => {
+      c.cloud.runtimePhase.readback.configuration.target = 'production';
+    },
+  ],
+  [
+    'wrong commit config',
+    (p, c) => {
+      c.cloud.runtimePhase.readback.configuration.values.EMR_WORKER_GATEWAY_COMMIT_SHA = 'b'.repeat(40);
+    },
+  ],
+  [
+    'wrong audience config name',
+    (p, c) => {
+      const v = c.cloud.runtimePhase.readback.configuration.values;
+      v.EMR_WORKER_GATEWAY_AUDIENCE_MODE = v.EMR_WORKER_GATEWAY_AUDIENCE;
+      delete v.EMR_WORKER_GATEWAY_AUDIENCE;
+    },
+  ],
+  [
+    'unapproved config field',
+    (p, c) => {
+      c.cloud.runtimePhase.readback.configuration.values.EMR_WORKER_GATEWAY_TOKEN_SHA256 =
+        'SYNTHETIC_FORBIDDEN';
+    },
+  ],
+])
+  test('runtime phase rejects ' + label + ' before reservation or DNS', async () => {
+    const f = fixture('Request'),
+      n = network(f);
+    mutate(f.input.preview, n.deps.runtimeContext);
+    n.deps.lookup = () => assert.fail('no DNS');
+    const out = await sendGatewayAttempt(f.input, n.deps);
+    assert.equal(out.status, 'stopped_reconcile');
+    assert.equal(out.attemptRecorded, false);
+    assert.equal(n.calls(), 0);
+    assert.equal(f.coordinator.snapshot().attempts, 0);
+  });
+
+test('actual public CLI rejects absent runtime lineage without any credentials and accepts exact completed public ledger', () => {
+  const f = fixture('Request'),
+    c = runtimeContext(f.input.preview),
+    base = join(f.root, 'scripts/n8n');
+  mkdirSync(join(base, 'out/gw01'), { recursive: true });
+  const config = {
+      windowId: GW01_WINDOW_ID,
+      audiences: ['https://everyone-market-researcher-prepared-synthetic.vercel.app'],
+    },
+    coordinator = createTrialCoordinator(join(base, 'out/gw01'), config);
+  coordinator.prepare();
+  coordinator.registerDeployment(c.cloud.runtimePhase.target);
+  coordinator.start();
+  for (const [name, value] of [
+    ['gw01-reviewed-preview', f.input.preview],
+    ['gw01-trial-config', config],
+    ['gw01-cloud-privacy', c.cloud],
+  ])
+    writeFileSync(join(base, name + '.json'), JSON.stringify(value));
+  writeFileSync(
+    join(base, 'out/gw01-environment-delivery.jsonl'),
+    c.environment.map((x) => JSON.stringify(x)).join('\n') + '\n',
+  );
+  const invoke = () =>
+    spawnSync(
+      process.execPath,
+      [fileURLToPath(new URL('./gw01-gateway-transport.mjs', import.meta.url)), '--check-public'],
+      {
+        cwd: f.root,
+        input: JSON.stringify(f.input),
+        env: {},
+        encoding: 'utf8',
+        timeout: 3000,
+        windowsHide: true,
+      },
+    );
+  const ok = invoke();
+  assert.equal(ok.status, 0, ok.stdout);
+  assert.equal(JSON.parse(ok.stdout).privateRead, false);
+  delete c.cloud.runtimePhase;
+  writeFileSync(join(base, 'gw01-cloud-privacy.json'), JSON.stringify(c.cloud));
+  const missing = invoke();
+  assert.equal(missing.status, 1);
+  assert.equal(JSON.parse(missing.stdout).status, 'stopped_reconcile');
+});
+
+test('public gateway guard permits only an exact later registered deployment with original config unchanged', () => {
+  const f = fixture(),
+    config = {
+      windowId: GW01_WINDOW_ID,
+      audiences: ['https://everyone-market-researcher-original-synthetic.vercel.app'],
+    },
+    root = mkdtempSync(join(tmpdir(), 'emr-gw01-registered-synthetic-'));
+  roots.push(root);
+  const coordinator = createTrialCoordinator(root, config);
+  coordinator.prepare();
+  const target = Object.fromEntries(
+    ['audience', 'commitSha', 'deploymentId', 'projectId', 'branch'].map((k) => [k, f.input.preview[k]]),
+  );
+  assert.throws(() => checkPublicGateway(f.input, coordinator), /GW01_DEPLOYMENT_REJECTED/);
+  coordinator.registerDeployment(target);
+  const journal = readFileSync(join(root, 'gw01-trial.jsonl'));
+  assert.deepEqual(checkPublicGateway(f.input, coordinator), {
+    version: 1,
+    status: 'public_ready',
+    networkRequests: 0,
+    privateRead: false,
+  });
+  f.input.preview.commitSha = 'b'.repeat(40);
+  assert.throws(() => checkPublicGateway(f.input, coordinator), /GW01_DEPLOYMENT_REJECTED/);
+  assert.deepEqual(readFileSync(join(root, 'gw01-trial.jsonl')), journal);
+  assert.equal(coordinator.snapshot().attempts, 0);
+  assert.equal(coordinator.snapshot().startedAt, null);
+  assert.equal(config.audiences.length, 1);
+});
 test('Probe uses only protection plus public synthetic auth, records preflight and verifies disabled503 without identity claim', async () => {
   const f = fixture(),
     n = network(f),
