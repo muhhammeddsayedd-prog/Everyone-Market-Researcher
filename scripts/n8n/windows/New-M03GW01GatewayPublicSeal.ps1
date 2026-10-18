@@ -8,10 +8,10 @@ $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $temporary=$null;$ownedTemporary=$false;$child=$null;$started=$false;$closed=$true;$start=$null;$buffer=$null;$memory=$null
 # BEGIN REVIEWED PUBLIC SOURCES
 $reviewed=ConvertFrom-Json -InputObject @'
-{"scripts/n8n/gw01-gateway-transport.mjs":"d0f4183c749a9f0a8d63357c31360e373317f26c1cf2e10dda5f5626cdadd331","scripts/n8n/gw01-gateway-logs.mjs":"d82eddabbe7b7593cda0c0bcba662d9434d6f0f0cf9eb8280914e0c5869d9b76","scripts/n8n/gw01-trial.mjs":"0d061eabed43651df145df1f82d403d6396d807db6451ce0622367d86dc859f5","packages/shared/src/n8n-worker-contracts.ts":"1195db341df1dafc1bbddbd9939ab779780aecd181903dcd4e402c46d382e21b","packages/shared/package.json":"35abc94942e944707bbbeace169ebeeb659122624a401056281b049956a7f3a8","pnpm-lock.yaml":"41a3cd4479dc1c8e0c504f466b4a7d27536d3f4b5eeaeec13123022a0fb212ef","scripts/n8n/windows/New-M03GW01Handoff.ps1":"e7e46ba59016a5ee5fc0ff8ee9cf5d886f9e244824b00a97179b204d87ea6ab4","scripts/n8n/windows/Invoke-M03GW01Gateway.ps1":"85fc2e377ddee1f93541c7d0b7a2fe6f84e9b34f84053591c1d19100b971f7c7"}
+{"scripts/n8n/gw01-gateway-transport.mjs":"e0f13d337662d003263fd3b465f40ee06b5d0c183b5f38b927c83eacba8ba565","scripts/n8n/gw01-gateway-logs.mjs":"d82eddabbe7b7593cda0c0bcba662d9434d6f0f0cf9eb8280914e0c5869d9b76","scripts/n8n/gw01-trial.mjs":"0d061eabed43651df145df1f82d403d6396d807db6451ce0622367d86dc859f5","packages/shared/src/n8n-worker-contracts.ts":"1195db341df1dafc1bbddbd9939ab779780aecd181903dcd4e402c46d382e21b","packages/shared/package.json":"35abc94942e944707bbbeace169ebeeb659122624a401056281b049956a7f3a8","pnpm-lock.yaml":"41a3cd4479dc1c8e0c504f466b4a7d27536d3f4b5eeaeec13123022a0fb212ef","scripts/n8n/windows/New-M03GW01Handoff.ps1":"e7e46ba59016a5ee5fc0ff8ee9cf5d886f9e244824b00a97179b204d87ea6ab4","scripts/n8n/windows/Invoke-M03GW01Gateway.ps1":"29e3f169b173ee9fb99569efa4bc4c49b14e34256eda031bc17423d8bcbad407"}
 '@
 # END REVIEWED PUBLIC SOURCES
-# Only this reviewed runtime-phase revision of two public source files is
+# Only this reviewed runtime-phase/Duplicate2 revision of two public source files is
 # permitted. A packet cannot nominate source paths or a former source revision.
 # BEGIN REVIEWED PREVIOUS SOURCES
 $previousSources=@{

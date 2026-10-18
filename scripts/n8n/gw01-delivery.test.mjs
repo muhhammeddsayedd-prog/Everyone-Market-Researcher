@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { resolve } from 'node:path';
+import * as gatewayDelivery from './gw01-delivery.mjs';
 import {
   deliverGatewayCredentials,
   gatewayCredentialIds,
@@ -10,6 +12,31 @@ const canary = 'SYNTHETIC_PRIVATE_GW01_CANARY';
 const config = () => ({
   audience: 'https://everyone-market-researcher-synthetic.vercel.app',
   privacyVerified: true,
+});
+
+test('native sensitive delivery loads the fixed no-retry guard before CLI and keeps values on stdin', () => {
+  // Assert the pure builder exists before calling anything: this regression must
+  // never fall through to an installed CLI or authenticate with a test value.
+  assert.equal(typeof gatewayDelivery.buildNativeVercelInvocation, 'function');
+  const value = 'SYNTHETIC_PRIVATE_ENV_VALUE_ONLY';
+  const previous = process.env.APPDATA;
+  let invocation;
+  try {
+    process.env.APPDATA = resolve('__SYNTHETIC_NO_CLI_INSTALLATION__');
+    invocation = gatewayDelivery.buildNativeVercelInvocation('EMR_WORKER_DB_PASSWORD', value);
+  } finally {
+    if (previous === undefined) delete process.env.APPDATA;
+    else process.env.APPDATA = previous;
+  }
+  assert.equal(invocation.args[0], '--import');
+  assert.match(invocation.args[1], /^file:\/\//);
+  assert.match(invocation.args[1], /\/scripts\/n8n\/gw01-vercel-no-retry\.mjs$/);
+  assert.match(invocation.args[2].replaceAll('\\', '/'), /\/vercel\/dist\/index\.js$/);
+  assert.equal(invocation.value, value);
+  assert.equal(JSON.stringify(invocation.args).includes(value), false);
+  assert.equal(Object.hasOwn(invocation.env, 'PGPASSWORD'), false);
+  assert.equal(Object.hasOwn(invocation.env, 'NODE_OPTIONS'), false);
+  assert.equal(invocation.args.includes('--force'), false);
 });
 function ports() {
   const calls = [],

@@ -17,6 +17,8 @@ function fixture(kind = 'success') {
     const f = join(root, p);
     mkdirSync(dirname(f), { recursive: true });
     let value = s;
+    if (p === 'appdata/npm/node_modules/vercel/dist/vc.js')
+      value = value.replaceAll('state.json', 'state.txt').replaceAll('calls.json', 'calls.txt');
     if (p === 'appdata/npm/node_modules/vercel/dist/vc.js' && kind.startsWith('final')) {
       const bad = { id: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' };
       if (kind === 'finalNull') bad.protectionBypass = null;
@@ -58,14 +60,40 @@ function fixture(kind = 'success') {
   const app = join(root, 'appdata'),
     cli = put(
       'appdata/npm/node_modules/vercel/dist/vc.js',
-      `const fs=require('node:fs'),path=require('node:path');const statePath=path.join(__dirname,'state.json'),callsPath=path.join(__dirname,'calls.json');let text='';process.stdin.on('data',c=>text+=c);process.stdin.on('end',()=>{const body=text?JSON.parse(text):null;const calls=fs.existsSync(callsPath)?JSON.parse(fs.readFileSync(callsPath)):[];calls.push({argv:process.argv.slice(2),action:body?.generate?'generate':body?.revoke?'revoke':'get'});fs.writeFileSync(callsPath,JSON.stringify(calls));let state=fs.existsSync(statePath)?JSON.parse(fs.readFileSync(statePath)):{DEFAULT_PUBLIC_SYNTHETIC_ENTRY:{scope:'automation-bypass',isEnvVar:true,note:'Unrelated default'}};if(body?.generate){state[body.generate.secret]={scope:'automation-bypass',isEnvVar:${['default', 'ambiguousRevoke'].includes(kind) ? 'true' : 'false'},note:${kind === 'wrongnote' ? "'Unrelated'" : 'body.generate.note'},createdAt:Date.now(),createdBy:'SyntheticOwner'};fs.writeFileSync(statePath,JSON.stringify(state));${kind === 'ambiguous' ? 'process.exit(1);' : ''}}if(body?.revoke){if(body.revoke.regenerate!==false)throw Error('badfixture');delete state[body.revoke.secret];fs.writeFileSync(statePath,JSON.stringify(state));${kind === 'ambiguousRevoke' ? 'process.exit(1);' : ''}}process.stdout.write(JSON.stringify({id:'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',protectionBypass:state}));});`,
+      `${kind === 'retryGuard' ? 'if(globalThis.__GW01_SYNTHETIC_PRELOAD__!==true)process.exit(1);' : ''}const fs=require('node:fs'),path=require('node:path');const statePath=path.join(__dirname,'state.json'),callsPath=path.join(__dirname,'calls.json');let text='';process.stdin.on('data',c=>text+=c);process.stdin.on('end',()=>{const body=text?JSON.parse(text):null;const calls=fs.existsSync(callsPath)?JSON.parse(fs.readFileSync(callsPath)):[];calls.push({argv:process.argv.slice(2),action:body?.generate?'generate':body?.revoke?'revoke':'get'});fs.writeFileSync(callsPath,JSON.stringify(calls));let state=fs.existsSync(statePath)?JSON.parse(fs.readFileSync(statePath)):{DEFAULT_PUBLIC_SYNTHETIC_ENTRY:{scope:'automation-bypass',isEnvVar:true,note:'Unrelated default'}};if(body?.generate){state[body.generate.secret]={scope:'automation-bypass',isEnvVar:${['default', 'ambiguousRevoke'].includes(kind) ? 'true' : 'false'},note:${kind === 'wrongnote' ? "'Unrelated'" : 'body.generate.note'},createdAt:Date.now(),createdBy:'SyntheticOwner'};fs.writeFileSync(statePath,JSON.stringify(state));${kind === 'ambiguous' ? 'process.exit(1);' : ''}}if(body?.revoke){if(body.revoke.regenerate!==false)throw Error('badfixture');delete state[body.revoke.secret];fs.writeFileSync(statePath,JSON.stringify(state));${kind === 'ambiguousRevoke' ? 'process.exit(1);' : ''}}process.stdout.write(JSON.stringify({id:'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',protectionBypass:state}));});`,
     ),
     pkg = put('appdata/npm/node_modules/vercel/package.json', JSON.stringify({ version: '56.5.0' }));
+  put('appdata/npm/node_modules/vercel/dist/index.js', readFileSync(cli, 'utf8'));
+  put(
+    'appdata/npm/node_modules/vercel/dist/chunks/client.cjs',
+    '// Synthetic transitive chunk; never executed.',
+  );
+  const runtime = 'appdata/npm/node_modules/vercel/';
+  put(
+    'scripts/n8n/gw01-gateway-seal.json',
+    JSON.stringify({
+      version: 1,
+      files: {},
+      vercelFiles: Object.fromEntries(
+        ['package.json', 'dist/index.js', 'dist/vc.js', 'dist/chunks/client.cjs'].map((p) => [
+          p,
+          createHash('sha256')
+            .update(readFileSync(join(root, runtime + p)))
+            .digest('hex'),
+        ]),
+      ),
+    }),
+  );
+  put('scripts/n8n/gw01-vercel-no-retry.mjs', 'globalThis.__GW01_SYNTHETIC_PRELOAD__=true;');
   const paths = [
     'scripts/n8n/windows/Invoke-M03GW01Bypass.ps1',
     'scripts/n8n/gw01-local-privacy.json',
     'scripts/n8n/gw01-cloud-privacy.json',
   ];
+  if (readFileSync(consumer, 'utf8').includes('gw01-vercel-no-retry.mjs'))
+    paths.push('scripts/n8n/gw01-vercel-no-retry.mjs');
+  if (readFileSync(consumer, 'utf8').includes('gw01-gateway-seal.json'))
+    paths.push('scripts/n8n/gw01-gateway-seal.json');
   put(
     'scripts/n8n/gw01-bypass-seal.json',
     JSON.stringify({
@@ -101,10 +129,10 @@ function fixture(kind = 'success') {
         timeout: 15000,
         windowsHide: true,
       }),
-    calls: () => JSON.parse(readFileSync(join(dirname(cli), 'calls.json'))),
-    state: () => JSON.parse(readFileSync(join(dirname(cli), 'state.json'))),
+    calls: () => JSON.parse(readFileSync(join(dirname(cli), 'calls.txt'))),
+    state: () => JSON.parse(readFileSync(join(dirname(cli), 'state.txt'))),
     mutateState: (fn) => {
-      const file = join(dirname(cli), 'state.json'),
+      const file = join(dirname(cli), 'state.txt'),
         state = JSON.parse(readFileSync(file));
       fn(state);
       writeFileSync(file, JSON.stringify(state));
@@ -438,3 +466,44 @@ test('other bypass metadata projects counts only, including omitted default flag
     /SYNTHETIC_OTHER|SYNTHETIC_PRIVATE_FLAG|DEFAULT_PUBLIC_SYNTHETIC_ENTRY/,
   );
 });
+
+test('native bypass loads its sealed no-retry preload before any CLI API command', () => {
+  const f = fixture('retryGuard');
+  const r = f.run('Create');
+  assert.equal(r.status, 0, r.stdout);
+  assert.equal(f.calls().length, 1);
+  assert.equal(f.calls()[0].action, 'generate');
+});
+for (const drift of ['changed transitive chunk', 'added runtime', 'Boolean runtime digest'])
+  test('Bypass full parent runtime refuses ' + drift + ' before generation or private read', () => {
+    const f = fixture();
+    if (drift === 'changed transitive chunk')
+      writeFileSync(
+        join(f.root, 'appdata/npm/node_modules/vercel/dist/chunks/client.cjs'),
+        '// Changed unreviewed chunk',
+      );
+    else if (drift === 'added runtime')
+      writeFileSync(
+        join(f.root, 'appdata/npm/node_modules/vercel/dist/new.cjs'),
+        '// Added unreviewed runtime',
+      );
+    else {
+      const path = join(f.root, 'scripts/n8n/gw01-gateway-seal.json'),
+        g = JSON.parse(readFileSync(path));
+      g.vercelFiles['dist/chunks/client.cjs'] = true;
+      writeFileSync(path, JSON.stringify(g));
+      const sealPath = join(f.root, 'scripts/n8n/gw01-bypass-seal.json'),
+        s = JSON.parse(readFileSync(sealPath));
+      if (s.files['scripts/n8n/gw01-gateway-seal.json']) {
+        s.files['scripts/n8n/gw01-gateway-seal.json'] = createHash('sha256')
+          .update(readFileSync(path))
+          .digest('hex');
+        writeFileSync(sealPath, JSON.stringify(s));
+      }
+    }
+    const r = f.run('Create');
+    assert.equal(r.status, 1);
+    assert.match(r.stdout, /PREFLIGHT_BLOCKED/);
+    assert.equal(existsSync(join(f.local, 'Temp/emr-m03-gw01-dev-protection.dpapi')), false);
+    assert.equal(existsSync(join(f.root, 'scripts/n8n/out/gw01-bypass-intent.json')), false);
+  });

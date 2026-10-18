@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: Writer direct login and authorization passed; Writer/Machine handoffs are ready. Runtime checks and the public-settings helper precede Environment delivery. Gateway HTTP identity and the trial remain pending.**
+**In progress: direct Writer login and Cloud privacy passed; all three handoffs are ready. Public-settings and shutdown helpers passed local tests and review. Sealed preflights and Environment delivery precede gateway HTTP identity and the trial.**
 
 | Field | Value |
 | --- | --- |
@@ -14,8 +14,8 @@
 | Branch / PR | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; preserved reviewed `100290a291530d30d0387269c1a0805ad4f86fcc` and earlier evidence, no reset |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Writer/Machine handoffs are ready. Direct Writer Verify fd8497 passed with native exit 0, strict TLS, both n8n_writer identities and four exact 42501 rollback denials. The connection and child closed; Writer was retained and Machine is unused. CloudA/B are preserved. There are 2/100 attempts, the clock is stopped and the server is prepared, unbound and at zero admissions. |
-| Next step | The runtime guard passed source review and 26 fresh targeted tests; its actual runtime phase remains absent. Finish validation and review of the helper for four public settings before Environment. Then deliver branch Preview values, review and register the fresh deployment, and bind the same window before gateway HTTP identity and the trial. No handoff recreation, Probe replay or counter reset. |
+| Current task | Writer/Machine are ready; direct Writer Verify fd8497 passed with strict TLS, both n8n_writer identities and four exact 42501 rollback denials. The connection and child closed; Writer was retained and Machine is unused. Management refresh fb95ae passed public presence/lease checks without authentication. CloudA/B are preserved, with 2/100 attempts, a stopped clock and an unbound server at zero admissions. |
+| Next step | Source is ready for sealed public preflight. Seal the selected-source public-settings packet, then run Plan/Apply with both sensitive entries absent before Environment. Verify and register the fresh Preview, its runtime-phase proof and same-window binding before gateway HTTP identity and the trial. Public shutdown verification is separately reviewed for Close/revocation. No handoff recreation, Probe replay or counter reset. |
 
 ## Task checklist
 <!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
@@ -48,7 +48,7 @@
 ## Blockers
 
 - Strict native n8n Postgres TLS remains unresolved. Actual saved host/session port5432/user/database/max5/SSL Require/Ignore SSL off/SSH off match. Its credential Retry/native Postgres2.7 SELECT encountered a self-signed-chain error, so native Cloud identity is not established. Separate GW-01 direct Writer Verify now passes actual restricted authentication/strict TLS/four42501 rollback denials; it does not relabel the native result. Preserve credentials/security and the declined support-contact boundary. [Native receipt](evidence/credential-readback-20261018.json), [direct Writer receipt](evidence/gw01-writer-verify-20261018.json), [source review](evidence/postgres-cloud-ca-review-20261018.md).
-- [GW-01](evidence/strict-tls-connection-proposal-20261018.md) dev exception is APPROVED by the owner for reviewed 100290a with bounded-trial clarifications. [Authorization](evidence/gw01-authorization-20261018.json). Full Cloud privacy passes via the [503 Probe](evidence/gw01-probe-20261018.json) and [GET-only captured-log continuation](evidence/gw01-log-read-20261018.json); metadata/time matching does not claim a separately captured platform trace ID or unseen storage. Actual [direct Writer login](evidence/gw01-writer-verify-20261018.json) passes; Machine is unused. Local runtime checks and the four-public-settings helper precede Environment delivery, exact target binding and the gateway HTTP trial. [Public transitions](evidence/gw01-public-seal-transitions-20261018.json) reconcile the uncaptured second completion; intents alone do not prove success. There are 2/100 attempts, the clock is stopped and the server is unbound with zero admissions; migration/history/data are unchanged. Only the confirmed-expired Management cleanup and existing-key redelivery action below is requested. No Admin or repeated Writer/Machine handoff.
+- [GW-01](evidence/strict-tls-connection-proposal-20261018.md) dev exception is APPROVED by the owner for reviewed 100290a with bounded-trial clarifications. [Authorization](evidence/gw01-authorization-20261018.json). Full Cloud privacy passes via the [503 Probe](evidence/gw01-probe-20261018.json) and [GET-only captured-log continuation](evidence/gw01-log-read-20261018.json); metadata/time matching does not claim a separately captured platform trace ID or unseen storage. Actual [direct Writer login](evidence/gw01-writer-verify-20261018.json) passes; Machine is unused. Management refresh is ready after public presence/lease check fb95ae; this is not authentication. Local runtime checks and the public-settings helper precede Environment delivery, exact target binding and the gateway HTTP trial. [Public transitions](evidence/gw01-public-seal-transitions-20261018.json) reconcile the uncaptured second completion; intents alone do not prove success. There are 2/100 attempts, the clock is stopped and the server is unbound with zero admissions; migration/history/data are unchanged. No owner action, Admin or repeated handoff is requested now.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 - M03 database deployment is RESOLVED. The third bounded attempt completed native0 with exact dry-run/push/history parity; two earlier failures remain accurately preserved. The second established native0+invalid_json; immutable CLI source reproduced conflicting output flags and the corrected command-specific helper passed regression/review. All nine versions/hashes match,12 RPC ACLs and receipt/indexes pass, budget25,17 Apify prices,285 competitors/1754 accounts/257 logos/seven owner exclusions unchanged, no collected items/runs or fixtures. Fresh hosted advisors have0 WARN/ERROR. Public-only MCP types were not substituted for the checked-in four-schema types. [Completion](evidence/dev-migration-completion-20261018.json), [schema](evidence/dev-post-migration-schema-20261018.json). Preserve the durable successful admission; never replay this packet.
 - API DNS is RESOLVED by bounded OS lookup with every-address screening/pinning/strict TLS. A credential-free401/socket-close test passed. The next keyed attempt authenticated, discovery advertised capabilities and Personal list returned200; workflow-list transport failed before a complete inventory, and the credential-list resource was not attempted. Both consumed API handoffs were deleted/children closed. Exact later transport cause remains unestablished; no further key/discovery loop is requested. Browser sign-in is already verified and connector errors do not invalidate it. [Actual API attempts](evidence/n8n-api-attempt-20261018.json), [DNS](evidence/n8n-dns-boundary-20261018.json).
@@ -63,8 +63,8 @@
 | MA-04 M03 dev | Both approved versions applied successfully; independent history/schema/advisor/data readback passes. Handoff/scratch deleted; children closed; successful admission retained. | None. No new database handoff or replay. |
 | MA-10 / MA-11 providers | Existing provider ID/type bindings/four metadata tests preserved. Native n8n TLS remains open; approved GW-01 direct Writer login/authorization now pass. | None now. No native credential recreation/reset/rename/SSL weakening or repeat declined contact request. |
 | MA-11 / INC-M03-20261018-01 | Owner inputs ready; separate production gate remains. | No further input requested here. Production gate remains separate; details stay private. |
-| MA-11 / GW-01 | Writer/Machine are ready. Direct Writer Verify passed with native exit 0, both identities and four 42501 denials; Machine is unused. CloudA/B are verified, with 2/100 attempts, a stopped clock and an unbound server at zero admissions. | No repeated Writer/Machine action. Finish local runtime and public-settings helper review before Environment; no Admin, Probe replay or counter reset. |
-| MA-11 / Management refresh | Read de6b5b confirmed the original lease is expired and still present; expiry 09:22:05.538867 UTC. Agent deletion was rejected before execution; neither file is reported deleted. | One exact cleanup and redelivery action below: remove only the two expired Management temporary files and rerun Kind Management with the existing saved key. This creates a new two-hour delivery lease, with no key reset or repeated Writer/Machine handoff. |
+| MA-11 / GW-01 | Writer/Machine are ready. Direct Writer Verify passed with native exit 0, both identities and four 42501 denials; Machine is unused. CloudA/B are verified, with 2/100 attempts, a stopped clock and an unbound server at zero admissions. | None. Complete sealed public configuration and reviewed Environment/Bypass preflights before delivery; no Admin, repeated handoff, Probe replay or counter reset. |
+| MA-11 / Management refresh | Owner reported refreshed. Actual read fb95ae verified the fixed window, 120-minute lease, expiry 2026-10-18T11:31:32.9449435+00:00 and unexpired state, with Management/Writer/Machine present and privateRead:false. | None. Readiness is not authentication; the existing key was not recreated. Earlier expiry and blocked automatic deletion remain historical. No repeated handoff. |
 | MA-11 API | Existing key authenticated; Personal list200; later workflow transport incomplete. Consumed key handoffs deleted. | None now. Do not request another key or repeat login/discovery to rediscover the transport failure. |
 | MA-12 | Authorized existing OpenAI credential works for Models read. Project cap is unverified; no model calls. | No new credential requested; keep cap evidence distinct. |
 | MA-13 / fees | Actual dev alert budget25. Subscription/other unknown prices remain unknown. | None; do not restart billing questions or alter shared budgets. |
@@ -109,9 +109,16 @@ The retained encrypted handoff filenames are
 `%LOCALAPPDATA%\Temp\emr-m03-gw01-dev-machine.dpapi`. Keep the owner's separately
 saved original password. No further readiness reply, value, file contents, URL
 or environment output is requested. Environment delivery has not run; local
-runtime-phase and four-public-config helper review comes first.
+sealed public configuration and reviewed Environment/Bypass preflights come first.
 
-### Management handoff refresh - requested after confirmed expiry
+### Management handoff refresh - ready; presence and lease verified
+
+The owner reported the refresh complete. Actual public read fb95ae verified
+the fixed window, a 120-minute lease, expiry
+`2026-10-18T11:31:32.9449435+00:00` and expired:false, with Management, Writer and
+Machine present. It reported privateRead:false; it does not authenticate the
+key or establish a new key. Current owner action is **None**. Do not repeat the
+commands below; they preserve the completed request and its earlier blocker.
 
 The original expiry is 09:22:05.538867 UTC. The 09:21:55 UTC read showed
 present:true/expired:false; later read de6b5b confirms present:true/expired:true.
@@ -121,8 +128,8 @@ request to recreate the API key.
 Root's conditional expired-handoff/lease deletion was rejected before execution
 with generic `blocked by policy`. No private read, decryption, authentication or
 deletion occurred, and no alternate deletion retry was made. Do not mark either
-file missing/deleted from that rejection. The following exact owner action is
-now requested because expiry and the bounded phase need are confirmed.
+file missing/deleted from that rejection. The following exact owner action was
+requested because expiry and the bounded phase need were confirmed.
 
 In Windows PowerShell under this same Windows account, run this one action:
 
@@ -200,6 +207,10 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-18 Cairo: Public-only shutdown checker now passes 48 focused tests after review exposed and fixed an incomplete-response false pass (eight RED cases, nine GREEN completion cases). Final peer source review and ten selected cases pass; native completion, bounded Content-Length/count parity and closed sockets are required. Public-config/no-retry author tests pass 60; independent preload five and adapter ten pass. Full parent runtime guards pass six new RED-to-GREEN cases plus two positives, with independent six and selected existing four passing. Root's final portable four-file run passes 121; the earlier 72-case wrapper checkpoint remains historical. Three new test files are registered in Linux CI, without a new-head CI claim. [Local evidence](evidence/local-gw01-public-config-shutdown-20261018.json). Source is ready for sealed public preflight; no actual helper, credential, gateway, deployed-runtime, old-environment erasure, production or M04 acceptance is inferred.
+
+- 2026-10-18 Cairo: Owner reported Management refreshed. Actual public check fb95ae verified the fixed window, 120-minute lease, expiry 2026-10-18T11:31:32.9449435+00:00 and expired:false, with Management/Writer/Machine present and privateRead:false. This is readiness, not key authentication or recreation. Current owner action is None; earlier expired-lease and blocked automatic-deletion records remain unchanged. Public-settings helper validation/review precedes Environment; no Writer replay, gateway attempt, production or M04.
 
 - 2026-10-18 Cairo: Local runtime-phase guard frozen/review clear; author69 affected transport cases including26 new phase/native-public-CLI and2 selected sealer cases pass. Independent reviewer reran only the26 new cases/native0, including strict system-env exposure negatives; root8 earlier critical cases remain historical before the final field addition. [Local receipt](evidence/local-runtime-phase-20261018.json). Actual runtimePhase remains absent/new enabled target not ready; completed Probe/log/source-advance receipts are preserved, no private/helper/network operation by reviewers. Four-public-config helper remains a pre-Environment gate; no actual runtime identity/activation/paid/production claim.
 

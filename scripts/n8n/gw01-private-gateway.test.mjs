@@ -70,26 +70,34 @@ function fixture(scenario = 'ok', mode = 'Probe') {
       version: 1,
       projectRef: 'zmotjsbzhzjvpelxvxlf',
       instanceHost: 'muhhammedsayed.app.n8n.cloud',
-      passed: mode === 'Request',
+      passed: mode !== 'Probe',
       credentialCanaryVerified: true,
       executionCanaryVerified: true,
       exportCanaryVerified: true,
-      logCanaryVerified: mode === 'Request',
+      logCanaryVerified: mode !== 'Probe',
       ownedWorkflowId: 'SyntheticOwned',
     }),
   );
   const request = {
     version: 1,
     requestId: '5f517a63-e9df-45cc-8751-9662ecb09c9a',
-    operation: 'identity.read',
-    args: {},
+    operation: mode === 'Duplicate2' ? 'error.log' : 'identity.read',
+    args:
+      mode === 'Duplicate2'
+        ? {
+            workflow: 'M03-GATEWAY-ACCEPTANCE-DEV',
+            executionId: '8c4e3b5e-851d-451f-a229-ac3277f5a1b3',
+            message: 'gateway_acceptance',
+            kind: 'notify',
+          }
+        : {},
   };
   put('scripts/n8n/out/gw01/request.json', JSON.stringify(request));
   put('scripts/n8n/out/gw01/gw01-trial.jsonl', 'Synthetic public journal fixture only\n');
   const runner = `
     let s='';for await(const c of process.stdin)s+=c;const x=JSON.parse(s);
     if(process.env.SYNTHETIC_POISON)process.exit(1);
-    if(process.argv[2]==='--check-public')process.stdout.write(JSON.stringify({version:1,status:'public_ready',networkRequests:0,privateRead:false}));
+    if(process.argv[2].startsWith('--check-public'))process.stdout.write(JSON.stringify({version:1,status:'public_ready',networkRequests:0,privateRead:false}));
     else { ${
       scenario === 'hang'
         ? 'setInterval(()=>{},1000);'
@@ -102,7 +110,20 @@ function fixture(scenario = 'ok', mode = 'Probe') {
       ${scenario === 'native' ? 'process.exitCode=1;' : ''}
       ${scenario === 'log_pending' ? 'r.logScan.status="unverified";r.logScan.code="GW01_LOGS_NO_CAPTURE";r.logScan.logsScanned=0;r.logScan.capturedMatchingRequest=false;r.logScan.observedAt=null;process.exitCode=1;' : ''}
       ${scenario === 'unknown' ? 'r.status="stopped_reconcile";r.code="GW01_GATEWAY_AFTER_HEADERS_CANCELLED";r.httpStatus=200;r.response=null;r.disabledRouteVerified=false;r.logScan=null;process.exitCode=1;' : ''}
-      process.stdout.write(JSON.stringify(r));
+      let out=r;
+      if(process.argv[2]==='--private-gateway-duplicate2'){
+        r.httpStatus=200;r.disabledRouteVerified=false;r.identityVerified=false;r.logScan=null;r.response={version:1,requestId:x.request.requestId,outcome:'completed',result:{acknowledged:true},window:{id:'76c2ad42-c094-4ba4-9a0b-566e19b97780',startsAt:'2026-10-18T10:00:00Z',expiresAt:'2026-10-18T10:30:00Z',closed:false,totalAdmitted:1,boundAudience:x.preview.audience,boundCommitSha:x.preview.commitSha,boundDeploymentId:x.preview.deploymentId}};
+        const second=structuredClone(r);
+        ${scenario === 'duplicate_unknown' ? 'second.status="stopped_reconcile";second.code="GW01_GATEWAY_CLOSE";second.response=null;second.socketsClosed=false;' : ''}
+        out={version:1,mode:'Duplicate2',status:${scenario === 'duplicate_unknown' ? "'stopped_reconcile'" : "'complete'"},code:${scenario === 'duplicate_unknown' ? "'GW01_GATEWAY_DUPLICATE'" : 'null'},requestId:x.request.requestId,operation:x.request.operation,attempts:[r,second],attemptsRecorded:2,maxConcurrentTransports:2,concurrencyVerified:${scenario !== 'duplicate_unknown'},socketsClosed:${scenario !== 'duplicate_unknown'}};
+        ${scenario === 'duplicate_unknown' ? 'process.exitCode=1;' : ''}
+        ${scenario === 'duplicate_count' ? 'out.attempts.push(structuredClone(r));' : ''}
+        ${scenario === 'duplicate_extra' ? 'out.count=2;' : ''}
+        ${scenario === 'duplicate_reflection' ? 'out.attempts[0].requestId=x.secrets.machine;' : ''}
+        ${scenario === 'duplicate_nested_extra' ? 'out.attempts[0].response.result.rawError="SYNTHETIC_UNRELATED_PRIVATE";' : ''}
+        ${scenario === 'duplicate_array_id' ? 'out.requestId=[out.requestId];out.attempts[0].requestId=[x.request.requestId];' : ''}
+      }
+      process.stdout.write(JSON.stringify(out));
     `
     }}
   `;
@@ -180,7 +201,7 @@ function fixture(scenario = 'ok', mode = 'Probe') {
   env.SYNTHETIC_POISON = 'NEVER_INHERIT_SYNTHETIC_PRIVATE_ENV';
   const save = put(
     'save-synthetic.ps1',
-    `$p=ConvertTo-SecureString '${protection}' -AsPlainText -Force;$p|ConvertFrom-SecureString|Set-Content -LiteralPath (Join-Path $env:LOCALAPPDATA 'Temp/emr-m03-gw01-dev-protection.dpapi') -Encoding ASCII;$p.Dispose();${mode === 'Request' ? `$m=ConvertTo-SecureString '${machine}' -AsPlainText -Force;$m|ConvertFrom-SecureString|Set-Content -LiteralPath (Join-Path $env:LOCALAPPDATA 'Temp/emr-m03-gw01-dev-machine.dpapi') -Encoding ASCII;$m.Dispose();` : ''}`,
+    `$p=ConvertTo-SecureString '${protection}' -AsPlainText -Force;$p|ConvertFrom-SecureString|Set-Content -LiteralPath (Join-Path $env:LOCALAPPDATA 'Temp/emr-m03-gw01-dev-protection.dpapi') -Encoding ASCII;$p.Dispose();${mode !== 'Probe' ? `$m=ConvertTo-SecureString '${machine}' -AsPlainText -Force;$m|ConvertFrom-SecureString|Set-Content -LiteralPath (Join-Path $env:LOCALAPPDATA 'Temp/emr-m03-gw01-dev-machine.dpapi') -Encoding ASCII;$m.Dispose();` : ''}`,
   );
   const saved = spawnSync(ps, ['-NoProfile', '-NonInteractive', '-File', save], {
     env,
@@ -273,6 +294,54 @@ test('Request consumes only machine and protection after fullprivacy, with no wr
   assert.equal(existsSync(join(f.local, 'Temp/emr-m03-gw01-dev-writer.dpapi')), false);
   assert.equal(existsSync(join(f.local, 'Temp/emr-m03-gw01-dev-admin.dpapi')), false);
 });
+test('Duplicate2 decrypts once and retains both safe request receipts and handoffs', () => {
+  const f = fixture('ok', 'Duplicate2'),
+    { r, v } = result(f);
+  assert.equal(r.status, 0);
+  assert.equal(v.privateRead, true);
+  assert.equal(v.result.mode, 'Duplicate2');
+  assert.equal(v.result.concurrencyVerified, true);
+  assert.equal(v.result.attempts.length, 2);
+  assert.equal(v.rootChildClosed, true);
+  assert.equal(v.handoffsRetained, true);
+  assert.ok(existsSync(join(f.local, 'Temp/emr-m03-gw01-dev-machine.dpapi')));
+});
+test('Duplicate2 retains the completed sibling and the unknown receipt without another invocation', () => {
+  const f = fixture('duplicate_unknown', 'Duplicate2'),
+    { r, v } = result(f);
+  assert.equal(r.status, 1);
+  assert.equal(v.result.concurrencyVerified, false);
+  assert.equal(v.result.attempts[0].status, 'complete');
+  assert.equal(v.result.attempts[1].code, 'GW01_GATEWAY_CLOSE');
+  assert.equal(v.rootChildClosed, true);
+});
+for (const scenario of [
+  'duplicate_count',
+  'duplicate_extra',
+  'duplicate_reflection',
+  'duplicate_nested_extra',
+  'duplicate_array_id',
+])
+  test('Duplicate2 withholds malformed ' + scenario + ' output', () => {
+    const f = fixture(scenario, 'Duplicate2'),
+      { r, v } = result(f);
+    assert.equal(r.status, 1);
+    assert.equal(v.result, null);
+    assert.equal(v.rootChildClosed, true);
+  });
+for (const args of [
+  ['-Kind', 'denial'],
+  ['-Authorization', 'synthetic'],
+  ['-Fault', 'before_send_abort'],
+])
+  test('Duplicate2 refuses unsupported ' + args[0] + ' before private read', () => {
+    const f = fixture('ok', 'Duplicate2'),
+      { r, v } = result(f, args);
+    assert.equal(r.status, 1);
+    assert.equal(v.privateRead, false);
+    assert.equal(v.result, null);
+    assert.ok(existsSync(join(f.local, 'Temp/emr-m03-gw01-dev-machine.dpapi')));
+  });
 test('fixed unknown fault receipt remains separate from a verified gateway result', () => {
   const f = fixture('unknown'),
     { r, v } = result(f);

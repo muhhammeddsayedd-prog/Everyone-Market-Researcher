@@ -147,6 +147,13 @@ function fixture(mode = 'success', phase = 'Canary') {
     'scripts/n8n/gw01-local-privacy.json',
   ];
   if (['Environment', 'RuntimeCredential'].includes(phase)) paths.push('scripts/n8n/gw01-cloud-privacy.json');
+  if (phase === 'Environment') {
+    put(
+      'scripts/n8n/gw01-vercel-no-retry.mjs',
+      '// Synthetic preload fixture; fake delivery never invokes Vercel.',
+    );
+    paths.push('scripts/n8n/gw01-vercel-no-retry.mjs');
+  }
   if (phase === 'PrivacyReadRetainedCanary') {
     put(
       'scripts/n8n/gw01-owned-privacy-target.json',
@@ -158,8 +165,35 @@ function fixture(mode = 'success', phase = 'Canary') {
     );
     paths.push('scripts/n8n/gw01-owned-privacy-target.json');
   }
-  const fakeCli = put('appdata/npm/node_modules/vercel/dist/vc.js', '// No actualVercelinvocation.'),
+  const fakeCli = put(
+      `appdata/npm/node_modules/vercel/dist/${phase === 'Environment' ? 'index' : 'vc'}.js`,
+      '// No actualVercelinvocation.',
+    ),
     fakePkg = put('appdata/npm/node_modules/vercel/package.json', JSON.stringify({ version: '56.5.0' }));
+  if (phase === 'Environment') {
+    put(
+      'appdata/npm/node_modules/vercel/dist/chunks/client.cjs',
+      '// Synthetic transitive runtime; never executed.',
+    );
+    const base = 'appdata/npm/node_modules/vercel/';
+    put(
+      'scripts/n8n/gw01-gateway-seal.json',
+      JSON.stringify({
+        version: 1,
+        files: {},
+        vercelFiles: Object.fromEntries(
+          ['package.json', 'dist/index.js', 'dist/chunks/client.cjs'].map((p) => [
+            p,
+            createHash('sha256')
+              .update(readFileSync(join(root, base + p)))
+              .digest('hex'),
+          ]),
+        ),
+      }),
+    );
+    if (readFileSync(consumer, 'utf8').includes('gw01-gateway-seal.json'))
+      paths.push('scripts/n8n/gw01-gateway-seal.json');
+  }
   const seal = {
     version: 1,
     files: Object.fromEntries(
@@ -328,6 +362,39 @@ test('Environment decrypts only writer/machine and needs no Management handoff o
   assert.equal(v.delivery.managementRequests, 0);
   assert.doesNotMatch(r.stdout + r.stderr, new RegExp(canary));
 });
+for (const drift of ['changed transitive chunk', 'added runtime', 'Boolean runtime digest'])
+  test('Environment full parent runtime refuses ' + drift + ' before private read', () => {
+    const f = fixture('success', 'Environment');
+    if (drift === 'changed transitive chunk')
+      writeFileSync(
+        join(f.root, 'appdata/npm/node_modules/vercel/dist/chunks/client.cjs'),
+        '// Changed unreviewed chunk',
+      );
+    else if (drift === 'added runtime')
+      writeFileSync(
+        join(f.root, 'appdata/npm/node_modules/vercel/dist/new.cjs'),
+        '// Added unreviewed runtime',
+      );
+    else {
+      const path = join(f.root, 'scripts/n8n/gw01-gateway-seal.json'),
+        g = JSON.parse(readFileSync(path));
+      g.vercelFiles['dist/chunks/client.cjs'] = true;
+      writeFileSync(path, JSON.stringify(g));
+      const sealPath = join(f.root, 'scripts/n8n/gw01-delivery-seal.json'),
+        s = JSON.parse(readFileSync(sealPath));
+      if (s.files['scripts/n8n/gw01-gateway-seal.json']) {
+        s.files['scripts/n8n/gw01-gateway-seal.json'] = createHash('sha256')
+          .update(readFileSync(path))
+          .digest('hex');
+        writeFileSync(sealPath, JSON.stringify(s));
+      }
+    }
+    const r = f.run();
+    assert.equal(r.status, 1);
+    assert.match(r.stdout, /PREFLIGHT_BLOCKED/);
+    assert.ok(existsSync(join(f.local, 'Temp/emr-m03-gw01-dev-writer.dpapi')));
+    assert.ok(existsSync(join(f.local, 'Temp/emr-m03-gw01-dev-machine.dpapi')));
+  });
 test('RuntimeCredential excludes writer/admin and leaves unused writer file intact', () => {
   const f = fixture('success', 'RuntimeCredential');
   writeFileSync(join(f.local, 'Temp/emr-m03-gw01-dev-writer.dpapi'), 'UNREAD_SYNTHETIC_INVALID_DPAPI');

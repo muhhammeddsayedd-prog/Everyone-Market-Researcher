@@ -28,6 +28,20 @@ function Cloud-Gate{
   foreach($key in @('passed','credentialCanaryVerified','executionCanaryVerified','exportCanaryVerified','logCanaryVerified')){if($g.$key -isnot [bool] -or $g.$key -ne $true){throw 'blocked'}}
   if($g.ownedWorkflowId -isnot [string] -or $g.ownedWorkflowId -cnotmatch '^[A-Za-z0-9_-]{1,128}$'){throw 'blocked'}
 }
+function Verify-VercelRuntime([string]$Runtime){
+  $gateway=Read-PublicJson 'scripts/n8n/gw01-gateway-seal.json';Keys $gateway @('version','files','vercelFiles')
+  if($gateway.version -isnot [int] -or $gateway.version -ne 1 -or $gateway.files -isnot [PSCustomObject] -or $gateway.vercelFiles -isnot [PSCustomObject]){throw 'blocked'}
+  $runtime=Safe-Path $Runtime;$expected=@('package.json');$queue=New-Object 'Collections.Generic.Queue[string]';$queue.Enqueue((Safe-Path (Join-Path $runtime 'dist')));$seen=0
+  while($queue.Count -gt 0){foreach($entry in Get-ChildItem -LiteralPath $queue.Dequeue() -Force){
+    $seen+=1;if($seen -gt 10000 -or ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'blocked'}
+    if($entry.PSIsContainer){$queue.Enqueue($entry.FullName)}elseif($entry.Extension -cin @('.js','.mjs','.cjs','.json','.wasm')){
+      if(-not $entry.FullName.StartsWith($runtime+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){throw 'blocked'}
+      $expected+=$entry.FullName.Substring($runtime.Length+1).Replace('\','/');if($expected.Count -gt 2000){throw 'blocked'}
+    }
+  }}
+  if('dist/index.js' -cnotin $expected){throw 'blocked'};Keys $gateway.vercelFiles $expected
+  foreach($relative in $expected){$digest=$gateway.vercelFiles.$relative;if($digest -isnot [string] -or $digest -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath (Safe-Path (Join-Path $runtime $relative)) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $digest){throw 'blocked'}}
+}
 try{
   $null=Safe-Path $repo
   $packet=Read-PublicJson 'scripts/n8n/gw01-delivery-packet.json'
@@ -36,14 +50,16 @@ try{
   $local=Read-PublicJson 'scripts/n8n/gw01-local-privacy.json'
   if($local.version -ne 1 -or $local.passed -isnot [bool] -or $local.passed -ne $true -or $local.consumerReviewed -isnot [bool] -or $local.consumerReviewed -ne $true -or $local.canaryTestsPassed -isnot [bool] -or $local.canaryTestsPassed -ne $true){throw 'blocked'}
   if($Mode -cin @('Environment','RuntimeCredential')){$required+=@('scripts/n8n/gw01-cloud-privacy.json');Cloud-Gate}
+  if($Mode -ceq 'Environment'){$required+=@('scripts/n8n/gw01-vercel-no-retry.mjs','scripts/n8n/gw01-gateway-seal.json')}
   if($Mode.StartsWith('PrivacyRead')){$required+=@('scripts/n8n/gw01-owned-privacy-target.json');$privacyTarget=Read-PublicJson 'scripts/n8n/gw01-owned-privacy-target.json';Keys $privacyTarget @('workflowId','executionId','audience');if($privacyTarget.audience -cne $packet.audience -or $privacyTarget.workflowId -cnotmatch '^[A-Za-z0-9_-]{1,128}$' -or $privacyTarget.executionId -cnotmatch '^[1-9][0-9]{0,31}$'){throw 'blocked'}}
   $seal=Read-PublicJson 'scripts/n8n/gw01-delivery-seal.json'
   Keys $seal @('version','files','vercelCliSha256','vercelPackageSha256')
   if($seal.version -ne 1){throw 'blocked'};Keys $seal.files $required
   foreach($relative in $required){$hash=$seal.files.$relative;if($hash -isnot [string] -or $hash -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -Algorithm SHA256 -LiteralPath (Safe-Path (Join-Path $repo $relative))).Hash.ToLowerInvariant() -cne $hash){throw 'blocked'}}
   if($Mode -ceq 'Environment'){
-    $cli=Safe-Path (Join-Path $env:APPDATA 'npm/node_modules/vercel/dist/vc.js');$package=Safe-Path (Join-Path $env:APPDATA 'npm/node_modules/vercel/package.json')
+    $cli=Safe-Path (Join-Path $env:APPDATA 'npm/node_modules/vercel/dist/index.js');$package=Safe-Path (Join-Path $env:APPDATA 'npm/node_modules/vercel/package.json')
     if((Get-FileHash -Algorithm SHA256 -LiteralPath $cli).Hash.ToLowerInvariant() -cne $seal.vercelCliSha256 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $package).Hash.ToLowerInvariant() -cne $seal.vercelPackageSha256 -or (ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($package))).version -cne '56.5.0'){throw 'blocked'}
+    Verify-VercelRuntime (Join-Path $env:APPDATA 'npm/node_modules/vercel')
   }
   $runner=Safe-Path (Join-Path $repo 'scripts/n8n/gw01-delivery.mjs');$node=(Get-Command node.exe -CommandType Application -ErrorAction Stop).Source
   $privateDirectory=Safe-Path (Join-Path $env:LOCALAPPDATA 'Temp')

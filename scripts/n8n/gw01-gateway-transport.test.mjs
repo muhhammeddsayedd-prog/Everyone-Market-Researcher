@@ -8,7 +8,13 @@ import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createTrialCoordinator, GW01_WINDOW_ID } from './gw01-trial.mjs';
-import { assertRuntimePhase, checkPublicGateway, sendGatewayAttempt } from './gw01-gateway-transport.mjs';
+import {
+  assertRuntimePhase,
+  checkPublicGateway,
+  checkPublicGatewayDuplicate2,
+  sendGatewayAttempt,
+  sendGatewayDuplicate2,
+} from './gw01-gateway-transport.mjs';
 
 const roots = [],
   audience = 'https://everyone-market-researcher-synthetic.vercel.app',
@@ -159,6 +165,7 @@ function network(f, scenario = 'success', options = {}) {
   let calls = 0,
     sent,
     written;
+  const bodies = [];
   const deps = {
     coordinator: f.coordinator,
     runtimeContext: runtimeContext(f.input.preview),
@@ -189,6 +196,7 @@ function network(f, scenario = 'success', options = {}) {
       req.destroy = close;
       req.end = (bytes) => {
         written = bytes;
+        bodies.push(Buffer.from(bytes));
         queueMicrotask(() => {
           req.emit('socket', socket);
           if (scenario === 'tls') {
@@ -217,7 +225,8 @@ function network(f, scenario = 'success', options = {}) {
                   version: 1,
                   requestId: f.input.request.requestId,
                   outcome: 'completed',
-                  result: { ...identity },
+                  result:
+                    f.input.request.operation === 'error.log' ? { acknowledged: true } : { ...identity },
                   window: window(f.input),
                 };
           if (scenario === 'wrong_identity') body.result.currentUser = 'postgres';
@@ -240,12 +249,203 @@ function network(f, scenario = 'success', options = {}) {
       return req;
     },
   };
-  return { deps, calls: () => calls, sent: () => sent, written: () => written };
+  return { deps, calls: () => calls, sent: () => sent, written: () => written, bodies: () => bodies };
 }
 function safe(result) {
   assert.doesNotMatch(JSON.stringify(result), new RegExp(machine + '|' + protection));
   return result;
 }
+
+function duplicateFixture() {
+  const f = fixture('Request');
+  mkdirSync(join(f.root, 'registered-duplicate'));
+  f.coordinator = createTrialCoordinator(join(f.root, 'registered-duplicate'), {
+    windowId: GW01_WINDOW_ID,
+    audiences: ['https://everyone-market-researcher-7k5et630y-muhammed-abdelrahman.vercel.app'],
+  });
+  f.coordinator.prepare();
+  f.coordinator.registerDeployment(
+    Object.fromEntries(
+      ['audience', 'commitSha', 'deploymentId', 'projectId', 'branch'].map((k) => [k, f.input.preview[k]]),
+    ),
+  );
+  f.coordinator.start();
+  f.input.request.operation = 'error.log';
+  f.input.request.args = {
+    workflow: 'M03-GATEWAY-ACCEPTANCE-DEV',
+    executionId: randomUUID(),
+    message: 'gateway_acceptance',
+    kind: 'notify',
+  };
+  return f;
+}
+test('Duplicate2 sends exactly two identical approved audit envelopes with durable reservations and native socket overlap', async () => {
+  const f = duplicateFixture(),
+    n = network(f, 'success', { closeDelayMs: 15 });
+  const before = f.coordinator.snapshot();
+  assert.equal(
+    checkPublicGatewayDuplicate2(f.input, f.coordinator, n.deps.runtimeContext).status,
+    'public_ready',
+  );
+  assert.deepEqual(f.coordinator.snapshot(), before);
+  const r = safe(await sendGatewayDuplicate2(f.input, n.deps));
+  assert.equal(r.status, 'complete');
+  assert.equal(r.concurrencyVerified, true);
+  assert.equal(r.maxConcurrentTransports, 2);
+  assert.equal(r.attempts.length, 2);
+  assert.equal(r.attemptsRecorded, 2);
+  assert.equal(r.socketsClosed, true);
+  assert.equal(n.calls(), 2);
+  assert.deepEqual(
+    n.bodies().map((x) => JSON.parse(x.toString())),
+    [f.input.request, f.input.request],
+  );
+  assert.ok(
+    r.attempts.every(
+      (x) =>
+        x.requestId === f.input.request.requestId &&
+        x.operation === 'error.log' &&
+        x.response.result.acknowledged === true,
+    ),
+  );
+  assert.equal(f.coordinator.snapshot().attempts, 2);
+  assert.equal(f.coordinator.snapshot().inFlight, 0);
+});
+for (const [label, mutate] of [
+  [
+    'another operation',
+    (f) => {
+      f.input.request.operation = 'identity.read';
+      f.input.request.args = {};
+    },
+  ],
+  [
+    'denial kind',
+    (f) => {
+      f.input.kind = 'denial';
+    },
+  ],
+  [
+    'synthetic authorization',
+    (f) => {
+      f.input.authorization = 'synthetic';
+    },
+  ],
+  [
+    'fault mode',
+    (f) => {
+      f.input.fault = 'after_headers_cancel';
+    },
+  ],
+  [
+    'caller batch count',
+    (f) => {
+      f.input.count = 2;
+    },
+  ],
+  [
+    'an existing inflight attempt',
+    (f) => {
+      f.coordinator.reserve({
+        requestId: randomUUID(),
+        operation: 'identity.read',
+        audience,
+        kind: 'ordinary',
+      });
+    },
+  ],
+  [
+    'only one ordinary budget slot',
+    (f) => {
+      for (let i = 0; i < 84; i++) {
+        const a = f.coordinator.reserve({
+          requestId: randomUUID(),
+          operation: 'identity.read',
+          audience,
+          kind: 'ordinary',
+        });
+        f.coordinator.finish(a.attemptId, { outcome: 'http', httpStatus: 200 });
+      }
+    },
+  ],
+])
+  test('Duplicate2 refuses ' + label + ' before reservation or DNS', async () => {
+    const f = duplicateFixture(),
+      n = network(f);
+    mutate(f);
+    const before = f.coordinator.snapshot();
+    assert.throws(() => checkPublicGatewayDuplicate2(f.input, f.coordinator, n.deps.runtimeContext));
+    const r = safe(await sendGatewayDuplicate2(f.input, n.deps));
+    assert.equal(r.status, 'stopped_reconcile');
+    assert.equal(r.attempts.length, 0);
+    assert.equal(n.calls(), 0);
+    assert.deepEqual(f.coordinator.snapshot(), before);
+  });
+test('Duplicate2 awaits both unknown attempts and retains their individual closures without retries', async () => {
+  const f = duplicateFixture(),
+    n = network(f, 'never_close');
+  const r = safe(await sendGatewayDuplicate2(f.input, n.deps));
+  assert.equal(r.status, 'stopped_reconcile');
+  assert.equal(r.concurrencyVerified, false);
+  assert.equal(r.attempts.length, 2);
+  assert.equal(r.attemptsRecorded, 2);
+  assert.equal(r.socketsClosed, false);
+  assert.equal(n.calls(), 2);
+  assert.ok(r.attempts.every((x) => x.code === 'GW01_GATEWAY_CLOSE' && x.status === 'stopped_reconcile'));
+  assert.equal(f.coordinator.snapshot().attempts, 2);
+  assert.equal(f.coordinator.snapshot().inFlight, 0);
+});
+test('Duplicate2 retains a completed sibling while waiting for an unknown unclosed request', async () => {
+  const f = duplicateFixture(),
+    a = network(f, 'never_close'),
+    b = network(f, 'success');
+  let calls = 0;
+  const r = safe(
+    await sendGatewayDuplicate2(f.input, {
+      ...a.deps,
+      request: (...args) => (calls++ === 0 ? a : b).deps.request(...args),
+    }),
+  );
+  assert.equal(r.status, 'stopped_reconcile');
+  assert.equal(r.concurrencyVerified, false);
+  assert.equal(r.attemptsRecorded, 2);
+  assert.equal(calls, 2);
+  assert.equal(r.attempts[0].socketsClosed, false);
+  assert.equal(r.attempts[1].status, 'complete');
+  assert.equal(r.attempts[1].response.result.acknowledged, true);
+  assert.equal(f.coordinator.snapshot().inFlight, 0);
+});
+test('Duplicate2 does not claim concurrency when both validated requests complete without socket overlap', async () => {
+  const f = duplicateFixture(),
+    n = network(f);
+  let lookups = 0;
+  const r = safe(
+    await sendGatewayDuplicate2(f.input, {
+      ...n.deps,
+      lookup: (host, opts, cb) => {
+        const delay = lookups++ === 0 ? 0 : 30;
+        setTimeout(() => n.deps.lookup(host, opts, cb), delay);
+      },
+      timeoutMs: 100,
+    }),
+  );
+  assert.equal(r.attemptsRecorded, 2);
+  assert.ok(r.attempts.every((x) => x.status === 'complete'));
+  assert.equal(r.maxConcurrentTransports, 1);
+  assert.equal(r.concurrencyVerified, false);
+  assert.equal(r.status, 'stopped_reconcile');
+  assert.equal(r.socketsClosed, true);
+});
+test('Duplicate2 does not label two authentication denials as accepted duplicate processing', async () => {
+  const f = duplicateFixture(),
+    n = network(f, 'denied', { closeDelayMs: 10 });
+  const r = safe(await sendGatewayDuplicate2(f.input, n.deps));
+  assert.equal(r.maxConcurrentTransports, 2);
+  assert.equal(r.attemptsRecorded, 2);
+  assert.equal(r.concurrencyVerified, false);
+  assert.equal(r.status, 'stopped_reconcile');
+  assert.ok(r.attempts.every((x) => x.httpStatus === 401));
+});
 
 test('runtime phase admits truthful enabled-target false flag using old CloudB and exact source/config lineage', () => {
   const f = fixture('Request'),

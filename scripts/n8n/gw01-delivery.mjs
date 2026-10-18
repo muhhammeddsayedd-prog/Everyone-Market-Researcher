@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { managementTransport, runOwnedStdinChild } from './gw01-delivery-transport.mjs';
 import {
   assertCredentialMetadata,
@@ -328,23 +328,28 @@ const osEnvironment = () =>
       process.env[k] === undefined ? [] : [[k, process.env[k]]],
     ),
   );
-export function nativeVercelEnvironment(name, value) {
+export function buildNativeVercelInvocation(name, value) {
   const args = vercelEnvArguments(name),
-    cli = join(process.env.APPDATA ?? '', 'npm/node_modules/vercel/dist/vc.js');
-  let pkg;
-  try {
-    pkg = JSON.parse(readFileSync(join(cli, '../../package.json'), 'utf8'));
-  } catch {
-    fail('GW01_DELIVERY_CLI_REJECTED');
-  }
-  if (pkg.version !== '56.5.0' || !privateValue(value)) fail('GW01_DELIVERY_CLI_REJECTED');
-  return runOwnedStdinChild({
+    cli = join(process.env.APPDATA ?? '', 'npm/node_modules/vercel/dist/index.js');
+  if (!privateValue(value)) fail('GW01_DELIVERY_CLI_REJECTED');
+  return {
     executable: process.execPath,
-    args: [cli, ...args],
+    args: ['--import', pathToFileURL(resolve('scripts/n8n/gw01-vercel-no-retry.mjs')).href, cli, ...args],
     cwd: resolve('apps/web'),
     env: osEnvironment(),
     value,
-  });
+  };
+}
+export function nativeVercelEnvironment(name, value) {
+  const invocation = buildNativeVercelInvocation(name, value);
+  let pkg;
+  try {
+    pkg = JSON.parse(readFileSync(join(invocation.args[2], '../../package.json'), 'utf8'));
+  } catch {
+    fail('GW01_DELIVERY_CLI_REJECTED');
+  }
+  if (pkg.version !== '56.5.0') fail('GW01_DELIVERY_CLI_REJECTED');
+  return runOwnedStdinChild(invocation);
 }
 export const nativeManagementRequest = managementTransport();
 

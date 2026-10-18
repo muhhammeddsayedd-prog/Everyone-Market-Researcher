@@ -293,7 +293,7 @@ for (const [label, change] of [
     );
   });
 
-test('reviewed public advancement permits only the two compiled runtime-phase predecessor source updates', () => {
+test('reviewed public advancement permits only the two compiled runtime-phase and Duplicate2 predecessor source updates', () => {
   const f = fixture();
   assert.equal(result(f).r.status, 0);
   const { previous, transition } = prepareTransition(f);
@@ -314,6 +314,21 @@ test('reviewed public advancement permits only the two compiled runtime-phase pr
   assert.deepEqual(
     receipt.sourceUpdates.sort(),
     ['scripts/n8n/gw01-gateway-transport.mjs', consumerPath].sort(),
+  );
+});
+test('compiled runtime-phase and Duplicate2 pins match reviewed sources while predecessors remain the actual installed pair', () => {
+  const pins = JSON.parse(
+    helperSource.match(/# BEGIN REVIEWED PUBLIC SOURCES[\s\S]*?@'\r?\n([\s\S]*?)\r?\n'@/)[1],
+  );
+  for (const file of ['scripts/n8n/gw01-gateway-transport.mjs', consumerPath])
+    assert.equal(pins[file], sha(readFileSync(file)));
+  assert.match(
+    helperSource,
+    /'scripts\/n8n\/gw01-gateway-transport\.mjs'='738502f9ba6268ba255751700ccf738f0d828effc35001d5fd60b9fbb8e2df3f'/,
+  );
+  assert.match(
+    helperSource,
+    /'scripts\/n8n\/windows\/Invoke-M03GW01Gateway\.ps1'='4f650df56fe689ad5fac4220d9e4663c03185bf7d08ec1e6a9b95bfb478a6297'/,
   );
 });
 

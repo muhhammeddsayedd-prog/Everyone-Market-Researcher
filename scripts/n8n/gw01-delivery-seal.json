@@ -1,17 +1,19 @@
 {
   "version": 1,
   "files": {
-    "scripts/n8n/gw01-delivery.mjs": "f6c79a3685c6ab1e8c75f25299b7991169f57916fbcf57be58e288a3411b604f",
+    "scripts/n8n/gw01-delivery.mjs": "aa45512dd72c48ad49b0596a358f20c4a3656af264ccc7593621e189463d0e08",
     "scripts/n8n/gw01-delivery-transport.mjs": "de933ecbd6b057de7efbdcc9d18e2bd8c9c367ad7bc6f51e9933cb9140da2b15",
     "scripts/n8n/gw01-credential-ownership.mjs": "951f134d9113e58d570fbf58bbc4d52a043891ae7c7931b7a879ecd563ccbd1a",
     "scripts/n8n/gw01-privacy-read.mjs": "a8ead692dd3dd9b80c9877e36275eeb420e30ca858793f59de3af853e979c5ec",
     "scripts/n8n/inventory.mjs": "fdeff60d163550325eac8cc9ac34de06cc35ce3c40d74a40b3b1bc5a20bff751",
     "scripts/n8n/windows/New-M03GW01Handoff.ps1": "e7e46ba59016a5ee5fc0ff8ee9cf5d886f9e244824b00a97179b204d87ea6ab4",
-    "scripts/n8n/windows/Invoke-M03GW01Delivery.ps1": "32f30b243dde49dd4d416b6970b64d92c1fab991eaf677f87465e4b3c1e25c2b",
+    "scripts/n8n/windows/Invoke-M03GW01Delivery.ps1": "28996d72b642370a7fd64f7613736bb1abc80996653ecab4b68a4176f74cb7f2",
     "scripts/n8n/gw01-delivery-packet.json": "e0f886f7a77456c35815088fbe7ba672e43cecc08fe8d1d03b0499edbbe4d81a",
     "scripts/n8n/gw01-local-privacy.json": "39e49afd4ca883f3d05a8ea9006ebc0cd2682115b7c6e6140b9cc9198f27661f",
-    "scripts/n8n/gw01-owned-privacy-target.json": "ac1ea973b41badf25cb101fe5f2be0e2b071d062399411a74b3fd9598d308b4b"
+    "scripts/n8n/gw01-cloud-privacy.json": "d702549c57bafebb8373b616ec8e7ddd633803329084a9fee3fc7287d680ad96",
+    "scripts/n8n/gw01-vercel-no-retry.mjs": "8492a298cf967176c85f111dffe58a6908f181af39f10934f6ed6dfd336607f1",
+    "scripts/n8n/gw01-gateway-seal.json": "25a664c9f1d7b45030ab0de35e0b87e8ad137f669b88107def87ce34671869f3"
   },
-  "vercelCliSha256": "f88f873193c7bc988f5b50e6566c46f62925c6d1a38097d3201f4057991f17ac",
+  "vercelCliSha256": "59b3fc5480456b92d33bdb463a9c8c847669bb53627364e58f7f82236dbcd804",
   "vercelPackageSha256": "a879c88b917b50a1bf2e46c8b6e0d0fdc12c2454db4764af1e86428280081a18"
 }

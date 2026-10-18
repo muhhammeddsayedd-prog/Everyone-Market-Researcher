@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-18T09:52:24.000Z",
+  "scope": "local synthetic delivery and trial-readiness checks only",
+  "environment": "emr-dev preparation",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "windowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+  "sourceSha256": {
+    "scripts/n8n/gw01-vercel-no-retry.mjs": "8492a298cf967176c85f111dffe58a6908f181af39f10934f6ed6dfd336607f1",
+    "scripts/n8n/gw01-vercel-no-retry.test.mjs": "07edb1d41f7b1422ee1a822052807cfa974dbe16bc14feb4cb52f06a3f2c654b",
+    "scripts/n8n/gw01-public-config.mjs": "3f2b5042b14d7dbc3f3d07689e0575160c35704ac55b21f32f3a92b7bbc81e6e",
+    "scripts/n8n/gw01-public-config.test.mjs": "52754fd5c29eb49a227af6487b0a61df11ae989af398a023c7c38356cf41a5ff",
+    "scripts/n8n/gw01-delivery.mjs": "aa45512dd72c48ad49b0596a358f20c4a3656af264ccc7593621e189463d0e08",
+    "scripts/n8n/gw01-delivery.test.mjs": "47767586dc7a967b1bff985747a38d2e1f56d9ca7d801793d8254e3d49ff384c",
+    "scripts/n8n/windows/Invoke-M03GW01Delivery.ps1": "28996d72b642370a7fd64f7613736bb1abc80996653ecab4b68a4176f74cb7f2",
+    "scripts/n8n/windows/Invoke-M03GW01Bypass.ps1": "6e0529f2c40fc552fe50c7cd6eb3faff9020c0c5aeda394db7b5a55c088fd405",
+    "scripts/n8n/gw01-private-delivery.test.mjs": "5627577f70977198bdd001cdff31e57c08d28aa5faf5c3c12108ca8143a85c20",
+    "scripts/n8n/gw01-bypass.test.mjs": "d67e9030de6d499ceb512e6d8601324767fe0488da961fcc46e34f7294f117d0",
+    "scripts/n8n/gw01-gateway-transport.mjs": "e0f13d337662d003263fd3b465f40ee06b5d0c183b5f38b927c83eacba8ba565",
+    "scripts/n8n/gw01-gateway-transport.test.mjs": "4aaad6219e2c6fa66aad11423da4c9d62d594d61369dc658cfd9709dab3607a7",
+    "scripts/n8n/windows/Invoke-M03GW01Gateway.ps1": "29e3f169b173ee9fb99569efa4bc4c49b14e34256eda031bc17423d8bcbad407",
+    "scripts/n8n/gw01-private-gateway.test.mjs": "dc78e8650603e7f6dca1b28d5d84c65aa7b68a57636382c6f0059df75fa371ab",
+    "scripts/n8n/windows/New-M03GW01GatewayPublicSeal.ps1": "2cb573f4183a1941d48f18fb82ad4aae32dc85fa3cee4e4a21758fd9fdb26fe9",
+    "scripts/n8n/gw01-public-seal.test.mjs": "fe35f9ed265e1ffbf8f2f79968ade3aeda72f5b2744386c8570e38a187659585"
+  },
+  "retryBoundary": {
+    "officialSource": "https://raw.githubusercontent.com/vercel/vercel/vercel@56.5.0/packages/cli/src/util/client.ts",
+    "finding": "Client.fetch uses retry options with a default of three retries; a parent durable intent alone cannot prevent internal CLI mutation retries.",
+    "correction": "A source-pinned preload verifies the fixed physical package, Client chunk and main entry, then applies retry.retries=0 and bailOn429=true to Client.fetch inside the one bounded child. Installed files and authentication remain unchanged.",
+    "parentBoundary": "Environment and Bypass verify the exact source-pinned gatewaySeal.vercelFiles physical runtime inventory before private reads or token generation; the child preload also validates its fixed three pins before importing Client.",
+    "valuesOnStdinOnly": true,
+    "noForceOrUpsert": true,
+    "globalOrInstalledFilesModified": false,
+    "independentPreloadTests": { "passed": 5, "failed": 0, "skipped": 0, "nativeExit": 0, "toolRef": "77b757" },
+    "independentPublicInvocationTests": { "passed": 2, "failed": 0, "nativeExit": 0, "toolRef": "b1d053" },
+    "rootPureBuilderRegression": {
+      "redToolRef": "0a27b1",
+      "greenToolRef": "02ad6c",
+      "correction": "The pure invocation builder no longer reads an installed package. The regression points APPDATA at a nonexistent synthetic location; package verification remains in the native consumer."
+    },
+    "independentPureBuilderCheck": { "passed": 1, "failed": 0, "nativeExit": 0, "toolRef": "c62614" }
+  },
+  "fullParentRuntime": {
+    "environmentRequiredSourceCount": 12,
+    "bypassRequiredSourceCountWithCurrentKnownCreatePacket": 6,
+    "bypassRequiredSourceCountWithoutKnownCreatePacket": 5,
+    "otherDeliveryModeInventoriesChanged": false,
+    "inventory": "package.json plus every js/mjs/cjs/json/wasm file under the fixed physical Vercel dist directory; added files, changed bytes, reparse points, malformed maps or non-string digests stop before private work.",
+    "red": {
+      "passed": 0, "failed": 6, "nativeExit": 1,
+      "toolRefs": ["213276", "71a6b3"],
+      "cases": "Both parents previously continued when a transitive chunk changed, a runtime file was added, or a runtime digest was Boolean."
+    },
+    "green": {
+      "passed": 8, "failed": 0, "skipped": 0, "nativeExit": 0,
+      "toolRefs": ["6f45fa", "7f1218"],
+      "cases": "The six refusal regressions plus Environment and preload positive paths."
+    },
+    "additionalExistingMultiPhaseChecks": {
+      "passed": 4, "failed": 0, "skipped": 0, "nativeExit": 0, "toolRef": "84a827",
+      "cases": "Sole-owned revoke/final empty readback, lost revoke acknowledgement GET-only recovery, Create/Reconcile/Revoke preserving the other default, and unchanged RuntimeCredential inventory."
+    },
+    "independentReview": {
+      "reviewer": "/root/m02_handles",
+      "sourceClear": true,
+      "passed": 6, "failed": 0, "skipped": 0, "nativeExit": 0,
+      "toolRefs": ["512cbe", "2c6971"],
+      "durationMs": 11183.4687,
+      "actualPrivateOrNetworkUse": false
+    }
+  },
+  "duplicate2": {
+    "entryPoint": "Invoke-M03GW01Gateway.ps1 -Mode Duplicate2",
+    "input": "One existing fixed error.log envelope, raw mode=Request, authorization=machine, kind=ordinary, fault=none. No caller-supplied list or count.",
+    "credentials": "One bounded child receives Machine and Protection after one decryption phase; no Writer, administrator or provider credentials.",
+    "preflight": "Exact registered deployment and completed runtime phase; zero in-flight attempts and at least two ordinary budget slots.",
+    "execution": "Exactly two existing coordinated sends run through Promise.allSettled. Each reservation is durable before its DNS/HTTP work, and both safe individual receipts survive a sibling failure. Neither is automatically re-executed.",
+    "overlapProof": "The maximum counts actual owned native HTTPS socket lifetimes. It does not assert simultaneous SQL execution. Verification requires exactly two recorded attempts, socket overlap of two, closed sockets, TLS and headers, and accepted 200/202 responses.",
+    "remainingLiveProof": "A later durable target-status/audit readback must independently prove the single expected audit side effect and pool limits.",
+    "red": [
+      { "toolRef": "b4f369", "failed": 1, "cause": "New pure exports missing before implementation." },
+      { "toolRef": "58bb4e", "failed": 5, "cause": "Old Windows consumer rejected Duplicate2 before executing the new path." },
+      { "toolRef": "ff42b9", "failed": 1, "cause": "Nested unknown response data was initially accepted." },
+      { "toolRef": "14e445", "failed": 1, "cause": "PowerShell array identity coercion was initially accepted." }
+    ],
+    "targetedGreen": [
+      { "passed": 12, "failed": 0, "skipped": 0, "nativeExit": 0, "toolRef": "f36b88", "scope": "Pure fixed duplicate, budget/scope, native overlap, no-overlap, denials and unknown-sibling cases." },
+      { "passed": 9, "failed": 0, "skipped": 0, "nativeExit": 0, "toolRef": "6f9121", "scope": "Windows fixed duplicate, unsafe nested output and unsupported options." },
+      { "passed": 1, "failed": 0, "skipped": 0, "nativeExit": 0, "toolRef": "9a1b7f", "scope": "Additional array identity rejection." }
+    ],
+    "fullAffectedGreen": {
+      "command": "node --test scripts/n8n/gw01-gateway-transport.test.mjs scripts/n8n/gw01-private-gateway.test.mjs",
+      "passed": 107, "failed": 0, "skipped": 0, "nativeExit": 0,
+      "portableCases": 81, "windowsCases": 26,
+      "durationMs": 62512.0221,
+      "toolRefs": ["f6b765", "433512"]
+    },
+    "sealerRegression": {
+      "passed": 2, "failed": 0, "skipped": 0, "nativeExit": 0, "toolRef": "f3d577",
+      "predecessors": {
+        "scripts/n8n/gw01-gateway-transport.mjs": "738502f9ba6268ba255751700ccf738f0d828effc35001d5fd60b9fbb8e2df3f",
+        "scripts/n8n/windows/Invoke-M03GW01Gateway.ps1": "4f650df56fe689ad5fac4220d9e4663c03185bf7d08ec1e6a9b95bfb478a6297"
+      },
+      "intermediateSourceVersionsAddedAsPredecessors": false
+    },
+    "independentReview": {
+      "status": "clear",
+      "reviewer": "/root/agent_probe_review",
+      "portableCases": 6,
+      "windowsCases": 2,
+      "passed": 8,
+      "failed": 0,
+      "nativeExit": 0,
+      "scope": "Both durable reservations before DNS, actual socket observer, mixed unknown receipts, no retry, strict Windows result projection, denial/no-overlap refusal and exact source predecessor pins.",
+      "actualSqlAuditOrNetworkAcceptanceClaimed": false
+    }
+  },
+  "separateRootResults": {
+    "preFullParentGuardCombinedRun": {
+      "reportedBy": "/root", "passed": 72, "nativeExit": 0,
+      "scope": "Historical combined run before the final full-parent-runtime additions; not relabeled as verification of the later guards."
+    },
+    "portableCurrentRun": {
+      "reportedBy": "/root",
+      "command": "node --test scripts/n8n/gw01-public-config.test.mjs scripts/n8n/gw01-vercel-no-retry.test.mjs scripts/n8n/gw01-shutdown-read.test.mjs scripts/n8n/gw01-delivery.test.mjs",
+      "passed": 121, "failed": 0, "nativeExit": 0, "durationMs": 7963.3486, "toolRef": "dc3eba"
+    }
+  },
+  "staticChecks": { "eslintNativeExit": 0, "prettierNativeExit": 0, "powerShellParserErrors": 0, "diffCheckNativeExit": 0 },
+  "limitations": [
+    "These are local synthetic checks and independent source reviews, not actual Environment delivery, gateway identity, live concurrent duplicate, shutdown or credential-cleanup receipts.",
+    "Sensitive ownership capture requires the actual successful closed Environment receipt and exact completed three-record ledger. A partial or ambiguous Environment attempt remains stopped for actual metadata reconciliation; this helper does not automatically adopt unproven partial CLI writes.",
+    "Removing branch variables or setting the enable flag false does not erase environment values from existing immutable deployments. Their denial proof depends separately on persisted database closure, owned bypass revocation and actual old/new deployment rejection checks.",
+    "These checks create no actual public runtime-phase declaration. Actual delivery, deployment readback and registration remain separate; local tests do not start or renew the real trial clock."
+  ],
+  "actualActionsInThisLocalSlice": {
+    "privateHandoffsReadOrDecrypted": false,
+    "realPhysicalRuntimeInventoryEnumeratedOrHashed": false,
+    "narrowInstalledPublicCliSourceRead": true,
+    "gatewayOrProviderRequests": 0,
+    "actualJournalOrClockChanged": false,
+    "hostedConfigurationChanged": false,
+    "databaseOrMigrationChanged": false,
+    "workflowsExecutedOrActivated": false,
+    "productionChanged": false,
+    "publicOfficialSourceRead": true
+  }
+}

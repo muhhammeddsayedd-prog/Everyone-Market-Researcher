@@ -5,7 +5,7 @@ $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $project='prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu';$team='team_gboXPxTevpCOZuaA8eY9PmR1';$note='M03 GW-01 dev trial 76c2ad42'
 $endpoint='/v1/projects/'+$project+'/protection-bypass?teamId='+$team
-$required=@('scripts/n8n/windows/Invoke-M03GW01Bypass.ps1','scripts/n8n/gw01-local-privacy.json','scripts/n8n/gw01-cloud-privacy.json')
+$required=@('scripts/n8n/windows/Invoke-M03GW01Bypass.ps1','scripts/n8n/gw01-local-privacy.json','scripts/n8n/gw01-cloud-privacy.json','scripts/n8n/gw01-vercel-no-retry.mjs','scripts/n8n/gw01-gateway-seal.json')
 $secret=$null;$secure=$null;$bstr=[IntPtr]::Zero;$random=$null;$rng=$null;$stream=$null;$child=$null;$start=$null;$memory=$null;$buffer=$null;$started=$false;$closed=$true;$sensitiveRead=$false;$privateInput=$null;$raw=$null;$response=$null
 $receipt=[ordered]@{version=1;mode=$Mode;status='preflight_blocked';code=$null;nativeExit=$null;childClosed=$true;handoffRetained=$true;ownEntryPresent=$null;defaultFlagShape=$null;ownershipMetadataVerified=$false;createdReceiptRecorded=$false;recoveredReadbackRecorded=$false;provenance='none';soleOwnedDefaultVerified=$false;revocationReadbackVerified=$false;nonDefaultVerified=$false;otherEntryCount=$null;otherAutomationCount=$null;otherSelectedDefaultCount=$null;unknownOtherFlagCount=$null;otherEntriesRequested=$false}
 $soleRecovery=$false;$known=$null;$recovered=$null;$revokeIntent=$null
@@ -14,6 +14,20 @@ function Read-Json([string]$Path){$p=Safe $Path;if((Get-Item -LiteralPath $p).Le
 function Keys($Value,[string[]]$Expected){if($Value -isnot [PSCustomObject] -or @(Compare-Object -ReferenceObject @($Expected|Sort-Object) -DifferenceObject @($Value.PSObject.Properties.Name|Sort-Object)).Count -ne 0){throw 'blocked'}}
 function New-Json([string]$Path,$Value){$s=$null;try{$data=[Text.Encoding]::UTF8.GetBytes(($Value|ConvertTo-Json -Compress));$s=[IO.File]::Open($Path,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);$s.Write($data,0,$data.Length);$s.Flush($true)}finally{if($null -ne $s){$s.Dispose()}}}
 function Default-FlagShape($Value){$property=$Value.PSObject.Properties['isEnvVar'];if($null -eq $property){return 'absent'};if($property.Value -isnot [bool]){return 'not_boolean'};if($property.Value){return 'true'};return 'false'}
+function Verify-VercelRuntime([string]$Runtime){
+ $gateway=Read-Json (Join-Path $repo 'scripts/n8n/gw01-gateway-seal.json');Keys $gateway @('version','files','vercelFiles')
+ if($gateway.version -isnot [int] -or $gateway.version -ne 1 -or $gateway.files -isnot [PSCustomObject] -or $gateway.vercelFiles -isnot [PSCustomObject]){throw 'blocked'}
+ $runtime=Safe $Runtime;$expected=@('package.json');$queue=New-Object 'Collections.Generic.Queue[string]';$queue.Enqueue((Safe (Join-Path $runtime 'dist')));$seen=0
+ while($queue.Count -gt 0){foreach($entry in Get-ChildItem -LiteralPath $queue.Dequeue() -Force){
+  $seen+=1;if($seen -gt 10000 -or ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'blocked'}
+  if($entry.PSIsContainer){$queue.Enqueue($entry.FullName)}elseif($entry.Extension -cin @('.js','.mjs','.cjs','.json','.wasm')){
+   if(-not $entry.FullName.StartsWith($runtime+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){throw 'blocked'}
+   $expected+=$entry.FullName.Substring($runtime.Length+1).Replace('\','/');if($expected.Count -gt 2000){throw 'blocked'}
+  }
+ }}
+ if('dist/index.js' -cnotin $expected){throw 'blocked'};Keys $gateway.vercelFiles $expected
+ foreach($relative in $expected){$digest=$gateway.vercelFiles.$relative;if($digest -isnot [string] -or $digest -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath (Safe (Join-Path $runtime $relative)) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $digest){throw 'blocked'}}
+}
 function Known-Create($Owner){
  $k=Read-Json $knownFile;Keys $k @('version','windowId','projectId','note','intentCreatedAt','originalCli');Keys $k.originalCli @('mode','nativeExit','childClosed','ownEntryPresent','status','code','toolRef')
  if($k.version -isnot [int] -or $k.version -ne 1 -or $k.windowId -cne $Owner.windowId -or $k.projectId -cne $project -or $k.note -cne $note -or $k.intentCreatedAt -isnot [long] -or $k.intentCreatedAt -ne $Owner.createdAt -or $k.originalCli.mode -cne 'Create' -or $k.originalCli.nativeExit -isnot [int] -or $k.originalCli.nativeExit -ne 0 -or $k.originalCli.childClosed -isnot [bool] -or -not $k.originalCli.childClosed -or $k.originalCli.ownEntryPresent -isnot [bool] -or -not $k.originalCli.ownEntryPresent -or $k.originalCli.status -cne 'stopped_reconcile' -or $k.originalCli.code -cne 'GW01_BYPASS_DEFAULT_UNVERIFIED' -or $k.originalCli.toolRef -isnot [string] -or $k.originalCli.toolRef -cnotmatch '^[A-Za-z0-9_./: -]{1,200}$'){throw 'blocked'}
@@ -30,8 +44,9 @@ try{
  $knownRelative='scripts/n8n/gw01-bypass-known-create.json';$knownFile=Join-Path $repo $knownRelative;if((Test-Path -LiteralPath $knownFile) -or $Mode -cin @('RecoverSoleCreated','ReconcileRevoked')){$required+=@($knownRelative)}
  $seal=Read-Json (Join-Path $repo 'scripts/n8n/gw01-bypass-seal.json');Keys $seal @('version','files','vercelCliSha256','vercelPackageSha256');if($seal.version -ne 1){throw 'blocked'};Keys $seal.files $required
  foreach($relative in $required){$hash=$seal.files.$relative;if($hash -isnot [string] -or $hash -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath (Safe (Join-Path $repo $relative)) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $hash){throw 'blocked'}}
- $cli=Safe (Join-Path $env:APPDATA 'npm/node_modules/vercel/dist/vc.js');$package=Safe (Join-Path $env:APPDATA 'npm/node_modules/vercel/package.json')
+ $cli=Safe (Join-Path $env:APPDATA 'npm/node_modules/vercel/dist/index.js');$package=Safe (Join-Path $env:APPDATA 'npm/node_modules/vercel/package.json');$preloadUri=([Uri](Safe (Join-Path $repo 'scripts/n8n/gw01-vercel-no-retry.mjs'))).AbsoluteUri
  if((Get-FileHash -LiteralPath $cli -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seal.vercelCliSha256 -or (Get-FileHash -LiteralPath $package -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seal.vercelPackageSha256 -or (Read-Json $package).version -cne '56.5.0'){throw 'blocked'}
+ Verify-VercelRuntime (Join-Path $env:APPDATA 'npm/node_modules/vercel')
  $node=(Get-Command node.exe -CommandType Application).Source;$temp=Safe (Join-Path $env:LOCALAPPDATA 'Temp');$handoff=Join-Path $temp 'emr-m03-gw01-dev-protection.dpapi'
  $out=Join-Path $repo 'scripts/n8n/out';if(-not (Test-Path -LiteralPath $out)){$null=New-Item -ItemType Directory -Path $out};$out=Safe $out;$intent=Join-Path $out 'gw01-bypass-intent.json';$createdFile=Join-Path $out 'gw01-bypass-created.json';$recoveredFile=Join-Path $out 'gw01-bypass-recovered-sole.json';$revokeIntentFile=Join-Path $out 'gw01-bypass-revoke-intent.json'
  if($Mode -ceq 'Create'){if((Test-Path -LiteralPath $handoff) -or (Test-Path -LiteralPath $intent) -or (Test-Path -LiteralPath $createdFile) -or (Test-Path -LiteralPath $recoveredFile) -or (Test-Path -LiteralPath $revokeIntentFile) -or (Test-Path -LiteralPath $knownFile)){throw 'blocked'}}else{
@@ -61,7 +76,7 @@ try{
  if($phase -ceq 'Create'){$privateInput=@{generate=@{secret=$secret;note=$note}}|ConvertTo-Json -Compress}
  elseif($phase -ceq 'Revoke'){if($soleRecovery){New-Json $revokeIntentFile ([ordered]@{version=1;windowId=$owner.windowId;projectId=$project;note=$note;entryCreatedAt=$recovered.entryCreatedAt;provenance='recovered_sole_readback';requestedAt=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()})};$privateInput=@{revoke=@{secret=$secret;regenerate=$false}}|ConvertTo-Json -Compress}
  else{$method='GET';$path='/v9/projects/'+$project+'?teamId='+$team}
- $arguments=@($cli,'api',$path,'--method',$method,'--raw','--scope','muhammed-abdelrahman','--non-interactive','--no-color');if($method -ceq 'PATCH'){$arguments+=@('--input','-')}
+ $arguments=@('--import',$preloadUri,$cli,'api',$path,'--method',$method,'--raw','--scope','muhammed-abdelrahman','--non-interactive','--no-color');if($method -ceq 'PATCH'){$arguments+=@('--input','-')}
  $start=New-Object Diagnostics.ProcessStartInfo;$start.FileName=$node;$start.Arguments=(@($arguments|ForEach-Object{if($_ -match '["\r\n\x00]'){throw 'blocked'};'"'+$_+'"'}) -join ' ');$start.WorkingDirectory=$repo;$start.UseShellExecute=$false;$start.CreateNoWindow=$true;$start.RedirectStandardInput=$true;$start.RedirectStandardOutput=$true;$start.RedirectStandardError=$true;$start.EnvironmentVariables.Clear();foreach($name in @('SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA','APPDATA','USERPROFILE')){$v=[Environment]::GetEnvironmentVariable($name,'Process');if($null -ne $v){$start.EnvironmentVariables[$name]=$v}}
  $child=New-Object Diagnostics.Process;$child.StartInfo=$start;$started=$child.Start();if(-not $started){throw 'blocked'};$closed=$false;$start.EnvironmentVariables.Clear();$buffer=New-Object byte[] 65536;$memory=[IO.MemoryStream]::new([byte[]]$buffer,$true);$stdout=$child.StandardOutput.BaseStream.CopyToAsync($memory);$stderr=$child.StandardError.BaseStream.CopyToAsync([IO.Stream]::Null);if($null -ne $privateInput){$child.StandardInput.Write($privateInput)};$child.StandardInput.Close();$privateInput=$null
  if(-not $child.WaitForExit(20000)){throw 'blocked'};$closed=$true;$receipt.nativeExit=$child.ExitCode;if(-not [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($stdout,$stderr)).Wait(5000)){throw 'blocked'}

@@ -42,3 +42,6 @@ scripts/n8n/gw01-gateway-transition.json
 scripts/n8n/gw01-log-read-seal.json
 scripts/n8n/gw01-public-config-packet.json
 scripts/n8n/gw01-public-config-seal.json
+scripts/n8n/gw01-public-config-proof.json
+scripts/n8n/gw01-shutdown-packet.json
+scripts/n8n/gw01-shutdown-seal.json

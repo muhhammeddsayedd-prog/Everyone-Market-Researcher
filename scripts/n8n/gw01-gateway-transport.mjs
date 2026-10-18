@@ -309,6 +309,25 @@ export function checkPublicGateway(raw, coordinator, runtimeContext) {
   coordinator.snapshot();
   return { version: 1, status: 'public_ready', networkRequests: 0, privateRead: false };
 }
+/** One approved audit envelope, exactly twice. No caller batch/count is accepted. */
+export function checkPublicGatewayDuplicate2(raw, coordinator, runtimeContext) {
+  const value = input(raw);
+  if (
+    value.mode !== 'Request' ||
+    value.kind !== 'ordinary' ||
+    value.authorization !== 'machine' ||
+    value.fault !== 'none' ||
+    value.request.operation !== 'error.log'
+  )
+    reject();
+  const ready = checkPublicGateway(value, coordinator, runtimeContext),
+    state = coordinator.snapshot();
+  if (state.inFlight !== 0) reject('GW01_PARALLEL_LIMIT');
+  if (state.closed) reject('GW01_CLOSED');
+  if (state.startedAt === null) reject('GW01_NOT_STARTED');
+  if (!Number.isInteger(state.attempts) || state.attempts > 83) reject('GW01_CLOSURE_RESERVE');
+  return ready;
+}
 // Conservative public-only literals; mixed/private answers never fall back to a
 // different address. The selected public answer is pinned to the TLS hostname.
 function publicAddress(value) {
@@ -537,7 +556,9 @@ function nativePost(value, address, signal, dependencies) {
       req.on('socket', (owned) => {
         socket = owned;
         socketClosed = false;
+        dependencies.observeNativeSocket?.('opened');
         socket.on('close', () => {
+          if (!socketClosed) dependencies.observeNativeSocket?.('closed');
           socketClosed = true;
           finish();
         });
@@ -687,6 +708,80 @@ export async function sendGatewayAttempt(raw, dependencies = {}) {
   return out;
 }
 
+/** Both ordinary sends share the one decrypted input and append separate durable
+ * reservations. Neither a missing ack nor a failed sibling is re-executed. The
+ * overlap count describes owned HTTPS sockets, not simultaneous SQL execution. */
+export async function sendGatewayDuplicate2(raw, dependencies = {}) {
+  const out = {
+    version: 1,
+    mode: 'Duplicate2',
+    status: 'stopped_reconcile',
+    code: null,
+    requestId: null,
+    operation: null,
+    attempts: [],
+    attemptsRecorded: 0,
+    maxConcurrentTransports: 0,
+    concurrencyVerified: false,
+    socketsClosed: true,
+  };
+  try {
+    checkPublicGatewayDuplicate2(raw, dependencies.coordinator, dependencies.runtimeContext);
+    const value = input(raw);
+    out.requestId = value.request.requestId;
+    out.operation = value.request.operation;
+    let active = 0;
+    const observeNativeSocket = (event) => {
+      active += event === 'opened' ? 1 : -1;
+      out.maxConcurrentTransports = Math.max(out.maxConcurrentTransports, active);
+    };
+    const settled = await Promise.allSettled([
+      sendGatewayAttempt(value, { ...dependencies, observeNativeSocket }),
+      sendGatewayAttempt(value, { ...dependencies, observeNativeSocket }),
+    ]);
+    out.attempts = settled.map((r) =>
+      r.status === 'fulfilled'
+        ? { ...r.value, logScan: null }
+        : {
+            version: 1,
+            mode: 'Request',
+            status: 'stopped_reconcile',
+            code: 'GW01_GATEWAY_RESPONSE',
+            requestId: out.requestId,
+            operation: out.operation,
+            kind: 'ordinary',
+            attemptRecorded: false,
+            httpStatus: null,
+            tlsVerified: false,
+            headersReceived: false,
+            socketsClosed: false,
+            disabledRouteVerified: false,
+            identityVerified: false,
+            response: null,
+            logScan: null,
+          },
+    );
+    out.attemptsRecorded = out.attempts.filter((x) => x.attemptRecorded).length;
+    out.socketsClosed = active === 0 && out.attempts.every((x) => x.socketsClosed);
+    out.concurrencyVerified =
+      out.attemptsRecorded === 2 &&
+      out.maxConcurrentTransports === 2 &&
+      out.socketsClosed &&
+      out.attempts.every(
+        (x) =>
+          x.status === 'complete' && x.tlsVerified && x.headersReceived && [200, 202].includes(x.httpStatus),
+      );
+    if (out.concurrencyVerified) out.status = 'complete';
+    else out.code = 'GW01_GATEWAY_DUPLICATE';
+  } catch (error) {
+    out.code =
+      coordinatorCodes.has(error?.message) || /^GW01_GATEWAY_INPUT$/.test(error?.message ?? '')
+        ? error.message
+        : 'GW01_GATEWAY_DUPLICATE';
+  }
+  return out;
+}
+
 export async function runGatewayPhase(raw, dependencies = {}) {
   const since = new Date(Date.now() - 5000).toISOString();
   const out = await sendGatewayAttempt(raw, dependencies);
@@ -706,7 +801,15 @@ export async function runGatewayPhase(raw, dependencies = {}) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   let out;
   try {
-    if (process.argv.length !== 3 || !['--private-gateway', '--check-public'].includes(process.argv[2]))
+    if (
+      process.argv.length !== 3 ||
+      ![
+        '--private-gateway',
+        '--check-public',
+        '--private-gateway-duplicate2',
+        '--check-public-duplicate2',
+      ].includes(process.argv[2])
+    )
       reject();
     let size = 0;
     const chunks = [];
@@ -743,9 +846,15 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
           .map((line) => JSON.parse(line)),
       };
     }
-    const readiness = checkPublicGateway(value, coordinator, runtimeContext);
-    if (process.argv[2] === '--check-public') out = readiness;
-    else out = await runGatewayPhase(value, { coordinator, runtimeContext });
+    const duplicate2 = process.argv[2].endsWith('-duplicate2');
+    const readiness = duplicate2
+      ? checkPublicGatewayDuplicate2(value, coordinator, runtimeContext)
+      : checkPublicGateway(value, coordinator, runtimeContext);
+    if (process.argv[2].startsWith('--check-public')) out = readiness;
+    else
+      out = duplicate2
+        ? await sendGatewayDuplicate2(value, { coordinator, runtimeContext })
+        : await runGatewayPhase(value, { coordinator, runtimeContext });
   } catch {
     out = { version: 1, status: 'stopped_reconcile', code: 'GW01_GATEWAY_INPUT' };
   }

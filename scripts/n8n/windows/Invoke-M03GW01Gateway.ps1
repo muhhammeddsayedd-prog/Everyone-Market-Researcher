@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-  [ValidateSet('Probe','Request')][string]$Mode='Probe',
+  [ValidateSet('Probe','Request','Duplicate2')][string]$Mode='Probe',
   [ValidateSet('ordinary','denial','status','shutdown')][string]$Kind='ordinary',
   [ValidateSet('machine','synthetic','missing')][string]$Authorization='machine',
   [ValidateSet('none','before_send_abort','after_headers_cancel')][string]$Fault='none',
@@ -37,7 +37,27 @@ function Run([string]$Flag,[string]$InputText,[bool]$Private){
   }
   return [PSCustomObject]@{closed=$closed;native=$native;text=$text}
 }
+function Duplicate-Response($Attempt){
+  $body=$Attempt.response
+  if($body.PSObject.Properties.Name -ccontains 'error'){
+    Keys $body @('requestId','error');Keys $body.error @('code')
+    $codes=@{unavailable=503;forbidden=403;unauthorized=401;identity_denied=403;deployment_denied=403;method_not_allowed=405;unsupported_encoding=415;invalid_content_type=415;body_too_large=413;invalid_request=400;outcome_unknown=503;operation_not_permitted=403;result_too_large=503;cleanup_unverified=503}
+    if(($null -ne $body.requestId -and ($body.requestId -isnot [string] -or $body.requestId -cne $request.requestId)) -or $body.error.code -isnot [string] -or -not $codes.ContainsKey($body.error.code) -or $Attempt.httpStatus -ne $codes[$body.error.code]){throw 'blocked'}
+  }else{
+    Keys $body @('version','requestId','outcome','result','window')
+    $states=@{completed=200;absent=200;admitted=202;in_flight=202;conflict=409;limited=429;closed=403;rejected=403;reconciliation_required=503}
+    if($body.version -isnot [int] -or $body.version -ne 1 -or $body.requestId -isnot [string] -or $body.requestId -cne $request.requestId -or $body.outcome -isnot [string] -or -not $states.ContainsKey($body.outcome) -or $Attempt.httpStatus -ne $states[$body.outcome]){throw 'blocked'}
+    if($body.outcome -ceq 'completed'){Keys $body.result @('acknowledged');if($body.result.acknowledged -isnot [bool] -or -not $body.result.acknowledged){throw 'blocked'}}elseif($null -ne $body.result){throw 'blocked'}
+    $w=$body.window;Keys $w @('id','startsAt','expiresAt','closed','totalAdmitted','boundAudience','boundCommitSha','boundDeploymentId')
+    if($w.id -cne '76c2ad42-c094-4ba4-9a0b-566e19b97780' -or $w.closed -isnot [bool] -or $w.totalAdmitted -isnot [int] -or $w.totalAdmitted -lt 0 -or $w.totalAdmitted -gt 100 -or $w.boundAudience -cne $preview.audience -or $w.boundCommitSha -cne $preview.commitSha -or $w.boundDeploymentId -cne $preview.deploymentId -or ($null -eq $w.startsAt) -ne ($null -eq $w.expiresAt)){throw 'blocked'}
+    foreach($t in @($w.startsAt,$w.expiresAt)){if($null -ne $t -and ($t -isnot [string] -or $t -cnotmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?(?:Z|[+-]\d\d:\d\d)$')){throw 'blocked'}}
+  }
+}
 try{
+  if($Mode -ceq 'Duplicate2' -and ($Kind -cne 'ordinary' -or $Authorization -cne 'machine' -or $Fault -cne 'none')){throw 'blocked'}
+  $transportMode=if($Mode -ceq 'Duplicate2'){'Request'}else{$Mode}
+  $publicFlag=if($Mode -ceq 'Duplicate2'){'--check-public-duplicate2'}else{'--check-public'}
+  $privateFlag=if($Mode -ceq 'Duplicate2'){'--private-gateway-duplicate2'}else{'--private-gateway'}
   $null=Safe-Path $repo
   $preview=Json 'scripts/n8n/gw01-reviewed-preview.json';Keys $preview @('version','projectId','teamId','branch','commitSha','deploymentId','audience','target','protection','routeDisabledVerified')
   if($preview.version -ne 1 -or $preview.projectId -cne 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' -or $preview.teamId -cne 'team_gboXPxTevpCOZuaA8eY9PmR1' -or $preview.branch -cne 'm03-n8n-foundation' -or $preview.commitSha -cnotmatch '^[a-f0-9]{40}$' -or $preview.deploymentId -cnotmatch '^dpl_[A-Za-z0-9]{16,80}$' -or $preview.audience -cnotmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$' -or $preview.target -cne 'preview' -or $preview.protection -cne 'all_except_custom_domains' -or $preview.routeDisabledVerified -isnot [bool]){throw 'blocked'}
@@ -47,7 +67,7 @@ try{
   $cloud=Json 'scripts/n8n/gw01-cloud-privacy.json'
   if($cloud.version -ne 1 -or $cloud.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $cloud.instanceHost -cne 'muhhammedsayed.app.n8n.cloud' -or $cloud.ownedWorkflowId -cnotmatch '^[A-Za-z0-9_-]{1,128}$'){throw 'blocked'}
   foreach($name in @('credentialCanaryVerified','executionCanaryVerified','exportCanaryVerified')){if($cloud.$name -isnot [bool] -or -not $cloud.$name){throw 'blocked'}}
-  foreach($name in @('passed','logCanaryVerified')){if($cloud.$name -isnot [bool] -or ($Mode -ceq 'Request' -and -not $cloud.$name)){throw 'blocked'}}
+  foreach($name in @('passed','logCanaryVerified')){if($cloud.$name -isnot [bool] -or ($Mode -cne 'Probe' -and -not $cloud.$name)){throw 'blocked'}}
   $required=@('scripts/n8n/gw01-gateway-transport.mjs','scripts/n8n/gw01-gateway-logs.mjs','scripts/n8n/gw01-trial.mjs','packages/shared/src/n8n-worker-contracts.ts','packages/shared/package.json','pnpm-lock.yaml','scripts/n8n/windows/New-M03GW01Handoff.ps1','scripts/n8n/windows/Invoke-M03GW01Gateway.ps1','scripts/n8n/gw01-reviewed-preview.json','scripts/n8n/gw01-trial-config.json','scripts/n8n/gw01-local-privacy.json','scripts/n8n/gw01-cloud-privacy.json')
   # Seal the actual physical dependency runtime, not a pnpm symlink or just its
   # version label. Added runtime JavaScript is detected before private reading.
@@ -88,13 +108,17 @@ try{
     $request=[PSCustomObject]@{version=1;requestId=[Guid]::NewGuid().ToString();operation='identity.read';args=[PSCustomObject]@{}};$actualKind='preflight';$actualAuth='synthetic';$actualFault='none';$names=@('protection')
   }else{
     $request=Json 'scripts/n8n/out/gw01/request.json';Keys $request @('version','requestId','operation','args');$actualKind=$Kind;$actualAuth=$Authorization;$actualFault=$Fault;$names=@('protection','machine')
+    if($Mode -ceq 'Duplicate2'){
+      Keys $request.args @('workflow','executionId','message','kind')
+      if($request.operation -cne 'error.log' -or $request.args.workflow -cne 'M03-GATEWAY-ACCEPTANCE-DEV' -or $request.args.message -cne 'gateway_acceptance' -or $request.args.kind -cne 'notify' -or $request.args.executionId -isnot [string] -or $request.args.executionId -cnotmatch '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'){throw 'blocked'}
+    }
   }
   $privateDirectory=Safe-Path (Join-Path $env:LOCALAPPDATA 'Temp');$secretFiles=@{protection='emr-m03-gw01-dev-protection.dpapi';machine='emr-m03-gw01-dev-machine.dpapi'}
   foreach($name in $names){$file=Safe-Path (Join-Path $privateDirectory $secretFiles[$name]);$entry=Get-Item -LiteralPath $file -Force;if($entry.PSIsContainer -or $entry.Length -gt 65536){throw 'blocked'}}
   $node=(Get-Command node.exe -CommandType Application -ErrorAction Stop).Source;$runner=Safe-Path (Join-Path $repo 'scripts/n8n/gw01-gateway-transport.mjs')
-  $publicSecrets=@{protection='GW01_PUBLIC_PREFLIGHT_PLACEHOLDER_PROTECTION'};if($Mode -ceq 'Request'){$publicSecrets.machine='GW01_PUBLIC_PREFLIGHT_PLACEHOLDER_MACHINE'}
-  $publicInput=@{mode=$Mode;preview=$preview;request=$request;kind=$actualKind;authorization=$actualAuth;fault=$actualFault;secrets=$publicSecrets}|ConvertTo-Json -Depth 7 -Compress
-  $p=Run '--check-public' $publicInput $false;$publicInput=$null;$receipt.rootChildClosed=$p.closed
+  $publicSecrets=@{protection='GW01_PUBLIC_PREFLIGHT_PLACEHOLDER_PROTECTION'};if($Mode -cne 'Probe'){$publicSecrets.machine='GW01_PUBLIC_PREFLIGHT_PLACEHOLDER_MACHINE'}
+  $publicInput=@{mode=$transportMode;preview=$preview;request=$request;kind=$actualKind;authorization=$actualAuth;fault=$actualFault;secrets=$publicSecrets}|ConvertTo-Json -Depth 7 -Compress
+  $p=Run $publicFlag $publicInput $false;$publicInput=$null;$receipt.rootChildClosed=$p.closed
   if(-not $p.closed -or $p.native -ne 0 -or $null -eq $p.text){throw 'blocked'};$v=ConvertFrom-Json -InputObject $p.text;Keys $v @('version','status','networkRequests','privateRead')
   if($v.version -ne 1 -or $v.status -cne 'public_ready' -or $v.networkRequests -ne 0 -or $v.privateRead -isnot [bool] -or $v.privateRead){throw 'blocked'}
 }catch{Write-Output ($receipt|ConvertTo-Json -Depth 3 -Compress);exit 1}
@@ -106,16 +130,32 @@ try{
     $secure=ConvertTo-SecureString -String ([Text.Encoding]::ASCII.GetString($bytes).Trim()) -ErrorAction Stop;[Array]::Clear($bytes,0,$bytes.Length)
     $bstr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure);$values[$name]=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr);[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr);$bstr=[IntPtr]::Zero;$secure.Dispose();$secure=$null
   }
-  $privateInput=@{mode=$Mode;preview=$preview;request=$request;kind=$actualKind;authorization=$actualAuth;fault=$actualFault;secrets=$values}|ConvertTo-Json -Depth 7 -Compress
-  $r=Run '--private-gateway' $privateInput $true;$privateInput=$null;$receipt.rootChildClosed=$r.closed;$receipt.nativeExit=$r.native
+  $privateInput=@{mode=$transportMode;preview=$preview;request=$request;kind=$actualKind;authorization=$actualAuth;fault=$actualFault;secrets=$values}|ConvertTo-Json -Depth 7 -Compress
+  $r=Run $privateFlag $privateInput $true;$privateInput=$null;$receipt.rootChildClosed=$r.closed;$receipt.nativeExit=$r.native
   if(-not $r.closed -or $null -eq $r.text){throw 'blocked'};$text=$r.text
   foreach($value in $values.Values){if(-not [string]::IsNullOrEmpty($value) -and $text.Contains($value)){throw 'blocked'}}
-  $v=ConvertFrom-Json -InputObject $text;Keys $v @('version','mode','status','code','requestId','operation','kind','attemptRecorded','httpStatus','tlsVerified','headersReceived','socketsClosed','disabledRouteVerified','identityVerified','response','logScan')
-  if($v.version -ne 1 -or $v.mode -cne $Mode -or $v.status -cnotin @('complete','stopped_reconcile') -or ($null -ne $v.requestId -and $v.requestId -cne $request.requestId) -or ($null -ne $v.operation -and $v.operation -cne $request.operation) -or ($null -ne $v.kind -and $v.kind -cne $actualKind)){throw 'blocked'}
+  $received=ConvertFrom-Json -InputObject $text
+  if($Mode -ceq 'Duplicate2'){
+    Keys $received @('version','mode','status','code','requestId','operation','attempts','attemptsRecorded','maxConcurrentTransports','concurrencyVerified','socketsClosed')
+    foreach($field in @('mode','status')){if($received.$field -isnot [string]){throw 'blocked'}}
+    foreach($field in @('requestId','operation','code')){if($null -ne $received.$field -and $received.$field -isnot [string]){throw 'blocked'}}
+    if($received.version -isnot [int] -or $received.version -ne 1 -or $received.mode -cne 'Duplicate2' -or $received.status -cnotin @('complete','stopped_reconcile') -or ($null -ne $received.requestId -and $received.requestId -cne $request.requestId) -or ($null -ne $received.operation -and $received.operation -cne 'error.log') -or $received.attempts -isnot [array] -or @($received.attempts).Count -notin @(0,2) -or $received.attemptsRecorded -isnot [int] -or $received.attemptsRecorded -lt 0 -or $received.attemptsRecorded -gt 2 -or $received.maxConcurrentTransports -isnot [int] -or $received.maxConcurrentTransports -lt 0 -or $received.maxConcurrentTransports -gt 2 -or $received.concurrencyVerified -isnot [bool] -or $received.socketsClosed -isnot [bool] -or ($null -ne $received.code -and $received.code -cnotmatch '^(GW01_GATEWAY_(INPUT|DUPLICATE)|GW01_(INPUT_REJECTED|STATE_REJECTED|LOCKED_RECONCILE|CLOCK_REJECTED|NOT_STARTED|EXPIRED|ATTEMPT_LIMIT|CLOSED|CLOSURE_RESERVE|PARALLEL_LIMIT))$')){throw 'blocked'}
+    $attempts=@($received.attempts)
+  }else{$attempts=@($received)}
+  foreach($v in $attempts){
+  $attemptNative=if($Mode -ceq 'Duplicate2'){if($v.status -ceq 'complete'){0}else{1}}else{$r.native}
+  Keys $v @('version','mode','status','code','requestId','operation','kind','attemptRecorded','httpStatus','tlsVerified','headersReceived','socketsClosed','disabledRouteVerified','identityVerified','response','logScan')
+  if($Mode -ceq 'Duplicate2'){
+    if($v.version -isnot [int]){throw 'blocked'}
+    foreach($field in @('mode','status')){if($v.$field -isnot [string]){throw 'blocked'}}
+    foreach($field in @('requestId','operation','kind','code')){if($null -ne $v.$field -and $v.$field -isnot [string]){throw 'blocked'}}
+  }
+  if($v.version -ne 1 -or $v.mode -cne $transportMode -or $v.status -cnotin @('complete','stopped_reconcile') -or ($null -ne $v.requestId -and $v.requestId -cne $request.requestId) -or ($null -ne $v.operation -and $v.operation -cne $request.operation) -or ($null -ne $v.kind -and $v.kind -cne $actualKind)){throw 'blocked'}
   foreach($flag in @('attemptRecorded','tlsVerified','headersReceived','socketsClosed','disabledRouteVerified','identityVerified')){if($v.$flag -isnot [bool]){throw 'blocked'}}
   if(($null -ne $v.httpStatus -and ($v.httpStatus -isnot [int] -or $v.httpStatus -lt 100 -or $v.httpStatus -gt 599)) -or ($null -ne $v.code -and $v.code -cnotmatch '^(GW01_GATEWAY_(INPUT|DNS|TLS|STATUS|BODY|PARSE|REDIRECT|AFTER_HEADERS_CANCELLED|BEFORE_SEND_ABORT|TIMEOUT|CLOSE|RESPONSE|PROBE_RESULT|JOURNAL|REDACTED)|GW01_(INPUT_REJECTED|STATE_REJECTED|LOCKED_RECONCILE|CLOCK_REJECTED|NOT_STARTED|EXPIRED|ATTEMPT_LIMIT|CLOSED|CLOSURE_RESERVE|PARALLEL_LIMIT))$')){throw 'blocked'}
   if($v.status -ceq 'complete'){
     if($null -ne $v.code -or -not $v.attemptRecorded -or -not $v.tlsVerified -or -not $v.headersReceived -or -not $v.socketsClosed -or $null -eq $v.response){throw 'blocked'}
+    if($Mode -ceq 'Duplicate2'){if($v.identityVerified){throw 'blocked'};Duplicate-Response $v}
     if($Mode -ceq 'Probe'){
       Keys $v.response @('requestId','error');Keys $v.response.error @('code')
       if($v.httpStatus -ne 503 -or -not $v.disabledRouteVerified -or $v.identityVerified -or $null -ne $v.response.requestId -or $v.response.error.code -cne 'unavailable'){throw 'blocked'}
@@ -123,11 +163,17 @@ try{
       if($v.logScan.version -ne 1 -or $v.logScan.status -cnotin @('verified','unverified') -or $v.logScan.logsScanned -isnot [int] -or $v.logScan.logsScanned -lt 0 -or $v.logScan.logsScanned -gt 100 -or ($null -ne $v.logScan.observedAt -and $v.logScan.observedAt -cnotmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$') -or ($null -ne $v.logScan.code -and $v.logScan.code -cnotmatch '^GW01_LOGS_(INPUT|NATIVE|TIMEOUT|CLOSE|RESPONSE|TRUNCATED|NO_CAPTURE|REFLECTION)$')){throw 'blocked'}
       foreach($flag in @('capturedMatchingRequest','publicAuthMarkerFound','requestBodyMarkerFound','ownBypassFound','truncated','childClosed')){if($v.logScan.$flag -isnot [bool]){throw 'blocked'}}
       if($v.logScan.status -ceq 'verified'){
-        if($r.native -ne 0 -or $null -ne $v.logScan.code -or -not $v.logScan.capturedMatchingRequest -or $v.logScan.logsScanned -lt 1 -or -not $v.logScan.childClosed -or $null -eq $v.logScan.observedAt -or $v.logScan.publicAuthMarkerFound -or $v.logScan.requestBodyMarkerFound -or $v.logScan.ownBypassFound -or $v.logScan.truncated){throw 'blocked'}
-      }elseif($r.native -ne 1 -or $null -eq $v.logScan.code){throw 'blocked'}
-    }elseif($v.disabledRouteVerified -or $null -ne $v.logScan -or $r.native -ne 0){throw 'blocked'}
-  }elseif($null -ne $v.response -or $v.identityVerified -or $v.disabledRouteVerified -or $r.native -eq 0){throw 'blocked'}
-  $receipt.result=$v;$receipt.status=$v.status
+        if($attemptNative -ne 0 -or $null -ne $v.logScan.code -or -not $v.logScan.capturedMatchingRequest -or $v.logScan.logsScanned -lt 1 -or -not $v.logScan.childClosed -or $null -eq $v.logScan.observedAt -or $v.logScan.publicAuthMarkerFound -or $v.logScan.requestBodyMarkerFound -or $v.logScan.ownBypassFound -or $v.logScan.truncated){throw 'blocked'}
+      }elseif($attemptNative -ne 1 -or $null -eq $v.logScan.code){throw 'blocked'}
+    }elseif($v.disabledRouteVerified -or $null -ne $v.logScan -or $attemptNative -ne 0){throw 'blocked'}
+  }elseif($null -ne $v.response -or $v.identityVerified -or $v.disabledRouteVerified -or $attemptNative -eq 0){throw 'blocked'}
+  }
+  if($Mode -ceq 'Duplicate2'){
+    if($received.attemptsRecorded -ne @($attempts|Where-Object {$_.attemptRecorded}).Count -or ($received.socketsClosed -and @($attempts|Where-Object {-not $_.socketsClosed}).Count -gt 0)){throw 'blocked'}
+    $verified=$attempts.Count -eq 2 -and $received.attemptsRecorded -eq 2 -and $received.maxConcurrentTransports -eq 2 -and $received.socketsClosed -and @($attempts|Where-Object {$_.status -cne 'complete' -or -not $_.tlsVerified -or -not $_.headersReceived -or $_.httpStatus -notin @(200,202)}).Count -eq 0
+    if($received.concurrencyVerified -ne $verified -or ($received.status -ceq 'complete') -ne $verified -or ($verified -and ($r.native -ne 0 -or $null -ne $received.code)) -or (-not $verified -and ($r.native -eq 0 -or $null -eq $received.code))){throw 'blocked'}
+  }
+  $receipt.result=$received;$receipt.status=$received.status
   if($Mode -ceq 'Probe' -and $v.status -ceq 'complete' -and $v.logScan.status -ceq 'unverified'){$receipt.status='privacy_pending'}
 }catch{$receipt.status='stopped_reconcile'}finally{
   if($bstr -ne [IntPtr]::Zero){[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)};if($null -ne $secure){$secure.Dispose()};if($null -ne $bytes){[Array]::Clear($bytes,0,$bytes.Length)}
