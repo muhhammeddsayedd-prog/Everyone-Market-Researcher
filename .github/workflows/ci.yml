@@ -54,6 +54,8 @@ jobs:
         run: node --test scripts/seed/diagnose-youtube.test.mjs
       - name: Check native n8n foundation and read-only API contracts
         run: node --test n8n/foundation/*.test.mjs scripts/n8n/inventory.test.mjs scripts/n8n/inventory-diagnostics.test.mjs scripts/n8n/check-dns.test.mjs
+      - name: Check bounded GW-01 trial and private delivery contracts
+        run: node --test scripts/n8n/gw01-trial.test.mjs scripts/n8n/gw01-delivery.test.mjs scripts/n8n/gw01-delivery-transport.test.mjs scripts/n8n/gw01-privacy-read.test.mjs scripts/n8n/gw01-writer.test.mjs
 
   build:
     runs-on: ubuntu-latest
@@ -121,3 +123,7 @@ jobs:
         run: |
           node --test scripts/db/check-m03-concurrency.test.mjs
           node scripts/db/check-m03-concurrency.mjs
+      - name: Verify isolated GW-01 admission and interrupted-write concurrency
+        run: |
+          node --test scripts/db/check-gw01-concurrency.test.mjs
+          node scripts/db/check-gw01-concurrency.mjs --local

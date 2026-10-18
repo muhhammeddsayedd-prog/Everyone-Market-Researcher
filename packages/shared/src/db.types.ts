@@ -2607,6 +2607,149 @@ export type Database = {
         };
         Relationships: [];
       };
+      worker_gateway_leases: {
+        Row: {
+          expires_at: string | null;
+          request_id: string | null;
+          slot: number;
+          window_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          expires_at?: string | null;
+          request_id?: string | null;
+          slot: number;
+          window_id: string;
+        };
+        Update: {
+          expires_at?: string | null;
+          request_id?: string | null;
+          slot?: number;
+          window_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'worker_gateway_leases_window_id_fkey';
+            columns: ['window_id'];
+            isOneToOne: false;
+            referencedRelation: 'worker_gateway_rate_windows';
+            referencedColumns: ['window_id'];
+          },
+          {
+            foreignKeyName: 'worker_gateway_leases_window_id_request_id_fkey';
+            columns: ['window_id', 'request_id'];
+            isOneToOne: false;
+            referencedRelation: 'worker_gateway_requests';
+            referencedColumns: ['window_id', 'request_id'];
+          },
+        ];
+      };
+      worker_gateway_rate_windows: {
+        Row: {
+          admitted_count: number;
+          bound_audience: string | null;
+          bound_commit_sha: string | null;
+          bound_deployment_id: string | null;
+          close_count: number;
+          closed_at: string | null;
+          day_count: number;
+          day_start: string | null;
+          environment: string;
+          expires_at: string | null;
+          minute_count: number;
+          minute_start: string | null;
+          namespace: string;
+          project_ref: string;
+          starts_at: string | null;
+          window_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          admitted_count?: number;
+          bound_audience?: string | null;
+          bound_commit_sha?: string | null;
+          bound_deployment_id?: string | null;
+          close_count?: number;
+          closed_at?: string | null;
+          day_count?: number;
+          day_start?: string | null;
+          environment: string;
+          expires_at?: string | null;
+          minute_count?: number;
+          minute_start?: string | null;
+          namespace: string;
+          project_ref: string;
+          starts_at?: string | null;
+          window_id: string;
+        };
+        Update: {
+          admitted_count?: number;
+          bound_audience?: string | null;
+          bound_commit_sha?: string | null;
+          bound_deployment_id?: string | null;
+          close_count?: number;
+          closed_at?: string | null;
+          day_count?: number;
+          day_start?: string | null;
+          environment?: string;
+          expires_at?: string | null;
+          minute_count?: number;
+          minute_start?: string | null;
+          namespace?: string;
+          project_ref?: string;
+          starts_at?: string | null;
+          window_id?: string;
+        };
+        Relationships: [];
+      };
+      worker_gateway_requests: {
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          error_code: string | null;
+          lease_expires_at: string;
+          operation: string;
+          payload_sha256: string;
+          request_id: string;
+          result: Json | null;
+          state: string;
+          window_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          error_code?: string | null;
+          lease_expires_at: string;
+          operation: string;
+          payload_sha256: string;
+          request_id: string;
+          result?: Json | null;
+          state: string;
+          window_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          error_code?: string | null;
+          lease_expires_at?: string;
+          operation?: string;
+          payload_sha256?: string;
+          request_id?: string;
+          result?: Json | null;
+          state?: string;
+          window_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'worker_gateway_requests_window_id_fkey';
+            columns: ['window_id'];
+            isOneToOne: false;
+            referencedRelation: 'worker_gateway_rate_windows';
+            referencedColumns: ['window_id'];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -2700,6 +2843,29 @@ export type Database = {
           p_workflow: string;
         };
         Returns: string;
+      };
+      worker_gateway_admit: {
+        Args: {
+          p_args: Json;
+          p_mode?: string;
+          p_operation: string;
+          p_request_id: string;
+          p_window_id: string;
+        };
+        Returns: Json;
+      };
+      worker_gateway_execute: {
+        Args: { p_args: Json; p_operation: string; p_request_id: string; p_window_id: string };
+        Returns: Json;
+      };
+      worker_gateway_response: {
+        Args: { p_code: string; p_result: Json; p_state: string; p_window_id: string };
+        Returns: Json;
+      };
+      worker_gateway_status: { Args: { p_target_request_id: string; p_window_id: string }; Returns: Json };
+      worker_gateway_validate: {
+        Args: { p_args: Json; p_operation: string; p_request_id: string; p_window_id: string };
+        Returns: undefined;
       };
     };
     Enums: {

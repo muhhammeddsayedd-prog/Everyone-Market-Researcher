@@ -12,15 +12,66 @@ completed M01/M02 password handoffs/probes below are historical and must not be
 reused or replayed.
 
 M03 adds CLI-generated `20261018034220_rpc_n8n_foundation` and
-`20261018035417_price_book_plan`. They have been applied **locally only** with
-`supabase migration up --local`, preserving all seven original versions and
-the existing Test House rows. Local11-suite pgTAP379/379, both advisors with no
-WARN/ERROR, generated four-schema types and workspace typecheck pass. Hosted
-dev still has the original seven versions at the current readback; production
-is untouched. See [M03 progress](../milestones/M03-n8n-foundation/PROGRESS.md).
-Never run reset or seed to apply these changes, and do not treat local types as
-proof of hosted deployment. A new bounded M03 dev-only consumer is being
-prepared; its private credential step will follow review, not an old handoff.
+`20261018035417_price_book_plan`. Both are applied to hosted dev, with all nine
+versions and statement fingerprints verified. The completed local379 pgTAP
+assertions remain separate from hosted schema/advisor/type coverage; native
+n8n Postgres TLS/login is still blocked. Production received no M03 migration.
+See the [dev completion](../milestones/M03-n8n-foundation/evidence/dev-migration-completion-20261018.json)
+and [M03 progress](../milestones/M03-n8n-foundation/PROGRESS.md). Never replay the
+completed M03 consumer, reset/seed an existing stack to resume, or treat local
+types as proof of hosted deployment.
+
+## GW-01 dev connection layer — local checkpoint
+
+The owner approved the separate
+[strict-TLS dev gateway packet](../milestones/M03-n8n-foundation/evidence/strict-tls-connection-proposal-20261018.md)
+at head `100290a`. The CLI-generated additive migration is
+`20261018070042_n8n_worker_gateway_admission.sql`; this checkpoint proves local
+behavior only. Its pending hosted deployment, actual restricted login,
+reviewed preview binding and bounded n8n-to-gateway trial need their own actual
+receipts. Gateway acceptance must never be labeled native Postgres acceptance.
+
+Three RLS-enabled private tables hold one trial window, durable request
+digests/results and two business-operation leases. `n8n_writer` has no direct
+table privileges. Its only new entry points are:
+
+- `ops.worker_gateway_admit(uuid,uuid,text,jsonb,text)`;
+- `ops.worker_gateway_execute(uuid,uuid,text,jsonb)`;
+- `ops.worker_gateway_status(uuid,uuid)`.
+
+These definers have empty search paths and no PUBLIC/browser/agent execution.
+Admission and execution are separate transactions: admission commits its
+counter/reservation first; an operation and its saved outcome then commit
+atomically. The digest uses PostgreSQL JSONB text, not client serialization.
+Status uses a fresh admitted correlation ID plus the original target ID and
+cannot execute it. An expired unknown reservation requires reconciliation.
+
+The immutable `gw01-dev` window pins one reviewed Vercel audience, commit and
+deployment ID before the first ordinary admission starts its30-minute clock.
+Direct restricted control modes `bind`, `inspect` and `close` are not HTTP
+operation aliases. Inspect changes no counters/clock; close waits for prior
+executing transactions and cannot reopen/reset the window. Limits are100
+admitted calls,30/minute,500/day and two business leases; the trial coordinator
+separately counts all100 network attempts, including pre-SQL denial tests.
+The route verifies actual connection `current_user` and `session_user` before
+the wrappers; definer `current_user` is not a writer-login receipt.
+
+Only seven trial aliases are enabled: `identity.read`, `request.status`,
+`settings.read`, `prices.read`, `health.read`, `error.log` and `error.count`.
+The latter two are fixed to `M03-GATEWAY-ACCEPTANCE-DEV`, with a fixed log
+acknowledgment and no notification claim. Actor/run/ingest/cost/fixed-fee aliases
+remain blocked. No C999, actor/model run, content or fake provider cost is
+included in this connection trial. `ops` remains unexposed to the Data API.
+
+[Local evidence](../milestones/M03-n8n-foundation/evidence/local-gw01-db-20261018.json):
+102 rollback-only pgTAP assertions,19 process/transaction checks,8 checker
+safety tests, both advisors without findings and regenerated four-schema types
+pass. Session authorization in the local superuser fixture is explicitly a
+simulation. The checker restores only initially pristine local gateway tables
+and retains designated audit acknowledgments; it is never a hosted cleanup.
+The locally applied initial draft was iterated only on new objects without
+rewriting its ledger. Fresh final-source CI replay and the pinned offline
+statement fingerprint are separate from that draft history.
 
 ## Local development
 
@@ -30,12 +81,29 @@ From the repository root:
 
 ```sh
 corepack pnpm exec supabase start --exclude realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
-corepack pnpm exec supabase db reset --local
-corepack pnpm exec supabase test db --local
+corepack pnpm exec supabase migration up --local
+corepack pnpm exec supabase test db --local supabase/tests/10_n8n_foundation.test.sql
 corepack pnpm exec supabase db advisors --local --type security --level warn --fail-on warn
 corepack pnpm exec supabase db advisors --local --type performance --level info --fail-on error
 node scripts/db/check-data-api.mjs
 ```
+
+The focused command above covers the original M03 RPC suite. The full CI runner
+`scripts/db/run-local-ci.sh` keeps the original11 suites under their existing
+local principal and runs `11_worker_gateway.test.sql` separately under the
+local `supabase_admin` fixture, so its session-authorization guard is exercised
+without weakening it. The latter password-free local URI and public fixture
+password are never a hosted credential delivery method. Do not run the whole
+12-file glob under ordinary local `postgres` and misreport its15 preliminary
+checks as complete gateway acceptance. For the dedicated local checker:
+
+```sh
+node --test scripts/db/check-gw01-concurrency.test.mjs
+node scripts/db/check-gw01-concurrency.mjs --local
+```
+
+It refuses an already opened/bound/nonempty gateway journal. Reset/seed is
+reserved for a separately admitted fresh CI fixture, not an ordinary resume.
 
 `start` and `status` can print local keys. Keep their output private; never copy
 it into Git, CI logs, chat or progress files. CI uses a wrapper that withholds
@@ -344,8 +412,8 @@ role. It will remove consumed temporary credentials/private SQL and close the
 owned children. Keep your separately saved passwords for later integration.
 This does not authorize workflows, production promotion, merge or M02.
 
-Local informational advisor findings are intentional deny-all policies on the
-eleven internal tables and unused indexes on a fresh database. Retain required
+Local informational advisor findings include intentional deny-all policies on
+private internal tables and unused indexes on a fresh database. Retain required
 FK/list/search indexes; reassess performance on real data in later milestones.
 Security warnings/errors are blockers. Search correctness is tested here;
 the M11 scale benchmark and full OAuth UI flow in M09 remain future work.

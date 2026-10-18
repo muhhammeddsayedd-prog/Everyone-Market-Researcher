@@ -50,7 +50,12 @@ else
   if [[ "$1 $2" == 'db reset' ]]; then phase=reset; fi
   if [[ "$1 $2" == 'test db' ]]; then
     phase=test
-    printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_TAP_FILES:-11}" "\${EMR_TEST_TAP_COUNT:-200}"
+    if [[ "$*" == *'supabase/tests/11_worker_gateway.test.sql'* ]]; then
+      phase=gw-test
+      printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_GW_TAP_FILES:-1}" "\${EMR_TEST_GW_TAP_COUNT:-102}"
+    else
+      printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_TAP_FILES:-11}" "\${EMR_TEST_TAP_COUNT:-200}"
+    fi
   fi
   if [[ "$1 $2" == 'db advisors' ]]; then
     case "$*" in *'--type security'*) phase=security;; *) phase=performance;; esac
@@ -181,7 +186,14 @@ test('CI runner uses only explicit local targets and exposes only safe summaries
       'postgresql://postgres@127.0.0.1:60322/postgres',
     );
     assert.match(child.stdout, /M02 PostgreSQL acceptance: 42 assertions, PASS/);
-    assert.ok(!commands.includes('--linked') && !commands.includes('--db-url'));
+    assert.ok(!commands.includes('--linked'));
+    const explicitTargets = commands.split('\n').filter((line) => line.includes('--db-url'));
+    assert.equal(explicitTargets.length, 1);
+    assert.match(
+      explicitTargets[0],
+      /test db --db-url postgresql:\/\/supabase_admin@127\.0\.0\.1:60322\/postgres supabase\/tests\/11_worker_gateway\.test\.sql/,
+    );
+    assert.match(child.stdout, /GW-01 pgTAP: 1 files, 102 assertions, PASS/);
   }));
 
 test('CI runner refuses non-GitHub environments without starting any service', () =>
@@ -193,7 +205,15 @@ test('CI runner refuses non-GitHub environments without starting any service', (
 
 test('CI runner fails closed at each failed phase without leaking captured output', () =>
   fixture((directory) => {
-    for (const [index, phase] of ['start', 'reset', 'test', 'security', 'performance', 'm02'].entries()) {
+    for (const [index, phase] of [
+      'start',
+      'reset',
+      'test',
+      'gw-test',
+      'security',
+      'performance',
+      'm02',
+    ].entries()) {
       writeFileSync(join(directory, 'commands'), '');
       const child = execute(directory, 'scripts/db/run-local-ci.sh', { EMR_TEST_FAIL_PHASE: phase });
       assert.equal(child.status, 1);
@@ -242,4 +262,17 @@ test('CI runner rejects skipped production-component assertions despite a succes
     const child = execute(directory, 'scripts/db/run-local-ci.sh', { EMR_TEST_M02_PROD_SKIPPED: '1' });
     assert.equal(child.status, 1);
     assert.match(child.stderr, /missing, skipped or failed assertions/);
+  }));
+
+test('CI rejects omitted or incomplete mandatory gateway session-principal assertions', () =>
+  fixture((directory) => {
+    for (const overrides of [
+      { EMR_TEST_GW_TAP_COUNT: '0' },
+      { EMR_TEST_GW_TAP_COUNT: '101' },
+      { EMR_TEST_GW_TAP_FILES: '0' },
+    ]) {
+      const child = execute(directory, 'scripts/db/run-local-ci.sh', overrides);
+      assert.equal(child.status, 1);
+      assert.match(child.stderr, /GW-01 pgTAP: FAIL/);
+    }
   }));

@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-18 Africa/Cairo",
+  "reviewedHead": "100290a291530d30d0387269c1a0805ad4f86fcc",
+  "reviewedCi": 39104226437,
+  "approvalDocumentSha256": "88e81c24f29f73a24ca43f400057052ac31d1b28421dcfd002789483eee38725",
+  "approved": [
+    "fixed dev Vercel worker-RPC gateway",
+    "one additive admission/idempotency dev migration",
+    "dedicated dev machine credential",
+    "branch-specific protected Preview",
+    "owned inactive M03 adapters",
+    "one immutable 100-total-attempt/two-concurrent/30-minute connection trial",
+    "USD1 planning reserve, not enforced invoice cap",
+    "cleanup of newly created trial-only credentials and bypass entries"
+  ],
+  "excluded": [
+    "production changes",
+    "incident rotation or workflow changes",
+    "PR8 merge or M03 closure",
+    "M04",
+    "actor/model calls or content collection",
+    "recurring activation or external notification"
+  ],
+  "trial": {
+    "windowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+    "started": false,
+    "clockStarted": false,
+    "realCredentialDelivery": false
+  },
+  "incident": {
+    "reference": "INC-M03-20261018-01",
+    "status": "open_private_targeted_decision_prepared_no_production_authority"
+  }
+}

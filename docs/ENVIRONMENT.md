@@ -31,9 +31,84 @@ Where every secret lives, who creates it, and which milestone needs it. **Never 
 | `API_KEY_PEPPER` | **no** | 32+ random bytes, base64 | M11 (key creation UI) |
 | `OPENAI_API_KEY` | **no** | for search-query embeddings | M11 |
 | `OPENAI_MODEL_EMBED` | no | `text-embedding-3-small` | M11 |
-| `INTERNAL_WEBHOOK_SECRET` | **no** | random; shared with n8n; the one secret for all internal routes (`/api/revalidate`, `/api/internal/*`) | M06 (media route) / M09 (revalidate) |
+| `INTERNAL_WEBHOOK_SECRET` | **no** | random; shared with n8n for the planned revalidate/media routes. The M03 GW-01 route uses its own machine credential below. | M06 (media route) / M09 (revalidate) |
 | `N8N_WEBHOOK_BASE` | **no** | n8n instance base URL (e.g. `https://<instance>.app.n8n.cloud`); WF-60 onboarding webhook path per `docs/N8N_WORKFLOWS.md` | M11 / M15 |
 | `N8N_WEBHOOK_SECRET` | **no** | header value the app sends to the WF-60 onboarding webhook; WF-60 verifies it (credential `EMR webhook in · App`) | M11 / M15 |
+
+### M03 GW-01 dev gateway: branch Preview only
+
+GW-01 is a separate, approved dev transport exception. Its route is
+`/api/internal/n8n/rpc`; it does not reuse `INTERNAL_WEBHOOK_SECRET`, an agent
+credential or a Supabase secret key. The implementation and local checks do not
+establish hosted gateway acceptance. The one additive dev migration is applied
+and independently read back with the window prepared, unbound and unused.
+Cloud privacy verification, private runtime delivery and the bounded live trial
+remain pending; use the current M03 progress record for later verified results.
+
+| Name | Classification | Exact source / restriction |
+|---|---|---|
+| `EMR_WORKER_GATEWAY_ENABLED` | server-only control | Only the exact string `true` enables the route after the other guards pass. Keep it disabled until the reviewed privacy and delivery gates pass. |
+| `EMR_WORKER_GATEWAY_AUDIENCE` | server-only control | Exact sentinel `vercel-deployment`. The actual audience is derived from Vercel's deployment hostname, then checked against the immutable DB binding; the sentinel alone does not identify a deployment. |
+| `EMR_WORKER_GATEWAY_WINDOW_ID` | server-only control | Fixed dev window `76c2ad42-c094-4ba4-9a0b-566e19b97780`. No fresh window or reset is inferred from redeployment. |
+| `EMR_WORKER_GATEWAY_COMMIT_SHA` | server-only control | The reviewed 40-character commit SHA; must equal Vercel's actual deployment commit. |
+| `EMR_WORKER_DB_PASSWORD` | **secret** | Existing **emr-dev `n8n_writer`** password only. Never use postgres, `api_agent`, service/secret keys, a prod password or a password-bearing connection URL. |
+| `EMR_WORKER_GATEWAY_TOKEN_SHA256` | **secret verifier** | SHA-256 verifier of the newly generated GW-01 machine token. Treat the verifier as private; never print or commit it. The raw machine token is not an application environment variable. |
+
+The reviewed delivery helper adds only the last two fields as **Sensitive**
+Vercel variables, scoped to **Preview / branch `m03-n8n-foundation`** in project
+`prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu`. Values travel through the owned CLI child's
+stdin, never command arguments or reports. Do not create project-wide Preview,
+Development or Production copies. The non-secret controls also belong only to
+this reviewed branch Preview; their presence is not permission to enable it.
+
+Vercel supplies `VERCEL_ENV`, `VERCEL_GIT_COMMIT_REF`, `VERCEL_PROJECT_ID`,
+`VERCEL_URL`, `VERCEL_GIT_COMMIT_SHA` and `VERCEL_DEPLOYMENT_ID`. Do not replace
+these with caller headers. The runtime requires `preview`, the exact branch and
+project above, a generated `*.vercel.app` hostname and valid commit/deployment
+IDs. A separate restricted-writer helper binds the actual reviewed HTTPS origin,
+commit SHA and deployment ID once in the prepared DB window. Another deployment
+cannot reuse that binding; binding itself does not start the trial clock.
+
+The database endpoint is fixed to the emr-dev session pooler
+`aws-1-eu-central-1.pooler.supabase.com:5432`, database `postgres`, login
+`n8n_writer.zmotjsbzhzjvpelxvxlf`. The client verifies the pinned public Supabase
+CA, certificate chain and exact hostname with `rejectUnauthorized: true` and TLS
+1.2 or later. It asserts native `current_user` and `session_user` before calling
+the three private gateway RPCs. No administrator credential enters this runtime;
+the separately consumed dev administrator handoff authorizes only the one
+reviewed additive migration.
+
+The new n8n native `httpCustomAuth` credential is
+`M03 GW-01 machine [dev]` (`EmrGw01Machine18`), restricted to the exact reviewed
+Preview hostname. It holds the new `Authorization: Bearer` machine token and a
+**new GW-01-only** `x-vercel-protection-bypass` value. The bypass remains in n8n;
+it is not copied into app environment variables and does not replace machine
+authentication. The separate `M03 GW-01 privacy canary [dev]`
+(`EmrGw01Canary18`) must prove credential, execution, export and log redaction
+before runtime delivery. Never place either secret in Variables, Code/Set nodes,
+workflow JSON, URLs, pinned data, browser storage or reports. The route refuses
+browser Origin/Cookie headers, query strings and any other request origin/path.
+
+Use only the sealed GW-01 Windows helpers for temporary DPAPI delivery. Their
+current-user Temp files are `emr-m03-gw01-dev-{writer,admin,machine,protection,management}.dpapi`;
+the management handoff also has its reviewed two-hour lease. Writer and Machine
+creation remain blocked until all Cloud privacy gates pass. A handoff's presence
+is not authentication, delivery or trial evidence. Plaintext exists only inside
+bounded owned children; do not forward it to builds, installs, tests or unrelated
+commands. Close credential-bearing children after each phase and remove the
+owned temporary handoffs during the recorded cleanup, retaining the owner's
+separately saved original passwords. Clearing a child does not clear a parent
+VS Code process.
+
+The DB enforces the one 30-minute window, 100 admissions, 30/minute, 500/day and
+two leases; the trial coordinator separately caps **all** HTTP attempts at 100.
+Only the seven reviewed trial aliases are enabled. Closing the window persists
+and cannot reopen it. Cleanup removes only owned trial credentials, new bypass,
+branch-specific secret variables and temporary artifacts. An environment edit
+does not erase secrets from older immutable deployments: reconcile and disable
+the owned trial deployments as recorded. Do not delete shared credentials or
+collected data. Production, provider/model calls, recurring activation, shared
+incident remediation and merge approval remain separate.
 
 ### n8n Cloud (credentials + variables)
 

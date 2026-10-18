@@ -36,7 +36,12 @@ run_private 'Local Supabase start' supabase start --exclude \
 printf 'Local Supabase start: OK\n'
 run_private 'Local database reset' supabase db reset --local
 printf 'Local database reset: OK\n'
-run_private 'pgTAP' supabase test db --local
+old_suites=()
+for suite in supabase/tests/*.sql; do
+  [[ "$suite" == supabase/tests/11_worker_gateway.test.sql ]] || old_suites+=("$suite")
+done
+[[ "${#old_suites[@]}" == 11 ]] || { printf 'Expected eleven retained SQL suites.\n' >&2; exit 1; }
+run_private 'pgTAP' supabase test db --local "${old_suites[@]}"
 
 # Emit only numeric TAP summaries. An empty/skipped or incomplete suite is not acceptance.
 files=0 assertions=0 verdict=''
@@ -54,6 +59,24 @@ if [[ "$files" != 11 || "$assertions" -eq 0 || "$verdict" != PASS ]]; then
   exit 1
 fi
 printf 'pgTAP: %s files, %s assertions, PASS\n' "$files" "$assertions"
+
+# The new session-principal guard is deliberately not weakened for SET ROLE.
+# This fixture-only superuser harness simulates session authorization locally;
+# it is not an actual hosted n8n_writer login receipt. No hosted secret is used.
+run_private 'GW-01 pgTAP' env PGPASSWORD=postgres supabase test db \
+  --db-url postgresql://supabase_admin@127.0.0.1:60322/postgres \
+  supabase/tests/11_worker_gateway.test.sql
+files=0 assertions=0 verdict=''
+while IFS= read -r line || [[ -n "$line" ]]; do
+  line="${line%$'\r'}"
+  if [[ "$line" =~ ^Files=([0-9]+),[[:space:]]*Tests=([0-9]+), ]]; then
+    files="${BASH_REMATCH[1]}"; assertions="${BASH_REMATCH[2]}"
+  elif [[ "$line" == 'Result: PASS' ]]; then verdict=PASS; fi
+done <"$private_log"
+if [[ "$files" != 1 || "$assertions" != 102 || "$verdict" != PASS ]]; then
+  printf 'GW-01 pgTAP: FAIL (expected one file,102 assertions and PASS).\n' >&2; exit 1
+fi
+printf 'GW-01 pgTAP: %s files, %s assertions, PASS (local session simulation)\n' "$files" "$assertions"
 
 run_private 'Security advisors' supabase db advisors --local --type security --level warn --fail-on warn
 printf 'Security advisors: no warnings or errors\n'

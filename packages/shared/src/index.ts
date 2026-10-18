@@ -11,6 +11,18 @@ export {
 export type { TrustedTerminalSnapshot } from './n8n-apify-contracts';
 export { createApifyRecoveryRuntime } from './n8n-apify-recovery';
 export {
+  gatewayRequest,
+  gatewayReceipt,
+  gatewayIdentity,
+  gatewayOperations,
+  gatewayStates,
+  gatewayCodes,
+  trialOperations,
+  trialWindowId,
+  trialWorkflow,
+} from './n8n-worker-contracts';
+export type { GatewayRequest, GatewayReceipt, GatewayOperation } from './n8n-worker-contracts';
+export {
   canonicalUrl,
   normalizeInstagram,
   normalizeLinkedIn,
