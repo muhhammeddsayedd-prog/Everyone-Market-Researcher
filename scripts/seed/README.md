@@ -329,7 +329,8 @@ are separate from local/CI checks and advisor evidence.
 describe the completed delivery procedure. Keep the permanent production admission
 and ownership manifests in `out/`; the successful write-pending gate is absent.
 If an artifact is lost, reconcile the actual target instead of adopting rows or
-reconstructing ownership. PR6 merge and M03 remain separate gates.
+reconstructing ownership. PR6 merged after its separate owner approval; M02 is
+complete and M03 remains unstarted. [Merge receipt](../../milestones/M02-seed-data/evidence/merge-closure-20261018.json).
 
 Review the [exact production packet](../../milestones/M02-seed-data/evidence/prod-seed-packet-20261018.md)
 and committed `prod-seed-packet.json`, `prod-payload.json` and

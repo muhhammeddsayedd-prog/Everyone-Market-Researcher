@@ -57,6 +57,14 @@ Owner: Mohamed Abdelrahman (mohamed.abdelrahman@everyone.film) — product owner
 
 ## Changes
 
+M02 closed after the owner separately approved **Approve merging PR #6**
+(`call_e5871c933ab04e8fad11f15a51a82b4c`). The exact reviewed head
+`8ecb87cb75bc895491c815c575816cb8bab26649` passed all five CI39093312511 jobs
+and Vercel, then merged at `2ee25d3442dc20e5967914c875685bcec35eddfc`
+on18October2026 at06:28:57 Cairo. Protected-main documentation closeout records
+the observed merge; it does not authorize M03 or any new database/provider run.
+[Actual merge receipt](../milestones/M02-seed-data/evidence/merge-closure-20261018.json).
+
 M02 T10 exact packet approval is recorded: on18October2026 the owner replied
 **approved: seed prod** for reviewed head
 `a17f7e25369abc5f71aab0196a4f2e7d5f3cc614`
