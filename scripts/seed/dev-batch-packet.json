@@ -1,8 +1,8 @@
 {
   "version": 1,
   "target": "zmotjsbzhzjvpelxvxlf",
-  "approved": false,
-  "approvalReference": null,
+  "approved": true,
+  "approvalReference": "Owner reply on 2026-10-18: Approve M02 dev batch (call_0e6df79cdf024f3b99d026f52e3a6ff5)",
   "sourceSha256": "135e6b24c632bb931b54025a09941963b777ada87ba25c58306a430756d32f66",
   "baselineSvgSha256": "956befb784a4499230bcb2162660665d95e8e00aa7aa0ba95e2a1bc4cf8d1f4d",
   "limits": {

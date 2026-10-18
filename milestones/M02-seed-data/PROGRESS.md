@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Blocked: waiting on owner — MA-07/MA-08, dev seed handoffs and bounded dev packet approval**
+**In progress — exact dev batch approved; owner reports handoffs ready; presence/authentication checks next**
 
 | Field | Value |
 |---|---|
@@ -12,8 +12,8 @@
 | Last updated | 2026-10-18 Cairo |
 | Finished | — |
 | Branch / PR | m02-seed-data; [PR6 draft](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6), code head35990bd27e762de21714b719c78e72210636c7f7 |
-| Current task | Local implementation and code-head CI complete. PR6 remains draft/unmerged; dev import/live acceptance await owner actions. |
-| Next step | After owner-confirmed available handoffs and **Approve M02 dev batch**, record actual approval, rebuild source seal in a credential-free process, then run the reviewed bounded dev consumer. Inspect receipt/schema/counts/IDs/logos/advisors; never retry an ambiguous write without reconciliation. Prepare MA-09 from actual results. |
+| Current task | Exact dev packet approved; source-sealed CheckOnly confirms all four handoffs present. Authentication remains untested; bounded dev execution next. PR6 draft/unmerged. |
+| Next step | Run the reviewed consumer's accept-dev action once. Inspect sanitized receipt and independent MCP readback before any retry. Complete available dev counts/IDs/logo/advisor checks and MA-09 report; preserve separate production/merge gates. |
 
 The owner instructed **Proceed with the next milestone** after M01 merged.
 Started from clean main a74459d082ba5d1f0445652d7d12f8d2079da945 and preserved
@@ -103,6 +103,7 @@ DB, Vimeo, YouTube and Storage. It stopped before private reads/authentication.
 
 ## Session log
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
+- 2026-10-18 Cairo · Owner replied **Approve M02 dev batch** and **M02 dev handoffs ready**. Recorded the exact previously reviewed USD0/285competitor/1,754account/20MiB dev packet approval; production and merge gates unchanged. Reconfirmed MCP dev project, original seven migration versions and still-empty competitor/account/item/media baseline. Handoff readiness is owner-reported until the sealed consumer's presence check and actual independent credential checks pass. No credential consumed or hosted write yet.
 - 2026-10-18 Cairo · Code head35990bd / CI39084190118 all five jobs PASS, Vercel SUCCESS. Isolated CI DB reports10pgTAP files/242assertions and15 mandatory M02 rollback assertions; no warning/error security advisor and no error performance advisor. AC11 complete within local/CI scope. Documentation-only receipt uses normal PR CI; hosted AC1–10 remain unaccepted. No credential or bulk approval reply yet, so runtime `approved:false` stays; no dev/production write, provider/collector/n8n action or merge. M02 blocked on exact owner steps above.
 - 2026-10-18 Cairo · Published draft PR6 at35990bd; CI39084190118 running. Final727-file index scan initially flagged a synthetic password URL in a negative report test; fixture now uses the URL API, targeted report15/15 and unchanged scanner0 PASS. Credential-free sealed build/native0; actual consumer CheckOnly verified source seal and found all four handoffs absent, no private read or authentication. Owner steps/approval remain pending; no hosted or provider action.
 - 2026-10-18 Cairo · Completed tested T2–T8 implementation and bounded private runner; [independent review](evidence/independent-review-20261018.md) found preservation, recovery, source-binding and credential-boundary issues, all fixed with focused regressions before live use. Shared135 / scripts236 tests PASS, separate actual local PG15/15 PASS with rollback+no C999 changes, CI safety9/9 PASS, root typecheck/lint/format PASS. [Windows/credential review](evidence/private-runner-review-20261018.json) uses synthetic handoffs only. Requested exact dev packet approval and executable MA-07/08/dev-owner credential delivery; no real handoff consumed, hosted import or provider request. Normal PR CI pending.

@@ -1,6 +1,7 @@
 # M02 dev import and public account checks — approval packet
 
-State: **pending the owner's approval**. This packet covers emr-dev only,
+State: **approved by the owner on18October2026**, reply **Approve M02 dev batch**
+(question call_0e6df79cdf024f3b99d026f52e3a6ff5). This packet covers emr-dev only,
 `zmotjsbzhzjvpelxvxlf`. The runtime rejects production. M01's production approval
 and PR4 merge do not approve M02 production seeding.
 
