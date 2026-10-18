@@ -91,6 +91,46 @@ jobs:
             apps/web/test-results/
           retention-days: 7
 
+  web-auth-e2e:
+    # Authenticated web journey against an isolated local Supabase stack (ports 613xx) with
+    # labelled fixtures and genuine local sessions. No hosted project, secret or machine role.
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@d9184bf108216479bc5a137cc391f4d7b14c870b # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.121.0
+      - run: pnpm --filter web exec playwright install --with-deps chromium
+      - name: Start isolated web e2e stack
+        run: node apps/web/e2e/support/stack.mjs up
+        env:
+          SUPABASE_BIN: supabase
+      - run: pnpm --filter web test:e2e:auth
+      - name: Stop isolated web e2e stack
+        if: always()
+        run: node apps/web/e2e/support/stack.mjs down
+        env:
+          SUPABASE_BIN: supabase
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: playwright-auth-report
+          path: |
+            apps/web/playwright-report/auth/
+            apps/web/test-results/auth/
+            apps/web/e2e/__screenshots__/
+          retention-days: 7
+
   db-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20

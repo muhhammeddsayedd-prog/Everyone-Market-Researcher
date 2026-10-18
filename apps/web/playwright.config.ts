@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
+  // The authenticated suite needs the isolated local stack: playwright.auth.config.ts.
+  testIgnore: ['auth/**'],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -32,7 +34,8 @@ export default defineConfig({
   ],
   webServer: {
     command: 'pnpm build && pnpm start --hostname 127.0.0.1 --port 3000',
-    url: 'http://127.0.0.1:3000',
+    // Without configuration every route but the notice is a 503, so readiness probes the notice.
+    url: 'http://127.0.0.1:3000/unavailable',
     reuseExistingServer: false,
     timeout: 180_000,
   },
