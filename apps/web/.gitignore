@@ -1,0 +1,7 @@
+# General Sans (ITF Free Font License) may be self-hosted but not redistributed through a
+# public repository. Provision it per environment; see apps/web/public/fonts/LICENSES.md.
+public/fonts/GeneralSans-*
+# Isolated e2e stack state (local test credentials)
+e2e/.stack/
+# The root rule `coverage/` (test reports) would hide the /coverage route.
+!app/(app)/coverage/

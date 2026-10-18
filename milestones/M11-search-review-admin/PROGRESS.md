@@ -10,12 +10,22 @@
 | Field | Value |
 |---|---|
 | Started | — |
-| Last updated | 2026-10-17 |
+| Last updated | 2026-10-18 |
 | Finished | — |
 | Branch / PR | `m11-search-review-admin` / — |
 | Current task | — |
 | Next step | Start T1: rewrite `app.search` cleanly (one CTE per source, RRF k=60) in migration `review_admin_search`, add the query-embedding cache, and benchmark 5 queries on 100k synthetic items locally (< 800 ms) |
 | Query-embedding cache (DB table / LRU) | — (decide in T1) |
+
+## Early parallel frontend track (18 Oct 2026)
+
+- **Role gates:** branch `m09-frontend-company-browsing` already has role-aware navigation and
+  server-side 404s for `/review` (analyst+) and `/admin/*` (admin).
+- **Placeholders only:** those routes render ComingSoon pages naming their contract dependency. No
+  review, admin, collection or report action is wired.
+- **Search:** ⌘K says "Search is coming in M11" and makes no search or embedding calls.
+- **Status:** no M11 task or AC is claimed. Details are in
+  `milestones/M09-web-app-foundation/PROGRESS.md`.
 
 ## Task checklist
 - [ ] T1 Clean `app.search` + query-embedding cache + EXPLAIN on 100k synthetic items

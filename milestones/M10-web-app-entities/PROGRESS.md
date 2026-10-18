@@ -10,11 +10,30 @@
 | Field | Value |
 |---|---|
 | Started | — |
-| Last updated | 2026-10-17 |
+| Last updated | 2026-10-18 |
 | Finished | — |
 | Branch / PR | `m10-web-app-entities` / — |
 | Current task | — |
 | Next step | Start T1: migration `entity_views` part 1 — `stats_daily` PK fix (add country), `ops.refresh_stats_daily`, pg_cron hourly job, WF-91 check, backfill from 2024-01-01 |
+
+## Early parallel frontend track (18 Oct 2026)
+
+Built ahead of the normal milestone order on branch `m09-frontend-company-browsing`. Evidence and
+open dependencies are in `milestones/M09-web-app-foundation/PROGRESS.md`.
+
+- **T3 `/competitors`: partial.**
+  - Done: grid and list views, search, filters (tier, category, capability, status, market),
+    keyset pages, baseline pinned, health dots.
+  - Waiting for `stats_daily` / `app.competitor_overview_v`: activity sort, sparkline, period
+    columns and the "active in period" filter.
+- **T4 profile: partial.**
+  - Done: EntityHeader, Overview facts, Sources (`/accounts`) and In-house (`/capabilities`).
+  - The seven other tabs show explicit unavailable states.
+  - Not done: sticky compact header, alias 308.
+- **Also built:** `/coverage`, derived from records.
+- **Status:** this milestone's migrations (T1/T2) are not started. No AC here is claimed.
+- **Conflict to fix (Codex/owner):** DESIGN.md §3.3 account-status colours win over this
+  milestone's T4 line ("warning failing … danger invalid").
 
 ## Task checklist
 - [ ] T1 `stats_daily` key fix + `ops.refresh_stats_daily` + pg_cron hourly + WF-91 daily + backfill (dev, prod)
