@@ -98,6 +98,7 @@ sign in → browse → filter → open a company → sources → open original �
 | Web unit and component tests (Vitest) | 65/65 pass |
 | Fail-closed e2e (no configuration) at 4 viewports | 12/12 pass |
 | Authenticated e2e on the isolated stack | 76 pass, 0 fail (88 desktop-only cases skipped on other viewports) |
+| GitHub CI on PR #9 head `1cb83b2` | quality, unit, build, e2e, db-tests and the new web-auth-e2e all pass (run 39109220989) |
 
 The authenticated suite covers:
 
@@ -112,7 +113,7 @@ Screenshots are in `apps/web/e2e/__screenshots__/`.
 
 `pnpm test` at the root shows 13 failures in `scripts/seed/youtube-diagnostic-runner.test.ts`. That
 is an M02 Windows-runner test on the local machine, in a file this branch does not touch. It is not
-caused by this track.
+caused by this track. CI's Linux `unit` job passes.
 
 ### Not done yet (still open in M09)
 
@@ -190,6 +191,7 @@ caused by this track.
 
 ## Session log
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
+- 2026-10-18 · Fixed an Arabic-text fallback that requested the unprovisioned General Sans file (failed only in CI). PR #9 CI is all green at `1cb83b2` (run 39109220989). The Vercel preview is behind the existing SSO deployment protection; it was not changed.
 - 2026-10-18 · Early frontend track (Claude): shell, auth gate, company directory/profile/sources/coverage, fail-closed config, isolated-stack e2e plus CI job `web-auth-e2e` · `apps/web/**`, `.github/workflows/ci.yml` · lint/format/typecheck/secrets pass; web unit 65/65; fail-closed e2e 12/12; authenticated e2e 76 pass / 0 fail. Real dev reads blocked on MA-19 (local).
 - 2026-10-17 · milestone file created (handoff pack)
 
