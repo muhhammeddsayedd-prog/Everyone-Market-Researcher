@@ -110,7 +110,7 @@ function canonicalWebsiteUrl(input) {
   return url.href;
 }
 
-function normalizeSmokeWebsite(row) {
+function validateSmokeWebsiteRow(row) {
   if (
     !row ||
     typeof row !== 'object' ||
@@ -126,6 +126,10 @@ function normalizeSmokeWebsite(row) {
   ) {
     return invalidWebsiteRow();
   }
+}
+
+function normalizeSmokeWebsite(row) {
+  validateSmokeWebsiteRow(row);
   // Identity follows the requested dataset URL, never a page-controlled
   // metadata.canonicalUrl pointing at another page or origin. Path case stays.
   const url = canonicalWebsiteUrl(row.url);
@@ -133,6 +137,12 @@ function normalizeSmokeWebsite(row) {
     if (retainedUrl !== undefined && retainedUrl !== null && retainedUrl !== '')
       canonicalWebsiteUrl(retainedUrl);
   }
+  return buildSmokeWebsiteSnapshot(row, url);
+}
+
+// Internal mapping seam: callers must validate the row and every retained URL
+// before invoking this helper. It performs no request and grants no ingest trust.
+function buildSmokeWebsiteSnapshot(row, url) {
   const title = row.metadata?.title ? smokeBoundedText(row.metadata.title, 2000) : null;
   const caption = smokeBoundedText(row.markdown || '', 8000);
   let hash;
@@ -165,5 +175,12 @@ function normalizeSmokeWebsite(row) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { canonicalWebsiteUrl, hasSensitiveUrlQuery, normalizeSmokeWebsite };
+  module.exports = {
+    canonicalWebsiteUrl,
+    hasSensitiveUrlQuery,
+    normalizeSmokeWebsite,
+    validateSmokeWebsiteRow,
+    buildSmokeWebsiteSnapshot,
+    invalidWebsiteRow,
+  };
 }

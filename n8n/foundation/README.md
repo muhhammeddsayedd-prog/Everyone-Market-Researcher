@@ -96,8 +96,9 @@ The remaining full-workflow gates are:
 - Native webhook/response contracts and the required durable
   `apify_callback_rejected` audit path. The current generic logger produces a
   different action and is not substituted as AC7 evidence.
-- A bounded delayed reread, saved-receipt replay, bounded dataset projection and
-  actual Cloud URL/crypto/normalizer support.
+- A bounded delayed reread, saved-receipt replay and bounded dataset projection
+  wired to the verified exact-page adapter below. The general URL parser has no
+  Cloud runtime pass.
 - Atomic persistence/finish wiring, original-run registration-race recovery and
   the reviewed paid batch admission. No automatic POST retry is permitted.
 - Strict restricted Postgres access, actual saved bindings/exports and native
@@ -140,6 +141,12 @@ PM/backfill nodes and Config flags remain disabled regardless of database flags.
 
 ## Targeted local checks
 
+`bindings.dev.json` contains the five actual, reviewed dev credential bindings.
+It intentionally has no invented workflow/tag IDs; it is not a full deployment
+manifest. Builders requiring foundation references continue to fail closed.
+Saved settings, successful provider metadata and strict native database login
+remain separate evidence in M03 progress.
+
 ```powershell
 node --test n8n/foundation/*.test.mjs
 pnpm.cmd exec vitest run packages/shared/src/n8n-bindings.test.ts packages/shared/src/n8n-apify-contracts.test.ts
@@ -154,3 +161,33 @@ mapper and query contracts with synthetic inputs. They do not execute the real
 Postgres, Set, Switch, Schedule, Error Trigger or Execute Workflow nodes. Hosted
 import, references, TLS, RPC login, callback, automatic errors and actual child
 dispatch remain separate M03 acceptance gates.
+
+## Observed Cloud normalizer boundary
+
+The archived temporary runtime probe has three saved manual executions. Global
+URL parsing and both `url`/`node:url` constructor imports failed. Crypto SHA-256,
+Buffer, TextEncoder and the common helpers passed. Its native success status
+means the diagnostic returned fixed booleans; the general website normalizer
+did not pass. The original diagnostic's incorrect 33-character expected item
+ID is preserved separately and was corrected before the follow-up.
+
+`normalizers/smoke_website_m03.js` supplies a separate exact-page adapter for
+`https://everyone.film/about-everyone`. It rejects every nonexact requested URL
+and permits associated URLs only from the explicit Everyone root/about list.
+It adds no parser, shim, dependency or security exception. Compose its factory
+with the shared `validateSmokeWebsiteRow`, `buildSmokeWebsiteSnapshot` and
+`invalidWebsiteRow` function declarations; omit the local CommonJS export blocks
+from pasted Code. The adapter preserves the existing ten-field snapshot, caps,
+SHA-256 identity and `smoke_website_stub.v1` output contract. The same reviewed
+source passed one Cloud execution with synthetic public input and six fixed
+positive/denial/bounds booleans; 21 local adapter tests and the existing 103
+normalizer tests pass.
+
+The generic `prepare_ingest_groups.js` helper still uses a URL constructor. The
+native SUB Ingest builder does not call that helper: it validates bounded JSON
+and submits the atomic RPC. Neither this distinction nor the exact-page probe
+establishes native database execution, real actor capture or full callback
+acceptance. The three `M03-runtime-capability-probe.*.dev.json` files are actual
+temporary probe exports, kept inactive and archived with recoverable history.
+Their default saved settings are diagnostic evidence, not foundation settings
+acceptance. See the milestone's `runtime-capability-20261018.json` receipt.

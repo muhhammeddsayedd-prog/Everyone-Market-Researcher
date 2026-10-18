@@ -1,0 +1,41 @@
+{
+  "runtimeVersion": "2.43.5",
+  "environment": "dev",
+  "instanceUrl": "https://muhhammedsayed.app.n8n.cloud",
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflowRefs": {},
+  "tagRefs": {},
+  "credentials": {
+    "postgres": {
+      "id": "3ZZtc9kMDcminv6w",
+      "name": "Supabase Postgres · n8n_writer · dev",
+      "type": "postgres",
+      "environment": "dev",
+      "projectRef": "zmotjsbzhzjvpelxvxlf"
+    },
+    "apify": {
+      "id": "EYmaOt0rd45ysq0J",
+      "name": "Apify account",
+      "type": "apifyApi",
+      "environment": "dev"
+    },
+    "openai": {
+      "id": "e04LREfPBELWQQ9D",
+      "name": "OpenAI account",
+      "type": "openAiApi",
+      "environment": "dev"
+    },
+    "vimeo": {
+      "id": "HeZBOZhFMeFYOC0N",
+      "name": "Vimeo Token",
+      "type": "httpHeaderAuth",
+      "environment": "dev"
+    },
+    "youtube": {
+      "id": "ltvBSloVLGVeUjqV",
+      "name": "YouTube Data API key",
+      "type": "httpHeaderAuth",
+      "environment": "dev"
+    }
+  }
+}
