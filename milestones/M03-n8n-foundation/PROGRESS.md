@@ -73,7 +73,7 @@
 - Callback spec correction under review: marking `processed_at` before ingest loses work after partial failure. Reordering alone is insufficient because chunk inserts, account receipts and costs need a durable atomic callback receipt. M03 will use a bounded atomic persistence RPC for the one-page website smoke branch; unsupported later collector branches fail closed. Existing M01 interfaces/seven migration versions remain intact.
 - Default callback verification is option (b), registered-run lookup plus authenticated Apify run readback. Callback-supplied context, dataset IDs, actor/status/usage are never trusted for persistence.
 - Official documentation supplements actual plan facts but does not establish the owner's tier/runtime. Pending n8n skill remains outside discovery until its actual-runtime/schema gate passes.
-- One-page M03 payload minimizes the generic raw-source contract to canonical URL, capped markdown and title; synthetic request/header/cookie fields are omitted. Raw provider HTTP/SQL error messages/stacks are likewise replaced by fixed classified summaries before audit logging. These changes prevent credential-bearing context from reaching logs/storage; they do not assert generic secret redaction.
+- One-page M03 payload minimizes the generic raw-source contract to canonical URL, capped markdown and title; synthetic request/header/cookie fields are omitted. Raw provider HTTP/SQL error messages/stacks are likewise replaced by fixed classified summaries before audit logging. These bounded projections exclude known context from persistence descriptors; raw native HTTP/webhook execution-storage privacy remains unverified. They do not assert generic secret redaction.
 
 ## Verified plan facts (T1)
 
