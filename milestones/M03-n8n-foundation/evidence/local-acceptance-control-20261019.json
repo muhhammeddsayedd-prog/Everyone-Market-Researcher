@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "capturedAt": "2026-10-19T03:34:09.935664+00:00",
+  "status": "local_engineering_verified_one_native_control_capability_unresolved",
+  "environment": "local source and synthetic ports only",
+  "preservedBase": {
+    "head": "632458b81dbc2517d51ff999d78c20d4caea7b60",
+    "ci": 39182073955,
+    "branch": "m03-n8n-foundation",
+    "draftPr": 8
+  },
+  "targetedTests": {
+    "command": "node --test n8n/foundation/materialize-acceptance-case.test.mjs scripts/n8n/foundation-execution-control.test.mjs scripts/n8n/foundation-runtime-plan.test.mjs scripts/n8n/foundation-runtime-control.test.mjs scripts/n8n/foundation-runtime-machine.test.mjs",
+    "receipt": "61839e",
+    "nativeExit": 0,
+    "passed": 52,
+    "failed": 0,
+    "skipped": 0,
+    "groups": {
+      "caseMaterializer": 12,
+      "executionControl": 17,
+      "runtimePlanControlMachine": 23
+    }
+  },
+  "quality": {
+    "affectedEslintExit": 0,
+    "affectedEslintReceipt": "671787",
+    "prettierExit": 0,
+    "prettierReceipt": "48de16",
+    "gitDiffCheckExit": 0,
+    "fullUnchangedLocalSuiteRerun": false
+  },
+  "independentReview": {
+    "execution": "concurrent/lost ACK/deadline/journal/nested-cap/freshness/version/receipt and parent-only rearm findings corrected; final static review no remaining P1/P2",
+    "runtime": "durable async admission/concurrency/journal identity/case receipt/domain/private header findings corrected; seven changed regressions independently passed a75c3d",
+    "nativeAcceptanceEstablished": false
+  },
+  "sourceFileSha256": {
+    "scripts/n8n/foundation-runtime-checkpoint.mjs": "af3bd51ff6336d9205e876af3e699677e122ca96cf825a66f807478a265603ea",
+    "scripts/n8n/foundation-runtime-control.md": "70bad6a35a6c76198409b19a9c98ec6095cd4502b7645475f9709da85744de5f",
+    "scripts/n8n/foundation-runtime-control.mjs": "83f7d6ab2cb0b792137c29893eceb942773db0dabcaa666ed8994b22df4e537b",
+    "scripts/n8n/foundation-runtime-control.test.mjs": "984c2cf96545dec064505fa74a0089553c28c6dc4bf2ae8386c6bc5101df9885",
+    "scripts/n8n/foundation-runtime-machine.mjs": "1f98496f3a91e1cc234b2f4ee04908b28486d747b727ddd4e98d53be3d9cdda3",
+    "scripts/n8n/foundation-runtime-machine.test.mjs": "636aa4e5e57f558c923a6f2aa34ef2b3563e2b8df184a6bca1cea17c9d974aaa",
+    "scripts/n8n/foundation-runtime-plan.mjs": "357d22db593255fd83ec00efedcdcefa64ccff76330b088e169e2b7bb1b889ff",
+    "scripts/n8n/foundation-runtime-plan.test.mjs": "a1b2487a75fdffce8f2cdfbc8f57afcedd7ebddf9760fbcec0e4d213b04004ef",
+    "scripts/n8n/foundation-execution-control.mjs": "430fdbbdac21cf9c3e15c065f9ba4d2018a84c710c9cc2328786bcedc5fd624d",
+    "scripts/n8n/foundation-execution-control.test.mjs": "c344196198a63f6ef6527251b882ecdc96777879f31a84a6240c57c0538b2d6a",
+    "n8n/foundation/materialize-acceptance-case.mjs": "e900812be765cb06c30f919ae751fd5d4adbe67f81dbfa7d0876f8a83da70f6b",
+    "n8n/foundation/materialize-acceptance-case.test.mjs": "2e797129f71af3fe4dcf036ff4a76eafc315aa9f850d493b7a02fed32751e7c1"
+  },
+  "migrationHashes": {
+    "20261018231756_m03_actor_launch_admission.sql": "fc6955938bba3d08b6a1140258a1db2d0569a5f441c8cc5c934847eb84116600",
+    "20261018232014_m03_foundation_gateway.sql": "ea1385b734e243bed4dea0030f4975a81d38d41338cb8d94d6086dd83916d334",
+    "20261018232922_m03_foundation_safety_receipts.sql": "dffa2c23d0102bb7382106c9800e05b5806a1eee89580794aa87bdd63a7f05a5",
+    "20261018233338_m03_foundation_boundary_hardening.sql": "bf930602b402ef0b4649e9399ed2dcb9d6f2bf576a08d9313f352ccfab4d6c90"
+  },
+  "preserved": {
+    "actualStagedWorkflows": 25,
+    "nativeTags": 13,
+    "deferredErrorLinks": 24,
+    "foundationManagementHistory": [
+      2,
+      68,
+      118
+    ],
+    "foundationManagementTotal": 188,
+    "existingMachineId": "EmrM03Machine19",
+    "pendingMachineRetainedEncrypted": true,
+    "closedGw01Replayed": false,
+    "tenAppliedVersionsChanged": false,
+    "m02DataChanged": false,
+    "actualCloudExportsChanged": false
+  },
+  "proposedOnly": {
+    "selectedCases": 23,
+    "nativeSelectedUpper": 68,
+    "businessSelectedUpper": 59,
+    "gatewaySelectedUpper": 118,
+    "providerSelectedGetUpper": 20,
+    "actorStarts": 2,
+    "originalGroupAcquisitionAdditional": {
+      "business": 1,
+      "gatewayHttp": 2,
+      "providerGet": 2
+    },
+    "runtimeManagement": {
+      "setup": 134,
+      "caseDrafts": 69,
+      "restore": 99,
+      "finalAudit": 25,
+      "nominal": 327,
+      "maximum": 512
+    },
+    "mcpMaximum": 416,
+    "nativeMaximum": 120,
+    "gatewayMaximum": 256,
+    "providerGetMaximum": 32,
+    "durationMinutes": 60,
+    "actorReserveUsd": 2,
+    "uniquePublications": 7,
+    "publicationActions": 8
+  },
+  "freshReads": {
+    "publicActorBuild": {
+      "at": "2026-10-19T03:20:54.8737046Z",
+      "receipt": "5fbe99",
+      "actorId": "aYG0l9s7dbB7j3gbS",
+      "buildId": "BdKJRCYsnmlzPfH3n",
+      "buildNumber": "0.3.99",
+      "status": "SUCCEEDED"
+    },
+    "publicActor": {
+      "at": "2026-10-19T03:21:26.6004233Z",
+      "receipt": "e2253e",
+      "pricingRowsSupplied": 0,
+      "noPriceClaimFromAbsence": true
+    },
+    "devPriceBook": {
+      "status": "oauth_refresh_failure_before_sql",
+      "attempts": 1,
+      "sqlExecuted": false,
+      "authSetupRepeated": false
+    }
+  },
+  "remainingCapability": {
+    "id": "M03-C01",
+    "required": "authoritative native terminal/version/child-link and settled-work receipt without retaining raw business data",
+    "current": "manual MCP start returns ID; row-only metadata omits version and cannot reliably survive retention none; no cancellation tool exposed",
+    "notProof": [
+      "missing execution row",
+      "empty list",
+      "SQL zero leases",
+      "different workflow success",
+      "gateway terminal business marker",
+      "caller labelled child ID"
+    ],
+    "next": "continue already-authorized local safe completion-bridge engineering; do not request or execute a known-failing live packet"
+  },
+  "actions": {
+    "credentialHandoffsRead": 0,
+    "credentialHandoffsConsumed": 0,
+    "privateValuesDecrypted": 0,
+    "managementRequests": 0,
+    "workflowExecutions": 0,
+    "hostedMigrations": 0,
+    "windowActivations": 0,
+    "publications": 0,
+    "actorStarts": 0,
+    "modelCalls": 0,
+    "productionChanges": 0,
+    "notifications": 0,
+    "merge": false,
+    "m04Started": false
+  }
+}

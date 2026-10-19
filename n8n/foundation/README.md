@@ -77,6 +77,33 @@ Unknown/mismatched callback paths durably invoke the exact `apify_callback_rejec
 
 ## Verification and saved definitions
 
+### Local acceptance controls, 19 October
+
+The new `scripts/n8n/foundation-runtime-*` modules pin the actual staged25 IDs,
+versions and hashes, validate a future immutable protected runtime readback,
+rebind only the owned Machine's domain/auth fields using its retained pending
+token and a new purpose-bound Preview bypass, install24canonical error links,
+save fixed manual-case variants and restore every owned temporary publication.
+They do not replay the completed inactive provisioner or mutate Cloud on import.
+The audited minimal publication closure is seven owned dependencies/eight publish
+actions; WF00 and WF99 remain unpublished and all schedules disabled. Readbacks
+are not CAS. Durable intents and drift checks prevent blind overwrite/replay.
+
+`materialize-acceptance-case.mjs` now includes first-original-run Ingest/Cost
+replay A/B and a distinct evidence map for all five SUBs. See
+[exact cases and source allocations](acceptance-cases.md).
+
+`scripts/n8n/foundation-execution-control.mjs` uses the installed MCP manual-start
+and metadata schemas, fixed saved-case receipts, exact IDs, bounded calls/polls,
+full nested upper reservations and durable uncertain-start fences. Its mocks
+prove local control behavior only. **M03-C01 remains:** the native save hooks can
+remove terminal rows/child metadata under retention-off settings. The controller
+rejects absent completion and caller-labelled child IDs. A safe native terminal
+envelope is still needed; no broad retention, fake completion or known-failing
+paid preflight is accepted. The [single packet](../../milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md)
+contains the four hashes, A-D scope, count ledger and precise remaining capability.
+No new handoff or hosted action is requested by this source preparation.
+
 Focused commands, all local and synthetic/localhost only:
 
 ```powershell

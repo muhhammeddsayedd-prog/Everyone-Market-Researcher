@@ -1,6 +1,259 @@
-# M03 bounded live acceptance packet — current preparation checkpoint
+# M03 finite dev acceptance packet — 19 October 2026
 
-## 19 October: canonical source complete; native staging and live control pending
+## Current decision boundary: one native completion capability
+
+The remaining local runtime-transition and SUB-case engineering is implemented.
+**The live decision cannot yet be requested:** the installed control surface
+cannot reliably return a native terminal/child-link receipt with business
+execution retention off. This is the single unresolved capability, **M03-C01**.
+The A–D scope below is one candidate packet; it is not a request to approve a
+setup/control phase known to fail. New deployment identity, credential delivery,
+fresh price read and actual runtime checks are guarded future setup outputs,
+not additional requirements to have an already-enabled runtime today.
+
+No credentials are requested now. No migration, runtime activation, publication,
+execution, actor/model call, production mutation, notification or merge occurred.
+GW-01 remains closed. PR8 stays draft; M03 open; M04 unstarted.
+
+### Completed checkpoint and local implementation
+
+- Preserve actual25 inactive staged definitions/exports and their exact IDs,
+  versions/hashes,13tags, `EmrM03Machine19` / `httpCustomAuth`, encrypted pending
+  token and24deferred error links. Nothing is recreated or re-exported as a live
+  result. Historical foundation management usage remains **188 =2+68+118**.
+- `scripts/n8n/foundation-runtime-{checkpoint,plan,control}.mjs` is a new finite
+  runtime procedure. It does not repurpose the completed inactive provisioner.
+  Its checkpoint pins actual25 saved records; its plan seals future source,
+  protected immutable deployment, exact audience and allowed case bodies.
+- `scripts/n8n/foundation-execution-control.mjs` binds the installed MCP schemas:
+  `get_workflow_details`, `execute_workflow` with `executionMode:'manual'` and
+  **no inputs**, then `get_execution` with `includeData:false`. There is no
+  invented public `/run`, cancellation endpoint or broad execution export.
+  Current available schemas expose no cancellation operation.
+- The controller verifies the case's exact draft version, execution permission,
+  MCP flag, exactly one enabled Manual Trigger and no other eligible trigger.
+  It journals before starting, admits one case at a time, reserves the full
+  nested case upper bound, times each tool call at15seconds and polls a known
+  execution ID at most8times/15seconds. A timed-out tool can still be pending;
+  that is explicitly recorded, never described as cancellation or closure.
+  Unknown acknowledgement never receives a replacement case/execution ID.
+- The materializer now defines27 fixed source cases,23 selected: **68 native,
+  59 business /118 gateway HTTP,20 provider GETs,2 actor starts**. Four new SUB
+  replay cases use the first actual run's original account/item and measured
+  keyed cost. [Exact inputs and five-SUB map](../../../n8n/foundation/acceptance-cases.md).
+  These are source/test allocations, not native execution receipts.
+
+### M03-C01: exact supported path and precise limitation
+
+Pinned n8n2.43.5 supports an **unpublished manual draft** when
+`settings.availableInMCP=true`. The installed connector omits
+`triggerNodeName`, so each case must have one eligible Manual Trigger and omit
+tool `inputs`. The API getter proves neither execution access nor completion.
+[Native access validation](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/modules/mcp/tools/workflow-validation.utils.ts),
+[manual execution](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/modules/mcp/tools/execute-workflow.tool.ts).
+
+The native save hook soft-deletes a manual execution when manual storage is off;
+non-manual success/error storage `none` deletes the in-flight execution. The
+metadata getter reads the database row, not a retained terminal promise; its
+installed projection also omits the executed workflow version. Native
+ExecuteWorkflow child IDs live in node metadata, which those settings do not
+preserve. Thus missing rows, empty lists, a final gateway business marker, a
+successful different workflow or SQL zero leases cannot prove engine completion
+or child linkage. A caller-supplied child ID/source label is rejected by the
+controller. [Save hook](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/execution-lifecycle/execution-lifecycle-hooks.ts#L587),
+[metadata getter](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/modules/mcp/tools/get-execution.tool.ts#L101).
+
+**Minimum missing result:** an authoritative, bounded native control envelope
+containing the actual case/workflow/draft version/execution ID, final status and
+stop time, exact child-ID links and whether all owned execution/transport work
+has settled. It must survive the retention policy without storing provider
+payloads, request credentials, raw errors or unrelated workflow data. Durable
+business/actor receipts remain separately required.
+
+**Smallest alternative to evaluate:** one fixed-case dev completion bridge or
+control-only wrapper whose success AND failure paths provably persist only that
+safe envelope. Merely retaining a safe routing probe does not prove the business
+graphs, and ordinary wrapper retention also retains intermediate child/error
+outputs; it is not accepted as safe by assumption. Redaction on read is not a
+metadata-only storage solution. Local bridge engineering is already authorized;
+no redundant development approval or key delivery is requested. Do not deploy a
+bridge or enable broad retention. If the installed Cloud surface cannot support
+the safe envelope, present that specific execution-integration change for a
+separate decision. No general rebuild, credential duplication or WF00 publication.
+
+### Phase A — exact dev setup, only after the completed packet is approved
+
+Target only emr-dev `zmotjsbzhzjvpelxvxlf`, session pooler
+`aws-1-eu-central-1.pooler.supabase.com:5432`, database `postgres`. Preserve the
+ten applied versions and all M02 data/exclusions/logos. Inspect current history;
+dry-run must contain exactly these four still-pending files/hashes, then one
+push and actual parity/advisor/type/ACL verification. No seed replay/reset.
+
+| Pending migration | SHA256 of actual file bytes, reverified19Oct |
+| --- | --- |
+| `20261018231756_m03_actor_launch_admission.sql` | `fc6955938bba3d08b6a1140258a1db2d0569a5f441c8cc5c934847eb84116600` |
+| `20261018232014_m03_foundation_gateway.sql` | `ea1385b734e243bed4dea0030f4975a81d38d41338cb8d94d6086dd83916d334` |
+| `20261018232922_m03_foundation_safety_receipts.sql` | `dffa2c23d0102bb7382106c9800e05b5806a1eee89580794aa87bdd63a7f05a5` |
+| `20261018233338_m03_foundation_boundary_hardening.sql` | `bf930602b402ef0b4649e9399ed2dcb9d6f2bf576a08d9313f352ccfab4d6c90` |
+
+[Preserved local DB application/advisor/type evidence](local-foundation-db-20261019.json)
+and CI39182073955 are local/CI evidence, not hosted application.
+
+After scoped private environment delivery, create a **new immutable protected
+Preview** in project `prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu`, branch
+`m03-n8n-foundation`, from the final reviewed SHA. Read back READY/project/SHA/
+branch/immutable URL/protection before SQL audience binding. Final deployment
+ID/URL cannot be known now. The setup-output validator checks the trusted
+readback's shape; a supplied object is not itself a Vercel/SQL receipt.
+
+Runtime credentials remain restricted dev writer + the existing dedicated
+Machine token + a **separate same-owner read-scoped Apify token**, never the
+administrator password in runtime or an extracted native launch token. Validate
+Actor-run/dataset/key-value-store Read scopes and exact private delivery before
+requesting that new reader after approval; no Run/Write/Manage by default.
+Private delivery helpers/leases require their own reviewed purpose, exact
+inputs and non-secret result before use. No completed handoff is requested now.
+
+New runtime plan: initial25owned/version/hash/owner/tag reads; one partial PATCH
+of the owned Machine's domain fields and exact auth JSON. A bounded private
+preparation port rebuilds only Authorization from the retained original pending
+token plus the **new owned Preview bypass header**; it never reads the saved
+native token or reuses GW-01's revoked bypass. Its public journal contains only
+metadata intents/method/path, never credential bodies or their hashes. Restoring
+removes only that added header and restores the original intended domain/auth.
+Saved PATCH acknowledgement is not proof of endpoint/domain enforcement.
+Change only sealed approved graph bodies. GET/PUT/GET checks are **not CAS**. A concurrent
+edit, version/hash/tag/owner drift or uncertain mutation fences later writes.
+One exact-ID read may classify the state; it never silently adopts an unknown
+version or blindly replays the mutation.
+
+Pinned2.43.5 dependency order for these cases is **seven unique publications**:
+bootstrap log-only SUB Notify → WF90; unpublish Notify while changing settings;
+install24canonical error links; republish Notify; publish WF30/WF70/WF80 →
+SUB Finish → WF19. Notify is published twice, so eight publish actions. A direct
+manual root child uses its draft, but a nested integrated child uses a published
+version. This is the audited call tree, not a universal publication rule.
+**Never publish WF00 or WF99.** Every saved/published variant disables every
+Schedule Trigger, including canonical retained schedules. No execution during
+setup; availableInMCP is enabled only for exact fixed case drafts.
+
+### Phase B — zero-actor proof before either paid start
+
+Proceed only after M03-C01 has a reviewed supported implementation. Prove the
+fixed controller's exact native ID/terminal/child linkage, unknown-start fencing,
+no payload/secret retention, bounded calls and shutdown on a zero-actor case.
+If that proof fails, stop before any actor launch; do not keep retrying a known
+retention failure. Verify restricted writer identity, audience/protection,
+machine-domain enforcement, endpoint denial cases, current price book/budget,
+clean error/cooldown baseline and all actor source/charge constraints.
+
+Public actor/build metadata re-read19Oct03:20–03:21UTC:
+`aYG0l9s7dbB7j3gbS` / `apify/website-content-crawler`, build
+`BdKJRCYsnmlzPfH3n` / `0.3.99`, SUCCEEDED. The actor's public response supplied
+no pricing rows. The one scoped dev price-book read failed OAuth refresh before
+SQL. No login loop or repeated four-provider checks. Fresh price-book read is a
+guarded read in the future approved dev setup; unknown prices remain unknown.
+The existing USD25/day alert default is not a provider spending cap.
+
+### Phase C — ordered two-run matrix, only if B passes
+
+1. Fixed individual WF00 dispatch cases cover all15slots, including health
+   (first accrual), then the unknown-slot audit and second health case. Exact
+   native child linkage is required; stubs prove dispatch only. Deterministic
+   Saturday/PM/backfill guards remain local/CI. Live unknown/no-row fixed-fee
+   result is labeled honestly; positive synthetic local accrual tests remain.
+2. Genuine `smoke.first` on the guarded C999 fixture only. Preserve original
+   launch/run/account/item and actual native IDs. Authenticate original run and
+   INPUT, exact pinned actor/build/options, stable terminal/cost samples and
+   bounded original dataset; trusted original-run recovery may use only its
+   actual durable receipt. Register/normalize/process/finish atomically and
+   settle the exact measured keyed cost. No guessed run ID or replacement POST.
+3. Acquire the same original group through one bounded original-run dataset
+   read+normalizer if necessary (one extra operation/two gateway HTTP/two provider
+   GETs). Native SUB Ingest replay A/B uses that first account/item group;
+   SQL verifies its original digest. SUB Cost replay A/B uses the actual first
+   measured keyed entry. Assert unchanged owned item/raw snapshot/AI/embed/media
+   queue/cost identities/hashes/counts. Duplicate Ingest returns the ORIGINAL
+   `items_new`/IDs with `updated:false,finished_now:false`; it need not say0.
+4. Only after the first terminal/durable/measured result, genuine `smoke.second`
+   on the same natural page identity: zero new items/queue work, separate actual
+   run and cost. No actor solely for SUB coverage and no fabricated nonzero fee.
+5. Forged unknown callback → exact durable rejection audit and no business
+   mutation. Equal replay/concurrent original-run processing → no new item,
+   queued work or duplicate charge. Reconcile lost atomic acknowledgements only
+   through the original registry/result; no SQL JSONB digest invented in JS.
+6. Four WF19 production-webhook calls with fixed **valid JSON `{}`** (not a
+   transport-level invalid-JSON rejection), sequential after each actual
+   automatic WF90 completes: four workflow-error audits, one threshold/cooldown
+   claim and one log-only SUB Notify. Four WF19+four WF90+one Notify=9native,
+   9business/18gatewayHTTP. Editor-manual or mocked errors do not count. No email
+   or other notification delivery. Requires clean owned baseline before test.
+
+| Whole proposed envelope | Explicit allocation; no allowance is approved |
+| --- | --- |
+| Lifecycle | Distinct `df4f29ec-e2dc-4d82-a276-62a4e695e6f9`,60minutes; stop planned work/start requests by minute50; actor guard requires6minutes remaining; no reset/reopen |
+| Native | 68selected cases +9automatic-error +5extra forged/race/recovery +1zero-actor control =83planned upper allocation;37reserve =120total. Actual child IDs still must be accounted for; not a provider-enforced quota |
+| Gateway | 118selected +2original group read +18errors +4forgery +24additional replay/race +24zero-actor preflight +10shutdown =200planned;56reserve =256HTTP attempts, including denials/status/Close/recovery;2business leases |
+| SQL | Up to20fixed commands/admitted attempt =5,120gateway commands; owner CLI migration/setup/readback/Close operations separately logged, never hidden as native calls |
+| Provider | 20selected +2original group read =22planned;10reserve =32GET attempts; no automatic GET/POST retry |
+| Actor | At most2sequential starts, one page/result each,1024MiB/300seconds,async waitForFinish0,restart off, requested USD1 each,USD2actor reserve; no AI/embedding/media/competitor collection |
+| Runtime management | 134setup +69(23case draft transitions×3) +99restore +25final audit =327planned;185reserve =512requests including credential schema/metadata/PATCH, graph GET/PUT, exact-version publish/unpublish and restoration. A completion bridge would require its own explicit count correction before approval |
+| MCP control | Separate416maximum details/start/metadata calls (metadata includeDatafalse), at most8polls/knownID; combined runtime+control ceiling928, distinct from historical188 and private35GETs |
+
+Native/MCP allocations are source/controller ceilings, not a claim of current
+execution visibility or a way to bound unsolicited webhook deliveries. Stop on
+unplanned deliveries, count exhaustion, assertion failure, expiry, ambiguous
+start/write or charge mismatch. Do not spend the shutdown reserve on more cases.
+Actor USD2 reserve excludes infrastructure/subscriptions; unknown fees stay
+unknown. The fixed safe input/streamed byte bounds in the preserved section
+below remain unchanged.
+
+### Phase D — recovery, restoration and immutable denial
+
+Stop new work; record actual known native/provider IDs. Bounded terminal
+confirmation must establish every owned native execution and both original
+actors settled. A socket/tool timeout is not cancellation, and zero SQL leases
+does not prove no external work. Do not add an unreviewed abort API or issue a
+replacement POST. Unknown original actor ID is an unresolved stop, not a guessed
+candidate from timestamps. Any extra abort mechanism needs supported exact-ID
+semantics and a disclosed count before approval.
+
+Close the SQL window once (permanent fence), reconcile original outcomes, and
+unpublish **every actually published owned dependency** in reverse verified
+order. Restore all25exact baseline staged graphs, disabled launch/retention,
+MCP off and deferred error links. Native settings merge requires the explicit
+`errorWorkflow:'DEFAULT'` clear; omitted fields would retain installed links.
+Verify the GET result matches the original omission/body, ownership and tags.
+Restoration saves new native draft version IDs; it does not rewind history to
+the original immutable version IDs. Preserve both in the durable journal.
+Restore the owned Machine's old domain fields and original bearer-only JSON from
+the same retained pending token, removing the new bypass header without extracting
+or rotating the saved native token. Preserve its credential/encrypted token at this
+stage; deletion is a separately specified destructive retirement, not hidden in
+the new runtime restore consumer. Any pending mutation/drift prevents blind
+restoration; Close and external-work reconciliation remain independent.
+
+Remove only the new purpose-bound handoffs/private scratch after their actual
+children close. Revoke the owned bypass/remove temporary branch-scoped sensitive
+environment entries; verify old/new immutable endpoints deny and the SQL window
+is closed. Environment deletion does not erase deployment snapshots. Record
+pending transports honestly; clearing a child does not clear its parent app.
+Keep password-manager originals, unrelated workflows/credentials and collected
+dev data; archive/pause C999 through the reviewed teardown, never delete data.
+
+### Private incident and delivery boundary
+
+Private R2 remains outside Git:35GETs completed, two verified published graphs,
+28empty pending-status queries, no proof of full execution visibility/version
+coverage/drain. Known set/canary ability/horizon None remain recorded; old window
+expired. The targeted private decision concerns absent local relay/canary/drain
+controls only. No new scan/key/window request or production implementation.
+
+Preserve the24October tooling follow-up. No merge, M03 closure or M04. The
+current source/tests and exact remaining capability are recorded in the existing
+progress records; no live acceptance criterion is ticked by this preparation.
+
+## Superseded 19 October preparation — preserved checkpoint
 
 **HOLD — not an execution approval request.** The current entry point is
 `n8n/foundation/build-foundation-gateway.mjs`, with 25 inactive definitions.

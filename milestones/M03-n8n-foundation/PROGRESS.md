@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: inactive delivery complete.25 actual staged definitions/exports,13 tags and one dedicated Machine are saved/read back; native0/child closed/118 requests.24 native error links remain explicitly deferred. No current credential action; final live packet remains HOLD on execution-control/runtime-procedure/current-price prerequisites. GW-01 stays closed.**
+**In progress: completed inactive delivery preserved. Finite runtime transition and SUB replay engineering implemented locally; one remaining execution-integration capability M03-C01 prevents a live approval request. No current credential action. GW-01 stays closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,9 +16,59 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Actual sealed continuation `da8fd3` completed118 requests/native0/child closed; all25 staged graphs exported with real version IDs, all13tags and `EmrM03Machine19`. `inactiveDefinitionsSaved:true`, `finalGraphsBound:false`, `errorRoutingAccepted:false`. Historical70requests/failures/journals preserved. No execution or activation. |
-| Next step | Finish the single live packet's engineering prerequisites: actual native manual-execution/completion/cancellation access, finite owned runtime rebinding/publication/restoration control, exact SUB Ingest/Cost cases and fresh current-price read. No additional credential handoff or successful inactive-packet replay. Present final batch for separate approval only when executable. |
+| Current task | New finite runtime controls and four SUB replay cases implemented/tested locally. Existing25 staged records/13tags/Machine and188 historical management requests unchanged. Canonical/error/live acceptance remains pending. |
+| Next step | Resolve only M03-C01: authoritative native terminal/child-link control receipts with business retention off. Local bridge engineering already authorized; no known-failing live control phase, repeated handoff or provisioning replay. |
 | Current source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. Private provisioning/helper changes receive normal new-head CI. |
+
+## 19 October local acceptance-control continuation
+
+Completed source work: new runtime checkpoint/plan/controller pins25actual saved
+IDs/versions/hashes; new protected Preview identity is a guarded future output,
+not a prerequisite to own an enabled runtime now. One partial Machine domain/auth PATCH reconstructs its original token
+from the encrypted pending handoff plus a new owned Preview bypass; no native
+token extraction or rotation. Public journals exclude credential bodies/hashes; canonical24links have explicit safe install/clear
+and restoration. Native manual children use draft; nested integrated children
+use published versions. Exact seven temporary dependencies/eight publish actions
+are Notify/WF90/WF30/WF70/WF80/Finish/WF19; never publish WF00 or WF99. All schedules
+are disabled in every variant. Pre/post reads are not CAS; ambiguous writes/drift
+stop, never adopt/overwrite blindly. The completed inactive consumer is untouched.
+
+The fixed case source now has23selected cases:68native/59business/118gatewayHTTP,
+20providerGET/two sequential actorPOSTs. Four explicit native SUB Ingest/Cost
+replays require the first original group and measured keyed cost; one original
+group acquisition separately reserves2gatewayHTTP/2providerGET. All five SUBs
+have distinct native-linkage and durable-evidence requirements. Duplicate Ingest
+returns historical original item counts; zero new work requires state deltas.
+SQL-only success cannot establish native completion.
+
+**One precise capability M03-C01 remains:** pinned save hooks delete/soft-delete
+execution records under retention-none; the installed MCP start returns an ID,
+metadata getter reads those rows, and no cancellation/terminal promise or
+retention-safe child-link projection is exposed. The local controller has a
+synchronous case latch, full-case upper reservations, durable intent fences,
+15-second tool deadlines,8bounded polls, exact saved-case binding and no raw
+errors/data. Missing rows/guessed IDs/zero leases never pass completion. A safe
+control-only bridge must prove both success/error privacy before any live packet;
+local engineering needs no repeated owner approval. Do not enable broad retention
+or execute a Phase B known to lack the required receipt.
+
+[Single existing packet](evidence/live-acceptance-outline-20261018.md) now records
+A-D setup/control/two-run/recovery scope, exact four unchanged migration hashes,
+327planned runtime management requests (512ceiling),416separate MCP ceiling and
+whole60min/256gateway/120native/32providerGET/twoactor/USD2reserve. Proposed only;
+a future completion bridge must disclose any count correction. Public pinned
+actor/build metadata rechecked successfully; one price-book read failed OAuth
+refresh before SQL, no login loop. Current price verification is a guarded future
+setup read; unknown fees/default25/24October follow-up retained.
+
+The [52-test source/control receipt](evidence/local-acceptance-control-20261019.json)
+records targeted native0/52pass/0skip, affected lint/format/diff checks and
+independent review. It is not hosted acceptance. New changes
+receive normal PR CI. No new hosted migration/window/publication/execution,
+credential consumption, actor/model call, production change, notification, merge,
+M03 closure or M04. Separate private R2 read-only engineering identified a
+specific local relay/canary/drain-control decision outside Git;35GET history,
+None horizon and expired old window remain unchanged.
 
 ## 19 October continuation — finite completion matrix
 
@@ -115,13 +165,15 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 - [ ] AC5 — End-to-end smoke remains unrun. Local graph9/9 and shared80/80 (55 new recovery cases) pass; new generator source is not an actual saved Cloud export or actor receipt.
 - [ ] AC6 — Local saved replay, early registration, stable cost and ambiguous-write recovery pass. Saved-only recovery reports payloadEqualityVerified:false and suppresses dispatch; no fake SQL JSONB digest or exactly-once external delivery. Hosted duplicate/interruption acceptance remains pending.
 - [ ] AC7 — Exact durable `apify_callback_rejected` source and rollback-only denial/zero-side-effect tests pass. Actual hosted forged/unrelated callback receipt remains pending; generic workflow-error logging is not substituted.
-- [ ] AC8 — Error routing — evidence:
-- [ ] AC9 — Orchestrator dispatch — evidence:
-- [ ] AC10 — Health — evidence:
+- [ ] AC8 — Error routing: canonical24links/runtime restore procedure and exact four-error/nine-execution test ledger implemented locally. Saved Cloud links remain deferred; actual automatic Error Trigger/cooldown/Notify receipts require M03-C01 and later batch approval.
+- [ ] AC9 — Orchestrator dispatch: fixed15slot/unknown cases and native manual-draft path inspected; all schedules disabled, WF00 never published. Native terminal/child-link receipt is not exposed under retention-off settings (M03-C01); actual dispatch acceptance remains pending.
+- [ ] AC10 — Health: two selected native cases include dispatch health then direct second call. Positive synthetic local fee idempotency evidence retained; future hosted unknown/no-row fees will be labeled accurately and cannot prove positive accrual. No live result yet.
 - [ ] AC11 — Historical probe snapshots retained. All25 actual inactive staged foundation exports now include real IDs/versions, safe credential references and intended/staged hashes;24 error links explicitly deferred. Saved retention/progress is off. Final canonical/live/privacy/release acceptance remains pending; secret scan and actual completion are recorded separately.
 - [x] AC12 — Budget documented — conservative steady-state estimate 160/day pilot and 181/day full scope, both below 200/day; shared quota and billing-rule boundaries below.
 
 ## Blockers
+
+- Current live-decision capability: **M03-C01**, authoritative native terminal/child-link receipt while business retention stays off. Runtime setup identity, private delivery and current-price checks are future guarded packet outputs; no completed handoff is requested. See the superseding local continuation above.
 
 - Separate private operational follow-up: bounded read-only preparation and
   temporary-credential cleanup completed; actual projections and remaining
@@ -141,6 +193,10 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 - OpenAI Models access does not establish its project spend cap. Unknown fees/prices remain unknown; USD25/day is an alert threshold, not a provider cap. The owner deprioritized fee reporting, so no further questionnaire. Shared plan allowance50K/runtime facts and the historical code/local/CI evidence are preserved.
 
 ## Manual actions needed from the owner
+
+### Current continuation: no repeated handoff or live approval request
+
+No key/password, billing answer, provisioning replay or new incident input is needed. Resolve M03-C01 with already-authorized local engineering or identify the specific supported integration change. The existing packet is the single scope/count record; it cannot yet request live execution. Private incident local-only decision remains outside Git.
 
 ### Current: MA-11 inactive foundation delivery only
 

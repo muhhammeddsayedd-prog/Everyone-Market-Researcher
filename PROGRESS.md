@@ -5,14 +5,14 @@
 
 ## Now
 
-|                       |                                                                                                                                                                                                                                                                                                                                                |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                                                                                                                           |
-| **Status**            | In progress: actual inactive staging complete—25 definitions/exports,13 tags/one Machine, native0/child closed.24 error links deferred; full live acceptance remains open. GW-01 stays closed.                                                                                                                                                 |
-| **Next step**         | Resolve final-packet engineering prerequisites: supported native execution/readback/cancellation, finite owned runtime rebinding/publication/restoration, SUB Ingest/Cost cases and current-price read. No replay of successful inactive provisioning.                                                                                         |
-| **Waiting on owner**  | None now; consumed Management pair deleted and encrypted pending Machine retained. No new key/password. Final live approval is not requested until the packet is executable. PrivateR2 remains held.                                                                                                                                           |
-| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                                                                                                                                        |
-| **Last updated**      | 19 October 2026 Cairo: actual `da8fd3` succeeded118requests/25staged exports, all13tags/oneMachine; total historical188 management requests. Both temporary Management files removed, child closed. `2865845` CI39180552607 running; current source/data evidence receives normalCI. Zero executions/actor calls/window activation/production. |
+|                       |                                                                                                                                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                        |
+| **Status**            | In progress: inactive delivery preserved; finite runtime transition and four SUB replay cases implemented locally. One remaining capability: native terminal/child-link evidence with retention off (M03-C01).                              |
+| **Next step**         | Resolve only M03-C01 through a reviewed safe native completion integration. Existing packet now records the exact A-D scope/counts; do not run a setup/control phase known to lack completion proof.                                        |
+| **Waiting on owner**  | No credential, billing or repeated setup action. Local completion-bridge engineering is already authorized; live approval is not requested until the safe receipt path is supported. Private local-only incident decision remains separate. |
+| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                                     |
+| **Last updated**      | 19 October 2026 Cairo: preserved base632458b/CI39182073955 and staged25/13/Machine; new source/controller/SUB tests receive normal PR CI. No hosted mutation/execution/actor call.                                                          |
 
 ## Milestone board
 
@@ -47,6 +47,17 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
 | Production launch     | —          |
 
 ## Log (newest first)
+
+- 2026-10-19 Cairo: Implemented finite owned25 runtime rebinding/publication/
+  restoration and four exact first-run SUB Ingest/Cost replay cases locally.
+  Pinned native draft/integrated lookup reduces publication to seven owned
+  dependencies (eight actions), never WF00. Bounded execution controller rejects
+  uncertain starts, absent terminal rows, guessed children and concurrent cases.
+  One capability M03-C01 remains: supported retention-safe native terminal and
+  child-link receipt. The existing single packet records exact four hashes,
+  A-D scope and counters; it is not an executable live approval request yet.
+  No credentials requested or consumed, no hosted changes/calls; private local
+  incident decision stays outside Git. PR8 draft, M03 open, M04 unstarted.
 
 - 2026-10-19 Cairo: Separate private read-only operational follow-up completed;
   projected evidence and verified temporary-credential cleanup remain outside
