@@ -101,15 +101,24 @@ metadata under retention-off settings; an ordinary retained wrapper also stores
 intermediate child outputs/failures. The controller stays fail-closed. Source
 tracing and actual isolated 2.43.5 privacy evidence are recorded in
 [M03-C01 evidence](../../milestones/M03-n8n-foundation/evidence/m03-c01-native-interface-20261019.md).
-The smallest supported alternative is one explicit temporary retention exception
+The owner approved one explicit temporary dev retention design at eee9a27
 for the existing25 dev IDs:21 integrated success/error modes and five manual
-roots, with WF91 overlapping. `foundation-retention-proposal.mjs` describes only
-the exact immutable deltas; it does not apply them or enable execution.
+roots, with WF91 overlapping. The historical pure proposal stays unchanged;
+the separate approved-policy factory applies only its exact immutable deltas to
+the existing future runtime/case bodies, preserving baseline restoration.
 The [single packet](../../milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md)
 states privacy cost, native version/body binding, independent child/provider
 closure, proposed2048 control ceiling (replacing416) and exact cleanup gates.
-Business retention remains off on Cloud. No new handoff or hosted action is
-requested; the scoped policy decision is separate from live-batch approval.
+Business retention remains off on Cloud. The private native reader, shared
+2048 ledger, causal execution controller, independent SQL/provider settlement
+and exact-record cleanup are local implementation with scripted verification,
+not Cloud acceptance. Full native responses stay private, refuse above8MiB or
+on incomplete/reflected evidence, and emit only checked technical projections.
+Phase B root/child success, four automatic errors and all11 acknowledged
+cleanup receipts gate either actor. See the
+[finite adapter procedure](../../scripts/n8n/foundation-runtime-control.md).
+No new handoff is requested; the existing single A–D live-batch approval is
+separate from the resolved retention design decision.
 
 Focused commands, all local and synthetic/localhost only:
 

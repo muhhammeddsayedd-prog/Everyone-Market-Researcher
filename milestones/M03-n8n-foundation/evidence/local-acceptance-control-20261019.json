@@ -213,7 +213,10 @@
       "independentPassed": 6,
       "remainingP1P2": 0
     },
-    "affectedEslint": { "receipt": "6f06b7", "nativeExit": 0 },
+    "affectedEslint": {
+      "receipt": "6f06b7",
+      "nativeExit": 0
+    },
     "finalQuality": {
       "affectedEslintReceipt": "2e3c25",
       "formatAndDiffReceipt": "ac5a6a",
@@ -223,7 +226,10 @@
       "independentProjectionReview": "no remaining P1/P2; original native canaries, causal historical filtering and all seven archive hashes verified",
       "nativeExit": 0
     },
-    "migrationHashReverification": { "receipt": "626ee3", "allFourUnchanged": true },
+    "migrationHashReverification": {
+      "receipt": "626ee3",
+      "allFourUnchanged": true
+    },
     "proposalInventory": "m03-c01-retention-proposal-20261019.json",
     "nativeSourceAndLocalRuntimeEvidence": "m03-c01-native-interface-20261019.md",
     "actualIsolatedRuntime": {
@@ -262,5 +268,19 @@
     "incidentActions": 0,
     "unchangedFullLocalSuiteRepeated": false,
     "liveProofEstablished": false
+  },
+  "approvedPolicyLocalContinuation": {
+    "date": "2026-10-19",
+    "receipt": "m03-c01-private-control-20261019.json",
+    "priorCheckpointFieldsPreserved": true,
+    "exactPolicyApprovedLocalOnly": true,
+    "localImplementationReviewComplete": true,
+    "exactSyntheticStatePresent": false,
+    "agentDeletionRetried": false,
+    "finalAffectedTests": 53,
+    "finalAffectedReceipt": "c9eefd",
+    "overlapsEarlierRunsDoNotAdd": true,
+    "liveApprovalPending": true,
+    "cloudRetentionAndHostedStateChanged": false
   }
 }

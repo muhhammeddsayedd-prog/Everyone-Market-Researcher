@@ -375,3 +375,16 @@ test('MCP adapter only invokes supported exact schemas; content/error payloads n
     includeData: false,
   });
 });
+
+test('native mode refuses caller-labelled reader, journal, budget and settlement ports', () => {
+  assert.throws(
+    () =>
+      realController({
+        bindings,
+        port: { details: async () => ({}), start: async () => ({}) },
+        journal: { append: async () => {} },
+        nativeReader: {},
+      }),
+    /FOUNDATION_NATIVE_CONTROL_BLOCKED/,
+  );
+});

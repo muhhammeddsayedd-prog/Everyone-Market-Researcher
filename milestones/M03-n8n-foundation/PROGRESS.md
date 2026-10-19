@@ -4,23 +4,74 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Blocked: waiting on owner — MA-11 / M03-C01 scoped retention-policy decision. Native investigation and isolated2.43.5 reproduction completed; no current-policy safe wrapper supplies all facts. Inactive delivery/runtime/SUB work preserved. No credential action or live batch request. GW-01 stays closed.**
+**In progress: approved local M03-C01 retention-policy/native-control implementation is complete. The single final A–D dev live-batch decision remains; no Cloud setting, credential, publication, execution or migration is authorized by the design approval alone. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
 | Started | 2026-10-18 Cairo |
 | Last updated | 2026-10-19 Cairo |
 | Finished | — |
-| Branch / PR | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; preserved reviewed `100290a291530d30d0387269c1a0805ad4f86fcc` and earlier evidence, no reset |
+| Branch / PR | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; preserved reviewed `eee9a277c6a7d63fffe967811c92a7fd50c15b14` / CI39199206035 and all earlier evidence, no reset |
 | Selected runtime source | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Completed supported-native source tracing and actual isolated2.43.5 privacy/lifecycle reproduction. Added pure exact25 retention proposal/six tests; controller stays fail-closed, policy unapplied. Existing25/13/Machine/188historical requests unchanged. |
-| Next step | Decide exact temporary M03-C01 retention exception in the existing packet. If approved, complete/review bounded private reducer and integration locally, then present full live packet. No live credentials/setup/publication/execution now. |
+| Current task | Approved exact25 policy in existing runtime/restoration, bounded private native reader, causal controller and settled exact-record cleanup implemented/tested/reviewed locally. Existing25/13/Machine/188historical requests unchanged. |
+| Next step | One final owner decision on the current PR8 head and existing A–D packet. After approval only: exact preflight/setup, zero-actor proof, conditional two-run matrix and shutdown. No credential request now. |
 | Current source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. Private provisioning/helper changes receive normal new-head CI. |
 
-## 19 October M03-C01 native investigation and exact alternative
+## 19 October approved local M03-C01 continuation
+
+The owner approved the exact inventory at
+`eee9a277c6a7d63fffe967811c92a7fd50c15b14` for local implementation/tests/review,
+explicitly accepting full native intermediate/error retention as a future
+temporary dev policy. This is separate from live-batch approval. Cloud retention
+remains off; no credential was consumed and no hosted state changed this pass.
+The subsequent reply **C01 synthetic state deleted** was checked only with
+`Test-Path -LiteralPath` for the exact `.c01-repro.local/state` path: **False**.
+No agent deletion/retry was attempted. The original policy-blocked cleanup and
+38 actual isolated executions remain historical evidence, not repeated tests.
+Source archives/projected receipts are preserved.
+
+The implemented private components are `foundation-native-reader.mjs`,
+`foundation-native-controller.mjs`, `foundation-native-cleanup.mjs`, strict
+transport, independent SQL/provider settlement, shared durable control state
+and five fixed callback-case producers. Existing runtime observation brands
+bind actual saved case/version/body; no caller-supplied approval boolean or
+copied receipt substitutes for a live binding. Full responses remain private;
+only allowlisted native facts/fixed diagnostics reach journals. Representative
+256KiB success/nested/failure and8MiB refusal/reflection fixtures are local
+tests, not Cloud privacy evidence. The source-native empty ManualTrigger MCP
+seed is distinct from user/business pins; webhook/output pins are refused.
+
+The controller preserves unknown starts, independently verifies actual native
+parent/child/error dispatch, and requires SQL/provider/transport settlement.
+PhaseB's root/child plus four automatic errors must all be settled and their
+11exact records acknowledged deleted+absent before either actor. Waiting with
+stoppedAt, stop ACK, missing child, empty scan and zero SQL leases are never
+closure. Lost DELETE ACK+404 remains ambiguous. Safe evidence is durable before
+deletion; unresolved records retain owner/follow-up/expected cleanup point,
+never a physical-erasure promise. Callback pair/drill scope is explicit in the
+packet; processed replay concurrency is not first-ingestion contention.
+
+[Current local implementation/review receipt](evidence/m03-c01-private-control-20261019.json)
+keeps the145-test checkpoint and subsequent affected reader/controller checks
+separate, not added as independent coverage. Historical54 controls, six policy
+tests, nine guards and38actual isolated executions are preserved. Normal PR CI
+runs on the delivery head; prior eee9a27/CI39199206035 remains historical.
+No live credential read, Cloud API mutation/execution, migration, provider/model
+call or incident operation occurred. All four pending migration hashes and
+the exact25staged exports/shared Apify runtime remain unchanged.
+
+The [single existing A–D packet](evidence/live-acceptance-outline-20261018.md)
+now covers exact setup, zero-actor/privacy/cleanup gates, conditional two-run
+acceptance and restoration. Its2048control replaces416; runtime512 gives2560
+combined, with120native/256gateway/32providerGET/twoactors/USD2reserve and
+60minutes/stop-new-work50minutes. Approval is still required for that live
+batch; no handoff is requested now. M03 remains open, PR8 draft/unmerged, GW01
+closed, private R2 separate,24October tooling follow-up kept, M04 unstarted.
+
+## 19 October M03-C01 native investigation and exact alternative — historical checkpoint
 
 Reviewed starting head `dd8f646bf83968249eb43d58a6026cbef2838542`; PR8 actually
 draft/open, all five jobs in CI39195709369 and Vercel passed. No reset/new kickoff.
@@ -219,15 +270,15 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 - [ ] AC5 — End-to-end smoke remains unrun. Local graph9/9 and shared80/80 (55 new recovery cases) pass; new generator source is not an actual saved Cloud export or actor receipt.
 - [ ] AC6 — Local saved replay, early registration, stable cost and ambiguous-write recovery pass. Saved-only recovery reports payloadEqualityVerified:false and suppresses dispatch; no fake SQL JSONB digest or exactly-once external delivery. Hosted duplicate/interruption acceptance remains pending.
 - [ ] AC7 — Exact durable `apify_callback_rejected` source and rollback-only denial/zero-side-effect tests pass. Actual hosted forged/unrelated callback receipt remains pending; generic workflow-error logging is not substituted.
-- [ ] AC8 — Error routing: canonical24links/runtime restore procedure and exact four-error/nine-execution test ledger implemented locally. Saved Cloud links remain deferred; actual automatic Error Trigger/cooldown/Notify receipts require M03-C01 and later batch approval.
-- [ ] AC9 — Orchestrator dispatch: fixed15slot/unknown cases and native manual-draft path inspected; all schedules disabled, WF00 never published. Native terminal/child-link receipt is not exposed under retention-off settings (M03-C01); actual dispatch acceptance remains pending.
+- [ ] AC8 — Error routing: canonical24links/runtime restore procedure and four-error/nine-execution native causal/settlement/cleanup control implemented and reviewed locally. Saved Cloud links remain deferred; actual automatic Error Trigger/cooldown/Notify receipts require the separate A–D batch.
+- [ ] AC9 — Orchestrator dispatch: fixed15slot/unknown cases, native manual-draft path and private terminal/child/body receipt reducer implemented/tested locally under the approved temporary-retention design. Cloud remains retention-off/schedules disabled/WF00 unpublished; actual dispatch acceptance remains pending.
 - [ ] AC10 — Health: two selected native cases include dispatch health then direct second call. Positive synthetic local fee idempotency evidence retained; future hosted unknown/no-row fees will be labeled accurately and cannot prove positive accrual. No live result yet.
-- [ ] AC11 — Historical probe snapshots retained. All25 actual inactive staged foundation exports now include real IDs/versions, safe credential references and intended/staged hashes;24 error links explicitly deferred. Saved retention/progress is off. Final canonical/live/privacy/release acceptance remains pending; secret scan and actual completion are recorded separately.
+- [ ] AC11 — Historical probe snapshots retained. All25 actual inactive staged foundation exports include real IDs/versions, safe credential references and intended/staged hashes;24 error links explicitly deferred. Exact approved temporary retention application/restoration and private native cleanup implemented locally; saved Cloud retention/progress stays off. Final canonical/live/privacy/release acceptance remains pending, separately from source checks.
 - [x] AC12 — Budget documented — conservative steady-state estimate 160/day pilot and 181/day full scope, both below 200/day; shared quota and billing-rule boundaries below.
 
 ## Blockers
 
-- Current decision: **MA-11 / M03-C01**, the exact scoped native-retention exception above. Current-policy safe wrapper is not supported; do not expand another bridge or request a known-failing live control phase. Runtime setup identity/private delivery/prices remain guarded future outputs, not credentials needed now.
+- The scoped M03-C01 retention design decision, local implementation/review and exact synthetic-state cleanup are complete. One separate final A–D live-batch decision remains. Runtime identity/private delivery/current prices are guarded future setup outputs; no credentials are needed now.
 
 - Separate private operational follow-up: bounded read-only preparation and
   temporary-credential cleanup completed; actual projections and remaining
@@ -248,18 +299,30 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-### Current MA-11 / M03-C01: one exact retention-policy decision
+### MA-11 / single final A–D dev live-batch decision
 
-Open `milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md`
-at “Current decision: scoped M03-C01 retention exception”. Review its exact25
-IDs/checkpoint reference, five manual roots/21integrated field deltas, full
-intermediate/error privacy cost and cleanup/unknown limits. Reply
-`Approve the scoped M03-C01 retention-policy exception` or decline it. Expected
-result: an explicit policy decision only; Cloud settings remain unchanged until
-the locally reviewed integration and separate full live-batch approval. No
-password/key, billing answer, provisioning replay or incident action is needed.
+Review [the current packet](evidence/live-acceptance-outline-20261018.md), current
+draft PR8 head and its normal CI. Reply exactly:
+`Approve M03 dev acceptance A–D at the reviewed PR #8 head`.
+This is the one setup/zero-actor/conditional two-run/shutdown decision; a failed
+zero-actor/privacy/cleanup gate means zero actor starts. No credential handoff
+is requested before approval. It excludes production, recurring schedules,
+external notifications, unrelated data/credentials, PR merge, M03 closure and
+M04. Full native intermediate/error retention and residual cleanup risk are
+explicit in the packet; safe projection is an output boundary, not a promise
+that Cloud storage contains only metadata.
 
-### MA-11 / M03-C01: delete only the stopped local synthetic state
+### MA-11 / M03-C01 policy decision — completed
+
+Owner approved the exact eee9a27 inventory for local implementation, tests and
+review. No repeat policy decision or credential delivery is needed. The separate
+live batch remains unauthorized until the final reviewed A–D packet is approved.
+
+### MA-11 / M03-C01 local synthetic-state cleanup — completed
+
+Owner reported **C01 synthetic state deleted**. Exact-path presence readback was
+**False** on19October. No deletion command was rerun; the historical instruction
+below is retained only as provenance, not an outstanding action.
 
 In Windows PowerShell under this Windows account, run:
 

@@ -1070,5 +1070,19 @@
       "localGuardNativeExecutions": 0,
       "sourceGuardReceipt": "4d4956"
     }
+  },
+  "postCaptureOwnerCleanupVerification": {
+    "observedAt": "2026-10-19T05:05:09Z",
+    "ownerReply": "C01 synthetic state deleted.",
+    "method": "Test-Path -LiteralPath on the exact existing target only",
+    "path": ".c01-repro.local/state",
+    "pathExists": false,
+    "privateFilesRead": false,
+    "agentDeletionAttempted": false,
+    "reproductionReplayed": false,
+    "sourceArchivesAndProjectedEvidencePreserved": true,
+    "priorRecordCommit": "eee9a277c6a7d63fffe967811c92a7fd50c15b14",
+    "priorRecordSha256": "590647a17db84b59def8511d5c0bc35e8b520eae3c29df19333c564681a9fb40",
+    "boundary": "This later exact-path absence supersedes the outstanding local cleanup action only. Historical blocked deletion, fixture failures and native execution counts are unchanged."
   }
 }

@@ -1,19 +1,22 @@
 # M03 finite dev acceptance packet — 19 October 2026
 
-## Current decision: scoped M03-C01 retention exception
+## Current decision: final finite dev live batch
 
-**Superseding decision, proposed only:** the supported 2.43.5 interfaces cannot
-provide all native terminal/child-link evidence under the current retention-off
-policy. Stop expanding a wrapper. Review the exact temporary policy exception
-below; approval accepts that policy/privacy deviation as the basis for the final
-packet, not the A-D live batch. Local engineering remains already authorized.
-No Cloud retention setting or execution has changed.
+**Policy decision resolved:** the owner approved the exact temporary dev
+retention inventory at `eee9a277c6a7d63fffe967811c92a7fd50c15b14` for local
+implementation, tests and review. That approval accepts the storage/privacy
+exception below, not this live batch. The private reader/controller/cleanup
+implementation uses that approved policy. No Cloud retention setting or other
+hosted state has changed. The single remaining owner decision is the complete
+bounded A–D batch below, after its final local review and normal PR CI.
 
 The pure `scripts/n8n/foundation-retention-proposal.mjs` inventory pins the
 existing 25 actual IDs, versions and record hashes. It performs no writes.
-[Exact proposed ID/version/hash and field inventory](m03-c01-retention-proposal-20261019.json).
+[Exact approved design ID/version/hash and field inventory](m03-c01-retention-proposal-20261019.json).
+The original pure proposal remains historical (`approved:false`); the separate
+branded approved-policy factory pins its file/canonical hashes and approval SHA.
 
-| Exact owned set | Proposed field change |
+| Exact owned set | Approved design field change; future live application only |
 | --- | --- |
 | WF-00, WF-91, WF-99, SUB-INGEST, SUB-COST (five manual roots) | `saveManualExecutions:false` to `true` |
 | All pinned25 except WF-00, WF-99, SUB-INGEST, SUB-COST (21 integrated/error-capable graphs) | `saveDataSuccessExecution:'none'` to `'all'`; `saveDataErrorExecution:'none'` to `'all'` |
@@ -25,7 +28,7 @@ through the existing runtime restoration. Seven dependency publications/eight
 actions and all disabled schedules remain unchanged. This is not authorization
 to save those proposed settings or request credentials now.
 
-**Privacy implication requiring approval:** this native policy stores full
+**Accepted retention boundary; live application still pending:** this native policy stores full
 intermediate inputs/outputs, workflow snapshots and errors, including the owned
 public-page item and gateway responses. It is not metadata-only storage.
 Response/error reflection can retain credentials; source review cannot promise
@@ -35,12 +38,11 @@ including unsolicited deliveries; workflow-level retention cannot select only
 batch IDs or allowlisted stored fields. Current retention-off is terminal retention off, not proof that
 transient initial/waiting payloads are never written.
 
-If approved, complete/review the bounded exact-ID private API reducer before
-requesting live approval. Full data stays in private RAM, never raw model-visible
-exports/logs. Proposed full-response streaming refusal ceiling is8MiB; oversize,
+The bounded exact-ID private API reducer handles full data in private RAM, never
+raw model-visible exports/logs. Its fixed full-response streaming refusal ceiling is8MiB; oversize,
 dataTooLargeToDisplay, incomplete JSON or unavailable native fields stays unknown.
-Before final live approval, validate that fixed ceiling locally with realistic
-one-page maximum/failure fixtures; do not silently increase it or bypass native
+Local fixtures exercise realistic one-page maximum/nested/failure data under
+that fixed ceiling; do not silently increase it or bypass native
 data-size protection. Emit only native identity/version/mode/status/times and known
 ExecuteWorkflow subExecution where produced and each child's native parent link.
 Thrown child failures can omit parent-side subExecution metadata; use bounded
@@ -65,16 +67,15 @@ missing signal, extra child or ambiguity stops before paid work. Local source,
 mock-port and actual isolated engine evidence remain distinct in
 [the native-interface record](m03-c01-native-interface-20261019.md).
 
-### Prior capability description, superseded by the precise decision above
+### Resolved historical capability constraint
 
-The remaining local runtime-transition and SUB-case engineering is implemented.
-**The live decision cannot yet be requested:** the installed control surface
-cannot reliably return a native terminal/child-link receipt with business
-execution retention off. This is the single unresolved capability, **M03-C01**.
-The A–D scope below is one candidate packet; it is not a request to approve a
-setup/control phase known to fail. New deployment identity, credential delivery,
-fresh price read and actual runtime checks are guarded future setup outputs,
-not additional requirements to have an already-enabled runtime today.
+The earlier retention-off controller could not reliably read native terminal/
+child-link evidence. The approved temporary retention design and private native
+reader address that source capability; no further wrapper investigation or
+repeat policy approval is requested. Actual Cloud support/permissions/privacy
+remain guarded zero-actor checks in this batch. New deployment identity,
+credential delivery, fresh price read and runtime checks are future setup
+outputs, not requirements to have an already-enabled environment today.
 
 No credentials are requested now. No Cloud migration, runtime activation,
 publication, execution, actor/model call, production mutation, notification or merge occurred.
@@ -141,7 +142,8 @@ Native stoppedAt precedes after-hooks/asynchronous error dispatch. Expected
 positive linked child terminal receipts are required; parent terminal, empty
 scan, zero leases or caller-labelled IDs cannot prove drain. Actor settlement
 and transport closure require their own evidence. The exact scoped-retention
-alternative above replaces further wrapper exploration; it remains unapproved.
+alternative above is approved for local implementation; live use remains part
+of this separate finite decision.
 
 ### Phase A — exact dev setup, only after the completed packet is approved
 
@@ -201,7 +203,7 @@ setup; availableInMCP is enabled only for exact fixed case drafts.
 
 ### Phase B — zero-actor proof before either paid start
 
-Proceed only after the exact M03-C01 policy decision and reviewed implementation.
+Proceed only after the separate A–D live approval and reviewed implementation.
 Prove the fixed controller's native ID/version/terminal/child linkage,
 unknown-start fencing, bounded calls and shutdown on a zero-actor case.
 Under the proposed exception, full native payload retention is explicit, not a
@@ -253,6 +255,19 @@ The existing USD25/day alert default is not a provider spending cap.
    mutation. Equal replay/concurrent original-run processing → no new item,
    queued work or duplicate charge. Reconcile lost atomic acknowledgements only
    through the original registry/result; no SQL JSONB digest invented in JS.
+   The five fixed native requests are `callback.unknown`, `callback.equal_replay`,
+   `callback.concurrent_a`, `callback.concurrent_b` and `callback.recovery_drill`.
+   Unknown uses only `M03AcceptanceUnknown0001` after fixed read-only SQL proves
+   it absent from both registry and launch admissions. Other payloads derive
+   terminal event/original ID from the first genuine processed settlement proof,
+   never arbitrary callback metadata. The concurrent pair is two overlapping
+   requests; both actual unpinned native traces must match bijectively. A race
+   between processed replays proves no-op boundaries, not first-ingestion
+   contention. The fifth request privately checks/closes its response and then
+   deliberately withholds its ACK to exercise same-trace/native-ID reconciliation;
+   this is a controlled response-loss drill, not a real I/O outage or proof of
+   a registration/first-ingestion race. Actual unexpected lost atomic ACKs still
+   require their original durable SQL outcome; no replacement POST is allowed.
 6. Already completed in Phase B: four WF19 production-webhook calls with fixed **valid JSON `{}`** (not a
    transport-level invalid-JSON rejection), sequential after each actual
    automatic WF90 completes: four workflow-error audits, one threshold/cooldown
@@ -264,27 +279,42 @@ The existing USD25/day alert default is not a provider spending cap.
 | Whole proposed envelope | Explicit allocation; no allowance is approved |
 | --- | --- |
 | Lifecycle | Distinct `df4f29ec-e2dc-4d82-a276-62a4e695e6f9`,60minutes; stop planned work/start requests by minute50; actor guard requires6minutes remaining; no reset/reopen |
-| Native | 68selected cases +9automatic-error +5extra forged/race/recovery +1zero-actor control =83planned upper allocation;37reserve =120total. Actual child IDs still must be accounted for; not a provider-enforced quota |
+| Native | 68selected cases +9automatic-error +5fixed callback requests +1zero-actor control =83normal planned upper. Ten of37reserve are earmarked for possible callback WF90/Notify descendants (each callback reserves3native):93reserved planning/27remaining =120total. No extra target cases or POSTs; actual children still require proof; not a provider-enforced quota |
 | Gateway | 118selected +2original group read +18errors +4forgery +24additional replay/race +24zero-actor preflight +10shutdown =200planned;56reserve =256HTTP attempts, including denials/status/Close/recovery;2business leases |
 | SQL | Up to20fixed commands/admitted attempt =5,120gateway commands; owner CLI migration/setup/readback/Close operations separately logged, never hidden as native calls |
-| Provider | 20selected +2original group read =22planned;10reserve =32GET attempts; no automatic GET/POST retry |
+| Provider | 20selected +2original group read +4independent control-settlement terminal samples =26planned;6reserve (including any new public metadata/recovery reads) =32GET attempts; no automatic GET/POST retry |
 | Actor | At most2sequential starts, one page/result each,1024MiB/300seconds,async waitForFinish0,restart off, requested USD1 each,USD2actor reserve; no AI/embedding/media/competitor collection |
-| Runtime management | 134setup +69(23case draft transitions×3) +99restore +25final audit =327planned;185reserve =512requests. Proposed retention fields would share the same graph saves, not create another workflow/publication. Current source still compiles retention-off; integration follows the policy decision |
-| Native execution control (replaces416) | Separate2048maximum MCP/public-API attempts:240details/start +960metadata (120IDs×8total polls) +120private full-data reads +120exact stop attempts +120DELETE +120post-delete GET +200baseline/final owned-list audits +128four-error discovery +40reserve. Runtime+control cap2560; no additional starts/cases authorized by this allocation |
+| Runtime management | 134setup +69(23case draft transitions×3) +99restore +25final audit =327planned;185reserve =512requests. Approved retention fields share the same graph saves, with exact baseline restoration; no extra workflow/publication. Cloud remains retention-off until approval |
+| Native execution control (replaces416) | Separate2048maximum MCP/public-API attempts:208details/start/body fencing +800metadata planning allocation +120private full-data reads +120exact stop attempts +120DELETE +120post-delete GET +200baseline/final owned-list audits +128four-error discovery +64two-original callback discovery +160five-fixture callback discovery +8reconciliation reserve. Runtime+control cap2560; at most8metadata polls per exact ID; no extra starts/cases |
 
-The new2048 control allocation is a proposed policy-alternative budget, not an
-implemented adapter or live allowance. The old416 did not cover native child
+The2048 shared durable control ledger is implemented locally, not a live
+allowance. The old416 did not cover native child
 reads/private projection/deletion and is superseded, not silently supplemented.
-240details/start conservatively reserves120roots×2; actual23manual cases use46.
+208details/start/fencing covers23manual details+23starts+23preflight body checks,
+nine wire preflights+nine wire starts and120private-read body fences =207
+(the concurrent pair may share one preflight). The original allocation is
+redistributed within the same2048 to include both genuine and fixture callback
+discovery explicitly. Categories are planning allocations within one immutable
+shared counter, not independently refillable allowances. Eight metadata polls
+per ID remains the hard per-ID limit;120IDs×8=960 is a theoretical maximum that
+competes for unused capacity in this same2048, not800+960. Exhaustion stops and
+leaves unresolved work inventoried; no claim that every worst case fits at once.
 Metadata8polls is TOTAL per exact ID, not8per phase. Each of120IDs reserves one
 private linkage read, one stop attempt, one DELETE and one absence read; stopping
 does not prove completion. Two all25owned sweeps, each default+explicit-running
 filter and at most2pages, cost200. Four expected automatic errors each reserve
-8discovery rounds×2filters×2pages=128; no waiting on empty lists forever.
+8discovery rounds×2filters×2pages=128; two genuine callbacks reserve another64,
+and five fixed fixture callbacks another160 (pair scans can share pages).
+Additional unexpected discovery consumes only remaining shared capacity and
+stops on exhaustion; no waiting on empty lists forever.
 List candidates require native causal parent verification before adoption.
 Include queued/new rows with null startedAt; timestamp-only filtering is unsafe.
 At most2pages is a refusal bound, not a completeness claim if more pages exist.
 Reserve is for reconciliation/cleanup, never extra business starts.
+Before any new case or wire start the controller also protects460control
+attempts for120stops+120DELETEs+120absence reads+100final owned-list calls,
+plus the case's native read/fencing and expected discovery upper allocation.
+This conservative admission floor does not reset counters or extend the clock.
 
 Native/MCP allocations are source/proposal ceilings, not a claim of current
 execution visibility or a way to bound unsolicited webhook deliveries. Stop on
@@ -338,6 +368,32 @@ controls only. No new scan/key/window request or production implementation.
 Preserve the24October tooling follow-up. No merge, M03 closure or M04. The
 current source/tests and exact remaining capability are recorded in the existing
 progress records; no live acceptance criterion is ticked by this preparation.
+
+### Single final owner decision
+
+Review the current PR8 head, focused local evidence and this entire current
+A–D section (the sections below are explicitly historical). Reply:
+
+`Approve M03 dev acceptance A–D at the reviewed PR #8 head`.
+
+Approval covers the exact four dev migrations above; owned C999 setup; a new
+protected immutable branch Preview and purpose-bound private delivery; the
+25owned runtime/settings/Machine transitions with seven unique/eight publication
+actions; zero-actor native success/error/privacy/cleanup proof; only then the
+two sequential fixed-page actors and finite replay/SUB/health cases; permanent
+Close, exact-record cleanup, baseline restoration and endpoint denial checks.
+The caps above apply to all attempts, denials, discovery and shutdown. Unknown
+prices/identity/permissions, reflection, ambiguous native/provider outcomes,
+drift or pending sockets stop the batch before dependent work. A failed B
+means zero actor starts. No new credential handoff is requested before approval.
+
+Expected result is actual per-environment native/SQL/provider/cleanup evidence
+or a precise unresolved stop with residual inventory and Mohamed Abdelrahman
+responsible for follow-up after admission closes. The expected cleanup point is
+the end of this60minute window; unresolved work may require later bounded
+follow-up. Never delete unsettled evidence to meet that time or claim backup/
+provider physical erasure. Approval excludes production, recurring schedules,
+external notification, unrelated data/credentials, PR8 merge, M03 closure and M04.
 
 ## Superseded 19 October preparation — preserved checkpoint
 

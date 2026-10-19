@@ -1,13 +1,21 @@
 import { foundationAcceptancePlan } from '../../n8n/foundation/materialize-acceptance-case.mjs';
 import { parseN8nBindings } from '../../packages/shared/src/n8n-bindings.ts';
 import { assertFoundationRuntimeCaseReceipt } from './foundation-runtime-control.mjs';
+import { createFoundationNativeController } from './foundation-native-controller.mjs';
+export {
+  createFoundationControlJournal,
+  assertFoundationControlJournal,
+  createFoundationControlBudget,
+  assertFoundationControlBudget,
+} from './foundation-control-state.mjs';
+export { assertFoundationNativeClosure } from './foundation-native-controller.mjs';
 
 // Local controller + explicit adapters, never an HTTP /run endpoint. Importing
 // this module has no effects. No credential handling, data reads or network
 // transport is supplied here. The caller must bind the supported MCP tools.
 export const foundationControlLimits = Object.freeze({
   nativeExecutions: 120,
-  mcpRequests: 416,
+  mcpRequests: 2048,
   pollsPerExecution: 8,
   pollIntervalMs: 15000,
   deadlineMs: 60 * 60 * 1000,
@@ -120,7 +128,33 @@ export function createFoundationExecutionController({
   pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   callTimeoutMs = foundationControlLimits.transportTimeoutMs,
   caseReceiptValidator = assertFoundationRuntimeCaseReceipt,
+  nativeReader,
+  bindingFor,
+  settlementReader,
+  nativeTransport,
+  controlBudget,
+  baselineIdsByKey,
+  runtimeBindingValidator,
+  callbackCases,
 }) {
+  if (nativeReader !== undefined)
+    return createFoundationNativeController({
+      bindings,
+      port,
+      journal,
+      nativeReader,
+      bindingFor,
+      settlementReader,
+      nativeTransport,
+      controlBudget,
+      baselineIdsByKey,
+      now,
+      pause,
+      callTimeoutMs,
+      caseReceiptValidator,
+      callbackCases,
+      ...(runtimeBindingValidator === undefined ? {} : { runtimeBindingValidator }),
+    });
   bindings = parseN8nBindings(bindings);
   if (typeof journal?.append !== 'function' || !Array.isArray(previousEvents)) fail('CONTROL_JOURNAL');
   if (

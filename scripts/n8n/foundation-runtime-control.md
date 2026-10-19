@@ -182,15 +182,16 @@ ledgers; none is hidden in this management-only count. Historical foundation
 provisioning 188 and the separate private incident's 35 GETs are not replenished
 or charged to this new proposed window.
 
-### M03-C01 policy alternative, not enabled by this plan
+### M03-C01 approved local policy, separate live decision
 
-The pure `foundation-retention-proposal.mjs` inventory describes the exact25
-checkpoint's proposed21integrated success/error and five manual-root deltas,
-WF91 overlapping, with progress storage still false. It validates IDs/versions/
-hashes and preserves other settings; it does not modify this runtime plan.
-No additional workflow, migration, publication or save step is proposed. If
-approved, retention fields share these existing saves/restores and stay within
-327nominal/512ceiling. Current generated graphs continue retention-off.
+The owner approved the exact eee9a27 inventory for local implementation, tests
+and review. The historical pure proposal remains unchanged. A separate branded
+approved-policy factory pins its approval/inventory hashes; this runtime plan
+applies21integrated success/error and five manual-root deltas, WF91 overlapping,
+progress false, to the existing setup and case bodies. Exact original fields
+remain in baseline bodies for restoration. No additional workflow, migration,
+publication or save step is added:327nominal/512ceiling. Generated future bodies
+carry the approved design; actual Cloud settings remain untouched.
 
 The supported public API supplies native workflowVersionId, but published-child
 loading can retain a draft entity version while replacing nodes/connections.
@@ -201,12 +202,55 @@ unknown; version alone is not universal executed-body proof.
 The packet replaces the old416control cap with a separately proposed2048 budget
 for metadata polling, private native-link reads, candidate discovery, exact stop,
 terminal deletion and absence verification. Combined ceiling2560, not928.
-Neither ceiling is authorization or an implemented execution adapter. Native
+Both counters and the bounded private execution adapter are now local source;
+neither ceiling grants live authority. Native
 stop acknowledges canceled state before all work settles. Restore changes saved
 settings, not already-running snapshots or existing execution payloads. Unknown
 children/providers/cleanup remain pending beyond admission close if necessary;
 no physical erasure-by-minute60 promise. See the exact single packet and native
 source/reproduction evidence before any future live decision.
+
+The existing execution-controller entry takes `nativeReader`, `bindingFor`,
+`settlementReader`, `nativeTransport`, `controlBudget` and complete owned
+baseline-ID lists for its private native branch. Compose the real transport
+with a closure over `controller.authorizeExecution`: GET only known claimed
+IDs, stop only causally owned IDs, DELETE only same-case genuine closures.
+Factories perform no network action on construction. The future private caller
+must bind reviewed MCP methods, the exact SQL-only read ports and physical
+transport counters, hold the existing cross-process operation lock, and provide
+synchronous flushed journal persistence. Test substitutes never become live
+receipts by matching a JSON shape.
+
+`foundation-native-reader.mjs` enforces8MiB streaming/strict framing, fatal UTF-8,
+complete native fields, private sensitive-reflection checks, exact draft/active/
+executed body fences and actual parent/child metadata. Its outputs are only
+technical metadata and fixed diagnostic failures. Thrown-child discovery uses
+the native backlink; automatic errors use fresh actual Webhook trace correlation.
+Detached actor callbacks require actual validator/Webhook original-ID agreement
+plus authenticated SQL launch/registry ownership. None is sender authentication.
+
+`foundation-native-settlement.mjs` performs fixed parameterized read-only SQL,
+checks all derived request receipts and uncleared lease pointers, and validates
+the actual original provider registry. Two authenticated terminal observations
+at least10seconds apart must agree; the final SQL read compares actual provider
+cost using PostgreSQL numeric rounding. No shared workflow Code or rounding
+implementation is changed. Waiting/canceled/crashed/unknown, incomplete native
+trees, in-flight private ports and unresolved physical sockets do not settle.
+
+`foundation-native-cleanup.mjs` first flushes safe projected evidence and an
+exact-ID intent, then requires matching DELETE acknowledgement and subsequent 404. A lost acknowledgement plus404 stays ambiguous with no DELETE retry.
+Factory-branded cleanup receipts are tied to the exact closure/native receipt;
+copied JSON cannot satisfy the controller's Phase B gate. Both actor cases
+require the selected root/child success and four automatic-error groups, all11
+records independently settled and acknowledged deleted/absent first.
+
+Five fixed callback cases use only a SQL-confirmed synthetic unknown ID or the
+actual processed first original, tiny terminal event/run-ID bodies, fresh trace
+and the existing owned callback route. The concurrent pair is actually issued
+as two calls; both native traces must map bijectively. Processed no-op races do
+not prove first-ingestion contention. The fifth case deliberately withholds an
+already privately checked HTTP response to exercise same-ID reconciliation;
+it is a controlled response-loss drill, not proof of a real I/O outage.
 
 Credential-free source inventory:
 

@@ -27,6 +27,28 @@ StartedAt can be null for queued/new work; a time-filtered empty result misses
 that work. Bound pagination and refuse an incomplete view instead of calling it
 drained. Error/callback roots require their own native origin/correlation proof.
 
+Native list DTOs omit creation time and may omit workflow version; discovery
+records those as unknown and never creates an exact-ID proof from a candidate.
+Fresh exact-ID metadata remains strict. The persisted workflow snapshot contains
+id/name/nodes/connections/settings/nodeGroups, not `activeVersionId` or a usable
+snapshot version field. Executed-body hashing therefore uses those actual saved
+fields; current draft/published fencing uses the separate fresh workflow GET,
+and the exact-ID execution's top-level `workflowVersionId` remains mandatory.
+Absent snapshot fields are not manufactured or treated as evidence. Actual
+executed pin evidence is `data.resultData.pinData`; optional snapshot/current
+pin checks are defensive and do not substitute for that native run-data check.
+
+The pinned MCP producer supplies one native no-input ManualTrigger seed:
+`{[manualTrigger.name]:[{json:{}}]}`. This is accepted only in manual mode,
+for the exact bound sole enabled MCP-supported ManualTrigger; it is not a
+caller-controlled business/output pin exception. The eligible MCP triggers
+are manual/schedule/webhook/form/chat, not ExecuteWorkflowTrigger/ErrorTrigger.
+All other execution pins, including webhook data, remain refused. This matches
+[the native MCP producer](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/modules/mcp/tools/execute-workflow.tool.ts)
+and [its supported trigger set](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/modules/mcp/mcp.constants.ts).
+[Public DTO mapper](https://github.com/n8n-io/n8n/blob/d811f5e87dfc164999f34d75b17017876d41a54a/packages/cli/src/public-api/v1/controllers/executions.public.controller.ts),
+[persisted snapshot type](https://github.com/n8n-io/n8n/blob/d811f5e87dfc164999f34d75b17017876d41a54a/packages/cli/src/executions/execution-data/types.ts).
+
 ### Why the current-policy bridge stops here
 
 The final save hook soft-deletes manual executions with manual storage disabled;
@@ -49,11 +71,44 @@ field-selective storage policy. HTTP Request sanitizes some request options,
 but NodeApiError and continued-failure paths can copy response data/errors.
 No source guarantee excludes credential reflection.
 
-The one precise proposed alternative is the existing packet's temporary
+The resolved policy alternative is the existing packet's temporary
 21 integrated success/error + five manual-root retention deltas (WF91 overlap,
-25 unique IDs). `foundation-retention-proposal.mjs` only validates/describes
-that unapproved inventory; no graph/controller currently applies it. No new
-orchestration framework, migration, actor permission or workflow is introduced.
+25 unique IDs). The owner approved the exact inventory at eee9a27 for local
+implementation/tests/review. The historical pure proposal stays unchanged;
+the runtime plan now consumes a separately branded approved policy and keeps
+the exact original settings for restoration. This is source behavior, not a
+Cloud application receipt or live-batch approval. No new orchestration framework,
+migration, actor permission or workflow is introduced.
+
+### Approved private reducer and correlation boundary
+
+`foundation-native-reader.mjs` handles full native responses only in the private
+technical process, with strict8MiB streaming refusal before parsing, fatal UTF-8,
+framing/JSON/native-redaction checks and raw/decoded sensitive-value scanning.
+Only checked native metadata, exact bound child/parent links, deterministic
+gateway request IDs/operations and narrowly validated callback context leave it.
+No body, headers, node data, workflow snapshot, original error or credential is
+included in its projected receipts. Injected scripted ports are local tests;
+they do not establish Cloud permission or native lifecycle acceptance.
+
+For the four already-budgeted automatic errors, the fixed credentialless wire
+operation sends valid JSON `{}` and one fresh standard `traceparent`. The native
+Webhook node copies actual request headers into its output; a full retained
+execution with the exact unpinned bound Webhook output and trace can correlate
+the request to its native ID. The ordinary response-node path supplies no native
+execution ID, and a500 response alone proves none. The controller must also read
+the actual linked mode:error WF-90 child and its descendants. Trace is request
+correlation only, not completion. No extra graph, response node or publication
+is introduced. [Webhook output producer](https://github.com/n8n-io/n8n/blob/d811f5e87dfc164999f34d75b17017876d41a54a/packages/nodes-base/nodes/Webhook/Webhook.node.ts),
+[response lifecycle and trace propagation](https://github.com/n8n-io/n8n/blob/d811f5e87dfc164999f34d75b17017876d41a54a/packages/cli/src/webhooks/webhook-helpers.ts).
+
+A genuine actor callback is a detached external WF-19 root, not an invented
+native child of WF-99. Its actual unpinned Webhook body and executed bound
+`Validate callback source` output must agree on the original provider run ID;
+the fixed authenticated SQL projection must tie that ID to this batch's actual
+WF-99 native execution. This proves registered-original correlation, not
+cryptographic webhook sender identity. Discover only known owned workflows;
+missing, duplicate, old or unlinked candidates remain unresolved.
 
 ### Primary implementation references
 
