@@ -1,5 +1,10 @@
 import { createHash } from 'node:crypto';
-import { foundationTagNames, foundationWorkflowNames } from '../../packages/shared/src/n8n-bindings.ts';
+import {
+  foundationTagNames,
+  foundationWorkflowNames,
+  foundationNativeTagNames,
+  nativeFoundationTagName,
+} from '../../packages/shared/src/n8n-bindings.ts';
 import { foundationScope, verifyShell } from './foundation-provision.mjs';
 const bad = () => {
   throw Error('FOUNDATION_BIND_BLOCKED');
@@ -9,7 +14,7 @@ const exact = (x, keys) =>
   object(x) && Object.keys(x).length === keys.length && keys.every((k) => Object.hasOwn(x, k));
 const id = (x) => typeof x === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(x);
 const hash = (x) => createHash('sha256').update(JSON.stringify(x)).digest('hex');
-const machineId = 'EmrFoundationMachine19',
+const machineId = 'EmrM03Machine19',
   machineName = 'M03 foundation machine [dev]';
 export function parseFoundationPacket(p) {
   if (
@@ -51,6 +56,7 @@ function validateBindingRows(rows) {
   if (!Array.isArray(rows) || rows.length > 250) bad();
   const intents = new Map(),
     tagIds = new Map();
+  const tagOwners = new Map();
   let knownMachine = null;
   for (const r of rows) {
     if (!object(r)) bad();
@@ -62,17 +68,40 @@ function validateBindingRows(rows) {
       )
         bad();
       intents.set('tag:' + r.name, true);
+    } else if (r.event === 'tag_native_intent') {
+      if (
+        !exact(r, ['event', 'name', 'nativeName', 'replacesLegacy', 'scan']) ||
+        !foundationTagNames.includes(r.name) ||
+        nativeFoundationTagName(r.name) === r.name ||
+        r.nativeName !== nativeFoundationTagName(r.name) ||
+        typeof r.replacesLegacy !== 'boolean' ||
+        r.replacesLegacy !== intents.has('tag:' + r.name) ||
+        r.scan !== 'complete_absent' ||
+        intents.has('native:' + r.name) ||
+        tagIds.has(r.name)
+      )
+        bad();
+      intents.set('native:' + r.name, true);
     } else if (r.event === 'tag_ack') {
       if (
-        !exact(r, ['event', 'name', 'id', 'created']) ||
+        !exact(
+          r,
+          foundationTagNames.includes(r.name) && nativeFoundationTagName(r.name) !== r.name
+            ? ['event', 'name', 'id', 'created', 'nativeName']
+            : ['event', 'name', 'id', 'created'],
+        ) ||
         !foundationTagNames.includes(r.name) ||
         !id(r.id) ||
         typeof r.created !== 'boolean' ||
-        (r.created && !intents.has('tag:' + r.name)) ||
+        (nativeFoundationTagName(r.name) !== r.name && r.nativeName !== nativeFoundationTagName(r.name)) ||
+        (r.created &&
+          !intents.has((nativeFoundationTagName(r.name) !== r.name ? 'native:' : 'tag:') + r.name)) ||
+        (tagOwners.has(r.id) && tagOwners.get(r.id) !== r.name) ||
         (tagIds.has(r.name) && tagIds.get(r.name) !== r.id)
       )
         bad();
       tagIds.set(r.name, r.id);
+      tagOwners.set(r.id, r.name);
     } else if (r.event === 'machine_intent') {
       if (!exact(r, ['event']) || intents.has('machine')) bad();
       intents.set('machine', true);
@@ -106,7 +135,12 @@ const latest = (j, event, keyField, key) =>
 export async function provisionTags(j, send) {
   validateBindingRows(j.rows);
   const refs = {},
-    seen = new Set();
+    seen = new Set(),
+    seenIds = new Set(),
+    legacyNames = new Set();
+  const nativeToLogical = new Map(
+    Object.entries(foundationNativeTagNames).map(([key, label]) => [label, key]),
+  );
   let cursor = null;
   for (let page = 0; page < 2; page++) {
     const r = await send(
@@ -117,10 +151,14 @@ export async function provisionTags(j, send) {
     if (r.status !== 200 || !object(r.body) || !Array.isArray(r.body.data) || r.body.data.length > 100) bad();
     for (const x of r.body.data) {
       if (!object(x)) bad();
-      if (!foundationTagNames.includes(x.name)) continue;
-      if (!id(x.id) || seen.has(x.name)) bad();
+      if (foundationTagNames.includes(x.name) && nativeFoundationTagName(x.name) !== x.name)
+        legacyNames.add(x.name);
+      const key = nativeToLogical.get(x.name);
+      if (!key) continue;
+      if (!id(x.id) || seen.has(x.name) || seenIds.has(x.id)) bad();
       seen.add(x.name);
-      refs[x.name] = { id: x.id, name: x.name };
+      seenIds.add(x.id);
+      refs[key] = { id: x.id, name: x.name };
     }
     const next = r.body.nextCursor;
     if (next === null || next === undefined) {
@@ -138,32 +176,73 @@ export async function provisionTags(j, send) {
     cursor = next;
   }
   if (cursor !== null) bad();
+  // Reconcile every completed/ambiguous tag before any new mutation. The failed
+  // overlength legacy intent is retained; a distinct native intent is permitted
+  // only after this complete GET scan proves both old and replacement absent.
   for (const name of foundationTagNames) {
+    const label = nativeFoundationTagName(name),
+      alias = label !== name;
     const intent = latest(j, 'tag_intent', 'name', name),
+      nativeIntent = latest(j, 'tag_native_intent', 'name', name),
+      ack = latest(j, 'tag_ack', 'name', name);
+    if (legacyNames.has(name)) bad();
+    if (ack && (!refs[name] || ack.id !== refs[name].id)) bad();
+    if ((alias ? nativeIntent : intent) && !ack && !refs[name]) {
+      if (!alias) bad();
+      // An already-issued replacement request is never replayed after ambiguity.
+      if (nativeIntent) bad();
+    }
+  }
+  for (const name of foundationTagNames) {
+    const label = nativeFoundationTagName(name),
+      alias = label !== name;
+    const intent = latest(j, 'tag_intent', 'name', name),
+      nativeIntent = latest(j, 'tag_native_intent', 'name', name),
       ack = latest(j, 'tag_ack', 'name', name);
     if (refs[name]) {
-      if (ack && ack.id !== refs[name].id) bad();
-      if (!ack) j.append({ event: 'tag_ack', name, id: refs[name].id, created: Boolean(intent) });
+      if (!ack)
+        j.append({
+          event: 'tag_ack',
+          name,
+          id: refs[name].id,
+          created: Boolean(alias ? nativeIntent : intent),
+          ...(alias ? { nativeName: label } : {}),
+        });
       continue;
     }
-    if (intent || ack) bad();
-    j.append({ event: 'tag_intent', name });
-    const created = await send('POST', '/api/v1/tags', { name });
+    if (ack || nativeIntent || (!alias && intent)) bad();
+    if (alias)
+      j.append({
+        event: 'tag_native_intent',
+        name,
+        nativeName: label,
+        replacesLegacy: Boolean(intent),
+        scan: 'complete_absent',
+      });
+    else j.append({ event: 'tag_intent', name });
+    const created = await send('POST', '/api/v1/tags', { name: label });
     if (
       ![200, 201].includes(created.status) ||
       !object(created.body) ||
-      created.body.name !== name ||
+      created.body.name !== label ||
       !id(created.body.id)
     )
       bad();
     const r = await send('GET', '/api/v1/tags/' + created.body.id, null);
-    if (r.status !== 200 || !object(r.body) || r.body.id !== created.body.id || r.body.name !== name) bad();
-    refs[name] = { id: r.body.id, name };
-    j.append({ event: 'tag_ack', name, id: r.body.id, created: true });
+    if (r.status !== 200 || !object(r.body) || r.body.id !== created.body.id || r.body.name !== label) bad();
+    refs[name] = { id: r.body.id, name: label };
+    j.append({
+      event: 'tag_ack',
+      name,
+      id: r.body.id,
+      created: true,
+      ...(alias ? { nativeName: label } : {}),
+    });
   }
   if (new Set(Object.values(refs).map((x) => x.id)).size !== 13) bad();
   return refs;
 }
+
 function machineMetadata(v) {
   if (
     !object(v) ||
@@ -246,11 +325,34 @@ export function graphBody(graph) {
     !object(graph.workflow.settings)
   )
     bad();
+  return JSON.parse(
+    JSON.stringify({
+      name: graph.workflow.name,
+      nodes: graph.workflow.nodes,
+      connections: graph.workflow.connections,
+      settings: safeSettings(graph.workflow.settings),
+    }),
+  );
+}
+export function inactiveNativeStagingGraph(graph, errorWorkflowId) {
+  if (!id(errorWorkflowId)) bad();
+  const intended = graphBody(graph),
+    staged = structuredClone(graph);
+  const deferred = intended.settings.errorWorkflow ?? null;
+  if (graph.key === 'WF-90') {
+    if (Object.hasOwn(intended.settings, 'errorWorkflow')) bad();
+  } else if (deferred !== errorWorkflowId) bad();
+  if (deferred !== null) delete staged.workflow.settings.errorWorkflow;
+  const stagedBody = graphBody(staged);
   return {
-    name: graph.workflow.name,
-    nodes: graph.workflow.nodes,
-    connections: graph.workflow.connections,
-    settings: safeSettings(graph.workflow.settings),
+    graph: staged,
+    metadata: {
+      definitionProfile: 'inactive_native_staging',
+      deferredErrorWorkflowId: deferred,
+      intendedSourceHash: hash(intended),
+      stagedSourceHash: hash(stagedBody),
+      canonicalParity: deferred === null,
+    },
   };
 }
 function sameKnown(actual, expected) {
@@ -338,7 +440,7 @@ export function projectSavedGraph(dto, graph, expectedId, { requireTags = true }
   if (
     !Array.isArray(tags) ||
     !tags.length ||
-    tags.some((t) => !object(t) || !id(t.id) || !foundationTagNames.includes(t.name))
+    tags.some((t) => !object(t) || !id(t.id) || !Object.values(foundationNativeTagNames).includes(t.name))
   )
     bad();
   if (requireTags) {
@@ -358,7 +460,13 @@ export function projectSavedGraph(dto, graph, expectedId, { requireTags = true }
     workflow: { ...expected, tags: tags.map((t) => ({ id: t.id, name: t.name })), pinData: {} },
   };
 }
-export async function bindOwnedGraphs(graphs, workflowRefs, j, send, { allowSubsetForTests = false } = {}) {
+export async function bindOwnedGraphs(
+  graphs,
+  workflowRefs,
+  j,
+  send,
+  { allowSubsetForTests = false, onVerified } = {},
+) {
   validateBindingRows(j.rows);
   if (
     !Array.isArray(graphs) ||
@@ -382,7 +490,7 @@ export async function bindOwnedGraphs(graphs, workflowRefs, j, send, { allowSubs
     else verifyShell(before.body, g.key);
     if (!intent) {
       j.append({ event: 'graph_intent', key: g.key, id: ref.id, hash: sourceHash });
-      const r = await send('PUT', '/api/v1/workflows/' + ref.id, body);
+      const r = await send('PUT', '/api/v1/workflows/' + ref.id + '?publishIfActive=false', body);
       if (r.status !== 200) bad();
       j.append({ event: 'graph_saved', key: g.key, id: ref.id, hash: sourceHash });
     } else if (!ack) j.append({ event: 'graph_saved', key: g.key, id: ref.id, hash: sourceHash });
@@ -402,7 +510,9 @@ export async function bindOwnedGraphs(graphs, workflowRefs, j, send, { allowSubs
     }
     const r = await send('GET', '/api/v1/workflows/' + ref.id, null);
     if (r.status !== 200) bad();
-    saved.push({ key: g.key, ...projectSavedGraph(r.body, g, ref.id) });
+    const verified = { key: g.key, ...projectSavedGraph(r.body, g, ref.id) };
+    if (onVerified) await onVerified(verified);
+    saved.push(verified);
   }
   return saved;
 }

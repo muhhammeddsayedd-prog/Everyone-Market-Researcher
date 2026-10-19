@@ -2,7 +2,7 @@ import { request } from 'node:https';
 import { isIP } from 'node:net';
 import { resolveInstance } from './inventory.mjs';
 import { buildShell, shellSpecs, foundationScope } from './foundation-provision.mjs';
-import { foundationTagNames } from '../../packages/shared/src/n8n-bindings.ts';
+import { foundationNativeTagNames } from '../../packages/shared/src/n8n-bindings.ts';
 class FoundationTransportError extends Error {
   constructor(code, httpStatus = null, transportReason = null) {
     super(code);
@@ -67,11 +67,7 @@ async function safeResolve(signal) {
 function bindingRequest(method, path, body, ownsWorkflow, c) {
   if (!c) return false;
   if (method === 'GET' && body === null) {
-    if (
-      ['/api/v1/credentials/schema/httpCustomAuth', '/api/v1/credentials/EmrFoundationMachine19'].includes(
-        path,
-      )
-    )
+    if (['/api/v1/credentials/schema/httpCustomAuth', '/api/v1/credentials/EmrM03Machine19'].includes(path))
       return true;
     const match = /^\/api\/v1\/tags\/([A-Za-z0-9_-]{1,128})$/.exec(path);
     if (match) return c.knownTagIds?.has(match[1]) === true;
@@ -95,14 +91,15 @@ function bindingRequest(method, path, body, ownsWorkflow, c) {
       body !== null &&
       typeof body === 'object' &&
       Object.keys(body).length === 1 &&
-      foundationTagNames.includes(body.name)
+      Object.values(foundationNativeTagNames).includes(body.name)
     );
   if (method === 'POST' && path === '/api/v1/credentials')
     return c.machineBody && JSON.stringify(body) === JSON.stringify(c.machineBody);
   if (method === 'PUT') {
-    const match = /^\/api\/v1\/workflows\/([A-Za-z0-9_-]{1,128})(\/tags)?$/.exec(path);
+    const match = /^\/api\/v1\/workflows\/([A-Za-z0-9_-]{1,128})(\/tags|\?publishIfActive=false)$/.exec(path);
     if (!match || ownsWorkflow(match[1]) !== true) return false;
-    const expected = match[2] ? c.workflowTagBodies?.get(match[1]) : c.workflowBodies?.get(match[1]);
+    const expected =
+      match[2] === '/tags' ? c.workflowTagBodies?.get(match[1]) : c.workflowBodies?.get(match[1]);
     return expected !== undefined && JSON.stringify(body) === JSON.stringify(expected);
   }
   return false;

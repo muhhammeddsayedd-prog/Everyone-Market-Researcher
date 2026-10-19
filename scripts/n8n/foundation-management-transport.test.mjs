@@ -73,6 +73,48 @@ test('public DNS requires every answer and rejects loopback/embedded/private/doc
   ])
     assert.throws(() => validateFoundationAddresses([p, { address, family: address.includes(':') ? 6 : 4 }]));
 });
+test('native writes require short mapped labels and explicit draft-only graph PUT query', () => {
+  const body = { name: 'Synthetic inactive source', nodes: [], connections: {}, settings: {} },
+    binding = {
+      workflowBodies: new Map([['Owned', body]]),
+      workflowTagBodies: new Map([['Owned', [{ id: 'Tag0' }]]]),
+    };
+  const owns = (x) => x === 'Owned';
+  assert.equal(
+    foundationAllowedRequest('PUT', '/api/v1/workflows/Owned?publishIfActive=false', body, owns, binding),
+    true,
+  );
+  for (const suffix of [
+    '',
+    '?publishIfActive=true',
+    '?publishIfActive=false&publishIfActive=false',
+    '?publishIfActive=false&other=1',
+  ])
+    assert.equal(
+      foundationAllowedRequest('PUT', '/api/v1/workflows/Owned' + suffix, body, owns, binding),
+      false,
+    );
+  assert.equal(
+    foundationAllowedRequest('PUT', '/api/v1/workflows/Owned/tags', [{ id: 'Tag0' }], owns, binding),
+    true,
+  );
+  assert.equal(
+    foundationAllowedRequest('POST', '/api/v1/tags', { name: 'platform:ig_stories' }, owns, binding),
+    true,
+  );
+  assert.equal(
+    foundationAllowedRequest('POST', '/api/v1/tags', { name: 'platform:instagram_stories' }, owns, binding),
+    false,
+  );
+  assert.equal(
+    foundationAllowedRequest('GET', '/api/v1/credentials/EmrFoundationMachine19', null, owns, binding),
+    false,
+  );
+  assert.equal(
+    foundationAllowedRequest('GET', '/api/v1/credentials/EmrM03Machine19', null, owns, binding),
+    true,
+  );
+});
 test('ordinary synthetic API key reaches DNS gate; controls are rejected before DNS', async () => {
   let calls = 0;
   const send = foundationManagementTransport({

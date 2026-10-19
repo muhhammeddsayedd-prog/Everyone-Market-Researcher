@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: full M03 source and local database/graph/reader checks completed. The first inactive-delivery attempt stopped at its bounded list-body check before Cloud mutation; the concrete local correction passed review and actual public resealing. Only the consumed existing-key handoff redelivery is needed. Actual saved definitions and separate live acceptance remain pending. GW-01 stays closed.**
+**Blocked: waiting on owner — MA-11 existing Management handoff redelivery.25 actual inactive shells/seven tags are preserved. Native corrections, focused fault tests, independent review and actual33-input public reseal/CheckOnly pass. Remaining inactive staging needs only the consumed existing key; no new key/password/Machine token. GW-01 stays closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,8 +16,8 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Full 25-definition source, typed fixed transport, durable actor admission/recovery, exact callback audit and bounded reader implemented. Focused local tests and current runtime CI pass. Final review of inactive-only provisioning precedes one existing-key handoff; actual Cloud definitions and full live acceptance are not claimed. Historical [GW-01 closeout](evidence/gw01-trial-closeout-20261018.json) remains closed and untouched. |
-| Next step | Corrected narrowed query/HTTP handling passed27 affected tests, isolated Windows diagnostics and independent22-case review. Actual public reseal/CheckOnly passed native0 (1b8cf4). Request only the consumed existing Management-key handoff using the exact helper below; then bounded inactive provisioning. No new key/password or dev approval. |
+| Current task | Native contract corrections after actual partial provisioning: short native tag aliases while retaining logical taxonomy; new Machine ID<=16 preserving pending token; deterministic Webhook/Wait IDs; draft-only PUT; explicit inactive staging that defers native errorWorkflow links. Twenty-five actual shell IDs/seven tags retained. No full graphs, Cloud Machine, execution or activation yet. |
+| Next step | Consume a genuinely present replenished MA-11 Management pair through the sealed All consumer once. Reconcile original25 shell IDs/seven tags and failed intents first; retain pending Machine token. Save/read back25 staged definitions and actual exports. No recreation, journal reset, WF-90 publication or execution. |
 | Current source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. Private provisioning/helper changes receive normal new-head CI. |
 
 ## 19 October continuation — finite completion matrix
@@ -47,6 +47,40 @@ The final live packet must use a distinct foundation window and credentials;
 the unused GW-01 allowance cannot be transferred. Private incident R2 preparation
 continues separately, with horizon **None** and the former maintenance window
 expired. No production remediation has been authorized.
+
+### Native partial delivery and source correction
+
+Actual `44cc22` preserved25 verified inactive shell IDs and seven tag IDs after
+68 requests, then stopped at tagPOST409; no full-node definitions, Cloud Machine
+or executions. Together with the first two-GET attempt, historical management
+requests total70. This is separate from the185 maximum for each bounded consumer
+invocation. [Partial evidence](evidence/inactive-foundation-partial-20261019.json)
+retains original75 shell events/15 binding events and absent version IDs honestly.
+
+[Pinned native audit](evidence/native-api-contract-audit-20261019.md) found three
+logical tag names exceeding24 characters, a planned credential ID exceeding16,
+save-time routing-ID normalization and error-link publication prerequisites.
+Source now preserves logical tags with explicit native aliases, reuses the same
+encrypted pending token under corrected metadata ID, pins Webhook/Wait IDs, and
+saves draft-only. All24 errorWorkflow links remain canonical source, explicitly
+deferred in `inactive_native_staging` exports until later approved publication.
+Saved-stage completion never claims canonical/error-routing acceptance.
+
+Independent review also caught incomplete short-write handling in per-record
+exports and journal writes before another credential delivery. The correction
+must pass fault regressions, independent review and the33-input public seal
+before consuming anything. One actual connector metadata read for owned WF-99
+`qTjioYmBUVMIERVz` returned no usable metadata; zero execution was attempted,
+raw responses suppressed, no login/discovery retry. Native manual-execution and
+completion/cancellation control remain a separate final-packet prerequisite.
+
+The finite local manual-case materializer proposes19 recommended cases and
+disables every Schedule Trigger. Its source upper bounds are64 native executions,
+55 business operations/110 gateway attempts,20 provider GETs and two genuine
+actor starts, plus separately bounded error/forgery/replay/setup/shutdown reserve.
+This source neither saves nor executes a workflow and is not a quota receipt.
+See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
+[single final-packet preparation](evidence/live-acceptance-outline-20261018.md).
 
 ## Task checklist
 <!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
@@ -91,7 +125,37 @@ expired. No production remediation has been authorized.
 
 ### Current: MA-11 inactive foundation delivery only
 
-**Latest actual result:** owner delivered the requested existing key. Attempt `f20045` completed native1 with child closed: project read authenticated, the second GET stopped at `FOUNDATION_TRANSPORT_BODY`, exact cause unknown. Both mutation journals remain empty; zero Cloud workflow/tag/credential writes or executions. Consumed Management handoff/lease are deleted. Presence-only read `b208de` verified that cleanup and the separately retained encrypted pending Machine/metadata. The concrete correction is now reviewed/resealed; only that consumed existing-key handoff needs redelivery, using the command below. There is no new key or administrator/Writer/provider handoff.
+**Current executable owner action:** the consumed Management pair is absent
+(presence-only `c47dc8`, privateRead:false). The native compatibility and full-write
+corrections are independently reviewed; targeted regressions pass. Actual public
+seal/CheckOnly `f54a68`/`ee76d2` completed native0 with33 project inputs/840 pinned
+dependency files, no private read/network/Node execution during sealing.
+The old32-input seals remain historical receipts.
+
+Open Windows PowerShell under this same Windows account and run:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03FoundationHandoff.ps1'
+```
+
+Enter only the **existing saved management API key** for
+`muhhammedsayed.app.n8n.cloud` at its hidden prompt. Expected output starts
+`M03_FOUNDATION_MANAGEMENT_READY`. Close that PowerShell window, retain the saved
+original and reply **M03 foundation Management replenished**; send no value/file.
+No reset, new key, Writer/administrator/provider password or Machine handoff.
+The pending encrypted Machine token is reused. This permits at most185 additional
+management requests in the bounded continuation, separately from historical70.
+It reuses25 workflow IDs/seven tags, reconciles the failed tag first, then saves
+only inactive staged definitions. Zero executions, actor/provider calls, gateway
+admissions, environment changes or production. The24 error links remain deferred;
+staged completion is not live/error-routing acceptance. Consumed temporary pair
+will be deleted after the credential-bearing child closes.
+
+**Historical delivery records below are superseded as current instructions.**
+
+**Latest actual result:** replenished handoff was consumed by `44cc22`: native1/child closed,68requests,25 created+GET-verified inactive noOp shells and seven created+GET-verified tags. The next tag POST returned409; no full graphs, Cloud Machine or workflow execution occurred. Management files were deleted. Actual refs and [partial inventory](evidence/inactive-foundation-partial-20261019.json) are persisted; unavailable version IDs/full exports are not fabricated. Native24-character tag and16-character credential-ID constraints are being corrected before any further handoff. Canonical error links remain desired source, but inactive native saves must defer them until the separately approved WF90 publication. No owner action during local correction/review.
+
+**Earlier actual result:** owner delivered the first requested existing key. Attempt `f20045` completed native1 with child closed: project read authenticated, the second GET stopped at `FOUNDATION_TRANSPORT_BODY`, exact cause unknown. Both mutation journals remain empty; zero Cloud workflow/tag/credential writes or executions. Consumed Management handoff/lease are deleted. Presence-only read `b208de` verified that cleanup and the separately retained encrypted pending Machine/metadata. The concrete correction is now reviewed/resealed; only that consumed existing-key handoff needs redelivery, using the command below. There is no new key or administrator/Writer/provider handoff.
 
 The existing provider/database setup and all GW-01 handoffs remain completed;
 do not recreate them. Presence-only read `aaeb97` verified the **new** foundation

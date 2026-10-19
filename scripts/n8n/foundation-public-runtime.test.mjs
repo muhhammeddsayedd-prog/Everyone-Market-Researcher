@@ -88,6 +88,7 @@ test(
       assert.equal(parsed.windowId, 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9');
       assert.equal(parsed.packetSha256, null);
       assert.ok(parsed.files['milestones/M03-n8n-foundation/evidence/sanitizedprobe.json']);
+      assert.ok(parsed.files['scripts/n8n/foundation-export.mjs']);
       assert.ok(parsed.files['packages/shared/package.json']);
       assert.ok(parsed.zod.files['v4/core.js']);
     }),

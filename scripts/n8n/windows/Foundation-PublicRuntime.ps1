@@ -10,6 +10,7 @@ function Get-M03FoundationPublicSourceFiles {
   'scripts/n8n/foundation-management-transport.mjs',
   'scripts/n8n/foundation-bind.mjs',
   'scripts/n8n/foundation-all.mjs',
+  'scripts/n8n/foundation-export.mjs',
   'scripts/n8n/inventory.mjs',
   'packages/shared/src/n8n-bindings.ts',
   'packages/shared/src/n8n-apify-recovery.ts',

@@ -2,7 +2,7 @@
 
 `buildFoundationGatewayWorkflows(bindings, transport)` is the current preparation entry point. It builds exactly 25 inactive workflows: five SUBs, WF-00/19/90/91/99 and 15 explicit stubs. It performs no network request, credential read, deployment or execution. All generated workflows disable successful/error/manual execution storage and progress storage. GW-01 remains closed and is never an input to this builder.
 
-`bindings.dev.json` retains the five actual provider/role references and intentionally has no invented workflow or tag IDs. A full build requires the real IDs from safe provisioning/readback. Unit tests use synthetic references only. Generated blueprints and proposed release graphs are not saved Cloud definitions or actual exports.
+`bindings.dev.json` retains the five actual provider/role references and now records 25 actual verified inactive shell IDs and seven actual tag IDs. [Partial inventory](../../milestones/M03-n8n-foundation/evidence/inactive-foundation-partial-20261019.json) is derived from the bounded save/readback journals; it is not a full saved-definition export and does not supply unavailable version IDs. Remaining tag and staged-definition delivery is pending. Unit tests use synthetic references. Generated blueprints and proposed release graphs are separate from actual Cloud exports.
 
 ## Fixed HTTPS transport
 
@@ -16,7 +16,30 @@ The protected Preview and new dedicated machine credential are future acceptance
 
 ## Workflow readiness
 
-Every row below is local source readiness. There are no actual Cloud foundation IDs/exports in the current empty `workflowRefs`. Actual probe and GW-01 exports retain their own historical scopes.
+Every row below is local source readiness. The 25 actual Cloud IDs currently identify verified inactive noOp shells; zero full foundation graphs or Cloud Machine credentials were saved. Actual probe and GW-01 exports retain their own historical scopes. The native API constraints below govern the remaining inactive staging.
+
+### Native inactive staging constraints
+
+The installed 2.43.5 API limits tag names to 24 characters and new credential
+IDs to 16. The logical platform taxonomy stays unchanged; three native tag labels
+use `platform:ig_stories`, `platform:li_employees` and `platform:web_work`.
+Seven already-created tags are preserved. The new dedicated Machine's proposed
+ID becomes `EmrM03Machine19`; no Cloud credential existed under the earlier
+overlong proposed ID. Its pending token is preserved, with a separately reviewed
+non-secret metadata transition inside the bounded consumer.
+
+Native saves assign IDs to webhook-bearing nodes. Source therefore pins
+deterministic Webhook/Wait IDs, while strict actual projection stays intact.
+Graph PUT must include `publishIfActive=false` and use fresh pre/post readback;
+it is not an optimistic-locking guarantee.
+
+n8n rejects a changed `errorWorkflow` link to an unpublished target. Canonical
+full graphs retain their intended WF-90 links. A separately marked inactive
+native staging projection defers only those links; actual staged exports must
+record that exact delta and cannot establish error-routing acceptance or full
+canonical parity. Publishing the owned log-only WF-90 and installing those links
+belongs to the separately approved final live packet. No implicit activation,
+workflow recreation or validation bypass is permitted.
 
 | Workflow                      | Fixed operations / behavior                                                                                                                          | Local coverage                                                                                         | Remaining actual proof                                                            |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |

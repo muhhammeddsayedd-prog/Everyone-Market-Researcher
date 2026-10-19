@@ -6,8 +6,10 @@ import {
   bindOwnedGraphs,
   graphBody,
   machineBody,
+  inactiveNativeStagingGraph,
 } from './foundation-bind.mjs';
 import { buildFoundationGatewayWorkflows } from '../../n8n/foundation/build-foundation-gateway.mjs';
+import { foundationNativeTagNames } from '../../packages/shared/src/n8n-bindings.ts';
 import { foundationTransportDiagnostic } from './foundation-management-transport.mjs';
 const fail = () => {
   throw Error('FOUNDATION_ALL_BLOCKED');
@@ -50,6 +52,10 @@ export async function runAllProvision(secrets, packet, baseBindings, ports) {
     credentialsCreated: 0,
     gatewayWindowStarted: false,
     finalGraphsBound: false,
+    inactiveDefinitionsSaved: false,
+    deferredErrorWorkflowCount: 0,
+    errorRoutingAccepted: false,
+    persistedExports: 0,
     networkCompletionVerified: false,
     diagnostics: {
       lastMethod: null,
@@ -107,7 +113,7 @@ export async function runAllProvision(secrets, packet, baseBindings, ports) {
           typeof x.id === 'string' &&
           /^[A-Za-z0-9_-]{1,128}$/.test(x.id) &&
           typeof x.name === 'string' &&
-          ports.tagNames.includes(x.name) &&
+          Object.values(foundationNativeTagNames).includes(x.name) &&
           !x.id.includes(secrets.management) &&
           !x.id.includes(secrets.machine)
         )
@@ -161,7 +167,8 @@ export async function runAllProvision(secrets, packet, baseBindings, ports) {
       graphs.some((g) => !Object.hasOwn(workflowRefs, g.key))
     )
       fail();
-    for (const g of graphs) {
+    const stagedGraphs = graphs.map((g) => inactiveNativeStagingGraph(g, workflowRefs['WF-90'].id));
+    for (const { graph: g } of stagedGraphs) {
       const id = workflowRefs[g.key].id,
         body = graphBody(g);
       if (Buffer.byteLength(JSON.stringify(body)) > 480000) fail();
@@ -172,13 +179,31 @@ export async function runAllProvision(secrets, packet, baseBindings, ports) {
       );
     }
     receipt.phase = 'binding';
-    receipt.workflows = await bindOwnedGraphs(graphs, workflowRefs, ports.bindingJournal, send);
+    await bindOwnedGraphs(
+      stagedGraphs.map((x) => x.graph),
+      workflowRefs,
+      ports.bindingJournal,
+      send,
+      {
+        onVerified: async (w) => {
+          const record = { ...w, ...stagedGraphs.find((x) => x.graph.key === w.key).metadata };
+          const text = JSON.stringify(record);
+          if (text.includes(secrets.management) || text.includes(secrets.machine)) fail();
+          receipt.workflows.push(record);
+          receipt.deferredErrorWorkflowCount += record.deferredErrorWorkflowId === null ? 0 : 1;
+          if (ports.onVerified) {
+            await ports.onVerified(record);
+            receipt.persistedExports++;
+          }
+        },
+      },
+    );
     receipt.bindings = bindings;
     receipt.transport = transport;
-    receipt.finalGraphsBound = true;
+    receipt.inactiveDefinitionsSaved = true;
     receipt.networkCompletionVerified = true;
-    receipt.status = 'inactive_foundation_verified';
-    receipt.phase = 'complete';
+    receipt.status = 'inactive_foundation_staged';
+    receipt.phase = 'inactive_staging';
   } catch {
     // A fixed phase, durable intent and typed safe projections preserve ambiguity.
     // Never return a native error, raw response, credential body or input secret.

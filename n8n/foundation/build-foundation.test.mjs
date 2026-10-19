@@ -1,3 +1,4 @@
+import { nativeFoundationTagName } from '../../packages/shared/src/n8n-bindings.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
@@ -31,7 +32,7 @@ const bindings = () => ({
       'platform:linkedin_employees',
       'platform:website_work_page',
       'platform:news',
-    ].map((name, index) => [name, { id: `SyntheticTag${index}`, name }]),
+    ].map((name, index) => [name, { id: `SyntheticTag${index}`, name: nativeFoundationTagName(name) }]),
   ),
 });
 

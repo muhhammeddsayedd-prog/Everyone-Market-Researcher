@@ -1,6 +1,12 @@
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { foundationTagNames, foundationWorkflowNames } from '../../packages/shared/src/n8n-bindings.ts';
+import {
+  foundationTagNames,
+  foundationWorkflowNames,
+  nativeFoundationTagName,
+  n8nBindingsSchema,
+} from '../../packages/shared/src/n8n-bindings.ts';
 import {
   parseFoundationPacket,
   provisionTags,
@@ -8,6 +14,7 @@ import {
   bindOwnedGraphs,
   createBindingJournal,
   projectSavedGraph,
+  inactiveNativeStagingGraph,
 } from './foundation-bind.mjs';
 import { buildShell } from './foundation-provision.mjs';
 const packet = {
@@ -30,8 +37,20 @@ test('delivery packet demands a real fixed immutable Preview contract and never 
   ])
     assert.throws(() => parseFoundationPacket(p));
 });
+test('inactive native staging defers only the intended unpublished error target and keeps both source hashes', () => {
+  const g = graph();
+  g.workflow.settings.errorWorkflow = 'OwnedError90';
+  const staged = inactiveNativeStagingGraph(g, 'OwnedError90');
+  assert.equal(g.workflow.settings.errorWorkflow, 'OwnedError90');
+  assert.equal(Object.hasOwn(staged.graph.workflow.settings, 'errorWorkflow'), false);
+  assert.deepEqual(staged.graph.workflow.nodes, g.workflow.nodes);
+  assert.equal(staged.metadata.deferredErrorWorkflowId, 'OwnedError90');
+  assert.notEqual(staged.metadata.intendedSourceHash, staged.metadata.stagedSourceHash);
+  assert.equal(staged.metadata.canonicalParity, false);
+  assert.throws(() => inactiveNativeStagingGraph(g, 'UnrelatedErrorId'));
+});
 test('tag phase reuses canonical metadata and never edits shared tags', async () => {
-  const tags = foundationTagNames.map((name, i) => ({ id: 'Tag' + i, name })),
+  const tags = foundationTagNames.map((name, i) => ({ id: 'Tag' + i, name: nativeFoundationTagName(name) })),
     calls = [],
     j = createBindingJournal();
   const result = await provisionTags(j, async (m, p, b) => {
@@ -68,7 +87,7 @@ test('machine is the exact new owned type/domain; response data is not inspected
   const j = createBindingJournal(),
     calls = [];
   const metadata = {
-    id: 'EmrFoundationMachine19',
+    id: 'EmrM03Machine19',
     name: 'M03 foundation machine [dev]',
     type: 'httpCustomAuth',
     createdAt: '2026-10-19T00:00:00.000Z',
@@ -80,7 +99,7 @@ test('machine is the exact new owned type/domain; response data is not inspected
         status: 200,
         body: { properties: { json: {}, allowedHttpRequestDomains: {}, allowedDomains: {} } },
       };
-    if (m === 'GET' && calls.filter((x) => x[1].endsWith('EmrFoundationMachine19')).length === 1)
+    if (m === 'GET' && calls.filter((x) => x[1].endsWith('EmrM03Machine19')).length === 1)
       return { status: 404, body: {} };
     return { status: 200, body: metadata };
   });
@@ -279,4 +298,110 @@ test('unexpected workflow settings cannot change error or caller behavior behind
     r.settings[setting] = value;
     assert.throws(() => projectSavedGraph(r, g, 'Owned0'));
   }
+});
+
+const tagContract = JSON.parse(readFileSync('n8n/foundation/native-tag-contract.2.43.5.json', 'utf8'));
+const tagLimits = /@Length\((\d+), (\d+),/.exec(tagContract.lengthExcerpt).slice(1).map(Number);
+const nativeTagValid = (name) =>
+  typeof name === 'string' && name.trim().length >= tagLimits[0] && name.trim().length <= tagLimits[1];
+test('pinned native TagEntity contract rejects three old logical names and validates every actual native label', () => {
+  assert.deepEqual(tagLimits, [1, 24]);
+  assert.equal(nativeTagValid('x'.repeat(24)), true);
+  assert.equal(nativeTagValid('x'.repeat(25)), false);
+  assert.deepEqual(
+    foundationTagNames.filter((x) => !nativeTagValid(x)),
+    ['platform:instagram_stories', 'platform:linkedin_employees', 'platform:website_work_page'],
+  );
+  const labels = foundationTagNames.map(nativeFoundationTagName);
+  assert.equal(new Set(labels).size, 13);
+  assert.ok(labels.every(nativeTagValid));
+  const base = JSON.parse(readFileSync('n8n/foundation/bindings.dev.json', 'utf8'));
+  assert.equal(
+    n8nBindingsSchema.safeParse({
+      ...base,
+      tagRefs: {
+        'platform:instagram_stories': { id: 'SyntheticNativeTag', name: 'platform:instagram_stories' },
+      },
+    }).success,
+    false,
+  );
+  assert.equal(
+    n8nBindingsSchema.safeParse({
+      ...base,
+      tagRefs: { 'platform:instagram_stories': { id: 'SyntheticNativeTag', name: 'platform:ig_stories' } },
+    }).success,
+    true,
+  );
+});
+function priorTagCheckpoint() {
+  const names = foundationTagNames.slice(0, 7),
+    tags = names.map((name, i) => ({ name, id: 'ExistingTag' + i }));
+  const rows = tags.flatMap((t) => [
+    { event: 'tag_intent', name: t.name },
+    { event: 'tag_ack', name: t.name, id: t.id, created: true },
+  ]);
+  rows.push({ event: 'tag_intent', name: 'platform:instagram_stories' });
+  return { tags, rows };
+}
+test('existing15events and seven tags survive a complete GET reconciliation then distinct valid native creation', async () => {
+  const f = priorTagCheckpoint(),
+    j = createBindingJournal(f.rows),
+    calls = [];
+  const result = await provisionTags(j, async (m, p, b) => {
+    calls.push({ m, p, b });
+    if (p.startsWith('/api/v1/tags?')) return { status: 200, body: { data: f.tags, nextCursor: null } };
+    if (m === 'POST') {
+      assert.equal(nativeTagValid(b.name), true);
+      assert.notEqual(b.name, 'platform:instagram_stories');
+      const row = { id: 'NewTag' + f.tags.length, name: b.name };
+      f.tags.push(row);
+      return { status: 201, body: row };
+    }
+    return { status: 200, body: f.tags.find((t) => p.endsWith('/' + t.id)) };
+  });
+  assert.deepEqual(j.rows.slice(0, 15), f.rows);
+  assert.equal(calls[0].m, 'GET');
+  const transition = j.rows[15];
+  assert.deepEqual(transition, {
+    event: 'tag_native_intent',
+    name: 'platform:instagram_stories',
+    nativeName: 'platform:ig_stories',
+    replacesLegacy: true,
+    scan: 'complete_absent',
+  });
+  assert.equal(calls.filter((c) => c.m === 'POST').length, 6);
+  assert.equal(result['platform:instagram_stories'].name, 'platform:ig_stories');
+  for (const t of f.tags.slice(0, 7)) assert.equal(result[t.name].id, t.id);
+});
+test('ambiguous replacement never replays either the old long request or its new native intent', async () => {
+  const f = priorTagCheckpoint(),
+    j = createBindingJournal(f.rows);
+  await assert.rejects(
+    provisionTags(j, async (m) => {
+      if (m === 'GET') return { status: 200, body: { data: f.tags, nextCursor: null } };
+      throw Error('SYNTHETIC_AMBIGUOUS');
+    }),
+  );
+  assert.equal(j.rows[15].event, 'tag_native_intent');
+  let calls = 0;
+  await assert.rejects(
+    provisionTags(j, async (m) => {
+      assert.equal(m, 'GET');
+      calls++;
+      return { status: 200, body: { data: f.tags, nextCursor: null } };
+    }),
+  );
+  assert.equal(calls, 1);
+});
+test('an unexpected existing long native tag stops before replacement or any new mutation', async () => {
+  const f = priorTagCheckpoint(),
+    j = createBindingJournal(f.rows);
+  f.tags.push({ id: 'UnexpectedOldLongTag', name: 'platform:instagram_stories' });
+  await assert.rejects(
+    provisionTags(j, async (m) => {
+      assert.equal(m, 'GET');
+      return { status: 200, body: { data: f.tags, nextCursor: null } };
+    }),
+  );
+  assert.deepEqual(j.rows, f.rows);
 });

@@ -1,12 +1,35 @@
 # M03 bounded live acceptance packet — current preparation checkpoint
 
-## 19 October: implementation complete locally; saved bindings still required
+## 19 October: canonical source complete; native staging and live control pending
 
 **HOLD — not an execution approval request.** The current entry point is
 `n8n/foundation/build-foundation-gateway.mjs`, with 25 inactive definitions.
 [Per-workflow source/readiness](../../../n8n/foundation/README.md) records the
 fixed operations, tests and precise remaining native proof for each workflow.
 The older outline below is historical and is superseded by this section.
+
+Actual inactive delivery is partial: attempt `44cc22` created and GET-verified
+25 owned inactive noOp shells and seven tags, then stopped at tag POST409. It
+made 68 requests; the earlier `f20045` made two GETs with no mutations. The
+cumulative historical count is 70, separate from each consumer's unchanged
+185-request maximum. Both consumed Management pairs were deleted and children
+closed. [Actual IDs and partial receipt](inactive-foundation-partial-20261019.json)
+preserve all 75 shell events and 15 binding events. No complete graph, Cloud
+Machine credential, execution or gateway admission has been saved by those runs.
+
+The [pinned native audit](native-api-contract-audit-20261019.md) identifies native
+24-character tag labels, a 16-character credential ID, deterministic Webhook/Wait
+routing IDs, draft-only graph updates and published error-handler dependencies.
+The three explicit native tag aliases preserve the logical taxonomy and seven
+created tags. `EmrM03Machine19` replaces only the invalid pending metadata ID,
+retaining the encrypted token. Reconciliation precedes any further mutation.
+
+Inactive delivery must use the explicit `inactive_native_staging` profile:
+all nodes and references are saved, but 24 `settings.errorWorkflow` links are
+deferred because their WF-90 target cannot pass native validation unpublished.
+Each actual export records intended/staged hashes and its deferred target.
+`inactiveDefinitionsSaved:true` is not `finalGraphsBound:true` or
+`errorRoutingAccepted:true`. No publication is authorized by inactive delivery.
 
 The owner authorized this local completion and safe owned inactive dev
 provisioning. No new hosted window, forward migration push, actor start,
@@ -95,6 +118,39 @@ SQL; it did not establish current prices and was not retried as a setup loop.
 
 ### Exact acceptance cases to execute only after separate approval
 
+The pure `n8n/foundation/materialize-acceptance-case.mjs` supplies finite source
+variants for manual cases. Native Manual Trigger has no generic JSON-input
+transport in the installed execution tool. The variant inserts one fixed Code
+input on the Manual Trigger branch, keeps the graph inactive, disables **every**
+Schedule Trigger, retains execution-data restrictions and keeps actor launch
+disabled unless an explicit future release option is supplied. It neither saves
+nor executes a graph. Smoke materialization requires the actual guarded C999
+setup receipt; a matching receipt shape is not proof of hosted ownership.
+
+The recommended 19 source cases cover 15 individual dispatch slots, one unknown
+slot, a second direct health call (the health dispatch supplies the first), and
+two genuine smoke launches. PM/backfill guards and the Saturday collision remain
+exhaustive local/CI checks; individual live dispatches already include both
+Saturday targets. The normal-case conservative union is 64 native executions,
+55 business operations / 110 gateway attempts, 20 provider GETs and two actor
+starts. Automatic error tests, forged/replayed callbacks, setup, additional
+incoming webhooks, readback and shutdown consume the separate whole-batch
+reserve. These are source upper bounds, not actual executions or provider quotas.
+This subset does not prove all five SUBs executed: SUB Ingest and SUB Cost still
+need explicit idempotent native cases using the original actual run/item-group
+and measured-cost receipts, with no extra actor or invented cost. Their exact
+inputs/allocations belong in the final ordered control plan. The second genuine
+launch must wait for the first registered, processed and measured-cost receipt;
+the source catalog's display order is not an execution script.
+
+Native dependency publication must be explicitly covered by the final decision:
+publish log-only SUB Notify first, then WF-90; install the 24 canonical error
+links with draft-only PUT; republish SUB Notify and required SUBs/stubs in
+dependency order; temporarily publish WF-19 for callbacks. Any WF-00 case variant
+must retain all Schedule Triggers disabled. Publication and canonical error-link
+acceptance have not occurred. The staged graph PUT uses
+`?publishIfActive=false`; pre/post reads are not native compare-and-swap locking.
+
 | Case | Required receipt / stop rule |
 | --- | --- |
 | First actor run | Guarded C999 fixture only; one distinct item maximum, actual separate run/cost, registered atomic completion; no real seeded account touched |
@@ -151,18 +207,14 @@ for exact-ID readback, never an automatic replay or a replacement window.
 
 ### Precise remaining prerequisites before this packet becomes approval-ready
 
-1. Finish/review the bounded **inactive-only** provisioning consumer, seal the
-   actual disabled Preview audience, then request one temporary handoff of the
-   owner's **existing** management key. Save/read back actual 25 workflow IDs,
-   13 tag IDs, one new dedicated machine credential ID and clean full exports.
-   Reuse the five existing credential references; no password is needed here.
-   This preparation and first handoff occurred: actual attempt `f20045` made
-   two GETs, authenticated its project read, then failed the bounded workflow-list
-   body checks before any mutation. Both journals remain empty. Management files
-   were deleted and the child closed; the pending Machine is retained encrypted
-   locally, with zero Cloud credentials created. The actual cause remains unknown.
-   Fix/review the reproduced HTTP-token case defect and narrower supported name
-   filter locally before any further credential delivery; no broad retry.
+1. Finish independent review/public resealing of the native compatibility and
+   durable per-export correction, then replenish only the consumed **existing**
+   Management handoff using `New-M03FoundationHandoff.ps1`. Resume from the 25
+   real IDs, seven tags and original journals; no shell recreation or token
+   regeneration. Reconcile the ambiguous tag by complete bounded GET before
+   saving remaining tags, one Machine and 25 staged definitions. Export each
+   actual verified graph immediately so a later failure preserves earlier
+   evidence. No writer, administrator or provider password is needed here.
 2. Record exact source SHA, pending migration hashes, actual saved graph hashes,
    inactive flags and current CI/Preview references. The protected source Preview
    is not evidence of an enabled runtime or an open window.
@@ -175,6 +227,22 @@ for exact-ID readback, never an automatic replay or a replacement window.
    dev-only restricted runtime credentials and read-scoped Apify token, and the
    above bounded USD 2/two-run batch. Do not request administrator/Writer/provider
    passwords just to reproduce prior successful work or before that decision.
+
+One safe connector metadata read of the known owned WF-99 shell
+`qTjioYmBUVMIERVz` on 19 October returned no usable workflow metadata. No execution
+was attempted; raw responses were suppressed and no login/discovery loop followed.
+Consequently a supported actual manual-execution control with projected completion
+and cancellation readback is still an engineering prerequisite, independently of
+Management API saves. The public management API does not supply a generic manual
+execution endpoint; simulation or workflow access alone cannot replace that proof.
+
+Runtime setup also needs a new immutable Preview **after** its narrowly scoped
+environment is delivered. The inactive source Preview above cannot receive later
+environment snapshots in place. The final approved setup must read back that new
+deployment, update only the owned Machine domain/audience and pending metadata,
+recompile/save its exact fixed-route graphs and bind the distinct SQL window to
+that deployment before opening admission. This is conditional future setup, not
+authority to enable the existing Preview or silently reuse its binding.
 
 The read-scoped provider token is a genuine new transport prerequisite: installed
 n8n HTTP/Apify nodes cannot stream-enforce the byte ceiling and the existing native

@@ -1,3 +1,4 @@
+import { nativeFoundationTagName } from '../../packages/shared/src/n8n-bindings.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
@@ -22,7 +23,10 @@ const binding = () => ({
     ]),
   ),
   tagRefs: Object.fromEntries(
-    foundationTagNames.map((name, i) => [name, { id: `SyntheticHealthTag${i}`, name }]),
+    foundationTagNames.map((name, i) => [
+      name,
+      { id: `SyntheticHealthTag${i}`, name: nativeFoundationTagName(name) },
+    ]),
   ),
   credentials: {
     postgres: {

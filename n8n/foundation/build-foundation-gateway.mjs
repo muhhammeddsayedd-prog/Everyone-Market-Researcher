@@ -4,6 +4,7 @@
   buildCollectorStubs,
   code,
   node,
+  nodeId,
   line,
 } from './build-foundation.mjs';
 import { buildHealthWorkflow } from './build-health.mjs';
@@ -211,7 +212,16 @@ export function compileFoundationGateway(input, config) {
     starts = new Map(),
     additions = {};
   graph.workflow.nodes = graph.workflow.nodes.flatMap((n) => {
-    if (n.type !== 'n8n-nodes-base.postgres') return [n];
+    if (n.type !== 'n8n-nodes-base.postgres') {
+      // n8n2.43.5 assigns a random webhookId during save for every type with
+      // webhook definitions, including Wait in timeInterval mode. Pin both
+      // types here so native save cannot alter the reviewed routing identity.
+      // packages/workflow/src/node-helpers.ts:resolveNodeWebhookId
+      // packages/nodes-base/nodes/{Webhook,Wait}/*.node.ts
+      if (['n8n-nodes-base.webhook', 'n8n-nodes-base.wait'].includes(n.type))
+        n.webhookId = nodeId(graph.key, 'Webhook routing: ' + n.name);
+      return [n];
+    }
     const spec = mapping.get(sourceQuery(n.parameters.query ?? ''));
     if (!spec) throw Error('FOUNDATION_OPERATION_UNMAPPED');
     const replacement = n.parameters.options?.queryReplacement;

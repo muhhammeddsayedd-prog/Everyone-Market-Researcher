@@ -5,14 +5,14 @@
 
 ## Now
 
-|                       |                                                                                                                                                                                                                                                                                                                              |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                                                                                                         |
-| **Status**            | In progress: full M03 foundation source/local checks pass. The first inactive-delivery attempt authenticated its project read, then stopped at the bounded list-body check before any Cloud mutation. GW-01 stays closed.                                                                                                    |
-| **Next step**         | The concrete narrowed-list/HTTP correction passed targeted and independent review; actual reseal/CheckOnly passed. Replenish only the consumed existing Management-key handoff, then resume bounded inactive provisioning. Actual IDs and the final live packet remain pending.                                              |
-| **Waiting on owner**  | Only the existing n8n Management key through New-M03FoundationHandoff.ps1; the consumed temporary pair is verified absent. No new key, provider/database password or general dev approval. Private incident R2 stays held separately.                                                                                        |
-| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                                                                                                                      |
-| **Last updated**      | 19 October 2026 Cairo: f20045 preserved two GETs/zero Cloud writes. Corrected query/framing source passed27 affected checks, isolated Windows diagnostic protocol and independent22-case review; actual public reseal/CheckOnly native0. ba6be60/CI39178472647 passed all five jobs; correction receives normal new-head CI. |
+|                       |                                                                                                                                                                                                                                                                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                                                                                                                  |
+| **Status**            | Blocked: waiting on owner — MA-11 existing Management handoff redelivery.25 actual inactive shells/seven tags preserved; native corrections reviewed/tested/resealed. GW-01 stays closed.                                                                                                                                             |
+| **Next step**         | Reconcile/resume the25 owned IDs/seven tags through sealed All consumer; save/export25 inactive staged definitions. Keep24 error links explicitly deferred until the separately approved native publication.                                                                                                                          |
+| **Waiting on owner**  | Only the consumed existing Management-key temporary handoff. Exact reviewed command/expected reply are in M03 PROGRESS. No new key, password or Machine token. PrivateR2 remains held.                                                                                                                                                |
+| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                                                                                                                               |
+| **Last updated**      | 19 October 2026 Cairo: actual33-input/840-dependency public seal and CheckOnly pass native0; independent review closed short-write P2. Historical70management requests/25shells/seven tags retained. No full graphs/Cloudcredentials/executions yet. bfe19f1/CI39178989894 passed; substantive corrections receive normal new-headCI. |
 
 ## Milestone board
 
@@ -47,6 +47,21 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
 | Production launch     | —          |
 
 ## Log (newest first)
+
+- 2026-10-19 Cairo: Second inactive attempt `44cc22` made68 management requests,
+  saved/read back25 owned inactive noOp shells and seven tags, then stopped at
+  tagPOST409. No full graphs, Cloud Machine, execution or gateway admission.
+  Both consumed Management pairs were deleted and children closed; pending
+  Machine stays encrypted. Actual25 IDs/seven tags and original75/15 journal
+  events are preserved. Native contract audit now covers label/credential limits,
+  deterministic webhook routing and draft-only saves. The24 native error links
+  require a later published WF-90 and remain explicitly deferred. Independent
+  review caught incomplete disk-write handling before another key request;
+  local correction/reseal is in progress. A single owned WF-99 connector metadata
+  read supplied no usable control metadata; no execution or discovery loop.
+  [Partial inventory](milestones/M03-n8n-foundation/evidence/inactive-foundation-partial-20261019.json),
+  [native audit](milestones/M03-n8n-foundation/evidence/native-api-contract-audit-20261019.md),
+  [remaining final-packet prerequisites](milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md).
 
 - 2026-10-19 Cairo: Actual inactive attempt `f20045` stopped on its second GET at
   the body boundary; no Cloud mutation/execution, empty journals, deleted temporary

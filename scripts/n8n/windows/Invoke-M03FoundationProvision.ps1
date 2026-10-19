@@ -33,7 +33,7 @@ if($CheckOnly){
  exit 0
 }
 $secret=$null;$key=$null;$machine=$null;$machineSecret=$null;$bstr=[IntPtr]::Zero;$child=$null;$start=$null;$memory=$null;$buffer=$null;$operationLock=$null;$closed=$true;$started=$false;$consumed=$false;$exitCode=1
-$receipt=[ordered]@{version=1;status='blocked';nativeExit=$null;childClosed=$true;requestCount=0;verifiedWorkflows=0;handoffDeleted=$false;leaseDeleted=$false;finalBindingReady=$false;pendingMachineStoreRetained=$false;operationLockAcquired=$false;privateRead=$false;diagnostics=$null}
+$receipt=[ordered]@{version=1;status='blocked';nativeExit=$null;childClosed=$true;requestCount=0;verifiedWorkflows=0;handoffDeleted=$false;leaseDeleted=$false;finalBindingReady=$false;pendingMachineStoreRetained=$false;inactiveDefinitionsSaved=$false;deferredErrorWorkflowCount=0;persistedExports=0;errorRoutingAccepted=$false;operationLockAcquired=$false;privateRead=$false;diagnostics=$null}
 try{
  if($Mode -ceq 'All' -and $null -eq $publicPacket){throw 'blocked'}
  $outputDirectory=Join-Path $repo 'scripts/n8n/out/foundation'
@@ -59,7 +59,7 @@ try{
  if($Mode -ceq 'All'){
   $pendingMachineFile=Join-Path $privateRoot 'Everyone-Market-Radar-Private/foundation/df4f29ec-e2dc-4d82-a276-62a4e695e6f9/machine.dpapi'
   . (Safe-File $repo 'scripts/n8n/windows/Get-M03FoundationPendingMachine.ps1')
-  $machineSecret=Get-M03FoundationPendingMachine -Audience $publicPacket.audience -SourceCommitSha $publicPacket.sourceCommitSha
+  $machineSecret=Get-M03FoundationPendingMachine -Audience $publicPacket.audience -SourceCommitSha $publicPacket.sourceCommitSha -BindingJournalPath (Safe-File $repo 'scripts/n8n/out/foundation/binding-intents.jsonl')
   $bstr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($machineSecret);$machine=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr);[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr);$bstr=[IntPtr]::Zero;$machineSecret.Dispose();$machineSecret=$null
   if($machine -cnotmatch '^[A-Za-z0-9_-]{43}$'){throw 'blocked'};$receipt.pendingMachineStoreRetained=$true
  }
@@ -76,15 +76,16 @@ try{
  if(-not [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($stdout,$stderr)).Wait(5000)){throw 'blocked'}
  $text=[Text.Encoding]::UTF8.GetString($buffer,0,[int]$memory.Position);if($text.Contains($key) -or ($null -ne $machine -and $text.Contains($machine))){throw 'blocked'}
  $result=ConvertFrom-Json -InputObject $text
- if($result.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or $result.host -cne 'muhhammedsayed.app.n8n.cloud' -or $result.projectId -cne 'pHvQjDmjxVZ3KQLT' -or $result.requestCount -lt 0 -or $result.requestCount -gt 185 -or $result.executionCount -ne 0 -or $result.credentialsCreated -lt 0 -or $result.credentialsCreated -gt 1 -or $result.gatewayWindowStarted -isnot [bool] -or $result.gatewayWindowStarted -ne $false -or $result.finalGraphsBound -isnot [bool] -or ($Mode -cne 'All' -and $result.finalGraphsBound -ne $false)){throw 'blocked'}
- $receipt.status=$result.status;$receipt.requestCount=$result.requestCount;$receipt.verifiedWorkflows=$result.verifiedWorkflows;$receipt.finalBindingReady=$result.finalGraphsBound
+ if($result.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or $result.host -cne 'muhhammedsayed.app.n8n.cloud' -or $result.projectId -cne 'pHvQjDmjxVZ3KQLT' -or $result.requestCount -lt 0 -or $result.requestCount -gt 185 -or $result.executionCount -ne 0 -or $result.credentialsCreated -lt 0 -or $result.credentialsCreated -gt 1 -or $result.gatewayWindowStarted -isnot [bool] -or $result.gatewayWindowStarted -ne $false -or $result.finalGraphsBound -isnot [bool] -or $result.inactiveDefinitionsSaved -isnot [bool] -or $result.deferredErrorWorkflowCount -isnot [int] -or $result.deferredErrorWorkflowCount -lt 0 -or $result.deferredErrorWorkflowCount -gt 24 -or $result.persistedExports -isnot [int] -or $result.persistedExports -lt 0 -or $result.persistedExports -gt 25 -or $result.errorRoutingAccepted -isnot [bool] -or $result.errorRoutingAccepted -ne $false -or $result.finalGraphsBound -ne $false){throw 'blocked'}
+ if($Mode -ceq 'All' -and $result.status -ceq 'inactive_foundation_staged' -and ($result.verifiedWorkflows -isnot [int] -or $result.verifiedWorkflows -ne 25 -or $result.inactiveDefinitionsSaved -ne $true -or $result.deferredErrorWorkflowCount -ne 24 -or $result.persistedExports -ne 25 -or $result.finalGraphsBound -ne $false -or $result.errorRoutingAccepted -ne $false)){throw 'blocked'}
+ $receipt.status=$result.status;$receipt.requestCount=$result.requestCount;$receipt.verifiedWorkflows=$result.verifiedWorkflows;$receipt.finalBindingReady=$result.finalGraphsBound;$receipt.inactiveDefinitionsSaved=$result.inactiveDefinitionsSaved;$receipt.deferredErrorWorkflowCount=$result.deferredErrorWorkflowCount;$receipt.errorRoutingAccepted=$result.errorRoutingAccepted;$receipt.persistedExports=$result.persistedExports
  $diagnosticProperty=$result.PSObject.Properties['diagnostics']
  if($null -ne $diagnosticProperty -and $null -ne $diagnosticProperty.Value){
   $d=$diagnosticProperty.Value
   if(@(Compare-Object -CaseSensitive @('lastMethod','lastResource','httpStatus','transportCode','transportReason'|Sort-Object) @($d.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $d.lastMethod -cnotin @('GET','POST','PUT') -or $d.lastResource -cnotin @('credential_schema','owned_credential','tags','projects','owned_workflows') -or ($null -ne $d.httpStatus -and ($d.httpStatus -isnot [int] -or $d.httpStatus -lt 100 -or $d.httpStatus -gt 599)) -or ($null -ne $d.transportCode -and ($d.transportCode -isnot [string] -or ($d.transportCode -cne 'unclassified' -and $d.transportCode -cnotmatch '^FOUNDATION_(?:TRANSPORT_(?:DNS|CLOSE|TLS|STATUS|BODY|PARSE|DEADLINE)|REQUEST_REJECTED)$'))) -or ($null -ne $d.transportReason -and ($d.transportReason -isnot [string] -or $d.transportReason -cnotin @('lease_expired','request_not_allowed','dns_rejected','socket_not_closed','response_incomplete','request_timeout','response_aborted','response_error','status_invalid','content_encoding_rejected','transfer_framing_rejected','content_length_invalid','body_declared_limit','body_stream_limit','body_incomplete','body_length_mismatch','utf8_invalid','json_invalid','duplicate_socket','socket_error','request_error','request_failed')))){throw 'blocked'}
   $receipt.diagnostics=$d
  }
- if($receipt.nativeExit -eq 0 -and $result.status -cin @('shells_verified','reconciliation_complete','inactive_foundation_verified')){$exitCode=0}
+ if($receipt.nativeExit -eq 0 -and $result.status -cin @('shells_verified','reconciliation_complete','inactive_foundation_staged')){$exitCode=0}
 }catch{
  # No raw exceptions, child output, connection values or credentials escape.
 }finally{

@@ -48,6 +48,29 @@ export const foundationTagNames = [
   'platform:news',
 ] as const;
 
+// These keys describe logical platform/layer semantics. n8n2.43.5's TagEntity
+// enforces1–24 characters, so only the three oversized keys need native labels.
+// References retain the logical key and store the actual native name separately.
+export const foundationNativeTagNames = Object.freeze({
+  'env:dev': 'env:dev',
+  'layer:collector': 'layer:collector',
+  'layer:ai': 'layer:ai',
+  'layer:ops': 'layer:ops',
+  'layer:sub': 'layer:sub',
+  'platform:vimeo': 'platform:vimeo',
+  'platform:instagram': 'platform:instagram',
+  'platform:instagram_stories': 'platform:ig_stories',
+  'platform:youtube': 'platform:youtube',
+  'platform:linkedin': 'platform:linkedin',
+  'platform:linkedin_employees': 'platform:li_employees',
+  'platform:website_work_page': 'platform:web_work',
+  'platform:news': 'platform:news',
+} as const);
+export function nativeFoundationTagName(logicalKey: string): string {
+  if (!Object.hasOwn(foundationNativeTagNames, logicalKey)) throw new Error('EMR_N8N_TAG_INVALID');
+  return foundationNativeTagNames[logicalKey as keyof typeof foundationNativeTagNames];
+}
+
 export const alertKinds = [
   'daily_digest',
   'weekly_brief',
@@ -154,7 +177,10 @@ export const n8nBindingsSchema = z
     instanceUrl: z.literal('https://muhhammedsayed.app.n8n.cloud'),
     projectId: z.literal('pHvQjDmjxVZ3KQLT'),
     workflowRefs: z.record(z.string(), reference),
-    tagRefs: z.partialRecord(z.enum(foundationTagNames), reference),
+    tagRefs: z.partialRecord(
+      z.enum(foundationTagNames),
+      reference.extend({ name: z.string().min(1).max(24) }),
+    ),
     credentials: z
       .strictObject({
         postgres: logicalCredentialSchemas.postgres.optional(),
@@ -174,7 +200,7 @@ export const n8nBindingsSchema = z
       workflowIds.add(ref.id);
     }
     for (const [name, ref] of Object.entries(value.tagRefs)) {
-      if (ref && (ref.name !== name || tagIds.has(ref.id)))
+      if (ref && (ref.name !== nativeFoundationTagName(name) || tagIds.has(ref.id)))
         ctx.addIssue({ code: 'custom', message: 'invalid reference' });
       if (ref) tagIds.add(ref.id);
     }

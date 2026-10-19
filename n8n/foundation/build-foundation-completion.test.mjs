@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { runInNewContext } from 'node:vm';
-import { foundationWorkflowNames, foundationTagNames } from '../../packages/shared/src/n8n-bindings.ts';
+import {
+  foundationWorkflowNames,
+  foundationTagNames,
+  nativeFoundationTagName,
+} from '../../packages/shared/src/n8n-bindings.ts';
 import { buildFoundationGatewayWorkflows } from './build-foundation-gateway.mjs';
 const bindings = {
   runtimeVersion: '2.43.5',
@@ -16,7 +20,10 @@ const bindings = {
     ]),
   ),
   tagRefs: Object.fromEntries(
-    foundationTagNames.map((name, i) => [name, { id: 'SyntheticCompleteTag' + i, name }]),
+    foundationTagNames.map((name, i) => [
+      name,
+      { id: 'SyntheticCompleteTag' + i, name: nativeFoundationTagName(name) },
+    ]),
   ),
   credentials: {
     postgres: {

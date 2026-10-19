@@ -4,7 +4,6 @@ import {
   openSync,
   closeSync,
   fsyncSync,
-  writeSync,
   mkdirSync,
   lstatSync,
   existsSync,
@@ -16,6 +15,7 @@ import { foundationManagementTransport } from './foundation-management-transport
 import { parseFoundationPacket, createBindingJournal, machineBody } from './foundation-bind.mjs';
 import { runAllProvision } from './foundation-all.mjs';
 import { foundationTagNames } from '../../packages/shared/src/n8n-bindings.ts';
+import { createOwnedStagingExportWriter, writeCompleteSync } from './foundation-export.mjs';
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const out = join(repo, 'scripts/n8n/out/foundation'),
   journalPath = join(out, 'owned-shells.jsonl');
@@ -61,7 +61,7 @@ function journal() {
   if (!existsSync(journalPath)) {
     const fd = openSync(journalPath, 'wx');
     try {
-      writeSync(fd, JSON.stringify({ version: 1, windowId: foundationScope.windowId }) + '\n');
+      writeCompleteSync(fd, JSON.stringify({ version: 1, windowId: foundationScope.windowId }) + '\n');
       fsyncSync(fd);
     } finally {
       closeSync(fd);
@@ -74,7 +74,7 @@ function journal() {
       noLinks(journalPath);
       const fd = openSync(journalPath, 'a');
       try {
-        writeSync(fd, JSON.stringify(row) + '\n');
+        writeCompleteSync(fd, JSON.stringify(row) + '\n');
         fsyncSync(fd);
       } finally {
         closeSync(fd);
@@ -113,7 +113,7 @@ function bindingJournal() {
   if (!existsSync(path)) {
     const fd = openSync(path, 'wx');
     try {
-      writeSync(
+      writeCompleteSync(
         fd,
         JSON.stringify({ version: 1, windowId: foundationScope.windowId, kind: 'inactive_binding_intents' }) +
           '\n',
@@ -127,7 +127,7 @@ function bindingJournal() {
     noLinks(path);
     const fd = openSync(path, 'a');
     try {
-      writeSync(fd, JSON.stringify(row) + '\n');
+      writeCompleteSync(fd, JSON.stringify(row) + '\n');
       fsyncSync(fd);
     } finally {
       closeSync(fd);
@@ -226,6 +226,7 @@ try {
               send,
               context,
               tagNames: foundationTagNames,
+              onVerified: createOwnedStagingExportWriter(repo, [key, machine]),
             },
           )
         : await runShellProvision(key, owned, send, { reconcileOnly: mode === 'Reconcile' });
@@ -249,16 +250,7 @@ try {
         );
       }
     }
-    if (result.status === 'inactive_foundation_verified') {
-      const directory = noLinks(join(repo, 'n8n/workflows'));
-      mkdirSync(directory, { recursive: true });
-      noLinks(directory);
-      for (const workflow of result.workflows)
-        writeFileSync(
-          noLinks(join(directory, workflow.key + '.json')),
-          JSON.stringify({ kind: 'actual_saved_inactive_foundation_definition', ...workflow }, null, 2) +
-            '\n',
-        );
+    if (result.status === 'inactive_foundation_staged') {
       writeFileSync(
         noLinks(join(repo, 'n8n/foundation/bindings.dev.json')),
         JSON.stringify(result.bindings, null, 2) + '\n',
@@ -267,7 +259,7 @@ try {
         noLinks(join(repo, 'n8n/foundation/transport.dev.json')),
         JSON.stringify(
           {
-            kind: 'actual_saved_inactive_transport_binding',
+            kind: 'actual_saved_inactive_staging_transport_binding',
             ...result.transport,
             activationAuthorized: false,
           },
@@ -289,14 +281,16 @@ try {
       credentialsCreated: result.credentialsCreated,
       gatewayWindowStarted: false,
       finalGraphsBound: result.finalGraphsBound,
+      inactiveDefinitionsSaved: result.inactiveDefinitionsSaved ?? false,
+      deferredErrorWorkflowCount: result.deferredErrorWorkflowCount ?? 0,
+      errorRoutingAccepted: false,
+      persistedExports: result.persistedExports ?? 0,
       networkCompletionVerified: result.networkCompletionVerified,
       diagnostics: result.diagnostics ?? null,
     });
-    process.exitCode = [
-      'shells_verified',
-      'reconciliation_complete',
-      'inactive_foundation_verified',
-    ].includes(result.status)
+    process.exitCode = ['shells_verified', 'reconciliation_complete', 'inactive_foundation_staged'].includes(
+      result.status,
+    )
       ? 0
       : 1;
   }

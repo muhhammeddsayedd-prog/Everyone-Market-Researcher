@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
-import { foundationWorkflowNames, foundationTagNames } from '../../packages/shared/src/n8n-bindings.ts';
+import {
+  foundationWorkflowNames,
+  foundationTagNames,
+  nativeFoundationTagName,
+} from '../../packages/shared/src/n8n-bindings.ts';
 import { buildFoundationGatewayWorkflows, compileFoundationGateway } from './build-foundation-gateway.mjs';
+import { nodeId } from './build-foundation.mjs';
 
 export const syntheticFoundationBindings = () => ({
   runtimeVersion: '2.43.5',
@@ -16,7 +21,10 @@ export const syntheticFoundationBindings = () => ({
     ]),
   ),
   tagRefs: Object.fromEntries(
-    foundationTagNames.map((name, i) => [name, { id: `SyntheticFoundationTag${i}`, name }]),
+    foundationTagNames.map((name, i) => [
+      name,
+      { id: `SyntheticFoundationTag${i}`, name: nativeFoundationTagName(name) },
+    ]),
   ),
   credentials: {
     postgres: {
@@ -87,6 +95,39 @@ test('all foundation database calls compile to fixed HTTPS operations with no SQ
       );
     }
   }
+});
+
+test('native save normalization preserves the pinned Webhook and Wait routing IDs', () => {
+  const build = () =>
+    buildFoundationGatewayWorkflows(syntheticFoundationBindings(), syntheticFoundationTransport());
+  const graphs = build();
+  const routed = graphs.flatMap((graph) =>
+    graph.workflow.nodes
+      .filter((n) => ['n8n-nodes-base.webhook', 'n8n-nodes-base.wait'].includes(n.type))
+      .map((n) => ({ key: graph.key, node: n })),
+  );
+  assert.equal(routed.length, 2);
+  assert.deepEqual(
+    new Set(routed.map(({ node }) => node.type)),
+    new Set(['n8n-nodes-base.webhook', 'n8n-nodes-base.wait']),
+  );
+  for (const { key, node } of routed) {
+    assert.equal(node.webhookId, nodeId(key, 'Webhook routing: ' + node.name));
+    const nativeSaved = structuredClone(node);
+    // Pinned n8n 2.43.5 resolveNodeWebhookId only injects an ID when absent,
+    // including Wait's timeInterval mode because its type declares webhooks.
+    if (!nativeSaved.webhookId) nativeSaved.webhookId = 'NATIVE_RANDOM_ID_MUST_NOT_APPEAR';
+    assert.deepEqual(nativeSaved, node);
+  }
+  const again = build().flatMap((g) => g.workflow.nodes.filter((n) => n.webhookId).map((n) => n.webhookId));
+  assert.deepEqual(
+    again,
+    routed.map(({ node }) => node.webhookId),
+  );
+  assert.equal(new Set(again).size, 2);
+  const callback = routed.find(({ node }) => node.type === 'n8n-nodes-base.webhook').node;
+  assert.equal(callback.parameters.path, 'emr-apify-callback');
+  assert.equal(callback.parameters.authentication, 'none');
 });
 test('closed GW01 window and removed credentials cannot be substituted for the new foundation profile', () => {
   for (const change of [

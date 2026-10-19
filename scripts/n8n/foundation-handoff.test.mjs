@@ -40,7 +40,7 @@ test('isolated All without a public delivery packet blocks before stdin/private 
   try {
     const list = readFileSync('scripts/n8n/windows/Foundation-PublicRuntime.ps1', 'utf8');
     const relatives = [...list.matchAll(/^  '([^']+)'/gm)].map((x) => x[1]);
-    assert.equal(relatives.length, 32);
+    assert.equal(relatives.length, 33);
     for (const relative of relatives) {
       const target = join(root, relative);
       mkdirSync(dirname(target), { recursive: true });
@@ -86,6 +86,64 @@ test('handoff and bounded consumer use only distinct purpose/paths; no key in ar
   assert.ok(c.includes('$child.Kill()'));
   assert.ok(c.includes('[IO.File]::Delete($handoff)'));
 });
+test(
+  'actual PowerShell staging-success guard rejects incomplete or canonical-routing claims without private reads',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const source = readFileSync('scripts/n8n/windows/Invoke-M03FoundationProvision.ps1', 'utf8');
+    const statement = source
+      .split(/\r?\n/)
+      .find((line) =>
+        line.includes("$Mode -ceq 'All' -and $result.status -ceq 'inactive_foundation_staged'"),
+      );
+    assert.ok(statement, 'exercise the actual consumer guard rather than a duplicate validator');
+    const valid = {
+      status: 'inactive_foundation_staged',
+      verifiedWorkflows: 25,
+      inactiveDefinitionsSaved: true,
+      deferredErrorWorkflowCount: 24,
+      persistedExports: 25,
+      finalGraphsBound: false,
+      errorRoutingAccepted: false,
+    };
+    const cases = [
+      valid,
+      ...[
+        { verifiedWorkflows: 24 },
+        { persistedExports: 24 },
+        { deferredErrorWorkflowCount: 23 },
+        { inactiveDefinitionsSaved: false },
+        { finalGraphsBound: true },
+        { errorRoutingAccepted: true },
+      ].map((change) => ({ ...valid, ...change })),
+    ];
+    const root = mkdtempSync(join(tmpdir(), 'emr-foundation-stage-guard-'));
+    try {
+      const wrapper = join(root, 'public-guard.ps1');
+      writeFileSync(
+        wrapper,
+        "$Mode='All';$cases=ConvertFrom-Json -InputObject '" +
+          JSON.stringify(cases).replaceAll("'", "''") +
+          "';$out=@();foreach($result in $cases){try{" +
+          statement +
+          ";$out+='accepted'}catch{$out+='rejected'}};$out|ConvertTo-Json -Compress",
+      );
+      const r = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', wrapper], {
+        encoding: 'utf8',
+        env: env(),
+        timeout: 10000,
+        windowsHide: true,
+      });
+      assert.equal(r.status, 0);
+      assert.equal(r.stderr, '');
+      assert.deepEqual(JSON.parse(r.stdout), ['accepted', ...Array(6).fill('rejected')]);
+    } finally {
+      assert.equal(dirname(root), tmpdir());
+      assert.ok(basename(root).startsWith('emr-foundation-stage-guard-'));
+      rmSync(root, { recursive: true, force: true });
+    }
+  },
+);
 test(
   'Windows hidden-prompt helper creates only fake isolated DPAPI+lease and preserves a preexisting handoff',
   { skip: process.platform !== 'win32' },
@@ -152,10 +210,20 @@ test(
         mkdirSync(dirname(target), { recursive: true });
         writeFileSync(target, readFileSync(relative));
       }
+      const fixtureJournal = join(repo, 'scripts/n8n/out/foundation/binding-intents.jsonl');
+      mkdirSync(dirname(fixtureJournal), { recursive: true });
+      writeFileSync(
+        fixtureJournal,
+        JSON.stringify({
+          version: 1,
+          windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+          kind: 'inactive_binding_intents',
+        }) + '\n',
+      );
       const cli = join(repo, 'scripts/n8n/foundation-provision-cli.mjs');
       writeFileSync(
         cli,
-        `import{readFileSync}from'node:fs';const p=JSON.parse(readFileSync(0,'utf8'));if(p.key!=='PUBLIC_SYNTHETIC_NON_SECRET'||!/^[A-Za-z0-9_-]{43}$/.test(p.machine))process.exit(1);process.stdout.write(JSON.stringify({version:1,windowId:'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',host:'muhhammedsayed.app.n8n.cloud',projectId:'pHvQjDmjxVZ3KQLT',status:'inactive_foundation_verified',phase:'complete',requestCount:0,verifiedWorkflows:25,executionCount:0,credentialsCreated:1,gatewayWindowStarted:false,finalGraphsBound:true,networkCompletionVerified:true,diagnostics:{lastMethod:'GET',lastResource:'owned_workflows',httpStatus:200,transportCode:'FOUNDATION_TRANSPORT_BODY',transportReason:'body_declared_limit'}})+'\\n');`,
+        `import{readFileSync}from'node:fs';const p=JSON.parse(readFileSync(0,'utf8'));if(p.key!=='PUBLIC_SYNTHETIC_NON_SECRET'||!/^[A-Za-z0-9_-]{43}$/.test(p.machine))process.exit(1);process.stdout.write(JSON.stringify({version:1,windowId:'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',host:'muhhammedsayed.app.n8n.cloud',projectId:'pHvQjDmjxVZ3KQLT',status:'inactive_foundation_staged',phase:'complete',requestCount:0,verifiedWorkflows:25,executionCount:0,credentialsCreated:1,gatewayWindowStarted:false,finalGraphsBound:false,inactiveDefinitionsSaved:true,deferredErrorWorkflowCount:24,errorRoutingAccepted:false,persistedExports:25,networkCompletionVerified:true,diagnostics:{lastMethod:'GET',lastResource:'owned_workflows',httpStatus:200,transportCode:'FOUNDATION_TRANSPORT_BODY',transportReason:'body_declared_limit'}})+'\\n');`,
       );
       const publicPacket = {
         version: 1,
@@ -210,6 +278,10 @@ test(
       assert.equal(r.stdout.includes('PUBLIC_SYNTHETIC_NON_SECRET'), false);
       const receipt = JSON.parse(r.stdout.trim().split(/\r?\n/).at(-1));
       assert.equal(receipt.childClosed, true);
+      assert.equal(receipt.finalBindingReady, false);
+      assert.equal(receipt.inactiveDefinitionsSaved, true);
+      assert.equal(receipt.deferredErrorWorkflowCount, 24);
+      assert.equal(receipt.errorRoutingAccepted, false);
       assert.deepEqual(receipt.diagnostics, {
         lastMethod: 'GET',
         lastResource: 'owned_workflows',
