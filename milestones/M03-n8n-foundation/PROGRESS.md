@@ -123,6 +123,14 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
+- Separate private operational follow-up: bounded read-only preparation and
+  temporary-credential cleanup completed; actual projections and remaining
+  production-decision engineering gates are recorded only in the private packet.
+  No additional owner input or credential delivery is requested now. This does
+  not establish full consumer/drain coverage, authorize a production change or
+  close any foundation live criterion. Preserve the completed inactive delivery;
+  no successful consumer replay, broader discovery or login/setup loop.
+
 - Strict native n8n Postgres TLS remains unresolved. Actual saved host/session port5432/user/database/max5/SSL Require/Ignore SSL off/SSH off match. Its credential Retry/native Postgres2.7 SELECT encountered a self-signed-chain error, so native Cloud identity is not established. Separate GW-01 direct Writer Verify now passes actual restricted authentication/strict TLS/four42501 rollback denials; it does not relabel the native result. Preserve credentials/security and the declined support-contact boundary. [Native receipt](evidence/credential-readback-20261018.json), [direct Writer receipt](evidence/gw01-writer-verify-20261018.json), [source review](evidence/postgres-cloud-ca-review-20261018.md).
 - [GW-01](evidence/strict-tls-connection-proposal-20261018.md) dev exception was approved for the bounded connection trial. [Authorization](evidence/gw01-authorization-20261018.json). The [actual trial/closeout](evidence/gw01-trial-closeout-20261018.json) verifies gateway/native HTTP-node identity, reads, duplicate/replay/conflict and both lost-ack recoveries. Writer/local windows closed, dedicated bypass revoked, both known snapshots reject public POSTs, owned credentials and temporary handoffs removed. Native Postgres TLS and full M03 acceptance remain open. The original Environment deletion failed at the CLI confirmation branch; GET reconciliation and one independently reviewed ResumeCleanup now verify both owned entries absent, with the original failure/intent preserved. There are 23/100 local attempts and 17 SQL admissions including one Close; the server is closed with zero leases and unchanged baseline data. The temporary window cannot reopen/reset. Earlier [public transitions](evidence/gw01-public-seal-transitions-20261018.json), [delivery](evidence/gw01-environment-delivery-20261018.json), [metadata](evidence/gw01-runtime-readback-20261018.json) and [binding](evidence/gw01-pretrial-binding-delivery-20261018.json) remain historical. No owner action, new handoff or replay requested.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.

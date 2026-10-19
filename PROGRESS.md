@@ -48,6 +48,14 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
 
 ## Log (newest first)
 
+- 2026-10-19 Cairo: Separate private read-only operational follow-up completed;
+  projected evidence and verified temporary-credential cleanup remain outside
+  Git. Its production decision stays held on engineering prerequisites. No
+  additional owner input is requested now and no M03 acceptance gate was closed
+  by those reads. Inactive delivery at `38ad3ae` passed all five jobs in
+  [CI39181054152](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39181054152)
+  and Vercel. PR8 stays draft; GW-01 closed; no production, execution or M04.
+
 - 2026-10-19 Cairo: Reviewed/sealed continuation `da8fd3` completed native0/child
   closed after118management requests. All25 owned definitions are saved/read back
   inactive with actual exports/version IDs, all13tags and one dedicated Machine.
