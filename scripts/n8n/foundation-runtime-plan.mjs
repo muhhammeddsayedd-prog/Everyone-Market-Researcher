@@ -3,6 +3,11 @@ import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs
 import { graphBody, inactiveNativeStagingGraph } from './foundation-bind.mjs';
 import { materializeFoundationAcceptanceCase } from '../../n8n/foundation/materialize-acceptance-case.mjs';
 import { buildFoundationGatewayWorkflows } from '../../n8n/foundation/build-foundation-gateway.mjs';
+import {
+  createFoundationApprovedRetentionPolicy,
+  assertFoundationApprovedRetentionPolicy,
+  applyFoundationApprovedRetentionSettings,
+} from './foundation-retention-proposal.mjs';
 
 const blocked = () => {
   throw Error('FOUNDATION_RUNTIME_PLAN_BLOCKED');
@@ -72,7 +77,7 @@ export function createFoundationRuntimeSetupOutput(v) {
 function bodyFor(record) {
   return graphBody({ key: record.key, workflow: { ...record.workflow, active: false } });
 }
-function runtimeBody(graph, setup, errorLink) {
+function runtimeBody(graph, setup, errorLink, retentionPolicy) {
   const body = graphBody(graph);
   for (const n of body.nodes) {
     if (n.type === 'n8n-nodes-base.scheduleTrigger') n.disabled = true;
@@ -81,6 +86,7 @@ function runtimeBody(graph, setup, errorLink) {
     }
   }
   if (JSON.stringify(body).includes(initialAudience)) blocked();
+  body.settings = applyFoundationApprovedRetentionSettings(retentionPolicy, graph.key, body.settings);
   body.settings.availableInMCP = false;
   if (graph.key !== 'WF-90' && errorLink)
     body.settings.errorWorkflow = foundationRuntimeCheckpoint.workflows['WF-90'].id;
@@ -135,6 +141,7 @@ export function createFoundationRuntimePlan({ bindings, transport, records, setu
       tags: structuredClone(record.workflow.tags),
     };
   });
+  const retentionPolicy = createFoundationApprovedRetentionPolicy({ bindings, records });
   const oldTransport = {
     audience: initialAudience,
     windowId: transport.windowId,
@@ -149,14 +156,14 @@ export function createFoundationRuntimePlan({ bindings, transport, records, setu
   const runtime = keys.map((key) => ({
     key,
     id: byKey.get(key).id,
-    body: runtimeBody(compiled.get(key), setup, true),
+    body: runtimeBody(compiled.get(key), setup, true, retentionPolicy),
     tags: structuredClone(byKey.get(key).workflow.tags),
   }));
   const step = (kind, key, body) => ({ kind, key, ...(body ? { body } : {}) });
   const setupSteps = [
-    step('save', 'SUB-NOTIFY', runtimeBody(compiled.get('SUB-NOTIFY'), setup, false)),
+    step('save', 'SUB-NOTIFY', runtimeBody(compiled.get('SUB-NOTIFY'), setup, false, retentionPolicy)),
     step('publish', 'SUB-NOTIFY'),
-    step('save', 'WF-90', runtimeBody(compiled.get('WF-90'), setup, false)),
+    step('save', 'WF-90', runtimeBody(compiled.get('WF-90'), setup, false, retentionPolicy)),
     step('publish', 'WF-90'),
     // Changing settings on a published workflow can be live. Remove its temporary
     // publication before changing the error link; setup allows no execution.
@@ -174,6 +181,7 @@ export function createFoundationRuntimePlan({ bindings, transport, records, setu
     version: 1,
     kind: 'proposed_finite_runtime_transition',
     hostedActionsPerformed: false,
+    retentionPolicy,
     windowId: foundationRuntimeCheckpoint.windowId,
     projectId: foundationRuntimeCheckpoint.projectId,
     setup,
@@ -222,6 +230,7 @@ export function assertFoundationRuntimePlan(plan) {
     plan.maximumManagementRequests !== 512
   )
     blocked();
+  assertFoundationApprovedRetentionPolicy(plan.retentionPolicy);
   return plan;
 }
 export function runtimeManagementCounts(plan, caseCount = 0) {
@@ -269,6 +278,7 @@ export function materializeFoundationRuntimeCase(plan, caseId, options = {}) {
   assertFoundationRuntimePlan(plan);
   const graph = materializeFoundationAcceptanceCase(plan.bindings, plan.transport, caseId, options);
   const body = graphBody(graph);
+  body.settings = applyFoundationApprovedRetentionSettings(plan.retentionPolicy, graph.key, body.settings);
   body.settings.availableInMCP = true;
   for (const n of body.nodes) {
     if (

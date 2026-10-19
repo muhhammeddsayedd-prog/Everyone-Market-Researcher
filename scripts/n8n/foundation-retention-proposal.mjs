@@ -1,6 +1,16 @@
+import { createHash } from 'node:crypto';
 import { parseN8nBindings } from '../../packages/shared/src/n8n-bindings.ts';
 import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
-import { freezeRuntimeValue, runtimeHash } from './foundation-runtime-plan.mjs';
+
+// Keep this pure inventory independent of the runtime plan that consumes it.
+const runtimeHash = (v) => createHash('sha256').update(JSON.stringify(v)).digest('hex');
+function freezeRuntimeValue(v) {
+  if (v !== null && typeof v === 'object') {
+    for (const child of Object.values(v)) freezeRuntimeValue(child);
+    Object.freeze(v);
+  }
+  return v;
+}
 
 // Proposal only. Importing or calling this module performs no I/O and supplies
 // no execution, settings-update, deletion, credential or network adapter.
@@ -13,6 +23,14 @@ const fields = [
   'saveManualExecutions',
   'saveExecutionProgress',
 ];
+const approvedPolicies = new WeakSet();
+export const foundationRetentionDesignApproval = freezeRuntimeValue({
+  commit: 'eee9a277c6a7d63fffe967811c92a7fd50c15b14',
+  inventoryPath: 'milestones/M03-n8n-foundation/evidence/m03-c01-retention-proposal-20261019.json',
+  inventoryFileSha256: '772699066c08a96d30415173cb238cc07b3bd475fb3fdd4bc7a587771860ff82',
+  inventoryCanonicalSha256: '0cf36aed398aa58b3ad1f6d153bdf7b0d19c5f8bb2c6282a98ea52c48b7910ab',
+  scope: 'local_runtime_design_only',
+});
 const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const exact = (v, names) =>
   object(v) && Object.keys(v).length === names.length && names.every((k) => Object.hasOwn(v, k));
@@ -141,4 +159,36 @@ export function createFoundationRetentionProposal(input) {
   } catch {
     blocked();
   }
+}
+
+// The owner's decision approves implementation of this one inventory. It is
+// not a credential, runtime admission, hosted-settings or execution approval.
+// There is deliberately no caller-controlled approval boolean or policy delta.
+export function createFoundationApprovedRetentionPolicy(input) {
+  const proposal = createFoundationRetentionProposal(input);
+  if (runtimeHash(proposal) !== foundationRetentionDesignApproval.inventoryCanonicalSha256) blocked();
+  const policy = freezeRuntimeValue({
+    version: 1,
+    kind: 'approved_local_retention_design',
+    approval: foundationRetentionDesignApproval,
+    localDesignApproved: true,
+    hostedActionsAllowed: false,
+    executionAllowed: false,
+    workflows: proposal.workflows,
+    privacy: proposal.privacy,
+  });
+  approvedPolicies.add(policy);
+  return policy;
+}
+
+export function assertFoundationApprovedRetentionPolicy(policy) {
+  if (!object(policy) || !approvedPolicies.has(policy) || !Object.isFrozen(policy)) blocked();
+  return policy;
+}
+
+export function applyFoundationApprovedRetentionSettings(policy, key, settings) {
+  assertFoundationApprovedRetentionPolicy(policy);
+  const row = policy.workflows.find((w) => w.key === key);
+  if (!row || !object(settings)) blocked();
+  return { ...settings, ...row.proposed };
 }

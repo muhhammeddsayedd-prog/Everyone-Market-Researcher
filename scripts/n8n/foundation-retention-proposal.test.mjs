@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs';
 import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
 import {
   createFoundationRetentionProposal,
+  createFoundationApprovedRetentionPolicy,
+  assertFoundationApprovedRetentionPolicy,
+  applyFoundationApprovedRetentionSettings,
   foundationNativeEvidencePaths,
 } from './foundation-retention-proposal.mjs';
 
@@ -185,4 +188,35 @@ test('native field paths distinguish payload-only links from terminal metadata',
   );
   assert.equal(Object.isFrozen(foundationNativeEvidencePaths), true);
   assert.equal(Object.isFrozen(foundationNativeEvidencePaths.metadata), true);
+});
+
+test('owner-approved constructor pins the exact historical inventory and grants local design only', () => {
+  const f = fixture();
+  const p = createFoundationApprovedRetentionPolicy(f);
+  assert.equal(assertFoundationApprovedRetentionPolicy(p), p);
+  assert.equal(p.kind, 'approved_local_retention_design');
+  assert.equal(p.approval.commit, 'eee9a277c6a7d63fffe967811c92a7fd50c15b14');
+  assert.equal(
+    p.approval.inventoryCanonicalSha256,
+    '0cf36aed398aa58b3ad1f6d153bdf7b0d19c5f8bb2c6282a98ea52c48b7910ab',
+  );
+  assert.deepEqual(p.workflows, createFoundationRetentionProposal(f).workflows);
+  assert.equal(p.localDesignApproved, true);
+  assert.equal(p.hostedActionsAllowed, false);
+  assert.equal(p.executionAllowed, false);
+  assert.equal(p.privacy.fullIntermediatePayloadsStored, true);
+  assert.equal(p.privacy.noSecretStorageProven, false);
+  assert.throws(() => assertFoundationApprovedRetentionPolicy(structuredClone(p)), blocked);
+  assert.throws(() => createFoundationApprovedRetentionPolicy({ ...f, approved: true }), blocked);
+  const original = { errorWorkflow: 'fixed-error-id', availableInMCP: true, executionTimeout: 42 };
+  const next = applyFoundationApprovedRetentionSettings(p, 'WF-91', original);
+  assert.deepEqual(next, {
+    ...original,
+    saveDataSuccessExecution: 'all',
+    saveDataErrorExecution: 'all',
+    saveManualExecutions: true,
+    saveExecutionProgress: false,
+  });
+  assert.deepEqual(original, { errorWorkflow: 'fixed-error-id', availableInMCP: true, executionTimeout: 42 });
+  assert.throws(() => applyFoundationApprovedRetentionSettings(p, 'unowned', original), blocked);
 });

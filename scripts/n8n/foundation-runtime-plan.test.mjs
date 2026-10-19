@@ -134,3 +134,32 @@ test('finite case is a source-defined MCP-visible draft with one Manual entry, n
   assert.equal(c.managementRequests, 3);
   assert.throws(() => materializeFoundationRuntimeCase(p, 'arbitrary-case'));
 });
+
+test('approved local retention design reaches every runtime save and case without changing the staged baseline', () => {
+  const p = createFoundationRuntimePlan(runtimeFixture());
+  assert.equal(p.retentionPolicy.approval.commit, 'eee9a277c6a7d63fffe967811c92a7fd50c15b14');
+  assert.equal(p.retentionPolicy.hostedActionsAllowed, false);
+  assert.equal(p.retentionPolicy.executionAllowed, false);
+  const manual = new Set(['WF-00', 'WF-91', 'WF-99', 'SUB-INGEST', 'SUB-COST']);
+  const manualOnly = new Set(['WF-00', 'WF-99', 'SUB-INGEST', 'SUB-COST']);
+  const expected = (key) => ({
+    saveDataSuccessExecution: manualOnly.has(key) ? 'none' : 'all',
+    saveDataErrorExecution: manualOnly.has(key) ? 'none' : 'all',
+    saveManualExecutions: manual.has(key),
+    saveExecutionProgress: false,
+  });
+  for (const row of [...p.runtime, ...p.setupSteps.filter((s) => s.kind === 'save')])
+    for (const [field, value] of Object.entries(expected(row.key)))
+      assert.equal(row.body.settings[field], value, row.key + ':' + field);
+  for (const row of p.baseline) {
+    assert.equal(row.body.settings.saveDataSuccessExecution, 'none');
+    assert.equal(row.body.settings.saveDataErrorExecution, 'none');
+    assert.equal(row.body.settings.saveManualExecutions, false);
+    assert.equal(row.body.settings.saveExecutionProgress, false);
+  }
+  const draft = materializeFoundationRuntimeCase(p, 'dispatch.vimeo');
+  for (const [field, value] of Object.entries(expected(draft.key)))
+    assert.equal(draft.body.settings[field], value);
+  assert.equal(draft.body.settings.availableInMCP, true);
+  assert.equal(runtimeManagementCounts(p, 23).nominalTotal, 327);
+});

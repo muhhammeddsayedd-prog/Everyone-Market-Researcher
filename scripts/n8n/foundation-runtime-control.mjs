@@ -49,6 +49,9 @@ const frozenGraphHashes = new WeakMap();
 const checkedJournals = new WeakSet();
 const activeJournals = new WeakSet();
 const checkedCaseReceipts = new WeakSet();
+const savedCaseBodies = new WeakMap();
+const nativeGraphObservations = new WeakMap();
+const checkedBindings = new WeakMap();
 function requireSynchronousVoid(value) {
   if (value !== undefined) {
     if (value && typeof value.then === 'function') Promise.resolve(value).catch(() => {});
@@ -376,8 +379,8 @@ function controller(plan, ports) {
     if (!object(r) || r.status !== 200) fail();
     return r.body;
   };
-  const read = async (key, want = state().workflows[key]) =>
-    graphReceipt(
+  const read = async (key, want = state().workflows[key]) => {
+    const receipt = graphReceipt(
       await request(
         'GET',
         '/api/v1/workflows/' + plan.baseline.find((b) => b.key === key).id + '?excludePinnedData=true',
@@ -386,6 +389,14 @@ function controller(plan, ports) {
       key,
       want,
     );
+    if (!nativeGraphObservations.has(ports.journal)) nativeGraphObservations.set(ports.journal, new Map());
+    nativeGraphObservations.get(ports.journal).set(key, {
+      plan,
+      receipt: freezeRuntimeValue(receipt),
+      requestNumber: state().requestCount,
+    });
+    return receipt;
+  };
   const transition = async (action, key, body = null) => {
     const s = state();
     if (s.pending || s.restoreComplete || !Object.hasOwn(s.workflows, key)) fail();
@@ -592,6 +603,7 @@ export async function saveFoundationRuntimeCase(plan, draft, ports) {
       bodyHash: draft.bodyHash,
     });
     checkedCaseReceipts.add(receipt);
+    savedCaseBodies.set(receipt, { plan, journal: ports.journal, draft });
     return receipt;
   } catch {
     return result(c, c.state().pending ? 'reconciliation_required' : 'blocked');
@@ -608,6 +620,75 @@ export function assertFoundationRuntimeCaseReceipt(receipt) {
   )
     fail();
   return receipt;
+}
+
+function currentBindingState(plan, key, journal, body) {
+  assertFoundationRuntimePlan(plan);
+  if (!checkedJournals.has(journal) || activeJournals.has(journal)) fail();
+  const state = reduce(plan, journal.rows);
+  const current = state.workflows[key];
+  const observed = nativeGraphObservations.get(journal)?.get(key);
+  if (
+    !state.setupComplete ||
+    state.restoreComplete ||
+    state.pending ||
+    !current ||
+    !observed ||
+    observed.plan !== plan ||
+    !isDeepStrictEqual(observed.receipt, current) ||
+    (current.activeVersionId !== null && current.activeVersionId !== current.versionId) ||
+    runtimeGraphHash(body) !== current.graphHash
+  )
+    fail();
+  return current;
+}
+
+// No new request or caller-supplied native DTO: only a controller's successful
+// owned GET plus its matching current durable state can produce this binding.
+// The execution reader must still GET the current graph and native snapshot;
+// this local proof is not compare-and-swap or a permanent freshness guarantee.
+export function createFoundationRuntimeBinding(plan, key, ports, options = {}) {
+  const c = controller(plan, ports);
+  if (!object(options) || Object.keys(options).some((k) => k !== 'caseReceipt')) fail();
+  let body = plan.runtime.find((r) => r.key === key)?.body;
+  if (Object.hasOwn(options, 'caseReceipt')) {
+    const receipt = assertFoundationRuntimeCaseReceipt(options.caseReceipt);
+    const saved = savedCaseBodies.get(receipt);
+    if (
+      !saved ||
+      saved.plan !== plan ||
+      saved.journal !== ports.journal ||
+      saved.draft.key !== key ||
+      receipt.versionId !== c.state().workflows[key]?.versionId
+    )
+      fail();
+    body = saved.draft.body;
+  }
+  if (!body) fail();
+  const current = currentBindingState(plan, key, ports.journal, body);
+  const binding = freezeRuntimeValue({
+    workflowId: plan.baseline.find((r) => r.key === key).id,
+    versionId: current.versionId,
+    activeVersionId: current.activeVersionId,
+    bodyHash: current.graphHash,
+    body,
+  });
+  checkedBindings.set(binding, { plan, key, journal: ports.journal });
+  return binding;
+}
+
+export function assertFoundationRuntimeBinding(binding) {
+  const scope = object(binding) && checkedBindings.get(binding);
+  if (!scope || !Object.isFrozen(binding)) fail();
+  const current = currentBindingState(scope.plan, scope.key, scope.journal, binding.body);
+  if (
+    binding.workflowId !== scope.plan.baseline.find((r) => r.key === scope.key).id ||
+    binding.versionId !== current.versionId ||
+    binding.activeVersionId !== current.activeVersionId ||
+    binding.bodyHash !== current.graphHash
+  )
+    fail();
+  return binding;
 }
 export async function restoreFoundationRuntime(plan, ports) {
   const c = controller(plan, ports);

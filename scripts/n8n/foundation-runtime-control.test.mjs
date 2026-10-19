@@ -14,6 +14,7 @@ import {
   runtimeGraphHash,
   assertFoundationRuntimeCaseReceipt,
 } from './foundation-runtime-control.mjs';
+import * as runtimeControl from './foundation-runtime-control.mjs';
 
 function fixture({ durableAppend, fault, sharedLimit = 512 } = {}) {
   const bindings = JSON.parse(
@@ -581,4 +582,87 @@ test('restoration also rejects async private preparation without a PATCH or a he
     (await restoreFoundationRuntime(f.plan, f.ports)).status,
     'exact_staging_restored_unpublished',
   );
+});
+
+test('native binding reuses a private GET observation without another request and rejects copied or stale proof', async () => {
+  const f = fixture();
+  assert.throws(() => runtimeControl.createFoundationRuntimeBinding(f.plan, 'WF-19', f.ports));
+  assert.equal((await runFoundationRuntimeSetup(f.plan, f.ports)).status, 'runtime_setup_verified');
+  const requests = f.calls.length;
+  const binding = runtimeControl.createFoundationRuntimeBinding(f.plan, 'WF-19', f.ports);
+  assert.equal(f.calls.length, requests);
+  assert.equal(runtimeControl.assertFoundationRuntimeBinding(binding), binding);
+  assert.equal(binding.versionId, binding.activeVersionId);
+  assert.equal(binding.workflowId, f.plan.runtime.find((r) => r.key === 'WF-19').id);
+  assert.equal(binding.bodyHash, runtimeGraphHash(binding.body));
+  assert.equal(binding.body.settings.saveDataSuccessExecution, 'all');
+  assert.equal(Object.isFrozen(binding.body.settings), true);
+  assert.throws(() => runtimeControl.assertFoundationRuntimeBinding(structuredClone(binding)));
+  const reconstructed = createFoundationRuntimeJournal(f.plan, f.journal.rows, () => {});
+  assert.throws(() =>
+    runtimeControl.createFoundationRuntimeBinding(f.plan, 'WF-19', { ...f.ports, journal: reconstructed }),
+  );
+  assert.equal(
+    (await restoreFoundationRuntime(f.plan, f.ports)).status,
+    'exact_staging_restored_unpublished',
+  );
+  assert.throws(() => runtimeControl.assertFoundationRuntimeBinding(binding));
+});
+
+test('case binding requires the same-plan saved receipt and becomes stale after a new case version', async () => {
+  const f = fixture();
+  await runFoundationRuntimeSetup(f.plan, f.ports);
+  const draft = materializeFoundationRuntimeCase(f.plan, 'dispatch.vimeo');
+  const receipt = await saveFoundationRuntimeCase(f.plan, draft, f.ports);
+  const requests = f.calls.length;
+  assert.throws(() => runtimeControl.createFoundationRuntimeBinding(f.plan, 'WF-00', f.ports));
+  const binding = runtimeControl.createFoundationRuntimeBinding(f.plan, 'WF-00', f.ports, {
+    caseReceipt: receipt,
+  });
+  assert.equal(f.calls.length, requests);
+  assert.equal(binding.versionId, receipt.versionId);
+  assert.equal(binding.activeVersionId, null);
+  assert.equal(binding.body.settings.saveManualExecutions, true);
+  assert.equal(binding.body.settings.availableInMCP, true);
+  assert.equal(binding.bodyHash, runtimeGraphHash(draft.body));
+  assert.throws(() =>
+    runtimeControl.createFoundationRuntimeBinding(f.plan, 'WF-00', f.ports, {
+      caseReceipt: structuredClone(receipt),
+    }),
+  );
+  await saveFoundationRuntimeCase(
+    f.plan,
+    materializeFoundationRuntimeCase(f.plan, 'dispatch.vimeo'),
+    f.ports,
+  );
+  assert.throws(() => runtimeControl.assertFoundationRuntimeBinding(binding));
+  assert.throws(() =>
+    runtimeControl.createFoundationRuntimeBinding(f.plan, 'WF-00', f.ports, { caseReceipt: receipt }),
+  );
+});
+
+test('pending writes and published-draft drift cannot reuse a previous binding observation', async () => {
+  const f = fixture();
+  await runFoundationRuntimeSetup(f.plan, f.ports);
+  const binding = runtimeControl.createFoundationRuntimeBinding(f.plan, 'WF-19', f.ports);
+  const before = foundationRuntimeState(f.plan, f.journal).workflows['WF-19'];
+  f.journal.append({
+    event: 'intent',
+    sequence: f.journal.rows.filter((r) => r.event === 'intent').length + 1,
+    action: 'save',
+    key: 'WF-19',
+    before,
+    target: { ...before, versionId: null },
+  });
+  assert.throws(() => runtimeControl.assertFoundationRuntimeBinding(binding));
+  assert.throws(() => runtimeControl.createFoundationRuntimeBinding(f.plan, 'WF-19', f.ports));
+
+  const g = fixture();
+  await runFoundationRuntimeSetup(g.plan, g.ports);
+  const current = foundationRuntimeState(g.plan, g.journal).workflows['WF-19'];
+  const sequence = g.journal.rows.filter((r) => r.event === 'intent').length + 1;
+  const target = { ...current, versionId: 'synthetic-unpublished-new-draft' };
+  g.journal.append({ event: 'intent', sequence, action: 'save', key: 'WF-19', before: current, target });
+  g.journal.append({ event: 'verified', sequence, after: target });
+  assert.throws(() => runtimeControl.createFoundationRuntimeBinding(g.plan, 'WF-19', g.ports));
 });

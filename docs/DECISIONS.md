@@ -203,3 +203,39 @@ snapshot, Variables enumeration, browser storage read or raw sensitive export
 is an acceptable verification path. Unknown fees, the USD 25 alert default and
 the 24 October tooling follow-up remain unchanged. Private incident preparation
 and production decisions stay outside this source authorization.
+
+## M03-C01 temporary dev retention design — approved19 October2026
+
+The owner explicitly approved the scoped inventory at
+`eee9a277c6a7d63fffe967811c92a7fd50c15b14`,
+[exact inventory](../milestones/M03-n8n-foundation/evidence/m03-c01-retention-proposal-20261019.json),
+as the basis for local implementation, tests, independent review and the final
+[A–D acceptance packet](../milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md).
+This approves no Cloud change or live batch by itself.
+
+For the same25 pinned owned dev workflows: enable manual storage only on
+WF-00/WF-91/WF-99/SUB-INGEST/SUB-COST; set success/error storage to `all` on the
+21 other integrated/error-capable graphs (all except WF-00/WF-99/SUB-INGEST/
+SUB-COST). WF-91 overlaps; union25. Keep progress storage false and every other
+setting unchanged. Preserve exact baselines for restoration. No instance,
+unrelated workflow, credential or production retention change is included.
+
+This stores full intermediate data, snapshots, headers/bodies and errors,
+including unsolicited webhook input before validation. Native settings cannot
+select batch IDs or safe stored fields; final-node/read-time redaction cannot
+sanitize earlier storage. Private reducers must refuse sensitive reflection,
+incomplete native evidence or responses above the8MiB streaming ceiling and
+emit only allowlisted technical metadata/fixed diagnostic codes. Cleanup is
+limited to causally owned, terminal **and independently settled** native records,
+after durable projected evidence, matching DELETE acknowledgement and absence
+read. Restoring settings is not erasure; lost acknowledgement plus404 is
+ambiguous. Unresolved records remain inventoried with owner follow-up.
+
+The separate live decision must cover setup, zero-actor success/failure/privacy
+and cleanup proof before two conditional actor starts, then shutdown. Proposed
+2048 execution-control attempts replace416; plus512 runtime attempts gives2560,
+with unchanged120 native/256 gateway/32 provider-GET/two-actor/USD2 reserve/
+60minute limits. No credentials, hosted migration, publication, execution,
+gateway activation, production, merge or M04 are authorized here. Private R2
+remains separate. The owner-reported local synthetic-state deletion was verified
+by exact-path absence only; its historical blocked deletion was not retried.
