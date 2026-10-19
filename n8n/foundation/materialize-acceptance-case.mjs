@@ -1,7 +1,8 @@
 import { dispatchSlot, scheduledSlots } from '../../packages/shared/src/n8n-schedule.ts';
 import { parseHealthInput } from '../../packages/shared/src/n8n-bindings.ts';
+import { createApifyRecoveryRuntime } from '../../packages/shared/src/n8n-apify-recovery.ts';
 import { buildFoundationGatewayWorkflows } from './build-foundation-gateway.mjs';
-import { code, edge, nodeId } from './build-foundation.mjs';
+import { code, edge, node, nodeId } from './build-foundation.mjs';
 
 // Pure proposed-case source. No credentials, files, network, saves or executions.
 // Native Manual Trigger has no generic JSON-input transport. Insert one fixed
@@ -130,6 +131,26 @@ function cases() {
       upperBounds: limits(10, smokeOperations, 10, 1),
     });
   }
+  for (const [kind, key, operation] of [
+    ['ingest', 'SUB-INGEST', 'apify.process'],
+    ['cost', 'SUB-COST', 'cost.log'],
+  ])
+    for (const suffix of ['a', 'b'])
+      result.push({
+        id: 'sub.' + kind + '.replay_' + suffix,
+        workflowKey: key,
+        input: null,
+        expectedTargets: [],
+        recommendedLive: true,
+        requiresFixtureReceipt: true,
+        requiresFirstRunEvidence: true,
+        upperBounds: limits(1, { [operation]: 1 }),
+        executionGroup:
+          kind === 'ingest'
+            ? 'two-original-replays-may-run-concurrently'
+            : 'two-original-cost-replays-sequential',
+        expectedDeltas: { items: 0, rawSnapshots: 0, queueWork: 0, costRows: 0, costUsd: 0 },
+      });
   return result;
 }
 export function foundationAcceptancePlan() {
@@ -159,6 +180,100 @@ export function foundationAcceptancePlan() {
       'An actual supported native manual-execution control and projected completion readback must be verified separately. A tool that only accepts chat/form/webhook inputs cannot receive arbitrary Manual Trigger JSON. This materializer supplies source only, never MCP access, publication authority or hosted evidence.',
     fixturePrerequisite:
       'Use only the actual committed M03_SMOKE_FIXTURE_READY receipt from the reviewed dev setup. A supplied receipt shape alone does not prove fixture ownership; the existing SQL launch guard must verify it.',
+    originalGroupAcquisition: {
+      source: 'bounded-original-dataset-read',
+      additionalGatewayHttpAttempts: 2,
+      additionalProviderGetAttempts: 2,
+      caseAllocationIncluded: false,
+      authority:
+        'Original SQL JSONB group digest is verified by the duplicate process_apify_run call, never recalculated in JavaScript.',
+    },
+    nativePublicationBoundary: {
+      runtimeVersion: '2.43.5',
+      directManualChild: 'Loads its saved draft because the direct parent passes executionMode=manual.',
+      nestedChild:
+        'The child runs integrated; BaseExecuteContext forwards that mode unchanged, so its own Execute Workflow node loads a published definition.',
+      uniqueTemporaryWorkflowKeys: ['SUB-NOTIFY', 'WF-90', 'WF-30', 'WF-70', 'WF-80', 'SUB-FINISH', 'WF-19'],
+      publicationActions: 8,
+      proofBoundary:
+        'Pinned source only. Actual supported manual control, saved versions, publication and completion remain unperformed gates. No universal all-children publication rule is assumed.',
+    },
+    subReadiness: [
+      {
+        workflowKey: 'SUB-START',
+        orderedCases: ['smoke.first', 'smoke.second'],
+        nativeCompletionRequired: true,
+        emptyExecutionListIsProof: false,
+        linkage:
+          'Own native SUB execution ID linked to its WF-99 parent; a different workflow succeeding is insufficient.',
+        durableReceipts: [
+          'run.start original request/status receipt',
+          'ops.scrape_runs run ID and original execution_id',
+        ],
+        expected: 'One distinct parent per genuine launch; unknown acknowledgement reconciles same ID.',
+      },
+      {
+        workflowKey: 'SUB-INGEST',
+        orderedCases: ['sub.ingest.replay_a', 'sub.ingest.replay_b'],
+        nativeCompletionRequired: true,
+        emptyExecutionListIsProof: false,
+        linkage:
+          'Two actual SUB-INGEST execution IDs, fixed first launch/account; supported terminal evidence is required independently of unchanged SQL counts.',
+        durableReceipts: [
+          'Original processed apify_run processing_result',
+          'Exact SQL groups_sha256 and same measured keyed cost',
+          'Unchanged scoped item/raw-snapshot/queue/cost projections',
+        ],
+        expected:
+          'updated=false/finished_now=false; historical items_new/new_item_ids remain original values, with zero new work.',
+      },
+      {
+        workflowKey: 'SUB-COST',
+        orderedCases: ['sub.cost.replay_a', 'sub.cost.replay_b'],
+        nativeCompletionRequired: true,
+        emptyExecutionListIsProof: false,
+        linkage:
+          'Two actual SUB-COST execution IDs using the original measured keyed-cost entry, no replacement price.',
+        durableReceipts: [
+          'cost.log original request/status receipts inserted=0',
+          'Same original cost key, amount and attribution',
+          'Unchanged scoped item/raw-snapshot/queue/cost projections',
+        ],
+        expected: 'Both inserted=0; no actor or provider call and no fabricated cost.',
+      },
+      {
+        workflowKey: 'SUB-FINISH',
+        orderedCases: ['smoke.first', 'smoke.second'],
+        nativeCompletionRequired: true,
+        emptyExecutionListIsProof: false,
+        linkage:
+          'Actual SUB-FINISH execution under the verified first callback transition; asynchronous stub starts are not terminal evidence.',
+        durableReceipts: [
+          'run.finish durable completed summary read',
+          'Original processing_result run_summary',
+          'Native downstream stub linkage for eligible transition only',
+        ],
+        expected: 'Original durable summary; duplicate receipt suppresses replacement finish/dispatch.',
+      },
+      {
+        workflowKey: 'SUB-NOTIFY',
+        orderedCases: ['dispatch.health', 'health.second', 'automatic-error-threshold'],
+        nativeCompletionRequired: true,
+        emptyExecutionListIsProof: false,
+        linkage:
+          'Actual log-only SUB execution from health and third automatic Error Trigger; editor-manual/mock handler is separate.',
+        durableReceipts: [
+          'notify_logged audit with originating correlation',
+          'Third-error atomic six-hour claim and exactly one notify audit',
+        ],
+        expected: 'sent=false; no external delivery; fourth error adds no notification.',
+      },
+    ],
+    healthCoverage: {
+      live: 'Report actual dated known fixed-fee rows and accrued count. Empty/unknown fee coverage proves only safe no-row behavior, not positive hosted accrual.',
+      positiveIdempotency:
+        'Retain the existing synthetic local SQL fee test; do not invent live fees or reopen the owner questionnaire.',
+    },
     publicationOrder: [
       {
         phase: 'bootstrap_notify',
@@ -178,39 +293,25 @@ export function foundationAcceptancePlan() {
       },
       {
         phase: 'republish_dependency_sources',
-        workflowKeys: ['SUB-NOTIFY', 'SUB-START', 'SUB-COST', 'SUB-INGEST'],
+        workflowKeys: ['SUB-NOTIFY'],
         profile: 'canonical sources with their verified error link',
       },
       {
-        phase: 'publish_explicit_stubs',
-        workflowKeys: [
-          'WF-10',
-          'WF-11',
-          'WF-12',
-          'WF-13',
-          'WF-18',
-          'WF-18b',
-          'WF-21',
-          'WF-22',
-          'WF-23',
-          'WF-30',
-          'WF-32',
-          'WF-40',
-          'WF-50',
-          'WF-70',
-          'WF-80',
-        ],
-        profile: 'stubs only; no recurring schedule',
+        phase: 'publish_nested_stubs',
+        workflowKeys: ['WF-30', 'WF-70', 'WF-80'],
+        profile:
+          'Only nested production-mode dependencies: SUB-FINISH to WF-30/WF-70 and WF-91 to WF-70/WF-80; no recurring schedule.',
       },
       {
         phase: 'publish_remaining_dependencies',
-        workflowKeys: ['SUB-FINISH', 'WF-91', 'WF-19'],
+        workflowKeys: ['SUB-FINISH', 'WF-19'],
         profile: 'dependency order; callback publication temporary and separately approved',
       },
       {
         phase: 'manual_case_controls',
-        workflowKeys: ['WF-99', 'WF-00'],
-        profile: 'reviewed manual case variant; ALL Schedule Triggers disabled; no recurring activation',
+        workflowKeys: ['WF-99', 'WF-00', 'WF-91', 'SUB-INGEST', 'SUB-COST'],
+        profile:
+          'unpublished draft/manual only; one enabled Manual Trigger; ALL Schedule Triggers disabled; NEVER publish WF-00',
       },
     ],
   });
@@ -240,26 +341,200 @@ function fixtureAccount(value) {
     bad();
   return value.account_id;
 }
+function firstOriginal(value, fixture) {
+  if (
+    !exact(value, ['source', 'readRequestId', 'launch', 'registered', 'atomicInput', 'costEntry']) ||
+    value.source !== 'bounded-original-dataset-read' ||
+    !uuid(value.readRequestId)
+  )
+    bad();
+  const l = value.launch,
+    r = value.registered,
+    p = value.atomicInput,
+    c = value.costEntry;
+  if (
+    !exact(l, [
+      'window_id',
+      'launch_id',
+      'ordinal',
+      'actor_id',
+      'actor_build',
+      'run_id',
+      'account_id',
+      'apify_run_id',
+    ]) ||
+    l.window_id !== 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' ||
+    l.launch_id !== nodeId('M03-ACCEPTANCE', 'WF-99 first launch') ||
+    l.ordinal !== 1 ||
+    l.actor_id !== 'aYG0l9s7dbB7j3gbS' ||
+    l.actor_build !== '0.3.99' ||
+    !uuid(l.run_id) ||
+    l.account_id !== fixtureAccount(fixture) ||
+    typeof l.apify_run_id !== 'string' ||
+    !/^[A-Za-z0-9_-]{1,128}$/.test(l.apify_run_id)
+  )
+    bad();
+  if (
+    !exact(r, [
+      'apify_run_id',
+      'actor_id',
+      'run_id',
+      'account_ids',
+      'purpose',
+      'status',
+      'dataset_id',
+      'usage_usd',
+      'processed_at',
+      'processing_result',
+    ]) ||
+    r.apify_run_id !== l.apify_run_id ||
+    r.actor_id !== 'apify/website-content-crawler' ||
+    r.run_id !== l.run_id ||
+    !Array.isArray(r.account_ids) ||
+    r.account_ids.length !== 1 ||
+    r.account_ids[0] !== l.account_id ||
+    r.status !== 'SUCCEEDED' ||
+    r.processed_at === null
+  )
+    bad();
+  const recovery = createApifyRecoveryRuntime(),
+    observed = recovery.validateReceipt(r.processing_result, r, p),
+    replay = recovery.savedReplay(r, l.apify_run_id);
+  if (
+    !observed.updated ||
+    !observed.finished_now ||
+    !replay ||
+    replay.status !== 'SUCCEEDED' ||
+    replay.items_seen !== 1 ||
+    replay.items_new !== 1 ||
+    replay.new_item_ids.length !== 1 ||
+    p.p_status !== 'SUCCEEDED'
+  )
+    bad();
+  if (
+    !exact(c, [
+      'provider',
+      'category',
+      'quantity',
+      'unit',
+      'cost_usd',
+      'run_id',
+      'competitor_id',
+      'platform',
+      'meta',
+    ]) ||
+    c.provider !== 'apify' ||
+    c.category !== 'scrape' ||
+    c.quantity !== 1 ||
+    c.unit !== 'result' ||
+    c.cost_usd !== replay.cost_usd ||
+    c.run_id !== l.run_id ||
+    c.competitor_id !== fixture.competitor_id ||
+    c.platform !== 'website_work_page' ||
+    !exact(c.meta, ['actor', 'apify_run_id', 'account_id', 'cost_key']) ||
+    c.meta.actor !== 'apify/website-content-crawler' ||
+    c.meta.apify_run_id !== l.apify_run_id ||
+    c.meta.account_id !== l.account_id ||
+    c.meta.cost_key !== replay.cost_keys[0]
+  )
+    bad();
+  return {
+    ingest: {
+      apify_run_id: p.p_apify_run_id,
+      status: p.p_status,
+      dataset_id: p.p_dataset_id,
+      usage_usd: p.p_usage_usd,
+      groups: structuredClone(p.p_groups),
+      env: 'dev',
+    },
+    cost: { entries: [structuredClone(c)], env: 'dev' },
+    expectedReplay: replay,
+  };
+}
+const canonical = (value) =>
+  Array.isArray(value)
+    ? '[' + value.map(canonical).join(',') + ']'
+    : object(value)
+      ? '{' +
+        Object.keys(value)
+          .sort()
+          .map((k) => JSON.stringify(k) + ':' + canonical(value[k]))
+          .join(',') +
+        '}'
+      : JSON.stringify(value);
+export function verifyFoundationSubReplay(caseId, output, context, before, after) {
+  const spec = cases().find((c) => c.id === caseId);
+  if (!spec?.requiresFirstRunEvidence || !exact(context, ['fixtureReceipt', 'firstRunEvidence'])) bad();
+  const original = firstOriginal(context.firstRunEvidence, context.fixtureReceipt),
+    keys = [
+      'items',
+      'rawSnapshots',
+      'aiExtractQueue',
+      'embedQueue',
+      'mediaQueue',
+      'costEntries',
+      'itemsSha256',
+      'rawSnapshotsSha256',
+      'queuesSha256',
+      'costsSha256',
+    ];
+  for (const state of [before, after])
+    if (
+      !exact(state, keys) ||
+      keys.some((k) =>
+        k.endsWith('Sha256')
+          ? typeof state[k] !== 'string' || !/^[a-f0-9]{64}$/.test(state[k])
+          : !Number.isSafeInteger(state[k]) || state[k] < 0,
+      )
+    )
+      bad();
+  if (canonical(before) !== canonical(after)) bad();
+  if (spec.workflowKey === 'SUB-INGEST') {
+    if (canonical(output) !== canonical(original.expectedReplay)) bad();
+  } else if (!exact(output, ['inserted']) || output.inserted !== 0) bad();
+  return {
+    sourceAssertionsPassed: true,
+    hostedAcceptance: false,
+    nativeCompletionVerified: false,
+    nativeCompletionRequired: true,
+    zeroDeltaVerified: true,
+    requiredNativeWorkflow: spec.workflowKey,
+    caseId,
+    payloadEqualityAuthority:
+      'Requires the actual native duplicate RPC to accept the original SQL JSONB groups digest; this pure check does not manufacture that proof.',
+  };
+}
 export function materializeFoundationAcceptanceCase(bindings, transport, caseId, options = {}) {
   const spec = cases().find((c) => c.id === caseId);
   if (
     !spec ||
     !object(options) ||
-    Object.keys(options).some((k) => !['fixtureReceipt', 'release'].includes(k))
+    Object.keys(options).some((k) => !['fixtureReceipt', 'release', 'firstRunEvidence'].includes(k))
   )
     bad();
   const release = Object.hasOwn(options, 'release') ? options.release : { launchEnabled: false };
   if (
     !exact(release, ['launchEnabled']) ||
     typeof release.launchEnabled !== 'boolean' ||
-    (spec.workflowKey !== 'WF-99' && (release.launchEnabled || Object.hasOwn(options, 'fixtureReceipt')))
+    (spec.workflowKey !== 'WF-99' && release.launchEnabled) ||
+    (!spec.requiresFixtureReceipt && Object.hasOwn(options, 'fixtureReceipt')) ||
+    (!spec.requiresFirstRunEvidence && Object.hasOwn(options, 'firstRunEvidence'))
   )
     bad();
-  const input = structuredClone(spec.input);
+  let input = structuredClone(spec.input);
   if (spec.workflowKey === 'WF-99') input.account_id = fixtureAccount(options.fixtureReceipt);
+  if (spec.requiresFirstRunEvidence) {
+    const original = firstOriginal(options.firstRunEvidence, options.fixtureReceipt);
+    input = spec.workflowKey === 'SUB-INGEST' ? original.ingest : original.cost;
+  }
   const graph = buildFoundationGatewayWorkflows(bindings, transport, release).find(
     (g) => g.key === spec.workflowKey,
   );
+  if (spec.requiresFirstRunEvidence) {
+    const manual = node(spec.workflowKey, 'Manual original replay', 'manualTrigger', {}, [0, 200]);
+    graph.workflow.nodes.push(manual);
+    graph.workflow.connections[manual.name] = structuredClone(graph.workflow.connections['When called']);
+  }
   const manual = graph.workflow.nodes.filter((n) => n.type === 'n8n-nodes-base.manualTrigger');
   if (manual.length !== 1 || graph.workflow.active !== false) bad();
   const source = graph.workflow.connections[manual[0].name];
@@ -282,6 +557,7 @@ export function materializeFoundationAcceptanceCase(bindings, transport, caseId,
     settings.saveExecutionProgress !== false
   )
     bad();
+  settings.availableInMCP = true;
   return {
     ...graph,
     kind: 'proposed-native-manual-case',
