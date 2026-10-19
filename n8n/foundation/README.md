@@ -2,7 +2,7 @@
 
 `buildFoundationGatewayWorkflows(bindings, transport)` is the current preparation entry point. It builds exactly 25 inactive workflows: five SUBs, WF-00/19/90/91/99 and 15 explicit stubs. It performs no network request, credential read, deployment or execution. All generated workflows disable successful/error/manual execution storage and progress storage. GW-01 remains closed and is never an input to this builder.
 
-`bindings.dev.json` retains the five actual provider/role references and now records 25 actual verified inactive shell IDs and seven actual tag IDs. [Partial inventory](../../milestones/M03-n8n-foundation/evidence/inactive-foundation-partial-20261019.json) is derived from the bounded save/readback journals; it is not a full saved-definition export and does not supply unavailable version IDs. Remaining tag and staged-definition delivery is pending. Unit tests use synthetic references. Generated blueprints and proposed release graphs are separate from actual Cloud exports.
+`bindings.dev.json` retains the five actual provider/role references and records 25 actual workflow IDs and all 13 native tag IDs. The reviewed continuation completed native0/child closed after118 requests and saved/read back all25 inactive staged definitions. Their actual version IDs, intended/staged hashes and deferred-error metadata are exported under `n8n/workflows/`. `transport.dev.json` records the dedicated `EmrM03Machine19` / `httpCustomAuth` reference with `activationAuthorized:false`. [Actual completion](../../milestones/M03-n8n-foundation/evidence/inactive-foundation-completion-20261019.json) is distinct from the preserved [earlier partial inventory](../../milestones/M03-n8n-foundation/evidence/inactive-foundation-partial-20261019.json). Twenty-four error links remain deferred; canonical parity/error routing and live execution are not accepted. Unit tests use synthetic references; proposed release variants stay separate from actual exports.
 
 ## Fixed HTTPS transport
 
@@ -16,7 +16,7 @@ The protected Preview and new dedicated machine credential are future acceptance
 
 ## Workflow readiness
 
-Every row below is local source readiness. The 25 actual Cloud IDs currently identify verified inactive noOp shells; zero full foundation graphs or Cloud Machine credentials were saved. Actual probe and GW-01 exports retain their own historical scopes. The native API constraints below govern the remaining inactive staging.
+Every row below has local source coverage and an actual inactive staged export at `../workflows/<key>.json`; the completion inventory records its exact Cloud ID/version/hash. Live proof in the last column remains pending. All25 Cloud IDs now identify complete-node staged definitions, with one dedicated Machine credential;24 canonical error links remain deferred. Actual probe and GW-01 exports retain their historical scopes.
 
 ### Native inactive staging constraints
 

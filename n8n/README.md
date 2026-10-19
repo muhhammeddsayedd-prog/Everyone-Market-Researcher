@@ -34,6 +34,16 @@ perform no external actions and currently accept development only.
 
 ## Development workflow contract
 
+The current M03 [foundation entry point](foundation/README.md) uses the fixed,
+least-privilege HTTPS gateway source. Actual inactive delivery saved/read back
+25 staged definitions under `workflows/`, with real version IDs and safe credential
+references. Native Postgres TLS failure remains historical; no native Postgres
+fallback, administrator credential or service key was substituted. The new
+foundation transport remains disabled and has no admitted runtime window.
+Twenty-four canonical error links are explicitly deferred until their WF-90
+target can be published under separate live approval. Saved-stage delivery does
+not prove native execution, error routing or actor smoke acceptance.
+
 Names are `WF-XX · Name [dev]` and `SUB · Name [dev]`; tags include `env:dev`,
 the appropriate `layer:*`, and `platform:*` where relevant. Set each workflow's
 timezone to Africa/Cairo. Route errors to WF-90 except WF-90 itself. Use
@@ -60,12 +70,22 @@ Import SUB workflows first, then WF-90, callback/health/stubs, and WF-00 last.
 WF-00 remains unpublished/inactive throughout M03. No production copy is made
 until M08. Unpin test data before exporting; preserve safe credential references
 and actual workflow IDs. Every changed hosted workflow must have a sanitized
-export under `workflows/`. There are no verified M03 hosted exports yet: access
-and live node schemas remain gates, so speculative JSON is not committed as an
-actual export. The actual 2.43.5 core-node probe now supplies observed versions
+export under `workflows/`. The25 current actual exports identify
+`inactive_native_staging`, intended/staged hashes and each deferred error target;
+they are separate from generated canonical source and proposed manual variants.
+The actual2.43.5 core-node probe supplies observed versions
 and field controls, and was archived without execution. Its sanitized JSON is
 capability evidence only. Native blueprints under `foundation/` remain separate
 from changed hosted exports and require actual bindings plus deployment checks.
+
+For the bounded foundation acceptance source, fixed HTTPS requests use no
+automatic retry,15-second request timeout and a20-second server operation
+deadline. Actor launch remains guarded off; its two-run proposal is asynchronous
+and has no POST retry. These reviewed limits supersede the generic retry/timeout
+defaults above for this finite source profile. All saved workflows are inactive,
+unpublished and disable successful/error/manual execution-data and progress
+storage. Future dependency publication, canonical error links, manual execution,
+runtime rebinding and full cleanup require the separate executable live packet.
 
 ## Callback safety
 

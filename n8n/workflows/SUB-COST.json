@@ -1,0 +1,286 @@
+{
+  "key": "SUB-COST",
+  "id": "v4yeqqNm6xHjZ5ue",
+  "versionId": "21b2e6de-903e-4068-b10b-7b08a55e8dfc",
+  "active": false,
+  "activeVersionId": null,
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflow": {
+    "name": "SUB · Log cost [dev]",
+    "nodes": [
+      {
+        "id": "035ae453-40da-426e-a6ba-18f439f4f9ba",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "entries",
+                "type": "array"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "51d271b4-3906-4e58-ae34-e41a1331594f",
+        "name": "Prepare costs",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const bad=()=>{throw Error('EMR_FOUNDATION_COST_INVALID');};\nconst rows=$input.all();if(rows.length!==1)bad();const j=rows[0].json;\nconst object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v),exact=(v,keys)=>object(v)&&Object.keys(v).length===keys.length&&keys.every(k=>Object.hasOwn(v,k));\nconst uuid=v=>typeof v==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(v);\nif(!object(j)||Object.keys(j).some(k=>!['entries','env'].includes(k))||(j.env!==undefined&&j.env!=='dev')||!Array.isArray(j.entries)||j.entries.length>2)bad();\nfor(const e of j.entries){\nif(!object(e)||Object.keys(e).some(k=>!['provider','category','quantity','unit','cost_usd','run_id','competitor_id','platform','item_id','day','meta'].includes(k))||\ne.provider!=='apify'||e.category!=='scrape'||![0,1].includes(e.quantity)||e.unit!=='result'||!Number.isFinite(e.cost_usd)||e.cost_usd<0||e.cost_usd>999999.999999||\n!uuid(e.run_id)||!uuid(e.competitor_id)||e.platform!=='website_work_page'||(e.item_id!==undefined&&e.item_id!==null)||\n(e.day!==undefined&&e.day!==null&&(typeof e.day!=='string'||!/^\\d{4}-\\d{2}-\\d{2}$/.test(e.day)))||\n!exact(e.meta,['actor','apify_run_id','account_id','cost_key'])||e.meta.actor!=='apify/website-content-crawler'||typeof e.meta.apify_run_id!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(e.meta.apify_run_id)||!uuid(e.meta.account_id)||e.meta.cost_key!=='apify:'+e.meta.apify_run_id+':'+e.meta.account_id)bad();\n}\nreturn[{json:{params:[JSON.stringify(j.entries)]}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "c4ca5a0a-6357-4701-aee1-a76f066de35a",
+        "name": "Prepare gateway · Log costs",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:SUB-COST:Log costs:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=$json.params;if(!Array.isArray(p))fail();\nlet args;try{args=({entries:JSON.parse(p[0])});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"cost.log\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          480,
+          0
+        ]
+      },
+      {
+        "id": "c84a9e91-4c6b-4f35-ad79-f9386a98b3cd",
+        "name": "Invoke gateway · Log costs",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          600,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "0aa20dbe-df42-4d55-a213-1e90fcb302c7",
+        "name": "Observe gateway · Log costs",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Log costs\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"inserted\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          720,
+          0
+        ]
+      },
+      {
+        "id": "f8c2e225-69b6-4853-a59c-3633714aca38",
+        "name": "Read durable gateway · Log costs",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          840,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "b7d32e98-7ea8-4c7e-ad0e-c81442f3b1a6",
+        "name": "Log costs",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Log costs\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"inserted\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          960,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Prepare costs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare costs": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Log costs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Log costs": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Log costs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Log costs": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Log costs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Log costs": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Log costs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Log costs": {
+        "main": [
+          [
+            {
+              "node": "Log costs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "gKQ40iTbrD5MKnK8",
+        "name": "layer:sub"
+      }
+    ],
+    "pinData": {}
+  },
+  "definitionProfile": "inactive_native_staging",
+  "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+  "intendedSourceHash": "0d278fd641b4eaadc1adf78d761d13d0f41b05b85f2ed62f337271f5328f377e",
+  "stagedSourceHash": "f0e62e3300ac86862c29eb762938c4e860a05e99c25c3e0127ba96c085ed9fdf",
+  "canonicalParity": false,
+  "kind": "actual_saved_inactive_foundation_staging",
+  "version": 1,
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+}

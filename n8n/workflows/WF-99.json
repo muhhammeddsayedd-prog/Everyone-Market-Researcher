@@ -1,0 +1,1574 @@
+{
+  "key": "WF-99",
+  "id": "qTjioYmBUVMIERVz",
+  "versionId": "cbf1aea5-b5a9-4fcb-91cd-95a86a118e72",
+  "active": false,
+  "activeVersionId": null,
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflow": {
+    "name": "WF-99 · Foundation smoke test [dev]",
+    "nodes": [
+      {
+        "id": "f11a0644-6487-4b18-ad54-be874ce8b761",
+        "name": "Manual foundation smoke",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "parameters": {},
+        "position": [
+          0,
+          100
+        ]
+      },
+      {
+        "id": "b3f4ad5b-2376-4ff9-a05a-7fd90f9f678b",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "action",
+                "type": "string"
+              },
+              {
+                "name": "launch_id",
+                "type": "string"
+              },
+              {
+                "name": "account_id",
+                "type": "string"
+              },
+              {
+                "name": "apify_run_id",
+                "type": "string"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "02bcb767-456b-4b1e-a2d7-1d86d5836136",
+        "name": "Validate smoke action",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');const j=rows[0].json;\nconst uuid=x=>typeof x==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(x);\nif(Object.keys(j).some(k=>!['action','launch_id','account_id','apify_run_id','env'].includes(k))||(j.env!==undefined&&j.env!=='dev'))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');\nif(j.action===undefined)return[{json:{action:'blocked',launchEnabled:false,reason:'separate_foundation_acceptance_approval_required'}}];\nif(!['launch','recover'].includes(j.action)||!uuid(j.launch_id)||(j.action==='launch'&&!uuid(j.account_id))||(j.action==='recover'&&(typeof j.apify_run_id!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(j.apify_run_id))))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');\nreturn[{json:{action:j.action,launch_id:j.launch_id,account_id:j.account_id??null,apify_run_id:j.apify_run_id??null,launchEnabled:false,params:[j.launch_id]}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "d95c7db0-d015-4ef4-a93a-24fb07914ecc",
+        "name": "Launch requested?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "413031c1-e299-41c0-a31e-06674ce9ab23",
+                "leftValue": "={{ $json.action === 'launch' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          480,
+          0
+        ]
+      },
+      {
+        "id": "b4f85a5b-8790-43ab-a727-9257b0ce05d7",
+        "name": "Approved launch gate (disabled)?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "dc98d29e-0e1c-47e6-ac89-72aca4ce76f1",
+                "leftValue": "={{ $json.launchEnabled }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          720,
+          -80
+        ]
+      },
+      {
+        "id": "6ccb8cfc-36a5-4435-aeb7-c55ef6e8e2bc",
+        "name": "Launch admission absent?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "70fad57f-2c5e-46a1-adb3-7cf587313aea",
+                "leftValue": "={{ $json.launch === null }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          840,
+          -80
+        ]
+      },
+      {
+        "id": "ad0a6e61-8b58-4454-a233-c7f871e3e5a5",
+        "name": "Return disabled launch",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "return[{json:{launchEnabled:false,actorStarted:false,reason:'separate_foundation_acceptance_approval_required'}}];"
+        },
+        "position": [
+          960,
+          -240
+        ]
+      },
+      {
+        "id": "c775d3ce-9278-4fa3-a206-ad5b3f522a94",
+        "name": "Start guarded dev parent",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "lkVDS0oO4WULipeV"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "workflow": "WF-99",
+              "platform": "website_work_page",
+              "mode": "manual",
+              "env": "dev"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "workflow",
+                "displayName": "workflow",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "platform",
+                "displayName": "platform",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "any",
+                "removed": false
+              },
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          960,
+          -80
+        ]
+      },
+      {
+        "id": "f1806fab-b9f3-4d46-a239-d754a4e20f28",
+        "name": "Prepare exact launch admission",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');const j=rows[0].json;\nconst uuid=x=>typeof x==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(x);\nconst source=$('Validate smoke action').first().json;if(!uuid(j.run_id))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,128}$/.test(execution))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');\nreturn[{json:{params:[{window_id:\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\",launch_id:source.launch_id,run_id:j.run_id,account_id:source.account_id,execution_id:execution,actor_id:'aYG0l9s7dbB7j3gbS',actor_build:'0.3.99',input:{\"startUrls\":[{\"url\":\"https://everyone.film/about-everyone\"}],\"crawlerType\":\"cheerio\",\"maxCrawlDepth\":0,\"maxCrawlPages\":1,\"saveMarkdown\":true,\"proxyConfiguration\":{\"useApifyProxy\":true},\"saveFiles\":false,\"saveContentTypes\":\"\",\"summarize\":false,\"useSitemaps\":false,\"useLlmsTxt\":false,\"maxRequestRetries\":0,\"maxSessionRotations\":0,\"maxResults\":1,\"maxConcurrency\":1,\"ignoreHttpsErrors\":false,\"respectRobotsTxtFile\":true},memory_mb:1024,timeout_seconds:300,max_total_charge_usd:1}]}}];"
+        },
+        "position": [
+          1200,
+          -80
+        ]
+      },
+      {
+        "id": "68d934fa-3afd-4b91-a110-a1928c7f3051",
+        "name": "Validate first launch authorization",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');const j=rows[0].json;\nconst expected=$('Prepare exact launch admission').first().json.params[0];\nconst stable=x=>Array.isArray(x)?'['+x.map(stable).join(',')+']':x!==null&&typeof x==='object'?'{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+stable(x[k])).join(',')+'}':JSON.stringify(x);\nif(j.authorized!==true||j.reason!=='first_post_only'||!j.launch||j.launch.launch_id!==expected.launch_id||j.launch.actor_id!==expected.actor_id||j.launch.actor_build!=='0.3.99'||stable(j.launch.input)!==stable(expected.input)||j.launch.apify_run_id!==null)throw Error('EMR_APIFY_LAUNCH_RECONCILIATION_REQUIRED');\nreturn[{json:{launch:j.launch}}];"
+        },
+        "position": [
+          1920,
+          -80
+        ]
+      },
+      {
+        "id": "65ecb86a-57b2-42e7-a80c-480089e09860",
+        "name": "Start exact actor once (disabled)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.apify.com/v2/actors/apify~website-content-crawler/runs",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "apifyApi",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.launch.input }}",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "waitForFinish",
+                "value": "0"
+              },
+              {
+                "name": "restartOnError",
+                "value": "false"
+              },
+              {
+                "name": "memory",
+                "value": "1024"
+              },
+              {
+                "name": "timeout",
+                "value": "300"
+              },
+              {
+                "name": "build",
+                "value": "0.3.99"
+              },
+              {
+                "name": "maxTotalChargeUsd",
+                "value": "1"
+              },
+              {
+                "name": "webhooks",
+                "value": "W3siZXZlbnRUeXBlcyI6WyJBQ1RPUi5SVU4uU1VDQ0VFREVEIiwiQUNUT1IuUlVOLkZBSUxFRCIsIkFDVE9SLlJVTi5USU1FRF9PVVQiLCJBQ1RPUi5SVU4uQUJPUlRFRCJdLCJyZXF1ZXN0VXJsIjoiaHR0cHM6Ly9tdWhoYW1tZWRzYXllZC5hcHAubjhuLmNsb3VkL3dlYmhvb2svZW1yLWFwaWZ5LWNhbGxiYWNrIiwicGF5bG9hZFRlbXBsYXRlIjoie1wiZXZlbnRUeXBlXCI6IHt7ZXZlbnRUeXBlfX0sIFwicmVzb3VyY2VcIjoge3tyZXNvdXJjZX19fSJ9XQ=="
+              }
+            ]
+          },
+          "sendHeaders": false,
+          "options": {
+            "timeout": 15000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          2160,
+          -80
+        ],
+        "credentials": {
+          "apifyApi": {
+            "id": "EYmaOt0rd45ysq0J",
+            "name": "Apify account"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput",
+        "disabled": true
+      },
+      {
+        "id": "aac4c4fe-9d61-4c34-a2bb-fa5b39ce8ce7",
+        "name": "Retain original launch identifier",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');const j=rows[0].json;\nconst launch=$('Validate first launch authorization').first().json.launch;\nconst d=j.body?.data;\nif(![200,201].includes(j.statusCode)||!d||typeof d.id!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(d.id)||d.actId!=='aYG0l9s7dbB7j3gbS')return[{json:{originalKnown:false,launch_id:launch.launch_id,reconciliationRequired:true,automaticRetry:false}}];\nreturn[{json:{originalKnown:true,launch_id:launch.launch_id,apify_run_id:d.id,params:[launch.launch_id,d.id]}}];"
+        },
+        "position": [
+          2400,
+          -80
+        ]
+      },
+      {
+        "id": "0b370868-6fdb-42af-a17b-5f7ea08d552c",
+        "name": "Original actor id known?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "a585b072-f4b7-459b-a909-e5cafa97bcca",
+                "leftValue": "={{ $json.originalKnown }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          2640,
+          -80
+        ]
+      },
+      {
+        "id": "729c4cf2-a72c-4b2d-a767-97d556ea50c7",
+        "name": "Return ambiguous launch",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');const j=rows[0].json;\nreturn[{json:{launch_id:j.launch_id,reconciliationRequired:true,actorPostMayHaveSucceeded:true,automaticRetry:false,replaceActor:false}}];"
+        },
+        "position": [
+          2880,
+          -240
+        ]
+      },
+      {
+        "id": "fd8a2498-5847-459b-a2e6-0d916afd625f",
+        "name": "Original-run recovery requested?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "f46f37dc-79fc-407f-a199-ca0f3de0f1d2",
+                "leftValue": "={{ $json.action === 'recover' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          720,
+          160
+        ]
+      },
+      {
+        "id": "dbda308c-62b4-4076-a01f-f260ed9aa553",
+        "name": "Prepare original-run recovery",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');const j=rows[0].json;\nreturn[{json:{params:[j.launch_id,j.apify_run_id]}}];"
+        },
+        "position": [
+          960,
+          160
+        ]
+      },
+      {
+        "id": "0171945c-6595-48b8-a0b7-0c09df4fc7c0",
+        "name": "Build verified registration request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');const j=rows[0].json;\nconst source=$('Read original launch context').first().json;\nif(!source.launch||!source.launch.apify_run_id)throw Error('EMR_APIFY_LAUNCH_RECONCILIATION_REQUIRED');\nreturn[{json:{apify_run_id:source.launch.apify_run_id,env:'dev',transport:'recovery'}}];"
+        },
+        "position": [
+          3600,
+          80
+        ]
+      },
+      {
+        "id": "4e69338e-e489-4f3d-a668-40589ce63501",
+        "name": "Recover registered callback",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "TsqSMa5MlO3QBLkt"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "apify_run_id": "={{ $json.apify_run_id }}",
+              "env": "dev",
+              "transport": "recovery"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "apify_run_id",
+                "displayName": "apify_run_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "transport",
+                "displayName": "transport",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          3840,
+          80
+        ]
+      },
+      {
+        "id": "8f94c8d5-8ec6-4909-aba4-14ca2673fae4",
+        "name": "Prepare gateway · Read launch admission before parent",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:WF-99:Read launch admission before parent:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=[$('Validate smoke action').first().json.launch_id];if(!Array.isArray(p))fail();\nlet args;try{args=({launchId:p[0]});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"launch.read\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "f46e1fc9-8e4f-4bd0-a6e1-db62e8f8007c",
+        "name": "Invoke gateway · Read launch admission before parent",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          120,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "b904dcb4-06fd-4b9c-abbd-aba903aaa08f",
+        "name": "Observe gateway · Read launch admission before parent",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Read launch admission before parent\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"launch\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "b65b864b-c8e1-4211-adcc-c5a74a0c37c9",
+        "name": "Read durable gateway · Read launch admission before parent",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          360,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "a9d4d47e-cf3f-4f83-a1da-ead22a201ac6",
+        "name": "Read launch admission before parent",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Read launch admission before parent\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"launch\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          480,
+          0
+        ]
+      },
+      {
+        "id": "dba02a50-1c80-431d-a017-87773889937f",
+        "name": "Prepare gateway · Authorize exact actor launch",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:WF-99:Authorize exact actor launch:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=$json.params;if(!Array.isArray(p))fail();\nlet args;try{args=({launch:p[0]});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"launch.authorize\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "716e7a3a-44b2-41ec-ab2b-e432d3401b10",
+        "name": "Invoke gateway · Authorize exact actor launch",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          120,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "dfe697c3-3d1f-4830-a412-e341eb35fa8e",
+        "name": "Observe gateway · Authorize exact actor launch",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Authorize exact actor launch\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"authorized\",\"reason\",\"launch\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:observed?b.result:null}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "60612eb2-bd7d-4b16-a735-0b6918130779",
+        "name": "Read durable gateway · Authorize exact actor launch",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          360,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "74101ed1-efaa-466d-a2a2-69cb9cfdaa78",
+        "name": "Authorize exact actor launch",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Authorize exact actor launch\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"authorized\",\"reason\",\"launch\"]))fail();\nconst stable=x=>Array.isArray(x)?'['+x.map(stable).join(',')+']':object(x)?'{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+stable(x[k])).join(',')+'}':JSON.stringify(x);if(!prepared.observed||prepared.observedResult?.authorized!==true||result.authorized!==true||stable(prepared.observedResult)!==stable(result)||end-now<360000)throw Error('EMR_APIFY_LAUNCH_RECONCILIATION_REQUIRED');\nreturn[{json:result}];"
+        },
+        "position": [
+          480,
+          0
+        ]
+      },
+      {
+        "id": "2b415168-98c9-4372-a807-1d60b15cd390",
+        "name": "Prepare gateway · Reconcile original actor registration",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:WF-99:Reconcile original actor registration:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=$json.params;if(!Array.isArray(p))fail();\nlet args;try{args=({launchId:p[0],apifyRunId:p[1]});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"launch.reconcile\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "949afaec-1935-4181-aa68-b021185be9e5",
+        "name": "Invoke gateway · Reconcile original actor registration",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          120,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "b5a740d4-7869-4dbf-a13a-5923b20afed7",
+        "name": "Observe gateway · Reconcile original actor registration",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Reconcile original actor registration\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"registered\",\"launch\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "8f2b3537-f914-4fde-a053-6f93cd352642",
+        "name": "Read durable gateway · Reconcile original actor registration",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          360,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "8941c602-e0c8-4871-afbc-3b336348ee72",
+        "name": "Reconcile original actor registration",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Reconcile original actor registration\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"registered\",\"launch\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          480,
+          0
+        ]
+      },
+      {
+        "id": "14f13189-1e9e-4541-aa34-fef1937bdf68",
+        "name": "Prepare gateway · Read original launch context",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:WF-99:Read original launch context:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=[$('Validate smoke action').first().json.launch_id];if(!Array.isArray(p))fail();\nlet args;try{args=({launchId:p[0]});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"launch.read\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "b0a286db-ad5e-4c43-aa69-a7eedde0dcba",
+        "name": "Invoke gateway · Read original launch context",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          120,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "54d2d17a-4a12-4562-a57c-39ceed037eb2",
+        "name": "Observe gateway · Read original launch context",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Read original launch context\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"launch\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "bd93d3d0-078e-41a7-a4ca-baff86f69f98",
+        "name": "Read durable gateway · Read original launch context",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          360,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "da407a02-0888-462c-abe3-dcd8cf11f1db",
+        "name": "Read original launch context",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Read original launch context\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"launch\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          480,
+          0
+        ]
+      },
+      {
+        "id": "ded82c17-ae59-4033-a6e9-ef0b85ab9615",
+        "name": "Return existing admission",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json))throw Error('EMR_FOUNDATION_SMOKE_INPUT_INVALID');const j=rows[0].json;\nreturn[{json:{launch_id:j.launch.launch_id,reconciliationRequired:true,actorPostMayHaveSucceeded:true,automaticRetry:false,replaceActor:false}}];"
+        },
+        "position": [
+          1080,
+          -320
+        ]
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Validate smoke action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate smoke action": {
+        "main": [
+          [
+            {
+              "node": "Launch requested?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual foundation smoke": {
+        "main": [
+          [
+            {
+              "node": "Validate smoke action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Launch requested?": {
+        "main": [
+          [
+            {
+              "node": "Approved launch gate (disabled)?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Original-run recovery requested?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Approved launch gate (disabled)?": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Read launch admission before parent",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return disabled launch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Read launch admission before parent": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Read launch admission before parent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Read launch admission before parent": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Read launch admission before parent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Read launch admission before parent": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Read launch admission before parent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Read launch admission before parent": {
+        "main": [
+          [
+            {
+              "node": "Read launch admission before parent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read launch admission before parent": {
+        "main": [
+          [
+            {
+              "node": "Launch admission absent?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Launch admission absent?": {
+        "main": [
+          [
+            {
+              "node": "Start guarded dev parent",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return existing admission",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Start guarded dev parent": {
+        "main": [
+          [
+            {
+              "node": "Prepare exact launch admission",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare exact launch admission": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Authorize exact actor launch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Authorize exact actor launch": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Authorize exact actor launch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Authorize exact actor launch": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Authorize exact actor launch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Authorize exact actor launch": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Authorize exact actor launch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Authorize exact actor launch": {
+        "main": [
+          [
+            {
+              "node": "Authorize exact actor launch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Authorize exact actor launch": {
+        "main": [
+          [
+            {
+              "node": "Validate first launch authorization",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate first launch authorization": {
+        "main": [
+          [
+            {
+              "node": "Start exact actor once (disabled)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Start exact actor once (disabled)": {
+        "main": [
+          [
+            {
+              "node": "Retain original launch identifier",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Retain original launch identifier": {
+        "main": [
+          [
+            {
+              "node": "Original actor id known?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Original actor id known?": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Reconcile original actor registration",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return ambiguous launch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Original-run recovery requested?": {
+        "main": [
+          [
+            {
+              "node": "Prepare original-run recovery",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return disabled launch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare original-run recovery": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Reconcile original actor registration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Reconcile original actor registration": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Reconcile original actor registration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Reconcile original actor registration": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Reconcile original actor registration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Reconcile original actor registration": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Reconcile original actor registration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Reconcile original actor registration": {
+        "main": [
+          [
+            {
+              "node": "Reconcile original actor registration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Reconcile original actor registration": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Read original launch context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Read original launch context": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Read original launch context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Read original launch context": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Read original launch context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Read original launch context": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Read original launch context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Read original launch context": {
+        "main": [
+          [
+            {
+              "node": "Read original launch context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read original launch context": {
+        "main": [
+          [
+            {
+              "node": "Build verified registration request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build verified registration request": {
+        "main": [
+          [
+            {
+              "node": "Recover registered callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "OxnbDrBVAtziiuTk",
+        "name": "layer:ops"
+      }
+    ],
+    "pinData": {}
+  },
+  "definitionProfile": "inactive_native_staging",
+  "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+  "intendedSourceHash": "addc744a30e7ac8f0aa03c7c82160e1e73f7f9f63942ef89b90a7c69357df2a4",
+  "stagedSourceHash": "64fbc43f0226d68709a620b823c641eb4e50740492cc4ee60dde95280ed8441e",
+  "canonicalParity": false,
+  "kind": "actual_saved_inactive_foundation_staging",
+  "version": 1,
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+}

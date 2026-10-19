@@ -8,6 +8,17 @@
 fixed operations, tests and precise remaining native proof for each workflow.
 The older outline below is historical and is superseded by this section.
 
+**Latest actual delivery:** sealed continuation from `2865845` completed
+native0/child closed with118 management requests,25 verified inactive staged
+definitions and25 persisted actual exports,13 tags and one owned Machine
+credential. Consumed Management pair deleted; pending Machine remains encrypted
+locally. Historical cumulative management requests are188 (2+68+118), not a new
+gateway allowance. [Actual completion](inactive-foundation-completion-20261019.json)
+records real version IDs/hashes and the24 deferred error links.
+`inactiveDefinitionsSaved:true`, `finalGraphsBound:false`,
+`errorRoutingAccepted:false`; zero executions/actor calls/window activation.
+The older partial delivery description below preserves the preceding failure.
+
 Actual inactive delivery is partial: attempt `44cc22` created and GET-verified
 25 owned inactive noOp shells and seven tags, then stopped at tag POST409. It
 made 68 requests; the earlier `f20045` made two GETs with no mutations. The
@@ -191,9 +202,13 @@ operations on those known original IDs may be required by the eventual approved
 shutdown plan; no replacement run or new scope is implied. Wait for actual
 native execution and owned HTTP completion/cancellation before claiming no
 in-flight work: SQL zero leases alone does not prove external socket closure.
-Then Close once, unpublish only the owned callback, restore every owned graph to
-inactive/launch disabled/retention off, and verify saved state through projected
-API readback. No recurring schedule is activated.
+Record every owned temporary publication's actual ID/version and pre-window
+inactive state in the setup ledger. Restore owned definitions to inactive,
+launch disabled and retention off; unpublish **every actually published owned
+dependency**, including callback, health, stubs, SUBs and error handler, in reverse
+dependency order. A callback-only unpublish is incomplete. Preserve unrelated
+workflow state. Close once and verify final saved/publication state through
+projected API readback. No recurring schedule is activated.
 
 Remove the dedicated foundation n8n machine credential, owned bypass and
 branch-specific sensitive environment entries after use; delete consumed
@@ -207,14 +222,12 @@ for exact-ID readback, never an automatic replay or a replacement window.
 
 ### Precise remaining prerequisites before this packet becomes approval-ready
 
-1. Finish independent review/public resealing of the native compatibility and
-   durable per-export correction, then replenish only the consumed **existing**
-   Management handoff using `New-M03FoundationHandoff.ps1`. Resume from the 25
-   real IDs, seven tags and original journals; no shell recreation or token
-   regeneration. Reconcile the ambiguous tag by complete bounded GET before
-   saving remaining tags, one Machine and 25 staged definitions. Export each
-   actual verified graph immediately so a later failure preserves earlier
-   evidence. No writer, administrator or provider password is needed here.
+1. **Inactive delivery completed:** reviewed native correction/public seal and
+   actual continuation `da8fd3` native0/118requests/25staged exports, all13tags/
+   oneMachine. Original25IDs/seven tags/failed intents preserved; complete GET
+   reconciliation preceded native alias creation. Management pair deleted and
+   child closed, pending token retained encrypted. Independent public graph/hash
+   verification passed. No further handoff or successful inactive-packet replay.
 2. Record exact source SHA, pending migration hashes, actual saved graph hashes,
    inactive flags and current CI/Preview references. The protected source Preview
    is not evidence of an enabled runtime or an open window.
@@ -222,6 +235,14 @@ for exact-ID readback, never an automatic replay or a replacement window.
    access and the finalized saved graphs, with request IDs/counters and bounded
    shutdown/conditional abort operations. Current source/local coverage does
    not claim a successful live multi-workflow test.
+   The inactive All consumer is not a runtime updater: its graph-intent hashes,
+   selected audience and Machine body are immutable. It must reject a changed
+   runtime packet or canonical graph rather than overwrite/adopt them. A separate
+   reviewed finite owned-ID procedure must cover domain/audience rebinding,
+   canonical links/manual variants, dependency publication and restoration with
+   durable intent and exact pre/post readback. That engineering control and its
+   actual supported execution access remain prerequisites; no new credential
+   request or broader authority follows from this note.
 4. Present the **single final approval decision** covering the exact four dev
    forward versions, fresh protected runtime delivery/binding, distinct lifecycle,
    dev-only restricted runtime credentials and read-scoped Apify token, and the

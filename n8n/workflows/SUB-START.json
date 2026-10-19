@@ -1,0 +1,294 @@
+{
+  "key": "SUB-START",
+  "id": "lkVDS0oO4WULipeV",
+  "versionId": "a2ec5439-b671-4c68-b4b6-dfb54cb15605",
+  "active": false,
+  "activeVersionId": null,
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflow": {
+    "name": "SUB · Start run [dev]",
+    "nodes": [
+      {
+        "id": "9f86e285-775c-41b5-a472-aa69ffc08266",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "workflow",
+                "type": "string"
+              },
+              {
+                "name": "platform",
+                "type": "any"
+              },
+              {
+                "name": "mode",
+                "type": "string"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "d85dcccf-7cd3-43e3-ac2d-3f77925a66da",
+        "name": "Prepare start",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const invalid = () => { throw new Error('EMR_N8N_INPUT_INVALID'); };\nconst items = $input.all();\nif (items.length !== 1) invalid();\nconst j = items[0].json;\nconst object = x => x !== null && typeof x === 'object' && !Array.isArray(x);\nconst exact = (x,allowed,required=[]) => object(x) && Object.keys(x).every(k=>allowed.includes(k)) && required.every(k=>Object.hasOwn(x,k));\nconst uuid = x => typeof x==='string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x);\nconst identifier = x => typeof x==='string' && /^[A-Za-z0-9_-]{1,200}$/.test(x);\nif (!object(j) || (j.env !== undefined && j.env !== null && j.env !== 'dev')) invalid();\nif (!exact(j,['workflow','platform','mode','env'],['workflow','platform','mode','env']) ||\n  !/^WF-[0-9]{2}[a-z]?$/.test(j.workflow) || !['daily','backfill','weekly','manual','removal_check'].includes(j.mode) || j.env!=='dev') invalid();\nif (j.platform!==null && !['vimeo','instagram','instagram_stories','website','website_work_page','linkedin','linkedin_employees','youtube','news'].includes(j.platform)) invalid();\nconst execution = String($execution.id ?? '');\nif (!identifier(execution)) invalid();\nreturn [{json:{params:[j.workflow,j.platform,j.mode,'dev',execution]}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "00e6515d-54cd-450e-afff-1306843b08db",
+        "name": "Prepare gateway · Start run",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:SUB-START:Start run:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=$json.params;if(!Array.isArray(p))fail();\nlet args;try{args=({workflow:p[0],platform:p[1],mode:p[2],env:p[3],executionId:p[4]});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"run.start\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          480,
+          0
+        ]
+      },
+      {
+        "id": "8d9693b2-8df1-437a-aa3c-2978defa930d",
+        "name": "Invoke gateway · Start run",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          600,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "7a18668a-973d-48f1-aa05-2f89465df858",
+        "name": "Observe gateway · Start run",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Start run\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"run_id\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          720,
+          0
+        ]
+      },
+      {
+        "id": "9a30b644-2ee4-4fc0-a375-fd55cc10116e",
+        "name": "Read durable gateway · Start run",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          840,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "593ae8de-21ed-49ce-acf8-9b62c6ba8344",
+        "name": "Start run",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Start run\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"run_id\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          960,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Prepare start",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare start": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Start run",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Start run": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Start run",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Start run": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Start run",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Start run": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Start run",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Start run": {
+        "main": [
+          [
+            {
+              "node": "Start run",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "gKQ40iTbrD5MKnK8",
+        "name": "layer:sub"
+      }
+    ],
+    "pinData": {}
+  },
+  "definitionProfile": "inactive_native_staging",
+  "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+  "intendedSourceHash": "4c447c11148d6627948c5d6fc18759066c82dd37a65de30e9dadc008bdb366d8",
+  "stagedSourceHash": "18b9f9b90f0d93cabc527615a6a4da07155e58e4afea2b6d3d178357d6ba418f",
+  "canonicalParity": false,
+  "kind": "actual_saved_inactive_foundation_staging",
+  "version": 1,
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+}

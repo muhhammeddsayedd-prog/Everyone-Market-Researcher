@@ -133,6 +133,30 @@
     "platform:instagram": {
       "id": "9A8MARQoIZ2KBpJN",
       "name": "platform:instagram"
+    },
+    "platform:instagram_stories": {
+      "id": "9N3BQMVj0uqaD0p1",
+      "name": "platform:ig_stories"
+    },
+    "platform:youtube": {
+      "id": "IDZNRDEVXu6ifxpJ",
+      "name": "platform:youtube"
+    },
+    "platform:linkedin": {
+      "id": "PccyUXHyUcidOTXA",
+      "name": "platform:linkedin"
+    },
+    "platform:linkedin_employees": {
+      "id": "QaHjrtRVHOsUIeFI",
+      "name": "platform:li_employees"
+    },
+    "platform:website_work_page": {
+      "id": "K1Ba9kSABaM0RTzi",
+      "name": "platform:web_work"
+    },
+    "platform:news": {
+      "id": "cEuk3rckVIVM8Xp6",
+      "name": "platform:news"
     }
   },
   "credentials": {

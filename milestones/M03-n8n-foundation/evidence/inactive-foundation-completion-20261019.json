@@ -1,0 +1,573 @@
+{
+  "version": 1,
+  "kind": "actual-saved-inactive-foundation-staging",
+  "recordedAt": "2026-10-19T00:27:45.120Z",
+  "environment": "emr-dev owned n8n Personal project",
+  "host": "muhhammedsayed.app.n8n.cloud",
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+  "provenance": {
+    "consumerSourceCommit": "2865845d1e4df54e6fe0c41e5ccb0eae2216b3f8",
+    "invocation": "c7332c",
+    "nativeCompletion": "da8fd3",
+    "presencePreflight": "297d74",
+    "cleanupPresenceRead": "82b71d",
+    "perWorkflowObservedAtUnavailable": true,
+    "sourceCI": {
+      "run": 39180552607,
+      "conclusion": "success",
+      "jobs": [
+        "quality",
+        "unit",
+        "build",
+        "e2e",
+        "db-tests"
+      ],
+      "qualification": "CI source evidence, separate from native save receipt"
+    }
+  },
+  "nativeCompletion": {
+    "nativeExit": 0,
+    "childClosed": true,
+    "requestCount": 118,
+    "maximumRequests": 185,
+    "networkCompletionVerified": true,
+    "executionCount": 0,
+    "actorCalls": 0,
+    "providerCalls": 0,
+    "gatewayWindowStarted": false,
+    "inactiveDefinitionsSaved": true,
+    "persistedExports": 25,
+    "finalGraphsBound": false,
+    "errorRoutingAccepted": false,
+    "deferredErrorWorkflowCount": 24
+  },
+  "historicalAttempts": {
+    "preservedReceipts": [
+      "inactive-foundation-attempt-20261019.json",
+      "inactive-foundation-partial-20261019.json"
+    ],
+    "requestCounts": [
+      2,
+      68,
+      118
+    ],
+    "cumulativeManagementRequests": 188,
+    "notGatewayAllowance": true,
+    "original25WorkflowIdsUnchanged": true
+  },
+  "journal": {
+    "events": {
+      "tag_intent": 11,
+      "tag_ack": 13,
+      "tag_native_intent": 3,
+      "machine_intent": 1,
+      "machine_ack": 1,
+      "graph_intent": 25,
+      "graph_saved": 25,
+      "tags_intent": 25,
+      "tags_saved": 25
+    },
+    "ownedShellEvents": 75,
+    "original15BindingEventsPreserved": true,
+    "paths": [
+      {
+        "path": "scripts/n8n/out/foundation/owned-shells.jsonl",
+        "sha256": "81ef4712b40ca6dd71b2551b869ce33f1c58660986704ee70d3a95a5e721f41e"
+      },
+      {
+        "path": "scripts/n8n/out/foundation/binding-intents.jsonl",
+        "sha256": "aa6f629477378c65bdebe28cc6aa42509fe62a447786640b8a1b6332234f61f6"
+      },
+      {
+        "path": "scripts/n8n/out/foundation/inactive-foundation-receipt.json",
+        "sha256": "6c7628fbd2b62c1dba53e8007906d7caa5f4caa6ad3937c07846cf483eb48d55"
+      }
+    ]
+  },
+  "bindings": {
+    "path": "n8n/foundation/bindings.dev.json",
+    "sha256": "89081f429a25e454dd098365debacc681b2a65d7c3d2b60f372e87be8897a3f3",
+    "workflowCount": 25,
+    "tagCount": 13,
+    "tagRefs": {
+      "env:dev": {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      "layer:collector": {
+        "id": "9VKnf3HlzT1qNNfW",
+        "name": "layer:collector"
+      },
+      "layer:ai": {
+        "id": "xypXIZGL9udCiwND",
+        "name": "layer:ai"
+      },
+      "layer:ops": {
+        "id": "OxnbDrBVAtziiuTk",
+        "name": "layer:ops"
+      },
+      "layer:sub": {
+        "id": "gKQ40iTbrD5MKnK8",
+        "name": "layer:sub"
+      },
+      "platform:vimeo": {
+        "id": "onHkKuv75MhQwmPx",
+        "name": "platform:vimeo"
+      },
+      "platform:instagram": {
+        "id": "9A8MARQoIZ2KBpJN",
+        "name": "platform:instagram"
+      },
+      "platform:instagram_stories": {
+        "id": "9N3BQMVj0uqaD0p1",
+        "name": "platform:ig_stories"
+      },
+      "platform:youtube": {
+        "id": "IDZNRDEVXu6ifxpJ",
+        "name": "platform:youtube"
+      },
+      "platform:linkedin": {
+        "id": "PccyUXHyUcidOTXA",
+        "name": "platform:linkedin"
+      },
+      "platform:linkedin_employees": {
+        "id": "QaHjrtRVHOsUIeFI",
+        "name": "platform:li_employees"
+      },
+      "platform:website_work_page": {
+        "id": "K1Ba9kSABaM0RTzi",
+        "name": "platform:web_work"
+      },
+      "platform:news": {
+        "id": "cEuk3rckVIVM8Xp6",
+        "name": "platform:news"
+      }
+    },
+    "originalProviderAndRoleReferencesPreserved": true
+  },
+  "transport": {
+    "path": "n8n/foundation/transport.dev.json",
+    "sha256": "0d06446736e850e5f9f2a086a96e73379a344892407348f3176c1202e6f5884d",
+    "credential": {
+      "id": "EmrM03Machine19",
+      "name": "M03 foundation machine [dev]",
+      "type": "httpCustomAuth"
+    },
+    "audience": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app",
+    "activationAuthorized": false,
+    "qualification": "inactive source Preview; new immutable runtime and owned rebinding still require separate approval"
+  },
+  "credentialCleanup": {
+    "consumedManagementHandoffDeleted": true,
+    "consumedLeaseDeleted": true,
+    "credentialBearingChildClosed": true,
+    "pendingMachineRetainedEncryptedLocally": true,
+    "cloudMachineRetainedForSeparateRuntimeDecision": true,
+    "ownerSavedOriginalKeyUnchanged": true,
+    "parentApplicationClearingClaimed": false
+  },
+  "workflows": [
+    {
+      "key": "WF-10",
+      "id": "4JMHLDBSdgGxhPlk",
+      "versionId": "d3191e0b-80a7-48c0-953b-f31fc78899de",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "b25555389e3adb9614f9d55b34e45d7b7d3c04454fef9fa6af2a134ddf55f05a",
+      "stagedSourceHash": "8e41993dde2f2f48265416d7163c467aadd77cba94ffc936b04c0b8fdbc94692",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-10.json",
+      "exportSha256": "82c4908f35a95ab0dfcefcc1a531bd016959ecfc84c8d5dd4ed2f9892b199068"
+    },
+    {
+      "key": "WF-11",
+      "id": "Oq19AMI9C3B1wbo9",
+      "versionId": "9ffb2a4e-1747-477f-b1d2-69a14a803155",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "541e9679460b70ddb2c38fc03b7a1dafaaa464c1b6493ff0cb1e6e3433db5407",
+      "stagedSourceHash": "2114c5320f8ea052c63060624768646f6feb459b229a1dd7e353f21675b14025",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-11.json",
+      "exportSha256": "5f4fda698053a44f21bea2383bec2de9a1569a33facae5ba18ffccce5e8e41a7"
+    },
+    {
+      "key": "WF-12",
+      "id": "8pz1lF0xPDQCs3ab",
+      "versionId": "8a23fbff-e07d-4180-8bbc-2ef1db8512c3",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "10428d446817ea8fbe9d6a052b5fab22cd581cf46f7c144c42b678147e7baff4",
+      "stagedSourceHash": "de084846bcc388ca2cd8c0fc7bcf6e504990610f6b3651d8ffb09f77fb82eff6",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-12.json",
+      "exportSha256": "d20d89b321bac9caefe85316458cb3adc2d9932c6f2b2515efc4f5a81698c785"
+    },
+    {
+      "key": "WF-13",
+      "id": "F7S8Llr0ZSaSuw4T",
+      "versionId": "f8f7d305-abb6-4836-a9e8-7def4371fa78",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "8d4f2f32c5134552ed2372ab6a7f1d67d35f8fca2c0bc0e65fb2ac9c0e81b65b",
+      "stagedSourceHash": "2a47711557618b4dfbb16a360fb65d9ce0805d41f3e6aa76d4b4f2155e2d655a",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-13.json",
+      "exportSha256": "6eee853526747d0472a44ee3daf87c95b901f48ed4015719d645ee909d3e177d"
+    },
+    {
+      "key": "WF-18",
+      "id": "VbJn4mLYm0sGy1X2",
+      "versionId": "13560120-52e8-4045-adf7-ed28ad0bc884",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "980762454f03519411e14a9ac7613087055cc38bb431dc101e0b7a0349c48973",
+      "stagedSourceHash": "29756f7c5f53956668106e2aac07387ff346ef6624b0a67fa37a27b098c0744f",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-18.json",
+      "exportSha256": "3c00bbfb0ca64d73e17ea86baae169075c80dc4633542f9ff3f00f4bd1a03682"
+    },
+    {
+      "key": "WF-18b",
+      "id": "h6lUXSGN5sV2jxuQ",
+      "versionId": "1d0a7886-106b-4be9-bb83-1cbad52ae29f",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "56c61953342a44b0cb64ac4303dd87763a59ed3d9b46a0c30b2a49b2a0176f5d",
+      "stagedSourceHash": "b08051519ef6c8c106fc233e7646b4059abca77e1d41ec254142e0aefe1bfeb2",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-18b.json",
+      "exportSha256": "b617006805c37a02874c06473730546a934c037cf152f86c1fce33dcd2a30e03"
+    },
+    {
+      "key": "WF-21",
+      "id": "02yefa9uEPYwmM3N",
+      "versionId": "70200b45-5c84-4117-a1be-94ec9fa7354a",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "3c0a293aefb05cbf242a6223157a62b41761d525936d9440ae1bbe96d5b2ba00",
+      "stagedSourceHash": "c0e7a9b36da78d98e7bb414efd9bfb4b9f49ea2ddf724e8f27cf1e74e4d78d7f",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-21.json",
+      "exportSha256": "773632e5adcc5a103377586d389497ac66654395fbdd685a7fb5a5dac1daa12e"
+    },
+    {
+      "key": "WF-22",
+      "id": "83LybyawRpHXbjx6",
+      "versionId": "4650fcfe-3b9b-47ae-ad9d-85eb8656b1df",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "c61591da5c6d16f3ee284940291233866ca8a5517561b67fd8d5468c4a028819",
+      "stagedSourceHash": "7096faaf7b62d01b3be1a3e610a74dc1fdf5500cf0f571f839c00ac8c3fba700",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-22.json",
+      "exportSha256": "7b6e91560d7d9fc787cc272b0c431773122ec2e27f3178b5766888a2dec40a8d"
+    },
+    {
+      "key": "WF-23",
+      "id": "qzgT9giRQJ7eMDmV",
+      "versionId": "03b0709e-ba83-4314-ad4b-98135143a6b7",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "92b11b813ba1bd343faa73c72861e67be9f19b542a54f65c56fc3e96bb34b889",
+      "stagedSourceHash": "887028f8ad0ad6cbd7959d6effe5b752cde7b52f821e1539d95e632024c7abbb",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-23.json",
+      "exportSha256": "0c230552724b6650264df95b2363f1478ee7f7dbb854560354eac84dd3873cca"
+    },
+    {
+      "key": "WF-30",
+      "id": "mySfLZbU7I1850uP",
+      "versionId": "5248f711-8983-42fc-978d-2014b8446887",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "41ea0977164fe3f0697dfe88eaade78fdf4f92b2f205f8997b34ee6e422c5027",
+      "stagedSourceHash": "ec23b2e2b9f58ed80bb9516e17943762e542189b8315e473c3d7421ef9083ad4",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-30.json",
+      "exportSha256": "fe3ee0ce9a198df342e5be044847feb6286dbf13cf4ffac189584f7e72ab4716"
+    },
+    {
+      "key": "WF-32",
+      "id": "kkAGgnbD8NjWHMKC",
+      "versionId": "8ad0d3d7-d1a3-40eb-a852-98a19c3f51c6",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "04b12cf4bbc8139325a4a3c5805af80ef42caaba12789576c6a251ab62f84577",
+      "stagedSourceHash": "31ac22c61ed30990646cf92622ea100cdab7b917bf88392f12a1f90ee32a8a6d",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-32.json",
+      "exportSha256": "d5c03d5e4b2f8aec7f8167d33d0abce22a13e4ee6ed2fd9fd72d4e3e2f805593"
+    },
+    {
+      "key": "WF-40",
+      "id": "ze8T1o0Cx0OGi3Wd",
+      "versionId": "47cccb7a-c30a-4ed0-87d5-9af372374364",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "b3cd15e7cd13e1cf724a86cf6a992e51f2340a06a51885191f8e9d78f45a4c70",
+      "stagedSourceHash": "b8e14503e7d882f3d9c6afe3d4822c2d2c1fd07d82f451813aca6c71ed581eca",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-40.json",
+      "exportSha256": "e2382981f34e7e33967abeb0c78b41e3d4b5bad62ca600ba49772e1edd2e76e9"
+    },
+    {
+      "key": "WF-50",
+      "id": "2U6nPs3uJkmjij82",
+      "versionId": "6054e8f3-771b-4325-b7df-5bde7c2211d8",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "307f7547f39b402f3fd97e7fcdc0b2adb13792476fbc10d86bc53169b1967afc",
+      "stagedSourceHash": "52c3de31fd0fcab0f3f9c158d52d4e50d16c2dd6a7a0a31faa85520459fc3c8b",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-50.json",
+      "exportSha256": "3b0281b568ceaeaf238650633b439562dda914d8293878ef3f7d75be42db608c"
+    },
+    {
+      "key": "WF-70",
+      "id": "S6KDFsx5IjQRf6tm",
+      "versionId": "d8f518bb-c74b-4158-bbca-8809a652539d",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "9305c3cdbd00226f66776ba30419abb57409fb5658c654508ee0fdb75cd8b416",
+      "stagedSourceHash": "1149dca0558b68e9f9bc621916222b9b9e98c51f7ce6e038502842ae75dc12c6",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-70.json",
+      "exportSha256": "5d26aa404e5b51a880796b5ef2068ab7666abb21cc7d5be51679ee9256528c8f"
+    },
+    {
+      "key": "WF-80",
+      "id": "gBDmjIIEoM6XC7Wi",
+      "versionId": "b250a5be-abb0-4135-9552-a97e1ee065c7",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "d9063acff92c3d007cf0cdccfb2764775186dd2b1385784f9ee07025700596a7",
+      "stagedSourceHash": "10061be8cb2805dd4239454bcfbb584f0021028595175355680b9f82e9f557b2",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-80.json",
+      "exportSha256": "37f85d7698ca35513cd8e16b08fa83a5c83af740b8fa2aeb44d759a6d6d31d50"
+    },
+    {
+      "key": "SUB-START",
+      "id": "lkVDS0oO4WULipeV",
+      "versionId": "a2ec5439-b671-4c68-b4b6-dfb54cb15605",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "4c447c11148d6627948c5d6fc18759066c82dd37a65de30e9dadc008bdb366d8",
+      "stagedSourceHash": "18b9f9b90f0d93cabc527615a6a4da07155e58e4afea2b6d3d178357d6ba418f",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/SUB-START.json",
+      "exportSha256": "1745dcce14535b4809e557efbc8e8fae976b1ae18f9f1ff2f37caf7f0113f00e"
+    },
+    {
+      "key": "SUB-FINISH",
+      "id": "RUTwaXMRh3PgLhJq",
+      "versionId": "11b75d2f-b4c0-48ce-aae4-6bf7aeb95ab8",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "9d6a8c597b803aeec12b968ea31c99c8a404e570f2798ce4dde39d7256fab718",
+      "stagedSourceHash": "7ee5865556151fc19aab6ad26998ec8bc7d8dcb71f6900f2d7bfddb5b7c41e88",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/SUB-FINISH.json",
+      "exportSha256": "14ac7cf529c36160e6cc7c0fbf724ea8d67cfa931f3906ac6223cbe8d20be661"
+    },
+    {
+      "key": "SUB-INGEST",
+      "id": "nDijMP0IurUw58Kg",
+      "versionId": "983f4040-ea34-4e45-9a95-d19c4ca3e36b",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "5410489d2e5cdf453e37a81b3abd0ceab2c26cdb7cc21c325da104b685f1c9b2",
+      "stagedSourceHash": "6b39ecdabf07affd22ca01e433e38bb629aa3db1a0d7341b337a4e1854d89616",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/SUB-INGEST.json",
+      "exportSha256": "577fe226b0f67a7b509818ee954fe45891cad28ea591459309894317fcac53be"
+    },
+    {
+      "key": "SUB-COST",
+      "id": "v4yeqqNm6xHjZ5ue",
+      "versionId": "21b2e6de-903e-4068-b10b-7b08a55e8dfc",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "0d278fd641b4eaadc1adf78d761d13d0f41b05b85f2ed62f337271f5328f377e",
+      "stagedSourceHash": "f0e62e3300ac86862c29eb762938c4e860a05e99c25c3e0127ba96c085ed9fdf",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/SUB-COST.json",
+      "exportSha256": "6d6dd53c031a0f9a2a0a97dc807ff9c4cbdf15a6ffa155c4eec82ce3fdefffb3"
+    },
+    {
+      "key": "SUB-NOTIFY",
+      "id": "tiEhU3dXrMifOnTL",
+      "versionId": "85cbf9c5-bc29-4c65-a02a-d616b4bd595b",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "7199626d5f454996213ac383ab7ee2996addd7f544a83108654166309eeddbce",
+      "stagedSourceHash": "67dd208e6f495528ab539fde08f1b385fa44f33759346c2819ae6806c4c382ae",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/SUB-NOTIFY.json",
+      "exportSha256": "5b989fefeadf5b9ec1a7d1c4f387131af8e6b7e78ccea4e3b35a29395ecc1933"
+    },
+    {
+      "key": "WF-90",
+      "id": "S9NHRkKFUIiXX2wv",
+      "versionId": "2659fdda-1926-4a17-9450-a81098c8e091",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "3a5494463416b04fdb86dc409c359d2d8bfa631ac4d2bd90fe6be7d75443b1cc",
+      "stagedSourceHash": "3a5494463416b04fdb86dc409c359d2d8bfa631ac4d2bd90fe6be7d75443b1cc",
+      "deferredErrorWorkflowId": null,
+      "canonicalParity": true,
+      "exportPath": "n8n/workflows/WF-90.json",
+      "exportSha256": "b500998f9db8d35209bd98c94107439a4223cbaa96750d4503a80fee0784bde6"
+    },
+    {
+      "key": "WF-00",
+      "id": "MzimjpsuyPuK7SKe",
+      "versionId": "b2ff9a94-89b8-4fe2-9bed-093774f0feff",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "7877dca03efdd2d9a859ba57b42ad3c865112c00a22eefc964e8735c28b2ae4b",
+      "stagedSourceHash": "1090db04ecf847c64c28a8bcb247e1080b1db85d37503c1108aa99f307d21239",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-00.json",
+      "exportSha256": "905e40aa96bea9291961f8e73297a8668b76ead397c834dbc7dc796e14ecfea9"
+    },
+    {
+      "key": "WF-91",
+      "id": "sowAIvuN7adg0JBq",
+      "versionId": "f2440fc9-b206-4632-b9b2-17e165beac40",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "e9620c02606f466ce504651c49597404010ed98e3b8cf44ee4ea0fc372904127",
+      "stagedSourceHash": "ad847803e4c6d1734331efc68641f0638fdc5c87abbf57150a902777a3aca28e",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-91.json",
+      "exportSha256": "899335da451ef0af28b69207ca7e11f7162d24eaa6f3894ef5a7af9a731af034"
+    },
+    {
+      "key": "WF-19",
+      "id": "TsqSMa5MlO3QBLkt",
+      "versionId": "a2b8730b-d0d6-4702-aedd-4c8629b81fc0",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "df4759067b422212215055f8f095535676154790d1a7ba393400ff32d9cfcde9",
+      "stagedSourceHash": "7685254e5fcda84251c254e271e8b241eb5025365e74bdcc86b000315c81287c",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-19.json",
+      "exportSha256": "26b6eccd4d4b416d65c1308d54034cd85e7ba9aafe113af92269b927b567ffcd"
+    },
+    {
+      "key": "WF-99",
+      "id": "qTjioYmBUVMIERVz",
+      "versionId": "cbf1aea5-b5a9-4fcb-91cd-95a86a118e72",
+      "active": false,
+      "activeVersionId": null,
+      "definitionProfile": "inactive_native_staging",
+      "intendedSourceHash": "addc744a30e7ac8f0aa03c7c82160e1e73f7f9f63942ef89b90a7c69357df2a4",
+      "stagedSourceHash": "64fbc43f0226d68709a620b823c641eb4e50740492cc4ee60dde95280ed8441e",
+      "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+      "canonicalParity": false,
+      "exportPath": "n8n/workflows/WF-99.json",
+      "exportSha256": "0431f4311ae90b08ab78a0e443e2396adf452f6638db576ec9f70c7edd8d15c9"
+    }
+  ],
+  "acceptance": {
+    "canonicalParityWorkflows": 1,
+    "deferredErrorLinks": 24,
+    "actualNativeExecutionAccepted": false,
+    "actualActorSmokeAccepted": false,
+    "hostedForwardMigrationsApplied": 0,
+    "freshDatabaseBaselineRead": false,
+    "historicalSeedBaselinePreservedNotRereadHere": true,
+    "productionChanged": false,
+    "gw01Closed": true,
+    "pr8DraftUnmerged": true,
+    "m04Started": false
+  },
+  "independentPublicVerification": {
+    "receipt": "f7f2af",
+    "nativeExit": 0,
+    "exports": 25,
+    "uniqueVersionIds": 25,
+    "tags": 13,
+    "sourceGraphAndHashParity": true,
+    "original25WorkflowIdsAndSevenTagsPreserved": true,
+    "retentionAndProgressOff": true,
+    "nativePostgresNodes": 0,
+    "enabledActorStarts": 0,
+    "publishedWorkflows": 0,
+    "scheduleTriggerNodes": 3,
+    "scheduleNodeQualification": "present in inactive unpublished canonical staging; not a claim every schedule node is disabled",
+    "cleanupPresenceReceipt": "22809d",
+    "managementPairAbsent": true,
+    "pendingMachineAndMetadataPresent": true,
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "postOutputPublicSeal": {
+    "receipts": [
+      "909ba7",
+      "241eed"
+    ],
+    "nativeExit": 0,
+    "projectInputs": 33,
+    "physicalDependencyFiles": 840,
+    "privateRead": false,
+    "networkRequests": 0,
+    "nodeExecutedDuringSeal": false,
+    "qualification": "public input refs changed after actual saves; new public seal verified without private use or delivery replay"
+  },
+  "originalBindingHistoryByteVerification": {
+    "receipt": "6b8ffd",
+    "original15EventsPreserved": true,
+    "privateRead": false
+  }
+}
