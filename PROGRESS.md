@@ -8,11 +8,11 @@
 |                       |                                                                                                                                                                                                                                                                                                                              |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                                                                                                         |
-| **Status**            | In progress: full M03 foundation source and focused local/CI checks pass. Saving the 25 inactive Cloud definitions and separate live acceptance remain pending. GW-01 stays closed.                                                                                                                                          |
-| **Next step**         | Complete final private-consumer review/public sealing, then obtain one existing-key handoff for bounded inactive-only provisioning. Advance the existing live packet with actual IDs before its separate approval.                                                                                                           |
-| **Waiting on owner**  | No repeated password/provider setup. One purpose-bound existing n8n Management key will be requested after preparation. Private incident R2 is held separately; production remains unauthorized.                                                                                                                             |
+| **Status**            | In progress: full M03 foundation source/local checks pass. The first inactive-delivery attempt authenticated its project read, then stopped at the bounded list-body check before any Cloud mutation. GW-01 stays closed.                                                                                                    |
+| **Next step**         | The concrete narrowed-list/HTTP correction passed targeted and independent review; actual reseal/CheckOnly passed. Replenish only the consumed existing Management-key handoff, then resume bounded inactive provisioning. Actual IDs and the final live packet remain pending.                                              |
+| **Waiting on owner**  | Only the existing n8n Management key through New-M03FoundationHandoff.ps1; the consumed temporary pair is verified absent. No new key, provider/database password or general dev approval. Private incident R2 stays held separately.                                                                                        |
 | **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                                                                                                                      |
-| **Last updated**      | 19 October 2026 Cairo: source9719cc8 passed CI39177818722 all five jobs, including actual local actor/gateway concurrency. Verified immutable Preview dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb; activation remains disabled. Four forward migrations are local-only. Historical GW-01 closeout and seeded hosted baseline preserved. |
+| **Last updated**      | 19 October 2026 Cairo: f20045 preserved two GETs/zero Cloud writes. Corrected query/framing source passed27 affected checks, isolated Windows diagnostic protocol and independent22-case review; actual public reseal/CheckOnly native0. ba6be60/CI39178472647 passed all five jobs; correction receives normal new-head CI. |
 
 ## Milestone board
 
@@ -47,6 +47,16 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
 | Production launch     | —          |
 
 ## Log (newest first)
+
+- 2026-10-19 Cairo: Actual inactive attempt `f20045` stopped on its second GET at
+  the body boundary; no Cloud mutation/execution, empty journals, deleted temporary
+  Management pair and closed child. Cause remains unknown. Reproduced/fixed valid
+  mixed-case coding rejection and narrowed discovery to verified `[dev]` filter,
+  retaining caps/no retries. Targeted27 tests, isolated Windows diagnostic test
+  and independent22-case review pass; actual reseal/CheckOnly `1b8cf4` passes.
+  Only consumed existing-key handoff redelivery is needed; pending Machine stays
+  encrypted locally and has not been created in Cloud.
+  [Actual failure/correction](milestones/M03-n8n-foundation/evidence/inactive-foundation-attempt-20261019.json).
 
 - 2026-10-19 Cairo: Full M03 source/25 inactive definitions, bounded authenticated
   dataset reader, durable admission/settlement/recovery and exact rejection audit

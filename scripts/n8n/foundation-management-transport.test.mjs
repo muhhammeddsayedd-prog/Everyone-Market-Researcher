@@ -4,6 +4,7 @@ import { EventEmitter } from 'node:events';
 import {
   foundationAllowedRequest,
   foundationManagementTransport,
+  foundationTransportDiagnostic,
   validateFoundationAddresses,
 } from './foundation-management-transport.mjs';
 import { buildShell } from './foundation-provision.mjs';
@@ -36,11 +37,17 @@ test('only exact shell create, project metadata, scoped list and owned ID GET ar
   assert.equal(
     foundationAllowedRequest(
       'GET',
-      '/api/v1/workflows?projectId=pHvQjDmjxVZ3KQLT&excludePinnedData=true&limit=100',
+      '/api/v1/workflows?projectId=pHvQjDmjxVZ3KQLT&excludePinnedData=true&name=%5Bdev%5D&limit=100',
       null,
     ),
     true,
   );
+  for (const path of [
+    '/api/v1/workflows?projectId=pHvQjDmjxVZ3KQLT&excludePinnedData=true&limit=100',
+    '/api/v1/workflows?projectId=pHvQjDmjxVZ3KQLT&excludePinnedData=true&name=%25&limit=100',
+    '/api/v1/workflows?projectId=pHvQjDmjxVZ3KQLT&excludePinnedData=true&name=%5Bdev%5D&name=%5Bdev%5D&limit=100',
+  ])
+    assert.equal(foundationAllowedRequest('GET', path, null), false);
   assert.equal(
     foundationAllowedRequest(
       'GET',
@@ -100,12 +107,17 @@ test('absolute credential lease deadline blocks before DNS or authentication', a
   );
   assert.equal(calls, 0);
 });
-function responseFixture(headers, bytes, { socketCloseDelay = 0, socketNeverCloses = false } = {}) {
+function responseFixture(
+  headers,
+  bytes,
+  { socketCloseDelay = 0, socketNeverCloses = false, complete = true, onRequest = () => {} } = {},
+) {
   return foundationManagementTransport({
     resolveInstance: async () => [{ address: '1.1.1.1', family: 4 }],
     timeoutMs: 100,
     closeTimeoutMs: 5,
     request: (_o, callback) => {
+      onRequest(_o);
       const req = new EventEmitter();
       const socket = new EventEmitter();
       const closeSocket = () => {
@@ -127,7 +139,7 @@ function responseFixture(headers, bytes, { socketCloseDelay = 0, socketNeverClos
           res = new EventEmitter();
           res.statusCode = 200;
           res.headers = headers;
-          res.complete = true;
+          res.complete = complete;
           res.destroy = () => queueMicrotask(() => res.emit('close'));
           callback(res);
           res.emit('data', bytes);
@@ -148,6 +160,57 @@ test('management response rejects compressed framing and length plus transfer en
     await assert.rejects(
       responseFixture(headers, Buffer.from('{}'))('GET', '/api/v1/projects?limit=100', null, 'SYNTHETIC_KEY'),
     );
+});
+test('only identity and chunked tokens are accepted case-insensitively, and identity is explicitly requested', async () => {
+  let options;
+  const r = await responseFixture(
+    { 'content-encoding': 'Identity', 'transfer-encoding': 'Chunked' },
+    Buffer.from('{}'),
+    { onRequest: (x) => (options = x) },
+  )('GET', '/api/v1/projects?limit=100', null, 'SYNTHETIC_KEY');
+  assert.equal(r.status, 200);
+  assert.equal(options.headers['accept-encoding'], 'identity');
+});
+test('fixed failure projection preserves HTTP status and first fault without raw headers or body', async () => {
+  for (const [headers, bytes, options, reason] of [
+    [{ 'content-encoding': 'gzip' }, Buffer.from('PRIVATE_BODY'), {}, 'content_encoding_rejected'],
+    [
+      { 'transfer-encoding': 'Chunked', 'content-length': '2' },
+      Buffer.from('{}'),
+      {},
+      'transfer_framing_rejected',
+    ],
+    [{ 'content-length': 'invalid-private-header' }, Buffer.from('{}'), {}, 'content_length_invalid'],
+    [{ 'content-length': '524289' }, Buffer.from('{}'), {}, 'body_declared_limit'],
+    [{}, Buffer.alloc(524289), {}, 'body_stream_limit'],
+    [{}, Buffer.from('{}'), { complete: false }, 'body_incomplete'],
+    [{ 'content-length': '3' }, Buffer.from('{}'), {}, 'body_length_mismatch'],
+    [{}, Buffer.from([123, 34, 120, 34, 58, 34, 255, 34, 125]), {}, 'utf8_invalid'],
+    [{}, Buffer.from('PRIVATE_INVALID_JSON'), {}, 'json_invalid'],
+  ]) {
+    let error;
+    try {
+      await responseFixture(headers, bytes, options)(
+        'GET',
+        '/api/v1/projects?limit=100',
+        null,
+        'SYNTHETIC_KEY',
+      );
+    } catch (e) {
+      error = e;
+    }
+    const d = foundationTransportDiagnostic(error);
+    assert.equal(d.httpStatus, 200);
+    assert.equal(d.transportReason, reason);
+    assert.equal(JSON.stringify(d).includes('PRIVATE'), false);
+    assert.equal(Object.keys(d).sort().join(','), 'httpStatus,transportCode,transportReason');
+  }
+  const native = Error('PRIVATE_NATIVE_ERROR');
+  assert.deepEqual(foundationTransportDiagnostic(native), {
+    httpStatus: null,
+    transportCode: 'unclassified',
+    transportReason: null,
+  });
 });
 test('successful result waits for the actual assigned TLS socket close', async () => {
   let settled = false;

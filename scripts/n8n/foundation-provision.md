@@ -90,6 +90,44 @@ owned child's stdin, suppresses raw errors, returns fixed stage/HTTP diagnostics
 and removes the consumed Management handoff/lease after child closure. It does
 not clear a parent's environment or remove the owner's saved original key.
 
+## First actual attempt and local correction
+
+The actual first attempt on source `ba6be60420c378d8f0749f0601d249e6018425e7`
+authenticated its project GET, then stopped on request two (workflow list) with
+`FOUNDATION_TRANSPORT_BODY`. It created no Cloud workflow or credential and wrote
+no journal events. The child closed and consumed Management files were deleted;
+the new local pending Machine store remains encrypted and has no admitted runtime
+authority. [The actual failure receipt](../../milestones/M03-n8n-foundation/evidence/inactive-foundation-attempt-20261019.json)
+preserves these results. The precise hosted cause was not captured by the old
+umbrella error and remains unknown.
+
+The local correction fixes an independently demonstrated protocol defect: HTTP
+coding tokens `chunked` and `identity` are case-insensitive, while Node preserves
+their header values ([Node24 headers](https://nodejs.org/docs/latest-v24.x/api/http.html#messageheaders),
+[RFC9112 transfer coding](https://www.rfc-editor.org/rfc/rfc9112.html#name-transfer-encoding)).
+The request now explicitly asks for identity encoding and
+accepts the same supported tokens case-insensitively. Compression, coding lists,
+ambiguous transfer framing, malformed UTF-8 and the 524,288-byte limit remain
+rejected. Fixed diagnostic reasons preserve validated HTTP status and the first
+fault without returning raw headers, bodies or exceptions. This source fix does
+not establish the original hosted cause or a successful corrected run.
+
+Workflow discovery now always combines the exact project with
+`excludePinnedData=true&name=%5Bdev%5D&limit=100`, for at most two pages. There is
+no unfiltered fallback. The [current official workflow reference](https://docs.n8n.io/connect/n8n-api/workflow.md)
+documents the name filter; the installed
+[2.43.5 controller](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/public-api/v1/controllers/workflows.public.controller.ts#L218)
+and [repository filter](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/%40n8n/db/src/repositories/workflow.repository.ts#L1471)
+establish substring matching. Every canonical name contains `[dev]`; returned
+names still require the original intent and exact ownership/source checks.
+Other dev workflows could also match this filter and are never adopted.
+
+The local 25-graph response fixture is 459,526 bytes, leaving 64,762 bytes under
+the unchanged cap. Its regression reserves at least 32 KiB for extra metadata;
+that measurement does not guarantee a hosted response fits. Initial discovery
+occurs before full graph binding; a completed 25-shell ledger bypasses that list
+on resume. The global 185-request maximum remains unchanged.
+
 ## Dedicated pending Machine storage
 
 For `All`, the bounded PowerShell child generates a new random Machine token or

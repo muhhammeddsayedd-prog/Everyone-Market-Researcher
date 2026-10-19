@@ -97,12 +97,25 @@ function fixture() {
   };
   return { ports, calls, workflows };
 }
-test('one finite full delivery creates25 shells/13tags/one owned credential and saves25 inactive full graphs', async () => {
+test('one finite full delivery creates25 shells/13tags/one owned credential and saves25 inactive full graphs', async (t) => {
   const f = fixture(),
     r = await runAllProvision(secrets, packet, base, f.ports);
   assert.equal(r.status, 'inactive_foundation_verified');
   assert.equal(r.workflows.length, 25);
   assert.equal(r.requestCount, 183);
+  const graphListBytes = Buffer.byteLength(JSON.stringify({ data: f.workflows, nextCursor: null }));
+  t.diagnostic(
+    'Local25GraphListBytes=' + graphListBytes + '; fixedTransportCap=524288; reservedMetadataMargin=32768',
+  );
+  assert.ok(
+    graphListBytes + 32768 < 524288,
+    '25 locally generated graphs leave at least32KiB for extra server metadata',
+  );
+  assert.ok(
+    f.calls
+      .filter((x) => x.p.startsWith('/api/v1/workflows?'))
+      .every((x) => new URL('https://public.invalid' + x.p).searchParams.get('name') === '[dev]'),
+  );
   assert.ok(r.requestCount <= foundationAllMaximum.requests);
   assert.equal(r.executionCount, 0);
   assert.equal(r.gatewayWindowStarted, false);

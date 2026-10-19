@@ -155,7 +155,7 @@ test(
       const cli = join(repo, 'scripts/n8n/foundation-provision-cli.mjs');
       writeFileSync(
         cli,
-        `import{readFileSync}from'node:fs';const p=JSON.parse(readFileSync(0,'utf8'));if(p.key!=='PUBLIC_SYNTHETIC_NON_SECRET'||!/^[A-Za-z0-9_-]{43}$/.test(p.machine))process.exit(1);process.stdout.write(JSON.stringify({version:1,windowId:'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',host:'muhhammedsayed.app.n8n.cloud',projectId:'pHvQjDmjxVZ3KQLT',status:'inactive_foundation_verified',phase:'complete',requestCount:0,verifiedWorkflows:25,executionCount:0,credentialsCreated:1,gatewayWindowStarted:false,finalGraphsBound:true,networkCompletionVerified:true})+'\\n');`,
+        `import{readFileSync}from'node:fs';const p=JSON.parse(readFileSync(0,'utf8'));if(p.key!=='PUBLIC_SYNTHETIC_NON_SECRET'||!/^[A-Za-z0-9_-]{43}$/.test(p.machine))process.exit(1);process.stdout.write(JSON.stringify({version:1,windowId:'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',host:'muhhammedsayed.app.n8n.cloud',projectId:'pHvQjDmjxVZ3KQLT',status:'inactive_foundation_verified',phase:'complete',requestCount:0,verifiedWorkflows:25,executionCount:0,credentialsCreated:1,gatewayWindowStarted:false,finalGraphsBound:true,networkCompletionVerified:true,diagnostics:{lastMethod:'GET',lastResource:'owned_workflows',httpStatus:200,transportCode:'FOUNDATION_TRANSPORT_BODY',transportReason:'body_declared_limit'}})+'\\n');`,
       );
       const publicPacket = {
         version: 1,
@@ -210,6 +210,14 @@ test(
       assert.equal(r.stdout.includes('PUBLIC_SYNTHETIC_NON_SECRET'), false);
       const receipt = JSON.parse(r.stdout.trim().split(/\r?\n/).at(-1));
       assert.equal(receipt.childClosed, true);
+      assert.deepEqual(receipt.diagnostics, {
+        lastMethod: 'GET',
+        lastResource: 'owned_workflows',
+        httpStatus: 200,
+        transportCode: 'FOUNDATION_TRANSPORT_BODY',
+        transportReason: 'body_declared_limit',
+      });
+      assert.equal(JSON.stringify(receipt.diagnostics).includes('PUBLIC_SYNTHETIC_NON_SECRET'), false);
       assert.equal(receipt.handoffDeleted, true);
       assert.equal(receipt.leaseDeleted, true);
       assert.equal(receipt.pendingMachineStoreRetained, true);

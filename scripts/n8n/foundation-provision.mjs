@@ -6,6 +6,7 @@ export const foundationScope = Object.freeze({
   windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
   host: 'muhhammedsayed.app.n8n.cloud',
   projectId: 'pHvQjDmjxVZ3KQLT',
+  workflowNameFilter: '[dev]',
   maxRequests: 53,
   maxCreates: 25,
   maxListPages: 2,
@@ -188,7 +189,9 @@ export async function runShellProvision(privateKey, journal, send, options = {})
       const path =
         '/api/v1/workflows?projectId=' +
         foundationScope.projectId +
-        '&excludePinnedData=true&limit=100' +
+        '&excludePinnedData=true&name=' +
+        encodeURIComponent(foundationScope.workflowNameFilter) +
+        '&limit=100' +
         (cursor ? '&cursor=' + encodeURIComponent(cursor) : '');
       const r = await request('GET', path);
       if (r.status !== 200 || !object(r.body) || !Array.isArray(r.body.data) || r.body.data.length > 100)

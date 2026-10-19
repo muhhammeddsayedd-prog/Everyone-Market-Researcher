@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: full M03 source and local database/graph/reader checks completed. Saved inactive definitions and the separate live acceptance remain pending. GW-01 stays closed.**
+**In progress: full M03 source and local database/graph/reader checks completed. The first inactive-delivery attempt stopped at its bounded list-body check before Cloud mutation; the concrete local correction passed review and actual public resealing. Only the consumed existing-key handoff redelivery is needed. Actual saved definitions and separate live acceptance remain pending. GW-01 stays closed.**
 
 | Field | Value |
 | --- | --- |
@@ -17,7 +17,7 @@
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
 | Current task | Full 25-definition source, typed fixed transport, durable actor admission/recovery, exact callback audit and bounded reader implemented. Focused local tests and current runtime CI pass. Final review of inactive-only provisioning precedes one existing-key handoff; actual Cloud definitions and full live acceptance are not claimed. Historical [GW-01 closeout](evidence/gw01-trial-closeout-20261018.json) remains closed and untouched. |
-| Next step | Independent review and actual public seal/CheckOnly passed. One new purpose-bound handoff of the existing Management key is requested below; on readiness, consume it through the reviewed bounded All entrypoint and save/read back the 25 inactive full definitions. Fill actual references in the [existing live packet](evidence/live-acceptance-outline-20261018.md) before separate live approval. No hosted migration/window or paid execution now. |
+| Next step | Corrected narrowed query/HTTP handling passed27 affected tests, isolated Windows diagnostics and independent22-case review. Actual public reseal/CheckOnly passed native0 (1b8cf4). Request only the consumed existing Management-key handoff using the exact helper below; then bounded inactive provisioning. No new key/password or dev approval. |
 | Current source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. Private provisioning/helper changes receive normal new-head CI. |
 
 ## 19 October continuation — finite completion matrix
@@ -91,6 +91,8 @@ expired. No production remediation has been authorized.
 
 ### Current: MA-11 inactive foundation delivery only
 
+**Latest actual result:** owner delivered the requested existing key. Attempt `f20045` completed native1 with child closed: project read authenticated, the second GET stopped at `FOUNDATION_TRANSPORT_BODY`, exact cause unknown. Both mutation journals remain empty; zero Cloud workflow/tag/credential writes or executions. Consumed Management handoff/lease are deleted. Presence-only read `b208de` verified that cleanup and the separately retained encrypted pending Machine/metadata. The concrete correction is now reviewed/resealed; only that consumed existing-key handoff needs redelivery, using the command below. There is no new key or administrator/Writer/provider handoff.
+
 The existing provider/database setup and all GW-01 handoffs remain completed;
 do not recreate them. Presence-only read `aaeb97` verified the **new** foundation
 Management handoff and lease absent, with `privateRead:false`. Independent final
@@ -100,7 +102,10 @@ disabled Preview from `9719cc8`; actual Cloud definitions remain pending.
 
 The actual reviewed public seal/CheckOnly passed native0 (`59330c`), with 32
 project inputs, 840 physical dependency files, no private read or network. One
-handoff request was sent after that completed preparation. The sole credential delivery
+handoff request was sent after that completed preparation. After the actual failed
+two-GET attempt, the corrected source also passed explicit reseal/CheckOnly
+`1b8cf4`, with the same caps and no private read. The consumed pair remains absent
+(`ade4b1`). The sole credential redelivery
 needed is the **existing saved n8n management API key** for
 `muhhammedsayed.app.n8n.cloud`. In Windows PowerShell under this Windows account:
 

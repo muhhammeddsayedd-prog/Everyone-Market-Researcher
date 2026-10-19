@@ -156,6 +156,13 @@ for exact-ID readback, never an automatic replay or a replacement window.
    owner's **existing** management key. Save/read back actual 25 workflow IDs,
    13 tag IDs, one new dedicated machine credential ID and clean full exports.
    Reuse the five existing credential references; no password is needed here.
+   This preparation and first handoff occurred: actual attempt `f20045` made
+   two GETs, authenticated its project read, then failed the bounded workflow-list
+   body checks before any mutation. Both journals remain empty. Management files
+   were deleted and the child closed; the pending Machine is retained encrypted
+   locally, with zero Cloud credentials created. The actual cause remains unknown.
+   Fix/review the reproduced HTTP-token case defect and narrower supported name
+   filter locally before any further credential delivery; no broad retry.
 2. Record exact source SHA, pending migration hashes, actual saved graph hashes,
    inactive flags and current CI/Preview references. The protected source Preview
    is not evidence of an enabled runtime or an open window.

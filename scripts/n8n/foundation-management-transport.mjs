@@ -3,9 +3,25 @@ import { isIP } from 'node:net';
 import { resolveInstance } from './inventory.mjs';
 import { buildShell, shellSpecs, foundationScope } from './foundation-provision.mjs';
 import { foundationTagNames } from '../../packages/shared/src/n8n-bindings.ts';
-const fail = (code) => {
-  throw Error(code);
+class FoundationTransportError extends Error {
+  constructor(code, httpStatus = null, transportReason = null) {
+    super(code);
+    this.httpStatus = httpStatus;
+    this.transportReason = transportReason;
+  }
+}
+const fail = (code, httpStatus = null, reason = null) => {
+  throw new FoundationTransportError(code, httpStatus, reason);
 };
+export function foundationTransportDiagnostic(error) {
+  if (!(error instanceof FoundationTransportError))
+    return { httpStatus: null, transportCode: 'unclassified', transportReason: null };
+  return {
+    httpStatus: error.httpStatus,
+    transportCode: error.message,
+    transportReason: error.transportReason,
+  };
+}
 export function validateFoundationAddresses(rows) {
   if (!Array.isArray(rows) || rows.length < 1 || rows.length > 100) fail('FOUNDATION_DNS_REJECTED');
   for (const row of rows) {
@@ -109,10 +125,11 @@ export function foundationAllowedRequest(method, path, body, ownsWorkflow = () =
     return (
       url.hostname === foundationScope.host &&
       url.pathname === '/api/v1/workflows' &&
-      [...p.keys()].every((k) => ['projectId', 'excludePinnedData', 'limit', 'cursor'].includes(k)) &&
-      [...p.keys()].length === (p.has('cursor') ? 4 : 3) &&
+      [...p.keys()].every((k) => ['projectId', 'excludePinnedData', 'name', 'limit', 'cursor'].includes(k)) &&
+      [...p.keys()].length === (p.has('cursor') ? 5 : 4) &&
       p.get('projectId') === foundationScope.projectId &&
       p.get('excludePinnedData') === 'true' &&
+      p.get('name') === foundationScope.workflowNameFilter &&
       p.get('limit') === '100' &&
       (!p.has('cursor') || /^[\x21-\x7e]{1,400}$/.test(p.get('cursor')))
     );
@@ -125,7 +142,8 @@ export function foundationManagementTransport(dependencies = {}) {
   const send = dependencies.request ?? request;
   return async (method, path, body, key) => {
     const remainingMs = dependencies.deadlineMs === undefined ? 12000 : dependencies.deadlineMs - Date.now();
-    if (!Number.isFinite(remainingMs) || remainingMs <= 0) fail('FOUNDATION_TRANSPORT_DEADLINE');
+    if (!Number.isFinite(remainingMs) || remainingMs <= 0)
+      fail('FOUNDATION_TRANSPORT_DEADLINE', null, 'lease_expired');
     if (
       !foundationAllowedRequest(method, path, body, dependencies.ownsWorkflow, dependencies.binding) ||
       typeof key !== 'string' ||
@@ -133,7 +151,7 @@ export function foundationManagementTransport(dependencies = {}) {
       key.length > 4096 ||
       /[\x00-\x20\x7f]/.test(key)
     )
-      fail('FOUNDATION_REQUEST_REJECTED');
+      fail('FOUNDATION_REQUEST_REJECTED', null, 'request_not_allowed');
     const controller = new AbortController(),
       timer = setTimeout(() => controller.abort(), Math.min(dependencies.timeoutMs ?? 12000, remainingMs));
     let addresses;
@@ -141,11 +159,11 @@ export function foundationManagementTransport(dependencies = {}) {
       addresses = validateFoundationAddresses(await lookup(controller.signal));
     } catch {
       clearTimeout(timer);
-      fail('FOUNDATION_TRANSPORT_DNS');
+      fail('FOUNDATION_TRANSPORT_DNS', null, 'dns_rejected');
     }
     if (controller.signal.aborted || !addresses?.length) {
       clearTimeout(timer);
-      fail('FOUNDATION_TRANSPORT_DNS');
+      fail('FOUNDATION_TRANSPORT_DNS', null, 'dns_rejected');
     }
     const address = addresses[0];
     return new Promise((done, reject) => {
@@ -156,6 +174,8 @@ export function foundationManagementTransport(dependencies = {}) {
         requestClosed = false,
         responseClosed = false,
         failed = false,
+        httpStatus = null,
+        firstFault = null,
         ended = false,
         result,
         settled = false,
@@ -168,11 +188,13 @@ export function foundationManagementTransport(dependencies = {}) {
         clearTimeout(closeTimer);
         controller.signal.removeEventListener('abort', abort);
         reject(
-          Error(
+          new FoundationTransportError(
             'FOUNDATION_TRANSPORT_' +
               (!requestClosed || (response && !responseClosed) || (assignedSocket && !socketClosed)
                 ? 'CLOSE'
                 : stage),
+            httpStatus,
+            firstFault ?? (assignedSocket && !socketClosed ? 'socket_not_closed' : 'response_incomplete'),
           ),
         );
       };
@@ -186,8 +208,9 @@ export function foundationManagementTransport(dependencies = {}) {
         controller.signal.removeEventListener('abort', abort);
         done(result);
       };
-      const destroy = () => {
+      const destroy = (reason) => {
         failed = true;
+        if (firstFault === null) firstFault = reason;
         try {
           response?.destroy();
           req?.destroy();
@@ -196,7 +219,11 @@ export function foundationManagementTransport(dependencies = {}) {
         if (!closeTimer) closeTimer = setTimeout(failure, dependencies.closeTimeoutMs ?? 5000);
       };
       const abort = () => {
-        destroy();
+        destroy(
+          dependencies.deadlineMs !== undefined && Date.now() >= dependencies.deadlineMs
+            ? 'lease_expired'
+            : 'request_timeout',
+        );
       };
       controller.signal.addEventListener('abort', abort, { once: true });
       try {
@@ -215,6 +242,7 @@ export function foundationManagementTransport(dependencies = {}) {
             headers: {
               'X-N8N-API-KEY': key,
               accept: 'application/json',
+              'accept-encoding': 'identity',
               ...(body === null ? {} : { 'content-type': 'application/json' }),
             },
           },
@@ -226,23 +254,33 @@ export function foundationManagementTransport(dependencies = {}) {
               finish();
             };
             res.on('close', closed);
-            res.on('aborted', () => destroy());
-            res.on('error', () => destroy());
+            res.on('aborted', () => destroy('response_aborted'));
+            res.on('error', () => destroy('response_error'));
             if (!Number.isInteger(res.statusCode) || res.statusCode < 100 || res.statusCode > 599) {
-              destroy();
+              destroy('status_invalid');
               return;
             }
+            httpStatus = res.statusCode;
             const length = res.headers?.['content-length'];
             const encoding = res.headers?.['content-encoding'],
               transfer = res.headers?.['transfer-encoding'];
+            let headerFault = null;
             if (
-              (encoding !== undefined && encoding !== 'identity') ||
-              (transfer !== undefined && (transfer !== 'chunked' || length !== undefined)) ||
-              (length !== undefined &&
-                (typeof length !== 'string' || !/^(0|[1-9]\d*)$/.test(length) || Number(length) > 524288))
-            ) {
+              encoding !== undefined &&
+              (typeof encoding !== 'string' || encoding.toLowerCase() !== 'identity')
+            )
+              headerFault = 'content_encoding_rejected';
+            else if (
+              transfer !== undefined &&
+              (typeof transfer !== 'string' || transfer.toLowerCase() !== 'chunked' || length !== undefined)
+            )
+              headerFault = 'transfer_framing_rejected';
+            else if (length !== undefined && (typeof length !== 'string' || !/^(0|[1-9]\d*)$/.test(length)))
+              headerFault = 'content_length_invalid';
+            else if (length !== undefined && Number(length) > 524288) headerFault = 'body_declared_limit';
+            if (headerFault) {
               stage = 'BODY';
-              destroy();
+              destroy(headerFault);
               return;
             }
             const chunks = [];
@@ -251,27 +289,33 @@ export function foundationManagementTransport(dependencies = {}) {
             res.on('data', (chunk) => {
               bytes += chunk.length;
               if (bytes > 524288) {
-                destroy();
+                destroy('body_stream_limit');
                 return;
               }
               chunks.push(chunk);
             });
             res.on('end', () => {
+              if (failed) return;
               if (res.complete !== true || (length !== undefined && bytes !== Number(length))) {
-                destroy();
+                destroy(res.complete !== true ? 'body_incomplete' : 'body_length_mismatch');
                 return;
               }
               stage = 'PARSE';
+              let text;
+              try {
+                text = new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks));
+              } catch {
+                destroy('utf8_invalid');
+                return;
+              }
               try {
                 result = {
                   status: res.statusCode,
-                  body: bytes
-                    ? JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks)))
-                    : {},
+                  body: bytes ? JSON.parse(text) : {},
                 };
                 ended = true;
               } catch {
-                destroy();
+                destroy('json_invalid');
               }
               finish();
             });
@@ -279,7 +323,7 @@ export function foundationManagementTransport(dependencies = {}) {
         );
         req.on('socket', (socket) => {
           if (assignedSocket) {
-            destroy();
+            destroy('duplicate_socket');
             return;
           }
           assignedSocket = socket;
@@ -287,12 +331,12 @@ export function foundationManagementTransport(dependencies = {}) {
             socketClosed = true;
             finish();
           });
-          socket.on('error', destroy);
+          socket.on('error', () => destroy('socket_error'));
           socket.on('secureConnect', () => {
             stage = 'STATUS';
           });
         });
-        req.on('error', () => destroy());
+        req.on('error', () => destroy('request_error'));
         req.on('close', () => {
           requestClosed = true;
           finish();
@@ -300,7 +344,7 @@ export function foundationManagementTransport(dependencies = {}) {
         if (body !== null) req.write(JSON.stringify(body));
         req.end();
       } catch {
-        destroy();
+        destroy('request_failed');
       }
     });
   };

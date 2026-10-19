@@ -8,6 +8,7 @@ import {
   machineBody,
 } from './foundation-bind.mjs';
 import { buildFoundationGatewayWorkflows } from '../../n8n/foundation/build-foundation-gateway.mjs';
+import { foundationTransportDiagnostic } from './foundation-management-transport.mjs';
 const fail = () => {
   throw Error('FOUNDATION_ALL_BLOCKED');
 };
@@ -50,7 +51,13 @@ export async function runAllProvision(secrets, packet, baseBindings, ports) {
     gatewayWindowStarted: false,
     finalGraphsBound: false,
     networkCompletionVerified: false,
-    diagnostics: { lastMethod: null, lastResource: null, httpStatus: null, transportCode: null },
+    diagnostics: {
+      lastMethod: null,
+      lastResource: null,
+      httpStatus: null,
+      transportCode: null,
+      transportReason: null,
+    },
   };
   const context = ports.context;
   if (
@@ -76,18 +83,13 @@ export async function runAllProvision(secrets, packet, baseBindings, ports) {
               : 'owned_workflows',
       httpStatus: null,
       transportCode: null,
+      transportReason: null,
     };
     let r;
     try {
       r = await ports.send(m, p, b, secrets.management);
     } catch (error) {
-      receipt.diagnostics.transportCode =
-        typeof error?.message === 'string' &&
-        /^FOUNDATION_(?:TRANSPORT_(?:DNS|CLOSE|TLS|STATUS|BODY|PARSE|DEADLINE)|REQUEST_REJECTED)$/.test(
-          error.message,
-        )
-          ? error.message
-          : 'unclassified';
+      Object.assign(receipt.diagnostics, foundationTransportDiagnostic(error));
       throw Error('FOUNDATION_REQUEST_FAILED');
     }
     if (Number.isInteger(r?.status) && r.status >= 100 && r.status <= 599)
