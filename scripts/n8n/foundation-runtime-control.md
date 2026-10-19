@@ -182,6 +182,32 @@ ledgers; none is hidden in this management-only count. Historical foundation
 provisioning 188 and the separate private incident's 35 GETs are not replenished
 or charged to this new proposed window.
 
+### M03-C01 policy alternative, not enabled by this plan
+
+The pure `foundation-retention-proposal.mjs` inventory describes the exact25
+checkpoint's proposed21integrated success/error and five manual-root deltas,
+WF91 overlapping, with progress storage still false. It validates IDs/versions/
+hashes and preserves other settings; it does not modify this runtime plan.
+No additional workflow, migration, publication or save step is proposed. If
+approved, retention fields share these existing saves/restores and stay within
+327nominal/512ceiling. Current generated graphs continue retention-off.
+
+The supported public API supplies native workflowVersionId, but published-child
+loading can retain a draft entity version while replacing nodes/connections.
+Require fresh draftVersionId==activeVersionId and exact body/source fencing for
+every published dependency until its owned executions settle. Mismatch remains
+unknown; version alone is not universal executed-body proof.
+
+The packet replaces the old416control cap with a separately proposed2048 budget
+for metadata polling, private native-link reads, candidate discovery, exact stop,
+terminal deletion and absence verification. Combined ceiling2560, not928.
+Neither ceiling is authorization or an implemented execution adapter. Native
+stop acknowledges canceled state before all work settles. Restore changes saved
+settings, not already-running snapshots or existing execution payloads. Unknown
+children/providers/cleanup remain pending beyond admission close if necessary;
+no physical erasure-by-minute60 promise. See the exact single packet and native
+source/reproduction evidence before any future live decision.
+
 Credential-free source inventory:
 
 ```powershell

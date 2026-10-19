@@ -1,6 +1,71 @@
 # M03 finite dev acceptance packet — 19 October 2026
 
-## Current decision boundary: one native completion capability
+## Current decision: scoped M03-C01 retention exception
+
+**Superseding decision, proposed only:** the supported 2.43.5 interfaces cannot
+provide all native terminal/child-link evidence under the current retention-off
+policy. Stop expanding a wrapper. Review the exact temporary policy exception
+below; approval accepts that policy/privacy deviation as the basis for the final
+packet, not the A-D live batch. Local engineering remains already authorized.
+No Cloud retention setting or execution has changed.
+
+The pure `scripts/n8n/foundation-retention-proposal.mjs` inventory pins the
+existing 25 actual IDs, versions and record hashes. It performs no writes.
+[Exact proposed ID/version/hash and field inventory](m03-c01-retention-proposal-20261019.json).
+
+| Exact owned set | Proposed field change |
+| --- | --- |
+| WF-00, WF-91, WF-99, SUB-INGEST, SUB-COST (five manual roots) | `saveManualExecutions:false` to `true` |
+| All pinned25 except WF-00, WF-99, SUB-INGEST, SUB-COST (21 integrated/error-capable graphs) | `saveDataSuccessExecution:'none'` to `'all'`; `saveDataErrorExecution:'none'` to `'all'` |
+| All25, with WF91 in both sets | Keep `saveExecutionProgress:false`; preserve every other retention mode |
+
+Union25, not26. No instance defaults, shared workflow, new wrapper, migration or
+credential change. Restore all four retention fields to their exact baselines
+through the existing runtime restoration. Seven dependency publications/eight
+actions and all disabled schedules remain unchanged. This is not authorization
+to save those proposed settings or request credentials now.
+
+**Privacy implication requiring approval:** this native policy stores full
+intermediate inputs/outputs, workflow snapshots and errors, including the owned
+public-page item and gateway responses. It is not metadata-only storage.
+Response/error reflection can retain credentials; source review cannot promise
+their absence. A safe final node/read-time redaction cannot sanitize earlier
+stored data. Webhook input headers/bodies may persist before validation,
+including unsolicited deliveries; workflow-level retention cannot select only
+batch IDs or allowlisted stored fields. Current retention-off is terminal retention off, not proof that
+transient initial/waiting payloads are never written.
+
+If approved, complete/review the bounded exact-ID private API reducer before
+requesting live approval. Full data stays in private RAM, never raw model-visible
+exports/logs. Proposed full-response streaming refusal ceiling is8MiB; oversize,
+dataTooLargeToDisplay, incomplete JSON or unavailable native fields stays unknown.
+Before final live approval, validate that fixed ceiling locally with realistic
+one-page maximum/failure fixtures; do not silently increase it or bypass native
+data-size protection. Emit only native identity/version/mode/status/times and known
+ExecuteWorkflow subExecution where produced and each child's native parent link.
+Thrown child failures can omit parent-side subExecution metadata; use bounded
+discovery plus the child's native parentExecution and exact case/body binding,
+not an invented reciprocal edge. Require every expected
+child, separately settled provider/SQL work and closed transports. Unexpected,
+missing or unlinked error children remain unknown; an empty scan is not proof
+that asynchronous error dispatch drained.
+
+Delete only exact owned causally bound temporary native execution records that
+are terminal AND independently settled (children/provider/SQL/transports),
+require matching acknowledged DELETE and absence read. A lost DELETE ack plus404
+does not prove blob cleanup. Keep application/provider data and journals.
+Restoring settings does not change captured running settings or erase records.
+The60minute window bounds admissions/operations, not guaranteed physical erasure;
+unknown work may leave retained data pending cleanup beyond it. Native120 is an
+application admission ceiling, not a provider-enforced webhook retention quota.
+
+Future Cloud zero-actor checks must first prove native version/terminal/child
+coverage and synthetic success/error/header-reflection privacy. Any reflection,
+missing signal, extra child or ambiguity stops before paid work. Local source,
+mock-port and actual isolated engine evidence remain distinct in
+[the native-interface record](m03-c01-native-interface-20261019.md).
+
+### Prior capability description, superseded by the precise decision above
 
 The remaining local runtime-transition and SUB-case engineering is implemented.
 **The live decision cannot yet be requested:** the installed control surface
@@ -11,8 +76,8 @@ setup/control phase known to fail. New deployment identity, credential delivery,
 fresh price read and actual runtime checks are guarded future setup outputs,
 not additional requirements to have an already-enabled runtime today.
 
-No credentials are requested now. No migration, runtime activation, publication,
-execution, actor/model call, production mutation, notification or merge occurred.
+No credentials are requested now. No Cloud migration, runtime activation,
+publication, execution, actor/model call, production mutation, notification or merge occurred.
 GW-01 remains closed. PR8 stays draft; M03 open; M04 unstarted.
 
 ### Completed checkpoint and local implementation
@@ -28,8 +93,10 @@ GW-01 remains closed. PR8 stays draft; M03 open; M04 unstarted.
 - `scripts/n8n/foundation-execution-control.mjs` binds the installed MCP schemas:
   `get_workflow_details`, `execute_workflow` with `executionMode:'manual'` and
   **no inputs**, then `get_execution` with `includeData:false`. There is no
-  invented public `/run`, cancellation endpoint or broad execution export.
-  Current available schemas expose no cancellation operation.
+  invented public `/run` or broad execution export. Installed MCP exposes no
+  cancellation operation. Correction: the supported public exact-ID
+  `POST /api/v1/executions/{id}/stop` exists; its canceled-state acknowledgement
+  does not await worker, child, provider or transport settlement.
 - The controller verifies the case's exact draft version, execution permission,
   MCP flag, exactly one enabled Manual Trigger and no other eligible trigger.
   It journals before starting, admits one case at a time, reserves the full
@@ -63,23 +130,18 @@ or child linkage. A caller-supplied child ID/source label is rejected by the
 controller. [Save hook](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/execution-lifecycle/execution-lifecycle-hooks.ts#L587),
 [metadata getter](https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/modules/mcp/tools/get-execution.tool.ts#L101).
 
-**Minimum missing result:** an authoritative, bounded native control envelope
-containing the actual case/workflow/draft version/execution ID, final status and
-stop time, exact child-ID links and whether all owned execution/transport work
-has settled. It must survive the retention policy without storing provider
-payloads, request credentials, raw errors or unrelated workflow data. Durable
-business/actor receipts remain separately required.
-
-**Smallest alternative to evaluate:** one fixed-case dev completion bridge or
-control-only wrapper whose success AND failure paths provably persist only that
-safe envelope. Merely retaining a safe routing probe does not prove the business
-graphs, and ordinary wrapper retention also retains intermediate child/error
-outputs; it is not accepted as safe by assumption. Redaction on read is not a
-metadata-only storage solution. Local bridge engineering is already authorized;
-no redundant development approval or key delivery is requested. Do not deploy a
-bridge or enable broad retention. If the installed Cloud surface cannot support
-the safe envelope, present that specific execution-integration change for a
-separate decision. No general rebuild, credential duplication or WF00 publication.
+**Resolved source investigation:** a single safe native envelope containing all
+these facts is not exposed under the current policy. Public exact-ID metadata
+provides workflowVersionId; full retained data supplies native child/parent links.
+Published-child lookup may replace nodes/connections without replacing the draft
+entity version. Require fresh draftVersionId==activeVersionId and exact body/
+source fencing for each published dependency until its known executions settle;
+the version field alone is not universal executed-body proof.
+Native stoppedAt precedes after-hooks/asynchronous error dispatch. Expected
+positive linked child terminal receipts are required; parent terminal, empty
+scan, zero leases or caller-labelled IDs cannot prove drain. Actor settlement
+and transport closure require their own evidence. The exact scoped-retention
+alternative above replaces further wrapper exploration; it remains unapproved.
 
 ### Phase A — exact dev setup, only after the completed packet is approved
 
@@ -139,9 +201,18 @@ setup; availableInMCP is enabled only for exact fixed case drafts.
 
 ### Phase B — zero-actor proof before either paid start
 
-Proceed only after M03-C01 has a reviewed supported implementation. Prove the
-fixed controller's exact native ID/terminal/child linkage, unknown-start fencing,
-no payload/secret retention, bounded calls and shutdown on a zero-actor case.
+Proceed only after the exact M03-C01 policy decision and reviewed implementation.
+Prove the fixed controller's native ID/version/terminal/child linkage,
+unknown-start fencing, bounded calls and shutdown on a zero-actor case.
+Under the proposed exception, full native payload retention is explicit, not a
+metadata-only claim. First verify synthetic success/failure/header-reflection
+privacy, private technical projection and acknowledged exact-ID record cleanup.
+Use the already-selected `dispatch.vimeo` root/child for the first supported
+interface/linkage proof, then the already-allocated four WF19 automatic-error
+cases below for failure/handler/privacy proof BEFORE either actor. These move
+earlier; they are not extra cases. The one additional zero-actor-control reserve
+does not stand in for all nested success/failure tests. Local timeout/wait/detach
+results are not a Cloud receipt. Missing Cloud proof stops paid work.
 If that proof fails, stop before any actor launch; do not keep retrying a known
 retention failure. Verify restricted writer identity, audience/protection,
 machine-domain enforcement, endpoint denial cases, current price book/budget,
@@ -182,12 +253,13 @@ The existing USD25/day alert default is not a provider spending cap.
    mutation. Equal replay/concurrent original-run processing → no new item,
    queued work or duplicate charge. Reconcile lost atomic acknowledgements only
    through the original registry/result; no SQL JSONB digest invented in JS.
-6. Four WF19 production-webhook calls with fixed **valid JSON `{}`** (not a
+6. Already completed in Phase B: four WF19 production-webhook calls with fixed **valid JSON `{}`** (not a
    transport-level invalid-JSON rejection), sequential after each actual
    automatic WF90 completes: four workflow-error audits, one threshold/cooldown
    claim and one log-only SUB Notify. Four WF19+four WF90+one Notify=9native,
    9business/18gatewayHTTP. Editor-manual or mocked errors do not count. No email
    or other notification delivery. Requires clean owned baseline before test.
+   Do not repeat this batch after paid work to claim another cooldown result.
 
 | Whole proposed envelope | Explicit allocation; no allowance is approved |
 | --- | --- |
@@ -197,10 +269,24 @@ The existing USD25/day alert default is not a provider spending cap.
 | SQL | Up to20fixed commands/admitted attempt =5,120gateway commands; owner CLI migration/setup/readback/Close operations separately logged, never hidden as native calls |
 | Provider | 20selected +2original group read =22planned;10reserve =32GET attempts; no automatic GET/POST retry |
 | Actor | At most2sequential starts, one page/result each,1024MiB/300seconds,async waitForFinish0,restart off, requested USD1 each,USD2actor reserve; no AI/embedding/media/competitor collection |
-| Runtime management | 134setup +69(23case draft transitions×3) +99restore +25final audit =327planned;185reserve =512requests including credential schema/metadata/PATCH, graph GET/PUT, exact-version publish/unpublish and restoration. A completion bridge would require its own explicit count correction before approval |
-| MCP control | Separate416maximum details/start/metadata calls (metadata includeDatafalse), at most8polls/knownID; combined runtime+control ceiling928, distinct from historical188 and private35GETs |
+| Runtime management | 134setup +69(23case draft transitions×3) +99restore +25final audit =327planned;185reserve =512requests. Proposed retention fields would share the same graph saves, not create another workflow/publication. Current source still compiles retention-off; integration follows the policy decision |
+| Native execution control (replaces416) | Separate2048maximum MCP/public-API attempts:240details/start +960metadata (120IDs×8total polls) +120private full-data reads +120exact stop attempts +120DELETE +120post-delete GET +200baseline/final owned-list audits +128four-error discovery +40reserve. Runtime+control cap2560; no additional starts/cases authorized by this allocation |
 
-Native/MCP allocations are source/controller ceilings, not a claim of current
+The new2048 control allocation is a proposed policy-alternative budget, not an
+implemented adapter or live allowance. The old416 did not cover native child
+reads/private projection/deletion and is superseded, not silently supplemented.
+240details/start conservatively reserves120roots×2; actual23manual cases use46.
+Metadata8polls is TOTAL per exact ID, not8per phase. Each of120IDs reserves one
+private linkage read, one stop attempt, one DELETE and one absence read; stopping
+does not prove completion. Two all25owned sweeps, each default+explicit-running
+filter and at most2pages, cost200. Four expected automatic errors each reserve
+8discovery rounds×2filters×2pages=128; no waiting on empty lists forever.
+List candidates require native causal parent verification before adoption.
+Include queued/new rows with null startedAt; timestamp-only filtering is unsafe.
+At most2pages is a refusal bound, not a completeness claim if more pages exist.
+Reserve is for reconciliation/cleanup, never extra business starts.
+
+Native/MCP allocations are source/proposal ceilings, not a claim of current
 execution visibility or a way to bound unsolicited webhook deliveries. Stop on
 unplanned deliveries, count exhaustion, assertion failure, expiry, ambiguous
 start/write or charge mismatch. Do not spend the shutdown reserve on more cases.

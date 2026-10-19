@@ -196,5 +196,71 @@
     },
     "unchangedFullLocalSuiteRepeated": false,
     "hostedActions": 0
+  },
+  "nativeInvestigationContinuation": {
+    "reviewedHead": "dd8f646bf83968249eb43d58a6026cbef2838542",
+    "preservedCi": 39195709369,
+    "prior52And54ResultsRetained": true,
+    "status": "precise_scoped_retention_policy_alternative_proposed_not_applied",
+    "pureProposalTests": {
+      "command": "node --test scripts/n8n/foundation-retention-proposal.test.mjs",
+      "receipt": "fe57a6",
+      "nativeExit": 0,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "independentReceipt": "7c3a1a",
+      "independentPassed": 6,
+      "remainingP1P2": 0
+    },
+    "affectedEslint": { "receipt": "6f06b7", "nativeExit": 0 },
+    "finalQuality": {
+      "affectedEslintReceipt": "2e3c25",
+      "formatAndDiffReceipt": "ac5a6a",
+      "trackedFileSecretScanReceipt": "8d00d4",
+      "trackedSecretViolations": 0,
+      "independentArchiveSyntaxReceipt": "3318ea",
+      "independentProjectionReview": "no remaining P1/P2; original native canaries, causal historical filtering and all seven archive hashes verified",
+      "nativeExit": 0
+    },
+    "migrationHashReverification": { "receipt": "626ee3", "allFourUnchanged": true },
+    "proposalInventory": "m03-c01-retention-proposal-20261019.json",
+    "nativeSourceAndLocalRuntimeEvidence": "m03-c01-native-interface-20261019.md",
+    "actualIsolatedRuntime": {
+      "receiptFile": "c01-native-local-repro-20261019.json",
+      "nativeExecutions": 38,
+      "invalidFixtureNativeExecutions": 14,
+      "validFixtureNativeExecutions": 24,
+      "cloudProof": false,
+      "sourceGuardChecks": 9,
+      "sourceGuardNativeExecutions": 0,
+      "containerAndNetworkRemoved": true,
+      "rawSyntheticStateRemoved": false,
+      "cleanupBlockedBeforeExecution": true,
+      "automaticApprovalReason": "blocked by policy"
+    },
+    "proposal": {
+      "approved": false,
+      "applied": false,
+      "workflows": 25,
+      "integratedAllPolicies": 21,
+      "manualSavePolicies": 5,
+      "overlap": "WF-91",
+      "fullIntermediateAndErrorStorage": true,
+      "metadataOnlyStorage": false,
+      "runtimeNominal": 327,
+      "runtimeMaximum": 512,
+      "replacementControlMaximum": 2048,
+      "combinedMaximum": 2560,
+      "old416ControlSupersededNotAdded": true,
+      "noNewGraphMigrationOrPublication": true
+    },
+    "cloudExecutions": 0,
+    "hostedMutations": 0,
+    "realCredentialReads": 0,
+    "providerOrModelCalls": 0,
+    "incidentActions": 0,
+    "unchangedFullLocalSuiteRepeated": false,
+    "liveProofEstablished": false
   }
 }

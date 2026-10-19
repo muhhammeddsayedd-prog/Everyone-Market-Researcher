@@ -96,13 +96,20 @@ replay A/B and a distinct evidence map for all five SUBs. See
 `scripts/n8n/foundation-execution-control.mjs` uses the installed MCP manual-start
 and metadata schemas, fixed saved-case receipts, exact IDs, bounded calls/polls,
 full nested upper reservations and durable uncertain-start fences. Its mocks
-prove local control behavior only. **M03-C01 remains:** the native save hooks can
-remove terminal rows/child metadata under retention-off settings. The controller
-rejects absent completion and caller-labelled child IDs. A safe native terminal
-envelope is still needed; no broad retention, fake completion or known-failing
-paid preflight is accepted. The [single packet](../../milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md)
-contains the four hashes, A-D scope, count ledger and precise remaining capability.
-No new handoff or hosted action is requested by this source preparation.
+prove local control behavior only. Native save hooks remove terminal rows/child
+metadata under retention-off settings; an ordinary retained wrapper also stores
+intermediate child outputs/failures. The controller stays fail-closed. Source
+tracing and actual isolated 2.43.5 privacy evidence are recorded in
+[M03-C01 evidence](../../milestones/M03-n8n-foundation/evidence/m03-c01-native-interface-20261019.md).
+The smallest supported alternative is one explicit temporary retention exception
+for the existing25 dev IDs:21 integrated success/error modes and five manual
+roots, with WF91 overlapping. `foundation-retention-proposal.mjs` describes only
+the exact immutable deltas; it does not apply them or enable execution.
+The [single packet](../../milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md)
+states privacy cost, native version/body binding, independent child/provider
+closure, proposed2048 control ceiling (replacing416) and exact cleanup gates.
+Business retention remains off on Cloud. No new handoff or hosted action is
+requested; the scoped policy decision is separate from live-batch approval.
 
 Focused commands, all local and synthetic/localhost only:
 

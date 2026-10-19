@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: completed inactive delivery preserved. Finite runtime transition and SUB replay engineering implemented locally; one remaining execution-integration capability M03-C01 prevents a live approval request. No current credential action. GW-01 stays closed.**
+**Blocked: waiting on owner — MA-11 / M03-C01 scoped retention-policy decision. Native investigation and isolated2.43.5 reproduction completed; no current-policy safe wrapper supplies all facts. Inactive delivery/runtime/SUB work preserved. No credential action or live batch request. GW-01 stays closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,11 +16,63 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | New finite runtime controls and four SUB replay cases implemented/tested locally. Existing25 staged records/13tags/Machine and188 historical management requests unchanged. Canonical/error/live acceptance remains pending. |
-| Next step | Resolve only M03-C01: authoritative native terminal/child-link control receipts with business retention off. Local bridge engineering already authorized; no known-failing live control phase, repeated handoff or provisioning replay. |
+| Current task | Completed supported-native source tracing and actual isolated2.43.5 privacy/lifecycle reproduction. Added pure exact25 retention proposal/six tests; controller stays fail-closed, policy unapplied. Existing25/13/Machine/188historical requests unchanged. |
+| Next step | Decide exact temporary M03-C01 retention exception in the existing packet. If approved, complete/review bounded private reducer and integration locally, then present full live packet. No live credentials/setup/publication/execution now. |
 | Current source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. Private provisioning/helper changes receive normal new-head CI. |
 
-## 19 October local acceptance-control continuation
+## 19 October M03-C01 native investigation and exact alternative
+
+Reviewed starting head `dd8f646bf83968249eb43d58a6026cbef2838542`; PR8 actually
+draft/open, all five jobs in CI39195709369 and Vercel passed. No reset/new kickoff.
+The54-test checkpoint and historical failures remain intact. New pure
+`foundation-retention-proposal.mjs` validates exact25owned IDs/versions/hashes,
+describes only four retention fields and performs no I/O or mutations. Six
+focused tests pass (root fe57a6), affected ESLint passes (6f06b7), independent
+review6/6 with no P1/P2. Unchanged full local suites were not repeated.
+
+Pinned native source and isolated actual2.43.5 engine tests establish that
+retention-off discards terminal/link data, while retained wrappers store earlier
+child output/errors even with safe final output. Native public metadata supplies
+version/status/time, full data supplies child/parent links, and stoppedAt occurs
+before after-hooks/error dispatch. Public stop exists but does not await child,
+provider or socket settlement. Published-child body binding additionally needs
+fresh draft==activeVersionId and exact source/body fencing. Missing/empty rows,
+caller IDs, SQL zero leases and parent terminal never substitute for closure.
+See [native source/local evidence](evidence/m03-c01-native-interface-20261019.md).
+
+The [existing packet](evidence/live-acceptance-outline-20261018.md) now presents
+ONE proposed exception: five manual roots saveManualExecutions=true;21integrated
+graphs save success/error=all, WF91overlap/union25;progressfalse. This intentionally
+stores full intermediate payload/error/workflow history temporarily, not only
+metadata. Source cannot promise absence of reflected secrets. No policy changed
+on Cloud and no private reader deployed. Proposed exact-ID RAM-only projection,
+positive expected-child receipts and acknowledged terminal record cleanup need
+local implementation/review after that decision and Cloud zero-actor proof only
+under a later full batch approval. Settings restoration does not erase data or
+change running snapshots; unresolved work/cleanup stays pending beyond admission
+close. No guarantee of physical erasure by minute60.
+
+No new Market Radar Cloud workflow, graph, migration or publication. Existing327nominal/512runtime
+budget remains; new proposed2048control replaces416 for native metadata/full
+private reads/discovery/stop/delete/absence, combined2560. Native120/gateway256/
+provider32/twoactors/USD2/60minutes remain proposed. The four pending migration
+hashes were reverified (626ee3), unchanged. All25actual exports/bindings unchanged.
+No real credential-handoff read/decryption, Cloud operation, provider/model call, incident
+work, production, notification, merge or M04. 24October tooling follow-up kept.
+
+Local cleanup: owned Docker container stopped/removed and its internal network
+removed (3495d6). Automatic approval review rejected exact raw synthetic state
+deletion before execution, generic “blocked by policy”; no alternate deletion
+was attempted. The ignored `.c01-repro.local/state` still contains synthetic
+local-auth/SQLite/snapshots, no real credentials. See the exact owner cleanup
+command below; do not label this cleanup complete or replay the native cases.
+[Actual projected runtime receipt](evidence/c01-native-local-repro-20261019.json):
+38local native executions=14invalid+24valid(12pairs);9archive guard checks started
+zero native work. Final affected ESLint2e3c25/format+diffac5a6a/secret scan8d00d4
+pass. Two independent reviews verified causal projection/source hashes and found
+no remaining P1/P2. Real Cloud proof remains pending; normal PR CI follows.
+
+## 19 October local acceptance-control continuation — preserved checkpoint
 
 Completed source work: new runtime checkpoint/plan/controller pins25actual saved
 IDs/versions/hashes; new protected Preview identity is a guarded future output,
@@ -175,7 +227,7 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
-- Current live-decision capability: **M03-C01**, authoritative native terminal/child-link receipt while business retention stays off. Runtime setup identity, private delivery and current-price checks are future guarded packet outputs; no completed handoff is requested. See the superseding local continuation above.
+- Current decision: **MA-11 / M03-C01**, the exact scoped native-retention exception above. Current-policy safe wrapper is not supported; do not expand another bridge or request a known-failing live control phase. Runtime setup identity/private delivery/prices remain guarded future outputs, not credentials needed now.
 
 - Separate private operational follow-up: bounded read-only preparation and
   temporary-credential cleanup completed; actual projections and remaining
@@ -196,9 +248,36 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-### Current continuation: no repeated handoff or live approval request
+### Current MA-11 / M03-C01: one exact retention-policy decision
 
-No key/password, billing answer, provisioning replay or new incident input is needed. Resolve M03-C01 with already-authorized local engineering or identify the specific supported integration change. The existing packet is the single scope/count record; it cannot yet request live execution. Private incident local-only decision remains outside Git.
+Open `milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md`
+at “Current decision: scoped M03-C01 retention exception”. Review its exact25
+IDs/checkpoint reference, five manual roots/21integrated field deltas, full
+intermediate/error privacy cost and cleanup/unknown limits. Reply
+`Approve the scoped M03-C01 retention-policy exception` or decline it. Expected
+result: an explicit policy decision only; Cloud settings remain unchanged until
+the locally reviewed integration and separate full live-batch approval. No
+password/key, billing answer, provisioning replay or incident action is needed.
+
+### MA-11 / M03-C01: delete only the stopped local synthetic state
+
+In Windows PowerShell under this Windows account, run:
+
+```powershell
+$emrC01State = 'D:\Everyone\everyone Market Research\everyone-market-radar\.c01-repro.local\state'
+$emrC01Resolved = (Resolve-Path -LiteralPath $emrC01State -ErrorAction Stop).Path
+if ($emrC01Resolved -ne $emrC01State) { throw 'Unexpected C01 state path' }
+Remove-Item -LiteralPath $emrC01Resolved -Recurse -Force -ErrorAction Stop
+Test-Path -LiteralPath $emrC01State
+```
+
+Expected non-secret result: `False`. Reply `C01 synthetic state deleted`.
+This removes only the owned, stopped reproduction's synthetic local database,
+local-auth material and raw snapshots. Keep source archives/projected receipts,
+all other data and password-manager originals. Automatic approval review blocked
+the agent's exact deletion before execution with “blocked by policy”; no owner
+development/credential approval is missing, and no alternative launcher retry
+is authorized by this record. Container/network closure is already verified.
 
 ### Current: MA-11 inactive foundation delivery only
 
