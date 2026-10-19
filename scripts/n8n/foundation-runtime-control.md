@@ -92,10 +92,12 @@ claim that `publishIfActive=false` makes all settings inert.
 
 The new controller accepts `send(method,path,body)`, its separate durable runtime
 journal, `prepareMachinePatch({audience,restore})`, and
-`admitManagementAttempt()`. Preparation must return the new builder's branded
-exact body; arbitrary JSON or header objects are rejected. The trusted private
-caller reads only the purpose-bound retained pending token and new bypass inside
-the bounded child. The body and private strings are never added to the public
+`admitManagementAttempt()`. Preparation must synchronously return the new
+builder's already-built branded exact body; thenables are handled and rejected
+without waiting. Arbitrary JSON or header objects are rejected. The trusted
+private caller completes purpose-bound DPAPI reads for the retained pending token
+and new bypass earlier inside the bounded child, before entering this operation.
+The preparation port performs no asynchronous work. The body and private strings are never added to the public
 plan, journal, hashes or diagnostics. That admission port is the
 batch's shared durable **512 management-attempt** counter, including any other
 runtime/control preflight or recovery API requests. Admission and a durable

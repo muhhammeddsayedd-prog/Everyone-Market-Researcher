@@ -56,6 +56,8 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
   One capability M03-C01 remains: supported retention-safe native terminal and
   child-link receipt. The existing single packet records exact four hashes,
   A-D scope and counters; it is not an executable live approval request yet.
+  Final source review closed the private-preparation wait with synchronous
+  branded input;54targeted checks pass, including both new regressions.
   No credentials requested or consumed, no hosted changes/calls; private local
   incident decision stays outside Git. PR8 draft, M03 open, M04 unstarted.
 

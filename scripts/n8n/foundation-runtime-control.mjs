@@ -55,6 +55,14 @@ function requireSynchronousVoid(value) {
     fail();
   }
 }
+function prepareSynchronousMachinePatch(ports, scope) {
+  const value = ports.prepareMachinePatch(scope);
+  if (value && typeof value.then === 'function') {
+    Promise.resolve(value).catch(() => {});
+    fail();
+  }
+  return assertFoundationRuntimeMachinePatch(value, scope);
+}
 function enter(journal) {
   if (activeJournals.has(journal)) return false;
   activeJournals.add(journal);
@@ -435,10 +443,7 @@ function controller(plan, ports) {
     const s = state();
     if (s.pending || s.restoreComplete || s.machineUpdatedAt === null) fail();
     const patchScope = { audience: restore ? plan.oldAudience : plan.setup.audience, restore };
-    const patch = assertFoundationRuntimeMachinePatch(
-      await ports.prepareMachinePatch(patchScope),
-      patchScope,
-    );
+    const patch = prepareSynchronousMachinePatch(ports, patchScope);
     const before = metadata(await request('GET', '/api/v1/credentials/' + plan.machine.id), plan);
     if (before.updatedAt !== s.machineUpdatedAt) fail();
     const sequence = ports.journal.rows.filter((r) => r.event === 'intent').length + 1;
@@ -527,10 +532,7 @@ export async function runFoundationRuntimeSetup(plan, ports) {
     )
       fail();
     const patchScope = { audience: plan.setup.audience, restore: false };
-    const patch = assertFoundationRuntimeMachinePatch(
-      await ports.prepareMachinePatch(patchScope),
-      patchScope,
-    );
+    const patch = prepareSynchronousMachinePatch(ports, patchScope);
     // changeMachine includes its own fresh GET; this separate observation is
     // omitted by setting the baseline metadata only from that first GET below.
     const first = metadata(await c.request('GET', '/api/v1/credentials/' + plan.machine.id), plan);

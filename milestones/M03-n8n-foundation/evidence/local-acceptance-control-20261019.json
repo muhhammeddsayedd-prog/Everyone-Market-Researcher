@@ -35,20 +35,6 @@
     "runtime": "durable async admission/concurrency/journal identity/case receipt/domain/private header findings corrected; seven changed regressions independently passed a75c3d",
     "nativeAcceptanceEstablished": false
   },
-  "sourceFileSha256": {
-    "scripts/n8n/foundation-runtime-checkpoint.mjs": "af3bd51ff6336d9205e876af3e699677e122ca96cf825a66f807478a265603ea",
-    "scripts/n8n/foundation-runtime-control.md": "70bad6a35a6c76198409b19a9c98ec6095cd4502b7645475f9709da85744de5f",
-    "scripts/n8n/foundation-runtime-control.mjs": "83f7d6ab2cb0b792137c29893eceb942773db0dabcaa666ed8994b22df4e537b",
-    "scripts/n8n/foundation-runtime-control.test.mjs": "984c2cf96545dec064505fa74a0089553c28c6dc4bf2ae8386c6bc5101df9885",
-    "scripts/n8n/foundation-runtime-machine.mjs": "1f98496f3a91e1cc234b2f4ee04908b28486d747b727ddd4e98d53be3d9cdda3",
-    "scripts/n8n/foundation-runtime-machine.test.mjs": "636aa4e5e57f558c923a6f2aa34ef2b3563e2b8df184a6bca1cea17c9d974aaa",
-    "scripts/n8n/foundation-runtime-plan.mjs": "357d22db593255fd83ec00efedcdcefa64ccff76330b088e169e2b7bb1b889ff",
-    "scripts/n8n/foundation-runtime-plan.test.mjs": "a1b2487a75fdffce8f2cdfbc8f57afcedd7ebddf9760fbcec0e4d213b04004ef",
-    "scripts/n8n/foundation-execution-control.mjs": "430fdbbdac21cf9c3e15c065f9ba4d2018a84c710c9cc2328786bcedc5fd624d",
-    "scripts/n8n/foundation-execution-control.test.mjs": "c344196198a63f6ef6527251b882ecdc96777879f31a84a6240c57c0538b2d6a",
-    "n8n/foundation/materialize-acceptance-case.mjs": "e900812be765cb06c30f919ae751fd5d4adbe67f81dbfa7d0876f8a83da70f6b",
-    "n8n/foundation/materialize-acceptance-case.test.mjs": "2e797129f71af3fe4dcf036ff4a76eafc315aa9f850d493b7a02fed32751e7c1"
-  },
   "migrationHashes": {
     "20261018231756_m03_actor_launch_admission.sql": "fc6955938bba3d08b6a1140258a1db2d0569a5f441c8cc5c934847eb84116600",
     "20261018232014_m03_foundation_gateway.sql": "ea1385b734e243bed4dea0030f4975a81d38d41338cb8d94d6086dd83916d334",
@@ -152,5 +138,63 @@
     "notifications": 0,
     "merge": false,
     "m04Started": false
+  },
+  "sourceFileSha256AtInitial52": {
+    "scripts/n8n/foundation-runtime-checkpoint.mjs": "af3bd51ff6336d9205e876af3e699677e122ca96cf825a66f807478a265603ea",
+    "scripts/n8n/foundation-runtime-control.md": "70bad6a35a6c76198409b19a9c98ec6095cd4502b7645475f9709da85744de5f",
+    "scripts/n8n/foundation-runtime-control.mjs": "83f7d6ab2cb0b792137c29893eceb942773db0dabcaa666ed8994b22df4e537b",
+    "scripts/n8n/foundation-runtime-control.test.mjs": "984c2cf96545dec064505fa74a0089553c28c6dc4bf2ae8386c6bc5101df9885",
+    "scripts/n8n/foundation-runtime-machine.mjs": "1f98496f3a91e1cc234b2f4ee04908b28486d747b727ddd4e98d53be3d9cdda3",
+    "scripts/n8n/foundation-runtime-machine.test.mjs": "636aa4e5e57f558c923a6f2aa34ef2b3563e2b8df184a6bca1cea17c9d974aaa",
+    "scripts/n8n/foundation-runtime-plan.mjs": "357d22db593255fd83ec00efedcdcefa64ccff76330b088e169e2b7bb1b889ff",
+    "scripts/n8n/foundation-runtime-plan.test.mjs": "a1b2487a75fdffce8f2cdfbc8f57afcedd7ebddf9760fbcec0e4d213b04004ef",
+    "scripts/n8n/foundation-execution-control.mjs": "430fdbbdac21cf9c3e15c065f9ba4d2018a84c710c9cc2328786bcedc5fd624d",
+    "scripts/n8n/foundation-execution-control.test.mjs": "c344196198a63f6ef6527251b882ecdc96777879f31a84a6240c57c0538b2d6a",
+    "n8n/foundation/materialize-acceptance-case.mjs": "e900812be765cb06c30f919ae751fd5d4adbe67f81dbfa7d0876f8a83da70f6b",
+    "n8n/foundation/materialize-acceptance-case.test.mjs": "2e797129f71af3fe4dcf036ff4a76eafc315aa9f850d493b7a02fed32751e7c1"
+  },
+  "sourceFileSha256": {
+    "scripts/n8n/foundation-runtime-checkpoint.mjs": "af3bd51ff6336d9205e876af3e699677e122ca96cf825a66f807478a265603ea",
+    "scripts/n8n/foundation-runtime-control.md": "ba0c384f51015fe911a3538df3e79e9e66b87c4e087264670dd5145ef3e599a6",
+    "scripts/n8n/foundation-runtime-control.mjs": "7f9a42d1b0fd9f6e018135e55321419a2cbd9162057903c5481c1c02dba4c50d",
+    "scripts/n8n/foundation-runtime-control.test.mjs": "0a37f944187fa9bc76e756cb85854017ca94eefc38b49ebb5fedbd3a379c0128",
+    "scripts/n8n/foundation-runtime-machine.mjs": "1f98496f3a91e1cc234b2f4ee04908b28486d747b727ddd4e98d53be3d9cdda3",
+    "scripts/n8n/foundation-runtime-machine.test.mjs": "636aa4e5e57f558c923a6f2aa34ef2b3563e2b8df184a6bca1cea17c9d974aaa",
+    "scripts/n8n/foundation-runtime-plan.mjs": "357d22db593255fd83ec00efedcdcefa64ccff76330b088e169e2b7bb1b889ff",
+    "scripts/n8n/foundation-runtime-plan.test.mjs": "a1b2487a75fdffce8f2cdfbc8f57afcedd7ebddf9760fbcec0e4d213b04004ef",
+    "scripts/n8n/foundation-execution-control.mjs": "430fdbbdac21cf9c3e15c065f9ba4d2018a84c710c9cc2328786bcedc5fd624d",
+    "scripts/n8n/foundation-execution-control.test.mjs": "c344196198a63f6ef6527251b882ecdc96777879f31a84a6240c57c0538b2d6a",
+    "n8n/foundation/materialize-acceptance-case.mjs": "e900812be765cb06c30f919ae751fd5d4adbe67f81dbfa7d0876f8a83da70f6b",
+    "n8n/foundation/materialize-acceptance-case.test.mjs": "2e797129f71af3fe4dcf036ff4a76eafc315aa9f850d493b7a02fed32751e7c1"
+  },
+  "postReviewCorrection": {
+    "verifiedAt": "2026-10-19T03:39:06.811850+00:00",
+    "problem": "asynchronous private Machine preparation could wait indefinitely while holding the runtime operation guard",
+    "correction": "setup and restoration require a synchronous branded prepared body; DPAPI work occurs earlier in the bounded child; thenables are handled and rejected before writes",
+    "initialHead": "e881ab5deba5a1180f4f3712d62b664f74828405",
+    "targetedTests": {
+      "receipt": "29edd3",
+      "nativeExit": 0,
+      "passed": 54,
+      "failed": 0,
+      "skipped": 0,
+      "groups": {
+        "caseMaterializer": 12,
+        "executionControl": 17,
+        "runtimePlanControlMachine": 25
+      }
+    },
+    "independentChangedTests": {
+      "receipt": "d63930",
+      "passed": 2,
+      "nativeExit": 0,
+      "remainingP1P2": 0
+    },
+    "affectedEslintAndDiff": {
+      "receipt": "578659",
+      "nativeExit": 0
+    },
+    "unchangedFullLocalSuiteRepeated": false,
+    "hostedActions": 0
   }
 }

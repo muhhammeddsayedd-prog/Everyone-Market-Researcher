@@ -536,3 +536,49 @@ test('private Machine preparation cannot inject cookies or an unbranded native J
     false,
   );
 });
+
+test('never-settling or rejecting async Machine preparation is blocked before writes and releases the operation guard', async () => {
+  for (const prepare of [
+    () => new Promise(() => {}),
+    () => Promise.reject(Error('SYNTHETIC_PRIVATE_PREPARATION_FAILURE')),
+  ]) {
+    const f = fixture();
+    f.ports.prepareMachinePatch = prepare;
+    const r = await Promise.race([
+      runFoundationRuntimeSetup(f.plan, f.ports),
+      new Promise((resolve) => setTimeout(() => resolve({ status: 'still_pending' }), 500)),
+    ]);
+    assert.equal(r.status, 'blocked');
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(
+      f.calls.some((c) => c.method !== 'GET'),
+      false,
+    );
+    assert.equal(foundationRuntimeState(f.plan, f.journal).pending, null);
+    assert.equal(
+      (await restoreFoundationRuntime(f.plan, f.ports)).status,
+      'exact_staging_restored_unpublished',
+    );
+  }
+});
+
+test('restoration also rejects async private preparation without a PATCH or a held operation guard', async () => {
+  const f = fixture();
+  assert.equal((await runFoundationRuntimeSetup(f.plan, f.ports)).status, 'runtime_setup_verified');
+  const syncPrepare = f.ports.prepareMachinePatch;
+  f.ports.prepareMachinePatch = () => new Promise(() => {});
+  const patches = f.calls.filter((c) => c.method === 'PATCH').length;
+  const r = await Promise.race([
+    restoreFoundationRuntime(f.plan, f.ports),
+    new Promise((resolve) => setTimeout(() => resolve({ status: 'still_pending' }), 500)),
+  ]);
+  assert.equal(r.status, 'blocked');
+  assert.equal(f.calls.filter((c) => c.method === 'PATCH').length, patches);
+  assert.equal(foundationRuntimeState(f.plan, f.journal).pending, null);
+  assert.equal((await reconcileFoundationRuntimeReadOnly(f.plan, f.ports)).status, 'no_pending_mutation');
+  f.ports.prepareMachinePatch = syncPrepare;
+  assert.equal(
+    (await restoreFoundationRuntime(f.plan, f.ports)).status,
+    'exact_staging_restored_unpublished',
+  );
+});

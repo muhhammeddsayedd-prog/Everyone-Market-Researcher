@@ -61,8 +61,10 @@ actor/build metadata rechecked successfully; one price-book read failed OAuth
 refresh before SQL, no login loop. Current price verification is a guarded future
 setup read; unknown fees/default25/24October follow-up retained.
 
-The [52-test source/control receipt](evidence/local-acceptance-control-20261019.json)
-records targeted native0/52pass/0skip, affected lint/format/diff checks and
+The [54-test source/control receipt](evidence/local-acceptance-control-20261019.json)
+preserves the initial52pass and final native0/54pass/0skip after the private
+preparation callback was made strictly synchronous. Both late regressions passed
+independent review; affected lint/format/diff checks and
 independent review. It is not hosted acceptance. New changes
 receive normal PR CI. No new hosted migration/window/publication/execution,
 credential consumption, actor/model call, production change, notification, merge,
