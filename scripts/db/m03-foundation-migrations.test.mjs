@@ -1,0 +1,789 @@
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { after, describe, it } from 'node:test';
+
+const powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+const directories = [];
+const creatorPath = resolve('scripts/db/windows/New-M03FoundationMigrationHandoff.ps1');
+const consumerPath = resolve('scripts/db/windows/Invoke-M03FoundationMigrations.ps1');
+const cliRelative =
+  'node_modules/.pnpm/@supabase+cli-windows-x64@2.121.0/node_modules/@supabase/cli-windows-x64/bin/supabase.exe';
+const versions = [
+  '20261017172928',
+  '20261017172931',
+  '20261017172934',
+  '20261017172937',
+  '20261017172940',
+  '20261017172943',
+  '20261017172945',
+  '20261018034220',
+  '20261018035417',
+  '20261018070042',
+  '20261018231756',
+  '20261018232014',
+  '20261018232922',
+  '20261018233338',
+];
+const names = [
+  'extensions_schemas_roles',
+  'core_tables',
+  'auth_rls_views',
+  'rpc_pipeline_core',
+  'rpc_app_search',
+  'storage_cron',
+  'seed_taxonomies',
+  'rpc_n8n_foundation',
+  'price_book_plan',
+  'n8n_worker_gateway_admission',
+  'm03_actor_launch_admission',
+  'm03_foundation_gateway',
+  'm03_foundation_safety_receipts',
+  'm03_foundation_boundary_hardening',
+];
+const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
+
+function consumerFixture(mode = 'success') {
+  const root = mkdtempSync(join(tmpdir(), 'emr-m03-foundation-migration-fixture-'));
+  directories.push(root);
+  const put = (name, content) => {
+    const file = join(root, name);
+    mkdirSync(resolve(file, '..'), { recursive: true });
+    writeFileSync(file, content);
+    return file;
+  };
+  put(
+    'scripts/db/windows/Invoke-M03FoundationMigrations.ps1',
+    readFileSync(consumerPath, 'utf8')
+      .replace('$queryTimeoutMs = 30000', '$queryTimeoutMs = 500')
+      .replace('$pushTimeoutMs = 180000', '$pushTimeoutMs = 500'),
+  );
+  put('scripts/db/windows/New-M03FoundationMigrationHandoff.ps1', readFileSync(creatorPath));
+  for (const name of [
+    'scripts/db/windows/Foundation-AdminControl.ps1',
+    'scripts/db/foundation-settlement.sql',
+    'scripts/db/foundation-postcheck.sql',
+    'scripts/db/foundation-replay-snapshot.sql',
+    'scripts/assert/m03_smoke_setup.sql',
+    'scripts/assert/m03_smoke_teardown.sql',
+    'scripts/assert/m03_smoke_assert.sql',
+    'scripts/db/check-foundation-types.mjs',
+    'packages/shared/src/db.types.ts',
+    'node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/typescript.js',
+  ])
+    put(name, readFileSync(resolve(name)));
+  put(
+    'scripts/seed/check-tls.mjs',
+    "console.log(JSON.stringify({status:'verified',phase:'tls_handshake',code:'TLS_VERIFIED',environment:'dev',projectRef:'zmotjsbzhzjvpelxvxlf',host:'aws-1-eu-central-1.pooler.supabase.com',port:5432,rejectUnauthorized:true,exactServerName:true,scopedCaVerified:true,startupMessageSent:false,authenticationAttempted:false,socketsClosed:true}));",
+  );
+  for (const name of ['supabase-root-2021.crt', 'supabase-root-2021.json']) {
+    put(`scripts/seed/certs/${name}`, readFileSync(resolve(`scripts/seed/certs/${name}`)));
+  }
+  const migrations = versions.map((version, i) => {
+    const file = `supabase/migrations/${version}_${names[i]}.sql`;
+    const content = `-- synthetic fixture migration ${version}\nselect ${i};\n`;
+    put(file, content);
+    return {
+      version,
+      name: names[i],
+      file,
+      sha256: sha(content),
+      historySha256: sha(`synthetic-ledger-${version}`),
+    };
+  });
+  const identity = (entries) =>
+    JSON.stringify([
+      {
+        receipt: {
+          current_user: 'postgres',
+          session_user: 'postgres',
+          database: 'postgres',
+          migrations: entries.map(({ version, name, historySha256 }) => ({ version, name, historySha256 })),
+        },
+      },
+    ]);
+  const executable = join(root, cliRelative);
+  mkdirSync(resolve(executable, '..'), { recursive: true });
+  const nativeDir = resolve(executable, '..');
+  const csharp = `using System; using System.IO; using System.Threading;
+public class FixtureCli { public static int Main(string[] args) {
+ var dir=AppDomain.CurrentDomain.BaseDirectory; var joined=String.Join(" ",args); var version=joined=="--version";
+ if(version) { if(Environment.GetEnvironmentVariable("PGPASSWORD")!=null)return 91; Console.WriteLine("2.121.0"); return 0; }
+ File.AppendAllText(Path.Combine(dir,"calls.txt"),joined+"\\n");
+ if(Environment.GetEnvironmentVariable("PGPASSWORD")!="synthetic-m03-foundation-dev-password" || Environment.GetEnvironmentVariable("SUPABASE_ACCESS_TOKEN")!=null || Environment.GetEnvironmentVariable("PGOPTIONS")!=null || Environment.GetEnvironmentVariable("NODE_OPTIONS")!=null) { Console.Error.WriteLine("synthetic-private-error-do-not-emit"); return 92; }
+ var mode=File.ReadAllText(Path.Combine(dir,"mode.txt"));
+ if(joined.Contains("gen types")) { Console.WriteLine(File.ReadAllText(Path.Combine(dir,"types.ts"))); return 0; }
+ if(joined.Contains(" advisors ")) { Console.WriteLine("{\\"results\\":[],\\"message\\":\\"db advisors\\"}"); return 0; }
+ if(joined.Contains(" query ")) {
+  var file=Array.IndexOf(args,"--file");var sql=File.ReadAllText(args[file+1]);
+  if(!sql.Contains("supabase_migrations.schema_migrations")){
+   File.AppendAllText(Path.Combine(dir,"control-sql.txt"),sql+"\\n--NEXT\\n");
+   if(sql.StartsWith("do ")) { Console.WriteLine("DO");return 0; }
+   var key=sql.Contains(" as postcheck;")?"postcheck":sql.Contains(" as preflight;")?"preflight":sql.Contains(" as provision ")?"provision":sql.Contains(" as fixture ")?"fixture":sql.Contains(" as ownership ")?"ownership":sql.Contains(" as closure ")?"closure":sql.Contains(" as closed;")?"close":sql.Contains(" as unknown_callback;")?"unknown":sql.Contains(" as settlement;")?"settlement":sql.Contains(" as original")?"original":sql.Contains(" as verified;")?"verified":sql.Contains(" as snapshot;")?"snapshot":null;
+   if(key!=null){Console.WriteLine(File.ReadAllText(Path.Combine(dir,key+".json")));return 0;}
+   if(sql.StartsWith("select ops.foundation_gateway_provision(")){Console.WriteLine("[]");return 0;}
+   Console.Error.WriteLine("synthetic-private-unknown-sql");return 98;
+  }
+  var n=Path.Combine(dir,"queries.txt"); var count=File.Exists(n)?Int32.Parse(File.ReadAllText(n)):0; File.WriteAllText(n,(count+1).ToString()); Console.WriteLine(File.ReadAllText(Path.Combine(dir,count==0?"before.json":"after.json"))); return 0;
+ }
+  // CLI2.121.0 root.ts gives legacy --output json precedence over --output-format json.
+  // Push uses the selected text output layer; query instead writes its own JSON.
+  if(joined.Contains(" push ") && joined.Contains("--output json")) { Console.WriteLine("Finished supabase db push."); return 0; }
+  if(joined.Contains("--dry-run")) { if(mode=="dryNativeFailure") { Console.Error.WriteLine("synthetic-private-error-do-not-emit"); Console.WriteLine("synthetic-private-output-do-not-emit"); return 7; } Console.WriteLine(File.ReadAllText(Path.Combine(dir,"dry.json"))); return 0; }
+ if(joined.Contains(" push ")) { if(mode=="timeout")Thread.Sleep(5000); if(mode=="failure"||mode=="partial") { Console.Error.WriteLine("synthetic-private-error-do-not-emit"); Console.WriteLine("synthetic-private-output-do-not-emit"); return 7; } Console.WriteLine(File.ReadAllText(Path.Combine(dir,"push.json"))); return 0; }
+ return 93; } }`;
+  const sourceFile = put('fixture-cli.cs', csharp);
+  const compile = put(
+    'compile.ps1',
+    `$ErrorActionPreference='Stop'\nAdd-Type -Path '${sourceFile.replaceAll("'", "''")}' -OutputAssembly '${executable.replaceAll("'", "''")}' -OutputType ConsoleApplication\n`,
+  );
+  const compiled = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', compile], {
+    env: osEnvironment(),
+    encoding: 'utf8',
+    timeout: 20000,
+    windowsHide: true,
+  });
+  assert.equal(compiled.status, 0, compiled.stderr);
+  writeFileSync(join(nativeDir, 'mode.txt'), mode);
+  writeFileSync(join(nativeDir, 'types.ts'), readFileSync(resolve('packages/shared/src/db.types.ts')));
+  const fixtureResult = {
+    result: 'M03_SMOKE_FIXTURE_READY',
+    company_code: 'C999',
+    competitor_id: '90000000-0000-4000-8000-000000000001',
+    account_id: '90000000-0000-4000-8000-000000000002',
+    platform: 'website_work_page',
+    url: 'https://everyone.film/about-everyone',
+    competitor_status: 'active',
+    account_status: 'active',
+  };
+  const controlRows = {
+    postcheck: {
+      postcheck: {
+        identity: true,
+        tables_rls: true,
+        no_machine_table_grants: true,
+        rpc_shape: true,
+        owner_control_restricted: true,
+        all_project_tables_rls: true,
+        all_views_invoker: true,
+        gw01_closed: true,
+        domain_auto_join_off: true,
+        baseline_counts: true,
+        schemas: ['app', 'api', 'ops', 'ingest'],
+      },
+    },
+    preflight: {
+      preflight: {
+        projectRef: 'zmotjsbzhzjvpelxvxlf',
+        priceBook: [],
+        dailyBudgetUsd: 25,
+        statsDailyEnabled: false,
+        errorCount24h: 0,
+        notificationCooldownClear: true,
+        observedAt: new Date().toISOString(),
+      },
+    },
+    fixture: { fixture: fixtureResult },
+    provision: {
+      provision: {
+        windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+        boundAudience: 'https://everyone-market-researcher-fixture.vercel.app',
+        boundCommitSha: 'f'.repeat(40),
+        boundDeploymentId: 'dpl_Fixture',
+        started: false,
+        closed: false,
+        totalAdmitted: 0,
+        approvalCount: 1,
+      },
+    },
+    close: { closed: { state: 'closed', window: { closed: true } } },
+    ownership: { ownership: { owned: true } },
+    closure: { closure: { closed: true } },
+    unknown: {
+      unknown_callback: {
+        apify_run_id: 'M03AcceptanceUnknown0001',
+        registry_absent: true,
+        launch_absent: true,
+      },
+    },
+    settlement: { settlement: { requests: [], leases: [], providers: [] } },
+    original: { original: { original: true } },
+    verified: { verified: { matched: true } },
+    snapshot: { snapshot: { items: 0 } },
+  };
+  for (const [name, row] of Object.entries(controlRows))
+    writeFileSync(join(nativeDir, name + '.json'), JSON.stringify([row]));
+  writeFileSync(
+    join(nativeDir, 'before.json'),
+    identity(mode === 'completed' ? migrations : migrations.slice(0, 10)),
+  );
+  writeFileSync(
+    join(nativeDir, 'after.json'),
+    identity(mode === 'partial' ? migrations.slice(0, 11) : migrations),
+  );
+  const migrationFiles = migrations.slice(10).map(({ file }) => file.split('/').at(-1));
+  writeFileSync(
+    join(nativeDir, 'dry.json'),
+    JSON.stringify({
+      upToDate: false,
+      dryRun: true,
+      migrations: mode === 'dryMismatch' ? [migrationFiles[0]] : migrationFiles,
+      seeds: [],
+      roles: [],
+      message: 'Finished supabase db push.',
+    }),
+  );
+  writeFileSync(
+    join(nativeDir, 'push.json'),
+    JSON.stringify({
+      upToDate: false,
+      dryRun: false,
+      migrations: migrationFiles,
+      seeds: [],
+      roles: [],
+      message: 'Finished supabase db push.',
+    }),
+  );
+  const files = {};
+  for (const name of [
+    'scripts/db/windows/Invoke-M03FoundationMigrations.ps1',
+    'scripts/db/windows/New-M03FoundationMigrationHandoff.ps1',
+    'scripts/db/windows/Foundation-AdminControl.ps1',
+    'scripts/db/foundation-settlement.sql',
+    'scripts/db/foundation-postcheck.sql',
+    'scripts/db/foundation-replay-snapshot.sql',
+    'scripts/assert/m03_smoke_setup.sql',
+    'scripts/assert/m03_smoke_teardown.sql',
+    'scripts/assert/m03_smoke_assert.sql',
+    'scripts/db/check-foundation-types.mjs',
+    'packages/shared/src/db.types.ts',
+    'node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/typescript.js',
+    'scripts/seed/check-tls.mjs',
+    'scripts/seed/certs/supabase-root-2021.crt',
+    'scripts/seed/certs/supabase-root-2021.json',
+    cliRelative,
+  ])
+    files[name] = sha(readFileSync(join(root, name)));
+  const packet = {
+    version: 1,
+    target: 'zmotjsbzhzjvpelxvxlf',
+    approved: true,
+    authorizationReference:
+      'Owner approved M03 A-D dev acceptance at f42930f90c2de43c84f61ad6d966d0ee6074d70e on 2026-10-21',
+    cliVersion: '2.121.0',
+    baseline: migrations.slice(0, 10),
+    pending: migrations.slice(10),
+    files,
+    node: { path: process.execPath, sha256: sha(readFileSync(process.execPath)) },
+  };
+  const packetFile = put('scripts/db/m03-foundation-dev-migration-packet.json', JSON.stringify(packet));
+  mkdirSync(join(root, 'private/Temp'), { recursive: true });
+  const handoff = join(root, 'private/Temp/emr-m03-foundation-dev-migration-password.dpapi');
+  const encrypted = put(
+    'encrypt.ps1',
+    `$s=ConvertTo-SecureString 'synthetic-m03-foundation-dev-password' -AsPlainText -Force\ntry { $s|ConvertFrom-SecureString|Set-Content -LiteralPath '${handoff.replaceAll("'", "''")}' -Encoding ASCII } finally { $s.Dispose() }\n`,
+  );
+  assert.equal(
+    spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', encrypted], {
+      env: osEnvironment(),
+      encoding: 'utf8',
+      timeout: 10000,
+      windowsHide: true,
+    }).status,
+    0,
+  );
+  const leaseCreatedAt = Date.now();
+  const leaseFile = put(
+    'private/Temp/emr-m03-foundation-dev-migration-password.lease.json',
+    JSON.stringify({
+      version: 1,
+      environment: 'dev',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      purpose: 'm03-foundation-phase-a-dev',
+      approvalSha: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+      createdAt: new Date(leaseCreatedAt).toISOString().replace('Z', '0000Z'),
+      expiresAt: new Date(leaseCreatedAt + 2 * 3600000).toISOString().replace('Z', '0000Z'),
+    }),
+  );
+  const run = (checkOnly = false, controlInput = null) =>
+    spawnSync(
+      powershell,
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-File',
+        join(root, 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1'),
+        ...(checkOnly ? ['-CheckOnly'] : []),
+        ...(controlInput === null ? [] : ['-PhaseAControl']),
+      ],
+      {
+        env: {
+          ...osEnvironment(),
+          LOCALAPPDATA: join(root, 'private'),
+          PGPASSWORD: 'unrelated-parent-secret',
+          SUPABASE_ACCESS_TOKEN: 'unrelated-parent-token',
+          PGOPTIONS: 'unrelated-parent-options',
+          NODE_OPTIONS: '--no-warnings',
+        },
+        encoding: 'utf8',
+        input: controlInput,
+        timeout: 30000,
+        windowsHide: true,
+      },
+    );
+  const result = () =>
+    JSON.parse(readFileSync(join(root, 'scripts/db/out/m03-foundation-dev-migration-latest.json'), 'utf8'));
+  const calls = () =>
+    existsSync(join(nativeDir, 'calls.txt')) ? readFileSync(join(nativeDir, 'calls.txt'), 'utf8') : '';
+  return { root, put, handoff, leaseFile, packet, packetFile, nativeDir, run, result, calls };
+}
+const commandLines = (entries) =>
+  entries
+    .map(([kind, args = {}], index) =>
+      JSON.stringify({ id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`, kind, args }),
+    )
+    .join('\n') + '\n';
+const preview = {
+  audience: 'https://everyone-market-researcher-fixture.vercel.app',
+  commitSha: 'f'.repeat(40),
+  deploymentId: 'dpl_Fixture',
+};
+const osEnvironment = () =>
+  Object.fromEntries(
+    ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP', 'LOCALAPPDATA', 'APPDATA', 'USERPROFILE'].flatMap(
+      (key) => (process.env[key] === undefined ? [] : [[key, process.env[key]]]),
+    ),
+  );
+
+function creatorFixture({ empty = false } = {}) {
+  const root = mkdtempSync(join(tmpdir(), 'emr-m03-foundation-migration-fixture-'));
+  directories.push(root);
+  mkdirSync(join(root, 'Temp'));
+  const file = join(root, 'New-M03FoundationMigrationHandoff.ps1');
+  const source = readFileSync(creatorPath, 'utf8').replace(
+    "Read-Host 'EXISTING emr-dev postgres password for approved Phase A: four migrations, dev readbacks, owned C999 fixture and exact foundation Preview binding only' -AsSecureString",
+    empty
+      ? '[Security.SecureString]::new()'
+      : "ConvertTo-SecureString 'synthetic-m03-foundation-dev-password' -AsPlainText -Force",
+  );
+  writeFileSync(file, source);
+  const handoff = join(root, 'Temp/emr-m03-foundation-dev-migration-password.dpapi');
+  const oldHandoff = join(root, 'Temp/emr-m02-dev-db-password.dpapi');
+  writeFileSync(oldHandoff, 'unrelated-old-handoff-sentinel');
+  const run = () =>
+    spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', file], {
+      env: { ...osEnvironment(), LOCALAPPDATA: root, PGPASSWORD: 'unrelated-parent-sentinel' },
+      encoding: 'utf8',
+      timeout: 10000,
+      windowsHide: true,
+    });
+  return { root, file, handoff, oldHandoff, run };
+}
+
+after(() => {
+  for (const directory of directories) rmSync(directory, { recursive: true, force: true });
+});
+
+describe(
+  'M03 dev migration handoff creator, synthetic isolated Windows fixtures',
+  { skip: process.platform !== 'win32' },
+  () => {
+    it('creates only the new current-user encrypted M03 handoff and suppresses synthetic secret output', () => {
+      const fixture = creatorFixture();
+      const result = fixture.run();
+      assert.equal(result.status, 0);
+      assert.equal(result.stderr, '');
+      assert.match(result.stdout, /M03_FOUNDATION_MIGRATION_ADMIN_READY/);
+      assert.doesNotMatch(result.stdout, /synthetic-m03-foundation-dev-password|unrelated-parent-sentinel/);
+      assert.ok(existsSync(fixture.handoff));
+      assert.notEqual(readFileSync(fixture.handoff, 'utf8'), 'synthetic-m03-foundation-dev-password');
+      assert.equal(readFileSync(fixture.oldHandoff, 'utf8'), 'unrelated-old-handoff-sentinel');
+    });
+    it('does not overwrite an existing M03 handoff', () => {
+      const fixture = creatorFixture();
+      writeFileSync(fixture.handoff, 'existing-owned-sentinel');
+      const result = fixture.run();
+      assert.equal(result.status, 1);
+      assert.equal(readFileSync(fixture.handoff, 'utf8'), 'existing-owned-sentinel');
+      assert.doesNotMatch(
+        result.stdout + result.stderr,
+        /existing-owned-sentinel|synthetic-m03-foundation-dev-password/,
+      );
+    });
+    it('does not create an encrypted handoff for an empty hidden input', () => {
+      const fixture = creatorFixture({ empty: true });
+      const result = fixture.run();
+      assert.equal(result.status, 1);
+      assert.equal(existsSync(fixture.handoff), false);
+      assert.equal(readFileSync(fixture.oldHandoff, 'utf8'), 'unrelated-old-handoff-sentinel');
+    });
+  },
+);
+
+describe(
+  'M03 dev migration bounded consumer, synthetic native CLI and isolated DPAPI only',
+  { skip: process.platform !== 'win32' },
+  () => {
+    it('checks public seals and presence without decrypting or connecting', () => {
+      const f = consumerFixture();
+      const r = f.run(true);
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, /CHECK_ONLY_READY/);
+      assert.equal(f.calls(), '');
+      assert.ok(existsSync(f.handoff));
+    });
+    it('rejects an expired or wrong-purpose lease without consuming credentials or authenticating', () => {
+      const f = consumerFixture();
+      const lease = JSON.parse(readFileSync(f.leaseFile, 'utf8'));
+      lease.purpose = 'unrelated-admin-purpose';
+      writeFileSync(f.leaseFile, JSON.stringify(lease));
+      assert.equal(f.run(true).status, 1);
+      assert.equal(f.calls(), '');
+      assert.ok(existsSync(f.handoff));
+      lease.purpose = 'm03-foundation-phase-a-dev';
+      lease.createdAt = '2026-01-01T00:00:00.0000000Z';
+      lease.expiresAt = '2026-01-01T02:00:00.0000000Z';
+      writeFileSync(f.leaseFile, JSON.stringify(lease));
+      assert.equal(f.run(true).status, 1);
+      assert.equal(f.calls(), '');
+      assert.ok(existsSync(f.handoff));
+    });
+    it('rejects a partial handoff pair or modified Node pin before any private read', () => {
+      const f = consumerFixture();
+      rmSync(f.leaseFile);
+      assert.equal(f.run(true).status, 1);
+      assert.equal(f.calls(), '');
+      assert.ok(existsSync(f.handoff));
+      f.packet.node.sha256 = '0'.repeat(64);
+      writeFileSync(f.packetFile, JSON.stringify(f.packet));
+      assert.equal(f.run(true).status, 1);
+      assert.equal(f.calls(), '');
+      assert.ok(existsSync(f.handoff));
+    });
+    it('rejects modified migration bytes before consuming the handoff', () => {
+      const f = consumerFixture();
+      f.put(f.packet.pending[0].file, 'modified');
+      const r = f.run();
+      assert.equal(r.status, 1);
+      assert.ok(existsSync(f.handoff));
+      assert.equal(f.calls(), '');
+    });
+    it('rejects an unknown extra local migration before consuming the handoff', () => {
+      const f = consumerFixture();
+      f.put('supabase/migrations/20261019000000_extra.sql', 'select 1;');
+      const r = f.run();
+      assert.equal(r.status, 1);
+      assert.ok(existsSync(f.handoff));
+      assert.equal(f.calls(), '');
+    });
+    it('does not treat handoff presence as authentication and handles a missing handoff privately', () => {
+      const f = consumerFixture();
+      rmSync(f.handoff);
+      const r = f.run(true);
+      assert.equal(r.status, 2);
+      assert.match(r.stdout, /HANDOFF_MISSING/);
+      assert.equal(f.calls(), '');
+    });
+    it('reports a broken public seal before missing credential delivery', () => {
+      const f = consumerFixture();
+      f.put(f.packet.pending[0].file, 'modified public migration');
+      rmSync(f.handoff);
+      const r = f.run(true);
+      assert.equal(r.status, 1);
+      assert.match(r.stdout, /PREFLIGHT_BLOCKED/);
+      assert.doesNotMatch(r.stdout, /HANDOFF_MISSING/);
+      assert.equal(f.calls(), '');
+    });
+    it('preserves completed baseline history and never reapplies already-completed M03 versions', () => {
+      const f = consumerFixture('completed');
+      const r = f.run();
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.equal(f.result().status, 'already_complete');
+      assert.doesNotMatch(f.calls(), / push /);
+      assert.equal(existsSync(f.handoff), false);
+    });
+    it('requires exact dry-run migrations with no seeds/roles before pushing', () => {
+      const f = consumerFixture('dryMismatch');
+      const r = f.run();
+      assert.equal(r.status, 1);
+      assert.equal(f.result().status, 'dry_run_rejected');
+      assert.equal(f.result().dryRunNativeExit, 0);
+      assert.equal(f.result().dryRunCheck, 'pending_mismatch');
+      assert.equal(f.calls().includes('--dry-run'), true);
+      assert.equal(
+        f
+          .calls()
+          .split('\n')
+          .filter((x) => x.includes(' push ') && !x.includes('--dry-run')).length,
+        0,
+      );
+      assert.equal(existsSync(f.handoff), false);
+    });
+    it('records a dry-run native failure without echoing private output or admitting a push', () => {
+      const f = consumerFixture('dryNativeFailure');
+      const r = f.run();
+      assert.equal(r.status, 1);
+      const receipt = f.result();
+      assert.equal(receipt.authenticationVerified, true);
+      assert.equal(receipt.status, 'dry_run_rejected');
+      assert.equal(receipt.dryRunNativeExit, 7);
+      assert.equal(receipt.dryRunCheck, 'native_failure');
+      assert.equal(receipt.pushAttempted, false);
+      assert.equal(
+        existsSync(join(f.root, 'scripts/db/out/m03-foundation-dev-migration-attempt.json')),
+        false,
+      );
+      assert.equal(receipt.childrenClosed, true);
+      assert.equal(receipt.handoffDeleted, true);
+      assert.equal(receipt.leaseDeleted, true);
+      assert.equal(receipt.scratchDeleted, true);
+      assert.doesNotMatch(r.stdout + r.stderr + JSON.stringify(receipt), /synthetic-private/);
+    });
+    it('distinguishes malformed dry-run JSON from pending migration mismatch without admitting a push', () => {
+      const f = consumerFixture();
+      writeFileSync(join(f.nativeDir, 'dry.json'), 'synthetic-private-malformed-json');
+      const r = f.run();
+      assert.equal(r.status, 1);
+      const receipt = f.result();
+      assert.equal(receipt.status, 'dry_run_rejected');
+      assert.equal(receipt.dryRunNativeExit, 0);
+      assert.equal(receipt.dryRunCheck, 'invalid_json');
+      assert.equal(receipt.pushAttempted, false);
+      assert.equal(
+        existsSync(join(f.root, 'scripts/db/out/m03-foundation-dev-migration-attempt.json')),
+        false,
+      );
+      assert.doesNotMatch(r.stdout + r.stderr + JSON.stringify(receipt), /synthetic-private/);
+    });
+    it('uses only the dev child password, clean public workdir and strict TLS then records exact completion', () => {
+      const f = consumerFixture();
+      const r = f.run();
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      const receipt = f.result();
+      assert.equal(receipt.status, 'complete');
+      assert.equal(receipt.dryRunNativeExit, 0);
+      assert.equal(receipt.dryRunCheck, 'matched');
+      assert.equal(receipt.historyBefore, 'baseline');
+      assert.equal(receipt.historyAfter, 'complete');
+      assert.equal(receipt.childrenClosed, true);
+      assert.equal(receipt.handoffDeleted, true);
+      assert.equal(receipt.scratchDeleted, true);
+      assert.equal(existsSync(f.handoff), false);
+      assert.equal(existsSync(f.leaseFile), false);
+      assert.doesNotMatch(
+        r.stdout + r.stderr,
+        /synthetic-m03-foundation-dev-password|unrelated-parent-secret|synthetic-private/,
+      );
+      assert.match(f.calls(), /sslmode=verify-full/);
+      assert.match(f.calls(), /sslrootcert=/);
+      assert.doesNotMatch(f.calls(), /--linked|--include-seed|--include-roles/);
+      assert.equal(
+        existsSync(join(f.root, 'scripts/db/out/m03-foundation-dev-migration-attempt.json')),
+        true,
+      );
+    });
+    it('uses command-specific output modes so legacy JSON never changes push stdout to human text', () => {
+      const f = consumerFixture();
+      const r = f.run();
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      const receipt = f.result();
+      assert.equal(receipt.dryRunCheck, 'matched');
+      assert.equal(receipt.dryRunNativeExit, 0);
+      assert.equal(receipt.status, 'complete');
+      const commands = f.calls().trim().split('\n');
+      const queries = commands.filter((command) => command.includes(' query '));
+      const pushes = commands.filter((command) => command.includes(' push '));
+      assert.equal(queries.length, 2);
+      assert.equal(pushes.length, 2);
+      for (const query of queries) assert.match(query, /--output json(?: |$)/);
+      for (const push of pushes) {
+        assert.match(push, /--output-format json(?: |$)/);
+        assert.doesNotMatch(push, /--output json(?: |$)/);
+      }
+    });
+    it('reconciles a failed push without replaying it, suppresses private errors and retains admission', () => {
+      const f = consumerFixture('failure');
+      const r = f.run();
+      assert.equal(r.status, 1);
+      assert.equal(f.result().status, 'reconciled_complete_after_failure');
+      assert.equal(
+        f
+          .calls()
+          .split('\n')
+          .filter((x) => x.includes(' push ') && !x.includes('--dry-run')).length,
+        1,
+      );
+      assert.equal(
+        f
+          .calls()
+          .split('\n')
+          .filter((x) => x.includes(' query ')).length,
+        2,
+      );
+      assert.doesNotMatch(r.stdout + r.stderr, /synthetic-private/);
+      assert.ok(existsSync(join(f.root, 'scripts/db/out/m03-foundation-dev-migration-attempt.json')));
+      const retry = f.run();
+      assert.equal(retry.status, 1);
+      assert.match(retry.stdout, /ATTEMPT_ALREADY_RECORDED/);
+    });
+    it('retains an ambiguous partial history and never auto-retries successful portions', () => {
+      const f = consumerFixture('partial');
+      const r = f.run();
+      assert.equal(r.status, 1);
+      assert.equal(f.result().status, 'reconciliation_required');
+      assert.equal(f.result().historyAfter, 'rejected');
+      assert.equal(existsSync(f.handoff), false);
+      assert.equal(
+        f
+          .calls()
+          .split('\n')
+          .filter((x) => x.includes(' push ') && !x.includes('--dry-run')).length,
+        1,
+      );
+    });
+    it('kills a timed-out credential child before read-only reconciliation and cleanup', () => {
+      const f = consumerFixture('timeout');
+      const r = f.run();
+      assert.equal(r.status, 1);
+      assert.equal(f.result().status, 'reconciled_complete_after_failure');
+      assert.equal(f.result().childrenClosed, true);
+      assert.equal(f.result().pushNativeExit, -1);
+      assert.equal(existsSync(f.handoff), false);
+      assert.doesNotMatch(r.stdout + r.stderr, /synthetic-m03-foundation-dev-password/);
+    });
+    it('allows presence-free CheckOnly readback of the exact successful admission receipt without replay', () => {
+      const f = consumerFixture();
+      assert.equal(f.run().status, 0);
+      const count = f.calls();
+      const r = f.run(true);
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, /RECORDED_COMPLETE/);
+      assert.equal(f.calls(), count);
+      assert.equal(existsSync(f.handoff), false);
+    });
+    it('preserves the handoff if public TLS verification fails before any login', () => {
+      const f = consumerFixture();
+      f.put('scripts/seed/check-tls.mjs', "console.log('{}');process.exitCode=1;");
+      f.packet.files['scripts/seed/check-tls.mjs'] = sha(
+        readFileSync(join(f.root, 'scripts/seed/check-tls.mjs')),
+      );
+      writeFileSync(f.packetFile, JSON.stringify(f.packet));
+      const r = f.run();
+      assert.equal(r.status, 1);
+      assert.equal(f.result().authenticationAttempted, false);
+      assert.equal(f.calls(), '');
+      assert.ok(existsSync(f.handoff));
+    });
+    it('rejects a mismatched original hosted ledger fingerprint without dry-run or push', () => {
+      const f = consumerFixture();
+      const before = JSON.parse(readFileSync(join(f.nativeDir, 'before.json'), 'utf8'));
+      before[0].receipt.migrations[0].historySha256 = '0'.repeat(64);
+      writeFileSync(join(f.nativeDir, 'before.json'), JSON.stringify(before));
+      const r = f.run();
+      assert.equal(r.status, 1);
+      assert.equal(f.result().status, 'history_rejected');
+      assert.doesNotMatch(f.calls(), / push /);
+      assert.equal(existsSync(f.handoff), false);
+    });
+    it('keeps one bounded Phase-A admin child through actual-shaped postchecks, fixture, Preview binding and permanent close', () => {
+      const f = consumerFixture();
+      const input = commandLines([
+        ['postcheck'],
+        ['preflight'],
+        ['fixture'],
+        ['provision', preview],
+        [
+          'settlement',
+          {
+            windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+            requestIds: [],
+            nativeIds: [],
+            terminalCosts: [],
+          },
+        ],
+        [
+          'settlement',
+          {
+            windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+            requestIds: [],
+            nativeIds: [],
+            terminalCosts: [{ apify_run_id: 'Original', usage_usd: 0.125 }],
+          },
+        ],
+        ['unknownCallbackAbsent'],
+        ['firstOriginalContext'],
+        [
+          'verifyAtomicInput',
+          {
+            atomicInput: {
+              p_apify_run_id: 'Original',
+              p_status: 'SUCCEEDED',
+              p_dataset_id: 'Dataset',
+              p_usage_usd: 0.1,
+              p_groups: [],
+            },
+          },
+        ],
+        ['replaySnapshot'],
+        [
+          'smokeAssert',
+          { runId: '90000000-0000-4000-8000-000000000001', apifyRunId: 'Original', expectedItemsNew: 1 },
+        ],
+        ['close'],
+        ['end'],
+      ]);
+      const r = f.run(false, input);
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      const lines = r.stdout
+        .trim()
+        .split(/\r?\n/)
+        .map((line) => JSON.parse(line));
+      assert.equal(lines[0].type, 'foundation_admin_ready');
+      const post = lines.find((row) => row.kind === 'postcheck').result;
+      assert.equal(post.ready, true);
+      assert.equal(post.typesAstEquivalent, true);
+      assert.equal(post.advisors.security.nativeExit, 0);
+      assert.equal(lines.find((row) => row.kind === 'fixture').result.company_code, 'C999');
+      assert.equal(f.result().phaseAClosed, true);
+      assert.equal(f.result().leaseDeleted, true);
+      assert.equal(f.result().phaseACommands, 13);
+      const sql = readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8');
+      assert.ok(sql.includes("from jsonb_array_elements('[]'::jsonb::jsonb)"));
+      assert.ok(sql.includes('"usage_usd":0.125'));
+      assert.equal((sql.match(/select ops\.foundation_gateway_provision\(/g) || []).length, 1);
+      assert.ok(sql.includes("set_config('emr.smoke_project_ref','zmotjsbzhzjvpelxvxlf',true)"));
+      assert.doesNotMatch(sql, /\\set|\\if|begin read only|begin;select/);
+      assert.doesNotMatch(
+        r.stdout + r.stderr,
+        /synthetic-private|synthetic-m03-foundation-dev-password|unrelated-parent/,
+      );
+      assert.equal(existsSync(f.handoff), false);
+      assert.equal(existsSync(f.leaseFile), false);
+    });
+    it('refuses fixture before actual postchecks and never treats EOF as successful Phase-A closure', () => {
+      const f = consumerFixture();
+      const r = f.run(false, commandLines([['fixture']]));
+      assert.equal(r.status, 1);
+      assert.equal(f.result().status, 'phase_a_control_failed');
+      assert.equal(f.result().handoffDeleted, true);
+      assert.equal(existsSync(join(f.nativeDir, 'control-sql.txt')), false);
+    });
+    it('retains one provision intent and rejects a repeated owner-provision command without another mutation', () => {
+      const f = consumerFixture();
+      const r = f.run(
+        false,
+        commandLines([['postcheck'], ['fixture'], ['provision', preview], ['provision', preview]]),
+      );
+      assert.equal(r.status, 1);
+      const sql = readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8');
+      assert.equal((sql.match(/select ops\.foundation_gateway_provision\(/g) || []).length, 1);
+      assert.ok(existsSync(join(f.root, 'scripts/db/out/m03-foundation-owner-provision-attempt.json')));
+      assert.equal(f.result().status, 'phase_a_control_failed');
+      assert.equal(f.result().childrenClosed, true);
+      assert.equal(f.result().phaseAClosed, true);
+    });
+  },
+);
