@@ -549,6 +549,31 @@ export function createFoundationNativeController({
       if (root.status !== 'error' || root.errorDispatchExpected !== true) fail();
       const notify = [...state.receipts.values()].filter((r) => r.key === 'SUB-NOTIFY');
       if (notify.length !== (state.ordinal === 3 ? 1 : 0)) fail();
+    } else if (state.caseId === 'control.machine_domain') {
+      const d = root.nativeDomainDenial;
+      if (
+        root.status !== 'error' ||
+        root.errorDispatchExpected ||
+        state.receipts.size !== 1 ||
+        state.providerRuns.length ||
+        root.nativeGatewayRequests.length ||
+        d?.kind !== 'foundation_native_domain_denial_projection' ||
+        d.restrictionCode !== 'native_credential_domain_blocked' ||
+        d.credentialId !== 'EmrM03Machine19' ||
+        d.httpRequestIssued !== false ||
+        d.actorStarts !== 0
+      )
+        fail();
+      append({
+        event: 'native_domain_denial',
+        caseId: state.caseId,
+        executionId: root.executionId,
+        workflowId: root.workflowId,
+        kind: 'native_credential_domain_blocked',
+        state: 'pre_http_denial_verified',
+        sourceLocation: d.targetAudience,
+        at: at(),
+      });
     } else if (root.status !== 'success') fail();
     const receiptList = frozenArray(state.receipts.values());
     const settled = await bounded(
@@ -711,7 +736,14 @@ export function createFoundationNativeController({
     });
   return Object.freeze({
     async runCase({ caseId, workflowKey, versionId, caseReceipt, providerRuns = [] } = {}) {
-      const spec = selected.get(caseId);
+      const spec =
+        caseId === 'control.machine_domain'
+          ? {
+              id: 'control.machine_domain',
+              workflowKey: 'WF-99',
+              upperBounds: { nativeExecutions: 1 },
+            }
+          : selected.get(caseId);
       if (
         !spec ||
         spec.workflowKey !== workflowKey ||

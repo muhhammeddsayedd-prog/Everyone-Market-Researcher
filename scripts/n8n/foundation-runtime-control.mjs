@@ -672,6 +672,7 @@ export function createFoundationRuntimeBinding(plan, key, ports, options = {}) {
     activeVersionId: current.activeVersionId,
     bodyHash: current.graphHash,
     body,
+    runtimeAudience: plan.setup.audience,
   });
   checkedBindings.set(binding, { plan, key, journal: ports.journal });
   return binding;
@@ -685,7 +686,8 @@ export function assertFoundationRuntimeBinding(binding) {
     binding.workflowId !== scope.plan.baseline.find((r) => r.key === scope.key).id ||
     binding.versionId !== current.versionId ||
     binding.activeVersionId !== current.activeVersionId ||
-    binding.bodyHash !== current.graphHash
+    binding.bodyHash !== current.graphHash ||
+    binding.runtimeAudience !== scope.plan.setup.audience
   )
     fail();
   return binding;

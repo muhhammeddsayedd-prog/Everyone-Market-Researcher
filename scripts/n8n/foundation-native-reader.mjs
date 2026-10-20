@@ -4,6 +4,10 @@ import { parseN8nBindings } from '../../packages/shared/src/n8n-bindings.ts';
 import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
 import { freezeRuntimeValue } from './foundation-runtime-plan.mjs';
 import * as runtimeControl from './foundation-runtime-control.mjs';
+import {
+  isFoundationNativeDomainProbeBody,
+  projectFoundationNativeDomainDenial,
+} from './foundation-live-domain-probe.mjs';
 
 // Private technical-process component. No credential loading, network adapter,
 // file access, logging or execution starts. Parsed native DTOs never escape.
@@ -885,11 +889,23 @@ export function createFoundationNativeReader({
                 fail('TRACE_MISMATCH');
               traceparent = actualTrace;
             }
+            const domain =
+              args.workflowKey === 'WF-99' &&
+              typeof b.runtimeAudience === 'string' &&
+              isFoundationNativeDomainProbeBody(b.body, { runtimeAudience: b.runtimeAudience });
+            const nativeDomainDenial = domain
+              ? projectFoundationNativeDomainDenial({
+                  resultData: dto.data.resultData,
+                  body: b.body,
+                  runtimeAudience: b.runtimeAudience,
+                })
+              : null;
             return {
               ...projected,
               ...links(dto.data, b, args.workflowKey, args.executionId),
               nativeGatewayRequests: gatewayRequests(dto.data, b, args.workflowKey, args.executionId),
               nativeProviderCallback: providerCallback(dto, b, args.workflowKey, projected.mode),
+              ...(nativeDomainDenial ? { nativeDomainDenial } : {}),
               errorDispatchExpected,
               ...(traceparent ? { traceparent } : {}),
             };

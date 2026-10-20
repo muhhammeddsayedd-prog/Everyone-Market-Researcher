@@ -32,3 +32,7 @@ scripts/n8n/gw01-shutdown-packet.json
 scripts/n8n/gw01-shutdown-seal.json
 scripts/n8n/gw01-preview-read-packet.json
 scripts/n8n/gw01-preview-read-seal.json
+
+# Workstation public closure; the explicit builder verifies reviewed source bytes.
+scripts/n8n/foundation-acceptance-seal.json
+scripts/n8n/.foundation-acceptance-seal.pending

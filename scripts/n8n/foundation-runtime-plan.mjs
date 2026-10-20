@@ -3,6 +3,7 @@ import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs
 import { graphBody, inactiveNativeStagingGraph } from './foundation-bind.mjs';
 import { materializeFoundationAcceptanceCase } from '../../n8n/foundation/materialize-acceptance-case.mjs';
 import { buildFoundationGatewayWorkflows } from '../../n8n/foundation/build-foundation-gateway.mjs';
+import { buildFoundationNativeDomainProbe } from './foundation-live-domain-probe.mjs';
 import {
   createFoundationApprovedRetentionPolicy,
   assertFoundationApprovedRetentionPolicy,
@@ -297,6 +298,29 @@ export function materializeFoundationRuntimeCase(plan, caseId, options = {}) {
     caseId,
     key: graph.key,
     id: foundationRuntimeCheckpoint.workflows[graph.key].id,
+    body,
+    bodyHash: runtimeHash(body),
+    publish: false,
+    managementRequests: 3,
+    sourceOnly: true,
+    executionAuthorized: false,
+  });
+  checkedCases.add(draft);
+  checkedBodies.get(plan).add(draft.bodyHash);
+  return draft;
+}
+export function materializeFoundationRuntimeDomainProbe(plan) {
+  assertFoundationRuntimePlan(plan);
+  const settings = { ...plan.runtime.find((r) => r.key === 'WF-99').body.settings, availableInMCP: true };
+  delete settings.errorWorkflow;
+  const graph = buildFoundationNativeDomainProbe({ runtimeAudience: plan.setup.audience, settings });
+  const body = graphBody({ ...graph, workflow: { ...graph.workflow, active: false } });
+  body.settings = applyFoundationApprovedRetentionSettings(plan.retentionPolicy, 'WF-99', body.settings);
+  const draft = freezeRuntimeValue({
+    kind: 'proposed_owned_runtime_case_draft',
+    caseId: 'control.machine_domain',
+    key: 'WF-99',
+    id: foundationRuntimeCheckpoint.workflows['WF-99'].id,
     body,
     bodyHash: runtimeHash(body),
     publish: false,
