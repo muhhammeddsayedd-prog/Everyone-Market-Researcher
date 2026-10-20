@@ -1,6 +1,34 @@
 # M03 finite dev acceptance packet — 19 October 2026
 
-## Current decision: final finite dev live batch
+## Current decision: A–D dev batch approved on21October2026
+
+The owner approved this exact packet at reviewed PR8 head
+`f42930f90c2de43c84f61ad6d966d0ee6074d70e`. Its immutable Git-blob SHA256 is
+`009415eccce00939fe5731e846d006728295522fd90849555c197b931ad6a712`;
+[the authorization record](dev-acceptance-authorization-20261021.json) preserves
+the caps and exclusions. No repeat general dev/batch approval is needed.
+Concrete setup/runtime consumers and purpose-bound delivery were missing from
+the earlier source factories and are completed under this approval, with
+review/local checks before any private delivery or hosted action. Their local
+results do not establish PhaseB or actor acceptance.
+
+The runtime512 maximum is unchanged. The concrete allocation is now
+**332n8n +45Vercel planned =377, with135reserve**: the prior327n8n plan plus
+three saved domain-probe draft operations and two exact Machine-metadata reads
+before the two conditional actor starts. Vercel's own subcap50/reserved cleanup
+is inside512. Its CLI transport disables auxiliary account/auth/update calls,
+retry and redirects; one counted attempt permits one exact API request.
+The special native domain control uses the existing one-record reserve within
+120; it does not add a business case or raise any batch limit. Direct provider
+verification is capped10, plus22 reserved workflow/original acquisition reads,
+inside32total. The shared control2048/combined2560 remains unchanged.
+
+[Exact credential-delivery commands](dev-acceptance-handoff-20261021.md) are
+provided only after the concrete consumers/public seals pass review. Historical
+preapproval statements below remain the reviewed19October design context; they
+do not reopen the approved decision. Production, PRmerge and M04 remain excluded.
+
+## Reviewed19October policy and packet context
 
 **Policy decision resolved:** the owner approved the exact temporary dev
 retention inventory at `eee9a277c6a7d63fffe967811c92a7fd50c15b14` for local
@@ -77,7 +105,7 @@ remain guarded zero-actor checks in this batch. New deployment identity,
 credential delivery, fresh price read and runtime checks are future setup
 outputs, not requirements to have an already-enabled environment today.
 
-No credentials are requested now. No Cloud migration, runtime activation,
+At the19October checkpoint no credentials were requested. No Cloud migration, runtime activation,
 publication, execution, actor/model call, production mutation, notification or merge occurred.
 GW-01 remains closed. PR8 stays draft; M03 open; M04 unstarted.
 

@@ -4,23 +4,63 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: approved local M03-C01 retention-policy/native-control implementation is complete. The single final A–D dev live-batch decision remains; no Cloud setting, credential, publication, execution or migration is authorized by the design approval alone. GW-01 stays permanently closed.**
+**Blocked: waiting on owner — MA-04/MA-11 purpose-bound credential delivery. The exact A–D dev batch is approved at f42930f. Concrete consumers, independent review and actual public CheckOnly now pass; normal delivery CI continues separately. Actors remain gated on actual PhaseB proof. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
 | Started | 2026-10-18 Cairo |
-| Last updated | 2026-10-19 Cairo |
+| Last updated | 2026-10-21 Cairo |
 | Finished | — |
-| Branch / PR | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; preserved reviewed `eee9a277c6a7d63fffe967811c92a7fd50c15b14` / CI39199206035 and all earlier evidence, no reset |
+| Branch / PR | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset |
 | Selected runtime source | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Approved exact25 policy in existing runtime/restoration, bounded private native reader, causal controller and settled exact-record cleanup implemented/tested/reviewed locally. Existing25/13/Machine/188historical requests unchanged. |
-| Next step | One final owner decision on the current PR8 head and existing A–D packet. After approval only: exact preflight/setup, zero-actor proof, conditional two-run matrix and shutdown. No credential request now. |
-| Current source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. Private provisioning/helper changes receive normal new-head CI. |
+| Current task | Approved A–D: consumers ready in722d47b/f1b19ff; exact new temporary inputs missing. Existing25/13/Machine/188historical requests unchanged. |
+| Next step | Follow the exact two helper commands below, verify current delivery CI and actual scoped history/runtime/price state, then approved PhaseA/PhaseB. No repeat batch approval and no actor before genuine cleanup/domain proof. |
+| Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. New helper delivery receives normal new-head CI. |
 
-## 19 October approved local M03-C01 continuation
+## 21 October A–D approval and actual preflight
+
+Owner replied **Approve M03 dev acceptance A–D at the reviewed PR #8 head.**
+At resumption local/PR head matched`f42930f90c2de43c84f61ad6d966d0ee6074d70e`, draft/open,
+with a clean worktree; all five jobs ofCI39205222326 and Vercel passed. The immutable
+packet hash, caps and exclusions are in
+[the authorization record](evidence/dev-acceptance-authorization-20261021.json).
+This resolves the final live-batch decision; no repeat policy/general dev
+approval is needed. It does not approve production, merge/M03 closure or M04.
+
+Concrete consumers are now complete for exact10→14 migration execution,
+protected Preview/private delivery and the existing runtime/controller
+composition. They are new purpose-bound entries; old successful consumers are
+not relabeled or replayed. Database31, runtime34, setup/domain21 and Windows
+custody/dependency16 checks pass in their separately described local synthetic
+environments. Independent review has no remaining P1/P2 findings. Actual public
+seal4a867c and CheckOnly293bfe pass:100project inputs,840Zod runtime files and
+3462installed Vercel runtime files; privateRead:false/networkRequests:0,
+administrator public inputs verified, administrator handoff absent and actual
+MCP execution port still unverified. These are not hosted acceptance receipts.
+
+The exact new Admin/Management/Writer/ApifyRead inputs were absent at the recorded
+presence check. [One executable delivery request](evidence/dev-acceptance-handoff-20261021.md)
+now supplies the two helper commands, four input purposes and readiness reply.
+No reset, credential recreation, Machine or production input is needed. The
+existing retained Machine handoff stays encrypted. Final source checkpoints
+are722d47b(database) andf1b19ff(runtime); new documentation/CI delivery receives
+normal PR CI. The approved application build remainsf42930f.
+
+[Current exact preflight and evidence boundaries](evidence/dev-acceptance-preflight-20261021.json)
+preserve the local failures/fixes, LF byte-pin correction and all historical
+work. Actual PhaseB/native/SQL/provider/domain/cleanup proof remains pending.
+
+One dev-scoped MCP get_project_url call failed OAuth refresh before any result
+or SQL. Authentication setup was not repeated. CLI history/readback remains
+available only after a correctly reviewed new administrator delivery/consumer;
+presence alone will never be recorded as authentication. No hosted mutation,
+workflow execution, gateway admission or actor start occurred in this preflight.
+Four pending hashes/ten applied versions/M02 data and exports remain preserved.
+
+## 19 October approved local M03-C01 continuation — preserved checkpoint
 
 The owner approved the exact inventory at
 `eee9a277c6a7d63fffe967811c92a7fd50c15b14` for local implementation/tests/review,
@@ -258,7 +298,7 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 - [ ] T6 — WF-90 source now uses the distinct fixed gateway, bounded safe errors and atomic log-only threshold/cooldown. Actual automatically triggered dev acceptance remains pending.
 - [ ] T7 — Functional WF-19 source now has exact durable rejection audit, registered authenticated metadata, streaming-bounded dataset transport, settlement, atomic persistence and original-ID recovery. New local SQL/graph/reader tests pass; actual saved/hosted/privacy/callback acceptance remains pending.
 - [ ] T8 — WF-00/15 explicit stubs have actual inactive staged versions/exports; Cairo/PM/backfill guards and both Saturday04:00 jobs retained. Actual manual dispatch proof and deferred canonical error links remain pending.
-- [ ] T9 — Functional disabled one-shot asynchronous WF-99 launch and original-run reconciliation implemented; WF-91 transport complete. Immutable actor build 0.3.99 verified publicly without starting it. Separate final live approval and actual smoke/health proof remain pending.
+- [ ] T9 — Functional disabled one-shot asynchronous WF-99 launch and original-run reconciliation implemented; WF-91 transport complete. Immutable actor build 0.3.99 verified publicly without starting it. A–D dev approval recorded21October; actual smoke/health proof remains pending.
 - [ ] T10 — Export, document, hand-off
 
 ## Acceptance criteria
@@ -270,7 +310,7 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 - [ ] AC5 — End-to-end smoke remains unrun. Local graph9/9 and shared80/80 (55 new recovery cases) pass; new generator source is not an actual saved Cloud export or actor receipt.
 - [ ] AC6 — Local saved replay, early registration, stable cost and ambiguous-write recovery pass. Saved-only recovery reports payloadEqualityVerified:false and suppresses dispatch; no fake SQL JSONB digest or exactly-once external delivery. Hosted duplicate/interruption acceptance remains pending.
 - [ ] AC7 — Exact durable `apify_callback_rejected` source and rollback-only denial/zero-side-effect tests pass. Actual hosted forged/unrelated callback receipt remains pending; generic workflow-error logging is not substituted.
-- [ ] AC8 — Error routing: canonical24links/runtime restore procedure and four-error/nine-execution native causal/settlement/cleanup control implemented and reviewed locally. Saved Cloud links remain deferred; actual automatic Error Trigger/cooldown/Notify receipts require the separate A–D batch.
+- [ ] AC8 — Error routing: canonical24links/runtime restore procedure and four-error/nine-execution native causal/settlement/cleanup control implemented and reviewed locally. Saved Cloud links remain deferred; actual automatic Error Trigger/cooldown/Notify receipts require the approved A–D batch.
 - [ ] AC9 — Orchestrator dispatch: fixed15slot/unknown cases, native manual-draft path and private terminal/child/body receipt reducer implemented/tested locally under the approved temporary-retention design. Cloud remains retention-off/schedules disabled/WF00 unpublished; actual dispatch acceptance remains pending.
 - [ ] AC10 — Health: two selected native cases include dispatch health then direct second call. Positive synthetic local fee idempotency evidence retained; future hosted unknown/no-row fees will be labeled accurately and cannot prove positive accrual. No live result yet.
 - [ ] AC11 — Historical probe snapshots retained. All25 actual inactive staged foundation exports include real IDs/versions, safe credential references and intended/staged hashes;24 error links explicitly deferred. Exact approved temporary retention application/restoration and private native cleanup implemented locally; saved Cloud retention/progress stays off. Final canonical/live/privacy/release acceptance remains pending, separately from source checks.
@@ -278,7 +318,7 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
-- The scoped M03-C01 retention design decision, local implementation/review and exact synthetic-state cleanup are complete. One separate final A–D live-batch decision remains. Runtime identity/private delivery/current prices are guarded future setup outputs; no credentials are needed now.
+- The exact A–D dev batch is approved atf42930f on21October. Concrete adapters/review/public CheckOnly now pass. Remaining gate is exact MA-04/MA-11 delivery, normal new-head CI and actual history/runtime/price/native proof, not another approval. Old successful consumers/window must not be replayed. MCP refresh failed before SQL; no setup loop.
 
 - Separate private operational follow-up: bounded read-only preparation and
   temporary-credential cleanup completed; actual projections and remaining
@@ -299,7 +339,24 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
+### MA-04 / MA-11 — approved A–D credential delivery
+
+No repeat approval or credential recreation. After reviewed consumer/public
+CheckOnly success, follow [the exact commands and hidden-prompt input purposes](evidence/dev-acceptance-handoff-20261021.md).
+The new administrator helper consumes only the existing emr-dev postgres
+password in a separate DB child; the new runtime helper asks for the existing
+n8n Management key, existing dev Writer password and same-owner Apify READ
+token. Expected prefixes are `M03_FOUNDATION_MIGRATION_ADMIN_READY` and
+`M03_ACCEPTANCE_HANDOFF_READY: All.` Close PowerShell and reply
+`M03 A–D handoffs ready`. No values/files in chat; no Machine/prod/service key.
+Readiness/presence never substitutes for authentication. The completed old
+consumers and GW01 remain closed. Public preflight/review status is recorded
+at the top of this progress file before this delivery is requested.
+
 ### MA-11 / single final A–D dev live-batch decision
+
+**Completed21October:** owner approved the exact packet atf42930f. Historical
+decision text follows; it is not an outstanding approval request.
 
 Review [the current packet](evidence/live-acceptance-outline-20261018.md), current
 draft PR8 head and its normal CI. Reply exactly:
@@ -315,8 +372,8 @@ that Cloud storage contains only metadata.
 ### MA-11 / M03-C01 policy decision — completed
 
 Owner approved the exact eee9a27 inventory for local implementation, tests and
-review. No repeat policy decision or credential delivery is needed. The separate
-live batch remains unauthorized until the final reviewed A–D packet is approved.
+review. No repeat policy decision is needed. The separate A–D batch was approved
+on21October atf42930f; its new purpose-bound delivery is listed above.
 
 ### MA-11 / M03-C01 local synthetic-state cleanup — completed
 
@@ -342,7 +399,7 @@ the agent's exact deletion before execution with “blocked by policy”; no own
 development/credential approval is missing, and no alternative launcher retry
 is authorized by this record. Container/network closure is already verified.
 
-### Current: MA-11 inactive foundation delivery only
+### Historical completed: MA-11 inactive foundation delivery only
 
 **Completed — no owner action:** delivered existing-key handoff consumed once
 by `da8fd3` with118requests/native0/child closed.25 staged definitions and actual
