@@ -6,6 +6,32 @@ const checked = new WeakSet();
 const fail = () => {
   throw Error('FOUNDATION_LIVE_SETUP_TRANSPORT_BLOCKED');
 };
+// Inspect bounded private stderr only in memory. Never return a message, URL,
+// header, account identity or arbitrary error.code supplied by a provider.
+function classifyStderr(text) {
+  for (const code of [
+    'saved_auth_missing',
+    'saved_auth_expired',
+    'saved_auth_invalid_expiry',
+    'auxiliary_scope_refusal',
+    'auth_refresh_refused',
+    'no_retry_bootstrap',
+    'local_write_refused',
+    'credential_storage_write_refused',
+    'credential_storage_unsupported',
+  ])
+    if (text.includes('FOUNDATION_LIVE_SETUP_NO_RETRY_BLOCKED:' + code)) return code;
+  if (
+    /\b(?:CERT_HAS_EXPIRED|CERT_UNTRUSTED|UNABLE_TO_VERIFY_LEAF_SIGNATURE|UNABLE_TO_GET_ISSUER_CERT_LOCALLY|SELF_SIGNED_CERT_IN_CHAIN|ERR_TLS_CERT_ALTNAME_INVALID)\b/.test(
+      text,
+    )
+  )
+    return 'tls_failure';
+  if (/\b(?:ENOTFOUND|EAI_AGAIN)\b/.test(text)) return 'dns_failure';
+  if (/\b(?:ECONNRESET|ECONNREFUSED|ETIMEDOUT|UND_ERR_CONNECT_TIMEOUT)\b/.test(text))
+    return 'network_failure';
+  return 'unknown';
+}
 const project = 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
   team = 'team_gboXPxTevpCOZuaA8eY9PmR1';
 export function assertFoundationLiveSetupTransport(value) {
@@ -48,6 +74,17 @@ export function createFoundationLiveSetupCliTransport(input, dependencies = {}) 
     closed = false,
     failed = false,
     pendingRequests = 0;
+  let diagnostic = {
+    stage: 'not_started',
+    childStarted: false,
+    childClosed: false,
+    nativeExit: null,
+    stdoutBytes: 0,
+    stderrBytes: 0,
+    httpStatus: null,
+    aborted: false,
+    code: 'unknown',
+  };
   const requestTimeoutMs = dependencies.requestTimeoutMs ?? 20000,
     closeGraceMs = dependencies.closeGraceMs ?? 5000;
   if (
@@ -79,6 +116,17 @@ export function createFoundationLiveSetupCliTransport(input, dependencies = {}) 
         input.now() >= input.deadlineAt
       )
         fail();
+      diagnostic = {
+        stage: 'starting',
+        childStarted: false,
+        childClosed: false,
+        nativeExit: null,
+        stdoutBytes: 0,
+        stderrBytes: 0,
+        httpStatus: null,
+        aborted: false,
+        code: 'unknown',
+      };
       const args = [
         '--import',
         pathToFileURL(input.noRetryPreloadPath).href,
@@ -105,6 +153,7 @@ export function createFoundationLiveSetupCliTransport(input, dependencies = {}) 
       return new Promise((resolve, reject) => {
         let child,
           chunks = [],
+          privateStderr = '',
           bytes = 0,
           errorBytes = 0,
           ended = false,
@@ -129,28 +178,39 @@ export function createFoundationLiveSetupCliTransport(input, dependencies = {}) 
           active = null;
           pendingRequests--;
           payload = null;
+          diagnostic.code = classifyStderr(privateStderr);
+          privateStderr = '';
           if (promiseSettled) return;
           if (timedOut || exitCode !== 0) {
+            if (!timedOut) diagnostic.stage = 'native_exit';
             rejectUnknown();
             return;
           }
           try {
+            diagnostic.stage = 'utf8';
             const text = new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks));
             chunks = [];
+            diagnostic.stage = 'framing';
             const split = text.indexOf('\n\n');
             if (split < 0 || split > 32768) fail();
             const first = text.slice(0, split).split('\n')[0].replace(/\r$/, '');
             const match = /^HTTP ([1-5][0-9]{2}) [^\r\n]*$/.exec(first);
             if (!match) fail();
+            diagnostic.httpStatus = Number(match[1]);
+            diagnostic.stage = 'json';
             const body = text.slice(split + 2).trim(),
               data = body ? JSON.parse(body) : null;
             promiseSettled = true;
+            diagnostic.stage = 'completed';
             resolve({ status: Number(match[1]), data, closed: true });
           } catch {
             rejectUnknown();
           }
         };
-        const abort = () => {
+        const abort = (reason) => {
+          diagnostic.aborted = true;
+          if (!['stdout_limit', 'stderr_limit', 'child_error'].includes(diagnostic.stage))
+            diagnostic.stage = reason === 'timeout' ? 'timeout' : 'aborted';
           timedOut = true;
           try {
             child?.kill();
@@ -158,7 +218,7 @@ export function createFoundationLiveSetupCliTransport(input, dependencies = {}) 
           if (closeTimer === null) closeTimer = setTimeout(rejectUnknown, closeGraceMs);
         };
         const timer = setTimeout(
-          abort,
+          () => abort('timeout'),
           Math.max(1, Math.min(requestTimeoutMs, input.deadlineAt - input.now())),
         );
         active = { abort, state: () => ({ spawned, timedOut }) };
@@ -176,10 +236,15 @@ export function createFoundationLiveSetupCliTransport(input, dependencies = {}) 
             stdio: ['pipe', 'pipe', 'pipe'],
           });
           spawned = true;
+          child.on('spawn', () => {
+            diagnostic.childStarted = true;
+          });
           child.stdout.on('data', (chunk) => {
             const b = Buffer.from(chunk);
             bytes += b.length;
+            diagnostic.stdoutBytes = Math.min(bytes, 1048577);
             if (bytes > 1048576) {
+              diagnostic.stage = 'stdout_limit';
               abort();
               return;
             }
@@ -187,12 +252,18 @@ export function createFoundationLiveSetupCliTransport(input, dependencies = {}) 
           });
           child.stderr.on('data', (chunk) => {
             errorBytes += Buffer.byteLength(chunk);
-            if (errorBytes > 65536) abort();
+            diagnostic.stderrBytes = Math.min(errorBytes, 65537);
+            if (errorBytes <= 65536) privateStderr += Buffer.from(chunk).toString('utf8');
+            if (errorBytes > 65536) {
+              diagnostic.stage = 'stderr_limit';
+              abort();
+            }
           });
           child.stdin.on('error', abort);
           child.stdout.on('error', abort);
           child.stderr.on('error', abort);
           child.on('error', () => {
+            diagnostic.stage = 'child_error';
             timedOut = true;
             if (!spawned) finish();
             else abort();
@@ -203,11 +274,14 @@ export function createFoundationLiveSetupCliTransport(input, dependencies = {}) 
           // close, rather than exit, proves the owned child's pipes are closed.
           child.on('close', (code) => {
             exitCode = code;
+            diagnostic.childClosed = true;
+            diagnostic.nativeExit = Number.isInteger(code) ? code : null;
             finish();
           });
           child.stdin.end(payload);
           payload = null;
         } catch {
+          diagnostic.stage = 'spawn_error';
           timedOut = true;
           finish();
         }
@@ -215,6 +289,9 @@ export function createFoundationLiveSetupCliTransport(input, dependencies = {}) 
     },
     state() {
       return Object.freeze({ pendingRequests, unclosedResponses: pendingRequests, closed, failed });
+    },
+    diagnostics() {
+      return Object.freeze({ ...diagnostic });
     },
     close() {
       closed = true;

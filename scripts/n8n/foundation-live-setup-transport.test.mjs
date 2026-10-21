@@ -11,6 +11,7 @@ import {
 import {
   installFoundationSetupNoRetry,
   createFoundationSetupWireGuard,
+  installFoundationSetupReadOnlyKeyring,
 } from './foundation-live-setup-no-retry.mjs';
 
 const project = 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
@@ -129,6 +130,9 @@ import { request as importedRequest } from 'node:https';
 import { installFoundationSetupWireFence } from ${JSON.stringify(moduleUrl)};
 globalThis.fetch=async()=>({status:200});
 installFoundationSetupWireFence({method:'GET',path:'/v9/fixed'});
+// Pinned CLI's Sentry integration assigns wrappers during Client bootstrap.
+http.get=()=>{throw Error('UNREVIEWED_WRAPPER_MUST_NEVER_RUN');};
+https.request=()=>{throw Error('UNREVIEWED_WRAPPER_MUST_NEVER_RUN');};
 for(const action of [()=>http.get('http://example.invalid'),()=>https.request('https://example.invalid'),()=>importedRequest('https://example.invalid')])assert.throws(action,/FOUNDATION_LIVE_SETUP_NO_RETRY_BLOCKED/);
 assert.equal((await fetch('https://api.vercel.com/v9/fixed')).status,200);
 assert.throws(()=>fetch('https://api.vercel.com/v9/fixed'),/FOUNDATION_LIVE_SETUP_NO_RETRY_BLOCKED/);
@@ -216,4 +220,85 @@ test('owned preload refuses hidden scope/auth calls before any native fetch and 
   client.authConfig.expiresAt = Date.now() / 1000 + 60;
   await client.ensureAuthorized();
   await assert.rejects(client.reauthenticate(), /FOUNDATION_LIVE_SETUP_NO_RETRY_BLOCKED/);
+});
+
+test('pinned Client constructor may assign its reauthenticate field but can never replace the owned refusal', async () => {
+  let refreshes = 0;
+  class Client {
+    constructor() {
+      this.reauthenticate = async () => {
+        refreshes++;
+      };
+    }
+    fetch(url) {
+      return url;
+    }
+  }
+  installFoundationSetupNoRetry(Client, { method: 'GET', path: '/v9/fixed' });
+  const client = new Client();
+  await assert.rejects(client.reauthenticate(), /FOUNDATION_LIVE_SETUP_NO_RETRY_BLOCKED/);
+  assert.equal(refreshes, 0);
+  assert.equal(Object.getOwnPropertyDescriptor(client, 'reauthenticate').writable, false);
+});
+test('private auth expiry classifications distinguish invalid metadata from actually elapsed time', async () => {
+  class Client {
+    fetch(url) {
+      return url;
+    }
+  }
+  installFoundationSetupNoRetry(Client, { method: 'GET', path: '/v9/fixed' });
+  const client = new Client();
+  await assert.rejects(client.ensureAuthorized(), /:saved_auth_missing$/);
+  for (const expiresAt of ['not-a-timestamp', NaN, Infinity, null]) {
+    client.authConfig = { token: 'SYNTHETIC', expiresAt };
+    await assert.rejects(client.ensureAuthorized(), /:saved_auth_invalid_expiry$/);
+  }
+  client.authConfig = { token: 'SYNTHETIC', expiresAt: 1 };
+  await assert.rejects(client.ensureAuthorized(), /:saved_auth_expired$/);
+});
+test('read-only credentials adapter permits a keyring read and rejects both mutation paths before native calls', () => {
+  let loader,
+    reads = 0,
+    writes = 0,
+    deletes = 0;
+  installFoundationSetupReadOnlyKeyring(
+    {
+      setLoadKeyringModuleForTesting(fn) {
+        loader = fn;
+      },
+    },
+    () => ({
+      Entry: class {
+        getPassword() {
+          reads++;
+          return 'SYNTHETIC_PRIVATE_CREDENTIAL';
+        }
+        setPassword() {
+          writes++;
+        }
+        deleteCredential() {
+          deletes++;
+        }
+      },
+    }),
+  );
+  const entry = new (loader().Entry)('synthetic-service', 'synthetic-account');
+  assert.equal(typeof entry.getPassword(), 'string');
+  assert.throws(() => entry.setPassword('SYNTHETIC_NEW'), /:credential_storage_write_refused$/);
+  assert.throws(() => entry.deleteCredential(), /:credential_storage_write_refused$/);
+  assert.equal(reads, 1);
+  assert.equal(writes, 0);
+  assert.equal(deletes, 0);
+});
+test('isolated read-only filesystem fence permits existing-directory checks and reads but zero persisted mutations', () => {
+  const moduleUrl = new URL('./foundation-live-setup-no-retry.mjs', import.meta.url).href;
+  const code = `import assert from 'node:assert/strict';import fs from 'node:fs';import {mkdtempSync,rmSync,writeFileSync,readFileSync} from 'node:fs';import {tmpdir} from 'node:os';import{join}from'node:path';
+import{installFoundationSetupReadOnlyFiles}from ${JSON.stringify(moduleUrl)};
+const originalRm=rmSync;const root=mkdtempSync(join(tmpdir(),'emr-read-only-fence-'));const path=join(root,'synthetic-storage');writeFileSync(path,'SYNTHETIC_UNCHANGED');
+try{installFoundationSetupReadOnlyFiles();fs.mkdirSync(root,{recursive:true});await fs.promises.mkdir(root,{recursive:true});
+assert.equal(readFileSync(path,'utf8'),'SYNTHETIC_UNCHANGED');
+for(const action of[()=>fs.writeFileSync(path,'new'),()=>fs.appendFileSync(path,'new'),()=>fs.openSync(path,'w'),()=>fs.unlinkSync(path),()=>fs.mkdirSync(join(root,'newdir'))])assert.throws(action);
+await assert.rejects(fs.promises.writeFile(path,'new'));await assert.rejects(fs.promises.open(path,'w'));
+assert.equal(readFileSync(path,'utf8'),'SYNTHETIC_UNCHANGED');}finally{originalRm(root,{recursive:true,force:true});}`;
+  execFileSync(process.execPath, ['--input-type=module', '-e', code], { stdio: 'pipe', timeout: 10000 });
 });

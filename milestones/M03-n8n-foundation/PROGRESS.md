@@ -16,8 +16,8 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Local Vercel guard compatibility correction and isolated actual-CLI proof/review. Successful dev postchecks, closed failure and exact unused-bypass cleanup are preserved. |
-| Next step | Complete concrete diagnosis/remediation/review before any exact next owner action. The replacement admission is spent; no prepare/start/migration replay or automatic renewal. |
+| Current task | Vercel guard correction and independent review pass. Separate one-use fixed project-read diagnostic is public CheckOnly ready; normal delivered-head CI precedes its actual read. Successful dev postchecks and cleanup remain preserved. |
+| Next step | Deliver the fix, verify normal CI, then perform only the bounded post-close project GET. The replacement admission is spent; no prepare/start/migration replay or automatic renewal. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
@@ -59,8 +59,16 @@ assigns http(s) methods; the guard's nonwritable prototype properties throw.
 This is a concrete local reproduction consistent with the failure, not a raw
 historical error receipt. The narrow fix retains deny-only auth/native-network
 accessors and all one-wire/no-retry/expiry restrictions. Actual-CLI synthetic
-regression/independent review and bounded diagnostics are in progress. No real
-auth/session restoration or credential request is inferred from this result.
+regression/independent review now pass: affected34/34, final native3/3,
+zero skips. Synthetic tests guard native keyring loads, out-of-root reads and
+real network; all four synthetic storage files remain byte-identical. The
+child-only filesystem/keyring mutation fences precede native resolver imports.
+No real auth/session restoration or credential request is inferred from these
+local results. The separate post-close diagnostic has one fixed GET, a20-second
+limit, durable one-use ledger and conservative aggregate management3/512. Root
+CheckOnlyea9f91 passed without private reads/network. Delivered-head CI and the
+actual one-read result remain separate gates; no A-D clock is started.
+[Guard review and diagnostic boundaries](evidence/dev-acceptance-vercel-guard-review-20261021.md).
 
 ### Historical pre-admission readiness for the now-consumed replacement
 
@@ -579,7 +587,7 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
   remediation is unblocked; unused-ciphertext cleanup is complete. No credentials
   or new window decision requested while concrete remediation is incomplete.
 
-- The prior one-use segment is consumed and closed after successful four-migration application plus the fixed type-check failure. The separately approved no-push replacement consumer is reviewed, tested, sealed and public CheckOnly ready. All four temporary handoff pairs are absent; actual transport/leases and normal new-head CI gate admission. No replay or renewal is authorized by the spent segment. Native A-D acceptance is unrun; prior GW01 stays closed. Dev MCP refresh failed; signed-in dashboard read-only reconciliation is recorded instead.
+- Historical type-check failure: that segment and its later no-push replacement are both consumed and closed. The replacement completed dev postchecks and stopped at its first Vercel GET as recorded above. All four temporary handoff pairs are deleted. Prior public seals/readiness do not authorize another admission. Native A-D acceptance remains unrun; GW01 stays closed. Historical dev MCP refresh failure/dashboard reconciliation remain separate.
 
 - Separate private operational follow-up: bounded read-only preparation and
   temporary-credential cleanup completed; actual projections and remaining
