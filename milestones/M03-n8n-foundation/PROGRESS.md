@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Blocked: waiting on owner — MA-11 exact remaining-window/retained-C999 decision after current PR checks pass. Vercel access is actually restored; the remaining consumer is implemented/reviewed and sealed public CheckOnly passes with approval_required/privateReadfalse/network0. Approval remains unpinned; no admission, private input or hosted mutation. Dev14 postchecks, archived/paused owned C999, all prior failures/counters and deleted handoffs remain preserved. No migration replay, production, merge or M04. GW01 stays closed.**
+**Blocked: waiting on owner — MA-04/MA-11 four existing-value temporary deliveries, after current delivery CI is verified. Exact packet approval is recorded/pinned; affected16/16/review and actual public seal67be61/full CheckOnly9d78d6 pass native0/privateReadfalse/network0. The one-use clock is stopped; administrator handoff and actual interactive transport are still unverified. Dev14 postchecks, archived/paused C999, prior failures/counters and cleanup remain preserved. No migration replay, production, merge or M04. GW01 stays closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,13 +16,43 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Remaining consumer/restricted exact-ID SQL/counter custody implemented/reviewed; no remaining P1/P2. Public seal4ed097 and full CheckOnly3ae74a pass native0 with approval_required/privateReadfalse/network0. Normal delivered-head CI remains to verify separately. |
-| Next step | Verify delivered PR8 checks, then request the exact remaining packet's single separate time/retained-C999 decision. Preserve spent fences, original source/header and aggregate management4/control101. No live clock or four-value handoff yet. |
+| Current task | Approvalcbc097 bound to reviewed a04d7c4; unchanged packet/checkpoint. Independent16/review plus actual public seal67be61/full CheckOnly9d78d6 pass native0/privateReadfalse/network0. No admin input/MCP/live acceptance inferred. Normal new-head CI is checked separately. |
+| Next step | After approved-source public checks and delivery CI, request only the four absent saved-input handoffs using evidence/dev-acceptance-remaining-handoff-20261022.md. Verify actual lease/transport/provenance before the single admission. No new batch approval, replay or renewal. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
 
-### 22 October: remaining consumer delivered locally, approval still absent
+### 22 October: exact remaining packet approved; no admission
+
+The owner answered **Approve exact remaining packet** to the packet question at
+reviewed PR8 head `a04d7c4b8835c0ae3f8136e9095d0e3e775b9151`, whose CI39687951618
+all five jobs/Vercel were freshly reverified d7b66c. The actual reply, without
+invented wording, is recorded at2026-10-21T22:55:58.798UTC in the
+[15-field approval](evidence/dev-acceptance-remaining-approval-20261022.json),
+SHA256cbc097a5ab606cf176a384084c66692b37b16b689676424211da19fc387f0b23.
+It binds unchanged packet7c4b9f3c/checkpoint2954a335 and the exact existing caps.
+Only the consumer's approval hash and its existing35-file DB packet pin change;
+no contract/guard/SQL or old evidence is relaxed. Independent review has no P1/P2,
+all35pins/14preserved records/old raw journal prefixes match, and affected
+synthetic continuation/CLI/branded-admin16/16 pass. Actual clock CheckOnly133942
+returns remaining_continuation_ready/native0/privateReadfalse/network0. No
+Admit/Read/Claim/Session, authentication or hosted mutation has occurred.
+
+Metadata-only eebe43 at22:57:21.003UTC verifies all ten temporary input/control
+paths absent and no new admission/claim. No credential contents were opened.
+Actual public seal67be61 passes native0 with123project/840Zod/3462Vercel inputs.
+Full coordinatorCheckOnly9d78d6 passes native0/check_only_ready, public composition
+and DB inputs verified, privateRead:false/network0/adminHandoffReady:false/
+actualMcpPortVerified:false. No authority was admitted. Normal new-delivery CI
+is checked separately. Then request only the same four saved values using the
+[exact remaining-mode commands](evidence/dev-acceptance-remaining-handoff-20261022.md).
+There is no new approval/reset/rotation/Machine/production request. Lease75minute
+coverage, actual interactive transport and provenance still gate the one-use
+admission. Original counters remain management4/control101/combined105; no actor,
+workflow, provider, gateway, fixture or migration operation has run.
+[Approved-source/public readiness](evidence/dev-acceptance-remaining-approved-readiness-20261022.json).
+
+### Historical preapproval remaining consumer delivery
 
 The [exact proposed remaining packet](evidence/dev-acceptance-remaining-packet-20261022.md)
 and immutable checkpoint are concrete. New segment e8035391-dba8-48c9-97e0-139ba980d86e
@@ -648,12 +678,12 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
-- The replacement is consumed and closed. The separate expired-session read is
-  preserved; the22October post-login read now verifies HTTP200/all12 project
-  predicates/native0 and closed children. MA-02 is complete. A distinct remaining
-  consumer/packet is being checked locally, with no approval pin/admission or
-  credential consumption. Its exact one-use time/retained-fixture decision is
-  separate. Historical raw layer remains unestablished; dev postchecks/cleanup stand.
+- The old replacement and both diagnostics are consumed/closed; all historical
+  failures/receipts remain. MA-02 access restoration is actually complete. The
+  distinct remaining packet is now approved/pinned, with no new admission or
+  credential consumption. Public/CI readiness and four missing temporary input
+  deliveries still gate live acceptance. Historical raw layer remains
+  unestablished; completed dev postchecks/cleanup stand.
 
 - Historical type-check failure: that segment and its later no-push replacement are both consumed and closed. The replacement completed dev postchecks and stopped at its first Vercel GET as recorded above. All four temporary handoff pairs are deleted. Prior public seals/readiness do not authorize another admission. Native A-D acceptance remains unrun; GW01 stays closed. Historical dev MCP refresh failure/dashboard reconciliation remain separate.
 
@@ -676,7 +706,29 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-### MA-11 — one exact remaining-window/retained-fixture decision
+### MA-04 / MA-11 — approved remaining-window saved-input delivery
+
+The owner decision below is **completed**, actual reply **Approve exact remaining
+packet**, reviewed head a04d7c4, receiptcbc097. Do not ask it again. The single
+clock has not started. Metadata-only eebe43 verifies all four temporary input
+pairs absent. After actual approved public preflight and new-head CI pass,
+request only the existing saved values through these two reviewed commands:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\db\windows\New-M03FoundationMigrationHandoff.ps1' -RemainingContinuation
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03AcceptanceHandoff.ps1' -Kind All
+```
+
+Windows PowerShell, same Windows account. Hidden prompts, in order: EXISTING
+emr-dev postgres password (no migration operation); EXISTING muhhammedsayed n8n
+Management key; EXISTING emr-dev n8n_writer password; EXISTING same-owner Apify
+READ token from the prior attempt. Expected prefixes:
+`M03_FOUNDATION_MIGRATION_ADMIN_READY` and `M03_ACCEPTANCE_HANDOFF_READY: All.`
+Close the window, retain originals and reply **M03 remaining-window handoffs
+ready**. Send no values/files. No new key/reset/rotation/Machine/prod input.
+[Exact fields/purpose/cleanup/readiness](evidence/dev-acceptance-remaining-handoff-20261022.md).
+
+### MA-11 — completed exact remaining-window/retained-fixture decision
 
 The implementation, independent review and actual sealed public preflight are
 complete. Verify current PR8 head/checks, then review the

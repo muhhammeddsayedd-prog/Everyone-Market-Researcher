@@ -5,35 +5,35 @@
 
 ## Now
 
-|                       |                                                                                                                                                                                     |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Current milestone** | M03 — n8n foundation                                                                                                                                                                |
-| **Status**            | Blocked: waiting on owner - MA-11 exact remaining-window/retained-C999 decision. Local review/public checks pass; current-head CI remains a separate readiness gate.                |
-| **Next step**         | Verify current PR8 checks, then obtain the exact one-use decision in M03 Manual actions. Keep approval unpinned and admission closed until the actual reply and readiness pass.     |
-| **Waiting on owner**  | Approve the exact remaining A-D dev window plus retained-C999 reactivation after current-head checks pass. No credentials/login, production, merge or M04 approval is requested.    |
-| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                             |
-| **Last updated**      | 22 October 2026 01:35 Cairo (21 October22:35 UTC): remaining consumer/review and actual public preapproval checks pass; aggregate4management/101control preserved, approval absent. |
+|                       |                                                                                                                                                                                          |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Current milestone** | M03 — n8n foundation                                                                                                                                                                     |
+| **Status**            | Blocked: waiting on owner - MA-04/MA-11 four saved-input temporary deliveries after current delivery CI. Exact packet approved/pinned; actual public checks pass, clock stopped.         |
+| **Next step**         | Verify normal current PR8 checks, request the exact two hidden-prompt commands, then verify actual75-minute lease coverage/interactive transport/provenance before the single admission. |
+| **Waiting on owner**  | Only the existing dev postgres, n8n Management, dev n8n_writer and same-owner Apify READ values through reviewed helpers after CI. No new batch approval/reset/key/Machine/prod.         |
+| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                  |
+| **Last updated**      | 22 October2026 01:59 Cairo (21October22:59UTC): approvalcbc097/review16 and actual public seal67be61/full CheckOnly9d78d6 pass; four pairs absent, clock stopped.                        |
 
 ## Milestone board
 
-| ID  | Milestone                                  | Status         | Started    | Done       | Blockers / owner actions                                                                                                | PR                                                                                      |
-| --- | ------------------------------------------ | -------------- | ---------- | ---------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| M00 | Repo bootstrap & tooling                   | Done           | 2026-10-17 | 2026-10-17 | —                                                                                                                       | [#1 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1) |
-| M01 | Supabase foundation                        | Done           | 2026-10-17 | 2026-10-18 | None for M01                                                                                                            | [#4 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4) |
-| M02 | Seed data & account resolution             | Done           | 2026-10-18 | 2026-10-18 | None for M02; exact PR6 merge/closure approved and completed                                                            | [#6 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6) |
-| M03 | n8n foundation                             | Blocked: MA-11 | 2026-10-18 |            | Exact remaining-window/retained-fixture owner decision; verify current PR checks separately. No credential handoff now. | [#8 draft](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8)  |
-| M04 | Collectors I: Vimeo + Instagram            | Not started    |            |            | MA-14                                                                                                                   |                                                                                         |
-| M05 | Collectors II: Websites, YouTube, LinkedIn | Not started    |            |            | MA-15                                                                                                                   |                                                                                         |
-| M06 | Collectors III: Stories + upkeep           | Not started    |            |            | MA-16, MA-20 (first Vercel env vars for the media route)                                                                |                                                                                         |
-| M07 | AI understanding                           | Not started    |            |            | MA-17                                                                                                                   |                                                                                         |
-| M08 | Campaign linker + pilot launch             | Not started    |            |            | MA-04 (prod token), MA-18                                                                                               |                                                                                         |
-| M09 | Web app foundation                         | Not started    |            |            | MA-19, MA-20                                                                                                            |                                                                                         |
-| M10 | Web app entities                           | Not started    |            |            | —                                                                                                                       |                                                                                         |
-| M11 | Search, review, admin                      | Not started    |            |            | MA-20, MA-21                                                                                                            |                                                                                         |
-| M12 | Pilot review & tuning (gate)               | Not started    |            |            | MA-22 (go/no-go)                                                                                                        |                                                                                         |
-| M13 | News, briefs, alerts                       | Not started    |            |            | MA-23, MA-24                                                                                                            |                                                                                         |
-| M14 | Agent API + MCP                            | Not started    |            |            | MA-20, MA-25                                                                                                            |                                                                                         |
-| M15 | Scale & launch                             | Not started    |            |            | MA-26…MA-28                                                                                                             |                                                                                         |
+| ID  | Milestone                                  | Status               | Started    | Done       | Blockers / owner actions                                                                                                       | PR                                                                                      |
+| --- | ------------------------------------------ | -------------------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| M00 | Repo bootstrap & tooling                   | Done                 | 2026-10-17 | 2026-10-17 | —                                                                                                                              | [#1 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1) |
+| M01 | Supabase foundation                        | Done                 | 2026-10-17 | 2026-10-18 | None for M01                                                                                                                   | [#4 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4) |
+| M02 | Seed data & account resolution             | Done                 | 2026-10-18 | 2026-10-18 | None for M02; exact PR6 merge/closure approved and completed                                                                   | [#6 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6) |
+| M03 | n8n foundation                             | Blocked: MA-04/MA-11 | 2026-10-18 |            | Exact remaining packet approved/reviewed/sealed. After current CI, four existing-value temporary deliveries; no admission yet. | [#8 draft](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8)  |
+| M04 | Collectors I: Vimeo + Instagram            | Not started          |            |            | MA-14                                                                                                                          |                                                                                         |
+| M05 | Collectors II: Websites, YouTube, LinkedIn | Not started          |            |            | MA-15                                                                                                                          |                                                                                         |
+| M06 | Collectors III: Stories + upkeep           | Not started          |            |            | MA-16, MA-20 (first Vercel env vars for the media route)                                                                       |                                                                                         |
+| M07 | AI understanding                           | Not started          |            |            | MA-17                                                                                                                          |                                                                                         |
+| M08 | Campaign linker + pilot launch             | Not started          |            |            | MA-04 (prod token), MA-18                                                                                                      |                                                                                         |
+| M09 | Web app foundation                         | Not started          |            |            | MA-19, MA-20                                                                                                                   |                                                                                         |
+| M10 | Web app entities                           | Not started          |            |            | —                                                                                                                              |                                                                                         |
+| M11 | Search, review, admin                      | Not started          |            |            | MA-20, MA-21                                                                                                                   |                                                                                         |
+| M12 | Pilot review & tuning (gate)               | Not started          |            |            | MA-22 (go/no-go)                                                                                                               |                                                                                         |
+| M13 | News, briefs, alerts                       | Not started          |            |            | MA-23, MA-24                                                                                                                   |                                                                                         |
+| M14 | Agent API + MCP                            | Not started          |            |            | MA-20, MA-25                                                                                                                   |                                                                                         |
+| M15 | Scale & launch                             | Not started          |            |            | MA-26…MA-28                                                                                                                    |                                                                                         |
 
 Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In review` · `Done` · `Parallel-OK`
 
@@ -47,6 +47,19 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
 | Production launch     | —          |
 
 ## Log (newest first)
+
+- 2026-10-22 01:57 Cairo: Owner approved the exact remaining packet at reviewed
+  a04d7c4/CI39687951618 five jobs/Vercel. Literal reply recorded in approvalcbc097
+  and pinned in the existing consumer/35-file DB closure; packet/checkpoint and
+  all14history/evidence/journal bytes preserved. Independent affected16/16 and
+  narrow review pass; actual clock CheckOnly133942 ready/privateReadfalse/network0.
+  Metadata-only eebe43 verifies four pairs/bypass/parent lock absent, no admission
+  or claim. Actual public seal67be61/full CheckOnly9d78d6 pass native0/privateReadfalse/
+  network0/check_only_ready. Normal delivery CI precedes the exact existing-value
+  handoff request. No new general approval, migration
+  replay, actor/provider/workflow/production/privateR2/merge/M04.
+  [Approval](milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-approval-20261022.json),
+  [delivery commands](milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-handoff-20261022.md).
 
 - 2026-10-22 01:35 Cairo: Distinct remaining consumer, exact retained-fixture SQL
   and carried-counter custody implemented/reviewed locally, no remaining P1/P2.

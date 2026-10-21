@@ -11,7 +11,7 @@ export const foundationRemainingContinuationCheckpoint = Object.freeze({
   windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
   originalDeadlineAt: 1792584023481,
   approvalRelative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-approval-20261022.json',
-  approvalSha256: null,
+  approvalSha256: 'cbc097a5ab606cf176a384084c66692b37b16b689676424211da19fc387f0b23',
   packetRelative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-packet-20261022.md',
   packetSha256: '7c4b9f3c3bb473a2ff4a473e23de79ce3b2c9a783cab5587d9caf9356d804205',
   checkpointRelative:
