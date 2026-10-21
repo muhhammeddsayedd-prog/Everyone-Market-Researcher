@@ -730,28 +730,25 @@ ready**. Send no values/files. No new key/reset/rotation/Machine/prod input.
 
 ### MA-11 — completed exact remaining-window/retained-fixture decision
 
-The implementation, independent review and actual sealed public preflight are
-complete. Verify current PR8 head/checks, then review the
-[exact packet](evidence/dev-acceptance-remaining-packet-20261022.md) and
-[local/public evidence](evidence/dev-acceptance-remaining-implementation-20261022.json).
-The packet permits one new60-minute dev segment: stop-new50, physical-close70,
+**Historical approval request, completed; do not repeat.** The owner answered
+**Approve exact remaining packet** at reviewed a04d7c4 after CI39687951618 and
+Vercel passed. Receiptcbc097 records that actual short reply and binds the
+[exact packet](evidence/dev-acceptance-remaining-packet-20261022.md), unchanged
+checkpoint and original scope. The packet permits one new60-minute dev segment:
+stop-new50, physical-close70,
 75-minute input coverage, all old attempts/counters preserved and no migration
 replay. It includes only the exact retained C999 status reactivation and original
 finite native matrix; at most two sequential actor starts, USD1each/USD2total,
 at most one new distinct item, second run zero new items. No new fixtures or
 real-competitor collection.
 
-Reply exactly: **Approve one M03 remaining A-D dev window and exact retained-C999
-reactivation at the reviewed PR #8 head, preserving all prior attempts and
-aggregate caps; no migration replay.**
-
-Why: the prior approved packet explicitly forbids renewal and its one-use
+The separate decision was required because the prior packet forbids renewal and
+its one-use
 admission is consumed/closed. The new retained-fixture operation also needs this
-specific decision. Existing local M03 authorization is unchanged. Expected
-non-secret result: the actual reply is recorded and pinned to the reviewed
-packet, then reviewed/resealed; no clock starts from the reply or this file alone.
-No credential handoff is requested now. After approval/readiness, request only
-truly missing saved values with the reviewed exact helper commands.
+specific decision, now supplied. Existing local M03 authorization is unchanged.
+The actual reply is pinned/reviewed and the approved public seal/CheckOnly pass;
+no clock starts from the reply or this file alone. Only the absent saved-input
+deliveries above remain an owner action after current delivery CI.
 
 MA-02 is verified complete on22October by actual fixed GET f3102d/HTTP200/native0/
 all12predicates and child closure. No more login, setup, key creation or reset.
