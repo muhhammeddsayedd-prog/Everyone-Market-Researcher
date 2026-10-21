@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Blocked: waiting on owner — MA-11 three consumed runtime inputs and unused-bypass cleanup. A–D remains approved at f42930f. First coordinator stopped before prepare with zero remote operations. Corrected source b4caf36, independent review, affected tests and actual seal/CheckOnly pass. Original clock is unchanged. Administrator was never started and its pair remains untouched. Actors stay gated on PhaseB proof. GW-01 stays permanently closed.**
+**Blocked: waiting on owner — MA-11 single clock amendment. Runtime replenishment and unused-bypass deletion are verified complete, but delivery occurred after the original stop-new cutoff. No new ciphertext was opened/decrypted, no authentication or hosted action attempted. Existing expired guards remain blocked; no clock/counter reset. The original A–D scope stays approved. All credentials remain encrypted/untouched. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,11 +16,44 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | b4caf36 corrections and actual CheckOnly9fd1b4 passed. Await only the exact runtime replenishment/unused bypass cleanup already requested; original journal and12:00:23.481 UTC deadline unchanged. Existing25/13/Machine/188historical requests unchanged. |
-| Next step | Verify owner cleanup and three runtime pairs, then interactive original-clock resume before11:50:23.481 UTC cutoff. CI39591182210 passed all five jobs on b4caf36; Vercel green. No fresh window, administrator request or repeat batch approval. |
+| Current task | Actual late-delivery read7189f4/39c155 verifies all three runtime pairs and exact valid/unexpired public metadata; bypass absent. Public guarddd4652 rejects after cutoff. Original header/counters/artifacts/processes reconciled319fdc:zero attempts/no children. |
+| Next step | Owner reviews the proposed clock-only packet below. No private consumer until one new admission window is explicitly approved, concretely implemented/reviewed/sealed and its lease floors pass. Retain new runtime pairs; request no credential delivery now. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
+
+### Latest: late delivery verified; original window remains stopped
+
+Owner replied **M03 runtime replenished; unused bypass deleted**. First current
+clock read was11:52:03 UTC, after original stop-new11:50:23.481. Public metadata
+read7189f4 at11:52:36 confirms all three pairs are present and created after
+that cutoff, and the unused bypass is absent. Exact schema/purpose/head/packet/
+kind/two-hour/unexpired metadata checks39c155 pass separately. No ciphertext
+was opened, DPAPI decryption attempted, credential child launched or remote
+authentication/network operation attempted. This is delivery verification only.
+
+Actual public zero-setup guarddd4652 returns `zero_setup_blocked`, native1,
+privateRead:false/networkRequests:0. No expired-clock bypass or new hour was
+created. Local checkpoint319fdc retains exact original management header only,
+zero attempts, absent/empty other journals and DB artifacts, no locks and no
+owned acceptance children. All historical evidence remains intact. Admin's
+untouched public lease expires12:52:25.6231844 UTC; it cannot cover a fresh
+70-minute cleanup ceiling plus5minutes. It was not extended/decrypted/deleted.
+New runtime pairs, retained Machine and password-manager originals are intact.
+
+[Actual late-delivery evidence](evidence/dev-acceptance-late-delivery-20261021.json).
+[Proposed single clock-only amendment](evidence/dev-acceptance-clock-amendment-20261021.md)
+is concrete but **unapproved**: one60-minute admission segment, stop-new50,
+physical-close70; exact original scope/cost/caps and aggregate counters, original
+header/failure receipts preserved. No operative source guard was changed. Owner
+decision is only for that new clock authority; no repeated general dev/batch
+approval or new credential input is requested now. After approval the narrow
+amended consumer must be implemented/reviewed/sealed before private use; only
+actual insufficient lease kinds may then need replenishment.
+
+Current executable sourceb8d0465 passed all five jobs inCI39591865256 and Vercel.
+New documentation receives normal PR CI. PR8 stays draft/unmerged, M03 open;
+production, schedules, notifications, privateR2, merge and M04 untouched.
 
 ### Actual first private attempt and transport correction
 
@@ -388,6 +421,25 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 ## Manual actions needed from the owner
 
 ### MA-04 / MA-11 — zero-setup continuation delivery
+
+**Completed as delivery; do not repeat:** owner supplied all three runtime pairs
+and deleted the unused bypass. Exact readbacks7189f4/39c155 verify this. Delivery
+arrived after original stop-new, so no credential was consumed and the operative
+guard blocked. Historical commands below do not authorize another clock.
+
+### MA-11 — single clock-only amendment decision
+
+Review [the exact proposed packet](evidence/dev-acceptance-clock-amendment-20261021.md).
+Reply: **Approve one new M03 A–D window at verified admission, with the same
+aggregate caps and the expired attempt preserved.** Expected non-secret result:
+one explicit clock authority; no hosted operation or acceptance is implied.
+This preserves original approval/source/history/caps and excludes production,
+merge/M03closure and M04. No new password/token input or rotation is requested.
+Existing code stays blocked until the amended consumer is reviewed/sealed and
+current lease floors pass. The untouched Admin lease is insufficient for a new
+full window; request its exact existing-helper replenishment only when ready.
+
+### Historical continuation delivery instructions — now fulfilled
 
 The initial four inputs were delivered. No repeat approval, administrator
 delivery or credential recreation is needed. After the corrected source checks

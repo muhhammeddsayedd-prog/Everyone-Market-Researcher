@@ -93,6 +93,17 @@ remain excluded. The completed GW01 trial stays closed.
 
 ## Zero-setup continuation after the actual transport failure
 
+**Latest: fulfilled as delivery, but original clock expired.** Readback at
+11:52:36 UTC verifies all three new pairs, valid/unexpired exact public lease
+metadata and unused bypass absence. No new ciphertext was opened or decrypted.
+The operative guard rejects after the original11:50:23.481 UTC cutoff. Do not
+repeat these commands or edit a lease to create another window. See the
+[late-delivery record](dev-acceptance-late-delivery-20261021.json) and
+[proposed clock-only amendment](dev-acceptance-clock-amendment-20261021.md).
+All new runtime pairs stay encrypted/untouched; no credential input is requested
+until an approved amended consumer is reviewed/sealed and actual lease gaps are
+identified. The steps below are historical.
+
 The initial four-input instructions above remain historical. Do not run the
 administrator helper again: that pair was never consumed. Three runtime pairs
 were consumed and verified deleted after physical child closure. No prepare or

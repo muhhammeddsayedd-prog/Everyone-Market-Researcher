@@ -89,6 +89,20 @@
     "record": "dev-acceptance-transport-20261021.md"
   },
   "deliveryCheckpointCommits": {"database": "722d47b", "runtime": "f1b19ff", "newDeliveryCi": "normal PR CI pending push; approved application-source CI remains separate"},
-  "remaining": "After corrected checks/seal: owner deletes unused local bypass and replenishes only three consumed runtime inputs; untouched administrator pair covers original cleanup. Explicit zero-setup resume before original cutoff, no clock/counter reset or repeated approval. Actual PhaseB/domain proof required before actors",
+  "lateDelivery": {
+    "record": "dev-acceptance-late-delivery-20261021.json",
+    "observedAtUtc": "2026-10-21T11:52:36.1763596Z",
+    "runtimeDeliveryAndBypassCleanupVerified": true,
+    "allThreeExactMetadataChecksPassed": true,
+    "originalStopAlreadyPassed": true,
+    "actualPublicGuard": "dd4652 native1 zero_setup_blocked, privateRead:false/networkRequests:0",
+    "originalCheckpointReconciled": "319fdc original header only,0 attempts,empty journals,no DB artifacts,no children or locks",
+    "newHandoffsOpenedOrConsumed": false,
+    "administratorLeaseChanged": false,
+    "executableSourceOrClockGuardChanged": false,
+    "proposedClockPacket": "dev-acceptance-clock-amendment-20261021.md",
+    "newClockApproved": false
+  },
+  "remaining": "Owner reviews single proposed clock-only amendment; original A-D scope/caps/history preserved. No new private child or operative guard change until explicit clock authority and concrete amended consumer review/seal. Retain new runtime pairs; no credential input requested now. Later replenish only actual insufficient lease kinds. Actual PhaseB/domain proof still required before actors",
   "productionMergeAndM04": "untouched and unauthorized by this continuation"
 }

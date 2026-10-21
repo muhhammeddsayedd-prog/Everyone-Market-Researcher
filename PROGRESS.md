@@ -5,35 +5,35 @@
 
 ## Now
 
-|                       |                                                                                                                                                                                                                                                                  |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                                             |
-| **Status**            | Blocked: MA-11 runtime replenishment/unused bypass cleanup. A–D approved; first coordinator closed before prepare with zero remote calls. Corrections/review/affected tests and actual seal/CheckOnly pass at b4caf36.                                           |
-| **Next step**         | Verify three runtime inputs/owner cleanup, then explicit original-clock resume. CI39591182210 passed all five jobs at b4caf36; Vercel green. Preserve stop11:50:23 / deadline12:00:23 UTC; never reset the clock.                                                |
-| **Waiting on owner**  | Remove unused temporary bypass and replenish Management/Writer/ApifyRead only using [exact continuation steps](milestones/M03-n8n-foundation/evidence/dev-acceptance-handoff-20261021.md), already requested after CheckOnly. Administrator untouched and ready. |
-| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                                                          |
-| **Last updated**      | 21 October2026: b4caf36 corrections, actual seal5bff2e and CheckOnly9fd1b4 pass with103project/840Zod/3462Vercel inputs; privateRead:false/networkRequests:0. Source f42930f unchanged; PR8 draft; current delivery CI runs separately.                          |
+|                       |                                                                                                                                                                                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                                          |
+| **Status**            | Blocked: MA-11 clock-only amendment. Runtime delivery/bypass cleanup verified after original stop-new; no new decryption/authentication or remote effects. Expired guards unchanged.                                                                          |
+| **Next step**         | Review the proposed single new admission-window packet. Original A-D scope/caps/history stay approved and preserved; no credential request until the amended consumer is ready.                                                                               |
+| **Waiting on owner**  | One clock-only decision in milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-amendment-20261021.md. All three runtime pairs retained encrypted; do not repeat delivery now.                                                                         |
+| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                                                       |
+| **Last updated**      | 21 October2026 11:52UTC: all runtime pairs present/valid and unused bypass absent, but original cutoff passed. Public guard rejects; original header/counters0 and no credential children. Source b8d0465/CI39591865256 all five jobs/Vercel pass; PR8 draft. |
 
 ## Milestone board
 
-| ID  | Milestone                                  | Status      | Started    | Done       | Blockers / owner actions                                                     | PR                                                                                      |
-| --- | ------------------------------------------ | ----------- | ---------- | ---------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| M00 | Repo bootstrap & tooling                   | Done        | 2026-10-17 | 2026-10-17 | —                                                                            | [#1 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1) |
-| M01 | Supabase foundation                        | Done        | 2026-10-17 | 2026-10-18 | None for M01                                                                 | [#4 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4) |
-| M02 | Seed data & account resolution             | Done        | 2026-10-18 | 2026-10-18 | None for M02; exact PR6 merge/closure approved and completed                 | [#6 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6) |
-| M03 | n8n foundation                             | In progress | 2026-10-18 |            | Local transport correction; three runtime inputs consumed, no remote effects | [#8 draft](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8)  |
-| M04 | Collectors I: Vimeo + Instagram            | Not started |            |            | MA-14                                                                        |                                                                                         |
-| M05 | Collectors II: Websites, YouTube, LinkedIn | Not started |            |            | MA-15                                                                        |                                                                                         |
-| M06 | Collectors III: Stories + upkeep           | Not started |            |            | MA-16, MA-20 (first Vercel env vars for the media route)                     |                                                                                         |
-| M07 | AI understanding                           | Not started |            |            | MA-17                                                                        |                                                                                         |
-| M08 | Campaign linker + pilot launch             | Not started |            |            | MA-04 (prod token), MA-18                                                    |                                                                                         |
-| M09 | Web app foundation                         | Not started |            |            | MA-19, MA-20                                                                 |                                                                                         |
-| M10 | Web app entities                           | Not started |            |            | —                                                                            |                                                                                         |
-| M11 | Search, review, admin                      | Not started |            |            | MA-20, MA-21                                                                 |                                                                                         |
-| M12 | Pilot review & tuning (gate)               | Not started |            |            | MA-22 (go/no-go)                                                             |                                                                                         |
-| M13 | News, briefs, alerts                       | Not started |            |            | MA-23, MA-24                                                                 |                                                                                         |
-| M14 | Agent API + MCP                            | Not started |            |            | MA-20, MA-25                                                                 |                                                                                         |
-| M15 | Scale & launch                             | Not started |            |            | MA-26…MA-28                                                                  |                                                                                         |
+| ID  | Milestone                                  | Status                  | Started    | Done       | Blockers / owner actions                                      | PR                                                                                      |
+| --- | ------------------------------------------ | ----------------------- | ---------- | ---------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| M00 | Repo bootstrap & tooling                   | Done                    | 2026-10-17 | 2026-10-17 | —                                                             | [#1 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1) |
+| M01 | Supabase foundation                        | Done                    | 2026-10-17 | 2026-10-18 | None for M01                                                  | [#4 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4) |
+| M02 | Seed data & account resolution             | Done                    | 2026-10-18 | 2026-10-18 | None for M02; exact PR6 merge/closure approved and completed  | [#6 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6) |
+| M03 | n8n foundation                             | Blocked: clock decision | 2026-10-18 |            | MA-11 late delivery verified; new time authority not approved | [#8 draft](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8)  |
+| M04 | Collectors I: Vimeo + Instagram            | Not started             |            |            | MA-14                                                         |                                                                                         |
+| M05 | Collectors II: Websites, YouTube, LinkedIn | Not started             |            |            | MA-15                                                         |                                                                                         |
+| M06 | Collectors III: Stories + upkeep           | Not started             |            |            | MA-16, MA-20 (first Vercel env vars for the media route)      |                                                                                         |
+| M07 | AI understanding                           | Not started             |            |            | MA-17                                                         |                                                                                         |
+| M08 | Campaign linker + pilot launch             | Not started             |            |            | MA-04 (prod token), MA-18                                     |                                                                                         |
+| M09 | Web app foundation                         | Not started             |            |            | MA-19, MA-20                                                  |                                                                                         |
+| M10 | Web app entities                           | Not started             |            |            | —                                                             |                                                                                         |
+| M11 | Search, review, admin                      | Not started             |            |            | MA-20, MA-21                                                  |                                                                                         |
+| M12 | Pilot review & tuning (gate)               | Not started             |            |            | MA-22 (go/no-go)                                              |                                                                                         |
+| M13 | News, briefs, alerts                       | Not started             |            |            | MA-23, MA-24                                                  |                                                                                         |
+| M14 | Agent API + MCP                            | Not started             |            |            | MA-20, MA-25                                                  |                                                                                         |
+| M15 | Scale & launch                             | Not started             |            |            | MA-26…MA-28                                                   |                                                                                         |
 
 Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In review` · `Done` · `Parallel-OK`
 
@@ -47,6 +47,21 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
 | Production launch     | —          |
 
 ## Log (newest first)
+
+- 2026-10-21 11:52UTC: Owner's runtime replenishment and unused-bypass deletion
+  verified7189f4/39c155. All three pairs are present, exact public metadata valid
+  and unexpired, created after original11:50:23.481 cutoff; bypass absent.
+  Public guarddd4652 correctly rejects native1. No ciphertext opened/decrypted,
+  credential child started or authentication/network action attempted. Original
+  management header/counters0, empty other journals, absent DB artifacts and no
+  child/locks reconciled319fdc. All new runtime handoffs retained untouched;
+  Admin never consumed and its12:52:25 lease cannot cover a fresh full window.
+  Prepared [one proposed clock-only amendment](milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-amendment-20261021.md),
+  preserving original scope/source/history/aggregatecaps; not approved or applied.
+  No repeated general dev approval or new credential input requested now.
+  Existing sourceb8d0465/CI39591865256 passed all five jobs and Vercel. New
+  records receive normal PR CI; PR8 draft, M03 open, GW01 closed, production,
+  merge and M04 untouched.
 
 - 2026-10-21 UTC: Owner delivered all four inputs. Actual coordinator18155
   decrypted the three runtime inputs but tool stdin was already closed; no
