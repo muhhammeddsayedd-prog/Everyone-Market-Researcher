@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-21T22:11:14.232Z",
+  "ownerReply": "Vercel CLI sign-in complete",
+  "ownerReplyDateCairo": "2026-10-22",
+  "deliveryHead": "d45e3e59cf4acf7e930eca74a0feeac9d1762b14",
+  "ci": {
+    "runId": 39661494543,
+    "allFiveJobs": "success",
+    "vercel": "success",
+    "freshReadback": "7e503a"
+  },
+  "freshPublicCheckOnly": {
+    "toolReceipt": "7e503a",
+    "nativeExit": 0,
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "actualRun": {
+    "toolReceipt": "f3102d",
+    "nativeExit": 0,
+    "kind": "postlogin_project_read_result",
+    "aggregateAttempts": 4,
+    "maximum": 512,
+    "status": "project_contract_ready",
+    "transport": {
+      "stage": "completed",
+      "childStarted": true,
+      "childClosed": true,
+      "nativeExit": 0,
+      "stdoutBytes": 15068,
+      "stderrBytes": 85,
+      "httpStatus": 200,
+      "aborted": false,
+      "code": "unknown"
+    },
+    "predicates": {
+      "object": true,
+      "projectId": true,
+      "teamId": true,
+      "rootDirectory": true,
+      "nodeVersion": true,
+      "framework": true,
+      "githubType": true,
+      "githubOrg": true,
+      "githubRepo": true,
+      "deploymentProtection": true,
+      "bypassObject": true,
+      "bypassEmpty": true
+    },
+    "childTransportsClosed": true,
+    "newAcceptanceWindow": false,
+    "mutations": 0
+  },
+  "ledger": {
+    "path": "scripts/n8n/out/foundation/live/postlogin-project-read-20261021.jsonl",
+    "rows": 4,
+    "sha256": "94a4f841b63537dabb47828e768a6f4cbf581452c9a928d5600fd1c0c20c4b7b"
+  },
+  "priorExpiredReceiptSha256": "a4a2ec0be139df4583391d164a0c08df69e407483f0bb827dd92e3b276b2656c",
+  "preservedJournals": {
+    "management": {
+      "path": "scripts/n8n/out/foundation/live/management.jsonl",
+      "sha256": "3d47a19f2481c5e7663c8d0624394fb36c3bc158394bb57bb1c5bc1f2089bcbd"
+    },
+    "control": {
+      "path": "scripts/n8n/out/foundation/live/control.jsonl",
+      "sha256": "b5c392a9a82ce35df84c8f9949bf64f21dccc9aded838285a321468a3c213cef"
+    },
+    "setup": {
+      "path": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "sha256": "4dec713080ced4f0a752e559202e2090cf69fb33cf2c1e3fa180e8549229daf6"
+    }
+  },
+  "accounting": {
+    "mainManagement": 1,
+    "separateManagement": 3,
+    "aggregateManagement": 4,
+    "managementMaximum": 512,
+    "mainControl": 100,
+    "separateControl": 1,
+    "aggregateControl": 101,
+    "controlMaximum": 2048,
+    "aggregateCombined": 105,
+    "combinedMaximum": 2560
+  },
+  "cleanup": {
+    "metadataOnly": true,
+    "checkedPaths": 10,
+    "present": 0,
+    "credentialHandoffsContentsRead": false,
+    "childTransportsClosed": true
+  },
+  "boundaries": {
+    "newAcceptanceWindow": false,
+    "mutations": 0,
+    "databaseConnections": 0,
+    "n8nOrProviderHandoffsRead": false,
+    "workflowExecutions": 0,
+    "actorStarts": 0,
+    "productionOperations": 0,
+    "authOrConfigWrites": false,
+    "originalFencesAndHistoryPreserved": true
+  },
+  "next": "Continue authorized local engineering; no automatic renewal or credential handoffs. A-D execution needs its own exact reviewed time authority."
+}
