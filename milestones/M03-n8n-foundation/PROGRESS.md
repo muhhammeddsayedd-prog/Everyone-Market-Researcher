@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: the replacement is consumed/closed native1; dev14 postchecks passed. Guard fix7a95a8e, independent focused tests and five-job CI/Vercel pass. Separate actual project-read diagnostic closes with saved_auth_expired before a project response. Only private existing Vercel CLI login is requested; the separately fenced post-login reader/review/public CheckOnly pass and normal new-head CI remains required. Owned C999 is archived/account paused, all consumed inputs/scratch/bypass deleted. No migration replay, A-D renewal or four-value credential request. GW-01 stays permanently closed.**
+**Blocked: waiting on owner ? MA-02 existing Vercel CLI sign-in. The replacement is consumed/closed native1; dev14 postchecks passed. Guard fix7a95a8e, independent focused tests and five-job CI/Vercel pass. Separate actual project-read diagnostic closes with saved_auth_expired before a project response. Only private existing Vercel CLI login is requested; the separately fenced post-login reader/review/public CheckOnly pass and normal new-head CI remains required. Owned C999 is archived/account paused, all consumed inputs/scratch/bypass deleted. No migration replay, A-D renewal or four-value credential request. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
