@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: approved replacement continuation is reviewed, tested, sealed and public CheckOnly ready. Await four genuinely absent temporary handoffs and normal new-head CI before admission. No new clock, private read or hosted operation. Dev14, both prior attempts and original caps/counters are preserved; no migration replay. GW-01 stays permanently closed.**
+**In progress: the one replacement attempt is consumed and physically closed native1. Actual dev14 authentication/postchecks/types passed; setup blocked at its first Vercel project GET before any native/provider/actor execution. Owned C999 is archived/account paused, all eight inputs/scratch and unused bypass are deleted. Concrete local Vercel guard fix/regression/review continues. No replay, new child/window or credential request. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,13 +16,54 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Approved one-use replacement consumer is ready: no-push14-version DB control, counter-preserving runtime, fresh-only C999 and exact once-only cleanup. Existing type-check fix/actual candidate evidence stays complete. |
-| Next step | Normal delivery CI plus exact four saved-value handoffs below; verify actual transport, source and75-minute lease floor before admission. No repeated time/development approval. |
+| Current task | Local Vercel guard compatibility correction and isolated actual-CLI proof/review. Successful dev postchecks, closed failure and exact unused-bypass cleanup are preserved. |
+| Next step | Complete concrete diagnosis/remediation/review before any exact next owner action. The replacement admission is spent; no prepare/start/migration replay or automatic renewal. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
 
-### Latest: approved replacement continuation ready; no admission yet
+### Latest actual replacement: database postchecks pass; Vercel setup blocked
+
+Owner delivery metadata546e88 verified all four pairs and75-minute coverage;
+fresh CheckOnlya001c9 and10e40c7/CI39622010384 five jobs plus Vercel passed.
+The single replacement admitted **18:40:52.488 UTC** (stop19:30:52.488,
+action19:40:52.488, physical19:50:52.488). It is now consumed and closed.
+
+Actual DB run3860e4ad-eac9-4b19-a08f-6dce4c79a372 verified authentication and
+all14 existing fingerprints, with no dry-run/push. Its postcheckStage is complete;
+sealed source order establishes catalog and both native CLI advisor checks
+passed, separate from a standalone per-advisor receipt. Fresh generated types
+match the original actual candidate byte-for-byte and pass4schema/6table/9RPC
+AST coverage. C999 was created, then exact owned locked-ID cleanup archived its
+competitor and paused its account. No owner provision intent/SQL window exists.
+
+Prepare stopped at the first Vercel project GET. The current generic BLOCKED
+does not identify CLI/preload/auth/transport/HTTP/project-predicate cause; local
+bounded diagnostics continue. Public setup journal has only one GET attempt and
+zero write intents. Management1/control100/native0/gateway0/provider0/actors0.
+One separate post-close Vercel MCP project read returned metadata unavailable;
+retain/debit that diagnostic attempt separately in any future aggregate packet.
+
+Restore/close452c7a verifies physical root/admin/transports closed, native1,
+all eight consumed inputs/private scratch deleted and retained Machine preserved.
+Archive-only is not window closure or full D: residual remains true. The unused
+uninstalled bypass remained at physical closure. Exact guarded cleanup adf3cf
+subsequently deleted it and verified absence, native0/privateContentsRead:false/
+network0, preserving all receipts/Machine/originals. [Cleanup proof](evidence/dev-acceptance-postcheck-unused-bypass-cleanup-20261021.json).
+[Immutable actual attempt](evidence/dev-acceptance-postcheck-attempt-20261021.json).
+Production/privateR2/merge/M04 remain untouched. Never restart this child/clock.
+
+The isolated actual installed-CLI test found an unconditional compatibility bug:
+the native Client constructor assigns reauthenticate, and native instrumentation
+assigns http(s) methods; the guard's nonwritable prototype properties throw.
+This is a concrete local reproduction consistent with the failure, not a raw
+historical error receipt. The narrow fix retains deny-only auth/native-network
+accessors and all one-wire/no-retry/expiry restrictions. Actual-CLI synthetic
+regression/independent review and bounded diagnostics are in progress. No real
+auth/session restoration or credential request is inferred from this result.
+
+### Historical pre-admission readiness for the now-consumed replacement
+
 
 Owner replied **I approve** to the exact reviewed packet at d834968. The
 [separate approval](evidence/dev-acceptance-postcheck-approval-20261021.json)
@@ -519,7 +560,7 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 <!-- Mirror of MILESTONE.md; paste evidence (command + output summary, counts, screenshot paths). -->
 - [x] AC1 — Plan facts recorded — actual n8n 2.43.5, paid Cloud plan, upgraded 50,000 allowance; the five facts and evidence boundaries are recorded below.
 - [ ] AC2 — Credentials work — four provider metadata GETs pass. Native n8n Postgres credential Retry/SELECT still fail TLS chain validation. Separate approved [direct Writer Verify](evidence/gw01-writer-verify-20261018.json) proves dev session5432 strict TLS, current_user/session_user=n8n_writer and four42501 rollback denials. The later [gateway/native HTTP-node trial](evidence/gw01-trial-closeout-20261018.json) proves restricted identity through the temporary route; native Postgres-node TLS and full credentials/backbone acceptance remain open. [Native readback](evidence/credential-readback-20261018.json).
-- [ ] AC3 - Historical local379/hosted nine-version evidence is preserved. Actual21October dev push has14 exact versions and independent catalog/RLS/ACL readback passes. Generated types are preserved; the checker rejected formatting-only ParenthesizedType nodes. Narrow local correction/review passes; the actual unchanged generated output verifies4schemas/6tables/9RPCs offline. Dashboard advisors were rerun separately (security1Auth warning, performance0warnings); no separate CLI advisor receipt was emitted before the postcheck failed. [Actual attempt](evidence/dev-acceptance-amended-attempt-20261021.json).
+- [x] AC3 — Dev RPC/database requirement verified: CI39622010384 database job passes the14-version local replay/pgTAP/advisor/concurrency checks, including10_n8n_foundation. New actual dev run3860e4ad verifies complete14 history, fresh catalog/RLS/ACL booleans, both native CLI advisors at zero WARN/ERROR (sealed source order; no standalone per-advisor receipt), and fresh4schema/6table/9RPC types/AST coverage. [Completed dev postchecks](evidence/dev-acceptance-postcheck-attempt-20261021.json). Historical formatting-only failure and unchanged original candidate remain preserved; the separate historical dashboard Auth warning is not erased. This completes the database criterion, not native workflow/business acceptance.
 - [ ] AC4 — Actual dev17 reviewed Apify prices and daily alert budget25 verified. Three fixed-fee amounts and other documented unknown prices remain unknown under the owner's instruction; no false zero fees or shared-service budget change. [Readback](evidence/dev-post-migration-schema-20261018.json).
 - [ ] AC5 — End-to-end smoke remains unrun. Local graph9/9 and shared80/80 (55 new recovery cases) pass; new generator source is not an actual saved Cloud export or actor receipt.
 - [ ] AC6 — Local saved replay, early registration, stable cost and ambiguous-write recovery pass. Saved-only recovery reports payloadEqualityVerified:false and suppresses dispatch; no fake SQL JSONB digest or exactly-once external delivery. Hosted duplicate/interruption acceptance remains pending.
@@ -531,6 +572,12 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 - [x] AC12 — Budget documented — conservative steady-state estimate 160/day pilot and 181/day full scope, both below 200/day; shared quota and billing-rule boundaries below.
 
 ## Blockers
+
+- The replacement is consumed and closed after completed dev database postchecks
+  and a first-Vercel-GET setup block. The exact historical layer remains unestablished;
+  a concrete guard/installed-CLI incompatibility is reproduced locally. Local
+  remediation is unblocked; unused-ciphertext cleanup is complete. No credentials
+  or new window decision requested while concrete remediation is incomplete.
 
 - The prior one-use segment is consumed and closed after successful four-migration application plus the fixed type-check failure. The separately approved no-push replacement consumer is reviewed, tested, sealed and public CheckOnly ready. All four temporary handoff pairs are absent; actual transport/leases and normal new-head CI gate admission. No replay or renewal is authorized by the spent segment. Native A-D acceptance is unrun; prior GW01 stays closed. Dev MCP refresh failed; signed-in dashboard read-only reconciliation is recorded instead.
 
@@ -553,12 +600,12 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-**Current:** the replacement decision is complete; owner replied `I approve`.
-The exact consumer/review/affected tests/public seal/CheckOnly now pass. All
-four temporary pairs are actually absent (74bf17); this is missing delivery,
-not authentication failure. No repeated approval or credential recreation.
+**Current:** none. Owner delivered the four existing values; metadata/authentication
+were verified and the bounded attempt is now closed. All eight inputs are deleted.
+Do not repeat the historical delivery commands below or reset/recreate credentials.
+The Vercel read is being diagnosed locally before any exact missing action is requested.
 
-### MA-04 / MA-11 — approved postcheck continuation: temporary delivery
+### MA-04 / MA-11 — historical postcheck delivery: completed/consumed
 
 In Windows PowerShell under this same Windows account, run:
 
@@ -928,6 +975,25 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-21 21:58 Cairo (18:58 UTC): Reviewed exact cleanup adf3cf native0
+  deleted/verified absent only the unused local bypass, no cipher content/network.
+  [Cleanup receipt](evidence/dev-acceptance-postcheck-unused-bypass-cleanup-20261021.json)
+  preserves failed native1/fullDfalse and all evidence/Machine/originals. Actual
+  installed-CLI isolated test reproduces guard constructor/instrumentation
+  incompatibility; narrow deny-only fix/regression/review continue. No auth
+  refresh, actual retry/new clock/credentials/production/merge/M04.
+
+- 2026-10-21 21:49 Cairo (18:49 UTC): Replacement admitted18:40:52.488 after
+  valid delivery546e88/publicCheckOnlya001c9/CI39622010384 five jobs and Vercel.
+  Actual14-version authentication/postchecks/types pass; no migrations replayed.
+  First Vercel GET blocked prepare; current layer unknown. Restore/close452c7a
+  native1 archived/paused exact C999, closed children/transports and deleted all
+  eight input files/scratch645885. No SQLwindow/Preview/workflow/native/provider/
+  actor; counters management1/control100. Uninstalled bypass cleanup pending.
+  [Immutable actual record](evidence/dev-acceptance-postcheck-attempt-20261021.json)
+  preserves full-D residual/source-ordered advisor boundaries. Local diagnosis
+  only; no replay, new child/window, credential request, production/merge/M04.
 
 - 2026-10-21 17:59 Cairo (14:59 UTC): Approved replacement consumer frozen and
   independently reviewed GREEN with no remaining P1/P2. Targeted clock/runtime/
