@@ -424,6 +424,75 @@ describe(
 );
 
 describe(
+  'fixed original Phase-A clock, public-only isolated Windows guard',
+  { skip: process.platform !== 'win32' },
+  () => {
+    it('inherits only the original header clock, preserves attempts and rejects clock reset before private use', () => {
+      const root = mkdtempSync(join(tmpdir(), 'emr-foundation-original-clock-'));
+      directories.push(root);
+      const journal = join(root, 'scripts/n8n/out/foundation/live/management.jsonl');
+      mkdirSync(resolve(journal, '..'), { recursive: true });
+      const source = readFileSync(consumerPath, 'utf8'),
+        start = source.indexOf('function Assert-Keys'),
+        end = source.indexOf('# Every native child');
+      const header =
+        JSON.stringify({
+          event: 'management_header',
+          version: 1,
+          sourceCommitSha: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+          deadlineAt: 1792584023481,
+        }) + '\n';
+      const script = join(root, 'guard.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+$repo='${root.replaceAll("'", "''")}';$PhaseAControl=$true;$OriginalDeadlineAtMs=0
+${source.slice(start, end)}
+$path='${journal.replaceAll("'", "''")}'
+$header='${header.replaceAll("'", "''")}'
+$deadline=[DateTimeOffset]::FromUnixTimeMilliseconds(1792584023481).UtcDateTime
+$now=$deadline.AddMinutes(-30)
+[IO.File]::WriteAllText($path,$header)
+$before=[IO.File]::ReadAllText($path)
+if((Read-FoundationOriginalStart 1792584023481 $now) -ne $deadline.AddMinutes(-60)){exit 1}
+if((Get-FoundationLeaseFloor $now) -ne $now.AddMinutes(75)){exit 1}
+$OriginalDeadlineAtMs=1792584023481
+if((Get-FoundationLeaseFloor $now) -ne $deadline.AddMinutes(15)){exit 1}
+$OriginalDeadlineAtMs=0
+if([IO.File]::ReadAllText($path) -cne $before){exit 1}
+[IO.File]::AppendAllText($path,'{"event":"management_attempt","ordinal":1}'+"\n")
+if((Read-FoundationOriginalStart 1792584023481 $now) -ne $deadline.AddMinutes(-60)){exit 1}
+try{$null=Read-FoundationOriginalStart 1792584023482 $now;exit 1}catch{}
+try{$null=Read-FoundationOriginalStart 1792584023481 $deadline.AddMinutes(-10);exit 1}catch{}
+$PhaseAControl=$false
+try{$null=Read-FoundationOriginalStart 1792584023481 $now;exit 1}catch{}
+$PhaseAControl=$true
+[IO.File]::WriteAllText($path,$header.Replace('1792584023481','1792584023482'))
+try{$null=Read-FoundationOriginalStart 1792584023481 $now;exit 1}catch{}
+Write-Output 'ORIGINAL_CLOCK_GUARD_PASS'
+`,
+      );
+      const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: osEnvironment(),
+        encoding: 'utf8',
+        timeout: 10000,
+        windowsHide: true,
+      });
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.equal(r.stderr, '');
+      assert.equal(r.stdout.trim(), 'ORIGINAL_CLOCK_GUARD_PASS');
+      assert.match(source, /if\(\$OriginalDeadlineAtMs -ne 0\).*Read-FoundationOriginalStart/);
+      assert.ok(
+        source.indexOf('Read-FoundationOriginalStart $OriginalDeadlineAtMs') <
+          source.indexOf('$consumed = $true'),
+      );
+      assert.match(source, /\$phaseAStart = if\(\$null -eq \$originalPhaseAStart\)/);
+    });
+  },
+);
+
+describe(
   'M03 dev migration bounded consumer, synthetic native CLI and isolated DPAPI only',
   { skip: process.platform !== 'win32' },
   () => {

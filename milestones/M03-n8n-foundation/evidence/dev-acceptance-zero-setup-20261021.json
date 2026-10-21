@@ -1,0 +1,18 @@
+{
+  "kind": "m03_zero_setup_physical_closure",
+  "version": 1,
+  "sourceCommitSha": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+  "deadlineAt": 1792584023481,
+  "wrapperNativeExit": 1,
+  "nodeClosed": true,
+  "wrapperClosed": true,
+  "credentialChildrenClosed": true,
+  "consumedRuntimeHandoffsDeleted": true,
+  "administratorStarted": false,
+  "managementAttempts": 0,
+  "controlAttempts": 0,
+  "nativeExecutions": 0,
+  "gatewayPreflightAttempts": 0,
+  "providerDirectAttempts": 0
+}

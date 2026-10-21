@@ -63,8 +63,25 @@
     "privateR2": "untouched",
     "toolingAdvisoryFollowup": "2026-10-24 retained"
   },
-  "actualBatch": {"started": false, "hostedMutations": 0, "migrationsPushed": 0, "workflowExecutions": 0, "actorStarts": 0, "providerCalls": 0, "privateCredentialReads": 0},
+  "actualBatch": {"started": false, "coordinatorStarted": true, "prepareSent": false, "hostedMutations": 0, "migrationsPushed": 0, "workflowExecutions": 0, "actorStarts": 0, "providerCalls": 0, "privateCredentialReads": "Three runtime handoffs and retained Machine decrypted by bounded coordinator; administrator never decrypted"},
+  "zeroSetupAttempt": {
+    "wrapperSession": 18155,
+    "wrapperCloseReceipt": "4789ee",
+    "wrapperNativeExit": 1,
+    "physicalOwnedNodeAndConsoleClosed": true,
+    "managementAttempts": 0,
+    "controlAttempts": 0,
+    "nativeExecutions": 0,
+    "providerDirectAttempts": 0,
+    "consumedRuntimeHandoffsDeleted": true,
+    "administratorUntouched": true,
+    "unusedBypassDeletion": "Automatic approval review rejected before execution: blocked by policy; owner exact cleanup pending",
+    "originalDeadlineAt": 1792584023481,
+    "deadlineReset": false,
+    "localCorrection": "Actual Node stdin-release regression and Windows Console.In synchronous-read deadlock fixed; nine affected custody/closure checks pass ea951e, independent review green; actual seal/CheckOnly rebuilding",
+    "record": "dev-acceptance-transport-20261021.md"
+  },
   "deliveryCheckpointCommits": {"database": "722d47b", "runtime": "f1b19ff", "newDeliveryCi": "normal PR CI pending push; approved application-source CI remains separate"},
-  "remaining": "Deliver genuinely missing purpose-bound inputs using the exact two reviewed helper commands, verify normal delivery CI and actual current state, then execute approved dev A-D with actual PhaseB proof before actors; no repeated batch approval",
+  "remaining": "After corrected checks/seal: owner deletes unused local bypass and replenishes only three consumed runtime inputs; untouched administrator pair covers original cleanup. Explicit zero-setup resume before original cutoff, no clock/counter reset or repeated approval. Actual PhaseB/domain proof required before actors",
   "productionMergeAndM04": "untouched and unauthorized by this continuation"
 }

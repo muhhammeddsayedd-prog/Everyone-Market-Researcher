@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Blocked: waiting on owner — MA-04/MA-11 purpose-bound credential delivery. The exact A–D dev batch is approved at f42930f. Concrete consumers, independent review and actual public CheckOnly now pass; normal delivery CI continues separately. Actors remain gated on actual PhaseB proof. GW-01 stays permanently closed.**
+**A–D remains approved at f42930f. First private coordinator stopped before prepare with zero remote operations. Transport correction and a strictly original-clock continuation are being verified; three consumed runtime handoffs need replenishment after that verification. Administrator was never started and its pair remains untouched. Actors remain gated on actual PhaseB proof. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,11 +16,47 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Approved A–D: consumers ready in722d47b/f1b19ff; exact new temporary inputs missing. Existing25/13/Machine/188historical requests unchanged. |
-| Next step | Follow the exact two helper commands below, verify current delivery CI and actual scoped history/runtime/price state, then approved PhaseA/PhaseB. No repeat batch approval and no actor before genuine cleanup/domain proof. |
+| Current task | Correct physical stdin release and Windows console blocking before any new private consumption. Verify exact zero-effect checkpoint; original journal and12:00:23.481 UTC deadline unchanged. Existing25/13/Machine/188historical requests unchanged. |
+| Next step | Finish affected checks/review/seal, then owner removes unused local bypass and replenishes only Management/Writer/ApifyRead. Resume before original11:50:23.481 UTC cutoff; no fresh window, administrator request or repeat batch approval. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
+
+### Actual first private attempt and transport correction
+
+Delivery commit025b1a8 received all five successful jobs inCI39507084987 and
+green Vercel. Owner supplied all four temporary input pairs. Actual wrapper
+18155 started the Node child with deadline1792584023481; its non-TTY tool stdin
+was closed. No prepare command was sent. The child reported zero management,
+control, native, gateway and provider attempts, then logical closure with
+all remote restoration flags false. This is neither authentication rejection
+nor A–D acceptance. Administrator was never started/decrypted.
+
+Node retained its stdin handle after logical closure. Exact owned Node64504
+and console53192 were reconciled by parent/creation identity and closed;
+wrapper4789ee then finished native1, childClosed/credentialChildrenClosed true,
+and handoffsDeleted true. All three consumed runtime pairs are absent; retained
+Machine and untouched Admin pair remain. The unused bypass was never sent to
+Vercel. Automatic approval review blocked its exact deletion before execution
+with “blocked by policy”; it remains for owner cleanup, with no alternate
+deletion attempt. [Detailed actual record](evidence/dev-acceptance-transport-20261021.md).
+
+Real synthetic subprocess tests reproduce/fix Node stdin release. Actual
+Windows custody tests also exposed Console.In.ReadAsync blocking synchronously
+before the coordinator could relay ready; its bounded read now runs on a worker
+task. A credential-free TTY stdin probe passed native0. Explicit
+SessionResumeZeroSetup validates pinned physical-closure evidence, original
+header and empty setup/control/runtime journals; it cannot create/reset history.
+Coordinator, budget, native timer and DB child inherit original stop-new
+11:50:23.481, action deadline12:00:23.481 and physical-close ceiling12:10:23.481
+UTC. Original-clock lease checks require coverage through12:15:23.481, without
+changing the existing two-hour administrator lease. Repeated proof/cutoff checks
+precede private decryption. New tests, review and seal remain separate from
+hosted acceptance. No remote state was read or changed during these fixes.
+
+Only after these checks pass, use the continuation section of
+[the existing handoff instructions](evidence/dev-acceptance-handoff-20261021.md).
+Do not rerun the Admin helper or request any new Machine/production credential.
 
 Owner replied **Approve M03 dev acceptance A–D at the reviewed PR #8 head.**
 At resumption local/PR head matched`f42930f90c2de43c84f61ad6d966d0ee6074d70e`, draft/open,
@@ -339,19 +375,22 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-### MA-04 / MA-11 — approved A–D credential delivery
+### MA-04 / MA-11 — zero-setup continuation delivery
 
-No repeat approval or credential recreation. After reviewed consumer/public
-CheckOnly success, follow [the exact commands and hidden-prompt input purposes](evidence/dev-acceptance-handoff-20261021.md).
-The new administrator helper consumes only the existing emr-dev postgres
-password in a separate DB child; the new runtime helper asks for the existing
-n8n Management key, existing dev Writer password and same-owner Apify READ
-token. Expected prefixes are `M03_FOUNDATION_MIGRATION_ADMIN_READY` and
-`M03_ACCEPTANCE_HANDOFF_READY: All.` Close PowerShell and reply
-`M03 A–D handoffs ready`. No values/files in chat; no Machine/prod/service key.
-Readiness/presence never substitutes for authentication. The completed old
-consumers and GW01 remain closed. Public preflight/review status is recorded
-at the top of this progress file before this delivery is requested.
+The initial four inputs were delivered. No repeat approval, administrator
+delivery or credential recreation is needed. After the corrected source checks
+and public seal pass, follow the **Zero-setup continuation** section of
+[the exact handoff record](evidence/dev-acceptance-handoff-20261021.md): delete
+the unused local bypass (expected False), then run only the runtime helper
+`New-M03AcceptanceHandoff.ps1 -Kind All` using existing Management/Writer/
+ApifyRead values. Expected prefix `M03_ACCEPTANCE_HANDOFF_READY: All.` Close
+PowerShell and reply `M03 runtime replenished; unused bypass deleted`.
+No values/files in chat; no Admin/Machine/prod/service key. Original stop-new
+11:50:23.481/actiondeadline12:00:23.481 UTC remains binding. Readiness/presence
+is not authentication. Automatic approval review blocked the unused bypass
+deletion before execution with “blocked by policy”; exact owner cleanup is
+required, with no alternative agent deletion. Existing successful consumers and
+GW01 stay closed.
 
 ### MA-11 / single final A–D dev live-batch decision
 

@@ -90,3 +90,40 @@ The Machine domain-denial check is an additional gated native control. Neither
 these local instructions nor a successful private delivery prove acceptance.
 Production, recurring schedules, notifications, PRmerge, M03closure and M04
 remain excluded. The completed GW01 trial stays closed.
+
+## Zero-setup continuation after the actual transport failure
+
+The initial four-input instructions above remain historical. Do not run the
+administrator helper again: that pair was never consumed. Three runtime pairs
+were consumed and verified deleted after physical child closure. No prepare or
+remote request occurred. See [the actual receipt](dev-acceptance-transport-20261021.md).
+Wait for corrected checks/seal readiness before creating replacements.
+
+In Windows PowerShell under this same Windows account, first remove only the
+unused encrypted local bypass left by that attempt:
+
+```powershell
+Remove-Item -LiteralPath "$env:LOCALAPPDATA\Temp\emr-m03-acceptance-protection-bypass.dpapi" -ErrorAction Stop
+Test-Path -LiteralPath "$env:LOCALAPPDATA\Temp\emr-m03-acceptance-protection-bypass.dpapi"
+```
+
+Expected result: `False`. It was never installed remotely. Keep all saved
+original credentials. Then replenish only the three existing runtime inputs:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03AcceptanceHandoff.ps1' -Kind All
+```
+
+Hidden prompts: existing n8n Management key, existing emr-dev n8n_writer password,
+then same-owner Apify READ token. No reset/newkey/Admin/Machine/production input.
+Expected prefix: `M03_ACCEPTANCE_HANDOFF_READY: All.` Close PowerShell and reply
+**M03 runtime replenished; unused bypass deleted**. Send no values or file contents.
+
+Continuation is explicit `-ResumeZeroSetup` over a verified interactive transport.
+It preserves original stop-new11:50:23.481/actiondeadline12:00:23.481 UTC on
+21October2026, counters and source. It does not restart an hour. If the cutoff
+has passed, do not create new handoffs for this closed window.
+
+Automatic approval review rejected Codex's exact temporary bypass deletion
+before execution with “blocked by policy.” That is why the owner cleanup command
+is required; no deletion or alternative route was performed by Codex.

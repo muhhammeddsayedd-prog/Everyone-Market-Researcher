@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, symlinkSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, symlinkSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   createFoundationLiveRuntime,
@@ -9,6 +9,7 @@ import {
 } from './foundation-live-runtime.mjs';
 import { isFoundationNativeDomainProbeBody } from './foundation-live-domain-probe.mjs';
 import { fixture } from './foundation-live-runtime-fixtures.mjs';
+import { syntheticZeroSetup } from './foundation-live-runtime-resume-fixtures.mjs';
 
 test('live composition is network-inert at construction and uses original25-guard setup/case/restore', async () => {
   const f = fixture();
@@ -203,6 +204,55 @@ test('final audit rejects malformed empty-array pinData after exact baseline res
     await assert.rejects(runtime.finalAudit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
   } finally {
     runtime?.close();
+    f.cleanup();
+  }
+});
+
+test('zero-setup branded continuation reuses the exact old ledger and refuses missing or changed history', () => {
+  const f = fixture(),
+    z = syntheticZeroSetup();
+  let budget;
+  const path = join(f.directory, 'management.jsonl');
+  try {
+    writeFileSync(path, z.header);
+    budget = createFoundationLiveManagementBudget(
+      { sourceCommitSha: z.checkpoint.sourceCommitSha, deadlineAt: z.checkpoint.deadlineAt },
+      { directory: f.directory, now: z.now, zeroSetupProof: z.proof },
+    );
+    assert.equal(budget.snapshot().deadlineAt, z.checkpoint.deadlineAt);
+    assert.equal(budget.snapshot().attempts, 0);
+    assert.equal(readFileSync(path, 'utf8'), z.header);
+    budget.close();
+    budget = null;
+    assert.throws(
+      () =>
+        createFoundationLiveManagementBudget(
+          { sourceCommitSha: z.checkpoint.sourceCommitSha, deadlineAt: z.checkpoint.deadlineAt },
+          { directory: f.directory, now: z.now, zeroSetupProof: structuredClone(z.proof) },
+        ),
+      /M03_ZERO_SETUP_BLOCKED/,
+    );
+    writeFileSync(path, z.header + JSON.stringify({ event: 'management_attempt', ordinal: 1 }) + '\n');
+    assert.throws(
+      () =>
+        createFoundationLiveManagementBudget(
+          { sourceCommitSha: z.checkpoint.sourceCommitSha, deadlineAt: z.checkpoint.deadlineAt },
+          { directory: f.directory, now: z.now, zeroSetupProof: z.proof },
+        ),
+      /FOUNDATION_LIVE_RUNTIME_BLOCKED/,
+    );
+    unlinkSync(path);
+    assert.throws(
+      () =>
+        createFoundationLiveManagementBudget(
+          { sourceCommitSha: z.checkpoint.sourceCommitSha, deadlineAt: z.checkpoint.deadlineAt },
+          { directory: f.directory, now: z.now, zeroSetupProof: z.proof },
+        ),
+      /FOUNDATION_LIVE_RUNTIME_BLOCKED/,
+    );
+    assert.throws(() => readFileSync(path), /ENOENT/);
+  } finally {
+    budget?.close();
     f.cleanup();
   }
 });

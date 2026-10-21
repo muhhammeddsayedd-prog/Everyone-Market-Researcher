@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$PhaseAControl)
+param([switch]$CheckOnly,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -27,6 +27,7 @@ $consumed = $false
 $sessionLock = $null
 $leaseExpires = $null
 $phaseAStart = $null
+$originalPhaseAStart = $null
 $phaseAControlHardDeadline = $null
 $exitCode = 1
 $receipt = [ordered]@{version=1;runId=$runId;environment='dev';projectRef=$projectRef;host=$poolerHost;port=5432;
@@ -71,6 +72,36 @@ function Write-NewJson([string]$File, $Value) {
     $stream = [IO.File]::Open($File,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
     $stream.Write($bytes,0,$bytes.Length); $stream.Flush($true)
   } finally { if ($null -ne $stream) { $stream.Dispose() } }
+}
+function Read-FoundationOriginalStart([long]$Value,[DateTime]$Now=[DateTime]::UtcNow) {
+  if(-not $PhaseAControl -or $Value -ne 1792584023481){throw 'blocked'}
+  $path=Assert-Path $repo 'scripts/n8n/out/foundation/live/management.jsonl'
+  if((Get-Item -LiteralPath $path).Length -gt 131072){throw 'blocked'}
+  $text=[IO.File]::ReadAllText($path)
+  if(-not $text.EndsWith("`n")){throw 'blocked'}
+  $lines=@($text.Substring(0,$text.Length-1) -split "`r?`n")
+  if($lines.Count -lt 1 -or $lines.Count -gt 513){throw 'blocked'}
+  $header=ConvertFrom-Json -InputObject $lines[0] -ErrorAction Stop
+  Assert-Keys $header @('event','version','sourceCommitSha','deadlineAt')
+  if($header.event -cne 'management_header' -or $header.version -isnot [int] -or $header.version -ne 1 -or $header.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or
+      $header.deadlineAt -isnot [long] -or $header.deadlineAt -ne $Value){throw 'blocked'}
+  for($index=1;$index -lt $lines.Count;$index++){
+    $row=ConvertFrom-Json -InputObject $lines[$index] -ErrorAction Stop
+    Assert-Keys $row @('event','ordinal')
+    if($row.event -cne 'management_attempt' -or $row.ordinal -isnot [int] -or $row.ordinal -ne $index){throw 'blocked'}
+  }
+  $deadline=[DateTimeOffset]::FromUnixTimeMilliseconds($Value).UtcDateTime
+  if($Now -ge $deadline.AddMinutes(-10)){throw 'blocked'}
+  return $deadline.AddMinutes(-60)
+}
+function Get-FoundationLeaseFloor([DateTime]$Now=[DateTime]::UtcNow) {
+  if($OriginalDeadlineAtMs -ne 0){
+    if(-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 1792584023481){throw 'blocked'}
+    # Same original physical minute70 ceiling plus five minutes; no new lease
+    # or action window is created by a later continuation process.
+    return [DateTimeOffset]::FromUnixTimeMilliseconds($OriginalDeadlineAtMs).UtcDateTime.AddMinutes(15)
+  }
+  return $Now.AddMinutes($(if($PhaseAControl){75}else{10}))
 }
 
 # Every native child gets a fresh OS-only environment. Only reviewed CLI database
@@ -235,6 +266,7 @@ try {
   $cliPath = Assert-Path $repo $cliRelative
   $cliVersion = Invoke-Bounded $cliPath @('--version') $repo 10000
   if (-not $cliVersion.ok -or -not $cliVersion.closed -or $cliVersion.text.Trim() -cne '2.121.0') { throw 'blocked' }
+  if($OriginalDeadlineAtMs -ne 0){$originalPhaseAStart=Read-FoundationOriginalStart $OriginalDeadlineAtMs;$phaseAControlHardDeadline=$originalPhaseAStart.AddMinutes(70)}
   $out = Join-Path $repo 'scripts/db/out'
   if (-not (Test-Path -LiteralPath $out)) { $null = New-Item -ItemType Directory -Path $out }
   $out = Assert-Path $repo 'scripts/db/out' -Directory
@@ -282,7 +314,7 @@ try {
   $leaseExpires = [DateTime]::ParseExact($lease.expiresAt,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
   if ($leaseCreated.Kind -ne [DateTimeKind]::Utc -or $leaseExpires.Kind -ne [DateTimeKind]::Utc -or
       $leaseCreated -gt [DateTime]::UtcNow.AddMinutes(1) -or $leaseExpires -ne $leaseCreated.AddHours(2) -or
-      $leaseExpires -le [DateTime]::UtcNow.AddMinutes($(if($PhaseAControl){75}else{10}))) { throw 'blocked' }
+      $leaseExpires -le (Get-FoundationLeaseFloor)) { throw 'blocked' }
 } catch { Write-Output 'M03_FOUNDATION HANDOFF_PATH_BLOCKED. No private file read, decryption or authentication attempted.'; exit 1 }
 if ($CheckOnly) { Write-Output 'M03_FOUNDATION CHECK_ONLY_READY. Exact dev target, public seals and encrypted handoff presence verified; no decryption, TCP connection or authentication attempted.'; exit 0 }
 
@@ -325,8 +357,9 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   # The only private read is the new purpose-bound foundation DPAPI file. No old administrator,
   # writer, provider or production credential is opened or used.
   $null = Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-foundation-dev-migration-password.dpapi'
+  if($null -ne $originalPhaseAStart -and [DateTime]::UtcNow -ge $originalPhaseAStart.AddMinutes(50)){throw 'blocked'}
   $consumed = $true
-  $phaseAStart = [DateTime]::UtcNow
+  $phaseAStart = if($null -eq $originalPhaseAStart){[DateTime]::UtcNow}else{$originalPhaseAStart}
   $secret = ConvertTo-SecureString -String ([IO.File]::ReadAllText($handoff).Trim()) -ErrorAction Stop
   $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
   $password = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)

@@ -81,6 +81,17 @@ operations within the parent ceiling. The gateway's separately enforced clock,
 attempt/lease/actor limits are not extended. No inactive setup or connection
 trial is replayed.
 
+The separately reviewed `SessionResumeZeroSetup` path can reuse only the
+physically closed, zero-effect checkpoint whose original action deadline is
+`1792584023481`. Its public proof pins the actual closure evidence, unchanged
+one-row management header and absence of effect/DB artifacts. The admin client
+passes that same public value as `-OriginalDeadlineAtMs`; the sealed child
+validates the fixed header before private access and derives the original
+minute50/60/70 boundaries. It cannot start a new clock or accept another value.
+Only this continuation checks the unchanged lease against the original physical
+deadline plus five minutes; normal sessions still require75 minutes remaining.
+Normal sessions omit this parameter. Neither path resets a counter or journal.
+
 The client sends EOF on failure/abort so the reviewed parent can finish its
 bounded current CLI call and run cleanup; it does not kill only the parent and
 orphan a password-bearing child. Closure is accepted only from native completion

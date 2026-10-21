@@ -22,10 +22,17 @@ const osEnvironment = () =>
 // This client never reads or receives the administrator password. The new,
 // sealed PowerShell child owns DPAPI, PGPASSWORD, exact SQL and child cleanup.
 export async function startFoundationAdminClient(
-  { repositoryRoot = defaultRoot, now = Date.now, signal } = {},
+  { repositoryRoot = defaultRoot, now = Date.now, signal, originalDeadlineAtMs } = {},
   deps = {},
 ) {
   if (typeof repositoryRoot !== 'string' || typeof now !== 'function' || signal?.aborted) throw fixed();
+  if (
+    originalDeadlineAtMs !== undefined &&
+    (originalDeadlineAtMs !== 1792584023481 ||
+      !Number.isSafeInteger(originalDeadlineAtMs) ||
+      now() >= originalDeadlineAtMs - 600000)
+  )
+    throw fixed();
   const root = resolve(repositoryRoot),
     launch = deps.spawn ?? spawn;
   if (root.toLowerCase() !== resolve(defaultRoot).toLowerCase()) throw fixed();
@@ -37,6 +44,7 @@ export async function startFoundationAdminClient(
       '-File',
       resolve(root, 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1'),
       '-PhaseAControl',
+      ...(originalDeadlineAtMs === undefined ? [] : ['-OriginalDeadlineAtMs', String(originalDeadlineAtMs)]),
     ],
     { cwd: root, env: osEnvironment(), windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] },
   );
@@ -114,7 +122,11 @@ export async function startFoundationAdminClient(
             value.postchecksVerified !== false ||
             ![value.hardDeadline, value.actionDeadline, value.stopNewAt].every(
               (time) => typeof time === 'string' && Number.isFinite(Date.parse(time)),
-            )
+            ) ||
+            (originalDeadlineAtMs !== undefined &&
+              (Date.parse(value.hardDeadline) !== originalDeadlineAtMs + 600000 ||
+                Date.parse(value.actionDeadline) !== originalDeadlineAtMs ||
+                Date.parse(value.stopNewAt) !== originalDeadlineAtMs - 600000))
           )
             throw fixed();
           ready = Object.freeze(value);

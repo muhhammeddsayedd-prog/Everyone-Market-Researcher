@@ -36,6 +36,10 @@ import {
 import { createFoundationNativeCleanup } from './foundation-native-cleanup.mjs';
 import { foundationAcceptancePlan } from '../../n8n/foundation/materialize-acceptance-case.mjs';
 import { createApifyRecoveryRuntime } from '../../packages/shared/src/n8n-apify-recovery.ts';
+import {
+  verifyFoundationLiveZeroSetup,
+  assertFoundationLiveZeroSetupProof,
+} from './foundation-live-zero-setup.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 const require = createRequire(import.meta.url);
@@ -123,6 +127,10 @@ export async function verifyFoundationLiveSmokeSql({
 
 export function createFoundationLiveAcceptanceSession(input, emit, dependencies = {}) {
   const now = dependencies.now ?? Date.now;
+  const resume =
+    dependencies.zeroSetupProof === undefined
+      ? null
+      : assertFoundationLiveZeroSetupProof(dependencies.zeroSetupProof);
   if (
     !exact(input, [
       'kind',
@@ -153,17 +161,26 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     typeof emit !== 'function'
   )
     fail();
-  const deadlineAt = now() + 3600000;
+  if (resume && (resume.sourceCommitSha !== input.sourceCommitSha || now() >= resume.stopNewAt)) fail();
+  const deadlineAt = resume ? resume.deadlineAt : now() + 3600000;
   const budget = createFoundationLiveManagementBudget(
     { sourceCommitSha: input.sourceCommitSha, deadlineAt },
-    dependencies.storage ?? {},
+    { ...(dependencies.storage ?? {}), now, ...(resume ? { zeroSetupProof: resume } : {}) },
   );
+  if (resume && budget.snapshot().attempts !== 0) {
+    budget.close();
+    fail();
+  }
   const ownerPreflight = foundationLiveAuxiliaryStorage(budget, 'preflight');
   if (ownerPreflight.previousEvents.length) {
     budget.close();
     fail();
   }
   const nativeStorage = foundationLiveAuxiliaryStorage(budget, 'control');
+  if (resume && nativeStorage.previousEvents.length) {
+    budget.close();
+    fail();
+  }
   const controlJournal = createFoundationControlJournal({
     previousEvents: nativeStorage.previousEvents,
     durableAppend: nativeStorage.append,
@@ -323,7 +340,11 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     }
     adminPhysicalClosed = false;
     adminLifecycleVerified = false;
-    admin = await (dependencies.startAdmin ?? startFoundationAdminClient)({ repositoryRoot, now });
+    admin = await (dependencies.startAdmin ?? startFoundationAdminClient)({
+      repositoryRoot,
+      now,
+      ...(resume ? { originalDeadlineAtMs: resume.deadlineAt } : {}),
+    });
     const ready = await admin.postcheck();
     if (ready?.ready !== true || ready.projectRef !== 'zmotjsbzhzjvpelxvxlf' || ready.migrationCount !== 14)
       fail();
@@ -983,7 +1004,20 @@ export async function runFoundationLiveRuntimeCli({
     });
     return 0;
   }
-  if (args.length !== 1 || args[0] !== 'Session') return 1;
+  if (args.length !== 1 || !['Session', 'SessionResumeZeroSetup'].includes(args[0])) return 1;
+  let zeroSetupProof;
+  if (args[0] === 'SessionResumeZeroSetup') {
+    try {
+      zeroSetupProof = assertFoundationLiveZeroSetupProof(
+        (dependencies.verifyZeroSetup ?? verifyFoundationLiveZeroSetup)({
+          now: dependencies.now ?? Date.now,
+        }),
+      );
+    } catch {
+      emit({ kind: 'm03_acceptance_closed', status: 'blocked', residual: true });
+      return 1;
+    }
+  }
   let session,
     running = false,
     finished = false,
@@ -1006,6 +1040,12 @@ export async function runFoundationLiveRuntimeCli({
       }
     }
   };
+  const releaseInput = () => {
+    lines?.close();
+    input.removeListener('data', guard);
+    input.pause();
+    clearTimeout(stopTimer);
+  };
   input.on('data', guard);
   lines = createInterface({ input, crlfDelay: Infinity });
   const jobs = new Set();
@@ -1020,7 +1060,10 @@ export async function runFoundationLiveRuntimeCli({
     }
     if (!session) {
       try {
-        session = createFoundationLiveAcceptanceSession(value, emit, dependencies);
+        session = createFoundationLiveAcceptanceSession(value, emit, {
+          ...dependencies,
+          ...(zeroSetupProof ? { zeroSetupProof } : {}),
+        });
         privateValues = [
           'managementKey',
           'writerPassword',
@@ -1048,6 +1091,7 @@ export async function runFoundationLiveRuntimeCli({
         stopTimer?.unref?.();
       } catch {
         emit({ kind: 'm03_acceptance_closed', status: 'blocked', residual: true });
+        releaseInput();
         return 1;
       }
       continue;
@@ -1130,8 +1174,7 @@ export async function runFoundationLiveRuntimeCli({
       emit({ kind: 'm03_acceptance_closed', status: 'residual', residual: true });
     }
   }
-  input.removeListener('data', guard);
-  clearTimeout(stopTimer);
+  releaseInput();
   return finished && !protocolFailed && !outcomeFailed ? 0 : 1;
 }
 

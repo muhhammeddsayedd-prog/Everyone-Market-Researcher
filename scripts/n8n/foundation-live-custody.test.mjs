@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
-import { spawnSync } from 'node:child_process';
+import { spawnSync, spawn } from 'node:child_process';
 
 // This vertical custody fixture uses the actual Windows wrapper and public
 // module with its fixed Vercel root rebound to an isolated public fixture,
@@ -15,7 +15,7 @@ const packetHash = '009415eccce00939fe5731e846d006728295522fd90849555c197b931ad6
 const windowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9';
 const quoted = (v) => "'" + v.replaceAll("'", "''") + "'";
 const secretValues = ['SyntheticManagement47', 'SyntheticWriter58', 'SyntheticApifyRead69'];
-function runFixture(mode) {
+async function runFixture(mode) {
   const root = mkdtempSync(join(tmpdir(), 'emr-acceptance-custody-'));
   const put = (name, text) => {
     const path = join(root, name);
@@ -75,7 +75,7 @@ else if(process.argv[2]==='Session') {
   assert.equal(v.approvedHead,'${head}');assert.equal(v.sourceCommitSha,'${head}');initialized=true;
   send({kind:'m03_acceptance_ready',status:'private_child_ready'});
  }else if(v.command==='close'){
-  send({kind:'m03_acceptance_closed',status:'${mode === 'residual' ? 'residual' : 'closed'}',baselineRestored:true,environmentCleanupVerified:${mode !== 'residual'},windowClosed:true,remoteWorkSettled:true,residual:${mode === 'residual'},childTransportsClosed:true,adminChildClosed:true});lines.close();break;
+  send({kind:'m03_acceptance_closed',status:'${mode === 'residual' ? 'residual' : 'closed'}',baselineRestored:true,environmentCleanupVerified:${mode !== 'residual'},windowClosed:true,remoteWorkSettled:true,residual:${mode === 'residual'},childTransportsClosed:true,adminChildClosed:true});lines.close();process.stdin.pause();break;
  }else throw Error('SYNTHETIC_PROTOCOL_REFUSED');}
 }else process.exitCode=1;
 `,
@@ -117,18 +117,66 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
     });
     assert.equal(prepared.status, 0, prepared.stderr || prepared.stdout);
     assert.match(prepared.stdout, /SYNTHETIC_CUSTODY_PREPARED/);
-    const result = spawnSync(
-      'powershell.exe',
-      ['-NoProfile', '-NonInteractive', '-File', join(root, 'scripts/n8n/windows/Invoke-M03Acceptance.ps1')],
-      {
-        env: environment,
-        encoding: 'utf8',
-        windowsHide: true,
-        timeout: 40000,
-        input:
-          JSON.stringify({ kind: 'm03_acceptance_command', id: 'fixture_close', command: 'close' }) + '\n',
-      },
-    );
+    const result = await new Promise((done, reject) => {
+      const child = spawn(
+        'powershell.exe',
+        [
+          '-NoProfile',
+          '-NonInteractive',
+          '-File',
+          join(root, 'scripts/n8n/windows/Invoke-M03Acceptance.ps1'),
+        ],
+        {
+          env: environment,
+          windowsHide: true,
+          stdio: ['pipe', 'pipe', 'pipe'],
+        },
+      );
+      let stdout = '',
+        stderr = '',
+        buffer = '',
+        lastPublicKind = 'none';
+      const timer = setTimeout(() => {
+        child.stdin.end();
+        spawnSync('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], {
+          windowsHide: true,
+          stdio: 'ignore',
+        });
+        reject(Error('SYNTHETIC_WRAPPER_TIMEOUT ' + lastPublicKind));
+      }, 35000);
+      child.on('error', reject);
+      child.stdout.on('data', (chunk) => {
+        stdout += chunk;
+        buffer += chunk;
+        while (buffer.includes('\n')) {
+          const at = buffer.indexOf('\n'),
+            line = buffer.slice(0, at).trim();
+          buffer = buffer.slice(at + 1);
+          if (!line) continue;
+          const value = JSON.parse(line);
+          lastPublicKind = value.kind;
+          if (value.kind === 'm03_acceptance_transport_ready') {
+            if (mode === 'transport_eof') child.stdin.end();
+            else if (mode !== 'transport_silent')
+              child.stdin.write(
+                JSON.stringify({ kind: 'm03_acceptance_transport_ack', nonce: value.nonce }) + '\n',
+              );
+          }
+          if (value.kind === 'm03_acceptance_ready')
+            child.stdin.write(
+              JSON.stringify({ kind: 'm03_acceptance_command', id: 'fixture_close', command: 'close' }) +
+                '\n',
+            );
+        }
+      });
+      child.stderr.on('data', (chunk) => {
+        stderr += chunk;
+      });
+      child.on('close', (status) => {
+        clearTimeout(timer);
+        done({ status, stdout, stderr });
+      });
+    });
     assert.equal(result.stderr, '');
     for (const value of [...secretValues, 'Z'.repeat(43), 'SyntheticParentPasswordMustNotReachChild'])
       assert.equal((result.stdout + result.stderr).includes(value), false);
@@ -137,7 +185,12 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
       .split(/\r?\n/)
       .map((line) => JSON.parse(line));
     const receipt = rows.at(-1);
-    if (mode === 'short_lease' || mode === 'extra_lease') {
+    if (
+      mode === 'short_lease' ||
+      mode === 'extra_lease' ||
+      mode === 'transport_eof' ||
+      mode === 'transport_silent'
+    ) {
       assert.equal(result.status, 1);
       assert.equal(receipt.privateRead, false);
       assert.equal(receipt.handoffsDeleted, false);
@@ -145,7 +198,7 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
         assert.equal(existsSync(join(root, 'Temp', `emr-m03-acceptance-${kind}.dpapi`)), true);
     } else {
       assert.equal(result.status, mode === 'residual' ? 1 : 0);
-      assert.equal(rows[0].status, 'private_child_ready');
+      assert.equal(rows.find((row) => row.kind === 'm03_acceptance_ready').status, 'private_child_ready');
       assert.equal(receipt.childClosed, true);
       assert.equal(receipt.handoffsDeleted, true);
       assert.equal(receipt.pendingMachinePreserved, true);
@@ -168,7 +221,14 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
     rmSync(root, { recursive: true, force: true });
   }
 }
-for (const mode of ['complete', 'residual', 'short_lease', 'extra_lease'])
+for (const mode of [
+  'complete',
+  'residual',
+  'short_lease',
+  'extra_lease',
+  'transport_eof',
+  'transport_silent',
+])
   test(
     `actual Windows custody wrapper with scripted private child: ${mode}`,
     { skip: process.platform !== 'win32' },

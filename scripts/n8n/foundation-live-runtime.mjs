@@ -35,6 +35,7 @@ import {
 } from './foundation-control-state.mjs';
 import { prepareFoundationRuntimeMachinePatch } from './foundation-runtime-machine.mjs';
 import { createFoundationLiveManagementTransport } from './foundation-live-runtime-transport.mjs';
+import { assertFoundationLiveZeroSetupProof } from './foundation-live-zero-setup.mjs';
 
 const fail = () => {
   throw Error('FOUNDATION_LIVE_RUNTIME_BLOCKED');
@@ -92,6 +93,10 @@ function appendFile(path, row) {
 // Its deadline is supplied by the concrete admitted child, never module import.
 export function createFoundationLiveManagementBudget({ sourceCommitSha, deadlineAt }, dependencies = {}) {
   const now = dependencies.now ?? Date.now;
+  const resume =
+    dependencies.zeroSetupProof === undefined
+      ? null
+      : assertFoundationLiveZeroSetupProof(dependencies.zeroSetupProof);
   if (
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
     typeof now !== 'function' ||
@@ -100,9 +105,18 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     deadlineAt > now() + 3600000
   )
     fail();
+  if (
+    resume &&
+    (resume.sourceCommitSha !== sourceCommitSha ||
+      resume.deadlineAt !== deadlineAt ||
+      now() >= resume.stopNewAt)
+  )
+    fail();
   const directory = resolve(dependencies.directory ?? join(repo, 'scripts/n8n/out/foundation/live'));
   noLinks(directory);
-  mkdirSync(directory, { recursive: true });
+  if (resume) {
+    if (!lstatSync(directory).isDirectory()) fail();
+  } else mkdirSync(directory, { recursive: true });
   noLinks(directory);
   const lockPath = join(directory, 'runtime.operation.lock');
   let lock;
@@ -134,7 +148,8 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     }
     fsyncSync(lock);
     const path = join(directory, 'management.jsonl');
-    if (!existsSync(path))
+    if (resume && !lstatSync(path).isFile()) fail();
+    if (!resume && !existsSync(path))
       appendFile(path, { event: 'management_header', version: 1, sourceCommitSha, deadlineAt });
     const rows = readRows(path, 513),
       header = rows.shift();
@@ -145,6 +160,7 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       header.version !== 1 ||
       header.sourceCommitSha !== sourceCommitSha ||
       header.deadlineAt !== deadlineAt ||
+      (resume && rows.length !== 0) ||
       rows.some(
         (r, i) => Object.keys(r).length !== 2 || r.event !== 'management_attempt' || r.ordinal !== i + 1,
       )

@@ -7,7 +7,7 @@ import { startFoundationAdminClient } from './foundation-admin-client.mjs';
 import { verifyFoundationTypes } from './check-foundation-types.mjs';
 
 const epoch = Date.parse('2026-10-21T10:00:00.000Z');
-function fixture({ badReady = false, stderr = false, overflow = false } = {}) {
+function fixture({ badReady = false, stderr = false, overflow = false, originalDeadlineAtMs } = {}) {
   const calls = [],
     child = new EventEmitter();
   let input = '';
@@ -61,6 +61,9 @@ function fixture({ badReady = false, stderr = false, overflow = false } = {}) {
     spawn(executable, args, options) {
       assert.match(executable, /WindowsPowerShell/);
       assert.ok(args.includes('-PhaseAControl'));
+      if (originalDeadlineAtMs !== undefined) {
+        assert.equal(args[args.indexOf('-OriginalDeadlineAtMs') + 1], String(originalDeadlineAtMs));
+      }
       assert.equal(Object.hasOwn(options.env, 'PGPASSWORD'), false);
       assert.equal(Object.hasOwn(options.env, 'SUPABASE_ACCESS_TOKEN'), false);
       assert.equal(options.windowsHide, true);
@@ -74,9 +77,15 @@ function fixture({ badReady = false, stderr = false, overflow = false } = {}) {
                 runId: 'fixture-run',
                 historyAfter: 'complete',
                 projectRef: 'zmotjsbzhzjvpelxvxlf',
-                hardDeadline: new Date(epoch + 4200000).toISOString(),
-                actionDeadline: new Date(epoch + 3600000).toISOString(),
-                stopNewAt: new Date(epoch + 3000000).toISOString(),
+                hardDeadline: new Date(
+                  originalDeadlineAtMs === undefined ? epoch + 4200000 : originalDeadlineAtMs + 600000,
+                ).toISOString(),
+                actionDeadline: new Date(
+                  originalDeadlineAtMs === undefined ? epoch + 3600000 : originalDeadlineAtMs,
+                ).toISOString(),
+                stopNewAt: new Date(
+                  originalDeadlineAtMs === undefined ? epoch + 3000000 : originalDeadlineAtMs - 600000,
+                ).toISOString(),
                 postchecksVerified: false,
               }) + '\n',
         );
@@ -114,6 +123,28 @@ test('same-child client uses fixed protocol without delivering a password to Nod
   assert.equal(done.childClosed, true);
   assert.deepEqual(f.calls.find((c) => c.kind === 'settlement').args.terminalCosts, []);
   assert.equal(client.state().childClosed, true);
+});
+test('zero-setup continuation forwards only the fixed original clock and rejects fresh or extended clocks', async () => {
+  const deadline = 1792584023481,
+    now = () => deadline - 1800000;
+  const f = fixture({ originalDeadlineAtMs: deadline });
+  const client = await startFoundationAdminClient({ now, originalDeadlineAtMs: deadline }, f.deps);
+  assert.equal(Date.parse(client.ready.actionDeadline), deadline);
+  assert.equal(Date.parse(client.ready.stopNewAt), deadline - 600000);
+  assert.equal(Date.parse(client.ready.hardDeadline), deadline + 600000);
+  await client.end();
+  for (const value of [deadline + 1, deadline - 1, '1792584023481'])
+    await assert.rejects(
+      startFoundationAdminClient({ now, originalDeadlineAtMs: value }, fixture().deps),
+      /FOUNDATION_ADMIN_BLOCKED/,
+    );
+  await assert.rejects(
+    startFoundationAdminClient(
+      { now: () => deadline - 600000, originalDeadlineAtMs: deadline },
+      fixture().deps,
+    ),
+    /FOUNDATION_ADMIN_BLOCKED/,
+  );
 });
 test('foreign SQL and overlapping command requests cannot cross the fixed child protocol', async () => {
   await assert.rejects(
