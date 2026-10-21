@@ -3,6 +3,10 @@ import {
   assertFoundationLiveRemainingContinuationProof,
   assertFoundationRemainingControlResume,
 } from './foundation-live-remaining-continuation.mjs';
+import {
+  assertFoundationLiveStartupReplacementProof,
+  assertFoundationStartupReplacementControlResume,
+} from './foundation-live-startup-replacement.mjs';
 
 const journals = new WeakSet();
 const budgets = new WeakMap();
@@ -147,6 +151,7 @@ export function createFoundationControlBudget({
   now = Date.now,
   deadlineAt,
   remainingContinuationProof,
+  startupReplacementProof,
 }) {
   assertFoundationControlJournal(journal);
   if (!Number.isFinite(deadlineAt) || typeof now !== 'function') fail();
@@ -154,14 +159,22 @@ export function createFoundationControlBudget({
     remainingContinuationProof === undefined
       ? null
       : assertFoundationLiveRemainingContinuationProof(remainingContinuationProof, { claimed: true });
+  const startup =
+    startupReplacementProof === undefined
+      ? null
+      : assertFoundationLiveStartupReplacementProof(startupReplacementProof, { claimed: true });
+  if (startup && remaining) fail();
+  const continuation = startup || remaining;
   if (
-    remaining &&
-    (remaining.deadlineAt !== deadlineAt || now() < remaining.startsAt || now() >= remaining.stopNewAt)
+    continuation &&
+    (continuation.deadlineAt !== deadlineAt ||
+      now() < continuation.startsAt ||
+      now() >= continuation.stopNewAt)
   )
     fail();
   if (budgets.has(journal)) {
     const old = budgets.get(journal);
-    if (old.deadlineAt !== deadlineAt || (remaining && old.remaining !== remaining)) fail();
+    if (old.deadlineAt !== deadlineAt || (continuation && old.remaining !== continuation)) fail();
     return old.budget;
   }
   const kinds = new Set([
@@ -188,15 +201,17 @@ export function createFoundationControlBudget({
     )
       fail();
   };
-  const carriedAttempts = remaining ? remaining.carriedControlAttempts : 0;
+  const carriedAttempts = continuation ? continuation.carriedControlAttempts : 0;
+  if (startup)
+    assertFoundationStartupReplacementControlResume(startup, { deadlineAt, previousEvents: journal.rows });
   if (remaining)
     assertFoundationRemainingControlResume(remaining, { deadlineAt, previousEvents: journal.rows });
   if (
     prior.length + carriedAttempts > 2048 ||
     prior.some((r, i) => r.ordinal !== i + 1) ||
-    (remaining &&
-      (prior.length !== 100 ||
-        journal.rows.length !== 100 ||
+    (continuation &&
+      (prior.length !== (startup ? 150 : 100) ||
+        journal.rows.length !== (startup ? 150 : 100) ||
         prior.some((r) => r.kind !== 'discovery' || Object.hasOwn(r, 'executionId'))))
   )
     fail();
@@ -244,7 +259,7 @@ export function createFoundationControlBudget({
         deadlineAt,
       }),
   });
-  budgets.set(journal, { budget, deadlineAt, remaining });
+  budgets.set(journal, { budget, deadlineAt, remaining: continuation });
   budgetOwners.set(budget, { journal, deadlineAt });
   return budget;
 }

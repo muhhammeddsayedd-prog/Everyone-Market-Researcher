@@ -1,0 +1,178 @@
+{
+  "kind": "m03_startup_replacement_public_readiness",
+  "version": 1,
+  "observedAt": "2026-10-21T23:59:44.068Z",
+  "environment": "local Windows public-only; no new hosted acceptance",
+  "proposedSegmentId": "1c69c89e-7807-46d5-b7b8-ca28285ff2b4",
+  "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+  "authority": {
+    "approvalRecorded": false,
+    "admissionCreated": false,
+    "runtimeClaimCreated": false,
+    "clockStarted": false,
+    "credentialDeliveryRequested": false,
+    "privateRead": false,
+    "credentialMetadataInspected": false,
+    "authenticationAttempts": 0,
+    "networkRequests": 0
+  },
+  "publicPins": {
+    "checkpointSha256": "e144d73dfbcab1e5a286ab9ba11df28bcbd10c8a9ad39eecb7852fee3d61d758",
+    "packetSha256": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0",
+    "consumerSha256": "6b1c4baadf27ca0d6b335023bb6b44662a7af0a7019141ccc8216b20f6e3be7a",
+    "sealSha256": "5508be0c35a07b5ea2dfb6af7e287ce905d9d8cbd37c36965a6d0641062de30f",
+    "packetMembersVerified": 39,
+    "trackedMembersGitIndexVerified": 37,
+    "untrackedInstalledPublicDependencies": 2,
+    "historicalRecordsVerified": 24,
+    "trackedHistoricalRecordsGitIndexVerified": 11,
+    "migrationFileRecords": 14,
+    "historyVersionAndFingerprintRecordsUnchanged": true,
+    "newReactivationSqlDiff": "only fixed audit segment UUID differs from reviewed predecessor",
+    "powerShellLineEndings": "four changed files normalized to LF under existing gitattributes; three source pins updated"
+  },
+  "reviews": [
+    {
+      "reviewer": "m03_transport_review",
+      "result": "no actionable P1/P2 in scoped integration review"
+    },
+    {
+      "reviewer": "startup_fresh_review",
+      "result": "no actionable P1/P2 in fresh-context guard/contract/integration review"
+    }
+  ],
+  "affectedTests": [
+    {
+      "chunks": [
+        "e24c0e",
+        "9e400c"
+      ],
+      "nativeExit": 0,
+      "tests": 62,
+      "passed": 62,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "guard; integration; control; runtime resume/CLI; postcheck/remaining/clock; setup"
+    },
+    {
+      "chunks": [
+        "97b87a",
+        "8cabbb"
+      ],
+      "nativeExit": 0,
+      "tests": 48,
+      "passed": 47,
+      "failed": 0,
+      "skipped": 1,
+      "scope": "DB client/startup; Windows adapters/ancestry/held-writer topology; reactivation/SQL continuation",
+      "limitation": "isolated local PostgreSQL case skipped; no new hosted SQL or acceptance proof"
+    },
+    {
+      "chunks": [
+        "b0ca62",
+        "18641e"
+      ],
+      "nativeExit": 0,
+      "tests": 19,
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "affected public runtime closure, seal, import/dependency/junction mutation rejection"
+    }
+  ],
+  "staticChecks": {
+    "affectedEslint": "pass",
+    "affectedPrettier": "pass",
+    "workingAndStagedDiffCheck": "pass",
+    "targetedIndexedSecretScan": {
+      "chunk": "468957",
+      "trackedFiles": 1280,
+      "violations": 0
+    },
+    "unchangedFullLocalSuiteRepeated": false
+  },
+  "publicChecks": [
+    {
+      "chunk": "4f0f07",
+      "command": "New-M03AcceptancePublicSeal.ps1 -ReplaceReviewedSeal",
+      "nativeExit": 0,
+      "status": "acceptance_public_seal_ready",
+      "projectFiles": 129,
+      "runtimeFiles": 840,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    {
+      "chunk": "b7af95",
+      "command": "foundation-live-startup-replacement.mjs CheckOnly",
+      "nativeExit": 0,
+      "status": "approval_required",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    {
+      "chunks": [
+        "2e3e87",
+        "c83748"
+      ],
+      "command": "Invoke-M03Acceptance.ps1 -CheckOnly -StartupReplacement",
+      "nativeExit": 0,
+      "status": "startup_replacement_approval_required",
+      "publicCompositionLoaded": true,
+      "adminPublicInputsVerified": false,
+      "adminHandoffReady": false,
+      "actualMcpPortVerified": false,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    {
+      "chunk": "a7770c",
+      "command": "Invoke-M03FoundationMigrations.ps1 -CheckOnly -PhaseAControl -StartupReplacement",
+      "nativeExit": 3,
+      "status": "M03_FOUNDATION APPROVAL_REQUIRED",
+      "privateRead": false,
+      "networkRequests": 0,
+      "note": "explicit LASTEXITCODE propagation verifies native3; first outer PowerShell invocation reported generic exit1 with the same fixed approval-required line"
+    }
+  ],
+  "validationCorrection": {
+    "firstGitIndexCheck": "failed on installed untracked TypeScript public dependency; no secret or code failure",
+    "correctedCheck": "all39 current disk pins verified;37 tracked pins and11 tracked historical records verified against Git index; all24 historical pins verified on disk"
+  },
+  "preservedState": {
+    "usedManagement": 4,
+    "usedControl": 151,
+    "usedCombined": 155,
+    "nativeExecutions": 0,
+    "gatewayAttempts": 0,
+    "providerGetAttempts": 0,
+    "actorStarts": 0,
+    "actorSpendUsd": 0,
+    "priorSpentAdmissionsPreserved": true,
+    "completedDevMigrations": 14,
+    "hostedMigrationReplay": false,
+    "consumedTemporaryLeavesDeleted": 9,
+    "unusedEncryptedAdminPair": "preserved as last independently observed; no new metadata read",
+    "savedOriginalsAndMachinePreserved": true,
+    "finalHistoricalWrapperReceiptPreserved": false,
+    "unknownOrphanClosureProven": false,
+    "fullDAccepted": false
+  },
+  "ciBoundary": {
+    "historicalRepairHead": "6d31eb4e8249d9cd0e1becbaf56a203558413e3e",
+    "historicalRepairCi": 39693886571,
+    "currentProposal": "normal PR8 checks on the commit containing this evidence must pass before presenting the owner decision; no future run is claimed here"
+  },
+  "nextOwnerDecision": "Approve one M03 A?D startup-replacement dev window and exact retained-C999 reactivation at the reviewed PR #8 head, preserving all prior attempts and aggregate caps; no migration replay.",
+  "excluded": {
+    "production": true,
+    "recurringSchedules": true,
+    "externalNotifications": true,
+    "sharedCredentialChanges": true,
+    "privateIncidentExecution": true,
+    "merge": true,
+    "m03Closure": true,
+    "m04": true
+  }
+}

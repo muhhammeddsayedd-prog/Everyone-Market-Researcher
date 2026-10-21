@@ -5,7 +5,7 @@
 
 ## Status
 
-**In progress — local startup/custody repair and exact temporary cleanup completed after the consumed remaining attempt. Evidence and normal new-head CI pending; no new owner input, handoff or time authority requested.**
+**In progress — concrete startup-replacement proposal/consumer reviewed and public readiness complete. Verify final delivery CI before the one new time/retained-C999 owner decision. Approval remains absent; no credential handoff/admission and live A–D/full-D remains open.**
 
 Four deliveries and 75-minute metadata coverage passed before admission. Prepare
 then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
@@ -16,22 +16,70 @@ advisor/type evidence and archived/paused C999 stay distinct from this attempt
 and open A–D business acceptance. GW01 remains closed; no migration replay,
 production, private incident R2 execution, PR8 merge or M04.
 
-| Field                          | Value                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Started                        | 2026-10-18 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Last updated                   | 2026-10-22 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Finished                       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Branch / PR                    | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset                                                                                                                                                                                       |
-| Current delivery checkpoint    | Stable `5a99d64d07ac78af4320aaca0edf50912ad6f258` / [CI39690616824](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39690616824) all five jobs and Vercel passed before this attempt. Source CI is not live A–D acceptance; the local remedy receives separate review/checks and normal CI.                                                                                                                      |
-| Selected runtime source        | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
-| Selected-source CI             | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance.                                                                                                                                                                                                       |
-| Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                              |
-| GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                |
-| Current task                   | Local parent-lock reader, branded startup/closure evidence and public final-wrapper reader repaired/reviewed; combined targeted 71/71 and public seal pass. Exact nine-leaf cleanup independently verified, Admin two files preserved. Historical missing receipt/unknown-orphan limits and actual A–D/full-D remain open.                                                                                                                        |
-| Next step                      | Finish evidence/delivery checks and normal new-head CI. Preserve admissions/raw journal prefixes/14 checkpoint records and current 4/151/155 accounting. No full CheckOnly against spent authority, prepare replay, new auth/handoff/time request, migration replay or automatic renewal.                                                                                                                                                         |
-| Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.      |
+| Field                          | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Started                        | 2026-10-18 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Last updated                   | 2026-10-22 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Finished                       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Branch / PR                    | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset                                                                                                                                                                                                                                                  |
+| Current delivery checkpoint    | Concrete startup-replacement proposal/consumer reviewed with no actionable P1/P2; [public readiness](evidence/dev-acceptance-startup-replacement-readiness-20261022.json) complete. Normal [PR8 checks](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8) for the commit containing this evidence must pass before the owner question; no future result/head claimed. Historical repair source `6d31eb4e8249d9cd0e1becbaf56a203558413e3e` / CI39693886571 is source evidence only. |
+| Selected runtime source        | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json).                                                            |
+| Selected-source CI             | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance.                                                                                                                                                                                                                                                                  |
+| Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                                                                                         |
+| GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                                                                           |
+| Current task                   | Public seal 4f0f07, direct guard b7af95, full wrapper c83748 and explicit Admin approval gate a7770c verify preapproval public readiness, without private metadata/auth/network. One distinct time/retained-C999 decision remains absent; no handoff/admission or live proof. Preserve e803/155 requests/14 records/cleanup nine/Admin pair/closure limits.                                                                                                                                                  |
+| Next step                      | Verify this commit's ordinary PR8 delivery CI, then present the single exact proposed startup-replacement time/retained-C999 decision. Only after an actual decision and concrete readiness assess genuinely missing saved-value deliveries. No credential handoff, new auth/admission, spent-consumer retry, migration replay or live work now.                                                                                                                                                             |
+| Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.                                                                 |
 
 ## 21 October A–D approval and actual preflight
+
+### 22 October proposed startup-replacement — implemented/reviewed, not approved
+
+The [concrete proposal](evidence/dev-acceptance-startup-replacement-packet-20261022.md)
+and [checkpoint](evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json)
+define distinct segment `1c69c89e-7807-46d5-b7b8-ca28285ff2b4`. The purpose-bound
+consumer/guard `scripts/n8n/foundation-live-startup-replacement.mjs` is implemented
+and fresh independent review has no actionable P1/P2. Actual public readiness is
+complete. Verify the final commit's ordinary PR8 delivery CI before presenting
+the one owner decision; old repair-source CI is not substituted and no future
+head/result is claimed.
+
+Actual affected JavaScript e24c0e/9e400c: native exit 0, 62 passed/0 skipped.
+Windows database-helper 97b87a/8cabbb: native exit 0, 48 tests/47 passed/one
+local-PostgreSQL case skipped/no failures. Do not sum overlapping independent
+suites or infer SQL/live acceptance from that skipped case. Fresh
+`startup_fresh_review` has no actionable P1/P2. Public readiness is complete;
+final delivery CI remains a separate gate before the owner question.
+
+[Actual readiness](evidence/dev-acceptance-startup-replacement-readiness-20261022.json):
+public seal **4f0f07** native exit 0 verifies 129 project/840 runtime files.
+Direct guard **b7af95** returns native exit 0/`approval_required`. Full wrapper
+**c83748** returns native exit 0/`startup_replacement_approval_required`,
+`privateRead: false`, network 0, `adminPublicInputsVerified: false`; neither
+Admin handoff nor actual MCP port is verified. Explicit Admin gate **a7770c**
+returns native exit 3/`APPROVAL_REQUIRED` before private metadata/authentication.
+All 39 disk pins/37 Git-index pins, 24 historical records/11 tracked historical
+pins and 14 unchanged migration/history records verify. These are preapproval
+public checks, not authority, private readiness, auth or live acceptance.
+
+The frozen checkpoint pins 24 records, including all 14 old members, spent e803
+admission/claim, failed attempt, exact cleanup intent/result and repair evidence.
+Keep management 4/control 151/combined 155 used requests, original ceilings,
+14 successful migration/history records, nine-leaf cleanup and unused Admin two
+files. Missing historical wrapper receipt/unknown-orphan limits/full-D false
+remain; no later local repair erases them.
+
+The proposal permits no operation by itself. All previous admissions remain
+spent; **no approval, new admission or credential handoff is recorded/requested
+now**. Public readiness is complete; after verifying delivered PR8 checks,
+present one genuine new
+time/exact retained-C999 owner decision below. Proposed timing is one 60-minute
+segment, stop-new 50/physical-close 70/lease floor 75; the original USD2 reserve,
+finite matrix and aggregate caps remain. No migration operation, replacement
+fixture, real-competitor collection, production/private incident execution,
+merge/M03 closure or M04. Public CheckOnly helpers have run as recorded above;
+do not run `Admit`, `ReadClaimed`, `Session`, credential-consuming helpers or the
+spent consumer to test readiness.
 
 ### 22 October actual remaining attempt — consumed; historical failure preserved
 
@@ -112,8 +160,14 @@ exclusive cleanup intent blocks replay. Safe process reconciliation retains the
 unknown-orphan limit, with no whole-workstation or parent-environment clearance
 claim and no replacement for historical physical-close/full-D evidence.
 
-Local repair and exact cleanup are complete; evidence/delivery and normal
-new-head CI remain. **No new owner input, handoff or window request now.**
+Local repair and exact cleanup are delivered. The distinct startup-replacement
+packet/consumer is reviewed and public readiness complete. The single next owner
+action is the new time/retained-C999 decision after final delivery CI verification;
+no decision is recorded and no credential handoff is requested. Old one-use
+admissions remain consumed and no future window is authorized.
+Preserve 155 used requests, all 14 records, old admissions and verified cleanup;
+never retry the spent consumer. This decision is separate from credentials,
+production, merge and acceptance.
 Completed AC3 remains distinct from all actual A–D/full-D criteria. Production,
 private incident R2 execution, merge and M04 remain untouched.
 [Verified cleanup](evidence/dev-acceptance-remaining-cleanup-20261022.json),
@@ -789,8 +843,13 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
   diagnostics prevent excluding an earlier simultaneous gate. No new DB receipt
   or password rejection is established. Aggregate management 4/control 151/
   combined 155 is conserved. Local repair/review and exact nine-leaf cleanup are
-  complete; Admin two files remain untouched. Evidence/normal new-head CI
-  pending; no new owner input/handoff/time request.
+  delivered; Admin two files remain untouched. Live A–D is blocked because all
+  one-use admissions are consumed, not because another credential action is
+  missing. No future window is authorized. The distinct startup-replacement
+  packet/consumer is reviewed with no actionable P1/P2 and public readiness
+  complete. Verify final delivery CI before presenting the single proposed new
+  time/retained-C999 owner decision, still absent. Preserve 155 requests,
+  14 records, old admissions and current cleanup. No credential handoff now.
 - The external reader lost final wrapper-close after the failure. Parent native exit 1
   and safe CIM no current roots/reachable children do not prove unknown-orphan
   absence or replace the missing physical-custody/full-D receipt. Restore/close
@@ -820,7 +879,32 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-### MA-04 / MA-11 — delivery fulfilled; local repair/cleanup complete, no current owner action
+### MA-11 — one startup-replacement decision, after final delivery CI
+
+**Decision outstanding; no approval recorded.** Public readiness is complete.
+Verify the final commit's normal PR8 delivery CI before presenting this question.
+Then open the [exact proposed packet](evidence/dev-acceptance-startup-replacement-packet-20261022.md)
+and [PR8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8)
+at the reviewed delivered head. The single genuine decision changes the spent
+time authority and permits only the packet's exact retained-C999 status/audit
+operation under fresh dev vacancy/ownership checks. Expected non-secret result:
+one explicit new decision, not a credential/authentication or live-pass receipt.
+Exact reply:
+
+**Approve one M03 A–D startup-replacement dev window and exact retained-C999
+reactivation at the reviewed PR #8 head, preserving all prior attempts and
+aggregate caps; no migration replay.**
+
+The proposal/consumer is reviewed with no actionable P1/P2 and
+[public readiness complete](evidence/dev-acceptance-startup-replacement-readiness-20261022.json).
+Public CheckOnly ran; no `Admit`, `ReadClaimed`, `Session`, credential-consuming
+helper, admission or credential handoff is authorized now. After an actual
+decision and concrete readiness, assess only genuinely missing purpose-bound
+saved-value deliveries; do not ask for resets, new keys or setup. Preserve the
+unused Admin pair. Production, private incident execution, merge/closure and M04
+remain separate/unstarted.
+
+### Historical MA-04 / MA-11 — delivery fulfilled; repair/cleanup delivered
 
 **Completed delivery; do not repeat.** Exact approvalcbc097 and the later owner
 reply **M03 remaining-window handoffs ready** are recorded. Metadata receipt 7146ff
@@ -829,9 +913,12 @@ admitted and consumed. Admin startup did not return ready. Its held-open public
 lock reader defect is reproduced/corrected locally, while lost raw diagnostics
 prevent excluding an earlier simultaneous gate. Nine-leaf cleanup fd3fa5/native
 exit 0 and absence read a3c6aa are verified; Admin two files remain preserved.
-Local repair/review is complete; finish evidence and normal new-head CI without
-another credential/window request or replaying spent authority. No historical
-password rejection or new authentication is claimed.
+Local repair/review and cleanup are delivered. All one-use admissions are spent;
+no future window is authorized. Prepare a distinct concrete replacement-window
+packet and purpose-bound consumer/guard before any fresh owner decision or
+credential delivery, preserving 155 requests, 14 records, old admissions and
+current cleanup. No credential/window request or spent-consumer retry now.
+No historical password rejection or new authentication is claimed.
 
 These are the **historical delivery commands**, retained for provenance only;
 the following prompt/readiness instructions are not a current action:
@@ -870,8 +957,10 @@ admission is consumed/closed. The new retained-fixture operation also needs this
 specific decision, now supplied. Existing local M03 authorization is unchanged.
 The actual reply is pinned/reviewed. Subsequent delivery and e803 admission are
 now consumed; no clock starts from this file or the old reply and no owner
-delivery is requested now. Preserve that admission and finish repair evidence/
-normal new-head CI before assessing any genuine future authority need.
+delivery is requested now. Preserve that admission and prepare/review a distinct
+concrete replacement-window packet and purpose-bound consumer/guard before
+assessing a fresh owner decision or credential delivery. No future window is
+authorized by the old reply or this record.
 
 MA-02 is verified complete on22October by actual fixed GET f3102d/HTTP200/native0/
 all12predicates and child closure. No more login, setup, key creation or reset.
@@ -1276,6 +1365,49 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-22 Cairo: Final public readiness complete: seal 4f0f07 native exit 0,
+  129 project/840 runtime files; direct guard b7af95 native exit 0 approval_required;
+  wrapper c83748 native exit 0 startup_replacement_approval_required/privateRead
+  false/network 0/Admin public inputs false. Explicit Admin a7770c native exit 3
+  APPROVAL_REQUIRED before private metadata/auth. All 39 disk/37 indexed pins,
+  24 history/11 tracked pins and 14 unchanged records verified. Verify the final
+  commit's normal PR8 CI before the single time/retained-C999 owner decision;
+  no future result/head claimed. Approval/handoff/admission absent; e803/155
+  requests/cleanup nine/Admin two/lost-wrapper/unknown-orphan/full-D limits kept.
+  No live A–D, production/private R2 execution/merge/M04.
+  [Actual readiness](evidence/dev-acceptance-startup-replacement-readiness-20261022.json).
+
+- 2026-10-22 Cairo: Concrete proposed startup-replacement packet/checkpoint and
+  purpose-bound consumer/guard implemented for segment 1c69c89e; fresh independent
+  review has no actionable P1/P2. Actual affected JS e24c0e/9e400c native exit 0:
+  62 passed/0 skipped. Windows helper 97b87a/8cabbb native exit 0: 48 tests,
+  47 passed/one local-PG skip/no failures; no overlapping-suite sum or SQL/live
+  pass inferred. Public readiness/current PR8 delivery CI pending,
+  no approval/handoff/admission now. After delivery, one exact new time/retained-C999
+  owner decision; old repair-source 6d31eb4/CI39693886571 remains historical.
+  Frozen 24-record checkpoint preserves e803/155 requests/14 history records/
+  cleanup nine/Admin two and missing-wrapper/unknown-orphan/full-D false limits.
+  No spent-consumer retry/migration replay/production/private R2 execution/merge/M04.
+  [Proposed packet](evidence/dev-acceptance-startup-replacement-packet-20261022.md),
+  [checkpoint](evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json).
+
+- 2026-10-22 Cairo: Closing source checkpoint `6d31eb4e8249d9cd0e1becbaf56a203558413e3e`
+  delivers local startup/custody repair and exact cleanup. Actual 36fc8f verifies
+  [CI39693886571](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39693886571)
+  all five jobs passed; 68204a verifies Vercel SUCCESS, draft/open PR8 and clean
+  tree at that checkpoint. Source checks do not establish live A–D/full-D.
+  All one-use admissions are consumed; no future window is authorized and no
+  owner credential action is outstanding. Next local task is a distinct concrete
+  replacement-window packet and purpose-bound consumer/guard, validated/reviewed
+  before any fresh owner decision or private delivery. Preserve 155 used
+  requests, 14 records, old admissions and exact cleanup; never retry the spent
+  consumer. No new auth/migration replay/production/private R2 execution/merge/M04.
+  Follow this substantive handoff's normal checks in
+  [PR8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8);
+  no future-head pass is claimed. Do not make another CI-only announcement commit.
+  [Cleanup](evidence/dev-acceptance-remaining-cleanup-20261022.json),
+  [startup repair](evidence/dev-acceptance-startup-repair-20261022.md).
 
 - 2026-10-22 Cairo: Local native held-open reproduction identifies unconditional
   `ReadAllText` sharing conflict 32 before password read. Dedicated public-lock

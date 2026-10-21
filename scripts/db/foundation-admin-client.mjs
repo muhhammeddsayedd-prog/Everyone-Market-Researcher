@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { assertFoundationLiveClockAmendmentProof } from '../n8n/foundation-live-clock-amendment.mjs';
 import { assertFoundationLivePostcheckContinuationProof } from '../n8n/foundation-live-postcheck-continuation.mjs';
 import { assertFoundationLiveRemainingContinuationProof } from '../n8n/foundation-live-remaining-continuation.mjs';
+import { assertFoundationLiveStartupReplacementProof } from '../n8n/foundation-live-startup-replacement.mjs';
 import { fileURLToPath } from 'node:url';
 
 const fixed = () => Error('FOUNDATION_ADMIN_BLOCKED');
@@ -37,6 +38,10 @@ const prePrivateDiagnostics = new Map([
   ],
   [
     'M03_FOUNDATION APPROVAL_REQUIRED. New remaining segment has no owner time authority; no credential metadata, private contents or authentication read.',
+    'approval_required',
+  ],
+  [
+    'M03_FOUNDATION APPROVAL_REQUIRED. New startup replacement has no owner time authority; no credential metadata, private contents or authentication read.',
     'approval_required',
   ],
 ]);
@@ -87,6 +92,7 @@ export async function startFoundationAdminClient(
     clockAmendmentProof,
     postcheckContinuationProof,
     remainingContinuationProof,
+    startupReplacementProof,
   } = {},
   deps = {},
 ) {
@@ -94,6 +100,35 @@ export async function startFoundationAdminClient(
   let amendment;
   let continuation;
   let remaining;
+  let startup;
+  if (
+    [
+      originalDeadlineAtMs,
+      clockAmendmentProof,
+      postcheckContinuationProof,
+      remainingContinuationProof,
+      startupReplacementProof,
+    ].filter((v) => v !== undefined).length > 1
+  )
+    throw fixed();
+  if (startupReplacementProof !== undefined) {
+    try {
+      startup = assertFoundationLiveStartupReplacementProof(startupReplacementProof, { claimed: true });
+    } catch {
+      throw fixed();
+    }
+    if (
+      startup.segmentId !== '1c69c89e-7807-46d5-b7b8-ca28285ff2b4' ||
+      startup.sourceCommitSha !== 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' ||
+      startup.windowId !== 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' ||
+      startup.carriedManagementAttempts !== 3 ||
+      startup.carriedControlAttempts !== 1 ||
+      now() < startup.startsAt ||
+      now() >= startup.stopNewAt
+    )
+      throw fixed();
+    continuation = startup;
+  }
   if (remainingContinuationProof !== undefined) {
     try {
       remaining = assertFoundationLiveRemainingContinuationProof(remainingContinuationProof, {
@@ -170,8 +205,11 @@ export async function startFoundationAdminClient(
         resolve(root, 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1'),
         '-PhaseAControl',
         ...(amendment === undefined ? [] : ['-ClockAmendment']),
-        ...(continuation === undefined || remaining !== undefined ? [] : ['-PostcheckContinuation']),
+        ...(continuation === undefined || remaining !== undefined || startup !== undefined
+          ? []
+          : ['-PostcheckContinuation']),
         ...(remaining === undefined ? [] : ['-RemainingContinuation']),
+        ...(startup === undefined ? [] : ['-StartupReplacement']),
         ...(originalDeadlineAtMs === undefined
           ? []
           : ['-OriginalDeadlineAtMs', String(originalDeadlineAtMs)]),
@@ -280,6 +318,7 @@ export async function startFoundationAdminClient(
               ...(amendment === undefined ? [] : ['clockSegmentId']),
               ...(continuation === undefined ? [] : ['clockSegmentId', 'postcheckContinuation']),
               ...(remaining === undefined ? [] : ['remainingContinuation']),
+              ...(startup === undefined ? [] : ['startupReplacement']),
             ]) ||
             value.type !== 'foundation_admin_ready' ||
             value.historyAfter !== 'complete' ||
@@ -303,7 +342,8 @@ export async function startFoundationAdminClient(
                 Date.parse(value.hardDeadline) !== continuation.hardDeadlineAt ||
                 Date.parse(value.actionDeadline) !== continuation.deadlineAt ||
                 Date.parse(value.stopNewAt) !== continuation.stopNewAt)) ||
-            (remaining !== undefined && value.remainingContinuation !== true)
+            (remaining !== undefined && value.remainingContinuation !== true) ||
+            (startup !== undefined && value.startupReplacement !== true)
           )
             throw fixed();
           ready = Object.freeze(value);

@@ -58,6 +58,11 @@ import {
   claimFoundationRemainingContinuation,
   assertFoundationLiveRemainingContinuationProof,
 } from './foundation-live-remaining-continuation.mjs';
+import {
+  readFoundationStartupReplacement,
+  claimFoundationStartupReplacement,
+  assertFoundationLiveStartupReplacementProof,
+} from './foundation-live-startup-replacement.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 const require = createRequire(import.meta.url);
@@ -165,8 +170,12 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       : assertFoundationLiveRemainingContinuationProof(dependencies.remainingContinuationProof, {
           claimed: true,
         });
-  if ([resume, amendment, previousContinuation, remaining].filter(Boolean).length > 1) fail();
-  const continuation = remaining || previousContinuation;
+  const startup =
+    dependencies.startupReplacementProof === undefined
+      ? null
+      : assertFoundationLiveStartupReplacementProof(dependencies.startupReplacementProof, { claimed: true });
+  if ([resume, amendment, previousContinuation, remaining, startup].filter(Boolean).length > 1) fail();
+  const continuation = startup || remaining || previousContinuation;
   const admittedClock = continuation || amendment;
   if (
     !exact(input, [
@@ -217,9 +226,10 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       ...(amendment ? { clockAmendmentProof: amendment } : {}),
       ...(previousContinuation ? { postcheckContinuationProof: previousContinuation } : {}),
       ...(remaining ? { remainingContinuationProof: remaining } : {}),
+      ...(startup ? { startupReplacementProof: startup } : {}),
     },
   );
-  if ((resume || admittedClock) && budget.snapshot().attempts !== (remaining ? 4 : 0)) {
+  if ((resume || admittedClock) && budget.snapshot().attempts !== (startup || remaining ? 4 : 0)) {
     budget.close();
     fail();
   }
@@ -235,7 +245,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   }
   if (
     continuation &&
-    (nativeStorage.previousEvents.length !== (remaining ? 100 : 50) ||
+    (nativeStorage.previousEvents.length !== (startup ? 150 : remaining ? 100 : 50) ||
       nativeStorage.previousEvents.some(
         (row, index) =>
           row.event !== 'control_request_intent' || row.kind !== 'discovery' || row.ordinal !== index + 1,
@@ -253,8 +263,9 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     now,
     deadlineAt,
     ...(remaining ? { remainingContinuationProof: remaining } : {}),
+    ...(startup ? { startupReplacementProof: startup } : {}),
   });
-  if (continuation && controlBudget.snapshot().attempts !== (remaining ? 101 : 50)) {
+  if (continuation && controlBudget.snapshot().attempts !== (startup ? 151 : remaining ? 101 : 50)) {
     budget.close();
     fail();
   }
@@ -424,6 +435,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         ...(amendment ? { clockAmendmentProof: amendment } : {}),
         ...(previousContinuation ? { postcheckContinuationProof: previousContinuation } : {}),
         ...(remaining ? { remainingContinuationProof: remaining } : {}),
+        ...(startup ? { startupReplacementProof: startup } : {}),
       });
     } catch (error) {
       adminStartupFailure = readFoundationAdminStartupFailure(error);
@@ -480,6 +492,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         journal: setupJournal,
         managementBudget: budget,
         ...(remaining ? { remainingContinuationProof: remaining } : {}),
+        ...(startup ? { startupReplacementProof: startup } : {}),
         now,
         deadlineAt,
         pause,
@@ -1185,6 +1198,7 @@ export async function runFoundationLiveRuntimeCli({
       'SessionClockAmendment',
       'SessionPostcheckContinuation',
       'SessionRemainingContinuation',
+      'SessionStartupReplacement',
     ].includes(args[0])
   )
     return 1;
@@ -1192,6 +1206,7 @@ export async function runFoundationLiveRuntimeCli({
   let clockAmendmentProof;
   let postcheckContinuationProof;
   let remainingContinuationProof;
+  let startupReplacementProof;
   if (args[0] === 'SessionResumeZeroSetup') {
     try {
       zeroSetupProof = assertFoundationLiveZeroSetupProof(
@@ -1252,6 +1267,22 @@ export async function runFoundationLiveRuntimeCli({
       return 1;
     }
   }
+  if (args[0] === 'SessionStartupReplacement') {
+    try {
+      const proof = (dependencies.readStartupReplacement ?? readFoundationStartupReplacement)({
+        now: dependencies.now ?? Date.now,
+      });
+      startupReplacementProof = assertFoundationLiveStartupReplacementProof(
+        (dependencies.claimStartupReplacement ?? claimFoundationStartupReplacement)(proof, {
+          now: dependencies.now ?? Date.now,
+        }),
+        { claimed: true },
+      );
+    } catch {
+      emit({ kind: 'm03_acceptance_closed', status: 'blocked', residual: true });
+      return 1;
+    }
+  }
   let session,
     running = false,
     finished = false,
@@ -1300,6 +1331,7 @@ export async function runFoundationLiveRuntimeCli({
           ...(clockAmendmentProof ? { clockAmendmentProof } : {}),
           ...(postcheckContinuationProof ? { postcheckContinuationProof } : {}),
           ...(remainingContinuationProof ? { remainingContinuationProof } : {}),
+          ...(startupReplacementProof ? { startupReplacementProof } : {}),
         });
         privateValues = [
           'managementKey',

@@ -21,11 +21,14 @@ function Invoke-FoundationMutation([string]$Sql) {
   try { return [ordered]@{nativeExit=$answer.nativeExit;childrenClosed=$answer.closed;acknowledged=($answer.ok -and $answer.closed)} } finally {$answer.text=$null}
 }
 function Foundation-FixtureSql([string]$Name,$ExpectedFixture=$null) {
+  $startupMode=[bool](Get-Variable -Name StartupReplacement -ValueOnly -ErrorAction SilentlyContinue)
+  if($startupMode -and $Name -cnotin @('m03_smoke_reactivate_startup.sql','m03_smoke_teardown.sql')){throw 'blocked'}
+  if($Name -ceq 'm03_smoke_reactivate_startup.sql' -and -not $startupMode){throw 'blocked'}
   $source = [IO.File]::ReadAllText((Assert-Path $repo ('scripts/assert/'+$Name)))
   # Exactly the reviewed psql wrapper is removed. The owner guard, transaction,
   # identity/baseline/ownership assertions and mutation body stay byte-for-byte.
   # Continuation adds only fixed fresh-fixture preconditions below.
-  $tag=if($Name -ceq 'm03_smoke_setup.sql'){'smoke_setup'}elseif($Name -ceq 'm03_smoke_reactivate.sql' -and $RemainingContinuation){'smoke_reactivate'}else{'smoke_teardown'}
+  $tag=if($Name -ceq 'm03_smoke_setup.sql'){'smoke_setup'}elseif(($Name -ceq 'm03_smoke_reactivate.sql' -and $RemainingContinuation) -or ($Name -ceq 'm03_smoke_reactivate_startup.sql' -and $startupMode)){'smoke_reactivate'}else{'smoke_teardown'}
   $start = $source.IndexOf('do $'+$tag+'$')
   $end = $source.IndexOf('$'+$tag+'$;',$start)
   if ($start -lt 0 -or $end -le $start) { throw 'blocked' }
@@ -37,6 +40,10 @@ function Foundation-FixtureSql([string]$Name,$ExpectedFixture=$null) {
   if($Name -ceq 'm03_smoke_reactivate.sql'){
     if(-not $RemainingContinuation){throw 'blocked'}
     $settings+="  perform pg_catalog.set_config('emr.smoke_reactivation_segment','e8035391-dba8-48c9-97e0-139ba980d86e',true);`n"
+  }
+  if($Name -ceq 'm03_smoke_reactivate_startup.sql'){
+    if(-not $startupMode){throw 'blocked'}
+    $settings+="  perform pg_catalog.set_config('emr.smoke_reactivation_segment','1c69c89e-7807-46d5-b7b8-ca28285ff2b4',true);`n"
   }
   $body=$body.Replace($needle,$settings)
   if($PostcheckContinuation -and $Name -ceq 'm03_smoke_setup.sql'){
@@ -84,6 +91,7 @@ function Close-FoundationOwnedWindow($Binding) {
   return $answer
 }
 function Assert-FoundationContinuationVacant([switch]$RefreshHistory) {
+  $startupMode=[bool](Get-Variable -Name StartupReplacement -ValueOnly -ErrorAction SilentlyContinue)
   if($RefreshHistory){
     $history=Invoke-Cli @('db','query','--file',$queryFile) $queryTimeoutMs
     try{if((History-State $history) -cne 'complete'){throw 'blocked'}}finally{$history.text=$null}
@@ -97,14 +105,14 @@ select jsonb_build_object('windowId','df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
  'bindings',(select count(*) from ops.foundation_gateway_run_bindings where window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9'),
  'leases',(select count(*) from ops.foundation_gateway_leases where window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9')) as continuation_preflight;
 '@
-  if($RemainingContinuation){$vacancySql=$vacancySql.Replace(" where window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9'",'')}
+  if($RemainingContinuation -or $startupMode){$vacancySql=$vacancySql.Replace(" where window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9'",'')}
   $value=Invoke-FoundationQuery $vacancySql 'continuation_preflight'
   Assert-Keys $value @('windowId','windows','approvals','launches','requests','bindings','leases')
   if($value.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'){throw 'blocked'}
   foreach($key in @('windows','approvals','launches','requests','bindings','leases')){
     if(($value.$key -isnot [int] -and $value.$key -isnot [long]) -or $value.$key -ne 0){throw 'blocked'}
   }
-  foreach($relative in @('scripts/db/out/m03-foundation-owner-provision-attempt.json','scripts/db/out/m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-owner-provision-attempt.json',('scripts/db/out/'+$continuationOutputStem+$postcheckContinuationSegment+'-owner-provision-attempt.json'))){
+  foreach($relative in @('scripts/db/out/m03-foundation-owner-provision-attempt.json','scripts/db/out/m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-owner-provision-attempt.json',$(if($startupMode){'scripts/db/out/m03-foundation-remaining-continuation-e8035391-dba8-48c9-97e0-139ba980d86e-owner-provision-attempt.json'}else{'scripts/db/out/m03-foundation-owner-provision-attempt.json'}),('scripts/db/out/'+$continuationOutputStem+$postcheckContinuationSegment+'-owner-provision-attempt.json'))){
     if(Test-Path -LiteralPath (Join-Path $repo $relative)){throw 'blocked'}
   }
 }
@@ -124,10 +132,11 @@ function Assert-FoundationContinuationFixture($Value,$Expected=$null) {
   if($null -ne $Expected){foreach($key in $keys){if($Value.$key -cne $Expected.$key){throw 'blocked'}}}
 }
 function Archive-FoundationUnprovisionedFixture($Expected) {
+  $startupMode=[bool](Get-Variable -Name StartupReplacement -ValueOnly -ErrorAction SilentlyContinue)
   if(-not $PostcheckContinuation -or $null -eq $Expected){throw 'blocked'}
   Assert-FoundationContinuationVacant -RefreshHistory
-  $current=if($RemainingContinuation){Read-FoundationRemainingReactivatedFixture}else{Read-FoundationFixture};Assert-FoundationContinuationFixture $current $Expected
-  foreach($name in @('m03-foundation-owner-provision-attempt.json','m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-owner-provision-attempt.json',($continuationOutputStem+$postcheckContinuationSegment+'-owner-provision-attempt.json'))){
+  $current=if($startupMode){Read-FoundationStartupReplacementReactivatedFixture}elseif($RemainingContinuation){Read-FoundationRemainingReactivatedFixture}else{Read-FoundationFixture};Assert-FoundationContinuationFixture $current $Expected
+  foreach($name in @('m03-foundation-owner-provision-attempt.json','m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-owner-provision-attempt.json',$(if($startupMode){'m03-foundation-remaining-continuation-e8035391-dba8-48c9-97e0-139ba980d86e-owner-provision-attempt.json'}else{'m03-foundation-owner-provision-attempt.json'}),($continuationOutputStem+$postcheckContinuationSegment+'-owner-provision-attempt.json'))){
     if(Test-Path -LiteralPath (Join-Path $out $name)){throw 'blocked'}
   }
   $intent=Join-Path $out ($continuationOutputStem+$postcheckContinuationSegment+'-unprovisioned-archive-attempt.json')
@@ -211,8 +220,48 @@ and (select count(*) from ops.audit_log l join ops.audit_log o on o.id::text=l.a
   if($value.competitor_id -cne 'd51a39f6-fe87-4d17-aee9-3070c45693aa' -or $value.account_id -cne 'bd23314c-591f-4fb7-92fd-b7450634eeb6'){throw 'blocked'}
   return $value
 }
+function Reactivate-FoundationStartupReplacementFixture {
+  if(-not $StartupReplacement){throw 'blocked'}
+  Assert-FoundationContinuationVacant -RefreshHistory
+  $null=Assert-FoundationRemainingArchivedFixture
+  $intent=Join-Path $out ($continuationOutputStem+$postcheckContinuationSegment+'-reactivation-attempt.json')
+  Write-NewJson $intent ([ordered]@{version=1;runId=$runId;segmentId=$postcheckContinuationSegment;competitorId='d51a39f6-fe87-4d17-aee9-3070c45693aa';accountId='bd23314c-591f-4fb7-92fd-b7450634eeb6';createdAt=[DateTime]::UtcNow.ToString('o')})
+  if([DateTime]::UtcNow -ge $phaseAStart.AddMinutes(50)){throw 'blocked'}
+  $receipt['reactivationState']='attempted'
+  $mutation=Invoke-FoundationMutation (Foundation-FixtureSql 'm03_smoke_reactivate_startup.sql')
+  if(-not $mutation.childrenClosed){$receipt['reactivationState']='unknown';throw 'blocked'}
+  try{$value=Read-FoundationStartupReplacementReactivatedFixture}catch{$receipt['reactivationState']='unknown';throw 'blocked'}
+  # Only the new segment's exact system audit and exact active IDs establish
+  # ownership after a lost ACK. Cache it for finally's once-only archive even
+  # though this failed command stops preparation; never replay reactivation.
+  $script:remainingOwnedFixture=$value.PSObject.Copy()
+  $receipt['reactivationState']=if($mutation.acknowledged){'acknowledged_and_verified'}else{'committed_after_unknown_ack'}
+  if(-not $mutation.acknowledged){throw 'blocked'}
+  return $value
+}
+function Read-FoundationStartupReplacementReactivatedFixture {
+  $value=Invoke-FoundationQuery @'
+select jsonb_build_object('result','M03_SMOKE_FIXTURE_READY','company_code',c.company_code,'competitor_id',c.id,'account_id',a.id,'platform',a.platform,'url',a.url,'competitor_status',c.status,'account_status',a.status) as fixture
+from app.competitors c join app.competitor_accounts a on a.competitor_id=c.id
+where c.id='d51a39f6-fe87-4d17-aee9-3070c45693aa' and c.company_code='C999' and c.slug='emr-smoke-test' and c.status='active'
+and a.id='bd23314c-591f-4fb7-92fd-b7450634eeb6' and a.status='active' and a.platform='website_work_page' and a.url='https://everyone.film/about-everyone'
+and (select count(*) from ops.audit_log l join ops.audit_log o on o.id::text=l.after->>'original_creation_audit_id'
+ where l.actor_type='system' and l.actor_id='m03_smoke_reactivate.v1:1c69c89e-7807-46d5-b7b8-ca28285ff2b4'
+ and l.action='m03_smoke_fixture_reactivated' and l.entity_type='competitor' and l.entity_id=c.id::text
+ and l.before=jsonb_build_object('competitor_status','archived','account_status','paused')
+ and l.after->>'fixture_version'='1' and l.after->>'project_ref'='zmotjsbzhzjvpelxvxlf' and l.after->>'segment_id'='1c69c89e-7807-46d5-b7b8-ca28285ff2b4'
+ and l.after->>'competitor_id'=c.id::text and l.after->>'account_id'=a.id::text and l.after->>'competitor_status'='active' and l.after->>'account_status'='active'
+ and (select count(*) from pg_catalog.jsonb_object_keys(l.after))=8
+ and o.actor_type='system' and o.actor_id='m03_smoke_setup.v1' and o.action='m03_smoke_fixture_created' and o.entity_type='competitor' and o.entity_id=c.id::text
+ and o.after->>'competitor_id'=c.id::text and o.after->>'account_id'=a.id::text)=1;
+'@ 'fixture'
+  Assert-FoundationContinuationFixture $value
+  if($value.competitor_id -cne 'd51a39f6-fe87-4d17-aee9-3070c45693aa' -or $value.account_id -cne 'bd23314c-591f-4fb7-92fd-b7450634eeb6'){throw 'blocked'}
+  return $value
+}
 function Invoke-FoundationPostcheck {
-  if($RemainingContinuation){return Invoke-FoundationRemainingPostcheck}
+  $startupMode=[bool](Get-Variable -Name StartupReplacement -ValueOnly -ErrorAction SilentlyContinue)
+  if($RemainingContinuation -or $startupMode){return Invoke-FoundationRemainingPostcheck}
   $receipt['postcheckStage']='catalog'
   $proof = Invoke-FoundationQuery ([IO.File]::ReadAllText((Assert-Path $repo 'scripts/db/foundation-postcheck.sql'))) 'postcheck'
   Assert-Keys $proof @('identity','tables_rls','no_machine_table_grants','rpc_shape','owner_control_restricted','all_project_tables_rls','all_views_invoker','gw01_closed','domain_auto_join_off','baseline_counts','schemas')
@@ -279,6 +328,7 @@ function Read-FoundationCommand([DateTime]$Deadline) {
   return ConvertFrom-Json -InputObject $builder.ToString() -ErrorAction Stop
 }
 function Invoke-FoundationAdminControl {
+  $startupMode=[bool](Get-Variable -Name StartupReplacement -ValueOnly -ErrorAction SilentlyContinue)
   $hardDeadline=$phaseAStart.AddMinutes(70);$actionDeadline=$phaseAStart.AddMinutes(60);$stopNewAt=$phaseAStart.AddMinutes(50)
   $postchecked=$false;$fixtureReady=$false;$provisionAttempted=$false;$provisioned=$false;$closed=$false;$queryCount=0;$provisionPacket=$null;$createdFixture=$null;$unprovisionedArchiveAttempted=$false
   $script:remainingOwnedFixture=$null
@@ -287,7 +337,7 @@ function Invoke-FoundationAdminControl {
   if($PostcheckContinuation){$receipt['unprovisionedFixtureArchived']=$false}
   $readyEnvelope=[ordered]@{type='foundation_admin_ready';runId=$runId;historyAfter='complete';projectRef=$projectRef;hardDeadline=$hardDeadline.ToString('o');actionDeadline=$actionDeadline.ToString('o');stopNewAt=$stopNewAt.ToString('o');postchecksVerified=$false}
   if($ClockAmendment){$readyEnvelope['clockSegmentId']=$clockAmendmentSegment}
-  if($PostcheckContinuation){Assert-FoundationContinuationVacant;if($RemainingContinuation){$null=Assert-FoundationRemainingArchivedFixture;$null=Assert-FoundationRemainingPriorPostcheck;$readyEnvelope['remainingContinuation']=$true}else{Assert-FoundationContinuationFixtureAbsent};$readyEnvelope['clockSegmentId']=$postcheckContinuationSegment;$readyEnvelope['postcheckContinuation']=$true}
+  if($PostcheckContinuation){Assert-FoundationContinuationVacant;if($RemainingContinuation -or $startupMode){$null=Assert-FoundationRemainingArchivedFixture;$null=Assert-FoundationRemainingPriorPostcheck;if($startupMode){$readyEnvelope['startupReplacement']=$true}else{$readyEnvelope['remainingContinuation']=$true}}else{Assert-FoundationContinuationFixtureAbsent};$readyEnvelope['clockSegmentId']=$postcheckContinuationSegment;$readyEnvelope['postcheckContinuation']=$true}
   Write-Output ($readyEnvelope | ConvertTo-Json -Compress)
   try { while($true){
     # Reserve the final two minutes for Close/physical child cleanup. This
@@ -315,9 +365,9 @@ function Invoke-FoundationAdminControl {
       $value=Invoke-FoundationQuery "select jsonb_build_object('projectRef','zmotjsbzhzjvpelxvxlf','priceBook',ops.get_price_book(),'dailyBudgetUsd',ops.get_setting('daily_budget_usd'),'statsDailyEnabled',ops.get_setting('stats_daily_enabled'),'errorCount24h',ops.error_count_24h('WF-19',false),'notificationCooldownClear',not exists(select 1 from ops.audit_log a where a.actor_type='n8n' and a.entity_type='workflow' and a.entity_id='WF-19' and a.action in ('notify_logged','workflow_notify_claimed') and a.created_at>=now()-interval '6 hours'),'observedAt',clock_timestamp()) as preflight;" 'preflight'
     } elseif($kind -ceq 'fixture'){
       Assert-Keys $args @();if(-not $postchecked -or $fixtureReady){throw 'blocked'}
-      if($PostcheckContinuation -and -not $RemainingContinuation){Assert-FoundationContinuationVacant -RefreshHistory;Assert-FoundationContinuationFixtureAbsent}
+      if($PostcheckContinuation -and -not ($RemainingContinuation -or $startupMode)){Assert-FoundationContinuationVacant -RefreshHistory;Assert-FoundationContinuationFixtureAbsent}
       if([DateTime]::UtcNow -ge $stopNewAt){throw 'blocked'}
-      if($RemainingContinuation){$value=Reactivate-FoundationRemainingFixture}else{
+      if($startupMode){$value=Reactivate-FoundationStartupReplacementFixture}elseif($RemainingContinuation){$value=Reactivate-FoundationRemainingFixture}else{
         $mutation=Invoke-FoundationMutation (Foundation-FixtureSql 'm03_smoke_setup.sql')
         if(-not $mutation.acknowledged){throw 'blocked'}
         $value=Read-FoundationFixture
@@ -331,7 +381,7 @@ function Invoke-FoundationAdminControl {
       if($PostcheckContinuation){
         Assert-FoundationContinuationVacant -RefreshHistory
         if($null -eq $createdFixture){throw 'blocked'}
-        $currentFixture=if($RemainingContinuation){Read-FoundationRemainingReactivatedFixture}else{Read-FoundationFixture};Assert-FoundationContinuationFixture $currentFixture $createdFixture
+        $currentFixture=if($startupMode){Read-FoundationStartupReplacementReactivatedFixture}elseif($RemainingContinuation){Read-FoundationRemainingReactivatedFixture}else{Read-FoundationFixture};Assert-FoundationContinuationFixture $currentFixture $createdFixture
       }
       if([DateTime]::UtcNow -ge $stopNewAt){throw 'blocked'}
       $intent=Join-Path $out 'm03-foundation-owner-provision-attempt.json'
@@ -408,7 +458,7 @@ where l.window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and l.ordinal=1 and a.p
     $queryCount++;if($queryCount -gt 512){throw 'blocked'}
     Write-Output (([ordered]@{type='foundation_admin_result';id=$command.id;kind=$kind;ok=$true;result=$value}) | ConvertTo-Json -Depth 50 -Compress)
   } } finally {
-    if($RemainingContinuation -and $null -ne $script:remainingOwnedFixture -and $null -eq $createdFixture){$createdFixture=$script:remainingOwnedFixture;$fixtureReady=$true}
+    if(($RemainingContinuation -or $startupMode) -and $null -ne $script:remainingOwnedFixture -and $null -eq $createdFixture){$createdFixture=$script:remainingOwnedFixture;$fixtureReady=$true}
     # A failed command, EOF or lost response cannot silently drop the only
     # administrator context while this owned ingress might remain open.
     if($provisionAttempted -and -not $closed){

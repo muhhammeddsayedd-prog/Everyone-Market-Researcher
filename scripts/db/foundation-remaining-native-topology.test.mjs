@@ -8,11 +8,23 @@ import { spawnSync } from 'node:child_process';
 const powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
 const quote = (text) => "'" + text.replaceAll("'", "''") + "'";
 const segmentId = 'e8035391-dba8-48c9-97e0-139ba980d86e';
+const startupSegmentId = '1c69c89e-7807-46d5-b7b8-ca28285ff2b4';
 
 // A new owned, harmless PS wrapper -> Node runtime -> PS administrator chain.
 // Only the source-reviewed three-field CIM projection reads these new children.
 // All JSON lives in this test's temp root; no credential or canonical file opens.
-function nativeTopology({ holdParentLock = false, legacyReader = false, assertParentDenials = false } = {}) {
+function nativeTopology({
+  holdParentLock = false,
+  legacyReader = false,
+  assertParentDenials = false,
+  startupReplacement = false,
+} = {}) {
+  const activeSegmentId = startupReplacement ? startupSegmentId : segmentId;
+  const ledgerStem = startupReplacement ? 'startup-replacement' : 'remaining-continuation';
+  const proofKind = startupReplacement ? 'm03_startup_replacement' : 'm03_remaining_continuation';
+  const ancestryFunction = startupReplacement
+    ? 'Assert-FoundationStartupReplacementProcessAncestry'
+    : 'Assert-FoundationRemainingProcessAncestry';
   const directory = mkdtempSync(join(tmpdir(), 'emr-remaining-native-topology-'));
   const local = join(directory, 'synthetic-localappdata');
   const live = join(directory, 'scripts/n8n/out/foundation/live');
@@ -21,8 +33,8 @@ function nativeTopology({ holdParentLock = false, legacyReader = false, assertPa
   const adminPath = join(directory, 'admin.ps1');
   const runtimePath = join(directory, 'runtime.mjs');
   const wrapperPath = join(directory, 'wrapper.ps1');
-  const claimPath = join(live, `remaining-continuation-${segmentId}.runtime-claim.json`);
-  const admissionPath = join(live, `remaining-continuation-${segmentId}.json`);
+  const claimPath = join(live, `${ledgerStem}-${activeSegmentId}.runtime-claim.json`);
+  const admissionPath = join(live, `${ledgerStem}-${activeSegmentId}.json`);
   const sourcePath = resolve('scripts/db/windows/Invoke-M03FoundationMigrations.ps1');
   assert.ok(readFileSync(sourcePath, 'utf8').includes('function Read-FoundationKernelProcess'));
   writeFileSync(
@@ -30,11 +42,11 @@ function nativeTopology({ holdParentLock = false, legacyReader = false, assertPa
     `$ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 $errors=$null;$tokens=$null;$ast=[Management.Automation.Language.Parser]::ParseFile(${quote(sourcePath)},[ref]$tokens,[ref]$errors)
 if($errors.Count -ne 0){throw 'SOURCE_PARSE_FAILED'}
-foreach($name in @('Assert-Path','Read-Json','File-Hash','Assert-Keys','Read-FoundationKernelProcess','Read-FoundationParentLock','Assert-FoundationRemainingProcessAncestry')){
+foreach($name in @('Assert-Path','Read-Json','File-Hash','Assert-Keys','Read-FoundationKernelProcess','Read-FoundationParentLock','${ancestryFunction}')){
  $found=@($ast.FindAll({param($item) $item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true));if($found.Count -ne 1){throw 'SOURCE_FUNCTION_MISSING'};$definition=$found[0].Extent.Text
  if($name -ceq 'Read-FoundationParentLock' -and $${legacyReader}){$definition='function Read-FoundationParentLock([string]$File){return Read-Json $File}'};Invoke-Expression $definition
 }
-$repo=${quote(directory)};$RemainingContinuation=$true;$CheckOnly=$false
+$repo=${quote(directory)};$RemainingContinuation=$${!startupReplacement};$StartupReplacement=$${startupReplacement};$CheckOnly=$false
 $clock=Read-Json ${quote(admissionPath)}
 $parentPath=${quote(join(local, 'Temp/emr-m03-acceptance-parent.operation.lock'))}
 if($${assertParentDenials}){
@@ -44,7 +56,7 @@ if($${assertParentDenials}){
  }
 }
 $stage='native_ancestry'
-try{$null=Assert-FoundationRemainingProcessAncestry $clock;Write-Output '{"status":"native_ancestry_ready","privateRead":false,"networkRequests":0,"canonicalReads":0}';exit 0}catch{$native=$_.Exception;while($null -ne $native.InnerException){$native=$native.InnerException};$status=if(($native.HResult -band 65535) -eq 32){'native_parent_sharing_violation'}else{'native_ancestry_blocked'};[ordered]@{status=$status;privateRead=$false;networkRequests=0;canonicalReads=0}|ConvertTo-Json -Compress;exit 1}
+try{$null=${ancestryFunction} $clock;$projection=[ordered]@{status='native_ancestry_ready';privateRead=$false;networkRequests=0;canonicalReads=0};if($StartupReplacement){$projection['segmentId']=$clock.segmentId};$projection|ConvertTo-Json -Compress;exit 0}catch{$native=$_.Exception;while($null -ne $native.InnerException){$native=$native.InnerException};$status=if(($native.HResult -band 65535) -eq 32){'native_parent_sharing_violation'}else{'native_ancestry_blocked'};[ordered]@{status=$status;privateRead=$false;networkRequests=0;canonicalReads=0}|ConvertTo-Json -Compress;exit 1}
 `,
   );
   writeFileSync(
@@ -53,7 +65,7 @@ try{$null=Assert-FoundationRemainingProcessAncestry $clock;Write-Output '{"statu
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 const admissionText=readFileSync(${JSON.stringify(admissionPath)},'utf8');
-writeFileSync(${JSON.stringify(claimPath)},JSON.stringify({kind:'m03_remaining_continuation_runtime_claim',version:1,segmentId:${JSON.stringify(segmentId)},admissionSha256:createHash('sha256').update(admissionText).digest('hex'),processId:process.pid,parentProcessId:process.ppid,claimedAt:Date.now()})+'\\n');
+writeFileSync(${JSON.stringify(claimPath)},JSON.stringify({kind:'${proofKind}_runtime_claim',version:1,segmentId:${JSON.stringify(activeSegmentId)},admissionSha256:createHash('sha256').update(admissionText).digest('hex'),processId:process.pid,parentProcessId:process.ppid,claimedAt:Date.now()})+'\\n');
 const r=spawnSync(${JSON.stringify(powershell)},['-NoProfile','-NonInteractive','-File',${JSON.stringify(adminPath)}],{env:Object.fromEntries(['SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA'].flatMap(k=>process.env[k]===undefined?[]:[[k,process.env[k]]])),windowsHide:true,encoding:'utf8',timeout:30000});
 process.stdout.write(r.stdout??'');
 if(r.stderr)process.stdout.write('{"status":"synthetic_native_stderr_present"}\\n');
@@ -65,9 +77,9 @@ process.exitCode=r.status??1;
     `$ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 $env:LOCALAPPDATA=${quote(local)}
 $start=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
-$admission=[ordered]@{kind='m03_remaining_continuation_admission';segmentId='${segmentId}';startsAt=$start;stopNewAt=$start+3000000;parentProcessId=$PID}
+$admission=[ordered]@{kind='${proofKind}_admission';segmentId='${activeSegmentId}';startsAt=$start;stopNewAt=$start+3000000;parentProcessId=$PID}
 [IO.File]::WriteAllText(${quote(admissionPath)},($admission|ConvertTo-Json -Compress)+[char]10,[Text.UTF8Encoding]::new($false))
-$parent=[ordered]@{kind='m03_clock_admission_parent';version=1;segmentId='${segmentId}';processId=$PID}
+$parent=[ordered]@{kind='m03_clock_admission_parent';version=1;segmentId='${activeSegmentId}';processId=$PID}
 $parentHandle=$null;$parentPath=${quote(join(local, 'Temp/emr-m03-acceptance-parent.operation.lock'))};$parentText=$parent|ConvertTo-Json -Compress
 if($${holdParentLock}){$parentHandle=[IO.File]::Open($parentPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::Read);$bytes=[Text.Encoding]::UTF8.GetBytes($parentText);$parentHandle.Write($bytes,0,$bytes.Length);$parentHandle.Flush($true)}else{[IO.File]::WriteAllText($parentPath,$parentText,[Text.UTF8Encoding]::new($false))}
 try{
@@ -130,6 +142,26 @@ test('the bounded public-parent reader admits the held-writer topology while add
       canonicalReads: 0,
     },
   });
+});
+
+test('startup replacement ancestry accepts the actual held-writer wrapper/runtime/admin topology while additional writers and deletion remain denied', () => {
+  assert.deepEqual(
+    nativeTopology({
+      holdParentLock: true,
+      assertParentDenials: true,
+      startupReplacement: true,
+    }),
+    {
+      nativeExit: 0,
+      projection: {
+        status: 'native_ancestry_ready',
+        privateRead: false,
+        networkRequests: 0,
+        canonicalReads: 0,
+        segmentId: startupSegmentId,
+      },
+    },
+  );
 });
 
 test('the dedicated public-parent reader bounds bytes, validates its exact JSON envelope and closes failed reads', () => {

@@ -3,6 +3,7 @@ import { isDeepStrictEqual } from 'node:util';
 import * as runtime from './foundation-live-runtime.mjs';
 import { assertFoundationLiveSetupTransport } from './foundation-live-setup-transport.mjs';
 import { assertFoundationRemainingSetupResume } from './foundation-live-remaining-continuation.mjs';
+import { assertFoundationStartupReplacementSetupResume } from './foundation-live-startup-replacement.mjs';
 
 // Only the approved dev project's seven temporary branch entries and one new
 // non-default bypass are mutable. Native workflow/API/SQL work is elsewhere.
@@ -218,17 +219,23 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
   const originals = [],
     unresolved = new Set(),
     deleteAttempted = new Set();
+  if (input.remainingContinuationProof !== undefined && input.startupReplacementProof !== undefined) fail();
+  const resumeProof = input.startupReplacementProof ?? input.remainingContinuationProof;
+  const resumeAssert =
+    input.startupReplacementProof === undefined
+      ? assertFoundationRemainingSetupResume
+      : assertFoundationStartupReplacementSetupResume;
   const resumed =
-    input.remainingContinuationProof === undefined
+    resumeProof === undefined
       ? false
-      : !!assertFoundationRemainingSetupResume(input.remainingContinuationProof, {
+      : !!resumeAssert(resumeProof, {
           sourceCommitSha,
           deadlineAt: input.deadlineAt,
           previousEvents: journal.rows,
         });
   if (resumed) {
-    if (resumedProofs.has(input.remainingContinuationProof)) fail();
-    resumedProofs.add(input.remainingContinuationProof);
+    if (resumedProofs.has(resumeProof)) fail();
+    resumedProofs.add(resumeProof);
   }
   let started = journal.rows.length > 0 && !resumed,
     busy = false,

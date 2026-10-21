@@ -49,6 +49,11 @@ import {
   foundationRemainingContinuationCheckpoint,
   assertFoundationRemainingJournalPrefixes,
 } from './foundation-live-remaining-continuation.mjs';
+import {
+  assertFoundationLiveStartupReplacementProof,
+  foundationStartupReplacementCheckpoint,
+  assertFoundationStartupReplacementJournalPrefixes,
+} from './foundation-live-startup-replacement.mjs';
 
 const fail = () => {
   throw Error('FOUNDATION_LIVE_RUNTIME_BLOCKED');
@@ -127,8 +132,12 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       : assertFoundationLiveRemainingContinuationProof(dependencies.remainingContinuationProof, {
           claimed: true,
         });
-  if ([resume, amendment, continuation, remaining].filter(Boolean).length > 1) fail();
-  const admittedClock = remaining || continuation || amendment;
+  const startup =
+    dependencies.startupReplacementProof === undefined
+      ? null
+      : assertFoundationLiveStartupReplacementProof(dependencies.startupReplacementProof, { claimed: true });
+  if ([resume, amendment, continuation, remaining, startup].filter(Boolean).length > 1) fail();
+  const admittedClock = startup || remaining || continuation || amendment;
   if (
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
     typeof now !== 'function' ||
@@ -148,13 +157,15 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     fail();
   if (admittedClock) clockBudgetOwners.add(admittedClock);
   const reuse = resume || admittedClock;
-  const headerDeadlineAt = remaining
-    ? foundationRemainingContinuationCheckpoint.originalDeadlineAt
-    : continuation
-      ? foundationPostcheckContinuationCheckpoint.originalDeadlineAt
-      : amendment
-        ? foundationClockAmendmentCheckpoint.originalDeadlineAt
-        : deadlineAt;
+  const headerDeadlineAt = startup
+    ? foundationStartupReplacementCheckpoint.originalDeadlineAt
+    : remaining
+      ? foundationRemainingContinuationCheckpoint.originalDeadlineAt
+      : continuation
+        ? foundationPostcheckContinuationCheckpoint.originalDeadlineAt
+        : amendment
+          ? foundationClockAmendmentCheckpoint.originalDeadlineAt
+          : deadlineAt;
   if (
     resume &&
     (resume.sourceCommitSha !== sourceCommitSha ||
@@ -203,6 +214,10 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       appendFile(path, { event: 'management_header', version: 1, sourceCommitSha, deadlineAt });
     const rows = readRows(path, 513),
       header = rows.shift();
+    if (startup)
+      assertFoundationStartupReplacementJournalPrefixes(startup, {
+        managementText: readFileSync(path, 'utf8'),
+      });
     if (remaining)
       assertFoundationRemainingJournalPrefixes(remaining, { managementText: readFileSync(path, 'utf8') });
     if (
@@ -212,13 +227,13 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       header.version !== 1 ||
       header.sourceCommitSha !== sourceCommitSha ||
       header.deadlineAt !== headerDeadlineAt ||
-      (reuse && rows.length !== (remaining ? 1 : 0)) ||
+      (reuse && rows.length !== (startup || remaining ? 1 : 0)) ||
       rows.some(
         (r, i) => Object.keys(r).length !== 2 || r.event !== 'management_attempt' || r.ordinal !== i + 1,
       )
     )
       fail();
-    const carriedAttempts = remaining ? remaining.carriedManagementAttempts : 0;
+    const carriedAttempts = (startup || remaining)?.carriedManagementAttempts ?? 0;
     attempts = rows.length;
     const budget = Object.freeze({
       admit() {
