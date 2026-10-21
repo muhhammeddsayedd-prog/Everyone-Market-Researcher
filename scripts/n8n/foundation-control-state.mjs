@@ -1,4 +1,8 @@
 import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
+import {
+  assertFoundationLiveRemainingContinuationProof,
+  assertFoundationRemainingControlResume,
+} from './foundation-live-remaining-continuation.mjs';
 
 const journals = new WeakSet();
 const budgets = new WeakMap();
@@ -138,12 +142,26 @@ export function assertFoundationControlJournal(journal) {
 
 // One shared lifetime counter for MCP starts and private execution API operations.
 // It replaces416; it never consumes/replenishes the separate512 runtime counter.
-export function createFoundationControlBudget({ journal, now = Date.now, deadlineAt }) {
+export function createFoundationControlBudget({
+  journal,
+  now = Date.now,
+  deadlineAt,
+  remainingContinuationProof,
+}) {
   assertFoundationControlJournal(journal);
   if (!Number.isFinite(deadlineAt) || typeof now !== 'function') fail();
+  const remaining =
+    remainingContinuationProof === undefined
+      ? null
+      : assertFoundationLiveRemainingContinuationProof(remainingContinuationProof, { claimed: true });
+  if (
+    remaining &&
+    (remaining.deadlineAt !== deadlineAt || now() < remaining.startsAt || now() >= remaining.stopNewAt)
+  )
+    fail();
   if (budgets.has(journal)) {
     const old = budgets.get(journal);
-    if (old.deadlineAt !== deadlineAt) fail();
+    if (old.deadlineAt !== deadlineAt || (remaining && old.remaining !== remaining)) fail();
     return old.budget;
   }
   const kinds = new Set([
@@ -170,10 +188,21 @@ export function createFoundationControlBudget({ journal, now = Date.now, deadlin
     )
       fail();
   };
-  if (prior.length > 2048 || prior.some((r, i) => r.ordinal !== i + 1)) fail();
+  const carriedAttempts = remaining ? remaining.carriedControlAttempts : 0;
+  if (remaining)
+    assertFoundationRemainingControlResume(remaining, { deadlineAt, previousEvents: journal.rows });
+  if (
+    prior.length + carriedAttempts > 2048 ||
+    prior.some((r, i) => r.ordinal !== i + 1) ||
+    (remaining &&
+      (prior.length !== 100 ||
+        journal.rows.length !== 100 ||
+        prior.some((r) => r.kind !== 'discovery' || Object.hasOwn(r, 'executionId'))))
+  )
+    fail();
   prior.forEach(context);
   let count = prior.length,
-    stopped = count > 2048;
+    stopped = count + carriedAttempts > 2048;
   const polls = new Map();
   for (const row of prior)
     if (row.kind === 'metadata') {
@@ -182,7 +211,7 @@ export function createFoundationControlBudget({ journal, now = Date.now, deadlin
     }
   const budget = Object.freeze({
     admit({ kind, workflowId, executionId } = {}) {
-      if (stopped || !kinds.has(kind) || count >= 2048 || now() >= deadlineAt) fail();
+      if (stopped || !kinds.has(kind) || count + carriedAttempts >= 2048 || now() >= deadlineAt) fail();
       context({ kind, workflowId, executionId });
       if (kind === 'metadata' && (!id(executionId) || (polls.get(executionId) ?? 0) >= 8)) fail();
       const row = {
@@ -205,9 +234,17 @@ export function createFoundationControlBudget({ journal, now = Date.now, deadlin
       }
       if (kind === 'metadata') polls.set(executionId, (polls.get(executionId) ?? 0) + 1);
     },
-    snapshot: () => Object.freeze({ attempts: count, maximum: 2048, stopped, deadlineAt }),
+    snapshot: () =>
+      Object.freeze({
+        attempts: count + carriedAttempts,
+        mainAttempts: count,
+        carriedAttempts,
+        maximum: 2048,
+        stopped,
+        deadlineAt,
+      }),
   });
-  budgets.set(journal, { budget, deadlineAt });
+  budgets.set(journal, { budget, deadlineAt, remaining });
   budgetOwners.set(budget, { journal, deadlineAt });
   return budget;
 }

@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$PostcheckContinuation)
+param([switch]$PostcheckContinuation,[switch]$RemainingContinuation)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -8,6 +8,7 @@ $lease = Join-Path $env:LOCALAPPDATA 'Temp\emr-m03-foundation-dev-migration-pass
 $secret = $null; $ciphertext = $null; $stream = $null; $bytes = $null
 $created = $false; $leaseCreated = $false; $success = $false
 try {
+  if($PostcheckContinuation -and $RemainingContinuation){throw 'blocked'}
   foreach ($directory in @($env:LOCALAPPDATA, (Join-Path $env:LOCALAPPDATA 'Temp'))) {
     $entry = Get-Item -LiteralPath $directory -Force -ErrorAction Stop
     if (-not $entry.PSIsContainer -or ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'blocked' }
@@ -15,7 +16,9 @@ try {
     while($null -ne $ancestor){$parent=Get-Item -LiteralPath $ancestor.FullName -Force -ErrorAction Stop;if(($parent.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'blocked'};$ancestor=$ancestor.Parent}
   }
   if ((Test-Path -LiteralPath $file) -or (Test-Path -LiteralPath $lease)) { throw 'blocked' }
-  $secret = if($PostcheckContinuation){
+  $secret = if($RemainingContinuation){
+    Read-Host 'EXISTING emr-dev postgres password for separately approved remaining acceptance: fourteen-version/critical catalog readbacks, exact archived C999 reactivation, exact Preview binding and Close only; no migrations, advisor rerun or type regeneration' -AsSecureString
+  }elseif($PostcheckContinuation){
     Read-Host 'EXISTING emr-dev postgres password for approved postcheck continuation: readbacks, owned C999 fixture and exact Preview binding only; no migration push' -AsSecureString
   }else{
     Read-Host 'EXISTING emr-dev postgres password for approved Phase A: four migrations, dev readbacks, owned C999 fixture and exact foundation Preview binding only' -AsSecureString

@@ -28,11 +28,11 @@ import {
   assertFoundationSettlementReceipt,
 } from './foundation-native-settlement.mjs';
 import { createFoundationCallbackCases } from './foundation-callback-cases.mjs';
+import { createFoundationExecutionController } from './foundation-execution-control.mjs';
 import {
-  createFoundationExecutionController,
   createFoundationControlJournal,
   createFoundationControlBudget,
-} from './foundation-execution-control.mjs';
+} from './foundation-control-state.mjs';
 import { createFoundationNativeCleanup } from './foundation-native-cleanup.mjs';
 import { foundationAcceptancePlan } from '../../n8n/foundation/materialize-acceptance-case.mjs';
 import { createApifyRecoveryRuntime } from '../../packages/shared/src/n8n-apify-recovery.ts';
@@ -50,6 +50,11 @@ import {
   claimFoundationPostcheckContinuation,
   assertFoundationLivePostcheckContinuationProof,
 } from './foundation-live-postcheck-continuation.mjs';
+import {
+  readFoundationRemainingContinuation,
+  claimFoundationRemainingContinuation,
+  assertFoundationLiveRemainingContinuationProof,
+} from './foundation-live-remaining-continuation.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 const require = createRequire(import.meta.url);
@@ -145,13 +150,20 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     dependencies.clockAmendmentProof === undefined
       ? null
       : assertFoundationLiveClockAmendmentProof(dependencies.clockAmendmentProof, { claimed: true });
-  const continuation =
+  const previousContinuation =
     dependencies.postcheckContinuationProof === undefined
       ? null
       : assertFoundationLivePostcheckContinuationProof(dependencies.postcheckContinuationProof, {
           claimed: true,
         });
-  if ([resume, amendment, continuation].filter(Boolean).length > 1) fail();
+  const remaining =
+    dependencies.remainingContinuationProof === undefined
+      ? null
+      : assertFoundationLiveRemainingContinuationProof(dependencies.remainingContinuationProof, {
+          claimed: true,
+        });
+  if ([resume, amendment, previousContinuation, remaining].filter(Boolean).length > 1) fail();
+  const continuation = remaining || previousContinuation;
   const admittedClock = continuation || amendment;
   if (
     !exact(input, [
@@ -200,10 +212,11 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       now,
       ...(resume ? { zeroSetupProof: resume } : {}),
       ...(amendment ? { clockAmendmentProof: amendment } : {}),
-      ...(continuation ? { postcheckContinuationProof: continuation } : {}),
+      ...(previousContinuation ? { postcheckContinuationProof: previousContinuation } : {}),
+      ...(remaining ? { remainingContinuationProof: remaining } : {}),
     },
   );
-  if ((resume || admittedClock) && budget.snapshot().attempts !== 0) {
+  if ((resume || admittedClock) && budget.snapshot().attempts !== (remaining ? 4 : 0)) {
     budget.close();
     fail();
   }
@@ -219,7 +232,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   }
   if (
     continuation &&
-    (nativeStorage.previousEvents.length !== 50 ||
+    (nativeStorage.previousEvents.length !== (remaining ? 100 : 50) ||
       nativeStorage.previousEvents.some(
         (row, index) =>
           row.event !== 'control_request_intent' || row.kind !== 'discovery' || row.ordinal !== index + 1,
@@ -232,8 +245,13 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     previousEvents: nativeStorage.previousEvents,
     durableAppend: nativeStorage.append,
   });
-  const controlBudget = createFoundationControlBudget({ journal: controlJournal, now, deadlineAt });
-  if (continuation && controlBudget.snapshot().attempts !== 50) {
+  const controlBudget = createFoundationControlBudget({
+    journal: controlJournal,
+    now,
+    deadlineAt,
+    ...(remaining ? { remainingContinuationProof: remaining } : {}),
+  });
+  if (continuation && controlBudget.snapshot().attempts !== (remaining ? 101 : 50)) {
     budget.close();
     fail();
   }
@@ -396,7 +414,8 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       now,
       ...(resume ? { originalDeadlineAtMs: resume.deadlineAt } : {}),
       ...(amendment ? { clockAmendmentProof: amendment } : {}),
-      ...(continuation ? { postcheckContinuationProof: continuation } : {}),
+      ...(previousContinuation ? { postcheckContinuationProof: previousContinuation } : {}),
+      ...(remaining ? { remainingContinuationProof: remaining } : {}),
     });
     const ready = await admin.postcheck();
     if (ready?.ready !== true || ready.projectRef !== 'zmotjsbzhzjvpelxvxlf' || ready.migrationCount !== 14)
@@ -436,6 +455,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         transport: t,
         journal: setupJournal,
         managementBudget: budget,
+        ...(remaining ? { remainingContinuationProof: remaining } : {}),
         now,
         deadlineAt,
         pause,
@@ -1135,14 +1155,19 @@ export async function runFoundationLiveRuntimeCli({
   }
   if (
     args.length !== 1 ||
-    !['Session', 'SessionResumeZeroSetup', 'SessionClockAmendment', 'SessionPostcheckContinuation'].includes(
-      args[0],
-    )
+    ![
+      'Session',
+      'SessionResumeZeroSetup',
+      'SessionClockAmendment',
+      'SessionPostcheckContinuation',
+      'SessionRemainingContinuation',
+    ].includes(args[0])
   )
     return 1;
   let zeroSetupProof;
   let clockAmendmentProof;
   let postcheckContinuationProof;
+  let remainingContinuationProof;
   if (args[0] === 'SessionResumeZeroSetup') {
     try {
       zeroSetupProof = assertFoundationLiveZeroSetupProof(
@@ -1178,6 +1203,22 @@ export async function runFoundationLiveRuntimeCli({
       });
       postcheckContinuationProof = assertFoundationLivePostcheckContinuationProof(
         (dependencies.claimPostcheckContinuation ?? claimFoundationPostcheckContinuation)(proof, {
+          now: dependencies.now ?? Date.now,
+        }),
+        { claimed: true },
+      );
+    } catch {
+      emit({ kind: 'm03_acceptance_closed', status: 'blocked', residual: true });
+      return 1;
+    }
+  }
+  if (args[0] === 'SessionRemainingContinuation') {
+    try {
+      const proof = (dependencies.readRemainingContinuation ?? readFoundationRemainingContinuation)({
+        now: dependencies.now ?? Date.now,
+      });
+      remainingContinuationProof = assertFoundationLiveRemainingContinuationProof(
+        (dependencies.claimRemainingContinuation ?? claimFoundationRemainingContinuation)(proof, {
           now: dependencies.now ?? Date.now,
         }),
         { claimed: true },
@@ -1234,6 +1275,7 @@ export async function runFoundationLiveRuntimeCli({
           ...(zeroSetupProof ? { zeroSetupProof } : {}),
           ...(clockAmendmentProof ? { clockAmendmentProof } : {}),
           ...(postcheckContinuationProof ? { postcheckContinuationProof } : {}),
+          ...(remainingContinuationProof ? { remainingContinuationProof } : {}),
         });
         privateValues = [
           'managementKey',

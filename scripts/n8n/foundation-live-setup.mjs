@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import * as runtime from './foundation-live-runtime.mjs';
 import { assertFoundationLiveSetupTransport } from './foundation-live-setup-transport.mjs';
+import { assertFoundationRemainingSetupResume } from './foundation-live-remaining-continuation.mjs';
 
 // Only the approved dev project's seven temporary branch entries and one new
 // non-default bypass are mutable. Native workflow/API/SQL work is elsewhere.
@@ -42,7 +43,8 @@ const sync = (fn, value) => {
   }
 };
 const journals = new WeakSet(),
-  deployments = new WeakSet();
+  deployments = new WeakSet(),
+  resumedProofs = new WeakSet();
 const eventKeys = new Set([
   'event',
   'kind',
@@ -216,7 +218,19 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
   const originals = [],
     unresolved = new Set(),
     deleteAttempted = new Set();
-  let started = journal.rows.length > 0,
+  const resumed =
+    input.remainingContinuationProof === undefined
+      ? false
+      : !!assertFoundationRemainingSetupResume(input.remainingContinuationProof, {
+          sourceCommitSha,
+          deadlineAt: input.deadlineAt,
+          previousEvents: journal.rows,
+        });
+  if (resumed) {
+    if (resumedProofs.has(input.remainingContinuationProof)) fail();
+    resumedProofs.add(input.remainingContinuationProof);
+  }
+  let started = journal.rows.length > 0 && !resumed,
     busy = false,
     closed = false,
     failed = false,

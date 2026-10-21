@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { assertFoundationLiveClockAmendmentProof } from '../n8n/foundation-live-clock-amendment.mjs';
 import { assertFoundationLivePostcheckContinuationProof } from '../n8n/foundation-live-postcheck-continuation.mjs';
+import { assertFoundationLiveRemainingContinuationProof } from '../n8n/foundation-live-remaining-continuation.mjs';
 import { fileURLToPath } from 'node:url';
 
 const fixed = () => Error('FOUNDATION_ADMIN_BLOCKED');
@@ -31,12 +32,36 @@ export async function startFoundationAdminClient(
     originalDeadlineAtMs,
     clockAmendmentProof,
     postcheckContinuationProof,
+    remainingContinuationProof,
   } = {},
   deps = {},
 ) {
   if (typeof repositoryRoot !== 'string' || typeof now !== 'function' || signal?.aborted) throw fixed();
   let amendment;
   let continuation;
+  let remaining;
+  if (remainingContinuationProof !== undefined) {
+    try {
+      remaining = assertFoundationLiveRemainingContinuationProof(remainingContinuationProof, {
+        claimed: true,
+      });
+    } catch {
+      throw fixed();
+    }
+    if (
+      originalDeadlineAtMs !== undefined ||
+      clockAmendmentProof !== undefined ||
+      postcheckContinuationProof !== undefined ||
+      remaining.segmentId !== 'e8035391-dba8-48c9-97e0-139ba980d86e' ||
+      remaining.sourceCommitSha !== 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' ||
+      remaining.windowId !== 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' ||
+      remaining.carriedManagementAttempts !== 3 ||
+      remaining.carriedControlAttempts !== 1 ||
+      now() >= remaining.stopNewAt
+    )
+      throw fixed();
+    continuation = remaining;
+  }
   if (postcheckContinuationProof !== undefined) {
     try {
       continuation = assertFoundationLivePostcheckContinuationProof(postcheckContinuationProof, {
@@ -89,7 +114,8 @@ export async function startFoundationAdminClient(
       resolve(root, 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1'),
       '-PhaseAControl',
       ...(amendment === undefined ? [] : ['-ClockAmendment']),
-      ...(continuation === undefined ? [] : ['-PostcheckContinuation']),
+      ...(continuation === undefined || remaining !== undefined ? [] : ['-PostcheckContinuation']),
+      ...(remaining === undefined ? [] : ['-RemainingContinuation']),
       ...(originalDeadlineAtMs === undefined ? [] : ['-OriginalDeadlineAtMs', String(originalDeadlineAtMs)]),
     ],
     { cwd: root, env: osEnvironment(), windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] },
@@ -163,6 +189,7 @@ export async function startFoundationAdminClient(
               'postchecksVerified',
               ...(amendment === undefined ? [] : ['clockSegmentId']),
               ...(continuation === undefined ? [] : ['clockSegmentId', 'postcheckContinuation']),
+              ...(remaining === undefined ? [] : ['remainingContinuation']),
             ]) ||
             value.type !== 'foundation_admin_ready' ||
             value.historyAfter !== 'complete' ||
@@ -185,7 +212,8 @@ export async function startFoundationAdminClient(
                 value.clockSegmentId !== continuation.segmentId ||
                 Date.parse(value.hardDeadline) !== continuation.hardDeadlineAt ||
                 Date.parse(value.actionDeadline) !== continuation.deadlineAt ||
-                Date.parse(value.stopNewAt) !== continuation.stopNewAt))
+                Date.parse(value.stopNewAt) !== continuation.stopNewAt)) ||
+            (remaining !== undefined && value.remainingContinuation !== true)
           )
             throw fixed();
           ready = Object.freeze(value);

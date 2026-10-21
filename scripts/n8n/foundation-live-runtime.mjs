@@ -44,6 +44,11 @@ import {
   assertFoundationLivePostcheckContinuationProof,
   foundationPostcheckContinuationCheckpoint,
 } from './foundation-live-postcheck-continuation.mjs';
+import {
+  assertFoundationLiveRemainingContinuationProof,
+  foundationRemainingContinuationCheckpoint,
+  assertFoundationRemainingJournalPrefixes,
+} from './foundation-live-remaining-continuation.mjs';
 
 const fail = () => {
   throw Error('FOUNDATION_LIVE_RUNTIME_BLOCKED');
@@ -116,8 +121,14 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       : assertFoundationLivePostcheckContinuationProof(dependencies.postcheckContinuationProof, {
           claimed: true,
         });
-  if ([resume, amendment, continuation].filter(Boolean).length > 1) fail();
-  const admittedClock = continuation || amendment;
+  const remaining =
+    dependencies.remainingContinuationProof === undefined
+      ? null
+      : assertFoundationLiveRemainingContinuationProof(dependencies.remainingContinuationProof, {
+          claimed: true,
+        });
+  if ([resume, amendment, continuation, remaining].filter(Boolean).length > 1) fail();
+  const admittedClock = remaining || continuation || amendment;
   if (
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
     typeof now !== 'function' ||
@@ -137,11 +148,13 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     fail();
   if (admittedClock) clockBudgetOwners.add(admittedClock);
   const reuse = resume || admittedClock;
-  const headerDeadlineAt = continuation
-    ? foundationPostcheckContinuationCheckpoint.originalDeadlineAt
-    : amendment
-      ? foundationClockAmendmentCheckpoint.originalDeadlineAt
-      : deadlineAt;
+  const headerDeadlineAt = remaining
+    ? foundationRemainingContinuationCheckpoint.originalDeadlineAt
+    : continuation
+      ? foundationPostcheckContinuationCheckpoint.originalDeadlineAt
+      : amendment
+        ? foundationClockAmendmentCheckpoint.originalDeadlineAt
+        : deadlineAt;
   if (
     resume &&
     (resume.sourceCommitSha !== sourceCommitSha ||
@@ -190,6 +203,8 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       appendFile(path, { event: 'management_header', version: 1, sourceCommitSha, deadlineAt });
     const rows = readRows(path, 513),
       header = rows.shift();
+    if (remaining)
+      assertFoundationRemainingJournalPrefixes(remaining, { managementText: readFileSync(path, 'utf8') });
     if (
       !header ||
       Object.keys(header).length !== 4 ||
@@ -197,16 +212,17 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       header.version !== 1 ||
       header.sourceCommitSha !== sourceCommitSha ||
       header.deadlineAt !== headerDeadlineAt ||
-      (reuse && rows.length !== 0) ||
+      (reuse && rows.length !== (remaining ? 1 : 0)) ||
       rows.some(
         (r, i) => Object.keys(r).length !== 2 || r.event !== 'management_attempt' || r.ordinal !== i + 1,
       )
     )
       fail();
+    const carriedAttempts = remaining ? remaining.carriedManagementAttempts : 0;
     attempts = rows.length;
     const budget = Object.freeze({
       admit() {
-        if (closed || stopped || attempts >= 512 || now() >= deadlineAt) fail();
+        if (closed || stopped || attempts + carriedAttempts >= 512 || now() >= deadlineAt) fail();
         try {
           appendFile(path, { event: 'management_attempt', ordinal: attempts + 1 });
           attempts++;
@@ -215,7 +231,16 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
           fail();
         }
       },
-      snapshot: () => Object.freeze({ attempts, maximum: 512, deadlineAt, stopped, closed }),
+      snapshot: () =>
+        Object.freeze({
+          attempts: attempts + carriedAttempts,
+          mainAttempts: attempts,
+          carriedAttempts,
+          maximum: 512,
+          deadlineAt,
+          stopped,
+          closed,
+        }),
       attachTransport(transport) {
         if (
           closed ||

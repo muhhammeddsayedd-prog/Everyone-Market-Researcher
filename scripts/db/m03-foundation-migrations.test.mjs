@@ -59,6 +59,12 @@ const clockPublicFiles = [
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-checkpoint-20261021.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-continuation-20261021.md',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-amended-attempt-20261021.json',
+  'scripts/n8n/foundation-live-remaining-continuation.mjs',
+  'scripts/assert/m03_smoke_reactivate.sql',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-checkpoint-20261022.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-packet-20261022.md',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-attempt-20261021.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-vercel-postlogin-actual-20261022.json',
 ];
 
 function consumerFixture(mode = 'success') {
@@ -356,7 +362,13 @@ public class FixtureCli { public static int Main(string[] args) {
       expiresAt: new Date(leaseCreatedAt + 2 * 3600000).toISOString().replace('Z', '0000Z'),
     }),
   );
-  const run = (checkOnly = false, controlInput = null, amended = false, continuation = false) =>
+  const run = (
+    checkOnly = false,
+    controlInput = null,
+    amended = false,
+    continuation = false,
+    remaining = false,
+  ) =>
     spawnSync(
       powershell,
       [
@@ -365,9 +377,10 @@ public class FixtureCli { public static int Main(string[] args) {
         '-File',
         join(root, 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1'),
         ...(checkOnly ? ['-CheckOnly'] : []),
-        ...(controlInput === null && !amended && !continuation ? [] : ['-PhaseAControl']),
+        ...(controlInput === null && !amended && !continuation && !remaining ? [] : ['-PhaseAControl']),
         ...(amended ? ['-ClockAmendment'] : []),
         ...(continuation ? ['-PostcheckContinuation'] : []),
+        ...(remaining ? ['-RemainingContinuation'] : []),
       ],
       {
         env: {
@@ -487,6 +500,45 @@ function creatorFixture({ empty = false, postcheckContinuation = false } = {}) {
 after(() => {
   for (const directory of directories) rmSync(directory, { recursive: true, force: true });
 });
+
+describe(
+  'remaining no-authority boundary, isolated real PowerShell consumer',
+  { skip: process.platform !== 'win32' },
+  () => {
+    it('verifies every public input then reports approval_required without opening its synthetic handoff or creating receipts', () => {
+      const f = consumerFixture('completed');
+      const relative = 'scripts/n8n/foundation-live-remaining-continuation.mjs';
+      f.put(
+        relative,
+        `console.log(JSON.stringify({kind:'remaining_continuation_approval_required',status:'approval_required',approvalRequired:true,segmentId:'e8035391-dba8-48c9-97e0-139ba980d86e',sourceCommitSha:'f42930f90c2de43c84f61ad6d966d0ee6074d70e',windowId:'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',privateRead:false,networkRequests:0}));`,
+      );
+      f.packet.files[relative] = sha(readFileSync(join(f.root, relative)));
+      writeFileSync(f.packetFile, JSON.stringify(f.packet));
+      const handoff = readFileSync(f.handoff),
+        lease = readFileSync(f.leaseFile);
+      const check = f.run(true, null, false, false, true);
+      assert.equal(check.status, 3, check.stdout + check.stderr);
+      assert.match(check.stdout, /APPROVAL_REQUIRED/);
+      assert.deepEqual(readFileSync(f.handoff), handoff);
+      assert.deepEqual(readFileSync(f.leaseFile), lease);
+      assert.equal(f.calls(), '');
+      const denied = f.run(false, null, false, false, true);
+      assert.equal(denied.status, 1);
+      assert.match(denied.stdout, /PREFLIGHT_BLOCKED/);
+      assert.deepEqual(readFileSync(f.handoff), handoff);
+      assert.equal(f.calls(), '');
+      assert.equal(
+        existsSync(
+          join(
+            f.root,
+            'scripts/db/out/m03-foundation-remaining-continuation-e8035391-dba8-48c9-97e0-139ba980d86e-attempt.json',
+          ),
+        ),
+        false,
+      );
+    });
+  },
+);
 
 describe(
   'postcheck-only continuation, isolated Windows native protocol',

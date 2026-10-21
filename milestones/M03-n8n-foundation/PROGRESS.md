@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: MA-02 existing Vercel CLI sign-in is verified restored. The one-use post-login read returned HTTP200, all12 project/protection predicates true and native0/physical child closure, with no mutation or new A-D clock. Dev14 postchecks and archived/paused owned C999 remain preserved; all consumed handoffs/scratch/bypass remain deleted. Remaining local retained-fixture/counter/checkpoint engineering and independent review continue before any new exact A-D decision. No credential request, migration replay, production, merge or M04. GW01 stays closed.**
+**In progress: Vercel project access is actually restored (HTTP200/all12 predicates/native0/closed child). The distinct remaining consumer is implemented/reviewed and actual sealed public CheckOnly passes with approval_required/privateReadfalse/network0. Normal delivered-head CI precedes the exact separate time/retained-fixture decision. Approval remains unpinned; no admission, private input or hosted mutation. Dev14 postchecks, archived/paused owned C999, all prior failures/counters and deleted handoffs remain preserved. No migration replay, production, merge or M04. GW01 stays closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,11 +16,45 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Fixed project access restored and verified f3102d/HTTP200/native0. Actual head d45e3e5/CI39661494543 all five jobs/Vercel freshly verified7e503a. Local remaining-fixture/checkpoint integration and review only. |
-| Next step | Complete the remaining-readiness engineering and exact reviewable packet. Preserve all spent fences, original source/header and aggregate management4/control101. No live clock or four-value handoff yet. |
+| Current task | Remaining consumer/restricted exact-ID SQL/counter custody implemented/reviewed; no remaining P1/P2. Public seal4ed097 and full CheckOnly3ae74a pass native0 with approval_required/privateReadfalse/network0. Normal delivered-head CI remains to verify separately. |
+| Next step | Verify delivered PR8 checks, then request the exact remaining packet's single separate time/retained-C999 decision. Preserve spent fences, original source/header and aggregate management4/control101. No live clock or four-value handoff yet. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
+
+### 22 October: remaining consumer delivered locally, approval still absent
+
+The [exact proposed remaining packet](evidence/dev-acceptance-remaining-packet-20261022.md)
+and immutable checkpoint are concrete. New segment e8035391-dba8-48c9-97e0-139ba980d86e
+has no approval pin/file, admission or claim. The consumer preserves raw journal
+prefixes/main ordinals and carries only outside3management/1control, starting
+aggregate4/101/105 without refill. Its retained-C999 operation requires the exact
+original archived/paused rows, unchanged identity/baseline digests, no edits or
+collection effects, locked rows, a durable once intent and separate audit. No
+create/adopt/delete/replay path replaces the original setup/teardown/assert SQL.
+
+Fresh independent review closed two P2s with actual regressions: raw journal
+bytes must be rechecked after claim, and ReadClaimed must bind the live runtime,
+canonical parent lock and actual administrator child ancestry before DPAPI.
+Final independent continuation/CLI14/14 plus mocked ancestry1/1 pass. Author
+SQL32/32 uses owned isolated PostgreSQL17 only, with cleanup; final custody/client
+22/22 and copied-consumer2/2 pass. Historical broad49/50/error-label mismatch is
+preserved and corrected by the affected checks, not relabeled50/50. Earlier
+compatibility counts overlap; do not add them as unique tests.
+
+Root verifies35public DB pins and exact unchanged14 migration/history records;
+affected lint/format/diff pass. Actual public seal4ed097 native0 covers123project/
+840Zod/3462Vercel files. Clock94919f and full coordinator3ae74a CheckOnly native0
+return approval_required, privateRead:false/network0, public composition and DB
+inputs verified; no administrator handoff, actual MCP transport or time authority
+is inferred. Metadata-only1a8833 confirms10temporary paths/new approval/admission/
+claim/runtime lock absent. No credential delivery is requested now.
+[Local/public implementation evidence](evidence/dev-acceptance-remaining-implementation-20261022.json).
+
+Normal PR8 CI remains enabled; its new head is verified separately. After delivery
+and checks pass, the single owner decision is the exact remaining-window plus
+retained-fixture packet. This does not approve production, merge or M04. Dev
+database/advisor/types remain completed; native business/full-D criteria remain open.
 
 ### 22 October: Vercel access restored and actually verified
 
@@ -45,7 +79,7 @@ the [remaining engineering handoff](evidence/dev-acceptance-remaining-readiness-
 locally. A distinct one-use time decision must follow a concrete reviewed packet;
 the consumed admissions cannot be restarted. Production/privateR2/merge/M04 stay out.
 
-### Latest actual replacement: database postchecks pass; Vercel setup blocked
+### Historical replacement: database postchecks pass; Vercel setup stopped
 
 Owner delivery metadata546e88 verified all four pairs and75-minute coverage;
 fresh CheckOnlya001c9 and10e40c7/CI39622010384 five jobs plus Vercel passed.
@@ -99,7 +133,8 @@ read attempts and one fixed native details read; original journals stay1/100.
 Native metadata produced no accepted DTO, with cause unestablished and local
 staged availableInMCP:false; no n8n login/credential action follows. Fresh
 metadata-onlya68b02 verifies all eight inputs/bypass/parent lock absent. No A-D
-clock is started. The only owner action is MA-02 private existing CLI login.
+clock was started. At that checkpoint the only owner action was MA-02 private
+existing CLI login; the22October actual read above now verifies it complete.
 [Guard review and diagnostic boundaries](evidence/dev-acceptance-vercel-guard-review-20261021.md).
 
 ### Historical pre-admission readiness for the now-consumed replacement
@@ -613,11 +648,12 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
-- The replacement is consumed and closed. Guard remediation and normal CI pass;
-  a separate actual read verifies saved_auth_expired before any project response.
-  Only existing CLI sign-in is requested. The one-use post-login reader must be
-  reviewed before access verification; no four-value handoff/time decision yet.
-  Historical raw layer remains unestablished and dev postchecks/cleanup stand.
+- The replacement is consumed and closed. The separate expired-session read is
+  preserved; the22October post-login read now verifies HTTP200/all12 project
+  predicates/native0 and closed children. MA-02 is complete. A distinct remaining
+  consumer/packet is being checked locally, with no approval pin/admission or
+  credential consumption. Its exact one-use time/retained-fixture decision is
+  separate. Historical raw layer remains unestablished; dev postchecks/cleanup stand.
 
 - Historical type-check failure: that segment and its later no-push replacement are both consumed and closed. The replacement completed dev postchecks and stopped at its first Vercel GET as recorded above. All four temporary handoff pairs are deleted. Prior public seals/readiness do not authorize another admission. Native A-D acceptance remains unrun; GW01 stays closed. Historical dev MCP refresh failure/dashboard reconciliation remain separate.
 

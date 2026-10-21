@@ -1,152 +1,155 @@
-# M03 remaining dev acceptance — next-session engineering handoff
+# M03 remaining dev acceptance — engineering readiness
 
-**PROPOSED — NOT READY FOR APPROVAL.** This file grants no time window, handoff
-consumption, reactivation, deployment or execution. Do not ask for another A–D
-approval or four temporary handoffs while the ordinary Vercel project read is
-still blocked.
+**PROPOSED; no new owner time authority.** The remaining consumer is implemented
+locally. Final integration review, delivered-head CI and public preflight remain
+separate gates before the exact packet can be presented for approval. No new
+handoffs, clock admission, credential consumption or hosted operation is requested
+by this handoff. The historical filename is retained.
 
-## Current verified boundary
+## Actual access and preserved effects
 
-Read the root/M03 progress first, then the immutable
-[actual replacement attempt](dev-acceptance-postcheck-attempt-20261021.json),
-[unused bypass cleanup](dev-acceptance-postcheck-unused-bypass-cleanup-20261021.json),
-[guard review](dev-acceptance-vercel-guard-review-20261021.md) and
-[actual post-close diagnostic](dev-acceptance-vercel-postclose-actual-20261021.json).
-The last artifact has SHA256
-`a4a2ec0be139df4583391d164a0c08df69e407483f0bb827dd92e3b276b2656c`.
-Its actual result supersedes the earlier guard-review draft's pending section.
+Read root/M03 progress first, then the immutable
+[replacement attempt](dev-acceptance-postcheck-attempt-20261021.json),
+[unused-bypass cleanup](dev-acceptance-postcheck-unused-bypass-cleanup-20261021.json),
+[expired-session diagnostic](dev-acceptance-vercel-postclose-actual-20261021.json)
+and [post-login actual read](dev-acceptance-vercel-postlogin-actual-20261022.json).
+The post-login proof has SHA256
+`04fd4681894f93e46a3674a73fd13447badeb257ab0a8fc307f1e63918d9c43e`.
 
-Actual diagnostic `0e9ce3` exited1 with `saved_auth_expired`, no HTTP response,
-null project predicates, closed child/transports, no mutation and no new
-acceptance window. The current owner action is only restoration of the existing
-Vercel CLI login. Do not reset credentials, recreate integrations or infer
-project readiness from the user's sign-in reply alone. The separate unavailable
-n8n details read established no authentication cause; the checked-in staged WF00
-has `availableInMCP:false` by design. That unavailable DTO does not independently
-verify the current Cloud setting.
+After the owner's sign-in, actual read `f3102d` returned HTTP 200/native 0, all 12
+fixed project/protection predicates and physical child/transport closure, with
+no mutation. The earlier `0e9ce3` saved-auth-expired failure remains unchanged;
+it is historical, not the current access blocker. Do not repeat login or either
+consumed diagnostic. The separate unavailable n8n details DTO established no
+authentication cause; staged WF00 has `availableInMCP:false` by design.
 
-Preserve all earlier admissions, claims, intents, receipts and counters. Dev has
-the successful14 migration versions/fingerprints; no migration operation is
-pending. Original seeds, exclusions and logos remain. The SQL foundation window
-was never provisioned. C999 exists and is archived/paused; it was not deleted.
-All consumed temporary inputs, scratch and the unused bypass are removed;
-credential-bearing children are closed. Retain the existing Machine and saved
-original passwords/keys. None of this is full-D or M03 completion.
+All 14 dev migration versions/fingerprints and completed catalog/advisor/type
+evidence remain. No migration operation is pending. The original 285 competitors,
+1,754 accounts, exclusions and 257 logos are retained. The extra owned C999 rows
+are archived/paused, not deleted, making totals 286/1,755. The logical SQL
+foundation window was never provisioned; no Preview control, workflow transition,
+native execution, gateway/provider operation or actor start occurred. Consumed
+temporary inputs, scratch and unused bypass are removed; credential-bearing
+children are closed. Keep saved originals and the retained Machine. None of
+these facts establishes full-D or M03 completion.
 
-## Aggregate allowance, without reset
+## Conserved aggregate allowance
 
-The main journals remain management1/control100. Two management attempts and
-one control read are accounted separately in the actual post-close artifact.
+The pinned main journals contain management 1/control 100. The closed diagnostics
+account separately for management 3/control 1. The ordinary post-login read has
+already been spent; it is no longer a conditional future increment.
 
-| Counter | Used now | Ceiling | Remaining now |
+| Counter | Used | Original ceiling | Remaining |
 | --- | ---: | ---: | ---: |
-| Management | 3 | 512 | 509 |
+| Management | 4 | 512 | 508 |
 | Control | 101 | 2048 | 1947 |
-| Combined | 104 | 2560 | 2456 |
+| Combined | 105 | 2560 | 2455 |
 | Native executions | 0 | 120 | 120 |
 | Gateway attempts | 0 | 256 | 256 |
 | Direct provider GETs | 0 | 32 | 32 |
 | Actor starts | 0 | 2 sequential | 2 sequential |
 
-Actor spend remains0; requested limits remain USD1/run and USD2 total. Preserve
-the existing publication and shutdown reserves. These ceilings do not authorize
-another batch by themselves.
+Main journal ordinals continue unchanged: management row 2 means aggregate 5;
+control row 101 means aggregate 102. Carry 3/1 comes only from a genuine claimed
+proof, never caller-supplied counts or fabricated history. Original headers,
+caps, publication/shutdown reserves and the USD1/run, USD2 total actor reserve
+remain. Actual actor spend is USD 0. Unknown infrastructure fees remain unknown.
 
-A separate post-login one-read consumer is implemented/reviewed, with6/6 local
-tests and public CheckOnly04aad6 passing; delivered-head CI and actual owner
-sign-in/read remain separate gates. It has its own durable intent; never rerun
-the consumed post-close `Run`. **If that
-new read is admitted**, even if it fails, management becomes4/control101,
-combined105; remaining management508/control1947/combined2455. That fourth
-attempt has not been spent at this checkpoint. Update the checkpoint from its
-actual receipt before drafting another batch packet.
+## Implemented local continuation
 
-## Work required before another packet can be reviewed
+The immutable [checkpoint](dev-acceptance-remaining-checkpoint-20261022.json)
+(`2954a33504376de123c2ca1638b11f3356d94fd274d35a7f62591642da463404`)
+pins 14 preserved inputs and exact management/control/setup prefixes. The
+[proposed packet](dev-acceptance-remaining-packet-20261022.md)
+(`7c4b9f3c3bb473a2ff4a473e23de79ce3b2c9a783cab5587d9caf9356d804205`)
+defines only segment `e8035391-dba8-48c9-97e0-139ba980d86e`: stop new work 50,
+action deadline 60, physical closure 70 and input lease coverage 75 minutes.
 
-1. Complete the separately bounded ordinary project read after login. Require
-   actual HTTP200, fixed project/team/repository/root/Node/framework/protection
-   predicates, no existing bypass, and physical child closure. Keep only the
-   allowlisted result. A public CheckOnly, saved-session metadata or synthetic
-   test pass is insufficient.
-2. Prepare a new fixed checkpoint/consumer for a **distinct one-use A–D time
-   segment**, preserving the existing header, aggregate accounting and all old
-   fences. It must explicitly accept only the historical setup journal's sole
-   failed GET as its checkpoint; it must not generically resume unknown setup
-   state. Prior resource writes are0. Require fresh exact baseline readback for
-   all25 owned staged workflows, inactive/unpublished state and current IDs,
-   versions and source hashes before any transition. Debit these fresh reads
-   against the remaining allowances. Revalidate prior physical closure/input
-   cleanup and retained-Machine provenance before admission. Do not reinterpret
-   the intentionally disabled MCP setting as a credential failure.
-3. Keep a readback-only administrator startup: fresh all14 migration
-   fingerprints and critical catalog/RLS/grants/RPC/view/domain restrictions;
-   no domain auto-join; all six foundation tables globally empty (reject any
-   foreign foundation window/effect); and every prior owner-provision intent
-   absent. Reuse the completed AC3 advisor/generated-type evidence if schema
-   and source remain unchanged; do not repeat those passes solely on resumption.
-   Never dry-run/push/reset,
-   repair history or replay a migration. Preserve all previous type candidates
-   and receipts and write fresh observations separately.
-4. Implement and independently review the narrowly proposed retained-fixture
-   operation below. The existing `PostcheckContinuation` correctly refuses its
-   consumed admission and non-vacant fixture; do not weaken or replay it. Keep
-   `m03_smoke_setup.sql`, `m03_smoke_teardown.sql` and `m03_smoke_assert.sql`
-   unchanged. A future consumer needs a separate explicit command and intent.
-5. Only after these engineering prerequisites pass, present the exact remaining
-   A–D packet with updated counters, estimates, recovery/verification and new
-   time authority. Deliver only genuinely missing temporary inputs through its
-   reviewed hidden prompts after approval/readiness. Do not request those four
-   handoffs or start a clock now.
+`scripts/n8n/foundation-live-remaining-continuation.mjs` supplies fixed,
+one-use admission/claim records and an in-process proof brand. Its production
+approval pin is currently null: Admit/Read/Claim cannot grant authority.
+Preapproval CheckOnly reports `approval_required`, with no proof or private
+read. It preserves old admissions, claims, PIDs/closure evidence and original
+headers; incomplete new files block replay rather than being repaired.
 
-The six-table vacancy proof covers `ops.foundation_gateway_rate_windows`,
-`ops.apify_launch_approvals`, `ops.apify_launch_admissions`,
-`ops.foundation_gateway_requests`, `ops.foundation_gateway_run_bindings` and
-`ops.foundation_gateway_leases`. Logical window
-`df4f29ec-e2dc-4d82-a276-62a4e695e6f9` may be retained only if fresh SQL proves it
-has never been provisioned. Never reopen a closed SQL window or GW01.
+The runtime/control/setup integrations retain main ordinals and charge the
+fixed outside requests. Genuine-proof checks compare the actual raw bytes of
+all three journal prefixes, including whitespace/key-order drift. Setup accepts
+only the single recorded historical GET; any write intent or other state blocks.
+Fresh checks of all 25 staged workflow IDs, versions, hashes and inactive/unpublished state are
+still required before transitions, debited against the remaining allowances.
 
-## Proposed retained C999 reactivation — not implemented or approved
+The administrator path remains readback-only: fresh 14 fingerprints, critical
+catalog/RLS/grants/RPC/view/domain restrictions, globally empty six foundation
+tables and no prior owner-provision intent. Completed AC3 advisor/type evidence
+is reused only while source/schema are unchanged. No dry-run, push, reset,
+history repair or migration replay. Separate new output paths preserve all old
+receipts and type candidates. Claimed-runtime liveness/lock checks and the new
+PowerShell PID, parent and creation time checks bind the real administrator child before
+any private handoff read. Its narrow ancestry review is complete; overall
+delivery/preflight evidence remains separate.
 
-Target only these existing rows:
+The local retained-fixture SQL targets only competitor
+`d51a39f6-fe87-4d17-aee9-3070c45693aa` and account
+`bd23314c-591f-4fb7-92fd-b7450634eeb6`, code C999/slug emr-smoke-test,
+website_work_page `https://everyone.film/about-everyone`. It requires their
+original system creation marker, unchanged identity/baseline digests, exact
+archived/paused state, advisory/row locks, clean progress and no related human,
+API, content/run/raw/Apify/cost/queue effects. A separate intent/audit protects
+status-only reactivation; ambiguous acknowledgement is reconciled, never
+replayed. Original setup/teardown/assert SQL remains unchanged. This source is
+implemented locally; its reactivation is not approved or executed.
 
-- Competitor `d51a39f6-fe87-4d17-aee9-3070c45693aa`, company code `C999`, slug
-  `emr-smoke-test`, currently exactly `archived`.
-- Account `bd23314c-591f-4fb7-92fd-b7450634eeb6`, owned by that competitor,
-  platform `website_work_page`, URL `https://everyone.film/about-everyone`,
-  currently exactly `paused`.
+Logical SQL UUID `df4f29ec-e2dc-4d82-a276-62a4e695e6f9` may be first-provisioned
+only after actual vacancy of all six foundation tables is freshly verified.
+Never reopen a closed SQL window or GW01, adopt another C999, replace the fixture
+or overwrite human/source fields. The proposed time UUID changes no SQL identity.
 
-The future command must hold the existing fixture advisory lock and row locks.
-Require the unique original system creation marker
-(`m03_smoke_setup.v1` / `m03_smoke_fixture_created`), original project/row IDs and
-recorded identity snapshots unchanged. Recompute the original285/1754 baseline
-digests excluding this fixture and require equality with that creation marker.
-Reject human/API edit audit evidence for these rows and any unknown ownership,
-identity, status or history. There are no `locked_fields` or `locked_by_human`
-columns on competitor/account rows; do not invent such predicates.
+## Local evidence and remaining delivery gates
 
-Require no associated content, scrape-run/account-run, raw-ingest, Apify,
-cost or queue effects. Check clean progress against the original fixture:
-null lease/run/success/error/watermark/cursor fields, zero failure/item counts
-and pending backfill. Preserve original identity, cadence, dates and
-`next_due_at`; do not reset progress to make a guard pass. Derive each query
-from the actual current schema and reject incomplete coverage.
+- New continuation checks: 11/11 source/synthetic cases passed `85b657`, with
+  independent review closing raw-prefix and one-use/liveness fixes. The final
+  approved-ready 6/preapproval 8-field projection correction passed its two
+  affected checks `02c297` and independent narrow review.
+- Earlier affected compatibility selection: 36/36 passed `6810be`. It included
+  the initial six new continuation checks; it overlaps the current 11 and must
+  not be added to it as 47 distinct cases.
+- Retained-fixture SQL: author-reported 32/32 passed `a66e7a` — two source checks
+  and 30 owned PostgreSQL 17 rollback-only cases, including 26 negative/replay/lock
+  cases. Cleanup `9502b6` reported no owned container remaining. This is local
+  SQL evidence, not an emr-dev reactivation receipt.
+- Parent-reported CLI integration: new 3/3 `7beaaa` plus independent 3/3;
+  historical 26-case compatibility `be4272`. Scripted boundaries are not actual
+  hosted/native acceptance.
+- PowerShell author reports 22/22 focused custody/DB checks and two copied
+  preapproval/mixed-mode checks passing. Independent narrow ancestry review
+  passed; native process creation is compared at the source clock's millisecond
+  resolution. These are isolated local checks, not a live administrator receipt.
 
-The only row changes allowed by this proposal are competitor status→`active`
-and account status→`active`, plus normal trigger-managed `updated_at`. Create a
-separate durable CreateNew intent before the mutation and a separate system
-audit record for this one reactivation; never alter the original creation
-receipt. Verify the exact locked IDs inside the transaction and exact readback
-afterward. An ambiguous acknowledgement requires reconciliation and blocks
-automatic replay. Never adopt another C999, insert a new fixture, delete,
-recreate or overwrite human/source fields.
+Final integration review has no remaining P1/P2: independent continuation/CLI
+14/14 and extracted mocked native ancestry1/1 pass. All35 database public pins
+and all14 unchanged version/file/hash/history records match. Root affected
+ESLint/diff58aaa0 and formattingc0157a pass; portable CI selection54d6ac passes4/4.
+These test selections overlap the evidence above and are not an additive total.
 
-Retained totals are286 competitors/1755 accounts, including C999. The seed
-baseline excluding C999 remains285/1754. Reuse the existing owned archive path
-for shutdown and preserve all collected data. A failed or absent resource must
-not be reported as a fabricated full-D success.
+Actual public seal4ed097 passes native0, with123 project inputs/840Zod files/
+3462 installed Vercel runtime files. Clock CheckOnly94919f and full coordinator
+CheckOnly3ae74a pass native0 with `approval_required`, `approvalRequired:true`,
+`privateRead:false`, `networkRequests:0`; composition and DB public inputs are
+verified, administrator handoff and actual MCP transport remain unverified.
+No proof/admission/claim or handoff authority is granted. Metadata-only1a8833
+confirms all10 temporary paths and the new approval/admission/claim/runtime lock
+absent. See the [implementation checkpoint](dev-acceptance-remaining-implementation-20261022.json).
+This source receives normal delivered-head PR8 CI; read current checks separately
+from these local/public results. No unchanged full local suite was rerun.
 
-The future packet must require actual zero-actor Phase-B proofs and exact
-native-record cleanup before either actor start, the single native domain-denial
-proof, sequential original-run/cost/replay checks and independent shutdown.
-None has run. Production, schedules, external notifications, shared credential
-changes, private incident work, PR8 merge, M03 closure and M04 remain excluded.
+Only after that engineering delivery is reviewable may the exact packet be
+presented for its separate one-use time/retained-fixture decision. Do not ask for
+temporary credentials now. Later input delivery must use saved originals and
+reviewed hidden prompts only after actual approval/readiness; no reset, rotation
+or new Machine token. Genuine 11-record zero-actor Phase B and exact native cleanup,
+then native domain-denial/cleanup, must precede either sequential actor start.
+Those acceptance checks have not run.
+
+Production, schedules, external notifications, shared credential changes,
+private incident work, PR8 merge, M03 closure and M04 remain excluded.
