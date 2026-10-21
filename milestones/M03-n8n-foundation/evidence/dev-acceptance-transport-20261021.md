@@ -68,6 +68,18 @@ The original UTC boundaries are immutable:
 | Existing administrator lease must cover through | 2026-10-21 12:15:23.481 |
 
 Source, independent review, affected tests and public seal are delivery evidence.
+
+Final affected checks:25 runtime/process/resume19840a,14 DB/helper/clock checks,
+and9 Windows custody/public closureea951e pass native0; independent review green.
+Changed-file lint/format/parser and secret checks pass. Corrected delivery head
+is b4caf36143e8b918429a35f5b966082a8082002b; normal CI39591182210 is separate.
+Actual zero-setup CheckOnly601359 confirms original header/source/deadline without
+private reads/network. Explicit corrected seal5bff2e covers103project/840Zod/
+3462Vercel inputs. Actual wrapper CheckOnly9fd1b4 passes native0 with public
+composition/admin inputs/admin handoff ready, actualMcpPortVerified:false,
+privateRead:false/networkRequests:0. Admin metadata-only receipt3cb935 confirms
+the untouched pair covers original cleanup+5m; it does not prove authentication.
+
 Actual PhaseA/B, domain denial, actors, SQL/provider settlement and PhaseD remain
 unperformed. If the original stop boundary arrives, do not consume another
 handoff or manufacture a fresh window. Preserve the actual checkpoint and stop.

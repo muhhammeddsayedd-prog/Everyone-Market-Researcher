@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**A–D remains approved at f42930f. First private coordinator stopped before prepare with zero remote operations. Transport correction and a strictly original-clock continuation are being verified; three consumed runtime handoffs need replenishment after that verification. Administrator was never started and its pair remains untouched. Actors remain gated on actual PhaseB proof. GW-01 stays permanently closed.**
+**Blocked: waiting on owner — MA-11 three consumed runtime inputs and unused-bypass cleanup. A–D remains approved at f42930f. First coordinator stopped before prepare with zero remote operations. Corrected source b4caf36, independent review, affected tests and actual seal/CheckOnly pass. Original clock is unchanged. Administrator was never started and its pair remains untouched. Actors stay gated on PhaseB proof. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,8 +16,8 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Correct physical stdin release and Windows console blocking before any new private consumption. Verify exact zero-effect checkpoint; original journal and12:00:23.481 UTC deadline unchanged. Existing25/13/Machine/188historical requests unchanged. |
-| Next step | Finish affected checks/review/seal, then owner removes unused local bypass and replenishes only Management/Writer/ApifyRead. Resume before original11:50:23.481 UTC cutoff; no fresh window, administrator request or repeat batch approval. |
+| Current task | b4caf36 corrections and actual CheckOnly9fd1b4 passed. Await only the exact runtime replenishment/unused bypass cleanup already requested; original journal and12:00:23.481 UTC deadline unchanged. Existing25/13/Machine/188historical requests unchanged. |
+| Next step | Verify owner cleanup and three runtime pairs, then interactive original-clock resume before11:50:23.481 UTC cutoff. CI39591182210 passed all five jobs on b4caf36; Vercel green. No fresh window, administrator request or repeat batch approval. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
@@ -57,6 +57,18 @@ hosted acceptance. No remote state was read or changed during these fixes.
 Only after these checks pass, use the continuation section of
 [the existing handoff instructions](evidence/dev-acceptance-handoff-20261021.md).
 Do not rerun the Admin helper or request any new Machine/production credential.
+
+Corrected deliveryb4caf36 received all five successful jobs inCI39591182210 and
+green Vercel. Actual corrected seal5bff2e/CheckOnly9fd1b4 pass with103project/
+840Zod/3462Vercel inputs and no private/network reads; administrator public
+readiness is true. Actual zero-setup check601359 preserves exact original
+history/deadline. Nine Windows custody/closure checks,25 runtime/process/resume
+checks and14 DB/helper/clock checks pass; independent review is green. Runtime
+replenishment/unused-bypass cleanup was requested once after this CheckOnly.
+Presence-only read65f045 still found all three runtime inputs absent and the
+unused bypass present. Administrator metadata3cb935 matches purpose and covers
+original cleanup+5m, without decryption. These are delivery/preflight facts,
+not actual A–D acceptance. Progress/evidence delivery receives normal PR CI.
 
 Owner replied **Approve M03 dev acceptance A–D at the reviewed PR #8 head.**
 At resumption local/PR head matched`f42930f90c2de43c84f61ad6d966d0ee6074d70e`, draft/open,
