@@ -113,7 +113,7 @@
     "scripts/db/foundation-settlement.sql": "94ce66c3c12a305bba196bef441a51c9879cc0764403bef2241d3660baaa91e9",
     "scripts/db/foundation-postcheck.sql": "f5ee87926275b368c476258a4b826f4a63c7b2775c4fbfabb24af774e6fc5f52",
     "scripts/db/foundation-replay-snapshot.sql": "f32c8251a11b14b34680025b8e05ee2ca90e87af45ce12a0b90bca31aec7af70",
-    "scripts/db/check-foundation-types.mjs": "f216824ec6585949fde1e10b8d38a787647dd9ecc17453f3d31d83e0798cf8ce",
+    "scripts/db/check-foundation-types.mjs": "f36202043923fa1418f36e144b077338a363779de82b399de5e6beb117e1fa98",
     "packages/shared/src/db.types.ts": "7e488378849c695f5f2460319076e2539519369e7005461e8c3d0c75d339691a",
     "node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/typescript.js": "569177652966bd528c319171c7dd22860dbf72bde116cbc4f644f1d02bb12e39",
     "scripts/assert/m03_smoke_setup.sql": "328b209facd51e6e9620390652bc10cbc042c370ea1498706644dec1aee8cb39",

@@ -15,6 +15,9 @@ function propertyName(node) {
   return node.name && (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name)) ? node.name.text : '';
 }
 function shape(node) {
+  // Grouping is already represented by the parsed child tree. The generator
+  // and formatter may add/remove this transparent wrapper around the same type.
+  if (ts.isParenthesizedTypeNode(node)) return shape(node.type);
   const scalar =
     ts.isIdentifier(node) || ts.isStringLiteral(node) || ts.isNumericLiteral(node) ? node.text : null;
   if (ts.isPropertySignature(node))
@@ -39,7 +42,9 @@ export function verifyFoundationTypes(candidate, reference) {
   const schemas = new Map(database.type.members.map((node) => [propertyName(node), node.type]));
   if (
     schemas.size !== 4 ||
-    ['app', 'api', 'ops', 'ingest'].some((name) => !ts.isTypeLiteralNode(schemas.get(name)))
+    ['app', 'api', 'ops', 'ingest'].some(
+      (name) => !schemas.has(name) || !ts.isTypeLiteralNode(schemas.get(name)),
+    )
   )
     throw Error('FOUNDATION_TYPES_BLOCKED');
   const sections = new Map(schemas.get('ops').members.map((node) => [propertyName(node), node.type]));
