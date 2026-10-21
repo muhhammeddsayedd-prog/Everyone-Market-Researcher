@@ -5,14 +5,14 @@
 
 ## Now
 
-|                       |                                                                                                                                                                                                                                     |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                |
-| **Status**            | Blocked: MA-04/MA-11 fresh handoff leases. Approved single-clock consumers, affected tests, independent review and actual seal/CheckOnly pass. No admission or new private/hosted action.                                           |
-| **Next step**         | Replace only four insufficient temporary leases using existing saved values and exact clock-handoff instructions, verify normal CI/public readiness, then interactive -ClockAmendment. New clock starts only at verified admission. |
-| **Waiting on owner**  | Fresh Admin/Management/Writer/ApifyRead delivery: milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-handoff-20261021.md. All old ciphertexts untouched; no new key/reset/Machine/prod or repeated approval.               |
-| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                             |
-| **Last updated**      | 21 October2026 13:26UTC: seal28a459/checkOnlyf4e5da pass108project/840Zod/3462Vercel inputs, no private read/network/admission. All four old leases fail75-minute floor. Original attempt/counters preserved; PR8 draft.            |
+|                       |                                                                                                                                                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                      |
+| **Status**            | In progress: fresh handoffs verified; correcting Linux-only test fixtures caught by CI, before any private use. New clock not admitted; production guards unchanged.                                                      |
+| **Next step**         | Finish test-only portability regressions/review, reseal changed public fixture input, pass CI and fresh CheckOnly, then interactive -ClockAmendment. Preserve original header/counters/caps.                              |
+| **Waiting on owner**  | Nothing now. Fresh c3822b verifies Admin/Management/Writer/ApifyRead metadata and75-minute coverage at13:32UTC. No repeat credentials or clock approval.                                                                  |
+| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                   |
+| **Last updated**      | 21 October2026 13:32UTC: fresh encrypted delivery verified; CI39608289275 failed Windows-only fixture assumptions onLinux, production code unchanged. Clock absent, ciphertexts unopened, no auth/hosted work. PR8 draft. |
 
 ## Milestone board
 

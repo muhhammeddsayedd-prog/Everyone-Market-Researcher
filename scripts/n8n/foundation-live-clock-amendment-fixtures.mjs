@@ -2,6 +2,7 @@
 import { readFileSync, lstatSync, openSync, writeSync, fsyncSync, closeSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 import {
   foundationClockAmendmentCheckpoint as c,
   verifyFoundationClockAmendment,
@@ -12,10 +13,29 @@ import {
 } from './foundation-live-clock-amendment.mjs';
 import { foundationZeroSetupCheckpoint as old } from './foundation-live-zero-setup.mjs';
 
+export function syntheticLocalAppDataPath() {
+  return process.env.LOCALAPPDATA || join(tmpdir(), 'emr-clock-synthetic-local-appdata');
+}
+
+// Synchronous test calls only: production still requires LOCALAPPDATA, and this
+// scope restores its exact prior presence/value before returning to the caller.
+export function withSyntheticLocalAppData(run, localAppData = syntheticLocalAppDataPath()) {
+  const present = Object.hasOwn(process.env, 'LOCALAPPDATA'),
+    previous = process.env.LOCALAPPDATA;
+  try {
+    process.env.LOCALAPPDATA = localAppData;
+    return run();
+  } finally {
+    if (present) process.env.LOCALAPPDATA = previous;
+    else delete process.env.LOCALAPPDATA;
+  }
+}
+
 export function syntheticClockAmendment({ parentProcessId = process.ppid, durableDirectory } = {}) {
   const repo = fileURLToPath(new URL('../../', import.meta.url)),
     files = new Map(),
-    directories = new Set();
+    directories = new Set(),
+    localAppData = syntheticLocalAppDataPath();
   for (const relative of [c.approvalRelative, c.packetRelative, c.lateRelative, old.closureRelative])
     files.set(join(repo, relative), readFileSync(join(repo, relative), 'utf8'));
   const header =
@@ -26,7 +46,7 @@ export function syntheticClockAmendment({ parentProcessId = process.ppid, durabl
       deadlineAt: old.deadlineAt,
     }) + '\n';
   files.set(join(repo, old.managementRelative), header);
-  const parentPath = join(process.env.LOCALAPPDATA, 'Temp', c.parentLockFilename);
+  const parentPath = join(localAppData, 'Temp', c.parentLockFilename);
   files.set(
     parentPath,
     JSON.stringify({
@@ -124,6 +144,7 @@ export function syntheticClockAmendment({ parentProcessId = process.ppid, durabl
     },
   };
   const now = () => time,
+    withLocalAppData = (run) => withSyntheticLocalAppData(run, localAppData),
     paths = {
       management: join(repo, old.managementRelative),
       admission: join(repo, c.admissionRelative),
@@ -137,6 +158,8 @@ export function syntheticClockAmendment({ parentProcessId = process.ppid, durabl
     header,
     files,
     paths,
+    localAppData,
+    withLocalAppData,
     checkpoint: c,
     setTime: (n) => {
       time = n;
@@ -147,10 +170,10 @@ export function syntheticClockAmendment({ parentProcessId = process.ppid, durabl
     setSyncFailure: (v) => {
       syncFail = v;
     },
-    check: () => verifyFoundationClockAmendment({ now }, io),
-    admit: () => admitFoundationClockAmendment({ now }, io),
-    read: () => readFoundationClockAmendment({ now }, io),
-    readClaimed: () => readClaimedFoundationClockAmendment({ now }, io),
-    claim: (p) => claimFoundationClockAmendment(p, { now }, io),
+    check: () => withLocalAppData(() => verifyFoundationClockAmendment({ now }, io)),
+    admit: () => withLocalAppData(() => admitFoundationClockAmendment({ now }, io)),
+    read: () => withLocalAppData(() => readFoundationClockAmendment({ now }, io)),
+    readClaimed: () => withLocalAppData(() => readClaimedFoundationClockAmendment({ now }, io)),
+    claim: (p) => withLocalAppData(() => claimFoundationClockAmendment(p, { now }, io)),
   };
 }

@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Blocked: waiting on owner — MA-04/MA-11 fresh delivery of four insufficient temporary leases. The clock amendment is approved and concretely implemented/reviewed; affected tests and actual public seal/CheckOnly pass. New clock has not started. All old ciphertexts remain untouched. Original attempt/header/counters stay preserved; no new decryption/authentication/hosted operation. GW-01 stays permanently closed.**
+**In progress: fresh handoffs verified; fixing Linux-only synthetic fixture assumptions caught by CI before any private use. New clock is not admitted. Production guards and original header/caps remain unchanged; no new decryption/authentication/hosted operation. No owner action is pending. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
@@ -17,12 +17,28 @@
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
 | Current task | Approved single-clock implementation is frozen/reviewed; actual seal28a459 and CheckOnlyf4e5da pass. Original header/counters are preserved and admission is absent. All four old leases are insufficient by metadata-only310117; request fresh delivery only, no repeated clock approval. |
-| Next step | Follow the exact fresh-delivery block linked below for the existing dev Admin/Management/Writer/ApifyRead values, verify current normal CI/public lease readiness, then interactive -ClockAmendment. No repeated development or clock approval; admit only after transport and leases pass. |
+| Next step | Finish the test-only cross-platform fix and affected regressions/review, replace the public seal for its changed fixture input, pass normal PR CI and actual fresh CheckOnly, then interactive -ClockAmendment. Fresh c3822b verifies all four deliveries cover75minutes at13:32; recheck at admission, no repeated inputs or approval now. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
 
 ### Latest: single clock amendment approved; implementation only
+
+**Latest fresh delivery and CI:** owner replied **M03 amended-window handoffs
+ready**. Actual metadata-only c3822b at13:32:05 UTC verifies Admin and all three
+runtime pairs present, exact identity/purpose/head/packet/two-hour metadata
+valid and covering75minutes; bypass/parent lock/admission absent. No ciphertext
+opened, decryption/authentication attempted or new segment started. Do not ask
+for these values again while their actual lease floor remains sufficient.
+
+Normal CI39608289275 on64f50e1 caught Linux-only synthetic fixtures joining an
+undefined LOCALAPPDATA. Quality/build/e2e passed; unit and DB safety tests failed
+before the DB replay step. Public logb8c8d2/c26c1f identifies only test fixture
+paths, no hosted failure. Production Windows guard is unchanged. Test-only
+scoped synthetic environment setup restores exact prior state; an env-absent
+fresh-child regression is being added. No CI disable, skip or production guard
+relaxation. Changed fixture source requires explicit public reseal after freeze;
+new clock remains unstarted while this correction and normal CI complete.
 
 **Current delivery:** concrete clock/runtime/DB/root guards are frozen and
 independently reviewed GREEN.34 affected runtime/clock/compatibility checks,
@@ -479,6 +495,11 @@ guard blocked. Historical commands below do not authorize another clock.
 Do not ask again. Historical decision text below is preserved only as provenance.
 
 ### MA-04 / MA-11 — fresh handoff leases for the approved admission
+
+**Completed as delivery:** owner supplied the fresh existing values. Actual
+c3822b metadata read verifies all four pairs and75-minute coverage at13:32:05
+UTC, without ciphertext reads or authentication. No further input requested;
+revalidate leases only at the actual admission. Commands below are historical.
 
 All four actual leases fail the new75-minute floor (metadata-only310117); Admin
 is expired. No ciphertext was opened or consumed. Concrete consumers/review/

@@ -38,6 +38,29 @@
     "ciphertextOpenedOrDecrypted": false,
     "newAdmissionAndRuntimeClaimAbsent": true
   },
+  "freshOwnerDelivery": {
+    "ownerReply": "M03 amended-window handoffs ready",
+    "metadataOnlyReceipt": "c3822b",
+    "observedAtUtc": "2026-10-21T13:32:05.7315354Z",
+    "allFourCiphertextsPresent": true,
+    "allFourExactMetadataValid": true,
+    "allFourCoverNewSeventyFiveMinutes": true,
+    "bypassParentLockAndAdmissionAbsent": true,
+    "ciphertextsOpenedOrDecrypted": false,
+    "authenticationAttempted": false
+  },
+  "ciPortabilityCorrection": {
+    "firstDeliveryHead": "64f50e14e959faaa0b513509c47fe3f8f175c922",
+    "failedCi": 39608289275,
+    "qualityBuildAndBrowserJobsPassed": true,
+    "unitAndDbSafetyFailure": "Only synthetic fixture path construction assumed LOCALAPPDATA on Linux; DB replay had not run. Actual logs b8c8d2/c26c1f",
+    "correction": "Test-only synchronous scoped synthetic environment restores exact prior presence/value; shared fixture replaces duplicated DB test implementation. Real production guard unchanged",
+    "productionClockModuleHashUnchanged": true,
+    "affectedAbsentEnvironmentChecks": "19 PASS/native0/0skip in OS-only fresh child with LOCALAPPDATA absent16ec3d; new permanent regressions and independent2 PASS32ad22",
+    "review": "Independent test-only portability review GREEN; not relabeled as Linux CI",
+    "priorBlockedDiagnostic": "One disposable temporary diagnostic harness was blocked before execution (generic blocked by policy). No file/child was created; that operation was not retried. Permanent checked-in no-file regression used instead",
+    "next": "Explicitly replace public seal for changed fixture bytes, run normal fresh CI and actual fresh CheckOnly before private admission"
+  },
   "mechanism": {
     "admitOnlyAfterPublicChecksTransportProvenanceAndLeases": true,
     "parentLockAndImmutableCreateNewAdmissionBeforeDecryption": true,

@@ -43,7 +43,6 @@ runFoundationLiveRuntimeCli({args:['SessionClockAmendment'],dependencies:{storag
         env: {
           SystemRoot: process.env.SystemRoot ?? '',
           WINDIR: process.env.WINDIR ?? '',
-          LOCALAPPDATA: process.env.LOCALAPPDATA,
         },
       },
     );

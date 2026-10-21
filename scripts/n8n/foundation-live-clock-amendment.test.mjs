@@ -34,7 +34,10 @@ test('a runtime claim is durable once even when first child has zero attempts an
   assert.equal(f.readClaimed().deadlineAt, claimed.deadlineAt);
   assert.throws(() => f.claim(f.read()), blocked);
   assert.throws(
-    () => claimFoundationClockAmendment(f.read(), { now: f.now }, { ...f.io, processId: process.pid + 100 }),
+    () =>
+      f.withLocalAppData(() =>
+        claimFoundationClockAmendment(f.read(), { now: f.now }, { ...f.io, processId: process.pid + 100 }),
+      ),
     blocked,
   );
   assert.equal(f.files.get(f.paths.claim), bytes);
