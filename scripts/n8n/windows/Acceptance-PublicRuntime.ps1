@@ -31,6 +31,9 @@ function Get-M03AcceptancePublicFiles([string]$Root) {
   'scripts/assert/m03_smoke_assert.sql',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-authorization-20261021.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-zero-setup-20261021.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-approval-20261021.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-amendment-20261021.md',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-late-delivery-20261021.json',
   'milestones/M03-n8n-foundation/evidence/m03-c01-retention-proposal-20261019.json'
  )
  foreach($relative in @('scripts/n8n','n8n/foundation')){

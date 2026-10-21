@@ -92,6 +92,18 @@ Only this continuation checks the unchanged lease against the original physical
 deadline plus five minutes; normal sessions still require75 minutes remaining.
 Normal sessions omit this parameter. Neither path resets a counter or journal.
 
+The owner separately approved one clock amendment for segment
+`30e75d0d-7e4c-46c6-9a07-556f90b63859`; its immutable approval artifact is
+`milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-approval-20261021.json`.
+The distinct `-ClockAmendment` mode cannot be combined with the original-deadline
+parameter. Public CheckOnly verifies approval without admitting a clock. Actual
+administration calls the pinned helper's `ReadClaimed` before DPAPI, requires
+the canonical admission and runtime claim, and checks the admitted segment in
+the native ready envelope. The same admitted start determines minute50/60/70;
+the unchanged two-hour lease must cover start plus75 minutes. All management
+and control counters remain in their existing journals. No automatic renewal
+or alternate segment is accepted.
+
 The client sends EOF on failure/abort so the reviewed parent can finish its
 bounded current CLI call and run cleanup; it does not kill only the parent and
 orphan a password-bearing child. Closure is accepted only from native completion

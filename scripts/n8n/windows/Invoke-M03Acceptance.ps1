@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$ResumeZeroSetup)
+param([switch]$CheckOnly,[switch]$ResumeZeroSetup,[switch]$ClockAmendment)
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
@@ -10,6 +10,7 @@ $childDeadline=$null;$closeRequested=$false;$emergency=$false;$treeClosed=$false
 $errorDraining=$false;$outputDiscarding=$false;$lineTask=$null;$errorTask=$null;$inputTask=$null
 $bypassCreated=$false;$script:closureVerified=$false;$script:credentialClosureVerified=$false
 $resumeDeadlineAt=$null
+$amendmentClock=$null
 $secret=$null;$bstr=[IntPtr]::Zero;$packet=$null;$private=$null;$machine=$null;$bypass=$null
 $needles=[Collections.Generic.List[string]]::new();$knownWorkflowIds=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $receipt=[ordered]@{kind='m03_acceptance_wrapper_closed';childClosed=$true;credentialChildrenClosed=$false;emergencyShutdown=$false;nativeExit=$null;handoffsDeleted=$false;bypassHandoffDeleted=$false;pendingMachinePreserved=$true;privateRead=$false;code='M03_ACCEPTANCE_BLOCKED'}
@@ -95,13 +96,14 @@ function Invoke-PublicCompositionCheck([string]$Node,[string]$Entry,[string]$Rep
  }
  if(-not $done){throw 'blocked'}
 }
-function Invoke-PublicDatabaseCheck([string]$Repository,[bool]$AllowMissing,$OriginalDeadline=$null){
+function Invoke-PublicDatabaseCheck([string]$Repository,[bool]$AllowMissing,$OriginalDeadline=$null,[bool]$AmendedClock=$false){
  $process=$null;$info=$null;$running=$false;$done=$true
  try{
   $db=Public-File (Join-Path $Repository 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1')
   $info=[Diagnostics.ProcessStartInfo]::new();$info.FileName=(Join-Path $PSHOME 'powershell.exe')
   $info.Arguments='-NoProfile -NonInteractive -File "'+$db+'" -CheckOnly -PhaseAControl';$info.WorkingDirectory=$Repository
   if($null -ne $OriginalDeadline){if($OriginalDeadline -ne 1792584023481){throw 'blocked'};$info.Arguments+=' -OriginalDeadlineAtMs '+[string]$OriginalDeadline}
+  if($AmendedClock){if($null -ne $OriginalDeadline){throw 'blocked'};$info.Arguments+=' -ClockAmendment'}
   $info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.EnvironmentVariables.Clear()
   foreach($name in @('SystemRoot','WINDIR','PATH','USERPROFILE','LOCALAPPDATA','APPDATA','TEMP','TMP')){if(Test-Path ('Env:'+ $name)){$info.EnvironmentVariables[$name]=[Environment]::GetEnvironmentVariable($name)}}
   $process=[Diagnostics.Process]::new();$process.StartInfo=$info;$running=$process.Start();$done=$false
@@ -112,6 +114,7 @@ function Invoke-PublicDatabaseCheck([string]$Repository,[bool]$AllowMissing,$Ori
   $line=$out.Result.Trim()
   if($process.ExitCode -eq 0 -and $line.StartsWith('M03_FOUNDATION CHECK_ONLY_READY.',[StringComparison]::Ordinal)){return $true}
   if($AllowMissing -and $process.ExitCode -eq 2 -and $line.StartsWith('M03_FOUNDATION HANDOFF_MISSING.',[StringComparison]::Ordinal)){return $false}
+  if($AllowMissing -and $AmendedClock -and $process.ExitCode -eq 2 -and $line.StartsWith('M03_FOUNDATION HANDOFF_LEASE_NOT_READY.',[StringComparison]::Ordinal)){return $false}
   throw 'blocked'
  }finally{
   if($null -ne $process){if($running -and -not $done){try{$process.Kill();$done=$process.WaitForExit(5000)}catch{}};$process.Dispose()}
@@ -133,6 +136,35 @@ function Invoke-ZeroSetupPublicCheck([string]$Node,[string]$Repository){
   $result=ConvertFrom-Json -InputObject $out.Result
   if($result -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @('kind','deadlineAt','sourceCommitSha','windowId','privateRead','networkRequests'|Sort-Object) @($result.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $result.kind -cne 'zero_setup_ready' -or $result.deadlineAt -ne 1792584023481 -or $result.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $result.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or $result.privateRead -isnot [bool] -or $result.privateRead -ne $false -or $result.networkRequests -ne 0){throw 'blocked'}
   return [long]$result.deadlineAt
+ }finally{
+  if($null -ne $process){if($running -and -not $done){try{$process.Kill();$done=$process.WaitForExit(5000)}catch{}};$process.Dispose()}
+  if($null -ne $info){$info.EnvironmentVariables.Clear()}
+ }
+}
+function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$Mode){
+ $process=$null;$info=$null;$running=$false;$done=$true
+ try{
+  if($Mode -cnotin @('CheckOnly','Admit','Read')){throw 'blocked'}
+  $entry=Public-File (Join-Path $Repository 'scripts/n8n/foundation-live-clock-amendment.mjs')
+  $info=[Diagnostics.ProcessStartInfo]::new();$info.FileName=$Node;$info.Arguments='"'+$entry+'" '+$Mode;$info.WorkingDirectory=$Repository
+  $info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.EnvironmentVariables.Clear()
+  foreach($name in @('SystemRoot','WINDIR','PATH','USERPROFILE','LOCALAPPDATA','APPDATA','TEMP','TMP')){if(Test-Path ('Env:'+ $name)){$info.EnvironmentVariables[$name]=[Environment]::GetEnvironmentVariable($name)}}
+  $process=[Diagnostics.Process]::new();$process.StartInfo=$info;$running=$process.Start();$done=$false
+  if(-not $running){throw 'blocked'}
+  $out=[EmrM03AcceptanceBoundedIo]::Text($process.StandardOutput,16384);$err=[EmrM03AcceptanceBoundedIo]::Text($process.StandardError,1024)
+  $done=$process.WaitForExit(10000)
+  if(-not $done -or $process.ExitCode -ne 0 -or -not [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($out,$err)).Wait(5000) -or $err.Result.Length -ne 0){throw 'blocked'}
+  $result=ConvertFrom-Json -InputObject $out.Result
+  $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
+  if($Mode -cne 'CheckOnly'){$keys+=@('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')}
+  if($result -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($keys|Sort-Object) @($result.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $result.segmentId -cne '30e75d0d-7e4c-46c6-9a07-556f90b63859' -or $result.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $result.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or $result.privateRead -isnot [bool] -or $result.privateRead -ne $false -or $result.networkRequests -ne 0){throw 'blocked'}
+  if($Mode -ceq 'CheckOnly'){
+   if($result.kind -cne 'clock_amendment_ready'){throw 'blocked'}
+  }else{
+   foreach($name in @('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')){if(($result.$name -isnot [long] -and $result.$name -isnot [int]) -or $result.$name -lt 0){throw 'blocked'}}
+   if($result.kind -cne 'clock_amendment_admitted' -or $result.startsAt -gt [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -or $result.deadlineAt -ne $result.startsAt+3600000 -or $result.stopNewAt -ne $result.startsAt+3000000 -or $result.hardDeadlineAt -ne $result.startsAt+4200000 -or [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -ge $result.stopNewAt){throw 'blocked'}
+  }
+  return $result
  }finally{
   if($null -ne $process){if($running -and -not $done){try{$process.Kill();$done=$process.WaitForExit(5000)}catch{}};$process.Dispose()}
   if($null -ne $info){$info.EnvironmentVariables.Clear()}
@@ -293,6 +325,7 @@ function Safe-PublicLine($Value){
  return $Value|ConvertTo-Json -Compress
 }
 try{
+ if($ResumeZeroSetup -and $ClockAmendment){throw 'blocked'}
  $sealFile=Public-File (Join-Path $repo 'scripts/n8n/foundation-acceptance-seal.json') 2097152
  $seal=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($sealFile))
  $module=Public-File (Join-Path $PSScriptRoot 'Acceptance-PublicRuntime.ps1')
@@ -303,8 +336,10 @@ try{
  $entry=Public-File (Join-Path $repo 'scripts/n8n/foundation-live-runtime-cli.mjs')
  Initialize-BoundedIo
  Invoke-PublicCompositionCheck $node $entry $repo
+ if(-not $ResumeZeroSetup -and -not $ClockAmendment -and (Test-Path -LiteralPath (Join-Path $repo 'scripts/n8n/out/foundation/live/management.jsonl'))){throw 'blocked'}
  if($ResumeZeroSetup){$resumeDeadlineAt=Invoke-ZeroSetupPublicCheck $node $repo}
- $adminPublicReady=Invoke-PublicDatabaseCheck $repo ([bool]$CheckOnly) $resumeDeadlineAt
+ if($ClockAmendment){$null=Invoke-ClockAmendmentPublic $node $repo 'CheckOnly'}
+ $adminPublicReady=Invoke-PublicDatabaseCheck $repo ([bool]$CheckOnly) $resumeDeadlineAt ([bool]$ClockAmendment)
  $bindings=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'n8n/foundation/bindings.dev.json'))))
  foreach($property in $bindings.workflowRefs.PSObject.Properties){$null=$knownWorkflowIds.Add($property.Value.id)}
  if($knownWorkflowIds.Count -ne 25){throw 'blocked'}
@@ -316,7 +351,14 @@ try{
  $directory=[IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA 'Temp'))
  $null=Get-M03AcceptancePhysicalPath $directory
  $lockPath=Join-Path $directory 'emr-m03-acceptance-parent.operation.lock'
- $lock=[IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+ $lockShare=if($ClockAmendment){[IO.FileShare]::Read}else{[IO.FileShare]::None}
+ $lock=[IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,$lockShare)
+ if($ClockAmendment){
+  $parentMetadata=[ordered]@{kind='m03_clock_admission_parent';version=1;segmentId='30e75d0d-7e4c-46c6-9a07-556f90b63859';processId=$PID}
+  $parentBytes=[Text.UTF8Encoding]::new($false).GetBytes(($parentMetadata|ConvertTo-Json -Compress))
+  $lock.Write($parentBytes,0,$parentBytes.Length);$lock.Flush($true);[Array]::Clear($parentBytes,0,$parentBytes.Length)
+  $null=Invoke-ClockAmendmentPublic $node $repo 'CheckOnly'
+ }
  if($ResumeZeroSetup){$resumeDeadlineAt=Invoke-ZeroSetupPublicCheck $node $repo}
  # Verify retained input provenance before consuming any new lease/ciphertext.
  $old=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'scripts/n8n/foundation-delivery-packet.json'))))
@@ -335,7 +377,8 @@ try{
   if(@(Compare-Object -CaseSensitive @($keys|Sort-Object) @($lease.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $lease.version -ne 1 -or $lease.windowId -cne $seal.windowId -or $lease.approvedHead -cne $seal.approvedHead -or $lease.approvedPacketSha256 -cne $seal.approvedPacketSha256 -or $lease.kind -cne $kind -or $lease.purpose -cne ('m03_approved_dev_acceptance_'+$kind.ToLowerInvariant())){throw 'blocked'}
   $created=[DateTimeOffset]::Parse($lease.createdAt,[Globalization.CultureInfo]::InvariantCulture)
   $expiry=[DateTimeOffset]::Parse($lease.expiresAt,[Globalization.CultureInfo]::InvariantCulture)
-  if($created -gt [DateTimeOffset]::UtcNow -or $expiry -ne $created.AddHours(2) -or $expiry -lt [DateTimeOffset]::UtcNow.AddMinutes(70)){throw 'blocked'}
+  $runtimeCoverageMinutes=if($ClockAmendment){75}else{70}
+  if($created -gt [DateTimeOffset]::UtcNow -or $expiry -ne $created.AddHours(2) -or $expiry -lt [DateTimeOffset]::UtcNow.AddMinutes($runtimeCoverageMinutes)){throw 'blocked'}
   if($expiry -lt $minimumExpiry){$minimumExpiry=$expiry}
   $null=Public-File $handoff
   $handoffs[$kind]=$handoff;$leases[$kind]=$leasePath
@@ -353,6 +396,14 @@ try{
  if($adminCreated.Kind -ne [DateTimeKind]::Utc -or $adminExpiry.Kind -ne [DateTimeKind]::Utc -or $adminCreated -gt [DateTime]::UtcNow.AddMinutes(1) -or $adminExpiry -ne $adminCreated.AddHours(2) -or $adminExpiry -le $adminRequiredUntil){throw 'blocked'}
  $bypassFile=Join-Path $directory 'emr-m03-acceptance-protection-bypass.dpapi'
  if(Test-Path -LiteralPath $bypassFile){throw 'blocked'}
+ if($ClockAmendment){
+  # One durable segment, only after source/transport/provenance/lease checks.
+  # Never delete or recreate its admission/claim, even after a zero-effect exit.
+  $amendmentClock=Invoke-ClockAmendmentPublic $node $repo 'Admit'
+  $resumeDeadlineAt=[long]$amendmentClock.deadlineAt
+  $amendmentLeaseFloor=[DateTimeOffset]::FromUnixTimeMilliseconds([long]$amendmentClock.startsAt).AddMinutes(75)
+  if($minimumExpiry -lt $amendmentLeaseFloor -or $adminExpiry -le $amendmentLeaseFloor.UtcDateTime){throw 'blocked'}
+ }
  if($ResumeZeroSetup -and [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -ge $resumeDeadlineAt-600000){throw 'blocked'}
  $receipt.privateRead=$true
  $machine=Plain-Dpapi (Read-LockedText $machinePath)
@@ -379,7 +430,7 @@ try{
  $cipher=$null
  $packet=[ordered]@{kind='m03_acceptance_private_input';version=1;approvedHead=$seal.approvedHead;approvedPacketSha256=$seal.approvedPacketSha256;sourceCommitSha=$seal.approvedHead;managementKey=$private.Management;writerPassword=$private.Writer;apifyReadToken=$private.ApifyRead;machineToken=$machine;protectionBypass=$bypass;leaseExpiry=$minimumExpiry.ToUnixTimeMilliseconds()}
  $start=[Diagnostics.ProcessStartInfo]::new();$start.FileName=$node
- $sessionMode=if($ResumeZeroSetup){'SessionResumeZeroSetup'}else{'Session'}
+ $sessionMode=if($ClockAmendment){'SessionClockAmendment'}elseif($ResumeZeroSetup){'SessionResumeZeroSetup'}else{'Session'}
  $start.Arguments='"'+$entry+'" '+$sessionMode;$start.WorkingDirectory=$repo
  $start.UseShellExecute=$false;$start.CreateNoWindow=$true
  $start.RedirectStandardInput=$true;$start.RedirectStandardOutput=$true;$start.RedirectStandardError=$true
@@ -387,11 +438,11 @@ try{
  foreach($name in @('SystemRoot','WINDIR','PATH','USERPROFILE','LOCALAPPDATA','APPDATA','TEMP','TMP')){if(Test-Path ('Env:'+ $name)){$start.EnvironmentVariables[$name]=[Environment]::GetEnvironmentVariable($name)}}
  $child=[Diagnostics.Process]::new();$child.StartInfo=$start
  $started=$child.Start();if(-not $started){throw 'blocked'};$closed=$false
- $childDeadline=if($ResumeZeroSetup){[DateTimeOffset]::FromUnixTimeMilliseconds($resumeDeadlineAt).AddMinutes(10)}else{[DateTimeOffset]::UtcNow.AddMinutes(70)}
+ $childDeadline=if($ClockAmendment -or $ResumeZeroSetup){[DateTimeOffset]::FromUnixTimeMilliseconds($resumeDeadlineAt).AddMinutes(10)}else{[DateTimeOffset]::UtcNow.AddMinutes(70)}
  $child.StandardInput.WriteLine(($packet|ConvertTo-Json -Depth 5 -Compress));$child.StandardInput.Flush()
  $packet=$null;$private=$null;$machine=$null;$bypass=$null
  $lineTask=[EmrM03AcceptanceBoundedIo]::Line($child.StandardOutput,65536);$errorBuffer=New-Object char[] 1024;$errorTask=$child.StandardError.ReadAsync($errorBuffer,0,1024);$inputTask=[EmrM03AcceptanceBoundedIo]::Line([Console]::In,262144)
- $until=if($ResumeZeroSetup){[DateTimeOffset]::FromUnixTimeMilliseconds($resumeDeadlineAt).AddMinutes(-10)}else{[DateTimeOffset]::UtcNow.AddMinutes(50)}
+ $until=if($ClockAmendment -or $ResumeZeroSetup){[DateTimeOffset]::FromUnixTimeMilliseconds($resumeDeadlineAt).AddMinutes(-10)}else{[DateTimeOffset]::UtcNow.AddMinutes(50)}
  while(-not $child.HasExited){
   if([DateTimeOffset]::UtcNow -ge $childDeadline){break}
   if([DateTimeOffset]::UtcNow -ge $until -and -not $closeRequested){

@@ -40,6 +40,11 @@ import {
   verifyFoundationLiveZeroSetup,
   assertFoundationLiveZeroSetupProof,
 } from './foundation-live-zero-setup.mjs';
+import {
+  readFoundationClockAmendment,
+  claimFoundationClockAmendment,
+  assertFoundationLiveClockAmendmentProof,
+} from './foundation-live-clock-amendment.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 const require = createRequire(import.meta.url);
@@ -131,6 +136,11 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     dependencies.zeroSetupProof === undefined
       ? null
       : assertFoundationLiveZeroSetupProof(dependencies.zeroSetupProof);
+  const amendment =
+    dependencies.clockAmendmentProof === undefined
+      ? null
+      : assertFoundationLiveClockAmendmentProof(dependencies.clockAmendmentProof, { claimed: true });
+  if (resume && amendment) fail();
   if (
     !exact(input, [
       'kind',
@@ -162,12 +172,24 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   )
     fail();
   if (resume && (resume.sourceCommitSha !== input.sourceCommitSha || now() >= resume.stopNewAt)) fail();
-  const deadlineAt = resume ? resume.deadlineAt : now() + 3600000;
+  if (
+    amendment &&
+    (amendment.sourceCommitSha !== input.sourceCommitSha ||
+      now() < amendment.startsAt ||
+      now() >= amendment.stopNewAt)
+  )
+    fail();
+  const deadlineAt = amendment ? amendment.deadlineAt : resume ? resume.deadlineAt : now() + 3600000;
   const budget = createFoundationLiveManagementBudget(
     { sourceCommitSha: input.sourceCommitSha, deadlineAt },
-    { ...(dependencies.storage ?? {}), now, ...(resume ? { zeroSetupProof: resume } : {}) },
+    {
+      ...(dependencies.storage ?? {}),
+      now,
+      ...(resume ? { zeroSetupProof: resume } : {}),
+      ...(amendment ? { clockAmendmentProof: amendment } : {}),
+    },
   );
-  if (resume && budget.snapshot().attempts !== 0) {
+  if ((resume || amendment) && budget.snapshot().attempts !== 0) {
     budget.close();
     fail();
   }
@@ -177,7 +199,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     fail();
   }
   const nativeStorage = foundationLiveAuxiliaryStorage(budget, 'control');
-  if (resume && nativeStorage.previousEvents.length) {
+  if ((resume || amendment) && nativeStorage.previousEvents.length) {
     budget.close();
     fail();
   }
@@ -344,6 +366,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       repositoryRoot,
       now,
       ...(resume ? { originalDeadlineAtMs: resume.deadlineAt } : {}),
+      ...(amendment ? { clockAmendmentProof: amendment } : {}),
     });
     const ready = await admin.postcheck();
     if (ready?.ready !== true || ready.projectRef !== 'zmotjsbzhzjvpelxvxlf' || ready.migrationCount !== 14)
@@ -1004,14 +1027,32 @@ export async function runFoundationLiveRuntimeCli({
     });
     return 0;
   }
-  if (args.length !== 1 || !['Session', 'SessionResumeZeroSetup'].includes(args[0])) return 1;
+  if (args.length !== 1 || !['Session', 'SessionResumeZeroSetup', 'SessionClockAmendment'].includes(args[0]))
+    return 1;
   let zeroSetupProof;
+  let clockAmendmentProof;
   if (args[0] === 'SessionResumeZeroSetup') {
     try {
       zeroSetupProof = assertFoundationLiveZeroSetupProof(
         (dependencies.verifyZeroSetup ?? verifyFoundationLiveZeroSetup)({
           now: dependencies.now ?? Date.now,
         }),
+      );
+    } catch {
+      emit({ kind: 'm03_acceptance_closed', status: 'blocked', residual: true });
+      return 1;
+    }
+  }
+  if (args[0] === 'SessionClockAmendment') {
+    try {
+      const proof = (dependencies.readClockAmendment ?? readFoundationClockAmendment)({
+        now: dependencies.now ?? Date.now,
+      });
+      clockAmendmentProof = assertFoundationLiveClockAmendmentProof(
+        (dependencies.claimClockAmendment ?? claimFoundationClockAmendment)(proof, {
+          now: dependencies.now ?? Date.now,
+        }),
+        { claimed: true },
       );
     } catch {
       emit({ kind: 'm03_acceptance_closed', status: 'blocked', residual: true });
@@ -1063,6 +1104,7 @@ export async function runFoundationLiveRuntimeCli({
         session = createFoundationLiveAcceptanceSession(value, emit, {
           ...dependencies,
           ...(zeroSetupProof ? { zeroSetupProof } : {}),
+          ...(clockAmendmentProof ? { clockAmendmentProof } : {}),
         });
         privateValues = [
           'managementKey',

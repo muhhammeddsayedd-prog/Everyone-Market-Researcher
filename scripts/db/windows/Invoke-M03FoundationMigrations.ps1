@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0)
+param([switch]$CheckOnly,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0,[switch]$ClockAmendment)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -14,6 +14,9 @@ $requiredFiles = @('scripts/db/windows/Invoke-M03FoundationMigrations.ps1','scri
   'scripts/db/check-foundation-types.mjs','packages/shared/src/db.types.ts','node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/typescript.js',
   'scripts/assert/m03_smoke_setup.sql','scripts/assert/m03_smoke_teardown.sql','scripts/assert/m03_smoke_assert.sql',
   'scripts/seed/check-tls.mjs','scripts/seed/certs/supabase-root-2021.json',$caRelative,$cliRelative)
+$requiredFiles+=@('scripts/n8n/foundation-live-clock-amendment.mjs','scripts/n8n/foundation-live-zero-setup.mjs','scripts/n8n/foundation-control-state.mjs','scripts/n8n/foundation-runtime-checkpoint.mjs',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-approval-20261021.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-zero-setup-20261021.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-amendment-20261021.md','milestones/M03-n8n-foundation/evidence/dev-acceptance-late-delivery-20261021.json')
 $versions = @('20261017172928','20261017172931','20261017172934','20261017172937','20261017172940','20261017172943','20261017172945','20261018034220','20261018035417','20261018070042','20261018231756','20261018232014','20261018232922','20261018233338')
 $names = @('extensions_schemas_roles','core_tables','auth_rls_views','rpc_pipeline_core','rpc_app_search','storage_cron','seed_taxonomies','rpc_n8n_foundation','price_book_plan','n8n_worker_gateway_admission','m03_actor_launch_admission','m03_foundation_gateway','m03_foundation_safety_receipts','m03_foundation_boundary_hardening')
 $queryTimeoutMs = 30000
@@ -28,6 +31,8 @@ $sessionLock = $null
 $leaseExpires = $null
 $phaseAStart = $null
 $originalPhaseAStart = $null
+$clockAmendmentStart = $null
+$clockAmendmentSegment = $null
 $phaseAControlHardDeadline = $null
 $exitCode = 1
 $receipt = [ordered]@{version=1;runId=$runId;environment='dev';projectRef=$projectRef;host=$poolerHost;port=5432;
@@ -95,6 +100,11 @@ function Read-FoundationOriginalStart([long]$Value,[DateTime]$Now=[DateTime]::Ut
   return $deadline.AddMinutes(-60)
 }
 function Get-FoundationLeaseFloor([DateTime]$Now=[DateTime]::UtcNow) {
+  if($ClockAmendment){
+    if(-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 0){throw 'blocked'}
+    if($null -ne $clockAmendmentStart){return $clockAmendmentStart.AddMinutes(75)}
+    return $Now.AddMinutes(75)
+  }
   if($OriginalDeadlineAtMs -ne 0){
     if(-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 1792584023481){throw 'blocked'}
     # Same original physical minute70 ceiling plus five minutes; no new lease
@@ -102,6 +112,30 @@ function Get-FoundationLeaseFloor([DateTime]$Now=[DateTime]::UtcNow) {
     return [DateTimeOffset]::FromUnixTimeMilliseconds($OriginalDeadlineAtMs).UtcDateTime.AddMinutes(15)
   }
   return $Now.AddMinutes($(if($PhaseAControl){75}else{10}))
+}
+function Read-FoundationClockAmendment {
+  if(-not $PhaseAControl -or -not $ClockAmendment -or $OriginalDeadlineAtMs -ne 0){throw 'blocked'}
+  $mode=if($CheckOnly){'CheckOnly'}else{'ReadClaimed'}
+  $module=Assert-Path $repo 'scripts/n8n/foundation-live-clock-amendment.mjs'
+  $answer=Invoke-Bounded $node @($module,$mode) $repo 10000
+  try{
+    if(-not $answer.ok -or -not $answer.closed){throw 'blocked'}
+    $value=ConvertFrom-Json -InputObject $answer.text -ErrorAction Stop
+    $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
+    if(-not $CheckOnly){$keys+=@('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')}
+    Assert-Keys $value $keys
+    $expected=if($CheckOnly){'clock_amendment_ready'}else{'clock_amendment_admitted'}
+    if($value.kind -cne $expected -or $value.segmentId -cne '30e75d0d-7e4c-46c6-9a07-556f90b63859' -or
+       $value.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $value.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or
+       $value.privateRead -isnot [bool] -or $value.privateRead -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0){throw 'blocked'}
+    if($CheckOnly){return $null}
+    foreach($field in @('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')){if($value.$field -isnot [long]){throw 'blocked'}}
+    $nowMs=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+    if($value.startsAt -le 0 -or $value.startsAt -gt $nowMs+1000 -or $nowMs -ge $value.stopNewAt -or
+       $value.deadlineAt-$value.startsAt -ne 3600000 -or $value.stopNewAt-$value.startsAt -ne 3000000 -or
+       $value.hardDeadlineAt-$value.startsAt -ne 4200000){throw 'blocked'}
+    return $value
+  }finally{$answer.text=$null}
 }
 
 # Every native child gets a fresh OS-only environment. Only reviewed CLI database
@@ -225,6 +259,7 @@ function Push-Matches($Result,[bool]$DryRun) {
 
 # All preflight checks are public and precede any DPAPI read/decryption.
 try {
+  if($ClockAmendment -and (-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 0)){throw 'blocked'}
   $repoEntry = Get-Item -LiteralPath $repo -Force
   if (($repoEntry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'blocked' }
   $packet = Read-Json (Assert-Path $repo 'scripts/db/m03-foundation-dev-migration-packet.json')
@@ -267,6 +302,14 @@ try {
   $cliVersion = Invoke-Bounded $cliPath @('--version') $repo 10000
   if (-not $cliVersion.ok -or -not $cliVersion.closed -or $cliVersion.text.Trim() -cne '2.121.0') { throw 'blocked' }
   if($OriginalDeadlineAtMs -ne 0){$originalPhaseAStart=Read-FoundationOriginalStart $OriginalDeadlineAtMs;$phaseAControlHardDeadline=$originalPhaseAStart.AddMinutes(70)}
+  if($ClockAmendment){
+    $clock=Read-FoundationClockAmendment
+    if($null -ne $clock){
+      $clockAmendmentStart=[DateTimeOffset]::FromUnixTimeMilliseconds($clock.startsAt).UtcDateTime
+      $clockAmendmentSegment=$clock.segmentId;$phaseAControlHardDeadline=$clockAmendmentStart.AddMinutes(70)
+      $receipt['clockSegmentId']=$clockAmendmentSegment
+    }
+  }
   $out = Join-Path $repo 'scripts/db/out'
   if (-not (Test-Path -LiteralPath $out)) { $null = New-Item -ItemType Directory -Path $out }
   $out = Assert-Path $repo 'scripts/db/out' -Directory
@@ -313,8 +356,11 @@ try {
   $leaseCreated = [DateTime]::ParseExact($lease.createdAt,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
   $leaseExpires = [DateTime]::ParseExact($lease.expiresAt,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
   if ($leaseCreated.Kind -ne [DateTimeKind]::Utc -or $leaseExpires.Kind -ne [DateTimeKind]::Utc -or
-      $leaseCreated -gt [DateTime]::UtcNow.AddMinutes(1) -or $leaseExpires -ne $leaseCreated.AddHours(2) -or
-      $leaseExpires -le (Get-FoundationLeaseFloor)) { throw 'blocked' }
+      $leaseCreated -gt [DateTime]::UtcNow.AddMinutes(1) -or $leaseExpires -ne $leaseCreated.AddHours(2)) { throw 'blocked' }
+  if($leaseExpires -le (Get-FoundationLeaseFloor)){
+    if($CheckOnly -and $ClockAmendment){Write-Output 'M03_FOUNDATION HANDOFF_LEASE_NOT_READY. Public inputs verified; the unchanged two-hour admin lease does not cover this admission. No private file read, decryption or authentication attempted.';exit 2}
+    throw 'blocked'
+  }
 } catch { Write-Output 'M03_FOUNDATION HANDOFF_PATH_BLOCKED. No private file read, decryption or authentication attempted.'; exit 1 }
 if ($CheckOnly) { Write-Output 'M03_FOUNDATION CHECK_ONLY_READY. Exact dev target, public seals and encrypted handoff presence verified; no decryption, TCP connection or authentication attempted.'; exit 0 }
 
@@ -358,8 +404,9 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   # writer, provider or production credential is opened or used.
   $null = Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-foundation-dev-migration-password.dpapi'
   if($null -ne $originalPhaseAStart -and [DateTime]::UtcNow -ge $originalPhaseAStart.AddMinutes(50)){throw 'blocked'}
+  if($null -ne $clockAmendmentStart -and [DateTime]::UtcNow -ge $clockAmendmentStart.AddMinutes(50)){throw 'blocked'}
   $consumed = $true
-  $phaseAStart = if($null -eq $originalPhaseAStart){[DateTime]::UtcNow}else{$originalPhaseAStart}
+  $phaseAStart = if($null -ne $originalPhaseAStart){$originalPhaseAStart}elseif($null -ne $clockAmendmentStart){$clockAmendmentStart}else{[DateTime]::UtcNow}
   $secret = ConvertTo-SecureString -String ([IO.File]::ReadAllText($handoff).Trim()) -ErrorAction Stop
   $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
   $password = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)

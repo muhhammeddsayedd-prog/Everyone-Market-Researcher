@@ -36,12 +36,17 @@ import {
 import { prepareFoundationRuntimeMachinePatch } from './foundation-runtime-machine.mjs';
 import { createFoundationLiveManagementTransport } from './foundation-live-runtime-transport.mjs';
 import { assertFoundationLiveZeroSetupProof } from './foundation-live-zero-setup.mjs';
+import {
+  assertFoundationLiveClockAmendmentProof,
+  foundationClockAmendmentCheckpoint,
+} from './foundation-live-clock-amendment.mjs';
 
 const fail = () => {
   throw Error('FOUNDATION_LIVE_RUNTIME_BLOCKED');
 };
 const repo = fileURLToPath(new URL('../../', import.meta.url));
 const managementBudgets = new WeakMap();
+const clockBudgetOwners = new WeakSet();
 function noLinks(path) {
   let p = resolve(path);
   for (;;) {
@@ -97,6 +102,11 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     dependencies.zeroSetupProof === undefined
       ? null
       : assertFoundationLiveZeroSetupProof(dependencies.zeroSetupProof);
+  const amendment =
+    dependencies.clockAmendmentProof === undefined
+      ? null
+      : assertFoundationLiveClockAmendmentProof(dependencies.clockAmendmentProof, { claimed: true });
+  if (resume && amendment) fail();
   if (
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
     typeof now !== 'function' ||
@@ -106,6 +116,18 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
   )
     fail();
   if (
+    amendment &&
+    (amendment.sourceCommitSha !== sourceCommitSha ||
+      amendment.deadlineAt !== deadlineAt ||
+      now() < amendment.startsAt ||
+      now() >= amendment.stopNewAt ||
+      clockBudgetOwners.has(amendment))
+  )
+    fail();
+  if (amendment) clockBudgetOwners.add(amendment);
+  const reuse = resume || amendment;
+  const headerDeadlineAt = amendment ? foundationClockAmendmentCheckpoint.originalDeadlineAt : deadlineAt;
+  if (
     resume &&
     (resume.sourceCommitSha !== sourceCommitSha ||
       resume.deadlineAt !== deadlineAt ||
@@ -114,7 +136,7 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     fail();
   const directory = resolve(dependencies.directory ?? join(repo, 'scripts/n8n/out/foundation/live'));
   noLinks(directory);
-  if (resume) {
+  if (reuse) {
     if (!lstatSync(directory).isDirectory()) fail();
   } else mkdirSync(directory, { recursive: true });
   noLinks(directory);
@@ -148,8 +170,8 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     }
     fsyncSync(lock);
     const path = join(directory, 'management.jsonl');
-    if (resume && !lstatSync(path).isFile()) fail();
-    if (!resume && !existsSync(path))
+    if (reuse && !lstatSync(path).isFile()) fail();
+    if (!reuse && !existsSync(path))
       appendFile(path, { event: 'management_header', version: 1, sourceCommitSha, deadlineAt });
     const rows = readRows(path, 513),
       header = rows.shift();
@@ -159,8 +181,8 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       header.event !== 'management_header' ||
       header.version !== 1 ||
       header.sourceCommitSha !== sourceCommitSha ||
-      header.deadlineAt !== deadlineAt ||
-      (resume && rows.length !== 0) ||
+      header.deadlineAt !== headerDeadlineAt ||
+      (reuse && rows.length !== 0) ||
       rows.some(
         (r, i) => Object.keys(r).length !== 2 || r.event !== 'management_attempt' || r.ordinal !== i + 1,
       )

@@ -2,12 +2,26 @@ import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import { readFileSync } from 'node:fs';
+import { resolve, join } from 'node:path';
 import { test } from 'node:test';
 import { startFoundationAdminClient } from './foundation-admin-client.mjs';
 import { verifyFoundationTypes } from './check-foundation-types.mjs';
+import {
+  admitFoundationClockAmendment,
+  claimFoundationClockAmendment,
+  foundationClockAmendmentCheckpoint as amendmentScope,
+} from '../n8n/foundation-live-clock-amendment.mjs';
+import { foundationZeroSetupCheckpoint as zeroScope } from '../n8n/foundation-live-zero-setup.mjs';
 
 const epoch = Date.parse('2026-10-21T10:00:00.000Z');
-function fixture({ badReady = false, stderr = false, overflow = false, originalDeadlineAtMs } = {}) {
+function fixture({
+  badReady = false,
+  stderr = false,
+  overflow = false,
+  originalDeadlineAtMs,
+  amendmentProof,
+  clockMismatch = false,
+} = {}) {
   const calls = [],
     child = new EventEmitter();
   let input = '';
@@ -19,7 +33,7 @@ function fixture({ badReady = false, stderr = false, overflow = false, originalD
     return true;
   };
   child.stdin.on('end', () => {
-    if (badReady || overflow) queueMicrotask(() => child.emit('close', 1, null));
+    if (badReady || overflow || clockMismatch) queueMicrotask(() => child.emit('close', 1, null));
   });
   const receipt = {
     version: 1,
@@ -61,6 +75,10 @@ function fixture({ badReady = false, stderr = false, overflow = false, originalD
     spawn(executable, args, options) {
       assert.match(executable, /WindowsPowerShell/);
       assert.ok(args.includes('-PhaseAControl'));
+      if (amendmentProof) {
+        assert.ok(args.includes('-ClockAmendment'));
+        assert.equal(args.includes('-OriginalDeadlineAtMs'), false);
+      }
       if (originalDeadlineAtMs !== undefined) {
         assert.equal(args[args.indexOf('-OriginalDeadlineAtMs') + 1], String(originalDeadlineAtMs));
       }
@@ -78,15 +96,28 @@ function fixture({ badReady = false, stderr = false, overflow = false, originalD
                 historyAfter: 'complete',
                 projectRef: 'zmotjsbzhzjvpelxvxlf',
                 hardDeadline: new Date(
-                  originalDeadlineAtMs === undefined ? epoch + 4200000 : originalDeadlineAtMs + 600000,
+                  amendmentProof
+                    ? amendmentProof.hardDeadlineAt
+                    : originalDeadlineAtMs === undefined
+                      ? epoch + 4200000
+                      : originalDeadlineAtMs + 600000,
                 ).toISOString(),
                 actionDeadline: new Date(
-                  originalDeadlineAtMs === undefined ? epoch + 3600000 : originalDeadlineAtMs,
+                  amendmentProof
+                    ? amendmentProof.deadlineAt + (clockMismatch ? 1 : 0)
+                    : originalDeadlineAtMs === undefined
+                      ? epoch + 3600000
+                      : originalDeadlineAtMs,
                 ).toISOString(),
                 stopNewAt: new Date(
-                  originalDeadlineAtMs === undefined ? epoch + 3000000 : originalDeadlineAtMs - 600000,
+                  amendmentProof
+                    ? amendmentProof.stopNewAt
+                    : originalDeadlineAtMs === undefined
+                      ? epoch + 3000000
+                      : originalDeadlineAtMs - 600000,
                 ).toISOString(),
                 postchecksVerified: false,
+                ...(amendmentProof ? { clockSegmentId: amendmentProof.segmentId } : {}),
               }) + '\n',
         );
       });
@@ -123,6 +154,112 @@ test('same-child client uses fixed protocol without delivering a password to Nod
   assert.equal(done.childClosed, true);
   assert.deepEqual(f.calls.find((c) => c.kind === 'settlement').args.terminalCosts, []);
   assert.equal(client.state().childClosed, true);
+});
+function syntheticClaimedAmendment() {
+  const start = Date.parse('2026-10-21T14:00:00.000Z'),
+    files = new Map(),
+    fds = new Map();
+  let descriptor = 10;
+  const path = (p) => resolve(p);
+  for (const p of [
+    amendmentScope.approvalRelative,
+    amendmentScope.packetRelative,
+    amendmentScope.lateRelative,
+    zeroScope.closureRelative,
+  ])
+    files.set(path(p), readFileSync(p, 'utf8'));
+  files.set(
+    path(zeroScope.managementRelative),
+    JSON.stringify({
+      event: 'management_header',
+      version: 1,
+      sourceCommitSha: zeroScope.sourceCommitSha,
+      deadlineAt: zeroScope.deadlineAt,
+    }) + '\n',
+  );
+  const parent = join(process.env.LOCALAPPDATA, 'Temp', amendmentScope.parentLockFilename);
+  files.set(
+    path(parent),
+    JSON.stringify({
+      kind: 'm03_clock_admission_parent',
+      version: 1,
+      segmentId: amendmentScope.segmentId,
+      processId: 90210,
+    }),
+  );
+  const known = new Set(
+    [
+      ...zeroScope.emptyRelatives,
+      ...zeroScope.absentRelatives,
+      amendmentScope.admissionRelative,
+      amendmentScope.claimRelative,
+    ].map(path),
+  );
+  const io = {
+    processId: process.pid,
+    parentProcessId: 90210,
+    readFileSync(p) {
+      if (!files.has(p)) throw Object.assign(Error('missing'), { code: 'ENOENT' });
+      return files.get(p);
+    },
+    lstatSync(p) {
+      if (known.has(p) && !files.has(p)) throw Object.assign(Error('missing'), { code: 'ENOENT' });
+      return {
+        isSymbolicLink: () => false,
+        isFile: () => files.has(p),
+        size: files.has(p) ? Buffer.byteLength(files.get(p)) : 0,
+        nlink: 1,
+      };
+    },
+    openSync(p, flags) {
+      assert.equal(flags, 'wx');
+      if (files.has(p)) throw Error('exists');
+      files.set(p, '');
+      fds.set(++descriptor, p);
+      return descriptor;
+    },
+    writeSync(fd, bytes, offset, length) {
+      const p = fds.get(fd);
+      files.set(p, files.get(p) + bytes.subarray(offset, offset + length).toString('utf8'));
+      return length;
+    },
+    fsyncSync() {},
+    closeSync(fd) {
+      fds.delete(fd);
+    },
+  };
+  const proof = claimFoundationClockAmendment(
+    admitFoundationClockAmendment({ now: () => start }, io),
+    { now: () => start },
+    io,
+  );
+  return { proof, now: () => start };
+}
+test('approved amendment client requires a genuine claimed segment and native matching ready clocks', async () => {
+  const { proof, now } = syntheticClaimedAmendment(),
+    f = fixture({ amendmentProof: proof });
+  const client = await startFoundationAdminClient({ now, clockAmendmentProof: proof }, f.deps);
+  assert.equal(client.ready.clockSegmentId, proof.segmentId);
+  assert.equal(Date.parse(client.ready.actionDeadline), proof.deadlineAt);
+  await client.end();
+  await assert.rejects(
+    startFoundationAdminClient({ now, clockAmendmentProof: { ...proof } }, fixture().deps),
+    /FOUNDATION_ADMIN_BLOCKED/,
+  );
+  await assert.rejects(
+    startFoundationAdminClient(
+      { now, clockAmendmentProof: proof, originalDeadlineAtMs: 1792584023481 },
+      fixture().deps,
+    ),
+    /FOUNDATION_ADMIN_BLOCKED/,
+  );
+  await assert.rejects(
+    startFoundationAdminClient(
+      { now, clockAmendmentProof: proof },
+      fixture({ amendmentProof: proof, clockMismatch: true }).deps,
+    ),
+    /FOUNDATION_ADMIN_BLOCKED/,
+  );
 });
 test('zero-setup continuation forwards only the fixed original clock and rejects fresh or extended clocks', async () => {
   const deadline = 1792584023481,

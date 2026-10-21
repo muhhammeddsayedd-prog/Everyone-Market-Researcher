@@ -15,7 +15,9 @@ const packetHash = '009415eccce00939fe5731e846d006728295522fd90849555c197b931ad6
 const windowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9';
 const quoted = (v) => "'" + v.replaceAll("'", "''") + "'";
 const secretValues = ['SyntheticManagement47', 'SyntheticWriter58', 'SyntheticApifyRead69'];
-async function runFixture(mode) {
+async function runFixture(variant) {
+  const amended = variant.startsWith('clock_');
+  const mode = variant.replace(/^clock_/, '');
   const root = mkdtempSync(join(tmpdir(), 'emr-acceptance-custody-'));
   const put = (name, text) => {
     const path = join(root, name);
@@ -57,17 +59,41 @@ async function runFixture(mode) {
     );
     put(
       'scripts/db/windows/Invoke-M03FoundationMigrations.ps1',
-      `param([switch]$CheckOnly,[switch]$PhaseAControl)\nif(-not $CheckOnly -or -not $PhaseAControl){exit 1}\nWrite-Output 'M03_FOUNDATION CHECK_ONLY_READY. Synthetic public fixture only.'\nexit 0\n`,
+      `param([switch]$CheckOnly,[switch]$PhaseAControl,[switch]$ClockAmendment)\nif(-not $CheckOnly -or -not $PhaseAControl){exit 1}\n${mode === 'public_stale' ? "Write-Output 'M03_FOUNDATION HANDOFF_LEASE_NOT_READY. Synthetic public fixture only.';exit 2" : "Write-Output 'M03_FOUNDATION CHECK_ONLY_READY. Synthetic public fixture only.';exit 0"}\n`,
     );
     for (const name of ['n8n/foundation/bindings.dev.json', 'scripts/n8n/foundation-delivery-packet.json'])
       put(name, readFileSync(resolve(name)));
+    if (amended) {
+      for (const name of [
+        'scripts/n8n/foundation-live-clock-amendment.mjs',
+        'scripts/n8n/foundation-live-zero-setup.mjs',
+        'scripts/n8n/foundation-control-state.mjs',
+        'scripts/n8n/foundation-runtime-checkpoint.mjs',
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-approval-20261021.json',
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-amendment-20261021.md',
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-late-delivery-20261021.json',
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-zero-setup-20261021.json',
+      ])
+        put(name, readFileSync(resolve(name)));
+      put(
+        'scripts/n8n/out/foundation/live/management.jsonl',
+        JSON.stringify({
+          event: 'management_header',
+          version: 1,
+          sourceCommitSha: head,
+          deadlineAt: 1792584023481,
+        }) + '\n',
+      );
+    }
     put(
       'scripts/n8n/foundation-live-runtime-cli.mjs',
       `import assert from 'node:assert/strict';
 import {createInterface} from 'node:readline';
+${amended ? "import {readFoundationClockAmendment,claimFoundationClockAmendment} from './foundation-live-clock-amendment.mjs';" : ''}
 const send=(v)=>process.stdout.write(JSON.stringify(v)+'\\n');
 if(process.argv[2]==='CheckOnly') {send({kind:'m03_acceptance_ready',status:'check_only_execution_port_required',privateRead:false,networkCalls:0,knownWorkflows:25,managementMaximum:512,controlMaximum:2048,actualMcpPortVerified:false,concreteVercelCliPresent:true,concreteAdminHelperPresent:true});}
-else if(process.argv[2]==='Session') {
+else if(process.argv[2]==='${amended ? 'SessionClockAmendment' : 'Session'}') {
+ ${amended ? 'const clock=claimFoundationClockAmendment(readFoundationClockAmendment());assert.equal(clock.deadlineAt-clock.startsAt,3600000);' : ''}
  const lines=createInterface({input:process.stdin});let initialized=false;
  for await(const line of lines){const v=JSON.parse(line);if(!initialized){
   assert.equal(v.managementKey,${JSON.stringify(secretValues[0])});assert.equal(v.writerPassword,${JSON.stringify(secretValues[1])});assert.equal(v.apifyReadToken,${JSON.stringify(secretValues[2])});
@@ -125,6 +151,8 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
           '-NonInteractive',
           '-File',
           join(root, 'scripts/n8n/windows/Invoke-M03Acceptance.ps1'),
+          ...(amended ? ['-ClockAmendment'] : []),
+          ...(mode === 'public_stale' ? ['-CheckOnly'] : []),
         ],
         {
           env: environment,
@@ -185,7 +213,15 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
       .split(/\r?\n/)
       .map((line) => JSON.parse(line));
     const receipt = rows.at(-1);
-    if (
+    if (mode === 'public_stale') {
+      assert.equal(result.status, 0);
+      assert.equal(receipt.status, 'check_only_ready');
+      assert.equal(receipt.adminPublicInputsVerified, true);
+      assert.equal(receipt.adminHandoffReady, false);
+      assert.equal(receipt.privateRead, false);
+      for (const kind of ['management', 'writer', 'apifyread'])
+        assert.equal(existsSync(join(root, 'Temp', `emr-m03-acceptance-${kind}.dpapi`)), true);
+    } else if (
       mode === 'short_lease' ||
       mode === 'extra_lease' ||
       mode === 'transport_eof' ||
@@ -216,6 +252,24 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
       existsSync(join(root, 'Temp/emr-m03-acceptance-protection-bypass.dpapi')),
       mode === 'residual',
     );
+    if (amended) {
+      const live = join(root, 'scripts/n8n/out/foundation/live');
+      assert.equal(
+        readFileSync(join(live, 'management.jsonl'), 'utf8'),
+        JSON.stringify({
+          event: 'management_header',
+          version: 1,
+          sourceCommitSha: head,
+          deadlineAt: 1792584023481,
+        }) + '\n',
+      );
+      const admitted = existsSync(join(live, 'clock-amendment-30e75d0d-7e4c-46c6-9a07-556f90b63859.json'));
+      assert.equal(admitted, mode === 'complete');
+      assert.equal(
+        existsSync(join(live, 'clock-amendment-30e75d0d-7e4c-46c6-9a07-556f90b63859.runtime-claim.json')),
+        mode === 'complete',
+      );
+    }
   } finally {
     assert.ok(resolve(root).startsWith(resolve(tmpdir()) + '\\emr-acceptance-custody-'));
     rmSync(root, { recursive: true, force: true });
@@ -228,6 +282,10 @@ for (const mode of [
   'extra_lease',
   'transport_eof',
   'transport_silent',
+  'clock_complete',
+  'clock_short_lease',
+  'clock_transport_eof',
+  'clock_public_stale',
 ])
   test(
     `actual Windows custody wrapper with scripted private child: ${mode}`,

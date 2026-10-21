@@ -111,7 +111,9 @@ function Invoke-FoundationAdminControl {
   $postchecked=$false;$fixtureReady=$false;$provisionAttempted=$false;$provisioned=$false;$closed=$false;$queryCount=0;$provisionPacket=$null
   $script:phaseAControlHardDeadline=$hardDeadline
   $window='df4f29ec-e2dc-4d82-a276-62a4e695e6f9'
-  Write-Output (([ordered]@{type='foundation_admin_ready';runId=$runId;historyAfter='complete';projectRef=$projectRef;hardDeadline=$hardDeadline.ToString('o');actionDeadline=$actionDeadline.ToString('o');stopNewAt=$stopNewAt.ToString('o');postchecksVerified=$false}) | ConvertTo-Json -Compress)
+  $readyEnvelope=[ordered]@{type='foundation_admin_ready';runId=$runId;historyAfter='complete';projectRef=$projectRef;hardDeadline=$hardDeadline.ToString('o');actionDeadline=$actionDeadline.ToString('o');stopNewAt=$stopNewAt.ToString('o');postchecksVerified=$false}
+  if($ClockAmendment){$readyEnvelope['clockSegmentId']=$clockAmendmentSegment}
+  Write-Output ($readyEnvelope | ConvertTo-Json -Compress)
   try { while($true){
     # Reserve the final two minutes for Close/physical child cleanup. This
     # neither extends the60-minute action window nor authorizes new work.

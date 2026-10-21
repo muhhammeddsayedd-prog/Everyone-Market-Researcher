@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Blocked: waiting on owner — MA-11 single clock amendment. Runtime replenishment and unused-bypass deletion are verified complete, but delivery occurred after the original stop-new cutoff. No new ciphertext was opened/decrypted, no authentication or hosted action attempted. Existing expired guards remain blocked; no clock/counter reset. The original A–D scope stays approved. All credentials remain encrypted/untouched. GW-01 stays permanently closed.**
+**Blocked: waiting on owner — MA-04/MA-11 fresh delivery of four insufficient temporary leases. The clock amendment is approved and concretely implemented/reviewed; affected tests and actual public seal/CheckOnly pass. New clock has not started. All old ciphertexts remain untouched. Original attempt/header/counters stay preserved; no new decryption/authentication/hosted operation. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,11 +16,56 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Actual late-delivery read7189f4/39c155 verifies all three runtime pairs and exact valid/unexpired public metadata; bypass absent. Public guarddd4652 rejects after cutoff. Original header/counters/artifacts/processes reconciled319fdc:zero attempts/no children. |
-| Next step | Owner reviews the proposed clock-only packet below. No private consumer until one new admission window is explicitly approved, concretely implemented/reviewed/sealed and its lease floors pass. Retain new runtime pairs; request no credential delivery now. |
+| Current task | Approved single-clock implementation is frozen/reviewed; actual seal28a459 and CheckOnlyf4e5da pass. Original header/counters are preserved and admission is absent. All four old leases are insufficient by metadata-only310117; request fresh delivery only, no repeated clock approval. |
+| Next step | Follow the exact fresh-delivery block linked below for the existing dev Admin/Management/Writer/ApifyRead values, verify current normal CI/public lease readiness, then interactive -ClockAmendment. No repeated development or clock approval; admit only after transport and leases pass. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
+
+### Latest: single clock amendment approved; implementation only
+
+**Current delivery:** concrete clock/runtime/DB/root guards are frozen and
+independently reviewed GREEN.34 affected runtime/clock/compatibility checks,
+8 client+7 Windows DB checks, and13 Windows custody/closure checks pass in the
+separate local environments recorded in
+[the implementation evidence](evidence/dev-acceptance-clock-implementation-20261021.json).
+Real isolated child tests reject the same segment's second child after zero
+work, preserving original header/admission/claim bytes. Copied/unclaimed proof,
+mixed modes, short leases and EOF reject before private consumption.
+
+Actual explicit seal28a459 passes108project/840Zod/3462Vercel inputs. Actual
+DB public preflight2002e8 returns specific HANDOFF_LEASE_NOT_READY/native2 after
+public source verification. Actual full coordinator CheckOnlyf4e5da passes
+native0 with no private reads/network, administrator readiness false and no
+admission. No TTL was relaxed: actual private paths still reject insufficient
+coverage before decryption.13:23:09 metadata-only receipt310117 finds old Admin
+expired and runtime leases unexpired but all four insufficient for75minutes.
+They remain encrypted and unchanged. The only owner action is
+[fresh delivery using existing saved values](evidence/dev-acceptance-clock-handoff-20261021.md),
+with exact eight temporary filenames and two existing hidden-prompt helpers.
+No new credential, reset, Machine, production or repeated clock approval.
+
+The paragraph below records the implementation-start checkpoint; its pending
+checks are superseded by the completed current delivery above.
+
+Owner replied **Approve one new M03 A–D window at verified admission, with the
+same aggregate caps and the expired attempt preserved.** Recorded at13:09:07 UTC
+in [the separate immutable authority](evidence/dev-acceptance-clock-approval-20261021.json),
+segment30e75d0d-7e4c-46c6-9a07-556f90b63859. The reviewed packet remains unchanged
+atb8b8d88; approval record pins its exact bytes and the late-delivery evidence.
+Approval does not start a clock or prove any acceptance.
+
+Local implementation uses one durable admission under the parent lock, after
+public/source/transport/provenance/lease checks and before DPAPI. A separate
+CreateNew runtime claim fences a second child even after zero-effect closure.
+Original management header and aggregate caps stay intact; all clocks derive
+from that single new admission. DB actual use requires a valid claimed segment;
+its public CheckOnly cannot admit or decrypt. Partial/unknown records remain
+fenced, never removed or replayed. Old modes retain their old expiry guards.
+Implementation/review/affected tests/seal are pending; no actual admission,
+credential child, decryption, authentication, network or hosted change performed.
+Do not ask for another clock/general dev approval. Revalidate only actual
+handoff lease gaps when concrete consumers are ready; no new input requested now.
 
 ### Latest: late delivery verified; original window remains stopped
 
@@ -428,6 +473,25 @@ arrived after original stop-new, so no credential was consumed and the operative
 guard blocked. Historical commands below do not authorize another clock.
 
 ### MA-11 — single clock-only amendment decision
+
+**Completed:** owner approved the exact decision; immutable authority is
+[clock-approval-20261021](evidence/dev-acceptance-clock-approval-20261021.json).
+Do not ask again. Historical decision text below is preserved only as provenance.
+
+### MA-04 / MA-11 — fresh handoff leases for the approved admission
+
+All four actual leases fail the new75-minute floor (metadata-only310117); Admin
+is expired. No ciphertext was opened or consumed. Concrete consumers/review/
+affected tests and actual public seal/CheckOnly are complete. Run only
+[the exact replacement block](evidence/dev-acceptance-clock-handoff-20261021.md):
+remove the eight named temporary old DPAPI/lease files, then the existing Admin
+helper and runtime helper -Kind All. Use existing saved values, no reset/rotation,
+new key, Machine, production or general/clock approval. Expected prefixes are
+`M03_FOUNDATION_MIGRATION_ADMIN_READY` and `M03_ACCEPTANCE_HANDOFF_READY: All.`
+Close PowerShell and reply **M03 amended-window handoffs ready**; send no values.
+New clock remains unstarted until full public/transport/lease admission passes.
+
+### Historical clock-only decision text — completed
 
 Review [the exact proposed packet](evidence/dev-acceptance-clock-amendment-20261021.md).
 Reply: **Approve one new M03 A–D window at verified admission, with the same

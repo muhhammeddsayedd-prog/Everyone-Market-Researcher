@@ -45,6 +45,16 @@ const names = [
   'm03_foundation_boundary_hardening',
 ];
 const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
+const clockPublicFiles = [
+  'scripts/n8n/foundation-live-clock-amendment.mjs',
+  'scripts/n8n/foundation-live-zero-setup.mjs',
+  'scripts/n8n/foundation-control-state.mjs',
+  'scripts/n8n/foundation-runtime-checkpoint.mjs',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-approval-20261021.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-zero-setup-20261021.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-amendment-20261021.md',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-late-delivery-20261021.json',
+];
 
 function consumerFixture(mode = 'success') {
   const root = mkdtempSync(join(tmpdir(), 'emr-m03-foundation-migration-fixture-'));
@@ -73,6 +83,7 @@ function consumerFixture(mode = 'success') {
     'scripts/db/check-foundation-types.mjs',
     'packages/shared/src/db.types.ts',
     'node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/typescript.js',
+    ...clockPublicFiles,
   ])
     put(name, readFileSync(resolve(name)));
   put(
@@ -265,6 +276,7 @@ public class FixtureCli { public static int Main(string[] args) {
     'scripts/seed/certs/supabase-root-2021.crt',
     'scripts/seed/certs/supabase-root-2021.json',
     cliRelative,
+    ...clockPublicFiles,
   ])
     files[name] = sha(readFileSync(join(root, name)));
   const packet = {
@@ -308,7 +320,7 @@ public class FixtureCli { public static int Main(string[] args) {
       expiresAt: new Date(leaseCreatedAt + 2 * 3600000).toISOString().replace('Z', '0000Z'),
     }),
   );
-  const run = (checkOnly = false, controlInput = null) =>
+  const run = (checkOnly = false, controlInput = null, amended = false) =>
     spawnSync(
       powershell,
       [
@@ -317,7 +329,8 @@ public class FixtureCli { public static int Main(string[] args) {
         '-File',
         join(root, 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1'),
         ...(checkOnly ? ['-CheckOnly'] : []),
-        ...(controlInput === null ? [] : ['-PhaseAControl']),
+        ...(controlInput === null && !amended ? [] : ['-PhaseAControl']),
+        ...(amended ? ['-ClockAmendment'] : []),
       ],
       {
         env: {
@@ -447,7 +460,7 @@ describe(
         script,
         `$ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
-$repo='${root.replaceAll("'", "''")}';$PhaseAControl=$true;$OriginalDeadlineAtMs=0
+$repo='${root.replaceAll("'", "''")}';$PhaseAControl=$true;$OriginalDeadlineAtMs=0;$ClockAmendment=$false;$clockAmendmentStart=$null
 ${source.slice(start, end)}
 $path='${journal.replaceAll("'", "''")}'
 $header='${header.replaceAll("'", "''")}'
@@ -487,7 +500,65 @@ Write-Output 'ORIGINAL_CLOCK_GUARD_PASS'
         source.indexOf('Read-FoundationOriginalStart $OriginalDeadlineAtMs') <
           source.indexOf('$consumed = $true'),
       );
-      assert.match(source, /\$phaseAStart = if\(\$null -eq \$originalPhaseAStart\)/);
+      assert.match(source, /\$phaseAStart = if\(\$null -ne \$originalPhaseAStart\)/);
+    });
+  },
+);
+
+describe(
+  'approved amended clock, public-only isolated Windows guard',
+  { skip: process.platform !== 'win32' },
+  () => {
+    it('clock amendment precheck never admits and actual read requires exact admitted segment before private access', () => {
+      const root = mkdtempSync(join(tmpdir(), 'emr-foundation-amended-clock-'));
+      directories.push(root);
+      const module = join(root, 'scripts/n8n/foundation-live-clock-amendment.mjs');
+      mkdirSync(resolve(module, '..'), { recursive: true });
+      writeFileSync(module, '// synthetic fixed public reader\n');
+      const source = readFileSync(consumerPath, 'utf8'),
+        start = source.indexOf('function Assert-Keys'),
+        end = source.indexOf('# Every native child');
+      const script = join(root, 'guard.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+$repo='${root.replaceAll("'", "''")}';$PhaseAControl=$true;$OriginalDeadlineAtMs=0;$ClockAmendment=$true;$clockAmendmentStart=$null;$node='synthetic-node.exe'
+${source.slice(start, end)}
+$script:mode=$null;$script:closed=$true;$script:extra=$false;$script:wrong=$false
+$admittedAt=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()-1000
+function Invoke-Bounded($Executable,$Arguments,$WorkingDirectory,$Timeout){
+ if($Executable -cne 'synthetic-node.exe' -or $Arguments.Count -ne 2 -or $Timeout -ne 10000){throw 'fixed_only'}
+ $script:mode=$Arguments[1]
+ $v=[ordered]@{kind='clock_amendment_ready';segmentId='30e75d0d-7e4c-46c6-9a07-556f90b63859';sourceCommitSha='f42930f90c2de43c84f61ad6d966d0ee6074d70e';windowId='df4f29ec-e2dc-4d82-a276-62a4e695e6f9';privateRead=$false;networkRequests=0}
+ if($Arguments[1] -ceq 'ReadClaimed'){$v.kind='clock_amendment_admitted';$v.startsAt=$admittedAt;$v.deadlineAt=$admittedAt+3600000;$v.stopNewAt=$admittedAt+3000000;$v.hardDeadlineAt=$admittedAt+4200000}
+ if($script:extra){$v['extra']=$true};if($script:wrong){$v.segmentId='00000000-0000-4000-8000-000000000000'}
+ return [ordered]@{ok=$true;closed=$script:closed;text=($v|ConvertTo-Json -Compress)}
+}
+$CheckOnly=$true
+if($null -ne (Read-FoundationClockAmendment) -or $script:mode -cne 'CheckOnly'){exit 1}
+$CheckOnly=$false
+$proof=Read-FoundationClockAmendment
+if($script:mode -cne 'ReadClaimed' -or $proof.startsAt -ne $admittedAt -or $proof.deadlineAt -ne $admittedAt+3600000){exit 1}
+$clockAmendmentStart=[DateTimeOffset]::FromUnixTimeMilliseconds($proof.startsAt).UtcDateTime
+if((Get-FoundationLeaseFloor) -ne $clockAmendmentStart.AddMinutes(75)){exit 1}
+$script:extra=$true;try{$null=Read-FoundationClockAmendment;exit 1}catch{};$script:extra=$false
+$script:wrong=$true;try{$null=Read-FoundationClockAmendment;exit 1}catch{};$script:wrong=$false
+$script:closed=$false;try{$null=Read-FoundationClockAmendment;exit 1}catch{};$script:closed=$true
+$OriginalDeadlineAtMs=1792584023481;try{$null=Read-FoundationClockAmendment;exit 1}catch{}
+Write-Output 'AMENDED_CLOCK_GUARD_PASS'
+`,
+      );
+      const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: osEnvironment(),
+        encoding: 'utf8',
+        timeout: 10000,
+        windowsHide: true,
+      });
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.equal(r.stderr, '');
+      assert.equal(r.stdout.trim(), 'AMENDED_CLOCK_GUARD_PASS');
+      assert.ok(source.indexOf('$clock=Read-FoundationClockAmendment') < source.indexOf('$consumed = $true'));
     });
   },
 );
@@ -518,6 +589,40 @@ describe(
       writeFileSync(f.leaseFile, JSON.stringify(lease));
       assert.equal(f.run(true).status, 1);
       assert.equal(f.calls(), '');
+      assert.ok(existsSync(f.handoff));
+    });
+    it('amended public CheckOnly reports only an otherwise-valid stale lease as a readiness gap without private reads', () => {
+      const f = consumerFixture();
+      f.put(
+        'scripts/n8n/out/foundation/live/management.jsonl',
+        JSON.stringify({
+          event: 'management_header',
+          version: 1,
+          sourceCommitSha: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+          deadlineAt: 1792584023481,
+        }) + '\n',
+      );
+      const lease = JSON.parse(readFileSync(f.leaseFile, 'utf8')),
+        created = Date.now() - 3 * 3600000;
+      lease.createdAt = new Date(created).toISOString().replace('Z', '0000Z');
+      lease.expiresAt = new Date(created + 2 * 3600000).toISOString().replace('Z', '0000Z');
+      writeFileSync(f.leaseFile, JSON.stringify(lease));
+      const r = f.run(true, null, true);
+      assert.equal(r.status, 2, r.stdout + r.stderr);
+      assert.match(r.stdout, /M03_FOUNDATION HANDOFF_LEASE_NOT_READY\./);
+      assert.equal(f.calls(), '');
+      assert.ok(existsSync(f.handoff));
+      assert.ok(existsSync(f.leaseFile));
+      assert.equal(
+        existsSync(join(f.root, 'scripts/db/out/m03-foundation-dev-migration-latest.json')),
+        false,
+      );
+      assert.equal(f.run(true).status, 1);
+      lease.purpose = 'unrelated-purpose';
+      writeFileSync(f.leaseFile, JSON.stringify(lease));
+      const wrong = f.run(true, null, true);
+      assert.equal(wrong.status, 1);
+      assert.doesNotMatch(wrong.stdout, /HANDOFF_LEASE_NOT_READY/);
       assert.ok(existsSync(f.handoff));
     });
     it('rejects a partial handoff pair or modified Node pin before any private read', () => {
@@ -831,6 +936,76 @@ describe(
       );
       assert.equal(existsSync(f.handoff), false);
       assert.equal(existsSync(f.leaseFile), false);
+    });
+    it('uses real public ReadClaimed and carries only the admitted amended segment through the bounded admin protocol', () => {
+      const f = consumerFixture(),
+        start = Date.now(),
+        segmentId = '30e75d0d-7e4c-46c6-9a07-556f90b63859';
+      f.put(
+        'scripts/n8n/out/foundation/live/management.jsonl',
+        JSON.stringify({
+          event: 'management_header',
+          version: 1,
+          sourceCommitSha: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+          deadlineAt: 1792584023481,
+        }) + '\n',
+      );
+      f.put(
+        'private/Temp/emr-m03-acceptance-parent.operation.lock',
+        JSON.stringify({ kind: 'm03_clock_admission_parent', version: 1, segmentId, processId: 90210 }),
+      );
+      const admission = {
+        kind: 'm03_clock_amendment_admission',
+        version: 1,
+        segmentId,
+        sourceCommitSha: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+        windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+        approvalSha256: '3d2346715e08edfc9eef4fab04c9c1b7be55d450660c862235b92195976bed31',
+        startsAt: start,
+        deadlineAt: start + 3600000,
+        stopNewAt: start + 3000000,
+        hardDeadlineAt: start + 4200000,
+        parentProcessId: 90210,
+      };
+      const text = JSON.stringify(admission) + '\n';
+      f.put('scripts/n8n/out/foundation/live/clock-amendment-' + segmentId + '.json', text);
+      f.put(
+        'scripts/n8n/out/foundation/live/clock-amendment-' + segmentId + '.runtime-claim.json',
+        JSON.stringify({
+          kind: 'm03_clock_amendment_runtime_claim',
+          version: 1,
+          segmentId,
+          admissionSha256: sha(text),
+          processId: 90211,
+          parentProcessId: 90210,
+        }) + '\n',
+      );
+      const r = f.run(
+        false,
+        commandLines([['postcheck'], ['fixture'], ['provision', preview], ['close'], ['end']]),
+        true,
+      );
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      const rows = r.stdout.trim().split(/\r?\n/).map(JSON.parse),
+        ready = rows[0];
+      assert.equal(ready.type, 'foundation_admin_ready');
+      assert.equal(ready.clockSegmentId, segmentId);
+      assert.equal(Date.parse(ready.stopNewAt), start + 3000000);
+      assert.equal(Date.parse(ready.actionDeadline), start + 3600000);
+      assert.equal(Date.parse(ready.hardDeadline), start + 4200000);
+      assert.equal(f.result().phaseAClosed, true);
+      assert.equal(f.result().clockSegmentId, segmentId);
+      assert.equal(f.result().childrenClosed, true);
+      assert.equal(f.result().handoffDeleted, true);
+      assert.equal(
+        readFileSync(join(f.root, 'scripts/n8n/out/foundation/live/management.jsonl'), 'utf8'),
+        JSON.stringify({
+          event: 'management_header',
+          version: 1,
+          sourceCommitSha: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+          deadlineAt: 1792584023481,
+        }) + '\n',
+      );
     });
     it('refuses fixture before actual postchecks and never treats EOF as successful Phase-A closure', () => {
       const f = consumerFixture();
