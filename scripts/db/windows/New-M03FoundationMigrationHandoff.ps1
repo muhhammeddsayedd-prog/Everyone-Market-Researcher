@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param()
+param([switch]$PostcheckContinuation)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -15,7 +15,11 @@ try {
     while($null -ne $ancestor){$parent=Get-Item -LiteralPath $ancestor.FullName -Force -ErrorAction Stop;if(($parent.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'blocked'};$ancestor=$ancestor.Parent}
   }
   if ((Test-Path -LiteralPath $file) -or (Test-Path -LiteralPath $lease)) { throw 'blocked' }
-  $secret = Read-Host 'EXISTING emr-dev postgres password for approved Phase A: four migrations, dev readbacks, owned C999 fixture and exact foundation Preview binding only' -AsSecureString
+  $secret = if($PostcheckContinuation){
+    Read-Host 'EXISTING emr-dev postgres password for approved postcheck continuation: readbacks, owned C999 fixture and exact Preview binding only; no migration push' -AsSecureString
+  }else{
+    Read-Host 'EXISTING emr-dev postgres password for approved Phase A: four migrations, dev readbacks, owned C999 fixture and exact foundation Preview binding only' -AsSecureString
+  }
   if ($secret.Length -eq 0) { throw 'blocked' }
   $ciphertext = ConvertFrom-SecureString -SecureString $secret -ErrorAction Stop
   $bytes = [Text.Encoding]::ASCII.GetBytes($ciphertext)

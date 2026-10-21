@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdirSync, mkdtempSync, writeFileSync, rmSync, linkSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { format } from 'prettier';
 import { verifyFoundationTypes } from './check-foundation-types.mjs';
 
@@ -51,4 +54,63 @@ test('malformed types and missing schemas remain blocked', () => {
     () => verifyFoundationTypes(reference.replace('api: {', 'unexpected: {'), reference),
     /FOUNDATION_TYPES_BLOCKED/,
   );
+});
+
+test('continuation CLI checks only its UUID-owned fresh candidate and refuses aliases, hardlinks and linked ancestors', () => {
+  const root = mkdtempSync(join(tmpdir(), 'emr-foundation-types-cli-'));
+  const runId = '12345678-1234-4234-8234-123456789abc';
+  const put = (name, bytes) => {
+    const path = join(root, name);
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, bytes, { flag: 'wx' });
+    return path;
+  };
+  try {
+    const entry = put(
+      'scripts/db/check-foundation-types.mjs',
+      readFileSync(new URL('./check-foundation-types.mjs', import.meta.url)),
+    );
+    put(
+      'node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/typescript.js',
+      readFileSync(
+        new URL(
+          '../../node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/typescript.js',
+          import.meta.url,
+        ),
+      ),
+    );
+    put('packages/shared/src/db.types.ts', reference);
+    const candidate = put(`scripts/db/out/m03-foundation-continuation-${runId}-db.types.ts`, reference);
+    const original = put('scripts/db/out/m03-foundation-hosted-db.types.ts', 'preserved-original-candidate');
+    const run = (...args) =>
+      spawnSync(process.execPath, [entry, ...args], { encoding: 'utf8', timeout: 10000, windowsHide: true });
+    const success = run('Continuation', runId);
+    assert.equal(success.status, 0, success.stdout + success.stderr);
+    assert.equal(JSON.parse(success.stdout).astEquivalent, true);
+    assert.equal(readFileSync(original, 'utf8'), 'preserved-original-candidate');
+    for (const args of [
+      ['Continuation', '../other'],
+      ['Continuation', runId, 'extra'],
+      ['Other', runId],
+      ['Continuation', runId.toUpperCase()],
+    ]) {
+      const blocked = run(...args);
+      assert.equal(blocked.status, 1);
+      assert.equal(blocked.stdout, 'FOUNDATION_TYPES_BLOCKED\n');
+      assert.equal(blocked.stderr, '');
+    }
+    const alias = join(root, 'candidate-alias');
+    linkSync(candidate, alias);
+    assert.equal(run('Continuation', runId).status, 1);
+    rmSync(alias);
+    const out = join(root, 'scripts/db/out');
+    const linked = join(root, 'linked-out');
+    mkdirSync(linked);
+    writeFileSync(join(linked, `m03-foundation-continuation-${runId}-db.types.ts`), reference);
+    rmSync(out, { recursive: true });
+    symlinkSync(linked, out, process.platform === 'win32' ? 'junction' : 'dir');
+    assert.equal(run('Continuation', runId).status, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

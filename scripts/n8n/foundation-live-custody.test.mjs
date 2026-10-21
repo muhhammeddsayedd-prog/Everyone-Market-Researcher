@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, existsSync
 import { join, resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync, spawn } from 'node:child_process';
+import { gunzipSync } from 'node:zlib';
 
 // This vertical custody fixture uses the actual Windows wrapper and public
 // module with its fixed Vercel root rebound to an isolated public fixture,
@@ -16,8 +17,9 @@ const windowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9';
 const quoted = (v) => "'" + v.replaceAll("'", "''") + "'";
 const secretValues = ['SyntheticManagement47', 'SyntheticWriter58', 'SyntheticApifyRead69'];
 async function runFixture(variant) {
-  const amended = variant.startsWith('clock_');
-  const mode = variant.replace(/^clock_/, '');
+  const continuation = variant.startsWith('postcheck_');
+  const amended = variant.startsWith('clock_') || continuation;
+  const mode = variant.replace(/^(?:clock_|postcheck_)/, '');
   const root = mkdtempSync(join(tmpdir(), 'emr-acceptance-custody-'));
   const put = (name, text) => {
     const path = join(root, name);
@@ -59,7 +61,7 @@ async function runFixture(variant) {
     );
     put(
       'scripts/db/windows/Invoke-M03FoundationMigrations.ps1',
-      `param([switch]$CheckOnly,[switch]$PhaseAControl,[switch]$ClockAmendment)\nif(-not $CheckOnly -or -not $PhaseAControl){exit 1}\n${mode === 'public_stale' ? "Write-Output 'M03_FOUNDATION HANDOFF_LEASE_NOT_READY. Synthetic public fixture only.';exit 2" : "Write-Output 'M03_FOUNDATION CHECK_ONLY_READY. Synthetic public fixture only.';exit 0"}\n`,
+      `param([switch]$CheckOnly,[switch]$PhaseAControl,[switch]$ClockAmendment,[switch]$PostcheckContinuation)\nif(-not $CheckOnly -or -not $PhaseAControl${continuation ? ' -or -not $PostcheckContinuation -or $ClockAmendment' : ''}){exit 1}\n${mode === 'public_stale' ? "Write-Output 'M03_FOUNDATION HANDOFF_LEASE_NOT_READY. Synthetic public fixture only.';exit 2" : "Write-Output 'M03_FOUNDATION CHECK_ONLY_READY. Synthetic public fixture only.';exit 0"}\n`,
     );
     for (const name of ['n8n/foundation/bindings.dev.json', 'scripts/n8n/foundation-delivery-packet.json'])
       put(name, readFileSync(resolve(name)));
@@ -85,15 +87,43 @@ async function runFixture(variant) {
         }) + '\n',
       );
     }
+    if (continuation) {
+      for (const name of [
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-approval-20261021.json',
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-checkpoint-20261021.json',
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-continuation-20261021.md',
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-amended-attempt-20261021.json',
+      ])
+        put(name, readFileSync(resolve(name)));
+      const snapshot = JSON.parse(
+        readFileSync(
+          resolve('milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-checkpoint-20261021.json'),
+          'utf8',
+        ),
+      );
+      for (const [name, record] of Object.entries(snapshot.retainedFiles))
+        put(
+          name,
+          record.text ??
+            gunzipSync(readFileSync(resolve('scripts/n8n/fixtures/foundation-hosted-types-20261021.ts.gz'))),
+        );
+      // The prior-PID query is an explicit synthetic port in this copied fixture;
+      // an unrelated future OS PID reuse must not make custody tests nondeterministic.
+      const moduleName = 'scripts/n8n/foundation-live-postcheck-continuation.mjs',
+        actual = readFileSync(resolve(moduleName), 'utf8'),
+        isolated = actual.replace(/process\.kill\(pid, 0\);\s*return true;/, 'return false;');
+      assert.notEqual(isolated, actual);
+      put(moduleName, isolated);
+    }
     put(
       'scripts/n8n/foundation-live-runtime-cli.mjs',
       `import assert from 'node:assert/strict';
 import {createInterface} from 'node:readline';
-${amended ? "import {readFoundationClockAmendment,claimFoundationClockAmendment} from './foundation-live-clock-amendment.mjs';" : ''}
+${continuation ? "import {readFoundationPostcheckContinuation,claimFoundationPostcheckContinuation} from './foundation-live-postcheck-continuation.mjs';" : amended ? "import {readFoundationClockAmendment,claimFoundationClockAmendment} from './foundation-live-clock-amendment.mjs';" : ''}
 const send=(v)=>process.stdout.write(JSON.stringify(v)+'\\n');
 if(process.argv[2]==='CheckOnly') {send({kind:'m03_acceptance_ready',status:'check_only_execution_port_required',privateRead:false,networkCalls:0,knownWorkflows:25,managementMaximum:512,controlMaximum:2048,actualMcpPortVerified:false,concreteVercelCliPresent:true,concreteAdminHelperPresent:true});}
-else if(process.argv[2]==='${amended ? 'SessionClockAmendment' : 'Session'}') {
- ${amended ? 'const clock=claimFoundationClockAmendment(readFoundationClockAmendment());assert.equal(clock.deadlineAt-clock.startsAt,3600000);' : ''}
+else if(process.argv[2]==='${continuation ? 'SessionPostcheckContinuation' : amended ? 'SessionClockAmendment' : 'Session'}') {
+ ${continuation ? 'const clock=claimFoundationPostcheckContinuation(readFoundationPostcheckContinuation());assert.equal(clock.deadlineAt-clock.startsAt,3600000);' : amended ? 'const clock=claimFoundationClockAmendment(readFoundationClockAmendment());assert.equal(clock.deadlineAt-clock.startsAt,3600000);' : ''}
  const lines=createInterface({input:process.stdin});let initialized=false;
  for await(const line of lines){const v=JSON.parse(line);if(!initialized){
   assert.equal(v.managementKey,${JSON.stringify(secretValues[0])});assert.equal(v.writerPassword,${JSON.stringify(secretValues[1])});assert.equal(v.apifyReadToken,${JSON.stringify(secretValues[2])});
@@ -151,7 +181,8 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
           '-NonInteractive',
           '-File',
           join(root, 'scripts/n8n/windows/Invoke-M03Acceptance.ps1'),
-          ...(amended ? ['-ClockAmendment'] : []),
+          ...(continuation ? ['-PostcheckContinuation'] : amended ? ['-ClockAmendment'] : []),
+          ...(mode === 'conflicting_modes' ? ['-ClockAmendment'] : []),
           ...(mode === 'public_stale' ? ['-CheckOnly'] : []),
         ],
         {
@@ -224,6 +255,7 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
     } else if (
       mode === 'short_lease' ||
       mode === 'extra_lease' ||
+      mode === 'conflicting_modes' ||
       mode === 'transport_eof' ||
       mode === 'transport_silent'
     ) {
@@ -263,12 +295,30 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
           deadlineAt: 1792584023481,
         }) + '\n',
       );
-      const admitted = existsSync(join(live, 'clock-amendment-30e75d0d-7e4c-46c6-9a07-556f90b63859.json'));
+      const stem = continuation
+        ? 'postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27'
+        : 'clock-amendment-30e75d0d-7e4c-46c6-9a07-556f90b63859';
+      const admitted = existsSync(join(live, stem + '.json'));
       assert.equal(admitted, mode === 'complete');
-      assert.equal(
-        existsSync(join(live, 'clock-amendment-30e75d0d-7e4c-46c6-9a07-556f90b63859.runtime-claim.json')),
-        mode === 'complete',
-      );
+      assert.equal(existsSync(join(live, stem + '.runtime-claim.json')), mode === 'complete');
+      if (continuation) {
+        const checkpoint = JSON.parse(
+          readFileSync(
+            resolve(
+              'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-checkpoint-20261021.json',
+            ),
+            'utf8',
+          ),
+        );
+        for (const [name, record] of Object.entries(checkpoint.retainedFiles)) {
+          const text =
+            record.text ??
+            gunzipSync(
+              readFileSync(resolve('scripts/n8n/fixtures/foundation-hosted-types-20261021.ts.gz')),
+            ).toString('utf8');
+          assert.equal(readFileSync(join(root, name), 'utf8'), text);
+        }
+      }
     }
   } finally {
     assert.ok(resolve(root).startsWith(resolve(tmpdir()) + '\\emr-acceptance-custody-'));
@@ -286,6 +336,11 @@ for (const mode of [
   'clock_short_lease',
   'clock_transport_eof',
   'clock_public_stale',
+  'postcheck_complete',
+  'postcheck_short_lease',
+  'postcheck_transport_eof',
+  'postcheck_public_stale',
+  'postcheck_conflicting_modes',
 ])
   test(
     `actual Windows custody wrapper with scripted private child: ${mode}`,

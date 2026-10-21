@@ -8,6 +8,7 @@ import { test } from 'node:test';
 import { startFoundationAdminClient } from './foundation-admin-client.mjs';
 import { verifyFoundationTypes } from './check-foundation-types.mjs';
 import { syntheticClockAmendment } from '../n8n/foundation-live-clock-amendment-fixtures.mjs';
+import { syntheticPostcheckContinuation } from '../n8n/foundation-live-postcheck-fixtures.mjs';
 
 const epoch = Date.parse('2026-10-21T10:00:00.000Z');
 function fixture({
@@ -16,6 +17,7 @@ function fixture({
   overflow = false,
   originalDeadlineAtMs,
   amendmentProof,
+  continuationProof,
   clockMismatch = false,
 } = {}) {
   const calls = [],
@@ -75,6 +77,11 @@ function fixture({
         assert.ok(args.includes('-ClockAmendment'));
         assert.equal(args.includes('-OriginalDeadlineAtMs'), false);
       }
+      if (continuationProof) {
+        assert.ok(args.includes('-PostcheckContinuation'));
+        assert.equal(args.includes('-ClockAmendment'), false);
+        assert.equal(args.includes('-OriginalDeadlineAtMs'), false);
+      }
       if (originalDeadlineAtMs !== undefined) {
         assert.equal(args[args.indexOf('-OriginalDeadlineAtMs') + 1], String(originalDeadlineAtMs));
       }
@@ -92,28 +99,31 @@ function fixture({
                 historyAfter: 'complete',
                 projectRef: 'zmotjsbzhzjvpelxvxlf',
                 hardDeadline: new Date(
-                  amendmentProof
-                    ? amendmentProof.hardDeadlineAt
+                  continuationProof || amendmentProof
+                    ? (continuationProof ?? amendmentProof).hardDeadlineAt
                     : originalDeadlineAtMs === undefined
                       ? epoch + 4200000
                       : originalDeadlineAtMs + 600000,
                 ).toISOString(),
                 actionDeadline: new Date(
-                  amendmentProof
-                    ? amendmentProof.deadlineAt + (clockMismatch ? 1 : 0)
+                  continuationProof || amendmentProof
+                    ? (continuationProof ?? amendmentProof).deadlineAt + (clockMismatch ? 1 : 0)
                     : originalDeadlineAtMs === undefined
                       ? epoch + 3600000
                       : originalDeadlineAtMs,
                 ).toISOString(),
                 stopNewAt: new Date(
-                  amendmentProof
-                    ? amendmentProof.stopNewAt
+                  continuationProof || amendmentProof
+                    ? (continuationProof ?? amendmentProof).stopNewAt
                     : originalDeadlineAtMs === undefined
                       ? epoch + 3000000
                       : originalDeadlineAtMs - 600000,
                 ).toISOString(),
                 postchecksVerified: false,
                 ...(amendmentProof ? { clockSegmentId: amendmentProof.segmentId } : {}),
+                ...(continuationProof
+                  ? { clockSegmentId: continuationProof.segmentId, postcheckContinuation: true }
+                  : {}),
               }) + '\n',
         );
       });
@@ -166,6 +176,8 @@ test('approved amendment client requires a genuine claimed segment and native ma
   const client = await startFoundationAdminClient({ now, clockAmendmentProof: proof }, f.deps);
   assert.equal(client.ready.clockSegmentId, proof.segmentId);
   assert.equal(Date.parse(client.ready.actionDeadline), proof.deadlineAt);
+  await assert.rejects(client.archiveUnprovisioned(), /FOUNDATION_ADMIN_BLOCKED/);
+  assert.equal(f.calls.length, 0);
   await client.end();
   await assert.rejects(
     startFoundationAdminClient({ now, clockAmendmentProof: { ...proof } }, fixture().deps),
@@ -201,6 +213,48 @@ test('amendment DB fixture passes in a fresh child with LOCALAPPDATA absent', ()
   );
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /pass 1/);
+});
+
+test('postcheck continuation accepts only its actual claimed proof and exact no-migration ready envelope', async () => {
+  const f = syntheticPostcheckContinuation({ parentProcessId: 90210 }),
+    proof = f.claim(f.admit());
+  const wire = fixture({ continuationProof: proof });
+  const client = await startFoundationAdminClient(
+    { now: f.now, postcheckContinuationProof: proof },
+    wire.deps,
+  );
+  assert.equal(client.ready.postcheckContinuation, true);
+  assert.equal(client.ready.clockSegmentId, proof.segmentId);
+  assert.equal(Date.parse(client.ready.actionDeadline), proof.deadlineAt);
+  assert.deepEqual(await client.archiveUnprovisioned(), { kind: 'archiveUnprovisioned' });
+  await client.end();
+  for (const options of [
+    { postcheckContinuationProof: { ...proof } },
+    { postcheckContinuationProof: proof, clockAmendmentProof: {} },
+    { postcheckContinuationProof: proof, originalDeadlineAtMs: 1792584023481 },
+  ]) {
+    let dispatched = 0;
+    await assert.rejects(
+      startFoundationAdminClient(
+        { now: f.now, ...options },
+        {
+          spawn() {
+            dispatched++;
+            throw Error('unexpected');
+          },
+        },
+      ),
+      /FOUNDATION_ADMIN_BLOCKED/,
+    );
+    assert.equal(dispatched, 0);
+  }
+  await assert.rejects(
+    startFoundationAdminClient(
+      { now: f.now, postcheckContinuationProof: proof },
+      fixture({ continuationProof: proof, clockMismatch: true }).deps,
+    ),
+    /FOUNDATION_ADMIN_BLOCKED/,
+  );
 });
 test('zero-setup continuation forwards only the fixed original clock and rejects fresh or extended clocks', async () => {
   const deadline = 1792584023481,

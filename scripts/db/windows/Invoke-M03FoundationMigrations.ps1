@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0,[switch]$ClockAmendment)
+param([switch]$CheckOnly,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0,[switch]$ClockAmendment,[switch]$PostcheckContinuation)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -17,6 +17,11 @@ $requiredFiles = @('scripts/db/windows/Invoke-M03FoundationMigrations.ps1','scri
 $requiredFiles+=@('scripts/n8n/foundation-live-clock-amendment.mjs','scripts/n8n/foundation-live-zero-setup.mjs','scripts/n8n/foundation-control-state.mjs','scripts/n8n/foundation-runtime-checkpoint.mjs',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-approval-20261021.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-zero-setup-20261021.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-amendment-20261021.md','milestones/M03-n8n-foundation/evidence/dev-acceptance-late-delivery-20261021.json')
+$requiredFiles+=@('scripts/n8n/foundation-live-postcheck-continuation.mjs',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-approval-20261021.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-checkpoint-20261021.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-continuation-20261021.md',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-amended-attempt-20261021.json')
 $versions = @('20261017172928','20261017172931','20261017172934','20261017172937','20261017172940','20261017172943','20261017172945','20261018034220','20261018035417','20261018070042','20261018231756','20261018232014','20261018232922','20261018233338')
 $names = @('extensions_schemas_roles','core_tables','auth_rls_views','rpc_pipeline_core','rpc_app_search','storage_cron','seed_taxonomies','rpc_n8n_foundation','price_book_plan','n8n_worker_gateway_admission','m03_actor_launch_admission','m03_foundation_gateway','m03_foundation_safety_receipts','m03_foundation_boundary_hardening')
 $queryTimeoutMs = 30000
@@ -33,12 +38,15 @@ $phaseAStart = $null
 $originalPhaseAStart = $null
 $clockAmendmentStart = $null
 $clockAmendmentSegment = $null
+$postcheckContinuationStart = $null
+$postcheckContinuationSegment = 'a570212a-634c-444f-90a2-578ae47e8d27'
 $phaseAControlHardDeadline = $null
 $exitCode = 1
 $receipt = [ordered]@{version=1;runId=$runId;environment='dev';projectRef=$projectRef;host=$poolerHost;port=5432;
   status='preflight_blocked';authenticationAttempted=$false;authenticationVerified=$false;historyBefore='not_checked';historyAfter='not_checked';
   dryRunMatched=$false;dryRunCheck='not_attempted';dryRunNativeExit=$null;pushAttempted=$false;pushNativeExit=$null;childrenClosed=$true;handoffDeleted=$false;leaseDeleted=$false;scratchDeleted=$true;
   pendingVersions=@('20261018231756','20261018232014','20261018232922','20261018233338');phaseAControl=$false;phaseACommands=0;phaseAClosed=$false;observedAt=$null}
+if($PostcheckContinuation){$receipt.pendingVersions=@();$receipt['postcheckContinuation']=$true}
 
 function Assert-Keys($Value, [string[]]$Expected) {
   if ($Value -isnot [PSCustomObject]) { throw 'blocked' }
@@ -100,6 +108,11 @@ function Read-FoundationOriginalStart([long]$Value,[DateTime]$Now=[DateTime]::Ut
   return $deadline.AddMinutes(-60)
 }
 function Get-FoundationLeaseFloor([DateTime]$Now=[DateTime]::UtcNow) {
+  if($PostcheckContinuation){
+    if(-not $PhaseAControl -or $ClockAmendment -or $OriginalDeadlineAtMs -ne 0){throw 'blocked'}
+    if($null -ne $postcheckContinuationStart){return $postcheckContinuationStart.AddMinutes(75)}
+    return $Now.AddMinutes(75)
+  }
   if($ClockAmendment){
     if(-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 0){throw 'blocked'}
     if($null -ne $clockAmendmentStart){return $clockAmendmentStart.AddMinutes(75)}
@@ -126,6 +139,30 @@ function Read-FoundationClockAmendment {
     Assert-Keys $value $keys
     $expected=if($CheckOnly){'clock_amendment_ready'}else{'clock_amendment_admitted'}
     if($value.kind -cne $expected -or $value.segmentId -cne '30e75d0d-7e4c-46c6-9a07-556f90b63859' -or
+       $value.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $value.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or
+       $value.privateRead -isnot [bool] -or $value.privateRead -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0){throw 'blocked'}
+    if($CheckOnly){return $null}
+    foreach($field in @('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')){if($value.$field -isnot [long]){throw 'blocked'}}
+    $nowMs=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+    if($value.startsAt -le 0 -or $value.startsAt -gt $nowMs+1000 -or $nowMs -ge $value.stopNewAt -or
+       $value.deadlineAt-$value.startsAt -ne 3600000 -or $value.stopNewAt-$value.startsAt -ne 3000000 -or
+       $value.hardDeadlineAt-$value.startsAt -ne 4200000){throw 'blocked'}
+    return $value
+  }finally{$answer.text=$null}
+}
+function Read-FoundationPostcheckContinuation {
+  if(-not $PhaseAControl -or -not $PostcheckContinuation -or $ClockAmendment -or $OriginalDeadlineAtMs -ne 0){throw 'blocked'}
+  $mode=if($CheckOnly){'CheckOnly'}else{'ReadClaimed'}
+  $module=Assert-Path $repo 'scripts/n8n/foundation-live-postcheck-continuation.mjs'
+  $answer=Invoke-Bounded $node @($module,$mode) $repo 10000
+  try{
+    if(-not $answer.ok -or -not $answer.closed){throw 'blocked'}
+    $value=ConvertFrom-Json -InputObject $answer.text -ErrorAction Stop
+    $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
+    if(-not $CheckOnly){$keys+=@('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')}
+    Assert-Keys $value $keys
+    $expected=if($CheckOnly){'postcheck_continuation_ready'}else{'clock_postcheck_continuation_admitted'}
+    if($value.kind -cne $expected -or $value.segmentId -cne $postcheckContinuationSegment -or
        $value.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $value.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or
        $value.privateRead -isnot [bool] -or $value.privateRead -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0){throw 'blocked'}
     if($CheckOnly){return $null}
@@ -207,6 +244,9 @@ function Invoke-Cli([string[]]$Arguments, [int]$TimeoutMs) {
     $TimeoutMs=[Math]::Min($TimeoutMs,$remaining)
   }
   if ($Arguments.Count -lt 2 -or -not (($Arguments[0] -ceq 'db' -and $Arguments[1] -cin @('query','push','advisors')) -or ($Arguments[0] -ceq 'gen' -and $Arguments[1] -ceq 'types'))) { throw 'blocked' }
+  # The continuation cannot reach a migration write even if another branch is
+  # accidentally changed later. Its scratch workdir contains no migrations.
+  if($PostcheckContinuation -and $Arguments[1] -ceq 'push'){throw 'blocked'}
   # CLI2.121.0 gives legacy --output json precedence over --output-format and
   # selects a text layer. Query has its own legacy formatter; push does not.
   $outputFlags = @('--output-format','json')
@@ -259,6 +299,7 @@ function Push-Matches($Result,[bool]$DryRun) {
 
 # All preflight checks are public and precede any DPAPI read/decryption.
 try {
+  if($PostcheckContinuation -and (-not $PhaseAControl -or $ClockAmendment -or $OriginalDeadlineAtMs -ne 0)){throw 'blocked'}
   if($ClockAmendment -and (-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 0)){throw 'blocked'}
   $repoEntry = Get-Item -LiteralPath $repo -Force
   if (($repoEntry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'blocked' }
@@ -310,11 +351,26 @@ try {
       $receipt['clockSegmentId']=$clockAmendmentSegment
     }
   }
+  if($PostcheckContinuation){
+    $clock=Read-FoundationPostcheckContinuation
+    if($null -ne $clock){
+      $postcheckContinuationStart=[DateTimeOffset]::FromUnixTimeMilliseconds($clock.startsAt).UtcDateTime
+      $phaseAControlHardDeadline=$postcheckContinuationStart.AddMinutes(70)
+      $receipt['clockSegmentId']=$postcheckContinuationSegment
+    }
+  }
   $out = Join-Path $repo 'scripts/db/out'
   if (-not (Test-Path -LiteralPath $out)) { $null = New-Item -ItemType Directory -Path $out }
   $out = Assert-Path $repo 'scripts/db/out' -Directory
   $attemptFile = Join-Path $out 'm03-foundation-dev-migration-attempt.json'
   $latestFile = Join-Path $out 'm03-foundation-dev-migration-latest.json'
+  if($PostcheckContinuation){
+    $attemptFile=Join-Path $out ('m03-foundation-postcheck-continuation-'+$postcheckContinuationSegment+'-attempt.json')
+    $latestFile=Join-Path $out ('m03-foundation-postcheck-continuation-'+$postcheckContinuationSegment+'-latest.json')
+    if((Test-Path -LiteralPath $attemptFile) -or (Test-Path -LiteralPath $latestFile)){
+      Write-Output 'M03_FOUNDATION CONTINUATION_ALREADY_RECORDED. No decryption, migration operation or automatic replay. Preserve and reconcile the separate continuation receipts.';exit 1
+    }
+  }
   if (Test-Path -LiteralPath $attemptFile) {
     if ($CheckOnly) {
       $admission = Read-Json (Assert-Path $repo 'scripts/db/out/m03-foundation-dev-migration-attempt.json')
@@ -358,7 +414,7 @@ try {
   if ($leaseCreated.Kind -ne [DateTimeKind]::Utc -or $leaseExpires.Kind -ne [DateTimeKind]::Utc -or
       $leaseCreated -gt [DateTime]::UtcNow.AddMinutes(1) -or $leaseExpires -ne $leaseCreated.AddHours(2)) { throw 'blocked' }
   if($leaseExpires -le (Get-FoundationLeaseFloor)){
-    if($CheckOnly -and $ClockAmendment){Write-Output 'M03_FOUNDATION HANDOFF_LEASE_NOT_READY. Public inputs verified; the unchanged two-hour admin lease does not cover this admission. No private file read, decryption or authentication attempted.';exit 2}
+    if($CheckOnly -and ($ClockAmendment -or $PostcheckContinuation)){Write-Output 'M03_FOUNDATION HANDOFF_LEASE_NOT_READY. Public inputs verified; the unchanged two-hour admin lease does not cover this admission. No private file read, decryption or authentication attempted.';exit 2}
     throw 'blocked'
   }
 } catch { Write-Output 'M03_FOUNDATION HANDOFF_PATH_BLOCKED. No private file read, decryption or authentication attempted.'; exit 1 }
@@ -388,11 +444,11 @@ try {
   Write-NewJson (Join-Path $scratch 'owned.json') ([ordered]@{runId=$runId;projectRef=$projectRef})
   $null = New-Item -ItemType Directory -Path (Join-Path $scratch 'supabase/migrations') -Force
   [IO.File]::WriteAllText((Join-Path $scratch 'supabase/config.toml'),"project_id = `"emr-m03-foundation-dev-migration`"`n[db.seed]`nenabled = false`nsql_paths = []`n")
-  foreach ($migration in $migrations) { [IO.File]::Copy((Assert-Path $repo $migration.file),(Join-Path $scratch $migration.file),$false) }
+  if(-not $PostcheckContinuation){foreach ($migration in $migrations) { [IO.File]::Copy((Assert-Path $repo $migration.file),(Join-Path $scratch $migration.file),$false) }}
   $scratchCa = Join-Path $scratch 'supabase-root-2021.crt'
   [IO.File]::Copy($caPath,$scratchCa,$false)
   if ((File-Hash $scratchCa) -cne $caHash) { throw 'blocked' }
-  foreach ($migration in $migrations) { if ((File-Hash (Assert-Path $scratch $migration.file)) -cne $migration.sha256) { throw 'blocked' } }
+  if(-not $PostcheckContinuation){foreach ($migration in $migrations) { if ((File-Hash (Assert-Path $scratch $migration.file)) -cne $migration.sha256) { throw 'blocked' } }}
   $historySql = @'
 select jsonb_build_object('current_user',current_user,'session_user',session_user,'database',current_database(),'migrations',(select coalesce(jsonb_agg(jsonb_build_object('version',version,'name',name,'historySha256',encode(extensions.digest(array_to_string(statements,E'\n'),'sha256'),'hex')) order by version),'[]'::jsonb) from supabase_migrations.schema_migrations)) as receipt;
 '@
@@ -405,8 +461,9 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   $null = Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-foundation-dev-migration-password.dpapi'
   if($null -ne $originalPhaseAStart -and [DateTime]::UtcNow -ge $originalPhaseAStart.AddMinutes(50)){throw 'blocked'}
   if($null -ne $clockAmendmentStart -and [DateTime]::UtcNow -ge $clockAmendmentStart.AddMinutes(50)){throw 'blocked'}
+  if($null -ne $postcheckContinuationStart -and [DateTime]::UtcNow -ge $postcheckContinuationStart.AddMinutes(50)){throw 'blocked'}
   $consumed = $true
-  $phaseAStart = if($null -ne $originalPhaseAStart){$originalPhaseAStart}elseif($null -ne $clockAmendmentStart){$clockAmendmentStart}else{[DateTime]::UtcNow}
+  $phaseAStart = if($null -ne $originalPhaseAStart){$originalPhaseAStart}elseif($null -ne $clockAmendmentStart){$clockAmendmentStart}elseif($null -ne $postcheckContinuationStart){$postcheckContinuationStart}else{[DateTime]::UtcNow}
   $secret = ConvertTo-SecureString -String ([IO.File]::ReadAllText($handoff).Trim()) -ErrorAction Stop
   $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
   $password = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
@@ -420,7 +477,14 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   $receipt.historyBefore = History-State $before
   if ($receipt.historyBefore -in @('baseline','complete')) { $receipt.authenticationAttempted = $true; $receipt.authenticationVerified = $true }
   $before.text = $null
-  if ($receipt.historyBefore -eq 'complete') { $receipt.status = 'already_complete'; $receipt.historyAfter = 'complete'; $exitCode = 0 }
+  if($PostcheckContinuation){
+    if($receipt.historyBefore -cne 'complete'){$receipt.status='history_rejected'}
+    else{
+      Write-NewJson $attemptFile ([ordered]@{version=1;runId=$runId;projectRef=$projectRef;segmentId=$postcheckContinuationSegment;purpose='postcheck-only-continuation';createdAt=[DateTime]::UtcNow.ToString('o')})
+      $receipt.status='continuation_history_verified';$receipt.historyAfter='complete';$exitCode=0
+    }
+  }
+  elseif ($receipt.historyBefore -eq 'complete') { $receipt.status = 'already_complete'; $receipt.historyAfter = 'complete'; $exitCode = 0 }
   elseif ($receipt.historyBefore -ne 'baseline') { $receipt.status = 'history_rejected' }
   else {
     $dry = Invoke-Cli @('db','push','--dry-run','--skip-vault') 60000
@@ -485,8 +549,11 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   if (-not $receipt.childrenClosed -or ($consumed -and (-not $receipt.handoffDeleted -or -not $receipt.leaseDeleted)) -or -not $receipt.scratchDeleted) { $exitCode = 1 }
   $receipt.observedAt = [DateTime]::UtcNow.ToString('o')
   try {
-    if (Test-Path -LiteralPath $latestFile) { $null = Assert-Path $repo 'scripts/db/out/m03-foundation-dev-migration-latest.json' }
-    [IO.File]::WriteAllText($latestFile,($receipt | ConvertTo-Json -Depth 8))
+    if($PostcheckContinuation){Write-NewJson $latestFile $receipt}
+    else{
+      if (Test-Path -LiteralPath $latestFile) { $null = Assert-Path $repo 'scripts/db/out/m03-foundation-dev-migration-latest.json' }
+      [IO.File]::WriteAllText($latestFile,($receipt | ConvertTo-Json -Depth 8))
+    }
   } catch { $exitCode = 1 }
 }
 Write-Output ($receipt | ConvertTo-Json -Depth 8 -Compress)

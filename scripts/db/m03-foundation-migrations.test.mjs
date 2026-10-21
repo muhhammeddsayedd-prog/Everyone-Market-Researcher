@@ -54,6 +54,11 @@ const clockPublicFiles = [
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-zero-setup-20261021.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-amendment-20261021.md',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-late-delivery-20261021.json',
+  'scripts/n8n/foundation-live-postcheck-continuation.mjs',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-approval-20261021.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-checkpoint-20261021.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-continuation-20261021.md',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-amended-attempt-20261021.json',
 ];
 
 function consumerFixture(mode = 'success') {
@@ -85,7 +90,10 @@ function consumerFixture(mode = 'success') {
     'node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/typescript.js',
     ...clockPublicFiles,
   ])
-    put(name, readFileSync(resolve(name)));
+    put(
+      name,
+      existsSync(resolve(name)) ? readFileSync(resolve(name)) : '// synthetic pending public module\n',
+    );
   put(
     'scripts/seed/check-tls.mjs',
     "console.log(JSON.stringify({status:'verified',phase:'tls_handshake',code:'TLS_VERIFIED',environment:'dev',projectRef:'zmotjsbzhzjvpelxvxlf',host:'aws-1-eu-central-1.pooler.supabase.com',port:5432,rejectUnauthorized:true,exactServerName:true,scopedCaVerified:true,startupMessageSent:false,authenticationAttempted:false,socketsClosed:true}));",
@@ -132,8 +140,11 @@ public class FixtureCli { public static int Main(string[] args) {
   var file=Array.IndexOf(args,"--file");var sql=File.ReadAllText(args[file+1]);
   if(!sql.Contains("supabase_migrations.schema_migrations")){
    File.AppendAllText(Path.Combine(dir,"control-sql.txt"),sql+"\\n--NEXT\\n");
-   if(sql.StartsWith("do ")) { Console.WriteLine("DO");return 0; }
-   var key=sql.Contains(" as postcheck;")?"postcheck":sql.Contains(" as preflight;")?"preflight":sql.Contains(" as provision ")?"provision":sql.Contains(" as fixture ")?"fixture":sql.Contains(" as ownership ")?"ownership":sql.Contains(" as closure ")?"closure":sql.Contains(" as closed;")?"close":sql.Contains(" as unknown_callback;")?"unknown":sql.Contains(" as settlement;")?"settlement":sql.Contains(" as original")?"original":sql.Contains(" as verified;")?"verified":sql.Contains(" as snapshot;")?"snapshot":null;
+   if(sql.StartsWith("do ")) { if(sql.Contains("do $smoke_teardown$") && File.Exists(Path.Combine(dir,"fixture-mode.txt")) && File.ReadAllText(Path.Combine(dir,"fixture-mode.txt"))=="archive-failure") {Console.Error.WriteLine("synthetic-private-archive-error");return 7;}Console.WriteLine("DO");return 0; }
+   var key=sql.Contains(" as continuation_fixture_absence;")?"continuation_fixture_absence":sql.Contains(" as continuation_preflight;")?"continuation_preflight":sql.Contains(" as postcheck;")?"postcheck":sql.Contains(" as preflight;")?"preflight":sql.Contains(" as provision ")?"provision":sql.Contains("'retained_items'")?"fixture_archived":sql.Contains(" as fixture ")?"fixture":sql.Contains(" as ownership ")?"ownership":sql.Contains(" as closure ")?"closure":sql.Contains(" as closed;")?"close":sql.Contains(" as unknown_callback;")?"unknown":sql.Contains(" as settlement;")?"settlement":sql.Contains(" as original")?"original":sql.Contains(" as verified;")?"verified":sql.Contains(" as snapshot;")?"snapshot":null;
+   var fixtureMode=File.Exists(Path.Combine(dir,"fixture-mode.txt"))?File.ReadAllText(Path.Combine(dir,"fixture-mode.txt")):"none";
+   if(key=="continuation_fixture_absence") {var countFile=Path.Combine(dir,"absence-queries.txt");var absenceCount=File.Exists(countFile)?Int32.Parse(File.ReadAllText(countFile)):0;File.WriteAllText(countFile,(absenceCount+1).ToString());if(fixtureMode=="startup" || (fixtureMode=="pre-fixture" && absenceCount>=1))key="fixture_absence_present";}
+   if(key=="fixture") {var countFile=Path.Combine(dir,"fixture-reads.txt");var fixtureCount=File.Exists(countFile)?Int32.Parse(File.ReadAllText(countFile)):0;File.WriteAllText(countFile,(fixtureCount+1).ToString());if(fixtureMode=="changed" && fixtureCount>=1)key="fixture_changed";if(fixtureMode=="legacy-intent" && fixtureCount==0)File.WriteAllText(File.ReadAllText(Path.Combine(dir,"legacy-intent-path.txt")),"contradictory-provision-intent");}
    if(key!=null){Console.WriteLine(File.ReadAllText(Path.Combine(dir,key+".json")));return 0;}
    if(sql.StartsWith("select ops.foundation_gateway_provision(")){Console.WriteLine("[]");return 0;}
    Console.Error.WriteLine("synthetic-private-unknown-sql");return 98;
@@ -171,6 +182,31 @@ public class FixtureCli { public static int Main(string[] args) {
     account_status: 'active',
   };
   const controlRows = {
+    continuation_fixture_absence: { continuation_fixture_absence: { conflictingCompetitors: 0 } },
+    fixture_absence_present: { continuation_fixture_absence: { conflictingCompetitors: 1 } },
+    fixture_changed: { fixture: { ...fixtureResult, account_id: '90000000-0000-4000-8000-000000000099' } },
+    fixture_archived: {
+      fixture: {
+        result: 'M03_SMOKE_FIXTURE_ARCHIVED',
+        company_code: 'C999',
+        competitor_id: fixtureResult.competitor_id,
+        account_id: fixtureResult.account_id,
+        competitor_status: 'archived',
+        account_status: 'paused',
+        retained_items: 0,
+      },
+    },
+    continuation_preflight: {
+      continuation_preflight: {
+        windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+        windows: 0,
+        approvals: 0,
+        launches: 0,
+        requests: 0,
+        bindings: 0,
+        leases: 0,
+      },
+    },
     postcheck: {
       postcheck: {
         identity: true,
@@ -320,7 +356,7 @@ public class FixtureCli { public static int Main(string[] args) {
       expiresAt: new Date(leaseCreatedAt + 2 * 3600000).toISOString().replace('Z', '0000Z'),
     }),
   );
-  const run = (checkOnly = false, controlInput = null, amended = false) =>
+  const run = (checkOnly = false, controlInput = null, amended = false, continuation = false) =>
     spawnSync(
       powershell,
       [
@@ -329,8 +365,9 @@ public class FixtureCli { public static int Main(string[] args) {
         '-File',
         join(root, 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1'),
         ...(checkOnly ? ['-CheckOnly'] : []),
-        ...(controlInput === null && !amended ? [] : ['-PhaseAControl']),
+        ...(controlInput === null && !amended && !continuation ? [] : ['-PhaseAControl']),
         ...(amended ? ['-ClockAmendment'] : []),
+        ...(continuation ? ['-PostcheckContinuation'] : []),
       ],
       {
         env: {
@@ -347,8 +384,18 @@ public class FixtureCli { public static int Main(string[] args) {
         windowsHide: true,
       },
     );
-  const result = () =>
-    JSON.parse(readFileSync(join(root, 'scripts/db/out/m03-foundation-dev-migration-latest.json'), 'utf8'));
+  const result = (continuation = false) =>
+    JSON.parse(
+      readFileSync(
+        join(
+          root,
+          continuation
+            ? 'scripts/db/out/m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-latest.json'
+            : 'scripts/db/out/m03-foundation-dev-migration-latest.json',
+        ),
+        'utf8',
+      ),
+    );
   const calls = () =>
     existsSync(join(nativeDir, 'calls.txt')) ? readFileSync(join(nativeDir, 'calls.txt'), 'utf8') : '';
   return { root, put, handoff, leaseFile, packet, packetFile, nativeDir, run, result, calls };
@@ -371,13 +418,44 @@ const osEnvironment = () =>
     ),
   );
 
-function creatorFixture({ empty = false } = {}) {
+// Scripted public-proof producer in an isolated repository, not an actual
+// admission or credential. Genuine claimed brands are covered by client tests.
+function preparePostcheckContinuation(f) {
+  const relative = 'scripts/n8n/foundation-live-postcheck-continuation.mjs';
+  const start = Date.now();
+  f.put(
+    relative,
+    `const admitted=${JSON.stringify({ kind: 'clock_postcheck_continuation_admitted', segmentId: 'a570212a-634c-444f-90a2-578ae47e8d27', sourceCommitSha: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e', windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9', startsAt: start, deadlineAt: start + 3600000, stopNewAt: start + 3000000, hardDeadlineAt: start + 4200000, privateRead: false, networkRequests: 0 })};if(process.argv[2]==='CheckOnly'){const {startsAt,deadlineAt,stopNewAt,hardDeadlineAt,...ready}=admitted;console.log(JSON.stringify({...ready,kind:'postcheck_continuation_ready'}));}else if(process.argv[2]==='ReadClaimed') console.log(JSON.stringify(admitted));else process.exitCode=1;`,
+  );
+  f.packet.files[relative] = sha(readFileSync(join(f.root, relative)));
+  writeFileSync(f.packetFile, JSON.stringify(f.packet));
+  const preserved = new Map();
+  for (const name of [
+    'm03-foundation-dev-migration-attempt.json',
+    'm03-foundation-dev-migration-latest.json',
+    'm03-foundation-hosted-db.types.ts',
+  ]) {
+    const path = f.put('scripts/db/out/' + name, `preserved-${name}\n`);
+    preserved.set(path, readFileSync(path));
+  }
+  return {
+    start,
+    preserved,
+    assertPreserved() {
+      for (const [path, bytes] of preserved) assert.deepEqual(readFileSync(path), bytes);
+    },
+  };
+}
+
+function creatorFixture({ empty = false, postcheckContinuation = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'emr-m03-foundation-migration-fixture-'));
   directories.push(root);
   mkdirSync(join(root, 'Temp'));
   const file = join(root, 'New-M03FoundationMigrationHandoff.ps1');
   const source = readFileSync(creatorPath, 'utf8').replace(
-    "Read-Host 'EXISTING emr-dev postgres password for approved Phase A: four migrations, dev readbacks, owned C999 fixture and exact foundation Preview binding only' -AsSecureString",
+    postcheckContinuation
+      ? "Read-Host 'EXISTING emr-dev postgres password for approved postcheck continuation: readbacks, owned C999 fixture and exact Preview binding only; no migration push' -AsSecureString"
+      : "Read-Host 'EXISTING emr-dev postgres password for approved Phase A: four migrations, dev readbacks, owned C999 fixture and exact foundation Preview binding only' -AsSecureString",
     empty
       ? '[Security.SecureString]::new()'
       : "ConvertTo-SecureString 'synthetic-m03-foundation-dev-password' -AsPlainText -Force",
@@ -387,18 +465,390 @@ function creatorFixture({ empty = false } = {}) {
   const oldHandoff = join(root, 'Temp/emr-m02-dev-db-password.dpapi');
   writeFileSync(oldHandoff, 'unrelated-old-handoff-sentinel');
   const run = () =>
-    spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', file], {
-      env: { ...osEnvironment(), LOCALAPPDATA: root, PGPASSWORD: 'unrelated-parent-sentinel' },
-      encoding: 'utf8',
-      timeout: 10000,
-      windowsHide: true,
-    });
+    spawnSync(
+      powershell,
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-File',
+        file,
+        ...(postcheckContinuation ? ['-PostcheckContinuation'] : []),
+      ],
+      {
+        env: { ...osEnvironment(), LOCALAPPDATA: root, PGPASSWORD: 'unrelated-parent-sentinel' },
+        encoding: 'utf8',
+        timeout: 10000,
+        windowsHide: true,
+      },
+    );
   return { root, file, handoff, oldHandoff, run };
 }
 
 after(() => {
   for (const directory of directories) rmSync(directory, { recursive: true, force: true });
 });
+
+describe(
+  'postcheck-only continuation, isolated Windows native protocol',
+  { skip: process.platform !== 'win32' },
+  () => {
+    it('preserves old attempts/types and completes fresh14 readback and new postchecks without migration commands', () => {
+      const f = consumerFixture('completed'),
+        p = preparePostcheckContinuation(f);
+      const r = f.run(
+        false,
+        commandLines([['postcheck'], ['fixture'], ['provision', preview], ['close'], ['end']]),
+        false,
+        true,
+      );
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      const receipt = f.result(true);
+      assert.equal(receipt.postcheckContinuation, true);
+      assert.equal(receipt.historyBefore, 'complete');
+      assert.equal(receipt.historyAfter, 'complete');
+      assert.equal(receipt.pushAttempted, false);
+      assert.equal(receipt.dryRunCheck, 'not_attempted');
+      assert.equal(receipt.phaseAClosed, true);
+      assert.deepEqual(receipt.pendingVersions, []);
+      assert.doesNotMatch(f.calls(), / push |--dry-run| reset |migration repair/);
+      assert.equal(
+        f
+          .calls()
+          .split('\n')
+          .filter((l) => l.includes('history.sql')).length,
+        3,
+      );
+      assert.equal(receipt.postcheckStage, 'complete');
+      const rows = r.stdout.trim().split(/\r?\n/).map(JSON.parse),
+        post = rows.find((row) => row.kind === 'postcheck').result;
+      assert.match(
+        post.typesCandidate,
+        new RegExp(`^scripts/db/out/m03-foundation-continuation-${receipt.runId}-db\\.types\\.ts$`),
+      );
+      assert.equal(rows[0].postcheckContinuation, true);
+      assert.equal(Date.parse(rows[0].actionDeadline), p.start + 3600000);
+      assert.equal(existsSync(join(f.root, post.typesCandidate)), true);
+      p.assertPreserved();
+      const sql = readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8');
+      assert.ok(sql.indexOf('as continuation_preflight;') < sql.indexOf('do $smoke_setup$'));
+      assert.equal((sql.match(/as continuation_preflight;/g) || []).length, 3);
+      assert.equal(existsSync(f.handoff), false);
+      const latestPath = join(
+          f.root,
+          'scripts/db/out/m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-latest.json',
+        ),
+        latestBytes = readFileSync(latestPath),
+        priorCalls = f.calls();
+      const replay = f.run(true, null, false, true);
+      assert.equal(replay.status, 1);
+      assert.match(replay.stdout, /CONTINUATION_ALREADY_RECORDED/);
+      assert.deepEqual(readFileSync(latestPath), latestBytes);
+      assert.equal(f.calls(), priorCalls);
+    });
+    it('rejects baseline10 instead of falling back to dry-run or push and retains prior receipts', () => {
+      const f = consumerFixture(),
+        p = preparePostcheckContinuation(f);
+      const r = f.run(false, commandLines([['fixture']]), false, true);
+      assert.equal(r.status, 1, r.stdout + r.stderr);
+      assert.equal(f.result(true).status, 'history_rejected');
+      assert.doesNotMatch(f.calls(), / push |--dry-run/);
+      assert.equal(existsSync(join(f.nativeDir, 'control-sql.txt')), false);
+      p.assertPreserved();
+    });
+    it('rejects an existing logical window before fixture or provisioning mutation', () => {
+      const f = consumerFixture('completed'),
+        p = preparePostcheckContinuation(f);
+      writeFileSync(
+        join(f.nativeDir, 'continuation_preflight.json'),
+        JSON.stringify([
+          {
+            continuation_preflight: {
+              windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+              windows: 1,
+              approvals: 0,
+              launches: 0,
+              requests: 0,
+              bindings: 0,
+              leases: 0,
+            },
+          },
+        ]),
+      );
+      const r = f.run(false, commandLines([['postcheck'], ['fixture']]), false, true);
+      assert.equal(r.status, 1, r.stdout + r.stderr);
+      assert.doesNotMatch(
+        readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8'),
+        /do \$smoke_setup\$|select ops\.foundation_gateway_provision\(/,
+      );
+      assert.doesNotMatch(f.calls(), / push |--dry-run/);
+      p.assertPreserved();
+    });
+    it('refuses an existing C999 or smoke-slug fixture at startup without adopting it', () => {
+      const f = consumerFixture('completed'),
+        p = preparePostcheckContinuation(f);
+      writeFileSync(join(f.nativeDir, 'fixture-mode.txt'), 'startup');
+      const r = f.run(false, commandLines([['postcheck'], ['fixture'], ['end']]), false, true);
+      assert.equal(r.status, 1, r.stdout + r.stderr);
+      const sql = readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8');
+      assert.doesNotMatch(sql, /do \$smoke_setup\$|select ops\.foundation_gateway_provision\(/);
+      assert.ok(sql.includes("company_code='C999' or slug='emr-smoke-test'"));
+      assert.doesNotMatch(f.calls(), / push |--dry-run/);
+      p.assertPreserved();
+    });
+    it('refuses a C999 introduced after postcheck before fixture mutation', () => {
+      const f = consumerFixture('completed'),
+        p = preparePostcheckContinuation(f);
+      writeFileSync(join(f.nativeDir, 'fixture-mode.txt'), 'pre-fixture');
+      const r = f.run(false, commandLines([['postcheck'], ['fixture'], ['end']]), false, true);
+      assert.equal(r.status, 1, r.stdout + r.stderr);
+      assert.equal(f.result(true).postcheckStage, 'complete');
+      const sql = readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8');
+      assert.equal((sql.match(/as continuation_fixture_absence;/g) || []).length, 2);
+      assert.doesNotMatch(sql, /do \$smoke_setup\$|select ops\.foundation_gateway_provision\(/);
+      p.assertPreserved();
+    });
+    it('refuses a changed fixture before provisioning instead of accepting a different returned account', () => {
+      const f = consumerFixture('completed'),
+        p = preparePostcheckContinuation(f);
+      writeFileSync(join(f.nativeDir, 'fixture-mode.txt'), 'changed');
+      const r = f.run(
+        false,
+        commandLines([['postcheck'], ['fixture'], ['provision', preview], ['close'], ['end']]),
+        false,
+        true,
+      );
+      assert.equal(r.status, 1, r.stdout + r.stderr);
+      const sql = readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8');
+      assert.equal((sql.match(/do \$smoke_setup\$/g) || []).length, 1);
+      assert.doesNotMatch(sql, /select ops\.foundation_gateway_provision\(/);
+      assert.equal(f.result(true).phaseAClosed, false);
+      p.assertPreserved();
+    });
+    it('archives only this child unprovisioned fixture without claiming window closure and fences another attempt', () => {
+      const f = consumerFixture('completed'),
+        p = preparePostcheckContinuation(f);
+      const r = f.run(
+        false,
+        commandLines([['postcheck'], ['fixture'], ['archiveUnprovisioned'], ['end']]),
+        false,
+        true,
+      );
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      const rows = r.stdout.trim().split(/\r?\n/).map(JSON.parse),
+        archived = rows.find((row) => row.kind === 'archiveUnprovisioned').result;
+      assert.equal(archived.result, 'M03_SMOKE_FIXTURE_ARCHIVED');
+      assert.equal(archived.competitor_status, 'archived');
+      assert.equal(archived.account_status, 'paused');
+      assert.equal(f.result(true).phaseAClosed, false);
+      assert.equal(f.result(true).unprovisionedFixtureArchived, true);
+      const sql = readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8');
+      assert.equal((sql.match(/do \$smoke_teardown\$/g) || []).length, 1);
+      assert.ok(
+        sql.includes(
+          "if v_comp.id is distinct from '90000000-0000-4000-8000-000000000001'::uuid or v_account.id is distinct from '90000000-0000-4000-8000-000000000002'::uuid then",
+        ),
+      );
+      assert.ok(
+        sql.indexOf('M03_CONTINUATION_FIXTURE_ID_CHANGED') <
+          sql.indexOf("update app.competitors set status='archived'"),
+      );
+      assert.doesNotMatch(sql, /select ops\.foundation_gateway_provision\(/);
+      assert.doesNotMatch(f.calls(), / push |--dry-run/);
+      p.assertPreserved();
+    });
+    it('preserves a newly appearing legacy provision intent and refuses unprovisioned archive', () => {
+      const f = consumerFixture('completed'),
+        p = preparePostcheckContinuation(f);
+      const legacy = join(f.root, 'scripts/db/out/m03-foundation-owner-provision-attempt.json');
+      writeFileSync(join(f.nativeDir, 'fixture-mode.txt'), 'legacy-intent');
+      writeFileSync(join(f.nativeDir, 'legacy-intent-path.txt'), legacy);
+      const r = f.run(
+        false,
+        commandLines([['postcheck'], ['fixture'], ['archiveUnprovisioned'], ['end']]),
+        false,
+        true,
+      );
+      assert.equal(r.status, 1, r.stdout + r.stderr);
+      assert.equal(f.result(true).unprovisionedFixtureArchived, false);
+      const sql = readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8');
+      assert.equal((sql.match(/do \$smoke_setup\$/g) || []).length, 1);
+      assert.doesNotMatch(sql, /do \$smoke_teardown\$/);
+      assert.equal(readFileSync(legacy, 'utf8'), 'contradictory-provision-intent');
+      p.assertPreserved();
+    });
+    it('archives its unprovisioned fixture on EOF while preserving failure and no-window flags', () => {
+      const f = consumerFixture('completed'),
+        p = preparePostcheckContinuation(f);
+      const r = f.run(false, commandLines([['postcheck'], ['fixture']]), false, true);
+      assert.equal(r.status, 1, r.stdout + r.stderr);
+      assert.equal(f.result(true).status, 'phase_a_control_failed');
+      assert.equal(f.result(true).unprovisionedFixtureArchived, true);
+      assert.equal(f.result(true).phaseAClosed, false);
+      const sql = readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8');
+      assert.equal((sql.match(/do \$smoke_teardown\$/g) || []).length, 1);
+      assert.doesNotMatch(sql, /select ops\.foundation_gateway_provision\(/);
+      p.assertPreserved();
+    });
+    it('never retries an unprovisioned archive after ambiguous acknowledgement or a second command', () => {
+      for (const mode of ['archive-failure', 'none']) {
+        const f = consumerFixture('completed'),
+          p = preparePostcheckContinuation(f);
+        writeFileSync(join(f.nativeDir, 'fixture-mode.txt'), mode);
+        const r = f.run(
+          false,
+          commandLines([['postcheck'], ['fixture'], ['archiveUnprovisioned'], ['archiveUnprovisioned']]),
+          false,
+          true,
+        );
+        assert.equal(r.status, 1, r.stdout + r.stderr);
+        const sql = readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8');
+        assert.equal((sql.match(/do \$smoke_teardown\$/g) || []).length, 1);
+        assert.equal(
+          existsSync(
+            join(
+              f.root,
+              'scripts/db/out/m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-unprovisioned-archive-attempt.json',
+            ),
+          ),
+          true,
+        );
+        assert.equal(f.result(true).unprovisionedFixtureArchived, mode === 'none');
+        assert.equal(f.result(true).phaseAClosed, false);
+        assert.doesNotMatch(r.stdout + r.stderr, /synthetic-private-archive-error/);
+        p.assertPreserved();
+      }
+    });
+    it('refuses early or post-provision unprovisioned-archive commands without teardown', () => {
+      for (const sequence of [
+        [['postcheck'], ['archiveUnprovisioned']],
+        [['postcheck'], ['fixture'], ['provision', preview], ['archiveUnprovisioned']],
+      ]) {
+        const f = consumerFixture('completed'),
+          p = preparePostcheckContinuation(f);
+        const r = f.run(false, commandLines(sequence), false, true);
+        assert.equal(r.status, 1, r.stdout + r.stderr);
+        const sql = readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8');
+        assert.doesNotMatch(sql, /do \$smoke_teardown\$/);
+        p.assertPreserved();
+      }
+    });
+    it('rejects partial14 parity before control and rejects mixed clock modes before any private authentication', () => {
+      const f = consumerFixture('completed'),
+        p = preparePostcheckContinuation(f);
+      const rows = JSON.parse(readFileSync(join(f.nativeDir, 'before.json'), 'utf8'));
+      rows[0].receipt.migrations.splice(11);
+      writeFileSync(join(f.nativeDir, 'before.json'), JSON.stringify(rows));
+      const mixed = f.run(true, null, true, true);
+      assert.equal(mixed.status, 1);
+      assert.match(mixed.stdout, /PREFLIGHT_BLOCKED/);
+      assert.equal(f.calls(), '');
+      assert.equal(existsSync(f.handoff), true);
+      const r = f.run(false, commandLines([['postcheck'], ['fixture']]), false, true);
+      assert.equal(r.status, 1, r.stdout + r.stderr);
+      assert.equal(f.result(true).status, 'history_rejected');
+      assert.equal(existsSync(join(f.nativeDir, 'control-sql.txt')), false);
+      assert.doesNotMatch(f.calls(), / push |--dry-run/);
+      p.assertPreserved();
+    });
+    it('retains a fresh failed types candidate and stops before fixture instead of reusing the old candidate', () => {
+      const f = consumerFixture('completed'),
+        p = preparePostcheckContinuation(f);
+      writeFileSync(
+        join(f.nativeDir, 'types.ts'),
+        readFileSync(join(f.nativeDir, 'types.ts'), 'utf8').replace(
+          'body_md: string | null',
+          'body_md: number | null',
+        ),
+      );
+      const r = f.run(false, commandLines([['postcheck'], ['fixture']]), false, true);
+      assert.equal(r.status, 1, r.stdout + r.stderr);
+      const receipt = f.result(true);
+      assert.equal(receipt.postcheckStage, 'types_ast');
+      assert.equal(existsSync(join(f.root, receipt.postcheckCandidate)), true);
+      assert.doesNotMatch(
+        readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8'),
+        /do \$smoke_setup\$|select ops\.foundation_gateway_provision\(/,
+      );
+      p.assertPreserved();
+      assert.doesNotMatch(f.calls(), / push |--dry-run/);
+    });
+    it('freshly rechecks14 history after postcheck and blocks fixture when it changed', () => {
+      const f = consumerFixture('completed'),
+        p = preparePostcheckContinuation(f);
+      const rows = JSON.parse(readFileSync(join(f.nativeDir, 'after.json'), 'utf8'));
+      rows[0].receipt.migrations[13].historySha256 = '0'.repeat(64);
+      writeFileSync(join(f.nativeDir, 'after.json'), JSON.stringify(rows));
+      const r = f.run(false, commandLines([['postcheck'], ['fixture']]), false, true);
+      assert.equal(r.status, 1, r.stdout + r.stderr);
+      assert.equal(f.result(true).postcheckStage, 'complete');
+      assert.equal(
+        f
+          .calls()
+          .split('\n')
+          .filter((line) => line.includes('history.sql')).length,
+        2,
+      );
+      assert.doesNotMatch(
+        readFileSync(join(f.nativeDir, 'control-sql.txt'), 'utf8'),
+        /do \$smoke_setup\$|select ops\.foundation_gateway_provision\(/,
+      );
+      assert.doesNotMatch(f.calls(), / push |--dry-run/);
+      p.assertPreserved();
+    });
+    it('public continuation guard requires exact claimed native clocks before private access', () => {
+      const root = mkdtempSync(join(tmpdir(), 'emr-foundation-postcheck-clock-'));
+      directories.push(root);
+      const module = join(root, 'scripts/n8n/foundation-live-postcheck-continuation.mjs');
+      mkdirSync(resolve(module, '..'), { recursive: true });
+      writeFileSync(module, '// isolated scripted public producer\n');
+      const source = readFileSync(consumerPath, 'utf8'),
+        start = source.indexOf('function Assert-Keys'),
+        end = source.indexOf('# Every native child');
+      const script = join(root, 'guard.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+$repo='${root.replaceAll("'", "''")}';$PhaseAControl=$true;$OriginalDeadlineAtMs=0;$ClockAmendment=$false;$PostcheckContinuation=$true;$postcheckContinuationStart=$null;$postcheckContinuationSegment='a570212a-634c-444f-90a2-578ae47e8d27';$node='synthetic-node.exe'
+${source.slice(start, end)}
+$script:mode=$null;$script:extra=$false;$script:wrong=$false;$script:closed=$true;$script:shift=$false
+$admittedAt=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()-1000
+function Invoke-Bounded($Executable,$Arguments,$WorkingDirectory,$Timeout){
+ $script:mode=$Arguments[1]
+ $v=[ordered]@{kind='postcheck_continuation_ready';segmentId='a570212a-634c-444f-90a2-578ae47e8d27';sourceCommitSha='f42930f90c2de43c84f61ad6d966d0ee6074d70e';windowId='df4f29ec-e2dc-4d82-a276-62a4e695e6f9';privateRead=$false;networkRequests=0}
+ if($Arguments[1] -ceq 'ReadClaimed'){$v.kind='clock_postcheck_continuation_admitted';$v.startsAt=$admittedAt;$v.deadlineAt=$admittedAt+3600000;$v.stopNewAt=$admittedAt+3000000;$v.hardDeadlineAt=$admittedAt+4200000}
+ if($script:extra){$v.extra=$true};if($script:wrong){$v.segmentId='30e75d0d-7e4c-46c6-9a07-556f90b63859'};if($script:shift){$v.deadlineAt++}
+ return [PSCustomObject]@{ok=$true;closed=$script:closed;text=($v|ConvertTo-Json -Compress)}
+}
+$CheckOnly=$true
+if($null -ne (Read-FoundationPostcheckContinuation) -or $script:mode -cne 'CheckOnly'){exit 1}
+$CheckOnly=$false;$proof=Read-FoundationPostcheckContinuation
+if($script:mode -cne 'ReadClaimed' -or $proof.startsAt -ne $admittedAt){exit 1}
+$postcheckContinuationStart=[DateTimeOffset]::FromUnixTimeMilliseconds($proof.startsAt).UtcDateTime
+if((Get-FoundationLeaseFloor) -ne $postcheckContinuationStart.AddMinutes(75)){exit 1}
+$script:extra=$true;try{$null=Read-FoundationPostcheckContinuation;exit 1}catch{};$script:extra=$false
+$script:wrong=$true;try{$null=Read-FoundationPostcheckContinuation;exit 1}catch{};$script:wrong=$false
+$script:closed=$false;try{$null=Read-FoundationPostcheckContinuation;exit 1}catch{};$script:closed=$true
+$script:shift=$true;try{$null=Read-FoundationPostcheckContinuation;exit 1}catch{};$script:shift=$false
+$ClockAmendment=$true;try{$null=Read-FoundationPostcheckContinuation;exit 1}catch{}
+Write-Output 'POSTCHECK_CLOCK_GUARD_PASS'
+`,
+      );
+      const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: osEnvironment(),
+        encoding: 'utf8',
+        timeout: 10000,
+        windowsHide: true,
+      });
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.equal(r.stderr, '');
+      assert.equal(r.stdout.trim(), 'POSTCHECK_CLOCK_GUARD_PASS');
+      assert.ok(
+        source.indexOf('$clock=Read-FoundationPostcheckContinuation') < source.indexOf('$consumed = $true'),
+      );
+    });
+  },
+);
 
 describe(
   'M03 dev migration handoff creator, synthetic isolated Windows fixtures',
@@ -425,6 +875,16 @@ describe(
         result.stdout + result.stderr,
         /existing-owned-sentinel|synthetic-m03-foundation-dev-password/,
       );
+    });
+    it('creates the same bounded handoff only after the explicit no-push continuation prompt', () => {
+      const fixture = creatorFixture({ postcheckContinuation: true });
+      const result = fixture.run();
+      assert.equal(result.status, 0, result.stdout + result.stderr);
+      const lease = JSON.parse(readFileSync(fixture.handoff.replace(/\.dpapi$/, '.lease.json'), 'utf8'));
+      assert.equal(lease.purpose, 'm03-foundation-phase-a-dev');
+      assert.equal(Date.parse(lease.expiresAt) - Date.parse(lease.createdAt), 7200000);
+      assert.doesNotMatch(result.stdout + result.stderr, /synthetic-m03-foundation-dev-password/);
+      assert.equal(readFileSync(fixture.oldHandoff, 'utf8'), 'unrelated-old-handoff-sentinel');
     });
     it('does not create an encrypted handoff for an empty hidden input', () => {
       const fixture = creatorFixture({ empty: true });
@@ -460,7 +920,7 @@ describe(
         script,
         `$ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
-$repo='${root.replaceAll("'", "''")}';$PhaseAControl=$true;$OriginalDeadlineAtMs=0;$ClockAmendment=$false;$clockAmendmentStart=$null
+$repo='${root.replaceAll("'", "''")}';$PhaseAControl=$true;$OriginalDeadlineAtMs=0;$ClockAmendment=$false;$clockAmendmentStart=$null;$PostcheckContinuation=$false;$postcheckContinuationStart=$null
 ${source.slice(start, end)}
 $path='${journal.replaceAll("'", "''")}'
 $header='${header.replaceAll("'", "''")}'
@@ -523,7 +983,7 @@ describe(
         script,
         `$ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
-$repo='${root.replaceAll("'", "''")}';$PhaseAControl=$true;$OriginalDeadlineAtMs=0;$ClockAmendment=$true;$clockAmendmentStart=$null;$node='synthetic-node.exe'
+$repo='${root.replaceAll("'", "''")}';$PhaseAControl=$true;$OriginalDeadlineAtMs=0;$ClockAmendment=$true;$clockAmendmentStart=$null;$PostcheckContinuation=$false;$postcheckContinuationStart=$null;$node='synthetic-node.exe'
 ${source.slice(start, end)}
 $script:mode=$null;$script:closed=$true;$script:extra=$false;$script:wrong=$false
 $admittedAt=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()-1000

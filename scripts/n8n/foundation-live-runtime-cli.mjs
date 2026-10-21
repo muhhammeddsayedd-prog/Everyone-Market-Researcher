@@ -45,6 +45,11 @@ import {
   claimFoundationClockAmendment,
   assertFoundationLiveClockAmendmentProof,
 } from './foundation-live-clock-amendment.mjs';
+import {
+  readFoundationPostcheckContinuation,
+  claimFoundationPostcheckContinuation,
+  assertFoundationLivePostcheckContinuationProof,
+} from './foundation-live-postcheck-continuation.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 const require = createRequire(import.meta.url);
@@ -140,7 +145,14 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     dependencies.clockAmendmentProof === undefined
       ? null
       : assertFoundationLiveClockAmendmentProof(dependencies.clockAmendmentProof, { claimed: true });
-  if (resume && amendment) fail();
+  const continuation =
+    dependencies.postcheckContinuationProof === undefined
+      ? null
+      : assertFoundationLivePostcheckContinuationProof(dependencies.postcheckContinuationProof, {
+          claimed: true,
+        });
+  if ([resume, amendment, continuation].filter(Boolean).length > 1) fail();
+  const admittedClock = continuation || amendment;
   if (
     !exact(input, [
       'kind',
@@ -172,14 +184,15 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   )
     fail();
   if (resume && (resume.sourceCommitSha !== input.sourceCommitSha || now() >= resume.stopNewAt)) fail();
+  if (continuation && input.leaseExpiry < continuation.startsAt + 4500000) fail();
   if (
-    amendment &&
-    (amendment.sourceCommitSha !== input.sourceCommitSha ||
-      now() < amendment.startsAt ||
-      now() >= amendment.stopNewAt)
+    admittedClock &&
+    (admittedClock.sourceCommitSha !== input.sourceCommitSha ||
+      now() < admittedClock.startsAt ||
+      now() >= admittedClock.stopNewAt)
   )
     fail();
-  const deadlineAt = amendment ? amendment.deadlineAt : resume ? resume.deadlineAt : now() + 3600000;
+  const deadlineAt = admittedClock ? admittedClock.deadlineAt : resume ? resume.deadlineAt : now() + 3600000;
   const budget = createFoundationLiveManagementBudget(
     { sourceCommitSha: input.sourceCommitSha, deadlineAt },
     {
@@ -187,9 +200,10 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       now,
       ...(resume ? { zeroSetupProof: resume } : {}),
       ...(amendment ? { clockAmendmentProof: amendment } : {}),
+      ...(continuation ? { postcheckContinuationProof: continuation } : {}),
     },
   );
-  if ((resume || amendment) && budget.snapshot().attempts !== 0) {
+  if ((resume || admittedClock) && budget.snapshot().attempts !== 0) {
     budget.close();
     fail();
   }
@@ -203,11 +217,26 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     budget.close();
     fail();
   }
+  if (
+    continuation &&
+    (nativeStorage.previousEvents.length !== 50 ||
+      nativeStorage.previousEvents.some(
+        (row, index) =>
+          row.event !== 'control_request_intent' || row.kind !== 'discovery' || row.ordinal !== index + 1,
+      ))
+  ) {
+    budget.close();
+    fail();
+  }
   const controlJournal = createFoundationControlJournal({
     previousEvents: nativeStorage.previousEvents,
     durableAppend: nativeStorage.append,
   });
   const controlBudget = createFoundationControlBudget({ journal: controlJournal, now, deadlineAt });
+  if (continuation && controlBudget.snapshot().attempts !== 50) {
+    budget.close();
+    fail();
+  }
   const bindings = JSON.parse(
     readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
   );
@@ -367,6 +396,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       now,
       ...(resume ? { originalDeadlineAtMs: resume.deadlineAt } : {}),
       ...(amendment ? { clockAmendmentProof: amendment } : {}),
+      ...(continuation ? { postcheckContinuationProof: continuation } : {}),
     });
     const ready = await admin.postcheck();
     if (ready?.ready !== true || ready.projectRef !== 'zmotjsbzhzjvpelxvxlf' || ready.migrationCount !== 14)
@@ -716,6 +746,53 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       executionIds: outcome.executionIds,
     });
   }
+  function canArchiveUnprovisionedFixture() {
+    return (
+      continuation !== null &&
+      !provisionAttempted &&
+      runtime === undefined &&
+      native === undefined &&
+      attemptedCaseIds.size === 0 &&
+      gatewayAttempts === 0 &&
+      providerAttempts === 0 &&
+      exact(fixture, [
+        'result',
+        'company_code',
+        'competitor_id',
+        'account_id',
+        'platform',
+        'url',
+        'competitor_status',
+        'account_status',
+      ]) &&
+      fixture.result === 'M03_SMOKE_FIXTURE_READY' &&
+      fixture.company_code === 'C999' &&
+      /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(fixture.competitor_id) &&
+      /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(fixture.account_id) &&
+      fixture.platform === 'website_work_page' &&
+      fixture.url === 'https://everyone.film/about-everyone' &&
+      fixture.competitor_status === 'active' &&
+      fixture.account_status === 'active'
+    );
+  }
+  function acceptClosedAdminFixtureArchive(result, childClosed) {
+    const receipt = result?.receipt;
+    if (
+      childClosed &&
+      canArchiveUnprovisionedFixture() &&
+      admin.ready?.postcheckContinuation === true &&
+      typeof admin.ready.runId === 'string' &&
+      admin.ready.runId.length > 0 &&
+      admin.ready.clockSegmentId === continuation.segmentId &&
+      receipt?.runId === admin.ready.runId &&
+      receipt.clockSegmentId === continuation.segmentId &&
+      receipt.postcheckContinuation === true &&
+      receipt.unprovisionedFixtureArchived === true
+    ) {
+      archiveAttempted = true;
+      archived = true;
+    }
+  }
   async function restore() {
     native?.closeAdmission();
     for (const executionId of native?.snapshot().residualExecutionIds ?? []) {
@@ -828,6 +905,33 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
           snapshot.pendingTransportCalls === 0 &&
           snapshot.cleanedExecutionIds.length === snapshot.observedExecutionIds));
     remoteWorkSettled = remoteSettled;
+    if (canArchiveUnprovisionedFixture() && !archiveAttempted) {
+      archiveAttempted = true;
+      try {
+        const r = await admin.archiveUnprovisioned();
+        archived =
+          exact(r, [
+            'result',
+            'company_code',
+            'competitor_id',
+            'account_id',
+            'competitor_status',
+            'account_status',
+            'retained_items',
+          ]) &&
+          r.result === 'M03_SMOKE_FIXTURE_ARCHIVED' &&
+          r.company_code === 'C999' &&
+          r.competitor_id === fixture.competitor_id &&
+          r.account_id === fixture.account_id &&
+          r.competitor_status === 'archived' &&
+          r.account_status === 'paused' &&
+          Number.isSafeInteger(r.retained_items) &&
+          r.retained_items >= 0;
+      } catch {
+        // The independent DB once-fence owns an ambiguous result; never replay.
+        archived = false;
+      }
+    }
     if (fixture && windowClosed && remoteSettled && !archiveAttempted) {
       archiveAttempted = true;
       try {
@@ -926,7 +1030,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       let adminChildClosed = adminPhysicalClosed;
       let restored = setup === undefined && runtime === undefined;
       try {
-        if (setup || runtime) {
+        if (setup || runtime || canArchiveUnprovisionedFixture()) {
           const r = await restore();
           restored = r.residual === false;
         } else if (provisionAttempted && !windowClosed) {
@@ -951,6 +1055,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
           adminEndAttempted = true;
           const r = await admin.end();
           adminChildClosed = r?.childClosed === true && r.receipt?.childrenClosed === true;
+          acceptClosedAdminFixtureArchive(r, adminChildClosed);
           adminLifecycleVerified =
             adminChildClosed &&
             r.nativeExit === 0 &&
@@ -964,6 +1069,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         try {
           const r = await admin.abort();
           adminChildClosed = r?.childClosed === true && r.receipt?.childrenClosed === true;
+          acceptClosedAdminFixtureArchive(r, adminChildClosed);
         } catch {
           /* No fake descendant closure. */
         }
@@ -1027,10 +1133,16 @@ export async function runFoundationLiveRuntimeCli({
     });
     return 0;
   }
-  if (args.length !== 1 || !['Session', 'SessionResumeZeroSetup', 'SessionClockAmendment'].includes(args[0]))
+  if (
+    args.length !== 1 ||
+    !['Session', 'SessionResumeZeroSetup', 'SessionClockAmendment', 'SessionPostcheckContinuation'].includes(
+      args[0],
+    )
+  )
     return 1;
   let zeroSetupProof;
   let clockAmendmentProof;
+  let postcheckContinuationProof;
   if (args[0] === 'SessionResumeZeroSetup') {
     try {
       zeroSetupProof = assertFoundationLiveZeroSetupProof(
@@ -1050,6 +1162,22 @@ export async function runFoundationLiveRuntimeCli({
       });
       clockAmendmentProof = assertFoundationLiveClockAmendmentProof(
         (dependencies.claimClockAmendment ?? claimFoundationClockAmendment)(proof, {
+          now: dependencies.now ?? Date.now,
+        }),
+        { claimed: true },
+      );
+    } catch {
+      emit({ kind: 'm03_acceptance_closed', status: 'blocked', residual: true });
+      return 1;
+    }
+  }
+  if (args[0] === 'SessionPostcheckContinuation') {
+    try {
+      const proof = (dependencies.readPostcheckContinuation ?? readFoundationPostcheckContinuation)({
+        now: dependencies.now ?? Date.now,
+      });
+      postcheckContinuationProof = assertFoundationLivePostcheckContinuationProof(
+        (dependencies.claimPostcheckContinuation ?? claimFoundationPostcheckContinuation)(proof, {
           now: dependencies.now ?? Date.now,
         }),
         { claimed: true },
@@ -1105,6 +1233,7 @@ export async function runFoundationLiveRuntimeCli({
           ...dependencies,
           ...(zeroSetupProof ? { zeroSetupProof } : {}),
           ...(clockAmendmentProof ? { clockAmendmentProof } : {}),
+          ...(postcheckContinuationProof ? { postcheckContinuationProof } : {}),
         });
         privateValues = [
           'managementKey',

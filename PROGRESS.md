@@ -5,35 +5,35 @@
 
 ## Now
 
-|                       |                                                                                                                                                                                                             |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                        |
-| **Status**            | In progress: four exact dev migrations applied; type-check formatting bug fixed/reviewed locally. Live child closed; remaining native/actor acceptance unrun.                                               |
-| **Next step**         | Normal PR CI and review the exact remaining-window proposal. Preserve dev14 migrations and both attempts; a new live segment needs its separate one-use time decision.                                      |
-| **Waiting on owner**  | One replacement-window time decision after CI: see the exact remaining-window packet in M03 progress. No credentials requested now.                                                                         |
-| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                     |
-| **Last updated**      | 21 October 2026 14:04 UTC: four dev migrations verified; local formatting-only type fix and independent review pass; all temporary acceptance inputs/bypass deleted. PR8 draft; live acceptance incomplete. |
+|                       |                                                                                                                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Current milestone** | M03 — n8n foundation                                                                                                                                                               |
+| **Status**            | Replacement consumer reviewed, tested, sealed and public CheckOnly ready. Dev14 and both prior attempts preserved; replacement clock not started.                                  |
+| **Next step**         | Normal delivery CI and four temporary handoffs, then actual lease/transport/readiness gates before the one approved no-push continuation.                                          |
+| **Waiting on owner**  | MA-04 / MA-11: deliver the four existing saved values through the exact two helpers in the current M03 progress. No new keys, reset, Machine or repeated approval.                 |
+| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                            |
+| **Last updated**      | 21 October 2026 17:59 Cairo (14:59 UTC): final public seal c3d577 and CheckOnly7cd5fa pass; actual eight temporary files absent, no new private read, authentication or admission. |
 
 ## Milestone board
 
-| ID  | Milestone                                  | Status      | Started    | Done       | Blockers / owner actions                                                                   | PR                                                                                      |
-| --- | ------------------------------------------ | ----------- | ---------- | ---------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| M00 | Repo bootstrap & tooling                   | Done        | 2026-10-17 | 2026-10-17 | —                                                                                          | [#1 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1) |
-| M01 | Supabase foundation                        | Done        | 2026-10-17 | 2026-10-18 | None for M01                                                                               | [#4 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4) |
-| M02 | Seed data & account resolution             | Done        | 2026-10-18 | 2026-10-18 | None for M02; exact PR6 merge/closure approved and completed                               | [#6 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6) |
-| M03 | n8n foundation                             | In progress | 2026-10-18 |            | Four migrations applied; generated-type comparison blocked setup; one-use segment consumed | [#8 draft](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8)  |
-| M04 | Collectors I: Vimeo + Instagram            | Not started |            |            | MA-14                                                                                      |                                                                                         |
-| M05 | Collectors II: Websites, YouTube, LinkedIn | Not started |            |            | MA-15                                                                                      |                                                                                         |
-| M06 | Collectors III: Stories + upkeep           | Not started |            |            | MA-16, MA-20 (first Vercel env vars for the media route)                                   |                                                                                         |
-| M07 | AI understanding                           | Not started |            |            | MA-17                                                                                      |                                                                                         |
-| M08 | Campaign linker + pilot launch             | Not started |            |            | MA-04 (prod token), MA-18                                                                  |                                                                                         |
-| M09 | Web app foundation                         | Not started |            |            | MA-19, MA-20                                                                               |                                                                                         |
-| M10 | Web app entities                           | Not started |            |            | —                                                                                          |                                                                                         |
-| M11 | Search, review, admin                      | Not started |            |            | MA-20, MA-21                                                                               |                                                                                         |
-| M12 | Pilot review & tuning (gate)               | Not started |            |            | MA-22 (go/no-go)                                                                           |                                                                                         |
-| M13 | News, briefs, alerts                       | Not started |            |            | MA-23, MA-24                                                                               |                                                                                         |
-| M14 | Agent API + MCP                            | Not started |            |            | MA-20, MA-25                                                                               |                                                                                         |
-| M15 | Scale & launch                             | Not started |            |            | MA-26…MA-28                                                                                |                                                                                         |
+| ID  | Milestone                                  | Status      | Started    | Done       | Blockers / owner actions                                                                            | PR                                                                                      |
+| --- | ------------------------------------------ | ----------- | ---------- | ---------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| M00 | Repo bootstrap & tooling                   | Done        | 2026-10-17 | 2026-10-17 | —                                                                                                   | [#1 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/1) |
+| M01 | Supabase foundation                        | Done        | 2026-10-17 | 2026-10-18 | None for M01                                                                                        | [#4 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/4) |
+| M02 | Seed data & account resolution             | Done        | 2026-10-18 | 2026-10-18 | None for M02; exact PR6 merge/closure approved and completed                                        | [#6 merged](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/6) |
+| M03 | n8n foundation                             | In progress | 2026-10-18 |            | No-push replacement ready; MA-04/MA-11 temporary deliveries and normal new-head CI before admission | [#8 draft](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8)  |
+| M04 | Collectors I: Vimeo + Instagram            | Not started |            |            | MA-14                                                                                               |                                                                                         |
+| M05 | Collectors II: Websites, YouTube, LinkedIn | Not started |            |            | MA-15                                                                                               |                                                                                         |
+| M06 | Collectors III: Stories + upkeep           | Not started |            |            | MA-16, MA-20 (first Vercel env vars for the media route)                                            |                                                                                         |
+| M07 | AI understanding                           | Not started |            |            | MA-17                                                                                               |                                                                                         |
+| M08 | Campaign linker + pilot launch             | Not started |            |            | MA-04 (prod token), MA-18                                                                           |                                                                                         |
+| M09 | Web app foundation                         | Not started |            |            | MA-19, MA-20                                                                                        |                                                                                         |
+| M10 | Web app entities                           | Not started |            |            | —                                                                                                   |                                                                                         |
+| M11 | Search, review, admin                      | Not started |            |            | MA-20, MA-21                                                                                        |                                                                                         |
+| M12 | Pilot review & tuning (gate)               | Not started |            |            | MA-22 (go/no-go)                                                                                    |                                                                                         |
+| M13 | News, briefs, alerts                       | Not started |            |            | MA-23, MA-24                                                                                        |                                                                                         |
+| M14 | Agent API + MCP                            | Not started |            |            | MA-20, MA-25                                                                                        |                                                                                         |
+| M15 | Scale & launch                             | Not started |            |            | MA-26…MA-28                                                                                         |                                                                                         |
 
 Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In review` · `Done` · `Parallel-OK`
 
@@ -47,6 +47,31 @@ Status values: `Not started` · `In progress` · `Blocked: <reason>` · `In revi
 | Production launch     | —          |
 
 ## Log (newest first)
+
+- 2026-10-21 17:59 Cairo (14:59 UTC): Replacement continuation is implemented,
+  independently reviewed GREEN, tested and publicly sealed. It has no migration
+  push/replay path; preserves all14 versions, both prior attempts, original
+  header/counters and caps. Fixed fresh-only C999 checks, prewrite cutoff checks
+  and exact once-only unprovisioned cleanup; local targeted and owned PostgreSQL
+  rollback proofs remain distinct from hosted acceptance.29 DB pins match;
+  actual seal c3d577/CheckOnly7cd5fa pass114project/840Zod/3462Vercel inputs,
+  privateRead:false/network0, adminHandoffReady:false. Metadata-only74bf17 finds
+  all eight temporary files absent, no parent lock/bypass/new admission/claim.
+  [Implementation evidence](milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-implementation-20261021.json)
+  and [exact saved-value delivery commands](milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-handoff-20261021.md).
+  Normal PR8 CI remains enabled; no extra approval, reset, new Machine or prod
+  input. No new authentication, hosted effect, actor or clock. PR8 remains
+  draft; production/privateR2/merge/M04 untouched.
+
+- 2026-10-21 17:30 Cairo (14:30 UTC): Owner replied `I approve` to the exact
+  remaining-window packet at d834968. Recorded separate immutable approval and
+  reconciled checkpoint, preserving both prior attempts,50 controls and dev14.
+  New local clock/no-push DB/runtime consumers are being implemented/tested;
+  actual public clock CheckOnly586655 passes with privateRead:false/network0.
+  No new admission, ciphertext read, auth, hosted operation or owner input.
+  [Approval](milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-approval-20261021.json).
+  PR8 remains draft; original completed migrations/GW01/M02 data preserved;
+  production/privateR2/merge/M04 untouched.
 
 - 2026-10-21 13:55 UTC: Fresh handoffs admitted the single approved clock at
   13:42:15.608 UTC. CI39609646416 passed all five jobs and Vercel; actual public

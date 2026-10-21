@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { assertFoundationLiveClockAmendmentProof } from '../n8n/foundation-live-clock-amendment.mjs';
+import { assertFoundationLivePostcheckContinuationProof } from '../n8n/foundation-live-postcheck-continuation.mjs';
 import { fileURLToPath } from 'node:url';
 
 const fixed = () => Error('FOUNDATION_ADMIN_BLOCKED');
@@ -23,11 +24,37 @@ const osEnvironment = () =>
 // This client never reads or receives the administrator password. The new,
 // sealed PowerShell child owns DPAPI, PGPASSWORD, exact SQL and child cleanup.
 export async function startFoundationAdminClient(
-  { repositoryRoot = defaultRoot, now = Date.now, signal, originalDeadlineAtMs, clockAmendmentProof } = {},
+  {
+    repositoryRoot = defaultRoot,
+    now = Date.now,
+    signal,
+    originalDeadlineAtMs,
+    clockAmendmentProof,
+    postcheckContinuationProof,
+  } = {},
   deps = {},
 ) {
   if (typeof repositoryRoot !== 'string' || typeof now !== 'function' || signal?.aborted) throw fixed();
   let amendment;
+  let continuation;
+  if (postcheckContinuationProof !== undefined) {
+    try {
+      continuation = assertFoundationLivePostcheckContinuationProof(postcheckContinuationProof, {
+        claimed: true,
+      });
+    } catch {
+      throw fixed();
+    }
+    if (
+      originalDeadlineAtMs !== undefined ||
+      clockAmendmentProof !== undefined ||
+      continuation.segmentId !== 'a570212a-634c-444f-90a2-578ae47e8d27' ||
+      continuation.sourceCommitSha !== 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' ||
+      continuation.windowId !== 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' ||
+      now() >= continuation.stopNewAt
+    )
+      throw fixed();
+  }
   if (clockAmendmentProof !== undefined) {
     try {
       amendment = assertFoundationLiveClockAmendmentProof(clockAmendmentProof, { claimed: true });
@@ -62,6 +89,7 @@ export async function startFoundationAdminClient(
       resolve(root, 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1'),
       '-PhaseAControl',
       ...(amendment === undefined ? [] : ['-ClockAmendment']),
+      ...(continuation === undefined ? [] : ['-PostcheckContinuation']),
       ...(originalDeadlineAtMs === undefined ? [] : ['-OriginalDeadlineAtMs', String(originalDeadlineAtMs)]),
     ],
     { cwd: root, env: osEnvironment(), windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] },
@@ -134,6 +162,7 @@ export async function startFoundationAdminClient(
               'stopNewAt',
               'postchecksVerified',
               ...(amendment === undefined ? [] : ['clockSegmentId']),
+              ...(continuation === undefined ? [] : ['clockSegmentId', 'postcheckContinuation']),
             ]) ||
             value.type !== 'foundation_admin_ready' ||
             value.historyAfter !== 'complete' ||
@@ -150,7 +179,13 @@ export async function startFoundationAdminClient(
               (value.clockSegmentId !== amendment.segmentId ||
                 Date.parse(value.hardDeadline) !== amendment.hardDeadlineAt ||
                 Date.parse(value.actionDeadline) !== amendment.deadlineAt ||
-                Date.parse(value.stopNewAt) !== amendment.stopNewAt))
+                Date.parse(value.stopNewAt) !== amendment.stopNewAt)) ||
+            (continuation !== undefined &&
+              (value.postcheckContinuation !== true ||
+                value.clockSegmentId !== continuation.segmentId ||
+                Date.parse(value.hardDeadline) !== continuation.hardDeadlineAt ||
+                Date.parse(value.actionDeadline) !== continuation.deadlineAt ||
+                Date.parse(value.stopNewAt) !== continuation.stopNewAt))
           )
             throw fixed();
           ready = Object.freeze(value);
@@ -237,6 +272,7 @@ export async function startFoundationAdminClient(
             provision: 120000,
             fixture: 90000,
             archive: 90000,
+            archiveUnprovisioned: 180000,
             close: 120000,
             smokeAssert: 45000,
           }[kind] ?? 45000;
@@ -276,6 +312,10 @@ export async function startFoundationAdminClient(
       smokeAssert: (args) => request('smokeAssert', args),
       close: () => request('close'),
       archive: () => request('archive'),
+      archiveUnprovisioned: () => {
+        if (continuation === undefined) return Promise.reject(fixed());
+        return request('archiveUnprovisioned');
+      },
       async end() {
         await request('end');
         stopped = true;

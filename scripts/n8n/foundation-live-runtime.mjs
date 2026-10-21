@@ -40,6 +40,10 @@ import {
   assertFoundationLiveClockAmendmentProof,
   foundationClockAmendmentCheckpoint,
 } from './foundation-live-clock-amendment.mjs';
+import {
+  assertFoundationLivePostcheckContinuationProof,
+  foundationPostcheckContinuationCheckpoint,
+} from './foundation-live-postcheck-continuation.mjs';
 
 const fail = () => {
   throw Error('FOUNDATION_LIVE_RUNTIME_BLOCKED');
@@ -106,7 +110,14 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     dependencies.clockAmendmentProof === undefined
       ? null
       : assertFoundationLiveClockAmendmentProof(dependencies.clockAmendmentProof, { claimed: true });
-  if (resume && amendment) fail();
+  const continuation =
+    dependencies.postcheckContinuationProof === undefined
+      ? null
+      : assertFoundationLivePostcheckContinuationProof(dependencies.postcheckContinuationProof, {
+          claimed: true,
+        });
+  if ([resume, amendment, continuation].filter(Boolean).length > 1) fail();
+  const admittedClock = continuation || amendment;
   if (
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
     typeof now !== 'function' ||
@@ -116,17 +127,21 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
   )
     fail();
   if (
-    amendment &&
-    (amendment.sourceCommitSha !== sourceCommitSha ||
-      amendment.deadlineAt !== deadlineAt ||
-      now() < amendment.startsAt ||
-      now() >= amendment.stopNewAt ||
-      clockBudgetOwners.has(amendment))
+    admittedClock &&
+    (admittedClock.sourceCommitSha !== sourceCommitSha ||
+      admittedClock.deadlineAt !== deadlineAt ||
+      now() < admittedClock.startsAt ||
+      now() >= admittedClock.stopNewAt ||
+      clockBudgetOwners.has(admittedClock))
   )
     fail();
-  if (amendment) clockBudgetOwners.add(amendment);
-  const reuse = resume || amendment;
-  const headerDeadlineAt = amendment ? foundationClockAmendmentCheckpoint.originalDeadlineAt : deadlineAt;
+  if (admittedClock) clockBudgetOwners.add(admittedClock);
+  const reuse = resume || admittedClock;
+  const headerDeadlineAt = continuation
+    ? foundationPostcheckContinuationCheckpoint.originalDeadlineAt
+    : amendment
+      ? foundationClockAmendmentCheckpoint.originalDeadlineAt
+      : deadlineAt;
   if (
     resume &&
     (resume.sourceCommitSha !== sourceCommitSha ||

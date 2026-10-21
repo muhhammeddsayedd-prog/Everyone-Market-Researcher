@@ -107,13 +107,13 @@
     }
   ],
   "files": {
-    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "98be189586c65f356e6cc372c3a6c3903763fda1b7c56222464b72a3bf36ff0a",
-    "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "cd1fe1f5626c287ddb55d239bf19def9512e6c7593ec36bf7c93c8464ad0b582",
-    "scripts/db/windows/Foundation-AdminControl.ps1": "6e3bf38d6e9f698a8212920eb992036ebb5cd0bf723e57e81a0431400ab7a292",
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "5ddd173fc11581983c5ed802fc159d58d549a811a61becca486406c5581a891e",
+    "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "09d9a37dd36a0301ef4c9abb585abbe000309860af10085668a02812d94f71f1",
+    "scripts/db/windows/Foundation-AdminControl.ps1": "baf69fb39ff5b10a7591ff6ea92ecfe7e89d086ba0a6e162a2cc01498c3f5705",
     "scripts/db/foundation-settlement.sql": "94ce66c3c12a305bba196bef441a51c9879cc0764403bef2241d3660baaa91e9",
     "scripts/db/foundation-postcheck.sql": "f5ee87926275b368c476258a4b826f4a63c7b2775c4fbfabb24af774e6fc5f52",
     "scripts/db/foundation-replay-snapshot.sql": "f32c8251a11b14b34680025b8e05ee2ca90e87af45ce12a0b90bca31aec7af70",
-    "scripts/db/check-foundation-types.mjs": "f36202043923fa1418f36e144b077338a363779de82b399de5e6beb117e1fa98",
+    "scripts/db/check-foundation-types.mjs": "ed62eb514aeb5adddb6b72c78a50960849ef9810c2ea89576d5784c95fede1c4",
     "packages/shared/src/db.types.ts": "7e488378849c695f5f2460319076e2539519369e7005461e8c3d0c75d339691a",
     "node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/typescript.js": "569177652966bd528c319171c7dd22860dbf72bde116cbc4f644f1d02bb12e39",
     "scripts/assert/m03_smoke_setup.sql": "328b209facd51e6e9620390652bc10cbc042c370ea1498706644dec1aee8cb39",
@@ -121,8 +121,6 @@
     "scripts/assert/m03_smoke_assert.sql": "9ab852e73ca6088ec49e9bea61037b683870c48b25176fb58e99e24b216391d0",
     "scripts/seed/check-tls.mjs": "497d8ad658f936c1b5f87b5316bbafbcf145f8ae8e01a6184fb80db5ff5e9d07",
     "scripts/seed/certs/supabase-root-2021.json": "86f7da7dbd65b7a97986e7cf859848835b162fb6aec17f09fb8b011d4accf16b",
-    "scripts/seed/certs/supabase-root-2021.crt": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
-    "node_modules/.pnpm/@supabase+cli-windows-x64@2.121.0/node_modules/@supabase/cli-windows-x64/bin/supabase.exe": "aed2aedd9e367549307d038b770e505b288225958e2e81bfe5db53fa6a01c148",
     "scripts/n8n/foundation-live-clock-amendment.mjs": "de2d33be3e30bb58a7bdf7abfbb846610fbe0826e730edac4a4fcc9f56aa5ce6",
     "scripts/n8n/foundation-live-zero-setup.mjs": "24f930de21fe509c0da2d4f21688ebd2498e0f6358a4d78d95a9a9e889095591",
     "scripts/n8n/foundation-control-state.mjs": "ca6a120e491d5b77551bbbec81a3a6a52497181f604bf2c3b9dbc31ef3ecd8f4",
@@ -130,7 +128,14 @@
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-approval-20261021.json": "3d2346715e08edfc9eef4fab04c9c1b7be55d450660c862235b92195976bed31",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-zero-setup-20261021.json": "6af79fc35a6e71fb323ca262092cfe015fd26a3422f5ce43b140f92caba1a28d",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-amendment-20261021.md": "f0fc4877034acfb5ed66e0c332d6260bbef8c169868a79d8aa550c5c47964fdb",
-    "milestones/M03-n8n-foundation/evidence/dev-acceptance-late-delivery-20261021.json": "0304b30f23ed3aed30f72bcf590a79bfe1f37df073f69c2f7eacb8192cf134fc"
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-late-delivery-20261021.json": "0304b30f23ed3aed30f72bcf590a79bfe1f37df073f69c2f7eacb8192cf134fc",
+    "scripts/n8n/foundation-live-postcheck-continuation.mjs": "9a1b10a38d2fe952954df4baa331afb88dd8297e060a2ad32313903cbf43dfe5",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-approval-20261021.json": "ab24cf3488a0990988550ec361a7bbe4f147d0bce5a62a5aa5d2eb9cdf17e19a",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-checkpoint-20261021.json": "99d8cc0befc307fae2ccb23042d8ebcdc2319f4bfe01838c91cfa1b42a5f0d77",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-continuation-20261021.md": "ceb239bef756ee9a169ddde0e8e94eb1a4d35dcff2f282c2ead95950b7250447",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-amended-attempt-20261021.json": "4a5e85d57ba8d64ba20c7337c66e70d01af59ac118915710c567faec4ec9c778",
+    "scripts/seed/certs/supabase-root-2021.crt": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+    "node_modules/.pnpm/@supabase+cli-windows-x64@2.121.0/node_modules/@supabase/cli-windows-x64/bin/supabase.exe": "aed2aedd9e367549307d038b770e505b288225958e2e81bfe5db53fa6a01c148"
   },
   "node": {
     "path": "C:\\Program Files\\nodejs\\node.exe",

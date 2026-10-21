@@ -1,6 +1,6 @@
 import { readFileSync, lstatSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { resolve } from 'node:path';
+import { resolve, dirname, parse, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // The exact physical compiler file, this helper and the checked-in reference
@@ -84,18 +84,36 @@ export function verifyFoundationTypes(candidate, reference) {
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    const candidate = resolve(repo, 'scripts/db/out/m03-foundation-hosted-db.types.ts');
-    if (
-      process.argv.length !== 2 ||
-      lstatSync(candidate).isSymbolicLink() ||
-      lstatSync(candidate).size > 1048576
-    )
-      throw Error('blocked');
+    const args = process.argv.slice(2);
+    let candidateRelative = 'scripts/db/out/m03-foundation-hosted-db.types.ts';
+    if (args.length !== 0) {
+      if (
+        args.length !== 2 ||
+        args[0] !== 'Continuation' ||
+        !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(args[1])
+      )
+        throw Error('blocked');
+      candidateRelative = `scripts/db/out/m03-foundation-continuation-${args[1]}-db.types.ts`;
+    }
+    const physicalFile = (relative) => {
+      const path = resolve(repo, relative);
+      if (!path.startsWith(resolve(repo) + sep)) throw Error('blocked');
+      const stat = lstatSync(path);
+      if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size < 1 || stat.size > 1048576)
+        throw Error('blocked');
+      for (let parent = dirname(path); ; parent = dirname(parent)) {
+        const entry = lstatSync(parent);
+        if (!entry.isDirectory() || entry.isSymbolicLink()) throw Error('blocked');
+        if (parent === parse(parent).root) break;
+      }
+      return path;
+    };
+    const candidate = physicalFile(candidateRelative);
     process.stdout.write(
       JSON.stringify(
         verifyFoundationTypes(
           readFileSync(candidate, 'utf8'),
-          readFileSync(resolve(repo, 'packages/shared/src/db.types.ts'), 'utf8'),
+          readFileSync(physicalFile('packages/shared/src/db.types.ts'), 'utf8'),
         ),
       ) + '\n',
     );

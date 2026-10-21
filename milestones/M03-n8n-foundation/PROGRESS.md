@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: four exact dev migrations applied successfully. Setup stopped at generated-type validation; native/actor acceptance is unrun. Credential-bearing children are physically closed and consumed inputs deleted. The one-use clock admission and claim remain retained; no prepare replay or second live child is authorized. The local formatting-only type-check correction and independent review now pass. Normal CI and the proposed remaining-window decision are next. GW-01 stays permanently closed.**
+**In progress: approved replacement continuation is reviewed, tested, sealed and public CheckOnly ready. Await four genuinely absent temporary handoffs and normal new-head CI before admission. No new clock, private read or hosted operation. Dev14, both prior attempts and original caps/counters are preserved; no migration replay. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,11 +16,48 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Local type-check formatting failure corrected/reviewed; actual unchanged hosted-generated candidate verifies4 schemas/6 tables/9 RPCs offline. Deliver normal CI and the remaining-window proposal. |
-| Next step | Review the exact proposed replacement one-use window after fresh CI. Preserve dev14, both attempts, source/counters and the used claim; no live retry or credential input now. |
+| Current task | Approved one-use replacement consumer is ready: no-push14-version DB control, counter-preserving runtime, fresh-only C999 and exact once-only cleanup. Existing type-check fix/actual candidate evidence stays complete. |
+| Next step | Normal delivery CI plus exact four saved-value handoffs below; verify actual transport, source and75-minute lease floor before admission. No repeated time/development approval. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
+
+### Latest: approved replacement continuation ready; no admission yet
+
+Owner replied **I approve** to the exact reviewed packet at d834968. The
+[separate approval](evidence/dev-acceptance-postcheck-approval-20261021.json)
+records the actual short reply and binds that packet, the prior actual attempt
+and a new [immutable checkpoint](evidence/dev-acceptance-postcheck-checkpoint-20261021.json).
+Segment a570212a-634c-444f-90a2-578ae47e8d27 has not been admitted. The two earlier
+attempts, old admission/claim, migration receipts, actual generated-type file,
+original management header and50 control rows remain unchanged.
+
+Local implementation uses the same50/60/70/75-minute clocks and one-use fencing,
+but its initial checkpoint explicitly includes the four successful migrations.
+New database control verifies all14 fingerprints and unused fixture/window state
+before writes, with no reachable migration dry-run/push/reset/history mutation.
+It uses separate receipts and fresh type output, retaining the failed attempt's
+candidate. Runtime starts from control50; another fresh baseline discovery costs
+50 more (100 total), without refill. The new type checker remains narrow.
+
+Final affected tests and independent review pass with no remaining P1/P2.
+New fixture guards reject existing C999/code-or-slug collisions and bind the
+fixture returned by this child; cutoff is rechecked immediately before writes.
+If setup fails before provisioning, only this child's exact locked fixture can
+be archived, once, behind a durable intent. EOF uses the same fence; unknown
+acknowledgements never replay. Archive-only never fabricates window/full-D
+acceptance. Original setup/teardown SQL and all migration hashes remain unchanged.
+
+Actual public clock CheckOnly2e4ae0, final seal c3d577 and full coordinator
+CheckOnly7cd5fa pass, with no private reads/network or admission.29 DB pins and
+114 project/840Zod/3462Vercel runtime inputs verified. Public composition/admin
+inputs are verified; administrator handoff readiness and actual MCP port remain
+false, separate admission gates. Normal new-head CI remains required before use.
+[Implementation/review/test evidence](evidence/dev-acceptance-postcheck-implementation-20261021.json).
+Metadata-only74bf17 at14:57:22 UTC verifies all eight temporary files absent,
+with no parent lock, unused bypass, new admission or claim. Only the exact four
+saved-value temporary deliveries below are needed; no new credential or repeated
+approval. Production, schedules, private R2, shared credentials, merge and M04 stay out.
 
 ### Latest actual attempt: migrations succeeded; postcheck stopped setup
 
@@ -55,7 +92,7 @@ scratch are deleted; the parent lock is absent and owned acceptance processes0.
 The retained Machine is preserved. The unused encrypted bypass was never sent remotely. Reviewed exact cleanup4f7998 deleted only that ordinary local ciphertext after history/control/DB/process/lock checks; Test-Path is false, with no content read or network call. Admission, claim and ledgers remain.
 
 [Actual attempt and reconciliation](evidence/dev-acceptance-amended-attempt-20261021.json).
-The narrow checker fix unwraps only redundant ParenthesizedType nodes. Five focused tests, the existing AST test, lint and independent review pass; eight adversarial semantic changes still reject. Actual preserved hosted output passes offline4schemas/6tables/9functions/AST-equivalent (93817b), with unchanged SHA. This is a post-hoc local check of actual generated output, not a completed live coordinator postcheck. The proposal is [one replacement remaining window](evidence/dev-acceptance-postcheck-continuation-20261021.md); it is unapproved and changes no operative guard. No credential delivery or password reset is requested. A second consumer/new clock is not authorized by the spent segment; only the separate proposed time decision could permit it.
+The narrow checker fix unwraps only redundant ParenthesizedType nodes. Five focused tests, the existing AST test, lint and independent review pass; eight adversarial semantic changes still reject. Actual preserved hosted output passes offline4schemas/6tables/9functions/AST-equivalent (93817b), with unchanged SHA. This is a post-hoc local check of actual generated output, not a completed live coordinator postcheck. At this historical checkpoint, [one replacement remaining window](evidence/dev-acceptance-postcheck-continuation-20261021.md) was only a proposal. Its later separate approval and ready implementation are recorded above; the spent segment itself never authorizes replay or another child.
 PR8 remains draft; M03 stays open; production, privateR2, merge and M04 untouched.
 
 ### Historical pre-admission checkpoint: single clock implementation
@@ -495,7 +532,7 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
-- The approved one-use segment is consumed and closed after successful four-migration application plus a generated-type postcheck failure. Local root-cause fix/review passes; normal CI and the concrete remaining-window time decision are next. No prepare replay, second child, clock renewal or new credential delivery is authorized by the spent segment. Native A-D acceptance is unrun; prior GW01 stays closed. Dev MCP refresh failed; signed-in dashboard read-only reconciliation is recorded instead.
+- The prior one-use segment is consumed and closed after successful four-migration application plus the fixed type-check failure. The separately approved no-push replacement consumer is reviewed, tested, sealed and public CheckOnly ready. All four temporary handoff pairs are absent; actual transport/leases and normal new-head CI gate admission. No replay or renewal is authorized by the spent segment. Native A-D acceptance is unrun; prior GW01 stays closed. Dev MCP refresh failed; signed-in dashboard read-only reconciliation is recorded instead.
 
 - Separate private operational follow-up: bounded read-only preparation and
   temporary-credential cleanup completed; actual projections and remaining
@@ -516,7 +553,32 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-**Current:** all credential deliveries were fulfilled, consumed and deleted; do not run historical handoff commands. The local type-check fix and review pass. After normal CI, review [the exact proposed remaining-window packet](evidence/dev-acceptance-postcheck-continuation-20261021.md). Its single decision permits one replacement clock with both attempts/counters preserved and no migration replay; no credentials are requested now. No new live segment is approved by this proposal.
+**Current:** the replacement decision is complete; owner replied `I approve`.
+The exact consumer/review/affected tests/public seal/CheckOnly now pass. All
+four temporary pairs are actually absent (74bf17); this is missing delivery,
+not authentication failure. No repeated approval or credential recreation.
+
+### MA-04 / MA-11 — approved postcheck continuation: temporary delivery
+
+In Windows PowerShell under this same Windows account, run:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\db\windows\New-M03FoundationMigrationHandoff.ps1' -PostcheckContinuation
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03AcceptanceHandoff.ps1' -Kind All
+```
+
+Hidden inputs, in order: existing emr-dev postgres password (readbacks/owned
+C999/exact binding/Close only, **no push**), existing n8n Management key,
+existing dev `n8n_writer` password, then existing same-owner Apify READ token.
+Use the same saved originals; no reset, rotation, new Machine or production key.
+Expected prefixes: `M03_FOUNDATION_MIGRATION_ADMIN_READY` and
+`M03_ACCEPTANCE_HANDOFF_READY: All.` Close that PowerShell window, preserve
+originals and reply **M03 postcheck-continuation handoffs ready**. Send no values,
+URLs or files. [Purpose, fields and exact readiness details](evidence/dev-acceptance-postcheck-handoff-20261021.md).
+Actual75-minute lease coverage, transport and normal CI must still pass before
+the one-use clock starts. Cleanup closes credential-bearing children and deletes
+consumed inputs; it does not clear a parent VS Code environment. The historical
+delivery commands below are spent and must not be repeated.
 
 ### MA-04 / MA-11 — zero-setup continuation delivery
 
@@ -866,6 +928,31 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-21 17:59 Cairo (14:59 UTC): Approved replacement consumer frozen and
+  independently reviewed GREEN with no remaining P1/P2. Targeted clock/runtime/
+  Windows/database checks pass; actual owned local PostgreSQL setup guard
+  compiled and rolled back without adopting its existing fixture. New mode has
+  no migration push;14 hashes and prior receipts/types/header/control50 remain
+  unchanged. Fresh-only C999, immediate prewrite cutoff and exact locked-ID
+  once-only unprovisioned cleanup prevent adopting unknown state or fabricating
+  full D.29 public pins e5a176, seal c3d577 and actual CheckOnly7cd5fa pass,
+  privateRead:false/network0. Actual metadata74bf17 finds all eight temporary
+  files absent, no parent lock/bypass/new admission/claim. Exact MA-04/MA-11
+  saved-value delivery commands are above; normal new-head CI before use.
+  [Implementation evidence](evidence/dev-acceptance-postcheck-implementation-20261021.json).
+  No new credential read/authentication/hosted effect/clock; PR8 stays draft;
+  production/privateR2/merge/M04 untouched.
+
+- 2026-10-21 17:30 Cairo (14:30 UTC): Owner replied `I approve` to the exact
+  remaining-window packet at d834968. Recorded separate immutable approval and
+  reconciled checkpoint, preserving both prior attempts,50 controls and dev14.
+  New local clock/no-push DB/runtime consumers are being implemented/tested;
+  actual public clock CheckOnly586655 passes with privateRead:false/network0.
+  No new admission, ciphertext read, auth, hosted operation or owner input.
+  [Approval](evidence/dev-acceptance-postcheck-approval-20261021.json).
+  PR8 remains draft; original completed migrations/GW01/M02 data preserved;
+  production/privateR2/merge/M04 untouched.
 
 - 2026-10-21 14:05 UTC: The one-use amended attempt admitted13:42:15.608,
   matched/pushed the exact four dev migrations native0 and reconciled dev14;
