@@ -100,6 +100,7 @@ function Read-Json($Path){
  if($Path.EndsWith('.lock')){return [pscustomobject]@{kind='m03_clock_admission_parent';version=1;segmentId=$clock.segmentId;processId=90002}}
  return [pscustomobject]@{kind='m03_remaining_continuation_admission';segmentId=$clock.segmentId;startsAt=$clock.startsAt;parentProcessId=90002}
 }
+function Read-FoundationParentLock($Path){return Read-Json $Path}
 function Get-CimInstance {param($ClassName,$Filter,$Property,$ErrorAction)
  if($ClassName -cne 'Win32_Process' -or @($Property).Count -ne 3 -or @($Property|Where-Object{$_ -cnotin @('ProcessId','ParentProcessId','CreationDate')}).Count -ne 0){throw 'UNSAFE_PROCESS_PROJECTION'}
  $number=[long]($Filter -replace '^ProcessId = ','')

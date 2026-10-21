@@ -8,6 +8,60 @@ import { assertFoundationLiveRemainingContinuationProof } from '../n8n/foundatio
 import { fileURLToPath } from 'node:url';
 
 const fixed = () => Error('FOUNDATION_ADMIN_BLOCKED');
+const startupFailures = new WeakMap();
+const prePrivateDiagnostics = new Map([
+  [
+    'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.',
+    'preflight_blocked',
+  ],
+  [
+    'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting continuation modes; no private access.',
+    'preflight_blocked',
+  ],
+  ['M03_FOUNDATION HANDOFF_MISSING. No decryption or authentication attempted.', 'handoff_missing'],
+  [
+    'M03_FOUNDATION HANDOFF_PATH_BLOCKED. No private file read, decryption or authentication attempted.',
+    'handoff_path_blocked',
+  ],
+  [
+    'M03_FOUNDATION HANDOFF_LEASE_NOT_READY. Public inputs verified; the unchanged two-hour admin lease does not cover this admission. No private file read, decryption or authentication attempted.',
+    'handoff_lease_not_ready',
+  ],
+  [
+    'M03_FOUNDATION CONTINUATION_ALREADY_RECORDED. No decryption, migration operation or automatic replay. Preserve and reconcile the separate continuation receipts.',
+    'continuation_already_recorded',
+  ],
+  [
+    'M03_FOUNDATION ATTEMPT_ALREADY_RECORDED. No decryption or automatic replay. Reconcile the existing public receipt/history before any separately reviewed continuation.',
+    'attempt_already_recorded',
+  ],
+  [
+    'M03_FOUNDATION APPROVAL_REQUIRED. New remaining segment has no owner time authority; no credential metadata, private contents or authentication read.',
+    'approval_required',
+  ],
+]);
+function startupFailure(diagnostic, childSpawned, physicalChildClosed, nativeExit, prePrivate = false) {
+  const error = fixed();
+  startupFailures.set(
+    error,
+    Object.freeze({
+      kind: 'foundation_admin_startup_failure',
+      stage: 'startup',
+      diagnostic,
+      childSpawned,
+      physicalChildClosed,
+      nativeExit,
+      dpapiRead: prePrivate ? 'not_attempted' : 'unknown',
+      authentication: prePrivate ? 'not_attempted' : 'unknown',
+    }),
+  );
+  return error;
+}
+// The error itself is fixed text; only this module can brand its safe receipt.
+// Raw stdout/stderr, exception contents and caller-created lookalikes are absent.
+export function readFoundationAdminStartupFailure(error) {
+  return startupFailures.get(error) ?? null;
+}
 const defaultRoot = fileURLToPath(new URL('../../', import.meta.url));
 const powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
 const object = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -105,21 +159,28 @@ export async function startFoundationAdminClient(
   const root = resolve(repositoryRoot),
     launch = deps.spawn ?? spawn;
   if (root.toLowerCase() !== resolve(defaultRoot).toLowerCase()) throw fixed();
-  const child = launch(
-    powershell,
-    [
-      '-NoProfile',
-      '-NonInteractive',
-      '-File',
-      resolve(root, 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1'),
-      '-PhaseAControl',
-      ...(amendment === undefined ? [] : ['-ClockAmendment']),
-      ...(continuation === undefined || remaining !== undefined ? [] : ['-PostcheckContinuation']),
-      ...(remaining === undefined ? [] : ['-RemainingContinuation']),
-      ...(originalDeadlineAtMs === undefined ? [] : ['-OriginalDeadlineAtMs', String(originalDeadlineAtMs)]),
-    ],
-    { cwd: root, env: osEnvironment(), windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] },
-  );
+  let child;
+  try {
+    child = launch(
+      powershell,
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-File',
+        resolve(root, 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1'),
+        '-PhaseAControl',
+        ...(amendment === undefined ? [] : ['-ClockAmendment']),
+        ...(continuation === undefined || remaining !== undefined ? [] : ['-PostcheckContinuation']),
+        ...(remaining === undefined ? [] : ['-RemainingContinuation']),
+        ...(originalDeadlineAtMs === undefined
+          ? []
+          : ['-OriginalDeadlineAtMs', String(originalDeadlineAtMs)]),
+      ],
+      { cwd: root, env: osEnvironment(), windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] },
+    );
+  } catch {
+    throw startupFailure('spawn_failed', false, true, null);
+  }
   let buffer = '',
     discardOutput = false,
     stopped = false,
@@ -129,11 +190,17 @@ export async function startFoundationAdminClient(
     ready = null,
     requests = 0;
   let settled = false,
-    exitResult;
+    exitResult,
+    closedResult = null,
+    childSpawned = Number.isSafeInteger(child.pid) && child.pid > 0,
+    startupDiagnostic = 'unknown',
+    startupPrePrivate = false,
+    startupLines = 0;
   const closed = new Promise((resolveClose) => {
     exitResult = resolveClose;
   });
-  function poison() {
+  function poison(diagnostic = 'protocol_rejected') {
+    if (!ready && startupDiagnostic === 'unknown') startupDiagnostic = diagnostic;
     failed = true;
     pending?.reject(fixed());
     pending = null;
@@ -146,7 +213,10 @@ export async function startFoundationAdminClient(
   }
   const onAbort = () => poison();
   signal?.addEventListener('abort', onAbort, { once: true });
-  child.once('error', poison);
+  child.once('spawn', () => {
+    childSpawned = true;
+  });
+  child.once('error', () => poison(childSpawned ? 'child_error' : 'spawn_failed'));
   child.stderr.on('data', () => {}); // Raw native/PowerShell diagnostics are private and discarded.
   child.stdout.setEncoding('utf8');
   child.stdout.on('data', (chunk) => {
@@ -154,15 +224,35 @@ export async function startFoundationAdminClient(
     if (Buffer.byteLength(buffer, 'utf8') + Buffer.byteLength(chunk, 'utf8') > 1048576) {
       discardOutput = true;
       buffer = '';
+      startupPrePrivate = false;
+      if (!ready) startupDiagnostic = 'output_limit';
       poison();
       return;
     }
     buffer += chunk;
     while (buffer.includes('\n')) {
       const index = buffer.indexOf('\n'),
-        line = buffer.slice(0, index).trim();
+        rawLine = buffer.slice(0, index),
+        line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine;
       buffer = buffer.slice(index + 1);
-      if (!line) continue;
+      if (!line.trim()) continue;
+      if (!ready) {
+        startupLines++;
+        const diagnostic = prePrivateDiagnostics.get(line);
+        if (!failed && startupLines === 1 && diagnostic !== undefined) {
+          startupDiagnostic = diagnostic;
+          startupPrePrivate = true;
+          poison();
+          continue;
+        }
+        if (startupPrePrivate) {
+          startupPrePrivate = false;
+          startupDiagnostic = 'protocol_rejected';
+          discardOutput = true;
+          buffer = '';
+          continue;
+        }
+      }
       try {
         const value = JSON.parse(line);
         if (failed) {
@@ -236,6 +326,10 @@ export async function startFoundationAdminClient(
         } else throw fixed();
       } catch {
         if (failed) continue;
+        if (!ready) {
+          discardOutput = true;
+          buffer = '';
+        }
         poison();
         return;
       }
@@ -243,12 +337,22 @@ export async function startFoundationAdminClient(
   });
   child.once('close', (code, closeSignal) => {
     settled = true;
+    if (!ready && buffer.trim()) {
+      startupDiagnostic = 'protocol_rejected';
+      startupPrePrivate = false;
+      buffer = '';
+    }
+    if (!ready && startupDiagnostic === 'unknown') startupDiagnostic = 'child_closed_before_ready';
     signal?.removeEventListener('abort', onAbort);
     pending?.reject(fixed());
     pending = null;
-    exitResult(
-      Object.freeze({ nativeExit: code, signal: closeSignal, childClosed: true, receipt: finalReceipt }),
-    );
+    closedResult = Object.freeze({
+      nativeExit: code,
+      signal: closeSignal,
+      childClosed: true,
+      receipt: finalReceipt,
+    });
+    exitResult(closedResult);
   });
   const race = async (operation, milliseconds) => {
     let timer;
@@ -257,7 +361,7 @@ export async function startFoundationAdminClient(
         operation,
         new Promise((_, reject) => {
           timer = setTimeout(() => {
-            poison();
+            poison('startup_timeout');
             reject(fixed());
           }, milliseconds);
         }),
@@ -381,6 +485,14 @@ export async function startFoundationAdminClient(
     try {
       await race(closed, 250000);
     } catch {}
-    throw fixed();
+    throw startupFailure(
+      startupDiagnostic,
+      childSpawned,
+      settled,
+      settled && childSpawned && Number.isSafeInteger(closedResult?.nativeExit)
+        ? closedResult.nativeExit
+        : null,
+      startupPrePrivate,
+    );
   }
 }

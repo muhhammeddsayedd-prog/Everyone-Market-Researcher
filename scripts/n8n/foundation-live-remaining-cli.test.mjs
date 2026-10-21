@@ -1,9 +1,135 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PassThrough } from 'node:stream';
+import { EventEmitter } from 'node:events';
 import { readFileSync, existsSync } from 'node:fs';
+import { startFoundationAdminClient } from '../db/foundation-admin-client.mjs';
 import { syntheticRemainingContinuation } from './foundation-live-remaining-fixtures.mjs';
 import { runFoundationLiveRuntimeCli } from './foundation-live-runtime-cli.mjs';
+
+test('failed Admin startup accepts only branded pre-private closure and never promotes full D', async () => {
+  for (const mode of ['branded', 'lookalike', 'unknown']) {
+    const f = await syntheticRemainingContinuation();
+    let session;
+    try {
+      const proof = f.claim(f.admit());
+      const cli = await f.copy('foundation-live-runtime-cli.mjs');
+      for (const name of ['bindings.dev.json', 'transport.dev.json'])
+        f.put(
+          'n8n/foundation/' + name,
+          readFileSync(new URL('../../n8n/foundation/' + name, import.meta.url)),
+        );
+      const bindings = JSON.parse(
+        readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
+      );
+      for (const key of Object.keys(bindings.workflowRefs))
+        f.put(
+          'n8n/workflows/' + key + '.json',
+          readFileSync(new URL('../../n8n/workflows/' + key + '.json', import.meta.url)),
+        );
+      session = cli.createFoundationLiveAcceptanceSession(
+        {
+          kind: 'm03_acceptance_private_input',
+          version: 1,
+          approvedHead: proof.sourceCommitSha,
+          approvedPacketSha256: '009415eccce00939fe5731e846d006728295522fd90849555c197b931ad6a712',
+          sourceCommitSha: proof.sourceCommitSha,
+          managementKey: 'SYNTHETIC_PRIVATE_MANAGEMENT',
+          writerPassword: 'SYNTHETIC_PRIVATE_WRITER',
+          apifyReadToken: 'SYNTHETIC_PRIVATE_APIFY_READ',
+          machineToken: 'M'.repeat(43),
+          protectionBypass: 'B'.repeat(32),
+          leaseExpiry: f.now() + 7200000,
+        },
+        () => {},
+        {
+          now: f.now,
+          storage: { directory: f.directory + '/scripts/n8n/out/foundation/live' },
+          remainingContinuationProof: proof,
+          createNativeTransport: () => ({
+            request: async () => ({
+              status: 200,
+              body: (async function* () {
+                yield Buffer.from('{"data":[],"nextCursor":null}');
+              })(),
+              closed: Promise.resolve(),
+            }),
+            state: () => ({ pendingRequests: 0, unclosedResponses: 0 }),
+            close() {},
+          }),
+          startAdmin: async () => {
+            if (mode === 'lookalike')
+              throw Object.assign(Error('FOUNDATION_ADMIN_BLOCKED'), {
+                physicalChildClosed: true,
+                dpapiRead: 'not_attempted',
+                authentication: 'not_attempted',
+              });
+            return startFoundationAdminClient(
+              { now: f.now },
+              {
+                spawn() {
+                  const child = new EventEmitter();
+                  child.stdin = new PassThrough();
+                  child.stdout = new PassThrough();
+                  child.stderr = new PassThrough();
+                  child.stdin.resume();
+                  child.stdin.on('end', () => queueMicrotask(() => child.emit('close', 1, null)));
+                  queueMicrotask(() => {
+                    child.emit('spawn');
+                    child.stderr.write('SYNTHETIC_PRIVATE_ERROR');
+                    child.stdout.write(
+                      mode === 'unknown'
+                        ? 'SYNTHETIC_PRIVATE_ERROR\n'
+                        : 'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.\n',
+                    );
+                  });
+                  return child;
+                },
+              },
+            );
+          },
+        },
+      );
+      const result = await session.command({
+        kind: 'm03_acceptance_command',
+        id: 'startup_only',
+        command: 'prepare',
+      });
+      assert.equal(result.status, 'blocked');
+      assert.equal(
+        result.code,
+        mode === 'lookalike'
+          ? undefined
+          : mode === 'unknown'
+            ? 'FOUNDATION_ADMIN_PROTOCOL_REJECTED'
+            : 'FOUNDATION_ADMIN_PREFLIGHT_BLOCKED',
+      );
+      assert.equal(result.controlAttempts, 151);
+      assert.equal(result.managementAttempts, 4);
+      assert.equal(JSON.stringify(result).includes('SYNTHETIC_PRIVATE_ERROR'), false);
+      const closed = await session.close();
+      assert.equal(closed.adminChildClosed, mode === 'branded');
+      assert.equal(closed.childTransportsClosed, mode === 'branded');
+      assert.equal(closed.residual, true);
+      for (const key of [
+        'windowClosed',
+        'fixtureArchived',
+        'baselineRestored',
+        'environmentCleanupVerified',
+        'remoteWorkSettled',
+      ])
+        assert.equal(closed[key], false);
+      assert.equal(closed.nativeExecutions, 0);
+      assert.equal(
+        existsSync(f.paths.management.replace('management.jsonl', 'runtime.operation.lock')),
+        mode !== 'branded',
+      );
+    } finally {
+      await session?.close();
+      f.cleanup();
+    }
+  }
+});
 
 test('synthetic remaining preparation carries totals through50 baseline reads and passes only its new proof to admin', async () => {
   const f = await syntheticRemainingContinuation();

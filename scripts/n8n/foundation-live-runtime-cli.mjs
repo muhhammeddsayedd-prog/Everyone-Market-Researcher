@@ -19,7 +19,10 @@ import {
   assertFoundationLiveDeployment,
 } from './foundation-live-setup.mjs';
 import { createFoundationLiveSetupCliTransport } from './foundation-live-setup-transport.mjs';
-import { startFoundationAdminClient } from '../db/foundation-admin-client.mjs';
+import {
+  startFoundationAdminClient,
+  readFoundationAdminStartupFailure,
+} from '../db/foundation-admin-client.mjs';
 import { createFoundationNativeTransport } from './foundation-native-transport.mjs';
 import { createFoundationNativeReader, assertFoundationNativeReceipt } from './foundation-native-reader.mjs';
 import {
@@ -302,6 +305,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   let physicalClosed = false,
     shutdownResult;
   let adminPhysicalClosed = true;
+  let adminStartupFailure = null;
   let adminLifecycleVerified = true,
     adminEndAttempted = false;
   const attemptedCaseIds = new Set(),
@@ -330,6 +334,9 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     phaseBReady: native?.snapshot().phaseBReady ?? false,
     domainProofReady: domainProof !== null,
     businessAcceptanceProven: false,
+    ...(adminStartupFailure
+      ? { code: 'FOUNDATION_ADMIN_' + adminStartupFailure.diagnostic.toUpperCase() }
+      : {}),
     ...extra,
   });
   const bindingFor = (key) =>
@@ -409,14 +416,31 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     }
     adminPhysicalClosed = false;
     adminLifecycleVerified = false;
-    admin = await (dependencies.startAdmin ?? startFoundationAdminClient)({
-      repositoryRoot,
-      now,
-      ...(resume ? { originalDeadlineAtMs: resume.deadlineAt } : {}),
-      ...(amendment ? { clockAmendmentProof: amendment } : {}),
-      ...(previousContinuation ? { postcheckContinuationProof: previousContinuation } : {}),
-      ...(remaining ? { remainingContinuationProof: remaining } : {}),
-    });
+    try {
+      admin = await (dependencies.startAdmin ?? startFoundationAdminClient)({
+        repositoryRoot,
+        now,
+        ...(resume ? { originalDeadlineAtMs: resume.deadlineAt } : {}),
+        ...(amendment ? { clockAmendmentProof: amendment } : {}),
+        ...(previousContinuation ? { postcheckContinuationProof: previousContinuation } : {}),
+        ...(remaining ? { remainingContinuationProof: remaining } : {}),
+      });
+    } catch (error) {
+      adminStartupFailure = readFoundationAdminStartupFailure(error);
+      // A rejected startup does not return an Admin client. Preserve genuine
+      // physical closure only when no credential-bearing child could exist;
+      // a generic error or an unclosed child still leaves the sentinel open.
+      if (
+        adminStartupFailure?.physicalChildClosed === true &&
+        (adminStartupFailure.childSpawned === false ||
+          (adminStartupFailure.dpapiRead === 'not_attempted' &&
+            adminStartupFailure.authentication === 'not_attempted'))
+      ) {
+        adminPhysicalClosed = true;
+        adminLifecycleVerified = true;
+      }
+      throw error;
+    }
     const ready = await admin.postcheck();
     if (ready?.ready !== true || ready.projectRef !== 'zmotjsbzhzjvpelxvxlf' || ready.migrationCount !== 14)
       fail();
@@ -1105,7 +1129,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         baselineRestored,
         environmentCleanupVerified,
         remoteWorkSettled,
-        residual: !closed || !restored || !adminLifecycleVerified,
+        residual: !closed || !restored || !adminLifecycleVerified || adminStartupFailure !== null,
       });
       physicalClosed = closed;
       return shutdownResult;

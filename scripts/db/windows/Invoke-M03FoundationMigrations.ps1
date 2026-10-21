@@ -200,6 +200,23 @@ function Read-FoundationKernelProcess([long]$ProcessId) {
   if($values.Count -ne 1 -or $values[0].CreationDate -isnot [DateTime]){throw 'blocked'}
   return [pscustomobject]@{processId=[long]$values[0].ProcessId;parentProcessId=[long]$values[0].ParentProcessId;createdAt=$values[0].CreationDate.ToUniversalTime()}
 }
+function Read-FoundationParentLock([string]$File) {
+  # Only this public metadata reader permits the incumbent wrapper's write
+  # access. The wrapper keeps FileShare.Read, denying other writers/deletion.
+  if([IO.Path]::GetFileName($File) -cne 'emr-m03-acceptance-parent.operation.lock'){throw 'blocked'}
+  $stream=$null;$buffer=$null
+  try{
+    $stream=[IO.File]::Open($File,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::ReadWrite)
+    $length=$stream.Length;if($length -le 0 -or $length -gt 4096){throw 'blocked'}
+    $buffer=New-Object byte[] 4097;$position=0
+    while($position -lt $buffer.Length){$count=$stream.Read($buffer,$position,$buffer.Length-$position);if($count -eq 0){break};$position+=$count}
+    if($position -ne $length -or $stream.Length -ne $length){throw 'blocked'}
+    $text=[Text.UTF8Encoding]::new($false,$true).GetString($buffer,0,$position)
+    $value=ConvertFrom-Json -InputObject $text -ErrorAction Stop
+    Assert-Keys $value @('kind','version','segmentId','processId')
+    return $value
+  }finally{if($null -ne $buffer){[Array]::Clear($buffer,0,$buffer.Length)};if($null -ne $stream){$stream.Dispose()}}
+}
 function Assert-FoundationRemainingProcessAncestry($Clock) {
   if(-not $RemainingContinuation -or $CheckOnly -or $Clock.segmentId -cne 'e8035391-dba8-48c9-97e0-139ba980d86e' -or
      [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -ge $Clock.stopNewAt){throw 'blocked'}
@@ -212,7 +229,7 @@ function Assert-FoundationRemainingProcessAncestry($Clock) {
      $claim.claimedAt -isnot [long] -or $claim.claimedAt -lt $Clock.startsAt -or $claim.claimedAt -gt [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -or
      $admission.kind -cne 'm03_remaining_continuation_admission' -or $admission.segmentId -cne $Clock.segmentId -or $admission.startsAt -ne $Clock.startsAt -or $admission.parentProcessId -ne $claim.parentProcessId){throw 'blocked'}
   $parentPath=Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-acceptance-parent.operation.lock'
-  $parent=Read-Json $parentPath
+  $parent=Read-FoundationParentLock $parentPath
   Assert-Keys $parent @('kind','version','segmentId','processId')
   if($parent.kind -cne 'm03_clock_admission_parent' -or $parent.version -ne 1 -or $parent.segmentId -cne $Clock.segmentId -or $parent.processId -ne $claim.parentProcessId){throw 'blocked'}
   $admin=Read-FoundationKernelProcess $PID;$runtime=Read-FoundationKernelProcess $claim.processId;$wrapper=Read-FoundationKernelProcess $claim.parentProcessId
