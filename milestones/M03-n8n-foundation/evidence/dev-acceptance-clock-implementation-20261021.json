@@ -59,7 +59,7 @@
     "affectedAbsentEnvironmentChecks": "19 PASS/native0/0skip in OS-only fresh child with LOCALAPPDATA absent16ec3d; new permanent regressions and independent2 PASS32ad22",
     "review": "Independent test-only portability review GREEN; not relabeled as Linux CI",
     "priorBlockedDiagnostic": "One disposable temporary diagnostic harness was blocked before execution (generic blocked by policy). No file/child was created; that operation was not retried. Permanent checked-in no-file regression used instead",
-    "next": "Explicitly replace public seal for changed fixture bytes, run normal fresh CI and actual fresh CheckOnly before private admission"
+    "next": "Completed historical step: explicit seal ed8820, CI39609646416 all five jobs plus Vercel, and actual CheckOnly8cd582 passed before13:42:15.608 admission. The later failed actual attempt is preserved separately."
   },
   "mechanism": {
     "admitOnlyAfterPublicChecksTransportProvenanceAndLeases": true,
@@ -67,13 +67,50 @@
     "separateCreateNewRuntimeClaimBeforePrivateDto": true,
     "secondChildDeniedAfterZeroEffectClose": true,
     "originalHeaderAndAggregateCountersPreserved": true,
-    "singleClockStopActionPhysicalLeaseMinutes": [50, 60, 70, 75],
+    "singleClockStopActionPhysicalLeaseMinutes": [
+      50,
+      60,
+      70,
+      75
+    ],
     "noAutomaticRenewalReplayOrRecordDeletion": true,
     "adminRevalidatesClaimBeforeDecryption": true,
     "publicStaleLeaseExit2DoesNotRelaxActualPrivateGuard": true
   },
-  "actualHostedAcceptance": { "newAdmission": false, "newCiphertextOpened": false, "authenticationAttempted": false, "managementAttempts": 0, "controlAttempts": 0, "nativeExecutions": 0, "migrationsApplied": 0, "actorStarts": 0 },
-  "next": "Use dev-acceptance-clock-handoff-20261021.md to replace only the four insufficient temporary deliveries using saved originals; verify normal PR CI and fresh public admission readiness before actual interactive ClockAmendment entry",
-  "excluded": ["production", "recurring schedules", "external notifications", "shared credentials", "private incident remediation", "PR8 merge", "M03 closure", "M04"],
-  "gw01RemainsPermanentlyClosed": true
+  "actualHostedAcceptance": {
+    "newAdmission": true,
+    "newCiphertextOpened": true,
+    "authenticationAttempted": true,
+    "managementAttempts": 0,
+    "controlAttempts": 50,
+    "nativeExecutions": 0,
+    "migrationsApplied": 4,
+    "actorStarts": 0,
+    "setupStatus": "postcheck_blocked",
+    "businessAcceptanceProven": false,
+    "credentialChildrenClosed": true,
+    "details": "dev-acceptance-amended-attempt-20261021.json"
+  },
+  "next": "Finish local generated-type root-cause diagnosis/regressions/review. Preserve applied dev14 migrations, one-use admission/claim and original header/counters. No replay, new child, clock renewal or credential delivery under the consumed authority.",
+  "excluded": [
+    "production",
+    "recurring schedules",
+    "external notifications",
+    "shared credentials",
+    "private incident remediation",
+    "PR8 merge",
+    "M03 closure",
+    "M04"
+  ],
+  "gw01RemainsPermanentlyClosed": true,
+  "historicalPreAdmissionHostedState": {
+    "newAdmission": false,
+    "newCiphertextOpened": false,
+    "authenticationAttempted": false,
+    "managementAttempts": 0,
+    "controlAttempts": 0,
+    "nativeExecutions": 0,
+    "migrationsApplied": 0,
+    "actorStarts": 0
+  }
 }

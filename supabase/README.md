@@ -21,6 +21,31 @@ and [M03 progress](../milestones/M03-n8n-foundation/PROGRESS.md). Never replay t
 completed M03 consumer, reset/seed an existing stack to resume, or treat local
 types as proof of hosted deployment.
 
+## 21 October - actual M03 dev migration completion; acceptance still open
+
+The single approved amended acceptance segment was admitted at13:42:15.608 UTC.
+Its exact four-file dry-run matched and one push completed native0: hosted dev
+now has14 versions. The ten existing versions and all four new statement
+fingerprints match the reviewed packet. **Do not replay any migration or delete
+the durable attempt/admission/claim records.** Production still has no M03
+changes.
+
+The first native postcheck stopped at generated-type validation after producing
+`scripts/db/out/m03-foundation-hosted-db.types.ts`. The actual candidate is
+preserved. The reviewed local checker correction removes only redundant type parentheses; that unchanged actual hosted output now passes the offline four-schema/six-table/nine-RPC AST comparison. The original native postcheck still failed; no live coordinator pass is claimed.
+The child closed and deleted its temporary administrator handoff/lease/private
+scratch. No fixture or foundation gateway window was created, and no workflow,
+provider or actor ran. Independent signed-in dev dashboard SQL verifies the
+catalog/RLS/grants/views/RPC restrictions,14 migrations,285 competitors,
+1,754 accounts and257 media objects. Dashboard advisor reruns are distinct:
+performance0warnings/errors; security0errors and1Auth warning for disabled
+leaked-password protection. Auth settings were unchanged.
+
+[Actual attempt and readback](../milestones/M03-n8n-foundation/evidence/dev-acceptance-amended-attempt-20261021.json).
+The one-use consumer is closed. Local diagnosis/review continues; this record
+does not authorize another live child, clock, credentials, production or merge.
+The19October section below remains the historical local-only checkpoint.
+
 ## 19 October — full M03 source, local acceptance only
 
 The actual GW-01 dev connection trial and cleanup are complete; its window is

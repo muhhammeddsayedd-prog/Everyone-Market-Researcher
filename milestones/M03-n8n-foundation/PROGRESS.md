@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: fresh handoffs verified; fixing Linux-only synthetic fixture assumptions caught by CI before any private use. New clock is not admitted. Production guards and original header/caps remain unchanged; no new decryption/authentication/hosted operation. No owner action is pending. GW-01 stays permanently closed.**
+**In progress: four exact dev migrations applied successfully. Setup stopped at generated-type validation; native/actor acceptance is unrun. Credential-bearing children are physically closed and consumed inputs deleted. The one-use clock admission and claim remain retained; no prepare replay or second live child is authorized. The local formatting-only type-check correction and independent review now pass. Normal CI and the proposed remaining-window decision are next. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,13 +16,49 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Approved single-clock implementation is frozen/reviewed; actual seal28a459 and CheckOnlyf4e5da pass. Original header/counters are preserved and admission is absent. All four old leases are insufficient by metadata-only310117; request fresh delivery only, no repeated clock approval. |
-| Next step | Finish the test-only cross-platform fix and affected regressions/review, replace the public seal for its changed fixture input, pass normal PR CI and actual fresh CheckOnly, then interactive -ClockAmendment. Fresh c3822b verifies all four deliveries cover75minutes at13:32; recheck at admission, no repeated inputs or approval now. |
-| Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. Four forward versions remain hosted-pending. New helper delivery receives normal new-head CI. |
+| Current task | Local type-check formatting failure corrected/reviewed; actual unchanged hosted-generated candidate verifies4 schemas/6 tables/9 RPCs offline. Deliver normal CI and the remaining-window proposal. |
+| Next step | Review the exact proposed replacement one-use window after fresh CI. Preserve dev14, both attempts, source/counters and the used claim; no live retry or credential input now. |
+| Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
 
-### Latest: single clock amendment approved; implementation only
+### Latest actual attempt: migrations succeeded; postcheck stopped setup
+
+The single segment was admitted at **13:42:15.608 UTC** after fresh delivery,
+CI39609646416 (five jobs plus Vercel), explicit public seal ed8820 and actual
+CheckOnly8cd582. Stop-new14:32:15.608, action14:42:15.608 and physical-close
+ceiling14:52:15.608 were derived once; admission and runtime claim remain.
+The previous expired attempt/header and aggregate caps are unchanged.
+
+`amended_prepare_1` performed50 baseline execution-discovery controls. The
+administrator child authenticated to the fixed dev session pooler, matched the
+exact four-file dry-run and pushed once, native0; history10 became14 with exact
+reviewed statement hashes. Its first `postcheck` then failed at generated-type
+validation. The actual public type candidate was created13:43:38.201 UTC and is
+retained for local comparison. This is neither a password rejection nor a failed
+migration push. **Never replay those four successful migrations.**
+
+Independent read-only SQL through the existing signed-in dev dashboard verifies
+all catalog/RLS/grants/view/RPC/GW01-closed/domain-off booleans,14 migrations and
+the four canonical statement fingerprints,285 competitors/1,754 accounts and
+257 media objects. C999, the new foundation window, approvals, requests, bindings
+and leases all have zero rows. No new Preview or n8n definition transition was
+attempted; management0/native0/gateway0/provider0/actors0. Dev MCP refresh failed;
+no repeated login/setup was attempted. Dashboard reruns show performance0WARN/
+ERROR and security0ERROR/1Auth warning: leaked-password protection disabled.
+This dashboard result is distinct from native CLI advisor evidence.
+
+The existing child received `restore`, then `close`. Full D flags remain false
+and residualtrue; do not relabel never-created remote resources as restoration
+success. Projected wrapper/admin closure flags and independent owned-process reconciliation df56aa verify physical root/admin/credential-child and transport closure; native exit1 records the failed attempt. All eight consumed temporary Admin/runtime files and private
+scratch are deleted; the parent lock is absent and owned acceptance processes0.
+The retained Machine is preserved. The unused encrypted bypass was never sent remotely. Reviewed exact cleanup4f7998 deleted only that ordinary local ciphertext after history/control/DB/process/lock checks; Test-Path is false, with no content read or network call. Admission, claim and ledgers remain.
+
+[Actual attempt and reconciliation](evidence/dev-acceptance-amended-attempt-20261021.json).
+The narrow checker fix unwraps only redundant ParenthesizedType nodes. Five focused tests, the existing AST test, lint and independent review pass; eight adversarial semantic changes still reject. Actual preserved hosted output passes offline4schemas/6tables/9functions/AST-equivalent (93817b), with unchanged SHA. This is a post-hoc local check of actual generated output, not a completed live coordinator postcheck. The proposal is [one replacement remaining window](evidence/dev-acceptance-postcheck-continuation-20261021.md); it is unapproved and changes no operative guard. No credential delivery or password reset is requested. A second consumer/new clock is not authorized by the spent segment; only the separate proposed time decision could permit it.
+PR8 remains draft; M03 stays open; production, privateR2, merge and M04 untouched.
+
+### Historical pre-admission checkpoint: single clock implementation
 
 **Latest fresh delivery and CI:** owner replied **M03 amended-window handoffs
 ready**. Actual metadata-only c3822b at13:32:05 UTC verifies Admin and all three
@@ -61,8 +97,7 @@ They remain encrypted and unchanged. The only owner action is
 with exact eight temporary filenames and two existing hidden-prompt helpers.
 No new credential, reset, Machine, production or repeated clock approval.
 
-The paragraph below records the implementation-start checkpoint; its pending
-checks are superseded by the completed current delivery above.
+All preceding pre-admission readiness and delivery instructions are historical; the actual admitted/closed attempt above supersedes them. The paragraph below records the implementation-start checkpoint; its pending checks are superseded by the completed delivery and later actual attempt.
 
 Owner replied **Approve one new M03 A–D window at verified admission, with the
 same aggregate caps and the expired attempt preserved.** Recorded at13:09:07 UTC
@@ -83,7 +118,7 @@ credential child, decryption, authentication, network or hosted change performed
 Do not ask for another clock/general dev approval. Revalidate only actual
 handoff lease gaps when concrete consumers are ready; no new input requested now.
 
-### Latest: late delivery verified; original window remains stopped
+### Historical 11:52 checkpoint: late delivery verified; original window stopped
 
 Owner replied **M03 runtime replenished; unused bypass deleted**. First current
 clock read was11:52:03 UTC, after original stop-new11:50:23.481. Public metadata
@@ -447,7 +482,7 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 <!-- Mirror of MILESTONE.md; paste evidence (command + output summary, counts, screenshot paths). -->
 - [x] AC1 — Plan facts recorded — actual n8n 2.43.5, paid Cloud plan, upgraded 50,000 allowance; the five facts and evidence boundaries are recorded below.
 - [ ] AC2 — Credentials work — four provider metadata GETs pass. Native n8n Postgres credential Retry/SELECT still fail TLS chain validation. Separate approved [direct Writer Verify](evidence/gw01-writer-verify-20261018.json) proves dev session5432 strict TLS, current_user/session_user=n8n_writer and four42501 rollback denials. The later [gateway/native HTTP-node trial](evidence/gw01-trial-closeout-20261018.json) proves restricted identity through the temporary route; native Postgres-node TLS and full credentials/backbone acceptance remain open. [Native readback](evidence/credential-readback-20261018.json).
-- [x] AC3 — Reused actual local379 pgTAP assertions in11 files on unchanged SQL; hosted nine-version/statement-hash parity,12 restricted RPCs and fresh advisors0 WARN/ERROR verified. [Schema](evidence/dev-post-migration-schema-20261018.json), [advisors](evidence/dev-post-migration-advisors-20261018.json). No hosted pgTAP or native n8n writer login claim.
+- [ ] AC3 - Historical local379/hosted nine-version evidence is preserved. Actual21October dev push has14 exact versions and independent catalog/RLS/ACL readback passes. Generated types are preserved; the checker rejected formatting-only ParenthesizedType nodes. Narrow local correction/review passes; the actual unchanged generated output verifies4schemas/6tables/9RPCs offline. Dashboard advisors were rerun separately (security1Auth warning, performance0warnings); no separate CLI advisor receipt was emitted before the postcheck failed. [Actual attempt](evidence/dev-acceptance-amended-attempt-20261021.json).
 - [ ] AC4 — Actual dev17 reviewed Apify prices and daily alert budget25 verified. Three fixed-fee amounts and other documented unknown prices remain unknown under the owner's instruction; no false zero fees or shared-service budget change. [Readback](evidence/dev-post-migration-schema-20261018.json).
 - [ ] AC5 — End-to-end smoke remains unrun. Local graph9/9 and shared80/80 (55 new recovery cases) pass; new generator source is not an actual saved Cloud export or actor receipt.
 - [ ] AC6 — Local saved replay, early registration, stable cost and ambiguous-write recovery pass. Saved-only recovery reports payloadEqualityVerified:false and suppresses dispatch; no fake SQL JSONB digest or exactly-once external delivery. Hosted duplicate/interruption acceptance remains pending.
@@ -460,7 +495,7 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
-- The exact A–D dev batch is approved atf42930f on21October. Concrete adapters/review/public CheckOnly now pass. Remaining gate is exact MA-04/MA-11 delivery, normal new-head CI and actual history/runtime/price/native proof, not another approval. Old successful consumers/window must not be replayed. MCP refresh failed before SQL; no setup loop.
+- The approved one-use segment is consumed and closed after successful four-migration application plus a generated-type postcheck failure. Local root-cause fix/review passes; normal CI and the concrete remaining-window time decision are next. No prepare replay, second child, clock renewal or new credential delivery is authorized by the spent segment. Native A-D acceptance is unrun; prior GW01 stays closed. Dev MCP refresh failed; signed-in dashboard read-only reconciliation is recorded instead.
 
 - Separate private operational follow-up: bounded read-only preparation and
   temporary-credential cleanup completed; actual projections and remaining
@@ -480,6 +515,8 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 - OpenAI Models access does not establish its project spend cap. Unknown fees/prices remain unknown; USD25/day is an alert threshold, not a provider cap. The owner deprioritized fee reporting, so no further questionnaire. Shared plan allowance50K/runtime facts and the historical code/local/CI evidence are preserved.
 
 ## Manual actions needed from the owner
+
+**Current:** all credential deliveries were fulfilled, consumed and deleted; do not run historical handoff commands. The local type-check fix and review pass. After normal CI, review [the exact proposed remaining-window packet](evidence/dev-acceptance-postcheck-continuation-20261021.md). Its single decision permits one replacement clock with both attempts/counters preserved and no migration replay; no credentials are requested now. No new live segment is approved by this proposal.
 
 ### MA-04 / MA-11 — zero-setup continuation delivery
 
@@ -510,7 +547,7 @@ helper and runtime helper -Kind All. Use existing saved values, no reset/rotatio
 new key, Machine, production or general/clock approval. Expected prefixes are
 `M03_FOUNDATION_MIGRATION_ADMIN_READY` and `M03_ACCEPTANCE_HANDOFF_READY: All.`
 Close PowerShell and reply **M03 amended-window handoffs ready**; send no values.
-New clock remains unstarted until full public/transport/lease admission passes.
+Historical readiness text only: this segment was subsequently admitted and closed; all consumed handoffs are now absent. Do not repeat this delivery.
 
 ### Historical clock-only decision text — completed
 
@@ -829,6 +866,21 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-21 14:05 UTC: The one-use amended attempt admitted13:42:15.608,
+  matched/pushed the exact four dev migrations native0 and reconciled dev14;
+  postcheck then failed on formatting-only type parentheses. No fixture/window,
+  Preview, workflow, provider or actor followed. Physical close0d7033/native1,
+  independent owned-process count0, all eight temporary inputs/scratch absent;
+  reviewed unused bypass cleanup4f7998 verified absent. Full D remains residual.
+  Narrow checker fix0b03210 passes five regressions, prior AST check, lint and
+  independent semantic review; unchanged actual generated output passes offline
+  four-schema/six-table/nine-RPC comparison93817b. Public24 input pins match.
+  [Actual attempt](evidence/dev-acceptance-amended-attempt-20261021.json) separates
+  local/CI/native/dashboard/source-inferred evidence. Normal new-head CI remains
+  enabled. [One proposed remaining window](evidence/dev-acceptance-postcheck-continuation-20261021.md)
+  has independent review; no new time authority, child, credentials or replay.
+  PR8 draft; M03 open; GW01 closed; production/privateR2/merge/M04 untouched.
 
 - 2026-10-19 Cairo: Local database continuation complete without reset/seed
   replay: four CLI-generated forward versions, 173 new rollback assertions,
