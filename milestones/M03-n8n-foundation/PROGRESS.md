@@ -4,25 +4,126 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Blocked: waiting on owner — MA-04/MA-11 four existing-value temporary deliveries, after current delivery CI is verified. Exact packet approval is recorded/pinned; affected16/16/review and actual public seal67be61/full CheckOnly9d78d6 pass native0/privateReadfalse/network0. The one-use clock is stopped; administrator handoff and actual interactive transport are still unverified. Dev14 postchecks, archived/paused C999, prior failures/counters and cleanup remain preserved. No migration replay, production, merge or M04. GW01 stays closed.**
 
-| Field | Value |
-| --- | --- |
-| Started | 2026-10-18 Cairo |
-| Last updated | 2026-10-22 Cairo |
-| Finished | — |
-| Branch / PR | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset |
-| Selected runtime source | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
-| Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
-| Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
-| GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Approvalcbc097 bound to reviewed a04d7c4; unchanged packet/checkpoint. Independent16/review plus actual public seal67be61/full CheckOnly9d78d6 pass native0/privateReadfalse/network0. No admin input/MCP/live acceptance inferred. Normal new-head CI is checked separately. |
-| Next step | After approved-source public checks and delivery CI, request only the four absent saved-input handoffs using evidence/dev-acceptance-remaining-handoff-20261022.md. Verify actual lease/transport/provenance before the single admission. No new batch approval, replay or renewal. |
-| Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI. |
+**In progress — local startup/custody repair and exact temporary cleanup completed after the consumed remaining attempt. Evidence and normal new-head CI pending; no new owner input, handoff or time authority requested.**
+
+Four deliveries and 75-minute metadata coverage passed before admission. Prepare
+then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
+reproduced/corrected locally; lost historical diagnostics prevent excluding an
+earlier simultaneous gate. Exact local cleanup is independently verified;
+historical restore/close remain residual, not full D. Completed dev14 database/
+advisor/type evidence and archived/paused C999 stay distinct from this attempt
+and open A–D business acceptance. GW01 remains closed; no migration replay,
+production, private incident R2 execution, PR8 merge or M04.
+
+| Field                          | Value                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Started                        | 2026-10-18 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Last updated                   | 2026-10-22 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Finished                       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Branch / PR                    | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset                                                                                                                                                                                       |
+| Current delivery checkpoint    | Stable `5a99d64d07ac78af4320aaca0edf50912ad6f258` / [CI39690616824](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39690616824) all five jobs and Vercel passed before this attempt. Source CI is not live A–D acceptance; the local remedy receives separate review/checks and normal CI.                                                                                                                      |
+| Selected runtime source        | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
+| Selected-source CI             | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance.                                                                                                                                                                                                       |
+| Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                              |
+| GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                |
+| Current task                   | Local parent-lock reader, branded startup/closure evidence and public final-wrapper reader repaired/reviewed; combined targeted 71/71 and public seal pass. Exact nine-leaf cleanup independently verified, Admin two files preserved. Historical missing receipt/unknown-orphan limits and actual A–D/full-D remain open.                                                                                                                        |
+| Next step                      | Finish evidence/delivery checks and normal new-head CI. Preserve admissions/raw journal prefixes/14 checkpoint records and current 4/151/155 accounting. No full CheckOnly against spent authority, prepare replay, new auth/handoff/time request, migration replay or automatic renewal.                                                                                                                                                         |
+| Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.      |
 
 ## 21 October A–D approval and actual preflight
 
-### 22 October: exact remaining packet approved; no admission
+### 22 October actual remaining attempt — consumed; historical failure preserved
+
+The owner replied **M03 remaining-window handoffs ready**. Metadata receipt 7146ff
+verified all four pairs/75-minute coverage without private reads or auth;
+actual CheckOnly 555e08 returned native exit 0 / `check_only_ready`,
+`privateRead: false`, network 0 and `adminHandoffReady: true`. These checks did
+not prove Admin authentication or the actual interactive MCP port.
+Stable 5a99d64 / CI39690616824 all five jobs and
+Vercel passed before the actual attempt.
+
+Segment `e8035391-dba8-48c9-97e0-139ba980d86e` was admitted at
+**21 October 23:12:25.721 UTC** (22 October 02:12:25.721 Cairo). Only `prepare`,
+`restore` and `close` were sent. This one-use admission/claim is consumed and
+closed; do not restart it, retry prepare, create another child or renew authority.
+
+Prepare completed 50 fresh workflow/execution baseline GETs, then blocked before
+setup/Vercel/native/gateway/provider/actor work. No new Admin DB authentication/
+latest receipt, retained-C999 reactivation or owner-provision intent exists;
+the Admin pair remains present. Source ordering and absent receipts are
+consistent with a pre-private startup gate, but the exact preflight/lease/
+transport layer is unestablished. This is not a password rejection. Earlier
+completed AC3 dev history/catalog/advisor/types stay accepted in their original
+scope; no successful migration was replayed.
+
+Actual main management 1 + outside carry 3 = 4. Main control 100 became 150
+through exactly 50 discovery rows; + outside carry 1 = 151, combined 155.
+Setup rows remain 1 with zero write intents; old raw journal prefixes and all
+14 checkpoint artifacts are preserved. Native executions/gateway/provider
+calls/actor starts/workflow transitions are 0; USD2 actor reserve remains unspent.
+All actual A–D/native
+business criteria remain open.
+
+Restore 14f1ce and close aafb7a remain residual: baseline restoration, environment
+cleanup, window closure, fixture archival and remote settlement are not proved.
+The external reader omitted `m03_acceptance_wrapper_closed` from its accepted
+kinds and discarded the final frame after the preparation failure. This defect
+does not explain the earlier startup gate or permit fabricating the missing
+wrapper receipt. The external parent returned native exit 1.
+
+Independent safe CIM b154b0 at 23:18:34.3125062 UTC found no current root 5468,
+runtime 35920 or reachable descendant, using only PID/parent/creation-time fields;
+no termination was attempted. An unknown orphan whose departed intermediate
+parent was never captured remains outside that ancestry proof. This is not a
+replacement physical-close receipt or full-D acceptance.
+
+Initial temporary-state read cf41ae showed all eight inputs, unused uninstalled
+bypass and both locks present. That initial state is preserved in the immutable
+[actual attempt](evidence/dev-acceptance-remaining-attempt-20261022.json).
+The separate verified cleanup and local repair below do not rewrite its residual
+flags, restore the missing wrapper receipt or establish full D.
+
+### 22 October local startup/custody repair and independent cleanup
+
+The public held-open native reproduction identifies unconditional
+`ReadAllText` sharing conflict 32 against the wrapper's Write/Share.Read lock,
+before password read. The dedicated public parent-lock reader now shares the
+incumbent writer; the wrapper still denies other writers and deletion. Its
+bounded strict metadata/path/process checks remain. Because the historical fixed
+diagnostic was lost, this unavoidable defect does not exclude an earlier
+simultaneous gate or establish a historical password rejection/authentication.
+
+Branded allowlisted startup/physical-closure evidence and the separate public
+wrapper reader are corrected; missing/unknown output remains unresolved. No
+historical wrapper receipt is fabricated. Independent review found no P1/P2 in
+these repairs. Combined targeted **71/71**, native exit 0/no skips (71e6f9),
+passes; overlapping 33/7/11 review checks are not added. Actual public seal
+590556 passes native exit 0, `privateRead: false`, network 0 with 124 project/
+840 runtime inputs. Readback 1ab4ed verifies all 35 DB pins and 14 unchanged
+migration/history records. No full CheckOnly on spent authority or new auth.
+
+Independent cleanup **fd3fa5** at 23:26:05.4456193 UTC returned native exit 0,
+`M03_REMAINING_TEMPORARY_CLEANUP_VERIFIED`: exactly nine leaves deleted, no
+private contents read/network/children started. Presence read **a3c6aa** at
+23:26:17.6672433 UTC confirms all nine absent and unused Admin two files still
+present. Saved originals/Machine/history/admissions/journals remain preserved;
+exclusive cleanup intent blocks replay. Safe process reconciliation retains the
+unknown-orphan limit, with no whole-workstation or parent-environment clearance
+claim and no replacement for historical physical-close/full-D evidence.
+
+Local repair and exact cleanup are complete; evidence/delivery and normal
+new-head CI remain. **No new owner input, handoff or window request now.**
+Completed AC3 remains distinct from all actual A–D/full-D criteria. Production,
+private incident R2 execution, merge and M04 remain untouched.
+[Verified cleanup](evidence/dev-acceptance-remaining-cleanup-20261022.json),
+[startup repair](evidence/dev-acceptance-startup-repair-20261022.md).
+
+### Historical 22 October approval/public readiness — before e803 admission
+
+This preserved pre-admission snapshot is superseded as current instructions by
+the actual consumed attempt above. Do not use it to redeliver inputs or admit
+another child/window.
 
 The owner answered **Approve exact remaining packet** to the packet question at
 reviewed PR8 head `a04d7c4b8835c0ae3f8136e9095d0e3e775b9151`, whose CI39687951618
@@ -43,13 +144,13 @@ paths absent and no new admission/claim. No credential contents were opened.
 Actual public seal67be61 passes native0 with123project/840Zod/3462Vercel inputs.
 Full coordinatorCheckOnly9d78d6 passes native0/check_only_ready, public composition
 and DB inputs verified, privateRead:false/network0/adminHandoffReady:false/
-actualMcpPortVerified:false. No authority was admitted. Normal new-delivery CI
-is checked separately. Then request only the same four saved values using the
-[exact remaining-mode commands](evidence/dev-acceptance-remaining-handoff-20261022.md).
-There is no new approval/reset/rotation/Machine/production request. Lease75minute
-coverage, actual interactive transport and provenance still gate the one-use
-admission. Original counters remain management4/control101/combined105; no actor,
-workflow, provider, gateway, fixture or migration operation has run.
+actualMcpPortVerified:false. No authority was admitted at that historical
+CheckOnly. Its subsequent request used the [exact remaining-mode commands](evidence/dev-acceptance-remaining-handoff-20261022.md),
+then metadata7146ff and e803 admission followed. No renewed delivery or authority
+is requested from this snapshot. At that checkpoint75-minute coverage/transport/
+provenance still gated admission and counters were4management/101control/105
+combined; no actor/workflow/provider/gateway/fixture or migration operation had
+run. Later accounting is the separate4/151/155 above.
 [Approved-source/public readiness](evidence/dev-acceptance-remaining-approved-readiness-20261022.json).
 
 ### Historical preapproval remaining consumer delivery
@@ -169,7 +270,6 @@ existing CLI login; the22October actual read above now verifies it complete.
 
 ### Historical pre-admission readiness for the now-consumed replacement
 
-
 Owner replied **I approve** to the exact reviewed packet at d834968. The
 [separate approval](evidence/dev-acceptance-postcheck-approval-20261021.json)
 records the actual short reply and binds that packet, the prior actual attempt
@@ -205,7 +305,7 @@ with no parent lock, unused bypass, new admission or claim. Only the exact four
 saved-value temporary deliveries below are needed; no new credential or repeated
 approval. Production, schedules, private R2, shared credentials, merge and M04 stay out.
 
-### Latest actual attempt: migrations succeeded; postcheck stopped setup
+### Historical actual attempt: migrations succeeded; postcheck stopped setup
 
 The single segment was admitted at **13:42:15.608 UTC** after fresh delivery,
 CI39609646416 (five jobs plus Vercel), explicit public seal ed8820 and actual
@@ -584,18 +684,18 @@ window stays permanently closed (23 coordinated attempts; 16 SQL admissions and
 one Close). Its runtime source remains `3d141fb9`; reviewed source `f43c5e5` and
 CI `39119760390` are separate historical evidence.
 
-| Task / criteria | Preserved evidence | Remaining implementation / acceptance |
-| --- | --- | --- |
-| T1 / AC1, AC12 | Runtime 2.43.5, 50K allowance, documented execution estimate | No renewed plan or billing investigation |
-| T2 | Existing authenticated browser and partial API receipts | Reviewed bounded owned-workflow provisioning; no broad editor read |
-| T3 / AC2 | Five existing credential IDs/types, four metadata successes, separate gateway identity success | Bind full foundation to its own disabled transport; native Postgres TLS remains a historical failure |
-| T4 / AC3–4 | Ten applied dev migrations, original hashes, schema/advisors/types, budget 25 | New forward source only: durable launch/callback audit and foundation admission; local tests/advisors/types before any proposed hosted application; unknown fees remain unknown |
-| T5 | Existing five SUB blueprints and local tests | Complete typed gateway operations, real references, sanitized saved definitions; later live proof |
-| T6 / AC8 | Existing error/cooldown SQL tests | Full log-only WF-90 transport; later automatic Error Trigger and cooldown test |
-| T7 / AC6–7 | Recovery and stable-settlement local evidence | Exact rejection audit, byte-bounded authenticated dataset reader, atomic processing and durable status recovery; later callback batch |
-| T8 / AC9 | Existing Cairo schedule/PM/backfill guards | Full gateway dispatch graph and 15 explicit stubs, including both Saturday 04:00 jobs; schedules inactive |
-| T9 / AC5, AC10 | Existing health SQL and recovery-only smoke source | Functional disabled one-shot async launch, original-run reconciliation, health/accrual idempotency; later two genuine runs with separate costs |
-| T10 / AC11 | Historical sanitized probe exports | Generated graph matrix, actual inactive IDs/exports where accessible, one exact final live packet; no M03 closure yet |
+| Task / criteria | Preserved evidence                                                                             | Remaining implementation / acceptance                                                                                                                                           |
+| --------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T1 / AC1, AC12  | Runtime 2.43.5, 50K allowance, documented execution estimate                                   | No renewed plan or billing investigation                                                                                                                                        |
+| T2              | Existing authenticated browser and partial API receipts                                        | Reviewed bounded owned-workflow provisioning; no broad editor read                                                                                                              |
+| T3 / AC2        | Five existing credential IDs/types, four metadata successes, separate gateway identity success | Bind full foundation to its own disabled transport; native Postgres TLS remains a historical failure                                                                            |
+| T4 / AC3–4      | Ten applied dev migrations, original hashes, schema/advisors/types, budget 25                  | New forward source only: durable launch/callback audit and foundation admission; local tests/advisors/types before any proposed hosted application; unknown fees remain unknown |
+| T5              | Existing five SUB blueprints and local tests                                                   | Complete typed gateway operations, real references, sanitized saved definitions; later live proof                                                                               |
+| T6 / AC8        | Existing error/cooldown SQL tests                                                              | Full log-only WF-90 transport; later automatic Error Trigger and cooldown test                                                                                                  |
+| T7 / AC6–7      | Recovery and stable-settlement local evidence                                                  | Exact rejection audit, byte-bounded authenticated dataset reader, atomic processing and durable status recovery; later callback batch                                           |
+| T8 / AC9        | Existing Cairo schedule/PM/backfill guards                                                     | Full gateway dispatch graph and 15 explicit stubs, including both Saturday 04:00 jobs; schedules inactive                                                                       |
+| T9 / AC5, AC10  | Existing health SQL and recovery-only smoke source                                             | Functional disabled one-shot async launch, original-run reconciliation, health/accrual idempotency; later two genuine runs with separate costs                                  |
+| T10 / AC11      | Historical sanitized probe exports                                                             | Generated graph matrix, actual inactive IDs/exports where accessible, one exact final live packet; no M03 closure yet                                                           |
 
 Source-only forward changes and their local tests are not hosted acceptance.
 The final live packet must use a distinct foundation window and credentials;
@@ -649,7 +749,9 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 [single final-packet preparation](evidence/live-acceptance-outline-20261018.md).
 
 ## Task checklist
+
 <!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
+
 - [x] T1 — Five plan facts recorded below; actual UI capability evidence and current official plan/billing rules are distinguished. No execution/billing experiment claimed.
 - [ ] T2 — Historical incomplete inventory/failures retained. Reviewed public API now created25 owned shells, updated/read back25 staged graphs,13tags and one Machine with actual sanitized exports. Native manual execution/completion/cancellation access remains unverified; the single owned metadata read supplied no usable result. No login/discovery loop or successful delivery replay.
 - [ ] T3 — All five actual IDs/types reused; four provider metadata GETs pass. Native Postgres-node TLS remains open; separate approved GW-01 direct Writer Verify and actual gateway/native HTTP-node identities now pass. The temporary connection trial is closed, not full backbone acceptance; OpenAI cap is not inferred from Models access.
@@ -662,7 +764,9 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 - [ ] T10 — Export, document, hand-off
 
 ## Acceptance criteria
+
 <!-- Mirror of MILESTONE.md; paste evidence (command + output summary, counts, screenshot paths). -->
+
 - [x] AC1 — Plan facts recorded — actual n8n 2.43.5, paid Cloud plan, upgraded 50,000 allowance; the five facts and evidence boundaries are recorded below.
 - [ ] AC2 — Credentials work — four provider metadata GETs pass. Native n8n Postgres credential Retry/SELECT still fail TLS chain validation. Separate approved [direct Writer Verify](evidence/gw01-writer-verify-20261018.json) proves dev session5432 strict TLS, current_user/session_user=n8n_writer and four42501 rollback denials. The later [gateway/native HTTP-node trial](evidence/gw01-trial-closeout-20261018.json) proves restricted identity through the temporary route; native Postgres-node TLS and full credentials/backbone acceptance remain open. [Native readback](evidence/credential-readback-20261018.json).
 - [x] AC3 — Dev RPC/database requirement verified: CI39622010384 database job passes the14-version local replay/pgTAP/advisor/concurrency checks, including10_n8n_foundation. New actual dev run3860e4ad verifies complete14 history, fresh catalog/RLS/ACL booleans, both native CLI advisors at zero WARN/ERROR (sealed source order; no standalone per-advisor receipt), and fresh4schema/6table/9RPC types/AST coverage. [Completed dev postchecks](evidence/dev-acceptance-postcheck-attempt-20261021.json). Historical formatting-only failure and unchanged original candidate remain preserved; the separate historical dashboard Auth warning is not erased. This completes the database criterion, not native workflow/business acceptance.
@@ -678,14 +782,24 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
-- The old replacement and both diagnostics are consumed/closed; all historical
-  failures/receipts remain. MA-02 access restoration is actually complete. The
-  distinct remaining packet is now approved/pinned, with no new admission or
-  credential consumption. Public/CI readiness and four missing temporary input
-  deliveries still gate live acceptance. Historical raw layer remains
-  unestablished; completed dev postchecks/cleanup stand.
+- The latest remaining segment e803 is consumed/closed after 75-minute metadata
+  coverage, CheckOnly 555e08 and admission at 23:12:25.721 UTC. Prepare blocked after 50
+  baseline GETs before Vercel/native/gateway/provider/actor work. Exact Admin
+  startup held-lock defect is now reproduced and corrected locally; lost raw
+  diagnostics prevent excluding an earlier simultaneous gate. No new DB receipt
+  or password rejection is established. Aggregate management 4/control 151/
+  combined 155 is conserved. Local repair/review and exact nine-leaf cleanup are
+  complete; Admin two files remain untouched. Evidence/normal new-head CI
+  pending; no new owner input/handoff/time request.
+- The external reader lost final wrapper-close after the failure. Parent native exit 1
+  and safe CIM no current roots/reachable children do not prove unknown-orphan
+  absence or replace the missing physical-custody/full-D receipt. Restore/close
+  remain residual; no A–D criterion is closed by that reconciliation.
+  [Actual remaining attempt](evidence/dev-acceptance-remaining-attempt-20261022.json),
+  [independent cleanup](evidence/dev-acceptance-remaining-cleanup-20261022.json),
+  [local startup repair](evidence/dev-acceptance-startup-repair-20261022.md).
 
-- Historical type-check failure: that segment and its later no-push replacement are both consumed and closed. The replacement completed dev postchecks and stopped at its first Vercel GET as recorded above. All four temporary handoff pairs are deleted. Prior public seals/readiness do not authorize another admission. Native A-D acceptance remains unrun; GW01 stays closed. Historical dev MCP refresh failure/dashboard reconciliation remain separate.
+- Historical type-check failure: that segment and its later no-push replacement are both consumed and closed. That replacement completed dev postchecks and stopped at its first Vercel GET; its four temporary handoff pairs were deleted at that checkpoint. This is separate from the e803 initial temporary state and later independently verified nine-leaf cleanup above. Prior seals/readiness never authorize another admission. Native A–D acceptance remains open; GW01 closed. Historical dev MCP refresh failure/dashboard reconciliation remain separate.
 
 - Separate private operational follow-up: bounded read-only preparation and
   temporary-credential cleanup completed; actual projections and remaining
@@ -706,13 +820,21 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-### MA-04 / MA-11 — approved remaining-window saved-input delivery
+### MA-04 / MA-11 — delivery fulfilled; local repair/cleanup complete, no current owner action
 
-The owner decision below is **completed**, actual reply **Approve exact remaining
-packet**, reviewed head a04d7c4, receiptcbc097. Do not ask it again. The single
-clock has not started. Metadata-only eebe43 verifies all four temporary input
-pairs absent. After actual approved public preflight and new-head CI pass,
-request only the existing saved values through these two reviewed commands:
+**Completed delivery; do not repeat.** Exact approvalcbc097 and the later owner
+reply **M03 remaining-window handoffs ready** are recorded. Metadata receipt 7146ff
+verified four pairs/75-minute coverage; CheckOnly 555e08 passed, then e803 was
+admitted and consumed. Admin startup did not return ready. Its held-open public
+lock reader defect is reproduced/corrected locally, while lost raw diagnostics
+prevent excluding an earlier simultaneous gate. Nine-leaf cleanup fd3fa5/native
+exit 0 and absence read a3c6aa are verified; Admin two files remain preserved.
+Local repair/review is complete; finish evidence and normal new-head CI without
+another credential/window request or replaying spent authority. No historical
+password rejection or new authentication is claimed.
+
+These are the **historical delivery commands**, retained for provenance only;
+the following prompt/readiness instructions are not a current action:
 
 ```powershell
 & 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\db\windows\New-M03FoundationMigrationHandoff.ps1' -RemainingContinuation
@@ -746,9 +868,10 @@ The separate decision was required because the prior packet forbids renewal and
 its one-use
 admission is consumed/closed. The new retained-fixture operation also needs this
 specific decision, now supplied. Existing local M03 authorization is unchanged.
-The actual reply is pinned/reviewed and the approved public seal/CheckOnly pass;
-no clock starts from the reply or this file alone. Only the absent saved-input
-deliveries above remain an owner action after current delivery CI.
+The actual reply is pinned/reviewed. Subsequent delivery and e803 admission are
+now consumed; no clock starts from this file or the old reply and no owner
+delivery is requested now. Preserve that admission and finish repair evidence/
+normal new-head CI before assessing any genuine future authority need.
 
 MA-02 is verified complete on22October by actual fixed GET f3102d/HTTP200/native0/
 all12predicates and child closure. No more login, setup, key creation or reset.
@@ -777,6 +900,10 @@ to verify actual fixed-project access. No administrator/n8n/provider handoff is
 needed for that check. All remaining A-D business criteria remain pending.
 
 ### MA-04 / MA-11 — historical postcheck delivery: completed/consumed
+
+All remaining delivery/decision instructions in this manual-action history are
+preserved snapshots, not current requests. The consumed e803 attempt and local
+remedy above govern the next step; do not repeat an old command or approval.
 
 In Windows PowerShell under this same Windows account, run:
 
@@ -979,17 +1106,17 @@ decision and explicitly recorded. [Exact procedure](../../scripts/n8n/foundation
 
 The following rows preserve prior completed actions and separate later gates.
 
-| ID | Current state | Owner action |
-| --- | --- | --- |
-| MA-04 M03 dev | Both approved versions applied successfully; independent history/schema/advisor/data readback passes. Handoff/scratch deleted; children closed; successful admission retained. | None. No new database handoff or replay. |
-| MA-10 / MA-11 providers | Existing provider ID/type bindings/four metadata tests preserved. Native n8n TLS remains open; approved GW-01 direct Writer login/authorization now pass. | None now. No native credential recreation/reset/rename/SSL weakening or repeat declined contact request. |
-| MA-11 / INC-M03-20261018-01 | Owner inputs ready; separate production gate remains. | No further input requested here. Production gate remains separate; details stay private. |
-| MA-11 / GW-01 | Actual connection trial and all owned closeout pass; window closed, 23/100 attempts, zero leases. Dedicated bypass, owned n8n credentials, both sensitive project Environment entries and all six checked temporary paths removed. | None. Continue full M03 technical preparation. No trial replay, window reset, paid start or handoff recreation. |
-| MA-11 / Management refresh | Earlier readiness fb95ae and lease history preserved. RuntimeCredential used three Management requests; final owned credential cleanup used four, then consumed temporary handoffs were removed. | None. No new key or handoff requested. Earlier expiry/blocked deletion and successful later cleanup are distinct records. |
-| MA-11 API | Existing key authenticated; Personal list200; later workflow transport incomplete. Consumed key handoffs deleted. | None now. Do not request another key or repeat login/discovery to rediscover the transport failure. |
-| MA-12 | Authorized existing OpenAI credential works for Models read. Project cap is unverified; no model calls. | No new credential requested; keep cap evidence distinct. |
-| MA-13 / fees | Actual dev alert budget25. Subscription/other unknown prices remain unknown. | None; do not restart billing questions or alter shared budgets. |
-| M03 live acceptance | [Outline](evidence/live-acceptance-outline-20261018.md) remains preparation only until exact graph IDs/source seals/request counts/price/caps are filled and technical gates pass. | No batch approval requested yet. Present the concrete packet before any actor/multi-workflow test batch. |
+| ID                          | Current state                                                                                                                                                                                                                      | Owner action                                                                                                              |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| MA-04 M03 dev               | Both approved versions applied successfully; independent history/schema/advisor/data readback passes. Handoff/scratch deleted; children closed; successful admission retained.                                                     | None. No new database handoff or replay.                                                                                  |
+| MA-10 / MA-11 providers     | Existing provider ID/type bindings/four metadata tests preserved. Native n8n TLS remains open; approved GW-01 direct Writer login/authorization now pass.                                                                          | None now. No native credential recreation/reset/rename/SSL weakening or repeat declined contact request.                  |
+| MA-11 / INC-M03-20261018-01 | Owner inputs ready; separate production gate remains.                                                                                                                                                                              | No further input requested here. Production gate remains separate; details stay private.                                  |
+| MA-11 / GW-01               | Actual connection trial and all owned closeout pass; window closed, 23/100 attempts, zero leases. Dedicated bypass, owned n8n credentials, both sensitive project Environment entries and all six checked temporary paths removed. | None. Continue full M03 technical preparation. No trial replay, window reset, paid start or handoff recreation.           |
+| MA-11 / Management refresh  | Earlier readiness fb95ae and lease history preserved. RuntimeCredential used three Management requests; final owned credential cleanup used four, then consumed temporary handoffs were removed.                                   | None. No new key or handoff requested. Earlier expiry/blocked deletion and successful later cleanup are distinct records. |
+| MA-11 API                   | Existing key authenticated; Personal list200; later workflow transport incomplete. Consumed key handoffs deleted.                                                                                                                  | None now. Do not request another key or repeat login/discovery to rediscover the transport failure.                       |
+| MA-12                       | Authorized existing OpenAI credential works for Models read. Project cap is unverified; no model calls.                                                                                                                            | No new credential requested; keep cap evidence distinct.                                                                  |
+| MA-13 / fees                | Actual dev alert budget25. Subscription/other unknown prices remain unknown.                                                                                                                                                       | None; do not restart billing questions or alter shared budgets.                                                           |
+| M03 live acceptance         | [Outline](evidence/live-acceptance-outline-20261018.md) remains preparation only until exact graph IDs/source seals/request counts/price/caps are filled and technical gates pass.                                                 | No batch approval requested yet. Present the concrete packet before any actor/multi-workflow test batch.                  |
 
 ### MA-11 GW-01 public runtime check - completed
 
@@ -1098,7 +1225,9 @@ Completed native0 with exact10-version parity; no new Admin delivery or replay i
   [preparation evidence](evidence/inactive-foundation-preparation-20261019.json).
   No real credential consumed or Cloud provisioning performed at this checkpoint.
   GW-01, production, merge and M04 remain untouched.
+
 <!-- Anything that differs from the docs. Also add to docs/DECISIONS.md → Changes if it changes a decision. -->
+
 - Callback spec correction under review: marking `processed_at` before ingest loses work after partial failure. Reordering alone is insufficient because chunk inserts, account receipts and costs need a durable atomic callback receipt. M03 will use a bounded atomic persistence RPC for the one-page website smoke branch; unsupported later collector branches fail closed. Existing M01 interfaces/seven migration versions remain intact.
 - Default callback verification is option (b), registered-run lookup plus authenticated Apify run readback. Callback-supplied context, dataset IDs, actor/status/usage are never trusted for persistence.
 - Official documentation supplements actual plan facts but does not establish the owner's tier/runtime. Pending n8n skill remains outside discovery until its actual-runtime/schema gate passes.
@@ -1111,13 +1240,13 @@ project `pHvQjDmjxVZ3KQLT`, runtime 2.43.5, Africa/Cairo. Cloud Manage showed Pr
 (Monthly); after the owner's upgrade its dashboard showed 11,001/50,000 used.
 This is the shared instance allowance, not a dedicated Market Radar reservation.
 
-| Fact | Answer and evidence boundary |
-| --- | --- |
-| Execution timeout | The actual unused workflow saved 900 seconds successfully. Current [Cloud pricing](https://n8n.io/pricing/) documents 40 minutes for Pro/Enterprise; the instance's hard maximum was not experimentally tested. M03 keeps 15 minutes. |
-| Sub-workflow quota | Current [execution documentation](https://docs.n8n.io/build/understand-workflows/understand-executions.md#how-executions-count-towards-quotas) says Execute Sub-workflow calls do not count separately; only the top-level production execution counts. Manual and error executions are also excluded by the documented rule. This is the rule for the observed paid plan, not an independently measured billing experiment. |
-| Variables | Initial T1 controls verified. INC-M03-20261018-01 owner inputs ready; separate production gate remains. Details stay private. |
-| Verified Apify node | Actual picker shows installed/verified Apify package version 0.6.10 (Legacy), update available. No install/update or actor execution occurred. HTTP Request remains the reviewed API path; a current Apify node schema is not assumed. |
-| Postgres parameters | Initial capability inspection found Postgres 2.7 Options → Query Parameters (`options.queryReplacement`) and `$1/$2/$3` help without connecting. The later native identity attempt failed strict TLS, as recorded separately above. |
+| Fact                | Answer and evidence boundary                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Execution timeout   | The actual unused workflow saved 900 seconds successfully. Current [Cloud pricing](https://n8n.io/pricing/) documents 40 minutes for Pro/Enterprise; the instance's hard maximum was not experimentally tested. M03 keeps 15 minutes.                                                                                                                                                                                        |
+| Sub-workflow quota  | Current [execution documentation](https://docs.n8n.io/build/understand-workflows/understand-executions.md#how-executions-count-towards-quotas) says Execute Sub-workflow calls do not count separately; only the top-level production execution counts. Manual and error executions are also excluded by the documented rule. This is the rule for the observed paid plan, not an independently measured billing experiment. |
+| Variables           | Initial T1 controls verified. INC-M03-20261018-01 owner inputs ready; separate production gate remains. Details stay private.                                                                                                                                                                                                                                                                                                |
+| Verified Apify node | Actual picker shows installed/verified Apify package version 0.6.10 (Legacy), update available. No install/update or actor execution occurred. HTTP Request remains the reviewed API path; a current Apify node schema is not assumed.                                                                                                                                                                                       |
+| Postgres parameters | Initial capability inspection found Postgres 2.7 Options → Query Parameters (`options.queryReplacement`) and `$1/$2/$3` help without connecting. The later native identity attempt failed strict TLS, as recorded separately above.                                                                                                                                                                                          |
 
 The [live capability receipt](evidence/n8n-node-capability-20261018.json) records
 12 exported node versions and the archived unused probe. It is not a foundation
@@ -1143,9 +1272,45 @@ ordinary Cloud execution with asynchronous actor callbacks; no queue-mode or
 concurrency setting was changed.
 
 ## Risks / notes for the owner
+
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-22 Cairo: Local native held-open reproduction identifies unconditional
+  `ReadAllText` sharing conflict 32 before password read. Dedicated public-lock
+  reader corrected; wrapper Write/Share.Read still refuses another writer/delete.
+  Lost historical diagnostic leaves earlier simultaneous gates unexcluded.
+  Branded startup/closure and public final-wrapper reader independently reviewed,
+  no P1/P2; combined targeted 71/71 native exit 0/no skips (71e6f9), overlapping
+  33/7/11 checks not added. Actual seal 590556 native exit 0/privateRead false/
+  network 0, 124 project/840 runtime inputs; 1ab4ed verifies 35 DB pins and all
+  14 unchanged records. Exact cleanup fd3fa5 native exit 0 deleted nine leaves;
+  a3c6aa confirms absent/Admin two files preserved. No private reads/network/new
+  children by cleanup, no whole-workstation/orphan/full-D claim. Spent e803,
+  counters 4/151/155 and historical residual/missing wrapper are preserved.
+  No full CheckOnly on spent authority/new auth/owner input/window request.
+  Evidence/normal new-head CI pending; AC3 preserved, actual A–D/full-D open,
+  production/private R2 execution/merge/M04 untouched.
+  [Cleanup](evidence/dev-acceptance-remaining-cleanup-20261022.json),
+  [startup repair](evidence/dev-acceptance-startup-repair-20261022.md).
+
+- 2026-10-22 Cairo: Stable 5a99d64 / CI39690616824 five jobs/Vercel, metadata receipt 7146ff
+  four pairs/75-minute coverage and CheckOnly 555e08 passed before the single
+  e803 admission on 21 October at 23:12:25.721 UTC. Prepare used 50 fresh baseline GETs then
+  blocked before Vercel/native/gateway/provider/actor work; no new DB auth/
+  fixture/provision receipt, Admin pair present, startup gate unestablished
+  rather than password rejection. Restore 14f1ce/close aafb7a residual; admission
+  consumed/closed, no replay/renewal. Main management 1 + carry 3 = 4/control 150 + carry 1 =
+  151/combined 155; old prefixes/14 checkpoint artifacts preserved, 0 migration
+  operations. External reader dropped final wrapper-close after failure; parent
+  native exit 1 and safe CIM b154b0 no current 5468/35920/reachable children retain an
+  unknown-orphan limit, not full-D/physical-custody proof. Nine exact non-admin
+  local cleanup targets under review; Admin two files/originals/Machine kept.
+  Local diagnostic/custody remedy is being implemented/reviewed; no owner new
+  input/handoff/time request. Completed AC3 stays distinct from open A–D;
+  production/private incident R2/merge/M04 remain unstarted.
+  [Actual remaining attempt](evidence/dev-acceptance-remaining-attempt-20261022.json).
 
 - 2026-10-21 22:23 Cairo (19:23 UTC): Delivered guard correction7a95a8e,
   CI39659730097 all five jobs/Vercel pass. Actual fixed diagnostic0e9ce3
@@ -1280,7 +1445,9 @@ concurrency setting was changed.
 - 2026-10-18 Cairo · Delivery code checkpoint954d9ef: targeted71 Node and42 shared contract tests pass; later exact-page mapper124 affected tests pass, root/workspace typecheck and affected ESLint native0. Independent artifact/source review clear after provenance corrections. All nine migration file hashes reconfirmed unchanged. Temporary dev DB/API handoffs and successful private scratch absent at05:45:10UTC; durable successful push admission retained. [Local receipt](evidence/local-resume-validation-20261018.json), [runtime receipt](evidence/runtime-capability-20261018.json). Final evidence/index scan and normal PR CI follow; no full unchanged local suite rerun.
 
 - 2026-10-18 Cairo · Current resumption: preserved ab9c3c6 and successful CI39097738601; actual clean branch inspected before changes. Existing five credential IDs/types mapped; four actual metadata GETs pass, native writer still fails strict TLS on saved5432. Actual probes exported/archived; no shared credential mutation. Both temporary handoffs initially ready; first DB dry-run rejection preserved, secondnative0/invalid_json preserved; exact pinned CLI source reveals legacy output flag precedence. Corrected command-specific flags pass RED→GREEN/review, actual third once-only run03a85d53 native0 and exact nine-history parity. Independent schema/advisor/type/data/exclusion/logo readback passes (links above); local379 unchanged SQL tests remain separate from hosted metadata/advisors. Daily dev budget25, unknown fees not fabricated. API DNS fixed/tested/reviewed; actual key authenticates and Personal list200, later workflow resource transport fails; no credential-list/full-inventory pass claimed. All consumed handoffs/scratch deleted/children closed; keep durable push admission and owner originals. Source-only Apify trust/async/spend boundaries tested; fullWF19/WF99 incomplete. Pure Cloud probe proves globalURL/modules unsupported; strict exact-owned-page adapter passes separately, general/grouping support not claimed. Root targeted71Node+42Vitest, lint/typecheck pass before the later mapper change; its affected checks are recorded separately. No replay, production, activation, actor/model/paid call, notification, merge or M04. Owner declined contact; no further credential action is needed. Final delivery checks/normal PR CI pending.
+
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
+
 - 2026-10-18 · Local native preparation now covers 15 stubs, five SUBs, WF-90, WF-00 and WF-91 (23 blueprints), all inactive and requiring actual bindings. Root's combined changed-code check passed 48/48: 30 foundation/graph/clock/cross-adapter checks plus 18 API-reader checks; binding tests separately 15/15. Targeted lint/format passed. No actual bindings file, hosted workflow export or execution is claimed. Independent review caught/fixed blind Start/claim retries, key reflection, credential project metadata, Cost context and activation-error correlation before live use. [Native review](evidence/native-foundation-review-20261018.json), [API local receipt](evidence/local-n8n-inventory-consumer-20261018.json).
 - 2026-10-18 · Code head `6e6db7ead293f7835d165c8ae574c8888ba7c41a` passed actual CI39097436130: quality, unit (including the 48 native/API checks), build, e2e and db-tests; Vercel preview SUCCESS. [CI receipt](evidence/ci-6e6db7e-20261018.json), [root local check](evidence/local-native-api-20261018.json). Both temporary M03 handoffs remain unconsumed and no hosted credential/provider/migration/workflow result is claimed. Three exact owner actions are pending above; no further sign-in, reset, general dev or merge approval is requested. Production, schedules and M04 stay untouched.
 - 2026-10-18 · [CI39096921840](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39096921840) passed all five jobs on `41d1aad2ae39be179436749039cc5454713bea72`. Its new actual PostgreSQL tests observed the required lock barriers: equal-key receipts 1+0/one row; reversed two-key batches 0+2/two rows with no later advisory locks held before the first key. Cleanup passed and retained catalog/Test House data matched. This covers keyed-cost contention, not an atomic-callback two-session race or hosted acceptance. [Actual CI receipt](evidence/ci-41d1aad-20261018.json).
@@ -1294,7 +1461,9 @@ concurrency setting was changed.
 - 2026-10-17 · milestone file created (handoff pack)
 
 ## Hand-off to next milestone
+
 <!-- Filled when Done: what exists now, how to run/verify it, known gaps, what the next milestone should start with. -->
+
 - —
 
 - 2026-10-18 Cairo ? GW-01 implementation checkpoint:24 scoped gateway tests including5 real local TLS cases,17 isolated migration-consumer cases,102 gateway pgTAP assertions,19 real local process/concurrency checks and8 checker regressions pass. Build/type/lint and traced public CA verified. Offline pinned CLI parser matches all9 existing history digests and derives18 statements/new digest53ceb5? without a ledger edit. [Gateway evidence](evidence/local-gw01-gateway-20261018.json), [DB evidence](evidence/local-gw01-db-20261018.json). Management presence/lease only; Admin requested for one new migration. Trial0requests/clock stopped; no hosted role acceptance or production change.24October tooling follow-up retained.
