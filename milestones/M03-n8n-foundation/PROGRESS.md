@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: Vercel project access is actually restored (HTTP200/all12 predicates/native0/closed child). The distinct remaining consumer is implemented/reviewed and actual sealed public CheckOnly passes with approval_required/privateReadfalse/network0. Normal delivered-head CI precedes the exact separate time/retained-fixture decision. Approval remains unpinned; no admission, private input or hosted mutation. Dev14 postchecks, archived/paused owned C999, all prior failures/counters and deleted handoffs remain preserved. No migration replay, production, merge or M04. GW01 stays closed.**
+**Blocked: waiting on owner — MA-11 exact remaining-window/retained-C999 decision after current PR checks pass. Vercel access is actually restored; the remaining consumer is implemented/reviewed and sealed public CheckOnly passes with approval_required/privateReadfalse/network0. Approval remains unpinned; no admission, private input or hosted mutation. Dev14 postchecks, archived/paused owned C999, all prior failures/counters and deleted handoffs remain preserved. No migration replay, production, merge or M04. GW01 stays closed.**
 
 | Field | Value |
 | --- | --- |
@@ -676,9 +676,33 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-**Current: none. MA-02 is verified complete on22October** by actual fixed GET
-f3102d/HTTP200/native0/all12predicates and child closure. No new approval or
-handoffs are requested while the remaining engineering/review packet is prepared.
+### MA-11 — one exact remaining-window/retained-fixture decision
+
+The implementation, independent review and actual sealed public preflight are
+complete. Verify current PR8 head/checks, then review the
+[exact packet](evidence/dev-acceptance-remaining-packet-20261022.md) and
+[local/public evidence](evidence/dev-acceptance-remaining-implementation-20261022.json).
+The packet permits one new60-minute dev segment: stop-new50, physical-close70,
+75-minute input coverage, all old attempts/counters preserved and no migration
+replay. It includes only the exact retained C999 status reactivation and original
+finite native matrix; at most two sequential actor starts, USD1each/USD2total,
+at most one new distinct item, second run zero new items. No new fixtures or
+real-competitor collection.
+
+Reply exactly: **Approve one M03 remaining A-D dev window and exact retained-C999
+reactivation at the reviewed PR #8 head, preserving all prior attempts and
+aggregate caps; no migration replay.**
+
+Why: the prior approved packet explicitly forbids renewal and its one-use
+admission is consumed/closed. The new retained-fixture operation also needs this
+specific decision. Existing local M03 authorization is unchanged. Expected
+non-secret result: the actual reply is recorded and pinned to the reviewed
+packet, then reviewed/resealed; no clock starts from the reply or this file alone.
+No credential handoff is requested now. After approval/readiness, request only
+truly missing saved values with the reviewed exact helper commands.
+
+MA-02 is verified complete on22October by actual fixed GET f3102d/HTTP200/native0/
+all12predicates and child closure. No more login, setup, key creation or reset.
 
 **Historical completed MA-02 instructions; do not repeat.** Actual bounded
 read0e9ce3 verified saved_auth_expired; no project response or automatic refresh.
