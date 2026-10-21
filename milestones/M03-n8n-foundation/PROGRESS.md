@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**In progress: the one replacement attempt is consumed and physically closed native1. Actual dev14 authentication/postchecks/types passed; setup blocked at its first Vercel project GET before any native/provider/actor execution. Owned C999 is archived/account paused, all eight inputs/scratch and unused bypass are deleted. Concrete local Vercel guard fix/regression/review continues. No replay, new child/window or credential request. GW-01 stays permanently closed.**
+**In progress: the replacement is consumed/closed native1; dev14 postchecks passed. Guard fix7a95a8e, independent focused tests and five-job CI/Vercel pass. Separate actual project-read diagnostic closes with saved_auth_expired before a project response. Only private existing Vercel CLI login is requested; the separately fenced post-login reader/review/public CheckOnly pass and normal new-head CI remains required. Owned C999 is archived/account paused, all consumed inputs/scratch/bypass deleted. No migration replay, A-D renewal or four-value credential request. GW-01 stays permanently closed.**
 
 | Field | Value |
 | --- | --- |
@@ -16,8 +16,8 @@
 | Selected-source CI | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance. |
 | Prior CI checkpoint | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result. |
 | GW-01 CI checkpoint | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance. |
-| Current task | Vercel guard correction and independent review pass. Separate one-use fixed project-read diagnostic is public CheckOnly ready; normal delivered-head CI precedes its actual read. Successful dev postchecks and cleanup remain preserved. |
-| Next step | Deliver the fix, verify normal CI, then perform only the bounded post-close project GET. The replacement admission is spent; no prepare/start/migration replay or automatic renewal. |
+| Current task | Actual Vercel diagnostic verified saved session expiry. Existing private CLI sign-in requested. Separately fenced post-login reader/review6/6 and actual CheckOnly04aad6 pass; normal new-head CI and private sign-in precede its one actual read. |
+| Next step | Verify normal new-head CI and owner-reported private sign-in, then use only AfterLoginRun to verify fixed-project access. Complete the remaining-readiness engineering before any new A-D decision; no migration replay or renewal. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI. |
 
 ## 21 October A–D approval and actual preflight
@@ -66,8 +66,17 @@ child-only filesystem/keyring mutation fences precede native resolver imports.
 No real auth/session restoration or credential request is inferred from these
 local results. The separate post-close diagnostic has one fixed GET, a20-second
 limit, durable one-use ledger and conservative aggregate management3/512. Root
-CheckOnlyea9f91 passed without private reads/network. Delivered-head CI and the
-actual one-read result remain separate gates; no A-D clock is started.
+CheckOnlyea9f91 passed without private reads/network. Delivered7a95a8e passed
+CI39659730097 all five jobs and Vercel. Actual one-read0e9ce3 closed native1:
+stage native_exit, saved_auth_expired, HTTP null, no predicates, no mutation or
+automatic refresh. This identifies current saved-session expiry, not the raw
+layer of the earlier batch failure. [Immutable actual diagnostic](evidence/dev-acceptance-vercel-postclose-actual-20261021.json).
+Conservative aggregate management3/control101 includes the two outside project
+read attempts and one fixed native details read; original journals stay1/100.
+Native metadata produced no accepted DTO, with cause unestablished and local
+staged availableInMCP:false; no n8n login/credential action follows. Fresh
+metadata-onlya68b02 verifies all eight inputs/bypass/parent lock absent. No A-D
+clock is started. The only owner action is MA-02 private existing CLI login.
 [Guard review and diagnostic boundaries](evidence/dev-acceptance-vercel-guard-review-20261021.md).
 
 ### Historical pre-admission readiness for the now-consumed replacement
@@ -581,11 +590,11 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
-- The replacement is consumed and closed after completed dev database postchecks
-  and a first-Vercel-GET setup block. The exact historical layer remains unestablished;
-  a concrete guard/installed-CLI incompatibility is reproduced locally. Local
-  remediation is unblocked; unused-ciphertext cleanup is complete. No credentials
-  or new window decision requested while concrete remediation is incomplete.
+- The replacement is consumed and closed. Guard remediation and normal CI pass;
+  a separate actual read verifies saved_auth_expired before any project response.
+  Only existing CLI sign-in is requested. The one-use post-login reader must be
+  reviewed before access verification; no four-value handoff/time decision yet.
+  Historical raw layer remains unestablished and dev postchecks/cleanup stand.
 
 - Historical type-check failure: that segment and its later no-push replacement are both consumed and closed. The replacement completed dev postchecks and stopped at its first Vercel GET as recorded above. All four temporary handoff pairs are deleted. Prior public seals/readiness do not authorize another admission. Native A-D acceptance remains unrun; GW01 stays closed. Historical dev MCP refresh failure/dashboard reconciliation remain separate.
 
@@ -608,10 +617,28 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-**Current:** none. Owner delivered the four existing values; metadata/authentication
-were verified and the bounded attempt is now closed. All eight inputs are deleted.
-Do not repeat the historical delivery commands below or reset/recreate credentials.
-The Vercel read is being diagnosed locally before any exact missing action is requested.
+**Current: MA-02, existing Vercel CLI session restoration only.** Actual bounded
+read0e9ce3 verified saved_auth_expired; no project response or automatic refresh.
+The four previous handoffs were consumed/deleted; do not replenish or reset them.
+
+In Windows PowerShell under the same Windows account, run:
+
+```powershell
+& "$env:APPDATA\npm\vercel.cmd" login
+$LASTEXITCODE
+```
+
+Complete the private browser/device sign-in with the existing Vercel account
+that has access to the Everyone Market Researcher project. Expected: successful
+sign-in and final exit0. Close PowerShell and reply **Vercel CLI sign-in
+complete**. Do not send device codes, tokens, auth-file contents or credential
+screenshots. This restores the local CLI session only; no new project, link,
+deploy, token, password reset or A-D window. The command is the official
+[Vercel login flow](https://vercel.com/docs/cli/login), verified21October.
+
+Codex will use a separately reviewed one-use read, preserving the spent ledger,
+to verify actual fixed-project access. No administrator/n8n/provider handoff is
+needed for that check. All remaining A-D business criteria remain pending.
 
 ### MA-04 / MA-11 — historical postcheck delivery: completed/consumed
 
@@ -983,6 +1010,25 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-21 22:23 Cairo (19:23 UTC): Delivered guard correction7a95a8e,
+  CI39659730097 all five jobs/Vercel pass. Actual fixed diagnostic0e9ce3
+  closed native1 with saved_auth_expired/no project HTTP response; fixed child
+  refuses automatic refresh and shared auth/config/keyring writes. Separate
+  immutable [actual proof](evidence/dev-acceptance-vercel-postclose-actual-20261021.json)
+  preserves the old four-row ledger, management3/control101 and no mutations.
+  Native details read yielded no accepted DTO/cause unestablished; checked-in
+  staged MCP availability is off, so no n8n credential/login action. Fresh
+  metadata-onlya68b02 confirms all eight inputs/bypass/parent lock absent.
+  Separate fixed post-login mode pins this failed read and uses a new one-use
+  ledger at conditional ordinal4. Author6/6 (162f49), independent6/6 (466b77),
+  lint/format pass; root actual CheckOnly04aad6 native0/privateRead:false/network0.
+  No actual fourth read or A-D clock admitted. Only owner private existing
+  Vercel CLI login is requested; normal new-head CI/access read remain gates.
+  [Next-session engineering handoff](evidence/dev-acceptance-remaining-readiness-20261021.md)
+  records future exact archived-C999 reactivation and counter/checkpoint work,
+  explicitly unimplemented/not ready for approval. No four-value handoff,
+  migration replay, native/provider/actor/production/privateR2/merge/M04.
 
 - 2026-10-21 21:58 Cairo (18:58 UTC): Reviewed exact cleanup adf3cf native0
   deleted/verified absent only the unused local bypass, no cipher content/network.

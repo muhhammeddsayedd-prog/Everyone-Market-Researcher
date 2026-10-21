@@ -29,7 +29,16 @@ export const foundationPostcloseProjectRead = Object.freeze({
   maximum: 512,
   aggregateAttempts: 3,
 });
+export const foundationPostloginProjectRead = Object.freeze({
+  expiredReadRelative:
+    'milestones/M03-n8n-foundation/evidence/dev-acceptance-vercel-postclose-actual-20261021.json',
+  expiredReadSha256: 'a4a2ec0be139df4583391d164a0c08df69e407483f0bb827dd92e3b276b2656c',
+  expiredLedgerSha256: '64312647faa121f13304c45fc0eca1a6b2382e7cdfd8b016136c7663e19142f5',
+  ledgerRelative: 'scripts/n8n/out/foundation/live/postlogin-project-read-20261021.jsonl',
+  aggregateAttempts: 4,
+});
 const c = foundationPostcloseProjectRead;
+const p = foundationPostloginProjectRead;
 const fail = () => {
   throw Error('FOUNDATION_POSTCLOSE_PROJECT_READ_BLOCKED');
 };
@@ -82,7 +91,7 @@ function pinned(relative, hash) {
     fail();
   }
 }
-function context() {
+function context(afterLogin = false) {
   if (
     typeof process.env.LOCALAPPDATA !== 'string' ||
     !process.env.LOCALAPPDATA ||
@@ -92,13 +101,13 @@ function context() {
     fail();
   return {
     parent: join(process.env.LOCALAPPDATA, 'Temp', c.parentLockFilename),
-    ledger: join(repo, c.ledgerRelative),
+    ledger: join(repo, afterLogin ? p.ledgerRelative : c.ledgerRelative),
     live: join(repo, 'scripts/n8n/out/foundation/live'),
     cli: join(process.env.APPDATA, 'npm/node_modules/vercel/dist/index.js'),
   };
 }
-function verify({ ownParent = false, processAlive } = {}) {
-  const paths = context();
+function verify({ ownParent = false, processAlive, afterLogin = false } = {}) {
+  const paths = context(afterLogin);
   const actual = pinned(c.attemptRelative, c.attemptSha256),
     cleanup = pinned(c.cleanupRelative, c.cleanupSha256);
   if (
@@ -139,6 +148,32 @@ function verify({ ownParent = false, processAlive } = {}) {
   absent(join(paths.live, 'runtime.operation.lock'));
   absent(join(process.env.LOCALAPPDATA, 'Temp', 'emr-m03-acceptance-protection-bypass.dpapi'));
   absent(paths.ledger);
+  if (afterLogin) {
+    const prior = pinned(p.expiredReadRelative, p.expiredReadSha256);
+    const priorLedger = text(join(repo, c.ledgerRelative));
+    if (
+      createHash('sha256').update(Buffer.from(priorLedger)).digest('hex') !== p.expiredLedgerSha256 ||
+      prior.ledger.path !== c.ledgerRelative ||
+      prior.ledger.sha256 !== p.expiredLedgerSha256 ||
+      prior.ledger.rows !== 4 ||
+      prior.actualRun.status !== 'transport_rejected' ||
+      prior.actualRun.childTransportsClosed !== true ||
+      prior.actualRun.transport.code !== 'saved_auth_expired' ||
+      prior.actualRun.transport.stage !== 'native_exit' ||
+      prior.actualRun.transport.childClosed !== true ||
+      prior.actualRun.transport.nativeExit !== 1 ||
+      prior.actualRun.transport.httpStatus !== null ||
+      prior.actualRun.transport.aborted !== false ||
+      prior.actualRun.newAcceptanceWindow !== false ||
+      prior.actualRun.mutations !== 0 ||
+      prior.accounting.aggregateManagement !== 3 ||
+      prior.accounting.maximum !== 512 ||
+      prior.accounting.mainControl !== 100 ||
+      prior.accounting.separateNativeDetails !== 1 ||
+      prior.accounting.aggregateControl !== 101
+    )
+      fail();
+  }
   const management = rows(join(paths.live, 'management.jsonl'));
   if (
     management.length !== 2 ||
@@ -175,11 +210,11 @@ function write(fd, value) {
   }
   fsyncSync(fd);
 }
-export function checkFoundationPostcloseProjectRead(dependencies = {}) {
-  verify(dependencies);
+function check(dependencies = {}, afterLogin = false) {
+  verify({ ...dependencies, afterLogin });
   return Object.freeze({
-    kind: 'postclose_project_read_ready',
-    aggregateAttempts: 3,
+    kind: afterLogin ? 'postlogin_project_read_ready' : 'postclose_project_read_ready',
+    aggregateAttempts: afterLogin ? 4 : 3,
     maximum: 512,
     requestMaximum: 1,
     requestTimeoutMs: 20000,
@@ -187,11 +222,17 @@ export function checkFoundationPostcloseProjectRead(dependencies = {}) {
     networkRequests: 0,
   });
 }
+export function checkFoundationPostcloseProjectRead(dependencies = {}) {
+  return check(dependencies, false);
+}
+export function checkFoundationPostloginProjectRead(dependencies = {}) {
+  return check(dependencies, true);
+}
 // The only executable operation is a separately authorized one-use GET after
 // the pinned physical closure. It is not an A-D session/clock/handoff consumer.
 // Dependencies are explicit local-test ports; the CLI supplies none.
-export async function runFoundationPostcloseProjectRead(dependencies = {}) {
-  const paths = verify(dependencies),
+async function run(dependencies = {}, afterLogin = false) {
+  const paths = verify({ ...dependencies, afterLogin }),
     now = dependencies.now ?? Date.now;
   let lock,
     ledger,
@@ -200,8 +241,12 @@ export async function runFoundationPostcloseProjectRead(dependencies = {}) {
     physicallyClosed = false;
   try {
     lock = openSync(paths.parent, 'wx');
-    write(lock, { kind: 'm03_postclose_project_read_parent', version: 1, processId: process.pid });
-    verify({ ...dependencies, ownParent: true });
+    write(lock, {
+      kind: afterLogin ? 'm03_postlogin_project_read_parent' : 'm03_postclose_project_read_parent',
+      version: 1,
+      processId: process.pid,
+    });
+    verify({ ...dependencies, ownParent: true, afterLogin });
     ledger = openSync(paths.ledger, 'wx');
     write(ledger, {
       event: 'postclose_project_read_admission',
@@ -209,7 +254,14 @@ export async function runFoundationPostcloseProjectRead(dependencies = {}) {
       priorBatchAttempts: 1,
       priorMcpAttempts: 1,
       thisAttempt: 1,
-      aggregateAttempts: 3,
+      ...(afterLogin
+        ? {
+            priorExpiredReadAttempts: 1,
+            expiredReadSha256: p.expiredReadSha256,
+            expiredLedgerSha256: p.expiredLedgerSha256,
+          }
+        : {}),
+      aggregateAttempts: afterLogin ? 4 : 3,
       maximum: 512,
       attemptSha256: c.attemptSha256,
       cleanupSha256: c.cleanupSha256,
@@ -247,8 +299,8 @@ export async function runFoundationPostcloseProjectRead(dependencies = {}) {
       transport.state().pendingRequests === 0 &&
       receipt.transport.childClosed === true;
     const result = Object.freeze({
-      kind: 'postclose_project_read_result',
-      aggregateAttempts: 3,
+      kind: afterLogin ? 'postlogin_project_read_result' : 'postclose_project_read_result',
+      aggregateAttempts: afterLogin ? 4 : 3,
       maximum: 512,
       status: receipt.status,
       transport: receipt.transport,
@@ -276,16 +328,30 @@ export async function runFoundationPostcloseProjectRead(dependencies = {}) {
     }
   }
 }
+export function runFoundationPostcloseProjectRead(dependencies = {}) {
+  return run(dependencies, false);
+}
+export function runFoundationPostloginProjectRead(dependencies = {}) {
+  return run(dependencies, true);
+}
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    if (process.argv.length !== 3 || !['CheckOnly', 'Run'].includes(process.argv[2])) fail();
+    if (
+      process.argv.length !== 3 ||
+      !['CheckOnly', 'Run', 'AfterLoginCheckOnly', 'AfterLoginRun'].includes(process.argv[2])
+    )
+      fail();
     const receipt =
       process.argv[2] === 'CheckOnly'
         ? checkFoundationPostcloseProjectRead()
-        : await runFoundationPostcloseProjectRead();
+        : process.argv[2] === 'Run'
+          ? await runFoundationPostcloseProjectRead()
+          : process.argv[2] === 'AfterLoginCheckOnly'
+            ? checkFoundationPostloginProjectRead()
+            : await runFoundationPostloginProjectRead();
     process.stdout.write(JSON.stringify(receipt) + '\n');
     if (
-      process.argv[2] === 'Run' &&
+      ['Run', 'AfterLoginRun'].includes(process.argv[2]) &&
       (receipt.status !== 'project_contract_ready' || !receipt.childTransportsClosed)
     )
       process.exitCode = 1;

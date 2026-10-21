@@ -1,8 +1,9 @@
 # M03 Vercel guard correction and bounded diagnostic — 21 October 2026
 
 The local guard correction and its isolated regressions pass. The separately
-bounded live project GET is **pending**. Local reproduction does not establish
-the raw error from the earlier actual attempt or complete hosted acceptance.
+bounded diagnostic is **closed native1: saved_auth_expired**, with no project
+HTTP response or mutation. Local reproduction does not establish the raw error
+from the earlier actual attempt or complete hosted acceptance.
 
 ## Preserved actual checkpoint
 
@@ -133,22 +134,69 @@ requestTimeoutMs20000, `privateRead:false`, network0. This is public readiness,
 not an authenticated endpoint receipt. Corrected-source commit/push and normal
 CI are separate delivery gates before the live diagnostic.
 
-## Actual diagnostic — pending
+## Actual diagnostic — saved session is expired
 
-No live diagnostic `Run` result is recorded here. Root will add a separate
-actual-result artifact after execution, without modifying the immutable attempt
-or cleanup records. Required fields are:
+Correction `7a95a8e59db74d8e51d142f32e992a31c40d0480` passed
+[CI39659730097](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39659730097)
+all five jobs and Vercel (`1c711c`/`35066b`). Root invoked the single `Run`
+once (`0e9ce3`). Its fixed result is `transport_rejected`, stage `native_exit`,
+code `saved_auth_expired`, native exit1, childStarted/childClosed true, no abort,
+HTTP status null and no project predicates. The expiry guard refused automatic
+refresh; the shared saved auth/configuration was not mutated.
 
-- Delivered correction head and normal CI reference.
-- Actual Run tool receipt/observation time, native exit, child closure and
-  fixed transport stage/code/HTTP status.
-- Predicate booleans if an actual HTTP200 response passes bounded parsing;
-  otherwise the exact non-secret unresolved layer or failed predicate.
-- Durable diagnostic-ledger/result reference and aggregate3/512 accounting,
-  with the original journals and consumed admission preserved.
-- Any genuinely missing saved-session action, or the next concrete reviewable
-  recovery packet. No live acceptance, credential readiness, new time authority
-  or replay is inferred from the local guard tests or public CheckOnly.
+[Actual result](dev-acceptance-vercel-postclose-actual-20261021.json) is immutable
+at SHA256 `a4a2ec0be139df4583391d164a0c08df69e407483f0bb827dd92e3b276b2656c`.
+The four-row public diagnostic ledger is retained at SHA256
+`64312647faa121f13304c45fc0eca1a6b2382e7cdfd8b016136c7663e19142f5`.
+Aggregate management3/512 is conservatively debited even though no project
+HTTP response was received. This does not identify the historical batch's raw
+error layer, prove an authentication rejection or establish project access.
+
+The independent fixed native details read (`0b8590`/`07b9e6`) yielded no accepted
+metadata DTO. Its cause is unestablished; local staged WF00 has
+`availableInMCP:false`. No workflow was changed or executed, and this does not
+establish a login failure. Carry its one separate control read forward as
+control101/2048 while the original control journal remains100. There is no
+discovery/login retry loop or new n8n credential request.
+
+Fresh metadata-only cleanup verification `a68b02` at19:19:57.982 UTC confirms
+all eight consumed input/lease files, unused bypass and canonical parent lock
+absent (10 checked paths,0 present; no contents read). The diagnostic child is
+physically closed. Preserved originals/Machine and all earlier fences remain.
+
+The only current owner action is private restoration of the existing local CLI
+session, documented in current M03 progress. No four-value handoff, A-D time
+authority, new project, deployment, key reset or shared credential change is
+requested.
+
+## Post-login read readiness — no actual read yet
+
+The same fixed entrypoint now has explicit `AfterLoginCheckOnly` and
+`AfterLoginRun` modes. They pin the immutable expired-read artifact and its
+exact four-row ledger, retain the original spent fence, and use a new
+`postlogin-project-read-20261021.jsonl` CreateNew ledger. The existing parent
+lock, closed-attempt/cleanup pins, dead-PID checks, fixed project GET,20-second
+deadline and read-only/no-refresh guard remain. First mode `Run` stays spent.
+No arbitrary command, request, auth-file path, handoff or new clock is accepted.
+
+Author focused6/6 (`162f49`) and independent6/6 (`466b77`) pass, native0,
+zero skips. Tests cover one new attempt, unchanged old journals, altered prior
+artifact/ledger refusal, old-mode fencing and unknown physical closure retaining
+the visible lock and durable intent. Author formatb22661/lintb6d2b4/diff86fc8c0
+pass. Production entrypoint SHA256 is
+`b41871efeb1de305f3755e904fd14d6a2869dd9d96c68a074e06349ee7a2e861`;
+the public test fixture is exactly the technical expired ledger, never an auth
+or response-body export. No private/session/network operation was performed by
+either agent.
+
+Root actual `AfterLoginCheckOnly` (`04aad6`) passes native0 with
+`postlogin_project_read_ready`, aggregate ordinal4/512, requestMaximum1,
+requestTimeoutMs20000, privateRead:false/network0. It does not authenticate or
+reserve the fourth attempt. Root will run it only after the owner reports
+private CLI sign-in and normal delivered-head CI is verified. Any admitted
+fourth read remains spent regardless of result; do not reuse either ledger or
+infer A-D authority from restored access. Actual result must be recorded
+separately, preserving every earlier failure.
 
 Production, recurring activation, notifications, shared credentials, private
 incident work, PR8 merge, M03 closure and M04 remain outside this correction.

@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-21T19:18:39.957Z",
+  "correctionHead": "7a95a8e59db74d8e51d142f32e992a31c40d0480",
+  "ci": {
+    "runId": 39659730097,
+    "allFiveJobs": "success",
+    "vercel": "success",
+    "readback": "1c711c/35066b"
+  },
+  "publicCheckOnly": {
+    "toolReceipt": "ea9f91",
+    "nativeExit": 0,
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "actualRun": {
+    "toolReceipt": "0e9ce3",
+    "nativeExit": 1,
+    "kind": "postclose_project_read_result",
+    "aggregateAttempts": 3,
+    "maximum": 512,
+    "status": "transport_rejected",
+    "transport": {
+      "stage": "native_exit",
+      "childStarted": true,
+      "childClosed": true,
+      "nativeExit": 1,
+      "stdoutBytes": 0,
+      "stderrBytes": 150,
+      "httpStatus": null,
+      "aborted": false,
+      "code": "saved_auth_expired"
+    },
+    "predicates": null,
+    "childTransportsClosed": true,
+    "newAcceptanceWindow": false,
+    "mutations": 0
+  },
+  "ledger": {
+    "path": "scripts/n8n/out/foundation/live/postclose-project-read-20261021.jsonl",
+    "sha256": "64312647faa121f13304c45fc0eca1a6b2382e7cdfd8b016136c7663e19142f5",
+    "rows": 4
+  },
+  "accounting": {
+    "historicalMainManagement": 1,
+    "postcloseMcpProjectRead": 1,
+    "thisReservedRead": 1,
+    "aggregateManagement": 3,
+    "maximum": 512,
+    "mainControl": 100,
+    "separateNativeDetails": 1,
+    "aggregateControl": 101,
+    "controlMaximum": 2048
+  },
+  "nativeDetails": {
+    "workflowId": "MzimjpsuyPuK7SKe",
+    "intentReceipt": "0b8590",
+    "resultReceipt": "07b9e6",
+    "result": "native_details_unavailable",
+    "causeEstablished": false,
+    "localStagedAvailableInMcp": false,
+    "executions": 0,
+    "mutations": 0
+  },
+  "boundaries": {
+    "projectPredicatesNotVerified": true,
+    "automaticRefresh": false,
+    "sharedAuthOrConfigMutation": false,
+    "administratorHandoffsRead": false,
+    "n8nOrProviderHandoffsRead": false,
+    "newAcceptanceWindow": false,
+    "workflowExecutions": 0,
+    "actorStarts": 0,
+    "productionOperations": 0,
+    "oldAdmissionAndJournalsPreserved": true
+  },
+  "remaining": "Existing Vercel CLI saved session restoration; no new four-value handoff or A-D clock. Future ordinary fixed project read needs a separate durable one-use intent."
+}

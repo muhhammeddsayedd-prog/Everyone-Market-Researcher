@@ -15,7 +15,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 const source = new URL('./', import.meta.url);
-async function fixture(action) {
+async function fixture(action, { afterLogin = false } = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'emr-postclose-get-'));
   const old = Object.fromEntries(['LOCALAPPDATA', 'APPDATA'].map((k) => [k, process.env[k]]));
   const put = (p, t) => {
@@ -69,6 +69,18 @@ async function fixture(action) {
         }),
       ).join('\n') + '\n',
     );
+    if (afterLogin) {
+      put(
+        join(directory, mod.foundationPostloginProjectRead.expiredReadRelative),
+        readFileSync(new URL('../../' + mod.foundationPostloginProjectRead.expiredReadRelative, source)),
+      );
+      // Exact public technical ledger from the physically closed expired read;
+      // source SHA64312647…19142f5. This fixture contains no auth/raw DTO data.
+      put(
+        join(directory, c.ledgerRelative),
+        readFileSync(new URL('./fixtures/foundation-vercel-postclose-expired-ledger.jsonl', source)),
+      );
+    }
     let calls = 0;
     const dto = {
       id: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
@@ -182,3 +194,84 @@ test('unknown response retains durable one-use fence after physical child closur
     assert.equal(JSON.stringify(r).includes('SYNTHETIC_PRIVATE_ERROR'), false);
     await assert.rejects(f.mod.runFoundationPostcloseProjectRead(f.input));
   }));
+test('after-login mode pins expired read and gets exactly one new GET without reopening the old mode or journals', () =>
+  fixture(
+    async (f) => {
+      const p = f.mod.foundationPostloginProjectRead;
+      const oldLedger = readFileSync(join(f.directory, f.c.ledgerRelative), 'utf8');
+      assert.throws(() => f.mod.checkFoundationPostcloseProjectRead(f.input));
+      await assert.rejects(f.mod.runFoundationPostcloseProjectRead(f.input));
+      const check = f.mod.checkFoundationPostloginProjectRead(f.input);
+      assert.equal(check.kind, 'postlogin_project_read_ready');
+      assert.equal(check.aggregateAttempts, 4);
+      assert.equal(check.networkRequests, 0);
+      const result = await f.mod.runFoundationPostloginProjectRead(f.input);
+      assert.equal(result.kind, 'postlogin_project_read_result');
+      assert.equal(result.aggregateAttempts, 4);
+      assert.equal(result.status, 'project_contract_ready');
+      assert.equal(result.childTransportsClosed, true);
+      assert.equal(result.newAcceptanceWindow, false);
+      assert.equal(result.mutations, 0);
+      assert.equal(f.calls(), 1);
+      assert.equal(readFileSync(join(f.directory, f.c.ledgerRelative), 'utf8'), oldLedger);
+      assert.equal(readFileSync(join(f.live, 'management.jsonl'), 'utf8'), f.management);
+      assert.equal(readFileSync(join(f.live, 'control.jsonl'), 'utf8').trim().split('\n').length, 100);
+      const ledger = readFileSync(join(f.directory, p.ledgerRelative), 'utf8')
+        .trim()
+        .split('\n')
+        .map(JSON.parse);
+      assert.equal(ledger.length, 4);
+      assert.equal(ledger[0].priorExpiredReadAttempts, 1);
+      assert.equal(ledger[0].aggregateAttempts, 4);
+      await assert.rejects(f.mod.runFoundationPostloginProjectRead(f.input));
+      assert.equal(f.calls(), 1);
+    },
+    { afterLogin: true },
+  ));
+test('after-login mode refuses changed expired ledger or expired-result artifact before any child', () =>
+  fixture(
+    async (f) => {
+      const old = join(f.directory, f.c.ledgerRelative),
+        bytes = readFileSync(old);
+      writeFileSync(old, Buffer.concat([bytes, Buffer.from('\n')]));
+      await assert.rejects(f.mod.runFoundationPostloginProjectRead(f.input));
+      writeFileSync(old, bytes);
+      const record = join(f.directory, f.mod.foundationPostloginProjectRead.expiredReadRelative);
+      writeFileSync(record, readFileSync(record, 'utf8').replace('saved_auth_expired', 'unknown'));
+      await assert.rejects(f.mod.runFoundationPostloginProjectRead(f.input));
+      assert.equal(f.calls(), 0);
+    },
+    { afterLogin: true },
+  ));
+test('after-login unknown physical closure retains the shared lock and one-use intent, never another GET', () =>
+  fixture(
+    async (f) => {
+      let calls = 0;
+      f.input.transportDependencies = {
+        requestTimeoutMs: 5,
+        closeGraceMs: 5,
+        spawn() {
+          calls++;
+          const child = new EventEmitter();
+          Object.assign(child, {
+            stdin: new PassThrough(),
+            stdout: new PassThrough(),
+            stderr: new PassThrough(),
+            kill() {},
+          });
+          setImmediate(() => child.emit('spawn'));
+          return child;
+        },
+      };
+      const result = await f.mod.runFoundationPostloginProjectRead(f.input);
+      assert.equal(result.status, 'transport_rejected');
+      assert.equal(result.childTransportsClosed, false);
+      assert.equal(result.transport.childClosed, false);
+      assert.equal(result.aggregateAttempts, 4);
+      assert.equal(existsSync(join(f.directory, f.mod.foundationPostloginProjectRead.ledgerRelative)), true);
+      assert.equal(existsSync(join(process.env.LOCALAPPDATA, 'Temp', f.c.parentLockFilename)), true);
+      await assert.rejects(f.mod.runFoundationPostloginProjectRead(f.input));
+      assert.equal(calls, 1);
+    },
+    { afterLogin: true },
+  ));
