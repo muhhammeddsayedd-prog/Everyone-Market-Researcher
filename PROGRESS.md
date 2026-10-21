@@ -5,14 +5,14 @@
 
 ## Now
 
-|                       |                                                                                                                                                                                                                                                            |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                                       |
-| **Status**            | Blocked: MA-11 runtime replenishment/unused bypass cleanup. A–D approved; first coordinator closed before prepare with zero remote calls. Corrections/review/affected tests and actual seal/CheckOnly pass at b4caf36. |
-| **Next step**         | Verify three runtime inputs/owner cleanup, then explicit original-clock resume. CI39591182210 passed all five jobs at b4caf36; Vercel green. Preserve stop11:50:23 / deadline12:00:23 UTC; never reset the clock. |
+|                       |                                                                                                                                                                                                                                                                  |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Current milestone** | M03 — n8n foundation                                                                                                                                                                                                                                             |
+| **Status**            | Blocked: MA-11 runtime replenishment/unused bypass cleanup. A–D approved; first coordinator closed before prepare with zero remote calls. Corrections/review/affected tests and actual seal/CheckOnly pass at b4caf36.                                           |
+| **Next step**         | Verify three runtime inputs/owner cleanup, then explicit original-clock resume. CI39591182210 passed all five jobs at b4caf36; Vercel green. Preserve stop11:50:23 / deadline12:00:23 UTC; never reset the clock.                                                |
 | **Waiting on owner**  | Remove unused temporary bypass and replenish Management/Writer/ApifyRead only using [exact continuation steps](milestones/M03-n8n-foundation/evidence/dev-acceptance-handoff-20261021.md), already requested after CheckOnly. Administrator untouched and ready. |
-| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                                                    |
-| **Last updated**      | 21 October2026: b4caf36 corrections, actual seal5bff2e and CheckOnly9fd1b4 pass with103project/840Zod/3462Vercel inputs; privateRead:false/networkRequests:0. Source f42930f unchanged; PR8 draft; current delivery CI runs separately. |
+| **Pilot**             | Not started (begins after M08; 14 days)                                                                                                                                                                                                                          |
+| **Last updated**      | 21 October2026: b4caf36 corrections, actual seal5bff2e and CheckOnly9fd1b4 pass with103project/840Zod/3462Vercel inputs; privateRead:false/networkRequests:0. Source f42930f unchanged; PR8 draft; current delivery CI runs separately.                          |
 
 ## Milestone board
 
