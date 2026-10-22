@@ -1,0 +1,64 @@
+{
+  "kind": "m03_vercel_restored_saved_metadata",
+  "version": 1,
+  "sourceHead": "a52cef0bdd5dc44dac1ae073e3818e8951ee9a7d",
+  "ownerReported": "Vercel CLI session restored",
+  "observedAtUtc": "2026-10-22T16:39:18.509Z",
+  "consumer": {
+    "path": "scripts/n8n/foundation-vercel-auth-preflight.mjs",
+    "sha256": "c1e0b211f5a03ca336a58a9c2bcc634bd785d08859867622a494cf6ad7237233",
+    "reviewedSourceUnchanged": true,
+    "mode": "InspectSavedMetadata",
+    "nodeChildEnvironment": "fixed_OS_only_no_auth_overrides",
+    "boundedChildMilliseconds": 5000
+  },
+  "actual": {
+    "nativeExit": 0,
+    "stderrPresent": false,
+    "kind": "m03_vercel_saved_auth_metadata",
+    "status": "metadata_covers_75_minutes",
+    "metadataValid": true,
+    "unexpired": true,
+    "covers75Minutes": true,
+    "effectiveBackendEstablished": false,
+    "networkRequests": 0,
+    "authenticationAttempted": false,
+    "refreshAttempted": false,
+    "configWritten": false,
+    "childClosed": true
+  },
+  "interpretation": {
+    "restorationDeliveryAndSavedFileCoverageVerified": true,
+    "remoteProjectAuthenticationVerified": false,
+    "projectPermissionVerified": false,
+    "effectiveBackendEstablished": false,
+    "historicalFailedGetCause": "unestablished",
+    "expiredObservationPreserved": "dev-acceptance-startup-replacement-followup-20261022.json"
+  },
+  "preserved": {
+    "acceptanceSegmentId": "1c69c89e-7807-46d5-b7b8-ca28285ff2b4",
+    "allPreviousAdmissionsAndProjectReadFencesSpent": true,
+    "newAcceptanceWindow": false,
+    "newNetworkFenceOrIntentCreated": false,
+    "adminOrRuntimeHandoffRequested": false,
+    "migrationOperation": false,
+    "workflowExecution": false,
+    "gatewayOrProviderCall": false,
+    "actorStart": false,
+    "production": false,
+    "merge": false,
+    "M04": false,
+    "aggregateManagement": 5,
+    "aggregateControl": 201,
+    "aggregateCombined": 206
+  },
+  "nextLocalTask": "Implement, test and review a distinct once-only fixed-project GET preflight before any further dev DB operations or handoffs; do not replay a spent consumer.",
+  "sourceDeliveryCheck": {
+    "ci": 39769760516,
+    "allFiveJobsAndVercelFreshlyReverified": true,
+    "pr": 8,
+    "draft": true,
+    "unmerged": true
+  },
+  "recordedAtUtc": "2026-10-22T16:42:27.778Z"
+}

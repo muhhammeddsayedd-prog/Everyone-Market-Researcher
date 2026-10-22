@@ -5,7 +5,7 @@
 
 ## Status
 
-**Blocked: waiting on owner — MA-02 existing Vercel CLI session restoration. Startup-replacement attempt closed with residual acceptance flags. Dev authentication/history14 passed; preparation stopped at the first resumed Vercel project GET. A–D/full-D remains open. Local saved auth-file expiry is verified; MA-02 existing-session restoration is pending. No database/n8n handoff or retry.**
+**In progress — one-use fixed-project Vercel GET preflight ready locally; new-source CI gates its single read. Owner session-restoration delivery and local saved-file 75-minute coverage are verified; remote project access and effective backend remain unverified. Startup-replacement remains consumed/closed with residual acceptance flags; A–D/full-D stays open. No owner input, repeat login, database/n8n handoff or A–D admission now.**
 
 Historical e803 deliveries and 75-minute metadata coverage passed before admission. Prepare
 then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
@@ -22,16 +22,37 @@ production, private incident R2 execution, PR8 merge or M04.
 | Last updated                   | 2026-10-22 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Finished                       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Branch / PR                    | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset                                                                                                                                                                                       |
-| Current delivery checkpoint    | Actual remote 3d0d7c verifies source 25a4621 all five jobs/Vercel, PR8 draft/open. Metadata bba48e at 2026-10-22T10:46:49.5103427Z verifies all four pairs present/valid/covers75 true; public CheckOnly 3c6be0 native exit 0 Admin handoff ready. Source/readiness stays distinct from actual phase/authentication results.                                                                                                                      |
+| Current delivery checkpoint    | Historical delivered source a52cef0 / CI39769760516 all five jobs plus Vercel passed. Current helper/evidence changes receive normal PR8 checks; no future-head pass is claimed. Local metadata16:39:18.509 UTC/native0 verifies saved-file75-minute coverage only, separate from remote authentication, effective backend and A–D acceptance. |
 | Selected runtime source        | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
 | Selected-source CI             | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance.                                                                                                                                                                                                       |
 | Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                              |
 | GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                |
-| Current task | Both source/wrapper close receipts captured; outer native exit1/stdout EOF, credential children closed. All eight handoffs/private SQL removed; reviewed unused-bypass cleanup29b313 native0 and presence11:10:53 UTC verify absence. Actual management5/control201/combined206; zero native/gateway/provider/actors. |
-| Next step | Deliver reviewed local fixes/evidence through normal PR8 CI. MA-02: restore the existing Vercel CLI session using the exact command below, then verify only bounded local metadata. Consumed admission stays closed; no database/n8n handoffs, new child/window or migration replay. |
+| Current task | Reviewed one-use project GET preflight, 11/11 synthetic tests; actual public CheckOnly ced183 native0/privateReadfalse/network0 and public Vercel3462/mismatch0. Saved-file coverage verified; remote access unverified until one read after current-source CI. Totals5/201/206 unchanged. |
+| Next step | Verify normal new-source PR8 CI, then invoke the separately reviewed ReadProject once with unchanged public source/runtime. Preserve old windows/fences, fourteen migrations and original counters; no database/runtime handoffs or A–D admission. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.      |
 
 ## 21 October A–D approval and actual preflight
+
+### 22 October Vercel restoration — saved-file coverage verified, remote access pending
+
+The owner replied **Vercel CLI session restored**. The reviewed bounded local
+metadata read at **2026-10-22T16:39:18.509Z** completed native0 with stderr
+absent and childClosed true. It reports **metadata_covers_75_minutes**:
+metadataValid, unexpired and covers75 are true. Network, authentication,
+refresh and configuration writes are all0; effectiveBackendEstablished is
+false. This verifies restored saved-file coverage only. It does not establish
+remote project authentication/permissions, which backend the CLI actually
+uses, or the cause of the lost first resumed GET diagnostic. The11:13 expired
+receipt below remains unchanged. [Actual restoration metadata](evidence/dev-acceptance-vercel-restored-metadata-20261022.json).
+
+MA-02 delivery/local verification is complete; do not repeat login or request
+values. Local engineering continues on a separate fixed-project
+GET-only consumer with its own one-use ledger. Its one bounded read follows
+affected tests, public readiness and normal PR8 CI; old diagnostic GET fences
+and every A–D admission remain spent. No read has occurred under this new path
+yet. Aggregate totals remain **5 management /201 control /206 combined**.
+No database/runtime handoff, A–D admission, migration, workflow/gateway/provider/
+actor activity, production, merge or M04 is authorized by this metadata result.
 
 ### 22 October startup-replacement — actual attempt closed, acceptance residual
 
@@ -84,9 +105,10 @@ The bounded read at11:13:24.871 UTC reports saved_auth_expired/native2/childClos
 true, no network/authentication/refresh/config writes. Effective backend and the
 historical GET cause remain unestablished. The standalone helper passes21/21
 focused tests; the diagnostic CLI passes18/18 including seven new failure cases;
-independent reviews found no P1/P2. Only MA-02 existing-session restoration is
-requested, using the exact command below. No database/n8n/provider handoff or live
-window is authorized. Production, schedules, private incident execution,
+independent reviews found no P1/P2. MA-02 restoration was requested at that
+checkpoint; the later owner reply and local saved-file coverage are recorded
+above. No database/n8n/provider handoff or live window is authorized.
+Production, schedules, private incident execution,
 PR8 merge and M04 remain untouched. [Local follow-up](evidence/dev-acceptance-startup-replacement-followup-20261022.json).
 
 ### Historical pre-admission startup-replacement approval/readiness
@@ -949,11 +971,13 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
   Source/wrapper/outer receipts prove credential-bearing child closure and
   all temporary inputs/private SQL/bypass cleanup. Residual window/baseline/
   settlement flags remain false; A–D/full-D remains open.
-- MA-02 current saved-file metadata read at11:13:24.871 UTC returns
-  saved_auth_expired/native2/childClosedtrue/network0. Effective CLI backend
-  and the historical failed-GET cause are unestablished. Restore only the
-  existing CLI session using the exact action below. Do not replenish any
-  database/n8n/Apify handoffs, repeat MCP setup or reuse a spent admission.
+- MA-02 owner restoration reply and local saved-file coverage are verified at
+  16:39:18.509 UTC/native0/childClosedtrue/network0. Remote project access and
+  effective CLI backend remain unverified, and the historical failed-GET cause
+  is unestablished. Finish the separate fixed-project GET consumer/ledger,
+  review/tests/public readiness/normal CI before its one bounded read. Do not
+  repeat login, replenish database/n8n/Apify handoffs, repeat MCP setup or reuse
+  any spent admission/GET fence.
 
 - Historical e803 checkpoint (superseded by the actual startup attempt above):
 - The latest remaining segment e803 is consumed/closed after 75-minute metadata
@@ -1004,30 +1028,20 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-### MA-02 — restore the existing Vercel CLI session
+### MA-02 — restoration delivery and saved-file coverage verified
 
-Actual bounded local read at **11:13:24.871 UTC** reports saved_auth_expired,
-childClosed true, network/authentication/refresh/config writes0. It reads only
-the fixed saved auth-file metadata; effective backend and the prior GET failure
-cause remain unestablished. [Actual local follow-up](evidence/dev-acceptance-startup-replacement-followup-20261022.json).
+The owner replied **Vercel CLI session restored**. Actual reviewed local read
+at **16:39:18.509 UTC** reports metadata_covers_75_minutes/native0/stderr absent/
+childClosed true; metadataValid/unexpired/covers75 true and network/
+authentication/refresh/config writes0. [Actual restoration metadata](evidence/dev-acceptance-vercel-restored-metadata-20261022.json).
+No repeated login, values or credential delivery is requested.
 
-In **Windows PowerShell under this same Windows account**, run:
-
-```powershell
-& "$env:APPDATA\npm\vercel.cmd" login
-$LASTEXITCODE
-```
-
-Complete the private sign-in with the existing account that can access Everyone
-Market Researcher. Expected: successful sign-in and final **0**. Close that
-PowerShell window, then reply **Vercel CLI session restored**. Send no token,
-device code, auth-file contents or credential screenshots. This restores only
-the existing session; no new key/project/password reset/deployment or window.
-
-After the reply, run only the reviewed bounded local metadata helper; a pass
-does not prove remote project access. Current one-read network fences and all
-acceptance admissions stay spent. Any future actual project-read/acceptance
-consumer must have concrete reviewed authority/readiness; no blanket retry.
+Remote project access/permissions and effective CLI backend remain unverified;
+the historical failed-GET cause remains unestablished. The11:13 expired receipt
+is preserved. Codex continues the separate fixed-project GET-only consumer and
+one-use ledger locally; its single read requires review, affected tests, public
+readiness and normal PR8 CI first. Old GET fences and A–D admissions stay spent.
+No database/runtime handoff or new acceptance window is requested now.
 
 ### MA-04 / MA-11 — saved-value delivery and cleanup complete
 
@@ -1529,6 +1543,10 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-22 Cairo: Separate fixed-project GET preflight is implemented/reviewed, no remaining P1/P2; 11/11 portable synthetic tests pass, lint/format/diff clean. Actual public CheckOnly ced183 native0/privateReadfalse/network0/counters5/201/206; full existing public Vercel subtree verifies3462 files/mismatch0, no reseal or old-window readiness claim. New-current-head normal CI must pass before its single ReadProject; no private runtime handoffs, GET, admission or database/provider/actor action yet. [Readiness](evidence/dev-acceptance-project-preflight-readiness-20261022.json), [exact read-only procedure](evidence/dev-acceptance-project-preflight-20261022.md).
+
+- 2026-10-22 Cairo: Owner replied **Vercel CLI session restored**; bounded reviewed local metadata at16:39:18.509 UTC/native0/stderr absent/childClosedtrue verifies metadata_covers_75_minutes, metadataValid/unexpired/covers75 true, network/authentication/refresh/config writes0. This is saved-file coverage only, not remote authentication/permissions, effective backend or historical GET cause. Preserve11:13 expired receipt and all spent windows/GET fences. MA-02 needs no repeat login/values. Local separate fixed-project GET-only consumer/one-use ledger engineering proceeds before affected review/tests/public readiness/normal PR8 CI and its one bounded read; no owner action/DB/runtime handoff now. Totals5/201/206 unchanged; no A–D admission, migration, workflow/gateway/provider/actor activity, production/merge/M04. Historical delivered a52cef0 / CI39769760516 five jobs plus Vercel passed; current changes receive ordinary checks. [Restoration metadata](evidence/dev-acceptance-vercel-restored-metadata-20261022.json).
 
 - 2026-10-22 Cairo: Startup attempt closed native1 at10:57:00.225 UTC; both source/wrapper receipts retained, Admin history14/catalog/authentication passed and C999 archived again, no migration operation. First resumed Vercel GET stopped before any write/provision/execution. Totals5/201/206, actors0. Eight inputs/private SQL removed; exact reviewed unused bypass cleanup29b313 native0/presence11:10:53 verifies absence. Local metadata at11:13:24.871 UTC proves saved auth-file expired, not effective backend or historical cause. New standalone redacted helper21/21 tests; failure-diagnostic CLI18/18 tests (seven new cases), independent reviews no P1/P2. Only MA-02 existing-session restore requested, no runtime/Admin handoffs. Normal new-source CI to verify; no spent-admission retry/window/migration/production/merge/M04. Actual/follow-up evidence linked above.
 
