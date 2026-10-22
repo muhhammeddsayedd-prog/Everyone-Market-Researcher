@@ -1,0 +1,147 @@
+{
+  "kind": "m03_startup_replacement_approved_public_readiness",
+  "version": 1,
+  "observedAt": "2026-10-22T09:24:32.152Z",
+  "reviewedPacketHead": "7262f6459e2b04713dda8d2912970c496585b4f3",
+  "reviewedPacketCi": 39696952040,
+  "reviewedPacketHeadFiveJobsAndVercelFreshlyVerified": "0ab261",
+  "approval": {
+    "file": "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-approval-20261022.json",
+    "sha256": "b58581a7622206ba52a35a3c60bc46d7482192640540e3025546f71c31fdc3c3",
+    "ownerReplyExact": true,
+    "utf8Bom": false,
+    "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+    "segmentId": "1c69c89e-7807-46d5-b7b8-ca28285ff2b4",
+    "clockStarted": false,
+    "admissionCreated": false,
+    "claimCreated": false
+  },
+  "unchanged": {
+    "packetSha256": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0",
+    "checkpointSha256": "e144d73dfbcab1e5a286ab9ba11df28bcbd10c8a9ad39eecb7852fee3d61d758",
+    "historicalArtifacts": 24,
+    "dbPublicMembers": 39,
+    "migrationRecords": 14,
+    "managementUsed": 4,
+    "controlUsed": 151,
+    "combinedUsed": 155,
+    "noHostedMigrationReplay": true,
+    "noFixtureReactivation": true
+  },
+  "approvalProjectionCorrection": {
+    "finding": "initial Windows text transport converted U+2013 to question mark; independent review found P2 before private use",
+    "initialSha256": "72878e70be15942f3c3a8523145d1ff4a2b963e6aba1572eaa6d35feaaee16b8",
+    "initialPublicProjectionPreserved": "scripts/n8n/out/foundation/startup-replacement-approval-initial-20261022.json",
+    "correction": "ASCII JavaScript unicode escape written as exact BOM-free UTF8 JSON; record and two dependent pins corrected",
+    "review": "c6609f",
+    "status": "closed; no remaining P1/P2 in reviewed scope",
+    "earlierCheckOnly": "6c973a preceded the correction; final correct-pin guard is5ba4cc"
+  },
+  "handoffMetadata": {
+    "chunk": "2de0da",
+    "observedAt": "2026-10-22T09:14:23.1556778Z",
+    "admin": "pair present; valid dev purpose; expired and no75-minute coverage",
+    "management": "pair absent",
+    "writer": "pair absent",
+    "apifyRead": "pair absent",
+    "leaseMetadataRead": true,
+    "secretContentsRead": false,
+    "decryption": false,
+    "authenticationAttempts": 0
+  },
+  "expiredAdminCleanup": {
+    "chunk": "effe3b",
+    "observedAt": "2026-10-22T09:16:21.6762115Z",
+    "nativeExit": 0,
+    "temporaryLeavesDeleted": 2,
+    "secretContentsRead": false,
+    "savedOriginalPreserved": true,
+    "noNewAdmission": true,
+    "note": "separate new preparation cleanup; original nine-leaf cleanup/Admin-pair observation retained unchanged"
+  },
+  "checks": {
+    "affectedTests": {
+      "chunks": [
+        "bf5fd9",
+        "a48cad"
+      ],
+      "nativeExit": 0,
+      "tests": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "affectedFormattingLintAndDiff": {
+      "chunks": [
+        "2e0d58",
+        "ce70bc"
+      ],
+      "nativeExit": 0
+    },
+    "guard": {
+      "chunk": "5ba4cc",
+      "nativeExit": 0,
+      "kind": "startup_replacement_ready",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "seal": {
+      "chunk": "144054",
+      "nativeExit": 0,
+      "status": "acceptance_public_seal_ready",
+      "projectFiles": 129,
+      "runtimeFiles": 840,
+      "sha256": "f627ad24e87097db493974fa463e68b5d0bfac3a0bf60213ab5a2023b30c42da"
+    },
+    "wrapper": {
+      "chunk": "70fc2d",
+      "nativeExit": 0,
+      "status": "check_only_ready",
+      "publicCompositionLoaded": true,
+      "adminPublicInputsVerified": true,
+      "adminHandoffReady": false,
+      "actualMcpPortVerified": false,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "admin": {
+      "chunk": "e79df1",
+      "nativeExit": 2,
+      "status": "HANDOFF_MISSING",
+      "decryption": false,
+      "authenticationAttempts": 0
+    }
+  },
+  "deliveryBoundary": "This commit must receive normal PR8 five-job CI and Vercel before requesting the exact saved-value delivery. The verified7262 CI is source evidence only; future delivery results are not claimed here.",
+  "nextOwnerAction": {
+    "type": "saved-value credential delivery only after current delivery verification; no new approval",
+    "instructions": "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-handoff-20261022.md",
+    "requiredKinds": [
+      "Admin",
+      "Management",
+      "Writer",
+      "ApifyRead"
+    ],
+    "resetOrNewKeyRequired": false,
+    "machineOrProductionInputRequired": false
+  },
+  "remainingLimits": {
+    "finalHistoricalWrapperReceiptPreserved": false,
+    "unknownOrphanClosureProven": false,
+    "fullDAccepted": false,
+    "knownSavedOriginalsAndMachinePreserved": true
+  },
+  "newOperations": {
+    "clockAdmissions": 0,
+    "authenticationAttempts": 0,
+    "remoteRequests": 0,
+    "nativeWorkflowExecutions": 0,
+    "gatewayAdmissions": 0,
+    "providerGets": 0,
+    "actorStarts": 0,
+    "migrationOperations": 0,
+    "production": false,
+    "merge": false,
+    "m04": false
+  }
+}

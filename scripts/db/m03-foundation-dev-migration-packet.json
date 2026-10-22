@@ -142,7 +142,7 @@
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-packet-20261022.md": "7c4b9f3c3bb473a2ff4a473e23de79ce3b2c9a783cab5587d9caf9356d804205",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-attempt-20261021.json": "b984ec79c857468822e9299dd59fc2b26d71a26bb6b324dd90ecbaa7f39d1fcd",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-vercel-postlogin-actual-20261022.json": "04fd4681894f93e46a3674a73fd13447badeb257ab0a8fc307f1e63918d9c43e",
-    "scripts/n8n/foundation-live-startup-replacement.mjs": "6b1c4baadf27ca0d6b335023bb6b44662a7af0a7019141ccc8216b20f6e3be7a",
+    "scripts/n8n/foundation-live-startup-replacement.mjs": "36f6729c3e81bc02be962cedf373fefc0ee8a2e98c539a729aa53ce3994f2c78",
     "scripts/assert/m03_smoke_reactivate_startup.sql": "cc2654e4d499cbd5fc1a6c75c30d991ea8f46bef3fa37f66bd415ad8b192e202",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json": "e144d73dfbcab1e5a286ab9ba11df28bcbd10c8a9ad39eecb7852fee3d61d758",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0"

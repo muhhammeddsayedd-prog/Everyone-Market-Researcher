@@ -12,7 +12,7 @@ export const foundationStartupReplacementCheckpoint = Object.freeze({
   originalDeadlineAt: 1792584023481,
   approvalRelative:
     'milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-approval-20261022.json',
-  approvalSha256: null,
+  approvalSha256: 'b58581a7622206ba52a35a3c60bc46d7482192640540e3025546f71c31fdc3c3',
   packetRelative:
     'milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md',
   packetSha256: '48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0',
