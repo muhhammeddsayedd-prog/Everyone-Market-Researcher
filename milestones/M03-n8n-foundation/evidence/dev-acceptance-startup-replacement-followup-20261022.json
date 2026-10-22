@@ -1,0 +1,63 @@
+{
+  "kind": "m03_startup_replacement_local_followup",
+  "version": 1,
+  "actualAttempt": "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-attempt-20261022.json",
+  "actualAttemptSha256": "61ea60bedf0268e6145154e6804767d7c76a9db35fda23556864c615f035ea31",
+  "metadataRead": {
+    "observedAtUtc": "2026-10-22T11:13:24.871Z",
+    "nativeExit": 2,
+    "stderrPresent": false,
+    "kind": "m03_vercel_saved_auth_metadata",
+    "status": "saved_auth_expired",
+    "metadataValid": true,
+    "unexpired": false,
+    "covers75Minutes": false,
+    "effectiveBackendEstablished": false,
+    "networkRequests": 0,
+    "authenticationAttempted": false,
+    "refreshAttempted": false,
+    "configWritten": false,
+    "childClosed": true
+  },
+  "interpretation": {
+    "savedFileExpiredAtObservation": true,
+    "effectiveCliBackendEstablished": false,
+    "remoteAuthenticationAttempted": false,
+    "historicalGetFailureCause": "unestablished",
+    "doesNotAuthorizeAnotherLiveWindow": true
+  },
+  "localChanges": {
+    "metadataHelper": "scripts/n8n/foundation-vercel-auth-preflight.mjs",
+    "metadataHelperSha256": "c1e0b211f5a03ca336a58a9c2bcc634bd785d08859867622a494cf6ad7237233",
+    "metadataHelperTests": 21,
+    "metadataHelperPassed": 21,
+    "metadataHelperSkipped": 0,
+    "metadataHelperReview": "72905f / 2d136a; no P1/P2",
+    "diagnosticConsumer": "scripts/n8n/foundation-live-runtime-cli.mjs",
+    "diagnosticConsumerSha256": "bd2ec90626cbed206cd90987aebe7c2a922954bafee086b12021a51faad8e392",
+    "diagnosticWholeFileTests": 18,
+    "diagnosticWholeFilePassed": 18,
+    "diagnosticNewCases": 7,
+    "diagnosticReview": "remaining_guard_review; no P1/P2",
+    "syntheticTestsDoNotEstablishHostedAcceptance": true,
+    "publicCheckOnlyRemainsPrivateReadFree": true,
+    "spentAdmissionOrFrozenPinsChanged": false
+  },
+  "ownerAction": {
+    "id": "MA-02",
+    "application": "Existing Vercel CLI under same Windows account",
+    "shell": "Windows PowerShell",
+    "command": "& \"$env:APPDATA\\npm\\vercel.cmd\" login\n$LASTEXITCODE",
+    "inputPurpose": "Private existing-account session restoration only",
+    "expectedNonSecretResult": "Successful sign-in and final 0",
+    "readinessReply": "Vercel CLI session restored",
+    "noNewTokenResetOrDbRuntimeHandoff": true
+  },
+  "accounting": {
+    "management": 5,
+    "control": 201,
+    "combined": 206,
+    "newNetworkRequestsInFollowup": 0
+  },
+  "recordedAtUtc": "2026-10-22T11:14:38.846Z"
+}

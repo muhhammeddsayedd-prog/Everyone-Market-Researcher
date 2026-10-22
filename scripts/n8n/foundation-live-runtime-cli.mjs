@@ -78,6 +78,77 @@ const exact = (v, keys) =>
   !Array.isArray(v) &&
   Object.keys(v).length === keys.length &&
   keys.every((k) => Object.hasOwn(v, k));
+const setupFailureStages = new Set([
+  'not_started',
+  'starting',
+  'native_exit',
+  'utf8',
+  'framing',
+  'json',
+  'completed',
+  'stdout_limit',
+  'stderr_limit',
+  'child_error',
+  'timeout',
+  'aborted',
+  'spawn_error',
+]);
+const setupFailureCodes = new Set([
+  'unknown',
+  'saved_auth_missing',
+  'saved_auth_expired',
+  'saved_auth_invalid_expiry',
+  'auxiliary_scope_refusal',
+  'auth_refresh_refused',
+  'no_retry_bootstrap',
+  'local_write_refused',
+  'credential_storage_write_refused',
+  'credential_storage_unsupported',
+  'tls_failure',
+  'dns_failure',
+  'network_failure',
+]);
+// Preserve only fixed technical fields from the private CLI transport. Neither
+// its stderr/output/error nor byte counts, paths or provider values are copied.
+// False flags in the unknown projection mean closure/start/abort is unproven.
+function projectSetupFailureDiagnostic(transport) {
+  const unknown = Object.freeze({
+    stage: 'unknown',
+    code: 'unknown',
+    httpStatus: null,
+    nativeExit: null,
+    childStarted: false,
+    childClosed: false,
+    aborted: false,
+  });
+  try {
+    const dto = transport?.diagnostics?.();
+    if (!dto || typeof dto !== 'object' || Array.isArray(dto)) return unknown;
+    const { stage, code, httpStatus, nativeExit, childStarted, childClosed, aborted } = dto;
+    if (
+      !setupFailureStages.has(stage) ||
+      typeof code !== 'string' ||
+      !(httpStatus === null || (Number.isInteger(httpStatus) && httpStatus >= 100 && httpStatus <= 599)) ||
+      !(
+        nativeExit === null ||
+        (Number.isInteger(nativeExit) && nativeExit >= -2147483648 && nativeExit <= 2147483647)
+      ) ||
+      [childStarted, childClosed, aborted].some((v) => typeof v !== 'boolean')
+    )
+      return unknown;
+    return Object.freeze({
+      stage,
+      code: setupFailureCodes.has(code) ? code : 'unknown',
+      httpStatus,
+      nativeExit,
+      childStarted,
+      childClosed,
+      aborted,
+    });
+  } catch {
+    return unknown;
+  }
+}
 const pause = (ms) => new Promise((done) => setTimeout(done, ms));
 const selected = new Map(
   foundationAcceptancePlan()
@@ -506,7 +577,17 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       },
       dependencies.setup ?? {},
     );
-    deployment = assertFoundationLiveDeployment(await setup.prepare());
+    try {
+      deployment = assertFoundationLiveDeployment(await setup.prepare());
+    } catch {
+      const diagnostic = projectSetupFailureDiagnostic(t);
+      ownerPreflight.append({
+        event: 'setup_failure_diagnostic',
+        at: new Date(now()).toISOString(),
+        ...diagnostic,
+      });
+      fail();
+    }
     provisionAttempted = true;
     const provision = await admin.provision({
       audience: deployment.audience,

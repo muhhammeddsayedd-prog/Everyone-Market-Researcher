@@ -169,6 +169,13 @@ for (const mode of [
   'identity_wrong_request',
   'identity_unstarted',
   'admin_abort_missing_descendants',
+  'setup_expired',
+  'setup_http',
+  'setup_contract',
+  'setup_unknown_diagnostics',
+  'setup_throwing_diagnostics',
+  'setup_missing_diagnostics',
+  'setup_malformed_diagnostics',
 ])
   test('same-child exact route / independent shutdown: ' + mode, async () => {
     let restoreFault = false;
@@ -266,12 +273,20 @@ for (const mode of [
       async request(spec) {
         let data,
           status = 200;
+        if (mode.startsWith('setup_')) {
+          assert.equal(spec.method, 'GET');
+          assert.equal(spec.path, '/v9/projects/' + projectId + '?teamId=' + teamId);
+          if (!['setup_http', 'setup_contract'].includes(mode))
+            throw Error('SYNTHETIC_PRIVATE_TRANSPORT_FAILURE');
+          if (mode === 'setup_http')
+            return { status: 401, data: { error: packet.writerPassword }, closed: true };
+        }
         if (spec.path.startsWith('/v9/projects/') && spec.method === 'GET')
           data = {
             id: projectId,
             accountId: teamId,
             rootDirectory: 'apps/web',
-            nodeVersion: '24.x',
+            nodeVersion: mode === 'setup_contract' ? '20.x' : '24.x',
             framework: 'nextjs',
             link: { type: 'github', org: 'muhhammeddsayedd-prog', repo: 'Everyone-Market-Researcher' },
             ssoProtection: { deploymentType: 'all_except_custom_domains' },
@@ -323,6 +338,35 @@ for (const mode of [
           };
         else throw Error('SYNTHETIC_ROUTE_UNSUPPORTED');
         return { status, data, closed: true };
+      },
+      diagnostics() {
+        if (mode === 'setup_throwing_diagnostics') throw Error(packet.writerPassword);
+        if (mode === 'setup_missing_diagnostics') return undefined;
+        return {
+          stage: ['setup_http', 'setup_contract'].includes(mode) ? 'completed' : 'native_exit',
+          code:
+            mode === 'setup_unknown_diagnostics'
+              ? packet.writerPassword
+              : mode === 'setup_expired'
+                ? 'saved_auth_expired'
+                : 'unknown',
+          httpStatus:
+            mode === 'setup_malformed_diagnostics'
+              ? '200'
+              : mode === 'setup_http'
+                ? 401
+                : mode === 'setup_contract'
+                  ? 200
+                  : null,
+          nativeExit: ['setup_http', 'setup_contract'].includes(mode) ? 0 : 1,
+          childStarted: true,
+          childClosed: true,
+          aborted: false,
+          stdoutBytes: 1048576,
+          stderrBytes: 65536,
+          path: 'https://private.invalid/' + packet.writerPassword,
+          error: packet.writerPassword,
+        };
       },
       state: () => ({ pendingRequests: 0, unclosedResponses: 0 }),
       close() {},
@@ -391,6 +435,73 @@ for (const mode of [
         id: 'prepare1',
         command: 'prepare',
       });
+      if (mode.startsWith('setup_')) {
+        assert.equal(prepared.status, 'blocked');
+        assert.equal(prepared.residual, true);
+        assert.equal(prepared.nativeExecutions, 0);
+        assert.equal(prepared.controlAttempts, 50);
+        const diagnosticRows = readFileSync(join(f.directory, 'preflight.jsonl'), 'utf8')
+          .trim()
+          .split('\n')
+          .map(JSON.parse);
+        assert.equal(diagnosticRows.length, 1);
+        const receipt = diagnosticRows[0];
+        assert.deepEqual(
+          Object.keys(receipt).sort(),
+          [
+            'event',
+            'at',
+            'stage',
+            'code',
+            'httpStatus',
+            'nativeExit',
+            'childStarted',
+            'childClosed',
+            'aborted',
+          ].sort(),
+        );
+        assert.equal(receipt.event, 'setup_failure_diagnostic');
+        assert.ok(Number.isFinite(Date.parse(receipt.at)));
+        const unknown = [
+          'setup_throwing_diagnostics',
+          'setup_missing_diagnostics',
+          'setup_malformed_diagnostics',
+        ].includes(mode);
+        assert.equal(
+          receipt.stage,
+          unknown ? 'unknown' : ['setup_http', 'setup_contract'].includes(mode) ? 'completed' : 'native_exit',
+        );
+        assert.equal(receipt.code, mode === 'setup_expired' ? 'saved_auth_expired' : 'unknown');
+        assert.equal(
+          receipt.httpStatus,
+          mode === 'setup_http' ? 401 : mode === 'setup_contract' ? 200 : null,
+        );
+        assert.equal(
+          receipt.nativeExit,
+          unknown ? null : ['setup_http', 'setup_contract'].includes(mode) ? 0 : 1,
+        );
+        assert.equal(receipt.childStarted, !unknown);
+        assert.equal(receipt.childClosed, !unknown);
+        assert.equal(receipt.aborted, false);
+        const publicJson = JSON.stringify({ prepared, rows, diagnosticRows });
+        for (const key of [
+          'managementKey',
+          'writerPassword',
+          'apifyReadToken',
+          'machineToken',
+          'protectionBypass',
+        ])
+          assert.equal(publicJson.includes(packet[key]), false);
+        assert.equal(publicJson.includes('SYNTHETIC_PRIVATE_TRANSPORT_FAILURE'), false);
+        const stopped = await session.close();
+        assert.equal(stopped.residual, true);
+        assert.equal(stopped.environmentCleanupVerified, true);
+        assert.equal(stopped.adminChildClosed, true);
+        assert.equal(f.calls.length, 0);
+        assert.equal(envs.length, 0);
+        assert.equal(Object.keys(bypass).length, 0);
+        return;
+      }
       const identityFailure = mode.startsWith('identity_');
       assert.equal(prepared.status, identityFailure ? 'blocked' : 'dev_runtime_prepared');
       assert.equal(prepared.nativeExecutions, 0);

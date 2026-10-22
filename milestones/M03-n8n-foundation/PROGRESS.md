@@ -5,7 +5,7 @@
 
 ## Status
 
-**Blocked: waiting on owner — MA-04 / MA-11 four saved-value deliveries. Exact b58581a7 approval and approval-bound public readiness complete; verify normal new-pin PR8 five-job CI/Vercel before requesting the exact handoff. Clock off/admission absent; authentication and live A–D/full-D open.**
+**In progress — startup-replacement attempt closed with residual acceptance flags. Dev authentication/history14 passed; preparation stopped at the first resumed Vercel project GET. A–D/full-D remains open. Local saved auth-file expiry is verified; MA-02 existing-session restoration is pending. No database/n8n handoff or retry.**
 
 Historical e803 deliveries and 75-minute metadata coverage passed before admission. Prepare
 then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
@@ -16,24 +16,80 @@ advisor/type evidence and archived/paused C999 stay distinct from this attempt
 and open A–D business acceptance. GW01 remains closed; no migration replay,
 production, private incident R2 execution, PR8 merge or M04.
 
-| Field                          | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Started                        | 2026-10-18 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Last updated                   | 2026-10-22 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Finished                       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Branch / PR                    | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset                                                                                                                                                                                                |
-| Current delivery checkpoint    | Final b58581a7 approval verified; [approved public readiness](evidence/dev-acceptance-startup-replacement-approved-readiness-20261022.json) complete. Reviewed 7262 / CI39696952040 five jobs/Vercel freshly reverified 0ab261, source evidence only. Normal new-pin commit's [PR8 CI/Vercel](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8) must pass before requesting saved-value delivery; no future result/head claimed. |
-| Selected runtime source        | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json).          |
-| Selected-source CI             | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance.                                                                                                                                                                                                                |
-| Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                                       |
-| GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                         |
-| Current task                   | Seal144054 native exit 0/129 project/840 runtime; corrected guard 5ba4cc native exit 0 ready; wrapper 70fc2d native exit 0 check_only_ready/publicComposition/Admin public inputs true, handoff ready false/MCP port false/privateRead false/network 0. Admin e79df1 explicit native exit 2 HANDOFF_MISSING/no auth. All four pairs absent; approved readiness complete, delivery CI gate remains.                                                         |
-| Next step                      | Verify this commit's normal five-job PR8 CI/Vercel, then request only four existing saved values via the exact handoff document. After actual delivery verify 75-minute coverage/source/transport/provenance and no admission before one child. No new approval/Machine/prod/reset, spent-consumer retry, migration replay or live work before gates.                                                                                                      |
-| Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.               |
+| Field                          | Value                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Started                        | 2026-10-18 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Last updated                   | 2026-10-22 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Finished                       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Branch / PR                    | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset                                                                                                                                                                                       |
+| Current delivery checkpoint    | Actual remote 3d0d7c verifies source 25a4621 all five jobs/Vercel, PR8 draft/open. Metadata bba48e at 2026-10-22T10:46:49.5103427Z verifies all four pairs present/valid/covers75 true; public CheckOnly 3c6be0 native exit 0 Admin handoff ready. Source/readiness stays distinct from actual phase/authentication results.                                                                                                                      |
+| Selected runtime source        | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
+| Selected-source CI             | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance.                                                                                                                                                                                                       |
+| Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                              |
+| GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                |
+| Current task | Both source/wrapper close receipts captured; outer native exit1/stdout EOF, credential children closed. All eight handoffs/private SQL removed; reviewed unused-bypass cleanup29b313 native0 and presence11:10:53 UTC verify absence. Actual management5/control201/combined206; zero native/gateway/provider/actors. |
+| Next step | Deliver reviewed local fixes/evidence through normal PR8 CI. MA-02: restore the existing Vercel CLI session using the exact command below, then verify only bounded local metadata. Consumed admission stays closed; no database/n8n handoffs, new child/window or migration replay. |
+| Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.      |
 
 ## 21 October A–D approval and actual preflight
 
-### 22 October startup-replacement — exact approval recorded; clock not started
+### 22 October startup-replacement — actual attempt closed, acceptance residual
+
+[Actual attempt and cleanup](evidence/dev-acceptance-startup-replacement-attempt-20261022.json).
+The sole segment 1c69c89e-7807-46d5-b7b8-ca28285ff2b4 started at
+**10:52:53.414 UTC**; stop-new11:42:53.414/action11:52:53.414/physical-close
+12:02:53.414 UTC were preserved. Prepare, restore and close were each sent once.
+Outer PID44408/runtime60040 closed at **10:57:00.225 UTC**, native exit1/stdout EOF.
+The one-use admission is consumed; remaining clock time does not authorize
+another prepare, second child, renewal or new cases.
+
+Actual native Admin authentication succeeded against dev/session5432. All14
+migration versions and current catalog/global-vacancy checks matched. No dry-run,
+push, reset or migration replay occurred. Retained C999 reactivation was
+acknowledged/verified, then the unprovisioned-fixture cleanup archived it again.
+Historical21October advisor/type postchecks were explicitly reused with their
+original observedAt; they are not newly run hosted advisors/types.
+
+Preparation reached the first resumed Vercel project GET, then blocked before
+any write intent, environment change, Preview creation, SQL window provision,
+workflow execution, gateway probe or actor call. The setup journal retains only
+two GET-attempt rows: one historical and one current. Precise transport failure
+was not retained; expiry/HTTP/contract/network causes remain unestablished
+until a separate safe diagnostic. No automatic replay is allowed.
+
+Source close reports childTransportsClosed/adminChildClosed/fixtureArchived/
+environmentCleanupVerified true, but windowClosed/baselineRestored/
+remoteWorkSettled false and residual true. Final wrapper independently reports
+childClosed/credentialChildrenClosed/handoffsDeleted true, nativeExit1,
+emergencyShutdown false, pendingMachinePreserved true. These are genuine local
+closure receipts, not full-D/business acceptance. Historical lost-wrapper and
+unknown-orphan limits remain unchanged.
+
+All eight consumed handoff leaves and private SQL scratch are absent. The
+unused, never-installed local bypass was separately removed by reviewed exact
+cleanup **29b313**, native0, **11:09:58.096 UTC**; presence-only readback
+**11:10:53.178 UTC** verifies bypass/locks/scratch/eight inputs absent.
+No ciphertext contents were read during cleanup. Saved originals and pending
+Machine are preserved; credential-bearing children can remain closed.
+
+Actual aggregate totals are **5 management /201 control /206 combined**,
+preserving155 prior requests; original ceilings512/2048/2560 remain.
+Native/gateway/provider/actor activity is zero, USD2 reserve unspent. PhaseB,
+domain, business acceptance and full-D remain false. One independent Supabase
+MCP project-URL read failed OAuth refresh; no SQL read/retry/login/setup followed.
+Actual native Admin receipts remain valid and separate.
+
+Local-only saved-session diagnosis and fixed-code failure recording are complete.
+The bounded read at11:13:24.871 UTC reports saved_auth_expired/native2/childClosed
+true, no network/authentication/refresh/config writes. Effective backend and the
+historical GET cause remain unestablished. The standalone helper passes21/21
+focused tests; the diagnostic CLI passes18/18 including seven new failure cases;
+independent reviews found no P1/P2. Only MA-02 existing-session restoration is
+requested, using the exact command below. No database/n8n/provider handoff or live
+window is authorized. Production, schedules, private incident execution,
+PR8 merge and M04 remain untouched. [Local follow-up](evidence/dev-acceptance-startup-replacement-followup-20261022.json).
+
+### Historical pre-admission startup-replacement approval/readiness
 
 The owner explicitly approved the exact packet at reviewed PR8 head
 `7262f6459e2b04713dda8d2912970c496585b4f3`. Actual ef71fc verifies
@@ -887,6 +943,19 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
+- Current startup-replacement segment is consumed/closed. Actual native dev
+  authentication/history14/catalog checks passed, retained C999 was archived
+  again, and no migration operation/setup write/execution/actor occurred.
+  Source/wrapper/outer receipts prove credential-bearing child closure and
+  all temporary inputs/private SQL/bypass cleanup. Residual window/baseline/
+  settlement flags remain false; A–D/full-D remains open.
+- MA-02 current saved-file metadata read at11:13:24.871 UTC returns
+  saved_auth_expired/native2/childClosedtrue/network0. Effective CLI backend
+  and the historical failed-GET cause are unestablished. Restore only the
+  existing CLI session using the exact action below. Do not replenish any
+  database/n8n/Apify handoffs, repeat MCP setup or reuse a spent admission.
+
+- Historical e803 checkpoint (superseded by the actual startup attempt above):
 - The latest remaining segment e803 is consumed/closed after 75-minute metadata
   coverage, CheckOnly 555e08 and admission at 23:12:25.721 UTC. Prepare blocked after 50
   baseline GETs before Vercel/native/gateway/provider/actor work. Exact Admin
@@ -935,7 +1004,41 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-### MA-11 — exact startup-replacement decision complete; do not repeat
+### MA-02 — restore the existing Vercel CLI session
+
+Actual bounded local read at **11:13:24.871 UTC** reports saved_auth_expired,
+childClosed true, network/authentication/refresh/config writes0. It reads only
+the fixed saved auth-file metadata; effective backend and the prior GET failure
+cause remain unestablished. [Actual local follow-up](evidence/dev-acceptance-startup-replacement-followup-20261022.json).
+
+In **Windows PowerShell under this same Windows account**, run:
+
+```powershell
+& "$env:APPDATA\npm\vercel.cmd" login
+$LASTEXITCODE
+```
+
+Complete the private sign-in with the existing account that can access Everyone
+Market Researcher. Expected: successful sign-in and final **0**. Close that
+PowerShell window, then reply **Vercel CLI session restored**. Send no token,
+device code, auth-file contents or credential screenshots. This restores only
+the existing session; no new key/project/password reset/deployment or window.
+
+After the reply, run only the reviewed bounded local metadata helper; a pass
+does not prove remote project access. Current one-read network fences and all
+acceptance admissions stay spent. Any future actual project-read/acceptance
+consumer must have concrete reviewed authority/readiness; no blanket retry.
+
+### MA-04 / MA-11 — saved-value delivery and cleanup complete
+
+Native dev Admin authentication/history14 passed; no migration operation.
+Both close receipts/outer native1/EOF prove credential children closed. All
+eight consumed handoffs/private SQL and unused bypass are verified absent.
+Keep saved originals and pending Machine. Do not repeat hidden-prompt commands
+or the fulfilled startup-replacement approval. No database/n8n/provider handoff,
+new Machine/prod value, renewal, production/merge/M04 action is requested.
+
+### Historical pre-admission MA-11 — exact decision complete
 
 **Completed:** owner approved the [exact packet](evidence/dev-acceptance-startup-replacement-packet-20261022.md)
 at reviewed [PR8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8)
@@ -1022,8 +1125,9 @@ concrete replacement-window packet and purpose-bound consumer/guard before
 assessing a fresh owner decision or credential delivery. No future window is
 authorized by the old reply or this record.
 
-MA-02 is verified complete on22October by actual fixed GET f3102d/HTTP200/native0/
-all12predicates and child closure. No more login, setup, key creation or reset.
+Historical MA-02 checkpoint: actual fixed GET f3102d on21October22:11 UTC
+returned HTTP200/native0/all12predicates and child closure. Later current
+saved-file expiry is recorded above; this older pass is not current access.
 
 **Historical completed MA-02 instructions; do not repeat.** Actual bounded
 read0e9ce3 verified saved_auth_expired; no project response or automatic refresh.
@@ -1425,6 +1529,28 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-22 Cairo: Startup attempt closed native1 at10:57:00.225 UTC; both source/wrapper receipts retained, Admin history14/catalog/authentication passed and C999 archived again, no migration operation. First resumed Vercel GET stopped before any write/provision/execution. Totals5/201/206, actors0. Eight inputs/private SQL removed; exact reviewed unused bypass cleanup29b313 native0/presence11:10:53 verifies absence. Local metadata at11:13:24.871 UTC proves saved auth-file expired, not effective backend or historical cause. New standalone redacted helper21/21 tests; failure-diagnostic CLI18/18 tests (seven new cases), independent reviews no P1/P2. Only MA-02 existing-session restore requested, no runtime/Admin handoffs. Normal new-source CI to verify; no spent-admission retry/window/migration/production/merge/M04. Actual/follow-up evidence linked above.
+
+- 2026-10-22 Cairo: startup_prepare_01 blocked/residual true; management5/
+  control201, native/gateway/provider0, PhaseB/domain false. SupervisorPID44408
+  alive/clean protocol; root sent startup_restore_01 once, shutdown/close pending.
+  No new cases/actors/MCP calls/retry/second child/new clock/owner action. Preserve
+  initialcarry155/old24/history14 and admission deadlines, no migration replay.
+  Await root's actual final receipts before restoration/closure/full-D claims.
+
+- 2026-10-22 Cairo: One startup-replacement admitted 10:52:53.414 UTC; stop-new
+  11:42:53.414/action 11:52:53.414/physical-close 12:02:53.414 UTC. Outer PID44408,
+  canonical private_child_ready and startup_prepare_01 sent once by sole operator.
+  Metadata bba48e10:46:49.5103427 UTC four pairs valid/present/covers75 true;
+  CheckOnly3c6be0 native exit 0 Admin handoff ready. Remote3d0d7c source25a4621
+  five jobs/Vercel/draft/open verified. Public Node-worker APPDATA filtering fixed
+  before start, no credentials consumed during fix. No new owner action; active
+  preparation, actual A–D/full-D unproven. Old24/carry155/history14/cleanup and
+  lost-wrapper/orphan limits kept; no second child/renewal/migration replay/
+  production/private R2 execution/merge/M04. Public observer startup-supervisor-
+  1c69c89e-7807-46d5-b7b8-ca28285ff2b4.jsonl retains actual frames; root phase/final
+  receipts to follow.
 
 - 2026-10-22 Cairo: Approved public readiness completed 09:24:32.152 UTC:
   seal 144054 native exit 0/129 project/840 runtime; final-pin guard 5ba4cc ready;
