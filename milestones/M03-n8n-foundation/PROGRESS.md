@@ -5,7 +5,7 @@
 
 ## Status
 
-**Blocked: waiting on owner — MA-11 separate time/retained-C999 decision, presented after this delivery passes ordinary PR8 CI. Vercel project access verified; distinct continuation, exact audit safeguards, independent review, affected tests and public readiness complete. A–D/full-D open; no credentials or admission now.**
+**Blocked: waiting on owner — MA-04 / MA-11 four existing-value handoffs. Exact packet approval/pins/review/public readiness complete. Normal new-pin CI and fresh saved-auth75 coverage precede issuing the exact request. No clock/admission; A–D/full-D open.**
 
 Historical e803 deliveries and 75-minute metadata coverage passed before admission. Prepare
 then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
@@ -22,18 +22,73 @@ production, private incident R2 execution, PR8 merge or M04.
 | Last updated                   | 2026-10-22 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Finished                       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Branch / PR                    | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset                                                                                                                                                                                       |
-| Current delivery checkpoint | Source f4775b2 / CI39818174853 all five jobs plus Vercel passed before the actual read. New continuation changes receive normal PR8 checks; no future-head pass is claimed. |
+| Current delivery checkpoint | Owner approved the exact packet at reviewed8eb6e2e / CI39823333289 all five jobs plus Vercel. Root is inspecting actual current state and preserving legitimate newer work before approved-pin readiness. New changes receive normal PR8 checks; no future-head pass is claimed. |
 | Selected runtime source        | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
 | Selected-source CI             | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance.                                                                                                                                                                                                       |
 | Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                              |
 | GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                |
-| Current task | Local concrete continuation/review/tests/public readiness complete; aggregate6/201/207 preserved. Seal3d3ce2, wrapper ee7ff4 approval_required/privateReadfalse/network0, direct DB fbb6bb native3 APPROVAL_REQUIRED. |
-| Next step | Verify this delivery’s normal PR8 five-job CI/Vercel, then present only the exact project-verified time/fixture decision. No credential delivery until actual decision/approved readiness; no admission, migration replay or old-fence reuse. |
+| Current task | Approved public seal92e675/guardbcada2/coordinatorfad5fc/direct Admin6224f6 pass; no private metadata/auth/network in these CheckOnly modes. Four input pairs absent; pending Machine's separate non-secret metadata contract verified, ciphertext unopened. Aggregate6/201/207 unchanged. |
+| Next step | Verify ordinary new-pin PR8 five-job CI/Vercel and fresh local saved-auth75-minute coverage, then request only four actually absent saved inputs through the exact handoff. No owner request/clock yet; no repeated approval/Machine input/migration replay/spent-fence reuse. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.      |
 
 ## 21 October A–D approval and actual preflight
 
-### 22 October remaining proposal — concrete local readiness complete
+### 22 October project-verified packet — approval pinned/reviewed, approved public readiness complete
+
+The owner replied **Approve exact project-verified packet** at reviewed PR8 head
+**8eb6e2e**, after **CI39823333289** all five jobs and Vercel passed. This is
+the actual approval of [the exact time/retained-C999 packet](evidence/dev-acceptance-project-verified-packet-20261022.md)
+for segment20275b22-b7fe-4737-a9a4-c50c2feadb74. Do not ask for that decision
+again. The literal reply is preserved in [the approval record](evidence/dev-acceptance-project-verified-approval-20261022.json),
+SHA256 **5eb38cbe8740ed9a9f72d2356de3fa2e9ce77c8de3710020a7d3de7a6ebdd610**,
+recorded **18:06:43.052 UTC**. Independent affected21/21 checks pass native0,
+review has no P1/P2, all43 DB pins/39 history records/14 migrations are preserved.
+Actual source8eb6e2e / CI39823333289 all five jobs plus Vercel was reverified21f6f9.
+
+No clock/admission has started. Fresh saved-auth metadata check **7a0943**
+completed native0 with covers75/childClosed true and no network/authentication/
+refresh/configuration writes; the storage backend remains unestablished. This
+is a new local metadata observation, separate from the dated16:39 result and
+the successful17:04 remote project read. That helper records no inner clock;
+the actual observation is bounded after18:06:43.052 UTC and before18:08:20.568
+UTC, rather than assigned an invented exact timestamp.
+
+Presence-only **f1ba87**, observed **2026-10-22T18:08:20.5684847Z**, finds all
+eight Admin/Management/Writer/ApifyRead ciphertext/lease files absent. Pending
+Machine ciphertext+metadata are present, which does not prove validity from
+presence alone. The parent operation lock is absent; no ciphertext or lease
+contents were read. Later bounded non-secret Machine JSON check **f30b9c**,
+observed **18:10:42.2851776 UTC**, verifies its exact seven-key contract,
+original public delivery pins and credential ID. The ciphertext remains
+unopened/undecrypted; this is metadata validation, not authentication or token
+validity proof. No network call or clock admission occurred.
+
+[Actual approved public readiness](evidence/dev-acceptance-project-verified-approved-readiness-20261022.json)
+is complete: seal **92e675** native0/SHA256
+**85cb7f91208bfd9541c68082fcc5b2435f7126192777d1e6b7dd35bf17733814**,
+136 project/840 Zod/3462 Vercel files; guard **bcada2** native0 ready; full
+coordinator **fad5fc** native0 check_only_ready, public composition/Admin public
+inputs true, Admin handoff/actual MCP false, privateRead false/network0. Correct
+direct Admin **6224f6** returns native4 PUBLIC_INPUTS_READY, with no credential
+metadata/private contents/authentication read. These public CheckOnly modes
+did not read saved-auth, Machine or input metadata. The separate actual local
+saved-auth7a0943 and non-secret Machine JSONf30b9c reads above stay explicit.
+All public check processes closed; approval5eb38cbe, packet13d19460 and
+checkpoint e21e515a are unchanged. No ciphertext was opened, decrypted or used
+for authentication; no acceptance network call, clock or hosted mutation.
+
+[Exact four-saved-input instructions](evidence/dev-acceptance-project-verified-handoff-20261022.md)
+are prepared. Ordinary new-pin PR8 CI/Vercel and a fresh local saved-auth75
+coverage check still gate the owner request; no future delivery-head pass or
+credential action is claimed yet. The17:04 fixed-project GET
+remains dated authentication/read evidence; it grants no new read fence or clock.
+Totals remain **6 management /201 control /207 combined**. Preserve all14
+migrations, completed advisor/type evidence with original observedAt, known
+prior fixture audit/archive receipts, historical failed attempts and closure
+limits. Original aggregate caps/USD2 reserve and all production/schedule/private
+incident/merge/M03 closure/M04 exclusions remain binding.
+
+### Historical preapproval proposal — concrete local readiness complete
 
 [Proposed packet](evidence/dev-acceptance-project-verified-packet-20261022.md),
 [39-record checkpoint](evidence/dev-acceptance-project-verified-checkpoint-20261022.json),
@@ -1019,12 +1074,17 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
   Source/wrapper/outer receipts prove credential-bearing child closure and
   all temporary inputs/private SQL/bypass cleanup. Residual window/baseline/
   settlement flags remain false; A–D/full-D remains open.
-- MA-02 actual project access is verified at17:04:25.170 UTC/HTTP200/native0/
-  all12 predicates/children closed; ledger spent, totals6/201/207. Backend and
-  old failure cause remain unestablished. The distinct continuation/audited
-  retained-C999 safeguard is ready/reviewed/tested/publicly sealed. After
-  normal delivery CI passes, only MA-11 new time/fixture authority is missing.
-  No credentials/login/MCP setup/old-fence reuse/new admission now.
+- MA-11 exact project-verified time/fixture approval is complete: literal owner
+  reply **Approve exact project-verified packet** at reviewed8eb6e2e /
+  CI39823333289 all five jobs plus Vercel. Approval5eb38cbe is pinned/reviewed;
+  affected21/21, fresh reviewed-source/CI recheck and approved public readiness
+  pass. Ordinary new-pin delivery CI/fresh saved-auth75 check remain.
+  Presence18:08:20.5684847 UTC verifies four input pairs absent; exact saved-value
+  handoff prepared but not requested. Separate Machine metadata validation
+  passes; its ciphertext is unopened and no Machine input is needed.
+  MA-02 dated fixed-project access and spent ledger remain preserved, totals
+  6/201/207 unchanged. No repeat approval/login/MCP setup, old-fence reuse,
+  new admission or migration replay.
 
 - Historical e803 checkpoint (superseded by the actual startup attempt above):
 - The latest remaining segment e803 is consumed/closed after 75-minute metadata
@@ -1085,25 +1145,24 @@ No repeated login, value, new key or credential delivery is requested. Storage
 backend and historical failed-GET cause remain unestablished. The read fence
 and all A–D windows remain spent; no new admission from this result.
 
-### MA-11 — single exact remaining time/fixture decision
+### MA-11 — exact remaining time/fixture decision complete
 
-Concrete consumer/SQL safeguard, independent review, affected tests and actual
-public readiness pass. Verify this substantive delivery’s ordinary PR8 five-job
-CI/Vercel, then present [the proposed packet](evidence/dev-acceptance-project-verified-packet-20261022.md).
-The previous one-use packet expressly forbids renewal/second child, so only
-new time authority and the exact audited C999 status operation require this
-decision. Same aggregate caps, USD2 reserve; no migration replay.
+Owner literal reply: **Approve exact project-verified packet**. This approves
+[the exact packet](evidence/dev-acceptance-project-verified-packet-20261022.md)
+at reviewed8eb6e2e / CI39823333289 all five jobs plus Vercel; do not repeat the
+decision. [Approval record](evidence/dev-acceptance-project-verified-approval-20261022.json).
+The original quoted proposal and all prior approval records remain historical.
 
-Exact readiness reply after review:
-
-**Approve one M03 project-verified A-D dev window and the exact audited retained-C999
-reactivation at the reviewed PR #8 head, preserving all prior attempts and aggregate
-caps; no migration replay.**
-
-No credentials now. Only after an actual decision/approved readiness, inspect
-genuine absent inputs and provide exact existing-value helper commands. Do not
-reset/new-key/recreate credentials or reopen any spent admission. Production,
-schedules, private incident execution, merge/M03 closure/M04 stay excluded.
+Approval pin/review, fresh reviewed-source/CI verification and approved public
+seal/readiness pass. Normal new-pin delivery CI/fresh saved-auth75 check remain before an owner request.
+No clock/admission has started. Actual presence check18:08:20.5684847 UTC finds
+all four input pairs absent. Pending Machine's later non-secret JSON contract/
+public delivery pins/credential ID check passes; ciphertext remains unopened,
+not proof of token validity or endpoint authentication. No Machine input needed.
+[Exact existing-value helper instructions](evidence/dev-acceptance-project-verified-handoff-20261022.md)
+are prepared for only those absent pairs. No reset/new key/credential recreation or spent-fence
+reuse. Production, schedules, private incident execution, merge/M03 closure and
+M04 stay excluded.
 
 ### MA-04 / MA-11 — saved-value delivery and cleanup complete
 
@@ -1605,6 +1664,12 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-22 Cairo: Approved public readiness complete: seal92e675 native0/SHA85cb7f91/136 project/840 Zod/3462 Vercel; guardbcada2 native0 ready; coordinatorfad5fc native0 check_only_ready/composition+Admin public inputs true/handoff+MCP false/privateReadfalse/network0; direct Admin6224f6 native4 PUBLIC_INPUTS_READY before credential metadata/auth. CheckOnly modes read no saved-auth/Machine/input metadata. Separate saved-auth7a0943 and non-secret Machine JSONf30b9c at18:10:42.2851776 UTC are explicit; ciphertext unopened/undecrypted/no authentication/network/clock. Approval5eb38cbe/packet13d19460/checkpoint e21e515a and43pins/39history/14migrations/counters6/201/207 preserved. Normal new-pin CI and fresh auth75 gate exact four-absent-input handoff request; no future head/pass/owner request now. No migration/fixture/hosted operation or excluded work. [Approved readiness](evidence/dev-acceptance-project-verified-approved-readiness-20261022.json), [handoff](evidence/dev-acceptance-project-verified-handoff-20261022.md).
+
+- 2026-10-22 Cairo: Approval5eb38cbe recorded18:06:43.052 UTC is pinned/reviewed; affected21/21 native0/no P1/P2 and all43 DB pins/39 history/14 migrations preserved. Source8eb6e2e / CI39823333289 all five jobs plus Vercel reverified21f6f9. Fresh saved-auth read7a0943 native0 covers75/childClosedtrue/network/auth/refresh/config writes0, backend unestablished; dated earlier metadata/HTTP200 proofs stay separate. Presence f1ba87 at18:08:20.5684847 UTC finds all eight input leaves absent, pending Machine cipher+metadata present (presence only), parent lock absent; no ciphertext/lease-content read. Exact four-value handoff prepared, owner request waits approved seal/public checks and normal new-pin CI. Clock/admission absent, totals6/201/207 unchanged; no hosted mutation or excluded work. [Handoff](evidence/dev-acceptance-project-verified-handoff-20261022.md).
+
+- 2026-10-22 Cairo: Owner literal reply **Approve exact project-verified packet** approves the distinct segment/time/retained-C999 packet at reviewed8eb6e2e / CI39823333289 all five jobs plus Vercel. Approval pin/review/reseal and fresh approved public readiness are local next steps; actual current state/input metadata remains to be verified. No credential request or new clock/admission, totals6/201/207 unchanged. Preserve all14 migrations, original advisor/type observedAt, old admissions/read fences, current known closure and historical unknown-orphan limits. No repeated decision, migration replay, production/schedules/private incident/merge/M03 closure/M04. [Actual approval](evidence/dev-acceptance-project-verified-approval-20261022.json).
 
 - 2026-10-22 Cairo: Local distinct continuation complete; independent reviews no P1/P2. JS45/45, independent overlapping26/26, Windows16/16+legacy21/21+native ancestry1/1, local PostgreSQL17 SQL64/64 pass. Public seal3d3ce2 native0/136+840+3462, wrapper ee7ff4 approval_required/privateReadfalse/network0, DB fbb6bb native3 APPROVAL_REQUIRED before private metadata/auth. Wrong root invocation without PhaseAControl is preserved as a correct rejection, not a source defect. All43 DB pins/39 historical records/14 migration hashes preserved; totals6/201/207. Approval/admission/claim absent; no inputs/hosted effects. After ordinary new-head CI, present exact separate time/retained-C999 decision in packet; no future pass/CI-only follow-up commit, credentials or M04. Readiness linked above.
 

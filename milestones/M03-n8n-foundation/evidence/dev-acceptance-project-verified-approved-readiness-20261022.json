@@ -1,0 +1,224 @@
+{
+  "kind": "m03_project_verified_continuation_approved_public_readiness",
+  "version": 1,
+  "recordedAtUtc": "2026-10-22T18:13:27.846Z",
+  "reviewedPacketHead": "8eb6e2edcd05a375d65473d8e3ab7005b00092fc",
+  "reviewedPacketCi": 39823333289,
+  "reviewedPacketHeadFiveJobsAndVercelFreshlyVerified": "21f6f9",
+  "approval": {
+    "file": "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json",
+    "sha256": "5eb38cbe8740ed9a9f72d2356de3fa2e9ce77c8de3710020a7d3de7a6ebdd610",
+    "ownerReply": "Approve exact project-verified packet",
+    "ownerReplyExact": true,
+    "recordedAtUtc": "2026-10-22T18:06:43.052Z",
+    "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+    "clockStarted": false,
+    "admissionCreated": false,
+    "claimCreated": false
+  },
+  "unchanged": {
+    "packetSha256": "13d19460cdb889378dec5ae4d93af4708baf85290c164e07961add18e7243650",
+    "checkpointSha256": "e21e515ae446dcde7983dba87d09221ce1bf3cd2ad06d08329368a8241e6ba10",
+    "historicalRecords": 39,
+    "dbPublicMembers": 43,
+    "migrationVersionsAndHashes": 14,
+    "completedHostedAdvisorsAndTypesKeepOriginalObservedAt": true,
+    "noMigrationOperation": true,
+    "noFixtureReactivation": true
+  },
+  "inputPresence": {
+    "receipt": "f1ba87",
+    "observedAtUtc": "2026-10-22T18:08:20.5684847Z",
+    "adminCiphertextAndLease": "both_absent",
+    "managementCiphertextAndLease": "both_absent",
+    "writerCiphertextAndLease": "both_absent",
+    "apifyReadCiphertextAndLease": "both_absent",
+    "allEightInputLeavesAbsent": true,
+    "pendingMachineCiphertextAndMetadataPresent": true,
+    "presenceAloneEstablishesValidity": false,
+    "parentOperationLockAbsent": true,
+    "ciphertextOrLeaseContentsRead": false,
+    "decryption": false,
+    "authenticationAttempts": 0
+  },
+  "separateSavedAuthMetadata": {
+    "receipt": "7a0943",
+    "nativeExit": 0,
+    "innerClockRecorded": false,
+    "observedIntervalUtc": {
+      "after": "2026-10-22T18:06:43.052Z",
+      "before": "2026-10-22T18:08:20.568Z"
+    },
+    "helperSha256": "c1e0b211f5a03ca336a58a9c2bcc634bd785d08859867622a494cf6ad7237233",
+    "status": "metadata_covers_75_minutes",
+    "covers75Minutes": true,
+    "childClosed": true,
+    "savedAuthMetadataRead": true,
+    "valuesExposed": false,
+    "effectiveBackendEstablished": false,
+    "networkRequests": 0,
+    "authenticationAttempted": false,
+    "refreshAttempted": false,
+    "configWritten": false,
+    "interpretation": "Separate bounded local saved-file metadata observation; not remote authentication, DPAPI use or a new clock. Earlier metadata and17:04 HTTP200 evidence retain their original observations."
+  },
+  "separatePendingMachineMetadata": {
+    "receipt": "f30b9c",
+    "observedAtUtc": "2026-10-22T18:10:42.2851776Z",
+    "nonSecretJsonRead": true,
+    "exactSevenKeysVerified": true,
+    "originalPublicDeliveryPinsAndCredentialIdVerified": true,
+    "ciphertextPresent": true,
+    "ciphertextOpened": false,
+    "decryption": false,
+    "authenticationAttempted": false,
+    "networkRequests": 0,
+    "clockStarted": false,
+    "machineInputRequired": false,
+    "interpretation": "Metadata contract verified only; no claim of decrypted-token validity or endpoint authentication."
+  },
+  "checks": {
+    "affectedIndependent": {
+      "receipts": [
+        "62686c",
+        "d01b72"
+      ],
+      "passed": 21,
+      "nativeExit": 0,
+      "independentReviewNoRemainingP1P2": true
+    },
+    "lint": {
+      "receipt": "568263",
+      "nativeExit": 0
+    },
+    "guard": {
+      "receipt": "bcada2",
+      "nativeExit": 0,
+      "kind": "project_verified_continuation_ready",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "seal": {
+      "receipt": "92e675",
+      "nativeExit": 0,
+      "status": "acceptance_public_seal_ready",
+      "projectFiles": 136,
+      "zodFiles": 840,
+      "vercelFiles": 3462,
+      "sha256": "85cb7f91208bfd9541c68082fcc5b2435f7126192777d1e6b7dd35bf17733814",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "coordinator": {
+      "receipt": "fad5fc",
+      "nativeExit": 0,
+      "status": "check_only_ready",
+      "publicCompositionLoaded": true,
+      "adminPublicInputsVerified": true,
+      "adminHandoffReady": false,
+      "actualMcpPortVerified": false,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "admin": {
+      "receipt": "6224f6",
+      "nativeExit": 4,
+      "status": "PUBLIC_INPUTS_READY",
+      "flags": [
+        "-CheckOnly",
+        "-PhaseAControl",
+        "-ProjectVerifiedContinuation"
+      ],
+      "credentialMetadataRead": false,
+      "privateContentsRead": false,
+      "authenticationAttempted": false
+    },
+    "checkOnlyBoundary": {
+      "savedAuthMetadataRead": false,
+      "machineMetadataRead": false,
+      "inputCredentialMetadataRead": false,
+      "dpapiCiphertextRead": false,
+      "authenticationAttempted": false,
+      "networkRequests": 0,
+      "note": "These facts apply to the public CheckOnly modes. Separate saved-auth and non-secret Machine metadata reads are recorded above."
+    }
+  },
+  "currentSourcePins": {
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "6901ccd3400b1ce115172cc7c08a773d34a882d60cc940bc368be6acdf00cc5e",
+    "scripts/db/m03-foundation-dev-migration-packet.json": "5197408c30faad75a6113279ccda10d48fc9e9aa1f6575d03f729e42740bd3cb"
+  },
+  "accounting": {
+    "mainManagement": 2,
+    "separateManagement": 4,
+    "aggregateManagement": 6,
+    "managementMaximum": 512,
+    "mainControl": 200,
+    "separateControl": 1,
+    "aggregateControl": 201,
+    "controlMaximum": 2048,
+    "aggregateCombined": 207,
+    "combinedMaximum": 2560,
+    "actorSpendUsd": 0,
+    "actorReserveUsd": 2
+  },
+  "deliveryBoundary": "Normal new-pin PR8 five-job CI/Vercel must pass and root must reconfirm fresh local saved-auth75-minute coverage before requesting the exact four existing saved inputs. The verified8eb6e2e CI is the reviewed-source receipt; no future delivery head/pass is claimed here.",
+  "nextOwnerAction": {
+    "type": "saved-value delivery only after approved public readiness, normal new-pin CI and fresh root saved-auth75-minute check",
+    "instructions": "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-handoff-20261022.md",
+    "requiredKinds": [
+      "Admin",
+      "Management",
+      "Writer",
+      "ApifyRead"
+    ],
+    "actuallyAbsentPairs": 4,
+    "noOwnerRequestIssuedByThisRecord": true,
+    "resetOrNewKeyRequired": false,
+    "machineOrProductionInputRequired": false
+  },
+  "closure": {
+    "allPublicCheckProcessesClosed": true,
+    "noDpapiInputConsumed": true,
+    "noNewClock": true,
+    "savedOriginalsAndPendingMachinePreserved": true,
+    "priorKnownCredentialCleanupPreserved": true,
+    "historicalUnknownOrphanClosureProven": false,
+    "historicalResidualReceiptsUnchanged": true,
+    "fullDAccepted": false,
+    "parentEnvironmentErasureNotClaimed": true
+  },
+  "newAcceptanceOperations": {
+    "clockAdmissions": 0,
+    "authenticationAttempts": 0,
+    "remoteRequests": 0,
+    "nativeWorkflowExecutions": 0,
+    "gatewayAdmissions": 0,
+    "directProviderGets": 0,
+    "actorStarts": 0,
+    "migrationOperations": 0,
+    "fixtureMutations": 0,
+    "production": false,
+    "recurringSchedules": false,
+    "externalNotifications": false,
+    "privateIncidentExecution": false,
+    "merge": false,
+    "m03Closure": false,
+    "m04": false
+  },
+  "deliveryVerification": {
+    "recordedAtUtc": "2026-10-22T18:16:42.771Z",
+    "publicDbDiskPins": 43,
+    "publicDbGitIndexPins": 41,
+    "indexedApprovalBytesMatch": true,
+    "indexedMigrationSourcesUnchanged": 14,
+    "targetedIndexSecretScan": {
+      "receipt": "e82bcf",
+      "trackedFiles": 1307,
+      "violations": 0,
+      "completeCredentialAudit": false
+    },
+    "finalRecordsReviewNoP1P2": true
+  }
+}

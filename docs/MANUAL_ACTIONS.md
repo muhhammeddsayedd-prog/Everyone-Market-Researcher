@@ -18,16 +18,31 @@ children closed/parent mutex absent. [Actual read](../milestones/M03-n8n-foundat
 MA-02 actual access is verified; no repeat login, key or credential action.
 Effective storage backend and earlier lost GET cause remain unestablished.
 
-Totals now6 management/201 control/207 combined. The new GET fence and all old
-windows remain spent. The distinct remaining dev packet/consumer and exact prior C999 audit
-safeguards now pass independent review, affected checks and actual public
-readiness: seal3d3ce2/native0, wrapper ee7ff4 approval_required/privateReadfalse/
-network0, direct DB fbb6bb native3 APPROVAL_REQUIRED before private metadata/auth.
-[Readiness](../milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-readiness-20261022.json).
-Verify normal delivery PR8 CI/Vercel, then present only the separate time/fixture
-decision in [the exact packet](../milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md).
-Prior one-use packets forbid renewal or a second child. No credentials, login or
-new admission now; all14 applied dev migrations/M02 data remain preserved.
+Totals remain6 management/201 control/207 combined. The owner replied
+**Approve exact project-verified packet** at reviewed8eb6e2e / CI39823333289
+all five jobs plus Vercel, approving [the exact distinct time/retained-C999 packet](../milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md).
+MA-11 decision is complete; do not ask again. [Actual approval](../milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json)
+SHA5eb38cbe is pinned/reviewed; affected21/21 and fresh reviewed-source/CI check
+pass. [Approved public readiness](../milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approved-readiness-20261022.json)
+also passes: seal92e675 native0/136 project/840 Zod/3462 Vercel, guardbcada2 ready,
+coordinatorfad5fc native0 check_only_ready/Admin public inputs true/handoff false,
+direct Admin6224f6 native4 PUBLIC_INPUTS_READY. These CheckOnly modes read no
+private metadata/DPAPI/auth/network. Normal new-pin delivery CI still remains.
+
+No new clock/admission or owner credential action now. Presence f1ba87 at
+18:08:20.5684847 UTC verifies all eight input ciphertext/lease files absent;
+pending Machine cipher+metadata present was presence only. Later non-secret
+JSON checkf30b9c at18:10:42.2851776 UTC verifies its exact seven-key contract/
+original public delivery pins/credential ID; ciphertext unopened, not token or
+endpoint authentication proof, no Machine input needed. Parent lock absent;
+no ciphertext/lease-content read. Separate saved-auth check7a0943
+native0 verifies covers75/child closure with no network/auth/refresh/config writes.
+[Exact four-saved-input instructions](../milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-handoff-20261022.md)
+are prepared but wait normal new-pin CI and a fresh local saved-auth75 check.
+No repeated approval is needed. Prior read fences/windows stay spent;
+all14 applied dev migrations/M02 data and historical advisor/type/closure
+evidence remain preserved. Production, schedules, private incident execution,
+merge/M03 closure and M04 remain excluded.
 
 Both source and final wrapper close receipts were captured; outer native1/EOF
 and credential-bearing children closed. All eight consumed handoff leaves and
@@ -116,7 +131,7 @@ aggregate caps; no migration replay.**
 | MA-08 | M02                            | YouTube API key                                                    | Google Cloud → enable **YouTube Data API v3** → Credentials → API key → restrict to YouTube Data API v3. Store as `YOUTUBE_API_KEY`.                                                                                                                                                                                                                                    | Resolve script resolves channel IDs                                                                                                                                                     |
 | MA-09 | M02                            | Review unresolved accounts                                         | Codex lists accounts it couldn't resolve or that look wrong. Confirm, fix the URL, or mark invalid. Owner18October response: skip the seven reviewed unavailable/unverified YouTube sources; retain23 website flags and accept11 missing-logo initials fallbacks (D-27). Exact dispositions live in M02 evidence/overrides.                                             | Dev decisions supplied; verify exact exclusions and eligible coverage, preserving raw counts. Production/merge approvals remain separate.                                               |
 | MA-10 | M03                            | Apify plan + existing credential                                   | Scale is already owner-reported. Reuse Personal credential `Apify account` (`apifyApi`) by actual ID; do not recreate/rename/rotate it. M03 authenticated limits metadata GET passed; no actor start.                                                                                                                                                                   | Native reference/access verified; prices/paid run are separate gates                                                                                                                    |
-| MA-11 | M03 separate time/fixture decision | Review exact packet after delivered CI | Concrete purpose-bound continuation/exact prior audit SQL, independent review, affected tests and public readiness pass. Verify new-head ordinary PR8 CI/Vercel, then ask the single exact approval reply in M03 PROGRESS/packet. Same caps and USD2 reserve; all old windows spent. | Actual owner approval recorded and pinned before approved readiness/credential delivery. No credential action now; production/merge/M04 excluded. |
+| MA-11 | M03 exact time/fixture decision complete | No repeated approval or credential action yet | Literal reply **Approve exact project-verified packet** at reviewed8eb6e2e / CI39823333289 all five jobs plus Vercel approves exact packet. Approval5eb38cbe/affected21/21/approved public readiness pass. Four input pairs verified absent; exact handoff prepared. Pending Machine metadata contract verified, ciphertext unopened. | Request only four actually absent saved inputs after ordinary new-pin CI and fresh root auth75 check. No Machine input/reset/new key/new clock/admission, production/merge/M04. |
 | MA-12 | M03                            | Existing OpenAI credential + limits                                | Owner authorized the existing native `OpenAI account`; Models metadata GET passed. Do not create/duplicate its key. Actual project spend cap remains unverified; no inference/embeddings. Vercel/model integrations remain later milestones.                                                                                                                            | Saved reuse/access verified; cap is separate from authentication                                                                                                                        |
 | MA-13 | M03                            | Daily alert budget                                                 | Retain Q-07 USD25/day steady-state alert default after owner deprioritized fee reporting. Unknown subscription fees remain unknown. Do not alter shared service budgets or restart the questionnaire.                                                                                                                                                                   | Verified dev budget25 after the exact approved migration; production unchanged                                                                                                          |
 | MA-14 | M04                            | Approve backfill estimate (Vimeo + IG)                             | Codex posts the estimated items and cost for the pilot backfill. Reply "approved" in PROGRESS.                                                                                                                                                                                                                                                                          | Approved                                                                                                                                                                                |
