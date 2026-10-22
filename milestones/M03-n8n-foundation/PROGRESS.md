@@ -5,7 +5,7 @@
 
 ## Status
 
-**In progress — startup-replacement attempt closed with residual acceptance flags. Dev authentication/history14 passed; preparation stopped at the first resumed Vercel project GET. A–D/full-D remains open. Local saved auth-file expiry is verified; MA-02 existing-session restoration is pending. No database/n8n handoff or retry.**
+**Blocked: waiting on owner — MA-02 existing Vercel CLI session restoration. Startup-replacement attempt closed with residual acceptance flags. Dev authentication/history14 passed; preparation stopped at the first resumed Vercel project GET. A–D/full-D remains open. Local saved auth-file expiry is verified; MA-02 existing-session restoration is pending. No database/n8n handoff or retry.**
 
 Historical e803 deliveries and 75-minute metadata coverage passed before admission. Prepare
 then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
