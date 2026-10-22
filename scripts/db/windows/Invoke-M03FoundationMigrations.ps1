@@ -1,12 +1,12 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement)
+param([switch]$CheckOnly,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement,[switch]$ProjectVerifiedContinuation)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 # Validate the caller's modes before sharing only the reviewed no-push path.
-if(@($ClockAmendment,$PostcheckContinuation,$RemainingContinuation,$StartupReplacement|Where-Object{$_}).Count -gt 1 -or
-   (($RemainingContinuation -or $StartupReplacement) -and (-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 0))){Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting continuation modes; no private access.';exit 1}
-if($RemainingContinuation -or $StartupReplacement){$PostcheckContinuation=$true}
+if(@($ClockAmendment,$PostcheckContinuation,$RemainingContinuation,$StartupReplacement,$ProjectVerifiedContinuation|Where-Object{$_}).Count -gt 1 -or
+   (($RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation) -and (-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 0))){Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting continuation modes; no private access.';exit 1}
+if($RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation){$PostcheckContinuation=$true}
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $projectRef = 'zmotjsbzhzjvpelxvxlf'
 $poolerHost = 'aws-1-eu-central-1.pooler.supabase.com'
@@ -34,6 +34,9 @@ $requiredFiles+=@('scripts/n8n/foundation-live-remaining-continuation.mjs','scri
 $requiredFiles+=@('scripts/n8n/foundation-live-startup-replacement.mjs','scripts/assert/m03_smoke_reactivate_startup.sql',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md')
+$requiredFiles+=@('scripts/n8n/foundation-live-project-verified-continuation.mjs','scripts/assert/m03_smoke_reactivate_project_verified.sql',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md')
 $versions = @('20261017172928','20261017172931','20261017172934','20261017172937','20261017172940','20261017172943','20261017172945','20261018034220','20261018035417','20261018070042','20261018231756','20261018232014','20261018232922','20261018233338')
 $names = @('extensions_schemas_roles','core_tables','auth_rls_views','rpc_pipeline_core','rpc_app_search','storage_cron','seed_taxonomies','rpc_n8n_foundation','price_book_plan','n8n_worker_gateway_admission','m03_actor_launch_admission','m03_foundation_gateway','m03_foundation_safety_receipts','m03_foundation_boundary_hardening')
 $queryTimeoutMs = 30000
@@ -55,6 +58,7 @@ $postcheckContinuationSegment = 'a570212a-634c-444f-90a2-578ae47e8d27'
 $continuationOutputStem='m03-foundation-postcheck-continuation-'
 if($RemainingContinuation){$postcheckContinuationSegment='e8035391-dba8-48c9-97e0-139ba980d86e';$continuationOutputStem='m03-foundation-remaining-continuation-'}
 if($StartupReplacement){$postcheckContinuationSegment='1c69c89e-7807-46d5-b7b8-ca28285ff2b4';$continuationOutputStem='m03-foundation-startup-replacement-'}
+if($ProjectVerifiedContinuation){$postcheckContinuationSegment='20275b22-b7fe-4737-a9a4-c50c2feadb74';$continuationOutputStem='m03-foundation-project-verified-continuation-'}
 $phaseAControlHardDeadline = $null
 $exitCode = 1
 $receipt = [ordered]@{version=1;runId=$runId;environment='dev';projectRef=$projectRef;host=$poolerHost;port=5432;
@@ -64,6 +68,7 @@ $receipt = [ordered]@{version=1;runId=$runId;environment='dev';projectRef=$proje
 if($PostcheckContinuation){$receipt.pendingVersions=@();$receipt['postcheckContinuation']=$true}
 if($RemainingContinuation){$receipt['remainingContinuation']=$true}
 if($StartupReplacement){$receipt['startupReplacement']=$true}
+if($ProjectVerifiedContinuation){$receipt['projectVerifiedContinuation']=$true}
 
 function Assert-Keys($Value, [string[]]$Expected) {
   if ($Value -isnot [PSCustomObject]) { throw 'blocked' }
@@ -171,22 +176,23 @@ function Read-FoundationPostcheckContinuation {
   if(-not $PhaseAControl -or -not $PostcheckContinuation -or $ClockAmendment -or $OriginalDeadlineAtMs -ne 0){throw 'blocked'}
   $remainingMode=[bool](Get-Variable -Name RemainingContinuation -ValueOnly -ErrorAction SilentlyContinue)
   $startupMode=[bool](Get-Variable -Name StartupReplacement -ValueOnly -ErrorAction SilentlyContinue)
+  $projectMode=[bool](Get-Variable -Name ProjectVerifiedContinuation -ValueOnly -ErrorAction SilentlyContinue)
   $mode=if($CheckOnly){'CheckOnly'}else{'ReadClaimed'}
-  $module=Assert-Path $repo $(if($startupMode){'scripts/n8n/foundation-live-startup-replacement.mjs'}elseif($remainingMode){'scripts/n8n/foundation-live-remaining-continuation.mjs'}else{'scripts/n8n/foundation-live-postcheck-continuation.mjs'})
+  $module=Assert-Path $repo $(if($projectMode){'scripts/n8n/foundation-live-project-verified-continuation.mjs'}elseif($startupMode){'scripts/n8n/foundation-live-startup-replacement.mjs'}elseif($remainingMode){'scripts/n8n/foundation-live-remaining-continuation.mjs'}else{'scripts/n8n/foundation-live-postcheck-continuation.mjs'})
   $answer=Invoke-Bounded $node @($module,$mode) $repo 10000
   try{
     if(-not $answer.ok -or -not $answer.closed){throw 'blocked'}
     $value=ConvertFrom-Json -InputObject $answer.text -ErrorAction Stop
-    $approvalKind=if($startupMode){'startup_replacement_approval_required'}else{'remaining_continuation_approval_required'}
-    if($CheckOnly -and ($remainingMode -or $startupMode) -and $value.kind -ceq $approvalKind){
+    $approvalKind=if($projectMode){'project_verified_continuation_approval_required'}elseif($startupMode){'startup_replacement_approval_required'}else{'remaining_continuation_approval_required'}
+    if($CheckOnly -and ($remainingMode -or $startupMode -or $projectMode) -and $value.kind -ceq $approvalKind){
       Assert-Keys $value @('kind','status','approvalRequired','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
       if($value.status -cne 'approval_required' -or $value.approvalRequired -isnot [bool] -or $value.approvalRequired -ne $true -or $value.privateRead -isnot [bool] -or $value.privateRead -ne $false -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0 -or $value.segmentId -cne $postcheckContinuationSegment -or $value.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $value.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'){throw 'blocked'}
-      if($startupMode){Write-Output 'M03_FOUNDATION APPROVAL_REQUIRED. New startup replacement has no owner time authority; no credential metadata, private contents or authentication read.'}else{Write-Output 'M03_FOUNDATION APPROVAL_REQUIRED. New remaining segment has no owner time authority; no credential metadata, private contents or authentication read.'};exit 3
+      if($projectMode){Write-Output 'M03_FOUNDATION APPROVAL_REQUIRED. New project-verified continuation has no owner time authority; no credential metadata, private contents or authentication read.'}elseif($startupMode){Write-Output 'M03_FOUNDATION APPROVAL_REQUIRED. New startup replacement has no owner time authority; no credential metadata, private contents or authentication read.'}else{Write-Output 'M03_FOUNDATION APPROVAL_REQUIRED. New remaining segment has no owner time authority; no credential metadata, private contents or authentication read.'};exit 3
     }
     $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
     if(-not $CheckOnly){$keys+=@('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')}
     Assert-Keys $value $keys
-    $expected=if($startupMode){if($CheckOnly){'startup_replacement_ready'}else{'clock_startup_replacement_admitted'}}elseif($remainingMode){if($CheckOnly){'remaining_continuation_ready'}else{'clock_remaining_continuation_admitted'}}elseif($CheckOnly){'postcheck_continuation_ready'}else{'clock_postcheck_continuation_admitted'}
+    $expected=if($projectMode){if($CheckOnly){'project_verified_continuation_ready'}else{'clock_project_verified_continuation_admitted'}}elseif($startupMode){if($CheckOnly){'startup_replacement_ready'}else{'clock_startup_replacement_admitted'}}elseif($remainingMode){if($CheckOnly){'remaining_continuation_ready'}else{'clock_remaining_continuation_admitted'}}elseif($CheckOnly){'postcheck_continuation_ready'}else{'clock_postcheck_continuation_admitted'}
     if($value.kind -cne $expected -or $value.segmentId -cne $postcheckContinuationSegment -or
        $value.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $value.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or
        $value.privateRead -isnot [bool] -or $value.privateRead -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0){throw 'blocked'}
@@ -276,6 +282,32 @@ function Assert-FoundationStartupReplacementProcessAncestry($Clock) {
   return $true
 }
 
+function Assert-FoundationProjectVerifiedContinuationProcessAncestry($Clock) {
+  if(-not $ProjectVerifiedContinuation -or $CheckOnly -or $Clock.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or
+     [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -ge $Clock.stopNewAt){throw 'blocked'}
+  $stem='scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74'
+  $admissionPath=Assert-Path $repo ($stem+'.json');$claimPath=Assert-Path $repo ($stem+'.runtime-claim.json')
+  $admission=Read-Json $admissionPath;$claim=Read-Json $claimPath
+  Assert-Keys $claim @('kind','version','segmentId','admissionSha256','processId','parentProcessId','claimedAt')
+  if($claim.kind -cne 'm03_project_verified_continuation_runtime_claim' -or $claim.version -ne 1 -or $claim.segmentId -cne $Clock.segmentId -or
+     $claim.admissionSha256 -cne (File-Hash $admissionPath) -or $claim.processId -le 0 -or $claim.parentProcessId -le 0 -or
+     $claim.claimedAt -isnot [long] -or $claim.claimedAt -lt $Clock.startsAt -or $claim.claimedAt -gt [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -or
+     $admission.kind -cne 'm03_project_verified_continuation_admission' -or $admission.segmentId -cne $Clock.segmentId -or $admission.startsAt -ne $Clock.startsAt -or $admission.parentProcessId -ne $claim.parentProcessId){throw 'blocked'}
+  $parentPath=Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-acceptance-parent.operation.lock'
+  $parent=Read-FoundationParentLock $parentPath
+  Assert-Keys $parent @('kind','version','segmentId','processId')
+  if($parent.kind -cne 'm03_clock_admission_parent' -or $parent.version -ne 1 -or $parent.segmentId -cne $Clock.segmentId -or $parent.processId -ne $claim.parentProcessId){throw 'blocked'}
+  $admin=Read-FoundationKernelProcess $PID;$runtime=Read-FoundationKernelProcess $claim.processId;$wrapper=Read-FoundationKernelProcess $claim.parentProcessId
+  # Native CreationDate has finer precision than the immutable Date.now() clock.
+  # Compare its Unix millisecond projection, preserving the same clock boundary.
+  $runtimeCreatedMs=([DateTimeOffset]$runtime.createdAt).ToUnixTimeMilliseconds();$wrapperCreatedMs=([DateTimeOffset]$wrapper.createdAt).ToUnixTimeMilliseconds()
+  if($admin.processId -ne $PID -or $admin.parentProcessId -ne $claim.processId -or $runtime.processId -ne $claim.processId -or
+     $runtime.parentProcessId -ne $claim.parentProcessId -or $wrapper.processId -ne $claim.parentProcessId -or
+     $wrapperCreatedMs -gt $Clock.startsAt -or $runtimeCreatedMs -lt $Clock.startsAt -or $runtimeCreatedMs -gt $claim.claimedAt -or
+     $admin.createdAt -lt $runtime.createdAt -or $admin.createdAt -gt [DateTime]::UtcNow){throw 'blocked'}
+  return $true
+}
+
 # Every native child gets a fresh OS-only environment. Only reviewed CLI database
 # operations receive PGPASSWORD. No shell, loader, compiler or install is launched.
 function Invoke-Bounded([string]$Executable, [string[]]$Arguments, [string]$WorkingDirectory, [int]$TimeoutMs, [string]$PrivatePassword = $null) {
@@ -348,7 +380,7 @@ function Invoke-Cli([string[]]$Arguments, [int]$TimeoutMs) {
   # The continuation cannot reach a migration write even if another branch is
   # accidentally changed later. Its scratch workdir contains no migrations.
   if($PostcheckContinuation -and $Arguments[1] -ceq 'push'){throw 'blocked'}
-  if(($RemainingContinuation -or $StartupReplacement) -and ($Arguments[0] -cne 'db' -or $Arguments[1] -cne 'query')){throw 'blocked'}
+  if(($RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation) -and ($Arguments[0] -cne 'db' -or $Arguments[1] -cne 'query')){throw 'blocked'}
   # CLI2.121.0 gives legacy --output json precedence over --output-format and
   # selects a text layer. Query has its own legacy formatter; push does not.
   $outputFlags = @('--output-format','json')
@@ -458,6 +490,7 @@ try {
     if($null -ne $clock){
       if($RemainingContinuation){$null=Assert-FoundationRemainingProcessAncestry $clock}
       if($StartupReplacement){$null=Assert-FoundationStartupReplacementProcessAncestry $clock}
+      if($ProjectVerifiedContinuation){$null=Assert-FoundationProjectVerifiedContinuationProcessAncestry $clock}
       $postcheckContinuationStart=[DateTimeOffset]::FromUnixTimeMilliseconds($clock.startsAt).UtcDateTime
       $phaseAControlHardDeadline=$postcheckContinuationStart.AddMinutes(70)
       $receipt['clockSegmentId']=$postcheckContinuationSegment
@@ -499,6 +532,7 @@ try {
   Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.'
   exit 1
 }
+if($CheckOnly -and $ProjectVerifiedContinuation){Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY. Project-verified public sources and approval checked; no credential metadata, private contents or authentication read.';exit 4}
 try {
   if ([string]::IsNullOrEmpty($env:LOCALAPPDATA)) { throw 'blocked' }
   $handoff = Join-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-foundation-dev-migration-password.dpapi'
@@ -511,7 +545,7 @@ try {
   $lease = Read-Json $leaseFile 4096
   Assert-Keys $lease @('version','environment','projectRef','purpose','approvalSha','createdAt','expiresAt')
   if ($lease.version -ne 1 -or $lease.environment -cne 'dev' -or $lease.projectRef -cne $projectRef -or
-      $lease.purpose -cne 'm03-foundation-phase-a-dev' -or $lease.approvalSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or
+      $lease.purpose -cne $(if($ProjectVerifiedContinuation){'m03-foundation-project-verified-continuation-dev:20275b22-b7fe-4737-a9a4-c50c2feadb74'}else{'m03-foundation-phase-a-dev'}) -or $lease.approvalSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or
       $lease.createdAt -isnot [string] -or $lease.expiresAt -isnot [string]) { throw 'blocked' }
   $leaseCreated = [DateTime]::ParseExact($lease.createdAt,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
   $leaseExpires = [DateTime]::ParseExact($lease.expiresAt,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
@@ -568,6 +602,7 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   if($null -ne $postcheckContinuationStart -and [DateTime]::UtcNow -ge $postcheckContinuationStart.AddMinutes(50)){throw 'blocked'}
   if($RemainingContinuation){$null=Assert-FoundationRemainingProcessAncestry $clock}
       if($StartupReplacement){$null=Assert-FoundationStartupReplacementProcessAncestry $clock}
+      if($ProjectVerifiedContinuation){$null=Assert-FoundationProjectVerifiedContinuationProcessAncestry $clock}
   $consumed = $true
   $phaseAStart = if($null -ne $originalPhaseAStart){$originalPhaseAStart}elseif($null -ne $clockAmendmentStart){$clockAmendmentStart}elseif($null -ne $postcheckContinuationStart){$postcheckContinuationStart}else{[DateTime]::UtcNow}
   $secret = ConvertTo-SecureString -String ([IO.File]::ReadAllText($handoff).Trim()) -ErrorAction Stop

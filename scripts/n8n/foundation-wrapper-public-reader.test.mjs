@@ -66,3 +66,62 @@ test('malformed, oversized or trailing frames fail with a fixed error and do not
   assert.throws(() => reader.push(JSON.stringify(wrapper) + '\n'), /PROTOCOL_BLOCKED/);
   assert.deepEqual(reader.state().wrapperReceipt, wrapper);
 });
+
+test('early Vercel metadata frame is fixed and cannot reflect credentials or claim remote authentication', () => {
+  const receipt = {
+    kind: 'm03_acceptance_vercel_metadata',
+    status: 'metadata_covers_75_minutes',
+    metadataValid: true,
+    unexpired: true,
+    covers75Minutes: true,
+    effectiveBackendEstablished: false,
+    networkRequests: 0,
+    authenticationAttempted: false,
+    refreshAttempted: false,
+    configWritten: false,
+    childClosed: true,
+  };
+  const reader = createFoundationWrapperPublicReader();
+  reader.push(JSON.stringify(receipt) + '\n');
+  assert.deepEqual(reader.drain(), [receipt]);
+  assert.throws(() => reader.push(JSON.stringify(receipt) + '\n'), /PROTOCOL_BLOCKED/);
+  for (const bad of [
+    { ...receipt, token: 'SYNTHETIC_PRIVATE' },
+    { ...receipt, status: 'SYNTHETIC_PRIVATE' },
+    { ...receipt, effectiveBackendEstablished: true },
+    { ...receipt, authenticationAttempted: true },
+    { ...receipt, covers75Minutes: false },
+  ])
+    assert.throws(
+      () => createFoundationWrapperPublicReader().push(JSON.stringify(bad) + '\n'),
+      /PROTOCOL_BLOCKED/,
+    );
+});
+
+test('early metadata failure retains the exact final wrapper receipt and unknown child closure', () => {
+  const metadata = {
+    kind: 'm03_acceptance_vercel_metadata',
+    status: 'child_failed',
+    metadataValid: false,
+    unexpired: false,
+    covers75Minutes: false,
+    effectiveBackendEstablished: false,
+    networkRequests: 0,
+    authenticationAttempted: false,
+    refreshAttempted: false,
+    configWritten: false,
+    childClosed: false,
+  };
+  const final = {
+    ...wrapper,
+    childClosed: false,
+    privateRead: false,
+    nativeExit: null,
+    code: 'M03_ACCEPTANCE_VERCEL_METADATA_BLOCKED',
+  };
+  const reader = createFoundationWrapperPublicReader();
+  reader.push(JSON.stringify(metadata) + '\n' + JSON.stringify(final) + '\n');
+  assert.deepEqual(reader.drain(), [metadata, final]);
+  assert.deepEqual(reader.state().wrapperReceipt, final);
+  assert.equal(reader.state().blocked, false);
+});

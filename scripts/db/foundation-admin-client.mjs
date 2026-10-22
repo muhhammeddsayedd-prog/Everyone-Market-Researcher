@@ -6,6 +6,7 @@ import { assertFoundationLiveClockAmendmentProof } from '../n8n/foundation-live-
 import { assertFoundationLivePostcheckContinuationProof } from '../n8n/foundation-live-postcheck-continuation.mjs';
 import { assertFoundationLiveRemainingContinuationProof } from '../n8n/foundation-live-remaining-continuation.mjs';
 import { assertFoundationLiveStartupReplacementProof } from '../n8n/foundation-live-startup-replacement.mjs';
+import { assertFoundationLiveProjectVerifiedContinuationProof } from '../n8n/foundation-live-project-verified-continuation.mjs';
 import { fileURLToPath } from 'node:url';
 
 const fixed = () => Error('FOUNDATION_ADMIN_BLOCKED');
@@ -93,6 +94,7 @@ export async function startFoundationAdminClient(
     postcheckContinuationProof,
     remainingContinuationProof,
     startupReplacementProof,
+    projectVerifiedContinuationProof,
   } = {},
   deps = {},
 ) {
@@ -101,6 +103,7 @@ export async function startFoundationAdminClient(
   let continuation;
   let remaining;
   let startup;
+  let verified;
   if (
     [
       originalDeadlineAtMs,
@@ -108,9 +111,30 @@ export async function startFoundationAdminClient(
       postcheckContinuationProof,
       remainingContinuationProof,
       startupReplacementProof,
+      projectVerifiedContinuationProof,
     ].filter((v) => v !== undefined).length > 1
   )
     throw fixed();
+  if (projectVerifiedContinuationProof !== undefined) {
+    try {
+      verified = assertFoundationLiveProjectVerifiedContinuationProof(projectVerifiedContinuationProof, {
+        claimed: true,
+      });
+    } catch {
+      throw fixed();
+    }
+    if (
+      verified.segmentId !== '20275b22-b7fe-4737-a9a4-c50c2feadb74' ||
+      verified.sourceCommitSha !== 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' ||
+      verified.windowId !== 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' ||
+      verified.carriedManagementAttempts !== 4 ||
+      verified.carriedControlAttempts !== 1 ||
+      now() < verified.startsAt ||
+      now() >= verified.stopNewAt
+    )
+      throw fixed();
+    continuation = verified;
+  }
   if (startupReplacementProof !== undefined) {
     try {
       startup = assertFoundationLiveStartupReplacementProof(startupReplacementProof, { claimed: true });
@@ -205,11 +229,15 @@ export async function startFoundationAdminClient(
         resolve(root, 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1'),
         '-PhaseAControl',
         ...(amendment === undefined ? [] : ['-ClockAmendment']),
-        ...(continuation === undefined || remaining !== undefined || startup !== undefined
+        ...(continuation === undefined ||
+        remaining !== undefined ||
+        startup !== undefined ||
+        verified !== undefined
           ? []
           : ['-PostcheckContinuation']),
         ...(remaining === undefined ? [] : ['-RemainingContinuation']),
         ...(startup === undefined ? [] : ['-StartupReplacement']),
+        ...(verified === undefined ? [] : ['-ProjectVerifiedContinuation']),
         ...(originalDeadlineAtMs === undefined
           ? []
           : ['-OriginalDeadlineAtMs', String(originalDeadlineAtMs)]),
@@ -319,6 +347,7 @@ export async function startFoundationAdminClient(
               ...(continuation === undefined ? [] : ['clockSegmentId', 'postcheckContinuation']),
               ...(remaining === undefined ? [] : ['remainingContinuation']),
               ...(startup === undefined ? [] : ['startupReplacement']),
+              ...(verified === undefined ? [] : ['projectVerifiedContinuation']),
             ]) ||
             value.type !== 'foundation_admin_ready' ||
             value.historyAfter !== 'complete' ||
@@ -343,7 +372,8 @@ export async function startFoundationAdminClient(
                 Date.parse(value.actionDeadline) !== continuation.deadlineAt ||
                 Date.parse(value.stopNewAt) !== continuation.stopNewAt)) ||
             (remaining !== undefined && value.remainingContinuation !== true) ||
-            (startup !== undefined && value.startupReplacement !== true)
+            (startup !== undefined && value.startupReplacement !== true) ||
+            (verified !== undefined && value.projectVerifiedContinuation !== true)
           )
             throw fixed();
           ready = Object.freeze(value);

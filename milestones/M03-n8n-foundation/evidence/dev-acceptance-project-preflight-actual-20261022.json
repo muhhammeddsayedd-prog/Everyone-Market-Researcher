@@ -1,0 +1,153 @@
+{
+  "kind": "m03_fixed_project_preflight_actual",
+  "version": 1,
+  "sourceHead": "f4775b2fd1c88e0110555fa006027a3d39cdcd89",
+  "sourceCi": 39818174853,
+  "allFiveSourceJobsAndVercelPassed": true,
+  "consumer": {
+    "path": "scripts/n8n/foundation-live-project-preflight.mjs",
+    "sha256": "fcf97adc0e41699eba9e7ed55b1488a01aa1f4c58ebb76b82df1d807c7914c5a",
+    "reviewedSourceUnchanged": true
+  },
+  "completedAtUtc": "2026-10-22T17:04:25.170Z",
+  "outerNativeExit": 0,
+  "fixedPublicReceiptCaptured": true,
+  "actual": {
+    "kind": "m03_project_preflight_result",
+    "status": "project_contract_ready",
+    "privateRead": true,
+    "oneUseConsumed": true,
+    "getAttemptDebited": true,
+    "managementAttempts": 6,
+    "controlAttempts": 201,
+    "combinedAttempts": 207,
+    "managementMaximum": 512,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "metadataStatus": "metadata_covers_75_minutes",
+    "effectiveBackendEstablished": false,
+    "transport": {
+      "stage": "completed",
+      "code": "unknown",
+      "httpStatus": 200,
+      "nativeExit": 0,
+      "childStarted": true,
+      "childClosed": true,
+      "aborted": false
+    },
+    "predicates": {
+      "object": true,
+      "projectId": true,
+      "teamId": true,
+      "rootDirectory": true,
+      "nodeVersion": true,
+      "framework": true,
+      "githubType": true,
+      "githubOrg": true,
+      "githubRepo": true,
+      "deploymentProtection": true,
+      "bypassObject": true,
+      "bypassEmpty": true
+    },
+    "childTransportsClosed": true,
+    "newAcceptanceWindow": false,
+    "mutations": 0,
+    "historicalGetFailureCause": "unestablished"
+  },
+  "ledger": {
+    "path": "scripts/n8n/out/foundation/live/project-preflight-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.jsonl",
+    "sha256": "4dbacde533b1be0a68f184b25d9bbde71895901b813978e6f701fb94be973e3e",
+    "rows": 4,
+    "onceOnly": true,
+    "newGetIntents": 1
+  },
+  "interpretation": {
+    "nativeCliFixedProjectAuthenticationAndReadVerified": true,
+    "twelveProjectPredicatesVerified": true,
+    "cliCredentialStorageBackendIdentified": false,
+    "historicalFailedGetCause": "unestablished",
+    "MA02ReadinessCompleteForThisObservation": true,
+    "newAcceptanceWindow": false,
+    "businessAcceptance": false,
+    "fullD": false
+  },
+  "closure": {
+    "metadataAndCliChildrenClosed": true,
+    "parentMutexAbsent": true,
+    "savedAuthOriginalPreserved": true,
+    "dpapiInputsConsumed": 0,
+    "oldKnownCleanupPreserved": true,
+    "historicalUnknownOrphanLimitsPreserved": true
+  },
+  "publicRuntimeBeforeRead": {
+    "kind": "m03_public_vercel_runtime_closure",
+    "status": "public_runtime_verified",
+    "manifestSha256": "f627ad24e87097db493974fa463e68b5d0bfac3a0bf60213ab5a2023b30c42da",
+    "vercelSubtreeSha256": "efb2ce741510bce3858052a6f530f69a3a84ca03a93629c4565958e0fd4c26b6",
+    "verifiedFiles": 3462,
+    "mismatches": 0,
+    "privateRead": false,
+    "networkRequests": 0,
+    "projectSealRebuilt": false,
+    "oldAcceptanceSealReadyClaim": false,
+    "observedAtUtc": "2026-10-22T17:04:07.847Z"
+  },
+  "preservedPublicArtifacts": [
+    {
+      "path": "scripts/n8n/out/foundation/live/startup-replacement-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.json",
+      "sha256": "f8c6b4d4082318c643c363b22fe7918a6fa6bced9d6cda5a0f49044caae3a5a1",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/n8n/out/foundation/live/startup-replacement-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.runtime-claim.json",
+      "sha256": "57d3a8a95e57dabca26e9aa5987ccf6bbe85bc0ff8fc4276b413ad4a25ad1634",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/n8n/out/foundation/live/startup-supervisor-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.jsonl",
+      "sha256": "5cd091876c5426fa1f6880a24bd66cb790de3e20479950f01b702017701f66dd",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "sha256": "e4e039e57925811bdc4b4246031f7de095e5e6a021814679638a720a88dbb917",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/n8n/out/foundation/live/management.jsonl",
+      "sha256": "dcb0d2d596dd61a114d3074d84e401e2ee68e02e582fa5c4052b048ec51f3ce1",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/n8n/out/foundation/live/control.jsonl",
+      "sha256": "fa8d7745b1b7e783314b09e23fccbc8a0c4cdb753a07939c46324345eded0a8c",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/db/out/m03-foundation-startup-replacement-1c69c89e-7807-46d5-b7b8-ca28285ff2b4-latest.json",
+      "sha256": "a546df7aa9ff5c123940fa4faecfa3633afd583ab15d0ea1da2884f5e96b9221",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/n8n/windows/Remove-M03StartupUnusedBypass.ps1",
+      "sha256": "0d4441481b591aba8be3290e1ac24d2f3fc457bad60ced927be0a05ba1af91b3",
+      "unchanged": true
+    }
+  ],
+  "exclusions": {
+    "databaseOperation": false,
+    "migrationReplay": false,
+    "fixtureMutation": false,
+    "n8nWorkflowExecution": false,
+    "gatewayCall": false,
+    "directApifyProviderCall": false,
+    "actorStart": false,
+    "paidProviderSpendUsd": 0,
+    "production": false,
+    "privateIncidentExecution": false,
+    "merge": false,
+    "M04": false
+  },
+  "nextLocalTask": "Prepare the distinct remaining A-D time/fixture packet and reviewed purpose-bound consumer; preserve the known prior C999 reactivation/archive audit and reject unknown edits. No owner credentials requested now.",
+  "recordedAtUtc": "2026-10-22T17:06:11.306Z"
+}

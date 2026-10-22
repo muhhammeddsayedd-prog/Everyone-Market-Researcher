@@ -7,6 +7,10 @@ import {
   assertFoundationLiveStartupReplacementProof,
   assertFoundationStartupReplacementControlResume,
 } from './foundation-live-startup-replacement.mjs';
+import {
+  assertFoundationLiveProjectVerifiedContinuationProof,
+  assertFoundationProjectVerifiedContinuationControlResume,
+} from './foundation-live-project-verified-continuation.mjs';
 
 const journals = new WeakSet();
 const budgets = new WeakMap();
@@ -152,6 +156,7 @@ export function createFoundationControlBudget({
   deadlineAt,
   remainingContinuationProof,
   startupReplacementProof,
+  projectVerifiedContinuationProof,
 }) {
   assertFoundationControlJournal(journal);
   if (!Number.isFinite(deadlineAt) || typeof now !== 'function') fail();
@@ -163,8 +168,14 @@ export function createFoundationControlBudget({
     startupReplacementProof === undefined
       ? null
       : assertFoundationLiveStartupReplacementProof(startupReplacementProof, { claimed: true });
-  if (startup && remaining) fail();
-  const continuation = startup || remaining;
+  const verified =
+    projectVerifiedContinuationProof === undefined
+      ? null
+      : assertFoundationLiveProjectVerifiedContinuationProof(projectVerifiedContinuationProof, {
+          claimed: true,
+        });
+  if ([startup, remaining, verified].filter(Boolean).length > 1) fail();
+  const continuation = verified || startup || remaining;
   if (
     continuation &&
     (continuation.deadlineAt !== deadlineAt ||
@@ -202,6 +213,11 @@ export function createFoundationControlBudget({
       fail();
   };
   const carriedAttempts = continuation ? continuation.carriedControlAttempts : 0;
+  if (verified)
+    assertFoundationProjectVerifiedContinuationControlResume(verified, {
+      deadlineAt,
+      previousEvents: journal.rows,
+    });
   if (startup)
     assertFoundationStartupReplacementControlResume(startup, { deadlineAt, previousEvents: journal.rows });
   if (remaining)
@@ -210,8 +226,8 @@ export function createFoundationControlBudget({
     prior.length + carriedAttempts > 2048 ||
     prior.some((r, i) => r.ordinal !== i + 1) ||
     (continuation &&
-      (prior.length !== (startup ? 150 : 100) ||
-        journal.rows.length !== (startup ? 150 : 100) ||
+      (prior.length !== (verified ? 200 : startup ? 150 : 100) ||
+        journal.rows.length !== (verified ? 200 : startup ? 150 : 100) ||
         prior.some((r) => r.kind !== 'discovery' || Object.hasOwn(r, 'executionId'))))
   )
     fail();

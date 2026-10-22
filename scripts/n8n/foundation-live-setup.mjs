@@ -4,6 +4,7 @@ import * as runtime from './foundation-live-runtime.mjs';
 import { assertFoundationLiveSetupTransport } from './foundation-live-setup-transport.mjs';
 import { assertFoundationRemainingSetupResume } from './foundation-live-remaining-continuation.mjs';
 import { assertFoundationStartupReplacementSetupResume } from './foundation-live-startup-replacement.mjs';
+import { assertFoundationProjectVerifiedContinuationSetupResume } from './foundation-live-project-verified-continuation.mjs';
 
 // Only the approved dev project's seven temporary branch entries and one new
 // non-default bypass are mutable. Native workflow/API/SQL work is elsewhere.
@@ -219,12 +220,24 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
   const originals = [],
     unresolved = new Set(),
     deleteAttempted = new Set();
-  if (input.remainingContinuationProof !== undefined && input.startupReplacementProof !== undefined) fail();
-  const resumeProof = input.startupReplacementProof ?? input.remainingContinuationProof;
+  if (
+    [
+      input.remainingContinuationProof,
+      input.startupReplacementProof,
+      input.projectVerifiedContinuationProof,
+    ].filter((p) => p !== undefined).length > 1
+  )
+    fail();
+  const resumeProof =
+    input.projectVerifiedContinuationProof ??
+    input.startupReplacementProof ??
+    input.remainingContinuationProof;
   const resumeAssert =
-    input.startupReplacementProof === undefined
-      ? assertFoundationRemainingSetupResume
-      : assertFoundationStartupReplacementSetupResume;
+    input.projectVerifiedContinuationProof !== undefined
+      ? assertFoundationProjectVerifiedContinuationSetupResume
+      : input.startupReplacementProof === undefined
+        ? assertFoundationRemainingSetupResume
+        : assertFoundationStartupReplacementSetupResume;
   const resumed =
     resumeProof === undefined
       ? false

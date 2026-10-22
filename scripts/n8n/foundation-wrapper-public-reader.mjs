@@ -5,6 +5,7 @@ const fail = () => {
 };
 const kinds = new Set([
   'm03_acceptance_transport_ready',
+  'm03_acceptance_vercel_metadata',
   'm03_acceptance_ready',
   'm03_acceptance_result',
   'm03_acceptance_closed',
@@ -29,6 +30,7 @@ export function createFoundationWrapperPublicReader({ acknowledge = () => {} } =
     bytes = 0,
     blocked = false,
     acknowledged = false,
+    metadataObserved = false,
     wrapper = null;
   const frames = [];
   return Object.freeze({
@@ -59,6 +61,55 @@ export function createFoundationWrapperPublicReader({ acknowledge = () => {} } =
             acknowledged = true;
             acknowledge({ kind: 'm03_acceptance_transport_ack', nonce: frame.nonce });
           }
+          if (frame.kind === 'm03_acceptance_vercel_metadata') {
+            if (metadataObserved) fail();
+            metadataObserved = true;
+            const keys = [
+              'kind',
+              'status',
+              'metadataValid',
+              'unexpired',
+              'covers75Minutes',
+              'effectiveBackendEstablished',
+              'networkRequests',
+              'authenticationAttempted',
+              'refreshAttempted',
+              'configWritten',
+              'childClosed',
+            ];
+            const statuses = [
+              'metadata_covers_75_minutes',
+              'saved_auth_expired',
+              'saved_auth_insufficient_coverage',
+              'saved_auth_expiry_unavailable',
+              'saved_auth_missing',
+              'saved_auth_invalid',
+              'path_blocked',
+              'public_inputs_blocked',
+              'child_failed',
+            ];
+            const flags =
+              frame.status === 'metadata_covers_75_minutes'
+                ? [true, true, true]
+                : frame.status === 'saved_auth_insufficient_coverage'
+                  ? [true, true, false]
+                  : ['saved_auth_expired', 'saved_auth_expiry_unavailable'].includes(frame.status)
+                    ? [true, false, false]
+                    : [false, false, false];
+            if (
+              Object.keys(frame).length !== keys.length ||
+              !keys.every((k) => Object.hasOwn(frame, k)) ||
+              !statuses.includes(frame.status) ||
+              typeof frame.childClosed !== 'boolean' ||
+              frame.effectiveBackendEstablished !== false ||
+              frame.networkRequests !== 0 ||
+              frame.authenticationAttempted !== false ||
+              frame.refreshAttempted !== false ||
+              frame.configWritten !== false ||
+              ['metadataValid', 'unexpired', 'covers75Minutes'].some((k, i) => frame[k] !== flags[i])
+            )
+              fail();
+          }
           if (frame.kind === 'm03_acceptance_wrapper_closed') {
             if (
               Object.keys(frame).length !== wrapperKeys.length ||
@@ -76,6 +127,7 @@ export function createFoundationWrapperPublicReader({ acknowledge = () => {} } =
                 'M03_ACCEPTANCE_BLOCKED',
                 'M03_ACCEPTANCE_CHILD_CLOSED',
                 'M03_ACCEPTANCE_EMERGENCY_RESIDUAL',
+                'M03_ACCEPTANCE_VERCEL_METADATA_BLOCKED',
               ].includes(frame.code)
             )
               fail();

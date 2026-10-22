@@ -54,6 +54,11 @@ import {
   foundationStartupReplacementCheckpoint,
   assertFoundationStartupReplacementJournalPrefixes,
 } from './foundation-live-startup-replacement.mjs';
+import {
+  assertFoundationLiveProjectVerifiedContinuationProof,
+  foundationProjectVerifiedContinuationCheckpoint,
+  assertFoundationProjectVerifiedContinuationJournalPrefixes,
+} from './foundation-live-project-verified-continuation.mjs';
 
 const fail = () => {
   throw Error('FOUNDATION_LIVE_RUNTIME_BLOCKED');
@@ -136,8 +141,14 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     dependencies.startupReplacementProof === undefined
       ? null
       : assertFoundationLiveStartupReplacementProof(dependencies.startupReplacementProof, { claimed: true });
-  if ([resume, amendment, continuation, remaining, startup].filter(Boolean).length > 1) fail();
-  const admittedClock = startup || remaining || continuation || amendment;
+  const verified =
+    dependencies.projectVerifiedContinuationProof === undefined
+      ? null
+      : assertFoundationLiveProjectVerifiedContinuationProof(dependencies.projectVerifiedContinuationProof, {
+          claimed: true,
+        });
+  if ([resume, amendment, continuation, remaining, startup, verified].filter(Boolean).length > 1) fail();
+  const admittedClock = verified || startup || remaining || continuation || amendment;
   if (
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
     typeof now !== 'function' ||
@@ -157,15 +168,17 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     fail();
   if (admittedClock) clockBudgetOwners.add(admittedClock);
   const reuse = resume || admittedClock;
-  const headerDeadlineAt = startup
-    ? foundationStartupReplacementCheckpoint.originalDeadlineAt
-    : remaining
-      ? foundationRemainingContinuationCheckpoint.originalDeadlineAt
-      : continuation
-        ? foundationPostcheckContinuationCheckpoint.originalDeadlineAt
-        : amendment
-          ? foundationClockAmendmentCheckpoint.originalDeadlineAt
-          : deadlineAt;
+  const headerDeadlineAt = verified
+    ? foundationProjectVerifiedContinuationCheckpoint.originalDeadlineAt
+    : startup
+      ? foundationStartupReplacementCheckpoint.originalDeadlineAt
+      : remaining
+        ? foundationRemainingContinuationCheckpoint.originalDeadlineAt
+        : continuation
+          ? foundationPostcheckContinuationCheckpoint.originalDeadlineAt
+          : amendment
+            ? foundationClockAmendmentCheckpoint.originalDeadlineAt
+            : deadlineAt;
   if (
     resume &&
     (resume.sourceCommitSha !== sourceCommitSha ||
@@ -214,6 +227,10 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       appendFile(path, { event: 'management_header', version: 1, sourceCommitSha, deadlineAt });
     const rows = readRows(path, 513),
       header = rows.shift();
+    if (verified)
+      assertFoundationProjectVerifiedContinuationJournalPrefixes(verified, {
+        managementText: readFileSync(path, 'utf8'),
+      });
     if (startup)
       assertFoundationStartupReplacementJournalPrefixes(startup, {
         managementText: readFileSync(path, 'utf8'),
@@ -227,13 +244,13 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       header.version !== 1 ||
       header.sourceCommitSha !== sourceCommitSha ||
       header.deadlineAt !== headerDeadlineAt ||
-      (reuse && rows.length !== (startup || remaining ? 1 : 0)) ||
+      (reuse && rows.length !== (verified ? 2 : startup || remaining ? 1 : 0)) ||
       rows.some(
         (r, i) => Object.keys(r).length !== 2 || r.event !== 'management_attempt' || r.ordinal !== i + 1,
       )
     )
       fail();
-    const carriedAttempts = (startup || remaining)?.carriedManagementAttempts ?? 0;
+    const carriedAttempts = (verified || startup || remaining)?.carriedManagementAttempts ?? 0;
     attempts = rows.length;
     const budget = Object.freeze({
       admit() {

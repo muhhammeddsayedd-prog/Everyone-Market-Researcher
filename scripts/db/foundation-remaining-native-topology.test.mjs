@@ -9,6 +9,7 @@ const powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.e
 const quote = (text) => "'" + text.replaceAll("'", "''") + "'";
 const segmentId = 'e8035391-dba8-48c9-97e0-139ba980d86e';
 const startupSegmentId = '1c69c89e-7807-46d5-b7b8-ca28285ff2b4';
+const projectSegmentId = '20275b22-b7fe-4737-a9a4-c50c2feadb74';
 
 // A new owned, harmless PS wrapper -> Node runtime -> PS administrator chain.
 // Only the source-reviewed three-field CIM projection reads these new children.
@@ -18,13 +19,28 @@ function nativeTopology({
   legacyReader = false,
   assertParentDenials = false,
   startupReplacement = false,
+  projectVerifiedContinuation = false,
 } = {}) {
-  const activeSegmentId = startupReplacement ? startupSegmentId : segmentId;
-  const ledgerStem = startupReplacement ? 'startup-replacement' : 'remaining-continuation';
-  const proofKind = startupReplacement ? 'm03_startup_replacement' : 'm03_remaining_continuation';
-  const ancestryFunction = startupReplacement
-    ? 'Assert-FoundationStartupReplacementProcessAncestry'
-    : 'Assert-FoundationRemainingProcessAncestry';
+  const activeSegmentId = projectVerifiedContinuation
+    ? projectSegmentId
+    : startupReplacement
+      ? startupSegmentId
+      : segmentId;
+  const ledgerStem = projectVerifiedContinuation
+    ? 'project-verified-continuation'
+    : startupReplacement
+      ? 'startup-replacement'
+      : 'remaining-continuation';
+  const proofKind = projectVerifiedContinuation
+    ? 'm03_project_verified_continuation'
+    : startupReplacement
+      ? 'm03_startup_replacement'
+      : 'm03_remaining_continuation';
+  const ancestryFunction = projectVerifiedContinuation
+    ? 'Assert-FoundationProjectVerifiedContinuationProcessAncestry'
+    : startupReplacement
+      ? 'Assert-FoundationStartupReplacementProcessAncestry'
+      : 'Assert-FoundationRemainingProcessAncestry';
   const directory = mkdtempSync(join(tmpdir(), 'emr-remaining-native-topology-'));
   const local = join(directory, 'synthetic-localappdata');
   const live = join(directory, 'scripts/n8n/out/foundation/live');
@@ -46,7 +62,7 @@ foreach($name in @('Assert-Path','Read-Json','File-Hash','Assert-Keys','Read-Fou
  $found=@($ast.FindAll({param($item) $item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true));if($found.Count -ne 1){throw 'SOURCE_FUNCTION_MISSING'};$definition=$found[0].Extent.Text
  if($name -ceq 'Read-FoundationParentLock' -and $${legacyReader}){$definition='function Read-FoundationParentLock([string]$File){return Read-Json $File}'};Invoke-Expression $definition
 }
-$repo=${quote(directory)};$RemainingContinuation=$${!startupReplacement};$StartupReplacement=$${startupReplacement};$CheckOnly=$false
+$repo=${quote(directory)};$RemainingContinuation=$${!startupReplacement && !projectVerifiedContinuation};$StartupReplacement=$${startupReplacement};$ProjectVerifiedContinuation=$${projectVerifiedContinuation};$CheckOnly=$false
 $clock=Read-Json ${quote(admissionPath)}
 $parentPath=${quote(join(local, 'Temp/emr-m03-acceptance-parent.operation.lock'))}
 if($${assertParentDenials}){
@@ -56,7 +72,7 @@ if($${assertParentDenials}){
  }
 }
 $stage='native_ancestry'
-try{$null=${ancestryFunction} $clock;$projection=[ordered]@{status='native_ancestry_ready';privateRead=$false;networkRequests=0;canonicalReads=0};if($StartupReplacement){$projection['segmentId']=$clock.segmentId};$projection|ConvertTo-Json -Compress;exit 0}catch{$native=$_.Exception;while($null -ne $native.InnerException){$native=$native.InnerException};$status=if(($native.HResult -band 65535) -eq 32){'native_parent_sharing_violation'}else{'native_ancestry_blocked'};[ordered]@{status=$status;privateRead=$false;networkRequests=0;canonicalReads=0}|ConvertTo-Json -Compress;exit 1}
+try{$null=${ancestryFunction} $clock;$projection=[ordered]@{status='native_ancestry_ready';privateRead=$false;networkRequests=0;canonicalReads=0};if($StartupReplacement -or $ProjectVerifiedContinuation){$projection['segmentId']=$clock.segmentId};$projection|ConvertTo-Json -Compress;exit 0}catch{$native=$_.Exception;while($null -ne $native.InnerException){$native=$native.InnerException};$status=if(($native.HResult -band 65535) -eq 32){'native_parent_sharing_violation'}else{'native_ancestry_blocked'};[ordered]@{status=$status;privateRead=$false;networkRequests=0;canonicalReads=0}|ConvertTo-Json -Compress;exit 1}
 `,
   );
   writeFileSync(
@@ -159,6 +175,22 @@ test('startup replacement ancestry accepts the actual held-writer wrapper/runtim
         networkRequests: 0,
         canonicalReads: 0,
         segmentId: startupSegmentId,
+      },
+    },
+  );
+});
+
+test('project-verified ancestry accepts the actual held-writer wrapper/runtime/admin topology while second writers and deletion remain denied', () => {
+  assert.deepEqual(
+    nativeTopology({ holdParentLock: true, assertParentDenials: true, projectVerifiedContinuation: true }),
+    {
+      nativeExit: 0,
+      projection: {
+        status: 'native_ancestry_ready',
+        privateRead: false,
+        networkRequests: 0,
+        canonicalReads: 0,
+        segmentId: projectSegmentId,
       },
     },
   );

@@ -5,7 +5,7 @@
 
 ## Status
 
-**In progress — one-use fixed-project Vercel GET preflight ready locally; new-source CI gates its single read. Owner session-restoration delivery and local saved-file 75-minute coverage are verified; remote project access and effective backend remain unverified. Startup-replacement remains consumed/closed with residual acceptance flags; A–D/full-D stays open. No owner input, repeat login, database/n8n handoff or A–D admission now.**
+**Blocked: waiting on owner — MA-11 separate time/retained-C999 decision, presented after this delivery passes ordinary PR8 CI. Vercel project access verified; distinct continuation, exact audit safeguards, independent review, affected tests and public readiness complete. A–D/full-D open; no credentials or admission now.**
 
 Historical e803 deliveries and 75-minute metadata coverage passed before admission. Prepare
 then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
@@ -22,18 +22,54 @@ production, private incident R2 execution, PR8 merge or M04.
 | Last updated                   | 2026-10-22 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Finished                       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Branch / PR                    | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset                                                                                                                                                                                       |
-| Current delivery checkpoint    | Historical delivered source a52cef0 / CI39769760516 all five jobs plus Vercel passed. Current helper/evidence changes receive normal PR8 checks; no future-head pass is claimed. Local metadata16:39:18.509 UTC/native0 verifies saved-file75-minute coverage only, separate from remote authentication, effective backend and A–D acceptance. |
+| Current delivery checkpoint | Source f4775b2 / CI39818174853 all five jobs plus Vercel passed before the actual read. New continuation changes receive normal PR8 checks; no future-head pass is claimed. |
 | Selected runtime source        | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
 | Selected-source CI             | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance.                                                                                                                                                                                                       |
 | Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                              |
 | GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                |
-| Current task | Reviewed one-use project GET preflight, 11/11 synthetic tests; actual public CheckOnly ced183 native0/privateReadfalse/network0 and public Vercel3462/mismatch0. Saved-file coverage verified; remote access unverified until one read after current-source CI. Totals5/201/206 unchanged. |
-| Next step | Verify normal new-source PR8 CI, then invoke the separately reviewed ReadProject once with unchanged public source/runtime. Preserve old windows/fences, fourteen migrations and original counters; no database/runtime handoffs or A–D admission. |
+| Current task | Local concrete continuation/review/tests/public readiness complete; aggregate6/201/207 preserved. Seal3d3ce2, wrapper ee7ff4 approval_required/privateReadfalse/network0, direct DB fbb6bb native3 APPROVAL_REQUIRED. |
+| Next step | Verify this delivery’s normal PR8 five-job CI/Vercel, then present only the exact project-verified time/fixture decision. No credential delivery until actual decision/approved readiness; no admission, migration replay or old-fence reuse. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.      |
 
 ## 21 October A–D approval and actual preflight
 
-### 22 October Vercel restoration — saved-file coverage verified, remote access pending
+### 22 October remaining proposal — concrete local readiness complete
+
+[Proposed packet](evidence/dev-acceptance-project-verified-packet-20261022.md),
+[39-record checkpoint](evidence/dev-acceptance-project-verified-checkpoint-20261022.json),
+[actual public readiness](evidence/dev-acceptance-project-verified-readiness-20261022.json).
+Separate segment20275b22-b7fe-4737-a9a4-c50c2feadb74 remains unapproved/unadmitted.
+Independent JS/Windows/SQL reviews have no remaining P1/P2. Targeted JS45/45
+plus independent overlapping26/26, Windows16/16 plus affected legacy21/21 and
+harmless native ancestry1/1, isolated local PostgreSQL17 SQL64/64 pass; no
+unchanged full local suite. SQL truly executes old startup+teardown first,
+requires the exact known prior audit/original marker/current archived state
+and rejects drift/replay/concurrent edits. The teardown created no archive
+audit: the actual archive receipt is separately pinned; no invented audit ID.
+
+The new actual Run checks saved Vercel75-minute metadata/child closure BEFORE
+input metadata/Machine/DPAPI/Admit. Public CheckOnly never reads auth metadata.
+Unknown metadata-child closure retains mutex. Its fixed final-wrapper code
+is allowlisted and regression-tested, preserving the failure/closure receipt.
+
+Final public seal3d3ce2 native0 verifies136 project/840 Zod/3462 Vercel files;
+full coordinator ee7ff4 native0 returns approval_required/privateReadfalse/
+network0/compositiontrue, Admin public inputs/handoff/MCP false. Correct direct
+DB fbb6bb native3 APPROVAL_REQUIRED before any private metadata/authentication.
+The root’s earlier command omitted mandatory PhaseAControl and was correctly
+rejected; a copied-entry parameter regression now covers it. A second shell
+projection mapped the correct blocked native status to outer1; explicit
+LASTEXITCODE propagation verifies native3. No consumer or credential retry.
+
+All43 public DB pins and14 source migration hashes match; source/genuine-hosted
+evidence remains distinct. Totals6/201/207 and every historical failure/closure
+limit remain. Approval/admission/claim absent; no secret handoff consumed or
+new hosted effect. Verify this substantive delivery’s normal PR8 CI/Vercel
+before presenting its ONE separate time/fixture decision. No future-head
+pass is claimed here and no CI-only announcement commit is needed.
+
+
+### 22 October Vercel restoration and fixed-project access — verified
 
 The owner replied **Vercel CLI session restored**. The reviewed bounded local
 metadata read at **2026-10-22T16:39:18.509Z** completed native0 with stderr
@@ -45,14 +81,26 @@ remote project authentication/permissions, which backend the CLI actually
 uses, or the cause of the lost first resumed GET diagnostic. The11:13 expired
 receipt below remains unchanged. [Actual restoration metadata](evidence/dev-acceptance-vercel-restored-metadata-20261022.json).
 
-MA-02 delivery/local verification is complete; do not repeat login or request
-values. Local engineering continues on a separate fixed-project
-GET-only consumer with its own one-use ledger. Its one bounded read follows
-affected tests, public readiness and normal PR8 CI; old diagnostic GET fences
-and every A–D admission remain spent. No read has occurred under this new path
-yet. Aggregate totals remain **5 management /201 control /206 combined**.
-No database/runtime handoff, A–D admission, migration, workflow/gateway/provider/
-actor activity, production, merge or M04 is authorized by this metadata result.
+MA-02 actual fixed-project access is now verified. After independent review,
+11/11 portable synthetic tests, public CheckOnly and the delivered source
+f4775b2 / CI39818174853 all five jobs plus Vercel, the once-only native read
+**f2121a** completed **2026-10-22T17:04:25.170Z**, HTTP200/native0, all12 project/
+protection predicates true. Metadata and CLI children closed normally, parent
+mutex absent. The four-row dedicated ledger is spent; never rerun it.
+[Actual read and preserved hashes](evidence/dev-acceptance-project-preflight-actual-20261022.json).
+
+This establishes current fixed-project authentication/read access, not the
+credential storage backend or the lost historical GET cause. Aggregate totals
+are **6 management /201 control /207 combined**, including the one new GET.
+The main journals and prior fences are unchanged. No database/fixture write,
+workflow/gateway/provider/actor operation, temporary input consumption or new
+A–D admission occurred. Saved auth/originals and pending Machine are preserved;
+credential-bearing children are closed. No repeat login or values are needed.
+
+Local engineering now prepares a distinct packet/checkpoint/consumer, with
+exact prior C999 audit validation, before any separate new time/fixture
+approval. All prior admissions stay spent. No owner input/handoff now;
+production, schedules, private incident execution, merge and M04 remain untouched.
 
 ### 22 October startup-replacement — actual attempt closed, acceptance residual
 
@@ -971,13 +1019,12 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
   Source/wrapper/outer receipts prove credential-bearing child closure and
   all temporary inputs/private SQL/bypass cleanup. Residual window/baseline/
   settlement flags remain false; A–D/full-D remains open.
-- MA-02 owner restoration reply and local saved-file coverage are verified at
-  16:39:18.509 UTC/native0/childClosedtrue/network0. Remote project access and
-  effective CLI backend remain unverified, and the historical failed-GET cause
-  is unestablished. Finish the separate fixed-project GET consumer/ledger,
-  review/tests/public readiness/normal CI before its one bounded read. Do not
-  repeat login, replenish database/n8n/Apify handoffs, repeat MCP setup or reuse
-  any spent admission/GET fence.
+- MA-02 actual project access is verified at17:04:25.170 UTC/HTTP200/native0/
+  all12 predicates/children closed; ledger spent, totals6/201/207. Backend and
+  old failure cause remain unestablished. The distinct continuation/audited
+  retained-C999 safeguard is ready/reviewed/tested/publicly sealed. After
+  normal delivery CI passes, only MA-11 new time/fixture authority is missing.
+  No credentials/login/MCP setup/old-fence reuse/new admission now.
 
 - Historical e803 checkpoint (superseded by the actual startup attempt above):
 - The latest remaining segment e803 is consumed/closed after 75-minute metadata
@@ -1028,20 +1075,35 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-### MA-02 — restoration delivery and saved-file coverage verified
+### MA-02 — actual fixed-project access verified
 
-The owner replied **Vercel CLI session restored**. Actual reviewed local read
-at **16:39:18.509 UTC** reports metadata_covers_75_minutes/native0/stderr absent/
-childClosed true; metadataValid/unexpired/covers75 true and network/
-authentication/refresh/config writes0. [Actual restoration metadata](evidence/dev-acceptance-vercel-restored-metadata-20261022.json).
-No repeated login, values or credential delivery is requested.
+The owner restoration is verified by saved-file metadata and the later once-only
+actual fixed-project GET **f2121a** at **17:04:25.170 UTC**: HTTP200/native0,
+all12 predicates true, children closed. Source f4775b2 / CI39818174853 all five
+jobs plus Vercel passed. [Actual receipt](evidence/dev-acceptance-project-preflight-actual-20261022.json).
+No repeated login, value, new key or credential delivery is requested. Storage
+backend and historical failed-GET cause remain unestablished. The read fence
+and all A–D windows remain spent; no new admission from this result.
 
-Remote project access/permissions and effective CLI backend remain unverified;
-the historical failed-GET cause remains unestablished. The11:13 expired receipt
-is preserved. Codex continues the separate fixed-project GET-only consumer and
-one-use ledger locally; its single read requires review, affected tests, public
-readiness and normal PR8 CI first. Old GET fences and A–D admissions stay spent.
-No database/runtime handoff or new acceptance window is requested now.
+### MA-11 — single exact remaining time/fixture decision
+
+Concrete consumer/SQL safeguard, independent review, affected tests and actual
+public readiness pass. Verify this substantive delivery’s ordinary PR8 five-job
+CI/Vercel, then present [the proposed packet](evidence/dev-acceptance-project-verified-packet-20261022.md).
+The previous one-use packet expressly forbids renewal/second child, so only
+new time authority and the exact audited C999 status operation require this
+decision. Same aggregate caps, USD2 reserve; no migration replay.
+
+Exact readiness reply after review:
+
+**Approve one M03 project-verified A-D dev window and the exact audited retained-C999
+reactivation at the reviewed PR #8 head, preserving all prior attempts and aggregate
+caps; no migration replay.**
+
+No credentials now. Only after an actual decision/approved readiness, inspect
+genuine absent inputs and provide exact existing-value helper commands. Do not
+reset/new-key/recreate credentials or reopen any spent admission. Production,
+schedules, private incident execution, merge/M03 closure/M04 stay excluded.
 
 ### MA-04 / MA-11 — saved-value delivery and cleanup complete
 
@@ -1543,6 +1605,10 @@ concurrency setting was changed.
 - INC-M03-20261018-01: owner inputs ready; separate production gate remains. Details stay private; no remediation or production action is claimed.
 
 ## Session log
+
+- 2026-10-22 Cairo: Local distinct continuation complete; independent reviews no P1/P2. JS45/45, independent overlapping26/26, Windows16/16+legacy21/21+native ancestry1/1, local PostgreSQL17 SQL64/64 pass. Public seal3d3ce2 native0/136+840+3462, wrapper ee7ff4 approval_required/privateReadfalse/network0, DB fbb6bb native3 APPROVAL_REQUIRED before private metadata/auth. Wrong root invocation without PhaseAControl is preserved as a correct rejection, not a source defect. All43 DB pins/39 historical records/14 migration hashes preserved; totals6/201/207. Approval/admission/claim absent; no inputs/hosted effects. After ordinary new-head CI, present exact separate time/retained-C999 decision in packet; no future pass/CI-only follow-up commit, credentials or M04. Readiness linked above.
+
+- 2026-10-22 Cairo: Once-only fixed-project GET f2121a succeeded17:04:25.170 UTC, HTTP200/native0/all12 predicates/children closed/parent mutex absent, after exact f4775b2 / CI39818174853 all5/Vercel. Immutable actual receipt and four-row ledger preserve main histories and old fences. MA-02 actual access complete; backend/earlier cause unestablished. Aggregate6/201/207; no DB/fixture/workflow/gateway/provider/actors or input consumption/new A–D admission. Distinct next packet/checkpoint/consumer and exact known prior C999 audit validation proceed locally before any owner decision. No new credentials/login. [Actual read](evidence/dev-acceptance-project-preflight-actual-20261022.json).
 
 - 2026-10-22 Cairo: Separate fixed-project GET preflight is implemented/reviewed, no remaining P1/P2; 11/11 portable synthetic tests pass, lint/format/diff clean. Actual public CheckOnly ced183 native0/privateReadfalse/network0/counters5/201/206; full existing public Vercel subtree verifies3462 files/mismatch0, no reseal or old-window readiness claim. New-current-head normal CI must pass before its single ReadProject; no private runtime handoffs, GET, admission or database/provider/actor action yet. [Readiness](evidence/dev-acceptance-project-preflight-readiness-20261022.json), [exact read-only procedure](evidence/dev-acceptance-project-preflight-20261022.md).
 

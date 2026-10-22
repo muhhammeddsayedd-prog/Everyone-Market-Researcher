@@ -21,7 +21,7 @@ const environment = () =>
     ),
   );
 function powershell(code, expectedStatus = 0) {
-  const script = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest\n${code}\nexit 0\n`;
+  const script = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest;$ProjectVerifiedContinuation=$false\n${code}\nexit 0\n`;
   const encoded = Buffer.from(script, 'utf16le').toString('base64');
   const temporary = encoded.length > 28000 ? mkdtempSync(join(tmpdir(), 'emr-startup-extracted-ps-')) : null;
   try {

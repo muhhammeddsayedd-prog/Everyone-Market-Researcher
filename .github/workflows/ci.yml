@@ -114,7 +114,7 @@ jobs:
         with:
           version: 2.121.0
       - name: Check database script safety regressions
-        run: node --test scripts/db/check-pooler.test.mjs scripts/db/check-m03-foundation-concurrency.test.mjs scripts/db/check-foundation-types.test.mjs scripts/db/m03-foundation-migrations.test.mjs scripts/db/foundation-admin-client.test.mjs scripts/db/foundation-admin-remaining.test.mjs scripts/db/foundation-admin-startup-failure.test.mjs scripts/db/foundation-reactivate.test.mjs
+        run: node --test scripts/db/check-pooler.test.mjs scripts/db/check-m03-foundation-concurrency.test.mjs scripts/db/check-foundation-types.test.mjs scripts/db/m03-foundation-migrations.test.mjs scripts/db/foundation-admin-client.test.mjs scripts/db/foundation-admin-remaining.test.mjs scripts/db/foundation-admin-startup-failure.test.mjs scripts/db/foundation-reactivate.test.mjs scripts/db/foundation-project-verified-reactivate.test.mjs scripts/db/foundation-project-verified-ps.test.mjs
       - name: Start isolated local stack, replay migrations, test and run advisors
         run: bash scripts/db/run-local-ci.sh
       - name: Verify local Data API exposure

@@ -107,9 +107,9 @@
     }
   ],
   "files": {
-    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "b16f5e6eb1d80239896f1506c943f8178441bf2bbd9ead347aae20e6656dca83",
-    "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "3aed0e1e4c1e2e3603e652bac60da69a45cd9b94ef15d967724094ae6a537c65",
-    "scripts/db/windows/Foundation-AdminControl.ps1": "361a6da0b252756c80a37bcb0b8c198f98a1dd321ba78bbb2c2bb6b58890eb04",
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "92d34f9027c8368536414bd052478c26701faaf75feb816548c8fcf35b014a77",
+    "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "b45c56364678a11283aab92cb60292ee29a86383a1114fa623af122f4b592c7e",
+    "scripts/db/windows/Foundation-AdminControl.ps1": "d93a7d7f619ffc050aa089dad2b1da9f5a1d33b09657f91501714e2987f99a73",
     "scripts/db/foundation-settlement.sql": "94ce66c3c12a305bba196bef441a51c9879cc0764403bef2241d3660baaa91e9",
     "scripts/db/foundation-postcheck.sql": "f5ee87926275b368c476258a4b826f4a63c7b2775c4fbfabb24af774e6fc5f52",
     "scripts/db/foundation-replay-snapshot.sql": "f32c8251a11b14b34680025b8e05ee2ca90e87af45ce12a0b90bca31aec7af70",
@@ -123,7 +123,7 @@
     "scripts/seed/certs/supabase-root-2021.json": "86f7da7dbd65b7a97986e7cf859848835b162fb6aec17f09fb8b011d4accf16b",
     "scripts/n8n/foundation-live-clock-amendment.mjs": "de2d33be3e30bb58a7bdf7abfbb846610fbe0826e730edac4a4fcc9f56aa5ce6",
     "scripts/n8n/foundation-live-zero-setup.mjs": "24f930de21fe509c0da2d4f21688ebd2498e0f6358a4d78d95a9a9e889095591",
-    "scripts/n8n/foundation-control-state.mjs": "ba34e6c520eea0bf1b842326ebb02e976557654fe568c07d31b5249ad0dbda9d",
+    "scripts/n8n/foundation-control-state.mjs": "ac4b0c97941b1d44249e2b54161c72e05179119f8e738aa87d8444b717d28fde",
     "scripts/n8n/foundation-runtime-checkpoint.mjs": "af3bd51ff6336d9205e876af3e699677e122ca96cf825a66f807478a265603ea",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-approval-20261021.json": "3d2346715e08edfc9eef4fab04c9c1b7be55d450660c862235b92195976bed31",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-zero-setup-20261021.json": "6af79fc35a6e71fb323ca262092cfe015fd26a3422f5ce43b140f92caba1a28d",
@@ -145,7 +145,11 @@
     "scripts/n8n/foundation-live-startup-replacement.mjs": "36f6729c3e81bc02be962cedf373fefc0ee8a2e98c539a729aa53ce3994f2c78",
     "scripts/assert/m03_smoke_reactivate_startup.sql": "cc2654e4d499cbd5fc1a6c75c30d991ea8f46bef3fa37f66bd415ad8b192e202",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json": "e144d73dfbcab1e5a286ab9ba11df28bcbd10c8a9ad39eecb7852fee3d61d758",
-    "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0"
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0",
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "0fa59fd2924be77213c2aae915935836721ce43237471bfab3c0c6cfe5b603ff",
+    "scripts/assert/m03_smoke_reactivate_project_verified.sql": "56c692a31ae43328af03107a0f3c98fd8c14eb7f1d0ab0a71198641d08a869b6",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json": "e21e515ae446dcde7983dba87d09221ce1bf3cd2ad06d08329368a8241e6ba10",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md": "13d19460cdb889378dec5ae4d93af4708baf85290c164e07961add18e7243650"
   },
   "node": {
     "path": "C:\\Program Files\\nodejs\\node.exe",

@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$ResumeZeroSetup,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement)
+param([switch]$CheckOnly,[switch]$ResumeZeroSetup,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement,[switch]$ProjectVerifiedContinuation)
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
@@ -11,6 +11,7 @@ $errorDraining=$false;$outputDiscarding=$false;$lineTask=$null;$errorTask=$null;
 $bypassCreated=$false;$script:closureVerified=$false;$script:credentialClosureVerified=$false
 $resumeDeadlineAt=$null
 $amendmentClock=$null
+$script:projectVerifiedMetadataClosed=$true
 $secret=$null;$bstr=[IntPtr]::Zero;$packet=$null;$private=$null;$machine=$null;$bypass=$null
 $needles=[Collections.Generic.List[string]]::new();$knownWorkflowIds=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $receipt=[ordered]@{kind='m03_acceptance_wrapper_closed';childClosed=$true;credentialChildrenClosed=$false;emergencyShutdown=$false;nativeExit=$null;handoffsDeleted=$false;bypassHandoffDeleted=$false;pendingMachinePreserved=$true;privateRead=$false;code='M03_ACCEPTANCE_BLOCKED'}
@@ -96,7 +97,7 @@ function Invoke-PublicCompositionCheck([string]$Node,[string]$Entry,[string]$Rep
  }
  if(-not $done){throw 'blocked'}
 }
-function Invoke-PublicDatabaseCheck([string]$Repository,[bool]$AllowMissing,$OriginalDeadline=$null,[bool]$AmendedClock=$false,[bool]$PostcheckClock=$false,[bool]$RemainingClock=$false,[bool]$StartupClock=$false){
+function Invoke-PublicDatabaseCheck([string]$Repository,[bool]$AllowMissing,$OriginalDeadline=$null,[bool]$AmendedClock=$false,[bool]$PostcheckClock=$false,[bool]$RemainingClock=$false,[bool]$StartupClock=$false,[bool]$ProjectClock=$false){
  $process=$null;$info=$null;$running=$false;$done=$true
  try{
   $db=Public-File (Join-Path $Repository 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1')
@@ -105,9 +106,10 @@ function Invoke-PublicDatabaseCheck([string]$Repository,[bool]$AllowMissing,$Ori
   if($null -ne $OriginalDeadline){if($OriginalDeadline -ne 1792584023481){throw 'blocked'};$info.Arguments+=' -OriginalDeadlineAtMs '+[string]$OriginalDeadline}
   if($AmendedClock){if($null -ne $OriginalDeadline){throw 'blocked'};$info.Arguments+=' -ClockAmendment'}
   if($PostcheckClock){if($null -ne $OriginalDeadline -or $AmendedClock){throw 'blocked'};$info.Arguments+=' -PostcheckContinuation'}
-  if(@($AmendedClock,$PostcheckClock,$RemainingClock,$StartupClock|Where-Object{$_}).Count -gt 1){throw 'blocked'}
+  if(@($AmendedClock,$PostcheckClock,$RemainingClock,$StartupClock,$ProjectClock|Where-Object{$_}).Count -gt 1){throw 'blocked'}
   if($RemainingClock){if($null -ne $OriginalDeadline -or $AmendedClock -or $PostcheckClock){throw 'blocked'};$info.Arguments+=' -RemainingContinuation'}
   if($StartupClock){if($null -ne $OriginalDeadline){throw 'blocked'};$info.Arguments+=' -StartupReplacement'}
+  if($ProjectClock){if($null -ne $OriginalDeadline){throw 'blocked'};$info.Arguments+=' -ProjectVerifiedContinuation'}
   $info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.EnvironmentVariables.Clear()
   foreach($name in @('SystemRoot','WINDIR','PATH','USERPROFILE','LOCALAPPDATA','APPDATA','TEMP','TMP')){if(Test-Path ('Env:'+ $name)){$info.EnvironmentVariables[$name]=[Environment]::GetEnvironmentVariable($name)}}
   $process=[Diagnostics.Process]::new();$process.StartInfo=$info;$running=$process.Start();$done=$false
@@ -116,10 +118,11 @@ function Invoke-PublicDatabaseCheck([string]$Repository,[bool]$AllowMissing,$Ori
   $done=$process.WaitForExit(30000)
   if(-not $done -or -not [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($out,$err)).Wait(5000) -or $err.Result.Length -ne 0){throw 'blocked'}
   $line=$out.Result.Trim()
+  if($ProjectClock -and $process.ExitCode -eq 4 -and $line.StartsWith('M03_FOUNDATION PUBLIC_INPUTS_READY.',[StringComparison]::Ordinal)){return $false}
   if($process.ExitCode -eq 0 -and $line.StartsWith('M03_FOUNDATION CHECK_ONLY_READY.',[StringComparison]::Ordinal)){return $true}
   if($AllowMissing -and $process.ExitCode -eq 2 -and $line.StartsWith('M03_FOUNDATION HANDOFF_MISSING.',[StringComparison]::Ordinal)){return $false}
   if($AllowMissing -and ($AmendedClock -or $PostcheckClock -or $RemainingClock -or $StartupClock) -and $process.ExitCode -eq 2 -and $line.StartsWith('M03_FOUNDATION HANDOFF_LEASE_NOT_READY.',[StringComparison]::Ordinal)){return $false}
-  if($AllowMissing -and ($RemainingClock -or $StartupClock) -and $process.ExitCode -eq 3 -and $line.StartsWith('M03_FOUNDATION APPROVAL_REQUIRED.',[StringComparison]::Ordinal)){return $false}
+  if($AllowMissing -and ($RemainingClock -or $StartupClock -or $ProjectClock) -and $process.ExitCode -eq 3 -and $line.StartsWith('M03_FOUNDATION APPROVAL_REQUIRED.',[StringComparison]::Ordinal)){return $false}
   throw 'blocked'
  }finally{
   if($null -ne $process){if($running -and -not $done){try{$process.Kill();$done=$process.WaitForExit(5000)}catch{}};$process.Dispose()}
@@ -146,15 +149,15 @@ function Invoke-ZeroSetupPublicCheck([string]$Node,[string]$Repository){
   if($null -ne $info){$info.EnvironmentVariables.Clear()}
  }
 }
-function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$Mode,[bool]$PostcheckClock=$false,[bool]$RemainingClock=$false,[bool]$StartupClock=$false){
+function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$Mode,[bool]$PostcheckClock=$false,[bool]$RemainingClock=$false,[bool]$StartupClock=$false,[bool]$ProjectClock=$false){
  $process=$null;$info=$null;$running=$false;$done=$true
  try{
   if($Mode -cnotin @('CheckOnly','Admit','Read')){throw 'blocked'}
   if(@($RemainingClock,$PostcheckClock,$StartupClock|Where-Object{$_}).Count -gt 1){throw 'blocked'}
-  $clockRelative=if($StartupClock){'scripts/n8n/foundation-live-startup-replacement.mjs'}elseif($RemainingClock){'scripts/n8n/foundation-live-remaining-continuation.mjs'}elseif($PostcheckClock){'scripts/n8n/foundation-live-postcheck-continuation.mjs'}else{'scripts/n8n/foundation-live-clock-amendment.mjs'}
-  $segmentId=if($StartupClock){'1c69c89e-7807-46d5-b7b8-ca28285ff2b4'}elseif($RemainingClock){'e8035391-dba8-48c9-97e0-139ba980d86e'}elseif($PostcheckClock){'a570212a-634c-444f-90a2-578ae47e8d27'}else{'30e75d0d-7e4c-46c6-9a07-556f90b63859'}
-  $readyKind=if($StartupClock){'startup_replacement_ready'}elseif($RemainingClock){'remaining_continuation_ready'}elseif($PostcheckClock){'postcheck_continuation_ready'}else{'clock_amendment_ready'}
-  $admittedKind=if($StartupClock){'clock_startup_replacement_admitted'}elseif($RemainingClock){'clock_remaining_continuation_admitted'}elseif($PostcheckClock){'clock_postcheck_continuation_admitted'}else{'clock_amendment_admitted'}
+  $clockRelative=if($ProjectClock){'scripts/n8n/foundation-live-project-verified-continuation.mjs'}elseif($StartupClock){'scripts/n8n/foundation-live-startup-replacement.mjs'}elseif($RemainingClock){'scripts/n8n/foundation-live-remaining-continuation.mjs'}elseif($PostcheckClock){'scripts/n8n/foundation-live-postcheck-continuation.mjs'}else{'scripts/n8n/foundation-live-clock-amendment.mjs'}
+  $segmentId=if($ProjectClock){'20275b22-b7fe-4737-a9a4-c50c2feadb74'}elseif($StartupClock){'1c69c89e-7807-46d5-b7b8-ca28285ff2b4'}elseif($RemainingClock){'e8035391-dba8-48c9-97e0-139ba980d86e'}elseif($PostcheckClock){'a570212a-634c-444f-90a2-578ae47e8d27'}else{'30e75d0d-7e4c-46c6-9a07-556f90b63859'}
+  $readyKind=if($ProjectClock){'project_verified_continuation_ready'}elseif($StartupClock){'startup_replacement_ready'}elseif($RemainingClock){'remaining_continuation_ready'}elseif($PostcheckClock){'postcheck_continuation_ready'}else{'clock_amendment_ready'}
+  $admittedKind=if($ProjectClock){'clock_project_verified_continuation_admitted'}elseif($StartupClock){'clock_startup_replacement_admitted'}elseif($RemainingClock){'clock_remaining_continuation_admitted'}elseif($PostcheckClock){'clock_postcheck_continuation_admitted'}else{'clock_amendment_admitted'}
   $entry=Public-File (Join-Path $Repository $clockRelative)
   $info=[Diagnostics.ProcessStartInfo]::new();$info.FileName=$Node;$info.Arguments='"'+$entry+'" '+$Mode;$info.WorkingDirectory=$Repository
   $info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.EnvironmentVariables.Clear()
@@ -165,8 +168,8 @@ function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$
   $done=$process.WaitForExit(10000)
   if(-not $done -or $process.ExitCode -ne 0 -or -not [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($out,$err)).Wait(5000) -or $err.Result.Length -ne 0){throw 'blocked'}
   $result=ConvertFrom-Json -InputObject $out.Result
-  $approvalKind=if($StartupClock){'startup_replacement_approval_required'}else{'remaining_continuation_approval_required'}
-  if(($RemainingClock -or $StartupClock) -and $Mode -ceq 'CheckOnly' -and $result.kind -ceq $approvalKind){
+  $approvalKind=if($ProjectClock){'project_verified_continuation_approval_required'}elseif($StartupClock){'startup_replacement_approval_required'}else{'remaining_continuation_approval_required'}
+  if(($RemainingClock -or $StartupClock -or $ProjectClock) -and $Mode -ceq 'CheckOnly' -and $result.kind -ceq $approvalKind){
    $expectedKeys=@('kind','status','approvalRequired','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
    if($result -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($expectedKeys|Sort-Object) @($result.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or
       $result.status -cne 'approval_required' -or $result.approvalRequired -isnot [bool] -or $result.approvalRequired -ne $true -or $result.segmentId -cne $segmentId -or
@@ -187,6 +190,55 @@ function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$
   if($null -ne $process){if($running -and -not $done){try{$process.Kill();$done=$process.WaitForExit(5000)}catch{}};$process.Dispose()}
   if($null -ne $info){$info.EnvironmentVariables.Clear()}
  }
+}
+function ConvertTo-ProjectVerifiedVercelMetadata($Value){
+ $keys=@('kind','status','metadataValid','unexpired','covers75Minutes','effectiveBackendEstablished','networkRequests','authenticationAttempted','refreshAttempted','configWritten','childClosed')
+ if($Value -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($keys|Sort-Object) @($Value.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $Value.kind -cne 'm03_vercel_saved_auth_metadata' -or $Value.status -isnot [string] -or $Value.status -cnotin @('metadata_covers_75_minutes','saved_auth_expired','saved_auth_insufficient_coverage','saved_auth_expiry_unavailable','saved_auth_missing','saved_auth_invalid','path_blocked','public_inputs_blocked','child_failed')){throw 'blocked'}
+ foreach($key in @('metadataValid','unexpired','covers75Minutes','effectiveBackendEstablished','authenticationAttempted','refreshAttempted','configWritten','childClosed')){if($Value.$key -isnot [bool]){throw 'blocked'}}
+ if($Value.effectiveBackendEstablished -ne $false -or $Value.networkRequests -isnot [int] -or $Value.networkRequests -ne 0 -or $Value.authenticationAttempted -ne $false -or $Value.refreshAttempted -ne $false -or $Value.configWritten -ne $false){throw 'blocked'}
+ $expected=switch($Value.status){'metadata_covers_75_minutes'{@($true,$true,$true)};'saved_auth_expired'{@($true,$false,$false)};'saved_auth_insufficient_coverage'{@($true,$true,$false)};'saved_auth_expiry_unavailable'{@($true,$false,$false)};default{@($false,$false,$false)}}
+ if($Value.metadataValid -ne $expected[0] -or $Value.unexpired -ne $expected[1] -or $Value.covers75Minutes -ne $expected[2]){throw 'blocked'}
+ # Construct every public field; never spread untrusted child properties.
+ return [ordered]@{kind='m03_acceptance_vercel_metadata';status=$Value.status;metadataValid=$Value.metadataValid;unexpired=$Value.unexpired;covers75Minutes=$Value.covers75Minutes;effectiveBackendEstablished=$false;networkRequests=0;authenticationAttempted=$false;refreshAttempted=$false;configWritten=$false;childClosed=$Value.childClosed}
+}
+function Read-ProjectVerifiedVercelMetadata([string]$Node,[string]$Repository){
+ $process=$null;$info=$null;$running=$false;$done=$true;$valid=$false;$result=$null;$out=$null;$err=$null
+ try{
+  $entry=Public-File (Join-Path $Repository 'scripts/n8n/foundation-vercel-auth-preflight.mjs')
+  $info=[Diagnostics.ProcessStartInfo]::new();$info.FileName=$Node;$info.Arguments='"'+$entry+'" InspectSavedMetadata';$info.WorkingDirectory=$Repository
+  $info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.EnvironmentVariables.Clear()
+  foreach($name in @('SystemRoot','WINDIR','PATH','USERPROFILE','LOCALAPPDATA','APPDATA','TEMP','TMP')){if(Test-Path ('Env:'+ $name)){$info.EnvironmentVariables[$name]=[Environment]::GetEnvironmentVariable($name)}}
+  $process=[Diagnostics.Process]::new();$process.StartInfo=$info;$running=$process.Start();$done=-not $running
+  if(-not $running){throw 'blocked'}
+  $out=[EmrM03AcceptanceBoundedIo]::Text($process.StandardOutput,4096);$err=[EmrM03AcceptanceBoundedIo]::Text($process.StandardError,1024)
+  $done=$process.WaitForExit(8000)
+  if(-not $done -or -not $out.Wait(500) -or -not $err.Wait(500) -or $err.Result.Length -ne 0 -or $process.ExitCode -notin @(0,2)){throw 'blocked'}
+  $result=ConvertFrom-Json -InputObject $out.Result -ErrorAction Stop
+  $safe=ConvertTo-ProjectVerifiedVercelMetadata $result
+  if(($process.ExitCode -eq 0) -ne ($safe.childClosed -and $safe.covers75Minutes)){throw 'blocked'}
+  $valid=$true
+ }catch{
+  # No child exception, stdout/stderr, path or saved value reaches the caller.
+ }finally{
+  if($null -ne $process){if($running -and -not $done){try{$process.Kill();$done=$process.WaitForExit(1000)}catch{}};try{$process.Dispose()}catch{}}
+  if($null -ne $info){$info.EnvironmentVariables.Clear()}
+ }
+ if($valid -and $done){return $result}
+ # Closing the outer process without its validated inner-child receipt does
+ # not prove dependent closure. Preserve the parent mutex in that case.
+ return [pscustomobject][ordered]@{kind='m03_vercel_saved_auth_metadata';status='child_failed';metadataValid=$false;unexpired=$false;covers75Minutes=$false;effectiveBackendEstablished=$false;networkRequests=0;authenticationAttempted=$false;refreshAttempted=$false;configWritten=$false;childClosed=(-not $running)}
+}
+function Confirm-ProjectVerifiedVercelMetadata([string]$Node,[string]$Repository){
+ $script:projectVerifiedMetadataClosed=$false
+ try{
+  $value=Read-ProjectVerifiedVercelMetadata $Node $Repository
+  $safe=ConvertTo-ProjectVerifiedVercelMetadata $value
+ }catch{
+  $safe=[ordered]@{kind='m03_acceptance_vercel_metadata';status='child_failed';metadataValid=$false;unexpired=$false;covers75Minutes=$false;effectiveBackendEstablished=$false;networkRequests=0;authenticationAttempted=$false;refreshAttempted=$false;configWritten=$false;childClosed=$false}
+ }
+ $script:projectVerifiedMetadataClosed=$safe.childClosed
+ $safe|ConvertTo-Json -Compress|Write-Output
+ if(-not $safe.childClosed -or -not $safe.covers75Minutes){throw 'blocked'}
 }
 function Confirm-PublicTransport {
  # A live public acknowledgement must arrive before any DPAPI read. In
@@ -343,8 +395,8 @@ function Safe-PublicLine($Value){
  return $Value|ConvertTo-Json -Compress
 }
 try{
- if(@($ResumeZeroSetup,$ClockAmendment,$PostcheckContinuation,$RemainingContinuation,$StartupReplacement|Where-Object{$_}).Count -gt 1){throw 'blocked'}
- $admittedClockMode=$ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement
+ if(@($ResumeZeroSetup,$ClockAmendment,$PostcheckContinuation,$RemainingContinuation,$StartupReplacement,$ProjectVerifiedContinuation|Where-Object{$_}).Count -gt 1){throw 'blocked'}
+ $admittedClockMode=$ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation
  $sealFile=Public-File (Join-Path $repo 'scripts/n8n/foundation-acceptance-seal.json') 2097152
  $seal=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($sealFile))
  $module=Public-File (Join-Path $PSScriptRoot 'Acceptance-PublicRuntime.ps1')
@@ -358,14 +410,19 @@ try{
  if(-not $ResumeZeroSetup -and -not $admittedClockMode -and (Test-Path -LiteralPath (Join-Path $repo 'scripts/n8n/out/foundation/live/management.jsonl'))){throw 'blocked'}
  if($ResumeZeroSetup){$resumeDeadlineAt=Invoke-ZeroSetupPublicCheck $node $repo}
  $remainingAuthorityReady=$true
- if($admittedClockMode){$publicClock=Invoke-ClockAmendmentPublic $node $repo 'CheckOnly' ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement);if($RemainingContinuation -and $publicClock.kind -ceq 'remaining_continuation_approval_required'){$remainingAuthorityReady=$false;if(-not $CheckOnly){throw 'blocked'}}}
+ if($admittedClockMode){$publicClock=Invoke-ClockAmendmentPublic $node $repo 'CheckOnly' ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation);if($RemainingContinuation -and $publicClock.kind -ceq 'remaining_continuation_approval_required'){$remainingAuthorityReady=$false;if(-not $CheckOnly){throw 'blocked'}}}
+ if($ProjectVerifiedContinuation -and $publicClock.kind -ceq 'project_verified_continuation_approval_required'){
+  if(-not $CheckOnly){throw 'blocked'}
+  [ordered]@{status='project_verified_continuation_approval_required';approvalRequired=$true;privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$false;adminHandoffReady=$false;actualMcpPortVerified=$false;windowId=$seal.windowId;segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';managementMaximum=512;controlMaximum=2048}|ConvertTo-Json -Compress
+  exit 0
+ }
  # Missing startup approval is a public-only terminal state, before the database helper or any private filename metadata.
  if($StartupReplacement -and $publicClock.kind -ceq 'startup_replacement_approval_required'){
   if(-not $CheckOnly){throw 'blocked'}
   [ordered]@{status='startup_replacement_approval_required';approvalRequired=$true;privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$false;adminHandoffReady=$false;actualMcpPortVerified=$false;windowId=$seal.windowId;segmentId='1c69c89e-7807-46d5-b7b8-ca28285ff2b4';managementMaximum=512;controlMaximum=2048}|ConvertTo-Json -Compress
   exit 0
  }
- $adminPublicReady=Invoke-PublicDatabaseCheck $repo ([bool]$CheckOnly) $resumeDeadlineAt ([bool]$ClockAmendment) ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement)
+ $adminPublicReady=Invoke-PublicDatabaseCheck $repo ([bool]$CheckOnly) $resumeDeadlineAt ([bool]$ClockAmendment) ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation)
  $bindings=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'n8n/foundation/bindings.dev.json'))))
  foreach($property in $bindings.workflowRefs.PSObject.Properties){$null=$knownWorkflowIds.Add($property.Value.id)}
  if($knownWorkflowIds.Count -ne 25){throw 'blocked'}
@@ -384,13 +441,23 @@ try{
  $lockShare=if($admittedClockMode){[IO.FileShare]::Read}else{[IO.FileShare]::None}
  $lock=[IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,$lockShare)
  if($admittedClockMode){
-  $parentSegment=if($StartupReplacement){'1c69c89e-7807-46d5-b7b8-ca28285ff2b4'}elseif($RemainingContinuation){'e8035391-dba8-48c9-97e0-139ba980d86e'}elseif($PostcheckContinuation){'a570212a-634c-444f-90a2-578ae47e8d27'}else{'30e75d0d-7e4c-46c6-9a07-556f90b63859'}
+  $parentSegment=if($ProjectVerifiedContinuation){'20275b22-b7fe-4737-a9a4-c50c2feadb74'}elseif($StartupReplacement){'1c69c89e-7807-46d5-b7b8-ca28285ff2b4'}elseif($RemainingContinuation){'e8035391-dba8-48c9-97e0-139ba980d86e'}elseif($PostcheckContinuation){'a570212a-634c-444f-90a2-578ae47e8d27'}else{'30e75d0d-7e4c-46c6-9a07-556f90b63859'}
   $parentMetadata=[ordered]@{kind='m03_clock_admission_parent';version=1;segmentId=$parentSegment;processId=$PID}
   $parentBytes=[Text.UTF8Encoding]::new($false).GetBytes(($parentMetadata|ConvertTo-Json -Compress))
   $lock.Write($parentBytes,0,$parentBytes.Length);$lock.Flush($true);[Array]::Clear($parentBytes,0,$parentBytes.Length)
-  $null=Invoke-ClockAmendmentPublic $node $repo 'CheckOnly' ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement)
+  $lockedPublicClock=Invoke-ClockAmendmentPublic $node $repo 'CheckOnly' ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation)
+  if($ProjectVerifiedContinuation -and $lockedPublicClock.kind -cne 'project_verified_continuation_ready'){throw 'blocked'}
  }
  if($ResumeZeroSetup){$resumeDeadlineAt=Invoke-ZeroSetupPublicCheck $node $repo}
+ # Project-verified Run checks saved CLI metadata after public approval and
+ # mutex/transport checks, before any lease, Machine metadata, DPAPI or Admit.
+ # This separate receipt describes saved metadata; privateRead below remains
+ # the existing batch-DPAPI indicator, not a claim that no metadata was read.
+ if($ProjectVerifiedContinuation){
+  $receipt.code='M03_ACCEPTANCE_VERCEL_METADATA_BLOCKED'
+  Confirm-ProjectVerifiedVercelMetadata $node $repo
+  $receipt.code='M03_ACCEPTANCE_BLOCKED'
+ }
  # Verify retained input provenance before consuming any new lease/ciphertext.
  $old=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'scripts/n8n/foundation-delivery-packet.json'))))
  $pending=Join-Path $env:LOCALAPPDATA 'Everyone-Market-Radar-Private\foundation\df4f29ec-e2dc-4d82-a276-62a4e695e6f9'
@@ -420,7 +487,7 @@ try{
  $null=Public-File ($adminStem+'.dpapi')
  $adminLease=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File ($adminStem+'.lease.json') 16384)))
  $adminKeys=@('version','environment','projectRef','purpose','approvalSha','createdAt','expiresAt')
- if($adminLease -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($adminKeys|Sort-Object) @($adminLease.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $adminLease.version -isnot [int] -or $adminLease.version -ne 1 -or $adminLease.environment -cne 'dev' -or $adminLease.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $adminLease.purpose -cne 'm03-foundation-phase-a-dev' -or $adminLease.approvalSha -cne $seal.approvedHead -or $adminLease.createdAt -isnot [string] -or $adminLease.expiresAt -isnot [string]){throw 'blocked'}
+ if($adminLease -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($adminKeys|Sort-Object) @($adminLease.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $adminLease.version -isnot [int] -or $adminLease.version -ne 1 -or $adminLease.environment -cne 'dev' -or $adminLease.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $adminLease.purpose -cne $(if($ProjectVerifiedContinuation){'m03-foundation-project-verified-continuation-dev:20275b22-b7fe-4737-a9a4-c50c2feadb74'}else{'m03-foundation-phase-a-dev'}) -or $adminLease.approvalSha -cne $seal.approvedHead -or $adminLease.createdAt -isnot [string] -or $adminLease.expiresAt -isnot [string]){throw 'blocked'}
  $adminCreated=[DateTime]::ParseExact($adminLease.createdAt,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
  $adminExpiry=[DateTime]::ParseExact($adminLease.expiresAt,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
  $adminRequiredUntil=if($ResumeZeroSetup){[DateTimeOffset]::FromUnixTimeMilliseconds($resumeDeadlineAt).AddMinutes(15).UtcDateTime}else{[DateTime]::UtcNow.AddMinutes(75)}
@@ -430,7 +497,7 @@ try{
  if($admittedClockMode){
   # One durable segment, only after source/transport/provenance/lease checks.
   # Never delete or recreate its admission/claim, even after a zero-effect exit.
-  $amendmentClock=Invoke-ClockAmendmentPublic $node $repo 'Admit' ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement)
+  $amendmentClock=Invoke-ClockAmendmentPublic $node $repo 'Admit' ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation)
   $resumeDeadlineAt=[long]$amendmentClock.deadlineAt
   $amendmentLeaseFloor=[DateTimeOffset]::FromUnixTimeMilliseconds([long]$amendmentClock.startsAt).AddMinutes(75)
   if($minimumExpiry -lt $amendmentLeaseFloor -or $adminExpiry -le $amendmentLeaseFloor.UtcDateTime){throw 'blocked'}
@@ -461,7 +528,7 @@ try{
  $cipher=$null
  $packet=[ordered]@{kind='m03_acceptance_private_input';version=1;approvedHead=$seal.approvedHead;approvedPacketSha256=$seal.approvedPacketSha256;sourceCommitSha=$seal.approvedHead;managementKey=$private.Management;writerPassword=$private.Writer;apifyReadToken=$private.ApifyRead;machineToken=$machine;protectionBypass=$bypass;leaseExpiry=$minimumExpiry.ToUnixTimeMilliseconds()}
  $start=[Diagnostics.ProcessStartInfo]::new();$start.FileName=$node
- $sessionMode=if($StartupReplacement){'SessionStartupReplacement'}elseif($RemainingContinuation){'SessionRemainingContinuation'}elseif($PostcheckContinuation){'SessionPostcheckContinuation'}elseif($ClockAmendment){'SessionClockAmendment'}elseif($ResumeZeroSetup){'SessionResumeZeroSetup'}else{'Session'}
+ $sessionMode=if($ProjectVerifiedContinuation){'SessionProjectVerifiedContinuation'}elseif($StartupReplacement){'SessionStartupReplacement'}elseif($RemainingContinuation){'SessionRemainingContinuation'}elseif($PostcheckContinuation){'SessionPostcheckContinuation'}elseif($ClockAmendment){'SessionClockAmendment'}elseif($ResumeZeroSetup){'SessionResumeZeroSetup'}else{'Session'}
  $start.Arguments='"'+$entry+'" '+$sessionMode;$start.WorkingDirectory=$repo
  $start.UseShellExecute=$false;$start.CreateNoWindow=$true
  $start.RedirectStandardInput=$true;$start.RedirectStandardOutput=$true;$start.RedirectStandardError=$true
@@ -532,7 +599,7 @@ try{
  # Consumed credentials require physical child closure, independently of the
  # remote restoration result. An emergency tree receipt proves only local
  # process closure and must never authorize removal of the residual bypass.
- $credentialChildrenClosed=(-not $started -or ($closed -and $script:credentialClosureVerified) -or $treeClosed)
+ $credentialChildrenClosed=$script:projectVerifiedMetadataClosed -and (-not $started -or ($closed -and $script:credentialClosureVerified) -or $treeClosed)
  $safeToDeleteCredentials=$closed -and $credentialChildrenClosed
  $safeToDeleteBypass=$closed -and (-not $started -or $script:closureVerified) -and -not $emergency
  if($safeToDeleteCredentials){foreach($path in $consumed){try{$null=Public-File $path;[IO.File]::Delete($path);if(Test-Path -LiteralPath $path){$deleted=$false}}catch{$deleted=$false}}}else{$deleted=$false}
