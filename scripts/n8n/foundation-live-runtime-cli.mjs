@@ -94,12 +94,16 @@ const exact = (v, keys) =>
   Object.keys(v).length === keys.length &&
   keys.every((k) => Object.hasOwn(v, k));
 // Metadata access is checked before expensive owned DB/Preview preparation.
-// This proves native read access only; it never tests execution or an actor.
+// Search can read an MCP-disabled baseline; native details deliberately cannot.
+// This proves inventory access only. The subsequent REST guard proves version.
 export async function verifyFoundationLiveNativeMetadata({ port, workflow, admit, append, now }) {
   if (
     !port ||
-    typeof port.details !== 'function' ||
-    !workflow ||
+    typeof port.discover !== 'function' ||
+    workflow?.id !== foundationRuntimeCheckpoint.workflows['WF-00'].id ||
+    typeof workflow.workflow?.name !== 'string' ||
+    workflow.workflow.name.length < 1 ||
+    workflow.workflow.name.length > 200 ||
     typeof admit !== 'function' ||
     typeof append !== 'function' ||
     typeof now !== 'function'
@@ -110,22 +114,21 @@ export async function verifyFoundationLiveNativeMetadata({ port, workflow, admit
     if (charged?.then) Promise.resolve(charged).catch(() => {});
     fail();
   }
-  const value = await port.details({ workflowId: workflow.id });
+  const value = await port.discover({ workflowId: workflow.id });
   if (
-    !exact(value, ['id', 'versionId', 'canExecute', 'scopes']) ||
+    !exact(value, ['id', 'name', 'active', 'availableInMCP']) ||
     value.id !== workflow.id ||
-    value.versionId !== workflow.versionId ||
-    typeof value.canExecute !== 'boolean' ||
-    !Array.isArray(value.scopes) ||
-    value.scopes.length > 64 ||
-    !value.scopes.every((v) => typeof v === 'string' && /^[a-zA-Z0-9:_*-]{1,80}$/.test(v))
+    value.name !== workflow.workflow.name ||
+    value.active !== false ||
+    value.availableInMCP !== false
   )
     fail();
   if (
     append({
       event: 'native_port_preflight_verified',
       workflowId: workflow.id,
-      versionId: workflow.versionId,
+      active: false,
+      availableInMCP: false,
       at: new Date(now()).toISOString(),
     }) !== undefined
   )

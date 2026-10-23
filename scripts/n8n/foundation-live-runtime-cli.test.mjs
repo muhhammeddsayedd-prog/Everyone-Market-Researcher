@@ -39,8 +39,9 @@ const replaySnapshot = () => ({
   queuesSha256: 'c'.repeat(64),
   costsSha256: 'd'.repeat(64),
 });
-test('early native metadata preflight charges once, reads only the exact saved version and never executes', async () => {
-  const workflow = { id: 'MzimjpsuyPuK7SKe', versionId: 'f5f755b7-9683-4fb6-a26d-87b001127244' };
+test('early native metadata preflight charges once for owned inactive MCP-disabled discovery and never requests details or executes', async () => {
+  const workflow = { id: 'MzimjpsuyPuK7SKe', workflow: { name: 'WF-00 · Orchestrator [dev]' } };
+  const discovered = { id: workflow.id, name: workflow.workflow.name, active: false, availableInMCP: false };
   const order = [];
   const args = {
     workflow,
@@ -51,13 +52,22 @@ test('early native metadata preflight charges once, reads only the exact saved v
     },
     append(value) {
       order.push('verified');
-      assert.equal(value.workflowId, workflow.id);
+      assert.deepEqual(value, {
+        event: 'native_port_preflight_verified',
+        workflowId: workflow.id,
+        active: false,
+        availableInMCP: false,
+        at: '2026-10-23T19:00:00.000Z',
+      });
     },
     port: {
-      async details(value) {
-        order.push('details');
+      async discover(value) {
+        order.push('discover');
         assert.deepEqual(value, { workflowId: workflow.id });
-        return { ...workflow, canExecute: false, scopes: ['workflow:read'] };
+        return discovered;
+      },
+      details() {
+        throw Error('UNAVAILABLE_DETAILS_FORBIDDEN');
       },
       start() {
         throw Error('NATIVE_START_FORBIDDEN');
@@ -68,13 +78,16 @@ test('early native metadata preflight charges once, reads only the exact saved v
     metadataVerified: true,
     executionsStarted: 0,
   });
-  assert.deepEqual(order, ['charge', 'details', 'verified']);
+  assert.deepEqual(order, ['charge', 'discover', 'verified']);
   for (const value of [
     null,
-    { ...workflow, canExecute: false, scopes: [], extra: true },
-    { ...workflow, versionId: 'changed', canExecute: true, scopes: [] },
-    { ...workflow, id: 'foreign', canExecute: true, scopes: [] },
-    { ...workflow, canExecute: 'true', scopes: [] },
+    { ...discovered, extra: true },
+    { ...discovered, name: 'changed' },
+    { ...discovered, id: 'foreign' },
+    { ...discovered, active: true },
+    { ...discovered, availableInMCP: true },
+    { ...discovered, availableInMCP: 'false' },
+    { id: workflow.id, versionId: 'SYNTHETIC_PRIVATE_UNRELATED', canExecute: false, scopes: [] },
   ]) {
     let verified = false;
     await assert.rejects(
@@ -84,7 +97,7 @@ test('early native metadata preflight charges once, reads only the exact saved v
           append() {
             verified = true;
           },
-          port: { details: async () => value },
+          port: { discover: async () => value },
         }),
       /FOUNDATION_LIVE_CHILD_BLOCKED/,
     );

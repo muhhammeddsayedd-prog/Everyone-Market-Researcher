@@ -399,7 +399,7 @@ function Safe-PublicLine($Value){
   }
  }
  if($Value.kind -ceq 'mcp_port_request'){
-  if(@(Compare-Object -CaseSensitive @('kind','nonce','action','workflowId'|Sort-Object) @($Value.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $Value.nonce -cnotmatch '^[A-Za-z0-9_-]{1,80}$' -or $Value.action -cnotin @('details','start') -or -not $knownWorkflowIds.Contains($Value.workflowId)){throw 'blocked'}
+  if(@(Compare-Object -CaseSensitive @('kind','nonce','action','workflowId'|Sort-Object) @($Value.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $Value.nonce -cnotmatch '^[A-Za-z0-9_-]{1,80}$' -or $Value.action -cnotin @('discover','details','start') -or -not $knownWorkflowIds.Contains($Value.workflowId) -or ($Value.action -ceq 'discover' -and $Value.workflowId -cne 'MzimjpsuyPuK7SKe')){throw 'blocked'}
   return $Value|ConvertTo-Json -Compress
  }
  # All other private protocol kinds require the finite CLI's safe projection.

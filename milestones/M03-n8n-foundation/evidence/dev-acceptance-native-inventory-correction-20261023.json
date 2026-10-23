@@ -1,0 +1,223 @@
+{
+  "kind": "m03_native_inventory_preflight_contract_correction",
+  "version": 1,
+  "recordedAt": "2026-10-23T19:14:31.665Z",
+  "environment": "dev",
+  "discovery": {
+    "detectedBeforeCredentialUse": true,
+    "detectedBeforeNewAdmission": true,
+    "actualUnsupportedDetailsCallMade": false,
+    "liveErrorObserved": false,
+    "usageChanged": false,
+    "cause": "The proposed early get_workflow_details check requires availableInMCP=true in the pinned native2.43.5 implementation. Reviewed inactive WF-00 deliberately has that setting false. This was a local pre-execution contract defect, not failed authentication or missing credentials."
+  },
+  "officialContract": {
+    "runtimeVersion": "2.43.5",
+    "independentlyReadFromPublicOfficialSource": true,
+    "sources": [
+      {
+        "url": "https://raw.githubusercontent.com/n8n-io/n8n/n8n@2.43.5/packages/cli/src/modules/mcp/tools/workflow-validation.utils.ts",
+        "lines": [
+          70,
+          74
+        ],
+        "supports": "validateMcpWorkflow rejects a workflow whose availableInMCP setting is false."
+      },
+      {
+        "url": "https://raw.githubusercontent.com/n8n-io/n8n/n8n@2.43.5/packages/cli/src/modules/mcp/tools/get-workflow-details.tool.ts",
+        "lines": [
+          168,
+          174
+        ],
+        "supports": "get_workflow_details calls getMcpWorkflow and therefore applies that availability validation."
+      },
+      {
+        "url": "https://raw.githubusercontent.com/n8n-io/n8n/n8n@2.43.5/packages/cli/src/modules/mcp/tools/search-workflows.tool.ts",
+        "lines": [
+          255,
+          307
+        ],
+        "supports": "Search applies permission-scoped user/project/name/archive filters, returns inventory metadata and reports availableInMCP without requiring it true."
+      }
+    ]
+  },
+  "reviewedTarget": {
+    "workflowId": "MzimjpsuyPuK7SKe",
+    "workflowName": "WF-00 · Orchestrator [dev]",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "projectName": "Personal",
+    "active": false,
+    "availableInMCP": false,
+    "exportPath": "n8n/workflows/WF-00.json",
+    "observedPublicExportVersion": "f5f755b7-9683-4fb6-a26d-87b001127244",
+    "liveInventoryReadByThisRecord": false
+  },
+  "correction": {
+    "status": "implemented_and_independently_reviewed_locally",
+    "earlyOperation": "discover-only inventory of the fixed owned WF-00",
+    "nativeTool": "search_workflows",
+    "query": "WF-00",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "limit": 2,
+    "relayProjection": {
+      "exactMatchingRowsRequired": 1,
+      "fields": [
+        "id",
+        "name",
+        "active",
+        "availableInMCP"
+      ],
+      "expectedActive": false,
+      "expectedAvailableInMCP": false,
+      "unrelatedRowsNotProjected": true,
+      "ambiguousOrMismatchedResultRejected": true,
+      "rawResultValidation": {
+        "structuredContentOrJsonText": true,
+        "countExactly": 1,
+        "dataLengthExactly": 1,
+        "expectedIdentityAndBooleansRequired": true
+      }
+    },
+    "wrapperAllowsOnlyFixedDiscoveryWorkflow": "MzimjpsuyPuK7SKe",
+    "versionIdInvented": false,
+    "canExecuteInvented": false,
+    "executionCapabilityClaimed": false,
+    "following25FreshRestReadsRetained": true,
+    "followingRestChecksVerifyVersionsGraphsAndOwnership": true,
+    "enableMcpFlagToPass": false,
+    "newPermissionOrCredentialRequested": false
+  },
+  "localChecksAlreadyReported": {
+    "affectedBridgeCliSuite": {
+      "toolReceipt": "e4ccd5",
+      "passed": 34,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "independentFullBridge": {
+      "toolReceipt": "18c07c",
+      "passed": 4,
+      "nativeExit": 0
+    },
+    "independentMetadataCli": {
+      "toolReceipt": "a6f03d",
+      "nativeExit": 0
+    },
+    "independentPowerShellProjection": {
+      "toolReceipt": "6b04c4",
+      "passed": 1,
+      "nativeExit": 0
+    },
+    "wrapperNativeProjection": {
+      "toolReceipt": "ce68b9",
+      "passed": 1,
+      "nativeExit": 0,
+      "fixedDiscoverOnlyWorkflowEnforced": true
+    },
+    "boundedRelayProjection": {
+      "cases": 3,
+      "reportedByCoordinator": true,
+      "toolReceiptOmitted": true,
+      "networkRequests": 0
+    },
+    "affectedEslint": {
+      "toolReceipt": "5caf92",
+      "nativeExit": 0
+    },
+    "affectedFormatting": {
+      "toolReceipt": "73c48d",
+      "nativeExit": 0
+    },
+    "independentP1P2Findings": 0,
+    "resultsNotSummed": true,
+    "actualApplicationCalls": 0
+  },
+  "readinessAtRecord": {
+    "bridgeAndCliAffectedTests": "passed_local",
+    "independentReview": "no_p1_p2",
+    "correctedPublicSeals": {
+      "toolReceipt": "635e29",
+      "nativeExit": 0,
+      "projectFiles": 230,
+      "runtimeFiles": 840,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "actualCorrectedWrapperCheck": {
+      "toolReceipt": "238b99",
+      "nativeExit": 0,
+      "status": "check_only_ready",
+      "privateRead": false,
+      "networkRequests": 0,
+      "publicCompositionLoaded": true,
+      "adminPublicInputsVerified": true,
+      "adminHandoffReady": false,
+      "actualMcpPortVerified": false
+    },
+    "correctedDeliveryCi": "pending",
+    "actualNativeInventoryVerified": false,
+    "actualMcpPortVerified": false
+  },
+  "previousDelivery": {
+    "head": "654bea14793c945abab14e3bcd4373c4d4f01a5a",
+    "ciRun": 40008893315,
+    "allFiveJobsPassed": true,
+    "vercelPassed": true,
+    "runReadbackTool": "e1cd6b",
+    "prReadbackTool": "6c5047",
+    "notAClaimForCorrectedWorktree": true
+  },
+  "preservedReadiness": {
+    "path": "milestones/M03-n8n-foundation/evidence/dev-acceptance-guard-repair-readiness-20261023.json",
+    "sha256": "51c2b8bc175ec825f7520405e8f0adb8b7a1c43988c7e3ddcfb45d5694280c52",
+    "immutableAfterDelivery": true,
+    "priorActualAcceptanceSealTool": "5d3bb0",
+    "priorActualWrapperTool": "887d9e",
+    "previousWrapperReadyDoesNotProveCorrectedNativeContract": true
+  },
+  "actualUsage": {
+    "management": 127,
+    "control": 351,
+    "combined": 478,
+    "vercelSetupUsed": 44,
+    "vercelSetupMaximum": 88,
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "actorStartsMaximum": 2,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "unchangedManagementPlan": {
+    "current": 127,
+    "newBaselineGets": 25,
+    "remainingVercelMaximum": 44,
+    "runtimeMaximum": 307,
+    "projectedMaximum": 503,
+    "globalMaximum": 512
+  },
+  "preservation": {
+    "frozenTechnical3AttemptSha256": "bdb2c97c4a4a64be2b24dbd4422edec2ebf9da1aa3c021bad9d3b1aea9382642",
+    "frozenReconciliationSha256": "176831e9c435b174e7d19e436c42c40d825b72ca677f7fb0ab1bd3b1f14e610b",
+    "oldClosedFalseUnchanged": true,
+    "appliedDevMigrations": 15,
+    "original14Fingerprints": true,
+    "closedDf4ArchivedC999": true,
+    "seededDataExclusionsLogos": true,
+    "retentionAndZeroActorRequirements": true,
+    "persistentOriginalsRetained": true
+  },
+  "boundaries": {
+    "credentialDecryptionForThisRecord": false,
+    "hostedApplicationCallsForThisRecord": 0,
+    "newAdmission": false,
+    "nativeExecution": false,
+    "actorStart": false,
+    "newOwnerInputRequired": false,
+    "productionChanged": false,
+    "pr8Merged": false,
+    "m04Started": false
+  },
+  "nextStep": "Verify normal corrected-head CI, then continue the remaining M03 dev run. Actual public seal and wrapper CheckOnly pass; native inventory and workflow execution still require actual receipts."
+}

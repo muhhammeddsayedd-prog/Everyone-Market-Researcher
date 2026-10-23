@@ -51,6 +51,7 @@ export function createFoundationLiveMcpBridge(
       now() >= deadlineAt ||
       !exact(args, action === 'start' ? ['workflowId', 'executionMode'] : ['workflowId']) ||
       !owned.has(args.workflowId) ||
+      (action === 'discover' && args.workflowId !== pins['WF-00'].id) ||
       (action === 'start' && args.executionMode !== 'manual')
     )
       throw fail();
@@ -78,7 +79,11 @@ export function createFoundationLiveMcpBridge(
     return response;
   };
   return Object.freeze({
-    port: Object.freeze({ details: (args) => call('details', args), start: (args) => call('start', args) }),
+    port: Object.freeze({
+      discover: (args) => call('discover', args),
+      details: (args) => call('details', args),
+      start: (args) => call('start', args),
+    }),
     accept(message) {
       if (
         closed ||
@@ -100,13 +105,19 @@ export function createFoundationLiveMcpBridge(
       const valid =
         message.action === 'start'
           ? exact(r, ['status', 'executionId']) && r.status === 'started' && executionId(r.executionId)
-          : exact(r, ['id', 'versionId', 'canExecute', 'scopes']) &&
-            r.id === pending.workflowId &&
-            nativeId(r.versionId) &&
-            typeof r.canExecute === 'boolean' &&
-            Array.isArray(r.scopes) &&
-            r.scopes.length <= 64 &&
-            r.scopes.every((v) => typeof v === 'string' && /^[a-zA-Z0-9:_*-]{1,80}$/.test(v));
+          : message.action === 'discover'
+            ? exact(r, ['id', 'name', 'active', 'availableInMCP']) &&
+              r.id === pins['WF-00'].id &&
+              r.name === bindings.workflowRefs['WF-00'].name &&
+              r.active === false &&
+              r.availableInMCP === false
+            : exact(r, ['id', 'versionId', 'canExecute', 'scopes']) &&
+              r.id === pending.workflowId &&
+              nativeId(r.versionId) &&
+              typeof r.canExecute === 'boolean' &&
+              Array.isArray(r.scopes) &&
+              r.scopes.length <= 64 &&
+              r.scopes.every((v) => typeof v === 'string' && /^[a-zA-Z0-9:_*-]{1,80}$/.test(v));
       if (!valid) return false;
       const done = pending;
       pending = null;

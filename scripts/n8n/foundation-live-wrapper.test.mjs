@@ -467,6 +467,13 @@ test(
           approvedHead: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
           sourceCommitSha: 'c'.repeat(40),
         },
+        {
+          kind: 'mcp_port_request',
+          nonce: 'fixtureNonce',
+          action: 'discover',
+          workflowId: 'MzimjpsuyPuK7SKe',
+        },
+        { kind: 'mcp_port_request', nonce: 'fixtureNonce', action: 'discover', workflowId: 'FixtureWFID' },
       ];
       const script = join(directory, 'projection.ps1');
       writeFileSync(
@@ -476,6 +483,7 @@ Set-StrictMode -Version Latest
 $script:closureVerified=$false
 $needles=[Collections.Generic.List[string]]::new();$needles.Add('PrivateKeyAlpha47');$needles.Add('123456')
 $knownWorkflowIds=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal);$null=$knownWorkflowIds.Add('FixtureWFID')
+$null=$knownWorkflowIds.Add('MzimjpsuyPuK7SKe')
 ${source.slice(start, end)}
 $cases=ConvertFrom-Json -InputObject '${JSON.stringify(cases).replaceAll("'", "''")}'
 $out=@();foreach($value in $cases){try{$null=Safe-PublicLine $value;$out+='accepted'}catch{$out+='rejected'}}
@@ -507,6 +515,8 @@ $out|ConvertTo-Json -Compress
         'rejected',
         'accepted',
         'rejected',
+        'rejected',
+        'accepted',
         'rejected',
       ]);
       assert.doesNotMatch(r.stdout, /PrivateKeyAlpha47/);
