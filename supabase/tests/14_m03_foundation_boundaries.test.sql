@@ -1,4 +1,5 @@
--- Validation happens before a window is created or its clock/counters can move.
+-- Invalid unregistered windows are rejected; argument validation is then tested
+-- against a separate owner-registered rollback fixture before counters can move.
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path=public,extensions;
@@ -8,6 +9,20 @@ create function pg_temp.boundary(p_operation text,p_args jsonb)
 returns jsonb language sql as $$
   select ops.foundation_gateway_admit('df4f29ec-e2dc-4d82-a276-62a4e695e6f9','50000000-0000-4000-8000-000000000001',p_operation,p_args,'admit');
 $$;
+set local session authorization n8n_writer;
+select extensions.throws_ok($$select pg_temp.boundary('identity.read','{}')$$,'22023',null,'unregistered window cannot create its own registration');
+reset session authorization;
+-- Only the local owner fixture registers this fixed dev-family row. No actor
+-- approval, live clock, request, credential or provider operation is created.
+do $local_registration$
+begin
+  if session_user not in ('postgres','supabase_admin') or current_user not in ('postgres','supabase_admin') then
+    raise exception using errcode='42501',message='LOCAL_TEST_OWNER_REQUIRED';
+  end if;
+end;
+$local_registration$;
+insert into ops.foundation_gateway_rate_windows(namespace,window_id,project_ref,environment)
+values('m03-foundation-dev','df4f29ec-e2dc-4d82-a276-62a4e695e6f9','zmotjsbzhzjvpelxvxlf','dev');
 set local session authorization n8n_writer;
 select extensions.throws_ok(format('select pg_temp.boundary(%L,%L::jsonb)',operation,args::text),'22023',null,label)
 from (values
@@ -29,7 +44,8 @@ from (values
   ('apify.dataset.read','{"apifyRunId":"Unknown","url":"https://example.test"}'::jsonb,'dataset cannot choose another host or URL')
 ) cases(operation,args,label);
 reset session authorization;
-select extensions.is((select count(*)::int from ops.foundation_gateway_rate_windows),0,'invalid requests create no window or clock');
+select extensions.is((select count(*)::int from ops.foundation_gateway_rate_windows),1,'invalid requests create no window beyond the owner fixture');
+select extensions.ok((select count(*)=1 and bool_and(starts_at is null and expires_at is null and closed_at is null and admitted_count=0 and close_count=0) from ops.foundation_gateway_rate_windows),'invalid requests never start or change the registered fixture clock or counters');
 select extensions.is((select count(*)::int from ops.foundation_gateway_requests),0,'invalid requests create no request reservations');
 select * from extensions.finish();
 rollback;

@@ -1,10 +1,10 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$InspectOnly,[switch]$WriterClose,[switch]$ArchiveFixture,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement,[switch]$ProjectVerifiedContinuation)
+param([switch]$CheckOnly,[switch]$InspectOnly,[switch]$WriterClose,[switch]$ArchiveFixture,[switch]$ForwardMigration,[switch]$ForwardWindow,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement,[switch]$ProjectVerifiedContinuation)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 # Validate the caller's modes before sharing only the reviewed no-push path.
-if(($ArchiveFixture -and ($WriterClose -or $InspectOnly -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or ($WriterClose -and ($InspectOnly -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or ($InspectOnly -and ($PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or @($ClockAmendment,$PostcheckContinuation,$RemainingContinuation,$StartupReplacement,$ProjectVerifiedContinuation|Where-Object{$_}).Count -gt 1 -or
+if(($ForwardWindow -and (-not $PhaseAControl -or -not $ProjectVerifiedContinuation -or $ForwardMigration -or $InspectOnly -or $WriterClose -or $ArchiveFixture -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $RemainingContinuation -or $StartupReplacement)) -or ($ForwardMigration -and ($ArchiveFixture -or $WriterClose -or $InspectOnly -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or ($ArchiveFixture -and ($WriterClose -or $InspectOnly -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or ($WriterClose -and ($InspectOnly -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or ($InspectOnly -and ($PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or @($ClockAmendment,$PostcheckContinuation,$RemainingContinuation,$StartupReplacement,$ProjectVerifiedContinuation|Where-Object{$_}).Count -gt 1 -or
    (($RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation) -and (-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 0))){Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting continuation modes; no private access.';exit 1}
 if($RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation){$PostcheckContinuation=$true}
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
@@ -38,8 +38,11 @@ $requiredFiles+=@('scripts/n8n/foundation-live-project-verified-continuation.mjs
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md')
 $requiredFiles+=@('scripts/db/foundation-inspect.sql','scripts/n8n/windows/Dev-CredentialStore.ps1')
+$forwardSchema=[bool]($ForwardMigration -or $ForwardWindow)
+if($forwardSchema){$requiredFiles+=@('scripts/db/foundation-forward-postcheck.sql','scripts/db/m03-foundation-dev-migration-packet.json')}
 $versions = @('20261017172928','20261017172931','20261017172934','20261017172937','20261017172940','20261017172943','20261017172945','20261018034220','20261018035417','20261018070042','20261018231756','20261018232014','20261018232922','20261018233338')
 $names = @('extensions_schemas_roles','core_tables','auth_rls_views','rpc_pipeline_core','rpc_app_search','storage_cron','seed_taxonomies','rpc_n8n_foundation','price_book_plan','n8n_worker_gateway_admission','m03_actor_launch_admission','m03_foundation_gateway','m03_foundation_safety_receipts','m03_foundation_boundary_hardening')
+if($forwardSchema){$versions+=@('20261023163755');$names+=@('m03_foundation_window_continuation')}
 $queryTimeoutMs = 30000
 $pushTimeoutMs = 180000
 $runId = [Guid]::NewGuid().ToString()
@@ -51,7 +54,7 @@ $consumed = $false
 $sessionLock = $null
 $inspectParentLock=$null;$inspectParentPath=$null;$inspectQueryFile=$null;$inspectMaterialized=$false
 $writerInspectFile=$null;$writerCloseFile=$null;$writerPrior=$null
-$archiveFile=$null;$archivePrior=$null
+$archiveFile=$null;$archivePrior=$null;$forwardPrior=$null;$forwardCheckFile=$null;$forwardFamilyFile=$null
 $leaseExpires = $null
 $phaseAStart = $null
 $originalPhaseAStart = $null
@@ -77,6 +80,9 @@ if($ProjectVerifiedContinuation){$receipt['projectVerifiedContinuation']=$true}
 if($InspectOnly){$receipt.pendingVersions=@();$receipt['inspectOnly']=$true}
 if($WriterClose){$receipt.pendingVersions=@();$receipt['writerClose']=$true;$receipt['administratorLoaded']=$false;$receipt['writerCloseAttempted']=$false;$receipt['writerCloseAcknowledged']=$false;$receipt['writerCloseNativeExit']=$null;$receipt['writerRpcClosed']=$false;$receipt['persistentWriterPreserved']=$true}
 if($ArchiveFixture){$receipt.pendingVersions=@();$receipt['archiveFixture']=$true;$receipt['archiveAttempted']=$false;$receipt['archiveAcknowledged']=$false;$receipt['archiveNativeExit']=$null;$receipt['fixtureArchived']=$false;$receipt['persistentAdminPreserved']=$true}
+
+if($ForwardWindow){$receipt['forwardWindow']=$true;$receipt['activeWindowId']='38b3708d-61b0-41d2-8170-5ed91c66b4dc'}
+if($ForwardMigration){$receipt.pendingVersions=@('20261023163755');$receipt['forwardMigration']=$true;$receipt['persistentAdminPreserved']=$true}
 
 function Assert-Keys($Value, [string[]]$Expected) {
   if ($Value -isnot [PSCustomObject]) { throw 'blocked' }
@@ -347,6 +353,9 @@ function Read-FoundationPostcheckContinuation {
   $remainingMode=[bool](Get-Variable -Name RemainingContinuation -ValueOnly -ErrorAction SilentlyContinue)
   $startupMode=[bool](Get-Variable -Name StartupReplacement -ValueOnly -ErrorAction SilentlyContinue)
   $projectMode=[bool](Get-Variable -Name ProjectVerifiedContinuation -ValueOnly -ErrorAction SilentlyContinue)
+  $forwardMode=[bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)
+  $expectedSource=if($forwardMode){'a5e746736893d5040e93032ae740a0878f748837'}else{'f42930f90c2de43c84f61ad6d966d0ee6074d70e'}
+  $expectedWindow=if($forwardMode){'38b3708d-61b0-41d2-8170-5ed91c66b4dc'}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
   $mode=if($CheckOnly){'CheckOnly'}else{'ReadClaimed'}
   $module=Assert-Path $repo $(if($projectMode){'scripts/n8n/foundation-live-project-verified-continuation.mjs'}elseif($startupMode){'scripts/n8n/foundation-live-startup-replacement.mjs'}elseif($remainingMode){'scripts/n8n/foundation-live-remaining-continuation.mjs'}else{'scripts/n8n/foundation-live-postcheck-continuation.mjs'})
   $answer=Invoke-Bounded $node @($module,$mode) $repo 10000
@@ -356,7 +365,7 @@ function Read-FoundationPostcheckContinuation {
     $approvalKind=if($projectMode){'project_verified_continuation_approval_required'}elseif($startupMode){'startup_replacement_approval_required'}else{'remaining_continuation_approval_required'}
     if($CheckOnly -and ($remainingMode -or $startupMode -or $projectMode) -and $value.kind -ceq $approvalKind){
       Assert-Keys $value @('kind','status','approvalRequired','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
-      if($value.status -cne 'approval_required' -or $value.approvalRequired -isnot [bool] -or $value.approvalRequired -ne $true -or $value.privateRead -isnot [bool] -or $value.privateRead -ne $false -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0 -or $value.segmentId -cne $postcheckContinuationSegment -or $value.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $value.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'){throw 'blocked'}
+      if($value.status -cne 'approval_required' -or $value.approvalRequired -isnot [bool] -or $value.approvalRequired -ne $true -or $value.privateRead -isnot [bool] -or $value.privateRead -ne $false -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0 -or $value.segmentId -cne $postcheckContinuationSegment -or $value.sourceCommitSha -cne $expectedSource -or $value.windowId -cne $expectedWindow){throw 'blocked'}
       if($projectMode){Write-Output 'M03_FOUNDATION APPROVAL_REQUIRED. New project-verified continuation has no owner time authority; no credential metadata, private contents or authentication read.'}elseif($startupMode){Write-Output 'M03_FOUNDATION APPROVAL_REQUIRED. New startup replacement has no owner time authority; no credential metadata, private contents or authentication read.'}else{Write-Output 'M03_FOUNDATION APPROVAL_REQUIRED. New remaining segment has no owner time authority; no credential metadata, private contents or authentication read.'};exit 3
     }
     $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
@@ -364,7 +373,7 @@ function Read-FoundationPostcheckContinuation {
     Assert-Keys $value $keys
     $expected=if($projectMode){if($CheckOnly){'project_verified_continuation_ready'}else{'clock_project_verified_continuation_admitted'}}elseif($startupMode){if($CheckOnly){'startup_replacement_ready'}else{'clock_startup_replacement_admitted'}}elseif($remainingMode){if($CheckOnly){'remaining_continuation_ready'}else{'clock_remaining_continuation_admitted'}}elseif($CheckOnly){'postcheck_continuation_ready'}else{'clock_postcheck_continuation_admitted'}
     if($value.kind -cne $expected -or $value.segmentId -cne $postcheckContinuationSegment -or
-       $value.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $value.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or
+       $value.sourceCommitSha -cne $expectedSource -or $value.windowId -cne $expectedWindow -or
        $value.privateRead -isnot [bool] -or $value.privateRead -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0){throw 'blocked'}
     if($CheckOnly){return $null}
     foreach($field in @('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')){if($value.$field -isnot [long]){throw 'blocked'}}
@@ -477,7 +486,8 @@ function Assert-FoundationProjectVerifiedContinuationProcessAncestry($Clock) {
   if($claim.kind -cne 'm03_project_verified_continuation_runtime_claim' -or $claim.version -ne 1 -or $claim.segmentId -cne $Clock.segmentId -or
      $claim.admissionSha256 -cne (File-Hash $admissionPath) -or $claim.processId -le 0 -or $claim.parentProcessId -le 0 -or
      $claim.claimedAt -isnot [long] -or $claim.claimedAt -lt $Clock.startsAt -or $claim.claimedAt -gt [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -or
-     $admission.kind -cne 'm03_project_verified_continuation_admission' -or $admission.segmentId -cne $Clock.segmentId -or $admission.startsAt -ne $Clock.startsAt -or $admission.parentProcessId -ne $claim.parentProcessId){throw 'blocked'}
+     $admission.kind -cne 'm03_project_verified_continuation_admission' -or $admission.segmentId -cne $Clock.segmentId -or $admission.startsAt -ne $Clock.startsAt -or $admission.parentProcessId -ne $claim.parentProcessId -or
+     ([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and ($admission.sourceCommitSha -cne 'a5e746736893d5040e93032ae740a0878f748837' -or $admission.windowId -cne '38b3708d-61b0-41d2-8170-5ed91c66b4dc'))){throw 'blocked'}
   $parentPath=Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-acceptance-parent.operation.lock'
   $parent=Read-FoundationParentLock $parentPath
   Assert-Keys $parent @('kind','version','segmentId','processId')
@@ -574,10 +584,16 @@ function Invoke-Cli([string[]]$Arguments, [int]$TimeoutMs) {
   if([bool](Get-Variable -Name ArchiveFixture -ValueOnly -ErrorAction SilentlyContinue)){
     if($Arguments.Count -ne 4 -or $Arguments[0] -cne 'db' -or $Arguments[1] -cne 'query' -or $Arguments[2] -cne '--file' -or $Arguments[3] -cnotin @($queryFile,$inspectQueryFile,$archiveFile)){throw 'blocked'}
   }
+  if([bool](Get-Variable -Name ForwardMigration -ValueOnly -ErrorAction SilentlyContinue)){
+    $permitted=$false
+    if($Arguments.Count -eq 4 -and $Arguments[0] -ceq 'db' -and $Arguments[1] -ceq 'query' -and $Arguments[2] -ceq '--file' -and $Arguments[3] -cin @($queryFile,$inspectQueryFile,$forwardCheckFile,$forwardFamilyFile)){$permitted=$true}
+    if(($Arguments -join '|') -cin @('db|push|--dry-run|--skip-vault','db|push|--skip-vault|--yes','db|advisors|--type|security|--level|warn|--fail-on|warn','db|advisors|--type|performance|--level|warn|--fail-on|warn','gen|types|--lang|typescript|--schema|app,api,ops,ingest')){$permitted=$true}
+    if(-not $permitted){throw 'blocked'}
+  }
   # The continuation cannot reach a migration write even if another branch is
   # accidentally changed later. Its scratch workdir contains no migrations.
   if($PostcheckContinuation -and $Arguments[1] -ceq 'push'){throw 'blocked'}
-  if(($RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation) -and ($Arguments[0] -cne 'db' -or $Arguments[1] -cne 'query')){throw 'blocked'}
+  if(($RemainingContinuation -or $StartupReplacement -or ($ProjectVerifiedContinuation -and -not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue))) -and ($Arguments[0] -cne 'db' -or $Arguments[1] -cne 'query')){throw 'blocked'}
   # CLI2.121.0 gives legacy --output json precedence over --output-format and
   # selects a text layer. Query has its own legacy formatter; push does not.
   $outputFlags = @('--output-format','json')
@@ -596,12 +612,12 @@ function History-State($Result) {
     Assert-Keys $snapshot @('current_user','session_user','database','migrations')
     if ($snapshot.current_user -cne 'postgres' -or $snapshot.session_user -cne 'postgres' -or $snapshot.database -cne 'postgres' -or $snapshot.migrations -isnot [Array]) { throw 'blocked' }
     $history = @($snapshot.migrations)
-    if ($history.Count -notin @(10,14)) { throw 'blocked' }
+    if ($history.Count -notin $(if([bool](Get-Variable -Name ForwardMigration -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){@(14,15)}else{@(10,14)})) { throw 'blocked' }
     for ($i=0; $i -lt $history.Count; $i++) {
       Assert-Keys $history[$i] @('version','name','historySha256')
       if ($history[$i].version -cne $migrations[$i].version -or $history[$i].name -cne $migrations[$i].name -or $history[$i].historySha256 -cne $migrations[$i].historySha256) { throw 'blocked' }
     }
-    if ($history.Count -eq 14) { return 'complete' }
+    if ($history.Count -eq $(if([bool](Get-Variable -Name ForwardMigration -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){15}else{14})) { return 'complete' }
     return 'baseline'
   } catch { return 'rejected' }
 }
@@ -620,12 +636,118 @@ function Push-Check($Result,[bool]$DryRun) {
         $value.message -cne 'Finished supabase db push.' -or $value.migrations -isnot [Array] -or $value.seeds -isnot [Array] -or $value.roles -isnot [Array] -or
         $value.seeds.Count -ne 0 -or $value.roles.Count -ne 0) { throw 'blocked' }
   } catch { return 'invalid_shape' }
-  if ($value.migrations.Count -ne 4) { return 'pending_mismatch' }
-  for ($i=0; $i -lt 4; $i++) { if ($value.migrations[$i] -isnot [string] -or $value.migrations[$i] -cne [IO.Path]::GetFileName($packet.pending[$i].file)) { return 'pending_mismatch' } }
+  if ($value.migrations.Count -ne $packet.pending.Count) { return 'pending_mismatch' }
+  for ($i=0; $i -lt $packet.pending.Count; $i++) { if ($value.migrations[$i] -isnot [string] -or $value.migrations[$i] -cne [IO.Path]::GetFileName($packet.pending[$i].file)) { return 'pending_mismatch' } }
   return 'matched'
 }
 function Push-Matches($Result,[bool]$DryRun) {
   return (Push-Check $Result $DryRun) -ceq 'matched'
+}
+
+function Read-FoundationForwardPrior {
+  # ForwardWindow already passed the sealed current ReadClaimed/native ancestry
+  # gate, which verifies the immutable prior closure while allowing its new sibling.
+  if(-not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){$null=Assert-FoundationInspectClosed}
+  $path=Assert-Path $repo 'scripts/db/out/m03-foundation-archive-df4f29ec-e2dc-4d82-a276-62a4e695e6f9-latest.json'
+  if((File-Hash $path) -cne 'c2d67c19b2a449f020b6d944ef1e0f6ec3a1e5bff3e4c4083b36162352596de1'){throw 'blocked'}
+  $prior=Read-Json $path
+  if($prior.runId -cne 'e9a3477a-c07c-4bdb-b394-5dc25462dabf' -or $prior.environment -cne 'dev' -or $prior.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or
+    $prior.status -cne 'archive_verified' -or $prior.authenticationVerified -ne $true -or $prior.historyBefore -cne 'complete' -or $prior.historyAfter -cne 'complete' -or
+    $prior.pushAttempted -ne $false -or $prior.fixtureArchived -ne $true -or $prior.childrenClosed -ne $true -or $prior.scratchDeleted -ne $true -or $prior.persistentAdminPreserved -ne $true -or $prior.inspectParentLockDeleted -ne $true){throw 'blocked'}
+  Assert-FoundationArchiveInspection $prior.archiveAfter $prior.archiveAfter.window $true
+  return $prior.archiveAfter
+}
+function Assert-FoundationForwardIntent($Value) {
+  Assert-Keys $Value @('version','runId','projectRef','purpose','pending','archiveRunId','createdAt')
+  if($Value.version -ne 1 -or $Value.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $Value.purpose -cne 'exact-fifteenth-dev-migration' -or
+    $Value.runId -cnotmatch '^[a-f0-9-]{36}$' -or $Value.archiveRunId -cne 'e9a3477a-c07c-4bdb-b394-5dc25462dabf' -or $Value.pending -isnot [Array] -or $Value.pending.Count -ne 1){throw 'blocked'}
+  Assert-Keys $Value.pending[0] @('version','name','file','sha256','historySha256')
+  foreach($field in @('version','name','file','sha256','historySha256')){if($Value.pending[0].$field -cne $packet.pending[0].$field){throw 'blocked'}}
+}
+function Assert-FoundationForwardBaseline {
+  $read=Invoke-Cli @('db','query','--file',$inspectQueryFile) $queryTimeoutMs
+  try{$value=Read-FoundationInspection $read;Assert-FoundationArchiveInspection $value $forwardPrior.window $true;$receipt['preservedClosedArchive']=$value}finally{$read.text=$null}
+  $read=Invoke-Cli @('db','query','--file',$forwardFamilyFile) $queryTimeoutMs
+  try{
+    if(-not $read.ok -or -not $read.closed){throw 'blocked'}
+    $rows=ConvertFrom-Json -InputObject $read.text -ErrorAction Stop
+    if($rows -isnot [Array] -or $rows.Count -ne 1){throw 'blocked'}
+    Assert-Keys $rows[0] @('forward_baseline');$value=$rows[0].forward_baseline
+    Assert-Keys $value @('identity','soleClosedFamily','globalAdmitted','launches','reservedUsd')
+    if($value.identity -ne $true -or $value.soleClosedFamily -ne $true -or $value.globalAdmitted -ne 2 -or $value.launches -ne 0 -or $value.reservedUsd -ne 0){throw 'blocked'}
+  }finally{$read.text=$null}
+}
+function Invoke-FoundationForwardPostcheck {
+  $receipt['postcheckStage']='catalog'
+  $read=Invoke-Cli @('db','query','--file',$forwardCheckFile) $queryTimeoutMs
+  try{
+    if(-not $read.ok -or -not $read.closed){throw 'blocked'}
+    $rows=ConvertFrom-Json -InputObject $read.text -ErrorAction Stop
+    if($rows -isnot [Array] -or $rows.Count -ne 1){throw 'blocked'}
+    Assert-Keys $rows[0] @('postcheck');$proof=$rows[0].postcheck
+    $checks=@('identity','tables_rls','no_machine_table_grants','rpc_shape','owner_control_restricted','all_project_tables_rls','all_views_invoker','gw01_closed','domain_auto_join_off','baseline_counts','forward_primary_key','forward_signatures','forward_namespace','no_new_window')
+    Assert-Keys $proof ($checks+@('schemas'))
+    foreach($key in $checks){if($proof.$key -isnot [bool] -or -not $proof.$key){throw 'blocked'}}
+    if(($proof.schemas -join '|') -cne 'app|api|ops|ingest'){throw 'blocked'}
+  }finally{$read.text=$null}
+  $advisors=[ordered]@{}
+  foreach($kind in @('security','performance')){
+    $receipt.postcheckStage='advisors_'+$kind
+    $read=Invoke-Cli @('db','advisors','--type',$kind,'--level','warn','--fail-on','warn') 60000
+    try{
+      if(-not $read.ok -or -not $read.closed -or $null -eq $read.text -or $read.text.Contains($password)){throw 'blocked'}
+      $value=ConvertFrom-Json -InputObject $read.text -ErrorAction Stop;Assert-Keys $value @('results','message')
+      if($value.message -cne 'db advisors' -or $value.results -isnot [Array] -or $value.results.Count -ne 0){throw 'blocked'}
+      $advisors[$kind]=[ordered]@{nativeExit=0;warnings=0;errors=0;childrenClosed=$true}
+    }finally{$read.text=$null}
+  }
+  $receipt.postcheckStage='types_generate'
+  $read=Invoke-Cli @('gen','types','--lang','typescript','--schema','app,api,ops,ingest') 60000
+  try{
+    if(-not $read.ok -or -not $read.closed -or $null -eq $read.text -or $read.text.Contains($password) -or $read.text.Length -lt 1000){throw 'blocked'}
+    $candidateRelative='scripts/db/out/m03-foundation-continuation-'+$runId+'-db.types.ts';$candidate=Join-Path $repo $candidateRelative
+    $bytes=[Text.UTF8Encoding]::new($false).GetBytes($read.text);$stream=$null
+    try{$stream=[IO.File]::Open($candidate,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);$stream.Write($bytes,0,$bytes.Length);$stream.Flush($true)}finally{if($null -ne $stream){$stream.Dispose()}}
+    $receipt['postcheckCandidate']=$candidateRelative;$receipt.postcheckStage='types_ast'
+    $checked=Invoke-Bounded $node @((Assert-Path $repo 'scripts/db/check-foundation-types.mjs'),'Continuation',$runId) $repo 15000
+    if(-not $checked.ok -or -not $checked.closed){throw 'blocked'}
+    $coverage=ConvertFrom-Json -InputObject $checked.text -ErrorAction Stop
+    Assert-Keys $coverage @('status','schemas','foundationTables','foundationFunctions','astEquivalent')
+    if($coverage.status -cne 'types_coverage_verified' -or $coverage.schemas -ne 4 -or $coverage.foundationTables -ne 6 -or $coverage.foundationFunctions -ne 9 -or $coverage.astEquivalent -ne $true){throw 'blocked'}
+    $receipt.postcheckStage='complete'
+    return [ordered]@{projectRef=$projectRef;migrationCount=15;catalog=$proof;advisors=$advisors;typesGenerated=$true;typesAstEquivalent=$true;typesCandidate=$candidateRelative;ready=$true}
+  }finally{$read.text=$null}
+}
+function Invoke-FoundationForwardMigration {
+  if($receipt.historyBefore -cnotin @('baseline','complete')){$receipt.status='history_rejected';return}
+  Assert-FoundationForwardBaseline
+  if($receipt.historyBefore -ceq 'complete'){
+    $receipt.historyAfter='complete';$receipt.status='forward_already_complete'
+  }elseif(Test-Path -LiteralPath $attemptFile){
+    # A prior once-only push intent always forces read-only reconciliation.
+    # Fourteen versions do not establish that the old child made no changes.
+    $receipt.status='reconciliation_required';return
+  }else{
+    $dry=Invoke-Cli @('db','push','--dry-run','--skip-vault') 60000
+    $receipt.dryRunNativeExit=$dry.nativeExit;$receipt.dryRunCheck=Push-Check $dry $true;$receipt.dryRunMatched=$receipt.dryRunCheck -ceq 'matched';$dry.text=$null
+    if(-not $receipt.dryRunMatched){$receipt.status='dry_run_rejected';return}
+    # Recheck actual history and immutable closed/archive state immediately
+    # before the one durable intent. No fixture or window operation is run.
+    $read=Invoke-Cli @('db','query','--file',$queryFile) $queryTimeoutMs
+    try{if((History-State $read) -cne 'baseline'){throw 'blocked'}}finally{$read.text=$null}
+    Assert-FoundationForwardBaseline
+    Write-NewJson $attemptFile ([ordered]@{version=1;runId=$runId;projectRef=$projectRef;purpose='exact-fifteenth-dev-migration';pending=$packet.pending;archiveRunId='e9a3477a-c07c-4bdb-b394-5dc25462dabf';createdAt=[DateTime]::UtcNow.ToString('o')})
+    $receipt.pushAttempted=$true;$push=Invoke-Cli @('db','push','--skip-vault','--yes') $pushTimeoutMs
+    $receipt.pushNativeExit=$push.nativeExit;$matched=Push-Matches $push $false;$push.text=$null
+    if(-not $push.closed){$receipt.status='child_cleanup_incomplete';return}
+    $read=Invoke-Cli @('db','query','--file',$queryFile) $queryTimeoutMs
+    try{$receipt.historyAfter=History-State $read}finally{$read.text=$null}
+    if($receipt.historyAfter -cne 'complete'){$receipt.status='reconciliation_required';return}
+    $receipt.status=if($matched){'forward_complete'}else{'forward_reconciled_complete_after_failure'}
+  }
+  Assert-FoundationForwardBaseline
+  $receipt['postcheck']=Invoke-FoundationForwardPostcheck
+  $script:exitCode=0
 }
 
 # All preflight checks are public and precede any DPAPI read/decryption.
@@ -634,11 +756,11 @@ try {
   if($ClockAmendment -and (-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 0)){throw 'blocked'}
   $repoEntry = Get-Item -LiteralPath $repo -Force
   if (($repoEntry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'blocked' }
-  $packet = Read-Json (Assert-Path $repo 'scripts/db/m03-foundation-dev-migration-packet.json')
+  $packet = Read-Json (Assert-Path $repo $(if($forwardSchema){'scripts/db/m03-foundation-forward-dev-migration-packet.json'}else{'scripts/db/m03-foundation-dev-migration-packet.json'}))
   Assert-Keys $packet @('version','target','approved','authorizationReference','cliVersion','baseline','pending','files','node')
   if ($packet.version -ne 1 -or $packet.target -cne $projectRef -or $packet.approved -isnot [bool] -or -not $packet.approved -or
-      $packet.cliVersion -cne '2.121.0' -or $packet.authorizationReference -cne 'Owner approved M03 A-D dev acceptance at f42930f90c2de43c84f61ad6d966d0ee6074d70e on 2026-10-21' -or
-      $packet.baseline -isnot [Array] -or $packet.pending -isnot [Array] -or $packet.baseline.Count -ne 10 -or $packet.pending.Count -ne 4) { throw 'blocked' }
+      $packet.cliVersion -cne '2.121.0' -or $packet.authorizationReference -cne $(if($forwardSchema){'M03 standing development autonomy reset on 2026-10-23; preserve prior attempts and aggregate allowances'}else{'Owner approved M03 A-D dev acceptance at f42930f90c2de43c84f61ad6d966d0ee6074d70e on 2026-10-21'}) -or
+      $packet.baseline -isnot [Array] -or $packet.pending -isnot [Array] -or $packet.baseline.Count -ne $(if($forwardSchema){14}else{10}) -or $packet.pending.Count -ne $(if($forwardSchema){1}else{4})) { throw 'blocked' }
   Assert-Keys $packet.files $requiredFiles
   foreach ($property in $packet.files.PSObject.Properties) {
     if ($property.Value -isnot [string] -or $property.Value -cnotmatch '^[a-f0-9]{64}$' -or (File-Hash (Assert-Path $repo $property.Name)) -cne $property.Value) { throw 'blocked' }
@@ -652,7 +774,15 @@ try {
   $nodeCursor=[IO.Directory]::GetParent($node)
   while($null -ne $nodeCursor){$nodeParent=Get-Item -LiteralPath $nodeCursor.FullName -Force;if(($nodeParent.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'blocked'};$nodeCursor=$nodeCursor.Parent}
   $migrations = @($packet.baseline) + @($packet.pending)
-  for ($i=0; $i -lt 14; $i++) {
+  if($forwardSchema){
+    $originalPacket=Read-Json (Assert-Path $repo 'scripts/db/m03-foundation-dev-migration-packet.json')
+    $originalMigrations=@($originalPacket.baseline)+@($originalPacket.pending)
+    if($originalMigrations.Count -ne 14){throw 'blocked'}
+    for($i=0;$i -lt 14;$i++){
+      foreach($field in @('version','name','file','sha256','historySha256')){if($migrations[$i].$field -cne $originalMigrations[$i].$field){throw 'blocked'}}
+    }
+  }
+  for ($i=0; $i -lt $versions.Count; $i++) {
     $migration = $migrations[$i]
     Assert-Keys $migration @('version','name','file','sha256','historySha256')
     $expectedFile = 'supabase/migrations/' + $versions[$i] + '_' + $names[$i] + '.sql'
@@ -661,7 +791,7 @@ try {
         (File-Hash (Assert-Path $repo $expectedFile)) -cne $migration.sha256) { throw 'blocked' }
   }
   $actualMigrations = @(Get-ChildItem -LiteralPath (Assert-Path $repo 'supabase/migrations' -Directory) -Force)
-  if ($actualMigrations.Count -ne 14) { throw 'blocked' }
+  if ($actualMigrations.Count -ne $versions.Count) { throw 'blocked' }
   foreach ($entry in $actualMigrations) {
     if ($entry.PSIsContainer -or ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or $entry.Name -cnotin @($migrations | ForEach-Object { [IO.Path]::GetFileName($_.file) })) { throw 'blocked' }
   }
@@ -706,6 +836,12 @@ try {
   $out = Assert-Path $repo 'scripts/db/out' -Directory
   $attemptFile = Join-Path $out 'm03-foundation-dev-migration-attempt.json'
   $latestFile = Join-Path $out 'm03-foundation-dev-migration-latest.json'
+  if($ForwardMigration){
+    $forwardPrior=Read-FoundationForwardPrior
+    $attemptFile=Join-Path $out 'm03-foundation-forward-20261023163755-attempt.json'
+    $latestFile=Join-Path $out ('m03-foundation-forward-20261023163755-'+$runId+'-latest.json')
+    if(Test-Path -LiteralPath $attemptFile){Assert-FoundationForwardIntent (Read-Json (Assert-Path $repo 'scripts/db/out/m03-foundation-forward-20261023163755-attempt.json'))}
+  }
   if($InspectOnly){
     $inspectExpectedBinding=Assert-FoundationInspectClosed
     $attemptFile=Join-Path $out ('m03-foundation-inspect-'+$runId+'-attempt.json')
@@ -732,7 +868,7 @@ try {
       Write-Output 'M03_FOUNDATION CONTINUATION_ALREADY_RECORDED. No decryption, migration operation or automatic replay. Preserve and reconcile the separate continuation receipts.';exit 1
     }
   }
-  if (Test-Path -LiteralPath $attemptFile) {
+  if (-not $ForwardMigration -and (Test-Path -LiteralPath $attemptFile)) {
     if ($CheckOnly) {
       $admission = Read-Json (Assert-Path $repo 'scripts/db/out/m03-foundation-dev-migration-attempt.json')
       Assert-Keys $admission @('version','runId','projectRef','pending','createdAt')
@@ -756,29 +892,30 @@ try {
   Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.'
   exit 1
 }
+if($CheckOnly -and $ForwardMigration){Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY. Exact fifteenth dev migration, prior closed/archive proof and public seals checked; no credential metadata, private contents or authentication read.';exit 4}
 if($CheckOnly -and $ProjectVerifiedContinuation){Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY. Project-verified public sources and approval checked; no credential metadata, private contents or authentication read.';exit 4}
 if($CheckOnly -and $InspectOnly){Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY. Exact dev public sources and physical closed-chain prerequisites checked; no credential metadata, private contents or authentication read.';exit 4}
 if($CheckOnly -and $WriterClose){Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY. Fixed writer Close and actual inspection prerequisites checked; no credential metadata, private contents or authentication read.';exit 4}
 if($CheckOnly -and $ArchiveFixture){Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY. Fixed archive and actual independent closed-window inspection checked; no credential metadata, private contents or authentication read.';exit 4}
 try {
   if ([string]::IsNullOrEmpty($env:LOCALAPPDATA)) { throw 'blocked' }
-  if($InspectOnly -or $WriterClose -or $ArchiveFixture){
+  if($InspectOnly -or $WriterClose -or $ArchiveFixture -or $ForwardMigration){
     $null=Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp' -Directory
     $inspectParentPath=Join-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-acceptance-parent.operation.lock'
     $inspectParentLock=[IO.File]::Open($inspectParentPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::ReadWrite,[IO.FileShare]::Read)
-    $lockBytes=[Text.Encoding]::UTF8.GetBytes(([ordered]@{kind=$(if($WriterClose){'m03_writer_close_parent'}elseif($ArchiveFixture){'m03_archive_parent'}else{'m03_read_only_inspect_parent'});version=1;processId=$PID}|ConvertTo-Json -Compress))
+    $lockBytes=[Text.Encoding]::UTF8.GetBytes(([ordered]@{kind=$(if($WriterClose){'m03_writer_close_parent'}elseif($ArchiveFixture){'m03_archive_parent'}elseif($ForwardMigration){'m03_forward_migration_parent'}else{'m03_read_only_inspect_parent'});version=1;processId=$PID}|ConvertTo-Json -Compress))
     $inspectParentLock.Write($lockBytes,0,$lockBytes.Length);$inspectParentLock.Flush($true)
     $inspectExpectedBinding=Assert-FoundationInspectClosed
     . (Assert-Path $repo 'scripts/n8n/windows/Dev-CredentialStore.ps1')
     if($InspectOnly){Ensure-M03DevReadOnlyHandoff -Kind Admin -CoordinatorLock $inspectParentLock;$inspectMaterialized=$true}
   }
-  if($WriterClose -or $ArchiveFixture){
-    if($WriterClose){$writerPrior=Read-FoundationWriterClosePrior}else{$archivePrior=Read-FoundationArchivePrior}
+  if($WriterClose -or $ArchiveFixture -or $ForwardMigration){
+    if($WriterClose){$writerPrior=Read-FoundationWriterClosePrior}elseif($ForwardMigration){$forwardPrior=Read-FoundationForwardPrior}else{$archivePrior=Read-FoundationArchivePrior}
     if($WriterClose){$writerSpec=Get-M03DevCredentialSpec -Kind Writer}else{$writerSpec=Get-M03DevCredentialSpec -Kind Admin}
     Assert-M03DevPrivateAcl (Get-M03DevCredentialRoot) $true
     Assert-M03DevPrivateAcl ([IO.Path]::GetDirectoryName($writerSpec.Source)) $true
     Assert-M03DevPrivateAcl $writerSpec.Source $false
-    $handoff=$writerSpec.Source;$leaseExpires=[DateTime]::UtcNow.AddMinutes(5)
+    $handoff=$writerSpec.Source;$leaseExpires=[DateTime]::UtcNow.AddMinutes($(if($ForwardMigration){10}else{5}))
   }else{
   $handoff = Join-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-foundation-dev-migration-password.dpapi'
   if (-not (Test-Path -LiteralPath $handoff -PathType Leaf)) {
@@ -803,7 +940,7 @@ try {
   }
   }
 } catch {
-  if(($InspectOnly -or $WriterClose -or $ArchiveFixture) -and $null -ne $inspectParentLock){
+  if(($InspectOnly -or $WriterClose -or $ArchiveFixture -or $ForwardMigration) -and $null -ne $inspectParentLock){
     if($inspectMaterialized){foreach($name in @('emr-m03-foundation-dev-migration-password.dpapi','emr-m03-foundation-dev-migration-password.lease.json')){try{[IO.File]::Delete((Join-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) ('Temp/'+$name)))}catch{}}}
     try{$inspectParentLock.Dispose();[IO.File]::Delete($inspectParentPath)}catch{}
   }
@@ -815,7 +952,7 @@ try {
   $lockPath = Join-Path $out 'm03-foundation-dev-migration-session.lock'
   if (Test-Path -LiteralPath $lockPath) { $null = Assert-Path $repo 'scripts/db/out/m03-foundation-dev-migration-session.lock' }
   $sessionLock = [IO.File]::Open($lockPath,[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
-  if (Test-Path -LiteralPath $attemptFile) { throw 'blocked' }
+  if (-not $ForwardMigration -and (Test-Path -LiteralPath $attemptFile)) { throw 'blocked' }
   if ((File-Hash $node) -cne $packet.node.sha256) { throw 'blocked' }
   $tls = Invoke-Bounded $node @((Assert-Path $repo 'scripts/seed/check-tls.mjs')) $repo 15000
   if (-not $tls.closed) { $receipt.childrenClosed = $false }
@@ -845,10 +982,16 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
 '@
   $queryFile = Join-Path $scratch 'history.sql'
   [IO.File]::WriteAllText($queryFile,$historySql)
-  if($InspectOnly -or $ArchiveFixture){
+  if($InspectOnly -or $ArchiveFixture -or $ForwardMigration){
     $inspectQueryFile=Join-Path $scratch 'inspect.sql'
     [IO.File]::Copy((Assert-Path $repo 'scripts/db/foundation-inspect.sql'),$inspectQueryFile,$false)
     if((File-Hash $inspectQueryFile) -cne $packet.files.'scripts/db/foundation-inspect.sql'){throw 'blocked'}
+  }
+  if($forwardSchema){
+    $forwardCheckFile=Join-Path $scratch 'forward-postcheck.sql';$forwardFamilyFile=Join-Path $scratch 'forward-family.sql'
+    [IO.File]::Copy((Assert-Path $repo 'scripts/db/foundation-forward-postcheck.sql'),$forwardCheckFile,$false)
+    if((File-Hash $forwardCheckFile) -cne $packet.files.'scripts/db/foundation-forward-postcheck.sql'){throw 'blocked'}
+    [IO.File]::WriteAllText($forwardFamilyFile,"select jsonb_build_object('identity',current_user='postgres' and session_user='postgres' and current_database()='postgres','soleClosedFamily',(select count(*)=1 and bool_and(window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and closed_at is not null and close_count=1) from ops.foundation_gateway_rate_windows where namespace='m03-foundation-dev'),'globalAdmitted',(select coalesce(sum(admitted_count),0) from ops.foundation_gateway_rate_windows where namespace='m03-foundation-dev'),'launches',(select count(*) from ops.apify_launch_admissions),'reservedUsd',(select coalesce(sum(max_total_charge_usd),0) from ops.apify_launch_admissions)) as forward_baseline;")
   }
   if($ArchiveFixture){$archiveFile=Join-Path $scratch 'archive.sql';[IO.File]::WriteAllText($archiveFile,(Foundation-ArchiveFixtureSql $archivePrior))}
   if($WriterClose){
@@ -860,7 +1003,7 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
 
   # The only private read is the new purpose-bound foundation DPAPI file. No old administrator,
   # writer, provider or production credential is opened or used.
-  if($WriterClose -or $ArchiveFixture){Assert-M03DevPrivateAcl $handoff $false}else{$null = Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-foundation-dev-migration-password.dpapi'}
+  if($WriterClose -or $ArchiveFixture -or $ForwardMigration){Assert-M03DevPrivateAcl $handoff $false}else{$null = Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-foundation-dev-migration-password.dpapi'}
   if($null -ne $originalPhaseAStart -and [DateTime]::UtcNow -ge $originalPhaseAStart.AddMinutes(50)){throw 'blocked'}
   if($null -ne $clockAmendmentStart -and [DateTime]::UtcNow -ge $clockAmendmentStart.AddMinutes(50)){throw 'blocked'}
   if($null -ne $postcheckContinuationStart -and [DateTime]::UtcNow -ge $postcheckContinuationStart.AddMinutes(50)){throw 'blocked'}
@@ -869,7 +1012,7 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
       if($ProjectVerifiedContinuation){$null=Assert-FoundationProjectVerifiedContinuationProcessAncestry $clock}
   $consumed = $true
   $phaseAStart = if($null -ne $originalPhaseAStart){$originalPhaseAStart}elseif($null -ne $clockAmendmentStart){$clockAmendmentStart}elseif($null -ne $postcheckContinuationStart){$postcheckContinuationStart}else{[DateTime]::UtcNow}
-  if($WriterClose -or $ArchiveFixture){$cipherBytes=[IO.File]::ReadAllBytes($handoff);try{Assert-M03DevCipherFraming $cipherBytes;$secret=ConvertTo-SecureString -String ([Text.Encoding]::ASCII.GetString($cipherBytes)) -ErrorAction Stop}finally{[Array]::Clear($cipherBytes,0,$cipherBytes.Length);$cipherBytes=$null}}
+  if($WriterClose -or $ArchiveFixture -or $ForwardMigration){$cipherBytes=[IO.File]::ReadAllBytes($handoff);try{Assert-M03DevCipherFraming $cipherBytes;$secret=ConvertTo-SecureString -String ([Text.Encoding]::ASCII.GetString($cipherBytes)) -ErrorAction Stop}finally{[Array]::Clear($cipherBytes,0,$cipherBytes.Length);$cipherBytes=$null}}
   else{$secret = ConvertTo-SecureString -String ([IO.File]::ReadAllText($handoff).Trim()) -ErrorAction Stop}
   $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
   $password = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
@@ -901,7 +1044,10 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   $receipt.historyBefore = History-State $before
   if ($receipt.historyBefore -in @('baseline','complete')) { $receipt.authenticationAttempted = $true; $receipt.authenticationVerified = $true }
   $before.text = $null
-  if($ArchiveFixture){
+  if($ForwardMigration){
+    Invoke-FoundationForwardMigration
+  }
+  elseif($ArchiveFixture){
     if($receipt.historyBefore -cne 'complete'){$receipt.status='history_rejected'}
     else{
       $read=Invoke-Cli @('db','query','--file',$inspectQueryFile) $queryTimeoutMs
@@ -977,7 +1123,7 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   if ($bstr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
   if ($null -ne $secret) { $secret.Dispose() }
   $password = $null; $secret = $null; $dbUri = $null
-  if (-not $WriterClose -and -not $ArchiveFixture -and ($consumed -or $inspectMaterialized) -and (-not $InspectOnly -or $receipt.childrenClosed)) {
+  if (-not $WriterClose -and -not $ArchiveFixture -and -not $ForwardMigration -and ($consumed -or $inspectMaterialized) -and (-not $InspectOnly -or $receipt.childrenClosed)) {
     try { [IO.File]::Delete($handoff); $receipt.handoffDeleted = -not (Test-Path -LiteralPath $handoff) } catch { $receipt.handoffDeleted = $false }
     try { [IO.File]::Delete($leaseFile); $receipt.leaseDeleted = -not (Test-Path -LiteralPath $leaseFile) } catch { $receipt.leaseDeleted = $false }
   }
@@ -997,15 +1143,15 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   }
   if ($null -ne $sessionLock) { try { $sessionLock.Dispose() } catch { $exitCode = 1 } }
   if($null -ne $inspectParentLock){
-    try{$inspectParentLock.Dispose();if($receipt.childrenClosed -and $receipt.scratchDeleted -and ($WriterClose -or $ArchiveFixture -or ($receipt.handoffDeleted -and $receipt.leaseDeleted))){[IO.File]::Delete($inspectParentPath)}}catch{$exitCode=1}
+    try{$inspectParentLock.Dispose();if($receipt.childrenClosed -and $receipt.scratchDeleted -and ($WriterClose -or $ArchiveFixture -or $ForwardMigration -or ($receipt.handoffDeleted -and $receipt.leaseDeleted))){[IO.File]::Delete($inspectParentPath)}}catch{$exitCode=1}
     $receipt['inspectParentLockDeleted']=-not(Test-Path -LiteralPath $inspectParentPath)
   }
   if($WriterClose){$receipt.persistentWriterPreserved=Test-Path -LiteralPath $handoff}
-  if($ArchiveFixture){$receipt.persistentAdminPreserved=Test-Path -LiteralPath $handoff}
-  if (-not $receipt.childrenClosed -or (-not $WriterClose -and -not $ArchiveFixture -and $consumed -and (-not $receipt.handoffDeleted -or -not $receipt.leaseDeleted)) -or -not $receipt.scratchDeleted) { $exitCode = 1 }
+  if($ArchiveFixture -or $ForwardMigration){$receipt.persistentAdminPreserved=Test-Path -LiteralPath $handoff}
+  if (-not $receipt.childrenClosed -or (-not $WriterClose -and -not $ArchiveFixture -and -not $ForwardMigration -and $consumed -and (-not $receipt.handoffDeleted -or -not $receipt.leaseDeleted)) -or -not $receipt.scratchDeleted) { $exitCode = 1 }
   $receipt.observedAt = [DateTime]::UtcNow.ToString('o')
   try {
-    if($PostcheckContinuation -or $InspectOnly -or $WriterClose -or $ArchiveFixture){Write-NewJson $latestFile $receipt}
+    if($PostcheckContinuation -or $InspectOnly -or $WriterClose -or $ArchiveFixture -or $ForwardMigration){Write-NewJson $latestFile $receipt}
     else{
       if (Test-Path -LiteralPath $latestFile) { $null = Assert-Path $repo 'scripts/db/out/m03-foundation-dev-migration-latest.json' }
       [IO.File]::WriteAllText($latestFile,($receipt | ConvertTo-Json -Depth 8))

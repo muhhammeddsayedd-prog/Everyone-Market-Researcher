@@ -21,6 +21,21 @@ and [M03 progress](../milestones/M03-n8n-foundation/PROGRESS.md). Never replay t
 completed M03 consumer, reset/seed an existing stack to resume, or treat local
 types as proof of hosted deployment.
 
+## 23 October — forward-only dev continuation repair
+
+The original14 migration files and successful hosted history remain unchanged.
+The original foundation SQL window is now independently verified permanently
+closed; C999 is archived/paused. The new CLI-created fifteenth migration permits
+owner-registered continuations in the existing dev family while retaining
+cumulative gateway/actor/spending limits. It creates no window or fixture data.
+The [repair packet](../milestones/M03-n8n-foundation/evidence/forward-continuation-repair-20261023.md)
+records actual isolated replay, local advisors/types, the exclusive existing
+consumer's `-ForwardMigration` commands and recovery procedure. Hosted application
+is tracked separately in current M03 progress; local replay is not hosted proof.
+Use the persistent dev Admin entry automatically through this bounded consumer.
+No new handoff, password reset, old migration replay or time-only approval is
+required. Production remains excluded.
+
 ## 21 October - actual M03 dev migration completion; acceptance still open
 
 The single approved amended acceptance segment was admitted at13:42:15.608 UTC.

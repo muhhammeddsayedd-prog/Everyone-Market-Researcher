@@ -244,7 +244,11 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       Object.keys(header).length !== 4 ||
       header.event !== 'management_header' ||
       header.version !== 1 ||
-      header.sourceCommitSha !== sourceCommitSha ||
+      header.sourceCommitSha !==
+        (verified
+          ? (foundationProjectVerifiedContinuationResumeCheckpoint(verified).headerSourceCommitSha ??
+            sourceCommitSha)
+          : sourceCommitSha) ||
       header.deadlineAt !== headerDeadlineAt ||
       (reuse &&
         rows.length !==
@@ -304,7 +308,14 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
         return Object.freeze({ closed: true, unresolvedTransport: false });
       },
     });
-    managementBudgets.set(budget, { directory, sourceCommitSha, deadlineAt });
+    managementBudgets.set(budget, {
+      directory,
+      sourceCommitSha,
+      deadlineAt,
+      ...(verified
+        ? { runtimeFilename: foundationProjectVerifiedContinuationResumeCheckpoint(verified).runtimeFilename }
+        : {}),
+    });
     return budget;
   } catch {
     releaseLock();
@@ -373,7 +384,7 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
     busy = false,
     failed = false;
   try {
-    const runtimePath = join(directory, 'runtime.jsonl'),
+    const runtimePath = join(directory, scope.runtimeFilename ?? 'runtime.jsonl'),
       controlPath = join(directory, 'control.jsonl');
     for (const path of [runtimePath, ...(dependencies.controlJournal === undefined ? [controlPath] : [])])
       if (!existsSync(path))

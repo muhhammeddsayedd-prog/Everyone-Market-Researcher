@@ -12,7 +12,10 @@ export async function syntheticProjectVerifiedContinuation({
   cleanupFault,
   priorFault,
   projectFault,
-  effectful = false,
+  closedWindow = false,
+  closedFault,
+  proposedBudgetApproved = false,
+  effectful = closedWindow,
   effectFault,
 } = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'emr-project-verified-synthetic-'));
@@ -349,6 +352,143 @@ export async function syntheticProjectVerifiedContinuation({
     put(recoveryConfiguration.receiptRelative, text);
     recoveryConfiguration.receiptSha256 = digest(text);
   }
+  let closedConfiguration;
+  if (closedWindow) {
+    const base =
+      'scripts/n8n/out/foundation/live/project-verified-continuation-' + snapshot.proposedSegmentId;
+    const db = 'scripts/db/out/m03-foundation-project-verified-continuation-' + snapshot.proposedSegmentId;
+    const receiptRelative =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-sole-default-attempt-20261023.json';
+    const cleanupRelative =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-sole-default-cleanup-20261023.json';
+    const readbackRelative =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-sole-default-readback-20261023.json';
+    const receipt = JSON.parse(readFileSync(join(sourceRoot, receiptRelative), 'utf8'));
+    const cleanup = JSON.parse(readFileSync(join(sourceRoot, cleanupRelative), 'utf8'));
+    const readback = JSON.parse(readFileSync(join(sourceRoot, readbackRelative), 'utf8'));
+    const pins = {},
+      json = (v) => JSON.stringify(v) + '\n';
+    const pin = (path, text) => {
+      put(path, text);
+      pins[path] = digest(text);
+    };
+    const start = Date.parse('2026-10-23T15:40:00.000Z');
+    const admission = {
+      kind: 'm03_project_verified_continuation_admission',
+      version: 1,
+      segmentId: snapshot.proposedSegmentId,
+      sourceCommitSha: snapshot.applicationSource,
+      windowId: snapshot.windowId,
+      approvalSha256: digest(approvalText),
+      startsAt: start,
+      deadlineAt: start + 3600000,
+      stopNewAt: start + 3000000,
+      hardDeadlineAt: start + 4200000,
+      parentProcessId: receipt.clock.parentProcessId,
+    };
+    const admissionText = json(admission);
+    receipt.clock.admissionSha256 = digest(admissionText);
+    pin(base + '.technical-2.json', admissionText);
+    pin(
+      base + '.technical-2.runtime-claim.json',
+      json({
+        kind: 'm03_project_verified_continuation_runtime_claim',
+        version: 1,
+        segmentId: snapshot.proposedSegmentId,
+        admissionSha256: digest(admissionText),
+        processId: receipt.clock.runtimeProcessId,
+        parentProcessId: receipt.clock.parentProcessId,
+        claimedAt: start + 1000,
+      }),
+    );
+    pin(base + '.technical-2.closed.json', json(receipt.clock));
+    for (const [name, used] of [
+      ['management', 92],
+      ['control', 300],
+      ['setup', 44],
+    ]) {
+      const path = snapshot.journals[name].path;
+      const original = readFileSync(join(directory, path), 'utf8');
+      const values = original.trimEnd().split('\n').map(JSON.parse);
+      const current = values.filter(
+        (r) =>
+          r.event ===
+          (name === 'management'
+            ? 'management_attempt'
+            : name === 'control'
+              ? 'control_request_intent'
+              : 'setup_attempt'),
+      ).length;
+      for (let i = current + 1; i <= used; i++)
+        values.push(
+          name === 'management'
+            ? { event: 'management_attempt', ordinal: i }
+            : name === 'control'
+              ? {
+                  event: 'control_request_intent',
+                  ordinal: i,
+                  kind: 'discovery',
+                  at: new Date(start).toISOString(),
+                }
+              : { event: 'setup_attempt', ordinal: i, kind: 'GET', at: start + i },
+        );
+      if (name === 'setup')
+        while (values.length < 84)
+          values.push({ event: 'setup_cleanup_absent', kind: 'bypass', at: start + values.length });
+      pin(path, values.map(json).join(''));
+    }
+    const preflightPath = 'scripts/n8n/out/foundation/live/preflight.jsonl';
+    const preflight = readFileSync(join(directory, preflightPath), 'utf8')
+      .trimEnd()
+      .split('\n')
+      .map(JSON.parse);
+    while (preflight.length < 4)
+      preflight.push({ event: 'synthetic_retained_gateway_preflight', at: start + preflight.length });
+    pin(preflightPath, preflight.map(json).join(''));
+    pin(
+      'scripts/n8n/out/foundation/live/runtime.jsonl',
+      Array.from({ length: 50 }, (_, i) =>
+        json({ event: 'synthetic_retained_runtime', ordinal: i + 1 }),
+      ).join(''),
+    );
+    for (const suffix of ['attempt', 'latest', 'owner-provision-attempt', 'reactivation-attempt'])
+      pin(db + '-technical-2-' + suffix + '.json', json({ kind: suffix, synthetic: true, retained: true }));
+    if (closedFault === 'archive') cleanup.subsequentArchive.archiveAfter.fixture.competitorArchived = false;
+    if (closedFault === 'writer') cleanup.writerClose.writerAfter.sessionUser = 'postgres';
+    if (closedFault === 'usage') cleanup.accounting.managementAttempts = 96;
+    if (closedFault === 'historical-closure') receipt.closure.windowClosed = true;
+    if (closedFault === 'readback') readback.workflow.actualGetCalls = 0;
+    for (const key of ['writerClose', 'independentAdminReadback', 'subsequentArchive']) {
+      const raw = structuredClone(cleanup[key]);
+      pin(raw.receiptPath, json(raw));
+      cleanup[key].receiptSha256 = pins[raw.receiptPath];
+    }
+    const receiptText = json(receipt),
+      cleanupText = json(cleanup),
+      readbackText = json(readback);
+    put(receiptRelative, receiptText);
+    put(cleanupRelative, cleanupText);
+    put(readbackRelative, readbackText);
+    closedConfiguration = {
+      receiptRelative,
+      receiptSha256: digest(receiptText),
+      cleanupRelative,
+      cleanupSha256: digest(cleanupText),
+      readbackRelative,
+      readbackSha256: digest(readbackText),
+      mainManagementAttempts: 92,
+      carriedManagementAttempts: 6,
+      mainControlAttempts: 300,
+      carriedControlAttempts: 1,
+      setupRows: 84,
+      setupAttempts: 44,
+      preflightRows: 4,
+      runtimeRows: 50,
+      gatewayPreflightAttempts: 2,
+      legacySqlAdmitted: 2,
+      pins,
+    };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -370,6 +510,12 @@ export async function syntheticProjectVerifiedContinuation({
       /const effectfulRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
       'const effectfulRecovery = Object.freeze(' + JSON.stringify(recoveryConfiguration) + ');',
     );
+  if (closedConfiguration)
+    source = source.replace(
+      /const closedWindowRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      'const closedWindowRecovery = Object.freeze(' + JSON.stringify(closedConfiguration) + ');',
+    );
+  if (proposedBudgetApproved) source = source.replace('setupMaximum: 50,', 'setupMaximum: 88,');
   const modulePath = put('scripts/n8n/foundation-live-project-verified-continuation.mjs', source);
   const module = await import(pathToFileURL(modulePath).href);
   const localAppData = join(directory, 'synthetic-localappdata');
@@ -383,7 +529,13 @@ export async function syntheticProjectVerifiedContinuation({
       processId: process.ppid,
     }) + '\n',
   );
-  let time = Date.parse(effectful ? '2026-10-23T15:00:00.000Z' : '2026-10-22T18:00:00.000Z');
+  let time = Date.parse(
+    closedWindow
+      ? '2026-10-23T18:00:00.000Z'
+      : effectful
+        ? '2026-10-23T15:00:00.000Z'
+        : '2026-10-22T18:00:00.000Z',
+  );
   const now = () => time,
     io = { processAlive: () => false };
   const scoped = (run) => {

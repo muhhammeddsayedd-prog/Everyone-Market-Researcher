@@ -52,6 +52,23 @@ if(r.passed!==true || r.scope!=='ci-owned-no-seed-local-fixture' || r.actorConcu
 }
 console.log('Foundation concurrent SQL: PASS (owned no-seed fixture, eight observed checks)');
 NODE
+# SQL15 enforces the one-item M03 cap globally. Keep all three retained
+# rollback suites in this owned no-seed phase; do not delete seeded baseline
+# rows or weaken the production guard to accommodate test data.
+foundation_suites=(supabase/tests/12_m03_launch_admission.test.sql supabase/tests/13_m03_foundation_gateway.test.sql supabase/tests/14_m03_foundation_boundaries.test.sql)
+for suite in "${foundation_suites[@]}"; do [[ -f "$suite" ]] || { printf 'Foundation pgTAP: FAIL (missing suite).\n' >&2; exit 1; }; done
+run_private 'Foundation pgTAP' env PGPASSWORD=postgres supabase test db \
+  --db-url postgresql://supabase_admin@127.0.0.1:60322/postgres "${foundation_suites[@]}"
+files=0 assertions=0 verdict=''
+while IFS= read -r line || [[ -n "$line" ]]; do
+  line="${line%$'\r'}"
+  if [[ "$line" =~ ^Files=([0-9]+),[[:space:]]*Tests=([0-9]+), ]]; then files="${BASH_REMATCH[1]}"; assertions="${BASH_REMATCH[2]}";
+  elif [[ "$line" == 'Result: PASS' ]]; then verdict=PASS; fi
+done <"$private_log"
+if [[ "$files" != 3 || "$assertions" -lt 173 || "$verdict" != PASS ]]; then
+  printf 'Foundation pgTAP: FAIL (expected three files, at least173 assertions and PASS).\n' >&2; exit 1
+fi
+printf 'Foundation pgTAP: %s files, %s assertions, PASS (local session simulation)\n' "$files" "$assertions"
 run_private 'Local database reset' supabase db reset --local
 printf 'Local database reset: OK\n'
 old_suites=()
@@ -99,20 +116,6 @@ if [[ "$files" != 1 || "$assertions" != 102 || "$verdict" != PASS ]]; then
 fi
 printf 'GW-01 pgTAP: %s files, %s assertions, PASS (local session simulation)\n' "$files" "$assertions"
 
-foundation_suites=(supabase/tests/12_m03_launch_admission.test.sql supabase/tests/13_m03_foundation_gateway.test.sql supabase/tests/14_m03_foundation_boundaries.test.sql)
-for suite in "${foundation_suites[@]}"; do [[ -f "$suite" ]] || { printf 'Foundation pgTAP: FAIL (missing suite).\n' >&2; exit 1; }; done
-run_private 'Foundation pgTAP' env PGPASSWORD=postgres supabase test db \
-  --db-url postgresql://supabase_admin@127.0.0.1:60322/postgres "${foundation_suites[@]}"
-files=0 assertions=0 verdict=''
-while IFS= read -r line || [[ -n "$line" ]]; do
-  line="${line%$'\r'}"
-  if [[ "$line" =~ ^Files=([0-9]+),[[:space:]]*Tests=([0-9]+), ]]; then files="${BASH_REMATCH[1]}"; assertions="${BASH_REMATCH[2]}";
-  elif [[ "$line" == 'Result: PASS' ]]; then verdict=PASS; fi
-done <"$private_log"
-if [[ "$files" != 3 || "$assertions" -lt 173 || "$verdict" != PASS ]]; then
-  printf 'Foundation pgTAP: FAIL (expected three files, at least173 assertions and PASS).\n' >&2; exit 1
-fi
-printf 'Foundation pgTAP: %s files, %s assertions, PASS (local session simulation)\n' "$files" "$assertions"
 run_private 'Foundation SQL/app contract' env EMR_M03_LOCAL_SQL_TEST=true pnpm --filter web exec vitest run server/n8n-worker/foundation-sql.integration.test.ts --reporter=json --outputFile "$private_report"
 node --input-type=module - "$private_report" <<'NODE'
 import {readFileSync} from 'node:fs';

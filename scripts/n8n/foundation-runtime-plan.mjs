@@ -78,24 +78,9 @@ export function createFoundationRuntimeSetupOutput(v) {
 function bodyFor(record) {
   return graphBody({ key: record.key, workflow: { ...record.workflow, active: false } });
 }
-function runtimeBody(graph, setup, errorLink, retentionPolicy) {
-  const body = graphBody(graph);
-  for (const n of body.nodes) {
-    if (n.type === 'n8n-nodes-base.scheduleTrigger') n.disabled = true;
-    if (n.credentials?.httpCustomAuth?.id === machine.id) {
-      if (n.parameters.url !== setup.audience + '/api/internal/n8n/foundation') blocked();
-    }
-  }
-  if (JSON.stringify(body).includes(initialAudience)) blocked();
-  body.settings = applyFoundationApprovedRetentionSettings(retentionPolicy, graph.key, body.settings);
-  body.settings.availableInMCP = false;
-  if (graph.key !== 'WF-90' && errorLink)
-    body.settings.errorWorkflow = foundationRuntimeCheckpoint.workflows['WF-90'].id;
-  else delete body.settings.errorWorkflow;
-  return body;
-}
-export function createFoundationRuntimePlan({ bindings, transport, records, setup }) {
-  setup = createFoundationRuntimeSetupOutput(setup);
+// Source-only baseline for preflight; constructing it grants no runtime plan,
+// deployment, publication or mutation authority.
+export function createFoundationRuntimeBaseline({ bindings, records }) {
   if (
     !object(bindings) ||
     bindings.projectId !== foundationRuntimeCheckpoint.projectId ||
@@ -103,12 +88,7 @@ export function createFoundationRuntimePlan({ bindings, transport, records, setu
     !object(bindings.workflowRefs) ||
     Object.keys(bindings.workflowRefs).length !== 25 ||
     !Array.isArray(records) ||
-    records.length !== 25 ||
-    !object(transport) ||
-    transport.audience !== initialAudience ||
-    transport.windowId !== foundationRuntimeCheckpoint.windowId ||
-    JSON.stringify(transport.credential) !==
-      JSON.stringify({ id: machine.id, name: machine.name, type: machine.type })
+    records.length !== 25
   )
     blocked();
   const byKey = new Map();
@@ -131,24 +111,71 @@ export function createFoundationRuntimePlan({ bindings, transport, records, setu
       blocked();
     byKey.set(record.key, record);
   }
-  const baseline = keys.map((key) => {
-    const record = byKey.get(key);
-    if (!record) blocked();
-    return {
-      key,
-      id: record.id,
-      versionId: record.versionId,
-      body: bodyFor(record),
-      tags: structuredClone(record.workflow.tags),
-    };
-  });
+  return freezeRuntimeValue(
+    keys.map((key) => {
+      const record = byKey.get(key);
+      if (!record) blocked();
+      return {
+        key,
+        id: record.id,
+        versionId: record.versionId,
+        body: bodyFor(record),
+        tags: structuredClone(record.workflow.tags),
+      };
+    }),
+  );
+}
+function runtimeBody(graph, setup, errorLink, retentionPolicy) {
+  const body = graphBody(graph);
+  for (const n of body.nodes) {
+    if (n.type === 'n8n-nodes-base.scheduleTrigger') n.disabled = true;
+    if (n.credentials?.httpCustomAuth?.id === machine.id) {
+      if (n.parameters.url !== setup.audience + '/api/internal/n8n/foundation') blocked();
+    }
+  }
+  if (JSON.stringify(body).includes(initialAudience)) blocked();
+  body.settings = applyFoundationApprovedRetentionSettings(retentionPolicy, graph.key, body.settings);
+  body.settings.availableInMCP = false;
+  if (graph.key !== 'WF-90' && errorLink)
+    body.settings.errorWorkflow = foundationRuntimeCheckpoint.workflows['WF-90'].id;
+  else delete body.settings.errorWorkflow;
+  return body;
+}
+export function createFoundationRuntimePlan({
+  bindings,
+  transport,
+  records,
+  setup,
+  activeWindowId = foundationRuntimeCheckpoint.windowId,
+}) {
+  setup = createFoundationRuntimeSetupOutput(setup);
+  if (
+    !['df4f29ec-e2dc-4d82-a276-62a4e695e6f9', '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].includes(
+      activeWindowId,
+    ) ||
+    !object(bindings) ||
+    bindings.projectId !== foundationRuntimeCheckpoint.projectId ||
+    bindings.runtimeVersion !== '2.43.5' ||
+    !object(bindings.workflowRefs) ||
+    Object.keys(bindings.workflowRefs).length !== 25 ||
+    !Array.isArray(records) ||
+    records.length !== 25 ||
+    !object(transport) ||
+    transport.audience !== initialAudience ||
+    transport.windowId !== foundationRuntimeCheckpoint.windowId ||
+    JSON.stringify(transport.credential) !==
+      JSON.stringify({ id: machine.id, name: machine.name, type: machine.type })
+  )
+    blocked();
+  const baseline = createFoundationRuntimeBaseline({ bindings, records });
+  const byKey = new Map(records.map((record) => [record.key, record]));
   const retentionPolicy = createFoundationApprovedRetentionPolicy({ bindings, records });
   const oldTransport = {
     audience: initialAudience,
     windowId: transport.windowId,
     credential: structuredClone(transport.credential),
   };
-  const newTransport = { ...oldTransport, audience: setup.audience };
+  const newTransport = { ...oldTransport, windowId: activeWindowId, audience: setup.audience };
   for (const graph of buildFoundationGatewayWorkflows(bindings, oldTransport)) {
     const staged = inactiveNativeStagingGraph(graph, foundationRuntimeCheckpoint.workflows['WF-90'].id);
     if (staged.metadata.stagedSourceHash !== byKey.get(graph.key)?.stagedSourceHash) blocked();
@@ -183,7 +210,7 @@ export function createFoundationRuntimePlan({ bindings, transport, records, setu
     kind: 'proposed_finite_runtime_transition',
     hostedActionsPerformed: false,
     retentionPolicy,
-    windowId: foundationRuntimeCheckpoint.windowId,
+    windowId: activeWindowId,
     projectId: foundationRuntimeCheckpoint.projectId,
     setup,
     oldAudience: initialAudience,

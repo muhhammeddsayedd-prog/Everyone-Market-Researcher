@@ -341,8 +341,9 @@ function fixtureAccount(value) {
     bad();
   return value.account_id;
 }
-function firstOriginal(value, fixture) {
+function firstOriginal(value, fixture, windowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9') {
   if (
+    !['df4f29ec-e2dc-4d82-a276-62a4e695e6f9', '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].includes(windowId) ||
     !exact(value, ['source', 'readRequestId', 'launch', 'registered', 'atomicInput', 'costEntry']) ||
     value.source !== 'bounded-original-dataset-read' ||
     !uuid(value.readRequestId)
@@ -363,7 +364,7 @@ function firstOriginal(value, fixture) {
       'account_id',
       'apify_run_id',
     ]) ||
-    l.window_id !== 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' ||
+    l.window_id !== windowId ||
     l.launch_id !== nodeId('M03-ACCEPTANCE', 'WF-99 first launch') ||
     l.ordinal !== 1 ||
     l.actor_id !== 'aYG0l9s7dbB7j3gbS' ||
@@ -524,7 +525,7 @@ export function materializeFoundationAcceptanceCase(bindings, transport, caseId,
   let input = structuredClone(spec.input);
   if (spec.workflowKey === 'WF-99') input.account_id = fixtureAccount(options.fixtureReceipt);
   if (spec.requiresFirstRunEvidence) {
-    const original = firstOriginal(options.firstRunEvidence, options.fixtureReceipt);
+    const original = firstOriginal(options.firstRunEvidence, options.fixtureReceipt, transport?.windowId);
     input = spec.workflowKey === 'SUB-INGEST' ? original.ingest : original.cost;
   }
   const graph = buildFoundationGatewayWorkflows(bindings, transport, release).find(

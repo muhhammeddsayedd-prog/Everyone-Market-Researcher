@@ -5,6 +5,143 @@ import { join, dirname } from 'node:path';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 import { syntheticRemainingContinuation } from './foundation-live-remaining-fixtures.mjs';
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
+import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
+
+test('closed old SQL window reconciliation preserves all usage and blocks fresh admission at the unchanged setup cap', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedWindow: true });
+  try {
+    const snapshots = [
+      f.paths.admission,
+      f.paths.claim,
+      f.paths.management,
+      f.paths.control,
+      f.paths.setup,
+    ].map((path) => readFileSync(path, 'utf8'));
+    const r = f.check();
+    assert.equal(r.status, 'setup_cap_insufficient');
+    assert.equal(r.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc');
+    assert.equal(r.managementAttempts, 98);
+    assert.equal(r.controlAttempts, 301);
+    assert.equal(r.combinedAttempts, 399);
+    assert.equal(r.gatewayPreflightAttempts, 2);
+    assert.equal(r.setupAttempts, 44);
+    assert.equal(r.setupMaximum, 50);
+    assert.equal(r.minimumNewSetupRequests, 32);
+    assert.equal(r.proposedSetupMaximum, 88);
+    assert.equal(r.privateRead, false);
+    assert.equal(
+      f.scoped(() => f.module.reconcileFoundationProjectVerifiedContinuation({ now: f.now }, f.io)).status,
+      'setup_cap_insufficient',
+    );
+    assert.throws(() => f.admit());
+    assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-3.json')), false);
+    for (const [i, path] of [
+      f.paths.admission,
+      f.paths.claim,
+      f.paths.management,
+      f.paths.control,
+      f.paths.setup,
+    ].entries())
+      assert.equal(readFileSync(path, 'utf8'), snapshots[i]);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('closed-window reconciliation rejects false archive, writer identity, usage, historical success and missing independent readback', async () => {
+  for (const closedFault of ['archive', 'writer', 'usage', 'historical-closure', 'readback']) {
+    const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, closedFault });
+    try {
+      assert.throws(() => f.check());
+      assert.throws(() => f.admit());
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('isolated approved-budget fixture claims only fresh window/source and preserves legacy headers/cumulative usage', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true });
+  let budget;
+  try {
+    const legacy = readFileSync(f.paths.management, 'utf8');
+    const p = f.claim(f.admit());
+    assert.equal(p.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc');
+    assert.equal(p.sourceCommitSha, 'a5e746736893d5040e93032ae740a0878f748837');
+    assert.equal(p.carriedManagementAttempts, 6);
+    assert.equal(p.carriedControlAttempts, 1);
+    const resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(p);
+    assert.equal(resume.aggregateManagementAttempts, 98);
+    assert.equal(resume.aggregateControlAttempts, 301);
+    assert.equal(resume.gatewayPreflightAttempts, 2);
+    assert.equal(resume.legacySqlAdmitted, 2);
+    assert.equal(resume.runtimeFilename, 'runtime.technical-3.jsonl');
+    assert.equal(resume.setupMaximum, 88);
+    const m = await f.copy('foundation-live-runtime.mjs');
+    budget = m.createFoundationLiveManagementBudget(
+      { sourceCommitSha: p.sourceCommitSha, deadlineAt: p.deadlineAt },
+      { directory: dirname(f.paths.management), now: f.now, projectVerifiedContinuationProof: p },
+    );
+    assert.equal(budget.snapshot().attempts, 98);
+    budget.admit();
+    assert.equal(budget.snapshot().attempts, 99);
+    assert.equal(readFileSync(f.paths.management, 'utf8').startsWith(legacy), true);
+    assert.equal(
+      JSON.parse(legacy.split('\n')[0]).sourceCommitSha,
+      'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+    );
+    assert.throws(() => f.admit());
+  } finally {
+    budget?.close();
+    f.cleanup();
+  }
+});
+
+test('fresh logical plan uses an immutable runtime sibling while original runtime and global journals remain historical', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true }),
+    live = liveRuntimeFixture();
+  let budget, runtime;
+  try {
+    const p = f.claim(f.admit()),
+      m = await f.copy('foundation-live-runtime.mjs'),
+      control = await f.copy('foundation-control-state.mjs');
+    const oldRuntime = join(f.directory, 'scripts/n8n/out/foundation/live/runtime.jsonl'),
+      before = readFileSync(oldRuntime, 'utf8');
+    budget = m.createFoundationLiveManagementBudget(
+      { sourceCommitSha: p.sourceCommitSha, deadlineAt: p.deadlineAt },
+      { directory: dirname(f.paths.management), now: f.now, projectVerifiedContinuationProof: p },
+    );
+    const journal = control.createFoundationControlJournal({
+      previousEvents: readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+      durableAppend() {},
+    });
+    const controlBudget = control.createFoundationControlBudget({
+      journal,
+      now: f.now,
+      deadlineAt: p.deadlineAt,
+      projectVerifiedContinuationProof: p,
+    });
+    runtime = m.createFoundationLiveRuntime(
+      {
+        ...live.input,
+        activeWindowId: p.windowId,
+        setup: { ...live.input.setup, sourceCommitSha: p.sourceCommitSha },
+        deadlineAt: p.deadlineAt,
+      },
+      { ...live.dependencies, managementBudget: budget, controlJournal: journal, controlBudget, now: f.now },
+    );
+    assert.equal((await runtime.setup()).status, 'runtime_setup_verified');
+    assert.equal(readFileSync(oldRuntime, 'utf8'), before);
+    assert.equal(existsSync(join(dirname(oldRuntime), 'runtime.technical-3.jsonl')), true);
+    assert.equal(controlBudget.snapshot().attempts, 301);
+    assert.equal(budget.snapshot().attempts, 98 + 134);
+  } finally {
+    runtime?.close();
+    budget?.close();
+    live.cleanup();
+    f.cleanup();
+  }
+});
 
 test('project-verified continuation public preapproval is non-authoritative and never creates an admission', async () => {
   const f = await syntheticProjectVerifiedContinuation({ approved: false });

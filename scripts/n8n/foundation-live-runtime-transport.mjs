@@ -4,8 +4,57 @@ import { validateFoundationAddresses } from './foundation-management-transport.m
 import { foundationRuntimeRequestAllowed } from './foundation-runtime-control.mjs';
 import { randomUUID } from 'node:crypto';
 import { nativeWriterClient } from './gw01-writer.mjs';
+import { createFoundationRuntimeBaseline } from './foundation-runtime-plan.mjs';
+import { diagnoseFoundationRuntimeBaseline } from './foundation-runtime-checkpoint.mjs';
 
 const blocked = () => Error('FOUNDATION_LIVE_MANAGEMENT_BLOCKED');
+
+export function createFoundationLiveBaselinePreflight(
+  { bindings, records, apiKey, deadlineAt, admitManagementAttempt },
+  dependencies = {},
+) {
+  const baseline = createFoundationRuntimeBaseline({ bindings, records });
+  if (typeof admitManagementAttempt !== 'function') throw blocked();
+  const paths = new Set(baseline.map((b) => '/api/v1/workflows/' + b.id + '?excludePinnedData=true'));
+  const t = privateJsonTransport(
+    {
+      host: 'muhhammedsayed.app.n8n.cloud',
+      apiKey,
+      sensitiveValues: [],
+      deadlineAt,
+      maxBytes: 524288,
+      api: 'n8n',
+      allowed: (method, path, body) => method === 'GET' && body === null && paths.has(path),
+    },
+    dependencies,
+  );
+  let started = false,
+    diagnostic = null;
+  return Object.freeze({
+    async read() {
+      if (started) throw blocked();
+      started = true;
+      for (const b of baseline) {
+        const admitted = admitManagementAttempt();
+        if (admitted !== undefined) {
+          if (admitted?.then) Promise.resolve(admitted).catch(() => {});
+          throw blocked();
+        }
+        const r = await t.send('GET', '/api/v1/workflows/' + b.id + '?excludePinnedData=true', null);
+        if (r.status !== 200) throw blocked();
+        const checked = diagnoseFoundationRuntimeBaseline(r.body, b, bindings.projectId);
+        if (checked.failedChecks.length) {
+          diagnostic = checked;
+          throw blocked();
+        }
+      }
+      return Object.freeze({ verifiedWorkflows: 25 });
+    },
+    diagnostics: () => diagnostic,
+    state: t.state,
+    close: t.close,
+  });
+}
 
 // Reuse only GW-01's pinned dev Client constructor. Its application_name is
 // informational; neither the old trial consumer nor its SQL window is used.

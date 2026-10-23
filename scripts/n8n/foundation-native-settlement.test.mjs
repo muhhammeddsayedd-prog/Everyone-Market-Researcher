@@ -13,6 +13,35 @@ const epoch = Date.parse('2026-10-19T12:00:00.000Z'),
   iso = (delta = 0) => new Date(epoch + delta).toISOString();
 const fixed = /^Error: FOUNDATION_SETTLEMENT_[A-Z_]+$/;
 
+test('fresh source-known settlement uses only that window and refuses legacy or arbitrary window evidence', async () => {
+  const f = await fixture(),
+    windowId = '38b3708d-61b0-41d2-8170-5ed91c66b4dc';
+  const reader = createFoundationSettlementReader({
+    ...f.ports,
+    windowId,
+    readGateway: async (args) => ({ ...(await f.ports.readGateway(args)), window_id: windowId }),
+  });
+  const proof = await reader.settle({ caseId: 'dispatch.vimeo', receipts: f.receipts, providerRuns: [] });
+  assert.equal(proof.windowId, windowId);
+  assert.equal(
+    f.calls.every((r) => r.params[0] === windowId),
+    true,
+  );
+  const old = await fixture();
+  await assert.rejects(
+    createFoundationSettlementReader({ ...old.ports, windowId }).settle({
+      caseId: 'dispatch.vimeo',
+      receipts: old.receipts,
+      providerRuns: [],
+    }),
+    fixed,
+  );
+  assert.throws(
+    () => createFoundationSettlementReader({ ...f.ports, windowId: '11111111-1111-4111-8111-111111111111' }),
+    fixed,
+  );
+});
+
 test('zero-actor settlement requires actual branded native and completed SQL observations, no caller boolean', async () => {
   const f = await fixture(),
     reader = createFoundationSettlementReader(f.ports);

@@ -9,6 +9,7 @@ import { startFoundationAdminClient } from './foundation-admin-client.mjs';
 import { verifyFoundationTypes } from './check-foundation-types.mjs';
 import { syntheticClockAmendment } from '../n8n/foundation-live-clock-amendment-fixtures.mjs';
 import { syntheticPostcheckContinuation } from '../n8n/foundation-live-postcheck-fixtures.mjs';
+import { syntheticProjectVerifiedContinuation } from '../n8n/foundation-live-project-verified-fixtures.mjs';
 
 const epoch = Date.parse('2026-10-21T10:00:00.000Z');
 function fixture({
@@ -18,6 +19,8 @@ function fixture({
   originalDeadlineAtMs,
   amendmentProof,
   continuationProof,
+  projectProof,
+  forwardWindow = false,
   clockMismatch = false,
 } = {}) {
   const calls = [],
@@ -82,6 +85,11 @@ function fixture({
         assert.equal(args.includes('-ClockAmendment'), false);
         assert.equal(args.includes('-OriginalDeadlineAtMs'), false);
       }
+      if (projectProof) {
+        assert.ok(args.includes('-ProjectVerifiedContinuation'));
+        assert.equal(args.includes('-ForwardWindow'), forwardWindow);
+        assert.equal(args.includes('-PostcheckContinuation'), false);
+      }
       if (originalDeadlineAtMs !== undefined) {
         assert.equal(args[args.indexOf('-OriginalDeadlineAtMs') + 1], String(originalDeadlineAtMs));
       }
@@ -99,22 +107,23 @@ function fixture({
                 historyAfter: 'complete',
                 projectRef: 'zmotjsbzhzjvpelxvxlf',
                 hardDeadline: new Date(
-                  continuationProof || amendmentProof
-                    ? (continuationProof ?? amendmentProof).hardDeadlineAt
+                  projectProof || continuationProof || amendmentProof
+                    ? (projectProof ?? continuationProof ?? amendmentProof).hardDeadlineAt
                     : originalDeadlineAtMs === undefined
                       ? epoch + 4200000
                       : originalDeadlineAtMs + 600000,
                 ).toISOString(),
                 actionDeadline: new Date(
-                  continuationProof || amendmentProof
-                    ? (continuationProof ?? amendmentProof).deadlineAt + (clockMismatch ? 1 : 0)
+                  projectProof || continuationProof || amendmentProof
+                    ? (projectProof ?? continuationProof ?? amendmentProof).deadlineAt +
+                        (clockMismatch ? 1 : 0)
                     : originalDeadlineAtMs === undefined
                       ? epoch + 3600000
                       : originalDeadlineAtMs,
                 ).toISOString(),
                 stopNewAt: new Date(
-                  continuationProof || amendmentProof
-                    ? (continuationProof ?? amendmentProof).stopNewAt
+                  projectProof || continuationProof || amendmentProof
+                    ? (projectProof ?? continuationProof ?? amendmentProof).stopNewAt
                     : originalDeadlineAtMs === undefined
                       ? epoch + 3000000
                       : originalDeadlineAtMs - 600000,
@@ -123,6 +132,13 @@ function fixture({
                 ...(amendmentProof ? { clockSegmentId: amendmentProof.segmentId } : {}),
                 ...(continuationProof
                   ? { clockSegmentId: continuationProof.segmentId, postcheckContinuation: true }
+                  : {}),
+                ...(projectProof
+                  ? {
+                      clockSegmentId: projectProof.segmentId,
+                      postcheckContinuation: true,
+                      projectVerifiedContinuation: true,
+                    }
                   : {}),
               }) + '\n',
         );
@@ -160,6 +176,51 @@ test('same-child client uses fixed protocol without delivering a password to Nod
   assert.equal(done.childClosed, true);
   assert.deepEqual(f.calls.find((c) => c.kind === 'settlement').args.terminalCosts, []);
   assert.equal(client.state().childClosed, true);
+});
+
+test('registered-window Admin option needs the genuine claimed fresh proof and preserves the carried ledger', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true });
+  try {
+    const proof = f.claim(f.admit());
+    assert.equal(proof.carriedManagementAttempts, 6);
+    assert.equal(proof.carriedControlAttempts, 1);
+    const module = await f.copy('foundation-admin-client.mjs');
+    const wire = fixture({ projectProof: proof, forwardWindow: true });
+    const client = await module.startFoundationAdminClient(
+      {
+        repositoryRoot: f.directory,
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        forwardWindow: true,
+      },
+      wire.deps,
+    );
+    assert.equal(client.ready.projectVerifiedContinuation, true);
+    await client.end();
+    for (const options of [
+      { forwardWindow: true },
+      { projectVerifiedContinuationProof: proof, forwardWindow: false },
+      { projectVerifiedContinuationProof: { ...proof }, forwardWindow: true },
+      { projectVerifiedContinuationProof: proof, forwardWindow: 'true' },
+    ]) {
+      let spawned = false;
+      await assert.rejects(
+        module.startFoundationAdminClient(
+          { repositoryRoot: f.directory, now: f.now, ...options },
+          {
+            spawn() {
+              spawned = true;
+              throw Error('SYNTHETIC_MUST_NOT_SPAWN');
+            },
+          },
+        ),
+        /FOUNDATION_ADMIN_BLOCKED/,
+      );
+      assert.equal(spawned, false);
+    }
+  } finally {
+    f.cleanup();
+  }
 });
 function syntheticClaimedAmendment() {
   const f = syntheticClockAmendment({ parentProcessId: 90210 });

@@ -198,7 +198,7 @@ if($script:children -ne 2 -or $denied -ne 5){throw 'WRITER_SCOPE_NOT_ENFORCED'};
     );
     assert.ok(
       value.includes(
-        'if (-not $WriterClose -and -not $ArchiveFixture -and ($consumed -or $inspectMaterialized)',
+        'if (-not $WriterClose -and -not $ArchiveFixture -and -not $ForwardMigration -and ($consumed -or $inspectMaterialized)',
       ),
     );
     assert.ok(value.includes('$writerSpec=Get-M03DevCredentialSpec -Kind Writer'));

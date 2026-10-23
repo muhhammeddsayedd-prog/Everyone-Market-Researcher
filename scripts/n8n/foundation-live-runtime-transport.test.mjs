@@ -115,6 +115,81 @@ function fixture({
 }
 const path = '/api/v1/workflows/' + p.baseline[0].id + '?excludePinnedData=true';
 
+test('readonly baseline preflight uses only25 source-owned GETs and admits each against the existing budget', async () => {
+  let attempts = 0;
+  const dto = (b) => ({
+    ...structuredClone(b.body),
+    id: b.id,
+    versionId: b.versionId,
+    active: false,
+    activeVersionId: null,
+    activeVersion: null,
+    isArchived: false,
+    pinData: {},
+    shared: [{ projectId: p.projectId, role: 'workflow:owner' }],
+    tags: structuredClone(b.tags),
+  });
+  const f = fixture({
+    value: (o) =>
+      dto(p.baseline.find((b) => o.path === '/api/v1/workflows/' + b.id + '?excludePinnedData=true')),
+    create: (d) =>
+      liveTransport.createFoundationLiveBaselinePreflight(
+        {
+          bindings: p.bindings,
+          records: Object.keys(p.bindings.workflowRefs).map((key) =>
+            JSON.parse(readFileSync(new URL('../../n8n/workflows/' + key + '.json', import.meta.url))),
+          ),
+          apiKey: 'SYNTHETIC_PRIVATE_PREFLIGHT',
+          deadlineAt: Date.now() + 60000,
+          admitManagementAttempt() {
+            attempts++;
+          },
+        },
+        d,
+      ),
+  });
+  assert.deepEqual(await f.t.read(), { verifiedWorkflows: 25 });
+  assert.equal(attempts, 25);
+  assert.equal(f.options.length, 25);
+  assert.equal(
+    f.options.every((o) => o.method === 'GET' && o.path.endsWith('?excludePinnedData=true')),
+    true,
+  );
+  assert.equal(f.writes.length, 0);
+  assert.equal(f.t.diagnostics(), null);
+  await assert.rejects(f.t.read());
+  f.t.close();
+});
+
+test('baseline preflight drift stops at the failing owned GET with fixed diagnosis and no writes', async () => {
+  let attempts = 0;
+  const f = fixture({
+    value: { name: 'SYNTHETIC_PRIVATE_BODY' },
+    create: (d) =>
+      liveTransport.createFoundationLiveBaselinePreflight(
+        {
+          bindings: p.bindings,
+          records: Object.keys(p.bindings.workflowRefs).map((key) =>
+            JSON.parse(readFileSync(new URL('../../n8n/workflows/' + key + '.json', import.meta.url))),
+          ),
+          apiKey: 'SYNTHETIC_PRIVATE_PREFLIGHT',
+          deadlineAt: Date.now() + 60000,
+          admitManagementAttempt() {
+            attempts++;
+          },
+        },
+        d,
+      ),
+  });
+  await assert.rejects(f.t.read(), /FOUNDATION_LIVE_MANAGEMENT_BLOCKED/);
+  assert.equal(attempts, 1);
+  assert.equal(f.options.length, 1);
+  assert.equal(f.writes.length, 0);
+  assert.equal(f.t.diagnostics().workflowKey, p.baseline[0].key);
+  assert.equal(JSON.stringify(f.t.diagnostics()).includes('SYNTHETIC_PRIVATE_BODY'), false);
+  f.t.close();
+});
+
 test('runtime management transport pins TLS/public DNS and exposes only complete private JSON', async () => {
   const f = fixture();
   assert.deepEqual(await f.t.send('GET', path), { status: 200, body: { ok: true } });

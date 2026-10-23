@@ -441,6 +441,54 @@ test('fixed minute50 admission stop closes the same persistent child without a n
   }
 });
 
+test('baseline drift is diagnosed before native discovery, Admin start and every Preview/SQL mutation', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'emr-preflight-first-'));
+  let adminStarts = 0,
+    setupStarts = 0;
+  const s = createFoundationLiveAcceptanceSession(privatePacket(), () => {}, {
+    storage: { directory },
+    startAdmin() {
+      adminStarts++;
+      throw Error('UNEXPECTED_ADMIN');
+    },
+    createSetupTransport() {
+      setupStarts++;
+      throw Error('UNEXPECTED_SETUP');
+    },
+    createBaselinePreflight({ admitManagementAttempt }) {
+      return {
+        async read() {
+          admitManagementAttempt();
+          throw Error('SYNTHETIC_PRIVATE_PREFLIGHT');
+        },
+        diagnostics: () => ({
+          version: 1,
+          workflowKey: 'WF-00',
+          failedChecks: ['version_mismatch'],
+          components: { nameEqual: true, nodesEqual: false, connectionsEqual: true, settingsEqual: false },
+        }),
+        state: () => ({ pendingRequests: 0, unclosedResponses: 0 }),
+        close() {},
+      };
+    },
+  });
+  try {
+    const r = await s.command({ kind: 'm03_acceptance_command', id: 'preflight1', command: 'prepare' });
+    assert.equal(r.status, 'blocked');
+    assert.equal(r.managementAttempts, 1);
+    assert.equal(r.controlAttempts, 0);
+    assert.equal(r.nativeExecutions, 0);
+    assert.equal(r.baselineWorkflowKey, 'WF-00');
+    assert.deepEqual(r.baselineFailureCodes, ['version_mismatch']);
+    assert.equal(adminStarts, 0);
+    assert.equal(setupStarts, 0);
+    assert.equal((await s.close()).childTransportsClosed, true);
+  } finally {
+    await s.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 for (const mode of [
   'normal',
   'sql_close_failure',
@@ -670,6 +718,15 @@ for (const mode of [
         storage: { directory: f.directory },
         startAdmin: async () => admin,
         createNativeTransport: () => nativeTransport,
+        createBaselinePreflight: ({ admitManagementAttempt }) => ({
+          async read() {
+            for (let i = 0; i < 25; i++) admitManagementAttempt();
+            return { verifiedWorkflows: 25 };
+          },
+          state: () => ({ pendingRequests: 0, unclosedResponses: 0 }),
+          diagnostics: () => null,
+          close() {},
+        }),
         createWriterCloser: (args) => {
           assert.equal(args.password, packet.writerPassword);
           assert.equal(args.sourceCommitSha, packet.sourceCommitSha);

@@ -67,6 +67,21 @@ select set_config('test.m03_launch_run_1',ops.start_run('WF-99','website_work_pa
 select set_config('test.m03_launch_run_2',ops.start_run('WF-99','website_work_page','manual','dev','launch-2')::text,true);
 select set_config('test.m03_launch_run_3',ops.start_run('WF-99','website_work_page','manual','dev','launch-3')::text,true);
 set local role n8n_writer;
+select extensions.throws_ok($$select ops.authorize_apify_launch(pg_temp.launch_args())$$,'22023',null,'unregistered foundation window cannot authorize an actor');
+reset role;
+-- SQL15 requires an owner-registered fixed dev-family window independently of
+-- actor approval. This rollback-only fixture intentionally leaves approval
+-- absent, so the retained missing-approval assertion still tests that boundary.
+do $local_registration$
+begin
+  if session_user not in ('postgres','supabase_admin') or current_user not in ('postgres','supabase_admin') then
+    raise exception using errcode='42501',message='LOCAL_TEST_OWNER_REQUIRED';
+  end if;
+end;
+$local_registration$;
+insert into ops.foundation_gateway_rate_windows(namespace,window_id,project_ref,environment)
+values('m03-foundation-dev','20000000-0000-4000-8000-000000000011','zmotjsbzhzjvpelxvxlf','dev');
+set local role n8n_writer;
 select extensions.throws_ok($$select * from ops.apify_launch_approvals$$,'42501',null,'writer cannot read approvals directly');
 select extensions.throws_ok($$insert into ops.apify_launch_approvals default values$$,'42501',null,'writer cannot create actor approval');
 select extensions.throws_ok($$select * from ops.apify_launch_admissions$$,'42501',null,'writer cannot read admissions directly');

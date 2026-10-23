@@ -85,7 +85,7 @@ export function parseFoundationTransport(c) {
   if (
     typeof c.audience !== 'string' ||
     !/^https:\/\/everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(c.audience) ||
-    c.windowId !== 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'
+    !['df4f29ec-e2dc-4d82-a276-62a4e695e6f9', '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].includes(c.windowId)
   )
     bad();
   const a = c.credential;

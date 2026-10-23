@@ -129,9 +129,10 @@ function Invoke-PublicCompositionCheck([string]$Node,[string]$Entry,[string]$Rep
  }
  if(-not $done){throw 'blocked'}
 }
-function Invoke-PublicDatabaseCheck([string]$Repository,[bool]$AllowMissing,$OriginalDeadline=$null,[bool]$AmendedClock=$false,[bool]$PostcheckClock=$false,[bool]$RemainingClock=$false,[bool]$StartupClock=$false,[bool]$ProjectClock=$false){
+function Invoke-PublicDatabaseCheck([string]$Repository,[bool]$AllowMissing,$OriginalDeadline=$null,[bool]$AmendedClock=$false,[bool]$PostcheckClock=$false,[bool]$RemainingClock=$false,[bool]$StartupClock=$false,[bool]$ProjectClock=$false,[bool]$ForwardWindow=$false){
  $process=$null;$info=$null;$running=$false;$done=$true
  try{
+  if($ForwardWindow -and (-not $ProjectClock -or $null -ne $OriginalDeadline -or $AmendedClock -or $PostcheckClock -or $RemainingClock -or $StartupClock)){throw 'blocked'}
   $db=Public-File (Join-Path $Repository 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1')
   $info=[Diagnostics.ProcessStartInfo]::new();$info.FileName=(Join-Path $PSHOME 'powershell.exe')
   $info.Arguments='-NoProfile -NonInteractive -File "'+$db+'" -CheckOnly -PhaseAControl';$info.WorkingDirectory=$Repository
@@ -142,6 +143,7 @@ function Invoke-PublicDatabaseCheck([string]$Repository,[bool]$AllowMissing,$Ori
   if($RemainingClock){if($null -ne $OriginalDeadline -or $AmendedClock -or $PostcheckClock){throw 'blocked'};$info.Arguments+=' -RemainingContinuation'}
   if($StartupClock){if($null -ne $OriginalDeadline){throw 'blocked'};$info.Arguments+=' -StartupReplacement'}
   if($ProjectClock){if($null -ne $OriginalDeadline){throw 'blocked'};$info.Arguments+=' -ProjectVerifiedContinuation'}
+  if($ForwardWindow){$info.Arguments+=' -ForwardWindow'}
   $info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.EnvironmentVariables.Clear()
   foreach($name in @('SystemRoot','WINDIR','PATH','USERPROFILE','LOCALAPPDATA','APPDATA','TEMP','TMP')){if(Test-Path ('Env:'+ $name)){$info.EnvironmentVariables[$name]=[Environment]::GetEnvironmentVariable($name)}}
   $process=[Diagnostics.Process]::new();$process.StartInfo=$info;$running=$process.Start();$done=$false
@@ -181,6 +183,17 @@ function Invoke-ZeroSetupPublicCheck([string]$Node,[string]$Repository){
   if($null -ne $info){$info.EnvironmentVariables.Clear()}
  }
 }
+function ConvertTo-ProjectVerifiedReadinessBlock($Value){
+ $keys=@('kind','status','segmentId','sourceCommitSha','windowId','managementAttempts','controlAttempts','combinedAttempts','gatewayPreflightAttempts','setupAttempts','setupMaximum','minimumNewSetupRequests','proposedSetupMaximum','privateRead','networkRequests')
+ foreach($name in @('kind','status','segmentId','sourceCommitSha','windowId')){if($Value.$name -isnot [string]){throw 'blocked'}}
+ if($Value -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($keys|Sort-Object) @($Value.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or
+   $Value.kind -cne 'project_verified_continuation_blocked' -or $Value.status -cne 'setup_cap_insufficient' -or
+   $Value.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or $Value.sourceCommitSha -cne 'a5e746736893d5040e93032ae740a0878f748837' -or $Value.windowId -cne '38b3708d-61b0-41d2-8170-5ed91c66b4dc' -or
+   $Value.privateRead -isnot [bool] -or $Value.privateRead -ne $false){throw 'blocked'}
+ $expected=@{managementAttempts=98;controlAttempts=301;combinedAttempts=399;gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=50;minimumNewSetupRequests=32;proposedSetupMaximum=88;networkRequests=0}
+ foreach($name in $expected.Keys){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long]) -or $Value.$name -ne $expected[$name]){throw 'blocked'}}
+ return $Value
+}
 function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$Mode,[bool]$PostcheckClock=$false,[bool]$RemainingClock=$false,[bool]$StartupClock=$false,[bool]$ProjectClock=$false){
  $process=$null;$info=$null;$running=$false;$done=$true
  try{
@@ -200,6 +213,7 @@ function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$
   $done=$process.WaitForExit(10000)
   if(-not $done -or $process.ExitCode -ne 0 -or -not [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($out,$err)).Wait(5000) -or $err.Result.Length -ne 0){throw 'blocked'}
   $result=ConvertFrom-Json -InputObject $out.Result
+  if($ProjectClock -and $Mode -ceq 'CheckOnly' -and $result.kind -ceq 'project_verified_continuation_blocked'){return ConvertTo-ProjectVerifiedReadinessBlock $result}
   $approvalKind=if($ProjectClock){'project_verified_continuation_approval_required'}elseif($StartupClock){'startup_replacement_approval_required'}else{'remaining_continuation_approval_required'}
   if(($RemainingClock -or $StartupClock -or $ProjectClock) -and $Mode -ceq 'CheckOnly' -and $result.kind -ceq $approvalKind){
    $expectedKeys=@('kind','status','approvalRequired','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
@@ -210,7 +224,9 @@ function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$
   }
   $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
   if($Mode -cne 'CheckOnly'){$keys+=@('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')}
-  if($result -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($keys|Sort-Object) @($result.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $result.segmentId -cne $segmentId -or $result.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $result.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or $result.privateRead -isnot [bool] -or $result.privateRead -ne $false -or $result.networkRequests -ne 0){throw 'blocked'}
+  $legacyBinding=$result.sourceCommitSha -ceq 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -and $result.windowId -ceq 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'
+  $activeBinding=$ProjectClock -and $result.sourceCommitSha -ceq 'a5e746736893d5040e93032ae740a0878f748837' -and $result.windowId -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
+  if($result -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($keys|Sort-Object) @($result.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $result.segmentId -cne $segmentId -or -not ($legacyBinding -or $activeBinding) -or $result.privateRead -isnot [bool] -or $result.privateRead -ne $false -or $result.networkRequests -ne 0){throw 'blocked'}
   if($Mode -ceq 'CheckOnly'){
    if($result.kind -cne $readyKind){throw 'blocked'}
   }else{
@@ -412,7 +428,8 @@ function Safe-PublicLine($Value){
   }
   elseif($v -is [string]){
    if($v -cnotmatch '^[A-Za-z0-9_.:-]{1,128}$'){throw 'blocked'}
-   if($property.Name -cin @('approvedHead','sourceCommitSha') -and $v -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e'){throw 'blocked'}
+   if($property.Name -ceq 'approvedHead' -and $v -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e'){throw 'blocked'}
+   if($property.Name -ceq 'sourceCommitSha' -and $v -cnotin @('f42930f90c2de43c84f61ad6d966d0ee6074d70e','a5e746736893d5040e93032ae740a0878f748837')){throw 'blocked'}
    if($property.Name -ceq 'code' -and $v -cnotmatch '^[A-Z][A-Z0-9_]{1,100}$'){throw 'blocked'}
    if($property.Name -ceq 'status' -and $v -cnotin @('private_child_ready','blocked','dev_runtime_prepared','native_unresolved','cleanup_unresolved','sql_acceptance_unresolved','native_settled_and_cleaned','restoration_verified','restoration_residual','prepared','not_prepared','closed','residual','domain_verified','domain_proof_unresolved','native_domain_denial_and_cleanup_verified')){throw 'blocked'}
   }
@@ -450,6 +467,12 @@ try{
  if($ResumeZeroSetup){$resumeDeadlineAt=Invoke-ZeroSetupPublicCheck $node $repo}
  $remainingAuthorityReady=$true
  if($admittedClockMode){$publicClock=Invoke-ClockAmendmentPublic $node $repo 'CheckOnly' ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation);if($RemainingContinuation -and $publicClock.kind -ceq 'remaining_continuation_approval_required'){$remainingAuthorityReady=$false;if(-not $CheckOnly){throw 'blocked'}}}
+ if($ProjectVerifiedContinuation -and $publicClock.kind -ceq 'project_verified_continuation_blocked'){
+  # The current50 subcap is binding. Stop before Admin checks, native-auth
+  # metadata, runtime copies, DPAPI, transport admission or hosted operations.
+  $publicClock|ConvertTo-Json -Compress|Write-Output
+  if($CheckOnly){exit 0}else{exit 1}
+ }
  if($ProjectVerifiedContinuation -and $publicClock.kind -ceq 'project_verified_continuation_approval_required'){
   if(-not $CheckOnly){throw 'blocked'}
   [ordered]@{status='project_verified_continuation_approval_required';approvalRequired=$true;privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$false;adminHandoffReady=$false;actualMcpPortVerified=$false;windowId=$seal.windowId;segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';managementMaximum=512;controlMaximum=2048}|ConvertTo-Json -Compress
@@ -461,7 +484,8 @@ try{
   [ordered]@{status='startup_replacement_approval_required';approvalRequired=$true;privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$false;adminHandoffReady=$false;actualMcpPortVerified=$false;windowId=$seal.windowId;segmentId='1c69c89e-7807-46d5-b7b8-ca28285ff2b4';managementMaximum=512;controlMaximum=2048}|ConvertTo-Json -Compress
   exit 0
  }
- $adminPublicReady=Invoke-PublicDatabaseCheck $repo ([bool]$CheckOnly) $resumeDeadlineAt ([bool]$ClockAmendment) ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation)
+ $forwardWindowPublic=$ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq 'a5e746736893d5040e93032ae740a0878f748837' -and $publicClock.windowId -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
+ $adminPublicReady=Invoke-PublicDatabaseCheck $repo ([bool]$CheckOnly) $resumeDeadlineAt ([bool]$ClockAmendment) ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation) ([bool]$forwardWindowPublic)
  $bindings=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'n8n/foundation/bindings.dev.json'))))
  foreach($property in $bindings.workflowRefs.PSObject.Properties){$null=$knownWorkflowIds.Add($property.Value.id)}
  if($knownWorkflowIds.Count -ne 25){throw 'blocked'}
@@ -572,7 +596,7 @@ try{
  $bypassCreated=$true
  try{$bytes=[Text.Encoding]::ASCII.GetBytes($cipher);$bypassStream.Write($bytes,0,$bytes.Length);$bypassStream.Flush($true)}finally{$bypassStream.Dispose();[Array]::Clear($bytes,0,$bytes.Length)}
  $cipher=$null
- $packet=[ordered]@{kind='m03_acceptance_private_input';version=1;approvedHead=$seal.approvedHead;approvedPacketSha256=$seal.approvedPacketSha256;sourceCommitSha=$seal.approvedHead;managementKey=$private.Management;writerPassword=$private.Writer;apifyReadToken=$private.ApifyRead;machineToken=$machine;protectionBypass=$bypass;leaseExpiry=$minimumExpiry.ToUnixTimeMilliseconds()}
+ $packet=[ordered]@{kind='m03_acceptance_private_input';version=1;approvedHead=$seal.approvedHead;approvedPacketSha256=$seal.approvedPacketSha256;sourceCommitSha=$(if($ProjectVerifiedContinuation){$amendmentClock.sourceCommitSha}else{$seal.approvedHead});managementKey=$private.Management;writerPassword=$private.Writer;apifyReadToken=$private.ApifyRead;machineToken=$machine;protectionBypass=$bypass;leaseExpiry=$minimumExpiry.ToUnixTimeMilliseconds()}
  $start=[Diagnostics.ProcessStartInfo]::new();$start.FileName=$node
  $sessionMode=if($ProjectVerifiedContinuation){'SessionProjectVerifiedContinuation'}elseif($StartupReplacement){'SessionStartupReplacement'}elseif($RemainingContinuation){'SessionRemainingContinuation'}elseif($PostcheckContinuation){'SessionPostcheckContinuation'}elseif($ClockAmendment){'SessionClockAmendment'}elseif($ResumeZeroSetup){'SessionResumeZeroSetup'}else{'Session'}
  $start.Arguments='"'+$entry+'" '+$sessionMode;$start.WorkingDirectory=$repo

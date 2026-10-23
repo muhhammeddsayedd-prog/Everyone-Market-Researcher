@@ -99,7 +99,7 @@ function Foundation-SmokeAssertSql($Packet) {
   return $body.Replace($needle,$settings)
 }
 function Close-FoundationOwnedWindow($Binding) {
-  $window='df4f29ec-e2dc-4d82-a276-62a4e695e6f9'
+  $window=if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){'38b3708d-61b0-41d2-8170-5ed91c66b4dc'}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
   $audience=Foundation-Literal $Binding.audience;$sha=Foundation-Literal $Binding.commitSha;$deployment=Foundation-Literal $Binding.deploymentId
   $owned=Invoke-FoundationQuery "select jsonb_build_object('owned',bound_audience=$audience and bound_commit_sha=$sha and bound_deployment_id=$deployment) as ownership from ops.foundation_gateway_rate_windows where window_id='$window';" 'ownership'
   if($owned.owned -ne $true){throw 'blocked'}
@@ -116,6 +116,10 @@ function Assert-FoundationContinuationVacant([switch]$RefreshHistory) {
   if($RefreshHistory){
     $history=Invoke-Cli @('db','query','--file',$queryFile) $queryTimeoutMs
     try{if((History-State $history) -cne 'complete'){throw 'blocked'}}finally{$history.text=$null}
+  }
+  if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){
+    Assert-FoundationForwardWindowState ([bool](Get-Variable -Name forwardWindowPrepared -ValueOnly -ErrorAction SilentlyContinue))
+    return
   }
   $vacancySql=@'
 select jsonb_build_object('windowId','df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
@@ -140,6 +144,41 @@ select jsonb_build_object('windowId','df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
   foreach($relative in $priorIntents){
     if(Test-Path -LiteralPath (Join-Path $repo $relative)){throw 'blocked'}
   }
+}
+function Assert-FoundationForwardWindowState([bool]$Prepared) {
+  if(-not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -or -not $ProjectVerifiedContinuation){throw 'blocked'}
+  $null=Read-FoundationForwardPrior
+  $value=Invoke-FoundationQuery @'
+select jsonb_build_object(
+ 'identity',current_user='postgres' and session_user='postgres' and current_database()='postgres',
+ 'legacyClosed',(select count(*)=1 and bool_and(closed_at='2026-10-23T16:25:54.94722+00:00'::timestamptz and close_count=1 and admitted_count=2 and bound_commit_sha='f42930f90c2de43c84f61ad6d966d0ee6074d70e') from ops.foundation_gateway_rate_windows where window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9'),
+ 'windows',(select count(*) from ops.foundation_gateway_rate_windows),
+ 'freshWindows',(select count(*) from ops.foundation_gateway_rate_windows where window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc'),
+ 'freshPrepared',(select count(*)=1 and bool_and(closed_at is null and starts_at is null and expires_at is null and admitted_count=0 and close_count=0 and namespace='m03-foundation-dev' and environment='dev' and project_ref='zmotjsbzhzjvpelxvxlf' and bound_commit_sha='a5e746736893d5040e93032ae740a0878f748837') from ops.foundation_gateway_rate_windows where window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc'),
+ 'globalAdmitted',(select coalesce(sum(admitted_count),0) from ops.foundation_gateway_rate_windows),
+ 'requests',(select count(*) from ops.foundation_gateway_requests),
+ 'activeLeases',(select count(*) from ops.foundation_gateway_leases where request_id is not null),
+ 'launches',(select count(*) from ops.apify_launch_admissions),
+ 'bindings',(select count(*) from ops.foundation_gateway_run_bindings),
+ 'progress',(select count(*) from app.items)+(select count(*) from ops.scrape_runs)+(select count(*) from ops.apify_runs)+(select count(*) from ops.cost_ledger)) as registered_preflight;
+'@ 'registered_preflight'
+  Assert-Keys $value @('identity','legacyClosed','windows','freshWindows','freshPrepared','globalAdmitted','requests','activeLeases','launches','bindings','progress')
+  foreach($key in @('identity','legacyClosed','freshPrepared')){if($value.$key -isnot [bool]){throw 'blocked'}}
+  foreach($key in @('windows','freshWindows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){if(($value.$key -isnot [int] -and $value.$key -isnot [long]) -or $value.$key -lt 0){throw 'blocked'}}
+  if($value.identity -ne $true -or $value.legacyClosed -ne $true -or $value.windows -ne $(if($Prepared){2}else{1}) -or $value.freshWindows -ne $(if($Prepared){1}else{0}) -or
+     $value.globalAdmitted -ne 2 -or $value.requests -ne 1 -or $value.activeLeases -ne 0 -or $value.launches -ne 0 -or $value.bindings -ne 0 -or $value.progress -ne 0 -or ($Prepared -and $value.freshPrepared -ne $true)){throw 'blocked'}
+  # Later settled actor/item progress needs its own engineering reconciliation;
+  # this branch never resets/removes it or blindly repeats a paid start.
+  if($Prepared){
+    $binding=Get-Variable -Name forwardWindowBinding -ValueOnly -ErrorAction SilentlyContinue
+    if($null -eq $binding){throw 'blocked'}
+    $audience=Foundation-Literal $binding.audience;$deployment=Foundation-Literal $binding.deploymentId
+    $owned=Invoke-FoundationQuery "select jsonb_build_object('owned',w.bound_audience=$audience and w.bound_deployment_id=$deployment and (select count(*)=1 from ops.apify_launch_approvals a where a.window_id=w.window_id and a.closed_at is null and a.actor_build='0.3.99' and a.max_total_charge_usd=1 and a.batch_max_usd=2 and a.approval_reference='M03-A-D-f42930f-20261021' and a.expires_at>clock_timestamp()) and (select count(*)=2 and bool_and(l.request_id is null) from ops.foundation_gateway_leases l where l.window_id=w.window_id)) as ownership from ops.foundation_gateway_rate_windows w where w.window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc';" 'ownership'
+    Assert-Keys $owned @('owned');if($owned.owned -ne $true){throw 'blocked'}
+  }
+  $identity=Foundation-ProjectVerifiedTechnicalIdentity
+  $currentIntent=Join-Path $out ($continuationOutputStem+$identity.outputSegment+'-owner-provision-attempt.json')
+  if(-not $Prepared -and (Test-Path -LiteralPath $currentIntent)){throw 'blocked'}
 }
 function Assert-FoundationContinuationFixtureAbsent {
   $value=Invoke-FoundationQuery "select jsonb_build_object('conflictingCompetitors',(select count(*) from app.competitors where company_code='C999' or slug='emr-smoke-test')) as continuation_fixture_absence;" 'continuation_fixture_absence'
@@ -333,6 +372,7 @@ and (select count(*) from ops.audit_log l join ops.audit_log o on o.id::text=l.a
   return $value
 }
 function Invoke-FoundationPostcheck {
+  if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){return Invoke-FoundationForwardPostcheck}
   $startupMode=[bool](Get-Variable -Name StartupReplacement -ValueOnly -ErrorAction SilentlyContinue)
   $projectMode=[bool](Get-Variable -Name ProjectVerifiedContinuation -ValueOnly -ErrorAction SilentlyContinue)
   if($RemainingContinuation -or $startupMode -or $projectMode){return Invoke-FoundationRemainingPostcheck}
@@ -404,15 +444,17 @@ function Read-FoundationCommand([DateTime]$Deadline) {
 function Invoke-FoundationAdminControl {
   $startupMode=[bool](Get-Variable -Name StartupReplacement -ValueOnly -ErrorAction SilentlyContinue)
   $projectMode=[bool](Get-Variable -Name ProjectVerifiedContinuation -ValueOnly -ErrorAction SilentlyContinue)
+  $forwardMode=[bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)
+  $script:forwardWindowPrepared=$false;$script:forwardWindowBinding=$null
   $hardDeadline=$phaseAStart.AddMinutes(70);$actionDeadline=$phaseAStart.AddMinutes(60);$stopNewAt=$phaseAStart.AddMinutes(50)
   $postchecked=$false;$fixtureReady=$false;$provisionAttempted=$false;$provisioned=$false;$closed=$false;$queryCount=0;$provisionPacket=$null;$createdFixture=$null;$unprovisionedArchiveAttempted=$false
   $script:remainingOwnedFixture=$null
   $script:phaseAControlHardDeadline=$hardDeadline
-  $window='df4f29ec-e2dc-4d82-a276-62a4e695e6f9'
+  $window=if($forwardMode){'38b3708d-61b0-41d2-8170-5ed91c66b4dc'}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
   if($PostcheckContinuation){$receipt['unprovisionedFixtureArchived']=$false}
   $readyEnvelope=[ordered]@{type='foundation_admin_ready';runId=$runId;historyAfter='complete';projectRef=$projectRef;hardDeadline=$hardDeadline.ToString('o');actionDeadline=$actionDeadline.ToString('o');stopNewAt=$stopNewAt.ToString('o');postchecksVerified=$false}
   if($ClockAmendment){$readyEnvelope['clockSegmentId']=$clockAmendmentSegment}
-  if($PostcheckContinuation){Assert-FoundationContinuationVacant;if($RemainingContinuation -or $startupMode -or $projectMode){$null=Assert-FoundationRemainingArchivedFixture;$null=Assert-FoundationRemainingPriorPostcheck;if($projectMode){$readyEnvelope['projectVerifiedContinuation']=$true}elseif($startupMode){$readyEnvelope['startupReplacement']=$true}else{$readyEnvelope['remainingContinuation']=$true}}else{Assert-FoundationContinuationFixtureAbsent};$readyEnvelope['clockSegmentId']=$postcheckContinuationSegment;$readyEnvelope['postcheckContinuation']=$true}
+  if($PostcheckContinuation){Assert-FoundationContinuationVacant;if($RemainingContinuation -or $startupMode -or $projectMode){$null=Assert-FoundationRemainingArchivedFixture;if(-not $forwardMode){$null=Assert-FoundationRemainingPriorPostcheck};if($projectMode){$readyEnvelope['projectVerifiedContinuation']=$true}elseif($startupMode){$readyEnvelope['startupReplacement']=$true}else{$readyEnvelope['remainingContinuation']=$true}}else{Assert-FoundationContinuationFixtureAbsent};$readyEnvelope['clockSegmentId']=$postcheckContinuationSegment;$readyEnvelope['postcheckContinuation']=$true}
   Write-Output ($readyEnvelope | ConvertTo-Json -Compress)
   try { while($true){
     # Reserve the final two minutes for Close/physical child cleanup. This
@@ -439,7 +481,7 @@ function Invoke-FoundationAdminControl {
       Assert-Keys $args @();if(-not $postchecked){throw 'blocked'}
       $value=Invoke-FoundationQuery "select jsonb_build_object('projectRef','zmotjsbzhzjvpelxvxlf','priceBook',ops.get_price_book(),'dailyBudgetUsd',ops.get_setting('daily_budget_usd'),'statsDailyEnabled',ops.get_setting('stats_daily_enabled'),'errorCount24h',ops.error_count_24h('WF-19',false),'notificationCooldownClear',not exists(select 1 from ops.audit_log a where a.actor_type='n8n' and a.entity_type='workflow' and a.entity_id='WF-19' and a.action in ('notify_logged','workflow_notify_claimed') and a.created_at>=now()-interval '6 hours'),'observedAt',clock_timestamp()) as preflight;" 'preflight'
     } elseif($kind -ceq 'fixture'){
-      Assert-Keys $args @();if(-not $postchecked -or $fixtureReady){throw 'blocked'}
+      Assert-Keys $args @();if(-not $postchecked -or $fixtureReady -or ($forwardMode -and -not $provisioned)){throw 'blocked'}
       if($PostcheckContinuation -and -not ($RemainingContinuation -or $startupMode -or $projectMode)){Assert-FoundationContinuationVacant -RefreshHistory;Assert-FoundationContinuationFixtureAbsent}
       if([DateTime]::UtcNow -ge $stopNewAt){throw 'blocked'}
       if($projectMode){$value=Reactivate-FoundationProjectVerifiedContinuationFixture}elseif($startupMode){$value=Reactivate-FoundationStartupReplacementFixture}elseif($RemainingContinuation){$value=Reactivate-FoundationRemainingFixture}else{
@@ -451,12 +493,15 @@ function Invoke-FoundationAdminControl {
       $fixtureReady=$true
     } elseif($kind -ceq 'provision'){
       Assert-Keys $args @('audience','commitSha','deploymentId')
-      if(-not $postchecked -or -not $fixtureReady -or $provisionAttempted -or $unprovisionedArchiveAttempted -or $args.audience -isnot [string] -or $args.audience -cnotmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$' -or $args.commitSha -isnot [string] -or $args.commitSha -cnotmatch '^[a-f0-9]{40}$' -or $args.deploymentId -isnot [string] -or $args.deploymentId -cnotmatch '^dpl_[A-Za-z0-9_-]{1,100}$'){throw 'blocked'}
+      if(-not $postchecked -or ((-not $forwardMode -and -not $fixtureReady) -or ($forwardMode -and $fixtureReady)) -or $provisionAttempted -or $unprovisionedArchiveAttempted -or $args.audience -isnot [string] -or $args.audience -cnotmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$' -or $args.commitSha -isnot [string] -or $args.commitSha -cnotmatch '^[a-f0-9]{40}$' -or $args.deploymentId -isnot [string] -or $args.deploymentId -cnotmatch '^dpl_[A-Za-z0-9_-]{1,100}$'){throw 'blocked'}
+      if($forwardMode -and $args.commitSha -cne 'a5e746736893d5040e93032ae740a0878f748837'){throw 'blocked'}
       $packet=[ordered]@{audience=$args.audience;commitSha=$args.commitSha;deploymentId=$args.deploymentId;actorBuild='0.3.99';approvalReference='M03-A-D-f42930f-20261021';maxTotalChargeUsd=1;batchMaxUsd=2}
       if($PostcheckContinuation){
         Assert-FoundationContinuationVacant -RefreshHistory
+        if($forwardMode){$null=Assert-FoundationRemainingArchivedFixture}else{
         if($null -eq $createdFixture){throw 'blocked'}
         $currentFixture=if($projectMode){Read-FoundationProjectVerifiedContinuationReactivatedFixture}elseif($startupMode){Read-FoundationStartupReplacementReactivatedFixture}elseif($RemainingContinuation){Read-FoundationRemainingReactivatedFixture}else{Read-FoundationFixture};Assert-FoundationContinuationFixture $currentFixture $createdFixture
+        }
       }
       if([DateTime]::UtcNow -ge $stopNewAt){throw 'blocked'}
       $intent=Join-Path $out 'm03-foundation-owner-provision-attempt.json'
@@ -466,11 +511,13 @@ function Invoke-FoundationAdminControl {
       $json=Foundation-Json $packet
       # Atomic insert cannot be replayed. Ambiguous native output leaves its durable intent.
       if([DateTime]::UtcNow -ge $stopNewAt){throw 'blocked'}
-      $mutation=Invoke-FoundationMutation ("select ops.foundation_gateway_provision($json);")
+      $provisionSql=if($forwardMode){"select ops.foundation_gateway_provision('$window'::uuid,$json);"}else{"select ops.foundation_gateway_provision($json);"}
+      $mutation=Invoke-FoundationMutation $provisionSql
       if(-not $mutation.childrenClosed){throw 'blocked'}
       $value=Invoke-FoundationQuery ("select jsonb_build_object('windowId',window_id,'boundAudience',bound_audience,'boundCommitSha',bound_commit_sha,'boundDeploymentId',bound_deployment_id,'started',starts_at is not null,'closed',closed_at is not null,'totalAdmitted',admitted_count,'approvalCount',(select count(*) from ops.apify_launch_approvals where window_id=w.window_id)) as provision from ops.foundation_gateway_rate_windows w where window_id='$window';") 'provision'
       if($value.started -ne $false -or $value.closed -ne $false -or $value.totalAdmitted -ne 0 -or $value.approvalCount -ne 1 -or $value.boundAudience -cne $args.audience -or $value.boundCommitSha -cne $args.commitSha -or $value.boundDeploymentId -cne $args.deploymentId){throw 'blocked'}
       $provisioned=$true
+      if($forwardMode){$script:forwardWindowPrepared=$true;$script:forwardWindowBinding=$packet;Assert-FoundationForwardWindowState $true}
     } elseif($kind -ceq 'settlement'){
       Assert-Keys $args @('windowId','requestIds','nativeIds','terminalCosts')
       if(-not $provisioned -or $args.windowId -cne $window -or $args.requestIds -isnot [Array] -or $args.requestIds.Count -gt 256 -or $args.nativeIds -isnot [Array] -or $args.nativeIds.Count -gt 120 -or $args.terminalCosts -isnot [Array] -or $args.terminalCosts.Count -gt 2){throw 'blocked'}
@@ -499,6 +546,7 @@ select jsonb_build_object('launch',jsonb_build_object('window_id',l.window_id,'l
 from ops.apify_launch_admissions l join ops.apify_runs a using(apify_run_id) join lateral(select q.request_id,q.result from ops.foundation_gateway_requests q where q.window_id=l.window_id and q.operation='apify.dataset.read' and q.state='completed' and q.result->'terminal'->>'apifyRunId'=l.apify_run_id order by q.completed_at,q.request_id limit 1) d on true
 where l.window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and l.ordinal=1 and a.processed_at is not null and a.status='SUCCEEDED';
 '@
+      if($forwardMode){$sql=$sql.Replace('df4f29ec-e2dc-4d82-a276-62a4e695e6f9',$window)}
       $value=Invoke-FoundationQuery $sql 'original'
     } elseif($kind -ceq 'verifyAtomicInput'){
       Assert-Keys $args @('atomicInput');if(-not $provisioned){throw 'blocked'}

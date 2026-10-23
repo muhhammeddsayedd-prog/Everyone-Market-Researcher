@@ -4,7 +4,10 @@ import * as runtime from './foundation-live-runtime.mjs';
 import { assertFoundationLiveSetupTransport } from './foundation-live-setup-transport.mjs';
 import { assertFoundationRemainingSetupResume } from './foundation-live-remaining-continuation.mjs';
 import { assertFoundationStartupReplacementSetupResume } from './foundation-live-startup-replacement.mjs';
-import { assertFoundationProjectVerifiedContinuationSetupResume } from './foundation-live-project-verified-continuation.mjs';
+import {
+  assertFoundationProjectVerifiedContinuationSetupResume,
+  foundationProjectVerifiedContinuationResumeCheckpoint,
+} from './foundation-live-project-verified-continuation.mjs';
 
 // Only the approved dev project's seven temporary branch entries and one new
 // sole/default bypass are mutable under the 23 October named M03 exception.
@@ -33,17 +36,23 @@ const freeze = (v) => {
   }
   return v;
 };
-export function foundationLiveSetupRequestPlan(previousAttempts) {
-  if (!Number.isInteger(previousAttempts) || previousAttempts < 0 || previousAttempts > maximum) fail();
+export function foundationLiveSetupRequestPlan(previousAttempts, maximumRequests = maximum) {
+  if (
+    ![50, 88].includes(maximumRequests) ||
+    !Number.isInteger(previousAttempts) ||
+    previousAttempts < 0 ||
+    previousAttempts > maximumRequests
+  )
+    fail();
   // Fourteen fixed preparation requests include the final protected-project
   // readback. All eighteen restoration requests remain reserved separately.
-  const buildPollLimit = Math.max(0, Math.min(12, maximum - previousAttempts - 14 - cleanupReserve));
+  const buildPollLimit = Math.max(0, Math.min(12, maximumRequests - previousAttempts - 14 - cleanupReserve));
   return freeze({
     previousAttempts,
     buildPollLimit,
     maximumNewPrepareRequests: 14 + buildPollLimit,
     cleanupReserve,
-    maximumRequests: maximum,
+    maximumRequests,
   });
 }
 const sync = (fn, value) => {
@@ -92,8 +101,14 @@ const envKeys = Object.freeze([
   'EMR_M03_FOUNDATION_AUDIENCE',
   'EMR_M03_FOUNDATION_COMMIT_SHA',
 ]);
-export function createFoundationLiveSetupJournal({ sourceCommitSha, durableAppend, previousEvents = [] }) {
+export function createFoundationLiveSetupJournal({
+  sourceCommitSha,
+  durableAppend,
+  previousEvents = [],
+  maximumRequests = maximum,
+}) {
   if (
+    ![50, 88].includes(maximumRequests) ||
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
     typeof durableAppend !== 'function' ||
     !Array.isArray(previousEvents) ||
@@ -144,7 +159,7 @@ export function createFoundationLiveSetupJournal({ sourceCommitSha, durableAppen
     if (row.event === 'setup_attempt') {
       if (
         row.ordinal !== ordinal + 1 ||
-        row.ordinal > maximum ||
+        row.ordinal > maximumRequests ||
         !['GET', 'POST', 'PATCH', 'DELETE'].includes(row.kind)
       )
         fail();
@@ -168,7 +183,9 @@ export function createFoundationLiveSetupJournal({ sourceCommitSha, durableAppen
       (row.type !== 'sensitive' ||
         row.gitBranch !== S.branch ||
         !isDeepStrictEqual(row.target, ['preview']) ||
-        row.comment !== 'M03 foundation temporary dev ' + S.windowId ||
+        !['df4f29ec-e2dc-4d82-a276-62a4e695e6f9', '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].some(
+          (id) => row.comment === 'M03 foundation temporary dev ' + id,
+        ) ||
         !Number.isFinite(row.createdAt) ||
         !Number.isFinite(row.updatedAt))
     )
@@ -184,6 +201,7 @@ export function createFoundationLiveSetupJournal({ sourceCommitSha, durableAppen
   for (const row of previousEvents) rows.push(check(row));
   const journal = Object.freeze({
     sourceCommitSha,
+    maximumRequests,
     get rows() {
       return Object.freeze([...rows]);
     },
@@ -208,6 +226,8 @@ export function assertFoundationLiveDeployment(value) {
 }
 export function createFoundationLiveSetup(input, dependencies = {}) {
   const { sourceCommitSha, transport, journal, managementBudget, verifyDevReady } = input;
+  const activeWindowId = input.activeWindowId ?? S.windowId;
+  if (![S.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].includes(activeWindowId)) fail();
   const now = input.now ?? Date.now,
     pause = input.pause;
   if (
@@ -245,7 +265,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
     fail();
   const tokenVerifier = createHash('sha256').update(sensitive.machineToken).digest('hex');
   const denied = [...Object.values(sensitive), tokenVerifier];
-  const comment = 'M03 foundation temporary dev ' + S.windowId;
+  const comment = 'M03 foundation temporary dev ' + activeWindowId;
   const projectPath = '/v9/projects/' + S.projectId + '?teamId=' + S.teamId;
   const envPath = '/v10/projects/' + S.projectId + '/env?decrypt=false&teamId=' + S.teamId;
   const createEnvPath = '/v10/projects/' + S.projectId + '/env?teamId=' + S.teamId;
@@ -284,6 +304,17 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
     if (resumedProofs.has(resumeProof)) fail();
     resumedProofs.add(resumeProof);
   }
+  const resumeCheckpoint =
+    input.projectVerifiedContinuationProof === undefined
+      ? null
+      : foundationProjectVerifiedContinuationResumeCheckpoint(input.projectVerifiedContinuationProof);
+  const requestMaximum = resumeCheckpoint?.setupMaximum ?? maximum;
+  if (
+    journal.maximumRequests !== requestMaximum ||
+    (activeWindowId !== S.windowId &&
+      (!resumeCheckpoint?.closedWindow || resumeCheckpoint.activeWindowId !== activeWindowId))
+  )
+    fail();
   let started = journal.rows.length > 0 && !resumed,
     busy = false,
     closed = false,
@@ -311,7 +342,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
   }
   async function request(method, path, body, cleanup = false) {
     deadline();
-    if (attempts >= maximum || (!cleanup && attempts >= maximum - cleanupReserve)) fail();
+    if (attempts >= requestMaximum || (!cleanup && attempts >= requestMaximum - cleanupReserve)) fail();
     const signal = AbortSignal.timeout(Math.max(1, Math.min(20000, input.deadlineAt - now())));
     const spec = { method, path, signal, ...(body === undefined ? {} : { body }) };
     sync(managementBudget.admit, { host: 'api.vercel.com', method, path });
@@ -479,7 +510,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
       return exclusive(async () => {
         if (started || failed || stopping) fail();
         started = true;
-        buildPollLimit = foundationLiveSetupRequestPlan(attempts).buildPollLimit;
+        buildPollLimit = foundationLiveSetupRequestPlan(attempts, requestMaximum).buildPollLimit;
         if (buildPollLimit < 1) fail();
         const sharedAttempts = managementBudget.snapshot().attempts;
         if (!Number.isInteger(sharedAttempts) || sharedAttempts < 0 || sharedAttempts + 45 + 134 + 142 > 512)
@@ -488,7 +519,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
         if (
           !object(ready) ||
           ready.projectRef !== S.projectRef ||
-          ready.migrationCount !== 14 ||
+          ready.migrationCount !== (activeWindowId === S.windowId ? 14 : 15) ||
           ready.ready !== true
         )
           fail();
@@ -544,7 +575,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
         });
         const values = [
           'true',
-          S.windowId,
+          activeWindowId,
           sensitive.writerPassword,
           sensitive.apifyReadToken,
           tokenVerifier,
@@ -588,7 +619,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
           name: 'everyone-market-researcher',
           project: S.projectId,
           gitSource: { type: 'github', org: S.org, repo: S.repo, ref: S.branch, sha: sourceCommitSha },
-          meta: { emrM03Window: S.windowId },
+          meta: { emrM03Window: activeWindowId },
         });
         if (![200, 201].includes(r.status)) fail();
         let current = deployment(r.data);
@@ -750,7 +781,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
     snapshot() {
       return freeze({
         requestCount: attempts,
-        maximumRequests: maximum,
+        maximumRequests: requestMaximum,
         sharedMaximum: 512,
         deploymentReady: proof !== null,
         unresolved: [...unresolved],

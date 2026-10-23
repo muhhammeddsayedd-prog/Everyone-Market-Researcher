@@ -95,10 +95,18 @@ export async function startFoundationAdminClient(
     remainingContinuationProof,
     startupReplacementProof,
     projectVerifiedContinuationProof,
+    forwardWindow = false,
   } = {},
   deps = {},
 ) {
-  if (typeof repositoryRoot !== 'string' || typeof now !== 'function' || signal?.aborted) throw fixed();
+  if (
+    typeof repositoryRoot !== 'string' ||
+    typeof now !== 'function' ||
+    signal?.aborted ||
+    typeof forwardWindow !== 'boolean' ||
+    (forwardWindow && projectVerifiedContinuationProof === undefined)
+  )
+    throw fixed();
   let amendment;
   let continuation;
   let remaining;
@@ -125,9 +133,13 @@ export async function startFoundationAdminClient(
     }
     if (
       verified.segmentId !== '20275b22-b7fe-4737-a9a4-c50c2feadb74' ||
-      verified.sourceCommitSha !== 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' ||
-      verified.windowId !== 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' ||
-      verified.carriedManagementAttempts !== 4 ||
+      verified.sourceCommitSha !==
+        (forwardWindow
+          ? 'a5e746736893d5040e93032ae740a0878f748837'
+          : 'f42930f90c2de43c84f61ad6d966d0ee6074d70e') ||
+      verified.windowId !==
+        (forwardWindow ? '38b3708d-61b0-41d2-8170-5ed91c66b4dc' : 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9') ||
+      verified.carriedManagementAttempts !== (forwardWindow ? 6 : 4) ||
       verified.carriedControlAttempts !== 1 ||
       now() < verified.startsAt ||
       now() >= verified.stopNewAt
@@ -238,6 +250,7 @@ export async function startFoundationAdminClient(
         ...(remaining === undefined ? [] : ['-RemainingContinuation']),
         ...(startup === undefined ? [] : ['-StartupReplacement']),
         ...(verified === undefined ? [] : ['-ProjectVerifiedContinuation']),
+        ...(forwardWindow ? ['-ForwardWindow'] : []),
         ...(originalDeadlineAtMs === undefined
           ? []
           : ['-OriginalDeadlineAtMs', String(originalDeadlineAtMs)]),

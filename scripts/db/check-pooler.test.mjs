@@ -212,17 +212,22 @@ test('CI runner uses only explicit local targets and exposes only safe summaries
     const explicitTargets = commands.split('\n').filter((line) => line.includes('--db-url'));
     assert.equal(explicitTargets.length, 2);
     assert.match(
-      explicitTargets[0],
+      explicitTargets.find((line) => line.includes('11_worker_gateway.test.sql')),
       /test db --db-url postgresql:\/\/supabase_admin@127\.0\.0\.1:60322\/postgres supabase\/tests\/11_worker_gateway\.test\.sql/,
     );
     assert.match(child.stdout, /GW-01 pgTAP: 1 files, 102 assertions, PASS/);
     assert.match(
-      explicitTargets[1],
+      explicitTargets.find((line) => line.includes('12_m03_launch_admission.test.sql')),
       /12_m03_launch_admission\.test\.sql.*13_m03_foundation_gateway\.test\.sql.*14_m03_foundation_boundaries\.test\.sql/,
     );
     assert.match(child.stdout, /Foundation concurrent SQL: PASS/);
     assert.match(child.stdout, /Foundation pgTAP: 3 files, 173 assertions, PASS/);
     assert.match(child.stdout, /Foundation SQL\/app contract: PASS/);
+    const lines = commands.trim().split('\n');
+    const emptyReset = lines.indexOf('db reset --local --no-seed');
+    const foundation = lines.findIndex((line) => line.includes('12_m03_launch_admission.test.sql'));
+    const seededReset = lines.indexOf('db reset --local');
+    assert.ok(emptyReset >= 0 && foundation > emptyReset && seededReset > foundation);
   }));
 
 test('CI runner refuses non-GitHub environments without starting any service', () =>
@@ -238,10 +243,10 @@ test('CI runner fails closed at each failed phase without leaking captured outpu
       'start',
       'foundation-reset',
       'foundation-concurrency',
+      'foundation-test',
       'reset',
       'test',
       'gw-test',
-      'foundation-test',
       'foundation-app',
       'security',
       'performance',

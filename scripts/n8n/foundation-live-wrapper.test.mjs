@@ -21,6 +21,111 @@ const safeEnvironment = (directory) => ({
   LOCALAPPDATA: directory,
 });
 
+test(
+  'public DB forward profile uses only its reviewed project context and a credential-free native child',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-forward-public-'));
+    try {
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+      const io = source.slice(
+        source.indexOf('function Initialize-BoundedIo'),
+        source.indexOf('function Invoke-PublicCompositionCheck'),
+      );
+      const helper = source.slice(
+        source.indexOf('function Invoke-PublicDatabaseCheck('),
+        source.indexOf('function ', source.indexOf('function Invoke-PublicDatabaseCheck(') + 10),
+      );
+      const childDirectory = join(directory, 'scripts/db/windows');
+      mkdirSync(childDirectory, { recursive: true });
+      writeFileSync(
+        join(childDirectory, 'Invoke-M03FoundationMigrations.ps1'),
+        `param([switch]$CheckOnly,[switch]$PhaseAControl,[switch]$ProjectVerifiedContinuation,[switch]$ForwardWindow)
+if(-not $CheckOnly -or -not $PhaseAControl -or -not $ProjectVerifiedContinuation -or -not $ForwardWindow){exit 1}
+if(Test-Path Env:EMR_SYNTHETIC_SECRET){exit 1}
+Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY.'
+exit 4
+`,
+      );
+      const script = join(directory, 'forward.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+${io}
+${helper}
+function Public-File([string]$Path){return $Path}
+Initialize-BoundedIo
+$ready=Invoke-PublicDatabaseCheck '${directory.replaceAll("'", "''")}' $true $null $false $false $false $false $true $true
+if($ready -ne $false){throw 'WRONG_NATIVE_READY'}
+$blocked=$false
+try{$null=Invoke-PublicDatabaseCheck '${directory.replaceAll("'", "''")}' $true $null $false $false $false $false $false $true}catch{$blocked=$true}
+if(-not $blocked){throw 'LEGACY_FORWARD_ALLOWED'}
+Write-Output 'NATIVE_FORWARD_PUBLIC_PASS'
+`,
+      );
+      const r = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: { ...safeEnvironment(directory), EMR_SYNTHETIC_SECRET: 'SYNTHETIC_ONLY' },
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 15000,
+      });
+      assert.equal(r.status, 0, r.stderr + r.stdout);
+      assert.equal(r.stderr, '');
+      assert.equal(r.stdout.trim(), 'NATIVE_FORWARD_PUBLIC_PASS');
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  'budget readiness projection rejects stale counters and untrusted fields before private initialization',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-budget-readiness-'));
+    try {
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+      const start = source.indexOf('function ConvertTo-ProjectVerifiedReadinessBlock(');
+      const end = source.indexOf('function Invoke-ClockAmendmentPublic(', start);
+      assert.ok(start > 0 && end > start);
+      const helper = source.slice(start, end);
+      const script = join(directory, 'fixed-projection.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop'
+${helper}
+$valid=[ordered]@{kind='project_verified_continuation_blocked';status='setup_cap_insufficient';segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';sourceCommitSha='a5e746736893d5040e93032ae740a0878f748837';windowId='38b3708d-61b0-41d2-8170-5ed91c66b4dc';managementAttempts=98;controlAttempts=301;combinedAttempts=399;gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=50;minimumNewSetupRequests=32;proposedSetupMaximum=88;privateRead=$false;networkRequests=0}
+$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$valid)
+foreach($key in @('sourceCommitSha','windowId','managementAttempts','setupAttempts','setupMaximum','privateRead','networkRequests')){
+ $copy=[ordered]@{};foreach($name in $valid.Keys){$copy[$name]=$valid[$name]};$copy[$key]='SYNTHETIC_PRIVATE_CANARY';$blocked=$false
+ try{$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$copy)}catch{$blocked=$true};if(-not $blocked){throw 'UNTRUSTED_FIELD_ACCEPTED'}
+}
+$copy=[ordered]@{};foreach($name in $valid.Keys){$copy[$name]=$valid[$name]};$copy['raw']='SYNTHETIC_PRIVATE_CANARY';$blocked=$false
+try{$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$copy)}catch{$blocked=$true};if(-not $blocked){throw 'EXTRA_FIELD_ACCEPTED'}
+Write-Output 'FIXED_BUDGET_PROJECTION_PASS'
+`,
+      );
+      const r = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: safeEnvironment(directory),
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 10000,
+      });
+      assert.equal(r.status, 0);
+      assert.equal(r.stderr, '');
+      assert.equal(r.stdout.trim(), 'FIXED_BUDGET_PROJECTION_PASS');
+      const branch = source.indexOf(
+        "if($ProjectVerifiedContinuation -and $publicClock.kind -ceq 'project_verified_continuation_blocked')",
+      );
+      assert.ok(branch > 0 && branch < source.indexOf(' $adminPublicReady=Invoke-PublicDatabaseCheck'));
+      assert.ok(branch < source.indexOf(' Confirm-ProjectVerifiedVercelMetadata $node $repo'));
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
 const writerPackages = {
   pg: [
     '8.23.1',
@@ -45,6 +150,37 @@ const writerPackages = {
   xtend: ['4.0.2', 'xtend@4.0.2', []],
   split2: ['4.2.0', 'split2@4.2.0', []],
 };
+
+test(
+  'the public closure seals the actual forward packet, postcheck and sole new migration',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-forward-closure-'));
+    try {
+      const script = join(directory, 'closure.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop'
+. '${resolve('scripts/n8n/windows/Acceptance-PublicRuntime.ps1').replaceAll("'", "''")}'
+$paths=@(Get-M03AcceptancePublicFiles '${resolve('.').replaceAll("'", "''")}')
+foreach($required in @('scripts/db/m03-foundation-forward-dev-migration-packet.json','scripts/db/foundation-forward-postcheck.sql','supabase/migrations/20261023163755_m03_foundation_window_continuation.sql')){if($paths -cnotcontains $required){throw 'FORWARD_SOURCE_NOT_SEALED'}}
+Write-Output 'FORWARD_CLOSURE_PASS'
+`,
+      );
+      const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: safeEnvironment(directory),
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 20000,
+      });
+      assert.equal(result.status, 0, result.stderr + result.stdout);
+      assert.equal(result.stderr, '');
+      assert.equal(result.stdout.trim(), 'FORWARD_CLOSURE_PASS');
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
 function writerClosureFixture(directory) {
   const root = join(directory, 'fixture');
   const physical = (name) => join(root, 'node_modules/.pnpm', writerPackages[name][1], 'node_modules', name);
@@ -311,6 +447,24 @@ test(
         { kind: 'm03_acceptance_result', status: 'blocked', baselineFailureCodes: ['PrivateKeyAlpha47'] },
         { kind: 'm03_acceptance_result', status: 'blocked', baselineWorkflowKey: 'Foreign' },
         { kind: 'm03_acceptance_result', status: 'blocked', baselineNameEqual: 'true' },
+        {
+          kind: 'm03_acceptance_result',
+          status: 'prepared',
+          approvedHead: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+          sourceCommitSha: 'a5e746736893d5040e93032ae740a0878f748837',
+        },
+        {
+          kind: 'm03_acceptance_result',
+          status: 'prepared',
+          approvedHead: 'a5e746736893d5040e93032ae740a0878f748837',
+          sourceCommitSha: 'a5e746736893d5040e93032ae740a0878f748837',
+        },
+        {
+          kind: 'm03_acceptance_result',
+          status: 'prepared',
+          approvedHead: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+          sourceCommitSha: 'c'.repeat(40),
+        },
       ];
       const script = join(directory, 'projection.ps1');
       writeFileSync(
@@ -347,6 +501,9 @@ $out|ConvertTo-Json -Compress
         'accepted',
         'accepted',
         'rejected',
+        'rejected',
+        'rejected',
+        'accepted',
         'rejected',
         'rejected',
       ]);

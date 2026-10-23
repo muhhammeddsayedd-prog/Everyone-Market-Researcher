@@ -34,6 +34,47 @@ test('setup request plan carries all prior attempts and preserves eighteen clean
     if (polls) assert.ok(used + p.maximumNewPrepareRequests + p.cleanupReserve <= 50);
   }
   for (const invalid of [-1, 51, 1.5, '9']) assert.throws(() => foundationLiveSetupRequestPlan(invalid));
+  assert.equal(foundationLiveSetupRequestPlan(44).buildPollLimit, 0);
+  const proposed = foundationLiveSetupRequestPlan(44, 88);
+  assert.equal(proposed.buildPollLimit, 12);
+  assert.equal(44 + proposed.maximumNewPrepareRequests + proposed.cleanupReserve, 88);
+});
+
+test('isolated approved cumulative88 fixture uses fresh window in exactly seven Preview entries and preserves44 spent requests', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true });
+  try {
+    const proof = f.claim(f.admit()),
+      setupModule = await f.copy('foundation-live-setup.mjs');
+    const current = fixture({
+      setupModule,
+      sourceSha: proof.sourceCommitSha,
+      startsAt: proof.startsAt,
+      projectVerifiedContinuationProof: proof,
+      previousEvents: readFileSync(f.paths.setup, 'utf8').trimEnd().split('\n').map(JSON.parse),
+      activeWindowId: proof.windowId,
+      maximumRequests: 88,
+      expectedMigrationCount: 15,
+    });
+    assert.equal(current.setup.snapshot().requestCount, 44);
+    await current.setup.prepare();
+    const entries = current.calls.filter((c) => c.method === 'POST' && c.path.includes('/env?'));
+    assert.equal(entries.length, 7);
+    assert.equal(
+      entries.find((c) => c.body.key === 'EMR_M03_FOUNDATION_WINDOW_ID').body.value,
+      proof.windowId,
+    );
+    assert.equal(
+      entries.every((c) => c.body.comment.endsWith(proof.windowId)),
+      true,
+    );
+    await current.setup.cleanup();
+    assert.equal(current.setup.snapshot().requestCount, 44 + current.calls.length);
+    assert.ok(current.setup.snapshot().requestCount <= 88);
+    assert.deepEqual(current.bypass, {});
+    assert.throws(() => fixture({ maximumRequests: 88 }));
+  } finally {
+    f.cleanup();
+  }
 });
 test('sole/default journal receipts reject non-default relabeling and arbitrary default-state values', () => {
   const row = {
@@ -98,6 +139,9 @@ function fixture({
   sourceSha = sha,
   startsAt = epoch,
   projectVerifiedContinuationProof,
+  activeWindowId = scope.windowId,
+  maximumRequests = 50,
+  expectedMigrationCount = 14,
 } = {}) {
   const calls = [],
     rows = [],
@@ -138,6 +182,7 @@ function fixture({
   };
   const journal = (setupModule?.createFoundationLiveSetupJournal ?? createFoundationLiveSetupJournal)({
     sourceCommitSha: sourceSha,
+    maximumRequests,
     previousEvents,
     durableAppend(row) {
       persist(row);
@@ -228,6 +273,7 @@ function fixture({
   const setup = (setupModule?.createFoundationLiveSetup ?? createFoundationLiveSetup)(
     {
       sourceCommitSha: sourceSha,
+      activeWindowId,
       transport,
       journal,
       managementBudget: budget,
@@ -240,7 +286,7 @@ function fixture({
       },
       verifyDevReady: async () => {
         readyReads++;
-        return { projectRef: scope.projectRef, migrationCount: 14, ready: true };
+        return { projectRef: scope.projectRef, migrationCount: expectedMigrationCount, ready: true };
       },
     },
     {

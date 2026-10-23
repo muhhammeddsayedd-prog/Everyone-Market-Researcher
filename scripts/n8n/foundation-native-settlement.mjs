@@ -30,7 +30,7 @@ export const foundationSettlementQuery = `select jsonb_build_object(
     left join ops.apify_runs a on a.apify_run_id=l.apify_run_id
     where l.window_id=$1::uuid and (l.execution_id=any($3::text[]) or r.n8n_execution_id=any($3::text[]))),'[]'::jsonb)
 ) as settlement;`;
-const windowId = foundationRuntimeCheckpoint.windowId;
+const legacyWindowId = foundationRuntimeCheckpoint.windowId;
 const readers = new WeakSet(),
   proofs = new WeakSet(),
   originProofs = new WeakSet();
@@ -74,8 +74,10 @@ export function createFoundationSettlementReader({
   now,
   pause,
   deadlineAt,
+  windowId = legacyWindowId,
 } = {}) {
   if (
+    ![legacyWindowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].includes(windowId) ||
     [readGateway, readProvider, transportSnapshot, now, pause].some((fn) => typeof fn !== 'function') ||
     !Number.isSafeInteger(deadlineAt)
   )

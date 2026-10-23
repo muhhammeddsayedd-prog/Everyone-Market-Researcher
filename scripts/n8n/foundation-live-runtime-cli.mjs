@@ -13,6 +13,7 @@ import {
   createFoundationLiveProviderReader,
   createFoundationLiveGatewayProbe,
   createFoundationLiveWriterCloser,
+  createFoundationLiveBaselinePreflight,
 } from './foundation-live-runtime-transport.mjs';
 import {
   createFoundationLiveSetup,
@@ -317,9 +318,12 @@ export async function verifyFoundationLiveSmokeSql({
   admin,
   append,
   now = Date.now,
+  activeWindowId = windowId,
 }) {
   const proof = assertFoundationSettlementReceipt(settlement);
   if (
+    ![windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].includes(activeWindowId) ||
+    proof.windowId !== activeWindowId ||
     !['smoke.first', 'smoke.second'].includes(caseId) ||
     proof.caseId !== caseId ||
     !Array.isArray(receipts) ||
@@ -333,12 +337,15 @@ export async function verifyFoundationLiveSmokeSql({
     JSON.stringify([...ids].sort()) !== JSON.stringify([...proof.executionIds].sort())
   )
     fail();
-  const s = await admin.readGateway({ query: foundationSettlementQuery, params: [windowId, [], ids, '[]'] });
+  const s = await admin.readGateway({
+    query: foundationSettlementQuery,
+    params: [activeWindowId, [], ids, '[]'],
+  });
   const p = s?.providers?.[0],
     expected = caseId === 'smoke.first' ? 1 : 0,
     original = proof.providerRunIds;
   if (
-    s?.window_id !== windowId ||
+    s?.window_id !== activeWindowId ||
     !Array.isArray(s.providers) ||
     s.providers.length !== 1 ||
     original.length !== 1 ||
@@ -409,6 +416,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   const verifiedCheckpoint = verified
     ? foundationProjectVerifiedContinuationResumeCheckpoint(verified)
     : null;
+  const activeWindowId = verified?.windowId ?? windowId;
   const admittedClock = continuation || amendment;
   if (
     !exact(input, [
@@ -532,6 +540,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     provider,
     gateway,
     writerCloser,
+    baselinePreflight,
     nativeTransport,
     fixture,
     preflight,
@@ -543,7 +552,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     windowClosed = false,
     archived = false,
     failed = false;
-  let gatewayAttempts = 0,
+  let gatewayAttempts = verifiedCheckpoint?.gatewayPreflightAttempts ?? 0,
     providerAttempts = 0,
     domainProof = null,
     latest = new Map(),
@@ -593,7 +602,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     ...(adminStartupFailure
       ? { code: 'FOUNDATION_ADMIN_' + adminStartupFailure.diagnostic.toUpperCase() }
       : {}),
-    ...projectFoundationBaselineDiagnostic(runtime),
+    ...projectFoundationBaselineDiagnostic(runtime ?? baselinePreflight),
     ...extra,
   });
   const bindingFor = (key) =>
@@ -643,6 +652,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     );
     budget.attachTransport(provider);
     const settlementReader = createFoundationSettlementReader({
+      windowId: activeWindowId,
       readGateway: (args) => admin.readGateway(args),
       readProvider: (args) => provider.read(args),
       transportSnapshot: () => ({
@@ -664,6 +674,21 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   async function prepare() {
     if (preparing || prepared || closed) fail();
     preparing = true;
+    // Twenty-five source-only GETs precede all owner DB/Preview/fixture writes.
+    // Reserve the bounded44-request delivery plus332 runtime/restoration work.
+    if (budget.snapshot().attempts + 25 + 44 + 332 > 512) fail();
+    baselinePreflight = (dependencies.createBaselinePreflight ?? createFoundationLiveBaselinePreflight)(
+      {
+        bindings,
+        records,
+        apiKey: input.managementKey,
+        deadlineAt,
+        admitManagementAttempt: () => budget.admit(),
+      },
+      dependencies.baselineTransport ?? {},
+    );
+    budget.attachTransport(baselinePreflight);
+    if ((await baselinePreflight.read()).verifiedWorkflows !== 25) fail();
     composeReader();
     baselineIdsByKey = {};
     for (const key of Object.keys(bindings.workflowRefs)) {
@@ -683,6 +708,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         ...(remaining ? { remainingContinuationProof: remaining } : {}),
         ...(startup ? { startupReplacementProof: startup } : {}),
         ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
+        ...(verified && activeWindowId !== windowId ? { forwardWindow: true } : {}),
       });
     } catch (error) {
       adminStartupFailure = readFoundationAdminStartupFailure(error);
@@ -701,9 +727,13 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       throw error;
     }
     const ready = await admin.postcheck();
-    if (ready?.ready !== true || ready.projectRef !== 'zmotjsbzhzjvpelxvxlf' || ready.migrationCount !== 14)
+    if (
+      ready?.ready !== true ||
+      ready.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+      ready.migrationCount !== (activeWindowId === windowId ? 14 : 15)
+    )
       fail();
-    fixture = await admin.fixture();
+    if (activeWindowId === windowId) fixture = await admin.fixture();
     preflight = await admin.preflight();
     if (
       preflight?.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
@@ -721,6 +751,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       sourceCommitSha: input.sourceCommitSha,
       previousEvents: storage.previousEvents,
       durableAppend: storage.append,
+      maximumRequests: verifiedCheckpoint?.setupMaximum ?? 50,
     });
     let t;
     t = (dependencies.createSetupTransport ?? createFoundationLiveSetupCliTransport)({
@@ -735,6 +766,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     setup = (dependencies.createSetup ?? createFoundationLiveSetup)(
       {
         sourceCommitSha: input.sourceCommitSha,
+        activeWindowId,
         transport: t,
         journal: setupJournal,
         managementBudget: budget,
@@ -767,7 +799,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     }
     writerCloser = (dependencies.createWriterCloser ?? createFoundationLiveWriterCloser)(
       {
-        windowId,
+        windowId: activeWindowId,
         password: input.writerPassword,
         audience: deployment.audience,
         sourceCommitSha: input.sourceCommitSha,
@@ -786,7 +818,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       deploymentId: deployment.deploymentId,
     });
     if (
-      provision?.windowId !== windowId ||
+      provision?.windowId !== activeWindowId ||
       provision.boundAudience !== deployment.audience ||
       provision.boundCommitSha !== input.sourceCommitSha ||
       provision.boundDeploymentId !== deployment.deploymentId ||
@@ -796,6 +828,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       provision.approvalCount !== 1
     )
       fail();
+    if (activeWindowId !== windowId) fixture = await admin.fixture();
     // The first authorized probe is constructed only after the real SQL binding.
     // Its transport and actual identity response supply these plan flags; the
     // deployment DTO's earlier false fields are never blindly promoted.
@@ -865,7 +898,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       Date.parse(w.expiresAt) <= now() ||
       Date.parse(w.expiresAt) <= Date.parse(w.startsAt) ||
       Date.parse(w.expiresAt) - Date.parse(w.startsAt) > 3600000 ||
-      w?.id !== windowId ||
+      w?.id !== activeWindowId ||
       w.closed !== false ||
       w.boundAudience !== deployment.audience ||
       w.boundCommitSha !== input.sourceCommitSha ||
@@ -885,6 +918,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         bindings,
         transport,
         records,
+        activeWindowId,
         setup: { ...deployment, protectionTransportVerified: true, sqlAudienceBindingVerified: true },
         managementKey: input.managementKey,
         machineToken: input.machineToken,
@@ -1025,6 +1059,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       }
       if (caseId.startsWith('smoke.')) {
         await verifyFoundationLiveSmokeSql({
+          activeWindowId,
           caseId,
           receipts: native.caseReceipts(caseId),
           settlement: native.caseSettlement(caseId),
@@ -1138,7 +1173,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         exact(r, ['state', 'window']) &&
         r.state === 'closed' &&
         exact(r.window, ['id', 'closed']) &&
-        r.window.id === windowId &&
+        r.window.id === activeWindowId &&
         r.window.closed === true;
     } catch {
       /* The owner SELECT cannot invent closure or repeat the Writer mutation. */
@@ -1168,9 +1203,9 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         ];
         const s = await admin.readGateway({
           query: foundationSettlementQuery,
-          params: [windowId, [], ids, '[]'],
+          params: [activeWindowId, [], ids, '[]'],
         });
-        if (s?.window_id !== windowId || !Array.isArray(s.providers) || s.providers.length > 2) fail();
+        if (s?.window_id !== activeWindowId || !Array.isArray(s.providers) || s.providers.length > 2) fail();
         const actual = s.providers
           .map((p) => {
             const id = p.launch?.apify_run_id;
@@ -1389,6 +1424,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       provider?.close();
       gateway?.close();
       writerCloser?.close();
+      baselinePreflight?.close();
       runtime?.close();
       try {
         setup?.close();
