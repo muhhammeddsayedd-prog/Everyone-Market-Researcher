@@ -168,20 +168,31 @@ describe(
       ]);
       owned = true;
       let ready = false;
-      for (let i = 0; i < 40; i++) {
-        const r = spawnSync('docker', ['exec', name, 'pg_isready', '-U', 'postgres'], {
+      const readyDeadline = Date.now() + 20000;
+      while (Date.now() < readyDeadline) {
+        // The official entrypoint briefly starts a socket-only bootstrap server.
+        // Schema writes must wait until PID1 has exec'ed the final PostgreSQL.
+        const principal = spawnSync('docker', ['exec', name, 'cat', '/proc/1/comm'], {
           env: env(),
           encoding: 'utf8',
           timeout: 2000,
           windowsHide: true,
         });
-        if (r.status === 0) {
-          ready = true;
-          break;
+        if (principal.status === 0 && principal.stdout.trim() === 'postgres') {
+          const r = spawnSync('docker', ['exec', name, 'pg_isready', '-U', 'postgres'], {
+            env: env(),
+            encoding: 'utf8',
+            timeout: 2000,
+            windowsHide: true,
+          });
+          if (r.status === 0) {
+            ready = true;
+            break;
+          }
         }
         await new Promise((r) => setTimeout(r, 100));
       }
-      assert.equal(ready, true, 'LOCAL_POSTGRES_READY');
+      assert.equal(ready, true, 'LOCAL_POSTGRES_FINAL_SERVER_READY');
       const types = source('20261017172928_extensions_schemas_roles.sql');
       const core = source('20261017172931_core_tables.sql');
       const actor = source('20261018231756_m03_actor_launch_admission.sql');

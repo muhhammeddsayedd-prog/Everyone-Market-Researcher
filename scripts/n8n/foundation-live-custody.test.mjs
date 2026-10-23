@@ -9,7 +9,7 @@ import { gunzipSync } from 'node:zlib';
 // This vertical custody fixture uses the actual Windows wrapper and public
 // module with its fixed Vercel root rebound to an isolated public fixture,
 // synthetic DPAPI values, a scripted CLI and a scripted DB check. The base
-// dependency validator is a fixture stub. This is neither actual
+// dependency validator and pg closure enumerator are fixture stubs. This is neither actual
 // dependency-closure verification nor hosted/provider/native acceptance.
 const head = 'f42930f90c2de43c84f61ad6d966d0ee6074d70e';
 const packetHash = '009415eccce00939fe5731e846d006728295522fd90849555c197b931ad6a712';
@@ -39,10 +39,19 @@ async function runFixture(variant) {
     mkdirSync(join(root, 'Temp'));
     mkdirSync(join(root, 'n8n/workflows'), { recursive: true });
     const fixtureVercelRoot = join(root, 'public-vercel-fixture');
-    const publicModule = readFileSync(
+    let publicModule = readFileSync(
       resolve('scripts/n8n/windows/Acceptance-PublicRuntime.ps1'),
       'utf8',
     ).replaceAll('C:\\Users\\iway\\AppData\\Roaming\\npm\\node_modules\\vercel', fixtureVercelRoot);
+    // This test exercises custody with a scripted child, not the separately
+    // tested installed pg closure. Keep that component explicit and synthetic.
+    const pgStart = publicModule.indexOf('function Get-M03AcceptancePgPublicFiles('),
+      pgEnd = publicModule.indexOf('function Get-M03AcceptancePublicFiles(', pgStart);
+    assert.ok(pgStart > 0 && pgEnd > pgStart);
+    publicModule =
+      publicModule.slice(0, pgStart) +
+      'function Get-M03AcceptancePgPublicFiles([string]$Root) { return @() }\n' +
+      publicModule.slice(pgEnd);
     put('public-vercel-fixture/package.json', JSON.stringify({ name: 'vercel', version: '56.5.0' }));
     put('public-vercel-fixture/dist/index.js', '// synthetic public fixture\n');
     put('public-vercel-fixture/node_modules/fixture-dependency/index.js', '// synthetic dependency\n');
@@ -52,6 +61,7 @@ async function runFixture(variant) {
       'Acceptance-PublicRuntime.ps1',
       'Invoke-M03Acceptance.ps1',
       'New-M03AcceptanceHandoff.ps1',
+      'Dev-CredentialStore.ps1',
     ])
       put('scripts/n8n/windows/' + name, readFileSync(resolve('scripts/n8n/windows', name)));
     put('scripts/n8n/windows/Acceptance-PublicRuntime.ps1', publicModule);
@@ -71,6 +81,9 @@ async function runFixture(variant) {
         'scripts/n8n/foundation-live-zero-setup.mjs',
         'scripts/n8n/foundation-control-state.mjs',
         'scripts/n8n/foundation-runtime-checkpoint.mjs',
+        'scripts/n8n/foundation-live-remaining-continuation.mjs',
+        'scripts/n8n/foundation-live-startup-replacement.mjs',
+        'scripts/n8n/foundation-live-project-verified-continuation.mjs',
         'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-approval-20261021.json',
         'milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-amendment-20261021.md',
         'milestones/M03-n8n-foundation/evidence/dev-acceptance-late-delivery-20261021.json',
@@ -143,8 +156,12 @@ else if(process.argv[2]==='${continuation ? 'SessionPostcheckContinuation' : ame
 $root=${quoted(root)}
 $global:fixturePosition=0
 function Read-Host { param($Prompt,[switch]$AsSecureString) $items=@(${secretValues.map(quoted).join(',')});$value=$items[$global:fixturePosition];$global:fixturePosition++;return ConvertTo-SecureString -String $value -AsPlainText -Force }
-& (Join-Path $root 'scripts/n8n/windows/New-M03AcceptanceHandoff.ps1') -Kind All
-if($LASTEXITCODE -ne 0){exit 1}
+foreach($kind in @('Management','Writer','ApifyRead')){
+ & (Join-Path $root 'scripts/n8n/windows/New-M03AcceptanceHandoff.ps1') -Kind $kind
+ if($LASTEXITCODE -ne 0){exit 1}
+}
+. (Join-Path $root 'scripts/n8n/windows/Dev-CredentialStore.ps1')
+foreach($kind in @('Management','Writer','ApifyRead')){Ensure-M03DevRuntimeHandoff -Kind $kind}
 $pending=Join-Path $root 'Everyone-Market-Radar-Private/foundation/${windowId}'
 $null=New-Item -ItemType Directory -Path $pending -Force
 $machine=ConvertTo-SecureString -String ('Z'*43) -AsPlainText -Force
@@ -244,8 +261,9 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
       .split(/\r?\n/)
       .map((line) => JSON.parse(line));
     const receipt = rows.at(-1);
+    const publicStages = JSON.stringify(rows.map(({ kind, status }) => ({ kind, status })));
     if (mode === 'public_stale') {
-      assert.equal(result.status, 0);
+      assert.equal(result.status, 0, publicStages);
       assert.equal(receipt.status, 'check_only_ready');
       assert.equal(receipt.adminPublicInputsVerified, true);
       assert.equal(receipt.adminHandoffReady, false);
@@ -265,7 +283,7 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
       for (const kind of ['management', 'writer', 'apifyread'])
         assert.equal(existsSync(join(root, 'Temp', `emr-m03-acceptance-${kind}.dpapi`)), true);
     } else {
-      assert.equal(result.status, mode === 'residual' ? 1 : 0);
+      assert.equal(result.status, mode === 'residual' ? 1 : 0, publicStages);
       assert.equal(rows.find((row) => row.kind === 'm03_acceptance_ready').status, 'private_child_ready');
       assert.equal(receipt.childClosed, true);
       assert.equal(receipt.handoffsDeleted, true);
@@ -279,6 +297,11 @@ Write-Output 'SYNTHETIC_CUSTODY_PREPARED'
       existsSync(join(root, 'Everyone-Market-Radar-Private/foundation', windowId, 'machine.dpapi')),
       true,
     );
+    for (const kind of ['management', 'writer', 'apifyread'])
+      assert.equal(
+        existsSync(join(root, 'Everyone-Market-Radar-Private/secrets/dev/runtime', kind + '.dpapi')),
+        true,
+      );
     assert.equal(existsSync(join(root, 'Temp/emr-m03-foundation-dev-migration-password.dpapi')), true);
     assert.equal(
       existsSync(join(root, 'Temp/emr-m03-acceptance-protection-bypass.dpapi')),

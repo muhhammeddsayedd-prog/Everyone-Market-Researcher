@@ -8,6 +8,7 @@ import { syntheticClockAmendment } from './foundation-live-clock-amendment-fixtu
 import { assertFoundationLivePostcheckContinuationProof } from './foundation-live-postcheck-continuation.mjs';
 import { createFoundationLiveManagementBudget } from './foundation-live-runtime.mjs';
 import { createFoundationLiveAcceptanceSession } from './foundation-live-runtime-cli.mjs';
+import { syntheticBaselinePreflight } from './foundation-live-runtime-fixtures.mjs';
 import {
   createFoundationControlJournal,
   createFoundationControlBudget,
@@ -85,6 +86,7 @@ test('continuation starts with control50 and fresh baseline discovery advances t
   let session, adminArgs;
   try {
     session = createFoundationLiveAcceptanceSession(packet(clock), () => {}, {
+      createBaselinePreflight: syntheticBaselinePreflight,
       now: clock.now,
       storage: { directory: f.directory },
       postcheckContinuationProof: proof,
@@ -122,6 +124,7 @@ test('continuation starts with control50 and fresh baseline discovery advances t
       command: 'prepare',
     });
     assert.equal(prepared.status, 'blocked');
+    assert.equal(prepared.managementAttempts, 25);
     assert.equal(prepared.controlAttempts, 100);
     assert.equal(
       assertFoundationLivePostcheckContinuationProof(adminArgs.postcheckContinuationProof, { claimed: true }),
@@ -132,7 +135,10 @@ test('continuation starts with control50 and fresh baseline discovery advances t
       readFileSync(join(f.directory, 'control.jsonl'), 'utf8').startsWith(clock.controlPrefix),
       true,
     );
-    assert.equal(readFileSync(join(f.directory, 'management.jsonl'), 'utf8'), clock.header);
+    const management = readFileSync(join(f.directory, 'management.jsonl'), 'utf8').trimEnd().split('\n');
+    assert.equal(management[0] + '\n', clock.header);
+    assert.equal(management.length, 26);
+    assert.equal(JSON.parse(management.at(-1)).ordinal, 25);
     assert.equal((await session.close()).adminChildClosed, true);
   } finally {
     await session?.close();
@@ -159,6 +165,7 @@ test('continuation rejects copied/unclaimed/mixed clocks and any missing or alte
       assert.throws(
         () =>
           createFoundationLiveAcceptanceSession(input, () => {}, {
+            createBaselinePreflight: syntheticBaselinePreflight,
             now: clock.now,
             storage: { directory: f.directory },
             postcheckContinuationProof: fault === 'copy' ? { ...proof } : proof,
@@ -203,6 +210,7 @@ for (const mode of [
       ended = 0;
     try {
       session = createFoundationLiveAcceptanceSession(packet(clock), () => {}, {
+        createBaselinePreflight: syntheticBaselinePreflight,
         now: clock.now,
         storage: { directory: f.directory },
         postcheckContinuationProof: proof,

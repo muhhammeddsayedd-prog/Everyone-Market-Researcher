@@ -6,6 +6,7 @@ import { EventEmitter } from 'node:events';
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { PassThrough } from 'node:stream';
 import { runFoundationLiveRuntimeCli } from './foundation-live-runtime-cli.mjs';
+import { syntheticBaselinePreflight } from './foundation-live-runtime-fixtures.mjs';
 import { startFoundationAdminClient } from '../db/foundation-admin-client.mjs';
 
 test('startup replacement refuses missing approval before private protocol and children', async () => {
@@ -221,6 +222,7 @@ test('synthetic startup preparation carries totals through50 baseline reads and 
       leaseExpiry: f.now() + 7200000,
     };
     session = cli.createFoundationLiveAcceptanceSession(packet, () => {}, {
+      createBaselinePreflight: syntheticBaselinePreflight,
       now: f.now,
       storage: { directory: f.directory + '/scripts/n8n/out/foundation/live' },
       startupReplacementProof: proof,
@@ -259,7 +261,7 @@ test('synthetic startup preparation carries totals through50 baseline reads and 
     });
     assert.equal(result.status, 'blocked');
     assert.equal(nativeReads, 50);
-    assert.equal(result.managementAttempts, 4);
+    assert.equal(result.managementAttempts, 29);
     assert.equal(result.controlAttempts, 201);
     assert.equal(
       f.module.assertFoundationLiveStartupReplacementProof(adminArgs.startupReplacementProof, {

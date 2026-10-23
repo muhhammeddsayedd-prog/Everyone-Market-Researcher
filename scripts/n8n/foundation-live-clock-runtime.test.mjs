@@ -7,7 +7,7 @@ import { syntheticZeroSetup } from './foundation-live-runtime-resume-fixtures.mj
 import { createFoundationLiveManagementBudget } from './foundation-live-runtime.mjs';
 import { createFoundationLiveAcceptanceSession } from './foundation-live-runtime-cli.mjs';
 import { assertFoundationLiveClockAmendmentProof } from './foundation-live-clock-amendment.mjs';
-import { fixture } from './foundation-live-runtime-fixtures.mjs';
+import { fixture, syntheticBaselinePreflight } from './foundation-live-runtime-fixtures.mjs';
 
 test('amended budget keeps original header bytes and consumes the same512 ordinal admissions exactly once', () => {
   const f = fixture(),
@@ -68,6 +68,7 @@ test('runtime amendment requires a claimed proof and propagates the same branded
     assert.throws(
       () =>
         createFoundationLiveAcceptanceSession(packet, () => {}, {
+          createBaselinePreflight: syntheticBaselinePreflight,
           clockAmendmentProof: admitted,
           now: clock.now,
           storage: { directory: f.directory },
@@ -77,6 +78,7 @@ test('runtime amendment requires a claimed proof and propagates the same branded
     assert.throws(() => syntheticZeroSetup(clock.now()), /M03_ZERO_SETUP_BLOCKED/);
     const claimed = clock.claim(admitted);
     session = createFoundationLiveAcceptanceSession(packet, () => {}, {
+      createBaselinePreflight: syntheticBaselinePreflight,
       clockAmendmentProof: claimed,
       now: clock.now,
       storage: { directory: f.directory },
@@ -113,13 +115,17 @@ test('runtime amendment requires a claimed proof and propagates the same branded
     });
     assert.equal(result.status, 'blocked');
     assert.equal(result.controlAttempts, 50);
+    assert.equal(result.managementAttempts, 25);
     assert.equal(
       assertFoundationLiveClockAmendmentProof(args.clockAmendmentProof, { claimed: true }),
       claimed,
     );
     assert.deepEqual(Object.keys(args).sort(), ['clockAmendmentProof', 'now', 'repositoryRoot']);
     assert.equal((await session.close()).adminChildClosed, true);
-    assert.equal(readFileSync(join(f.directory, 'management.jsonl'), 'utf8'), clock.header);
+    const management = readFileSync(join(f.directory, 'management.jsonl'), 'utf8').trimEnd().split('\n');
+    assert.equal(management[0] + '\n', clock.header);
+    assert.equal(management.length, 26);
+    assert.equal(JSON.parse(management.at(-1)).ordinal, 25);
   } finally {
     await session?.close();
     f.cleanup();

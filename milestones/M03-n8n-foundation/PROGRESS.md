@@ -5,6 +5,10 @@
 
 ## Current operational checkpoint
 
+- Owner approved only the reviewed WF-00 restore: [literal decision](evidence/wf00-restore-approval-20261023.json). No repeat decision or credential request. Existing provisioner is being extended with a fixed three-request definition restore, encrypted private rollback, fresh drift recheck and exact inactive readback; actual restoration is pending reviewed local/native checks. All other workflows, shared credentials and execution remain excluded. Current usage98/301/399 unchanged.
+
+- Normal CI39995755152 at8b67405 passed build/e2e/Vercel and all retained database replay/advisor/concurrency stages; quality failed root progress formatting, unit failed15 legacy fixtures missing the new baseline dependency, and the new isolated SQL step hit its entrypoint temporary-server race. All failures are preserved. Corrections: root formatting passes;15 CI scenarios now pass in33 targeted tests; cold PostgreSQL16/16 passes after exact final-PID1/readiness guard; broader Windows fixtures retain assertions and pass36/36 after copying actual isolated adapters and fixing a non-changing inode mock. Initial full foundation run537/553 plus affected passes remain distinct from a fresh complete run. No runtime guard, migration, budget or assertion was weakened; focused review reports no P1/P2. Corrected head receives normal CI.
+
 - Final affected CI compatibility checks pass: [actual retained SQL](evidence/forward-continuation-retained-sql-20261023.json), three files/176 pgTAP assertions (63/92/21), exact plans/no failures and unchanged empty rollback baseline/history15. Only owner-only rollback registration fixtures changed; unknown-window/argument/approval/ACL assertions remain. Existing CI moves these three suites into its owned no-seed phase before adding test-house data; all seeded suites and required jobs remain. The new isolated cumulative-safety suite uses the verified public PostgreSQL17 RepoDigest. Native CI-runner tests8/9 initially passed, then the corrected phase-order case1/1 passed; its first edit-time replacement bug was caught locally before commit and never touched hosted state. Independent review has no P1/P2. This is local evidence, distinct from the hosted15 receipt.
 
 - Actual sealed public readiness5703d9 is verified: [receipt](evidence/forward-continuation-public-readiness-20261023.json). Public seal e27a02/native0 covers225 project and840 runtime files; CheckOnly/native0 returns setup_cap_insufficient with44/50 used, proposed88, privateReadfalse/networkRequests0. It stops before private initialization, authentication, clock admission or hosted setup. This is an actual safe refusal, not A-D acceptance.
@@ -55,7 +59,7 @@ with zero actor starts and no allowance replenishment.
 
 ## Status
 
-**In progress: sole/default exception, exact cleanup and the forward-only dev15 repair are verified. WF-00 restore/preserve and Vercel cumulative subcap50-to88 decisions remain pending. Selected app sourcea5e7467 / CI39990446858 passed all five jobs and Vercel; changed delivery receives normal checks. Persistent access ready; no credential/time renewal. A-D/full-D open.**
+**In progress: sole/default exception, exact cleanup and the forward-only dev15 repair are verified. WF-00 restore is approved, verification pending; Vercel cumulative subcap50-to88 decision remains pending. Selected app sourcea5e7467 / CI39990446858 passed all five jobs and Vercel; changed delivery receives normal checks. Persistent access ready; no credential/time renewal. A-D/full-D open.**
 
 Historical e803 deliveries and 75-minute metadata coverage passed before admission. Prepare
 then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
@@ -1305,15 +1309,9 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 The [exact allocation packet](evidence/remaining-control-allocation-20261023.md) proposes only the cumulative Vercel setup subcap50 to88, retaining44 actual requests charged. The global512 management/2048 control/2560 combined and actor2/USD2 limits stay unchanged. Current source still refuses at50 before private initialization or hosted calls. This is an exhausted request allowance, not another clock renewal. After review/checks, reply **Approve the M03 cumulative Vercel subcap of88, retaining44 used requests and all unchanged aggregate limits.** It can be combined with the existing MA-11 choice: **Restore reviewed WF-00; approve the cumulative Vercel subcap of88.** No secrets, new credentials, production or merge are requested.
 
-### MA-11 — resolve only the changed WF-00 definition
+### MA-11 - reviewed WF-00 restoration approved; verification pending
 
-Review [the exact drift decision](evidence/wf00-drift-decision-20261023.md).
-Reply **Restore reviewed WF-00** to authorize the exact inactive reviewed
-definition, with an encrypted rollback snapshot and fresh drift check first;
-or **Preserve current WF-00** with the intended parameter/settings changes.
-The workflow is `MzimjpsuyPuK7SKe` in n8n Personal on
-`muhhammedsayed.app.n8n.cloud`. No credential, new clock, execution or actor is
-requested. Database cleanup and local verification continue independently.
+Owner replied **Restore reviewed WF-00 (Recommended)** to the exact [definition choice](evidence/wf00-drift-decision-20261023.md). [Approval receipt](evidence/wf00-restore-approval-20261023.json) preserves it separately. No further owner action is needed for this restore. The coordinator must preserve an encrypted definition backup, reconfirm known drift/identity/unpublished state and verify the exact inactive saved definition before closing this gate. The implementation/test work is local; actual restoration is not yet claimed. It does not approve any other workflow, execution, production or budget increase.
 
 ### Local reference cleanup - platform-blocked, independent of acceptance
 

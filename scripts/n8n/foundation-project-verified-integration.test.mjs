@@ -6,6 +6,7 @@ import { EventEmitter } from 'node:events';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 import { PassThrough } from 'node:stream';
 import { runFoundationLiveRuntimeCli } from './foundation-live-runtime-cli.mjs';
+import { syntheticBaselinePreflight } from './foundation-live-runtime-fixtures.mjs';
 import { startFoundationAdminClient } from '../db/foundation-admin-client.mjs';
 
 test('project-verified replacement refuses missing approval before private protocol and children', async () => {
@@ -209,6 +210,7 @@ test('synthetic project-verified preparation carries totals through50 baseline r
       leaseExpiry: f.now() + 7200000,
     };
     session = cli.createFoundationLiveAcceptanceSession(packet, () => {}, {
+      createBaselinePreflight: syntheticBaselinePreflight,
       now: f.now,
       storage: { directory: f.directory + '/scripts/n8n/out/foundation/live' },
       projectVerifiedContinuationProof: proof,
@@ -247,7 +249,7 @@ test('synthetic project-verified preparation carries totals through50 baseline r
     });
     assert.equal(result.status, 'blocked');
     assert.equal(nativeReads, 50);
-    assert.equal(result.managementAttempts, 6);
+    assert.equal(result.managementAttempts, 31);
     assert.equal(result.controlAttempts, 251);
     assert.equal(
       f.module.assertFoundationLiveProjectVerifiedContinuationProof(

@@ -4,6 +4,28 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createFoundationLiveRuntime } from './foundation-live-runtime.mjs';
 
+// Explicit network-free dependency for session protocol tests that isolate
+// behavior after a successful baseline read. The real preflight transport and
+// source comparisons have their own tests; this fixture charges all25 attempts.
+export function syntheticBaselinePreflight({ admitManagementAttempt }) {
+  assert.equal(typeof admitManagementAttempt, 'function');
+  let read = false,
+    closed = false;
+  return {
+    async read() {
+      assert.equal(read, false);
+      assert.equal(closed, false);
+      read = true;
+      for (let i = 0; i < 25; i++) admitManagementAttempt();
+      return { verifiedWorkflows: 25 };
+    },
+    state: () => ({ pendingRequests: 0, unclosedResponses: 0 }),
+    close() {
+      closed = true;
+    },
+  };
+}
+
 export function fixture({ fault } = {}) {
   const bindings = JSON.parse(
     readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),

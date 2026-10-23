@@ -4,7 +4,7 @@ import { writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createFoundationLiveAcceptanceSession } from './foundation-live-runtime-cli.mjs';
 import { syntheticZeroSetup } from './foundation-live-runtime-resume-fixtures.mjs';
-import { fixture } from './foundation-live-runtime-fixtures.mjs';
+import { fixture, syntheticBaselinePreflight } from './foundation-live-runtime-fixtures.mjs';
 
 test('original zero-setup deadline reaches the actual admin port and shared control reader without a new clock', async () => {
   const f = fixture(),
@@ -33,6 +33,7 @@ test('original zero-setup deadline reaches the actual admin port and shared cont
   };
   try {
     session = createFoundationLiveAcceptanceSession(packet, () => {}, {
+      createBaselinePreflight: syntheticBaselinePreflight,
       now: z.now,
       zeroSetupProof: z.proof,
       storage: { directory: f.directory },
@@ -70,6 +71,7 @@ test('original zero-setup deadline reaches the actual admin port and shared cont
     });
     assert.equal(r.status, 'blocked');
     assert.equal(r.controlAttempts, 50);
+    assert.equal(r.managementAttempts, 25);
     assert.equal(lists, 50);
     assert.equal(adminArgs.originalDeadlineAtMs, z.checkpoint.deadlineAt);
     assert.equal(adminArgs.now(), z.now());
@@ -77,7 +79,10 @@ test('original zero-setup deadline reaches the actual admin port and shared cont
     const closed = await session.close();
     assert.equal(closed.adminChildClosed, true);
     assert.equal(closed.childTransportsClosed, true);
-    assert.equal(readFileSync(join(f.directory, 'management.jsonl'), 'utf8'), z.header);
+    const management = readFileSync(join(f.directory, 'management.jsonl'), 'utf8').trimEnd().split('\n');
+    assert.equal(management[0] + '\n', z.header);
+    assert.equal(management.length, 26);
+    assert.equal(JSON.parse(management.at(-1)).ordinal, 25);
   } finally {
     await session?.close();
     f.cleanup();

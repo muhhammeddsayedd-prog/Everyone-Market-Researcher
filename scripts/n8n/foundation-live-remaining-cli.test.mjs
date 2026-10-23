@@ -6,6 +6,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { startFoundationAdminClient } from '../db/foundation-admin-client.mjs';
 import { syntheticRemainingContinuation } from './foundation-live-remaining-fixtures.mjs';
 import { runFoundationLiveRuntimeCli } from './foundation-live-runtime-cli.mjs';
+import { syntheticBaselinePreflight } from './foundation-live-runtime-fixtures.mjs';
 
 test('failed Admin startup accepts only branded pre-private closure and never promotes full D', async () => {
   for (const mode of ['branded', 'lookalike', 'unknown']) {
@@ -43,6 +44,7 @@ test('failed Admin startup accepts only branded pre-private closure and never pr
         },
         () => {},
         {
+          createBaselinePreflight: syntheticBaselinePreflight,
           now: f.now,
           storage: { directory: f.directory + '/scripts/n8n/out/foundation/live' },
           remainingContinuationProof: proof,
@@ -105,7 +107,7 @@ test('failed Admin startup accepts only branded pre-private closure and never pr
             : 'FOUNDATION_ADMIN_PREFLIGHT_BLOCKED',
       );
       assert.equal(result.controlAttempts, 151);
-      assert.equal(result.managementAttempts, 4);
+      assert.equal(result.managementAttempts, 29);
       assert.equal(JSON.stringify(result).includes('SYNTHETIC_PRIVATE_ERROR'), false);
       const closed = await session.close();
       assert.equal(closed.adminChildClosed, mode === 'branded');
@@ -163,6 +165,7 @@ test('synthetic remaining preparation carries totals through50 baseline reads an
       leaseExpiry: f.now() + 7200000,
     };
     session = cli.createFoundationLiveAcceptanceSession(packet, () => {}, {
+      createBaselinePreflight: syntheticBaselinePreflight,
       now: f.now,
       storage: { directory: f.directory + '/scripts/n8n/out/foundation/live' },
       remainingContinuationProof: proof,
@@ -201,7 +204,7 @@ test('synthetic remaining preparation carries totals through50 baseline reads an
     });
     assert.equal(result.status, 'blocked');
     assert.equal(nativeReads, 50);
-    assert.equal(result.managementAttempts, 4);
+    assert.equal(result.managementAttempts, 29);
     assert.equal(result.controlAttempts, 151);
     assert.equal(
       f.module.assertFoundationLiveRemainingContinuationProof(adminArgs.remainingContinuationProof, {

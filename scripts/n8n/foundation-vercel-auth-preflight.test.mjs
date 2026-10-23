@@ -266,7 +266,9 @@ test('an opened synthetic leaf with changed identity is refused before reading',
           openSync,
           fstatSync(descriptor) {
             const stat = fstatSync(descriptor);
-            return { ...stat, ino: stat.ino + 1, isFile: () => true };
+            // Windows inode projections may exceed Number.MAX_SAFE_INTEGER;
+            // adding1 can round back to the same value rather than model drift.
+            return { ...stat, ino: stat.ino === 0 ? 1 : 0, isFile: () => true };
           },
           readSync(...args) {
             readCalls += 1;
