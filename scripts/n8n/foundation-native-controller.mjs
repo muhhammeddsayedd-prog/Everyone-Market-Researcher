@@ -29,6 +29,8 @@ const closures = new WeakMap(),
   active = new WeakSet();
 const positive = (v) => typeof v === 'string' && /^[1-9]\d{0,31}$/.test(v);
 const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const exact = (v, keys) =>
+  object(v) && Object.keys(v).length === keys.length && keys.every((key) => Object.hasOwn(v, key));
 const goodTerminal = new Set(['success', 'error']);
 const manualRetention = new Set(['WF-00', 'WF-91', 'WF-99', 'SUB-INGEST', 'SUB-COST']);
 const omittedIntegrated = new Set(['WF-00', 'WF-99', 'SUB-INGEST', 'SUB-COST']);
@@ -118,6 +120,7 @@ export function createFoundationNativeController({
       typeof bindingFor !== 'function' ||
       typeof port?.details !== 'function' ||
       typeof port?.start !== 'function' ||
+      (port.source !== undefined && !['mcp', 'browser_ui'].includes(port.source)) ||
       typeof now !== 'function' ||
       typeof pause !== 'function' ||
       typeof caseReceiptValidator !== 'function' ||
@@ -132,6 +135,7 @@ export function createFoundationNativeController({
     fail();
   }
   assertFoundationControlBudget(controlBudget, { journal });
+  const browserUi = port.source === 'browser_ui';
   const deadlineAt = controlBudget.snapshot().deadlineAt,
     cutoffAt = deadlineAt - 600000;
   if (!Number.isFinite(now()) || deadlineAt <= now() || deadlineAt > now() + 3600000) fail();
@@ -197,7 +201,8 @@ export function createFoundationNativeController({
     preserveShutdown(
       upper * foundationNativeAdmissionReserve.perNative +
         foundationNativeAdmissionReserve.discovery +
-        foundationNativeAdmissionReserve.preflight,
+        foundationNativeAdmissionReserve.preflight +
+        (browserUi ? 1 : 0),
     );
   const readerIdle = () => {
     const state = nativeReader.state();
@@ -223,7 +228,13 @@ export function createFoundationNativeController({
     // still bounds their aggregate. The fixed poll wait gets scheduling grace;
     // this does not extend any HTTP timeout.
     const duration = Math.min(
-      composite === 'pause' ? 16000 : composite ? remaining(start) : callTimeoutMs,
+      composite === 'pause'
+        ? 16000
+        : composite === 'browser_ui'
+          ? 60000
+          : composite
+            ? remaining(start)
+            : callTimeoutMs,
       remaining(start),
     );
     let timer;
@@ -774,35 +785,59 @@ export function createFoundationNativeController({
       state.providerRuns = [...providerRuns];
       try {
         await bounded(() => nativeReader.verifyBinding({ workflowKey, binding }));
-        const details = await bounded(() => port.details({ workflowId: binding.workflowId }), {
-          kind: 'details',
-          workflowId: binding.workflowId,
-        });
+        const details = await bounded(
+          () => port.details({ workflowId: binding.workflowId }),
+          {
+            kind: 'details',
+            workflowId: binding.workflowId,
+          },
+          false,
+          browserUi ? 'browser_ui' : false,
+        );
         if (
-          details?.id !== binding.workflowId ||
-          details.versionId !== binding.versionId ||
-          details.canExecute !== true ||
-          !details.scopes?.includes('workflow:execute')
+          browserUi
+            ? !exact(details, ['source', 'id', 'renderedName', 'executeControlEnabled']) ||
+              details.source !== 'browser_ui' ||
+              details.id !== binding.workflowId ||
+              details.renderedName !== bindings.workflowRefs[workflowKey].name ||
+              details.executeControlEnabled !== true
+            : details?.id !== binding.workflowId ||
+              details.versionId !== binding.versionId ||
+              details.canExecute !== true ||
+              !details.scopes?.includes('workflow:execute') ||
+              Object.hasOwn(details, 'source')
         )
           fail();
+        // Rendering/reloading the browser may take longer than an MCP call.
+        // Recheck the actual saved definition after that interval, before any
+        // durable start intent or browser click can admit provider work.
+        if (browserUi) await bounded(() => nativeReader.verifyBinding({ workflowKey, binding }));
         append({
           event: 'native_start_intent',
           caseId,
           workflowKey,
           workflowId: binding.workflowId,
           versionId,
+          ...(browserUi ? { kind: 'browser_ui' } : {}),
           intentAt: at(),
         });
         const ack = await bounded(
           () => port.start({ workflowId: binding.workflowId, executionMode: 'manual' }),
           { kind: 'start', workflowId: binding.workflowId },
           true,
+          browserUi ? 'browser_ui' : false,
         );
         if (
           ack?.status !== 'started' ||
           !positive(ack.executionId) ||
           registry.has(ack.executionId) ||
-          baselineAll.has(ack.executionId)
+          baselineAll.has(ack.executionId) ||
+          (browserUi
+            ? !exact(ack, ['source', 'status', 'executionId', 'executionUrl']) ||
+              ack.source !== 'browser_ui' ||
+              ack.executionUrl !==
+                `https://muhhammedsayed.app.n8n.cloud/workflow/${binding.workflowId}/executions/${ack.executionId}`
+            : Object.hasOwn(ack, 'source'))
         )
           fail();
         claim(ack.executionId, workflowKey, state);
@@ -815,6 +850,7 @@ export function createFoundationNativeController({
           workflowId: binding.workflowId,
           versionId,
           executionId: ack.executionId,
+          ...(browserUi ? { kind: 'browser_ui' } : {}),
           intentAt: at(),
         });
         const root = await observe(workflowKey, ack.executionId, binding, state, 'manual');

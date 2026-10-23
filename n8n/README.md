@@ -14,6 +14,32 @@ another human approval solely for an expired local lease/window or tested source
 change. One coordinator reconciles previous side effects/closure and carries all
 usage forward; never reopen a closed window or blindly repeat an actor start.
 
+The remaining M03 acceptance uses the authenticated n8n browser's whole-workflow
+Execute control when the connector returns an error. Browser observations are
+explicitly labelled `browser_ui`; they do not supply invented MCP permissions or
+version metadata. The existing API reader verifies each saved case's exact
+version and graph before a click, then verifies the actual manual execution,
+parent/child links, business results, privacy and deletion receipts. Reload the
+owned editor after each case save, keep it clean, and stop for any save/conflict
+prompt. Never use Execute step or publish a schedule for a manual test.
+
+Each browser start has one durable intent and one click. Its acknowledgement
+must contain the native execution URL for that owned workflow. A lost or
+ambiguous acknowledgement stays unresolved until actual execution state is
+reconciled; do not click again. Browser interaction is bounded to60 seconds per
+port call within the existing hard deadline. Ordinary API calls and the MCP
+path retain their existing15-second bounds and assertions.
+
+For URL correlation, first verify a freshly loaded, unfiltered execution list
+is empty with no active execution. After the one click, require exactly one
+new execution card, open that card's actual link and capture the resulting URL.
+Zero or multiple cards leave the start unresolved. An automatically selected
+latest execution is not an acknowledgement.
+
+The [browser-port readiness receipt](../milestones/M03-n8n-foundation/evidence/dev-acceptance-browser-port-readiness-20261023.json)
+records the closed connector attempt, implementation checks and separate live
+acceptance boundary.
+
 M00 provides the canonical plain JavaScript helpers in
 `normalizers/_common.js`, copied from `docs/N8N_WORKFLOWS.md` §7, with Vitest
 tests. The guarded CommonJS export supports Node tests; the helper definitions

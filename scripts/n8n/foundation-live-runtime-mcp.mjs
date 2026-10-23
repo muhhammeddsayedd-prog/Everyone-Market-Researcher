@@ -11,17 +11,18 @@ const exact = (v, keys) =>
 const nativeId = (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(v);
 const executionId = (v) => typeof v === 'string' && /^[1-9][0-9]{0,19}$/.test(v);
 
-// This fixed external port is NOT a REST /run endpoint. The parent executor
-// invokes only the existing installed MCP tool, privately projects its result,
-// and returns the nonce-correlated fields below without showing raw tool data.
+// The parent invokes the selected installed MCP tool or the rendered browser's
+// whole-workflow Execute control. Browser observations stay explicitly tagged;
+// neither branch supplies REST /run, arbitrary inputs, or raw tool output.
 export function createFoundationLiveMcpBridge(
-  { bindings, emit, deadlineAt, now = Date.now },
+  { bindings, emit, deadlineAt, now = Date.now, executionSource = 'mcp' },
   dependencies = {},
 ) {
   const pins = foundationRuntimeCheckpoint.workflows;
   if (
     typeof emit !== 'function' ||
     typeof now !== 'function' ||
+    !['mcp', 'browser_ui'].includes(executionSource) ||
     !Number.isFinite(deadlineAt) ||
     deadlineAt <= now() ||
     !bindings?.workflowRefs ||
@@ -30,7 +31,8 @@ export function createFoundationLiveMcpBridge(
   )
     throw fail();
   const owned = new Set(Object.values(pins).map((v) => v.id));
-  const timeoutMs = Math.min(dependencies.timeoutMs ?? 15000, 15000);
+  const browser = executionSource === 'browser_ui';
+  const timeoutMs = Math.min(dependencies.timeoutMs ?? (browser ? 60000 : 15000), browser ? 60000 : 15000);
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw fail();
   let pending = null,
     fenced = false,
@@ -56,9 +58,10 @@ export function createFoundationLiveMcpBridge(
     )
       throw fail();
     const nonce = randomBytes(16).toString('hex');
+    const emittedAction = browser ? `browser_${action}` : action;
     const response = new Promise((resolve, reject) => {
       pending = {
-        action,
+        action: emittedAction,
         nonce,
         workflowId: args.workflowId,
         resolve,
@@ -69,8 +72,14 @@ export function createFoundationLiveMcpBridge(
     response.catch(() => {});
     try {
       if (
-        emit(Object.freeze({ kind: 'mcp_port_request', nonce, action, workflowId: args.workflowId })) !==
-        undefined
+        emit(
+          Object.freeze({
+            kind: 'mcp_port_request',
+            nonce,
+            action: emittedAction,
+            workflowId: args.workflowId,
+          }),
+        ) !== undefined
       )
         fence();
     } catch {
@@ -80,6 +89,7 @@ export function createFoundationLiveMcpBridge(
   };
   return Object.freeze({
     port: Object.freeze({
+      source: executionSource,
       discover: (args) => call('discover', args),
       details: (args) => call('details', args),
       start: (args) => call('start', args),
@@ -102,8 +112,29 @@ export function createFoundationLiveMcpBridge(
         fence();
         return true;
       }
-      const valid =
-        message.action === 'start'
+      const expectedName = Object.values(bindings.workflowRefs).find(
+        (v) => v.id === pending.workflowId,
+      )?.name;
+      const workflowUrl = `https://muhhammedsayed.app.n8n.cloud/workflow/${pending.workflowId}`;
+      const valid = browser
+        ? message.action === 'browser_start'
+          ? exact(r, ['source', 'status', 'executionId', 'executionUrl']) &&
+            r.source === 'browser_ui' &&
+            r.status === 'started' &&
+            executionId(r.executionId) &&
+            r.executionUrl === `${workflowUrl}/executions/${r.executionId}`
+          : exact(
+              r,
+              message.action === 'browser_discover'
+                ? ['source', 'id', 'renderedName', 'workflowUrl', 'executeControlEnabled']
+                : ['source', 'id', 'renderedName', 'executeControlEnabled'],
+            ) &&
+            r.source === 'browser_ui' &&
+            r.id === pending.workflowId &&
+            r.renderedName === expectedName &&
+            r.executeControlEnabled === true &&
+            (message.action !== 'browser_discover' || r.workflowUrl === workflowUrl)
+        : message.action === 'start'
           ? exact(r, ['status', 'executionId']) && r.status === 'started' && executionId(r.executionId)
           : message.action === 'discover'
             ? exact(r, ['id', 'name', 'active', 'availableInMCP']) &&

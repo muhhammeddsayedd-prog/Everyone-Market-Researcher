@@ -12,7 +12,9 @@ export async function syntheticProjectVerifiedContinuation({
   cleanupFault,
   priorFault,
   projectFault,
-  readonlyPrepare = false,
+  nativeDiscovery = false,
+  nativeDiscoveryFault,
+  readonlyPrepare = nativeDiscovery,
   readonlyPrepareFault,
   closedWindow = readonlyPrepare,
   closedFault,
@@ -356,7 +358,11 @@ export async function syntheticProjectVerifiedContinuation({
     put(recoveryConfiguration.receiptRelative, text);
     recoveryConfiguration.receiptSha256 = digest(text);
   }
-  let closedConfiguration, restoreConfiguration, allocationConfiguration, readonlyPrepareConfiguration;
+  let closedConfiguration,
+    restoreConfiguration,
+    allocationConfiguration,
+    readonlyPrepareConfiguration,
+    nativeDiscoveryConfiguration;
   if (closedWindow) {
     const base =
       'scripts/n8n/out/foundation/live/project-verified-continuation-' + snapshot.proposedSegmentId;
@@ -640,6 +646,92 @@ export async function syntheticProjectVerifiedContinuation({
     put(relative, text);
     readonlyPrepareConfiguration = { relative, sha256: digest(text) };
   }
+  if (nativeDiscovery) {
+    const relative =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical4-reconciliation-20261023.json';
+    const receipt = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8'));
+    const json = (value) => JSON.stringify(value) + '\n';
+    const base =
+      'scripts/n8n/out/foundation/live/project-verified-continuation-' + snapshot.proposedSegmentId;
+    const start = Date.parse('2026-10-23T17:10:00.000Z');
+    const admission = {
+      kind: 'm03_project_verified_continuation_admission',
+      version: 1,
+      segmentId: snapshot.proposedSegmentId,
+      sourceCommitSha: 'a5e746736893d5040e93032ae740a0878f748837',
+      windowId: '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+      approvalSha256: digest(approvalText),
+      startsAt: start,
+      deadlineAt: start + 3600000,
+      stopNewAt: start + 3000000,
+      hardDeadlineAt: start + 4200000,
+      parentProcessId: 91003,
+    };
+    const admissionSha256 = digest(json(admission));
+    const claim = {
+      kind: 'm03_project_verified_continuation_runtime_claim',
+      version: 1,
+      segmentId: snapshot.proposedSegmentId,
+      admissionSha256,
+      processId: 91004,
+      parentProcessId: admission.parentProcessId,
+      claimedAt: start + 1000,
+    };
+    const closed = {
+      kind: 'm03_project_verified_technical_closed',
+      version: 1,
+      admissionSha256,
+      parentProcessId: admission.parentProcessId,
+      runtimeProcessId: claim.processId,
+      closedAt: start + 20000,
+      childClosed: true,
+      credentialChildrenClosed: true,
+      emergencyShutdown: false,
+      pendingMachinePreserved: true,
+      nativeExit: 1,
+      bypassHandoffDeleted: false,
+      closureVerified: false,
+    };
+    for (const [key, suffix, value] of [
+      ['admission', '.json', admission],
+      ['runtimeClaim', '.runtime-claim.json', claim],
+      ['closed', '.closed.json', closed],
+    ]) {
+      const path = base + '.technical-4' + suffix,
+        text = json(value);
+      put(path, text);
+      receipt.immutableTechnicalRecords[key] = { path, bytes: Buffer.byteLength(text), sha256: digest(text) };
+    }
+    receipt.actualCleanup.closedReceiptSha256 = receipt.immutableTechnicalRecords.closed.sha256;
+    receipt.actualCleanup.parentProcessId = admission.parentProcessId;
+    receipt.actualCleanup.runtimeProcessId = claim.processId;
+    const controlPath = snapshot.journals.control.path;
+    const discovery = {
+      event: 'control_request_intent',
+      ordinal: 351,
+      kind: 'discovery',
+      workflowId: 'MzimjpsuyPuK7SKe',
+      at: new Date(start + 6000).toISOString(),
+    };
+    if (nativeDiscoveryFault === 'execution') discovery.kind = 'execution_start';
+    if (nativeDiscoveryFault === 'foreign') discovery.workflowId = 'SYNTHETIC_FOREIGN';
+    put(controlPath, readFileSync(join(directory, controlPath), 'utf8') + json(discovery));
+    receipt.discoveryAttempt = discovery;
+    for (const name of ['management', 'control', 'setup', 'preflight', 'runtime']) {
+      const value = receipt.actualPublicJournals[name],
+        text = readFileSync(join(directory, value.path), 'utf8');
+      value.sha256 = digest(text);
+      value.bytes = Buffer.byteLength(text);
+      value.rowCount = text.trimEnd().split('\n').length;
+    }
+    if (nativeDiscoveryFault === 'usage') receipt.usage.control = 351;
+    if (nativeDiscoveryFault === 'write') receipt.actualFailure.newWorkflowWrites = 1;
+    if (nativeDiscoveryFault === 'actor') receipt.actualFailure.actorStarts = 1;
+    if (nativeDiscoveryFault === 'cleanup') receipt.actualCleanup.bypassAbsent = false;
+    const text = json(receipt);
+    put(relative, text);
+    nativeDiscoveryConfiguration = { relative, sha256: digest(text) };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -680,6 +772,11 @@ export async function syntheticProjectVerifiedContinuation({
     source = source.replace(
       /const readonlyPrepareRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
       'const readonlyPrepareRecovery = Object.freeze(' + JSON.stringify(readonlyPrepareConfiguration) + ');',
+    );
+  if (nativeDiscoveryConfiguration)
+    source = source.replace(
+      /const nativeDiscoveryRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      'const nativeDiscoveryRecovery = Object.freeze(' + JSON.stringify(nativeDiscoveryConfiguration) + ');',
     );
   // Explicitly retain the exhausted old50 branch as a synthetic regression.
   source = source.replace(/setupMaximum: (?:50|88),/, `setupMaximum: ${proposedBudgetApproved ? 88 : 50},`);

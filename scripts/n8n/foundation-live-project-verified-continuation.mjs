@@ -149,6 +149,10 @@ const readonlyPrepareRecovery = Object.freeze({
   relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical3-reconciliation-20261023.json',
   sha256: '176831e9c435b174e7d19e436c42c40d825b72ca677f7fb0ab1bd3b1f14e610b',
 });
+const nativeDiscoveryRecovery = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical4-reconciliation-20261023.json',
+  sha256: 'b4e9beab46bf5c375529f082e9815979d87e9c6a3526edf38705c418bc78f0ef',
+});
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
 };
@@ -381,6 +385,7 @@ function checkpoint(x) {
   x.recovery = reconciledClosedWindow(x) ?? x.recovery;
   x.recovery = reconciledWf00Restore(x) ?? x.recovery;
   x.recovery = reconciledReadonlyPrepare(x) ?? x.recovery;
+  x.recovery = reconciledNativeDiscovery(x) ?? x.recovery;
   if (x.recovery?.closedWindow) assertSetupAllocationApproval(x);
   recoveryPreflight(x);
   return p;
@@ -923,6 +928,134 @@ function reconciledReadonlyPrepare(x) {
     mainManagementAttempts: 117,
     mainControlAttempts: 350,
     readonlyTechnicalAttempt: 3,
+    pins: Object.freeze(pins),
+  });
+}
+function reconciledNativeDiscovery(x) {
+  const text = x.file(nativeDiscoveryRecovery.relative, { optional: true });
+  if (text === null) return null;
+  if (
+    hash(text) !== nativeDiscoveryRecovery.sha256 ||
+    x.recovery?.readonlyTechnicalAttempt !== 3 ||
+    x.recovery.mainManagementAttempts !== 117 ||
+    x.recovery.carriedManagementAttempts !== 10 ||
+    x.recovery.mainControlAttempts !== 350
+  )
+    fail();
+  const base = `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-4`;
+  for (const suffix of [
+    'attempt',
+    'latest',
+    'owner-provision-attempt',
+    'reactivation-attempt',
+    'unprovisioned-archive-attempt',
+  ])
+    if (
+      x.physical(
+        join(
+          repo,
+          `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-technical-4-${suffix}.json`,
+        ),
+        true,
+      )
+    )
+      fail();
+  if (x.physical(join(repo, 'scripts/n8n/out/foundation/live/runtime.technical-4.jsonl'), true)) fail();
+  const r = JSON.parse(text);
+  if (
+    r.kind !== 'm03_technical4_closed_native_discovery_reconciliation' ||
+    r.version !== 1 ||
+    r.environment !== 'dev' ||
+    r.usage.mainManagement !== 117 ||
+    r.usage.carriedManagement !== 10 ||
+    r.usage.management !== 127 ||
+    r.usage.mainControl !== 351 ||
+    r.usage.carriedControl !== 1 ||
+    r.usage.control !== 352 ||
+    r.usage.combined !== 479 ||
+    r.usage.vercelSetupUsed !== 44 ||
+    r.usage.vercelSetupMaximum !== 88 ||
+    r.usage.allowancesReplenished !== false ||
+    r.actualFailure.phase !== 'early_native_discovery' ||
+    r.actualFailure.toolResultIsError !== true ||
+    r.actualFailure.nativeExecutions !== 0 ||
+    r.actualFailure.actorStarts !== 0 ||
+    r.actualFailure.baselineGets !== 0 ||
+    r.actualFailure.administrativePrivateRead !== false ||
+    r.actualFailure.administrativeAuthenticationAttempted !== false ||
+    r.actualFailure.newPreviewRequests !== 0 ||
+    r.actualFailure.newWorkflowWrites !== 0 ||
+    r.actualFailure.newDatabaseOrFixtureWrites !== 0 ||
+    r.actualCleanup.nativeExit !== 0 ||
+    r.actualCleanup.bothProcessesDead !== true ||
+    r.actualCleanup.parentLockAbsent !== true ||
+    r.actualCleanup.bypassAbsent !== true ||
+    r.actualCleanup.contentsRead !== false ||
+    r.actualCleanup.networkRequests !== 0 ||
+    r.actualCleanup.persistentOriginalsUntouched !== true ||
+    r.acceptance.actualM03DevAcceptanceVerified !== false ||
+    r.acceptance.successfulNativeDiscoveryVerified !== false ||
+    r.immutableTechnicalRecords.closureVerifiedRemainsFalse !== true ||
+    r.immutableTechnicalRecords.bypassHandoffDeletedRemainsFalse !== true
+  )
+    fail();
+  const pins = { ...x.recovery.pins };
+  for (const [key, suffix] of [
+    ['admission', '.json'],
+    ['runtimeClaim', '.runtime-claim.json'],
+    ['closed', '.closed.json'],
+  ]) {
+    const p = r.immutableTechnicalRecords[key];
+    if (p.path !== base + suffix || hash(x.file(p.path)) !== p.sha256) fail();
+    pins[p.path] = p.sha256;
+  }
+  const admission = JSON.parse(x.file(base + '.json')),
+    closed = JSON.parse(x.file(base + '.closed.json'));
+  if (
+    closed.closureVerified !== false ||
+    closed.bypassHandoffDeleted !== false ||
+    r.actualCleanup.closedReceiptSha256 !== pins[base + '.closed.json']
+  )
+    fail();
+  for (const [name, retainedRows] of [
+    ['management', 118],
+    ['control', 351],
+    ['setup', 84],
+    ['preflight', 4],
+    ['runtime', 50],
+  ]) {
+    const path = `scripts/n8n/out/foundation/live/${name}.jsonl`,
+      p = r.actualPublicJournals[name];
+    if (p.path !== path) fail();
+    const current = x.file(path),
+      parsed = jsonl(current, 8000);
+    if (
+      parsed.lines.length < retainedRows ||
+      hash(parsed.lines.slice(0, retainedRows).join('\n') + '\n') !== p.sha256 ||
+      (name === 'runtime' && current !== parsed.lines.slice(0, retainedRows).join('\n') + '\n')
+    )
+      fail();
+    if (name === 'control') {
+      const last = parsed.rows[350],
+        at = Date.parse(last.at);
+      if (
+        !exact(last, ['event', 'ordinal', 'kind', 'workflowId', 'at']) ||
+        last.event !== 'control_request_intent' ||
+        last.ordinal !== 351 ||
+        last.kind !== 'discovery' ||
+        last.workflowId !== 'MzimjpsuyPuK7SKe' ||
+        !Number.isFinite(at) ||
+        at < admission.startsAt ||
+        at > closed.closedAt
+      )
+        fail();
+    } else if (p.sha256 !== x.recovery.pins[path]) fail();
+    pins[path] = p.sha256;
+  }
+  return Object.freeze({
+    ...x.recovery,
+    mainControlAttempts: 351,
+    nativeDiscoveryTechnicalAttempt: 4,
     pins: Object.freeze(pins),
   });
 }
@@ -1492,7 +1625,8 @@ function closedTechnicalAttempt(x, paths) {
   const reconciled =
     (paths.ordinal === 1 && x.recovery !== null && x.recovery !== undefined) ||
     (paths.ordinal === 2 && x.recovery?.closedWindow === true) ||
-    (paths.ordinal === 3 && x.recovery?.readonlyTechnicalAttempt === 3);
+    (paths.ordinal === 3 && x.recovery?.readonlyTechnicalAttempt === 3) ||
+    (paths.ordinal === 4 && x.recovery?.nativeDiscoveryTechnicalAttempt === 4);
   if (
     !exact(close, [
       'kind',

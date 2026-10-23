@@ -1,0 +1,143 @@
+{
+  "kind": "m03_technical4_closed_native_discovery_reconciliation",
+  "version": 1,
+  "recordedAt": "2026-10-23T19:41:38.948Z",
+  "environment": "dev",
+  "source": {
+    "head": "fa064d9dbcce414ba807da76fd796e7fd9d7eff3",
+    "verification": "Root reported all five required CI jobs and Vercel green before admission."
+  },
+  "immutableTechnicalRecords": {
+    "admission": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-4.json",
+      "bytes": 446,
+      "sha256": "c7670717c5a6b6d20268579f94291603b748e9c3c2e6795624340ffe69bed122"
+    },
+    "runtimeClaim": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-4.runtime-claim.json",
+      "bytes": 275,
+      "sha256": "4ebd5cc635da54f8c1e150791611d69d95bf3bd779b822ddb9ea4af10506b2d5"
+    },
+    "closed": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-4.closed.json",
+      "bytes": 396,
+      "sha256": "5c4e97faa702ccede36139b329dc78030ea877c7b82a4ffa0360dd6acbee444a"
+    },
+    "closedReceiptNotRewritten": true,
+    "closureVerifiedRemainsFalse": true,
+    "bypassHandoffDeletedRemainsFalse": true
+  },
+  "actualFailure": {
+    "source": "Root coordinator public result; no raw tool body copied.",
+    "coordinatorProcessSession": 8064,
+    "phase": "early_native_discovery",
+    "toolResultIsError": true,
+    "toolResultCode": "tool_error",
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "baselineGets": 0,
+    "administrativePrivateRead": false,
+    "administrativeAuthenticationAttempted": false,
+    "newPreviewRequests": 0,
+    "newWorkflowWrites": 0,
+    "newDatabaseOrFixtureWrites": 0,
+    "protocolCloseReceiptProduced": false,
+    "limitation": "The child was already physically closed; no successful MCP discovery or protocol Close is inferred."
+  },
+  "actualPublicJournals": {
+    "management": {
+      "path": "scripts/n8n/out/foundation/live/management.jsonl",
+      "bytes": 5287,
+      "sha256": "79d556144e111625be9b90d9743dae118b90c6e64eac4ab43b7f13f337506a97",
+      "rowCount": 118
+    },
+    "control": {
+      "path": "scripts/n8n/out/foundation/live/control.jsonl",
+      "bytes": 46224,
+      "sha256": "23f37c1535d1af0d208c15aed0e4a94bb096c031c1e58939fcecb2b82404a137",
+      "rowCount": 351
+    },
+    "setup": {
+      "path": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "bytes": 9102,
+      "sha256": "0cad48fd9550da762c0b629ee63364e4668f4829c3a89bd6f75ec2843d32f624",
+      "rowCount": 84
+    },
+    "preflight": {
+      "path": "scripts/n8n/out/foundation/live/preflight.jsonl",
+      "bytes": 938,
+      "sha256": "ae07f30519e51f81d60bfa5cabe5ef80b5694fe13bac3da181c2b8fe38d08598",
+      "rowCount": 4
+    },
+    "runtime": {
+      "path": "scripts/n8n/out/foundation/live/runtime.jsonl",
+      "bytes": 5713,
+      "sha256": "3f1c85ad7d185481da33c8989b34b82cbbef26aa3ec01209bc13561bd3481378",
+      "rowCount": 50
+    }
+  },
+  "discoveryAttempt": {
+    "event": "control_request_intent",
+    "ordinal": 351,
+    "kind": "discovery",
+    "workflowId": "MzimjpsuyPuK7SKe",
+    "at": "2026-10-23T19:39:12.935Z"
+  },
+  "absentSideEffectOutputs": [
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-4-attempt.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-4-latest.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-4-owner-provision-attempt.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-4-reactivation-attempt.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-4-unprovisioned-archive-attempt.json",
+    "scripts/n8n/out/foundation/live/runtime.technical-4.jsonl"
+  ],
+  "actualCleanup": {
+    "source": "Root guarded cleanup503d5d plus independent targeted public PID liveness check.",
+    "toolReceipt": "503d5d",
+    "nativeExit": 0,
+    "closedReceiptSha256": "5c4e97faa702ccede36139b329dc78030ea877c7b82a4ffa0360dd6acbee444a",
+    "parentProcessId": 33672,
+    "runtimeProcessId": 40384,
+    "bothProcessesDead": true,
+    "parentLockAbsent": true,
+    "bypassExistedBeforeCleanup": true,
+    "bypassAbsent": true,
+    "removedOnlyUnusedTemporaryBypass": true,
+    "contentsRead": false,
+    "networkRequests": 0,
+    "persistentOriginalsUntouched": true
+  },
+  "usage": {
+    "mainManagement": 117,
+    "carriedManagement": 10,
+    "management": 127,
+    "mainControl": 351,
+    "carriedControl": 1,
+    "control": 352,
+    "combined": 479,
+    "vercelSetupUsed": 44,
+    "vercelSetupMaximum": 88,
+    "managementMaximum": 512,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "gatewayPreflightAttempts": 2,
+    "actorStarts": 0,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "continuation": {
+    "requiresTargetedTestsAndPublicReadiness": true,
+    "closedAdmissionReopened": false,
+    "credentialsRecreated": false,
+    "capsReplenished": false,
+    "timeOnlyApprovalRequired": false
+  },
+  "acceptance": {
+    "actualM03DevAcceptanceVerified": false,
+    "successfulNativeDiscoveryVerified": false,
+    "productionChanged": false,
+    "pr8Merged": false,
+    "m04Started": false
+  }
+}

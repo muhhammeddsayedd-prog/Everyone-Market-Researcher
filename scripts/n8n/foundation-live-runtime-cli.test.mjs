@@ -39,6 +39,64 @@ const replaySnapshot = () => ({
   queuesSha256: 'c'.repeat(64),
   costsSha256: 'd'.repeat(64),
 });
+test('early browser discovery proves only exact rendered owned control before later REST metadata verification', async () => {
+  const workflow = { id: 'MzimjpsuyPuK7SKe', workflow: { name: 'WF-00 · Orchestrator [dev]' } };
+  const observed = {
+    source: 'browser_ui',
+    id: workflow.id,
+    renderedName: workflow.workflow.name,
+    workflowUrl: `https://muhhammedsayed.app.n8n.cloud/workflow/${workflow.id}`,
+    executeControlEnabled: true,
+  };
+  const order = [],
+    rows = [];
+  const args = {
+    workflow,
+    now: () => 1792782000000,
+    admit() {
+      order.push('charged');
+    },
+    append(row) {
+      rows.push(row);
+    },
+    port: {
+      source: 'browser_ui',
+      discover: async () => {
+        order.push('observed');
+        return observed;
+      },
+    },
+  };
+  assert.deepEqual(await liveSql.verifyFoundationLiveNativeMetadata(args), {
+    browserControlVerified: true,
+    executionsStarted: 0,
+  });
+  assert.deepEqual(order, ['charged', 'observed']);
+  assert.deepEqual(rows, [
+    {
+      event: 'browser_port_preflight_verified',
+      kind: 'browser_ui',
+      workflowId: workflow.id,
+      at: '2026-10-23T19:00:00.000Z',
+    },
+  ]);
+  for (const value of [
+    { ...observed, renderedName: 'foreign' },
+    { ...observed, id: 'foreign' },
+    { ...observed, workflowUrl: observed.workflowUrl + '/executions/1' },
+    { ...observed, executeControlEnabled: false },
+    { ...observed, scopes: ['workflow:execute'] },
+    { id: workflow.id, name: workflow.workflow.name, active: false, availableInMCP: false },
+  ])
+    await assert.rejects(
+      () =>
+        liveSql.verifyFoundationLiveNativeMetadata({
+          ...args,
+          port: { source: 'browser_ui', discover: async () => value },
+        }),
+      /FOUNDATION_LIVE_CHILD_BLOCKED/,
+    );
+});
 test('early native metadata preflight charges once for owned inactive MCP-disabled discovery and never requests details or executes', async () => {
   const workflow = { id: 'MzimjpsuyPuK7SKe', workflow: { name: 'WF-00 · Orchestrator [dev]' } };
   const discovered = { id: workflow.id, name: workflow.workflow.name, active: false, availableInMCP: false };

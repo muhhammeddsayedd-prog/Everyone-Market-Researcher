@@ -5,6 +5,104 @@ import { createFoundationLiveMcpBridge } from './foundation-live-runtime-mcp.mjs
 const bindings = JSON.parse(readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)));
 const workflowId = bindings.workflowRefs['WF-00'].id;
 
+test('browser UI bridge keeps observed readiness and exact execution URLs separate from MCP metadata', async () => {
+  const frames = [];
+  const b = createFoundationLiveMcpBridge({
+    bindings,
+    executionSource: 'browser_ui',
+    emit(value) {
+      frames.push(value);
+    },
+    deadlineAt: Date.now() + 120000,
+  });
+  try {
+    const discovered = b.port.discover({ workflowId });
+    discovered.catch(() => {});
+    const discovery = {
+      source: 'browser_ui',
+      id: workflowId,
+      renderedName: bindings.workflowRefs['WF-00'].name,
+      workflowUrl: `https://muhhammedsayed.app.n8n.cloud/workflow/${workflowId}`,
+      executeControlEnabled: true,
+    };
+    assert.equal(frames[0].action, 'browser_discover');
+    for (const invalid of [
+      { ...discovery, source: 'mcp' },
+      { ...discovery, renderedName: 'Foreign' },
+      { ...discovery, workflowUrl: discovery.workflowUrl + '?execution=other' },
+      { ...discovery, executeControlEnabled: false },
+      { ...discovery, canExecute: true },
+    ])
+      assert.equal(b.accept({ ...frames[0], kind: 'mcp_port_result', result: invalid }), false);
+    assert.equal(b.accept({ ...frames[0], kind: 'mcp_port_result', result: discovery }), true);
+    assert.deepEqual(await discovered, discovery);
+    const details = b.port.details({ workflowId });
+    details.catch(() => {});
+    const readiness = {
+      source: 'browser_ui',
+      id: workflowId,
+      renderedName: discovery.renderedName,
+      executeControlEnabled: true,
+    };
+    assert.equal(frames[1].action, 'browser_details');
+    assert.equal(
+      b.accept({
+        ...frames[1],
+        kind: 'mcp_port_result',
+        result: { ...readiness, scopes: ['workflow:execute'] },
+      }),
+      false,
+    );
+    assert.equal(b.accept({ ...frames[1], kind: 'mcp_port_result', result: readiness }), true);
+    assert.deepEqual(await details, readiness);
+    const started = b.port.start({ workflowId, executionMode: 'manual' });
+    started.catch(() => {});
+    const ack = {
+      source: 'browser_ui',
+      status: 'started',
+      executionId: '123',
+      executionUrl: `https://muhhammedsayed.app.n8n.cloud/workflow/${workflowId}/executions/123`,
+    };
+    assert.equal(frames[2].action, 'browser_start');
+    for (const invalid of [
+      { ...ack, executionId: '124' },
+      { ...ack, executionUrl: ack.executionUrl.replace(workflowId, 'foreign') },
+      { ...ack, executionUrl: ack.executionUrl.replace('https:', 'http:') },
+      { ...ack, executionUrl: ack.executionUrl + '?token=SYNTHETIC_PRIVATE' },
+      { status: 'started', executionId: '123' },
+    ])
+      assert.equal(b.accept({ ...frames[2], kind: 'mcp_port_result', result: invalid }), false);
+    assert.equal(b.accept({ ...frames[2], kind: 'mcp_port_result', result: ack }), true);
+    assert.deepEqual(await started, ack);
+    assert.equal(b.port.source, 'browser_ui');
+  } finally {
+    b.close();
+  }
+});
+
+test('browser UI deadline, single pending request and unknown completion never permit a replacement click', async () => {
+  const frames = [];
+  const b = createFoundationLiveMcpBridge(
+    {
+      bindings,
+      executionSource: 'browser_ui',
+      emit(value) {
+        frames.push(value);
+      },
+      deadlineAt: Date.now() + 60000,
+    },
+    { timeoutMs: 10 },
+  );
+  const pending = b.port.start({ workflowId, executionMode: 'manual' });
+  pending.catch(() => {});
+  await assert.rejects(b.port.start({ workflowId, executionMode: 'manual' }), /FOUNDATION_LIVE_MCP_BLOCKED/);
+  await assert.rejects(pending, /FOUNDATION_LIVE_MCP_BLOCKED/);
+  await assert.rejects(b.port.start({ workflowId, executionMode: 'manual' }), /FOUNDATION_LIVE_MCP_BLOCKED/);
+  assert.equal(frames.length, 1);
+  assert.equal(b.state().fenced, true);
+  b.close();
+});
+
 test('owned WF-00 discovery accepts inactive MCP-disabled inventory without inventing details or execution proof', async () => {
   const frames = [];
   const b = createFoundationLiveMcpBridge({

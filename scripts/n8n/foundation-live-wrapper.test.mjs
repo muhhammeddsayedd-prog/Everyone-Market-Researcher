@@ -474,6 +474,37 @@ test(
           workflowId: 'MzimjpsuyPuK7SKe',
         },
         { kind: 'mcp_port_request', nonce: 'fixtureNonce', action: 'discover', workflowId: 'FixtureWFID' },
+        {
+          kind: 'mcp_port_request',
+          nonce: 'fixtureNonce',
+          action: 'browser_discover',
+          workflowId: 'MzimjpsuyPuK7SKe',
+        },
+        {
+          kind: 'mcp_port_request',
+          nonce: 'fixtureNonce',
+          action: 'browser_discover',
+          workflowId: 'FixtureWFID',
+        },
+        {
+          kind: 'mcp_port_request',
+          nonce: 'fixtureNonce',
+          action: 'browser_details',
+          workflowId: 'FixtureWFID',
+        },
+        {
+          kind: 'mcp_port_request',
+          nonce: 'fixtureNonce',
+          action: 'browser_start',
+          workflowId: 'FixtureWFID',
+        },
+        {
+          kind: 'mcp_port_request',
+          nonce: 'fixtureNonce',
+          action: 'browser_start',
+          workflowId: 'OtherWorkflow',
+        },
+        { kind: 'mcp_port_request', nonce: 'fixtureNonce', action: 'browser_run', workflowId: 'FixtureWFID' },
       ];
       const script = join(directory, 'projection.ps1');
       writeFileSync(
@@ -517,6 +548,12 @@ $out|ConvertTo-Json -Compress
         'rejected',
         'rejected',
         'accepted',
+        'rejected',
+        'accepted',
+        'rejected',
+        'accepted',
+        'accepted',
+        'rejected',
         'rejected',
       ]);
       assert.doesNotMatch(r.stdout, /PrivateKeyAlpha47/);

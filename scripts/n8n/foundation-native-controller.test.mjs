@@ -105,7 +105,7 @@ function fixture(options = {}) {
     const resultData = { runData: {}, ...data.resultData };
     const trigger = b.body.nodes.find((node) => node.type === 'n8n-nodes-base.manualTrigger');
     // The native MCP producer always seeds the sole ManualTrigger with an empty item.
-    if (mode === 'manual' && trigger && resultData.pinData === undefined)
+    if (!options.browserUi && mode === 'manual' && trigger && resultData.pinData === undefined)
       resultData.pinData = { [trigger.name]: [{ json: {} }] };
     const metadata = {
       id,
@@ -315,22 +315,43 @@ function fixture(options = {}) {
     },
     callTimeoutMs: options.callTimeoutMs ?? 15000,
     port: {
-      details: async () => ({
-        id: idFor('WF-00'),
-        versionId: bound.get('WF-00').versionId,
-        canExecute: true,
-        scopes: ['workflow:execute'],
-      }),
+      ...(options.browserUi ? { source: 'browser_ui' } : {}),
+      details: async () => {
+        if (options.detailsDelay) await new Promise((resolve) => setTimeout(resolve, options.detailsDelay));
+        return options.browserUi
+          ? {
+              source: 'browser_ui',
+              id: idFor('WF-00'),
+              renderedName: bindings.workflowRefs['WF-00'].name,
+              executeControlEnabled: true,
+              ...options.detailsOverride,
+            }
+          : {
+              id: idFor('WF-00'),
+              versionId: bound.get('WF-00').versionId,
+              canExecute: true,
+              scopes: ['workflow:execute'],
+            };
+      },
       start: async (args) => {
         starts++;
         assert.deepEqual(args, { workflowId: idFor('WF-00'), executionMode: 'manual' });
         if (options.neverStart) return new Promise(() => {});
         if (options.unknownStart) throw Error('SYNTHETIC_PRIVATE_START');
-        return { status: 'started', executionId: options.ackId ?? '301' };
+        const id = options.ackId ?? '301';
+        return options.browserUi
+          ? {
+              source: 'browser_ui',
+              status: 'started',
+              executionId: id,
+              executionUrl: `https://muhhammedsayed.app.n8n.cloud/workflow/${idFor('WF-00')}/executions/${id}`,
+              ...options.startOverride,
+            }
+          : { status: 'started', executionId: id };
       },
     },
   };
-  options.beforeCreate?.({ executions, bodies, bound, baselineIdsByKey, ports });
+  options.beforeCreate?.({ executions, bodies, bound, workflows, baselineIdsByKey, ports });
   const controller = createFoundationExecutionController(ports);
   return {
     controller,
@@ -360,6 +381,81 @@ function fixture(options = {}) {
     },
   };
 }
+
+test('browser whole-workflow control uses fresh actual binding and native URL receipt without fake MCP scopes', async () => {
+  const f = fixture({ browserUi: true, callTimeoutMs: 5, detailsDelay: 20 });
+  const r = await f.controller.runCase(f.input);
+  assert.equal(r.state, 'native_settled');
+  assert.equal(r.businessAcceptanceProven, false);
+  assert.equal(f.starts(), 1);
+  assert.deepEqual(
+    f.controller.caseReceipts(f.input.caseId).map((v) => v.executionId),
+    ['301', '302'],
+  );
+  assert.equal(f.calls[0].path, '/api/v1/workflows/' + f.savedCase.workflowId + '?excludePinnedData=true');
+});
+
+test('browser foreign readiness, mixed sources, changed actual workflow or mismatched URL cannot prove a native start', async () => {
+  for (const options of [
+    { browserUi: true, detailsOverride: { renderedName: 'Foreign' } },
+    { browserUi: true, detailsOverride: { executeControlEnabled: false } },
+    { browserUi: true, detailsOverride: { canExecute: true } },
+    { browserUi: true, detailsOverride: { source: 'mcp' } },
+    {
+      browserUi: true,
+      beforeCreate({ workflows, ports }) {
+        workflows.get(ports.bindings.workflowRefs['WF-00'].id).name = 'Foreign';
+      },
+      savedDrift: true,
+    },
+    {
+      browserUi: true,
+      beforeCreate({ executions }) {
+        executions.get('301').full.workflowData.name = 'Foreign';
+      },
+    },
+    {
+      browserUi: true,
+      startOverride: { executionUrl: 'https://muhhammedsayed.app.n8n.cloud/workflow/Foreign/executions/301' },
+    },
+  ]) {
+    const f = fixture(options),
+      result = await f.controller.runCase(f.input);
+    assert.equal(result.state, 'native_unresolved');
+    assert.equal(f.controller.caseClosure(f.input.caseId), null);
+    await assert.rejects(f.controller.runCase(f.input), fixed);
+    assert.equal(f.starts(), options.startOverride || (options.beforeCreate && !options.savedDrift) ? 1 : 0);
+  }
+});
+
+test('browser saved graph drift during UI readiness blocks before durable start intent and every click', async () => {
+  const f = fixture({
+    browserUi: true,
+    beforeCreate({ workflows, ports }) {
+      const originalDetails = ports.port.details;
+      ports.port.details = async (args) => {
+        const observed = await originalDetails(args);
+        workflows.get(args.workflowId).name = 'SYNTHETIC_CHANGED_DURING_BROWSER_READINESS';
+        return observed;
+      };
+    },
+  });
+  const r = await f.controller.runCase(f.input);
+  assert.equal(r.state, 'native_unresolved');
+  assert.equal(f.starts(), 0);
+  assert.equal(f.controller.caseClosure(f.input.caseId), null);
+  assert.equal(
+    f.rows.some((row) => row.event === 'native_start_intent'),
+    false,
+  );
+  assert.equal(
+    f.rows.some((row) => row.event === 'native_start_ack'),
+    false,
+  );
+  assert.equal(f.calls.filter((call) => call.path.startsWith('/api/v1/workflows/')).length, 2);
+  await assert.rejects(f.controller.runCase(f.input), fixed);
+  assert.equal(f.starts(), 0);
+});
 
 test('native main entry proves real scripted root-child, settlement and exact cleanup brands without altering historical mode', async () => {
   const f = fixture();

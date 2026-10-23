@@ -93,9 +93,9 @@ const exact = (v, keys) =>
   !Array.isArray(v) &&
   Object.keys(v).length === keys.length &&
   keys.every((k) => Object.hasOwn(v, k));
-// Metadata access is checked before expensive owned DB/Preview preparation.
-// Search can read an MCP-disabled baseline; native details deliberately cannot.
-// This proves inventory access only. The subsequent REST guard proves version.
+// Selected native-port access is checked before owned DB/Preview preparation.
+// Browser observations prove the rendered control only; the subsequent REST
+// guard remains responsible for saved metadata, version, graph and privacy.
 export async function verifyFoundationLiveNativeMetadata({ port, workflow, admit, append, now }) {
   if (
     !port ||
@@ -106,7 +106,8 @@ export async function verifyFoundationLiveNativeMetadata({ port, workflow, admit
     workflow.workflow.name.length > 200 ||
     typeof admit !== 'function' ||
     typeof append !== 'function' ||
-    typeof now !== 'function'
+    typeof now !== 'function' ||
+    (port.source !== undefined && !['mcp', 'browser_ui'].includes(port.source))
   )
     fail();
   const charged = admit({ kind: 'discovery', workflowId: workflow.id });
@@ -115,25 +116,35 @@ export async function verifyFoundationLiveNativeMetadata({ port, workflow, admit
     fail();
   }
   const value = await port.discover({ workflowId: workflow.id });
+  const browserUi = port.source === 'browser_ui';
   if (
-    !exact(value, ['id', 'name', 'active', 'availableInMCP']) ||
-    value.id !== workflow.id ||
-    value.name !== workflow.workflow.name ||
-    value.active !== false ||
-    value.availableInMCP !== false
+    browserUi
+      ? !exact(value, ['source', 'id', 'renderedName', 'workflowUrl', 'executeControlEnabled']) ||
+        value.source !== 'browser_ui' ||
+        value.id !== workflow.id ||
+        value.renderedName !== workflow.workflow.name ||
+        value.executeControlEnabled !== true ||
+        value.workflowUrl !== `https://muhhammedsayed.app.n8n.cloud/workflow/${workflow.id}`
+      : !exact(value, ['id', 'name', 'active', 'availableInMCP']) ||
+        value.id !== workflow.id ||
+        value.name !== workflow.workflow.name ||
+        value.active !== false ||
+        value.availableInMCP !== false
   )
     fail();
   if (
     append({
-      event: 'native_port_preflight_verified',
+      event: browserUi ? 'browser_port_preflight_verified' : 'native_port_preflight_verified',
       workflowId: workflow.id,
-      active: false,
-      availableInMCP: false,
+      ...(browserUi ? { kind: 'browser_ui' } : { active: false, availableInMCP: false }),
       at: new Date(now()).toISOString(),
     }) !== undefined
   )
     fail();
-  return Object.freeze({ metadataVerified: true, executionsStarted: 0 });
+  return Object.freeze({
+    ...(browserUi ? { browserControlVerified: true } : { metadataVerified: true }),
+    executionsStarted: 0,
+  });
 }
 export function projectFoundationBaselineDiagnostic(runtime) {
   try {
@@ -575,7 +586,13 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   const records = Object.keys(bindings.workflowRefs).map((k) =>
     JSON.parse(readFileSync(new URL('../../n8n/workflows/' + k + '.json', import.meta.url))),
   );
-  const bridge = createFoundationLiveMcpBridge({ bindings, emit, deadlineAt, now });
+  const bridge = createFoundationLiveMcpBridge({
+    bindings,
+    emit,
+    deadlineAt,
+    now,
+    executionSource: verifiedCheckpoint?.closedWindow ? 'browser_ui' : 'mcp',
+  });
   let runtime,
     setup,
     admin,
@@ -649,7 +666,14 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     ...(adminStartupFailure
       ? { code: 'FOUNDATION_ADMIN_' + adminStartupFailure.diagnostic.toUpperCase() }
       : {}),
-    ...(nativeMetadataFailure ? { code: 'FOUNDATION_NATIVE_METADATA_BLOCKED' } : {}),
+    ...(nativeMetadataFailure
+      ? {
+          code:
+            bridge.port.source === 'browser_ui'
+              ? 'FOUNDATION_NATIVE_UI_BLOCKED'
+              : 'FOUNDATION_NATIVE_METADATA_BLOCKED',
+        }
+      : {}),
     ...projectFoundationBaselineDiagnostic(runtime ?? baselinePreflight),
     ...extra,
   });
