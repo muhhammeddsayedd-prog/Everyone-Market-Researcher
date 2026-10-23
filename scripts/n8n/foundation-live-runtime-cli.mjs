@@ -112,11 +112,13 @@ const setupFailureCodes = new Set([
   'tls_failure',
   'dns_failure',
   'network_failure',
+  'http_failure',
+  'nondefault_bypass_prerequisite',
 ]);
 // Preserve only fixed technical fields from the private CLI transport. Neither
 // its stderr/output/error nor byte counts, paths or provider values are copied.
 // False flags in the unknown projection mean closure/start/abort is unproven.
-function projectSetupFailureDiagnostic(transport) {
+function projectSetupFailureDiagnostic(transport, setup) {
   const unknown = Object.freeze({
     stage: 'unknown',
     code: 'unknown',
@@ -143,7 +145,12 @@ function projectSetupFailureDiagnostic(transport) {
       return unknown;
     return Object.freeze({
       stage,
-      code: setupFailureCodes.has(code) ? code : 'unknown',
+      code:
+        setup?.snapshot?.().prerequisiteCode === 'nondefault_bypass_prerequisite'
+          ? 'nondefault_bypass_prerequisite'
+          : setupFailureCodes.has(code)
+            ? code
+            : 'unknown',
       httpStatus,
       nativeExit,
       childStarted,
@@ -577,7 +584,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       deadlineAt,
       authorizeRequest: (spec) => setup?.authorizeRequest(spec) === true,
     });
-    setup = createFoundationLiveSetup(
+    setup = (dependencies.createSetup ?? createFoundationLiveSetup)(
       {
         sourceCommitSha: input.sourceCommitSha,
         transport: t,
@@ -600,9 +607,9 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       dependencies.setup ?? {},
     );
     try {
-      deployment = assertFoundationLiveDeployment(await setup.prepare());
+      deployment = (dependencies.assertDeployment ?? assertFoundationLiveDeployment)(await setup.prepare());
     } catch {
-      const diagnostic = projectSetupFailureDiagnostic(t);
+      const diagnostic = projectSetupFailureDiagnostic(t, setup);
       ownerPreflight.append({
         event: 'setup_failure_diagnostic',
         at: new Date(now()).toISOString(),

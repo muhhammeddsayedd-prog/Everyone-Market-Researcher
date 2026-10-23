@@ -1,5 +1,8 @@
 # Development autonomy — actual implementation, 23 October 2026
 
+This is the initial implementation checkpoint. The subsequent actual hosted
+attempt and cleanup are in [its separate receipt](dev-acceptance-persistent-attempt-20261023.json).
+
 The owner's explicit policy reset is implemented in the existing helpers and
 coordinator. This is an implementation receipt, not a new approval packet.
 Starting branch/head: `m03-n8n-foundation` / `90ba8d24f135c510126840383e375daae025dc87`.

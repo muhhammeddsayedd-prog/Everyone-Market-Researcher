@@ -176,6 +176,7 @@ for (const mode of [
   'setup_throwing_diagnostics',
   'setup_missing_diagnostics',
   'setup_malformed_diagnostics',
+  'setup_prerequisite',
 ])
   test('same-child exact route / independent shutdown: ' + mode, async () => {
     let restoreFault = false;
@@ -276,7 +277,7 @@ for (const mode of [
         if (mode.startsWith('setup_')) {
           assert.equal(spec.method, 'GET');
           assert.equal(spec.path, '/v9/projects/' + projectId + '?teamId=' + teamId);
-          if (!['setup_http', 'setup_contract'].includes(mode))
+          if (!['setup_http', 'setup_contract', 'setup_prerequisite'].includes(mode))
             throw Error('SYNTHETIC_PRIVATE_TRANSPORT_FAILURE');
           if (mode === 'setup_http')
             return { status: 401, data: { error: packet.writerPassword }, closed: true };
@@ -343,7 +344,9 @@ for (const mode of [
         if (mode === 'setup_throwing_diagnostics') throw Error(packet.writerPassword);
         if (mode === 'setup_missing_diagnostics') return undefined;
         return {
-          stage: ['setup_http', 'setup_contract'].includes(mode) ? 'completed' : 'native_exit',
+          stage: ['setup_http', 'setup_contract', 'setup_prerequisite'].includes(mode)
+            ? 'completed'
+            : 'native_exit',
           code:
             mode === 'setup_unknown_diagnostics'
               ? packet.writerPassword
@@ -355,10 +358,10 @@ for (const mode of [
               ? '200'
               : mode === 'setup_http'
                 ? 401
-                : mode === 'setup_contract'
+                : ['setup_contract', 'setup_prerequisite'].includes(mode)
                   ? 200
                   : null,
-          nativeExit: ['setup_http', 'setup_contract'].includes(mode) ? 0 : 1,
+          nativeExit: ['setup_http', 'setup_contract', 'setup_prerequisite'].includes(mode) ? 0 : 1,
           childStarted: true,
           childClosed: true,
           aborted: false,
@@ -381,6 +384,37 @@ for (const mode of [
         startAdmin: async () => admin,
         createNativeTransport: () => nativeTransport,
         createSetupTransport: () => setupTransport,
+        // Post-setup unit behavior is isolated behind explicit factory ports.
+        // This stub is not a successful real-component/provider setup receipt.
+        ...(mode.startsWith('setup_')
+          ? {}
+          : {
+              createSetup: () => ({
+                async prepare() {
+                  envs.push(...Array.from({ length: 7 }, (_, i) => ({ id: 'synthetic_completed_env_' + i })));
+                  return {
+                    version: 1,
+                    projectId,
+                    branch: 'm03-n8n-foundation',
+                    sourceCommitSha: packet.sourceCommitSha,
+                    deploymentId: 'dpl_SyntheticSession',
+                    audience,
+                    environment: 'preview',
+                    readyState: 'READY',
+                    protection: 'all_except_custom_domains',
+                    protectionVerified: true,
+                    protectionTransportVerified: false,
+                    sqlAudienceBindingVerified: false,
+                  };
+                },
+                async cleanup() {
+                  envs.length = 0;
+                  return { state: 'setup_resources_removed' };
+                },
+                close() {},
+              }),
+              assertDeployment: (proof) => proof,
+            }),
         setup: { transportValidator: (t) => t },
         runtime: f.dependencies,
         createGatewayProbe: ({ admitGatewayAttempt }) => ({
@@ -469,16 +503,27 @@ for (const mode of [
         ].includes(mode);
         assert.equal(
           receipt.stage,
-          unknown ? 'unknown' : ['setup_http', 'setup_contract'].includes(mode) ? 'completed' : 'native_exit',
+          unknown
+            ? 'unknown'
+            : ['setup_http', 'setup_contract', 'setup_prerequisite'].includes(mode)
+              ? 'completed'
+              : 'native_exit',
         );
-        assert.equal(receipt.code, mode === 'setup_expired' ? 'saved_auth_expired' : 'unknown');
+        assert.equal(
+          receipt.code,
+          mode === 'setup_expired'
+            ? 'saved_auth_expired'
+            : mode === 'setup_prerequisite'
+              ? 'nondefault_bypass_prerequisite'
+              : 'unknown',
+        );
         assert.equal(
           receipt.httpStatus,
-          mode === 'setup_http' ? 401 : mode === 'setup_contract' ? 200 : null,
+          mode === 'setup_http' ? 401 : ['setup_contract', 'setup_prerequisite'].includes(mode) ? 200 : null,
         );
         assert.equal(
           receipt.nativeExit,
-          unknown ? null : ['setup_http', 'setup_contract'].includes(mode) ? 0 : 1,
+          unknown ? null : ['setup_http', 'setup_contract', 'setup_prerequisite'].includes(mode) ? 0 : 1,
         );
         assert.equal(receipt.childStarted, !unknown);
         assert.equal(receipt.childClosed, !unknown);

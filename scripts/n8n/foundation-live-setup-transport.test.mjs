@@ -202,6 +202,19 @@ test('new child preload disables native default retry without changing installed
   assert.equal(r.options.useCurrentTeam, false);
   assert.throws(() => new Client().fetch('/v9/fixed'), /FOUNDATION_LIVE_SETUP_NO_RETRY_BLOCKED/);
 });
+test('native HTTP errors expose only a fixed numeric status and never the server error message', async () => {
+  class Client {
+    fetch(url) {
+      assert.equal(url, '/v1/fixed');
+      return Promise.reject(Object.assign(Error('SYNTHETIC_PRIVATE_SERVER_MESSAGE'), { status: 400 }));
+    }
+  }
+  installFoundationSetupNoRetry(Client, { method: 'PATCH', path: '/v1/fixed' });
+  await assert.rejects(
+    new Client().fetch('/v1/fixed', { method: 'PATCH' }),
+    (error) => error.message === 'FOUNDATION_LIVE_SETUP_NO_RETRY_BLOCKED:http_status_400',
+  );
+});
 test('owned preload refuses hidden scope/auth calls before any native fetch and disables OAuth refresh', async () => {
   let calls = 0;
   class Client {

@@ -9,7 +9,7 @@ import { createFoundationLiveSetupCliTransport } from './foundation-live-setup-t
 import { createFoundationSetupProjectDiagnostic } from './foundation-live-setup-diagnostic.mjs';
 
 const cli = join(process.env.APPDATA ?? '', 'npm/node_modules/vercel/dist/index.js');
-for (const mode of ['valid', 'missing_identity', 'expired'])
+for (const mode of ['valid', 'missing_identity', 'expired', 'http400'])
   test(
     'installed pinned CLI with synthetic isolated auth, mocked fetch and no network: ' + mode,
     { skip: !existsSync(cli) },
@@ -86,6 +86,7 @@ for (const mode of ['valid', 'missing_identity', 'expired'])
                   EMR_FOUNDATION_SETUP_PATH: options.env.EMR_FOUNDATION_SETUP_PATH,
                   EMR_SYNTHETIC_VERCEL: 'isolated-no-network',
                   EMR_SYNTHETIC_VERCEL_ROOT: root,
+                  EMR_SYNTHETIC_VERCEL_RESPONSE: mode === 'http400' ? '400' : '200',
                 },
               },
             );
@@ -136,22 +137,25 @@ for (const mode of ['valid', 'missing_identity', 'expired'])
         assert.equal(result.status, mode === 'valid' ? 'project_contract_ready' : 'transport_rejected');
         assert.equal(result.transport.stage, mode === 'valid' ? 'completed' : 'native_exit');
         assert.equal(result.transport.childClosed, true);
-        assert.equal(result.transport.httpStatus, mode === 'valid' ? 200 : null);
+        assert.equal(result.transport.httpStatus, mode === 'valid' ? 200 : mode === 'http400' ? 400 : null);
         assert.equal(
           result.transport.code,
           mode === 'valid'
             ? 'unknown'
             : mode === 'expired'
               ? 'saved_auth_expired'
-              : 'auxiliary_scope_refusal',
+              : mode === 'http400'
+                ? 'http_failure'
+                : 'auxiliary_scope_refusal',
         );
         assert.equal(admissions, 1);
         assert.equal(rows.length, 2);
         assert.equal(JSON.stringify(result).includes('SYNTHETIC_RAW_DTO_MUST_STAY_PRIVATE'), false);
+        if (mode === 'http400') assert.equal(stderr.includes('SYNTHETIC_PRIVATE_SERVER_MESSAGE'), false);
         const facts = JSON.parse(readFileSync(join(root, 'synthetic-wire-facts.json'), 'utf8'));
         assert.deepEqual(facts, {
-          fetchCalls: mode === 'valid' ? 1 : 0,
-          matchingAuthorization: mode === 'valid',
+          fetchCalls: ['valid', 'http400'].includes(mode) ? 1 : 0,
+          matchingAuthorization: ['valid', 'http400'].includes(mode),
           blockedNetwork: 0,
           blockedFileAccess: 0,
           blockedFileKind: null,

@@ -78,7 +78,8 @@ function fixture({ fault, previousEvents = [], persist = () => {} } = {}) {
             note: spec.body.generate.note,
             isEnvVar: true,
           };
-        if (spec.body.update) bypass[spec.body.update.secret].isEnvVar = spec.body.update.isEnvVar;
+        if (spec.body.update && spec.body.update.isEnvVar === false && Object.keys(bypass).length === 1)
+          return { status: 400, data: { error: 'SOLE_DEFAULT_REQUIRED' }, closed: true };
         if (spec.body.revoke) delete bypass[spec.body.revoke.secret];
         return { status: 200, data: { protectionBypass: structuredClone(bypass) }, closed: true };
       }
@@ -162,33 +163,63 @@ function fixture({ fault, previousEvents = [], persist = () => {} } = {}) {
     readyReads: () => readyReads,
   };
 }
-test('new protected Preview follows exact dev readiness and seven branch-sensitive entries without production or upsert', async () => {
+// Hypothetical acknowledged resource journal for independent cleanup tests.
+// This is not a successful empty-baseline prepare or a hosted receipt.
+function acknowledgedCleanupFixture(fault, priorAttempts = 0) {
+  const keys = [
+    'ENABLED',
+    'WINDOW_ID',
+    'WRITER_PASSWORD',
+    'APIFY_READ_TOKEN',
+    'TOKEN_SHA256',
+    'AUDIENCE',
+    'COMMIT_SHA',
+  ];
+  const envs = keys.map((key, i) => ({
+    key: 'EMR_M03_FOUNDATION_' + key,
+    id: 'env_historical_' + i,
+    type: 'sensitive',
+    target: ['preview'],
+    gitBranch: scope.branch,
+    comment: 'M03 foundation temporary dev ' + scope.windowId,
+    createdAt: epoch,
+    updatedAt: epoch,
+  }));
+  const previousEvents = [
+    ...Array.from({ length: priorAttempts }, (_, i) => ({
+      event: 'setup_attempt',
+      ordinal: i + 1,
+      kind: 'GET',
+      at: epoch,
+    })),
+    { event: 'setup_ack', kind: 'bypass', at: epoch },
+    ...envs.map((row) => ({ event: 'setup_ack', kind: 'environment', ...row })),
+  ];
+  const f = fixture({ fault, previousEvents });
+  f.envs.push(...structuredClone(envs));
+  f.bypass[secret.protectionBypass] = {
+    scope: 'automation-bypass',
+    createdAt: epoch,
+    note: 'M03 foundation temporary dev ' + scope.windowId,
+    isEnvVar: false,
+  };
+  return f;
+}
+test('real provider default invariant blocks an empty baseline before every bypass, environment or deployment intent', async () => {
   const f = fixture();
-  const result = await f.setup.prepare();
+  await assert.rejects(f.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
   assert.equal(f.readyReads(), 1);
-  assert.equal(assertFoundationLiveDeployment(result), result);
-  assert.equal(result.audience, 'https://everyone-market-researcher-synthetic21.vercel.app');
-  assert.equal(result.protectionVerified, true);
-  assert.equal(result.protectionTransportVerified, false);
-  assert.equal(result.sqlAudienceBindingVerified, false);
-  assert.equal(f.envs.length, 7);
-  for (const e of f.envs) {
-    assert.equal(e.type, 'sensitive');
-    assert.deepEqual(e.target, ['preview']);
-    assert.equal(e.gitBranch, scope.branch);
-  }
-  const deploy = f.calls.find((c) => c.method === 'POST' && c.path.startsWith('/v13/deployments?'));
-  assert.equal(Object.hasOwn(deploy.body, 'target'), false);
-  assert.equal(deploy.body.gitSource.sha, sha);
-  assert.equal(deploy.body.gitSource.ref, scope.branch);
-  assert.equal(
-    f.calls.some((c) => c.path.includes('upsert')),
-    false,
+  assert.equal(f.setup.snapshot().prerequisiteCode, 'nondefault_bypass_prerequisite');
+  assert.equal(f.setup.snapshot().deploymentReady, false);
+  assert.deepEqual(
+    f.calls.map((c) => c.method),
+    ['GET'],
   );
-  assert.equal(f.bypass[secret.protectionBypass].isEnvVar, false);
+  assert.equal(f.rows.filter((r) => r.event === 'setup_intent').length, 0);
+  assert.equal(f.envs.length, 0);
   assert.equal(f.attempts(), f.calls.length);
-  assert.throws(() => assertFoundationLiveDeployment({ ...result }));
-  const publicText = JSON.stringify({ result, rows: f.rows });
+  assert.throws(() => assertFoundationLiveDeployment({ version: 1 }));
+  const publicText = JSON.stringify({ snapshot: f.setup.snapshot(), rows: f.rows });
   for (const value of Object.values(secret)) assert.equal(publicText.includes(value), false);
   const closed = await f.setup.cleanup();
   assert.equal(closed.state, 'setup_resources_removed');
@@ -213,22 +244,49 @@ test('existing owned-key environment or another bypass blocks before every mutat
   }
 });
 test('ambiguous create is never replayed; known resources can still clean up without raw errors', async () => {
-  const f = fixture({ fault: 'lost_env_ack' });
+  const f = fixture({
+    previousEvents: [
+      { event: 'setup_intent', kind: 'environment', key: 'EMR_M03_FOUNDATION_ENABLED', at: epoch },
+    ],
+  });
   await assert.rejects(f.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
   const count = f.calls.length;
   await assert.rejects(f.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
   assert.equal(f.calls.length, count);
   const closed = await f.setup.cleanup();
   assert.equal(closed.state, 'setup_cleanup_incomplete');
-  assert.equal(f.calls.filter((c) => c.method === 'POST' && c.path.includes('/env?')).length, 1);
+  assert.equal(f.calls.filter((c) => c.method === 'POST').length, 0);
   assert.equal(JSON.stringify(f.rows).includes(secret.writerPassword), false);
 });
-test('wrong source, old environment snapshot or unclosed response cannot produce a deployment proof', async () => {
-  for (const fault of ['wrong_sha', 'old_deployment', 'unclosed']) {
-    const f = fixture({ fault });
+test('project identity, runtime and protection drift cannot be mislabeled as the non-default prerequisite', async () => {
+  for (const fault of ['repository', 'node', 'protection']) {
+    const f = fixture();
+    if (fault === 'repository') f.project.link.repo = 'ForeignProject';
+    if (fault === 'node') f.project.nodeVersion = '20.x';
+    if (fault === 'protection') f.project.ssoProtection.deploymentType = 'none';
     await assert.rejects(f.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
     assert.equal(f.setup.snapshot().deploymentReady, false);
+    assert.equal(f.setup.snapshot().prerequisiteCode, null);
+    assert.equal(f.calls.filter((c) => c.method !== 'GET').length, 0);
   }
+});
+test('scripted documented provider semantics retain the first default when an update tries to unset the sole default', async () => {
+  const f = fixture();
+  const path = '/v1/projects/' + scope.projectId + '/protection-bypass?teamId=' + scope.teamId;
+  const generated = await f.transport.request({
+    method: 'PATCH',
+    path,
+    body: { generate: { secret: secret.protectionBypass, note: 'synthetic' } },
+  });
+  assert.equal(generated.status, 200);
+  assert.equal(generated.data.protectionBypass[secret.protectionBypass].isEnvVar, true);
+  const update = await f.transport.request({
+    method: 'PATCH',
+    path,
+    body: { update: { secret: secret.protectionBypass, isEnvVar: false, note: 'synthetic' } },
+  });
+  assert.equal(update.status, 400);
+  assert.equal(f.bypass[secret.protectionBypass].isEnvVar, true);
 });
 test('durable intent failure, parallel callers, replay journals and missing readiness prevent extra writes', async () => {
   const f = fixture({
@@ -241,14 +299,13 @@ test('durable intent failure, parallel callers, replay journals and missing read
   const g = fixture();
   const first = g.setup.prepare();
   await assert.rejects(g.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
-  await first;
+  await assert.rejects(first, /FOUNDATION_LIVE_SETUP_BLOCKED/);
   const prior = fixture({ previousEvents: g.rows });
   await assert.rejects(prior.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
   assert.equal(prior.calls.length, 0);
 });
 test('a lost DELETE acknowledgement plus absence remains ambiguous and is never retried', async () => {
-  const f = fixture({ fault: 'lost_delete_ack' });
-  await f.setup.prepare();
+  const f = acknowledgedCleanupFixture('lost_delete_ack');
   const result = await f.setup.cleanup();
   assert.equal(result.state, 'setup_cleanup_incomplete');
   assert.equal(result.unresolved.length, 7);
@@ -256,20 +313,18 @@ test('a lost DELETE acknowledgement plus absence remains ambiguous and is never 
   await f.setup.cleanup();
   assert.equal(f.calls.filter((c) => c.method === 'DELETE').length, count);
 });
-test('last bounded build poll still reserves all eighteen cleanup attempts within the same fifty-request subcap', async () => {
-  const f = fixture({ fault: 'last_poll' });
-  await f.setup.prepare();
-  assert.equal(f.calls.length, 27);
+test('historical acknowledged cleanup retains all eighteen reserved requests within the same fifty-request subcap', async () => {
+  const f = acknowledgedCleanupFixture(undefined, 32);
   const result = await f.setup.cleanup();
   assert.equal(result.state, 'setup_resources_removed');
-  assert.equal(f.calls.length, 45);
-  assert.equal(f.attempts(), 45);
+  assert.equal(f.calls.length, 18);
+  assert.equal(f.attempts(), 18);
+  assert.equal(f.setup.snapshot().requestCount, 50);
   assert.equal(f.setup.snapshot().maximumRequests, 50);
 });
 test('a new bounded child reconstructs only acknowledged resource cleanup and never pretends an old prepared batch is empty', async () => {
-  const old = fixture();
-  await old.setup.prepare();
-  const resumed = fixture({ previousEvents: old.rows });
+  const old = acknowledgedCleanupFixture();
+  const resumed = fixture({ previousEvents: old.journal.rows });
   resumed.envs.push(...structuredClone(old.envs));
   Object.assign(resumed.bypass, structuredClone(old.bypass));
   const result = await resumed.setup.cleanup();

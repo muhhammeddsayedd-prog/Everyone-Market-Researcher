@@ -234,6 +234,13 @@ export function installFoundationSetupNoRetry(Client, expected) {
   )
     fail();
   const original = d.value;
+  const projectHttpFailure = (error) => {
+    // Native Client.fetch consumes non-2xx responses and throws before the API
+    // command's --include formatting. Preserve only its numeric HTTP status.
+    if (Number.isInteger(error?.status) && error.status >= 400 && error.status <= 599)
+      classifiedFail('http_status_' + error.status);
+    throw error;
+  };
   let consumed = false;
   Object.defineProperty(Client.prototype, 'fetch', {
     value: function fetch(url, opts = {}) {
@@ -242,14 +249,21 @@ export function installFoundationSetupNoRetry(Client, expected) {
         classifiedFail('auxiliary_scope_refusal');
       }
       consumed = true;
-      return original.call(this, url, {
-        ...opts,
-        retry: { retries: 0 },
-        bailOn429: true,
-        useCurrentTeam: false,
-        accountId: undefined,
-        redirect: 'manual',
-      });
+      try {
+        const result = original.call(this, url, {
+          ...opts,
+          retry: { retries: 0 },
+          bailOn429: true,
+          useCurrentTeam: false,
+          accountId: undefined,
+          redirect: 'manual',
+        });
+        return result && typeof result.then === 'function'
+          ? Promise.resolve(result).catch(projectHttpFailure)
+          : result;
+      } catch (error) {
+        return projectHttpFailure(error);
+      }
     },
     enumerable: d.enumerable,
     writable: false,

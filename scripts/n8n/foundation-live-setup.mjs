@@ -260,7 +260,8 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
     bypassOwned = false,
     bypassRevokeAttempted = false,
     proof = null,
-    deploymentIntentAt = null;
+    deploymentIntentAt = null,
+    prerequisiteCode = null;
   const safe = (row) => {
     const text = JSON.stringify(row);
     if (denied.some((s) => text.includes(s))) fail();
@@ -441,6 +442,13 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
         let r = await request('GET', projectPath);
         if (r.status !== 200) fail();
         project(r.data);
+        // Vercel requires exactly one default automation bypass whenever any
+        // entries exist. This approved path requires an empty map followed by
+        // a non-default owned entry, so its prerequisite cannot be satisfied.
+        // Stop before even a create intent; do not create a default and try to
+        // unset the sole default, adopt another entry, or reuse GW-01 scope.
+        prerequisiteCode = 'nondefault_bypass_prerequisite';
+        fail();
         if ((await envs()).some((e) => envKeys.includes(e.key))) fail();
         emit({ event: 'setup_intent', kind: 'bypass', at: now() });
         unresolved.add('bypass_create');
@@ -458,10 +466,8 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
         bypassOwned = true;
         unresolved.delete('bypass_create');
         emit({ event: 'setup_ack', kind: 'bypass', at: now() });
-        r = await request('PATCH', bypassPath, {
-          update: { secret: sensitive.protectionBypass, isEnvVar: false, note: comment },
-        });
-        if (r.status !== 200) fail();
+        // A generated entry must itself meet the non-default gate. There is
+        // no blind follow-up update that attempts to unset a sole default.
         checkBypass(r.data.protectionBypass?.[sensitive.protectionBypass]);
         r = await request('GET', projectPath);
         if (r.status !== 200) fail();
@@ -676,6 +682,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
         unresolved: [...unresolved],
         busy,
         closed,
+        prerequisiteCode,
       });
     },
     close() {

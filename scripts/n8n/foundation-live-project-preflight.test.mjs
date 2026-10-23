@@ -161,6 +161,20 @@ async function fixture(action, { mode = 'success' } = {}) {
       'cliPins: foundationSetupVercelPins,',
       'cliPins: Object.freeze(' + JSON.stringify(cliPins) + '),',
     );
+    // The retired real reader retains its historical source pins. This copied
+    // synthetic reader seals the current fixture bytes before drift exercises.
+    const copiedSourcePins = Object.fromEntries(
+      [
+        'foundation-live-setup-transport.mjs',
+        'foundation-live-setup-no-retry.mjs',
+        'foundation-live-setup-diagnostic.mjs',
+        'foundation-vercel-auth-preflight.mjs',
+      ].map((name) => ['scripts/n8n/' + name, hash(readFileSync(join(directory, 'scripts/n8n', name)))]),
+    );
+    source = source.replace(
+      /const sourcePins = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      'const sourcePins = Object.freeze(' + JSON.stringify(copiedSourcePins) + ');',
+    );
     put('scripts/n8n/foundation-live-project-preflight.mjs', source);
     const mod = await import(
       pathToFileURL(join(directory, 'scripts/n8n/foundation-live-project-preflight.mjs')).href

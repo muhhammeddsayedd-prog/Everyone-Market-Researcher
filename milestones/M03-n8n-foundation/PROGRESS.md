@@ -3,9 +3,31 @@
 > Codex keeps this file current. Read it first in every session; update it after every task.
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
+## Current provider prerequisite correction
+
+The Vercel update body is supported, but its sole bypass must be the default.
+The actual failed PATCH's HTTP status remains unknown. The corrected consumer
+now stops after its verified project GET, before any bypass intent or mutation,
+with `nondefault_bypass_prerequisite`; the non-default gate remains intact.
+Numeric native HTTP 400-599 errors receive a fixed redacted status marker.
+No raw server error or automatic retry is exposed.
+
+Affected 71/71 local cases pass across the corrected runs. Focused independent
+review has no remaining P1/P2; independent 47/47 native cases, 24 numeric-status
+boundaries and six runtime JSON injection denials pass. Realistic first-entry
+fixtures block before writes; hypothetical acknowledged cleanup and post-setup
+unit stubs are not hosted acceptance. Targeted lint/format pass. The correction
+has not been run against hosted state and receives normal PR checks.
+
+The [exact proposed sole/default exception](evidence/sole-bypass-scope-decision-20261023.md)
+is a separate project-security/default and future-build exposure decision.
+Persistent access is complete; no credential or time-only approval is pending.
+Do not execute the exception before approval. Preserve the closed attempt,
+13/251/264 counters, zero actor starts and all restoration residuals.
+
 ## Status
 
-**In progress — implementing the owner's 23 October persistent-dev-access and milestone-autonomy reset. Existing M03 A–D authority persists; A–D/full-D acceptance remains open. No repeated disposable-secret or time-only approval request.**
+**In progress — persistent-dev access implemented/tested and reused in the actual closed attempt. Second Vercel PATCH diagnosis and residual reconciliation remain; existing M03 authority persists, A–D/full-D stays open. No repeated credential or time-only approval request.**
 
 Historical e803 deliveries and 75-minute metadata coverage passed before admission. Prepare
 then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
@@ -22,13 +44,13 @@ production, private incident R2 execution, PR8 merge or M04.
 | Last updated                   | 2026-10-23 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Finished                       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Branch / PR                    | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset                                                                                                                                                                                       |
-| Current delivery checkpoint | Actual starting head90ba8d24f135c510126840383e375daae025dc87 / CI39829980484 all five jobs and Vercel passed. Current policy/helper changes need affected tests/review and normal PR8 CI; that prior result is not a new-head acceptance claim. |
+| Current delivery checkpoint | Helperheade8a151b9340e59522fb264b73e655b189f2823e4 at admission; deliveryheadeda73b6e0356f6d5668ec45063d92c19fe3bf1c2 by Close. Only intervening diff is handoff.test; consumed runtime files unchanged. Root verified CI39965113905/eda73b6 all five jobs+Vercel success; subsequent bugfix receives normal CI. |
 | Selected runtime source        | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
 | Selected-source CI             | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance.                                                                                                                                                                                                       |
 | Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                              |
 | GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                |
-| Current task | Persistent helper9 native + creator4 + coordinator44JS/19PowerShell pass; security review no remaining P1/P2. Actual store Status ready for Admin/Management/Writer/ApifyRead, authentication not inferred. Public source checks/normal PR8 delivery precede actual remaining acceptance. |
-| Next step | Automatically materialize the four narrowly scoped runtime inputs through the existing coordinator after readiness; perform actual dev readbacks/retained-fixture reconciliation, then zero-actor gates and finite A-D. Preserve counters, closure, privacy and all completed setup. |
+| Current task | Actual attempt closed native1 after second new Vercel PATCH; owned bypass create/removal acknowledged and absent verified, C999 archived. Source/wrapper child closure captured but restoration/window/settlement residuals remain. Originals ready; no new credential input. Usage13/251/264, actors0/2/USD2. |
+| Next step | Preserve/reconcile project-wide bypass create/removal and residuals. Root prepares the genuine security-default exception decision for the verified sole-bypass constraint; continue independent engineering under standing authority. No credential/time-only request or completed-setup replay. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.      |
 
 ## 23 October development-autonomy reset — current operating state
@@ -68,6 +90,64 @@ still stops. Production, recurring activity, external notifications, private R2
 execution, PR8 merge and M04 remain separate. The 24 October tooling follow-up
 remains visible. Dated sections below are historical checkpoints, not current
 instructions to repeat handoffs or request replacement-window approvals.
+
+### Actual persistent-access attempt — closed with residuals
+
+[Actual receipt](evidence/dev-acceptance-persistent-attempt-20261023.json), root
+tool session80910. Helper head at admission was **e8a151b**; application source
+remained **f42930f**. Delivery head reached **eda73b6** by Close; its sole
+intervening diff is `scripts/n8n/foundation-live-handoff.test.mjs`, with no
+consumed runtime file changes. Admission started **13:54:09.449UTC**;
+source/wrapper closed **13:57:51.860UTC**, native1. Prepare reached aggregate10
+management/251control, then failed the **second new Vercel PATCH**, not the first
+GET. Fixed diagnostic: stage `native_exit`, code `unknown`, HTTP status null,
+native1, child started/closed true, aborted false. Precise cause remains unknown.
+
+The actual13-row setup journal preserves two historical GET attempts, seven new
+attempts (four GET/three PATCH), and four bypass intent/acknowledgement/cleanup
+rows. An owned temporary bypass **was created**, then removed with acknowledged
+cleanup and verified absence. The bypass is project-wide and its actual created
+default flag was not established; the provider may automatically have made it
+default. These are two acknowledged Vercel writes plus a
+failed PATCH intent, not zero writes. No Environment entries, deployment, SQL
+foundation window, workflow transition/native execution, gateway/provider call or
+actor start occurred; PhaseB remains false.
+
+Actual bounded Admin run **9d15ddf1-ed91-4433-905a-8ed050a5dcdc**, observed
+**13:57:51.6856676UTC**, authenticated to dev/session5432, verified complete14
+history before/after with no pending versions and completed its postcheck stage.
+No dry-run/push/migration replay. Retained C999 reactivation was acknowledged and
+verified, then the unprovisioned-fixture path archived it. Advisor/type postchecks
+explicitly reuse **21October18:43:05.9104107UTC** evidence; no fresh advisor/type
+claim. Admin children/private scratch/handoff/lease are verified removed.
+
+Restore reached **13management/251control/264combined**. Environment cleanup and
+fixture archival are true; baselineRestored/windowClosed/remoteWorkSettled remain
+false/residual true. Source confirms child transports/Admin child closed.
+Wrapper confirms child/credential children closed/native1/no emergency, disposable
+handoffs deleted, Machine preserved, privateRead true; local bypass handoff
+deletion and technical closure verification remain false. This is physical child
+closure, not full-D acceptance or proved settlement.
+
+Fresh Status/presence receipt **ecb070**, **13:58:48.7369750UTC**, verifies all
+four persistent originals ready, all eight disposable credential leaves absent,
+parent lock absent and local bypass handoff present. That handoff was not read,
+decrypted or deleted by this records check. Root subsequently removed only that
+temporary local handoff (**dc60a7**, native0), without private reads or touching
+originals. Independent fresh Status/presence at **14:02:57.0199979UTC** confirms
+all four originals still ready, local bypass/parent lock absent. Status alone is not authentication;
+the separate Admin authentication above is actual. Keep originals/Machine; no new
+entry or owner time approval is requested. Current official API review identifies
+the unsupported sole-bypass/non-default state; credentials were not rejected.
+The native failure's raw detail remains unrecovered. Root is preparing the
+separate consequential project-security-default exception decision, while safe
+independent work continues. Do not reuse the closed record or repeat an ambiguous write.
+CI39965113905 was in progress at the initial root handoff; root subsequently
+verified all five jobs and Vercel success on eda73b6. This is delivery CI, not
+live acceptance or a pass for the subsequent bugfix head.
+No production deployment/data/environment target/workflow was changed, but the
+project-wide temporary protection bypass change above is explicitly retained.
+Private R2, recurring activity, PR8 merge and M04 remain untouched.
 
 ## Historical 21–22 October A–D approval and actual preflight
 
@@ -1106,18 +1186,19 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
-- Persistent initialization is complete: actual Status verifies all four encrypted
-  entries and their ACLs; authentication remains untested. Focused helper/
-  coordinator tests and review pass. No owner development action is pending.
-  Normal changed-head CI/public readiness and actual hosted readback remain.
-- Supported native Vercel-session use restored sufficient saved-file coverage:
-  latest bounded metadata returns unexpired/covers75/childClosed true, with no
-  network/authentication in that metadata helper. The native `whoami` result was
-  not recovered and is not claimed passed. Historical remote project access is
-  dated; actual coordinator readiness remains to be checked. No repeat owner
-  login or permission-setting change is currently needed (Codex0.162.0-alpha.17.2;
-  host already supplies workspace/network access; no security settings changed).
-- Remaining live gates: authenticated dev14/catalog/vacancy/C999 reconciliation,
+- Current live gate: actual attempt is physically closed with residuals after
+  the second Vercel PATCH. Provider contract review identifies the impossible
+  requested sole-bypass/non-default state. Root is preparing its consequential
+  project-security-default exception decision. Preserve the two acknowledged
+  project-wide bypass writes/create+remove and failed PATCH intent; no new
+  credential, login or time-only approval is needed.
+- Four persistent dev originals remain ready after consumption/cleanup. Eight
+  disposable credential files and parent lock are absent; root removed the local
+  bypass handoff without private reads and fresh presence confirms absence. Actual
+  Admin authentication/history14/postcheck-stage/C999 archival passed. Native
+  Vercel project reads and owned bypass create/removal occurred; the raw failed
+  PATCH detail remains unknown, not a demonstrated credential rejection.
+- Remaining live gates: any necessary fresh dev14/catalog/vacancy/C999 reconciliation,
   protected Preview/runtime binding, zero-actor native causal/settlement/privacy/
   deletion-404 and domain-denial checks before actor starts, then the finite
   A–D smoke/replay/error/orchestration/health cases and full restoration/cleanup.
@@ -1192,17 +1273,18 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-### MA-04 / MA-11 — one persistent missing-entry initialization
+### MA-04 / MA-11 — persistent initialization complete; no credential action
 
-Actual inventory finds Admin/Management/Writer/ApifyRead missing from both the
-persistent dev store and approved temporary files. After focused local tests and
-review pass, open Windows PowerShell under this same account and run:
+The owner completed the single initialization. Actual fresh Status confirms
+Admin/Management/Writer/ApifyRead all ready; this attempt reused the originals
+and cleaned only disposable copies. No credential re-entry is requested. Keep
+the command below only for genuinely missing entries or an explicit update:
 
 ```powershell
 & 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03AcceptanceHandoff.ps1' -Action Initialize -Kind All
 ```
 
-Hidden prompts use saved EXISTING values: emr-dev postgres password for
+If initialization is ever actually needed, hidden prompts use saved EXISTING values: emr-dev postgres password for
 `zmotjsbzhzjvpelxvxlf`; n8n Management key for `muhhammedsayed.app.n8n.cloud`;
 emr-dev `n8n_writer` password; same-owner Apify Actor runs/Datasets/Key-value
 stores READ token. No reset/rotation/new key, Machine input, production value or
@@ -1214,7 +1296,9 @@ Initialization/status is not authentication evidence. Exact source/status/update
 details are in [ENVIRONMENT](../../docs/ENVIRONMENT.md#persistent-development-access--current-policy-23-october-2026).
 
 No time-only/hash-only approval, billing questionnaire, support contact, new
-Machine or Vercel login is requested. Other owner actions below are dated
+Machine or Vercel login is requested. The separate project-security-default
+exception is a consequential decision being prepared by root, not a renewal of
+development authority. Other owner actions below are dated
 historical records; they do not request another disposable delivery. Genuine
 provider expiry/MFA, unsafe ambiguity, exhausted limits, production/merge and
 M04 remain separate boundaries.

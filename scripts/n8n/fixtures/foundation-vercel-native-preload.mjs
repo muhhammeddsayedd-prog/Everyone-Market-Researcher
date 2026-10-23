@@ -89,6 +89,15 @@ globalThis.fetch = async (value, options = {}) => {
     noNetwork();
   facts.fetchCalls++;
   facts.matchingAuthorization = headers.get('authorization') === 'Bearer SyntheticVercelReadOnly47';
+  if (process.env.EMR_SYNTHETIC_VERCEL_RESPONSE === '400')
+    return new Response(
+      JSON.stringify({ error: { code: 'bad_request', message: 'SYNTHETIC_PRIVATE_SERVER_MESSAGE' } }),
+      {
+        status: 400,
+        statusText: 'Bad Request',
+        headers: { 'content-type': 'application/json' },
+      },
+    );
   const dto = {
     id: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
     accountId: 'team_gboXPxTevpCOZuaA8eY9PmR1',

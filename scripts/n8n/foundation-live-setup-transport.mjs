@@ -9,6 +9,7 @@ const fail = () => {
 // Inspect bounded private stderr only in memory. Never return a message, URL,
 // header, account identity or arbitrary error.code supplied by a provider.
 function classifyStderr(text) {
+  if (nativeHttpStatus(text) !== null) return 'http_failure';
   for (const code of [
     'saved_auth_missing',
     'saved_auth_expired',
@@ -31,6 +32,11 @@ function classifyStderr(text) {
   if (/\b(?:ECONNRESET|ECONNREFUSED|ETIMEDOUT|UND_ERR_CONNECT_TIMEOUT)\b/.test(text))
     return 'network_failure';
   return 'unknown';
+}
+function nativeHttpStatus(text) {
+  const matches = [...text.matchAll(/FOUNDATION_LIVE_SETUP_NO_RETRY_BLOCKED:http_status_([45][0-9]{2})\b/g)];
+  const values = new Set(matches.map((match) => Number(match[1])));
+  return values.size === 1 ? [...values][0] : null;
 }
 const project = 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
   team = 'team_gboXPxTevpCOZuaA8eY9PmR1';
@@ -56,8 +62,8 @@ function allowed(method, path) {
   );
 }
 // The parent seals Node/CLI/preload/this file before decrypting. No command-line
-// secret or raw CLI error/output is returned. CLI's --include status is required:
-// its raw JSON output can exit0 even for an HTTP error.
+// secret or raw CLI error/output is returned. --include frames successful HTTP
+// responses; the owned preload projects native HTTP exceptions separately.
 export function createFoundationLiveSetupCliTransport(input, dependencies = {}) {
   if (
     !input ||
@@ -179,6 +185,7 @@ export function createFoundationLiveSetupCliTransport(input, dependencies = {}) 
           pendingRequests--;
           payload = null;
           diagnostic.code = classifyStderr(privateStderr);
+          diagnostic.httpStatus = nativeHttpStatus(privateStderr);
           privateStderr = '';
           if (promiseSettled) return;
           if (timedOut || exitCode !== 0) {
