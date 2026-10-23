@@ -11,6 +11,7 @@ import {
   foundationRuntimeGraphHash,
   foundationRuntimePublishedHash,
   diagnoseFoundationRuntimeBaseline,
+  foundationRuntimeObservedGraphHash,
 } from './foundation-runtime-checkpoint.mjs';
 export { diagnoseFoundationRuntimeBaseline } from './foundation-runtime-checkpoint.mjs';
 
@@ -108,7 +109,7 @@ function graphReceipt(dto, plan, key, want) {
       (!object(dto.pinData) || Object.keys(dto.pinData).length))
   )
     fail();
-  const graphHash = runtimeGraphHash(dto);
+  const graphHash = foundationRuntimeObservedGraphHash(dto, b);
   if (graphHash !== want.graphHash) fail();
   if (
     want.activeVersionId !== null &&
@@ -645,6 +646,12 @@ export function createFoundationRuntimeBinding(plan, key, ports, options = {}) {
     bodyHash: current.graphHash,
     body,
     runtimeAudience: plan.setup.audience,
+    ...(Object.hasOwn(
+      plan.baseline.find((r) => r.key === key),
+      'nativeReadonlySettings',
+    )
+      ? { nativeReadonlySettings: plan.baseline.find((r) => r.key === key).nativeReadonlySettings }
+      : {}),
   });
   checkedBindings.set(binding, { plan, key, journal: ports.journal });
   return binding;

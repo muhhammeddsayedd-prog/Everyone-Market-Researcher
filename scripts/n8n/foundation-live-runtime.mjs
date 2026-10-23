@@ -28,6 +28,7 @@ import {
   runtimeGraphHash,
   foundationRuntimeGuardDiagnostic,
 } from './foundation-runtime-control.mjs';
+import { foundationRuntimeObservedGraphHash } from './foundation-runtime-checkpoint.mjs';
 import {
   createFoundationControlJournal,
   createFoundationControlBudget,
@@ -587,7 +588,7 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
                 (typeof dto.pinData !== 'object' ||
                   Array.isArray(dto.pinData) ||
                   Object.keys(dto.pinData).length)) ||
-              runtimeGraphHash(dto) !== runtimeGraphHash(b.body)
+              foundationRuntimeObservedGraphHash(dto, b) !== runtimeGraphHash(b.body)
             )
               fail();
             verified++;

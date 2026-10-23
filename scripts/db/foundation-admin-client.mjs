@@ -139,7 +139,7 @@ export async function startFoundationAdminClient(
           : 'f42930f90c2de43c84f61ad6d966d0ee6074d70e') ||
       verified.windowId !==
         (forwardWindow ? '38b3708d-61b0-41d2-8170-5ed91c66b4dc' : 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9') ||
-      verified.carriedManagementAttempts !== (forwardWindow ? 6 : 4) ||
+      verified.carriedManagementAttempts !== (forwardWindow ? 10 : 4) ||
       verified.carriedControlAttempts !== 1 ||
       now() < verified.startsAt ||
       now() >= verified.stopNewAt

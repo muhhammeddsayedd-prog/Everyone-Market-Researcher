@@ -6,6 +6,13 @@ import {
   nativeFoundationTagName,
 } from '../../packages/shared/src/n8n-bindings.ts';
 import { foundationScope, verifyShell } from './foundation-provision.mjs';
+import {
+  foundationEditableSettings,
+  foundationNativeReadonlySettings,
+  foundationRuntimeNativeReadonlyPin,
+  foundationRuntimeCheckpoint,
+} from './foundation-runtime-checkpoint.mjs';
+import { isDeepStrictEqual } from 'node:util';
 const bad = () => {
   throw Error('FOUNDATION_BIND_BLOCKED');
 };
@@ -307,7 +314,7 @@ export async function provisionMachine(packet, machine, j, send) {
   return metadata;
 }
 const safeSettings = (settings) => ({
-  ...settings,
+  ...foundationEditableSettings(settings),
   saveDataSuccessExecution: 'none',
   saveDataErrorExecution: 'none',
   saveManualExecutions: false,
@@ -379,8 +386,21 @@ function sameKnown(actual, expected) {
     sameKnown(d.value, expected[k]);
   }
 }
-export function projectSavedGraph(dto, graph, expectedId, { requireTags = true } = {}) {
+export function projectSavedGraph(
+  dto,
+  graph,
+  expectedId,
+  { requireTags = true, editableSettingsOnly = false, nativeReadonlySettings } = {},
+) {
   const expected = graphBody(graph);
+  const native =
+    nativeReadonlySettings === undefined
+      ? null
+      : foundationRuntimeNativeReadonlyPin({
+          key: graph.key,
+          id: expectedId,
+          nativeReadonlySettings,
+        });
   if (
     !object(dto) ||
     dto.id !== expectedId ||
@@ -429,7 +449,11 @@ export function projectSavedGraph(dto, graph, expectedId, { requireTags = true }
     for (const k of Object.keys(want)) sameKnown(actual[k], want[k]);
   }
   sameKnown(dto.connections, expected.connections);
-  sameKnown(dto.settings, expected.settings);
+  if (native && !isDeepStrictEqual(foundationNativeReadonlySettings(dto.settings), native)) bad();
+  sameKnown(
+    native || editableSettingsOnly ? foundationEditableSettings(dto.settings) : dto.settings,
+    expected.settings,
+  );
   if (
     dto.pinData !== null &&
     dto.pinData !== undefined &&
@@ -457,8 +481,15 @@ export function projectSavedGraph(dto, graph, expectedId, { requireTags = true }
     active: false,
     activeVersionId: null,
     projectId: foundationScope.projectId,
+    ...(native ? { nativeReadonlySettings: structuredClone(native) } : {}),
     workflow: { ...expected, tags: tags.map((t) => ({ id: t.id, name: t.name })), pinData: {} },
   };
+}
+function pinnedProjectionOptions(graph, id, options = {}) {
+  const pin = foundationRuntimeCheckpoint.workflows['WF-00'];
+  return graph.key === 'WF-00' && id === pin.id && pin.nativeReadonlySettings
+    ? { ...options, nativeReadonlySettings: pin.nativeReadonlySettings }
+    : options;
 }
 export async function bindOwnedGraphs(
   graphs,
@@ -486,7 +517,8 @@ export async function bindOwnedGraphs(
     if (intent && (intent.id !== ref.id || intent.hash !== sourceHash)) bad();
     const before = await send('GET', '/api/v1/workflows/' + ref.id, null);
     if (before.status !== 200) bad();
-    if (intent) projectSavedGraph(before.body, g, ref.id, { requireTags: false });
+    if (intent)
+      projectSavedGraph(before.body, g, ref.id, pinnedProjectionOptions(g, ref.id, { requireTags: false }));
     else verifyShell(before.body, g.key);
     if (!intent) {
       j.append({ event: 'graph_intent', key: g.key, id: ref.id, hash: sourceHash });
@@ -505,12 +537,15 @@ export async function bindOwnedGraphs(
       if (r.status !== 200) bad();
       j.append({ event: 'tags_saved', key: g.key, id: ref.id, hash: tagHash });
     } else if (!tagAck) {
-      projectSavedGraph(before.body, g, ref.id);
+      projectSavedGraph(before.body, g, ref.id, pinnedProjectionOptions(g, ref.id));
       j.append({ event: 'tags_saved', key: g.key, id: ref.id, hash: tagHash });
     }
     const r = await send('GET', '/api/v1/workflows/' + ref.id, null);
     if (r.status !== 200) bad();
-    const verified = { key: g.key, ...projectSavedGraph(r.body, g, ref.id) };
+    const verified = {
+      key: g.key,
+      ...projectSavedGraph(r.body, g, ref.id, pinnedProjectionOptions(g, ref.id)),
+    };
     if (onVerified) await onVerified(verified);
     saved.push(verified);
   }

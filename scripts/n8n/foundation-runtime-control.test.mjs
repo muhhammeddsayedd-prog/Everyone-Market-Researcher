@@ -17,10 +17,101 @@ import {
 import * as runtimeControl from './foundation-runtime-control.mjs';
 import * as checkpointDiagnostics from './foundation-runtime-checkpoint.mjs';
 
+test('editable settings comparison explicitly isolates only known native binary mode without relaxing raw guards', () => {
+  const f = fixture(),
+    baseline = { ...f.plan.baseline.find((v) => v.key === 'WF-00') },
+    dto = structuredClone(f.workflows.get(baseline.id));
+  delete baseline.nativeReadonlySettings;
+  delete dto.settings.binaryMode;
+  assert.deepEqual(checkpointDiagnostics.foundationNativeReadonlySettings(dto.settings), {
+    binaryMode: null,
+  });
+  for (const binaryMode of ['separate', 'combined']) {
+    dto.settings.binaryMode = binaryMode;
+    assert.deepEqual(checkpointDiagnostics.foundationNativeReadonlySettings(dto.settings), { binaryMode });
+    assert.deepEqual(checkpointDiagnostics.foundationEditableSettings(dto.settings), baseline.body.settings);
+    assert.notEqual(runtimeGraphHash(dto), runtimeGraphHash(baseline.body));
+    assert.equal(
+      checkpointDiagnostics.foundationRuntimeGraphHash(dto, { editableSettingsOnly: true }),
+      runtimeGraphHash(baseline.body),
+    );
+    assert.deepEqual(
+      checkpointDiagnostics.diagnoseFoundationRuntimeBaseline(dto, baseline, f.plan.projectId).failedChecks,
+      ['graph_settings'],
+    );
+    assert.deepEqual(
+      checkpointDiagnostics.diagnoseFoundationRuntimeBaseline(dto, baseline, f.plan.projectId, {
+        editableSettingsOnly: true,
+      }).failedChecks,
+      [],
+    );
+    assert.equal(
+      checkpointDiagnostics.diagnoseFoundationRuntimeBaselineVariants(dto, baseline).settingsCategories
+        .otherEqual,
+      false,
+      'historical forensic categories remain raw',
+    );
+  }
+});
+
+test('editable settings deny invalid native mode and retain every unknown/resolver/editable mismatch', () => {
+  const f = fixture(),
+    baseline = f.plan.baseline.find((v) => v.key === 'WF-00');
+  for (const binaryMode of ['SYNTHETIC_PRIVATE_MODE', '', null, undefined, false, {}, []]) {
+    const settings = { ...baseline.body.settings, binaryMode };
+    assert.throws(() => checkpointDiagnostics.foundationNativeReadonlySettings(settings), {
+      message: 'FOUNDATION_RUNTIME_CONTROL_BLOCKED',
+    });
+    assert.throws(() => checkpointDiagnostics.foundationEditableSettings(settings), {
+      message: 'FOUNDATION_RUNTIME_CONTROL_BLOCKED',
+    });
+  }
+  let getterCalls = 0;
+  for (const property of ['binaryMode', 'executionTimeout']) {
+    const settings = { ...baseline.body.settings };
+    Object.defineProperty(settings, property, {
+      enumerable: true,
+      get() {
+        getterCalls++;
+        throw Error('SYNTHETIC_PRIVATE_GETTER');
+      },
+    });
+    assert.throws(() => checkpointDiagnostics.foundationEditableSettings(settings));
+  }
+  assert.equal(getterCalls, 0);
+  for (const mutate of [
+    (s) => (s.credentialResolverId = 'SYNTHETIC_PRIVATE_RESOLVER'),
+    (s) => (s.credentialResolverId = ''),
+    (s) => (s.syntheticUnknownSetting = true),
+    (s) => (s.executionTimeout = 123),
+    (s) => (s.saveManualExecutions = true),
+    (s) => (s.availableInMCP = true),
+  ]) {
+    const dto = structuredClone(f.workflows.get(baseline.id));
+    dto.settings.binaryMode = 'separate';
+    mutate(dto.settings);
+    assert.notEqual(
+      checkpointDiagnostics.foundationRuntimeGraphHash(dto, { editableSettingsOnly: true }),
+      runtimeGraphHash(baseline.body),
+    );
+    const diagnostic = checkpointDiagnostics.diagnoseFoundationRuntimeBaseline(
+      dto,
+      baseline,
+      f.plan.projectId,
+      {
+        editableSettingsOnly: true,
+      },
+    );
+    assert.deepEqual(diagnostic.failedChecks, ['graph_settings']);
+    assert.doesNotMatch(JSON.stringify(diagnostic), /SYNTHETIC_PRIVATE|credentialResolver|syntheticUnknown/);
+  }
+});
+
 test('fixed WF00 forensics identify reviewed component variants without adopting their version', () => {
   const f = fixture(),
     b = f.plan.baseline.find((v) => v.key === 'WF-00'),
     dto = structuredClone(f.workflows.get(b.id));
+  delete dto.settings.binaryMode;
   for (const n of dto.nodes) if (n.type === 'n8n-nodes-base.scheduleTrigger') n.disabled = true;
   dto.settings.availableInMCP = true;
   dto.settings.saveManualExecutions = true;
@@ -143,6 +234,55 @@ test('production baseline guard records diagnostic and still refuses every mutat
   ]);
 });
 
+test('ordinary WF00 guards require the actual native pin while keeping every other workflow raw', async () => {
+  const f = fixture(),
+    baseline = f.plan.baseline.find((v) => v.key === 'WF-00'),
+    dto = f.workflows.get(baseline.id);
+  assert.equal(
+    checkpointDiagnostics.foundationRuntimeObservedGraphHash(dto, baseline),
+    runtimeGraphHash(baseline.body),
+  );
+  assert.deepEqual(
+    checkpointDiagnostics.diagnoseFoundationRuntimeBaseline(dto, baseline, f.plan.projectId).failedChecks,
+    [],
+  );
+  for (const mutate of [
+    (v) => delete v.settings.binaryMode,
+    (v) => (v.settings.binaryMode = 'combined'),
+    (v) => (v.settings.binaryMode = 'SYNTHETIC_PRIVATE_MODE'),
+    (v) => (v.settings.credentialResolverId = ''),
+    (v) => (v.settings.syntheticUnknownSetting = true),
+    (v) => v.settings.executionTimeout++,
+  ]) {
+    const changed = structuredClone(dto);
+    mutate(changed);
+    assert.ok(
+      checkpointDiagnostics.diagnoseFoundationRuntimeBaseline(changed, baseline, f.plan.projectId)
+        .failedChecks.length,
+    );
+    const other = fixture();
+    mutate(other.workflows.get(baseline.id));
+    assert.equal((await runFoundationRuntimeSetup(other.plan, other.ports)).status, 'blocked');
+    assert.equal(
+      other.calls.some((v) => v.method !== 'GET'),
+      false,
+    );
+  }
+  const other = f.plan.baseline.find((v) => v.key === 'WF-10');
+  assert.throws(() =>
+    checkpointDiagnostics.foundationRuntimeNativeReadonlyPin({
+      ...other,
+      nativeReadonlySettings: baseline.nativeReadonlySettings,
+    }),
+  );
+  const otherDto = structuredClone(f.workflows.get(other.id));
+  otherDto.settings.binaryMode = 'separate';
+  assert.notEqual(
+    checkpointDiagnostics.foundationRuntimeObservedGraphHash(otherDto, other),
+    runtimeGraphHash(other.body),
+  );
+});
+
 function fixture({ durableAppend, fault, sharedLimit = 512 } = {}) {
   const bindings = JSON.parse(
     readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
@@ -182,6 +322,7 @@ function fixture({ durableAppend, fault, sharedLimit = 512 } = {}) {
           isArchived: false,
           shared: [{ projectId: plan.projectId, role: 'workflow:owner' }],
           ...structuredClone(b.body),
+          settings: { ...structuredClone(b.body.settings), ...(b.nativeReadonlySettings ?? {}) },
           tags: structuredClone(b.tags),
           pinData: {},
           activeVersion: null,
@@ -353,7 +494,12 @@ test('all actual publications are removed, all25 exact baseline bodies restored 
     const w = f.workflows.get(b.id);
     assert.equal(w.active, false);
     assert.equal(w.activeVersionId, null);
-    assert.equal(runtimeGraphHash(w), runtimeGraphHash(b.body));
+    assert.equal(checkpointDiagnostics.foundationRuntimeObservedGraphHash(w, b), runtimeGraphHash(b.body));
+    if (b.nativeReadonlySettings)
+      assert.deepEqual(
+        checkpointDiagnostics.foundationNativeReadonlySettings(w.settings),
+        b.nativeReadonlySettings,
+      );
     assert.equal(Object.hasOwn(w.settings, 'errorWorkflow'), false);
     assert.equal(w.settings.availableInMCP, false);
   }
@@ -752,6 +898,7 @@ test('case binding requires the same-plan saved receipt and becomes stale after 
   assert.equal(binding.body.settings.saveManualExecutions, true);
   assert.equal(binding.body.settings.availableInMCP, true);
   assert.equal(binding.bodyHash, runtimeGraphHash(draft.body));
+  assert.deepEqual(binding.nativeReadonlySettings, { binaryMode: 'separate' });
   assert.throws(() =>
     runtimeControl.createFoundationRuntimeBinding(f.plan, 'WF-00', f.ports, {
       caseReceipt: structuredClone(receipt),

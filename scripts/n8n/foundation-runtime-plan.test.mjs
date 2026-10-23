@@ -54,6 +54,22 @@ test('fresh active window compiles exact new response guards while preserving re
   assert.throws(() => createFoundationRuntimeBaseline(changed));
 });
 
+test('verified WF00 restore carries one exact native pin outside all editable PUT bodies', () => {
+  const f = runtimeFixture(),
+    plan = createFoundationRuntimePlan(f),
+    wf00 = plan.baseline.find((v) => v.key === 'WF-00');
+  assert.equal(wf00.versionId, 'f5f755b7-9683-4fb6-a26d-87b001127244');
+  assert.deepEqual(wf00.nativeReadonlySettings, { binaryMode: 'separate' });
+  assert.equal(Object.isFrozen(wf00.nativeReadonlySettings), true);
+  assert.equal(Object.hasOwn(wf00.body.settings, 'binaryMode'), false);
+  assert.equal(plan.baseline.filter((v) => Object.hasOwn(v, 'nativeReadonlySettings')).length, 1);
+  for (const value of [undefined, { binaryMode: 'combined' }, { binaryMode: 'SYNTHETIC_PRIVATE_MODE' }]) {
+    const changed = structuredClone(f);
+    changed.records.find((v) => v.key === 'WF-00').nativeReadonlySettings = value;
+    assert.throws(() => createFoundationRuntimeBaseline(changed));
+  }
+});
+
 test('plan binds exact25 checkpoint IDs/versions, future Preview rules and finite native order', () => {
   const f = runtimeFixture();
   const p = createFoundationRuntimePlan(f);

@@ -1,6 +1,9 @@
 import { createHash } from 'node:crypto';
 import { parseN8nBindings } from '../../packages/shared/src/n8n-bindings.ts';
-import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
+import {
+  foundationRuntimeCheckpoint,
+  foundationRuntimeNativeReadonlyPin,
+} from './foundation-runtime-checkpoint.mjs';
 
 // Keep this pure inventory independent of the runtime plan that consumes it.
 const runtimeHash = (v) => createHash('sha256').update(JSON.stringify(v)).digest('hex');
@@ -166,7 +169,26 @@ export function createFoundationRetentionProposal(input) {
 // There is deliberately no caller-controlled approval boolean or policy delta.
 export function createFoundationApprovedRetentionPolicy(input) {
   const proposal = createFoundationRetentionProposal(input);
-  if (runtimeHash(proposal) !== foundationRetentionDesignApproval.inventoryCanonicalSha256) blocked();
+  // Current records must pass the complete pinned identity/content validation
+  // above. A verified definition restore changes WF00's revision metadata,
+  // not the owner's four-field C01 design or its historical approval hash.
+  const historical = structuredClone(proposal);
+  const row = historical.workflows.find((w) => w.key === 'WF-00');
+  if (
+    row.checkpointVersionId !== 'b2ff9a94-89b8-4fe2-9bed-093774f0feff' ||
+    row.checkpointRecordHash !== 'a3d4922364fc414fde9073f98535fef0885443b38fee1d86e5d9a5fe54ed2347'
+  ) {
+    const pin = foundationRuntimeCheckpoint.workflows['WF-00'];
+    if (
+      pin.versionId !== 'f5f755b7-9683-4fb6-a26d-87b001127244' ||
+      pin.stagedSourceHash !== '1090db04ecf847c64c28a8bcb247e1080b1db85d37503c1108aa99f307d21239' ||
+      !foundationRuntimeNativeReadonlyPin({ key: 'WF-00', ...pin })
+    )
+      blocked();
+    row.checkpointVersionId = 'b2ff9a94-89b8-4fe2-9bed-093774f0feff';
+    row.checkpointRecordHash = 'a3d4922364fc414fde9073f98535fef0885443b38fee1d86e5d9a5fe54ed2347';
+  }
+  if (runtimeHash(historical) !== foundationRetentionDesignApproval.inventoryCanonicalSha256) blocked();
   const policy = freezeRuntimeValue({
     version: 1,
     kind: 'approved_local_retention_design',

@@ -173,6 +173,35 @@ test('native persisted snapshot omits active-version and pins while exact top-le
   await assert.rejects(f.reader.read(f.args), fixed);
 });
 
+test('pinned native mode is checked separately on current graph and executed snapshot', async () => {
+  const f = nativeReaderFixture();
+  f.binding.nativeReadonlySettings = { binaryMode: 'separate' };
+  f.workflow.settings.binaryMode = 'separate';
+  f.full.workflowData.settings.binaryMode = 'separate';
+  const receipt = await f.reader.read(f.args);
+  assert.equal(receipt.bodyHash, f.binding.bodyHash);
+  assert.equal(Object.hasOwn(receipt, 'nativeReadonlySettings'), false);
+  for (const [target, value] of [
+    ['workflow', 'combined'],
+    ['workflow', undefined],
+    ['snapshot', 'combined'],
+    ['snapshot', 'SYNTHETIC_PRIVATE_MODE'],
+    ['binding', 'combined'],
+  ]) {
+    const denied = nativeReaderFixture();
+    denied.binding.nativeReadonlySettings = { binaryMode: 'separate' };
+    denied.workflow.settings.binaryMode = 'separate';
+    denied.full.workflowData.settings.binaryMode = 'separate';
+    if (target === 'binding') denied.binding.nativeReadonlySettings.binaryMode = value;
+    else {
+      const settings = target === 'workflow' ? denied.workflow.settings : denied.full.workflowData.settings;
+      if (value === undefined) delete settings.binaryMode;
+      else settings.binaryMode = value;
+    }
+    await assert.rejects(denied.reader.read(denied.args), fixed);
+  }
+});
+
 test('actual supplied pin data cannot masquerade as owned manual execution output', async () => {
   for (const pins of [{ 'Known call': [{ json: { synthetic: true } }] }, { 'Unused node': [] }, null, []]) {
     const f = nativeReaderFixture();

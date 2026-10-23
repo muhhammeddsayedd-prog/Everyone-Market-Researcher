@@ -7,7 +7,7 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
-test('closed old SQL window reconciliation preserves all usage and blocks fresh admission at the unchanged setup cap', async () => {
+test('the retained old50 setup-cap regression preserves all usage and still blocks fresh admission', async () => {
   const f = await syntheticProjectVerifiedContinuation({ closedWindow: true });
   try {
     const snapshots = [
@@ -20,9 +20,9 @@ test('closed old SQL window reconciliation preserves all usage and blocks fresh 
     const r = f.check();
     assert.equal(r.status, 'setup_cap_insufficient');
     assert.equal(r.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc');
-    assert.equal(r.managementAttempts, 98);
+    assert.equal(r.managementAttempts, 102);
     assert.equal(r.controlAttempts, 301);
-    assert.equal(r.combinedAttempts, 399);
+    assert.equal(r.combinedAttempts, 403);
     assert.equal(r.gatewayPreflightAttempts, 2);
     assert.equal(r.setupAttempts, 44);
     assert.equal(r.setupMaximum, 50);
@@ -60,6 +60,96 @@ test('closed-window reconciliation rejects false archive, writer identity, usage
   }
 });
 
+test('cumulative88 requires the exact owner allocation and cannot reset44 used or increase any global allowance', async () => {
+  for (const allocationFault of ['owner', 'used', 'maximum', 'reset', 'global', 'budget', 'prior-usage']) {
+    const f = await syntheticProjectVerifiedContinuation({
+      closedWindow: true,
+      proposedBudgetApproved: true,
+      allocationFault,
+    });
+    try {
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-3.json')), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('missing or changed cumulative88 approval blocks before private metadata and cannot acquire a runtime claim', async () => {
+  for (const fault of ['missing', 'byte-drift', 'after-admission']) {
+    const f = await syntheticProjectVerifiedContinuation({
+      closedWindow: true,
+      proposedBudgetApproved: true,
+    });
+    let privateCalls = 0;
+    try {
+      assert.equal(f.check().kind, 'project_verified_continuation_ready');
+      const proof = fault === 'after-admission' ? f.admit() : null;
+      const path = join(
+        f.directory,
+        'milestones/M03-n8n-foundation/evidence/remaining-control-allocation-approval-20261023.json',
+      );
+      if (fault === 'byte-drift') appendFileSync(path, ' ');
+      else unlinkSync(path);
+      f.io.lstatSync = (p) => {
+        if (/(?:\.dpapi|\.lease\.json)$/.test(String(p))) privateCalls++;
+        return lstatSync(p);
+      };
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.throws(() => (proof ? f.claim(proof) : f.admit()), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(privateCalls, 0);
+      assert.equal(
+        existsSync(f.paths.admission.replace(/\.json$/, '.technical-3.runtime-claim.json')),
+        false,
+      );
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('WF-00 carried usage requires the preserved failed prefix, one acknowledged PUT and verified physical closure', async () => {
+  for (const restoreFault of [
+    'closure',
+    'child',
+    'ack',
+    'quota-reset',
+    'prefix',
+    'extra-request',
+    'duplicate-put',
+    'unknown-setting',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, restoreFault });
+    try {
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-3.json')), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('WF-00 restore journal is immutable and cannot be truncated, edited or extended after pinned reconciliation', async () => {
+  for (const fault of ['missing', 'truncated', 'edited', 'extended']) {
+    const f = await syntheticProjectVerifiedContinuation({ closedWindow: true });
+    try {
+      const path = join(f.directory, 'scripts/n8n/out/foundation/wf00-restore-20261023.jsonl'),
+        text = readFileSync(path, 'utf8');
+      if (fault === 'missing') unlinkSync(path);
+      if (fault === 'truncated') writeFileSync(path, text.split('\n').slice(0, 2).join('\n') + '\n');
+      if (fault === 'edited') writeFileSync(path, text.replace('"number":3', '"number":30'));
+      if (fault === 'extended') appendFileSync(path, '{}\n');
+      assert.throws(() => f.check());
+      assert.throws(() => f.admit());
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
 test('isolated approved-budget fixture claims only fresh window/source and preserves legacy headers/cumulative usage', async () => {
   const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true });
   let budget;
@@ -68,10 +158,10 @@ test('isolated approved-budget fixture claims only fresh window/source and prese
     const p = f.claim(f.admit());
     assert.equal(p.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc');
     assert.equal(p.sourceCommitSha, 'a5e746736893d5040e93032ae740a0878f748837');
-    assert.equal(p.carriedManagementAttempts, 6);
+    assert.equal(p.carriedManagementAttempts, 10);
     assert.equal(p.carriedControlAttempts, 1);
     const resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(p);
-    assert.equal(resume.aggregateManagementAttempts, 98);
+    assert.equal(resume.aggregateManagementAttempts, 102);
     assert.equal(resume.aggregateControlAttempts, 301);
     assert.equal(resume.gatewayPreflightAttempts, 2);
     assert.equal(resume.legacySqlAdmitted, 2);
@@ -82,9 +172,9 @@ test('isolated approved-budget fixture claims only fresh window/source and prese
       { sourceCommitSha: p.sourceCommitSha, deadlineAt: p.deadlineAt },
       { directory: dirname(f.paths.management), now: f.now, projectVerifiedContinuationProof: p },
     );
-    assert.equal(budget.snapshot().attempts, 98);
+    assert.equal(budget.snapshot().attempts, 102);
     budget.admit();
-    assert.equal(budget.snapshot().attempts, 99);
+    assert.equal(budget.snapshot().attempts, 103);
     assert.equal(readFileSync(f.paths.management, 'utf8').startsWith(legacy), true);
     assert.equal(
       JSON.parse(legacy.split('\n')[0]).sourceCommitSha,
@@ -134,7 +224,7 @@ test('fresh logical plan uses an immutable runtime sibling while original runtim
     assert.equal(readFileSync(oldRuntime, 'utf8'), before);
     assert.equal(existsSync(join(dirname(oldRuntime), 'runtime.technical-3.jsonl')), true);
     assert.equal(controlBudget.snapshot().attempts, 301);
-    assert.equal(budget.snapshot().attempts, 98 + 134);
+    assert.equal(budget.snapshot().attempts, 102 + 134);
   } finally {
     runtime?.close();
     budget?.close();

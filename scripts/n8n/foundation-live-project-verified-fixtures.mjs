@@ -14,6 +14,8 @@ export async function syntheticProjectVerifiedContinuation({
   projectFault,
   closedWindow = false,
   closedFault,
+  restoreFault,
+  allocationFault,
   proposedBudgetApproved = false,
   effectful = closedWindow,
   effectFault,
@@ -352,7 +354,7 @@ export async function syntheticProjectVerifiedContinuation({
     put(recoveryConfiguration.receiptRelative, text);
     recoveryConfiguration.receiptSha256 = digest(text);
   }
-  let closedConfiguration;
+  let closedConfiguration, restoreConfiguration, allocationConfiguration;
   if (closedWindow) {
     const base =
       'scripts/n8n/out/foundation/live/project-verified-continuation-' + snapshot.proposedSegmentId;
@@ -488,6 +490,54 @@ export async function syntheticProjectVerifiedContinuation({
       legacySqlAdmitted: 2,
       pins,
     };
+    // This fixture copies only checked-in public receipts. Its operation journal
+    // is rebuilt from their projected rows, never from the real runtime paths.
+    const restoreRelative = 'milestones/M03-n8n-foundation/evidence/wf00-restore-verified-20261023.json';
+    const priorRestoreRelative = 'milestones/M03-n8n-foundation/evidence/wf00-restore-attempt-20261023.json';
+    const restored = JSON.parse(readFileSync(join(sourceRoot, restoreRelative), 'utf8'));
+    const priorRestoreText = readFileSync(join(sourceRoot, priorRestoreRelative), 'utf8');
+    const journalRows = structuredClone(restored.journal.rows);
+    if (restoreFault === 'closure') restored.actual.networkCompletionVerified = false;
+    if (restoreFault === 'child') restored.actual.childClosed = false;
+    if (restoreFault === 'ack') restored.actual.putAcknowledged = false;
+    if (restoreFault === 'quota-reset') restored.usage.carriedManagementAfter = 6;
+    if (restoreFault === 'prefix') journalRows[0].path += '&changed=true';
+    if (restoreFault === 'extra-request') journalRows.push({ ...journalRows[7], number: 5 });
+    if (restoreFault === 'duplicate-put') journalRows[7] = { ...journalRows[6], number: 4 };
+    if (restoreFault === 'unknown-setting')
+      journalRows[8].nativeReadonlySettings.unknown = 'SYNTHETIC_PRIVATE_CANARY';
+    const journalText = journalRows.map(json).join('');
+    restored.journal.sha256 = digest(journalText);
+    restored.journal.rows = journalRows;
+    const restoredText = json(restored);
+    put(restoreRelative, restoredText);
+    put(priorRestoreRelative, priorRestoreText);
+    put(restored.journal.path, journalText);
+    restoreConfiguration = {
+      receiptRelative: restoreRelative,
+      receiptSha256: digest(restoredText),
+      priorReceiptRelative: priorRestoreRelative,
+      priorReceiptSha256: digest(priorRestoreText),
+      journalRelative: restored.journal.path,
+      journalSha256: digest(journalText),
+      priorJournalSha256: restored.journal.originalPrefix.sha256,
+    };
+    if (proposedBudgetApproved) {
+      const allocationRelative =
+        'milestones/M03-n8n-foundation/evidence/remaining-control-allocation-approval-20261023.json';
+      const allocation = JSON.parse(readFileSync(join(sourceRoot, allocationRelative), 'utf8'));
+      allocation.actualPriorUsage.receiptSha256 = restoreConfiguration.receiptSha256;
+      if (allocationFault === 'owner') allocation.ownerReply = 'SYNTHETIC_UNAPPROVED';
+      if (allocationFault === 'used') allocation.allocation.usedSetupRequests = 0;
+      if (allocationFault === 'maximum') allocation.allocation.setupMaximum = 89;
+      if (allocationFault === 'reset') allocation.allocation.countersReset = true;
+      if (allocationFault === 'global') allocation.unchangedGlobalCaps.management = 513;
+      if (allocationFault === 'budget') allocation.boundaries.actorAllowanceReplenished = true;
+      if (allocationFault === 'prior-usage') allocation.actualPriorUsage.management = 98;
+      const text = json(allocation);
+      put(allocationRelative, text);
+      allocationConfiguration = { relative: allocationRelative, sha256: digest(text) };
+    }
   }
   if (approved)
     put(
@@ -515,7 +565,18 @@ export async function syntheticProjectVerifiedContinuation({
       /const closedWindowRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
       'const closedWindowRecovery = Object.freeze(' + JSON.stringify(closedConfiguration) + ');',
     );
-  if (proposedBudgetApproved) source = source.replace('setupMaximum: 50,', 'setupMaximum: 88,');
+  if (restoreConfiguration)
+    source = source.replace(
+      /const wf00RestoreRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      'const wf00RestoreRecovery = Object.freeze(' + JSON.stringify(restoreConfiguration) + ');',
+    );
+  if (allocationConfiguration)
+    source = source.replace(
+      /const setupAllocationApproval = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      'const setupAllocationApproval = Object.freeze(' + JSON.stringify(allocationConfiguration) + ');',
+    );
+  // Explicitly retain the exhausted old50 branch as a synthetic regression.
+  source = source.replace(/setupMaximum: (?:50|88),/, `setupMaximum: ${proposedBudgetApproved ? 88 : 50},`);
   const modulePath = put('scripts/n8n/foundation-live-project-verified-continuation.mjs', source);
   const module = await import(pathToFileURL(modulePath).href);
   const localAppData = join(directory, 'synthetic-localappdata');

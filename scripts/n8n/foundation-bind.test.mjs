@@ -15,6 +15,7 @@ import {
   createBindingJournal,
   projectSavedGraph,
   inactiveNativeStagingGraph,
+  graphBody,
 } from './foundation-bind.mjs';
 import { buildShell } from './foundation-provision.mjs';
 const packet = {
@@ -186,6 +187,53 @@ test('saved projection uses exact generated graph fields only and refuses change
     mutation(x);
     assert.throws(() => projectSavedGraph(x, g, 'Owned0'));
   }
+});
+
+test('native binary mode is excluded from PUT and requires explicit editable-only saved projection', () => {
+  for (const binaryMode of ['separate', 'combined']) {
+    const g = graph();
+    g.workflow.settings.binaryMode = binaryMode;
+    const body = graphBody(g);
+    assert.equal(Object.hasOwn(body.settings, 'binaryMode'), false);
+    const dto = saved(g);
+    assert.throws(() => projectSavedGraph(dto, g, 'Owned0'));
+    const projected = projectSavedGraph(dto, g, 'Owned0', { editableSettingsOnly: true });
+    assert.equal(Object.hasOwn(projected.workflow.settings, 'binaryMode'), false);
+    for (const mutate of [
+      (s) => (s.binaryMode = 'SYNTHETIC_PRIVATE_MODE'),
+      (s) => (s.credentialResolverId = 'SYNTHETIC_PRIVATE_RESOLVER'),
+      (s) => (s.syntheticUnknownSetting = true),
+      (s) => (s.saveManualExecutions = true),
+    ]) {
+      const changed = saved(g);
+      mutate(changed.settings);
+      assert.throws(() => projectSavedGraph(changed, g, 'Owned0', { editableSettingsOnly: true }));
+    }
+  }
+  const invalidGraph = graph();
+  invalidGraph.workflow.settings.binaryMode = 'SYNTHETIC_PRIVATE_MODE';
+  assert.throws(() => graphBody(invalidGraph));
+});
+
+test('ordinary owned WF00 saved projection requires the fixed native tuple and preserves it outside editable body', () => {
+  const g = graph(),
+    workflowId = 'MzimjpsuyPuK7SKe',
+    dto = saved(g, workflowId),
+    nativeReadonlySettings = { binaryMode: 'separate' };
+  dto.settings.binaryMode = 'separate';
+  const projected = projectSavedGraph(dto, g, workflowId, { nativeReadonlySettings });
+  assert.deepEqual(projected.nativeReadonlySettings, nativeReadonlySettings);
+  assert.equal(Object.hasOwn(projected.workflow.settings, 'binaryMode'), false);
+  for (const changed of [undefined, 'combined', 'SYNTHETIC_PRIVATE_MODE']) {
+    const altered = structuredClone(dto);
+    if (changed === undefined) delete altered.settings.binaryMode;
+    else altered.settings.binaryMode = changed;
+    assert.throws(() => projectSavedGraph(altered, g, workflowId, { nativeReadonlySettings }));
+  }
+  assert.throws(() =>
+    projectSavedGraph(dto, g, workflowId, { nativeReadonlySettings: { binaryMode: 'combined' } }),
+  );
+  assert.throws(() => projectSavedGraph(dto, graph('WF-10'), workflowId, { nativeReadonlySettings }));
 });
 test('graph and tag PUT each have durable intent and one GET; no activate/execute route', async () => {
   const g = graph(),

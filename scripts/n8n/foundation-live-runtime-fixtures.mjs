@@ -57,6 +57,7 @@ export function fixture({ fault } = {}) {
       r.id,
       {
         ...structuredClone(r.workflow),
+        settings: { ...structuredClone(r.workflow.settings), ...(r.nativeReadonlySettings ?? {}) },
         id: r.id,
         versionId: r.versionId,
         active: false,

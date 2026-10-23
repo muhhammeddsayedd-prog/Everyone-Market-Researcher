@@ -95,8 +95,10 @@ test(
         script,
         `$ErrorActionPreference='Stop'
 ${helper}
-$valid=[ordered]@{kind='project_verified_continuation_blocked';status='setup_cap_insufficient';segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';sourceCommitSha='a5e746736893d5040e93032ae740a0878f748837';windowId='38b3708d-61b0-41d2-8170-5ed91c66b4dc';managementAttempts=98;controlAttempts=301;combinedAttempts=399;gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=50;minimumNewSetupRequests=32;proposedSetupMaximum=88;privateRead=$false;networkRequests=0}
+$valid=[ordered]@{kind='project_verified_continuation_blocked';status='setup_cap_insufficient';segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';sourceCommitSha='a5e746736893d5040e93032ae740a0878f748837';windowId='38b3708d-61b0-41d2-8170-5ed91c66b4dc';managementAttempts=102;controlAttempts=301;combinedAttempts=403;gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=50;minimumNewSetupRequests=32;proposedSetupMaximum=88;privateRead=$false;networkRequests=0}
 $null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$valid)
+$stale=[ordered]@{};foreach($name in $valid.Keys){$stale[$name]=$valid[$name]};$stale.managementAttempts=98;$stale.combinedAttempts=399;$blocked=$false
+try{$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$stale)}catch{$blocked=$true};if(-not $blocked){throw 'HISTORICAL_USAGE_ACCEPTED'}
 foreach($key in @('sourceCommitSha','windowId','managementAttempts','setupAttempts','setupMaximum','privateRead','networkRequests')){
  $copy=[ordered]@{};foreach($name in $valid.Keys){$copy[$name]=$valid[$name]};$copy[$key]='SYNTHETIC_PRIVATE_CANARY';$blocked=$false
  try{$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$copy)}catch{$blocked=$true};if(-not $blocked){throw 'UNTRUSTED_FIELD_ACCEPTED'}

@@ -34,6 +34,8 @@ apps/web/styles/tokens.css
 n8n/workflows/*.json
 # Preserve the historical CloudA export as exact Git blob bytes.
 n8n/fixtures/GW01-cloud-a-saved-export.json
+# Preserve the owner-approved WF-00 native staging source as exact Git blob bytes.
+n8n/fixtures/WF-00-reviewed-native-staging-025c2a2.json
 .m00-clean-*/
 
 # Locally generated public runtime inventory; byte form is checked by its owner-only sealer.

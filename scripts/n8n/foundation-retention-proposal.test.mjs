@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
 import {
   createFoundationRetentionProposal,
@@ -219,4 +220,39 @@ test('owner-approved constructor pins the exact historical inventory and grants 
   });
   assert.deepEqual(original, { errorWorkflow: 'fixed-error-id', availableInMCP: true, executionTimeout: 42 });
   assert.throws(() => applyFoundationApprovedRetentionSettings(p, 'unowned', original), blocked);
+});
+
+test('verified WF00 revision metadata is current while the unchanged C01 approval remains the historical four-field design', () => {
+  const f = fixture(),
+    proposal = createFoundationRetentionProposal(f),
+    policy = createFoundationApprovedRetentionPolicy(f),
+    current = proposal.workflows.find((v) => v.key === 'WF-00'),
+    historical = structuredClone(proposal);
+  assert.equal(current.checkpointVersionId, 'f5f755b7-9683-4fb6-a26d-87b001127244');
+  assert.equal(
+    current.checkpointRecordHash,
+    'c12fad19e44c495708a9f33728ae7c3b050563b09e133dfc20945750da7c3c00',
+  );
+  const historicalRow = historical.workflows.find((v) => v.key === 'WF-00');
+  historicalRow.checkpointVersionId = 'b2ff9a94-89b8-4fe2-9bed-093774f0feff';
+  historicalRow.checkpointRecordHash = 'a3d4922364fc414fde9073f98535fef0885443b38fee1d86e5d9a5fe54ed2347';
+  assert.equal(
+    createHash('sha256').update(JSON.stringify(historical)).digest('hex'),
+    '0cf36aed398aa58b3ad1f6d153bdf7b0d19c5f8bb2c6282a98ea52c48b7910ab',
+  );
+  assert.deepEqual(
+    policy.workflows,
+    proposal.workflows,
+    'historical comparison does not replace current identity proof',
+  );
+  for (const change of [
+    (v) => (v.versionId = 'SYNTHETIC_UNREVIEWED_VERSION'),
+    (v) => (v.nativeReadonlySettings.binaryMode = 'combined'),
+    (v) => (v.workflow.settings.saveExecutionProgress = true),
+    (v) => (v.stagedSourceHash = '0'.repeat(64)),
+  ]) {
+    const altered = structuredClone(f);
+    change(altered.records.find((v) => v.key === 'WF-00'));
+    assert.throws(() => createFoundationApprovedRetentionPolicy(altered), blocked);
+  }
 });

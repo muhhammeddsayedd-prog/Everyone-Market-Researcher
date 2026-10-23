@@ -31,6 +31,26 @@ test('only exact shell create, project metadata, scoped list and owned ID GET ar
     false,
   );
   assert.equal(
+    foundationAllowedRequest(
+      'GET',
+      '/api/v1/workflows/Owned?excludePinnedData=true',
+      null,
+      (x) => x === 'Owned',
+    ),
+    true,
+  );
+  for (const path of [
+    '/api/v1/workflows/Other?excludePinnedData=true',
+    '/api/v1/workflows/Owned?excludePinnedData=false',
+    '/api/v1/workflows/Owned?excludePinnedData=true&other=1',
+    '/api/v1/workflows/Owned?excludePinnedData=true&excludePinnedData=true',
+    '/api/v1/workflows/Owned?includeData=true',
+  ])
+    assert.equal(
+      foundationAllowedRequest('GET', path, null, (x) => x === 'Owned'),
+      false,
+    );
+  assert.equal(
     foundationAllowedRequest('POST', '/api/v1/workflows', { ...buildShell('WF-00'), active: true }),
     false,
   );

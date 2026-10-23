@@ -40,7 +40,7 @@ test('isolated All without a public delivery packet blocks before stdin/private 
   try {
     const list = readFileSync('scripts/n8n/windows/Foundation-PublicRuntime.ps1', 'utf8');
     const relatives = [...list.matchAll(/^  '([^']+)'/gm)].map((x) => x[1]);
-    assert.equal(relatives.length, 33);
+    assert.equal(relatives.length, 39);
     for (const relative of relatives) {
       const target = join(root, relative);
       mkdirSync(dirname(target), { recursive: true });

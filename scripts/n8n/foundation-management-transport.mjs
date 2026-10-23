@@ -114,7 +114,7 @@ export function foundationAllowedRequest(method, path, body, ownsWorkflow = () =
     );
   if (method !== 'GET' || body !== null || typeof path !== 'string' || path.includes('#')) return false;
   if (path === '/api/v1/projects?limit=100') return true;
-  const exact = /^\/api\/v1\/workflows\/([A-Za-z0-9_-]{1,128})$/.exec(path);
+  const exact = /^\/api\/v1\/workflows\/([A-Za-z0-9_-]{1,128})(?:\?excludePinnedData=true)?$/.exec(path);
   if (exact) return ownsWorkflow(exact[1]) === true;
   try {
     const url = new URL('https://' + foundationScope.host + path),

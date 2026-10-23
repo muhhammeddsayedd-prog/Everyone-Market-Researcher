@@ -850,6 +850,9 @@ export async function runWorkflowBaselineDiagnostic(key, dependencies = {}) {
         settings: record.workflow.settings,
       },
       tags: record.workflow.tags,
+      ...(Object.hasOwn(record, 'nativeReadonlySettings')
+        ? { nativeReadonlySettings: record.nativeReadonlySettings }
+        : {}),
     };
     if (diagnoseFoundationRuntimeBaseline(null, baseline, projectId).failedChecks.includes('expected_shape'))
       reject();

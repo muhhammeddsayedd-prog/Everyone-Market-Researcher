@@ -1,5 +1,8 @@
 import { createHash } from 'node:crypto';
-import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
+import {
+  foundationRuntimeCheckpoint,
+  foundationRuntimeNativeReadonlyPin,
+} from './foundation-runtime-checkpoint.mjs';
 import { graphBody, inactiveNativeStagingGraph } from './foundation-bind.mjs';
 import { materializeFoundationAcceptanceCase } from '../../n8n/foundation/materialize-acceptance-case.mjs';
 import { buildFoundationGatewayWorkflows } from '../../n8n/foundation/build-foundation-gateway.mjs';
@@ -110,6 +113,7 @@ export function createFoundationRuntimeBaseline({ bindings, records }) {
     )
       blocked();
     byKey.set(record.key, record);
+    if (Object.hasOwn(record, 'nativeReadonlySettings')) foundationRuntimeNativeReadonlyPin(record);
   }
   return freezeRuntimeValue(
     keys.map((key) => {
@@ -121,6 +125,9 @@ export function createFoundationRuntimeBaseline({ bindings, records }) {
         versionId: record.versionId,
         body: bodyFor(record),
         tags: structuredClone(record.workflow.tags),
+        ...(Object.hasOwn(record, 'nativeReadonlySettings')
+          ? { nativeReadonlySettings: structuredClone(record.nativeReadonlySettings) }
+          : {}),
       };
     }),
   );

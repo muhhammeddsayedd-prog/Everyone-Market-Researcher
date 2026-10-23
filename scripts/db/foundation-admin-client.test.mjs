@@ -182,7 +182,7 @@ test('registered-window Admin option needs the genuine claimed fresh proof and p
   const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true });
   try {
     const proof = f.claim(f.admit());
-    assert.equal(proof.carriedManagementAttempts, 6);
+    assert.equal(proof.carriedManagementAttempts, 10);
     assert.equal(proof.carriedControlAttempts, 1);
     const module = await f.copy('foundation-admin-client.mjs');
     const wire = fixture({ projectProof: proof, forwardWindow: true });

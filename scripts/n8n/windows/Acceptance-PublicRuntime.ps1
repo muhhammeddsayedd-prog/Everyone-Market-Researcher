@@ -137,6 +137,9 @@ function Get-M03AcceptancePublicFiles([string]$Root) {
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-packet-20261022.md',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-attempt-20261021.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-vercel-postlogin-actual-20261022.json',
+  'milestones/M03-n8n-foundation/evidence/wf00-restore-attempt-20261023.json',
+  'milestones/M03-n8n-foundation/evidence/wf00-restore-verified-20261023.json',
+  'milestones/M03-n8n-foundation/evidence/remaining-control-allocation-approval-20261023.json',
   'milestones/M03-n8n-foundation/evidence/m03-c01-retention-proposal-20261019.json'
  )
  foreach($relative in @('scripts/n8n','n8n/foundation')){

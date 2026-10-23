@@ -75,8 +75,12 @@ export const foundationProjectVerifiedActiveRuntime = Object.freeze({
   sourceCi: 39990446858,
   allFiveCiJobsPassed: true,
   vercelPassed: true,
-  setupMaximum: 50,
+  setupMaximum: 88,
   proposedSetupMaximum: 88,
+});
+const setupAllocationApproval = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/remaining-control-allocation-approval-20261023.json',
+  sha256: '313dd1de36e1c2d24e426cb2d09d1a027d192305a97a3a45b5a1783f61bf3f43',
 });
 const closedWindowRecovery = Object.freeze({
   receiptRelative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-sole-default-attempt-20261023.json',
@@ -128,6 +132,18 @@ const closedWindowRecovery = Object.freeze({
     'scripts/db/out/m03-foundation-archive-df4f29ec-e2dc-4d82-a276-62a4e695e6f9-latest.json':
       'c2d67c19b2a449f020b6d944ef1e0f6ec3a1e5bff3e4c4083b36162352596de1',
   }),
+});
+// The separate inactive WF-00 repair consumed four management requests. Its
+// append-only journal and physically closed receipt extend the carried ledger;
+// they do not rewrite the earlier 98-request reconciliation or replenish caps.
+const wf00RestoreRecovery = Object.freeze({
+  receiptRelative: 'milestones/M03-n8n-foundation/evidence/wf00-restore-verified-20261023.json',
+  receiptSha256: '32184be54a4b36f250fa026ece00f295c94c6149b2af5fb682bfb769f683f9ec',
+  priorReceiptRelative: 'milestones/M03-n8n-foundation/evidence/wf00-restore-attempt-20261023.json',
+  priorReceiptSha256: 'e5d6188f80281a0603209b57de131f4f8fe16278c7d56a53ae3f56b77156a3f7',
+  journalRelative: 'scripts/n8n/out/foundation/wf00-restore-20261023.jsonl',
+  journalSha256: '53b1620b0ee3bdd54645076cd81cfc2c80d6040ee58d2c0cdb6511fc68b5298b',
+  priorJournalSha256: '22c18ac86b7e0e03762cf19ad98a33560344af664fcf25f0a45673906fdc955d',
 });
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
@@ -359,6 +375,8 @@ function checkpoint(x) {
   positiveProjectRead(x, p);
   x.recovery = reconciledEffectfulAttempt(x);
   x.recovery = reconciledClosedWindow(x) ?? x.recovery;
+  x.recovery = reconciledWf00Restore(x) ?? x.recovery;
+  if (x.recovery?.closedWindow) assertSetupAllocationApproval(x);
   recoveryPreflight(x);
   return p;
 }
@@ -651,9 +669,200 @@ function reconciledClosedWindow(x) {
     pins: Object.freeze({ ...effectfulRecovery.pins, ...closedWindowRecovery.pins }),
   });
 }
+function reconciledWf00Restore(x) {
+  if (!x.recovery?.closedWindow) return null;
+  const text = x.file(wf00RestoreRecovery.receiptRelative),
+    priorText = x.file(wf00RestoreRecovery.priorReceiptRelative),
+    journal = x.file(wf00RestoreRecovery.journalRelative),
+    { lines, rows } = jsonl(journal, 9);
+  if (
+    hash(text) !== wf00RestoreRecovery.receiptSha256 ||
+    hash(priorText) !== wf00RestoreRecovery.priorReceiptSha256 ||
+    hash(journal) !== wf00RestoreRecovery.journalSha256 ||
+    rows.length !== 9 ||
+    hash(lines.slice(0, 2).join('\n') + '\n') !== wf00RestoreRecovery.priorJournalSha256
+  )
+    fail();
+  const receipt = JSON.parse(text),
+    prior = JSON.parse(priorText),
+    workflowId = 'MzimjpsuyPuK7SKe',
+    priorBackup = 'fc0bdea1-f733-4c68-ba8c-f062e83b7919',
+    backup = '4586bbde-add3-4376-b8b4-5200443c06d5',
+    versionId = 'f5f755b7-9683-4fb6-a26d-87b001127244';
+  const expectedRows = [
+    {
+      event: 'request',
+      number: 1,
+      method: 'GET',
+      path: `/api/v1/workflows/${workflowId}?excludePinnedData=true`,
+    },
+    { event: 'backup_ready', workflowId, backupRunId: priorBackup },
+    {
+      event: 'restore_continuation',
+      workflowId,
+      priorToolReceipt: '905f06',
+      priorRequestCount: 1,
+      priorBackupRunId: priorBackup,
+    },
+    {
+      event: 'request',
+      number: 2,
+      method: 'GET',
+      path: `/api/v1/workflows/${workflowId}?excludePinnedData=true`,
+    },
+    { event: 'backup_ready', workflowId, backupRunId: backup },
+    {
+      event: 'restore_intent',
+      workflowId,
+      sourceCommitSha: '025c2a2c0127566df71cef77797db277f1565568',
+      backupRunId: backup,
+    },
+    {
+      event: 'request',
+      number: 3,
+      method: 'PUT',
+      path: `/api/v1/workflows/${workflowId}?publishIfActive=false`,
+    },
+    {
+      event: 'request',
+      number: 4,
+      method: 'GET',
+      path: `/api/v1/workflows/${workflowId}?excludePinnedData=true`,
+    },
+    {
+      event: 'restore_verified',
+      workflowId,
+      versionId,
+      backupRunId: backup,
+      nativeReadonlySettings: { binaryMode: 'separate' },
+    },
+  ];
+  if (
+    rows.some((row, i) => JSON.stringify(row) !== JSON.stringify(expectedRows[i])) ||
+    prior.kind !== 'actual_owned_wf00_restore_attempt' ||
+    prior.toolReceipt !== '905f06' ||
+    prior.actual.nativeExit !== 1 ||
+    prior.actual.requestCount !== 1 ||
+    prior.actual.putCount !== 0 ||
+    prior.actual.putAttempted !== false ||
+    prior.actual.writeIntentRecorded !== false ||
+    prior.actual.childClosed !== true ||
+    prior.actual.networkCompletionVerified !== true ||
+    prior.journal.rowCount !== 2 ||
+    prior.journal.sha256 !== wf00RestoreRecovery.priorJournalSha256 ||
+    receipt.kind !== 'actual_owned_wf00_restore_verified' ||
+    receipt.environment !== 'dev' ||
+    receipt.toolReceipt !== '87a22f' ||
+    receipt.actual.version !== 1 ||
+    receipt.actual.windowId !== c.windowId ||
+    receipt.actual.host !== 'muhhammedsayed.app.n8n.cloud' ||
+    receipt.actual.projectId !== 'pHvQjDmjxVZ3KQLT' ||
+    receipt.actual.workflowId !== workflowId ||
+    receipt.actual.status !== 'wf00_restore_verified' ||
+    receipt.actual.nativeExit !== 0 ||
+    receipt.actual.requestCount !== 3 ||
+    receipt.actual.versionId !== versionId ||
+    receipt.actual.backupReady !== true ||
+    receipt.actual.beforeVersionPrivatelyBackedUp !== true ||
+    receipt.actual.writeIntentRecorded !== true ||
+    receipt.actual.putAttempted !== true ||
+    receipt.actual.putAcknowledged !== true ||
+    receipt.actual.exactContentVerified !== true ||
+    receipt.actual.inactiveVerified !== true ||
+    receipt.actual.ownerAndTagsVerified !== true ||
+    receipt.actual.nativeStorageModePreserved !== true ||
+    receipt.actual.childClosed !== true ||
+    receipt.actual.networkCompletionVerified !== true ||
+    receipt.actual.parentLockDeleted !== true ||
+    receipt.actual.persistentManagementRetained !== true ||
+    receipt.actual.diagnostic !== null ||
+    receipt.actual.executionCount !== 0 ||
+    receipt.actual.credentialsCreated !== 0 ||
+    receipt.actual.gatewayWindowStarted !== false ||
+    receipt.journal.path !== wf00RestoreRecovery.journalRelative ||
+    receipt.journal.rowCount !== 9 ||
+    receipt.journal.sha256 !== wf00RestoreRecovery.journalSha256 ||
+    receipt.journal.putCount !== 1 ||
+    receipt.journal.originalPrefix.rowCount !== 2 ||
+    receipt.journal.originalPrefix.sha256 !== wf00RestoreRecovery.priorJournalSha256 ||
+    receipt.journal.originalPrefix.byteIdentical !== true ||
+    receipt.journal.continuationBackupRunId !== backup ||
+    JSON.stringify(receipt.journal.requestOrdinals) !== '[1,2,3,4]' ||
+    receipt.usage.beforeRestore.management !== 98 ||
+    receipt.usage.beforeRestore.control !== 301 ||
+    receipt.usage.beforeRestore.combined !== 399 ||
+    receipt.usage.totalRestore.management !== 4 ||
+    receipt.usage.totalRestore.control !== 0 ||
+    receipt.usage.totalRestore.combined !== 4 ||
+    receipt.usage.after.management !== 102 ||
+    receipt.usage.after.control !== 301 ||
+    receipt.usage.after.combined !== 403 ||
+    receipt.usage.carriedManagementBefore !== x.recovery.carriedManagementAttempts ||
+    receipt.usage.carriedManagementAfter !== x.recovery.carriedManagementAttempts + 4 ||
+    receipt.usage.allowancesReplenished !== false ||
+    receipt.cleanup.nativeExit !== 0 ||
+    receipt.cleanup.acceptanceParentLockAbsent !== true ||
+    receipt.cleanup.provisionMutexExclusiveOpenCloseVerified !== true ||
+    receipt.acceptance.wf00RestoreVerified !== true ||
+    receipt.acceptance.m03DevAcceptanceComplete !== false
+  )
+    fail();
+  return Object.freeze({
+    ...x.recovery,
+    carriedManagementAttempts: x.recovery.carriedManagementAttempts + 4,
+  });
+}
+function assertSetupAllocationApproval(x) {
+  const maximum = foundationProjectVerifiedActiveRuntime.setupMaximum;
+  if (maximum === 50) return;
+  if (maximum !== 88) fail();
+  const text = x.file(setupAllocationApproval.relative);
+  if (hash(text) !== setupAllocationApproval.sha256) fail();
+  const a = JSON.parse(text);
+  if (
+    a.kind !== 'm03_cumulative_vercel_allocation_approval' ||
+    a.questionCallId !== 'call_9bd1dfd31b95479381b5bc036dfa1925' ||
+    a.ownerReply !== 'Approve cumulative88; keep44 charged' ||
+    a.decision !== 'approved' ||
+    a.environment !== 'dev' ||
+    a.milestone !== 'M03' ||
+    a.allocation.previousSetupMaximum !== 50 ||
+    a.allocation.setupMaximum !== maximum ||
+    a.allocation.usedSetupRequests !== 44 ||
+    a.allocation.usedSetupRequests !== x.recovery.setupAttempts ||
+    a.allocation.additionalSetupRequestsMaximum !== 44 ||
+    a.allocation.countersReset !== false ||
+    a.unchangedGlobalCaps.management !== caps.runtimeManagement ||
+    a.unchangedGlobalCaps.control !== caps.control ||
+    a.unchangedGlobalCaps.combined !== caps.combined ||
+    a.unchangedGlobalCaps.nativeExecutions !== caps.nativeExecutions ||
+    a.unchangedGlobalCaps.gatewayAttempts !== caps.gatewayAttempts ||
+    a.unchangedGlobalCaps.directProviderReads !== caps.providerGetAttempts ||
+    a.unchangedGlobalCaps.actorStarts !== caps.actorStarts ||
+    a.unchangedGlobalCaps.maxActorUsd !== caps.requestedUsdEachActor ||
+    a.unchangedGlobalCaps.actorReserveUsd !== caps.actorReserveUsd ||
+    a.unchangedGlobalCaps.actorsSequential !== true ||
+    a.unchangedGlobalCaps.newDistinctCollectedItems !== 1 ||
+    a.actualPriorUsage.management !==
+      x.recovery.mainManagementAttempts + x.recovery.carriedManagementAttempts ||
+    a.actualPriorUsage.control !== x.recovery.mainControlAttempts + x.recovery.carriedControlAttempts ||
+    a.actualPriorUsage.combined !== 403 ||
+    a.actualPriorUsage.carriedManagement !== x.recovery.carriedManagementAttempts ||
+    a.actualPriorUsage.actorStarts !== 0 ||
+    a.actualPriorUsage.actorSpendUsd !== 0 ||
+    a.actualPriorUsage.receiptPath !== wf00RestoreRecovery.receiptRelative ||
+    a.actualPriorUsage.receiptSha256 !== wf00RestoreRecovery.receiptSha256 ||
+    Object.values(a.limitsPreserved).some((v) => v !== true) ||
+    Object.values(a.boundaries).some((v) => v !== false) ||
+    a.acceptance.allocationDecisionComplete !== true ||
+    a.acceptance.executionStartedByThisRecord !== false ||
+    a.acceptance.m03DevAcceptanceVerified !== false
+  )
+    fail();
+}
 function currentReadiness(x) {
   if (!x.recovery?.closedWindow) return null;
-  if (![50, 88].includes(foundationProjectVerifiedActiveRuntime.setupMaximum)) fail();
+  assertSetupAllocationApproval(x);
   if (foundationProjectVerifiedActiveRuntime.setupMaximum - x.recovery.setupAttempts < 14 + 18)
     return 'setup_cap_insufficient';
   const active = foundationProjectVerifiedActiveRuntime;
@@ -1004,7 +1213,7 @@ function journals(x, initial = false) {
     header.version !== 1 ||
     header.sourceCommitSha !== c.sourceCommitSha ||
     header.deadlineAt !== c.originalDeadlineAt ||
-    management.length + 4 > 512 ||
+    management.length + (x.recovery?.carriedManagementAttempts ?? 4) > 512 ||
     management.some(
       (r, i) => !exact(r, ['event', 'ordinal']) || r.event !== 'management_attempt' || r.ordinal !== i + 1,
     )

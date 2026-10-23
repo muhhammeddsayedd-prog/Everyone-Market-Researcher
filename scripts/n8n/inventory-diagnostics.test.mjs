@@ -211,6 +211,7 @@ function baselineFixture(change = () => {}, status = 200) {
   const record = JSON.parse(readFileSync(new URL('../../n8n/workflows/WF-00.json', import.meta.url), 'utf8'));
   const dto = {
     ...structuredClone(record.workflow),
+    settings: { ...structuredClone(record.workflow.settings), ...(record.nativeReadonlySettings ?? {}) },
     id: record.id,
     versionId: record.versionId,
     active: false,
@@ -318,6 +319,7 @@ test('baseline diagnostic refuses reflected key and HTTP denial without retry or
 
 test('one GET forensics can recognize a reviewed graph variant without claiming pinned baseline or edit provenance', async () => {
   const f = baselineFixture((dto) => {
+    delete dto.settings.binaryMode;
     dto.versionId = 'SYNTHETIC_PRIVATE_NEW_VERSION';
     for (const n of dto.nodes) if (n.type === 'n8n-nodes-base.scheduleTrigger') n.disabled = true;
     dto.settings.availableInMCP = true;

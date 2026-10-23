@@ -89,12 +89,36 @@ test(
       assert.equal(parsed.packetSha256, null);
       assert.ok(parsed.files['milestones/M03-n8n-foundation/evidence/sanitizedprobe.json']);
       assert.ok(parsed.files['scripts/n8n/foundation-export.mjs']);
+      assert.ok(parsed.files['scripts/n8n/windows/Dev-CredentialStore.ps1']);
+      assert.ok(parsed.files['n8n/workflows/WF-00.json']);
+      assert.ok(parsed.files['n8n/fixtures/WF-00-reviewed-native-staging-025c2a2.json']);
+      assert.ok(parsed.files['milestones/M03-n8n-foundation/evidence/wf00-restore-attempt-20261023.json']);
       assert.ok(parsed.files['packages/shared/package.json']);
       assert.ok(parsed.zod.files['v4/core.js']);
     }),
 );
 
 for (const [name, mutate] of [
+  [
+    'a changed current WF-00 runtime export',
+    ({ repo }) => writeFileSync(join(repo, 'n8n/workflows/WF-00.json'), '{}'),
+  ],
+  [
+    'a changed immutable reviewed WF-00 restore target',
+    ({ repo }) => writeFileSync(join(repo, 'n8n/fixtures/WF-00-reviewed-native-staging-025c2a2.json'), '{}'),
+  ],
+  [
+    'a changed immutable read-only WF-00 attempt receipt',
+    ({ repo }) =>
+      writeFileSync(
+        join(repo, 'milestones/M03-n8n-foundation/evidence/wf00-restore-attempt-20261023.json'),
+        '{}',
+      ),
+  ],
+  [
+    'a changed persistent credential adapter',
+    ({ repo }) => writeFileSync(join(repo, 'scripts/n8n/windows/Dev-CredentialStore.ps1'), 'public mutation'),
+  ],
   [
     'a changed project import',
     ({ repo }) => writeFileSync(join(repo, 'scripts/n8n/foundation-all.mjs'), 'public mutation'),

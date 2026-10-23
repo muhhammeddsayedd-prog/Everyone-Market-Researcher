@@ -1,7 +1,11 @@
 import { isDeepStrictEqual } from 'node:util';
 import { createHash } from 'node:crypto';
 import { parseN8nBindings } from '../../packages/shared/src/n8n-bindings.ts';
-import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
+import {
+  foundationRuntimeCheckpoint,
+  foundationRuntimeNativeReadonlyPin,
+  foundationRuntimeObservedGraphHash,
+} from './foundation-runtime-checkpoint.mjs';
 import { freezeRuntimeValue } from './foundation-runtime-plan.mjs';
 import * as runtimeControl from './foundation-runtime-control.mjs';
 import {
@@ -369,7 +373,22 @@ export function createFoundationNativeReader({
       (b.workflowId !== undefined && b.workflowId !== scope(key))
     )
       fail('BINDING');
+    if (Object.hasOwn(b, 'nativeReadonlySettings'))
+      foundationRuntimeNativeReadonlyPin({
+        key,
+        id: scope(key),
+        nativeReadonlySettings: b.nativeReadonlySettings,
+      });
     return b;
+  }
+  function observedGraphHash(dto, key, binding) {
+    return foundationRuntimeObservedGraphHash(dto, {
+      key,
+      id: scope(key),
+      ...(Object.hasOwn(binding, 'nativeReadonlySettings')
+        ? { nativeReadonlySettings: binding.nativeReadonlySettings }
+        : {}),
+    });
   }
   function metadataProjection(row, key, id, { binding, expectedMode, intentAt, list = false } = {}) {
     const workflowId = scope(key);
@@ -702,7 +721,7 @@ export function createFoundationNativeReader({
           dto.id !== scope(key) ||
           dto.versionId !== b.versionId ||
           dto.activeVersionId !== b.activeVersionId ||
-          runtimeControl.runtimeGraphHash(dto) !== b.bodyHash
+          observedGraphHash(dto, key, b) !== b.bodyHash
         )
           fail('CURRENT_BODY');
         if (
@@ -710,11 +729,15 @@ export function createFoundationNativeReader({
           (!object(dto.activeVersion) ||
             dto.activeVersion.versionId !== b.activeVersionId ||
             dto.activeVersion.workflowId !== dto.id ||
-            runtimeControl.runtimeGraphHash({
-              ...dto,
-              nodes: dto.activeVersion.nodes,
-              connections: dto.activeVersion.connections,
-            }) !== b.bodyHash)
+            observedGraphHash(
+              {
+                ...dto,
+                nodes: dto.activeVersion.nodes,
+                connections: dto.activeVersion.connections,
+              },
+              key,
+              b,
+            ) !== b.bodyHash)
         )
           fail('PUBLISHED_BODY');
         if (trace) {
@@ -808,7 +831,7 @@ export function createFoundationNativeReader({
             if (
               !object(snapshot) ||
               snapshot.id !== scope(args.workflowKey) ||
-              runtimeControl.runtimeGraphHash(snapshot) !== b.bodyHash ||
+              observedGraphHash(snapshot, args.workflowKey, b) !== b.bodyHash ||
               !object(dto.data) ||
               !object(dto.data.resultData) ||
               !object(dto.data.resultData.runData) ||

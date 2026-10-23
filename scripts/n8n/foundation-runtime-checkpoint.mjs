@@ -106,9 +106,11 @@ export const foundationRuntimeCheckpoint = {
     },
     'WF-00': {
       id: 'MzimjpsuyPuK7SKe',
-      versionId: 'b2ff9a94-89b8-4fe2-9bed-093774f0feff',
-      recordHash: 'a3d4922364fc414fde9073f98535fef0885443b38fee1d86e5d9a5fe54ed2347',
+      versionId: 'f5f755b7-9683-4fb6-a26d-87b001127244',
+      recordHash: 'c12fad19e44c495708a9f33728ae7c3b050563b09e133dfc20945750da7c3c00',
       stagedSourceHash: '1090db04ecf847c64c28a8bcb247e1080b1db85d37503c1108aa99f307d21239',
+      nativeReadonlySettings: { binaryMode: 'separate' },
+      restoredReceipt: '87a22f',
     },
     'WF-19': {
       id: 'TsqSMa5MlO3QBLkt',
@@ -222,7 +224,67 @@ function graphNodes(v) {
   });
 }
 const graphCanonical = (v) => JSON.stringify(graphSorted(v));
-export function foundationRuntimeGraphHash(body) {
+// n8n2.43.5's public write DTO ignores binaryMode; the editor seeds it as
+// internal native state. It is not computed by the GET mapper and must never
+// be assumed stable merely because editable definition comparison passes.
+// These helpers are opt-in for the separately verified restore operation.
+// Source: packages/@n8n/api-types/src/dto/workflows/base-workflow-public.dto.ts
+// and packages/frontend/editor-ui/src/app/constants/workflows.ts at n8n@2.43.5.
+function nativeSettingsDescriptors(settings) {
+  if (!graphObject(settings) || ![Object.prototype, null].includes(Object.getPrototypeOf(settings)))
+    graphBlocked();
+  const descriptors = Object.getOwnPropertyDescriptors(settings);
+  if (
+    Reflect.ownKeys(descriptors).some(
+      (key) =>
+        typeof key !== 'string' ||
+        !Object.hasOwn(descriptors[key], 'value') ||
+        descriptors[key].enumerable !== true,
+    )
+  )
+    graphBlocked();
+  const binary = descriptors.binaryMode;
+  if (binary && !['separate', 'combined'].includes(binary.value)) graphBlocked();
+  return descriptors;
+}
+export function foundationNativeReadonlySettings(settings) {
+  const descriptors = nativeSettingsDescriptors(settings);
+  return Object.freeze({ binaryMode: descriptors.binaryMode?.value ?? null });
+}
+export function foundationEditableSettings(settings) {
+  const descriptors = nativeSettingsDescriptors(settings);
+  return Object.fromEntries(
+    Object.entries(descriptors)
+      .filter(([key]) => key !== 'binaryMode')
+      .map(([key, descriptor]) => [key, descriptor.value]),
+  );
+}
+// Only this source-pinned post-restore workflow may carry native state outside
+// its editable definition. Other workflows retain the original raw comparison.
+export function foundationRuntimeNativeReadonlyPin(scope) {
+  if (!graphObject(scope) || !Object.hasOwn(scope, 'nativeReadonlySettings')) return null;
+  const pin = foundationRuntimeCheckpoint.workflows['WF-00'];
+  if (
+    scope.key !== 'WF-00' ||
+    scope.id !== pin.id ||
+    !graphObject(scope.nativeReadonlySettings) ||
+    Object.keys(scope.nativeReadonlySettings).length !== 1 ||
+    !Object.hasOwn(scope.nativeReadonlySettings, 'binaryMode') ||
+    !isDeepStrictEqual(
+      foundationNativeReadonlySettings(scope.nativeReadonlySettings),
+      pin.nativeReadonlySettings,
+    )
+  )
+    graphBlocked();
+  return pin.nativeReadonlySettings;
+}
+export function foundationRuntimeObservedGraphHash(body, scope) {
+  const native = foundationRuntimeNativeReadonlyPin(scope);
+  if (!native) return foundationRuntimeGraphHash(body);
+  if (!isDeepStrictEqual(foundationNativeReadonlySettings(body?.settings), native)) graphBlocked();
+  return foundationRuntimeGraphHash(body, { editableSettingsOnly: true });
+}
+export function foundationRuntimeGraphHash(body, { editableSettingsOnly = false } = {}) {
   if (
     !graphObject(body) ||
     typeof body.name !== 'string' ||
@@ -236,7 +298,7 @@ export function foundationRuntimeGraphHash(body) {
         name: body.name,
         nodes: graphNodes(body.nodes),
         connections: body.connections,
-        settings: body.settings,
+        settings: editableSettingsOnly ? foundationEditableSettings(body.settings) : body.settings,
       }),
     )
     .digest('hex');
@@ -266,7 +328,12 @@ export const foundationRuntimeBaselineFailureCodes = Object.freeze([
   'graph_connections',
   'graph_settings',
 ]);
-export function diagnoseFoundationRuntimeBaseline(dto, baseline, projectId) {
+export function diagnoseFoundationRuntimeBaseline(
+  dto,
+  baseline,
+  projectId,
+  { editableSettingsOnly = false } = {},
+) {
   const failedChecks = [];
   const components = { nameEqual: false, nodesEqual: false, connectionsEqual: false, settingsEqual: false };
   const workflowKey =
@@ -283,6 +350,7 @@ export function diagnoseFoundationRuntimeBaseline(dto, baseline, projectId) {
   const check = (ok, code) => {
     if (!ok) failedChecks.push(code);
   };
+  let native = null;
   try {
     if (
       !graphObject(baseline) ||
@@ -294,7 +362,10 @@ export function diagnoseFoundationRuntimeBaseline(dto, baseline, projectId) {
       failedChecks.push('expected_shape');
       return done();
     }
-    foundationRuntimeGraphHash(baseline.body);
+    native = foundationRuntimeNativeReadonlyPin(baseline);
+    foundationRuntimeGraphHash(baseline.body, {
+      editableSettingsOnly: native !== null || editableSettingsOnly,
+    });
   } catch {
     failedChecks.push('expected_shape');
     return done();
@@ -347,7 +418,16 @@ export function diagnoseFoundationRuntimeBaseline(dto, baseline, projectId) {
       graphObject(dto.connections) &&
       graphCanonical(dto.connections) === graphCanonical(baseline.body.connections);
     components.settingsEqual =
-      graphObject(dto.settings) && graphCanonical(dto.settings) === graphCanonical(baseline.body.settings);
+      graphObject(dto.settings) &&
+      (native === null || isDeepStrictEqual(foundationNativeReadonlySettings(dto.settings), native)) &&
+      graphCanonical(
+        native !== null || editableSettingsOnly ? foundationEditableSettings(dto.settings) : dto.settings,
+      ) ===
+        graphCanonical(
+          native !== null || editableSettingsOnly
+            ? foundationEditableSettings(baseline.body.settings)
+            : baseline.body.settings,
+        );
     for (const [name, code] of [
       ['nameEqual', 'graph_name'],
       ['nodesEqual', 'graph_nodes'],

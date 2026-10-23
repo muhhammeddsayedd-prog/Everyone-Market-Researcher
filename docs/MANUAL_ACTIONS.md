@@ -69,6 +69,14 @@ only the bounded remaining M03 dev use and cleanup, with all cumulative
 limits unchanged. No credential, new time window, production operation or merge
 approval is requested. [Approval receipt](../milestones/M03-n8n-foundation/evidence/sole-bypass-scope-approval-20261023.json). The four persistent entries remain ready; no owner action is currently pending.
 
+## MA-02 - cumulative Vercel88/44 approved,23 October2026
+
+The owner replied exactly **Approve cumulative88; keep44 charged**: [immutable allocation approval](../milestones/M03-n8n-foundation/evidence/remaining-control-allocation-approval-20261023.json), referencing the original df4b539 packet. This approves cumulative setup50-to88 while retaining44 already used, with all global/actor/spending limits and prior102/301/403 preserved. No owner reply, login, secret delivery or time-window decision remains for this gate. Codex must verify the scoped implementation and actual readiness before continuing remaining dev A-D; approval alone is not acceptance or permission for production, recurring activity, merge or M04.
+
+## MA-11 - reviewed WF-00 restoration verified,23 October2026
+
+The exact owner-approved inactive definition restoration is complete: [actual verification and cleanup](../milestones/M03-n8n-foundation/evidence/wf00-restore-verified-20261023.json),87a22f/native0. One preserved failed GET plus the successful GET/PUT/GET total4 requests; current102/301/403 and carried Management10 do not replenish any allowance. Exact editable definition, inactive/unpublished ownership and separate native storage invariant pass. Private rollback backups and all four credential originals are retained; metadata-only Status is not every-endpoint authentication. No restore, credential or time owner action remains. The separate cumulative Vercel88/44 decision is now approved as recorded above; full A-D/C01 acceptance, production, merge and M04 are not completed by this restoration.
+
 ## Historical M03 owner actions and receipts
 
 **Historical M03 status, 22 October 2026:** fixed-project Vercel access verified.

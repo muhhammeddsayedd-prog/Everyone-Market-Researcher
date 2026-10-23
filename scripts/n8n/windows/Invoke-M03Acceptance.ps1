@@ -190,7 +190,7 @@ function ConvertTo-ProjectVerifiedReadinessBlock($Value){
    $Value.kind -cne 'project_verified_continuation_blocked' -or $Value.status -cne 'setup_cap_insufficient' -or
    $Value.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or $Value.sourceCommitSha -cne 'a5e746736893d5040e93032ae740a0878f748837' -or $Value.windowId -cne '38b3708d-61b0-41d2-8170-5ed91c66b4dc' -or
    $Value.privateRead -isnot [bool] -or $Value.privateRead -ne $false){throw 'blocked'}
- $expected=@{managementAttempts=98;controlAttempts=301;combinedAttempts=399;gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=50;minimumNewSetupRequests=32;proposedSetupMaximum=88;networkRequests=0}
+ $expected=@{managementAttempts=102;controlAttempts=301;combinedAttempts=403;gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=50;minimumNewSetupRequests=32;proposedSetupMaximum=88;networkRequests=0}
  foreach($name in $expected.Keys){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long]) -or $Value.$name -ne $expected[$name]){throw 'blocked'}}
  return $Value
 }

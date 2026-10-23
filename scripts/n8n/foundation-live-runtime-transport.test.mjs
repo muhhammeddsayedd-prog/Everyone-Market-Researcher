@@ -119,6 +119,7 @@ test('readonly baseline preflight uses only25 source-owned GETs and admits each 
   let attempts = 0;
   const dto = (b) => ({
     ...structuredClone(b.body),
+    settings: { ...structuredClone(b.body.settings), ...(b.nativeReadonlySettings ?? {}) },
     id: b.id,
     versionId: b.versionId,
     active: false,

@@ -1,7 +1,7 @@
 {
   "key": "WF-00",
   "id": "MzimjpsuyPuK7SKe",
-  "versionId": "b2ff9a94-89b8-4fe2-9bed-093774f0feff",
+  "versionId": "f5f755b7-9683-4fb6-a26d-87b001127244",
   "active": false,
   "activeVersionId": null,
   "projectId": "pHvQjDmjxVZ3KQLT",
@@ -2082,5 +2082,8 @@
   "canonicalParity": false,
   "kind": "actual_saved_inactive_foundation_staging",
   "version": 1,
-  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+  "nativeReadonlySettings": {
+    "binaryMode": "separate"
+  }
 }

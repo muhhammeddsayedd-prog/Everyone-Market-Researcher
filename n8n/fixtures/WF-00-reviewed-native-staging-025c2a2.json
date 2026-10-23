@@ -1,0 +1,2086 @@
+{
+  "key": "WF-00",
+  "id": "MzimjpsuyPuK7SKe",
+  "versionId": "b2ff9a94-89b8-4fe2-9bed-093774f0feff",
+  "active": false,
+  "activeVersionId": null,
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflow": {
+    "name": "WF-00 · Orchestrator [dev]",
+    "nodes": [
+      {
+        "id": "74c946d3-bdef-4f55-a596-286cdc98b072",
+        "name": "Cairo clock",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 0 1 * * *"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 0 2 * * *"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 30 2 * * *"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 0 3 * * *"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 30 3 * * *"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 0 4 * * *"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 0 5 * * 0"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 0 6 * * *"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 30 6 * * *"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 0 7 * * 0"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 30 7 * * 0"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 0 8 * * 1"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 0 9 * * *"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 15 9 * * *"
+              }
+            ]
+          },
+          "misfirePolicy": "skip",
+          "misfireGraceSeconds": 0
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "3722c2f1-84e4-4a0a-abd8-85c914085e74",
+        "name": "PM stories (disabled)",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 0 18 * * *"
+              }
+            ]
+          },
+          "misfirePolicy": "skip",
+          "misfireGraceSeconds": 0
+        },
+        "position": [
+          0,
+          200
+        ],
+        "disabled": true
+      },
+      {
+        "id": "e4bc7d0a-5576-4d60-a5e2-6771aee033b8",
+        "name": "Backfill waves (disabled)",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 0 10-23 * * *"
+              }
+            ]
+          },
+          "misfirePolicy": "skip",
+          "misfireGraceSeconds": 0
+        },
+        "position": [
+          0,
+          400
+        ],
+        "disabled": true
+      },
+      {
+        "id": "ec2f4308-bc5f-454d-a48b-e8aad3e18082",
+        "name": "Manual slot test",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "parameters": {},
+        "position": [
+          0,
+          600
+        ]
+      },
+      {
+        "id": "d821156a-90ba-4c5b-a8d7-ed6019e03bc5",
+        "name": "Config",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "parameters": {
+          "mode": "manual",
+          "includeOtherFields": false,
+          "assignments": {
+            "assignments": [
+              {
+                "id": "5b5f61e1-6ef3-46eb-aae6-b8900bf2a7bc",
+                "name": "env",
+                "type": "string",
+                "value": "dev"
+              },
+              {
+                "id": "90f235b3-f106-4be7-a6aa-3335de728007",
+                "name": "app_url",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "64a4b01a-4cec-4f64-a29f-038ea7c0af51",
+                "name": "webhook_base",
+                "type": "string",
+                "value": "https://muhhammedsayed.app.n8n.cloud"
+              },
+              {
+                "id": "43bdd663-cbcd-4d9c-a99b-a0c1765017cf",
+                "name": "notify_mode",
+                "type": "string",
+                "value": "log"
+              },
+              {
+                "id": "43d77e7b-ba77-45db-a86f-d1d453091d72",
+                "name": "stories_twice_daily",
+                "type": "boolean",
+                "value": false
+              },
+              {
+                "id": "f975a3bc-057b-4410-afcf-c1b6ca513288",
+                "name": "backfill_enabled",
+                "type": "boolean",
+                "value": false
+              },
+              {
+                "id": "a5f41609-ffb7-4371-af86-fa7d75aef53f",
+                "name": "input",
+                "type": "object",
+                "value": "={{ { timestamp: $json.timestamp ?? null, slot_override: $json.slot_override ?? null, env: $json.env ?? null } }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          260,
+          0
+        ]
+      },
+      {
+        "id": "e834f0ae-93c5-4848-a0d9-2c00f87b5129",
+        "name": "Which slot?",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const invalid=()=>{throw new Error('EMR_N8N_INPUT_INVALID');};\nconst items=$input.all();\nif(items.length!==1)invalid();\nconst j=items[0].json;\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nif(!object(j)||j.env!=='dev'||j.backfill_enabled!==false||j.stories_twice_daily!==false||\n  j.app_url!==''||j.webhook_base!=='https://muhhammedsayed.app.n8n.cloud'||j.notify_mode!=='log'||!object(j.input))invalid();\nconst input=j.input;\nif(Object.keys(input).some(k=>!['timestamp','slot_override','env'].includes(k))||\n  (input.env!==null&&input.env!==undefined&&input.env!=='dev'))invalid();\nfunction timestamp(value){\n  if(typeof value!=='string')invalid();\n  const m=/^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$/.exec(value);\n  if(!m)invalid();\n  const [y,month,d,h,minute,s]=m.slice(1,7).map(Number);\n  const leap=y%4===0&&(y%100!==0||y%400===0);\n  const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];\n  if(y<1||month<1||month>12||d<1||d>days[month-1]||h>23||minute>59||s>59)invalid();\n  if(m[7]!=='Z'){\n    const [oh,om]=m[7].slice(1).split(':').map(Number);\n    if(oh>14||om>59||(oh===14&&om!==0))invalid();\n  }\n  const date=new Date(value);if(!Number.isFinite(date.getTime()))invalid();return date;\n}\nconst date=input.timestamp===null||input.timestamp===undefined?null:timestamp(input.timestamp);\nconst routes={\n  \"web_map\": [\n    {\n      \"target\": \"WF-21\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"daily\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"vimeo\": [\n    {\n      \"target\": \"WF-10\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"daily\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"ig_posts\": [\n    {\n      \"target\": \"WF-11\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"daily\",\n        \"limit\": 500,\n        \"result_type\": \"posts\"\n      }\n    }\n  ],\n  \"ig_reels\": [\n    {\n      \"target\": \"WF-11\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"daily\",\n        \"limit\": 500,\n        \"result_type\": \"reels\"\n      }\n    }\n  ],\n  \"youtube\": [\n    {\n      \"target\": \"WF-13\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"daily\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"li_posts\": [\n    {\n      \"target\": \"WF-18\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"daily\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"removal\": [\n    {\n      \"target\": \"WF-40\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"removal_check\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"li_employees\": [\n    {\n      \"target\": \"WF-18b\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"weekly\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"stories_am\": [\n    {\n      \"target\": \"WF-12\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"daily\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"linker\": [\n    {\n      \"target\": \"WF-32\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"daily\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"news\": [\n    {\n      \"target\": \"WF-22\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"weekly\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"briefs\": [\n    {\n      \"target\": \"WF-50\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"weekly\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"digest\": [\n    {\n      \"target\": \"WF-80\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"daily\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"health\": [\n    {\n      \"target\": \"WF-91\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"daily\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ],\n  \"stories_pm\": [],\n  \"backfill_wave\": [],\n  \"awards\": [\n    {\n      \"target\": \"WF-23\",\n      \"input\": {\n        \"env\": \"dev\",\n        \"mode\": \"weekly\",\n        \"limit\": 500,\n        \"result_type\": null\n      }\n    }\n  ]\n};\nconst rules=[\n  {\n    \"slot\": \"web_map\",\n    \"hour\": 1,\n    \"minute\": 0\n  },\n  {\n    \"slot\": \"vimeo\",\n    \"hour\": 2,\n    \"minute\": 0\n  },\n  {\n    \"slot\": \"ig_posts\",\n    \"hour\": 2,\n    \"minute\": 30\n  },\n  {\n    \"slot\": \"ig_reels\",\n    \"hour\": 3,\n    \"minute\": 0\n  },\n  {\n    \"slot\": \"youtube\",\n    \"hour\": 3,\n    \"minute\": 30\n  },\n  {\n    \"slot\": \"li_posts\",\n    \"hour\": 4,\n    \"minute\": 0\n  },\n  {\n    \"slot\": \"removal\",\n    \"hour\": 4,\n    \"minute\": 0,\n    \"weekday\": \"Sat\"\n  },\n  {\n    \"slot\": \"li_employees\",\n    \"hour\": 5,\n    \"minute\": 0,\n    \"weekday\": \"Sun\"\n  },\n  {\n    \"slot\": \"stories_am\",\n    \"hour\": 6,\n    \"minute\": 0\n  },\n  {\n    \"slot\": \"linker\",\n    \"hour\": 6,\n    \"minute\": 30\n  },\n  {\n    \"slot\": \"news\",\n    \"hour\": 7,\n    \"minute\": 0,\n    \"weekday\": \"Sun\"\n  },\n  {\n    \"slot\": \"awards\",\n    \"hour\": 7,\n    \"minute\": 30,\n    \"weekday\": \"Sun\"\n  },\n  {\n    \"slot\": \"briefs\",\n    \"hour\": 8,\n    \"minute\": 0,\n    \"weekday\": \"Mon\"\n  },\n  {\n    \"slot\": \"digest\",\n    \"hour\": 9,\n    \"minute\": 0\n  },\n  {\n    \"slot\": \"health\",\n    \"hour\": 9,\n    \"minute\": 15\n  }\n];\nconst unknown=()=>{\n  const execution=String($execution.id??'');\n  if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))invalid();\n  return [{json:{target:'audit',audit_reason:'unknown_schedule_slot',params:[JSON.stringify({\n    kind:'error',workflow:'WF-00',execution_id:execution,node:'Unknown schedule slot',message:'unexpected_error'\n  })]}}];\n};\nlet selected=[];\nif(input.slot_override!==null&&input.slot_override!==undefined){\n  const slot=input.slot_override;\n  if(typeof slot!=='string'||slot.length<1||slot.length>100)invalid();\n  if(!Object.hasOwn(routes,slot))return unknown();\n  selected=[slot];\n}else if(date!==null){\n  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Africa/Cairo',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(date);\n  const part=name=>parts.find(p=>p.type===name)?.value;\n  selected=rules.filter(r=>r.hour===Number(part('hour'))&&r.minute===Number(part('minute'))&&(!r.weekday||r.weekday===part('weekday'))).map(r=>r.slot);\n}else return unknown();\nreturn selected.flatMap(slot=>routes[slot].map(call=>({json:call})));"
+        },
+        "position": [
+          500,
+          0
+        ]
+      },
+      {
+        "id": "d5092170-c451-4d05-ab42-efa2c9ed15c1",
+        "name": "Route child",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "parameters": {
+          "mode": "rules",
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "7316d67e-71a8-4fcd-a114-f956fee224b0",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-21",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-21"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "6e52ca10-d906-4bd3-a7f0-59bad82c1561",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-10",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-10"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "4a0aeff9-65b5-47ed-a961-5e4288219177",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-11",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-11"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "093232c7-afbc-4bd0-a64e-80afdcaba033",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-13",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-13"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "77edfe29-3399-4aba-a62a-1dab4e982663",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-18",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-18"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "5c46eb23-0f92-4fd2-ae4e-d2f0e34a452b",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-40",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-40"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "a4682aaa-8a4d-4a7f-ab8f-bdc369f5aa85",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-18b",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-18b"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "148e1c02-6083-40ae-acc0-ce2002d786d4",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-12",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-12"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "683eeb0a-77ab-4c9f-afac-3e28f3adec1c",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-32",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-32"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "c8b72494-3667-40bf-ad98-22d4a1b30d25",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-22",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-22"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "fde5f854-b6e0-4d90-a670-4d52555f6f4f",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-50",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-50"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "4de80ceb-ac67-4e78-ad85-42a005c1dd10",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-80",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-80"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "18201644-3933-4917-a712-9a9b28e05b33",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-91",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-91"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "8b584835-57e1-48be-af5a-243f02373b8d",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "WF-23",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "WF-23"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "id": "8ef45812-ee94-4c00-a5b9-ff82a1420420",
+                      "leftValue": "={{ $json.target }}",
+                      "rightValue": "audit",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                },
+                "renameOutput": true,
+                "outputKey": "audit"
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "Invalid dispatch"
+          }
+        },
+        "position": [
+          740,
+          0
+        ]
+      },
+      {
+        "id": "a856156d-e414-4073-ad8b-65a16dfe674b",
+        "name": "Call WF-21",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "02yefa9uEPYwmM3N"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          0
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "6fad9ff7-41b6-415f-a67d-521d2b910e55",
+        "name": "Call WF-10",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "4JMHLDBSdgGxhPlk"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          160
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "326a45bf-3ab9-43e3-a5f7-5c71180dc3b5",
+        "name": "Call WF-11",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "Oq19AMI9C3B1wbo9"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          320
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "368fe417-3ec1-4d58-a341-10c25207c537",
+        "name": "Call WF-13",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "F7S8Llr0ZSaSuw4T"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          480
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "11990dc2-4bbc-4d88-aa65-7f5ef4c24447",
+        "name": "Call WF-18",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "VbJn4mLYm0sGy1X2"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          640
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "528dfa4e-0a4b-4663-a472-10f950d4e30a",
+        "name": "Call WF-40",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "ze8T1o0Cx0OGi3Wd"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          800
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "1622b820-ae9e-4255-a2b8-1243f6ab66ab",
+        "name": "Call WF-18b",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "h6lUXSGN5sV2jxuQ"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          960
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "72d141f3-b138-4163-aa7e-4bf110a79110",
+        "name": "Call WF-12",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "8pz1lF0xPDQCs3ab"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          1120
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "e660cd29-3dea-44a8-a941-fbefa0e649bb",
+        "name": "Call WF-32",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "kkAGgnbD8NjWHMKC"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          1280
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "2aee76ae-7abc-4488-a5bc-d7728c5ff3ec",
+        "name": "Call WF-22",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "83LybyawRpHXbjx6"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          1440
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "9c9dec4b-51b4-4106-a3f7-bb558a114e64",
+        "name": "Call WF-50",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "2U6nPs3uJkmjij82"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          1600
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "fc17ff48-63ba-4cee-a090-cd1aee4fee3c",
+        "name": "Call WF-80",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "gBDmjIIEoM6XC7Wi"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          1760
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "98011899-9f7b-45b0-a623-91e11ff10be6",
+        "name": "Call WF-91",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "sowAIvuN7adg0JBq"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          1920
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "1bad439f-c262-421e-acca-a11a494d9b8c",
+        "name": "Call WF-23",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "qzgT9giRQJ7eMDmV"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $json.input.mode }}",
+              "limit": "={{ $json.input.limit }}",
+              "result_type": "={{ $json.input.result_type }}",
+              "env": "={{ $json.input.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1000,
+          2080
+        ],
+        "retryOnFail": false
+      },
+      {
+        "id": "9d88938c-aba8-407c-aafb-9d596621e075",
+        "name": "Prepare gateway · Audit unknown slot",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:WF-00:Audit unknown slot:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=$json.params;if(!Array.isArray(p))fail();\nlet args;try{args=({entry:JSON.parse(p[0])});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"error.log\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          1000,
+          2240
+        ]
+      },
+      {
+        "id": "73487e99-7e76-468c-a0fa-236cc6d18374",
+        "name": "Invoke gateway · Audit unknown slot",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1120,
+          2240
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "936748af-efbf-40cf-aaff-d508b2a8c1a3",
+        "name": "Observe gateway · Audit unknown slot",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Audit unknown slot\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"logged\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          1240,
+          2240
+        ]
+      },
+      {
+        "id": "fbc9cddc-0b1b-4186-a908-2a5095aebf8a",
+        "name": "Read durable gateway · Audit unknown slot",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1360,
+          2240
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "a7e57afb-578d-4675-a4fb-a856ca56cc3a",
+        "name": "Audit unknown slot",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Audit unknown slot\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"logged\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          1480,
+          2240
+        ]
+      },
+      {
+        "id": "0922f25e-3f56-4a1f-a652-b9f2df8c536d",
+        "name": "Reject invalid dispatch",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw new Error('EMR_N8N_DISPATCH_INVALID');"
+        },
+        "position": [
+          1000,
+          2400
+        ]
+      }
+    ],
+    "connections": {
+      "Cairo clock": {
+        "main": [
+          [
+            {
+              "node": "Config",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "PM stories (disabled)": {
+        "main": [
+          [
+            {
+              "node": "Config",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Backfill waves (disabled)": {
+        "main": [
+          [
+            {
+              "node": "Config",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual slot test": {
+        "main": [
+          [
+            {
+              "node": "Config",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Config": {
+        "main": [
+          [
+            {
+              "node": "Which slot?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Which slot?": {
+        "main": [
+          [
+            {
+              "node": "Route child",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Route child": {
+        "main": [
+          [
+            {
+              "node": "Call WF-21",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-10",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-11",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-13",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-18",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-40",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-18b",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-12",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-32",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-22",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-50",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-80",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-91",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call WF-23",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prepare gateway · Audit unknown slot",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Reject invalid dispatch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Audit unknown slot": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Audit unknown slot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Audit unknown slot": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Audit unknown slot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Audit unknown slot": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Audit unknown slot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Audit unknown slot": {
+        "main": [
+          [
+            {
+              "node": "Audit unknown slot",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "OxnbDrBVAtziiuTk",
+        "name": "layer:ops"
+      }
+    ],
+    "pinData": {}
+  },
+  "definitionProfile": "inactive_native_staging",
+  "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+  "intendedSourceHash": "7877dca03efdd2d9a859ba57b42ad3c865112c00a22eefc964e8735c28b2ae4b",
+  "stagedSourceHash": "1090db04ecf847c64c28a8bcb247e1080b1db85d37503c1108aa99f307d21239",
+  "canonicalParity": false,
+  "kind": "actual_saved_inactive_foundation_staging",
+  "version": 1,
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+}
