@@ -3,6 +3,11 @@
 > The project board. Codex updates it whenever a milestone changes status. The owner checks it first to see where we stand.
 > Details for each milestone are in `milestones/Mxx-*/PROGRESS.md`.
 
+## Owner-requested design reuse export — 23 October 2026
+
+- Completed [Design Elements](<Design Elements/README.md>): portable design/brand kit with exact source documents, all five brand/token files, component specifications, reuse/font/asset guides, an agent handoff prompt, placeholder source and five historical screenshots. Original files remain in place.
+- Local verification passed: 30 hashed files, 21 byte-identical source copies, 136 dark tokens, 32 light overrides and 55 guide links; verifier also runs from outside the repository. Authored-file formatting, verifier ESLint/syntax and independent export review passed. Fonts and a finished component library are explicitly absent; no browser or app acceptance is claimed. This packaging request does not advance a development milestone.
+
 ## Now
 
 |                       |                                                                                                                                                                                                                                                                                                                                   |

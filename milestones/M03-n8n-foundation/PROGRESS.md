@@ -3,6 +3,11 @@
 > Codex keeps this file current. Read it first in every session; update it after every task.
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
+## Owner-requested design reuse export — 23 October 2026
+
+- Completed the separate [Design Elements](<../../Design Elements/README.md>) packaging request: all local brand files, exact design specifications, reusable guidance, component catalogue, handoff prompt and clearly labelled placeholder source/screenshots. No M03 runtime, hosted integration or milestone status change is part of this export.
+- Static verification passed for 30 hashed files, 21 byte-identical copies, 136 dark tokens, 32 light overrides and 55 guide links. The verifier also passed from an external working directory; authored-file formatting, verifier ESLint/syntax and independent review passed. Missing fonts/licences and unimplemented UI elements are documented. Continue the existing operational next step below after this separate export.
+
 ## Current operational checkpoint
 
 - Owner approved only the reviewed WF-00 restore: [literal decision](evidence/wf00-restore-approval-20261023.json). No repeat decision or credential request. Existing provisioner is being extended with a fixed three-request definition restore, encrypted private rollback, fresh drift recheck and exact inactive readback; actual restoration is pending reviewed local/native checks. All other workflows, shared credentials and execution remain excluded. Current usage98/301/399 unchanged.

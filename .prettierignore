@@ -52,3 +52,6 @@ scripts/n8n/gw01-preview-read-seal.json
 
 # Public foundation closure inventory is published by its reviewed owner-only sealer.
 scripts/n8n/foundation-provision-seal.json
+
+# Portable design snapshot includes exact original bytes; authored files are checked explicitly.
+/Design Elements/**
