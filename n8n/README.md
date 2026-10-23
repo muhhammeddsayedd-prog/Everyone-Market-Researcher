@@ -63,10 +63,22 @@ retaining all 152 management charges. Control remains 2,048 and combined remains
 2,560; both actual counters must be checked before each new request. The original
 proposal and historical refusals remain unchanged. Persistent originals remain reusable.
 The subsequent [WF-70 readback](../milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json)
-completed two strict-TLS GETs with HTTP 200 and zero rows. Current charges are 152
+completed two strict-TLS GETs with HTTP 200 and zero rows. Charges at that checkpoint were 152
 management / 384 control / 536 combined; the diagnostic child and disposable key
 copy are closed/removed. That current success does not establish the original
 failure's cause, adoption, drain or M03 business acceptance.
+
+[Technical attempt 7](../milestones/M03-n8n-foundation/evidence/dev-acceptance-technical7-reconciliation-20261024.json)
+then authenticated the separate dev Admin child and completed the 15-version
+history, catalog, advisor and type postchecks. Preparation stopped before any
+new Preview request, workflow execution or actor start. Its raw closure flags
+remain false; physical child closure and subsequent disposable-file cleanup
+are separately recorded. Current usage is 177 management / 435 control / 612
+combined, with 44/88 Vercel requests and zero of two actor starts used.
+The existing consumer now reconstructs verified absence of historical owned
+environment entries before preparing the new window; current entries retain
+the strict new-window identity. Closed attempt 7 stays consumed. A safe next
+technical attempt retains all charges and the unchanged actor/spending limits.
 
 M00 provides the canonical plain JavaScript helpers in
 `normalizers/_common.js`, copied from `docs/N8N_WORKFLOWS.md` §7, with Vitest

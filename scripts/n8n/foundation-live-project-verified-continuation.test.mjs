@@ -921,6 +921,159 @@ test('management576 requires pinnedapprovalandpacket throughclaim and every late
   }
 });
 
+test('closed technical7 preserves177/435/612 and exact read-only Admin evidence before technical8', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedPreparation: true });
+  try {
+    const rows = readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse);
+    const before = readFileSync(f.paths.admission.replace(/\.json$/, '.technical-7.closed.json'), 'utf8');
+    const ready = f.check();
+    assert.equal(ready.kind, 'project_verified_continuation_ready');
+    assert.equal(ready.managementMaximum, 576);
+    assert.equal(ready.managementAttempts, 177);
+    assert.equal(ready.controlAttempts, 435);
+    assert.equal(ready.combinedAttempts, 612);
+    const p = f.claim(f.admit()),
+      r = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(p);
+    assert.equal(r.technicalAttemptOrdinal, 8);
+    assert.equal(r.mainManagementAttempts, 167);
+    assert.equal(r.mainControlAttempts, 432);
+    assert.equal(r.aggregateControlAttempts, 435);
+    assert.equal(rows.length, 434);
+    assert.equal(p.carriedManagementAttempts, 10);
+    assert.equal(p.carriedControlAttempts, 3);
+    assert.equal(
+      readFileSync(f.paths.admission.replace(/\.json$/, '.technical-7.closed.json'), 'utf8'),
+      before,
+    );
+    assert.equal(JSON.parse(before).closureVerified, false);
+  } finally {
+    f.cleanup();
+  }
+});
+test('technical7 recovery denies unknown work, Admin replay, usage reset and incomplete cleanup', async () => {
+  for (const closedPreparationFault of [
+    'unknown-completion',
+    'admin',
+    'usage',
+    'write',
+    'cleanup',
+    'fresh-window',
+    'unknown-row',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ closedPreparation: true, closedPreparationFault });
+    try {
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+test('technical7 recovery pins every record and refuses missing evidence, live owners and mutation outputs', async () => {
+  for (const fault of [
+    'receipt',
+    'admission',
+    'claim',
+    'closed',
+    'attempt',
+    'latest',
+    'types',
+    'management',
+    'control',
+    'setup',
+    'preflight',
+    'runtime',
+    'missing-receipt',
+    'live-parent',
+    'live-child',
+    'owner-provision-attempt',
+    'reactivation-attempt',
+    'unprovisioned-archive-attempt',
+    'new-runtime',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ closedPreparation: true });
+    try {
+      const base = f.paths.admission.slice(0, -5) + '.technical-7',
+        db =
+          'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-7';
+      const receipt = join(
+        f.directory,
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical7-reconciliation-20261024.json',
+      );
+      const r = JSON.parse(readFileSync(receipt, 'utf8'));
+      const paths = {
+        receipt,
+        admission: base + '.json',
+        claim: base + '.runtime-claim.json',
+        closed: base + '.closed.json',
+        attempt: join(f.directory, r.administrativeResult.attemptPath),
+        latest: join(f.directory, r.administrativeResult.receiptPath),
+        types: join(f.directory, r.administrativeResult.generatedTypePath),
+        management: f.paths.management,
+        control: f.paths.control,
+        setup: f.paths.setup,
+        preflight: join(f.directory, 'scripts/n8n/out/foundation/live/preflight.jsonl'),
+        runtime: join(f.directory, 'scripts/n8n/out/foundation/live/runtime.jsonl'),
+      };
+      if (paths[fault]) writeFileSync(paths[fault], readFileSync(paths[fault], 'utf8') + '\n');
+      if (fault === 'missing-receipt') unlinkSync(receipt);
+      if (fault === 'live-parent') f.io.processAlive = (pid) => pid === 91011;
+      if (fault === 'live-child') f.io.processAlive = (pid) => pid === 91012;
+      if (
+        ['owner-provision-attempt', 'reactivation-attempt', 'unprovisioned-archive-attempt'].includes(fault)
+      )
+        f.put(db + '-' + fault + '.json', '{}\n');
+      if (fault === 'new-runtime') f.put('scripts/n8n/out/foundation/live/runtime.technical-7.jsonl', '{}\n');
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+test('technical7 immutable Admin and type evidence remains pinned after claim while legitimate journals append', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedPreparation: true });
+  try {
+    const p = f.claim(f.admit());
+    const lines = readFileSync(f.paths.management, 'utf8');
+    writeFileSync(
+      f.paths.management,
+      lines + JSON.stringify({ event: 'management_attempt', ordinal: 168 }) + '\n',
+    );
+    const prior = readFileSync(f.paths.control, 'utf8');
+    writeFileSync(
+      f.paths.control,
+      prior +
+        JSON.stringify({
+          event: 'control_request_intent',
+          ordinal: 433,
+          kind: 'discovery',
+          workflowId: 'MzimjpsuyPuK7SKe',
+          at: new Date(f.now()).toISOString(),
+        }) +
+        '\n',
+    );
+    const setup = readFileSync(f.paths.setup, 'utf8').trimEnd().split('\n').map(JSON.parse);
+    f.scoped(() =>
+      f.module.assertFoundationProjectVerifiedContinuationSetupResume(p, {
+        sourceCommitSha: p.sourceCommitSha,
+        deadlineAt: p.deadlineAt,
+        previousEvents: setup,
+      }),
+    );
+    const path = join(
+      f.directory,
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical7-reconciliation-20261024.json',
+    );
+    const r = JSON.parse(readFileSync(path, 'utf8'));
+    const type = join(f.directory, r.administrativeResult.generatedTypePath);
+    writeFileSync(type, readFileSync(type, 'utf8') + '\n');
+    assert.throws(
+      () => f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(p)),
+      /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
+    );
+  } finally {
+    f.cleanup();
+  }
+});
 test('fresh logical plan uses an immutable runtime sibling while original runtime and global journals remain historical', async () => {
   const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true }),
     live = liveRuntimeFixture();

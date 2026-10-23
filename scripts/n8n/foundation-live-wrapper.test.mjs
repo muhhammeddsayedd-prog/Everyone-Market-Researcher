@@ -98,6 +98,12 @@ Set-StrictMode -Version Latest
 ${source.slice(start, end)}
 $valid=[ordered]@{kind='project_verified_continuation_ready';segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';sourceCommitSha='a5e746736893d5040e93032ae740a0878f748837';windowId='38b3708d-61b0-41d2-8170-5ed91c66b4dc';privateRead=$false;networkRequests=0;managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}
 if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$valid) $true 'CheckOnly') -ne 576){throw 'APPROVED_CAP_NOT_PROJECTED'}
+$reconciled=[ordered]@{};foreach($name in $valid.Keys){$reconciled[$name]=$valid[$name]};$reconciled.managementAttempts=177;$reconciled.controlAttempts=435;$reconciled.combinedAttempts=612
+if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$reconciled) $true 'CheckOnly') -ne 576){throw 'RECONCILED_CHARGES_NOT_PROJECTED'}
+foreach($key in @('managementAttempts','controlAttempts','combinedAttempts')){
+ $mixed=[ordered]@{};foreach($name in $reconciled.Keys){$mixed[$name]=$reconciled[$name]};$mixed[$key]=$valid[$key];$denied=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED_CHARGES_ACCEPTED'}
+}
 $legacy=[ordered]@{};foreach($name in $valid.Keys){if($name -cnotin @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){$legacy[$name]=$valid[$name]}}
 if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$legacy) $true 'CheckOnly') -ne 512){throw 'LEGACY_CAP_CHANGED'}
 foreach($mutation in @(@{key='managementMaximum';value=512},@{key='managementMaximum';value=577},@{key='managementMaximum';value='576'},@{key='managementAttempts';value=151},@{key='controlAttempts';value=382},@{key='combinedAttempts';value=534},@{key='kind';value='clock_project_verified_continuation_admitted'},@{key='sourceCommitSha';value='f42930f90c2de43c84f61ad6d966d0ee6074d70e'},@{key='privateRead';value=$true},@{key='networkRequests';value=1})){

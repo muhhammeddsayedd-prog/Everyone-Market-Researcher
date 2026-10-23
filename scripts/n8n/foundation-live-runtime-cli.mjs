@@ -697,6 +697,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     shutdownResult;
   let adminPhysicalClosed = true;
   let adminStartupFailure = null;
+  let preparationStage = null;
   let nativeMetadataFailure = false;
   let adminLifecycleVerified = true,
     adminEndAttempted = false;
@@ -726,6 +727,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     phaseBReady: native?.snapshot().phaseBReady ?? false,
     domainProofReady: domainProof !== null,
     businessAcceptanceProven: false,
+    ...(failed && preparationStage ? { code: 'FOUNDATION_' + preparationStage + '_BLOCKED' } : {}),
     ...(adminStartupFailure
       ? { code: 'FOUNDATION_ADMIN_' + adminStartupFailure.diagnostic.toUpperCase() }
       : {}),
@@ -893,6 +895,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       fail();
     if (activeWindowId === windowId) fixture = await admin.fixture();
     preflight = await admin.preflight();
+    preparationStage = 'PREFLIGHT_CONTRACT';
     if (
       preflight?.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
       preflight.dailyBudgetUsd !== 25 ||
@@ -904,6 +907,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       !Object.keys(preflight.priceBook).length
     )
       fail();
+    preparationStage = 'SETUP_JOURNAL';
     const storage = foundationLiveAuxiliaryStorage(budget, 'setup');
     const setupJournal = createFoundationLiveSetupJournal({
       sourceCommitSha: input.sourceCommitSha,
@@ -912,6 +916,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       maximumRequests: verifiedCheckpoint?.setupMaximum ?? 50,
     });
     let t;
+    preparationStage = 'SETUP_TRANSPORT';
     t = (dependencies.createSetupTransport ?? createFoundationLiveSetupCliTransport)({
       nodeExecutable: process.execPath,
       cliPath: join(process.env.APPDATA ?? '', 'npm/node_modules/vercel/dist/index.js'),
@@ -921,6 +926,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       deadlineAt,
       authorizeRequest: (spec) => setup?.authorizeRequest(spec) === true,
     });
+    preparationStage = 'SETUP_CONSTRUCTOR';
     setup = (dependencies.createSetup ?? createFoundationLiveSetup)(
       {
         sourceCommitSha: input.sourceCommitSha,
@@ -944,6 +950,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       },
       dependencies.setup ?? {},
     );
+    preparationStage = null;
     try {
       deployment = (dependencies.assertDeployment ?? assertFoundationLiveDeployment)(await setup.prepare());
     } catch {

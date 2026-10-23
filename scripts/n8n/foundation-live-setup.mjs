@@ -273,7 +273,10 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
   const deployPath = '/v13/deployments?forceNew=1&teamId=' + S.teamId;
   const originals = [],
     unresolved = new Set(),
-    deleteAttempted = new Set();
+    deleteAttempted = new Set(),
+    seenEnvironmentIds = new Set(),
+    environmentCleanup = new Map();
+  let pendingEnvironmentCleanup = null;
   if (
     [
       input.remainingContinuationProof,
@@ -309,6 +312,8 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
       ? null
       : foundationProjectVerifiedContinuationResumeCheckpoint(input.projectVerifiedContinuationProof);
   const requestMaximum = resumeCheckpoint?.setupMaximum ?? maximum;
+  const legacyMetadataReplay =
+    resumed && resumeCheckpoint?.closedWindow === true && activeWindowId !== S.windowId;
   if (
     journal.maximumRequests !== requestMaximum ||
     (activeWindowId !== S.windowId &&
@@ -392,7 +397,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
     )
       fail();
   }
-  function metadata(row) {
+  function metadata(row, historical = false) {
     if (
       !object(row) ||
       typeof row.id !== 'string' ||
@@ -401,7 +406,12 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
       row.type !== 'sensitive' ||
       !isDeepStrictEqual(row.target, ['preview']) ||
       row.gitBranch !== S.branch ||
-      row.comment !== comment ||
+      (row.comment !== comment &&
+        !(
+          historical &&
+          legacyMetadataReplay &&
+          row.comment === 'M03 foundation temporary dev ' + S.windowId
+        )) ||
       !Number.isFinite(row.createdAt) ||
       !Number.isFinite(row.updatedAt) ||
       row.decrypted === true
@@ -449,13 +459,20 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
   // unknown; a DELETE without verified absence is never submitted again.
   for (const row of journal.rows) {
     safe(row);
-    if (row.event === 'setup_intent') {
+    if (row.event === 'setup_attempt' && pendingEnvironmentCleanup !== null) {
+      const cleanup = environmentCleanup.get(pendingEnvironmentCleanup);
+      if (row.kind === 'DELETE') {
+        if (cleanup.deleted) fail();
+        cleanup.deleted = true;
+      } else if (row.kind === 'GET' && cleanup.deleted) cleanup.readback = true;
+    } else if (row.event === 'setup_intent') {
       unresolved.add(row.kind === 'environment' ? 'create:' + row.key : row.kind + '_create');
     } else if (row.event === 'setup_ack') {
       unresolved.delete(row.kind === 'environment' ? 'create:' + row.key : row.kind + '_create');
       if (row.kind === 'environment') {
-        const item = metadata(row);
-        if (originals.some((e) => e.id === item.id || e.key === item.key)) fail();
+        const item = metadata(row, true);
+        if (seenEnvironmentIds.has(item.id) || originals.some((e) => e.key === item.key)) fail();
+        seenEnvironmentIds.add(item.id);
         originals.push(item);
       } else if (row.kind === 'bypass') bypassOwned = true;
     } else if (row.event === 'setup_verified' && row.kind === 'bypass') {
@@ -464,6 +481,13 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
       soleOwnedDefaultVerified = true;
     } else if (row.event === 'setup_cleanup_intent' || row.event === 'setup_cleanup_unknown') {
       if (row.kind === 'environment') {
+        const item = originals.find((e) => e.id === row.id && e.key === row.key);
+        if (!item) fail();
+        if (row.event === 'setup_cleanup_intent') {
+          if (pendingEnvironmentCleanup !== null || environmentCleanup.has(row.id)) fail();
+          environmentCleanup.set(row.id, { key: row.key, deleted: false, readback: false });
+          pendingEnvironmentCleanup = row.id;
+        } else if (pendingEnvironmentCleanup === row.id) pendingEnvironmentCleanup = null;
         deleteAttempted.add(row.id);
         unresolved.add('delete:' + row.id);
       } else if (row.kind === 'bypass') {
@@ -472,6 +496,19 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
       }
     } else if (row.event === 'setup_cleanup_absent') {
       if (row.kind === 'environment') {
+        const index = originals.findIndex((e) => e.id === row.id && e.key === row.key),
+          cleanup = environmentCleanup.get(row.id);
+        if (
+          index < 0 ||
+          pendingEnvironmentCleanup !== row.id ||
+          cleanup?.key !== row.key ||
+          cleanup.deleted !== true ||
+          cleanup.readback !== true
+        )
+          fail();
+        originals.splice(index, 1);
+        environmentCleanup.delete(row.id);
+        pendingEnvironmentCleanup = null;
         deleteAttempted.add(row.id);
         unresolved.delete('delete:' + row.id);
       } else if (row.kind === 'bypass') {
@@ -512,8 +549,16 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
         started = true;
         buildPollLimit = foundationLiveSetupRequestPlan(attempts, requestMaximum).buildPollLimit;
         if (buildPollLimit < 1) fail();
-        const sharedAttempts = managementBudget.snapshot().attempts;
-        if (!Number.isInteger(sharedAttempts) || sharedAttempts < 0 || sharedAttempts + 45 + 134 + 142 > 512)
+        const sharedBudget = managementBudget.snapshot(),
+          sharedAttempts = sharedBudget.attempts,
+          sharedMaximum = sharedBudget.maximum ?? 512;
+        if (
+          ![512, 576].includes(sharedMaximum) ||
+          (sharedMaximum === 576 && resumeCheckpoint?.managementMaximum !== 576) ||
+          !Number.isInteger(sharedAttempts) ||
+          sharedAttempts < 0 ||
+          sharedAttempts + 45 + 134 + 142 > sharedMaximum
+        )
           fail();
         const ready = await verifyDevReady();
         if (
@@ -602,7 +647,8 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
           )
             fail();
           const item = metadata(r.data.created);
-          if (item.key !== key || originals.some((e) => e.id === item.id)) fail();
+          if (item.key !== key || seenEnvironmentIds.has(item.id)) fail();
+          seenEnvironmentIds.add(item.id);
           originals.push(item);
           unresolved.delete('create:' + key);
           emit({ event: 'setup_ack', kind: 'environment', ...item });

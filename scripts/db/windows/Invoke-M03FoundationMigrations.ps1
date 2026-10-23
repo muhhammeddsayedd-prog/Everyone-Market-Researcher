@@ -373,7 +373,8 @@ function Read-FoundationPostcheckContinuation {
     $managementPresent=@($managementFields|Where-Object{$_ -cin $value.PSObject.Properties.Name})
     if($managementPresent.Count -gt 0){
       if(-not $CheckOnly -or -not $projectMode -or -not $forwardMode -or $managementPresent.Count -ne 4){throw 'blocked'}
-      $managementExpected=@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}
+      # Exact known read-only reconciliation, never a replenished allowance.
+      $managementExpected=if($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
       $keys+=$managementFields
     }

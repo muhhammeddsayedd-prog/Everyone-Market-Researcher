@@ -381,6 +381,12 @@ foreach($mutation in @(@{key='managementMaximum';value=512},@{key='managementMax
  $copy=[ordered]@{};foreach($name in $valid.Keys){$copy[$name]=$valid[$name]};$copy[$mutation.key]=$mutation.value;$script:dto=[pscustomobject]$copy;$denied=$false
  try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'UNAPPROVED_PUBLIC_PROFILE_ACCEPTED'}
 }
+$reconciled=[ordered]@{};foreach($name in $valid.Keys){$reconciled[$name]=$valid[$name]};$reconciled.managementAttempts=177;$reconciled.controlAttempts=435;$reconciled.combinedAttempts=612;$script:dto=[pscustomobject]$reconciled
+$null=Read-FoundationPostcheckContinuation
+foreach($key in @('managementAttempts','controlAttempts','combinedAttempts')){
+ $mixed=[ordered]@{};foreach($name in $reconciled.Keys){$mixed[$name]=$reconciled[$name]};$mixed[$key]=$valid[$key];$script:dto=[pscustomobject]$mixed;$denied=$false
+ try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MIXED_CHARGES_ACCEPTED'}
+}
 foreach($missing in @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){
  $copy=[ordered]@{};foreach($name in $valid.Keys){if($name -cne $missing){$copy[$name]=$valid[$name]}};$script:dto=[pscustomobject]$copy;$denied=$false
  try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'PARTIAL_MANAGEMENT_PROFILE_ACCEPTED'}

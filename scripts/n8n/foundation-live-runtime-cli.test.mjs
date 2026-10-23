@@ -825,6 +825,9 @@ for (const mode of [
   'setup_missing_diagnostics',
   'setup_malformed_diagnostics',
   'setup_foreign_bypass',
+  'preflight_contract',
+  'transport_constructor',
+  'definition_constructor',
 ])
   test('same-child exact route / independent shutdown: ' + mode, async () => {
     let restoreFault = false;
@@ -867,7 +870,7 @@ for (const mode of [
       }),
       preflight: async () => ({
         projectRef: 'zmotjsbzhzjvpelxvxlf',
-        dailyBudgetUsd: 25,
+        dailyBudgetUsd: mode === 'preflight_contract' ? '25' : 25,
         statsDailyEnabled: false,
         errorCount24h: 0,
         notificationCooldownClear: true,
@@ -1055,36 +1058,44 @@ for (const mode of [
             close() {},
           };
         },
-        createSetupTransport: () => setupTransport,
+        createSetupTransport: () => {
+          if (mode === 'transport_constructor') throw Error(packet.writerPassword);
+          return setupTransport;
+        },
         // Post-setup unit behavior is isolated behind explicit factory ports.
         // This stub is not a successful real-component/provider setup receipt.
         ...(mode.startsWith('setup_')
           ? {}
           : {
-              createSetup: () => ({
-                async prepare() {
-                  envs.push(...Array.from({ length: 7 }, (_, i) => ({ id: 'synthetic_completed_env_' + i })));
-                  return {
-                    version: 1,
-                    projectId,
-                    branch: 'm03-n8n-foundation',
-                    sourceCommitSha: packet.sourceCommitSha,
-                    deploymentId: 'dpl_SyntheticSession',
-                    audience,
-                    environment: 'preview',
-                    readyState: 'READY',
-                    protection: 'all_except_custom_domains',
-                    protectionVerified: true,
-                    protectionTransportVerified: false,
-                    sqlAudienceBindingVerified: false,
-                  };
-                },
-                async cleanup() {
-                  envs.length = 0;
-                  return { state: 'setup_resources_removed' };
-                },
-                close() {},
-              }),
+              createSetup: () => {
+                if (mode === 'definition_constructor') throw Error(packet.apifyReadToken);
+                return {
+                  async prepare() {
+                    envs.push(
+                      ...Array.from({ length: 7 }, (_, i) => ({ id: 'synthetic_completed_env_' + i })),
+                    );
+                    return {
+                      version: 1,
+                      projectId,
+                      branch: 'm03-n8n-foundation',
+                      sourceCommitSha: packet.sourceCommitSha,
+                      deploymentId: 'dpl_SyntheticSession',
+                      audience,
+                      environment: 'preview',
+                      readyState: 'READY',
+                      protection: 'all_except_custom_domains',
+                      protectionVerified: true,
+                      protectionTransportVerified: false,
+                      sqlAudienceBindingVerified: false,
+                    };
+                  },
+                  async cleanup() {
+                    envs.length = 0;
+                    return { state: 'setup_resources_removed' };
+                  },
+                  close() {},
+                };
+              },
               assertDeployment: (proof) => proof,
             }),
         setup: { transportValidator: (t) => t },
@@ -1141,6 +1152,33 @@ for (const mode of [
         id: 'prepare1',
         command: 'prepare',
       });
+      if (['preflight_contract', 'transport_constructor', 'definition_constructor'].includes(mode)) {
+        assert.equal(prepared.status, 'blocked');
+        assert.equal(
+          prepared.code,
+          'FOUNDATION_' +
+            {
+              preflight_contract: 'PREFLIGHT_CONTRACT',
+              transport_constructor: 'SETUP_TRANSPORT',
+              definition_constructor: 'SETUP_CONSTRUCTOR',
+            }[mode] +
+            '_BLOCKED',
+        );
+        assert.equal(prepared.residual, true);
+        assert.equal(prepared.nativeExecutions, 0);
+        assert.equal(rows.length, 0);
+        const publicJson = JSON.stringify(prepared);
+        for (const key of [
+          'managementKey',
+          'writerPassword',
+          'apifyReadToken',
+          'machineToken',
+          'protectionBypass',
+        ])
+          assert.equal(publicJson.includes(packet[key]), false);
+        assert.equal((await session.close()).childTransportsClosed, true);
+        return;
+      }
       if (mode.startsWith('setup_')) {
         assert.equal(prepared.status, 'blocked');
         assert.equal(prepared.residual, true);

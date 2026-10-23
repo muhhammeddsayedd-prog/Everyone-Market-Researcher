@@ -196,7 +196,9 @@ function Get-ProjectVerifiedPublicManagementMaximum($Value,[bool]$ProjectClock,[
   $Value.kind -cne 'project_verified_continuation_ready' -or $Value.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or
   $Value.sourceCommitSha -cne 'a5e746736893d5040e93032ae740a0878f748837' -or $Value.windowId -cne '38b3708d-61b0-41d2-8170-5ed91c66b4dc' -or
   $Value.privateRead -isnot [bool] -or $Value.privateRead -ne $false){throw 'blocked'}
- $expected=@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536;networkRequests=0}
+ # The immutable allocation keeps its original charges. A separately pinned,
+ # physically closed attempt adds the exact current snapshot without reset.
+ $expected=if($Value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612;networkRequests=0}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536;networkRequests=0}}
  foreach($name in $expected.Keys){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long]) -or $Value.$name -ne $expected[$name]){throw 'blocked'}}
  return 576
 }

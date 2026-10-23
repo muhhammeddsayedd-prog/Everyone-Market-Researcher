@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { createHash } from 'node:crypto';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 import {
   createFoundationLiveSetup,
@@ -20,6 +22,270 @@ const secret = {
   apifyReadToken: 'SYNTHETIC_SEPARATE_APIFY_READER',
   protectionBypass: 'N'.repeat(32),
 };
+// Exact PUBLIC84-row,44-request historical metadata journal captured after verified cleanup.
+// It contains IDs/scope metadata only; no values, credentials, auth or network reads.
+const cleanedLegacySetupJsonl = `{"event":"setup_attempt","ordinal":1,"kind":"GET","at":1792608136543}
+{"event":"setup_attempt","ordinal":2,"kind":"GET","at":1792666486587}
+{"event":"setup_attempt","ordinal":3,"kind":"GET","at":1792763737227}
+{"event":"setup_attempt","ordinal":4,"kind":"GET","at":1792763739727}
+{"event":"setup_intent","kind":"bypass","at":1792763742402}
+{"event":"setup_attempt","ordinal":5,"kind":"PATCH","at":1792763742407}
+{"event":"setup_ack","kind":"bypass","at":1792763745142}
+{"event":"setup_attempt","ordinal":6,"kind":"PATCH","at":1792763745148}
+{"event":"setup_attempt","ordinal":7,"kind":"GET","at":1792763763179}
+{"event":"setup_cleanup_intent","kind":"bypass","at":1792763765746}
+{"event":"setup_attempt","ordinal":8,"kind":"PATCH","at":1792763765751}
+{"event":"setup_attempt","ordinal":9,"kind":"GET","at":1792763768220}
+{"event":"setup_cleanup_absent","kind":"bypass","at":1792763770653}
+{"event":"setup_attempt","ordinal":10,"kind":"GET","at":1792770385610}
+{"event":"setup_attempt","ordinal":11,"kind":"GET","at":1792770388160}
+{"event":"setup_intent","kind":"bypass","at":1792770390664}
+{"event":"setup_attempt","ordinal":12,"kind":"PATCH","at":1792770390668}
+{"event":"setup_ack","kind":"bypass","at":1792770393132}
+{"event":"setup_attempt","ordinal":13,"kind":"GET","at":1792770393137}
+{"event":"setup_verified","kind":"bypass","at":1792770395587,"createdAt":1792770393383,"soleOwnedDefaultVerified":true,"nonDefaultVerified":false,"observedDefaultFlag":"true"}
+{"event":"setup_intent","kind":"environment","key":"EMR_M03_FOUNDATION_ENABLED","at":1792770395589}
+{"event":"setup_attempt","ordinal":14,"kind":"POST","at":1792770395592}
+{"event":"setup_ack","kind":"environment","id":"BANdqedkjfktF2vy","key":"EMR_M03_FOUNDATION_ENABLED","type":"sensitive","target":["preview"],"gitBranch":"m03-n8n-foundation","comment":"M03 foundation temporary dev df4f29ec-e2dc-4d82-a276-62a4e695e6f9","createdAt":1792770399411,"updatedAt":1792770399411}
+{"event":"setup_intent","kind":"environment","key":"EMR_M03_FOUNDATION_WINDOW_ID","at":1792770399182}
+{"event":"setup_attempt","ordinal":15,"kind":"POST","at":1792770399188}
+{"event":"setup_ack","kind":"environment","id":"yhOy0BjVgrvMKBpr","key":"EMR_M03_FOUNDATION_WINDOW_ID","type":"sensitive","target":["preview"],"gitBranch":"m03-n8n-foundation","comment":"M03 foundation temporary dev df4f29ec-e2dc-4d82-a276-62a4e695e6f9","createdAt":1792770401946,"updatedAt":1792770401946}
+{"event":"setup_intent","kind":"environment","key":"EMR_M03_FOUNDATION_WRITER_PASSWORD","at":1792770401693}
+{"event":"setup_attempt","ordinal":16,"kind":"POST","at":1792770401698}
+{"event":"setup_ack","kind":"environment","id":"5kNmNA0oKiXnXDr7","key":"EMR_M03_FOUNDATION_WRITER_PASSWORD","type":"sensitive","target":["preview"],"gitBranch":"m03-n8n-foundation","comment":"M03 foundation temporary dev df4f29ec-e2dc-4d82-a276-62a4e695e6f9","createdAt":1792770404421,"updatedAt":1792770404421}
+{"event":"setup_intent","kind":"environment","key":"EMR_M03_FOUNDATION_APIFY_READ_TOKEN","at":1792770404170}
+{"event":"setup_attempt","ordinal":17,"kind":"POST","at":1792770404175}
+{"event":"setup_ack","kind":"environment","id":"sP6c78IvUkuh0q1y","key":"EMR_M03_FOUNDATION_APIFY_READ_TOKEN","type":"sensitive","target":["preview"],"gitBranch":"m03-n8n-foundation","comment":"M03 foundation temporary dev df4f29ec-e2dc-4d82-a276-62a4e695e6f9","createdAt":1792770406841,"updatedAt":1792770406841}
+{"event":"setup_intent","kind":"environment","key":"EMR_M03_FOUNDATION_TOKEN_SHA256","at":1792770406591}
+{"event":"setup_attempt","ordinal":18,"kind":"POST","at":1792770406594}
+{"event":"setup_ack","kind":"environment","id":"O63SRoiYRJSB3lR2","key":"EMR_M03_FOUNDATION_TOKEN_SHA256","type":"sensitive","target":["preview"],"gitBranch":"m03-n8n-foundation","comment":"M03 foundation temporary dev df4f29ec-e2dc-4d82-a276-62a4e695e6f9","createdAt":1792770409304,"updatedAt":1792770409304}
+{"event":"setup_intent","kind":"environment","key":"EMR_M03_FOUNDATION_AUDIENCE","at":1792770409067}
+{"event":"setup_attempt","ordinal":19,"kind":"POST","at":1792770409070}
+{"event":"setup_ack","kind":"environment","id":"EKbTlPeSsL7x7Jsg","key":"EMR_M03_FOUNDATION_AUDIENCE","type":"sensitive","target":["preview"],"gitBranch":"m03-n8n-foundation","comment":"M03 foundation temporary dev df4f29ec-e2dc-4d82-a276-62a4e695e6f9","createdAt":1792770411758,"updatedAt":1792770411758}
+{"event":"setup_intent","kind":"environment","key":"EMR_M03_FOUNDATION_COMMIT_SHA","at":1792770411527}
+{"event":"setup_attempt","ordinal":20,"kind":"POST","at":1792770411530}
+{"event":"setup_ack","kind":"environment","id":"R6oLddAHm22ATdYK","key":"EMR_M03_FOUNDATION_COMMIT_SHA","type":"sensitive","target":["preview"],"gitBranch":"m03-n8n-foundation","comment":"M03 foundation temporary dev df4f29ec-e2dc-4d82-a276-62a4e695e6f9","createdAt":1792770415379,"updatedAt":1792770415379}
+{"event":"setup_attempt","ordinal":21,"kind":"GET","at":1792770415160}
+{"event":"setup_intent","kind":"deployment","at":1792770417614}
+{"event":"setup_attempt","ordinal":22,"kind":"POST","at":1792770417617}
+{"event":"setup_ack","kind":"deployment","deploymentId":"dpl_8gyW2MmNfAK4ARLKcKEWkbDxtuiv","audience":"https://everyone-market-researcher-eb5no2yxz-muhammed-abdelrahman.vercel.app","at":1792770422101}
+{"event":"setup_attempt","ordinal":23,"kind":"GET","at":1792770422104}
+{"event":"setup_attempt","ordinal":24,"kind":"GET","at":1792770439709}
+{"event":"setup_attempt","ordinal":25,"kind":"GET","at":1792770457874}
+{"event":"setup_attempt","ordinal":26,"kind":"GET","at":1792770460578}
+{"event":"setup_verified","kind":"deployment","deploymentId":"dpl_8gyW2MmNfAK4ARLKcKEWkbDxtuiv","audience":"https://everyone-market-researcher-eb5no2yxz-muhammed-abdelrahman.vercel.app","at":1792770462994}
+{"event":"setup_attempt","ordinal":27,"kind":"GET","at":1792770525975}
+{"event":"setup_cleanup_intent","kind":"environment","id":"BANdqedkjfktF2vy","key":"EMR_M03_FOUNDATION_ENABLED","at":1792770528363}
+{"event":"setup_attempt","ordinal":28,"kind":"DELETE","at":1792770528367}
+{"event":"setup_attempt","ordinal":29,"kind":"GET","at":1792770530827}
+{"event":"setup_cleanup_absent","kind":"environment","id":"BANdqedkjfktF2vy","key":"EMR_M03_FOUNDATION_ENABLED","at":1792770533351}
+{"event":"setup_cleanup_intent","kind":"environment","id":"yhOy0BjVgrvMKBpr","key":"EMR_M03_FOUNDATION_WINDOW_ID","at":1792770533353}
+{"event":"setup_attempt","ordinal":30,"kind":"DELETE","at":1792770533356}
+{"event":"setup_attempt","ordinal":31,"kind":"GET","at":1792770535786}
+{"event":"setup_cleanup_absent","kind":"environment","id":"yhOy0BjVgrvMKBpr","key":"EMR_M03_FOUNDATION_WINDOW_ID","at":1792770538178}
+{"event":"setup_cleanup_intent","kind":"environment","id":"5kNmNA0oKiXnXDr7","key":"EMR_M03_FOUNDATION_WRITER_PASSWORD","at":1792770538180}
+{"event":"setup_attempt","ordinal":32,"kind":"DELETE","at":1792770538184}
+{"event":"setup_attempt","ordinal":33,"kind":"GET","at":1792770540500}
+{"event":"setup_cleanup_absent","kind":"environment","id":"5kNmNA0oKiXnXDr7","key":"EMR_M03_FOUNDATION_WRITER_PASSWORD","at":1792770543030}
+{"event":"setup_cleanup_intent","kind":"environment","id":"sP6c78IvUkuh0q1y","key":"EMR_M03_FOUNDATION_APIFY_READ_TOKEN","at":1792770543032}
+{"event":"setup_attempt","ordinal":34,"kind":"DELETE","at":1792770543034}
+{"event":"setup_attempt","ordinal":35,"kind":"GET","at":1792770545520}
+{"event":"setup_cleanup_absent","kind":"environment","id":"sP6c78IvUkuh0q1y","key":"EMR_M03_FOUNDATION_APIFY_READ_TOKEN","at":1792770548253}
+{"event":"setup_cleanup_intent","kind":"environment","id":"O63SRoiYRJSB3lR2","key":"EMR_M03_FOUNDATION_TOKEN_SHA256","at":1792770548255}
+{"event":"setup_attempt","ordinal":36,"kind":"DELETE","at":1792770548258}
+{"event":"setup_attempt","ordinal":37,"kind":"GET","at":1792770550647}
+{"event":"setup_cleanup_absent","kind":"environment","id":"O63SRoiYRJSB3lR2","key":"EMR_M03_FOUNDATION_TOKEN_SHA256","at":1792770553036}
+{"event":"setup_cleanup_intent","kind":"environment","id":"EKbTlPeSsL7x7Jsg","key":"EMR_M03_FOUNDATION_AUDIENCE","at":1792770553038}
+{"event":"setup_attempt","ordinal":38,"kind":"DELETE","at":1792770553042}
+{"event":"setup_attempt","ordinal":39,"kind":"GET","at":1792770555559}
+{"event":"setup_cleanup_absent","kind":"environment","id":"EKbTlPeSsL7x7Jsg","key":"EMR_M03_FOUNDATION_AUDIENCE","at":1792770557941}
+{"event":"setup_cleanup_intent","kind":"environment","id":"R6oLddAHm22ATdYK","key":"EMR_M03_FOUNDATION_COMMIT_SHA","at":1792770557943}
+{"event":"setup_attempt","ordinal":40,"kind":"DELETE","at":1792770557946}
+{"event":"setup_attempt","ordinal":41,"kind":"GET","at":1792770560330}
+{"event":"setup_cleanup_absent","kind":"environment","id":"R6oLddAHm22ATdYK","key":"EMR_M03_FOUNDATION_COMMIT_SHA","at":1792770562866}
+{"event":"setup_attempt","ordinal":42,"kind":"GET","at":1792770562869}
+{"event":"setup_cleanup_intent","kind":"bypass","at":1792770565371}
+{"event":"setup_attempt","ordinal":43,"kind":"PATCH","at":1792770565374}
+{"event":"setup_attempt","ordinal":44,"kind":"GET","at":1792770567831}
+{"event":"setup_cleanup_absent","kind":"bypass","at":1792770570170}
+`;
+const cleanedLegacySetupRows = cleanedLegacySetupJsonl.trimEnd().split('\n').map(JSON.parse);
+const cleanedLegacySetupSha256 = '0cad48fd9550da762c0b629ee63364e4668f4829c3a89bd6f75ec2843d32f624';
+
+test('genuine576 constructor replays all84 fully cleaned legacy rows before creating only the new38b Preview entries', async () => {
+  assert.equal(createHash('sha256').update(cleanedLegacySetupJsonl).digest('hex'), cleanedLegacySetupSha256);
+  assert.equal(cleanedLegacySetupRows.length, 84);
+  assert.equal(cleanedLegacySetupRows.filter((row) => row.event === 'setup_attempt').length, 44);
+  const f = await syntheticProjectVerifiedContinuation({
+    managementAllocation: true,
+    historicalSetupEvents: cleanedLegacySetupRows,
+  });
+  let budget, current;
+  try {
+    const proof = f.claim(f.admit()),
+      runtime = await f.copy('foundation-live-runtime.mjs'),
+      setupModule = await f.copy('foundation-live-setup.mjs');
+    budget = runtime.createFoundationLiveManagementBudget(
+      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        controlAttempts: () => 384,
+      },
+    );
+    while (budget.snapshot().attempts < 177) budget.admit();
+    const before = readFileSync(f.paths.setup, 'utf8');
+    assert.equal(before, cleanedLegacySetupJsonl);
+    current = fixture({
+      setupModule,
+      sourceSha: proof.sourceCommitSha,
+      startsAt: proof.startsAt,
+      projectVerifiedContinuationProof: proof,
+      previousEvents: cleanedLegacySetupRows,
+      activeWindowId: proof.windowId,
+      maximumRequests: 88,
+      expectedMigrationCount: 15,
+      managementBudget: budget,
+    });
+    assert.equal(current.calls.length, 0);
+    assert.equal(current.setup.snapshot().requestCount, 44);
+    assert.deepEqual(current.setup.snapshot().unresolved, []);
+    await current.setup.prepare();
+    const created = current.calls.filter((call) => call.method === 'POST' && call.path.includes('/env?'));
+    assert.equal(created.length, 7);
+    assert.equal(
+      created.every((call) => call.body.comment.endsWith(proof.windowId)),
+      true,
+    );
+    assert.equal((await current.setup.cleanup()).state, 'setup_resources_removed');
+    const oldIds = new Set(
+      cleanedLegacySetupRows
+        .filter((row) => row.event === 'setup_ack' && row.kind === 'environment')
+        .map((row) => row.id),
+    );
+    const deleted = current.calls.filter((call) => call.method === 'DELETE');
+    assert.equal(deleted.length, 7);
+    assert.equal(
+      deleted.some((call) => [...oldIds].some((id) => call.path.includes('/env/' + id + '?'))),
+      false,
+    );
+    assert.equal(current.setup.snapshot().requestCount, 44 + current.calls.length);
+    assert.equal(current.setup.snapshot().requestCount <= 88, true);
+    assert.equal(readFileSync(f.paths.setup, 'utf8'), before);
+  } finally {
+    current?.setup.close();
+    budget?.close();
+    f.cleanup();
+  }
+});
+
+test('pinned historical environment replay refuses unmatched, unknown, reordered or unverified deletion records', async () => {
+  for (const fault of ['id', 'key', 'unknown', 'intent', 'delete', 'readback', 'order']) {
+    const rows = structuredClone(cleanedLegacySetupRows),
+      absent = rows.findIndex((row) => row.event === 'setup_cleanup_absent' && row.kind === 'environment'),
+      intent = rows.findIndex((row) => row.event === 'setup_cleanup_intent' && row.kind === 'environment');
+    if (fault === 'id') rows[absent].id += '_UNOWNED';
+    if (fault === 'key') rows[absent].key = 'EMR_M03_FOUNDATION_WINDOW_ID';
+    if (fault === 'unknown') rows[absent].event = 'setup_cleanup_unknown';
+    if (fault === 'intent') rows[intent].event = 'setup_cleanup_unknown';
+    if (fault === 'delete') rows[intent + 1].kind = 'GET';
+    if (fault === 'readback') rows[intent + 2].kind = 'PATCH';
+    if (fault === 'order') [rows[intent], rows[absent]] = [rows[absent], rows[intent]];
+    const f = await syntheticProjectVerifiedContinuation({
+      managementAllocation: true,
+      historicalSetupEvents: rows,
+    });
+    let budget;
+    try {
+      const proof = f.claim(f.admit()),
+        runtime = await f.copy('foundation-live-runtime.mjs'),
+        setupModule = await f.copy('foundation-live-setup.mjs');
+      budget = runtime.createFoundationLiveManagementBudget(
+        { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+        {
+          directory: dirname(f.paths.management),
+          now: f.now,
+          projectVerifiedContinuationProof: proof,
+          controlAttempts: () => 384,
+        },
+      );
+      assert.throws(
+        () =>
+          fixture({
+            setupModule,
+            sourceSha: proof.sourceCommitSha,
+            startsAt: proof.startsAt,
+            projectVerifiedContinuationProof: proof,
+            previousEvents: rows,
+            activeWindowId: proof.windowId,
+            maximumRequests: 88,
+            expectedMigrationCount: 15,
+            managementBudget: budget,
+          }),
+        /FOUNDATION_LIVE_SETUP_BLOCKED/,
+      );
+      assert.equal(budget.snapshot().attempts, 152);
+    } finally {
+      budget?.close();
+      f.cleanup();
+    }
+  }
+});
+
+test('new38b environment responses cannot reuse legacy scope metadata or old deleted resource IDs', async () => {
+  for (const fault of ['legacy_env_comment', 'reused_env_id']) {
+    const f = await syntheticProjectVerifiedContinuation({
+      managementAllocation: true,
+      historicalSetupEvents: cleanedLegacySetupRows,
+    });
+    let budget, current;
+    try {
+      const proof = f.claim(f.admit()),
+        runtime = await f.copy('foundation-live-runtime.mjs'),
+        setupModule = await f.copy('foundation-live-setup.mjs');
+      budget = runtime.createFoundationLiveManagementBudget(
+        { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+        {
+          directory: dirname(f.paths.management),
+          now: f.now,
+          projectVerifiedContinuationProof: proof,
+          controlAttempts: () => 384,
+        },
+      );
+      current = fixture({
+        fault,
+        setupModule,
+        sourceSha: proof.sourceCommitSha,
+        startsAt: proof.startsAt,
+        projectVerifiedContinuationProof: proof,
+        previousEvents: cleanedLegacySetupRows,
+        activeWindowId: proof.windowId,
+        maximumRequests: 88,
+        expectedMigrationCount: 15,
+        managementBudget: budget,
+      });
+      await assert.rejects(current.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+      assert.equal(
+        current.calls.filter((call) => call.method === 'POST' && call.path.includes('/env?')).length,
+        1,
+      );
+      assert.equal(
+        current.calls.some((call) => call.method === 'DELETE'),
+        false,
+      );
+      assert.equal(
+        current.setup.snapshot().unresolved.some((value) => value.startsWith('create:')),
+        true,
+      );
+    } finally {
+      current?.setup.close();
+      budget?.close();
+      f.cleanup();
+    }
+  }
+});
+
 test('setup request plan carries all prior attempts and preserves eighteen cleanup requests before any write', () => {
   for (const [used, polls] of [
     [0, 12],
@@ -73,6 +339,55 @@ test('isolated approved cumulative88 fixture uses fresh window in exactly seven 
     assert.deepEqual(current.bypass, {});
     assert.throws(() => fixture({ maximumRequests: 88 }));
   } finally {
+    f.cleanup();
+  }
+});
+
+test('genuine approved576 Management capacity permits setup at202 charged requests while default512 still refuses before a request', async () => {
+  const historical = fixture({ managementInitialAttempts: 202 });
+  await assert.rejects(historical.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+  assert.equal(historical.calls.length, 0);
+  assert.equal(historical.attempts(), 202);
+  const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+  let budget, current;
+  try {
+    const proof = f.claim(f.admit()),
+      runtime = await f.copy('foundation-live-runtime.mjs'),
+      setupModule = await f.copy('foundation-live-setup.mjs');
+    budget = runtime.createFoundationLiveManagementBudget(
+      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        controlAttempts: () => 384,
+      },
+    );
+    while (budget.snapshot().attempts < 202) budget.admit();
+    current = fixture({
+      setupModule,
+      sourceSha: proof.sourceCommitSha,
+      startsAt: proof.startsAt,
+      projectVerifiedContinuationProof: proof,
+      previousEvents: readFileSync(f.paths.setup, 'utf8').trimEnd().split('\n').map(JSON.parse),
+      activeWindowId: proof.windowId,
+      maximumRequests: 88,
+      expectedMigrationCount: 15,
+      managementBudget: budget,
+    });
+    assert.equal(budget.snapshot().maximum, 576);
+    assert.equal(budget.snapshot().attempts, 202);
+    assert.equal(current.setup.snapshot().requestCount, 44);
+    await current.setup.prepare();
+    await current.setup.cleanup();
+    assert.equal(budget.snapshot().attempts, 202 + current.calls.length);
+    assert.equal(current.setup.snapshot().requestCount, 44 + current.calls.length);
+    assert.ok(current.setup.snapshot().requestCount <= 88);
+    assert.equal(current.calls.filter((c) => c.method === 'POST' && c.path.includes('/env?')).length, 7);
+    assert.deepEqual(current.bypass, {});
+  } finally {
+    if (current) await current.setup.cleanup();
+    budget?.close();
     f.cleanup();
   }
 });
@@ -142,6 +457,8 @@ function fixture({
   activeWindowId = scope.windowId,
   maximumRequests = 50,
   expectedMigrationCount = 14,
+  managementBudget,
+  managementInitialAttempts = 0,
 } = {}) {
   const calls = [],
     rows = [],
@@ -168,15 +485,15 @@ function fixture({
     meta: { githubCommitSha: sourceSha, githubCommitRef: scope.branch },
   };
   let clock = startsAt,
-    attempts = 0,
+    attempts = managementInitialAttempts,
     readyReads = 0,
     polls = 0;
-  const budget = {
+  const budget = managementBudget ?? {
     admit() {
       attempts++;
     },
     snapshot() {
-      return { attempts };
+      return { attempts, maximum: 512 };
     },
     attachTransport() {},
   };
@@ -190,6 +507,8 @@ function fixture({
     },
   });
   const transport = {
+    state: () => ({ pendingRequests: 0, unclosedResponses: 0 }),
+    close: () => true,
     async request(spec) {
       calls.push(JSON.parse(JSON.stringify({ method: spec.method, path: spec.path, body: spec.body })));
       if (fault === 'lost_env_ack' && spec.method === 'POST' && spec.path.includes('/env?'))
@@ -236,6 +555,11 @@ function fixture({
           updatedAt: clock,
           decrypted: false,
         };
+        if (fault === 'legacy_env_comment') item.comment = 'M03 foundation temporary dev ' + scope.windowId;
+        if (fault === 'reused_env_id')
+          item.id = cleanedLegacySetupRows.find(
+            (row) => row.event === 'setup_ack' && row.kind === 'environment',
+          ).id;
         envs.push(item);
         return { status: 200, data: { created: structuredClone(item), failed: [] }, closed: true };
       }
@@ -291,7 +615,7 @@ function fixture({
     },
     {
       transportValidator: (t) => assert.equal(t, transport),
-      managementBudgetValidator: (b) => assert.equal(b, budget),
+      ...(managementBudget ? {} : { managementBudgetValidator: (b) => assert.equal(b, budget) }),
     },
   );
   return {

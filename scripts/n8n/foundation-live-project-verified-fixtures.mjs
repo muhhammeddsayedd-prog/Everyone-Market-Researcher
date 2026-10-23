@@ -12,7 +12,10 @@ export async function syntheticProjectVerifiedContinuation({
   cleanupFault,
   priorFault,
   projectFault,
-  managementAllocation = false,
+  historicalSetupEvents,
+  closedPreparation = false,
+  closedPreparationFault,
+  managementAllocation = closedPreparation,
   managementAllocationFault,
   wf70Readback = managementAllocation,
   wf70ReadbackFault,
@@ -374,7 +377,8 @@ export async function syntheticProjectVerifiedContinuation({
     nativeBrowserDiscoveryConfiguration,
     baselineDiscoveryConfiguration,
     wf70ReadbackConfiguration,
-    managementAllocationConfiguration;
+    managementAllocationConfiguration,
+    closedPreparationConfiguration;
   if (closedWindow) {
     const base =
       'scripts/n8n/out/foundation/live/project-verified-continuation-' + snapshot.proposedSegmentId;
@@ -431,7 +435,10 @@ export async function syntheticProjectVerifiedContinuation({
     ]) {
       const path = snapshot.journals[name].path;
       const original = readFileSync(join(directory, path), 'utf8');
-      const values = original.trimEnd().split('\n').map(JSON.parse);
+      const values =
+        name === 'setup' && historicalSetupEvents !== undefined
+          ? structuredClone(historicalSetupEvents)
+          : original.trimEnd().split('\n').map(JSON.parse);
       const current = values.filter(
         (r) =>
           r.event ===
@@ -885,6 +892,184 @@ export async function syntheticProjectVerifiedContinuation({
       packetSha256: digest(packet),
     };
   }
+  if (closedPreparation) {
+    const relative =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical7-reconciliation-20261024.json';
+    const receipt = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8'));
+    const base =
+      'scripts/n8n/out/foundation/live/project-verified-continuation-' + snapshot.proposedSegmentId;
+    const db =
+      'scripts/db/out/m03-foundation-project-verified-continuation-' +
+      snapshot.proposedSegmentId +
+      '-technical-7';
+    const start = Date.parse('2026-10-23T17:51:00.000Z');
+    const json = (value) => JSON.stringify(value) + '\n';
+    const admission = {
+      kind: 'm03_project_verified_continuation_admission',
+      version: 1,
+      segmentId: snapshot.proposedSegmentId,
+      sourceCommitSha: 'a5e746736893d5040e93032ae740a0878f748837',
+      windowId: '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+      approvalSha256: digest(approvalText),
+      startsAt: start,
+      deadlineAt: start + 3600000,
+      stopNewAt: start + 3000000,
+      hardDeadlineAt: start + 4200000,
+      parentProcessId: 91011,
+    };
+    const admissionSha256 = digest(json(admission));
+    const claim = {
+      kind: 'm03_project_verified_continuation_runtime_claim',
+      version: 1,
+      segmentId: snapshot.proposedSegmentId,
+      admissionSha256,
+      processId: 91012,
+      parentProcessId: 91011,
+      claimedAt: start + 1000,
+    };
+    const closed = {
+      kind: 'm03_project_verified_technical_closed',
+      version: 1,
+      admissionSha256,
+      parentProcessId: 91011,
+      runtimeProcessId: 91012,
+      closedAt: start + 20000,
+      childClosed: true,
+      credentialChildrenClosed: true,
+      emergencyShutdown: false,
+      pendingMachinePreserved: true,
+      nativeExit: 1,
+      bypassHandoffDeleted: false,
+      closureVerified: false,
+    };
+    if (closedPreparationFault === 'unknown-completion') closed.credentialChildrenClosed = false;
+    for (const [key, suffix, value] of [
+      ['admission', '.json', admission],
+      ['runtimeClaim', '.runtime-claim.json', claim],
+      ['closed', '.closed.json', closed],
+    ]) {
+      const path = base + '.technical-7' + suffix,
+        text = json(value);
+      put(path, text);
+      receipt.immutableTechnicalRecords[key] = { path, bytes: Buffer.byteLength(text), sha256: digest(text) };
+    }
+    receipt.recordedAt = '2026-10-23T17:52:00.000Z';
+    receipt.actualCleanup.parentProcessId = 91011;
+    receipt.actualCleanup.runtimeProcessId = 91012;
+    const runId = 'a7777777-7777-4777-8777-777777777777';
+    const typePath = 'scripts/db/out/m03-foundation-continuation-' + runId + '-db.types.ts';
+    const typeText = 'Explicit synthetic generated-type snapshot only.\n';
+    put(typePath, typeText);
+    const attempt = {
+      version: 1,
+      runId,
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      segmentId: snapshot.proposedSegmentId,
+      purpose: 'postcheck-only-continuation',
+      createdAt: new Date(start + 2000).toISOString(),
+    };
+    const admin = {
+      version: 1,
+      runId,
+      environment: 'dev',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      host: 'aws-1-eu-central-1.pooler.supabase.com',
+      port: 5432,
+      status: 'continuation_history_verified',
+      authenticationAttempted: true,
+      authenticationVerified: true,
+      historyBefore: 'complete',
+      historyAfter: 'complete',
+      pendingVersions: [],
+      pushAttempted: false,
+      childrenClosed: true,
+      handoffDeleted: true,
+      leaseDeleted: true,
+      scratchDeleted: true,
+      phaseAControl: true,
+      phaseACommands: 3,
+      phaseAClosed: false,
+      postcheckContinuation: true,
+      projectVerifiedContinuation: true,
+      forwardWindow: true,
+      activeWindowId: '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+      clockSegmentId: snapshot.proposedSegmentId,
+      technicalAttemptOrdinal: 7,
+      unprovisionedFixtureArchived: false,
+      postcheckStage: 'complete',
+      postcheckCandidate: typePath,
+    };
+    if (closedPreparationFault === 'admin') admin.pushAttempted = true;
+    put(db + '-attempt.json', json(attempt));
+    put(db + '-latest.json', json(admin));
+    Object.assign(receipt.administrativeResult, {
+      runId,
+      attemptPath: db + '-attempt.json',
+      attemptSha256: digest(json(attempt)),
+      receiptPath: db + '-latest.json',
+      receiptSha256: digest(json(admin)),
+      generatedTypePath: typePath,
+      generatedTypeSha256: digest(typeText),
+    });
+    const managementPath = snapshot.journals.management.path;
+    put(
+      managementPath,
+      readFileSync(join(directory, managementPath), 'utf8') +
+        Array.from({ length: 25 }, (_, i) => json({ event: 'management_attempt', ordinal: 143 + i })).join(
+          '',
+        ),
+    );
+    const refs = JSON.parse(
+      readFileSync(join(sourceRoot, 'n8n/foundation/bindings.dev.json'), 'utf8'),
+    ).workflowRefs;
+    const controlRows = [
+      {
+        event: 'control_request_intent',
+        ordinal: 382,
+        kind: 'discovery',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        at: new Date(start + 3000).toISOString(),
+      },
+      {
+        event: 'browser_port_preflight_verified',
+        kind: 'browser_ui',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        at: new Date(start + 3500).toISOString(),
+      },
+      ...Object.values(refs).flatMap((ref, i) =>
+        [0, 1].map((j) => ({
+          event: 'control_request_intent',
+          ordinal: 383 + 2 * i + j,
+          kind: 'discovery',
+          workflowId: ref.id,
+          at: new Date(start + 4000 + (2 * i + j) * 100).toISOString(),
+        })),
+      ),
+    ];
+    if (closedPreparationFault === 'unknown-row') controlRows[2].kind = 'start';
+    const controlPath = snapshot.journals.control.path;
+    put(controlPath, readFileSync(join(directory, controlPath), 'utf8') + controlRows.map(json).join(''));
+    for (const name of ['management', 'control', 'setup', 'preflight', 'runtime']) {
+      const p = receipt.actualPublicJournals[name],
+        text = readFileSync(join(directory, p.path), 'utf8');
+      Object.assign(p, {
+        bytes: Buffer.byteLength(text),
+        rowCount: text.trimEnd().split('\n').length,
+        sha256: digest(text),
+      });
+    }
+    if (closedPreparationFault === 'usage') receipt.usage.control = 434;
+    if (closedPreparationFault === 'write') receipt.actualFailure.newPreviewRequests = 1;
+    if (closedPreparationFault === 'cleanup') receipt.actualCleanup.allEightRuntimeInputFilesAbsent = false;
+    if (closedPreparationFault === 'fresh-window')
+      receipt.independentHostedReadback.windows.push({
+        ...receipt.independentHostedReadback.windows[0],
+        windowId: '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+      });
+    const text = json(receipt);
+    put(relative, text);
+    closedPreparationConfiguration = { relative, sha256: digest(text) };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -957,6 +1142,16 @@ export async function syntheticProjectVerifiedContinuation({
         JSON.stringify(managementAllocationConfiguration) +
         ');',
     );
+  // These copies explicitly model historical pre-technical7 authority. The
+  // production source has no runtime switch to omit its completed receipt.
+  source = source.replace(
+    /const closedPreparationRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+    'const closedPreparationRecovery = ' +
+      (closedPreparationConfiguration
+        ? 'Object.freeze(' + JSON.stringify(closedPreparationConfiguration) + ')'
+        : 'null') +
+      ';',
+  );
   // Explicitly retain the exhausted old50 branch as a synthetic regression.
   source = source.replace(/setupMaximum: (?:50|88),/, `setupMaximum: ${proposedBudgetApproved ? 88 : 50},`);
   const modulePath = put('scripts/n8n/foundation-live-project-verified-continuation.mjs', source);

@@ -1,0 +1,220 @@
+{
+  "kind": "m03_technical7_closed_preparation_reconciliation",
+  "version": 1,
+  "recordedAt": "2026-10-23T23:39:53.341Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "source": {
+    "head": "16d30fd13581516c8310ae9803cfb13e23204228",
+    "ciRun": 40039419304,
+    "allFiveCiJobsPassed": true,
+    "vercelPassed": true,
+    "applicationSource": "a5e746736893d5040e93032ae740a0878f748837"
+  },
+  "immutableTechnicalRecords": {
+    "admission": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-7.json",
+      "bytes": 446,
+      "sha256": "ac83512ef819bcd53a7dbf8d77d23663b5369d687a39d2b8083281fd93d56724"
+    },
+    "runtimeClaim": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-7.runtime-claim.json",
+      "bytes": 275,
+      "sha256": "188a8e08998a2fff6e7211f38697c5f01aca7055df4da04e3a306b7b745e80ec"
+    },
+    "closed": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-7.closed.json",
+      "bytes": 396,
+      "sha256": "f31a21153b797b5a9476a5e616bfc7b21acf7eef8c8ad54a1468fa6116a783fd"
+    },
+    "closedReceiptNotRewritten": true,
+    "closureVerifiedRemainsFalse": true,
+    "bypassHandoffDeletedRemainsFalse": true
+  },
+  "actualFailure": {
+    "phase": "after_administrative_preflight_command_before_setup_prepare",
+    "exactCaughtErrorRetained": false,
+    "baselineSourceGets": 25,
+    "executionDiscoveryAttempts": 50,
+    "browserDiscoveryAttempts": 1,
+    "newManagementAttempts": 25,
+    "newControlAttempts": 51,
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "newPreviewRequests": 0,
+    "newWorkflowWrites": 0,
+    "newDatabaseOrFixtureWrites": 0,
+    "limitation": "The original public result retained generic blocked, not a failing field or exception. Later readback and local reproductions are separate diagnostic evidence."
+  },
+  "administrativeResult": {
+    "runId": "a7b2f30d-5ebd-4654-9305-2b1b049d7833",
+    "attemptPath": "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-7-attempt.json",
+    "attemptSha256": "f3683f2af97559c357d9b700266f409c2484eff9c46ede70a2caaff3dbc0abc1",
+    "receiptPath": "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-7-latest.json",
+    "receiptSha256": "db4e36209b25a124cc8fb9973bad1f119987879d77c13a5f9ffc62cbeb2dbccd",
+    "status": "continuation_history_verified",
+    "authenticationAttempted": true,
+    "authenticationVerified": true,
+    "historyBefore": "complete",
+    "historyAfter": "complete",
+    "migrationCount": 15,
+    "migrationsAppliedThisAttempt": 0,
+    "pushAttempted": false,
+    "postcheckStage": "complete",
+    "phaseACommands": 3,
+    "phaseAClosed": false,
+    "unprovisionedFixtureArchived": false,
+    "childrenClosed": true,
+    "handoffDeleted": true,
+    "leaseDeleted": true,
+    "scratchDeleted": true,
+    "generatedTypePath": "scripts/db/out/m03-foundation-continuation-a7b2f30d-5ebd-4654-9305-2b1b049d7833-db.types.ts",
+    "generatedTypeSha256": "de2854863855f3551dd562fc80f450a76032e084b8e7c84abdc7788d80497f59"
+  },
+  "actualPublicJournals": {
+    "management": {
+      "path": "scripts/n8n/out/foundation/live/management.jsonl",
+      "bytes": 7537,
+      "rowCount": 168,
+      "sha256": "2d42c50b1cb97bcade54b03bd92b1fc2719aebe12956e0456224012c012b2632"
+    },
+    "control": {
+      "path": "scripts/n8n/out/foundation/live/control.jsonl",
+      "bytes": 57172,
+      "rowCount": 434,
+      "sha256": "204e76ed973351efa6411d06db7cf06b1977022004a53071017fca730004887e"
+    },
+    "setup": {
+      "path": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "bytes": 9102,
+      "rowCount": 84,
+      "sha256": "0cad48fd9550da762c0b629ee63364e4668f4829c3a89bd6f75ec2843d32f624"
+    },
+    "preflight": {
+      "path": "scripts/n8n/out/foundation/live/preflight.jsonl",
+      "bytes": 938,
+      "rowCount": 4,
+      "sha256": "ae07f30519e51f81d60bfa5cabe5ef80b5694fe13bac3da181c2b8fe38d08598"
+    },
+    "runtime": {
+      "path": "scripts/n8n/out/foundation/live/runtime.jsonl",
+      "bytes": 5713,
+      "rowCount": 50,
+      "sha256": "3f1c85ad7d185481da33c8989b34b82cbbef26aa3ec01209bc13561bd3481378"
+    }
+  },
+  "absentSideEffectOutputs": [
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-7-owner-provision-attempt.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-7-reactivation-attempt.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-7-unprovisioned-archive-attempt.json",
+    "scripts/n8n/out/foundation/live/runtime.technical-7.jsonl"
+  ],
+  "protocolClose": {
+    "status": "closed",
+    "childTransportsClosed": true,
+    "adminChildClosed": true,
+    "residual": false,
+    "windowClosed": false,
+    "fixtureArchived": false,
+    "baselineRestored": false,
+    "environmentCleanupVerified": false,
+    "remoteWorkSettled": false
+  },
+  "wrapperClose": {
+    "kind": "m03_acceptance_wrapper_closed",
+    "childClosed": true,
+    "credentialChildrenClosed": true,
+    "emergencyShutdown": false,
+    "nativeExit": 1,
+    "handoffsDeleted": true,
+    "bypassHandoffDeleted": false,
+    "pendingMachinePreserved": true,
+    "privateRead": true,
+    "code": "M03_ACCEPTANCE_BLOCKED"
+  },
+  "actualCleanup": {
+    "toolReceipt": "935b52",
+    "nativeExit": 0,
+    "parentProcessId": 53272,
+    "runtimeProcessId": 61140,
+    "bothProcessesDead": true,
+    "parentLockAbsent": true,
+    "runtimeLockAbsent": true,
+    "allEightRuntimeInputFilesAbsent": true,
+    "bypassAbsent": true,
+    "cleanupLockRemoved": true,
+    "contentsRead": false,
+    "decrypted": false,
+    "networkRequests": 0,
+    "persistentOriginalsUntouched": true
+  },
+  "independentHostedReadback": {
+    "observedAt": "2026-10-23T23:36:18.570601+00:00",
+    "surface": "authenticated Chrome Supabase SQL Editor",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "queryInvocations": 1,
+    "mutations": 0,
+    "preflight": {
+      "dailyBudgetUsd": 25,
+      "dailyBudgetType": "number",
+      "statsDailyEnabled": false,
+      "statsType": "boolean",
+      "errorCount24h": 0,
+      "notificationCooldownClear": true,
+      "priceBookType": "object",
+      "priceBookEntries": 25
+    },
+    "migrationCount": 15,
+    "windows": [
+      {
+        "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+        "namespace": "m03-foundation-dev",
+        "projectRef": "zmotjsbzhzjvpelxvxlf",
+        "environment": "dev",
+        "started": true,
+        "closed": true,
+        "admittedCount": 2,
+        "closeCount": 1
+      }
+    ],
+    "fixture": {
+      "competitorId": "d51a39f6-fe87-4d17-aee9-3070c45693aa",
+      "companyCode": "C999",
+      "competitorStatus": "archived",
+      "accountId": "bd23314c-591f-4fb7-92fd-b7450634eeb6",
+      "accountStatus": "paused",
+      "platform": "website_work_page",
+      "itemsCount": 0,
+      "locked": null
+    }
+  },
+  "usage": {
+    "mainManagement": 167,
+    "carriedManagement": 10,
+    "management": 177,
+    "mainControl": 432,
+    "carriedControl": 3,
+    "control": 435,
+    "combined": 612,
+    "vercelSetupUsed": 44,
+    "vercelSetupMaximum": 88,
+    "managementMaximum": 576,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "gatewayPreflightAttempts": 2,
+    "actorStarts": 0,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "acceptance": {
+    "actualM03DevAcceptanceVerified": false,
+    "all25SavedWorkflowBaselineVerified": true,
+    "executionBaselineComplete": true,
+    "postchecksVerified": true,
+    "fullDVerified": false,
+    "productionChanged": false,
+    "pr8Merged": false,
+    "m04Started": false
+  }
+}
