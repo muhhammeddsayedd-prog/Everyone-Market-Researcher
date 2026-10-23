@@ -58,9 +58,78 @@ const gatewayOperations = new Set([
   'launch.read',
   'launch.reconcile',
 ]);
+export const foundationNativeFailureCodes = Object.freeze([
+  'ADMISSION',
+  'READER_BRAND',
+  'METADATA_BRAND',
+  'RECEIPT_BRAND',
+  'SCOPE',
+  'CONFIG',
+  'SENSITIVE_REFLECTION',
+  'STRUCTURE',
+  'TRANSPORT_SHAPE',
+  'CLOSE',
+  'FRAMING',
+  'RESPONSE_LIMIT',
+  'STREAM',
+  'TRUNCATED',
+  'JSON',
+  'NATIVE_SIZE_LIMIT',
+  'DEADLINE',
+  'BUSY',
+  'PRIVATE_RESPONSE_ARGS',
+  'BINDING',
+  'METADATA',
+  'VERSION',
+  'MODE',
+  'TIMES',
+  'OWNERSHIP_TIME',
+  'ARGS',
+  'TRACE_ARGS',
+  'POLL_LIMIT',
+  'NOT_FOUND',
+  'HTTP',
+  'PARENT',
+  'CHILD',
+  'CHILD_LIMIT',
+  'RUN_DATA',
+  'GATEWAY_SOURCE',
+  'GATEWAY_PREPARE',
+  'GATEWAY_LIMIT',
+  'CALLBACK_SOURCE',
+  'CALLBACK_PINNED',
+  'CURRENT_BODY',
+  'PUBLISHED_BODY',
+  'TRACE_PUBLISHED',
+  'TRACE_PINNED',
+  'EXECUTED_BODY',
+  'OBSERVATION_CHANGED',
+  'EXECUTED_PIN_DATA',
+  'REDACTED_DATA',
+  'ERROR_DISPATCH_TARGET',
+  'TRACE_MODE',
+  'TRACE_NODE',
+  'TRACE_MISMATCH',
+  'DISCOVERY',
+  'DISCOVERY_CHANGED',
+  'DISCOVERY_CURSOR',
+  'DISCOVERY_INCOMPLETE',
+  'CLEANUP_ARGS',
+  'CLEANUP_HTTP',
+  'DELETE_ACK',
+  'WEBHOOK_ARGS',
+  'WEBHOOK_HTTP',
+  'STOP_RECEIPT',
+  'STOP_ACK',
+  'REJECTED',
+]);
+const safeFailureCodes = new Set(foundationNativeFailureCodes),
+  errorCodes = new WeakMap();
 class NativeReaderError extends Error {
   constructor(code) {
-    super('FOUNDATION_NATIVE_' + code);
+    const safeCode = safeFailureCodes.has(code) ? code : 'REJECTED';
+    super('FOUNDATION_NATIVE_' + safeCode);
+    errorCodes.set(this, safeCode);
   }
 }
 const fail = (code) => {
@@ -162,7 +231,47 @@ export function createFoundationNativeReader({
   let busy = false,
     requests = 0,
     pendingRequests = 0,
-    unclosedResponses = 0;
+    unclosedResponses = 0,
+    currentContext = null,
+    lastFailure = null;
+  function retainFailure(error) {
+    const code = errorCodes.get(error) ?? 'REJECTED';
+    const context = currentContext;
+    let stage = context?.stage ?? 'unknown';
+    let classification =
+      code === 'REJECTED'
+        ? 'unknown'
+        : code === 'DEADLINE'
+          ? 'timeout'
+          : code === 'CLOSE'
+            ? 'closure'
+            : code === 'SENSITIVE_REFLECTION'
+              ? 'confidentiality'
+              : code === 'JSON'
+                ? 'parse'
+                : ['FRAMING', 'RESPONSE_LIMIT', 'STREAM', 'TRUNCATED', 'NATIVE_SIZE_LIMIT'].includes(code)
+                  ? 'framing'
+                  : 'contract';
+    if (code === 'CLOSE') stage = 'close';
+    if (
+      context?.httpStatus !== null &&
+      context?.httpStatus !== undefined &&
+      context.httpStatus !== 200 &&
+      stage === 'projection'
+    ) {
+      stage = 'http_status';
+      classification = 'http';
+    }
+    lastFailure = Object.freeze({
+      version: 1,
+      workflowKey: context?.workflowKey ?? null,
+      operation: context?.operation ?? 'unknown',
+      stage,
+      classification,
+      code,
+      httpStatus: context?.httpStatus ?? null,
+    });
+  }
   function scope(key) {
     if (!Object.hasOwn(refs, key)) fail('SCOPE');
     return refs[key].id;
@@ -200,12 +309,19 @@ export function createFoundationNativeReader({
     state.promise.catch(() => {});
     return state;
   }
-  async function consume(response, signal, project) {
+  async function consume(response, signal, project, context = null) {
     let iterator,
       result,
       fault = null,
       closure;
     try {
+      if (context) {
+        context.stage = 'framing';
+        context.httpStatus =
+          Number.isInteger(response?.status) && response.status >= 100 && response.status <= 599
+            ? response.status
+            : null;
+      }
       closure = responseClosure(response);
       if (
         !Number.isInteger(response.status) ||
@@ -238,6 +354,7 @@ export function createFoundationNativeReader({
       if (length !== null && Number(length) > foundationNativeReaderLimits.responseBytes)
         fail('RESPONSE_LIMIT');
       iterator = response.body[Symbol.asyncIterator]();
+      if (context) context.stage = 'body';
       const decoder = new TextDecoder('utf-8', { fatal: true });
       let count = 0,
         text = '',
@@ -257,6 +374,7 @@ export function createFoundationNativeReader({
       if (length !== null && count !== Number(length)) fail('TRUNCATED');
       reflection(text);
       let dto;
+      if (context) context.stage = 'parse';
       try {
         dto = JSON.parse(text);
       } catch {
@@ -265,6 +383,7 @@ export function createFoundationNativeReader({
       decodedReflection(dto);
       if (object(dto) && Object.hasOwn(dto, 'dataTooLargeToDisplay') && dto.dataTooLargeToDisplay !== false)
         fail('NATIVE_SIZE_LIMIT');
+      if (context) context.stage = 'projection';
       result = project(dto, response.status);
       text = '';
       dto = null;
@@ -283,6 +402,7 @@ export function createFoundationNativeReader({
         await raceAbort(closure.promise, signal);
       } catch {
         fault = new NativeReaderError('CLOSE');
+        if (context) context.stage = 'close';
       }
     }
     if (closure && !closure.closed) fault = new NativeReaderError('CLOSE');
@@ -291,6 +411,13 @@ export function createFoundationNativeReader({
     return result;
   }
   async function exchange(path, project, admission) {
+    const context = {
+      workflowKey: byId.get(admission?.workflowId) ?? null,
+      operation: ['discovery', 'metadata', 'workflow'].includes(admission?.kind) ? admission.kind : 'unknown',
+      stage: 'admission',
+      httpStatus: null,
+    };
+    currentContext = context;
     if (now() >= deadlineAt) fail('DEADLINE');
     try {
       syncVoid(admitControlAttempt(admission));
@@ -299,6 +426,7 @@ export function createFoundationNativeReader({
     }
     if (now() >= deadlineAt) fail('DEADLINE');
     requests++;
+    context.stage = 'request';
     const controller = new AbortController();
     const timer = setTimeout(
       () => controller.abort(),
@@ -323,7 +451,7 @@ export function createFoundationNativeReader({
           pendingRequests--;
         });
       const response = await raceAbort(requestPromise, controller.signal);
-      return await consume(response, controller.signal, project);
+      return await consume(response, controller.signal, project, context);
     } catch (e) {
       controller.abort();
       throw fixedError(e);
@@ -334,10 +462,13 @@ export function createFoundationNativeReader({
   async function exclusive(fn) {
     if (busy) fail('BUSY');
     busy = true;
+    currentContext = null;
     try {
       return await fn();
     } catch (e) {
-      throw fixedError(e);
+      const safe = fixedError(e);
+      retainFailure(safe);
+      throw safe;
     } finally {
       busy = false;
     }
@@ -1142,6 +1273,9 @@ export function createFoundationNativeReader({
     },
     state() {
       return Object.freeze({ requests, pendingRequests, unclosedResponses, busy });
+    },
+    lastFailure() {
+      return lastFailure;
     },
   };
   Object.freeze(reader);

@@ -18,6 +18,8 @@ const osEnv = () =>
   );
 function fixture(mode = 'success') {
   const baselineMode = mode.startsWith('baseline');
+  const discoveryMode = mode.startsWith('wf70');
+  const persistentMode = baselineMode || discoveryMode;
   const root = mkdtempSync(join(tmpdir(), 'emr-m03-n8n-fixture-'));
   roots.push(root);
   const put = (path, value) => {
@@ -37,6 +39,15 @@ function fixture(mode = 'success') {
     resolve('scripts/n8n/windows/Invoke-M03N8nInventory.ps1'),
     'utf8',
   ).replace('$childTimeoutMs = 75000', '$childTimeoutMs = 500');
+  // This isolated credential/consumer contract test substitutes ONLY the
+  // independent public source/budget proof. It does not claim real public
+  // reconciliation/closure evidence; the native reader/CLI tests cover those
+  // own strict contracts separately, with synthetic DNS/HTTPS and no network.
+  if (discoveryMode)
+    consumerSource = consumerSource.replace(
+      'if($Wf70DiscoveryDiagnostic){$node=Assert-Wf70DiscoveryPublic}',
+      'if($Wf70DiscoveryDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
+    );
   if (mode === 'baselineUnknownClose')
     consumerSource = consumerSource.replace('$closed = $child.WaitForExit(5000)', '$closed = $false');
   if (mode === 'failedStart')
@@ -221,14 +232,85 @@ function fixture(mode = 'success') {
     if (mode === 'baselineUnsafeForensics')
       result.forensics.nodeCategories.parametersEqual = 'synthetic-private-value';
   }
+  if (discoveryMode) {
+    for (const k of Object.keys(result)) delete result[k];
+    Object.assign(result, {
+      version: 1,
+      environment: 'dev',
+      host: 'muhhammedsayed.app.n8n.cloud',
+      projectId: 'pHvQjDmjxVZ3KQLT',
+      workflowKey: 'WF-70',
+      status: 'discovery_complete',
+      transportAdapter: 'inventory_bounded_get_adapter',
+      requestCount: 2,
+      maximumRequests: 4,
+      authenticationVerified: true,
+      paginationComplete: true,
+      candidateCount: 0,
+      adoptionProven: false,
+      drainProven: false,
+      readerFailure: null,
+      networkCompletionVerified: true,
+      diagnostics: {
+        version: 1,
+        dns: 'complete',
+        requests: Array.from({ length: 2 }, () => ({
+          resource: 'executions',
+          page: 1,
+          tcpConnected: true,
+          tlsVerified: true,
+          httpStatus: 200,
+          bodyRead: 'complete',
+          jsonParsed: true,
+          schemaValidated: true,
+          socketClosed: true,
+          failureStage: 'none',
+          failureCode: 'none',
+        })),
+      },
+    });
+    if (mode === 'wf70Unsafe')
+      result.readerFailure = {
+        version: 1,
+        workflowKey: 'WF-70',
+        operation: 'discovery',
+        stage: 'projection',
+        classification: 'contract',
+        code: 'SYNTHETIC_PRIVATE_CODE',
+        httpStatus: 200,
+      };
+    if (mode === 'wf70Http') {
+      result.status = 'discovery_failed';
+      result.requestCount = 1;
+      result.paginationComplete = false;
+      result.candidateCount = null;
+      result.authenticationVerified = false;
+      result.diagnostics.requests = result.diagnostics.requests.slice(0, 1);
+      Object.assign(result.diagnostics.requests[0], {
+        httpStatus: 429,
+        schemaValidated: false,
+        failureStage: 'status',
+        failureCode: 'http_failed',
+      });
+      result.readerFailure = {
+        version: 1,
+        workflowKey: 'WF-70',
+        operation: 'discovery',
+        stage: 'http_status',
+        classification: 'http',
+        code: 'DISCOVERY',
+        httpStatus: 429,
+      };
+    }
+  }
   const code = `import {writeFileSync} from 'node:fs';
- const good=process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : ''};
+ const good=process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : ''};
  writeFileSync(new URL('./called.txt',import.meta.url),good?'only-n8n-key':'wrong-env');
  delete process.env.M03_N8N_API_KEY;
  console.error('synthetic-private-stderr-must-stay-hidden');
  ${['timeout', 'baselineTimeout', 'baselineUnknownClose'].includes(mode) ? 'await new Promise(r=>setTimeout(r,10000));' : ''}
  console.log(${mode === 'badJson' ? "'synthetic-private-stdout-must-stay-hidden'" : mode === 'unsafeSchema' ? JSON.stringify(JSON.stringify({ ...result, privateSecret: 'synthetic-private-value' })) : JSON.stringify(JSON.stringify(result))});
- ${mode === 'failure' ? 'process.exitCode=7;' : mode === 'workflowBodyFailure' ? 'process.exitCode=1;' : ''}`;
+ ${mode === 'failure' ? 'process.exitCode=7;' : ['workflowBodyFailure', 'wf70Http'].includes(mode) ? 'process.exitCode=1;' : ''}`;
   put('scripts/n8n/inventory.mjs', code);
   const paths = [
     'scripts/n8n/windows/New-M03N8nApiHandoff.ps1',
@@ -248,7 +330,7 @@ function fixture(mode = 'success') {
       ]),
     ),
   };
-  if (baselineMode) {
+  if (persistentMode) {
     const baselineFiles = [
       'scripts/n8n/foundation-runtime-checkpoint.mjs',
       'n8n/workflows/WF-00.json',
@@ -280,7 +362,7 @@ function fixture(mode = 'success') {
       windowsHide: true,
     });
   assert.equal(runFile(creator).status, 0);
-  if (baselineMode) {
+  if (persistentMode) {
     const initialize = put(
       'synthetic-initialize.ps1',
       String.raw`
@@ -306,6 +388,7 @@ $s=[IO.File]::Open($store,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.Fi
       runFile(consumer, [
         ...(check ? ['-CheckOnly'] : []),
         ...(baselineMode ? ['-WorkflowBaselineDiagnostic'] : []),
+        ...(discoveryMode ? ['-Wf70DiscoveryDiagnostic'] : []),
       ]),
   };
 }
@@ -316,6 +399,236 @@ describe(
   'M03 n8n bounded private inventory consumer, isolated synthetic Windows DPAPI only',
   { skip: process.platform !== 'win32' },
   () => {
+    it('WF70 native public gate binds cumulative snapshots before any credential path and refuses a reused fence', () => {
+      const root = mkdtempSync(join(tmpdir(), 'emr-wf70-public-'));
+      roots.push(root);
+      const put = (relative, text) => {
+        const path = join(root, relative);
+        mkdirSync(resolve(path, '..'), { recursive: true });
+        writeFileSync(path, text);
+        return path;
+      };
+      const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
+      const snapshots = {};
+      for (const name of ['management', 'control', 'setup', 'preflight', 'runtime']) {
+        const path = 'scripts/n8n/out/foundation/live/' + name + '.jsonl';
+        put(path, 'synthetic-public-snapshot\n');
+        snapshots[name] = { path, sha256: hash('synthetic-public-snapshot\n') };
+      }
+      const closedPath = 'scripts/n8n/out/foundation/live/synthetic-technical6.closed.json';
+      put(closedPath, 'synthetic-public-closed\n');
+      const actual = {
+        usage: { management: 152, control: 382, combined: 534 },
+        actualCleanup: {
+          bothProcessesDead: true,
+          parentLockAbsent: true,
+          persistentOriginalsUntouched: true,
+        },
+        actualPublicJournals: snapshots,
+        immutableTechnicalRecords: {
+          closed: { path: closedPath, sha256: hash('synthetic-public-closed\n') },
+        },
+      };
+      const text = JSON.stringify(actual);
+      put(
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical6-reconciliation-20261024.json',
+        text,
+      );
+      const stub = `function Assert-M03AcceptancePublicSeal([string]$Root,$Seal){return 'synthetic-reviewed-node.exe'}\n`;
+      put('scripts/n8n/windows/Acceptance-PublicRuntime.ps1', stub);
+      put(
+        'scripts/n8n/foundation-acceptance-seal.json',
+        JSON.stringify({ files: { 'scripts/n8n/windows/Acceptance-PublicRuntime.ps1': hash(stub) } }),
+      );
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03N8nInventory.ps1'), 'utf8');
+      const confined = source.slice(
+        source.indexOf('function Confined-File'),
+        source.indexOf('function Validate-Diagnostics'),
+      );
+      let helper = source.slice(
+        source.indexOf('function Assert-Wf70DiscoveryPublic'),
+        source.indexOf('function Validate-Inventory'),
+      );
+      // Replace ONLY the immutable receipt pin for this isolated synthetic
+      // public fixture; actual source must retain its reviewed258a6c7 pin.
+      assert.match(helper, /258a6c7d15c59323f4e95c5315d42d839f735ea40d70834b8aa171ff00b9ca66/);
+      helper = helper.replace('258a6c7d15c59323f4e95c5315d42d839f735ea40d70834b8aa171ff00b9ca66', hash(text));
+      const script = put(
+        'public.ps1',
+        `$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+$repo='${root.replaceAll("'", "''")}'
+${confined}
+${helper}
+if((Assert-Wf70DiscoveryPublic) -cne 'synthetic-reviewed-node.exe'){throw 'blocked'}
+$path=Join-Path $repo 'scripts/n8n/out/foundation/live/control.jsonl'
+[IO.File]::WriteAllText($path,'changed');$blocked=$false;try{$null=Assert-Wf70DiscoveryPublic}catch{$blocked=$true};if(-not $blocked){throw 'blocked'}
+[IO.File]::WriteAllText($path,"synthetic-public-snapshot\`n")
+New-Wf70DiscoveryBudget
+$blocked=$false;try{$null=Assert-Wf70DiscoveryPublic}catch{$blocked=$true};if(-not $blocked){throw 'blocked'}
+$blocked=$false;try{New-Wf70DiscoveryBudget}catch{$blocked=$true};if(-not $blocked){throw 'blocked'}
+$header=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Join-Path $repo 'scripts/n8n/out/foundation/wf70-discovery-diagnostic-20261024.jsonl')))
+if($header.managementAttempts -ne 152 -or $header.controlAttempts -ne 382 -or $header.combinedAttempts -ne 534 -or $header.maximumRequests -ne 4){throw 'blocked'}
+Write-Output 'WF70_PUBLIC_GATE_PASS'
+`,
+      );
+      const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: osEnv(),
+        encoding: 'utf8',
+        timeout: 10000,
+        windowsHide: true,
+      });
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.equal(r.stderr, '');
+      assert.equal(r.stdout.trim(), 'WF70_PUBLIC_GATE_PASS');
+    });
+    it('WF70 native projection refuses arbitrary fields, unknown classifications and non-numeric HTTP status', () => {
+      const root = mkdtempSync(join(tmpdir(), 'emr-wf70-schema-'));
+      roots.push(root);
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03N8nInventory.ps1'), 'utf8');
+      const keys = source.slice(
+        source.indexOf('function Assert-Keys'),
+        source.indexOf('function Confined-File'),
+      );
+      const diagnostics = source.slice(
+        source.indexOf('function Validate-Diagnostics'),
+        source.indexOf('function Assert-Wf70DiscoveryPublic'),
+      );
+      const failure = {
+        version: 1,
+        workflowKey: 'WF-70',
+        operation: 'discovery',
+        stage: 'projection',
+        classification: 'contract',
+        code: 'METADATA',
+        httpStatus: 200,
+      };
+      const valid = {
+        version: 1,
+        environment: 'dev',
+        host: 'muhhammedsayed.app.n8n.cloud',
+        projectId: 'pHvQjDmjxVZ3KQLT',
+        workflowKey: 'WF-70',
+        status: 'discovery_failed',
+        transportAdapter: 'inventory_bounded_get_adapter',
+        requestCount: 1,
+        maximumRequests: 4,
+        authenticationVerified: true,
+        paginationComplete: false,
+        candidateCount: null,
+        adoptionProven: false,
+        drainProven: false,
+        readerFailure: failure,
+        networkCompletionVerified: true,
+        diagnostics: {
+          version: 1,
+          dns: 'complete',
+          requests: [
+            {
+              resource: 'executions',
+              page: 1,
+              tcpConnected: true,
+              tlsVerified: true,
+              httpStatus: 200,
+              bodyRead: 'complete',
+              jsonParsed: true,
+              schemaValidated: false,
+              socketClosed: true,
+              failureStage: 'schema',
+              failureCode: 'invalid_schema',
+            },
+          ],
+        },
+      };
+      const cases = [valid];
+      for (const update of [
+        { httpStatus: '200' },
+        { stage: 'SYNTHETIC_PRIVATE_STAGE' },
+        { classification: 'SYNTHETIC_PRIVATE_CLASS' },
+        { workflowKey: 'WF-00' },
+        { operation: 'metadata' },
+        { code: 'SYNTHETIC_PRIVATE_CODE' },
+        { message: 'SYNTHETIC_PRIVATE_MESSAGE' },
+      ])
+        cases.push({ ...valid, readerFailure: { ...failure, ...update } });
+      for (const update of [
+        { maximumRequests: 5 },
+        { requestCount: 5 },
+        { adoptionProven: true },
+        { drainProven: true },
+        { candidateCount: '0' },
+        { extra: 'SYNTHETIC_PRIVATE_FIELD' },
+      ])
+        cases.push({ ...valid, ...update });
+      const script = join(root, 'schema.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop'
+$fixedHost='muhhammedsayed.app.n8n.cloud';$projectId='pHvQjDmjxVZ3KQLT'
+${keys}
+${diagnostics}
+$cases=ConvertFrom-Json -InputObject '${JSON.stringify(cases).replaceAll("'", "''")}'
+$out=@();foreach($value in $cases){try{Validate-Wf70Discovery $value;$out+=$true}catch{$out+=$false}};$out|ConvertTo-Json -Compress
+`,
+      );
+      const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: osEnv(),
+        encoding: 'utf8',
+        timeout: 10000,
+        windowsHide: true,
+      });
+      assert.equal(r.status, 0);
+      assert.equal(r.stderr, '');
+      assert.deepEqual(JSON.parse(r.stdout), [true, ...Array(cases.length - 1).fill(false)]);
+      assert.doesNotMatch(r.stdout, /SYNTHETIC_PRIVATE/);
+    });
+    it('WF70 CheckOnly returns before any persistent metadata, budget journal or child', () => {
+      const f = fixture('wf70Success'),
+        r = f.run(true);
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, /WF70_CHECK_ONLY_READY/);
+      assert.equal(existsSync(f.handoff), false);
+      assert.equal(
+        existsSync(join(f.root, 'scripts/n8n/out/foundation/wf70-discovery-diagnostic-20261024.jsonl')),
+        false,
+      );
+      assert.equal(existsSync(join(f.root, 'scripts/n8n/called.txt')), false);
+      assert.equal(existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')), false);
+    });
+    for (const mode of ['wf70Success', 'wf70Http', 'wf70Unsafe'])
+      it(`WF70 same consumer ${mode} isolates persistent Management and preserves one-use public budget`, () => {
+        const f = fixture(mode);
+        mkdirSync(join(f.root, 'scripts/n8n/out/foundation'), { recursive: true });
+        const persistent = join(
+            f.root,
+            'private/Everyone-Market-Radar-Private/secrets/dev/runtime/management.dpapi',
+          ),
+          before = readFileSync(persistent);
+        const r = f.run();
+        assert.equal(r.status, mode === 'wf70Success' ? 0 : 1, r.stdout + r.stderr);
+        const receipt = JSON.parse(r.stdout);
+        assert.equal(receipt.childClosed, true);
+        assert.equal(receipt.handoffDeleted, true);
+        assert.deepEqual(readFileSync(persistent), before);
+        assert.equal(existsSync(f.handoff), false);
+        assert.equal(readFileSync(join(f.root, 'scripts/n8n/called.txt'), 'utf8'), 'only-n8n-key');
+        const header = JSON.parse(
+          readFileSync(
+            join(f.root, 'scripts/n8n/out/foundation/wf70-discovery-diagnostic-20261024.jsonl'),
+            'utf8',
+          ),
+        );
+        assert.equal(header.managementAttempts, 152);
+        assert.equal(header.controlAttempts, 382);
+        assert.equal(header.combinedAttempts, 534);
+        assert.equal(header.maximumRequests, 4);
+        assert.equal(receipt.inventory === null, mode === 'wf70Unsafe');
+        if (mode === 'wf70Http') assert.equal(receipt.inventory.readerFailure.httpStatus, 429);
+        assert.doesNotMatch(r.stdout + r.stderr, /SYNTHETIC_PRIVATE|synthetic-n8n-key|unrelated-/);
+        const repeated = f.run();
+        assert.equal(repeated.status, 1);
+        assert.match(repeated.stdout, /HANDOFF_PATH_BLOCKED/);
+      });
     it('baseline CheckOnly validates public sources without materializing persistent credentials or a coordinator lock', () => {
       const f = fixture('baselineSuccess'),
         r = f.run(true);

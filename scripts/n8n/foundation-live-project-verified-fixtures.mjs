@@ -12,7 +12,11 @@ export async function syntheticProjectVerifiedContinuation({
   cleanupFault,
   priorFault,
   projectFault,
-  nativeBrowserDiscovery = false,
+  wf70Readback = false,
+  wf70ReadbackFault,
+  baselineDiscovery = wf70Readback,
+  baselineDiscoveryFault,
+  nativeBrowserDiscovery = baselineDiscovery,
   nativeBrowserDiscoveryFault,
   nativeDiscovery = nativeBrowserDiscovery,
   nativeDiscoveryFault,
@@ -365,7 +369,9 @@ export async function syntheticProjectVerifiedContinuation({
     allocationConfiguration,
     readonlyPrepareConfiguration,
     nativeDiscoveryConfiguration,
-    nativeBrowserDiscoveryConfiguration;
+    nativeBrowserDiscoveryConfiguration,
+    baselineDiscoveryConfiguration,
+    wf70ReadbackConfiguration;
   if (closedWindow) {
     const base =
       'scripts/n8n/out/foundation/live/project-verified-continuation-' + snapshot.proposedSegmentId;
@@ -650,13 +656,19 @@ export async function syntheticProjectVerifiedContinuation({
     readonlyPrepareConfiguration = { relative, sha256: digest(text) };
   }
   if (nativeDiscovery)
-    for (const ordinal of nativeBrowserDiscovery ? [4, 5] : [4]) {
-      const relative = `milestones/M03-n8n-foundation/evidence/dev-acceptance-technical${ordinal}-reconciliation-20261023.json`;
+    for (const ordinal of baselineDiscovery ? [4, 5, 6] : nativeBrowserDiscovery ? [4, 5] : [4]) {
+      const relative = `milestones/M03-n8n-foundation/evidence/dev-acceptance-technical${ordinal}-reconciliation-${ordinal === 6 ? '20261024' : '20261023'}.json`;
       const receipt = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8'));
       const json = (value) => JSON.stringify(value) + '\n';
       const base =
         'scripts/n8n/out/foundation/live/project-verified-continuation-' + snapshot.proposedSegmentId;
-      const start = Date.parse(ordinal === 4 ? '2026-10-23T17:10:00.000Z' : '2026-10-23T17:20:00.000Z');
+      const start = Date.parse(
+        ordinal === 4
+          ? '2026-10-23T17:10:00.000Z'
+          : ordinal === 5
+            ? '2026-10-23T17:20:00.000Z'
+            : '2026-10-23T17:30:00.000Z',
+      );
       const admission = {
         kind: 'm03_project_verified_continuation_admission',
         version: 1,
@@ -668,7 +680,7 @@ export async function syntheticProjectVerifiedContinuation({
         deadlineAt: start + 3600000,
         stopNewAt: start + 3000000,
         hardDeadlineAt: start + 4200000,
-        parentProcessId: ordinal === 4 ? 91003 : 91005,
+        parentProcessId: 91003 + 2 * (ordinal - 4),
       };
       const admissionSha256 = digest(json(admission));
       const claim = {
@@ -676,7 +688,7 @@ export async function syntheticProjectVerifiedContinuation({
         version: 1,
         segmentId: snapshot.proposedSegmentId,
         admissionSha256,
-        processId: ordinal === 4 ? 91004 : 91006,
+        processId: 91004 + 2 * (ordinal - 4),
         parentProcessId: admission.parentProcessId,
         claimedAt: start + 1000,
       };
@@ -695,6 +707,8 @@ export async function syntheticProjectVerifiedContinuation({
         bypassHandoffDeleted: false,
         closureVerified: false,
       };
+      if (ordinal === 6 && baselineDiscoveryFault === 'unknown-completion')
+        closed.credentialChildrenClosed = false;
       for (const [key, suffix, value] of [
         ['admission', '.json', admission],
         ['runtimeClaim', '.runtime-claim.json', claim],
@@ -720,11 +734,57 @@ export async function syntheticProjectVerifiedContinuation({
         workflowId: 'MzimjpsuyPuK7SKe',
         at: new Date(start + 6000).toISOString(),
       };
-      const fault = ordinal === 4 ? nativeDiscoveryFault : nativeBrowserDiscoveryFault;
+      const fault =
+        ordinal === 4
+          ? nativeDiscoveryFault
+          : ordinal === 5
+            ? nativeBrowserDiscoveryFault
+            : baselineDiscoveryFault;
       if (fault === 'execution') discovery.kind = 'execution_start';
       if (fault === 'foreign') discovery.workflowId = 'SYNTHETIC_FOREIGN';
       put(controlPath, readFileSync(join(directory, controlPath), 'utf8') + json(discovery));
-      receipt.discoveryAttempt = discovery;
+      if (ordinal === 6) {
+        const managementPath = snapshot.journals.management.path;
+        const addedManagement = Array.from({ length: 25 }, (_, i) => ({
+          event: fault === 'unknown-row' && i === 0 ? 'SYNTHETIC_UNKNOWN_ROW' : 'management_attempt',
+          ordinal: 118 + i,
+        }));
+        put(
+          managementPath,
+          readFileSync(join(directory, managementPath), 'utf8') + addedManagement.map(json).join(''),
+        );
+        const verified = {
+          event: 'browser_port_preflight_verified',
+          kind: 'browser_ui',
+          workflowId: discovery.workflowId,
+          at: new Date(start + 6500).toISOString(),
+        };
+        const refs = JSON.parse(
+          readFileSync(join(sourceRoot, 'n8n/foundation/bindings.dev.json'), 'utf8'),
+        ).workflowRefs;
+        const extra = Object.values(refs)
+          .slice(0, 14)
+          .flatMap((ref, i) =>
+            [0, 1].map((j) => ({
+              event: 'control_request_intent',
+              ordinal: 354 + 2 * i + j,
+              kind: 'discovery',
+              workflowId: fault === 'foreign' && i === 13 ? 'SYNTHETIC_FOREIGN' : ref.id,
+              at: new Date(start + 7000 + (2 * i + j) * 100).toISOString(),
+            })),
+          );
+        put(
+          controlPath,
+          readFileSync(join(directory, controlPath), 'utf8') + json(verified) + extra.map(json).join(''),
+        );
+        receipt.executionDiscovery = {
+          ...receipt.executionDiscovery,
+          browserIntent: discovery,
+          browserVerified: verified,
+          lastIntent: extra.at(-1),
+        };
+        if (fault === 'baseline-count') receipt.actualFailure.baselineSourceGets = 24;
+      } else receipt.discoveryAttempt = discovery;
       for (const name of ['management', 'control', 'setup', 'preflight', 'runtime']) {
         const value = receipt.actualPublicJournals[name],
           text = readFileSync(join(directory, value.path), 'utf8');
@@ -740,8 +800,60 @@ export async function syntheticProjectVerifiedContinuation({
       const text = json(receipt);
       put(relative, text);
       if (ordinal === 4) nativeDiscoveryConfiguration = { relative, sha256: digest(text) };
-      else nativeBrowserDiscoveryConfiguration = { relative, sha256: digest(text) };
+      else if (ordinal === 5) nativeBrowserDiscoveryConfiguration = { relative, sha256: digest(text) };
+      else baselineDiscoveryConfiguration = { relative, sha256: digest(text) };
     }
+  if (wf70Readback || baselineDiscovery) {
+    const relative = 'milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json';
+    const journalRelative = 'scripts/n8n/out/foundation/wf70-discovery-diagnostic-20261024.jsonl';
+    const receipt = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8'));
+    receipt.originalFailure.receiptSha256 = baselineDiscoveryConfiguration.sha256;
+    receipt.recordedAt = '2026-10-23T17:40:10.000Z';
+    const rows = [
+      {
+        kind: 'm03_wf70_discovery_budget',
+        version: 1,
+        receiptSha256: baselineDiscoveryConfiguration.sha256,
+        managementAttempts: 152,
+        controlAttempts: 382,
+        combinedAttempts: 534,
+        maximumRequests: 4,
+        parentProcessId: 91009,
+      },
+      { event: 'diagnostic_child_claim', processId: 91010 },
+      ...[1, 2].map((i) => ({
+        event: 'control_request_intent',
+        ordinal: 382 + i,
+        diagnosticOrdinal: i,
+        kind: 'discovery',
+        workflowKey: 'WF-70',
+        at: new Date(Date.parse('2026-10-23T17:40:00.000Z') + i * 100).toISOString(),
+      })),
+    ];
+    if (wf70ReadbackFault === 'ordinal') rows[3].ordinal = 383;
+    if (wf70ReadbackFault === 'unknown-row') rows[3].kind = 'start';
+    if (wf70ReadbackFault === 'suffix') rows.push({ ...rows[3], ordinal: 385, diagnosticOrdinal: 3 });
+    if (wf70ReadbackFault === 'usage') receipt.usage.control = 383;
+    if (wf70ReadbackFault === 'write') receipt.interpretation.newWorkflowExecutionOrRemoteWrite = true;
+    if (wf70ReadbackFault === 'cleanup')
+      receipt.independentCleanupReadback.temporaryManagementCopyAbsent = false;
+    if (wf70ReadbackFault === 'unknown-completion') receipt.actualNativeResult.childClosed = false;
+    if (wf70ReadbackFault === 'http') receipt.actualNativeResult.requests[1].httpStatus = 503;
+    if (wf70ReadbackFault === 'scope') receipt.actualNativeResult.workflowKey = 'WF-00';
+    const journalText = rows.map((v) => JSON.stringify(v) + '\n').join('');
+    put(journalRelative, journalText);
+    receipt.durableUsageJournal.sha256 = digest(journalText);
+    receipt.durableUsageJournal.parentProcessId = 91009;
+    receipt.durableUsageJournal.childProcessId = 91010;
+    const text = JSON.stringify(receipt) + '\n';
+    put(relative, text);
+    wf70ReadbackConfiguration = {
+      relative,
+      sha256: digest(text),
+      journalRelative,
+      journalSha256: digest(journalText),
+    };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -794,6 +906,18 @@ export async function syntheticProjectVerifiedContinuation({
       'const nativeBrowserDiscoveryRecovery = Object.freeze(' +
         JSON.stringify(nativeBrowserDiscoveryConfiguration) +
         ');',
+    );
+  if (baselineDiscoveryConfiguration)
+    source = source.replace(
+      /const baselineDiscoveryRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      'const baselineDiscoveryRecovery = Object.freeze(' +
+        JSON.stringify(baselineDiscoveryConfiguration) +
+        ');',
+    );
+  if (wf70ReadbackConfiguration)
+    source = source.replace(
+      /const wf70DiagnosticRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      'const wf70DiagnosticRecovery = Object.freeze(' + JSON.stringify(wf70ReadbackConfiguration) + ');',
     );
   // Explicitly retain the exhausted old50 branch as a synthetic regression.
   source = source.replace(/setupMaximum: (?:50|88),/, `setupMaximum: ${proposedBudgetApproved ? 88 : 50},`);

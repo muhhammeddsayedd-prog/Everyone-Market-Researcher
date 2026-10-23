@@ -231,7 +231,7 @@ export function createFoundationControlBudget({
     prior.some((r, i) => r.ordinal !== i + 1) ||
     (continuation &&
       (prior.length !== (verified ? verifiedInitialControl : startup ? 150 : 100) ||
-        journal.rows.length !== (verified ? verifiedInitialControl : startup ? 150 : 100) ||
+        (!verified && journal.rows.length !== (startup ? 150 : 100)) ||
         prior.some((r) => r.kind !== 'discovery' || Object.hasOwn(r, 'executionId'))))
   )
     fail();

@@ -201,6 +201,7 @@ test('registered-window Admin option needs the genuine claimed fresh proof and p
       { forwardWindow: true },
       { projectVerifiedContinuationProof: proof, forwardWindow: false },
       { projectVerifiedContinuationProof: { ...proof }, forwardWindow: true },
+      { projectVerifiedContinuationProof: { ...proof, carriedControlAttempts: 3 }, forwardWindow: true },
       { projectVerifiedContinuationProof: proof, forwardWindow: 'true' },
     ]) {
       let spawned = false;

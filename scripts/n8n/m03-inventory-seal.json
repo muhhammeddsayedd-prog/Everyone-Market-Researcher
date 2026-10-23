@@ -4,12 +4,12 @@
   "projectId": "pHvQjDmjxVZ3KQLT",
   "files": {
     "scripts/n8n/windows/New-M03N8nApiHandoff.ps1": "c8c9d34855ef55c5391f5b14c80a7768b51761a149982f4917b910c391c788e2",
-    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "f5c29391d9c86b9ca83862df52b1d0ffe1ef68ac6354f452c2656e9915936fdc",
-    "scripts/n8n/inventory.mjs": "f1bf61adb4b9f4648ad0dbe263aa05e21a117993705e01781e8c5a69c627e47e"
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "90a1f01e2c4f2480eb36c9789b2772e313dc0460940006d706321ea53d22f899",
+    "scripts/n8n/inventory.mjs": "f7cf66ae8c447d002e37b413f35c38c12bcbd68b954d439f2d6ce97ec03eaaf3"
   },
   "baselineFiles": {
-    "scripts/n8n/foundation-runtime-checkpoint.mjs": "2f16e916df1185f4098c2e563719bba6944dd1c97bd71d80c93c035b020a1c76",
-    "n8n/workflows/WF-00.json": "905e40aa96bea9291961f8e73297a8668b76ead397c834dbc7dc796e14ecfea9",
+    "scripts/n8n/foundation-runtime-checkpoint.mjs": "c41ff516535c7c87a710a88667ec690ad2e051e6f49790c47da52f1ad942c4c2",
+    "n8n/workflows/WF-00.json": "db764d55ae2b8b7ed2b6ac2c2fa605e4bc1e968acab2b5183092eb90db9209f0",
     "scripts/n8n/windows/Dev-CredentialStore.ps1": "49c16b64f9b57c4e27cf6ad92dc16cd05c6cf29a7ada7f9c7fa6e8f64ca5fc13"
   }
 }

@@ -133,6 +133,88 @@ export function nativeReaderFixture(options = {}) {
 }
 const fixed = /^Error: FOUNDATION_NATIVE_[A-Z_]+$/;
 
+test('native discovery keeps a fixed safe last failure with actual HTTP status and owned workflow only', async () => {
+  const f = nativeReaderFixture(),
+    key = 'WF-70',
+    id = f.bindings.workflowRefs[key].id;
+  const path = '/api/v1/executions?workflowId=' + id + '&includeData=false&limit=120';
+  f.answers.set(path, () => f.wire({ data: [], nextCursor: null }));
+  f.answers.set(path + '&status=running', () =>
+    f.wire({
+      data: [
+        {
+          id: '501',
+          workflowId: id,
+          mode: 'SYNTHETIC_PRIVATE_MODE',
+          status: 'running',
+          startedAt: null,
+          stoppedAt: null,
+          waitTill: null,
+        },
+      ],
+      nextCursor: null,
+    }),
+  );
+  assert.equal(f.reader.lastFailure(), null);
+  await assert.rejects(f.reader.discover({ workflowKey: key, baselineIds: [] }), fixed);
+  const diagnostic = f.reader.lastFailure();
+  assert.deepEqual(diagnostic, {
+    version: 1,
+    workflowKey: key,
+    operation: 'discovery',
+    stage: 'projection',
+    classification: 'contract',
+    code: 'METADATA',
+    httpStatus: 200,
+  });
+  assert.equal(Object.isFrozen(diagnostic), true);
+  assert.doesNotMatch(JSON.stringify(diagnostic), /SYNTHETIC|501|https|message|body|cursor/);
+  f.answers.set(path + '&status=running', () => f.wire({ data: [], nextCursor: null }));
+  await f.reader.discover({ workflowKey: key, baselineIds: [] });
+  assert.deepEqual(f.reader.lastFailure(), diagnostic);
+});
+
+test('native reader diagnostics distinguish obtained HTTP rejection from unknown transport failure without reading raw errors', async () => {
+  const f = nativeReaderFixture(),
+    key = 'WF-70',
+    id = f.bindings.workflowRefs[key].id;
+  const path = '/api/v1/executions?workflowId=' + id + '&includeData=false&limit=120';
+  f.answers.set(path, () => f.wire({ message: 'SYNTHETIC_PRIVATE_BODY' }, { status: 429 }));
+  await assert.rejects(f.reader.discover({ workflowKey: key, baselineIds: [] }), fixed);
+  assert.deepEqual(f.reader.lastFailure(), {
+    version: 1,
+    workflowKey: key,
+    operation: 'discovery',
+    stage: 'http_status',
+    classification: 'http',
+    code: 'DISCOVERY',
+    httpStatus: 429,
+  });
+  let privateReads = 0;
+  const raw = Object.create(null);
+  for (const field of ['message', 'code', 'body'])
+    Object.defineProperty(raw, field, {
+      get() {
+        privateReads++;
+        throw Error('SYNTHETIC_PRIVATE_ERROR');
+      },
+    });
+  f.answers.set(path, () => {
+    throw raw;
+  });
+  await assert.rejects(f.reader.discover({ workflowKey: key, baselineIds: [] }), fixed);
+  assert.deepEqual(f.reader.lastFailure(), {
+    version: 1,
+    workflowKey: key,
+    operation: 'discovery',
+    stage: 'request',
+    classification: 'unknown',
+    code: 'REJECTED',
+    httpStatus: null,
+  });
+  assert.equal(privateReads, 0);
+});
+
 test('metadata is one request; full read reuses fresh branded metadata and emits only safe fields', async () => {
   const f = nativeReaderFixture();
   assert.equal(assertFoundationNativeReader(f.reader), f.reader);

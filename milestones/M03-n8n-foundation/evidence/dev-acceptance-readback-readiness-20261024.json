@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "clientDate": "2026-10-24",
+  "status": "blocked_on_management_allocation",
+  "branch": "m03-n8n-foundation",
+  "pullRequest": 8,
+  "changesetParent": "3d5ef1d8b67404ce8c82f777c04131599e26de3e",
+  "completedThisContinuation": {
+    "vercelNativeSession": {
+      "ownerReportedRenewal": true,
+      "actualMetadataReceipt": "a35300",
+      "covers75Minutes": true,
+      "networkRequests": 0,
+      "freshProjectAccessClaimed": false
+    },
+    "technical6Reconciliation": {
+      "path": "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical6-reconciliation-20261024.json",
+      "sha256": "258a6c7d15c59323f4e95c5315d42d839f735ea40d70834b8aa171ff00b9ca66",
+      "originalReaderFailureCause": "unknown",
+      "historicalFalseClosureFlagsPreserved": true,
+      "separatePhysicalCleanupReceipt": "864135",
+      "workflowStarts": 0,
+      "actorStarts": 0,
+      "administratorChildStarted": false,
+      "previewSetupStarted": false
+    },
+    "wf70Readback": {
+      "path": "milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json",
+      "sha256": "4b76cc98a34ad10ff16f200d34cd89c6527076a849b168e0bfcd48690392ac0c",
+      "actualCompletionReceipt": "9ec0d1",
+      "nativeExitCode": 0,
+      "getRequests": 2,
+      "httpStatuses": [200, 200],
+      "candidateCount": 0,
+      "authenticationVerified": true,
+      "strictTlsVerified": true,
+      "disposableCredentialRemoved": true,
+      "credentialChildrenClosed": true,
+      "establishesHistoricalFailureCause": false,
+      "establishesDrainOrFullAcceptance": false
+    },
+    "persistentCredentials": {
+      "actualStatusReceipt": "fc5ccf",
+      "missingEntries": [],
+      "encryptedOriginalsRetained": true,
+      "administratorAndRuntimeStoresSeparate": true,
+      "statusIsAuthenticationProof": false,
+      "ownerCredentialDeliveryNeeded": false
+    }
+  },
+  "currentCumulativeUsage": {
+    "management": 152,
+    "control": 384,
+    "combined": 536,
+    "vercel": 44,
+    "actors": 0
+  },
+  "unchangedCeilings": {
+    "management": 512,
+    "control": 2048,
+    "combined": 2560,
+    "vercel": 88,
+    "actors": 2,
+    "actorUsdEach": 1,
+    "actorUsdReserveTotal": 2
+  },
+  "implementedRepairs": [
+    "Allowlisted Reader failure classification survives public output without raw errors or payloads.",
+    "Existing inventory consumer supports one fixed, GET-only WF70 metadata diagnostic with durable request intents.",
+    "Known technical6 recovery requires the exact reconciliation, raw journal prefixes and both diagnostic artifacts; missing both cannot reset usage.",
+    "Branded control constructors distinguish the preserved browser verification row from charged request intents.",
+    "The Admin client derives external control carry from the genuine claimed checkpoint instead of a stale literal."
+  ],
+  "localValidation": [
+    {
+      "scope": "final guard and Admin client",
+      "passed": 56,
+      "skipped": 0,
+      "completionReceipt": "7d44db"
+    },
+    {
+      "scope": "Reader and existing inventory consumers",
+      "passed": 117,
+      "completionReceipt": "b22f31",
+      "additionalPublicGatePassed": 1,
+      "additionalPublicGateReceipt": "10ec4c"
+    },
+    {
+      "scope": "affected control and runtime constructors",
+      "passed": 43,
+      "completionReceipt": "e34807",
+      "legacyChecksPassedSeparately": 19,
+      "legacyCompletionReceipt": "6b8ae2"
+    },
+    {
+      "scope": "native Windows public wrapper",
+      "passed": 12,
+      "completionReceipt": "ca9af6"
+    }
+  ],
+  "validationCountNote": "Suites overlap; counts are separate and must not be added into one acceptance total.",
+  "finalStaticChecks": {
+    "targetedPrettierReceipt": "27ec8b",
+    "targetedEslintReceipt": "d27c41",
+    "nativePowerShellParserReceipt": "25066d",
+    "powerShellParseErrors": 0,
+    "publicPinReadbackReceipt": "b5ae18",
+    "publicPinMismatches": 0
+  },
+  "independentReview": {
+    "guardSourceSha256": "8f966f9652810b05dd7fcb95887fcc4cc195f6e7e02436b257dfb56e09bee8f9",
+    "readerAndInventory": "clear_no_p1_or_p2",
+    "finalGuardAdminAndConstructors": "clear_no_p1_or_p2",
+    "finalMissingBothRegressionReceipt": "3de05d",
+    "finalAdminCarryRegressionReceipt": "692efb"
+  },
+  "publicPins": {
+    "refreshReceipt": "75922c",
+    "databasePacketPinCounts": [45, 47],
+    "databasePacketSha256": "aa4f1bc2c9aa347390cbb18193e83f7d5aa6dd5a4d6826f13c9a96fcda732b55",
+    "forwardPacketSha256": "f21de659a25c3bdffebd796d7b8b56fe7d9ab0d85c05ed57afc414db4ab9c3cc",
+    "authorityHistoryLimitsAndRuntimeBinariesChanged": false
+  },
+  "actualCurrentGuardCheck": {
+    "receipt": "bfbd74",
+    "nativeExitCode": 0,
+    "status": "management_cap_insufficient",
+    "privateRead": false,
+    "networkRequests": 0,
+    "admissionCreated": false,
+    "remainingPlanMaximum": 376,
+    "planCumulativeMaximum": 528,
+    "approvedManagementMaximum": 512
+  },
+  "remainingGate": {
+    "packet": "milestones/M03-n8n-foundation/evidence/remaining-management-allocation-20261024.md",
+    "proposedManagementMaximum": 576,
+    "approved": false,
+    "implemented": false,
+    "used": false,
+    "requiredAfterActualApproval": [
+      "Update the existing budget consumer without resetting any counter.",
+      "Verify genuine positive mixed-row constructor and Admin integration under the real approved allocation.",
+      "Refresh affected public pins and the existing acceptance seal; run public preflight and affected checks.",
+      "Pass normal PR CI, then continue incomplete dev acceptance under standing milestone authority."
+    ],
+    "newTimeApprovalNeeded": false,
+    "newCredentialHandoffNeeded": false
+  },
+  "acceptanceBoundaries": {
+    "fullDevAcceptanceComplete": false,
+    "currentFullAcceptanceSealClaimed": false,
+    "genuinePositiveTechnical6ConstructorIntegrationClaimed": false,
+    "productionChanged": false,
+    "migrationsReplayed": false,
+    "recurringSchedulesActivated": false,
+    "externalNotificationsSent": false,
+    "mergeApproved": false,
+    "m04Started": false
+  },
+  "blockedExistingRecordMutation": {
+    "automaticApprovalReviewReason": "blocked by policy",
+    "paths": [
+      "PROGRESS.md",
+      "milestones/M03-n8n-foundation/PROGRESS.md",
+      "milestones/M03-n8n-foundation/evidence/dev-acceptance-ci-recovery-20261023.json"
+    ],
+    "retried": false,
+    "existingPendingEditsPreservedAndExcludedFromCommit": true,
+    "thisRecordDoesNotClaimThoseBoardsWereUpdated": true
+  }
+}

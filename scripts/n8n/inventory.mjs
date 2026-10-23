@@ -1,15 +1,109 @@
 import { lookup as osLookup } from 'node:dns';
 import { request } from 'node:https';
 import { isIP } from 'node:net';
-import { resolve } from 'node:path';
+import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
+import {
+  readFileSync,
+  openSync,
+  fstatSync,
+  lstatSync,
+  writeSync,
+  fsyncSync,
+  closeSync,
+  constants,
+} from 'node:fs';
 import { createHash } from 'node:crypto';
 
 const host = 'muhhammedsayed.app.n8n.cloud';
 const projectId = 'pHvQjDmjxVZ3KQLT';
 const maxBytes = 4 * 1024 * 1024;
 export const inventoryDiagnosticVersion = 1;
+export const wf70DiscoveryReceiptSha256 = '258a6c7d15c59323f4e95c5315d42d839f735ea40d70834b8aa171ff00b9ca66';
+export function openWf70DiscoveryBudget(repositoryRoot = fileURLToPath(new URL('../../', import.meta.url))) {
+  const path = join(repositoryRoot, 'scripts/n8n/out/foundation/wf70-discovery-diagnostic-20261024.jsonl');
+  let cursor = path;
+  while (true) {
+    if (lstatSync(cursor).isSymbolicLink()) throw Error('WF70_DIAGNOSTIC_BUDGET_BLOCKED');
+    const parent = dirname(cursor);
+    if (parent === cursor) break;
+    cursor = parent;
+  }
+  const fd = openSync(path, constants.O_RDWR | constants.O_APPEND | (constants.O_NOFOLLOW ?? 0));
+  let requests = 0,
+    closed = false;
+  const append = (value) => {
+    const text = JSON.stringify(value) + '\n';
+    if (writeSync(fd, text, null, 'utf8') !== Buffer.byteLength(text))
+      throw Error('WF70_DIAGNOSTIC_BUDGET_BLOCKED');
+    fsyncSync(fd);
+  };
+  try {
+    const stat = fstatSync(fd);
+    if (!stat.isFile() || stat.nlink !== 1 || stat.size > 4096) throw Error('WF70_DIAGNOSTIC_BUDGET_BLOCKED');
+    const text = readFileSync(fd, 'utf8'),
+      rows = text.trimEnd().split('\n');
+    if (rows.length !== 1) throw Error('WF70_DIAGNOSTIC_BUDGET_BLOCKED');
+    const header = JSON.parse(rows[0]);
+    const keys = [
+      'kind',
+      'version',
+      'receiptSha256',
+      'managementAttempts',
+      'controlAttempts',
+      'combinedAttempts',
+      'maximumRequests',
+      'parentProcessId',
+    ];
+    if (
+      !record(header) ||
+      Object.keys(header).length !== keys.length ||
+      keys.some((k) => !Object.hasOwn(header, k)) ||
+      header.kind !== 'm03_wf70_discovery_budget' ||
+      header.version !== 1 ||
+      header.receiptSha256 !== wf70DiscoveryReceiptSha256 ||
+      header.managementAttempts !== 152 ||
+      header.controlAttempts !== 382 ||
+      header.combinedAttempts !== 534 ||
+      header.maximumRequests !== 4 ||
+      header.parentProcessId !== process.ppid ||
+      header.controlAttempts + 4 > 2048 ||
+      header.combinedAttempts + 4 > 2560
+    )
+      throw Error('WF70_DIAGNOSTIC_BUDGET_BLOCKED');
+    append({ event: 'diagnostic_child_claim', processId: process.pid });
+  } catch {
+    closeSync(fd);
+    throw Error('WF70_DIAGNOSTIC_BUDGET_BLOCKED');
+  }
+  return Object.freeze({
+    admit(value) {
+      if (
+        closed ||
+        value?.kind !== 'discovery' ||
+        value.workflowId !== 'S6KDFsx5IjQRf6tm' ||
+        Object.keys(value).length !== 2 ||
+        requests >= 4
+      )
+        throw Error('WF70_DIAGNOSTIC_BUDGET_BLOCKED');
+      requests++;
+      append({
+        event: 'control_request_intent',
+        ordinal: 382 + requests,
+        diagnosticOrdinal: requests,
+        kind: 'discovery',
+        workflowKey: 'WF-70',
+        at: new Date().toISOString(),
+      });
+    },
+    close() {
+      if (!closed) {
+        closed = true;
+        closeSync(fd);
+      }
+    },
+  });
+}
 function requestDiagnostic(resource, page) {
   return {
     resource,
@@ -1014,15 +1108,248 @@ export async function runWorkflowBaselineDiagnostic(key, dependencies = {}) {
   return result;
 }
 
+// Fixed metadata-only diagnostic: the bounded inventory GET transport supplies
+// bytes and actual socket closure to the SAME strict native discovery reader.
+// This explicitly is an adapter, not identical native-wire transport evidence.
+export async function runWf70DiscoveryDiagnostic(key, dependencies = {}) {
+  const result = {
+    version: 1,
+    environment: 'dev',
+    host,
+    projectId,
+    workflowKey: 'WF-70',
+    status: 'discovery_failed',
+    transportAdapter: 'inventory_bounded_get_adapter',
+    requestCount: 0,
+    maximumRequests: 4,
+    authenticationVerified: false,
+    paginationComplete: false,
+    candidateCount: null,
+    adoptionProven: false,
+    drainProven: false,
+    readerFailure: null,
+    networkCompletionVerified: false,
+    diagnostics: { version: 1, dns: 'not_attempted', requests: [] },
+  };
+  if (!key) {
+    result.status = 'missing_key';
+    return result;
+  }
+  if (typeof key !== 'string' || key.length < 8 || key.length > 4096 || !/^[\x21-\x7e]+$/.test(key)) {
+    result.status = 'invalid_key';
+    return result;
+  }
+  const timeoutMs = dependencies.timeoutMs ?? 60000;
+  if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 60000) {
+    result.status = 'invalid_options';
+    return result;
+  }
+  let reader, ownedBudget;
+  const controller = new AbortController(),
+    sockets = [],
+    requests = new Set(),
+    deadlineAt = Date.now() + timeoutMs;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const { createFoundationNativeReader } = await import('./foundation-native-reader.mjs');
+    const bindings = JSON.parse(
+      readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url), 'utf8'),
+    );
+    const admit = dependencies.admitControlAttempt ?? (ownedBudget = openWf70DiscoveryBudget()).admit;
+    result.diagnostics.dns = 'resolving';
+    const addresses = validatedAddresses(
+      await Promise.race([
+        (dependencies.lookup ?? resolveInstance)(controller.signal),
+        new Promise((_, reject) =>
+          controller.signal.addEventListener('abort', () => reject(new InventoryError('timeout')), {
+            once: true,
+          }),
+        ),
+      ]),
+    );
+    if (controller.signal.aborted) throw new InventoryError('timeout');
+    result.diagnostics.dns = 'complete';
+    reader = createFoundationNativeReader({
+      bindings,
+      deadlineAt,
+      sensitiveValues: [key],
+      admitControlAttempt(value) {
+        if (controller.signal.aborted || Date.now() >= deadlineAt || result.requestCount >= 4)
+          throw Error('WF70_DIAGNOSTIC_BUDGET_BLOCKED');
+        result.requestCount++;
+        const written = admit(value);
+        if (written !== undefined) {
+          if (written?.then) Promise.resolve(written).catch(() => {});
+          throw Error('WF70_DIAGNOSTIC_BUDGET_BLOCKED');
+        }
+      },
+      transport: {
+        async request({ method, path, signal }) {
+          if (
+            method !== 'GET' ||
+            !/^\/api\/v1\/executions\?workflowId=S6KDFsx5IjQRf6tm&includeData=false&limit=120(?:&status=running)?(?:&cursor=[^\s#]+)?$/.test(
+              path,
+            )
+          )
+            throw Error('WF70_DIAGNOSTIC_ROUTE_BLOCKED');
+          const diagnostic = requestDiagnostic('executions', path.includes('&cursor=') ? 2 : 1);
+          result.diagnostics.requests.push(diagnostic);
+          let done;
+          const closure = {
+            closed: false,
+            promise: new Promise((resolveClosed) => {
+              done = resolveClosed;
+            }),
+          };
+          sockets.push(closure);
+          const input = {
+            url: new URL('https://' + host + path),
+            method: 'GET',
+            headers: {
+              'x-n8n-api-key': key,
+              accept: 'application/json',
+              'user-agent': 'everyone-market-radar-m03-wf70-read-only/1',
+            },
+            address: addresses[0],
+            signal: AbortSignal.any([signal, controller.signal]),
+            maxBytes,
+            rejectUnauthorized: true,
+            servername: host,
+            diagnostic,
+            onSocketClosed() {
+              diagnostic.socketClosed = true;
+              closure.closed = true;
+              done();
+            },
+          };
+          const response = await (
+            dependencies.transport ??
+            ((input) =>
+              nativeRequest(input, (...args) => {
+                const req = (dependencies.request ?? request)(...args);
+                requests.add(req);
+                return req;
+              }))
+          )(input);
+          if (
+            !record(response) ||
+            !Number.isInteger(response.status) ||
+            response.status < 100 ||
+            response.status > 599 ||
+            !(response.body instanceof Uint8Array) ||
+            response.body.byteLength > maxBytes
+          )
+            throw Error('WF70_DIAGNOSTIC_RESPONSE_BLOCKED');
+          diagnostic.httpStatus = response.status;
+          diagnostic.bodyRead = 'complete';
+          if (response.status === 200) result.authenticationVerified = true;
+          const bytes = response.body;
+          return {
+            status: response.status,
+            headers: {},
+            body: (async function* () {
+              yield bytes;
+            })(),
+            closed: closure.promise,
+            abort() {
+              for (const req of requests) {
+                try {
+                  req.destroy();
+                } catch {}
+              }
+            },
+          };
+        },
+      },
+    });
+    const candidates = await reader.discover({ workflowKey: 'WF-70', baselineIds: [] });
+    result.paginationComplete = candidates.paginationComplete === true;
+    result.candidateCount = candidates.candidates.length;
+    result.status = 'discovery_complete';
+    for (const diagnostic of result.diagnostics.requests) {
+      diagnostic.jsonParsed = true;
+      diagnostic.schemaValidated = true;
+    }
+  } catch {
+    result.readerFailure = reader?.lastFailure() ?? null;
+    if (result.diagnostics.dns === 'resolving')
+      result.diagnostics.dns = controller.signal.aborted ? 'timeout' : 'failed';
+    const diagnostic = result.diagnostics.requests.at(-1);
+    if (diagnostic && diagnostic.failureStage === 'none') {
+      const failure = result.readerFailure;
+      if (failure?.httpStatus !== null && failure?.httpStatus !== undefined)
+        diagnostic.httpStatus = failure.httpStatus;
+      if (['projection', 'http_status'].includes(failure?.stage)) {
+        diagnostic.jsonParsed = true;
+        diagnosticFailure(
+          diagnostic,
+          failure.stage === 'http_status' ? 'status' : 'schema',
+          failure.stage === 'http_status' ? 'http_failed' : 'invalid_schema',
+        );
+      } else
+        diagnosticFailure(
+          diagnostic,
+          failure?.stage === 'parse' ? 'parse' : 'unknown',
+          failure?.stage === 'parse'
+            ? 'invalid_json'
+            : controller.signal.aborted
+              ? 'timeout'
+              : 'network_failed',
+        );
+    }
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
+    for (const req of requests) {
+      try {
+        req.destroy();
+      } catch {}
+    }
+    let closeTimer;
+    await Promise.race([
+      Promise.allSettled(sockets.map((s) => s.promise)),
+      new Promise((done) => {
+        closeTimer = setTimeout(done, 1000);
+      }),
+    ]);
+    clearTimeout(closeTimer);
+    result.networkCompletionVerified =
+      sockets.every((s) => s.closed) &&
+      (reader?.state().pendingRequests ?? 0) === 0 &&
+      (reader?.state().unclosedResponses ?? 0) === 0;
+    if (!result.networkCompletionVerified) result.status = 'discovery_failed';
+    ownedBudget?.close();
+    key = null;
+  }
+  return result;
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const key = process.env.M03_N8N_API_KEY;
   delete process.env.M03_N8N_API_KEY;
   if (!(
     process.argv.length === 2 ||
-    (process.argv.length === 3 && process.argv[2] === '--workflow-baseline-diagnostic')
+    (process.argv.length === 3 &&
+      ['--workflow-baseline-diagnostic', '--wf70-discovery-diagnostic'].includes(process.argv[2]))
   )) {
     process.stdout.write(JSON.stringify({ version: 1, status: 'argument_rejected' }) + '\n');
     process.exitCode = 1;
+  } else if (process.argv[2] === '--wf70-discovery-diagnostic') {
+    // The reader's runtime-control dependency imports resolveInstance above.
+    // Schedule only this new mode after module evaluation, avoiding a circular
+    // top-level-await wait without changing the existing inventory entry paths.
+    setImmediate(() =>
+      runWf70DiscoveryDiagnostic(key).then(
+        (result) => {
+          process.stdout.write(JSON.stringify(result) + '\n');
+          process.exitCode = result.status === 'discovery_complete' ? 0 : 1;
+        },
+        () => {
+          process.stdout.write(JSON.stringify({ version: 1, status: 'diagnostic_failed' }) + '\n');
+          process.exitCode = 1;
+        },
+      ),
+    );
   } else {
     const result =
       process.argv.length === 3 ? await runWorkflowBaselineDiagnostic(key) : await runInventory(key);

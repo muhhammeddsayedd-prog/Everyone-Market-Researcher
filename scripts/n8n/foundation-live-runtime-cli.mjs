@@ -29,7 +29,11 @@ import {
   readFoundationAdminStartupFailure,
 } from '../db/foundation-admin-client.mjs';
 import { createFoundationNativeTransport } from './foundation-native-transport.mjs';
-import { createFoundationNativeReader, assertFoundationNativeReceipt } from './foundation-native-reader.mjs';
+import {
+  createFoundationNativeReader,
+  assertFoundationNativeReceipt,
+  foundationNativeFailureCodes,
+} from './foundation-native-reader.mjs';
 import {
   createFoundationSettlementReader,
   foundationSettlementQuery,
@@ -76,6 +80,7 @@ import {
   readFoundationProjectVerifiedContinuation,
   claimFoundationProjectVerifiedContinuation,
   assertFoundationLiveProjectVerifiedContinuationProof,
+  assertFoundationProjectVerifiedContinuationControlResume,
   foundationProjectVerifiedContinuationResumeCheckpoint,
 } from './foundation-live-project-verified-continuation.mjs';
 
@@ -146,6 +151,43 @@ export async function verifyFoundationLiveNativeMetadata({ port, workflow, admit
     executionsStarted: 0,
   });
 }
+export function projectFoundationNativeFailureDiagnostic(reader) {
+  try {
+    const d = reader?.lastFailure?.();
+    if (
+      !exact(d, ['version', 'workflowKey', 'operation', 'stage', 'classification', 'code', 'httpStatus']) ||
+      d.version !== 1 ||
+      (d.workflowKey !== null && !Object.hasOwn(foundationRuntimeCheckpoint.workflows, d.workflowKey)) ||
+      !['unknown', 'discovery', 'metadata', 'workflow'].includes(d.operation) ||
+      ![
+        'unknown',
+        'admission',
+        'request',
+        'framing',
+        'body',
+        'parse',
+        'projection',
+        'close',
+        'http_status',
+      ].includes(d.stage) ||
+      !['unknown', 'contract', 'http', 'timeout', 'closure', 'confidentiality', 'parse', 'framing'].includes(
+        d.classification,
+      ) ||
+      !foundationNativeFailureCodes.includes(d.code) ||
+      (d.httpStatus !== null && (!Number.isInteger(d.httpStatus) || d.httpStatus < 100 || d.httpStatus > 599))
+    )
+      return {};
+    return {
+      code: 'FOUNDATION_NATIVE_' + d.code,
+      nativeReaderWorkflowKey: d.workflowKey,
+      nativeReaderStage: d.stage,
+      nativeReaderHttpStatus: d.httpStatus,
+    };
+  } catch {
+    return {};
+  }
+}
+
 export function projectFoundationBaselineDiagnostic(runtime) {
   try {
     const value = runtime?.diagnostics?.();
@@ -545,10 +587,21 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     budget.close();
     fail();
   }
+  if (verified) {
+    try {
+      assertFoundationProjectVerifiedContinuationControlResume(verified, {
+        deadlineAt,
+        previousEvents: nativeStorage.previousEvents,
+      });
+    } catch {
+      budget.close();
+      fail();
+    }
+  }
   if (
     continuation &&
-    (nativeStorage.previousEvents.length !==
-      (verified ? verifiedCheckpoint.mainControlAttempts : startup ? 150 : remaining ? 100 : 50) ||
+    !verified &&
+    (nativeStorage.previousEvents.length !== (startup ? 150 : remaining ? 100 : 50) ||
       nativeStorage.previousEvents.some(
         (row, index) =>
           row.event !== 'control_request_intent' || row.kind !== 'discovery' || row.ordinal !== index + 1,
@@ -675,6 +728,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         }
       : {}),
     ...projectFoundationBaselineDiagnostic(runtime ?? baselinePreflight),
+    ...projectFoundationNativeFailureDiagnostic(reader),
     ...extra,
   });
   const bindingFor = (key) =>

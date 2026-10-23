@@ -33,7 +33,7 @@
                   "scripts/n8n/foundation-provision.mjs":  "a08efc3ccbfe83786441a46288a99d3967f2fcea7008ee655fea0537499ded04",
                   "scripts/n8n/foundation-provision-cli.mjs":  "56ee29c49a01a26d12f12beaa97c1eedd7f120bc4b0c3546230d70b64f709cd2",
                   "scripts/n8n/foundation-runtime-checkpoint.mjs":  "c41ff516535c7c87a710a88667ec690ad2e051e6f49790c47da52f1ad942c4c2",
-                  "scripts/n8n/inventory.mjs":  "f36cfd6f5b16e502ff817bfbf0532ad6cee80ada3002cdd259af8f8ea4c60a6e",
+                  "scripts/n8n/inventory.mjs":  "f7cf66ae8c447d002e37b413f35c38c12bcbd68b954d439f2d6ce97ec03eaaf3",
                   "scripts/n8n/windows/Dev-CredentialStore.ps1":  "49c16b64f9b57c4e27cf6ad92dc16cd05c6cf29a7ada7f9c7fa6e8f64ca5fc13",
                   "scripts/n8n/windows/Foundation-PublicRuntime.ps1":  "6f1af26b5e4143731a0890f4ec93b849e7261a708583c772ba8de5873b18ddd0",
                   "scripts/n8n/windows/Get-M03FoundationPendingMachine.ps1":  "d417c8af7c3671482b8d3232654b7e08d1312d08908736b78bdcc15f02fe0e07",

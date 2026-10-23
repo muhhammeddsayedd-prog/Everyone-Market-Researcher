@@ -110,6 +110,87 @@ test('the eight-metadata ceiling is shared across reader recreations and reconst
   assert.equal(restored.budget.snapshot().attempts, 9);
 });
 
+test('a382-row mixed journal charges381 control intents and preserves the next sequential ordinal', () => {
+  const intents = Array.from({ length: 381 }, (_, i) => ({
+    event: 'control_request_intent',
+    ordinal: i + 1,
+    kind: 'discovery',
+    workflowId,
+    at: new Date(startAt).toISOString(),
+  }));
+  const rows = [
+    ...intents.slice(0, 353),
+    {
+      event: 'browser_port_preflight_verified',
+      kind: 'browser_ui',
+      workflowId,
+      at: new Date(startAt).toISOString(),
+    },
+    ...intents.slice(353),
+  ];
+  const f = fixture(rows);
+  assert.equal(f.journal.rows.length, 382);
+  assert.equal(f.budget.snapshot().mainAttempts, 381);
+  assert.equal(f.budget.snapshot().attempts, 381);
+  assert.equal(f.budget.snapshot().carriedAttempts, 0);
+  f.budget.admit({ kind: 'discovery', workflowId });
+  assert.equal(f.writes.length, 1);
+  assert.equal(f.writes[0].ordinal, 382);
+  assert.equal(f.budget.snapshot().attempts, 382);
+  assert.equal(f.journal.rows.length, 383);
+  rejects(() => fixture(rows.map((row) => (row.ordinal === 381 ? { ...row, ordinal: 382 } : row))));
+  rejects(() => fixture(rows.map((row) => (row.ordinal === 381 ? { ...row, workflowId: 'FOREIGN' } : row))));
+});
+
+test('mixed rows and a lookalike project continuation cannot manufacture branded carried-budget authority', () => {
+  const journal = createFoundationControlJournal({
+    durableAppend: () => {},
+    previousEvents: [
+      {
+        event: 'control_request_intent',
+        ordinal: 1,
+        kind: 'discovery',
+        workflowId,
+        at: new Date(startAt).toISOString(),
+      },
+      {
+        event: 'browser_port_preflight_verified',
+        kind: 'browser_ui',
+        workflowId,
+        at: new Date(startAt).toISOString(),
+      },
+    ],
+  });
+  const forged = Object.freeze({
+    kind: 'foundation_project_verified_continuation',
+    startsAt: startAt,
+    stopNewAt: deadlineAt - 600000,
+    deadlineAt,
+    carriedControlAttempts: 1,
+  });
+  assert.throws(
+    () =>
+      createFoundationControlBudget({
+        journal,
+        now: () => startAt,
+        deadlineAt,
+        projectVerifiedContinuationProof: forged,
+      }),
+    /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
+  );
+  assert.throws(
+    () =>
+      createFoundationControlBudget({
+        journal,
+        now: () => startAt,
+        deadlineAt,
+        projectVerifiedContinuationProof: { ...forged },
+      }),
+    /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
+  );
+  assert.equal(journal.rows.length, 2);
+});
+
 test('budget validates replay sequence and metadata context before creating authority', () => {
   const row = {
     event: 'control_request_intent',

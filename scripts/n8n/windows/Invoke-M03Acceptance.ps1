@@ -191,10 +191,11 @@ function ConvertTo-ProjectVerifiedReadinessBlock($Value){
  $keys=@('kind','status','segmentId','sourceCommitSha','windowId','managementAttempts','controlAttempts','combinedAttempts','gatewayPreflightAttempts','setupAttempts','setupMaximum','minimumNewSetupRequests','proposedSetupMaximum','privateRead','networkRequests')
  foreach($name in @('kind','status','segmentId','sourceCommitSha','windowId')){if($Value.$name -isnot [string]){throw 'blocked'}}
  if($Value -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($keys|Sort-Object) @($Value.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or
-   $Value.kind -cne 'project_verified_continuation_blocked' -or $Value.status -cne 'setup_cap_insufficient' -or
+   $Value.kind -cne 'project_verified_continuation_blocked' -or $Value.status -cnotin @('setup_cap_insufficient','management_cap_insufficient') -or
    $Value.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or $Value.sourceCommitSha -cne 'a5e746736893d5040e93032ae740a0878f748837' -or $Value.windowId -cne '38b3708d-61b0-41d2-8170-5ed91c66b4dc' -or
    $Value.privateRead -isnot [bool] -or $Value.privateRead -ne $false){throw 'blocked'}
- $expected=@{managementAttempts=102;controlAttempts=301;combinedAttempts=403;gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=50;minimumNewSetupRequests=32;proposedSetupMaximum=88;networkRequests=0}
+ if($Value.status -ceq 'management_cap_insufficient' -and (($Value.controlAttempts -isnot [int] -and $Value.controlAttempts -isnot [long]) -or $Value.controlAttempts -lt 382 -or $Value.controlAttempts -gt 386)){throw 'blocked'}
+ $expected=if($Value.status -ceq 'management_cap_insufficient'){@{managementAttempts=152;controlAttempts=$Value.controlAttempts;combinedAttempts=(152+$Value.controlAttempts);gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=88;minimumNewSetupRequests=32;proposedSetupMaximum=88;networkRequests=0}}else{@{managementAttempts=102;controlAttempts=301;combinedAttempts=403;gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=50;minimumNewSetupRequests=32;proposedSetupMaximum=88;networkRequests=0}}
  foreach($name in $expected.Keys){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long]) -or $Value.$name -ne $expected[$name]){throw 'blocked'}}
  return $Value
 }
@@ -409,19 +410,26 @@ function Safe-PublicLine($Value){
  # All other private protocol kinds require the finite CLI's safe projection.
  # Until that exact projection is installed/reviewed, refuse rather than echo.
  if($Value.kind -cnotin @('m03_acceptance_result','m03_acceptance_ready','m03_acceptance_closed')){throw 'blocked'}
- $allowed=@('kind','id','status','code','command','caseId','executionIds','phaseBReady','domainProofReady','businessAcceptanceProven','managementAttempts','controlAttempts','gatewayPreflightAttempts','providerDirectAttempts','nativeExecutions','startedActors','baselineRestored','environmentCleanupVerified','windowClosed','fixtureArchived','remoteWorkSettled','residual','childTransportsClosed','adminChildClosed','approvedHead','sourceCommitSha','deadlineAt','baselineWorkflowKey','baselineFailureCodes','baselineNameEqual','baselineNodesEqual','baselineConnectionsEqual','baselineSettingsEqual')
+ $allowed=@('kind','id','status','code','command','caseId','executionIds','phaseBReady','domainProofReady','businessAcceptanceProven','managementAttempts','controlAttempts','gatewayPreflightAttempts','providerDirectAttempts','nativeExecutions','startedActors','baselineRestored','environmentCleanupVerified','windowClosed','fixtureArchived','remoteWorkSettled','residual','childTransportsClosed','adminChildClosed','approvedHead','sourceCommitSha','deadlineAt','baselineWorkflowKey','baselineFailureCodes','baselineNameEqual','baselineNodesEqual','baselineConnectionsEqual','baselineSettingsEqual','nativeReaderWorkflowKey','nativeReaderStage','nativeReaderHttpStatus')
  if(@($Value.PSObject.Properties.Name|Where-Object{$_ -cnotin $allowed}).Count -ne 0){throw 'blocked'}
  foreach($property in $Value.PSObject.Properties){
   $v=$property.Value
   if($property.Name -cin @('phaseBReady','domainProofReady','businessAcceptanceProven','baselineRestored','environmentCleanupVerified','windowClosed','fixtureArchived','remoteWorkSettled','residual','childTransportsClosed','adminChildClosed','baselineNameEqual','baselineNodesEqual','baselineConnectionsEqual','baselineSettingsEqual')){
    if($v -isnot [bool]){throw 'blocked'}
   }
-  elseif($property.Name -ceq 'baselineWorkflowKey'){
+  elseif($property.Name -cin @('baselineWorkflowKey','nativeReaderWorkflowKey')){
+   if($property.Name -ceq 'nativeReaderWorkflowKey' -and $null -eq $v){continue}
    if($v -isnot [string] -or $v -cnotin @('WF-00','WF-10','WF-11','WF-12','WF-13','WF-18','WF-18b','WF-19','WF-21','WF-22','WF-23','WF-30','WF-32','WF-40','WF-50','WF-70','WF-80','WF-90','WF-91','WF-99','SUB-START','SUB-FINISH','SUB-INGEST','SUB-COST','SUB-NOTIFY')){throw 'blocked'}
   }
   elseif($property.Name -ceq 'baselineFailureCodes'){
    $codes=@('expected_shape','dto_shape','workflow_id','archive_state','activation_state','active_version','version_shape','version_mismatch','owner_project','tags_shape','tags_mismatch','pinned_data','graph_shape','node_shape','graph_name','graph_nodes','graph_connections','graph_settings')
    if($v -isnot [Array] -or $v.Count -gt $codes.Count -or @($v|Where-Object{$_ -isnot [string] -or $_ -cnotin $codes}).Count -ne 0){throw 'blocked'}
+  }
+  elseif($property.Name -ceq 'nativeReaderStage'){
+   if($v -isnot [string] -or $v -cnotin @('unknown','admission','request','framing','body','parse','projection','close','http_status')){throw 'blocked'}
+  }
+  elseif($property.Name -ceq 'nativeReaderHttpStatus'){
+   if($null -ne $v -and (($v -isnot [int] -and $v -isnot [long]) -or $v -lt 100 -or $v -gt 599)){throw 'blocked'}
   }
   elseif($property.Name -ceq 'executionIds'){
    if($v -isnot [Array] -or $v.Count -gt 120 -or @($v|Where-Object{$_ -isnot [string] -or $_ -cnotmatch '^[1-9][0-9]{0,31}$'}).Count -ne 0){throw 'blocked'}

@@ -343,6 +343,87 @@ test('successful SQL cannot conceal native or cleanup failure', async () => {
   assert.deepEqual(f.events, []);
 });
 
+test('reader failure projection refuses raw errors and stale or untrusted diagnostic fields', () => {
+  const diagnostic = {
+    version: 1,
+    workflowKey: 'WF-70',
+    operation: 'discovery',
+    stage: 'http_status',
+    classification: 'http',
+    code: 'DISCOVERY',
+    httpStatus: 429,
+  };
+  assert.deepEqual(liveSql.projectFoundationNativeFailureDiagnostic({ lastFailure: () => diagnostic }), {
+    code: 'FOUNDATION_NATIVE_DISCOVERY',
+    nativeReaderWorkflowKey: 'WF-70',
+    nativeReaderStage: 'http_status',
+    nativeReaderHttpStatus: 429,
+  });
+  for (const value of [
+    null,
+    { ...diagnostic, raw: 'PRIVATE_CANARY' },
+    { ...diagnostic, workflowKey: 'PRIVATE_CANARY' },
+    { ...diagnostic, code: 'PRIVATE_CANARY' },
+    { ...diagnostic, stage: 'PRIVATE_CANARY' },
+    { ...diagnostic, httpStatus: '429' },
+    { ...diagnostic, httpStatus: 600 },
+  ])
+    assert.deepEqual(liveSql.projectFoundationNativeFailureDiagnostic({ lastFailure: () => value }), {});
+  assert.deepEqual(
+    liveSql.projectFoundationNativeFailureDiagnostic({
+      lastFailure() {
+        throw Error('PRIVATE_CANARY');
+      },
+    }),
+    {},
+  );
+});
+
+test('failed execution discovery returns the actual safe Reader diagnostic before Admin or Preview starts', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'emr-reader-diagnostic-'));
+  let adminStarts = 0,
+    setupStarts = 0;
+  const s = createFoundationLiveAcceptanceSession(privatePacket(), () => {}, {
+    storage: { directory },
+    createBaselinePreflight: (input) => syntheticBaselinePreflight(input),
+    startAdmin() {
+      adminStarts++;
+      throw Error('PRIVATE_CANARY');
+    },
+    createSetupTransport() {
+      setupStarts++;
+      throw Error('PRIVATE_CANARY');
+    },
+    createNativeTransport: () => ({
+      request: async () => ({
+        status: 429,
+        body: (async function* () {
+          yield Buffer.from('{"data":[],"nextCursor":null}');
+        })(),
+        closed: Promise.resolve(),
+      }),
+      close() {},
+      state: () => ({ pendingRequests: 0, unclosedResponses: 0 }),
+    }),
+  });
+  try {
+    const r = await s.command({ kind: 'm03_acceptance_command', id: 'reader_failure', command: 'prepare' });
+    assert.equal(r.status, 'blocked');
+    assert.equal(r.nativeExecutions, 0);
+    assert.equal(r.code, 'FOUNDATION_NATIVE_DISCOVERY');
+    assert.equal(r.nativeReaderWorkflowKey, 'WF-10');
+    assert.equal(r.nativeReaderStage, 'http_status');
+    assert.equal(r.nativeReaderHttpStatus, 429);
+    assert.equal(adminStarts, 0);
+    assert.equal(setupStarts, 0);
+    assert.doesNotMatch(JSON.stringify(r), /PRIVATE_CANARY/);
+    assert.equal((await s.close()).childTransportsClosed, true);
+  } finally {
+    await s.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test('baseline diagnostic projection exposes only fixed codes and component booleans', () => {
   const diagnostic = {
     version: 1,
@@ -423,6 +504,57 @@ test('effectful continuation reaches the actual session constructor with retaine
     assert.equal(result.status, 'not_prepared');
   } finally {
     if (session) await session.close();
+    f.cleanup();
+  }
+});
+
+test('a lookalike mixed-row continuation is rejected before session storage, child creation or emitted metadata', () => {
+  const time = Date.parse('2026-10-24T01:00:00Z');
+  let effects = 0;
+  const forged = Object.freeze({
+    kind: 'foundation_project_verified_continuation',
+    sourceCommitSha: 'a'.repeat(40),
+    windowId: '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+    startsAt: time,
+    stopNewAt: time + 3000000,
+    deadlineAt: time + 3600000,
+    carriedControlAttempts: 1,
+  });
+  assert.throws(
+    () =>
+      createFoundationLiveAcceptanceSession(
+        { ...privatePacket(), leaseExpiry: time + 7200000 },
+        () => {
+          effects++;
+        },
+        {
+          now: () => time,
+          projectVerifiedContinuationProof: forged,
+          storage: {
+            read() {
+              effects++;
+              throw Error('SYNTHETIC_STORAGE_FORBIDDEN');
+            },
+          },
+          startAdmin() {
+            effects++;
+            throw Error('SYNTHETIC_CHILD_FORBIDDEN');
+          },
+        },
+      ),
+    /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
+  );
+  assert.equal(effects, 0);
+});
+
+test('current technical6 cannot reach the mixed-row session constructor until the unchanged management cap is sufficient', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ baselineDiscovery: true });
+  try {
+    assert.equal(f.check().status, 'management_cap_insufficient');
+    assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+    assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-7.json')), false);
+    assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-7.runtime-claim.json')), false);
+  } finally {
     f.cleanup();
   }
 });

@@ -98,6 +98,17 @@ test(
 ${helper}
 $valid=[ordered]@{kind='project_verified_continuation_blocked';status='setup_cap_insufficient';segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';sourceCommitSha='a5e746736893d5040e93032ae740a0878f748837';windowId='38b3708d-61b0-41d2-8170-5ed91c66b4dc';managementAttempts=102;controlAttempts=301;combinedAttempts=403;gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=50;minimumNewSetupRequests=32;proposedSetupMaximum=88;privateRead=$false;networkRequests=0}
 $null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$valid)
+$management=[ordered]@{};foreach($name in $valid.Keys){$management[$name]=$valid[$name]}
+$management.status='management_cap_insufficient';$management.managementAttempts=152;$management.controlAttempts=382;$management.combinedAttempts=534;$management.setupMaximum=88
+$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$management)
+foreach($diagnosticAttempts in 1..4){
+ $copy=[ordered]@{};foreach($name in $management.Keys){$copy[$name]=$management[$name]};$copy.controlAttempts=382+$diagnosticAttempts;$copy.combinedAttempts=534+$diagnosticAttempts
+ $null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$copy)
+}
+foreach($mutation in @(@{key='managementAttempts';value=127},@{key='controlAttempts';value=353},@{key='controlAttempts';value=387},@{key='controlAttempts';value=383},@{key='combinedAttempts';value=480},@{key='setupMaximum';value=512},@{key='status';value='unknown_failure'},@{key='privateRead';value=$true})){
+ $copy=[ordered]@{};foreach($name in $management.Keys){$copy[$name]=$management[$name]};$copy[$mutation.key]=$mutation.value;$blocked=$false
+ try{$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$copy)}catch{$blocked=$true};if(-not $blocked){throw 'MANAGEMENT_BOUNDARY_WEAKENED'}
+}
 $stale=[ordered]@{};foreach($name in $valid.Keys){$stale[$name]=$valid[$name]};$stale.managementAttempts=98;$stale.combinedAttempts=399;$blocked=$false
 try{$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$stale)}catch{$blocked=$true};if(-not $blocked){throw 'HISTORICAL_USAGE_ACCEPTED'}
 foreach($key in @('sourceCommitSha','windowId','managementAttempts','setupAttempts','setupMaximum','privateRead','networkRequests')){
@@ -506,6 +517,17 @@ test(
           workflowId: 'OtherWorkflow',
         },
         { kind: 'mcp_port_request', nonce: 'fixtureNonce', action: 'browser_run', workflowId: 'FixtureWFID' },
+        {
+          kind: 'm03_acceptance_result',
+          status: 'blocked',
+          code: 'FOUNDATION_NATIVE_DISCOVERY',
+          nativeReaderWorkflowKey: 'WF-70',
+          nativeReaderStage: 'http_status',
+          nativeReaderHttpStatus: 429,
+        },
+        { kind: 'm03_acceptance_result', status: 'blocked', nativeReaderWorkflowKey: 'Foreign' },
+        { kind: 'm03_acceptance_result', status: 'blocked', nativeReaderStage: 'PrivateKeyAlpha47' },
+        { kind: 'm03_acceptance_result', status: 'blocked', nativeReaderHttpStatus: 600 },
       ];
       const script = join(directory, 'projection.ps1');
       writeFileSync(
@@ -554,6 +576,10 @@ $out|ConvertTo-Json -Compress
         'rejected',
         'accepted',
         'accepted',
+        'rejected',
+        'rejected',
+        'accepted',
+        'rejected',
         'rejected',
         'rejected',
       ]);

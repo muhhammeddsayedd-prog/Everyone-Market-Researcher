@@ -47,6 +47,24 @@ deadline, identity and schema checks still apply; Windows console modes and
 security settings are unchanged. The fix is verified through the actual Windows
 terminal with synthetic public data before development credentials are reused.
 
+On 24 October Cairo, the renewed Vercel session passed its 75-minute metadata
+check, then technical attempt 6 accepted the browser acknowledgement and verified all 25
+saved definitions. It stopped during WF-70 execution-history discovery before
+Admin, database, Preview or workflow writes. The original Reader code/status
+was not retained. [The immutable reconciliation](../milestones/M03-n8n-foundation/evidence/dev-acceptance-technical6-reconciliation-20261024.json)
+preserves that partial result, 152 management / 382 control charges and separate
+verified disposable-input cleanup. It does not establish A-D or full D.
+The Reader now retains fixed error classification, and the public wrapper
+forwards only its allowlisted code, owned key, stage and actual HTTP status.
+The unchanged 512 management ceiling blocks a 528-request remaining plan before
+new admission or private inputs; [the separate allowance proposal](../milestones/M03-n8n-foundation/evidence/remaining-management-allocation-20261024.md)
+does not itself increase that ceiling. Persistent originals remain reusable.
+The subsequent [WF-70 readback](../milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json)
+completed two strict-TLS GETs with HTTP 200 and zero rows. Current charges are 152
+management / 384 control / 536 combined; the diagnostic child and disposable key
+copy are closed/removed. That current success does not establish the original
+failure's cause, adoption, drain or M03 business acceptance.
+
 M00 provides the canonical plain JavaScript helpers in
 `normalizers/_common.js`, copied from `docs/N8N_WORKFLOWS.md` §7, with Vitest
 tests. The guarded CommonJS export supports Node tests; the helper definitions

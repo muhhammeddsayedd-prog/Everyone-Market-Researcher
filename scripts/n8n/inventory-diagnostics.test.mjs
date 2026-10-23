@@ -3,9 +3,214 @@ import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
 import { inventoryDiagnosticVersion, runInventory } from './inventory.mjs';
 import * as inventory from './inventory.mjs';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { resolve, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const key = 'synthetic-diagnostic-key-only';
+function wf70Fixture(options = {}) {
+  const calls = [],
+    charges = [];
+  return {
+    calls,
+    charges,
+    dependencies: {
+      timeoutMs: 1000,
+      lookup: async () => [{ address: '1.1.1.1', family: 4 }],
+      admitControlAttempt(value) {
+        charges.push(value);
+      },
+      transport: async (input) => {
+        calls.push(input.url.toString());
+        assert.equal(charges.length, calls.length);
+        assert.equal(input.method, 'GET');
+        assert.equal(input.rejectUnauthorized, true);
+        assert.equal(input.url.searchParams.get('includeData'), 'false');
+        assert.equal(input.url.searchParams.get('workflowId'), 'S6KDFsx5IjQRf6tm');
+        const diagnostic = input.diagnostic;
+        diagnostic.tcpConnected = true;
+        diagnostic.tlsVerified = true;
+        diagnostic.socketClosed = true;
+        input.onSocketClosed();
+        const dto = options.dto?.(calls.length) ?? { data: [], nextCursor: null };
+        return { status: options.status ?? 200, body: Buffer.from(JSON.stringify(dto)) };
+      },
+    },
+  };
+}
+test('fixed WF70 discovery uses the same strict reader through an explicit bounded GET adapter and charges before every call', async () => {
+  const f = wf70Fixture(),
+    r = await inventory.runWf70DiscoveryDiagnostic(key, f.dependencies);
+  assert.equal(r.status, 'discovery_complete');
+  assert.equal(r.requestCount, 2);
+  assert.equal(r.transportAdapter, 'inventory_bounded_get_adapter');
+  assert.equal(r.paginationComplete, true);
+  assert.equal(r.candidateCount, 0);
+  assert.equal(r.adoptionProven, false);
+  assert.equal(r.drainProven, false);
+  assert.equal(r.networkCompletionVerified, true);
+  assert.equal(r.readerFailure, null);
+  assert.equal(f.charges.length, 2);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls[1], f.calls[0] + '&status=running');
+  assert.doesNotMatch(
+    JSON.stringify(r),
+    /synthetic-diagnostic-key|executionId|cursor|parameters|workflowData|\/api\//,
+  );
+});
+test('WF70 diagnostic retains HTTP/schema failure and page cap without leaking response values or retrying', async () => {
+  for (const options of [
+    { status: 429, dto: () => ({ message: 'SYNTHETIC_PRIVATE_UPSTREAM' }) },
+    {
+      dto: () => ({
+        data: [
+          {
+            id: '101',
+            workflowId: 'S6KDFsx5IjQRf6tm',
+            mode: 'SYNTHETIC_PRIVATE_MODE',
+            status: 'running',
+            startedAt: null,
+            stoppedAt: null,
+            waitTill: null,
+          },
+        ],
+        nextCursor: null,
+      }),
+    },
+    { dto: () => ({ data: [], nextCursor: 'SYNTHETIC_PRIVATE_CURSOR' }) },
+  ]) {
+    const f = wf70Fixture(options),
+      r = await inventory.runWf70DiscoveryDiagnostic(key, f.dependencies);
+    assert.equal(r.status, 'discovery_failed');
+    assert.equal(r.paginationComplete, false);
+    assert.equal(r.candidateCount, null);
+    assert.equal(r.networkCompletionVerified, true);
+    assert.ok(r.requestCount <= 2);
+    assert.equal(f.calls.length, r.requestCount);
+    assert.equal(r.readerFailure.workflowKey, 'WF-70');
+    assert.equal(r.readerFailure.httpStatus, options.status ?? 200);
+    assert.doesNotMatch(JSON.stringify(r), /SYNTHETIC_PRIVATE|synthetic-diagnostic-key|\/api\//);
+  }
+  const f = wf70Fixture({
+    dto: (n) => ({ data: [], nextCursor: n % 2 === 1 ? 'SYNTHETIC_PRIVATE_CURSOR' : null }),
+  });
+  const r = await inventory.runWf70DiscoveryDiagnostic(key, f.dependencies);
+  assert.equal(r.status, 'discovery_complete');
+  assert.equal(r.requestCount, 4);
+  assert.equal(f.charges.length, 4);
+});
+
+test('WF70 budget journal is one-use, preserves baseline counters and durably debits no more than four controls', () => {
+  const root = mkdtempSync(join(tmpdir(), 'emr-wf70-budget-'));
+  try {
+    const directory = join(root, 'scripts/n8n/out/foundation');
+    mkdirSync(directory, { recursive: true });
+    const path = join(directory, 'wf70-discovery-diagnostic-20261024.jsonl');
+    const header = {
+      kind: 'm03_wf70_discovery_budget',
+      version: 1,
+      receiptSha256: inventory.wf70DiscoveryReceiptSha256,
+      managementAttempts: 152,
+      controlAttempts: 382,
+      combinedAttempts: 534,
+      maximumRequests: 4,
+      parentProcessId: process.ppid,
+    };
+    writeFileSync(path, JSON.stringify(header) + '\n');
+    const budget = inventory.openWf70DiscoveryBudget(root);
+    try {
+      for (let i = 0; i < 4; i++) budget.admit({ kind: 'discovery', workflowId: 'S6KDFsx5IjQRf6tm' });
+      assert.throws(
+        () => budget.admit({ kind: 'discovery', workflowId: 'S6KDFsx5IjQRf6tm' }),
+        /WF70_DIAGNOSTIC_BUDGET_BLOCKED/,
+      );
+    } finally {
+      budget.close();
+    }
+    const rows = readFileSync(path, 'utf8').trim().split('\n').map(JSON.parse);
+    assert.deepEqual(rows[0], header);
+    assert.equal(rows[1].event, 'diagnostic_child_claim');
+    assert.deepEqual(
+      rows.slice(2).map((r) => r.ordinal),
+      [383, 384, 385, 386],
+    );
+    assert.throws(() => inventory.openWf70DiscoveryBudget(root), /WF70_DIAGNOSTIC_BUDGET_BLOCKED/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('actual diagnostic CLI completes its circular reader imports with synthetic DNS/HTTPS only and records exact charged GETs', () => {
+  const root = mkdtempSync(join(tmpdir(), 'emr-wf70-cli-'));
+  try {
+    const put = (relative, text) => {
+      const path = join(root, relative);
+      mkdirSync(resolve(path, '..'), { recursive: true });
+      writeFileSync(path, text);
+      return path;
+    };
+    const entry = put('scripts/n8n/inventory.mjs', readFileSync(new URL('./inventory.mjs', import.meta.url)));
+    put(
+      'n8n/foundation/bindings.dev.json',
+      readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
+    );
+    const journal = put(
+      'scripts/n8n/out/foundation/wf70-discovery-diagnostic-20261024.jsonl',
+      JSON.stringify({
+        kind: 'm03_wf70_discovery_budget',
+        version: 1,
+        receiptSha256: inventory.wf70DiscoveryReceiptSha256,
+        managementAttempts: 152,
+        controlAttempts: 382,
+        combinedAttempts: 534,
+        maximumRequests: 4,
+        parentProcessId: process.pid,
+      }) + '\n',
+    );
+    const dns = put(
+      'dns.mjs',
+      `export function lookup(_host,_options,done){done(null,[{address:'1.1.1.1',family:4}]);}`,
+    );
+    const https = put(
+      'https.mjs',
+      `import {EventEmitter} from 'node:events';
+export function request(url,options,callback){if(options.method!=='GET'||url.hostname!=='muhhammedsayed.app.n8n.cloud'||url.pathname!=='/api/v1/executions'||url.searchParams.get('workflowId')!=='S6KDFsx5IjQRf6tm'||url.searchParams.get('includeData')!=='false')throw Error('SYNTHETIC_ROUTE_BLOCKED');const req=new EventEmitter(),socket=new EventEmitter();socket.encrypted=true;socket.authorized=true;let closed=false;const close=()=>{if(!closed){closed=true;socket.emit('close');}};req.destroy=close;req.end=()=>setImmediate(()=>{req.emit('socket',socket);socket.emit('connect');socket.emit('secureConnect');const response=new EventEmitter();const body=Buffer.from(JSON.stringify({data:[],nextCursor:null}));response.statusCode=200;response.headers={'content-length':String(body.length)};response.complete=true;response.destroy=close;callback(response);response.emit('data',body);response.emit('end');close();});return req;}`,
+    );
+    const copyUrl = pathToFileURL(entry).href,
+      actualReader = pathToFileURL(resolve('scripts/n8n/foundation-native-reader.mjs')).href;
+    const preload = put(
+      'preload.mjs',
+      `import {registerHooks} from 'node:module';
+registerHooks({resolve(specifier,context,next){if(context.parentURL===${JSON.stringify(copyUrl)}&&specifier==='./foundation-native-reader.mjs')return {url:${JSON.stringify(actualReader)},shortCircuit:true};if(specifier==='./inventory.mjs'&&context.parentURL?.includes('/scripts/n8n/'))return {url:${JSON.stringify(copyUrl)},shortCircuit:true};if(context.parentURL===${JSON.stringify(copyUrl)}&&specifier==='node:dns')return {url:${JSON.stringify(pathToFileURL(dns).href)},shortCircuit:true};if(context.parentURL===${JSON.stringify(copyUrl)}&&specifier==='node:https')return {url:${JSON.stringify(pathToFileURL(https).href)},shortCircuit:true};return next(specifier,context);}});`,
+    );
+    const env = Object.fromEntries(
+      ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP']
+        .filter((k) => process.env[k] !== undefined)
+        .map((k) => [k, process.env[k]]),
+    );
+    const r = spawnSync(
+      process.execPath,
+      ['--import', pathToFileURL(preload).href, entry, '--wf70-discovery-diagnostic'],
+      { env: { ...env, M03_N8N_API_KEY: key }, encoding: 'utf8', windowsHide: true, timeout: 10000 },
+    );
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stderr, '');
+    const dto = JSON.parse(r.stdout);
+    assert.equal(dto.status, 'discovery_complete');
+    assert.equal(dto.requestCount, 2);
+    assert.equal(dto.networkCompletionVerified, true);
+    const rows = readFileSync(journal, 'utf8').trim().split('\n').map(JSON.parse);
+    assert.deepEqual(
+      rows.slice(2).map((r) => r.ordinal),
+      [383, 384],
+    );
+    assert.doesNotMatch(r.stdout, /synthetic-diagnostic-key|x-n8n|executionId|SYNTHETIC/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 const projectId = 'pHvQjDmjxVZ3KQLT';
 const payloads = {
   discover: { data: { scopes: [], resources: {}, filters: {}, specUrl: '/api/v1/openapi.yml' } },

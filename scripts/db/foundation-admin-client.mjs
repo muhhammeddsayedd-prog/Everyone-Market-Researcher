@@ -6,7 +6,10 @@ import { assertFoundationLiveClockAmendmentProof } from '../n8n/foundation-live-
 import { assertFoundationLivePostcheckContinuationProof } from '../n8n/foundation-live-postcheck-continuation.mjs';
 import { assertFoundationLiveRemainingContinuationProof } from '../n8n/foundation-live-remaining-continuation.mjs';
 import { assertFoundationLiveStartupReplacementProof } from '../n8n/foundation-live-startup-replacement.mjs';
-import { assertFoundationLiveProjectVerifiedContinuationProof } from '../n8n/foundation-live-project-verified-continuation.mjs';
+import {
+  assertFoundationLiveProjectVerifiedContinuationProof,
+  foundationProjectVerifiedContinuationResumeCheckpoint,
+} from '../n8n/foundation-live-project-verified-continuation.mjs';
 import { fileURLToPath } from 'node:url';
 
 const fixed = () => Error('FOUNDATION_ADMIN_BLOCKED');
@@ -112,6 +115,7 @@ export async function startFoundationAdminClient(
   let remaining;
   let startup;
   let verified;
+  let verifiedControlCarry;
   if (
     [
       originalDeadlineAtMs,
@@ -128,6 +132,8 @@ export async function startFoundationAdminClient(
       verified = assertFoundationLiveProjectVerifiedContinuationProof(projectVerifiedContinuationProof, {
         claimed: true,
       });
+      const checkpoint = foundationProjectVerifiedContinuationResumeCheckpoint(verified);
+      verifiedControlCarry = checkpoint.aggregateControlAttempts - checkpoint.mainControlAttempts;
     } catch {
       throw fixed();
     }
@@ -140,7 +146,7 @@ export async function startFoundationAdminClient(
       verified.windowId !==
         (forwardWindow ? '38b3708d-61b0-41d2-8170-5ed91c66b4dc' : 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9') ||
       verified.carriedManagementAttempts !== (forwardWindow ? 10 : 4) ||
-      verified.carriedControlAttempts !== 1 ||
+      verified.carriedControlAttempts !== verifiedControlCarry ||
       now() < verified.startsAt ||
       now() >= verified.stopNewAt
     )

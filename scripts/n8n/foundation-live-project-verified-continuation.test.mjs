@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { appendFileSync, existsSync, lstatSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
+import {
+  appendFileSync,
+  existsSync,
+  lstatSync,
+  openSync,
+  readFileSync,
+  writeFileSync,
+  unlinkSync,
+} from 'node:fs';
 import { join, dirname } from 'node:path';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 import { syntheticRemainingContinuation } from './foundation-live-remaining-fixtures.mjs';
@@ -589,6 +597,234 @@ test('browser discovery reconciliation requires both immutable early failures, d
         );
       assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
       assert.equal(existsSync(base + '.technical-6.json'), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('closed technical6 preserves152/382 raw history and current152/384 charges but blocks528/512 before new admission or private metadata', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ baselineDiscovery: true });
+  try {
+    const base = f.paths.admission.slice(0, -5);
+    const preserved = [4, 5, 6].flatMap((ordinal) =>
+      ['.json', '.runtime-claim.json', '.closed.json'].map((suffix) => {
+        const path = base + '.technical-' + ordinal + suffix;
+        return [path, readFileSync(path, 'utf8')];
+      }),
+    );
+    const result = f.check();
+    assert.equal(result.kind, 'project_verified_continuation_blocked');
+    assert.equal(result.status, 'management_cap_insufficient');
+    assert.equal(result.managementAttempts, 152);
+    assert.equal(result.controlAttempts, 384);
+    assert.equal(result.combinedAttempts, 536);
+    assert.equal(result.setupAttempts, 44);
+    assert.equal(result.setupMaximum, 88);
+    assert.equal(result.privateRead, false);
+    assert.equal(result.networkRequests, 0);
+    let privateMetadataReads = 0;
+    for (const [key, fallback] of [
+      ['lstatSync', lstatSync],
+      ['readFileSync', readFileSync],
+      ['openSync', openSync],
+    ]) {
+      const original = f.io[key] ?? fallback;
+      f.io[key] = (...args) => {
+        if (/\.dpapi|\.lease\.json|secrets[\\/]dev/.test(String(args[0]))) {
+          privateMetadataReads++;
+          throw Error('SYNTHETIC_PRIVATE_METADATA_FORBIDDEN');
+        }
+        return original(...args);
+      };
+    }
+    assert.equal(f.check().status, 'management_cap_insufficient');
+    assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+    assert.equal(privateMetadataReads, 0);
+    assert.equal(existsSync(base + '.technical-7.json'), false);
+    assert.equal(existsSync(base + '.technical-7.runtime-claim.json'), false);
+    for (const [path, text] of preserved) assert.equal(readFileSync(path, 'utf8'), text);
+    const closed = JSON.parse(readFileSync(base + '.technical-6.closed.json', 'utf8'));
+    assert.equal(closed.closureVerified, false);
+    assert.equal(closed.bypassHandoffDeleted, false);
+    assert.equal(
+      JSON.parse(
+        readFileSync(
+          join(
+            f.directory,
+            'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical6-reconciliation-20261024.json',
+          ),
+          'utf8',
+        ),
+      ).usage.control,
+      382,
+    );
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('technical6 recovery refuses writes, unknown completion, false baseline counts, missing cleanup and usage resets', async () => {
+  for (const baselineDiscoveryFault of [
+    'usage',
+    'write',
+    'actor',
+    'cleanup',
+    'unknown-completion',
+    'baseline-count',
+    'foreign',
+    'unknown-row',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ baselineDiscovery: true, baselineDiscoveryFault });
+    try {
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-7.json')), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('technical6 recovery requires pinned records and all journal prefixes, dead owners, free locks and every prior6 output absent', async () => {
+  const collisions = [
+    'attempt',
+    'latest',
+    'owner-provision-attempt',
+    'reactivation-attempt',
+    'unprovisioned-archive-attempt',
+    'runtime',
+  ];
+  for (const fault of [
+    'receipt',
+    'admission',
+    'claim',
+    'closed',
+    'management',
+    'control',
+    'setup',
+    'preflight',
+    'historical-runtime',
+    'live-parent',
+    'live-runtime',
+    'live-lock',
+    ...collisions,
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ baselineDiscovery: true });
+    try {
+      const base = f.paths.admission.slice(0, -5),
+        paths = {
+          receipt: join(
+            f.directory,
+            'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical6-reconciliation-20261024.json',
+          ),
+          admission: base + '.technical-6.json',
+          claim: base + '.technical-6.runtime-claim.json',
+          closed: base + '.technical-6.closed.json',
+          management: f.paths.management,
+          control: f.paths.control,
+          setup: f.paths.setup,
+          preflight: join(f.directory, 'scripts/n8n/out/foundation/live/preflight.jsonl'),
+          'historical-runtime': join(f.directory, 'scripts/n8n/out/foundation/live/runtime.jsonl'),
+        };
+      if (Object.hasOwn(paths, fault))
+        writeFileSync(paths[fault], readFileSync(paths[fault], 'utf8').replace('{', '{ '));
+      if (fault === 'live-parent') f.io.processAlive = (pid) => pid === 91007;
+      if (fault === 'live-runtime') f.io.processAlive = (pid) => pid === 91008;
+      if (fault === 'live-lock')
+        f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'SYNTHETIC_ACTIVE_LOCK\n');
+      if (collisions.includes(fault))
+        f.put(
+          fault === 'runtime'
+            ? 'scripts/n8n/out/foundation/live/runtime.technical-6.jsonl'
+            : 'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-6-' +
+                fault +
+                '.json',
+          '{}\n',
+        );
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(existsSync(base + '.technical-7.json'), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('closed WF70 two-read diagnostic adds only2 carried controls and keeps152/384/536 blocked before admission', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ wf70Readback: true });
+  try {
+    const live = [f.paths.management, f.paths.control, f.paths.setup].map((p) => [
+      p,
+      readFileSync(p, 'utf8'),
+    ]);
+    const result = f.check();
+    assert.equal(result.status, 'management_cap_insufficient');
+    assert.equal(result.managementAttempts, 152);
+    assert.equal(result.controlAttempts, 384);
+    assert.equal(result.combinedAttempts, 536);
+    assert.equal(result.setupAttempts, 44);
+    assert.equal(result.setupMaximum, 88);
+    assert.equal(result.privateRead, false);
+    assert.equal(result.networkRequests, 0);
+    assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+    assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-7.json')), false);
+    for (const [p, t] of live) assert.equal(readFileSync(p, 'utf8'), t);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('WF70 diagnostic carry refuses changed scope, effects, unknown closure, reset charges, malformed requests and extra journal suffixes', async () => {
+  for (const wf70ReadbackFault of [
+    'usage',
+    'write',
+    'cleanup',
+    'unknown-completion',
+    'http',
+    'scope',
+    'ordinal',
+    'suffix',
+    'unknown-row',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ wf70Readback: true, wf70ReadbackFault });
+    try {
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-7.json')), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('WF70 diagnostic requires immutable complete receipt/journal and dead claim owners; orphan journal cannot be ignored', async () => {
+  for (const fault of [
+    'receipt',
+    'journal',
+    'missing-receipt',
+    'missing-journal',
+    'missing-both',
+    'live-parent',
+    'live-child',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ wf70Readback: true });
+    try {
+      const paths = {
+        receipt: join(
+          f.directory,
+          'milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json',
+        ),
+        journal: join(f.directory, 'scripts/n8n/out/foundation/wf70-discovery-diagnostic-20261024.jsonl'),
+      };
+      if (fault === 'receipt' || fault === 'journal')
+        writeFileSync(paths[fault], readFileSync(paths[fault], 'utf8') + '\n');
+      if (fault === 'missing-receipt') unlinkSync(paths.receipt);
+      if (fault === 'missing-journal') unlinkSync(paths.journal);
+      if (fault === 'missing-both') {
+        unlinkSync(paths.receipt);
+        unlinkSync(paths.journal);
+      }
+      if (fault === 'live-parent') f.io.processAlive = (pid) => pid === 91009;
+      if (fault === 'live-child') f.io.processAlive = (pid) => pid === 91010;
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
     } finally {
       f.cleanup();
     }

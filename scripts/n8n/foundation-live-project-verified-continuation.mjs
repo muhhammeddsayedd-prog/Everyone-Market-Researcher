@@ -157,6 +157,16 @@ const nativeBrowserDiscoveryRecovery = Object.freeze({
   relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical5-reconciliation-20261023.json',
   sha256: '82327c57bd526bd61629fa5c2d099f21e82351abb419201353bff7965ae2d2ca',
 });
+const baselineDiscoveryRecovery = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical6-reconciliation-20261024.json',
+  sha256: '258a6c7d15c59323f4e95c5315d42d839f735ea40d70834b8aa171ff00b9ca66',
+});
+const wf70DiagnosticRecovery = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json',
+  sha256: '4b76cc98a34ad10ff16f200d34cd89c6527076a849b168e0bfcd48690392ac0c',
+  journalRelative: 'scripts/n8n/out/foundation/wf70-discovery-diagnostic-20261024.jsonl',
+  journalSha256: '86753c28dc66e902bfe80774ba3f66543b5808e99ef7f694154c831543d16c58',
+});
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
 };
@@ -390,6 +400,8 @@ function checkpoint(x) {
   x.recovery = reconciledWf00Restore(x) ?? x.recovery;
   x.recovery = reconciledReadonlyPrepare(x) ?? x.recovery;
   x.recovery = reconciledNativeDiscovery(x) ?? x.recovery;
+  x.recovery = reconciledBaselineDiscovery(x) ?? x.recovery;
+  x.recovery = reconciledWf70Diagnostic(x) ?? x.recovery;
   if (x.recovery?.closedWindow) assertSetupAllocationApproval(x);
   recoveryPreflight(x);
   return p;
@@ -1138,11 +1150,360 @@ function assertSetupAllocationApproval(x) {
   )
     fail();
 }
+function reconciledBaselineDiscovery(x) {
+  const text = x.file(baselineDiscoveryRecovery.relative, { optional: true });
+  if (text === null) return null;
+  if (
+    hash(text) !== baselineDiscoveryRecovery.sha256 ||
+    x.recovery?.nativeDiscoveryTechnicalAttempt !== 5 ||
+    x.recovery.mainManagementAttempts !== 117 ||
+    x.recovery.carriedManagementAttempts !== 10 ||
+    x.recovery.mainControlAttempts !== 352
+  )
+    fail();
+  const r = JSON.parse(text);
+  if (
+    r.kind !== 'm03_technical6_closed_baseline_discovery_reconciliation' ||
+    r.version !== 1 ||
+    r.environment !== 'dev' ||
+    r.usage.mainManagement !== 142 ||
+    r.usage.carriedManagement !== 10 ||
+    r.usage.management !== 152 ||
+    r.usage.mainControl !== 381 ||
+    r.usage.carriedControl !== 1 ||
+    r.usage.control !== 382 ||
+    r.usage.combined !== 534 ||
+    r.usage.vercelSetupUsed !== 44 ||
+    r.usage.vercelSetupMaximum !== 88 ||
+    r.usage.allowancesReplenished !== false ||
+    r.actualFailure.phase !== 'baseline_execution_discovery' ||
+    r.actualFailure.lastWorkflowKey !== 'WF-70' ||
+    r.actualFailure.readerCodeRecorded !== false ||
+    r.actualFailure.httpStatusRecorded !== false ||
+    r.actualFailure.browserAcknowledgementAccepted !== true ||
+    r.actualFailure.baselineSourceGets !== 25 ||
+    r.actualFailure.executionDiscoveryAttempts !== 28 ||
+    r.actualFailure.browserDiscoveryAttempts !== 1 ||
+    r.actualFailure.newControlAttempts !== 29 ||
+    r.actualFailure.nativeExecutions !== 0 ||
+    r.actualFailure.actorStarts !== 0 ||
+    r.actualFailure.administrativePrivateRead !== false ||
+    r.actualFailure.administrativeAuthenticationAttempted !== false ||
+    r.actualFailure.newPreviewRequests !== 0 ||
+    r.actualFailure.newWorkflowWrites !== 0 ||
+    r.actualFailure.newDatabaseOrFixtureWrites !== 0 ||
+    r.actualCleanup.nativeExit !== 0 ||
+    r.actualCleanup.bothProcessesDead !== true ||
+    r.actualCleanup.parentLockAbsent !== true ||
+    r.actualCleanup.adminSessionLockExclusive !== true ||
+    r.actualCleanup.unusedAdminPasswordAbsent !== true ||
+    r.actualCleanup.unusedAdminLeaseAbsent !== true ||
+    r.actualCleanup.bypassAbsent !== true ||
+    r.actualCleanup.cleanupLockRemoved !== true ||
+    r.actualCleanup.contentsRead !== false ||
+    r.actualCleanup.networkRequests !== 0 ||
+    r.actualCleanup.persistentOriginalsUntouched !== true ||
+    r.acceptance.actualM03DevAcceptanceVerified !== false ||
+    r.acceptance.executionBaselineComplete !== false ||
+    r.acceptance.fullDVerified !== false ||
+    r.immutableTechnicalRecords.closureVerifiedRemainsFalse !== true ||
+    r.immutableTechnicalRecords.bypassHandoffDeletedRemainsFalse !== true
+  )
+    fail();
+  const base = `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-6`;
+  for (const suffix of [
+    'attempt',
+    'latest',
+    'owner-provision-attempt',
+    'reactivation-attempt',
+    'unprovisioned-archive-attempt',
+  ])
+    if (
+      x.physical(
+        join(
+          repo,
+          `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-technical-6-${suffix}.json`,
+        ),
+        true,
+      )
+    )
+      fail();
+  if (x.physical(join(repo, 'scripts/n8n/out/foundation/live/runtime.technical-6.jsonl'), true)) fail();
+  const pins = { ...x.recovery.pins };
+  for (const [key, suffix] of [
+    ['admission', '.json'],
+    ['runtimeClaim', '.runtime-claim.json'],
+    ['closed', '.closed.json'],
+  ]) {
+    const p = r.immutableTechnicalRecords[key];
+    if (p.path !== base + suffix || hash(x.file(p.path)) !== p.sha256) fail();
+    pins[p.path] = p.sha256;
+  }
+  const admission = JSON.parse(x.file(base + '.json')),
+    closed = JSON.parse(x.file(base + '.closed.json'));
+  if (
+    closed.closureVerified !== false ||
+    closed.bypassHandoffDeleted !== false ||
+    r.actualCleanup.closedReceiptSha256 !== pins[base + '.closed.json']
+  )
+    fail();
+  for (const [name, count] of [
+    ['management', 143],
+    ['control', 382],
+    ['setup', 84],
+    ['preflight', 4],
+    ['runtime', 50],
+  ]) {
+    const path = `scripts/n8n/out/foundation/live/${name}.jsonl`,
+      p = r.actualPublicJournals[name];
+    if (p.path !== path) fail();
+    const current = x.file(path),
+      parsed = jsonl(current, 8000),
+      prefix = parsed.lines.slice(0, count).join('\n') + '\n';
+    if (parsed.rows.length < count || hash(prefix) !== p.sha256 || (name === 'runtime' && current !== prefix))
+      fail();
+    if (name === 'management') {
+      const added = parsed.rows.slice(118, 143);
+      if (
+        added.length !== 25 ||
+        added.some(
+          (row, index) =>
+            !exact(row, ['event', 'ordinal']) ||
+            row.event !== 'management_attempt' ||
+            row.ordinal !== 118 + index,
+        )
+      )
+        fail();
+    } else if (name === 'control') {
+      const added = parsed.rows.slice(352, 382);
+      const expectedIds = [
+        'MzimjpsuyPuK7SKe',
+        '4JMHLDBSdgGxhPlk',
+        'Oq19AMI9C3B1wbo9',
+        '8pz1lF0xPDQCs3ab',
+        'F7S8Llr0ZSaSuw4T',
+        'VbJn4mLYm0sGy1X2',
+        'h6lUXSGN5sV2jxuQ',
+        '02yefa9uEPYwmM3N',
+        '83LybyawRpHXbjx6',
+        'qzgT9giRQJ7eMDmV',
+        'mySfLZbU7I1850uP',
+        'kkAGgnbD8NjWHMKC',
+        'ze8T1o0Cx0OGi3Wd',
+        '2U6nPs3uJkmjij82',
+        'S6KDFsx5IjQRf6tm',
+      ];
+      if (added.length !== 30) fail();
+      for (let index = 0; index < added.length; index++) {
+        const row = added[index],
+          at = Date.parse(row.at);
+        if (!Number.isFinite(at) || at < admission.startsAt || at > closed.closedAt) fail();
+        if (index === 1) {
+          if (
+            !exact(row, ['event', 'kind', 'workflowId', 'at']) ||
+            row.event !== 'browser_port_preflight_verified' ||
+            row.kind !== 'browser_ui' ||
+            row.workflowId !== expectedIds[0]
+          )
+            fail();
+        } else {
+          const ordinal = index === 0 ? 353 : 352 + index,
+            id = index === 0 ? expectedIds[0] : expectedIds[1 + Math.floor((index - 2) / 2)];
+          if (
+            !exact(row, ['event', 'ordinal', 'kind', 'workflowId', 'at']) ||
+            row.event !== 'control_request_intent' ||
+            row.kind !== 'discovery' ||
+            row.ordinal !== ordinal ||
+            row.workflowId !== id
+          )
+            fail();
+        }
+      }
+    } else if (p.sha256 !== x.recovery.pins[path]) fail();
+    pins[path] = p.sha256;
+  }
+  return Object.freeze({
+    ...x.recovery,
+    mainManagementAttempts: 142,
+    mainControlAttempts: 381,
+    controlRows: 382,
+    baselineDiscoveryTechnicalAttempt: 6,
+    pins: Object.freeze(pins),
+  });
+}
+function reconciledWf70Diagnostic(x) {
+  const text = x.file(wf70DiagnosticRecovery.relative, { optional: true });
+  const journalText = x.file(wf70DiagnosticRecovery.journalRelative, { optional: true });
+  if (text === null && journalText === null) {
+    if (x.recovery?.baselineDiscoveryTechnicalAttempt === 6) fail();
+    return null;
+  }
+  if (
+    text === null ||
+    journalText === null ||
+    hash(text) !== wf70DiagnosticRecovery.sha256 ||
+    hash(journalText) !== wf70DiagnosticRecovery.journalSha256 ||
+    x.recovery?.baselineDiscoveryTechnicalAttempt !== 6 ||
+    x.recovery.mainManagementAttempts !== 142 ||
+    x.recovery.carriedManagementAttempts !== 10 ||
+    x.recovery.mainControlAttempts !== 381 ||
+    x.recovery.carriedControlAttempts !== 1 ||
+    x.recovery.controlRows !== 382
+  )
+    fail();
+  const r = JSON.parse(text),
+    result = r.actualNativeResult,
+    usage = r.usage,
+    custody = r.durableUsageJournal,
+    cleanup = r.independentCleanupReadback;
+  if (
+    r.kind !== 'm03_wf70_bounded_discovery_readback' ||
+    r.version !== 1 ||
+    r.environment !== 'dev' ||
+    r.originalFailure.receiptPath !== baselineDiscoveryRecovery.relative ||
+    r.originalFailure.receiptSha256 !== baselineDiscoveryRecovery.sha256 ||
+    r.originalFailure.historicalAttemptRewritten !== false ||
+    r.originalFailure.exactHistoricalReaderCodeKnown !== false ||
+    r.originalFailure.exactHistoricalHttpStatusKnown !== false ||
+    result.status !== 'complete' ||
+    result.outerNativeExit !== 0 ||
+    result.nativeExit !== 0 ||
+    result.childClosed !== true ||
+    result.handoffDeleted !== true ||
+    result.host !== 'muhhammedsayed.app.n8n.cloud' ||
+    result.configuredProjectId !== 'pHvQjDmjxVZ3KQLT' ||
+    result.workflowKey !== 'WF-70' ||
+    result.workflowId !== 'S6KDFsx5IjQRf6tm' ||
+    result.discoveryStatus !== 'discovery_complete' ||
+    result.requestCount !== 2 ||
+    result.maximumRequests !== 4 ||
+    result.authenticationVerified !== true ||
+    result.paginationComplete !== true ||
+    result.candidateCount !== 0 ||
+    result.readerFailure !== null ||
+    result.networkCompletionVerified !== true ||
+    result.adoptionProven !== false ||
+    result.drainProven !== false ||
+    !Array.isArray(result.requests) ||
+    result.requests.length !== 2 ||
+    result.requests.some(
+      (row, i) =>
+        row.filter !== ['all', 'running'][i] ||
+        row.page !== 1 ||
+        row.tcpConnected !== true ||
+        row.tlsVerified !== true ||
+        row.httpStatus !== 200 ||
+        row.bodyRead !== 'complete' ||
+        row.jsonParsed !== true ||
+        row.schemaValidated !== true ||
+        row.socketClosed !== true ||
+        row.failureStage !== 'none' ||
+        row.failureCode !== 'none',
+    ) ||
+    custody.path !== wf70DiagnosticRecovery.journalRelative ||
+    custody.sha256 !== wf70DiagnosticRecovery.journalSha256 ||
+    custody.rowCount !== 4 ||
+    custody.headerBeforePrivateMetadata !== true ||
+    custody.intentSyncedBeforeEachGet !== true ||
+    JSON.stringify(custody.controlOrdinals) !== '[383,384]' ||
+    custody.oneUseFenceRetained !== true ||
+    custody.originalLiveJournalsUnchanged !== true ||
+    cleanup.parentProcessDead !== true ||
+    cleanup.childProcessDead !== true ||
+    cleanup.parentOperationLockAbsent !== true ||
+    cleanup.temporaryManagementCopyAbsent !== true ||
+    cleanup.persistentManagementOriginalPresent !== true ||
+    cleanup.allFourPersistentEntriesReady !== true ||
+    cleanup.credentialContentsReadByCleanupCheck !== false ||
+    usage.management !== 152 ||
+    usage.control !== 384 ||
+    usage.combined !== 536 ||
+    usage.diagnosticControlAttempts !== 2 ||
+    usage.vercelSetupUsed !== 44 ||
+    usage.vercelSetupMaximum !== 88 ||
+    usage.nativeExecutions !== 0 ||
+    usage.gatewayPreflightAttempts !== 2 ||
+    usage.providerDirectAttempts !== 0 ||
+    usage.actorStarts !== 0 ||
+    usage.actorReserveUsd !== 2 ||
+    usage.managementMaximum !== 512 ||
+    usage.controlMaximum !== 2048 ||
+    usage.combinedMaximum !== 2560 ||
+    usage.countersReset !== false ||
+    r.interpretation.historicalFailureCauseEstablished !== false ||
+    r.interpretation.newWorkflowExecutionOrRemoteWrite !== false ||
+    r.interpretation.actualM03DevAcceptanceVerified !== false ||
+    r.interpretation.fullDVerified !== false ||
+    r.interpretation.managementAllocationIncreaseApproved !== false ||
+    r.interpretation.newAcceptanceAdmissionBlockedByCurrent512 !== true
+  )
+    fail();
+  const parsed = jsonl(journalText, 4),
+    [header, claim, ...intents] = parsed.rows;
+  if (
+    parsed.rows.length !== 4 ||
+    !exact(header, [
+      'kind',
+      'version',
+      'receiptSha256',
+      'managementAttempts',
+      'controlAttempts',
+      'combinedAttempts',
+      'maximumRequests',
+      'parentProcessId',
+    ]) ||
+    header.kind !== 'm03_wf70_discovery_budget' ||
+    header.version !== 1 ||
+    header.receiptSha256 !== baselineDiscoveryRecovery.sha256 ||
+    header.managementAttempts !== 152 ||
+    header.controlAttempts !== 382 ||
+    header.combinedAttempts !== 534 ||
+    header.maximumRequests !== 4 ||
+    !positive(header.parentProcessId) ||
+    header.parentProcessId !== custody.parentProcessId ||
+    !exact(claim, ['event', 'processId']) ||
+    claim.event !== 'diagnostic_child_claim' ||
+    !positive(claim.processId) ||
+    claim.processId !== custody.childProcessId ||
+    claim.processId === header.parentProcessId ||
+    x.io.processAlive(header.parentProcessId) !== false ||
+    x.io.processAlive(claim.processId) !== false
+  )
+    fail();
+  const closed = JSON.parse(
+    x.file(
+      `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-6.closed.json`,
+    ),
+  );
+  const recordedAt = Date.parse(r.recordedAt);
+  if (!Number.isFinite(recordedAt) || recordedAt > x.clock()) fail();
+  for (const [i, row] of intents.entries()) {
+    const at = Date.parse(row.at);
+    if (
+      !exact(row, ['event', 'ordinal', 'diagnosticOrdinal', 'kind', 'workflowKey', 'at']) ||
+      row.event !== 'control_request_intent' ||
+      row.ordinal !== 383 + i ||
+      row.diagnosticOrdinal !== i + 1 ||
+      row.kind !== 'discovery' ||
+      row.workflowKey !== 'WF-70' ||
+      !Number.isFinite(at) ||
+      at < closed.closedAt ||
+      at > recordedAt
+    )
+      fail();
+  }
+  return Object.freeze({ ...x.recovery, carriedControlAttempts: 3, wf70DiagnosticControlAttempts: 2 });
+}
 function currentReadiness(x) {
   if (!x.recovery?.closedWindow) return null;
   assertSetupAllocationApproval(x);
   if (foundationProjectVerifiedActiveRuntime.setupMaximum - x.recovery.setupAttempts < 14 + 18)
     return 'setup_cap_insufficient';
+  if (
+    x.recovery.mainManagementAttempts + x.recovery.carriedManagementAttempts + 25 + 44 + 307 >
+    caps.runtimeManagement
+  )
+    return 'management_cap_insufficient';
   const active = foundationProjectVerifiedActiveRuntime;
   if (
     typeof active.sourceCommitSha !== 'string' ||
@@ -1469,7 +1830,7 @@ function journals(x, initial = false) {
     const recoveredPrefix = x.recovery
       ? {
           management: x.recovery.mainManagementAttempts + 1,
-          control: x.recovery.mainControlAttempts,
+          control: x.recovery.controlRows ?? x.recovery.mainControlAttempts,
           setup: x.recovery.setupRows,
         }[name]
       : prefix;
@@ -1499,7 +1860,7 @@ function journals(x, initial = false) {
     fail();
   const control = values.control.rows.filter((r) => r.event === 'control_request_intent');
   if (
-    control.length + 1 > 2048 ||
+    control.length + (x.recovery?.carriedControlAttempts ?? 1) > 2048 ||
     control.some((r, i) => r.ordinal !== i + 1) ||
     (initial &&
       (control.length !== (x.recovery?.mainControlAttempts ?? 200) ||
@@ -1658,7 +2019,8 @@ function closedTechnicalAttempt(x, paths) {
     (paths.ordinal === 2 && x.recovery?.closedWindow === true) ||
     (paths.ordinal === 3 && x.recovery?.readonlyTechnicalAttempt === 3) ||
     (paths.ordinal === 4 && [4, 5].includes(x.recovery?.nativeDiscoveryTechnicalAttempt)) ||
-    (paths.ordinal === 5 && x.recovery?.nativeDiscoveryTechnicalAttempt === 5);
+    (paths.ordinal === 5 && x.recovery?.nativeDiscoveryTechnicalAttempt === 5) ||
+    (paths.ordinal === 6 && x.recovery?.baselineDiscoveryTechnicalAttempt === 6);
   if (
     !exact(close, [
       'kind',
@@ -1790,7 +2152,8 @@ function proof(data, claimed = false) {
       aggregateManagementAttempts:
         (data.recovery?.mainManagementAttempts ?? 2) + (data.recovery?.carriedManagementAttempts ?? 4),
       mainControlAttempts: data.recovery?.mainControlAttempts ?? 200,
-      aggregateControlAttempts: (data.recovery?.mainControlAttempts ?? 200) + 1,
+      aggregateControlAttempts:
+        (data.recovery?.mainControlAttempts ?? 200) + (data.recovery?.carriedControlAttempts ?? 1),
       setupRows: data.recovery?.setupRows ?? 2,
       setupAttempts: data.recovery?.setupAttempts ?? 2,
       preflightRows: data.recovery?.preflightRows ?? 0,
@@ -1850,7 +2213,8 @@ export function assertFoundationProjectVerifiedContinuationControlResume(p, { de
   if (
     deadlineAt !== p.deadlineAt ||
     !Array.isArray(previousEvents) ||
-    previousEvents.length !== proofs.get(p).resume.mainControlAttempts ||
+    previousEvents.length !==
+      (proofs.get(p).recovery?.controlRows ?? proofs.get(p).resume.mainControlAttempts) ||
     hash(previousEvents.map((r) => JSON.stringify(r) + '\n').join('')) !== proofs.get(p).controlPrefixSha256
   )
     fail();
@@ -1863,6 +2227,13 @@ export function assertFoundationProjectVerifiedContinuationJournalPrefixes(p, op
   const x = context();
   x.checkpoint = proofs.get(p).checkpoint;
   x.recovery = proofs.get(p).recovery;
+  if (x.recovery?.wf70DiagnosticControlAttempts === 2) {
+    for (const [path, expected] of [
+      [wf70DiagnosticRecovery.relative, wf70DiagnosticRecovery.sha256],
+      [wf70DiagnosticRecovery.journalRelative, wf70DiagnosticRecovery.journalSha256],
+    ])
+      if (hash(x.file(path)) !== expected) fail();
+  }
   recoveryPreflight(x);
   const current = journals(x);
   if (
