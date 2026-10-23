@@ -153,6 +153,10 @@ const nativeDiscoveryRecovery = Object.freeze({
   relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical4-reconciliation-20261023.json',
   sha256: 'b4e9beab46bf5c375529f082e9815979d87e9c6a3526edf38705c418bc78f0ef',
 });
+const nativeBrowserDiscoveryRecovery = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical5-reconciliation-20261023.json',
+  sha256: '82327c57bd526bd61629fa5c2d099f21e82351abb419201353bff7965ae2d2ca',
+});
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
 };
@@ -932,17 +936,34 @@ function reconciledReadonlyPrepare(x) {
   });
 }
 function reconciledNativeDiscovery(x) {
-  const text = x.file(nativeDiscoveryRecovery.relative, { optional: true });
-  if (text === null) return null;
+  let recovery = x.recovery;
+  for (const [ordinal, checkpoint] of [
+    [4, nativeDiscoveryRecovery],
+    [5, nativeBrowserDiscoveryRecovery],
+  ]) {
+    const text = x.file(checkpoint.relative, { optional: true });
+    if (text === null) {
+      if (ordinal === 4 && x.file(nativeBrowserDiscoveryRecovery.relative, { optional: true }) !== null)
+        fail();
+      break;
+    }
+    recovery = reconciledNativeDiscoveryStep(x, recovery, text, checkpoint, ordinal);
+  }
+  return recovery === x.recovery ? null : recovery;
+}
+function reconciledNativeDiscoveryStep(x, recovery, text, checkpoint, ordinal) {
+  const previousMainControl = ordinal === 4 ? 350 : 351;
   if (
-    hash(text) !== nativeDiscoveryRecovery.sha256 ||
-    x.recovery?.readonlyTechnicalAttempt !== 3 ||
-    x.recovery.mainManagementAttempts !== 117 ||
-    x.recovery.carriedManagementAttempts !== 10 ||
-    x.recovery.mainControlAttempts !== 350
+    hash(text) !== checkpoint.sha256 ||
+    recovery?.readonlyTechnicalAttempt !== 3 ||
+    (ordinal === 5 && recovery.nativeDiscoveryTechnicalAttempt !== 4) ||
+    recovery.mainManagementAttempts !== 117 ||
+    recovery.carriedManagementAttempts !== 10 ||
+    recovery.mainControlAttempts !== previousMainControl
   )
     fail();
-  const base = `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-4`;
+  const mainControl = previousMainControl + 1;
+  const base = `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-${ordinal}`;
   for (const suffix of [
     'attempt',
     'latest',
@@ -954,30 +975,40 @@ function reconciledNativeDiscovery(x) {
       x.physical(
         join(
           repo,
-          `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-technical-4-${suffix}.json`,
+          `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-technical-${ordinal}-${suffix}.json`,
         ),
         true,
       )
     )
       fail();
-  if (x.physical(join(repo, 'scripts/n8n/out/foundation/live/runtime.technical-4.jsonl'), true)) fail();
+  if (x.physical(join(repo, `scripts/n8n/out/foundation/live/runtime.technical-${ordinal}.jsonl`), true))
+    fail();
   const r = JSON.parse(text);
   if (
-    r.kind !== 'm03_technical4_closed_native_discovery_reconciliation' ||
+    r.kind !==
+      (ordinal === 4
+        ? 'm03_technical4_closed_native_discovery_reconciliation'
+        : 'm03_technical5_closed_browser_discovery_reconciliation') ||
     r.version !== 1 ||
     r.environment !== 'dev' ||
     r.usage.mainManagement !== 117 ||
     r.usage.carriedManagement !== 10 ||
     r.usage.management !== 127 ||
-    r.usage.mainControl !== 351 ||
+    r.usage.mainControl !== mainControl ||
     r.usage.carriedControl !== 1 ||
-    r.usage.control !== 352 ||
-    r.usage.combined !== 479 ||
+    r.usage.control !== mainControl + 1 ||
+    r.usage.combined !== 127 + mainControl + 1 ||
     r.usage.vercelSetupUsed !== 44 ||
     r.usage.vercelSetupMaximum !== 88 ||
     r.usage.allowancesReplenished !== false ||
     r.actualFailure.phase !== 'early_native_discovery' ||
-    r.actualFailure.toolResultIsError !== true ||
+    (ordinal === 4
+      ? r.actualFailure.toolResultIsError !== true
+      : r.actualFailure.executionSource !== 'browser_ui' ||
+        r.actualFailure.statusCode !== 'FOUNDATION_NATIVE_UI_BLOCKED' ||
+        r.actualFailure.browserAcknowledgementAccepted !== false ||
+        r.actualFailure.protocolCloseReceiptProduced !== true ||
+        r.actualFailure.protocolResidual !== false) ||
     r.actualFailure.nativeExecutions !== 0 ||
     r.actualFailure.actorStarts !== 0 ||
     r.actualFailure.baselineGets !== 0 ||
@@ -999,7 +1030,7 @@ function reconciledNativeDiscovery(x) {
     r.immutableTechnicalRecords.bypassHandoffDeletedRemainsFalse !== true
   )
     fail();
-  const pins = { ...x.recovery.pins };
+  const pins = { ...recovery.pins };
   for (const [key, suffix] of [
     ['admission', '.json'],
     ['runtimeClaim', '.runtime-claim.json'],
@@ -1019,7 +1050,7 @@ function reconciledNativeDiscovery(x) {
     fail();
   for (const [name, retainedRows] of [
     ['management', 118],
-    ['control', 351],
+    ['control', mainControl],
     ['setup', 84],
     ['preflight', 4],
     ['runtime', 50],
@@ -1036,12 +1067,12 @@ function reconciledNativeDiscovery(x) {
     )
       fail();
     if (name === 'control') {
-      const last = parsed.rows[350],
+      const last = parsed.rows[mainControl - 1],
         at = Date.parse(last.at);
       if (
         !exact(last, ['event', 'ordinal', 'kind', 'workflowId', 'at']) ||
         last.event !== 'control_request_intent' ||
-        last.ordinal !== 351 ||
+        last.ordinal !== mainControl ||
         last.kind !== 'discovery' ||
         last.workflowId !== 'MzimjpsuyPuK7SKe' ||
         !Number.isFinite(at) ||
@@ -1049,13 +1080,13 @@ function reconciledNativeDiscovery(x) {
         at > closed.closedAt
       )
         fail();
-    } else if (p.sha256 !== x.recovery.pins[path]) fail();
+    } else if (p.sha256 !== recovery.pins[path]) fail();
     pins[path] = p.sha256;
   }
   return Object.freeze({
-    ...x.recovery,
-    mainControlAttempts: 351,
-    nativeDiscoveryTechnicalAttempt: 4,
+    ...recovery,
+    mainControlAttempts: mainControl,
+    nativeDiscoveryTechnicalAttempt: ordinal,
     pins: Object.freeze(pins),
   });
 }
@@ -1626,7 +1657,8 @@ function closedTechnicalAttempt(x, paths) {
     (paths.ordinal === 1 && x.recovery !== null && x.recovery !== undefined) ||
     (paths.ordinal === 2 && x.recovery?.closedWindow === true) ||
     (paths.ordinal === 3 && x.recovery?.readonlyTechnicalAttempt === 3) ||
-    (paths.ordinal === 4 && x.recovery?.nativeDiscoveryTechnicalAttempt === 4);
+    (paths.ordinal === 4 && [4, 5].includes(x.recovery?.nativeDiscoveryTechnicalAttempt)) ||
+    (paths.ordinal === 5 && x.recovery?.nativeDiscoveryTechnicalAttempt === 5);
   if (
     !exact(close, [
       'kind',

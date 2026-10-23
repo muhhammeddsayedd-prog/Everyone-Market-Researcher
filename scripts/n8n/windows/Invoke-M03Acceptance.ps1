@@ -109,6 +109,10 @@ public static class EmrM03AcceptanceBoundedIo {
  }
 }
 '@ -ErrorAction Stop | Out-Null
+ # Windows Console.In otherwise uses a 256-character console buffer (254
+ # payload characters plus CRLF). Keep the existing bounded JSON lines intact
+ # in ConPTY without changing console modes or weakening either schema/cap.
+ [Console]::SetIn([IO.StreamReader]::new([Console]::OpenStandardInput(262144),[Console]::InputEncoding,$false,262144,$true))
 }
 function Invoke-PublicCompositionCheck([string]$Node,[string]$Entry,[string]$Repository){
  $process=$null;$info=$null;$running=$false;$done=$true

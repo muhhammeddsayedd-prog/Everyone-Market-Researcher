@@ -40,6 +40,13 @@ The [browser-port readiness receipt](../milestones/M03-n8n-foundation/evidence/d
 records the closed connector attempt, implementation checks and separate live
 acceptance boundary.
 
+The Windows wrapper installs a larger process-local standard-input reader before
+its first console read. This prevents the default console reader from truncating
+long public JSON acknowledgements at254 characters. Existing protocol length,
+deadline, identity and schema checks still apply; Windows console modes and
+security settings are unchanged. The fix is verified through the actual Windows
+terminal with synthetic public data before development credentials are reused.
+
 M00 provides the canonical plain JavaScript helpers in
 `normalizers/_common.js`, copied from `docs/N8N_WORKFLOWS.md` §7, with Vitest
 tests. The guarded CommonJS export supports Node tests; the helper definitions

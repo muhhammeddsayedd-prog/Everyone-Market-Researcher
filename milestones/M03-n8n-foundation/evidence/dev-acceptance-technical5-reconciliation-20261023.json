@@ -1,0 +1,150 @@
+{
+  "kind": "m03_technical5_closed_browser_discovery_reconciliation",
+  "version": 1,
+  "recordedAt": "2026-10-23T20:11:13.150Z",
+  "environment": "dev",
+  "source": {
+    "head": "7a08c9bb2d45c3122902c449cf522e45b7465f66",
+    "verification": "Actual local HEAD at the bounded attempt; this record makes no new CI claim."
+  },
+  "immutableTechnicalRecords": {
+    "admission": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-5.json",
+      "bytes": 446,
+      "sha256": "30ce6311fafa1bb7f79244d900a845fc72a1905c2cc407ff75511f0fd2fed3a1"
+    },
+    "runtimeClaim": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-5.runtime-claim.json",
+      "bytes": 275,
+      "sha256": "26fc222a79c7bfa94e9667c8e0fb7922d524ced44782152851df65ed869388e2"
+    },
+    "closed": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-5.closed.json",
+      "bytes": 396,
+      "sha256": "9b06cd828f8a5a09649c80502ca58e9c82cd7e916cb044b6bc98adbdee85a00b"
+    },
+    "closedReceiptNotRewritten": true,
+    "closureVerifiedRemainsFalse": true,
+    "bypassHandoffDeletedRemainsFalse": true
+  },
+  "actualFailure": {
+    "source": "Root coordinator recovered fixed public result/Close frames from its TTY carry; no raw frame body copied.",
+    "phase": "early_native_discovery",
+    "executionSource": "browser_ui",
+    "statusCode": "FOUNDATION_NATIVE_UI_BLOCKED",
+    "browserIdentityObserved": true,
+    "browserAcknowledgementAccepted": false,
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "baselineGets": 0,
+    "administrativePrivateRead": false,
+    "administrativeAuthenticationAttempted": false,
+    "newPreviewRequests": 0,
+    "newWorkflowWrites": 0,
+    "newDatabaseOrFixtureWrites": 0,
+    "protocolCloseReceiptProduced": true,
+    "protocolResidual": false,
+    "windowClosed": false,
+    "fixtureArchived": false,
+    "baselineRestored": false,
+    "environmentCleanup": false,
+    "remoteSettled": false,
+    "limitation": "Browser discovery ACK timed out. Physical child closure and a no-residual protocol response do not prove dev acceptance or database/environment restoration."
+  },
+  "actualPublicJournals": {
+    "management": {
+      "path": "scripts/n8n/out/foundation/live/management.jsonl",
+      "bytes": 5287,
+      "sha256": "79d556144e111625be9b90d9743dae118b90c6e64eac4ab43b7f13f337506a97",
+      "rowCount": 118
+    },
+    "control": {
+      "path": "scripts/n8n/out/foundation/live/control.jsonl",
+      "bytes": 46356,
+      "sha256": "d1601b9dfc07294e4622e758b0dc4562470151c5a194a7e88b68936570b76905",
+      "rowCount": 352
+    },
+    "setup": {
+      "path": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "bytes": 9102,
+      "sha256": "0cad48fd9550da762c0b629ee63364e4668f4829c3a89bd6f75ec2843d32f624",
+      "rowCount": 84
+    },
+    "preflight": {
+      "path": "scripts/n8n/out/foundation/live/preflight.jsonl",
+      "bytes": 938,
+      "sha256": "ae07f30519e51f81d60bfa5cabe5ef80b5694fe13bac3da181c2b8fe38d08598",
+      "rowCount": 4
+    },
+    "runtime": {
+      "path": "scripts/n8n/out/foundation/live/runtime.jsonl",
+      "bytes": 5713,
+      "sha256": "3f1c85ad7d185481da33c8989b34b82cbbef26aa3ec01209bc13561bd3481378",
+      "rowCount": 50
+    }
+  },
+  "discoveryAttempt": {
+    "event": "control_request_intent",
+    "ordinal": 352,
+    "kind": "discovery",
+    "workflowId": "MzimjpsuyPuK7SKe",
+    "at": "2026-10-23T20:07:01.903Z"
+  },
+  "absentSideEffectOutputs": [
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-5-attempt.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-5-latest.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-5-owner-provision-attempt.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-5-reactivation-attempt.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-5-unprovisioned-archive-attempt.json",
+    "scripts/n8n/out/foundation/live/runtime.technical-5.jsonl"
+  ],
+  "actualCleanup": {
+    "source": "Root guarded cleanup0c0d6a plus independent targeted public PID liveness check.",
+    "toolReceipt": "0c0d6a",
+    "nativeExit": 0,
+    "closedReceiptSha256": "9b06cd828f8a5a09649c80502ca58e9c82cd7e916cb044b6bc98adbdee85a00b",
+    "parentProcessId": 45816,
+    "runtimeProcessId": 48000,
+    "bothProcessesDead": true,
+    "parentLockAbsent": true,
+    "bypassExistedBeforeCleanup": true,
+    "bypassAbsent": true,
+    "removedOnlyUnusedTemporaryBypass": true,
+    "contentsRead": false,
+    "networkRequests": 0,
+    "persistentOriginalsUntouched": true
+  },
+  "usage": {
+    "mainManagement": 117,
+    "carriedManagement": 10,
+    "management": 127,
+    "mainControl": 352,
+    "carriedControl": 1,
+    "control": 353,
+    "combined": 480,
+    "vercelSetupUsed": 44,
+    "vercelSetupMaximum": 88,
+    "managementMaximum": 512,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "gatewayPreflightAttempts": 2,
+    "actorStarts": 0,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "continuation": {
+    "requiresTargetedTestsAndPublicReadiness": true,
+    "closedAdmissionReopened": false,
+    "credentialsRecreated": false,
+    "capsReplenished": false,
+    "timeOnlyApprovalRequired": false
+  },
+  "acceptance": {
+    "actualM03DevAcceptanceVerified": false,
+    "successfulNativeDiscoveryVerified": false,
+    "productionChanged": false,
+    "pr8Merged": false,
+    "m04Started": false
+  }
+}

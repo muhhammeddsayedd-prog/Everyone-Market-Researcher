@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, cpSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 
 const names = [
   'New-M03AcceptanceHandoff.ps1',
@@ -598,6 +599,186 @@ $out|ConvertTo-Json -Compress
       assert.equal(r.stderr, '');
       assert.deepEqual(JSON.parse(r.stdout), ['bounded_line_pass', 'line_refused', 'text_refused']);
     } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  'native wrapper forwards a complete long ASCII browser ACK through its actual console reader and pump',
+  windowsOnly,
+  async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-browser-relay-'));
+    let child,
+      childClosed = true;
+    try {
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+      const io = source.slice(
+        source.indexOf('function Initialize-BoundedIo'),
+        source.indexOf('function Invoke-PublicCompositionCheck'),
+      );
+      // The .NET Framework console defaults to254 payload characters. The actual
+      // ConPTY RED/GREEN reproduction accompanies this piped native regression;
+      // this assertion retains the process-local larger-buffer remedy, not a
+      // reduced browser schema or a global console/security mode change.
+      assert.match(io, /OpenStandardInput\(262144\)/);
+      const projection = source.slice(
+        source.indexOf('function Safe-PublicLine'),
+        source.indexOf('\ntry{', source.indexOf('function Safe-PublicLine')),
+      );
+      const pumpStart = source.indexOf(
+        ' $lineTask=[EmrM03AcceptanceBoundedIo]::Line($child.StandardOutput,65536);',
+      );
+      const pump = source.slice(pumpStart, source.indexOf(' $closed=$child.WaitForExit(0);', pumpStart));
+      assert.ok(pumpStart > 0 && pump.includes('$child.StandardInput.WriteLine($inputLine)'));
+      const childPath = join(directory, 'child.mjs');
+      writeFileSync(
+        childPath,
+        `import {createInterface} from 'node:readline';
+import {readFileSync} from 'node:fs';
+import {createFoundationLiveMcpBridge} from ${JSON.stringify(pathToFileURL(resolve('scripts/n8n/foundation-live-runtime-mcp.mjs')).href)};
+const bindings=JSON.parse(readFileSync(${JSON.stringify(resolve('n8n/foundation/bindings.dev.json'))},'utf8'));
+const emit=value=>{process.stdout.write(JSON.stringify(value)+'\\n');};
+const bridge=createFoundationLiveMcpBridge({bindings,executionSource:'browser_ui',deadlineAt:Date.now()+10000,emit},{timeoutMs:5000});
+const lines=createInterface({input:process.stdin,crlfDelay:Infinity});
+const done=ok=>{emit({kind:'m03_acceptance_result',status:ok?'prepared':'blocked',residual:!ok});bridge.close();lines.close();process.stdin.pause();process.exitCode=ok?0:1;};
+lines.on('line',line=>{let value;try{value=JSON.parse(line);}catch{done(false);return;}
+if(value.kind==='m03_acceptance_command'&&value.command==='prepare')bridge.port.discover({workflowId:bindings.workflowRefs['WF-00'].id}).then(()=>done(true),()=>done(false));
+else if(value.kind==='mcp_port_result'&&!bridge.accept(value))done(false);
+});
+`,
+      );
+      const quote = (value) => value.replaceAll("'", "''");
+      const script = join(directory, 'relay.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+$needles=[Collections.Generic.List[string]]::new();$knownWorkflowIds=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal);$null=$knownWorkflowIds.Add('MzimjpsuyPuK7SKe')
+$script:closureVerified=$true;$child=$null;$closed=$false;$closeRequested=$false;$lineTask=$null;$inputTask=$null;$errorTask=$null;$admittedClockMode=$false;$ResumeZeroSetup=$false
+${io}
+${projection}
+Initialize-BoundedIo
+$info=[Diagnostics.ProcessStartInfo]::new();$info.FileName='${quote(process.execPath)}';$info.Arguments='"${quote(childPath)}"';$info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.RedirectStandardInput=$true;$info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true
+$info.EnvironmentVariables.Clear();foreach($name in @('SystemRoot','WINDIR','PATH','TEMP','TMP')){if(Test-Path ('Env:'+ $name)){$info.EnvironmentVariables[$name]=[Environment]::GetEnvironmentVariable($name)}}
+try{
+$child=[Diagnostics.Process]::new();$child.StartInfo=$info;if(-not $child.Start()){throw 'blocked'};$childDeadline=[DateTimeOffset]::UtcNow.AddSeconds(10)
+${pump}
+if(-not $child.HasExited){throw 'blocked'}
+while($null -ne $lineTask){if(-not $lineTask.Wait(2000)){throw 'blocked'};$line=$lineTask.Result;if($null -eq $line){$lineTask=$null;break};Write-Output (Safe-PublicLine (ConvertFrom-Json -InputObject $line));$lineTask=[EmrM03AcceptanceBoundedIo]::Line($child.StandardOutput,65536)}
+if($child.ExitCode -ne 0){throw 'blocked'};Write-Output 'SYNTHETIC_RELAY_PASS'
+}catch{Write-Output 'SYNTHETIC_RELAY_BLOCKED';exit 1}finally{if($null -ne $child){if(-not $child.HasExited){$child.Kill();$null=$child.WaitForExit(2000)};$child.Dispose()};$info.EnvironmentVariables.Clear()}
+`,
+      );
+      child = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: safeEnvironment(directory),
+        windowsHide: true,
+      });
+      childClosed = false;
+      child.once('close', () => {
+        childClosed = true;
+      });
+      let buffer = '',
+        stderrBytes = 0,
+        requests = 0,
+        prepared = false,
+        passed = false,
+        outputBytes = 0,
+        failed = false;
+      child.stderr.on('data', (bytes) => {
+        stderrBytes += bytes.length;
+      });
+      child.stdout.on('data', (bytes) => {
+        outputBytes += bytes.length;
+        if (outputBytes > 16384) {
+          failed = true;
+          child.kill();
+          return;
+        }
+        buffer += bytes.toString('utf8');
+        let newline;
+        while ((newline = buffer.indexOf('\n')) >= 0) {
+          const line = buffer.slice(0, newline).replace(/\r$/, '');
+          buffer = buffer.slice(newline + 1);
+          if (line === 'SYNTHETIC_RELAY_PASS') {
+            passed = true;
+            continue;
+          }
+          let value;
+          try {
+            value = JSON.parse(line);
+          } catch {
+            failed = true;
+            continue;
+          }
+          if (value.kind === 'mcp_port_request') {
+            requests++;
+            if (
+              requests !== 1 ||
+              value.action !== 'browser_discover' ||
+              value.workflowId !== 'MzimjpsuyPuK7SKe'
+            ) {
+              failed = true;
+              child.kill();
+              return;
+            }
+            const ack = {
+              kind: 'mcp_port_result',
+              nonce: value.nonce,
+              action: value.action,
+              workflowId: value.workflowId,
+              result: {
+                source: 'browser_ui',
+                id: value.workflowId,
+                renderedName: 'WF-00 · Orchestrator [dev]',
+                workflowUrl: 'https://muhhammedsayed.app.n8n.cloud/workflow/' + value.workflowId,
+                executeControlEnabled: true,
+              },
+            };
+            const ascii = JSON.stringify(ack).replace(
+              /[^\x00-\x7f]/g,
+              (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'),
+            );
+            if (ascii.length <= 254) {
+              failed = true;
+              child.kill();
+              return;
+            }
+            child.stdin.write(ascii + '\n');
+          } else if (value.kind === 'm03_acceptance_result') {
+            prepared = value.status === 'prepared' && value.residual === false;
+            child.stdin.end();
+          } else failed = true;
+        }
+      });
+      child.stdin.write(
+        JSON.stringify({ kind: 'm03_acceptance_command', id: 'synthetic_prepare', command: 'prepare' }) +
+          '\n',
+      );
+      const exit = await new Promise((resolveExit) => {
+        const timer = setTimeout(() => child.kill(), 15000);
+        child.on('close', (code) => {
+          clearTimeout(timer);
+          resolveExit(code);
+        });
+      });
+      assert.equal(exit, 0);
+      assert.equal(stderrBytes, 0);
+      assert.equal(requests, 1);
+      assert.equal(prepared, true);
+      assert.equal(passed, true);
+      assert.equal(failed, false);
+    } finally {
+      if (child && !childClosed) {
+        child.kill();
+        await new Promise((resolveClose) => {
+          const timer = setTimeout(resolveClose, 2000);
+          child.once('close', () => {
+            clearTimeout(timer);
+            resolveClose();
+          });
+        });
+      }
       rmSync(directory, { recursive: true, force: true });
     }
   },

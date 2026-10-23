@@ -478,6 +478,123 @@ test('native discovery technical4 requires immutable receipts, records, control 
   }
 });
 
+test('repeated early discovery failures preserve attempts4and5 and admit only technical6 with127/353 charged', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ nativeBrowserDiscovery: true });
+  try {
+    const base = f.paths.admission.slice(0, -5);
+    const preserved = [3, 4, 5].flatMap((ordinal) =>
+      ['.json', '.runtime-claim.json', '.closed.json'].map((suffix) => {
+        const path = base + '.technical-' + ordinal + suffix;
+        return [path, readFileSync(path, 'utf8')];
+      }),
+    );
+    assert.equal(f.check().kind, 'project_verified_continuation_ready');
+    const proof = f.claim(f.admit());
+    const current = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(current.technicalAttemptOrdinal, 6);
+    assert.equal(current.runtimeFilename, 'runtime.technical-6.jsonl');
+    assert.equal(current.mainManagementAttempts, 117);
+    assert.equal(current.aggregateManagementAttempts, 127);
+    assert.equal(current.mainControlAttempts, 352);
+    assert.equal(current.aggregateControlAttempts, 353);
+    assert.equal(current.setupAttempts, 44);
+    assert.equal(current.setupMaximum, 88);
+    for (const [path, text] of preserved) assert.equal(readFileSync(path, 'utf8'), text);
+    for (const ordinal of [4, 5]) {
+      const closed = JSON.parse(readFileSync(base + '.technical-' + ordinal + '.closed.json', 'utf8'));
+      assert.equal(closed.closureVerified, false);
+      assert.equal(closed.bypassHandoffDeleted, false);
+    }
+    f.io.processAlive = (pid) => pid === process.pid || pid === process.ppid;
+    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+    assert.equal(f.readClaimed().windowId, proof.windowId);
+    assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('browser discovery reconciliation rejects effects, unknown completion, missing cleanup and counter reset', async () => {
+  for (const nativeBrowserDiscoveryFault of [
+    'execution',
+    'foreign',
+    'usage',
+    'write',
+    'actor',
+    'cleanup',
+    'unknown-completion',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      nativeBrowserDiscovery: true,
+      nativeBrowserDiscoveryFault,
+    });
+    try {
+      assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-6.json')), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('browser discovery reconciliation requires both immutable early failures, dead owners and no prior5 side-effect outputs', async () => {
+  const collisions = [
+    'attempt',
+    'latest',
+    'owner-provision-attempt',
+    'reactivation-attempt',
+    'unprovisioned-archive-attempt',
+    'runtime',
+  ];
+  for (const fault of [
+    'receipt',
+    'prior-receipt',
+    'admission',
+    'claim',
+    'closed',
+    'control',
+    'live-parent',
+    'live-runtime',
+    ...collisions,
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ nativeBrowserDiscovery: true });
+    try {
+      const base = f.paths.admission.slice(0, -5);
+      const paths = {
+        receipt: join(
+          f.directory,
+          'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical5-reconciliation-20261023.json',
+        ),
+        'prior-receipt': join(
+          f.directory,
+          'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical4-reconciliation-20261023.json',
+        ),
+        admission: base + '.technical-5.json',
+        claim: base + '.technical-5.runtime-claim.json',
+        closed: base + '.technical-5.closed.json',
+        control: f.paths.control,
+      };
+      if (Object.hasOwn(paths, fault))
+        writeFileSync(paths[fault], readFileSync(paths[fault], 'utf8').replace('{', '{ '));
+      if (fault === 'live-parent') f.io.processAlive = (pid) => pid === 91005;
+      if (fault === 'live-runtime') f.io.processAlive = (pid) => pid === 91006;
+      if (collisions.includes(fault))
+        f.put(
+          fault === 'runtime'
+            ? 'scripts/n8n/out/foundation/live/runtime.technical-5.jsonl'
+            : 'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-5-' +
+                fault +
+                '.json',
+          '{}\n',
+        );
+      assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(existsSync(base + '.technical-6.json'), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
 test('fresh logical plan uses an immutable runtime sibling while original runtime and global journals remain historical', async () => {
   const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true }),
     live = liveRuntimeFixture();
