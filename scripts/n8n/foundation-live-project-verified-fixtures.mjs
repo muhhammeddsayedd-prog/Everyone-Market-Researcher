@@ -12,7 +12,9 @@ export async function syntheticProjectVerifiedContinuation({
   cleanupFault,
   priorFault,
   projectFault,
-  wf70Readback = false,
+  managementAllocation = false,
+  managementAllocationFault,
+  wf70Readback = managementAllocation,
   wf70ReadbackFault,
   baselineDiscovery = wf70Readback,
   baselineDiscoveryFault,
@@ -371,7 +373,8 @@ export async function syntheticProjectVerifiedContinuation({
     nativeDiscoveryConfiguration,
     nativeBrowserDiscoveryConfiguration,
     baselineDiscoveryConfiguration,
-    wf70ReadbackConfiguration;
+    wf70ReadbackConfiguration,
+    managementAllocationConfiguration;
   if (closedWindow) {
     const base =
       'scripts/n8n/out/foundation/live/project-verified-continuation-' + snapshot.proposedSegmentId;
@@ -854,6 +857,34 @@ export async function syntheticProjectVerifiedContinuation({
       journalSha256: digest(journalText),
     };
   }
+  if (managementAllocation) {
+    const relative =
+      'milestones/M03-n8n-foundation/evidence/remaining-management-allocation-approval-20261024.json';
+    const packetRelative =
+      'milestones/M03-n8n-foundation/evidence/remaining-management-allocation-20261024.md';
+    const receipt = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8'));
+    receipt.recordedAt = '2026-10-23T17:50:00.000Z';
+    const packet = readFileSync(join(sourceRoot, packetRelative), 'utf8');
+    put(packetRelative, packet);
+    receipt.referencePacket.sha256 = digest(packet);
+    receipt.actualPriorUsage.reconciliationSha256 = baselineDiscoveryConfiguration.sha256;
+    receipt.actualPriorUsage.diagnosticSha256 = wf70ReadbackConfiguration.sha256;
+    if (managementAllocationFault === 'usage') receipt.actualPriorUsage.management = 127;
+    if (managementAllocationFault === 'maximum') receipt.allocation.managementMaximum = 640;
+    if (managementAllocationFault === 'combined') receipt.unchangedCaps.combined = 2624;
+    if (managementAllocationFault === 'reset') receipt.allocation.countersReset = true;
+    if (managementAllocationFault === 'actor') receipt.unchangedCaps.actorStarts = 3;
+    if (managementAllocationFault === 'spend') receipt.boundaries.spendingIncrease = true;
+    if (managementAllocationFault === 'reply') receipt.ownerReply = 'Synthetic unapproved allowance';
+    const text = JSON.stringify(receipt) + '\n';
+    put(relative, text);
+    managementAllocationConfiguration = {
+      relative,
+      sha256: digest(text),
+      packetRelative,
+      packetSha256: digest(packet),
+    };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -918,6 +949,13 @@ export async function syntheticProjectVerifiedContinuation({
     source = source.replace(
       /const wf70DiagnosticRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
       'const wf70DiagnosticRecovery = Object.freeze(' + JSON.stringify(wf70ReadbackConfiguration) + ');',
+    );
+  if (managementAllocationConfiguration)
+    source = source.replace(
+      /const managementAllocationApproval = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      'const managementAllocationApproval = Object.freeze(' +
+        JSON.stringify(managementAllocationConfiguration) +
+        ');',
     );
   // Explicitly retain the exhausted old50 branch as a synthetic regression.
   source = source.replace(/setupMaximum: (?:50|88),/, `setupMaximum: ${proposedBudgetApproved ? 88 : 50},`);

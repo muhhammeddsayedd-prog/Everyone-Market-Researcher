@@ -365,6 +365,36 @@ Write-Output 'SOURCE_SELECTED_FORWARD_PROFILE'
 });
 
 test(
+  'ForwardWindow public adapter accepts only the exact approved management CheckOnly fields',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys', 'Read-FoundationPostcheckContinuation'])}
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$PhaseAControl=$true;$PostcheckContinuation=$true;$ClockAmendment=$false;$OriginalDeadlineAtMs=0;$RemainingContinuation=$false;$StartupReplacement=$false;$CheckOnly=$true;$postcheckContinuationSegment='20275b22-b7fe-4737-a9a4-c50c2feadb74';$repo='synthetic';$node='never-spawned'
+$valid=[ordered]@{kind='project_verified_continuation_ready';segmentId=$postcheckContinuationSegment;sourceCommitSha='a5e746736893d5040e93032ae740a0878f748837';windowId='38b3708d-61b0-41d2-8170-5ed91c66b4dc';privateRead=$false;networkRequests=0;managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}
+$script:dto=[pscustomobject]$valid
+function Assert-Path($Root,$Relative){return 'synthetic-fixed-module'}
+function Invoke-Bounded{return [pscustomobject]@{ok=$true;closed=$true;text=ConvertTo-Json $script:dto -Compress}}
+$null=Read-FoundationPostcheckContinuation
+foreach($mutation in @(@{key='managementMaximum';value=512},@{key='managementMaximum';value=577},@{key='managementMaximum';value='576'},@{key='managementAttempts';value=151},@{key='controlAttempts';value=382},@{key='combinedAttempts';value=534},@{key='privateRead';value=$true},@{key='networkRequests';value=1},@{key='extra';value='SYNTHETIC_ONLY'})){
+ $copy=[ordered]@{};foreach($name in $valid.Keys){$copy[$name]=$valid[$name]};$copy[$mutation.key]=$mutation.value;$script:dto=[pscustomobject]$copy;$denied=$false
+ try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'UNAPPROVED_PUBLIC_PROFILE_ACCEPTED'}
+}
+foreach($missing in @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){
+ $copy=[ordered]@{};foreach($name in $valid.Keys){if($name -cne $missing){$copy[$name]=$valid[$name]}};$script:dto=[pscustomobject]$copy;$denied=$false
+ try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'PARTIAL_MANAGEMENT_PROFILE_ACCEPTED'}
+}
+$script:dto=[pscustomobject]$valid;$CheckOnly=$false;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'PUBLIC_FIELDS_ACCEPTED_IN_PRIVATE_MODE'}
+$CheckOnly=$true;$ForwardWindow=$false;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'PUBLIC_FIELDS_ACCEPTED_IN_LEGACY_WINDOW'}
+Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
+`),
+      'EXACT_MANAGEMENT_PUBLIC_PROFILE',
+    );
+  },
+);
+
+test(
   'actual forward packet has all47 source-required public pins and retains every old migration field',
   native,
   () => {

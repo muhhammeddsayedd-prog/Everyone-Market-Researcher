@@ -119,7 +119,7 @@ function appendFile(path, row) {
 }
 
 // This pool exists before the new deployment/plan is known. Vercel delivery,
-// runtime setup/case/restoration all debit the SAME512 ledger and child lock.
+// runtime setup/case/restoration all debit the SAME cumulative ledger and child lock.
 // Its deadline is supplied by the concrete admitted child, never module import.
 export function createFoundationLiveManagementBudget({ sourceCommitSha, deadlineAt }, dependencies = {}) {
   const now = dependencies.now ?? Date.now;
@@ -154,6 +154,34 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
           claimed: true,
         });
   if ([resume, amendment, continuation, remaining, startup, verified].filter(Boolean).length > 1) fail();
+  const verifiedCheckpoint = verified
+    ? foundationProjectVerifiedContinuationResumeCheckpoint(verified)
+    : null;
+  const managementMaximum = verifiedCheckpoint?.managementMaximum ?? 512;
+  if (![512, 576].includes(managementMaximum)) fail();
+  const sharedMaximum = managementMaximum === 576;
+  let observedControlAttempts = verifiedCheckpoint?.aggregateControlAttempts;
+  const readControlAttempts = () => {
+    let value;
+    try {
+      value = dependencies.controlAttempts();
+    } catch {
+      fail();
+    }
+    if (!Number.isSafeInteger(value) || value < observedControlAttempts || value > 2048) fail();
+    observedControlAttempts = value;
+    return value;
+  };
+  if (sharedMaximum) {
+    if (
+      typeof dependencies.controlAttempts !== 'function' ||
+      !Number.isSafeInteger(observedControlAttempts) ||
+      observedControlAttempts < 0 ||
+      observedControlAttempts > 2048
+    )
+      fail();
+    readControlAttempts();
+  }
   const admittedClock = verified || startup || remaining || continuation || amendment;
   if (
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
@@ -231,7 +259,7 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     if (reuse && !lstatSync(path).isFile()) fail();
     if (!reuse && !existsSync(path))
       appendFile(path, { event: 'management_header', version: 1, sourceCommitSha, deadlineAt });
-    const rows = readRows(path, 513),
+    const rows = readRows(path, managementMaximum + 1),
       header = rows.shift();
     if (verified)
       assertFoundationProjectVerifiedContinuationJournalPrefixes(verified, {
@@ -249,18 +277,11 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       header.event !== 'management_header' ||
       header.version !== 1 ||
       header.sourceCommitSha !==
-        (verified
-          ? (foundationProjectVerifiedContinuationResumeCheckpoint(verified).headerSourceCommitSha ??
-            sourceCommitSha)
-          : sourceCommitSha) ||
+        (verified ? (verifiedCheckpoint.headerSourceCommitSha ?? sourceCommitSha) : sourceCommitSha) ||
       header.deadlineAt !== headerDeadlineAt ||
       (reuse &&
         rows.length !==
-          (verified
-            ? foundationProjectVerifiedContinuationResumeCheckpoint(verified).mainManagementAttempts
-            : startup || remaining
-              ? 1
-              : 0)) ||
+          (verified ? verifiedCheckpoint.mainManagementAttempts : startup || remaining ? 1 : 0)) ||
       rows.some(
         (r, i) => Object.keys(r).length !== 2 || r.event !== 'management_attempt' || r.ordinal !== i + 1,
       )
@@ -270,10 +291,25 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     attempts = rows.length;
     const budget = Object.freeze({
       admit() {
-        if (closed || stopped || attempts + carriedAttempts >= 512 || now() >= deadlineAt) fail();
+        if (closed || stopped || attempts + carriedAttempts >= managementMaximum || now() >= deadlineAt)
+          fail();
+        if (sharedMaximum) {
+          let controlAttempts;
+          try {
+            controlAttempts = readControlAttempts();
+          } catch {
+            stopped = true;
+            fail();
+          }
+          if (attempts + carriedAttempts + controlAttempts >= 2560) fail();
+        }
         try {
-          appendFile(path, { event: 'management_attempt', ordinal: attempts + 1 });
-          attempts++;
+          const ordinal = attempts + 1;
+          // The expanded paired pool must charge an uncertain append before
+          // Control can observe this counter, even if fsync/close then fails.
+          if (sharedMaximum) attempts = ordinal;
+          appendFile(path, { event: 'management_attempt', ordinal });
+          if (!sharedMaximum) attempts = ordinal;
         } catch {
           stopped = true;
           fail();
@@ -284,7 +320,7 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
           attempts: attempts + carriedAttempts,
           mainAttempts: attempts,
           carriedAttempts,
-          maximum: 512,
+          maximum: managementMaximum,
           deadlineAt,
           stopped,
           closed,
@@ -316,9 +352,7 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       directory,
       sourceCommitSha,
       deadlineAt,
-      ...(verified
-        ? { runtimeFilename: foundationProjectVerifiedContinuationResumeCheckpoint(verified).runtimeFilename }
-        : {}),
+      ...(verified ? { runtimeFilename: verifiedCheckpoint.runtimeFilename } : {}),
     });
     return budget;
   } catch {
@@ -381,6 +415,7 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
     );
   assertFoundationLiveManagementBudget(budget);
   const scope = managementBudgets.get(budget);
+  const managementMaximum = budget.snapshot().maximum;
   if (scope.sourceCommitSha !== input.setup.sourceCommitSha || scope.deadlineAt !== input.deadlineAt) fail();
   const baselinePreflightReceipt = dependencies.baselinePreflightReceipt;
   if (baselinePreflightReceipt !== undefined)
@@ -499,21 +534,24 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
           privateFileRead: false,
           hostedActions: 0,
           setupDriftGuardGetCount: baselinePreflightReceipt === undefined ? 25 : 0,
-          managementMaximum: 512,
+          managementMaximum,
           controlMaximum: 2048,
         }),
       setup: () =>
         exclusive(() => {
           const state = foundationRuntimeState(plan, journal);
           const setupRequests = baselinePreflightReceipt === undefined ? 134 : 109;
-          if (state.requestCount === 0 && budget.snapshot().attempts + setupRequests + 142 > 512)
+          if (
+            state.requestCount === 0 &&
+            budget.snapshot().attempts + setupRequests + 142 > managementMaximum
+          )
             return Object.freeze({ status: 'shared_management_reserve_required' });
           return runFoundationRuntimeSetup(plan, ports);
         }),
       diagnostics: () => foundationRuntimeGuardDiagnostic(journal),
       saveCase: (caseId, options = {}) =>
         exclusive(() => {
-          if (budget.snapshot().attempts + 3 + 142 > 512)
+          if (budget.snapshot().attempts + 3 + 142 > managementMaximum)
             return Object.freeze({ status: 'shared_management_reserve_required' });
           return saveFoundationRuntimeCase(
             plan,
@@ -523,7 +561,7 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
         }),
       saveDomainProbe: () =>
         exclusive(() => {
-          if (budget.snapshot().attempts + 3 + 142 > 512)
+          if (budget.snapshot().attempts + 3 + 142 > managementMaximum)
             return Object.freeze({ status: 'shared_management_reserve_required' });
           return saveFoundationRuntimeCase(plan, materializeFoundationRuntimeDomainProbe(plan), ports);
         }),
@@ -622,7 +660,7 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
         Object.freeze({
           ...foundationRuntimeState(plan, journal),
           managementAttempts: budget.snapshot().attempts,
-          managementMaximum: 512,
+          managementMaximum,
           controlAttempts: controlBudget.snapshot().attempts,
           controlMaximum: 2048,
           pendingTransport: transport.state(),

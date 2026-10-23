@@ -280,6 +280,20 @@ evidence are unchanged; their superseded time-only and disposable-input wording
 does not govern current development continuations. Implementation/tests/live
 acceptance are recorded separately in the existing progress records.
 
+## M03 cumulative management allocation — approved 24 October 2026
+
+The owner approved the exact packet at PR #8 head `0bb8598`: **Approve cumulative
+management 576; retain 152 charged**. [The immutable decision](../milestones/M03-n8n-foundation/evidence/remaining-management-allocation-approval-20261024.json)
+raises only management from 512 to 576. Keep 152 management / 384 control / 536
+combined charged, all historical attempts, side-effect IDs and closed windows.
+Control stays 2,048 and combined stays 2,560; enforce the combined ceiling against
+both actual counters before each request. Vercel stays 88 with 44 used. Two
+sequential actor starts, USD 1 each / USD 2 total reserve, remain entirely unused.
+No spending increase, migration replay, production, recurring activity, external
+messaging, shared rotation, PR merge or M04 is approved. Standing M03 authority
+and persistent dev access continue; no time-only renewal or credential handoff
+is required by this allowance amendment.
+
 ## M03 temporary sole/default Preview bypass — approved 23 October 2026
 
 The owner replied **“I approve”** to the exact [security-scope packet at9e7a8be](../milestones/M03-n8n-foundation/evidence/sole-bypass-scope-decision-20261023.md).

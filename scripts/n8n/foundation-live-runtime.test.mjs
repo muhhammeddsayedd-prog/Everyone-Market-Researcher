@@ -1,7 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync, symlinkSync, unlinkSync } from 'node:fs';
-import { join } from 'node:path';
+import {
+  readFileSync,
+  writeFileSync,
+  symlinkSync,
+  unlinkSync,
+  mkdirSync,
+  rmdirSync,
+  renameSync,
+} from 'node:fs';
+import { dirname, join } from 'node:path';
 import {
   createFoundationLiveRuntime,
   createFoundationLiveManagementBudget,
@@ -12,6 +20,277 @@ import { fixture, syntheticBaselinePreflight } from './foundation-live-runtime-f
 import { foundationAcceptancePlan } from '../../n8n/foundation/materialize-acceptance-case.mjs';
 import { assertFoundationRuntimeRestorationAudit } from './foundation-runtime-control.mjs';
 import { syntheticZeroSetup } from './foundation-live-runtime-resume-fixtures.mjs';
+import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
+
+test('only the approved genuine Management allocation carries152 charged attempts into the cumulative576 pool', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+  let budget;
+  try {
+    const prior = readFileSync(f.paths.management, 'utf8'),
+      proof = f.claim(f.admit()),
+      runtime = await f.copy('foundation-live-runtime.mjs');
+    budget = runtime.createFoundationLiveManagementBudget(
+      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        controlAttempts: () => 384,
+      },
+    );
+    assert.equal(budget.snapshot().attempts, 152);
+    assert.equal(budget.snapshot().maximum, 576);
+    for (let i = 152; i < 576; i++) budget.admit();
+    const atCap = readFileSync(f.paths.management, 'utf8');
+    assert.equal(budget.snapshot().attempts, 576);
+    assert.equal(budget.snapshot().carriedAttempts, 10);
+    assert.equal(budget.snapshot().mainAttempts, 566);
+    assert.equal(atCap.startsWith(prior), true);
+    assert.throws(() => budget.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+    assert.equal(readFileSync(f.paths.management, 'utf8'), atCap);
+  } finally {
+    budget?.close();
+    f.cleanup();
+  }
+});
+
+test('expanded Management admission preserves the combined2560 ceiling before any new durable intent', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+  let budget;
+  try {
+    const proof = f.claim(f.admit()),
+      runtime = await f.copy('foundation-live-runtime.mjs');
+    budget = runtime.createFoundationLiveManagementBudget(
+      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        controlAttempts: () => 2048,
+      },
+    );
+    for (let i = 152; i < 512; i++) budget.admit();
+    const before = readFileSync(f.paths.management, 'utf8');
+    assert.equal(budget.snapshot().maximum, 576);
+    assert.equal(budget.snapshot().attempts + 2048, 2560);
+    assert.throws(() => budget.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+    assert.equal(readFileSync(f.paths.management, 'utf8'), before);
+  } finally {
+    budget?.close();
+    f.cleanup();
+  }
+});
+
+test('an uncertain576 journal append stays charged and stops paired Control at the combined boundary', async () => {
+  for (const atBoundary of [false, true]) {
+    const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+    let budget,
+      controlBudget,
+      moved = false,
+      directoryCreated = false;
+    const saved = f.paths.management + '.synthetic-owned-backup';
+    try {
+      const proof = f.claim(f.admit()),
+        runtime = await f.copy('foundation-live-runtime.mjs'),
+        control = await f.copy('foundation-control-state.mjs');
+      budget = runtime.createFoundationLiveManagementBudget(
+        { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+        {
+          directory: dirname(f.paths.management),
+          now: f.now,
+          projectVerifiedContinuationProof: proof,
+          controlAttempts: () => controlBudget?.snapshot().attempts ?? 384,
+        },
+      );
+      const journal = control.createFoundationControlJournal({
+        previousEvents: readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+        durableAppend() {},
+      });
+      controlBudget = control.createFoundationControlBudget({
+        journal,
+        now: f.now,
+        deadlineAt: proof.deadlineAt,
+        projectVerifiedContinuationProof: proof,
+        managementAttempts: () => budget.snapshot().attempts,
+      });
+      if (atBoundary) {
+        while (budget.snapshot().attempts < 512) budget.admit();
+        while (controlBudget.snapshot().attempts < 2047) controlBudget.admit({ kind: 'discovery' });
+      }
+      const before = budget.snapshot().attempts;
+      renameSync(f.paths.management, saved);
+      moved = true;
+      mkdirSync(f.paths.management);
+      directoryCreated = true;
+      // This owned synthetic path fails before any network transport exists.
+      // An append/fsync/close failure may be uncertain in production, so its
+      // attempted ordinal must remain visible to the paired Control budget.
+      assert.throws(() => budget.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+      assert.equal(budget.snapshot().attempts, before + 1);
+      assert.equal(budget.snapshot().attempts, atBoundary ? 513 : 153);
+      assert.equal(budget.snapshot().stopped, true);
+      assert.throws(() => budget.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+      assert.equal(budget.snapshot().attempts, before + 1);
+      if (atBoundary) {
+        assert.throws(() => controlBudget.admit({ kind: 'discovery' }), /FOUNDATION_CONTROL_STATE_BLOCKED/);
+        assert.equal(controlBudget.snapshot().attempts, 2047);
+        assert.equal(budget.snapshot().attempts + controlBudget.snapshot().attempts, 2560);
+      }
+    } finally {
+      budget?.close();
+      if (directoryCreated) rmdirSync(f.paths.management);
+      if (moved) renameSync(saved, f.paths.management);
+      f.cleanup();
+    }
+  }
+});
+
+test('approved runtime state and existing shutdown reserves use576 without resetting prior Management or Control usage', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true }),
+    live = fixture();
+  let budget, runtime, controlBudget;
+  try {
+    const proof = f.claim(f.admit()),
+      module = await f.copy('foundation-live-runtime.mjs'),
+      control = await f.copy('foundation-control-state.mjs');
+    budget = module.createFoundationLiveManagementBudget(
+      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        controlAttempts: () => controlBudget?.snapshot().attempts ?? 384,
+      },
+    );
+    const journal = control.createFoundationControlJournal({
+      previousEvents: readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+      durableAppend() {},
+    });
+    controlBudget = control.createFoundationControlBudget({
+      journal,
+      now: f.now,
+      deadlineAt: proof.deadlineAt,
+      projectVerifiedContinuationProof: proof,
+      managementAttempts: () => budget.snapshot().attempts,
+    });
+    runtime = module.createFoundationLiveRuntime(
+      {
+        ...live.input,
+        activeWindowId: proof.windowId,
+        setup: { ...live.input.setup, sourceCommitSha: proof.sourceCommitSha },
+        deadlineAt: proof.deadlineAt,
+      },
+      { ...live.dependencies, managementBudget: budget, controlJournal: journal, controlBudget, now: f.now },
+    );
+    assert.equal(runtime.checkOnly().managementMaximum, 576);
+    assert.equal(runtime.state().managementMaximum, 576);
+    assert.equal(runtime.state().managementAttempts, 152);
+    assert.equal(runtime.state().controlAttempts, 384);
+    assert.equal((await runtime.setup()).status, 'runtime_setup_verified');
+    for (let i = budget.snapshot().attempts; i < 371; i++) budget.admit();
+    const before = live.calls.length;
+    assert.equal((await runtime.saveCase('dispatch.vimeo')).status, 'case_draft_verified');
+    assert.equal(live.calls.length - before, 3);
+    assert.equal(budget.snapshot().attempts, 374);
+    assert.equal((await runtime.restore()).status, 'exact_staging_restored_unpublished');
+    assert.equal(runtime.state().managementMaximum, 576);
+    assert.equal(runtime.state().controlAttempts, 384);
+  } finally {
+    runtime?.close();
+    budget?.close();
+    live.cleanup();
+    f.cleanup();
+  }
+});
+
+test('expanded Management rejects missing, invalid, throwing or decreasing Control snapshots without adding an intent', async () => {
+  for (const snapshot of [
+    undefined,
+    () => NaN,
+    () => -1,
+    () => 383,
+    () => 2049,
+    () => 384.5,
+    () => {
+      throw Error('PRIVATE_CALLBACK_VALUE');
+    },
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+    let budget;
+    try {
+      const proof = f.claim(f.admit()),
+        runtime = await f.copy('foundation-live-runtime.mjs'),
+        before = readFileSync(f.paths.management, 'utf8');
+      assert.throws(() => {
+        budget = runtime.createFoundationLiveManagementBudget(
+          { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+          {
+            directory: dirname(f.paths.management),
+            now: f.now,
+            projectVerifiedContinuationProof: proof,
+            ...(snapshot === undefined ? {} : { controlAttempts: snapshot }),
+          },
+        );
+      }, /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+      assert.equal(readFileSync(f.paths.management, 'utf8'), before);
+    } finally {
+      budget?.close();
+      f.cleanup();
+    }
+  }
+  const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+  let budget,
+    controlAttempts = 385;
+  try {
+    const proof = f.claim(f.admit()),
+      runtime = await f.copy('foundation-live-runtime.mjs');
+    budget = runtime.createFoundationLiveManagementBudget(
+      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        controlAttempts: () => controlAttempts,
+      },
+    );
+    budget.admit();
+    const before = readFileSync(f.paths.management, 'utf8');
+    controlAttempts = 384;
+    assert.throws(() => budget.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+    assert.equal(readFileSync(f.paths.management, 'utf8'), before);
+  } finally {
+    budget?.close();
+    f.cleanup();
+  }
+});
+
+test('a plain requested576 cap does not change the historical default512 budget', () => {
+  const f = fixture();
+  let budget;
+  try {
+    budget = createFoundationLiveManagementBudget(
+      {
+        sourceCommitSha: f.input.setup.sourceCommitSha,
+        deadlineAt: f.input.deadlineAt,
+        managementMaximum: 576,
+      },
+      {
+        directory: f.directory,
+        managementMaximum: 576,
+        controlAttempts: () => {
+          throw Error('NOT_CALLED');
+        },
+      },
+    );
+    assert.equal(budget.snapshot().maximum, 512);
+    for (let i = 0; i < 512; i++) budget.admit();
+    assert.throws(() => budget.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+    assert.equal(budget.snapshot().attempts, 512);
+  } finally {
+    budget?.close();
+    f.cleanup();
+  }
+});
 
 test('one genuine same-attempt early baseline plus one actual restoration audit completes the full307 runtime request bound', async () => {
   const f = fixture();

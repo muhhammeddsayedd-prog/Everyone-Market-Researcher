@@ -508,6 +508,69 @@ test('effectful continuation reaches the actual session constructor with retaine
   }
 });
 
+test('approved576 session composes genuine mixed-row budgets with152 management and384 control before any child or network', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+  let session;
+  try {
+    const proof = f.claim(f.admit());
+    const checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(checkpoint.managementMaximum, 576);
+    assert.equal(readFileSync(f.paths.control, 'utf8').trim().split('\n').length, 382);
+    assert.equal(checkpoint.mainControlAttempts, 381);
+    assert.equal(checkpoint.aggregateControlAttempts, 384);
+    const bindings = JSON.parse(
+      readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
+    );
+    for (const name of ['bindings.dev.json', 'transport.dev.json'])
+      f.put(
+        'n8n/foundation/' + name,
+        readFileSync(new URL('../../n8n/foundation/' + name, import.meta.url), 'utf8'),
+      );
+    for (const key of Object.keys(bindings.workflowRefs))
+      f.put(
+        'n8n/workflows/' + key + '.json',
+        readFileSync(new URL('../../n8n/workflows/' + key + '.json', import.meta.url), 'utf8'),
+      );
+    let children = 0,
+      emitted = 0;
+    const copied = await f.copy('foundation-live-runtime-cli.mjs');
+    session = f.scoped(() =>
+      copied.createFoundationLiveAcceptanceSession(
+        { ...privatePacket(), sourceCommitSha: proof.sourceCommitSha, leaseExpiry: f.now() + 7200000 },
+        () => {
+          emitted++;
+        },
+        {
+          now: f.now,
+          projectVerifiedContinuationProof: proof,
+          startAdmin() {
+            children++;
+            throw Error('UNEXPECTED_CHILD');
+          },
+        },
+      ),
+    );
+    const result = await session.command({
+      kind: 'm03_acceptance_command',
+      id: 'mixed576',
+      command: 'state',
+    });
+    assert.equal(result.managementAttempts, 152);
+    assert.equal(result.controlAttempts, 384);
+    assert.equal(result.nativeExecutions, 0);
+    assert.equal(result.status, 'not_prepared');
+    assert.equal(children, 0);
+    assert.equal(emitted, 0);
+    assert.equal(
+      f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof).aggregateManagementAttempts,
+      152,
+    );
+  } finally {
+    if (session) await session.close();
+    f.cleanup();
+  }
+});
+
 test('a lookalike mixed-row continuation is rejected before session storage, child creation or emitted metadata', () => {
   const time = Date.parse('2026-10-24T01:00:00Z');
   let effects = 0;

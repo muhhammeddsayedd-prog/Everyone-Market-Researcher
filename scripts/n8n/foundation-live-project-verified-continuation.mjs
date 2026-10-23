@@ -167,6 +167,12 @@ const wf70DiagnosticRecovery = Object.freeze({
   journalRelative: 'scripts/n8n/out/foundation/wf70-discovery-diagnostic-20261024.jsonl',
   journalSha256: '86753c28dc66e902bfe80774ba3f66543b5808e99ef7f694154c831543d16c58',
 });
+const managementAllocationApproval = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/remaining-management-allocation-approval-20261024.json',
+  sha256: 'e2819cf2dc62a01befabca78d32032cfab4378a39625b8d0dfae14229d9d80db',
+  packetRelative: 'milestones/M03-n8n-foundation/evidence/remaining-management-allocation-20261024.md',
+  packetSha256: '54bf439c37109db9cb184fd70fc8896684ff605d7f243fce0196684d54ddfa74',
+});
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
 };
@@ -402,6 +408,7 @@ function checkpoint(x) {
   x.recovery = reconciledNativeDiscovery(x) ?? x.recovery;
   x.recovery = reconciledBaselineDiscovery(x) ?? x.recovery;
   x.recovery = reconciledWf70Diagnostic(x) ?? x.recovery;
+  x.recovery = approvedManagementAllocation(x) ?? x.recovery;
   if (x.recovery?.closedWindow) assertSetupAllocationApproval(x);
   recoveryPreflight(x);
   return p;
@@ -1494,6 +1501,73 @@ function reconciledWf70Diagnostic(x) {
   }
   return Object.freeze({ ...x.recovery, carriedControlAttempts: 3, wf70DiagnosticControlAttempts: 2 });
 }
+function approvedManagementAllocation(x) {
+  const text = x.file(managementAllocationApproval.relative, { optional: true });
+  if (text === null) return null;
+  if (
+    hash(text) !== managementAllocationApproval.sha256 ||
+    hash(x.file(managementAllocationApproval.packetRelative)) !== managementAllocationApproval.packetSha256 ||
+    x.recovery?.baselineDiscoveryTechnicalAttempt !== 6 ||
+    x.recovery.wf70DiagnosticControlAttempts !== 2 ||
+    x.recovery.mainManagementAttempts !== 142 ||
+    x.recovery.carriedManagementAttempts !== 10 ||
+    x.recovery.mainControlAttempts !== 381 ||
+    x.recovery.carriedControlAttempts !== 3 ||
+    x.recovery.setupAttempts !== 44
+  )
+    fail();
+  const a = JSON.parse(text),
+    allocation = a.allocation;
+  const recordedAt = Date.parse(a.recordedAt);
+  if (!Number.isFinite(recordedAt) || recordedAt > x.clock()) fail();
+  if (
+    a.kind !== 'm03_cumulative_management_allocation_approval' ||
+    a.questionCallId !== 'call_bab43b11555c42afbb61ecb2bc4bfe30' ||
+    a.ownerReply !== 'Approve cumulative management 576; retain 152 charged' ||
+    a.decision !== 'approved' ||
+    a.environment !== 'dev' ||
+    a.milestone !== 'M03' ||
+    a.referencePacket.path !== managementAllocationApproval.packetRelative ||
+    a.referencePacket.sha256 !== managementAllocationApproval.packetSha256 ||
+    a.referencePacket.sourceCommitSha !== '0bb85989e0996e3844817bbe1d08e8e376afeb4d' ||
+    allocation.previousManagementMaximum !== 512 ||
+    allocation.managementMaximum !== 576 ||
+    allocation.usedManagementRequests !== 152 ||
+    allocation.remainingManagementRequestsMaximum !== 424 ||
+    allocation.remainingPlanMaximum !== 376 ||
+    allocation.planCumulativeMaximum !== 528 ||
+    allocation.reserveAbovePlan !== 48 ||
+    allocation.countersReset !== false ||
+    a.actualPriorUsage.management !== 152 ||
+    a.actualPriorUsage.control !== 384 ||
+    a.actualPriorUsage.combined !== 536 ||
+    a.actualPriorUsage.vercel !== 44 ||
+    a.actualPriorUsage.actorStarts !== 0 ||
+    a.actualPriorUsage.actorSpendUsd !== 0 ||
+    a.actualPriorUsage.reconciliationPath !== baselineDiscoveryRecovery.relative ||
+    a.actualPriorUsage.reconciliationSha256 !== baselineDiscoveryRecovery.sha256 ||
+    a.actualPriorUsage.diagnosticPath !== wf70DiagnosticRecovery.relative ||
+    a.actualPriorUsage.diagnosticSha256 !== wf70DiagnosticRecovery.sha256 ||
+    a.unchangedCaps.control !== caps.control ||
+    a.unchangedCaps.combined !== caps.combined ||
+    a.unchangedCaps.vercel !== 88 ||
+    a.unchangedCaps.nativeExecutions !== caps.nativeExecutions ||
+    a.unchangedCaps.gatewayAttempts !== caps.gatewayAttempts ||
+    a.unchangedCaps.directProviderReads !== caps.providerGetAttempts ||
+    a.unchangedCaps.actorStarts !== 2 ||
+    a.unchangedCaps.maxActorUsd !== 1 ||
+    a.unchangedCaps.actorReserveUsd !== 2 ||
+    a.unchangedCaps.actorsSequential !== true ||
+    a.unchangedCaps.newDistinctCollectedItems !== 1 ||
+    Object.values(a.limitsPreserved).some((v) => v !== true) ||
+    Object.values(a.boundaries).some((v) => v !== false) ||
+    a.acceptance.allocationDecisionComplete !== true ||
+    a.acceptance.executionStartedByThisRecord !== false ||
+    a.acceptance.m03DevAcceptanceVerified !== false
+  )
+    fail();
+  return Object.freeze({ ...x.recovery, managementMaximum: 576 });
+}
 function currentReadiness(x) {
   if (!x.recovery?.closedWindow) return null;
   assertSetupAllocationApproval(x);
@@ -1501,7 +1575,7 @@ function currentReadiness(x) {
     return 'setup_cap_insufficient';
   if (
     x.recovery.mainManagementAttempts + x.recovery.carriedManagementAttempts + 25 + 44 + 307 >
-    caps.runtimeManagement
+    (x.recovery.managementMaximum ?? caps.runtimeManagement)
   )
     return 'management_cap_insufficient';
   const active = foundationProjectVerifiedActiveRuntime;
@@ -1815,7 +1889,7 @@ function journals(x, initial = false) {
   if (!exact(j, ['management', 'control', 'setup'])) fail();
   const values = {};
   for (const [name, maximum, prefix] of [
-    ['management', 510, 3],
+    ['management', (x.recovery?.managementMaximum ?? caps.runtimeManagement) + 1, 3],
     ['control', 8000, 200],
     ['setup', 500, 2],
   ]) {
@@ -1852,7 +1926,8 @@ function journals(x, initial = false) {
     header.version !== 1 ||
     header.sourceCommitSha !== c.sourceCommitSha ||
     header.deadlineAt !== c.originalDeadlineAt ||
-    management.length + (x.recovery?.carriedManagementAttempts ?? 4) > 512 ||
+    management.length + (x.recovery?.carriedManagementAttempts ?? 4) >
+      (x.recovery?.managementMaximum ?? caps.runtimeManagement) ||
     management.some(
       (r, i) => !exact(r, ['event', 'ordinal']) || r.event !== 'management_attempt' || r.ordinal !== i + 1,
     )
@@ -2151,6 +2226,7 @@ function proof(data, claimed = false) {
       mainManagementAttempts: data.recovery?.mainManagementAttempts ?? 2,
       aggregateManagementAttempts:
         (data.recovery?.mainManagementAttempts ?? 2) + (data.recovery?.carriedManagementAttempts ?? 4),
+      managementMaximum: data.recovery?.managementMaximum ?? caps.runtimeManagement,
       mainControlAttempts: data.recovery?.mainControlAttempts ?? 200,
       aggregateControlAttempts:
         (data.recovery?.mainControlAttempts ?? 200) + (data.recovery?.carriedControlAttempts ?? 1),
@@ -2234,6 +2310,13 @@ export function assertFoundationProjectVerifiedContinuationJournalPrefixes(p, op
     ])
       if (hash(x.file(path)) !== expected) fail();
   }
+  if (x.recovery?.managementMaximum === 576) {
+    for (const [path, expected] of [
+      [managementAllocationApproval.relative, managementAllocationApproval.sha256],
+      [managementAllocationApproval.packetRelative, managementAllocationApproval.packetSha256],
+    ])
+      if (hash(x.file(path)) !== expected) fail();
+  }
   recoveryPreflight(x);
   const current = journals(x);
   if (
@@ -2265,6 +2348,9 @@ export function verifyFoundationProjectVerifiedContinuation(options = {}, depend
       windowId: x.recovery?.closedWindow ? foundationProjectVerifiedActiveRuntime.windowId : c.windowId,
       privateRead: false,
       networkRequests: 0,
+      ...(x.recovery?.managementMaximum === 576
+        ? { managementMaximum: 576, managementAttempts: 152, controlAttempts: 384, combinedAttempts: 536 }
+        : {}),
     });
   } catch {
     fail();

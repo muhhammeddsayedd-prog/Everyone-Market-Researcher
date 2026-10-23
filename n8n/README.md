@@ -56,9 +56,12 @@ preserves that partial result, 152 management / 382 control charges and separate
 verified disposable-input cleanup. It does not establish A-D or full D.
 The Reader now retains fixed error classification, and the public wrapper
 forwards only its allowlisted code, owned key, stage and actual HTTP status.
-The unchanged 512 management ceiling blocks a 528-request remaining plan before
-new admission or private inputs; [the separate allowance proposal](../milestones/M03-n8n-foundation/evidence/remaining-management-allocation-20261024.md)
-does not itself increase that ceiling. Persistent originals remain reusable.
+The then-current 512 management ceiling blocked the 528-request remaining plan
+before new admission or private inputs. The owner subsequently approved
+[the exact 576 allocation](../milestones/M03-n8n-foundation/evidence/remaining-management-allocation-approval-20261024.json),
+retaining all 152 management charges. Control remains 2,048 and combined remains
+2,560; both actual counters must be checked before each new request. The original
+proposal and historical refusals remain unchanged. Persistent originals remain reusable.
 The subsequent [WF-70 readback](../milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json)
 completed two strict-TLS GETs with HTTP 200 and zero rows. Current charges are 152
 management / 384 control / 536 combined; the diagnostic child and disposable key

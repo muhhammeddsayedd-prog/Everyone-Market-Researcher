@@ -556,6 +556,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   )
     fail();
   const deadlineAt = admittedClock ? admittedClock.deadlineAt : resume ? resume.deadlineAt : now() + 3600000;
+  let controlBudget;
   const budget = createFoundationLiveManagementBudget(
     { sourceCommitSha: input.sourceCommitSha, deadlineAt },
     {
@@ -567,6 +568,12 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       ...(remaining ? { remainingContinuationProof: remaining } : {}),
       ...(startup ? { startupReplacementProof: startup } : {}),
       ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
+      ...(verifiedCheckpoint?.managementMaximum === 576
+        ? {
+            controlAttempts: () =>
+              controlBudget?.snapshot().attempts ?? verifiedCheckpoint.aggregateControlAttempts,
+          }
+        : {}),
     },
   );
   if (
@@ -614,13 +621,16 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     previousEvents: nativeStorage.previousEvents,
     durableAppend: nativeStorage.append,
   });
-  const controlBudget = createFoundationControlBudget({
+  controlBudget = createFoundationControlBudget({
     journal: controlJournal,
     now,
     deadlineAt,
     ...(remaining ? { remainingContinuationProof: remaining } : {}),
     ...(startup ? { startupReplacementProof: startup } : {}),
     ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
+    ...(verifiedCheckpoint?.managementMaximum === 576
+      ? { managementAttempts: () => budget.snapshot().attempts }
+      : {}),
   });
   if (
     continuation &&
@@ -804,7 +814,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     // Reuse this actual25-read proof in runtime setup, and its own final25
     // restoration audit, retaining every fresh per-write GET/PUT/GET.
     // 109setup +24drafts*3 +2Machine reads +124restore =307.
-    if (budget.snapshot().attempts + 25 + 44 + 307 > 512) fail();
+    if (budget.snapshot().attempts + 25 + 44 + 307 > budget.snapshot().maximum) fail();
     if (verifiedCheckpoint?.closedWindow) {
       nativeMetadataFailure = true;
       await verifyFoundationLiveNativeMetadata({

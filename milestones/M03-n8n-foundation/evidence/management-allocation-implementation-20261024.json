@@ -1,0 +1,158 @@
+{
+  "version": 1,
+  "clientDate": "2026-10-24",
+  "status": "local_validated_sealed_public_check_and_ci_pending",
+  "changesetParent": "0bb85989e0996e3844817bbe1d08e8e376afeb4d",
+  "approval": {
+    "path": "milestones/M03-n8n-foundation/evidence/remaining-management-allocation-approval-20261024.json",
+    "sha256": "e2819cf2dc62a01befabca78d32032cfab4378a39625b8d0dfae14229d9d80db",
+    "managementMaximum": 576,
+    "priorManagementCharged": 152,
+    "counterReset": false
+  },
+  "actualUnchangedUsage": {
+    "management": 152,
+    "control": 384,
+    "combined": 536,
+    "vercel": 44,
+    "actors": 0
+  },
+  "unchangedCeilings": {
+    "control": 2048,
+    "combined": 2560,
+    "vercel": 88,
+    "nativeExecutions": 120,
+    "gatewayAttempts": 256,
+    "directProviderGets": 32,
+    "actorStarts": 2,
+    "actorUsdEach": 1,
+    "actorUsdReserveTotal": 2
+  },
+  "implementation": [
+    "Only the genuine continuation proof backed by the pinned approval enables management 576; historical paths retain 512.",
+    "Management and Control use each other's actual synchronous snapshot, including carried charges, before every durable intent; combined remains 2560.",
+    "An uncertain Management append/fsync/close retains its charge in the approved profile and stops further Management admissions.",
+    "Both native public consumers accept only the exact approved CheckOnly fields; private ReadClaimed and legacy contracts remain unchanged.",
+    "The existing public closure includes the reviewed allocation packet, approval and both immutable recovery receipts."
+  ],
+  "genuinePositiveIntegration": {
+    "completionReceipt": "666499",
+    "passed": 2,
+    "controlRawRows": 382,
+    "controlMainIntents": 381,
+    "controlCarried": 3,
+    "cliAndAdminConstructors": true,
+    "realCredentialRead": false,
+    "realChildOrNetworkStarted": false
+  },
+  "localValidation": {
+    "guardControlCliAdminBatch": {
+      "receipt": "133ad1",
+      "passed": 105,
+      "total": 106,
+      "failedCase": "Legacy expected checkpoint shape omitted the now-explicit managementMaximum 512.",
+      "correction": "Exact legacy expected field added without changing production source or removing assertions.",
+      "correctedCaseReceipt": "d785f1",
+      "correctedCasePassed": 1
+    },
+    "additionalLinkedBudgetsBoundary": {
+      "receipt": "411306",
+      "passed": 1,
+      "coversBothDirectionsAt2560": true
+    },
+    "runtimeBeforeFinalUncertaintyFix": {
+      "receipt": "8117b7",
+      "passed": 16
+    },
+    "finalRuntimeAffectedCases": {
+      "redReceipt": "5039c6",
+      "greenReceipt": "4526a8",
+      "passed": 3,
+      "includesUncertainAppendAndPairedDenial": true
+    },
+    "nativeWrapper": {
+      "receipt": "c42bb2",
+      "passed": 13,
+      "publicClosureExtensionRed": "4da002",
+      "publicClosureExtensionGreen": "3e6c67"
+    },
+    "nativeDatabasePublicConsumer": {
+      "redReceipt": "5838df",
+      "targetedGreenReceipt": "640a89",
+      "fullCompletionReceipt": "324771",
+      "passed": 15,
+      "skipped": 0
+    },
+    "countNote": "Checks overlap and are separate. The earlier failed fixture remains recorded; normal exact-head CI must pass before actual acceptance admission."
+  },
+  "independentReview": {
+    "status": "clear_no_p1_or_p2",
+    "genuineProfileAndCombinedChecks": ["60e35b", "cdda5e"],
+    "uncertainAppendChecks": ["384ae6", "5a33c0"],
+    "nativePublicProjection": "9de505",
+    "publicClosure": "8ac0a8",
+    "nativeDatabasePublicContract": "f17b77"
+  },
+  "finalStaticChecks": {
+    "targetedFormatting": "283a05",
+    "targetedEslint": "e3bfb8",
+    "nativePowerShellParse": "afdc80",
+    "powerShellParseErrors": 0,
+    "publicPinReadback": "89732a",
+    "publicPinMismatches": 0
+  },
+  "publicPreflight": {
+    "currentJavascriptGuard": {
+      "receipt": "e9eb5a",
+      "status": "project_verified_continuation_ready",
+      "managementMaximum": 576,
+      "privateRead": false,
+      "networkRequests": 0,
+      "admissionCreated": false
+    },
+    "earlierFullWrapperRefusal": {
+      "receipt": "608489",
+      "nativeExitCode": 1,
+      "privateRead": false,
+      "credentialChildrenClosed": true,
+      "newAdmission": false,
+      "nativeDatabaseOldStrictShapeReproducedAndCorrectedLocally": true,
+      "freshFullWrapperPassClaimed": false
+    },
+    "finalSourcePinRefresh": {
+      "receipt": "b0ffe8",
+      "fileCounts": [45, 47],
+      "databasePacketSha256": "db40a3256d78891912e56a3697cc87e8513c43d6c988a44b4789b278c5f7c826",
+      "forwardPacketSha256": "2f913d6c3b0568a95107d7e4a7ad88e29906980ea6b88a0a070ef188f72bd489",
+      "authorityHistoryMigrationAndRuntimeBinaryFieldsUnchanged": true
+    }
+  },
+  "actualCredentialMetadata": {
+    "persistentStatusReceipt": "a4028d",
+    "missing": [],
+    "authenticationTested": false,
+    "originalsRetained": true,
+    "vercelMetadataReceipt": "fc375d",
+    "vercelCovers75MinutesAtThatCheck": true,
+    "effectiveVercelBackendEstablishedByMetadata": false,
+    "newOwnerCredentialInputNeeded": false
+  },
+  "frozenSourceSha256": {
+    "guard": "e0ff3bae46ecd64ea0b37e2e76e107eb5826f157128b64acc977cd821b0134d6",
+    "fixture": "5924326e2e58cf8d699d1e17f823c0893fcbf507c6f1df13d533f99a6db9fc83",
+    "control": "4c34c4dbf9d1457058fb80eb48a0f71d4f006687cf96c79bf2755ae81dccd35b",
+    "cli": "8b343d3556ed705ded292df1b342105ddddebd5f98fc93891382cc9455cdd427",
+    "runtime": "a5daec17ebca3fa20ff1efc1f964897d130e619e58dcb3ba5312b711a19b9e5c"
+  },
+  "boundaries": {
+    "m03AcceptanceComplete": false,
+    "newAcceptanceAdmission": false,
+    "hostedOperationsStarted": false,
+    "migrationsReplayed": false,
+    "productionChanged": false,
+    "recurringActivityStarted": false,
+    "mergeApproved": false,
+    "m04Started": false,
+    "priorBlockedProgressAndCiRecordMutationRetried": false
+  }
+}

@@ -81,6 +81,55 @@ Write-Output 'NATIVE_FORWARD_PUBLIC_PASS'
 );
 
 test(
+  'approved management readiness is projected only for the exact current public profile',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-management-projection-'));
+    try {
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+      const start = source.indexOf('function Get-ProjectVerifiedPublicManagementMaximum(');
+      const end = source.indexOf('function ConvertTo-ProjectVerifiedReadinessBlock(', start);
+      assert.ok(start > 0 && end > start);
+      const script = join(directory, 'management.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+${source.slice(start, end)}
+$valid=[ordered]@{kind='project_verified_continuation_ready';segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';sourceCommitSha='a5e746736893d5040e93032ae740a0878f748837';windowId='38b3708d-61b0-41d2-8170-5ed91c66b4dc';privateRead=$false;networkRequests=0;managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}
+if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$valid) $true 'CheckOnly') -ne 576){throw 'APPROVED_CAP_NOT_PROJECTED'}
+$legacy=[ordered]@{};foreach($name in $valid.Keys){if($name -cnotin @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){$legacy[$name]=$valid[$name]}}
+if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$legacy) $true 'CheckOnly') -ne 512){throw 'LEGACY_CAP_CHANGED'}
+foreach($mutation in @(@{key='managementMaximum';value=512},@{key='managementMaximum';value=577},@{key='managementMaximum';value='576'},@{key='managementAttempts';value=151},@{key='controlAttempts';value=382},@{key='combinedAttempts';value=534},@{key='kind';value='clock_project_verified_continuation_admitted'},@{key='sourceCommitSha';value='f42930f90c2de43c84f61ad6d966d0ee6074d70e'},@{key='privateRead';value=$true},@{key='networkRequests';value=1})){
+ $copy=[ordered]@{};foreach($name in $valid.Keys){$copy[$name]=$valid[$name]};$copy[$mutation.key]=$mutation.value;$blocked=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$copy) $true 'CheckOnly'}catch{$blocked=$true};if(-not $blocked){throw 'MANAGEMENT_PROFILE_WEAKENED'}
+}
+foreach($missing in @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){
+ $copy=[ordered]@{};foreach($name in $valid.Keys){if($name -cne $missing){$copy[$name]=$valid[$name]}};$blocked=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$copy) $true 'CheckOnly'}catch{$blocked=$true};if(-not $blocked){throw 'PARTIAL_PROFILE_ACCEPTED'}
+}
+foreach($mode in @('Admit','Read')){$blocked=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$valid) $true $mode}catch{$blocked=$true};if(-not $blocked){throw 'WRONG_MODE_ACCEPTED'}}
+$blocked=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$valid) $false 'CheckOnly'}catch{$blocked=$true};if(-not $blocked){throw 'WRONG_PROFILE_ACCEPTED'}
+Write-Output 'MANAGEMENT_PUBLIC_PROFILE_PASS'
+`,
+      );
+      const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: safeEnvironment(directory),
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 10000,
+      });
+      assert.equal(result.status, 0, result.stderr + result.stdout);
+      assert.equal(result.stderr, '');
+      assert.equal(result.stdout.trim(), 'MANAGEMENT_PUBLIC_PROFILE_PASS');
+      assert.match(source, /managementMaximum=\$effectiveManagementMaximum;controlMaximum=2048/);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
   'budget readiness projection rejects stale counters and untrusted fields before private initialization',
   windowsOnly,
   () => {
@@ -166,7 +215,7 @@ const writerPackages = {
 };
 
 test(
-  'the public closure seals the actual forward packet, postcheck and sole new migration',
+  'the public closure seals the forward packet and actual approved management recovery evidence',
   windowsOnly,
   () => {
     const directory = mkdtempSync(join(tmpdir(), 'emr-forward-closure-'));
@@ -177,7 +226,7 @@ test(
         `$ErrorActionPreference='Stop'
 . '${resolve('scripts/n8n/windows/Acceptance-PublicRuntime.ps1').replaceAll("'", "''")}'
 $paths=@(Get-M03AcceptancePublicFiles '${resolve('.').replaceAll("'", "''")}')
-foreach($required in @('scripts/db/m03-foundation-forward-dev-migration-packet.json','scripts/db/foundation-forward-postcheck.sql','supabase/migrations/20261023163755_m03_foundation_window_continuation.sql')){if($paths -cnotcontains $required){throw 'FORWARD_SOURCE_NOT_SEALED'}}
+foreach($required in @('scripts/db/m03-foundation-forward-dev-migration-packet.json','scripts/db/foundation-forward-postcheck.sql','supabase/migrations/20261023163755_m03_foundation_window_continuation.sql','milestones/M03-n8n-foundation/evidence/remaining-management-allocation-20261024.md','milestones/M03-n8n-foundation/evidence/remaining-management-allocation-approval-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical6-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json')){if($paths -cnotcontains $required){throw 'FORWARD_SOURCE_NOT_SEALED'}}
 Write-Output 'FORWARD_CLOSURE_PASS'
 `,
       );

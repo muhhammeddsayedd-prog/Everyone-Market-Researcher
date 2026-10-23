@@ -158,6 +158,7 @@ export function createFoundationControlBudget({
   remainingContinuationProof,
   startupReplacementProof,
   projectVerifiedContinuationProof,
+  managementAttempts,
 }) {
   assertFoundationControlJournal(journal);
   if (!Number.isFinite(deadlineAt) || typeof now !== 'function') fail();
@@ -214,9 +215,26 @@ export function createFoundationControlBudget({
       fail();
   };
   const carriedAttempts = continuation ? continuation.carriedControlAttempts : 0;
-  const verifiedInitialControl = verified
-    ? foundationProjectVerifiedContinuationResumeCheckpoint(verified).mainControlAttempts
-    : 0;
+  const verifiedCheckpoint = verified
+    ? foundationProjectVerifiedContinuationResumeCheckpoint(verified)
+    : null;
+  const verifiedInitialControl = verifiedCheckpoint?.mainControlAttempts ?? 0;
+  const expandedManagement = verifiedCheckpoint?.managementMaximum === 576;
+  let lastManagementAttempts = verifiedCheckpoint?.aggregateManagementAttempts ?? 0;
+  const authoritativeManagementAttempts = () => {
+    if (!expandedManagement) return 0;
+    let value;
+    try {
+      value = managementAttempts();
+    } catch {
+      fail();
+    }
+    if (!Number.isSafeInteger(value) || value < lastManagementAttempts || value > 576) fail();
+    lastManagementAttempts = value;
+    return value;
+  };
+  if (expandedManagement && typeof managementAttempts !== 'function') fail();
+  if (expandedManagement && prior.length + carriedAttempts + authoritativeManagementAttempts() > 2560) fail();
   if (verified)
     assertFoundationProjectVerifiedContinuationControlResume(verified, {
       deadlineAt,
@@ -248,6 +266,17 @@ export function createFoundationControlBudget({
     admit({ kind, workflowId, executionId } = {}) {
       if (stopped || !kinds.has(kind) || count + carriedAttempts >= 2048 || now() >= deadlineAt) fail();
       context({ kind, workflowId, executionId });
+      if (expandedManagement) {
+        try {
+          if (count + carriedAttempts + authoritativeManagementAttempts() >= 2560) {
+            stopped = true;
+            fail();
+          }
+        } catch {
+          stopped = true;
+          fail();
+        }
+      }
       if (kind === 'metadata' && (!id(executionId) || (polls.get(executionId) ?? 0) >= 8)) fail();
       const row = {
         event: 'control_request_intent',

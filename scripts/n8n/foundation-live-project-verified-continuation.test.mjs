@@ -831,6 +831,96 @@ test('WF70 diagnostic requires immutable complete receipt/journal and dead claim
   }
 });
 
+test('exact approved576 profile claims technical7 with152/384 retained and every historical512 authority unchanged', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+  try {
+    const base = f.paths.admission.slice(0, -5),
+      retained = [f.paths.management, f.paths.control, base + '.technical-6.closed.json'].map((p) => [
+        p,
+        readFileSync(p, 'utf8'),
+      ]);
+    const ready = f.check();
+    assert.equal(ready.kind, 'project_verified_continuation_ready');
+    assert.equal(ready.managementMaximum, 576);
+    assert.equal(ready.managementAttempts, 152);
+    assert.equal(ready.controlAttempts, 384);
+    assert.equal(ready.combinedAttempts, 536);
+    const proof = f.claim(f.admit()),
+      resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(resume.managementMaximum, 576);
+    assert.equal(resume.mainManagementAttempts, 142);
+    assert.equal(resume.aggregateManagementAttempts, 152);
+    assert.equal(resume.mainControlAttempts, 381);
+    assert.equal(resume.aggregateControlAttempts, 384);
+    assert.equal(resume.technicalAttemptOrdinal, 7);
+    assert.equal(proof.carriedControlAttempts, 3);
+    const original = JSON.parse(
+      readFileSync(
+        join(
+          f.directory,
+          'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
+        ),
+        'utf8',
+      ),
+    );
+    assert.equal(original.caps.runtimeManagement, 512);
+    assert.equal(original.caps.control, 2048);
+    assert.equal(original.caps.combined, 2560);
+    for (const [p, t] of retained) assert.equal(readFileSync(p, 'utf8'), t);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('approved management allocation cannot resetusage, widenanothercap, changeownerreply orgrantnewspending', async () => {
+  for (const managementAllocationFault of [
+    'usage',
+    'maximum',
+    'combined',
+    'reset',
+    'actor',
+    'spend',
+    'reply',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      managementAllocation: true,
+      managementAllocationFault,
+    });
+    try {
+      assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-7.json')), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('management576 requires pinnedapprovalandpacket throughclaim and every laterprefixcheck', async () => {
+  for (const fault of ['missing', 'changed', 'packet', 'after-claim']) {
+    const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+    try {
+      const path = join(
+        f.directory,
+        'milestones/M03-n8n-foundation/evidence/' +
+          (fault === 'packet'
+            ? 'remaining-management-allocation-20261024.md'
+            : 'remaining-management-allocation-approval-20261024.json'),
+      );
+      const proof = fault === 'after-claim' ? f.claim(f.admit()) : null;
+      if (fault === 'missing' || fault === 'after-claim') unlinkSync(path);
+      else writeFileSync(path, readFileSync(path, 'utf8') + '\n');
+      if (proof)
+        assert.throws(
+          () => f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof)),
+          /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
+        );
+      else assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
 test('fresh logical plan uses an immutable runtime sibling while original runtime and global journals remain historical', async () => {
   const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true }),
     live = liveRuntimeFixture();
@@ -1329,6 +1419,7 @@ test('pinned CLOSED effectful attempt permits a distinct immutable technical sib
     assert.deepEqual(f.module.foundationProjectVerifiedContinuationResumeCheckpoint(p), {
       mainManagementAttempts: 9,
       aggregateManagementAttempts: 13,
+      managementMaximum: 512,
       mainControlAttempts: 250,
       aggregateControlAttempts: 251,
       setupRows: 13,

@@ -7,6 +7,9 @@ import {
   assertFoundationControlBudget,
 } from './foundation-control-state.mjs';
 import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
+import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
+import { readFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 
 const deadlineAt = Date.parse('2026-10-19T10:00:00Z');
 const startAt = deadlineAt - 3600000;
@@ -189,6 +192,148 @@ test('mixed rows and a lookalike project continuation cannot manufacture branded
     /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
   );
   assert.equal(journal.rows.length, 2);
+});
+
+test('genuine576 profile accepts382 mixed rows as381 intents plus3 carried controls and enforces combined2560', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+  try {
+    const proof = f.claim(f.admit()),
+      core = await f.copy('foundation-control-state.mjs');
+    const rows = readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+      writes = [];
+    const journal = core.createFoundationControlJournal({
+      previousEvents: rows,
+      durableAppend: (row) => {
+        writes.push(row);
+      },
+    });
+    const budget = core.createFoundationControlBudget({
+      journal,
+      now: f.now,
+      deadlineAt: proof.deadlineAt,
+      projectVerifiedContinuationProof: proof,
+      managementAttempts: () => 576,
+    });
+    assert.equal(journal.rows.length, 382);
+    assert.equal(budget.snapshot().mainAttempts, 381);
+    assert.equal(budget.snapshot().carriedAttempts, 3);
+    assert.equal(budget.snapshot().attempts, 384);
+    assert.equal(budget.snapshot().maximum, 2048);
+    for (let i = 0; i < 1600; i++) budget.admit({ kind: 'discovery', workflowId });
+    assert.equal(budget.snapshot().attempts, 1984);
+    assert.equal(writes.at(-1).ordinal, 1981);
+    assert.throws(() => budget.admit({ kind: 'discovery', workflowId }), /FOUNDATION_CONTROL_STATE_BLOCKED/);
+    assert.equal(writes.length, 1600);
+    assert.equal(budget.snapshot().attempts + 576, 2560);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('new576 control pool refuses missing, throwing, invalid or backwards authoritative management counters before intents', async () => {
+  for (const mode of ['missing', 'throw', 'low', 'fraction', 'high', 'backwards']) {
+    const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+    try {
+      const proof = f.claim(f.admit()),
+        core = await f.copy('foundation-control-state.mjs');
+      const rows = readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+        writes = [];
+      const journal = core.createFoundationControlJournal({
+        previousEvents: rows,
+        durableAppend: (row) => {
+          writes.push(row);
+        },
+      });
+      let count = 152;
+      const args = {
+        journal,
+        now: f.now,
+        deadlineAt: proof.deadlineAt,
+        projectVerifiedContinuationProof: proof,
+        ...(mode === 'missing'
+          ? {}
+          : {
+              managementAttempts: () => {
+                if (mode === 'throw') throw Error('PRIVATE_CALLBACK_CANARY');
+                return mode === 'low' ? 151 : mode === 'fraction' ? 152.5 : mode === 'high' ? 577 : count;
+              },
+            }),
+      };
+      if (mode === 'backwards') {
+        const budget = core.createFoundationControlBudget(args);
+        count = 151;
+        assert.throws(
+          () => budget.admit({ kind: 'discovery', workflowId }),
+          /FOUNDATION_CONTROL_STATE_BLOCKED/,
+        );
+      } else
+        assert.throws(() => core.createFoundationControlBudget(args), /FOUNDATION_CONTROL_STATE_BLOCKED/);
+      assert.equal(writes.length, 0);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('genuine linked Management andControl snapshots enforce2560 in both directions with no counter or intent reset', async () => {
+  for (const direction of ['management', 'control']) {
+    const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
+    let management;
+    try {
+      const proof = f.claim(f.admit()),
+        checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof),
+        runtime = await f.copy('foundation-live-runtime.mjs'),
+        core = await f.copy('foundation-control-state.mjs');
+      let control;
+      management = runtime.createFoundationLiveManagementBudget(
+        { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+        {
+          directory: dirname(f.paths.management),
+          now: f.now,
+          projectVerifiedContinuationProof: proof,
+          controlAttempts: () => control?.snapshot().attempts ?? checkpoint.aggregateControlAttempts,
+        },
+      );
+      const writes = [],
+        journal = core.createFoundationControlJournal({
+          previousEvents: readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+          durableAppend: (row) => {
+            writes.push(row);
+          },
+        });
+      control = core.createFoundationControlBudget({
+        journal,
+        now: f.now,
+        deadlineAt: proof.deadlineAt,
+        projectVerifiedContinuationProof: proof,
+        managementAttempts: () => management.snapshot().attempts,
+      });
+      const managementTarget = direction === 'management' ? 512 : 576;
+      while (management.snapshot().attempts < managementTarget) management.admit();
+      while (control.snapshot().attempts < 2560 - managementTarget)
+        control.admit({ kind: 'discovery', workflowId });
+      const prior = readFileSync(f.paths.management, 'utf8'),
+        count = writes.length;
+      assert.equal(management.snapshot().attempts + control.snapshot().attempts, 2560);
+      if (direction === 'management') {
+        assert.equal(management.snapshot().attempts < management.snapshot().maximum, true);
+        assert.throws(() => management.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+      } else {
+        assert.equal(control.snapshot().attempts < control.snapshot().maximum, true);
+        assert.throws(
+          () => control.admit({ kind: 'discovery', workflowId }),
+          /FOUNDATION_CONTROL_STATE_BLOCKED/,
+        );
+      }
+      assert.equal(readFileSync(f.paths.management, 'utf8'), prior);
+      assert.equal(writes.length, count);
+      assert.equal(management.snapshot().carriedAttempts, 10);
+      assert.equal(control.snapshot().carriedAttempts, 3);
+    } finally {
+      management?.close();
+      f.cleanup();
+    }
+  }
 });
 
 test('budget validates replay sequence and metadata context before creating authority', () => {

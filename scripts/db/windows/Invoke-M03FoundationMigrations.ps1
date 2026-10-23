@@ -369,6 +369,14 @@ function Read-FoundationPostcheckContinuation {
       if($projectMode){Write-Output 'M03_FOUNDATION APPROVAL_REQUIRED. New project-verified continuation has no owner time authority; no credential metadata, private contents or authentication read.'}elseif($startupMode){Write-Output 'M03_FOUNDATION APPROVAL_REQUIRED. New startup replacement has no owner time authority; no credential metadata, private contents or authentication read.'}else{Write-Output 'M03_FOUNDATION APPROVAL_REQUIRED. New remaining segment has no owner time authority; no credential metadata, private contents or authentication read.'};exit 3
     }
     $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
+    $managementFields=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')
+    $managementPresent=@($managementFields|Where-Object{$_ -cin $value.PSObject.Properties.Name})
+    if($managementPresent.Count -gt 0){
+      if(-not $CheckOnly -or -not $projectMode -or -not $forwardMode -or $managementPresent.Count -ne 4){throw 'blocked'}
+      $managementExpected=@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}
+      foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
+      $keys+=$managementFields
+    }
     if(-not $CheckOnly){$keys+=@('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')}
     Assert-Keys $value $keys
     $expected=if($projectMode){if($CheckOnly){'project_verified_continuation_ready'}else{'clock_project_verified_continuation_admitted'}}elseif($startupMode){if($CheckOnly){'startup_replacement_ready'}else{'clock_startup_replacement_admitted'}}elseif($remainingMode){if($CheckOnly){'remaining_continuation_ready'}else{'clock_remaining_continuation_admitted'}}elseif($CheckOnly){'postcheck_continuation_ready'}else{'clock_postcheck_continuation_admitted'}

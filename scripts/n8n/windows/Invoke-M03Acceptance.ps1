@@ -187,6 +187,19 @@ function Invoke-ZeroSetupPublicCheck([string]$Node,[string]$Repository){
   if($null -ne $info){$info.EnvironmentVariables.Clear()}
  }
 }
+function Get-ProjectVerifiedPublicManagementMaximum($Value,[bool]$ProjectClock,[string]$Mode){
+ if($Value -isnot [PSCustomObject]){throw 'blocked'}
+ $fields=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')
+ $present=@($fields|Where-Object{$_ -cin $Value.PSObject.Properties.Name})
+ if($present.Count -eq 0){return 512}
+ if(-not $ProjectClock -or $Mode -cne 'CheckOnly' -or $present.Count -ne 4 -or
+  $Value.kind -cne 'project_verified_continuation_ready' -or $Value.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or
+  $Value.sourceCommitSha -cne 'a5e746736893d5040e93032ae740a0878f748837' -or $Value.windowId -cne '38b3708d-61b0-41d2-8170-5ed91c66b4dc' -or
+  $Value.privateRead -isnot [bool] -or $Value.privateRead -ne $false){throw 'blocked'}
+ $expected=@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536;networkRequests=0}
+ foreach($name in $expected.Keys){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long]) -or $Value.$name -ne $expected[$name]){throw 'blocked'}}
+ return 576
+}
 function ConvertTo-ProjectVerifiedReadinessBlock($Value){
  $keys=@('kind','status','segmentId','sourceCommitSha','windowId','managementAttempts','controlAttempts','combinedAttempts','gatewayPreflightAttempts','setupAttempts','setupMaximum','minimumNewSetupRequests','proposedSetupMaximum','privateRead','networkRequests')
  foreach($name in @('kind','status','segmentId','sourceCommitSha','windowId')){if($Value.$name -isnot [string]){throw 'blocked'}}
@@ -228,6 +241,8 @@ function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$
    return $result
   }
   $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
+  $effectiveManagementMaximum=Get-ProjectVerifiedPublicManagementMaximum $result $ProjectClock $Mode
+  if($effectiveManagementMaximum -eq 576){$keys+=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')}
   if($Mode -cne 'CheckOnly'){$keys+=@('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')}
   $legacyBinding=$result.sourceCommitSha -ceq 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -and $result.windowId -ceq 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'
   $activeBinding=$ProjectClock -and $result.sourceCommitSha -ceq 'a5e746736893d5040e93032ae740a0878f748837' -and $result.windowId -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
@@ -502,11 +517,12 @@ try{
  foreach($property in $bindings.workflowRefs.PSObject.Properties){$null=$knownWorkflowIds.Add($property.Value.id)}
  if($knownWorkflowIds.Count -ne 25){throw 'blocked'}
  if($CheckOnly){
+  $effectiveManagementMaximum=if($ProjectVerifiedContinuation){Get-ProjectVerifiedPublicManagementMaximum $publicClock $true 'CheckOnly'}else{512}
   if($RemainingContinuation -and -not $remainingAuthorityReady){
    [ordered]@{status='approval_required';approvalRequired=$true;privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$true;adminHandoffReady=$false;actualMcpPortVerified=$false;windowId=$seal.windowId;segmentId='e8035391-dba8-48c9-97e0-139ba980d86e';managementMaximum=512;controlMaximum=2048}|ConvertTo-Json -Compress
    exit 0
   }
-  [ordered]@{status='check_only_ready';privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$true;adminHandoffReady=$adminPublicReady;actualMcpPortVerified=$false;windowId=$seal.windowId;managementMaximum=512;controlMaximum=2048}|ConvertTo-Json -Compress
+  [ordered]@{status='check_only_ready';privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$true;adminHandoffReady=$adminPublicReady;actualMcpPortVerified=$false;windowId=$seal.windowId;managementMaximum=$effectiveManagementMaximum;controlMaximum=2048}|ConvertTo-Json -Compress
   exit 0
  }
  Confirm-PublicTransport
