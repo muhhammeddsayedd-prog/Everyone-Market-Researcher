@@ -7,9 +7,57 @@ How this works:
 1. Each action has an ID (`MA-xx`) and the milestone that needs it.
 2. When Codex reaches it, Codex copies it into that milestone's `PROGRESS.md` → "Manual actions needed" and sets the status to Blocked if nothing else can proceed.
 3. The owner does it, ticks it in the milestone `PROGRESS.md`, and adds any non-secret value (project ref, URL) there.
-4. Secrets go only into Vercel, n8n or a local `.env`, never into the repo or chat.
+4. Secrets go only into approved native stores or the current-user-encrypted dev store below, never into the repo or chat.
 
-**Current M03 status, 22 October 2026:** fixed-project Vercel access verified.
+## Current M03 action — persistent access, 23 October 2026
+
+The owner's development-autonomy reset is approved. No replacement-window or
+ordinary task approval is needed within the existing M03 scope and cumulative
+limits. Temporary-copy consumption/lease expiry does not require another handoff.
+Historical instructions below describe earlier checkpoints and are not current
+owner requests.
+
+Initial inventory found the store and all four disposable inputs absent. The
+owner completed the single setup below; actual Status now verifies all four
+persistent entries present with correct ACLs and no missing entries. This is
+storage readiness, not endpoint authentication. No development owner action is
+pending. Keep the command below for genuinely missing entries or explicit updates. Existing Machine ciphertext is retained and reused;
+shared n8n provider credentials and native GitHub/Vercel/MCP stores are not copied
+or recreated. The tested/reviewed missing-only initialization command in Windows PowerShell
+under this same Windows account is:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03AcceptanceHandoff.ps1' -Action Initialize -Kind All
+```
+
+Enter saved EXISTING values at the hidden prompts, in order:
+
+1. emr-dev postgres database password for `zmotjsbzhzjvpelxvxlf` — bounded Admin path only.
+2. n8n Management API key for `muhhammedsayed.app.n8n.cloud` — only identified Market Radar resources.
+3. emr-dev `n8n_writer` password saved from M01 — not postgres, `api_agent`, a production password or Supabase Secret key.
+4. Same-owner Apify READ token for Actor runs, Datasets and Key-value stores READ — reuse the saved token; do not extract the shared n8n token.
+
+Expected final marker: `M03_DEV_ACCESS_READY`. Close that PowerShell window,
+retain your saved originals, and reply **M03 persistent dev access ready**. Send
+no values/files/URLs. Initialization saves reusable CurrentUser-DPAPI originals
+outside Git with intended-user/SYSTEM ACLs; it does not authenticate or start a
+paid call. Later approved consumers automatically create/delete only necessary
+disposable copies. No artificial expiry or repeated entry while values remain
+valid. Missing-entry status is available through the same command with
+`-Action Status -Kind All`; a revoked/expired entry can be replaced using
+`-Action Update -Kind <one actual kind>`.
+
+Current Vercel saved-file metadata covers the technical 75-minute floor after
+the supported native CLI session path; no owner login is currently justified.
+The CLI `whoami` result itself was not recovered, so no authentication pass is
+claimed. Remote project access remains the dated observation pending the actual
+coordinator. No enforced permission/settings change is needed: installed Codex
+is0.162.0-alpha.17.2 and the host already supplies workspace/network access.
+Production, private R2, recurring activity, merge and M04 remain separate.
+
+## Historical M03 owner actions and receipts
+
+**Historical M03 status, 22 October 2026:** fixed-project Vercel access verified.
 The owner restored the existing session; bounded saved-file coverage passed
 16:39:18.509 UTC. Following independent review/public readiness and source
 f4775b2 / CI39818174853 all five jobs plus Vercel, the one-use native GET
@@ -124,14 +172,14 @@ aggregate caps; no migration replay.**
 | MA-01 | M00                            | Give Codex repo access                                             | Make sure Codex can push branches and open PRs to `muhhammeddsayedd-prog/Everyone-Market-Researcher`. Enable branch protection on `main` (PR required, CI must pass).                                                                                                                                                                                                   | Codex pushes `m00-bootstrap`                                                                                                                                                            |
 | MA-02 | M03 actual access verified | No repeat login or values | Fixed-project native GET f2121a at17:04:25.170 UTC passed HTTP200/native0/all12 predicates, children closed; source f4775b2 / CI39818174853 all5/Vercel. Backend and historical failure cause remain unestablished. | Complete for this observation; no owner action. All old windows/read fences remain spent. |
 | MA-03 | M01                            | Create Supabase projects                                           | Supabase → New project `emr-dev` and `emr-prod` (Pro, same region, strong DB passwords saved in your password manager). Send Codex the two **project refs** (not passwords).                                                                                                                                                                                            | Refs in M01 PROGRESS                                                                                                                                                                    |
-| MA-04 | M03 delivery consumed/closed | No repeat database handoff | Actual native Admin dev authentication/history14 passed; C999 archived again, no migration operation. All Admin/runtime handoff leaves and private SQL deleted. | Complete delivery/cleanup receipt, not A–D/full-D. Do not replenish/reset/replay. |
+| MA-04 | M03 persistent dev access | Initialize only genuinely missing existing Admin input once | Use the single current initialization above; Admin stays in its separate bounded DB consumer, with no migration replay. Prior authentication/history14/cleanup receipts remain historical. | Local store ready plus actual bounded access separately verified; no recurring handoff. |
 | MA-05 | M01                            | Set machine role passwords                                         | After Codex's M01 migration runs: in each project's SQL editor run `alter role n8n_writer password '<gen>';` and `alter role api_agent password '<gen>';` (generate with `openssl rand -base64 32`). Keep them for MA-11 and MA-20.                                                                                                                                     | Codex test connection succeeds                                                                                                                                                          |
 | MA-06 | M01                            | Google sign-in                                                     | Google Cloud → APIs & Services → OAuth consent (Internal if Workspace) → Credentials → OAuth client (Web) with redirect `https://<dev-ref>.supabase.co/auth/v1/callback` (and prod). Supabase → Authentication → Providers → Google → paste the client ID and secret.                                                                                                   | Test login on dev works (M09)                                                                                                                                                           |
 | MA-07 | M02                            | Vimeo token                                                        | developer.vimeo.com → Create app → Generate an access token, scope **Public** only. Store as `VIMEO_TOKEN` locally for the resolve script and later in n8n (MA-11).                                                                                                                                                                                                     | Resolve script resolves Vimeo IDs                                                                                                                                                       |
 | MA-08 | M02                            | YouTube API key                                                    | Google Cloud → enable **YouTube Data API v3** → Credentials → API key → restrict to YouTube Data API v3. Store as `YOUTUBE_API_KEY`.                                                                                                                                                                                                                                    | Resolve script resolves channel IDs                                                                                                                                                     |
 | MA-09 | M02                            | Review unresolved accounts                                         | Codex lists accounts it couldn't resolve or that look wrong. Confirm, fix the URL, or mark invalid. Owner18October response: skip the seven reviewed unavailable/unverified YouTube sources; retain23 website flags and accept11 missing-logo initials fallbacks (D-27). Exact dispositions live in M02 evidence/overrides.                                             | Dev decisions supplied; verify exact exclusions and eligible coverage, preserving raw counts. Production/merge approvals remain separate.                                               |
 | MA-10 | M03                            | Apify plan + existing credential                                   | Scale is already owner-reported. Reuse Personal credential `Apify account` (`apifyApi`) by actual ID; do not recreate/rename/rotate it. M03 authenticated limits metadata GET passed; no actor start.                                                                                                                                                                   | Native reference/access verified; prices/paid run are separate gates                                                                                                                    |
-| MA-11 | M03 exact time/fixture decision complete | No repeated approval or credential action yet | Literal reply **Approve exact project-verified packet** at reviewed8eb6e2e / CI39823333289 all five jobs plus Vercel approves exact packet. Approval5eb38cbe/affected21/21/approved public readiness pass. Four input pairs verified absent; exact handoff prepared. Pending Machine metadata contract verified, ciphertext unopened. | Request only four actually absent saved inputs after ordinary new-pin CI and fresh root auth75 check. No Machine input/reset/new key/new clock/admission, production/merge/M04. |
+| MA-11 | M03 standing development authority | Single missing-entry setup; no time-only reapproval | Owner23October reset supersedes the disposable-copy/lease approval cycle. Use current initialization above for existing Management/Writer/ApifyRead only when actually missing; Machine/native provider bindings are reused. Reconcile safe continuations with counters preserved. | Actual A–D acceptance, retention/settlement/cleanup evidence and separate merge decision; no production, recurring activity or M04. |
 | MA-12 | M03                            | Existing OpenAI credential + limits                                | Owner authorized the existing native `OpenAI account`; Models metadata GET passed. Do not create/duplicate its key. Actual project spend cap remains unverified; no inference/embeddings. Vercel/model integrations remain later milestones.                                                                                                                            | Saved reuse/access verified; cap is separate from authentication                                                                                                                        |
 | MA-13 | M03                            | Daily alert budget                                                 | Retain Q-07 USD25/day steady-state alert default after owner deprioritized fee reporting. Unknown subscription fees remain unknown. Do not alter shared service budgets or restart the questionnaire.                                                                                                                                                                   | Verified dev budget25 after the exact approved migration; production unchanged                                                                                                          |
 | MA-14 | M04                            | Approve backfill estimate (Vimeo + IG)                             | Codex posts the estimated items and cost for the pilot backfill. Reply "approved" in PROGRESS.                                                                                                                                                                                                                                                                          | Approved                                                                                                                                                                                |

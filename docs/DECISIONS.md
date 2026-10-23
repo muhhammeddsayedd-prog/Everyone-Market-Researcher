@@ -239,3 +239,43 @@ with unchanged120 native/256 gateway/32 provider-GET/two-actor/USD2 reserve/
 gateway activation, production, merge or M04 are authorized here. Private R2
 remains separate. The owner-reported local synthetic-state deletion was verified
 by exact-path absence only; its historical blocked deletion was not retried.
+
+## Persistent dev access and standing milestone authority — approved 23 October 2026
+
+The owner explicitly replaced the earlier project-level disposable-secret and
+time-only approval rules. Development credentials use the existing Windows
+CurrentUser DPAPI implementation at
+`%LOCALAPPDATA%\Everyone-Market-Radar-Private\secrets\dev\`, outside Git and
+shared/cloud-synced directories, with ACL access limited to the intended user
+and SYSTEM. Encrypted originals persist until actual expiry, revocation or owner
+deletion; no artificial two-hour expiry applies. Existing consumers may receive
+automatically generated disposable copies, which are cleaned with scratch after
+their bounded children close. Initialization/update prompts once for genuinely
+missing approved entries, reuses suitable purpose-approved dev handoffs and
+native GitHub/Vercel/MCP/n8n stores, and exposes no print-secret interface.
+Administrator credentials remain separate from application/runtime credentials;
+production and unrelated incident credentials are excluded from the dev profile.
+
+M03 development and approved A–D acceptance remain authorized until completion
+or revocation, including ordinary fixes, scoped commits/PR updates, protected dev
+previews and owned dev configuration. Technical timeouts and safe closure remain;
+expiry or a tested source change alone does not require a new human approval.
+One hosted-write coordinator must reconcile side effects and cumulative counters
+before a continuation. Never reopen closed windows, reuse spent mutation claims,
+overlap uncertain work or blindly repeat an ambiguous paid start. Preserve every
+historical attempt/receipt and the 14 applied dev migrations, seeded data, owned
+workflows, retention/privacy conditions and zero-actor gates. Starting usage is
+6 management / 201 control / 207 combined; existing ceilings remain 512 / 2048 /
+2560, native executions 120, gateway 256, provider GETs 32, actors 0 of 2 total
+sequential starts, USD1 each / USD2 reserve and at most one new distinct item.
+This decision replenishes none of those limits.
+
+Ask only at a genuine missing/revoked credential, MFA/consent, enforced permission,
+exhausted allowance, consequential unresolved decision, unsafe ambiguous effect,
+production/destructive action, shared rotation, external-message or unapproved
+recurrence boundary. Enforced platform/organization policies and actual provider
+expiry still govern. Production, private R2 execution, PR #8 merge and M04 remain
+separate. Historical approvals and closed records below/linked from milestone
+evidence are unchanged; their superseded time-only and disposable-input wording
+does not govern current development continuations. Implementation/tests/live
+acceptance are recorded separately in the existing progress records.

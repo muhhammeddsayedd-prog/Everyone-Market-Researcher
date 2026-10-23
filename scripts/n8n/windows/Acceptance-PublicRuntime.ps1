@@ -14,6 +14,7 @@ function Get-M03AcceptancePublicFiles([string]$Root) {
   'scripts/n8n/windows/Acceptance-PublicRuntime.ps1',
   'scripts/n8n/windows/New-M03AcceptancePublicSeal.ps1',
   'scripts/n8n/windows/New-M03AcceptanceHandoff.ps1',
+  'scripts/n8n/windows/Dev-CredentialStore.ps1',
   'scripts/n8n/windows/Invoke-M03Acceptance.ps1',
   'scripts/n8n/windows/Foundation-PublicRuntime.ps1',
   'scripts/n8n/foundation-live-runtime-cli.mjs',

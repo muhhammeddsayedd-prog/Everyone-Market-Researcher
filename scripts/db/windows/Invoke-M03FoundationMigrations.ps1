@@ -282,11 +282,26 @@ function Assert-FoundationStartupReplacementProcessAncestry($Clock) {
   return $true
 }
 
+function Resolve-FoundationProjectVerifiedTechnicalPaths {
+  $base='scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74'
+  $stem=$base
+  for($ordinal=2;$ordinal -le 1024;$ordinal++){
+    $next=$base+'.technical-'+$ordinal
+    if(-not (Test-Path -LiteralPath (Join-Path $repo ($next+'.json')))){
+      if((Test-Path -LiteralPath (Join-Path $repo ($next+'.runtime-claim.json'))) -or (Test-Path -LiteralPath (Join-Path $repo ($next+'.closed.json')))){throw 'blocked'}
+      return [pscustomobject]@{admission=(Assert-Path $repo ($stem+'.json'));claim=(Assert-Path $repo ($stem+'.runtime-claim.json'))}
+    }
+    $stem=$next
+  }
+  throw 'blocked'
+}
 function Assert-FoundationProjectVerifiedContinuationProcessAncestry($Clock) {
   if(-not $ProjectVerifiedContinuation -or $CheckOnly -or $Clock.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or
      [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -ge $Clock.stopNewAt){throw 'blocked'}
-  $stem='scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74'
-  $admissionPath=Assert-Path $repo ($stem+'.json');$claimPath=Assert-Path $repo ($stem+'.runtime-claim.json')
+  # The existing JS ReadClaimed gate verified the immutable technical chain.
+  # Select that same active sibling; never alter an earlier admission or claim.
+  $paths=Resolve-FoundationProjectVerifiedTechnicalPaths
+  $admissionPath=$paths.admission;$claimPath=$paths.claim
   $admission=Read-Json $admissionPath;$claim=Read-Json $claimPath
   Assert-Keys $claim @('kind','version','segmentId','admissionSha256','processId','parentProcessId','claimedAt')
   if($claim.kind -cne 'm03_project_verified_continuation_runtime_claim' -or $claim.version -ne 1 -or $claim.segmentId -cne $Clock.segmentId -or

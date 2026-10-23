@@ -464,36 +464,33 @@ function creatorFixture({ empty = false, postcheckContinuation = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'emr-m03-foundation-migration-fixture-'));
   directories.push(root);
   mkdirSync(join(root, 'Temp'));
-  const file = join(root, 'New-M03FoundationMigrationHandoff.ps1');
-  const source = readFileSync(creatorPath, 'utf8').replace(
-    postcheckContinuation
-      ? "Read-Host 'EXISTING emr-dev postgres password for approved postcheck continuation: readbacks, owned C999 fixture and exact Preview binding only; no migration push' -AsSecureString"
-      : "Read-Host 'EXISTING emr-dev postgres password for approved Phase A: four migrations, dev readbacks, owned C999 fixture and exact foundation Preview binding only' -AsSecureString",
-    empty
-      ? '[Security.SecureString]::new()'
-      : "ConvertTo-SecureString 'synthetic-m03-foundation-dev-password' -AsPlainText -Force",
+  const creator = join(root, 'scripts/db/windows/New-M03FoundationMigrationHandoff.ps1');
+  const adapter = join(root, 'scripts/n8n/windows/Dev-CredentialStore.ps1');
+  mkdirSync(resolve(creator, '..'), { recursive: true });
+  mkdirSync(resolve(adapter, '..'), { recursive: true });
+  writeFileSync(creator, readFileSync(creatorPath));
+  writeFileSync(adapter, readFileSync('scripts/n8n/windows/Dev-CredentialStore.ps1'));
+  const file = join(root, 'synthetic-owner-setup.ps1');
+  writeFileSync(
+    file,
+    `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue'
+. '${adapter.replaceAll("'", "''")}'
+function Read-Host {param($Prompt,[switch]$AsSecureString) ${empty ? '[Security.SecureString]::new()' : "ConvertTo-SecureString 'synthetic-m03-foundation-dev-password' -AsPlainText -Force"}}
+try{Initialize-M03DevCredentials -Action Initialize -Kind Admin}catch{Write-Output 'M03_DEV_ACCESS_BLOCKED';exit 1}
+& '${creator.replaceAll("'", "''")}' ${postcheckContinuation ? '-PostcheckContinuation' : ''}
+exit $LASTEXITCODE
+`,
   );
-  writeFileSync(file, source);
   const handoff = join(root, 'Temp/emr-m03-foundation-dev-migration-password.dpapi');
   const oldHandoff = join(root, 'Temp/emr-m02-dev-db-password.dpapi');
   writeFileSync(oldHandoff, 'unrelated-old-handoff-sentinel');
   const run = () =>
-    spawnSync(
-      powershell,
-      [
-        '-NoProfile',
-        '-NonInteractive',
-        '-File',
-        file,
-        ...(postcheckContinuation ? ['-PostcheckContinuation'] : []),
-      ],
-      {
-        env: { ...osEnvironment(), LOCALAPPDATA: root, PGPASSWORD: 'unrelated-parent-sentinel' },
-        encoding: 'utf8',
-        timeout: 10000,
-        windowsHide: true,
-      },
-    );
+    spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', file], {
+      env: { ...osEnvironment(), LOCALAPPDATA: root, PGPASSWORD: 'unrelated-parent-sentinel' },
+      encoding: 'utf8',
+      timeout: 10000,
+      windowsHide: true,
+    });
   return { root, file, handoff, oldHandoff, run };
 }
 
@@ -906,7 +903,7 @@ describe(
   'M03 dev migration handoff creator, synthetic isolated Windows fixtures',
   { skip: process.platform !== 'win32' },
   () => {
-    it('creates only the new current-user encrypted M03 handoff and suppresses synthetic secret output', () => {
+    it('creates only the selected disposable admin copy from a persistent current-user original', () => {
       const fixture = creatorFixture();
       const result = fixture.run();
       assert.equal(result.status, 0);
@@ -928,7 +925,7 @@ describe(
         /existing-owned-sentinel|synthetic-m03-foundation-dev-password/,
       );
     });
-    it('creates the same bounded handoff only after the explicit no-push continuation prompt', () => {
+    it('reuses the persistent admin original for the explicit no-push continuation mode', () => {
       const fixture = creatorFixture({ postcheckContinuation: true });
       const result = fixture.run();
       assert.equal(result.status, 0, result.stdout + result.stderr);

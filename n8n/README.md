@@ -2,8 +2,17 @@
 
 M03 adds the development workflow foundation after the connected n8n Cloud
 runtime and supported node versions are verified. Export each changed workflow
-to `workflows/` without credentials. Schedules and paid runs require the
-milestone's existing owner approval.
+to `workflows/` without credentials. Reuse the milestone's existing authorization;
+new recurring activity or paid scope still requires its separate decision.
+
+The owner's23October development-autonomy reset provides persistent dev access
+through the existing Windows DPAPI helper/consumers. Use the single
+[initialization/update interface](../docs/ENVIRONMENT.md#persistent-development-access--current-policy-23-october-2026)
+only for genuinely missing/revoked entries; encrypted originals persist outside
+Git and only disposable copies are cleaned. M03 safe continuations do not need
+another human approval solely for an expired local lease/window or tested source
+change. One coordinator reconciles previous side effects/closure and carries all
+usage forward; never reopen a closed window or blindly repeat an actor start.
 
 M00 provides the canonical plain JavaScript helpers in
 `normalizers/_common.js`, copied from `docs/N8N_WORKFLOWS.md` §7, with Vitest
@@ -41,7 +50,8 @@ references. Native Postgres TLS failure remains historical; no native Postgres
 fallback, administrator credential or service key was substituted. The new
 foundation transport remains disabled and has no admitted runtime window.
 Twenty-four canonical error links are explicitly deferred until their WF-90
-target can be published under separate live approval. Saved-stage delivery does
+target can be published through the already-approved bounded live acceptance.
+Saved-stage delivery does
 not prove native execution, error routing or actor smoke acceptance.
 
 Names are `WF-XX · Name [dev]` and `SUB · Name [dev]`; tags include `env:dev`,
@@ -85,7 +95,8 @@ and has no POST retry. These reviewed limits supersede the generic retry/timeout
 defaults above for this finite source profile. All saved workflows are inactive,
 unpublished and disable successful/error/manual execution-data and progress
 storage. Future dependency publication, canonical error links, manual execution,
-runtime rebinding and full cleanup require the separate executable live packet.
+runtime rebinding and full cleanup follow the approved executable live packet
+under standing M03 authority, with cumulative limits and actual gates preserved.
 
 ## Callback safety
 
@@ -118,9 +129,9 @@ or forwarded. The M03 logger uses safe summaries and optional UUID correlation,
 superseding the draft's raw-stack storage. Diagnose private raw executions in
 the n8n editor when necessary.
 
-## GW-01 development connection trial
+## Historical GW-01 development connection trial — closed
 
-The approved GW-01 work adds a development-only worker gateway and a separate
+The completed GW-01 work added a development-only worker gateway and a separate
 inactive native adapter in `foundation/build-worker-rpc.mjs`. It does not
 activate foundation workflows or launch actors. The adapter makes one explicit
 HTTP attempt using an `httpCustomAuth` credential reference; an ambiguous result
@@ -128,11 +139,10 @@ produces a fresh `request.status` descriptor for the original request ID. Status
 readback never repeats the business write. The current schema includes immutable
 deployment binding in the response window.
 
-[The GW-01 helper instructions](../scripts/n8n/GW01.md) describe the separate
-temporary handoffs, privacy gates, one-use delivery receipts, durable trial
-counter, direct restricted-writer controls and cleanup. Local tests and inactive
-blueprints are preparation evidence; actual Cloud privacy, deployment, restricted
-login, trial and cleanup receipts remain separate acceptance requirements.
+[The historical GW-01 helper instructions](../scripts/n8n/GW01.md) record its
+temporary handoffs, privacy gates, one-use receipts, counters and cleanup; they
+are not a request to recreate handoffs or reopen the trial. Its actual closed
+trial receipts stay separate from the still-open full M03 A–D acceptance.
 
 See [M03 tests](tests/README.md), [the callback review](../milestones/M03-n8n-foundation/evidence/callback-review-20261018.md)
 and [M03 progress](../milestones/M03-n8n-foundation/PROGRESS.md) for exact gates.

@@ -5,7 +5,7 @@
 
 ## Status
 
-**Blocked: waiting on owner — MA-04 / MA-11 four existing-value handoffs. Exact packet approval/pins/review/public readiness complete. Normal new-pin CI and fresh saved-auth75 coverage precede issuing the exact request. No clock/admission; A–D/full-D open.**
+**In progress — implementing the owner's 23 October persistent-dev-access and milestone-autonomy reset. Existing M03 A–D authority persists; A–D/full-D acceptance remains open. No repeated disposable-secret or time-only approval request.**
 
 Historical e803 deliveries and 75-minute metadata coverage passed before admission. Prepare
 then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
@@ -19,19 +19,57 @@ production, private incident R2 execution, PR8 merge or M04.
 | Field                          | Value                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Started                        | 2026-10-18 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Last updated                   | 2026-10-22 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Last updated                   | 2026-10-23 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Finished                       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Branch / PR                    | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset                                                                                                                                                                                       |
-| Current delivery checkpoint | Owner approved the exact packet at reviewed8eb6e2e / CI39823333289 all five jobs plus Vercel. Root is inspecting actual current state and preserving legitimate newer work before approved-pin readiness. New changes receive normal PR8 checks; no future-head pass is claimed. |
+| Current delivery checkpoint | Actual starting head90ba8d24f135c510126840383e375daae025dc87 / CI39829980484 all five jobs and Vercel passed. Current policy/helper changes need affected tests/review and normal PR8 CI; that prior result is not a new-head acceptance claim. |
 | Selected runtime source        | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
 | Selected-source CI             | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance.                                                                                                                                                                                                       |
 | Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                              |
 | GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                |
-| Current task | Approved public seal92e675/guardbcada2/coordinatorfad5fc/direct Admin6224f6 pass; no private metadata/auth/network in these CheckOnly modes. Four input pairs absent; pending Machine's separate non-secret metadata contract verified, ciphertext unopened. Aggregate6/201/207 unchanged. |
-| Next step | Verify ordinary new-pin PR8 five-job CI/Vercel and fresh local saved-auth75-minute coverage, then request only four actually absent saved inputs through the exact handoff. No owner request/clock yet; no repeated approval/Machine input/migration replay/spent-fence reuse. |
+| Current task | Persistent helper9 native + creator4 + coordinator44JS/19PowerShell pass; security review no remaining P1/P2. Actual store Status ready for Admin/Management/Writer/ApifyRead, authentication not inferred. Public source checks/normal PR8 delivery precede actual remaining acceptance. |
+| Next step | Automatically materialize the four narrowly scoped runtime inputs through the existing coordinator after readiness; perform actual dev readbacks/retained-fixture reconciliation, then zero-actor gates and finite A-D. Preserve counters, closure, privacy and all completed setup. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.      |
 
-## 21 October A–D approval and actual preflight
+## 23 October development-autonomy reset — current operating state
+
+The owner's explicit instruction supersedes only earlier project-level
+disposable-dev-credential and repeated time-only approval requirements.
+[The binding decision](../../docs/DECISIONS.md#persistent-dev-access-and-standing-milestone-authority--approved-23-october-2026)
+and [current credential interface](../../docs/ENVIRONMENT.md#persistent-development-access--current-policy-23-october-2026)
+replace those current requirements. Persistent CurrentUser-DPAPI originals live
+outside Git with intended-user/SYSTEM ACLs; disposable copies/private scratch
+are removed after bounded children close. Admin stays separate from runtime.
+Production credentials and unrelated private R2 entries are excluded.
+
+Implementation and focused review now pass: nine native credential cases, four
+affected creator cases, 44 JavaScript coordinator/integration cases and19 native
+PowerShell cases, with no remaining P1/P2. Actual public/full delivery and hosted
+acceptance remain distinct from those local results. One coordinator owns hosted mutations. Reuse existing native
+credentials and Machine ciphertext; import compatible approved dev handoffs
+where present. If values are genuinely unavailable, use one consolidated hidden
+initialization for only those missing names. Do not request prior disposable
+commands or a new approval because a lease/window expired or source changed.
+
+Reconcile before each continuation and prove the prior attempt cannot still
+act. Never reopen a closed window, reuse spent claims, overlap uncertain work,
+replay successful setup/migrations or blindly repeat a paid start. Preserve all
+prior attempts,14 applied dev migrations, M02 data/exclusions/logos,25 owned
+workflows, retention exceptions and zero-actor privacy/settlement gates. Starting
+usage remains6 management/201 control/207 combined; ceilings512/2048/2560,
+native120/gateway256/providerGET32, actors0/2 sequential, USD1 each/USD2 total
+reserve and at most one new distinct item. No allowance replenishment.
+
+Actual A–D remains incomplete. Native n8n Postgres TLS failure, historical
+closure residuals and unknown fees retain their exact limitations. Safe technical
+timeout/closure controls remain; genuine credential expiry/revocation, enforced
+permissions, unsafe ambiguity, exhausted limits and consequential decisions are
+still stops. Production, recurring activity, external notifications, private R2
+execution, PR8 merge and M04 remain separate. The 24 October tooling follow-up
+remains visible. Dated sections below are historical checkpoints, not current
+instructions to repeat handoffs or request replacement-window approvals.
+
+## Historical 21–22 October A–D approval and actual preflight
 
 ### 22 October project-verified packet — approval pinned/reviewed, approved public readiness complete
 
@@ -1068,13 +1106,32 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Blockers
 
-- Current startup-replacement segment is consumed/closed. Actual native dev
+- Persistent initialization is complete: actual Status verifies all four encrypted
+  entries and their ACLs; authentication remains untested. Focused helper/
+  coordinator tests and review pass. No owner development action is pending.
+  Normal changed-head CI/public readiness and actual hosted readback remain.
+- Supported native Vercel-session use restored sufficient saved-file coverage:
+  latest bounded metadata returns unexpired/covers75/childClosed true, with no
+  network/authentication in that metadata helper. The native `whoami` result was
+  not recovered and is not claimed passed. Historical remote project access is
+  dated; actual coordinator readiness remains to be checked. No repeat owner
+  login or permission-setting change is currently needed (Codex0.162.0-alpha.17.2;
+  host already supplies workspace/network access; no security settings changed).
+- Remaining live gates: authenticated dev14/catalog/vacancy/C999 reconciliation,
+  protected Preview/runtime binding, zero-actor native causal/settlement/privacy/
+  deletion-404 and domain-denial checks before actor starts, then the finite
+  A–D smoke/replay/error/orchestration/health cases and full restoration/cleanup.
+  Standing authority removes time-only approval cycles, not those evidence gates.
+
+### Historical blockers and their dated resolution limits
+
+- Historical startup-replacement segment is consumed/closed. Actual native dev
   authentication/history14/catalog checks passed, retained C999 was archived
   again, and no migration operation/setup write/execution/actor occurred.
   Source/wrapper/outer receipts prove credential-bearing child closure and
   all temporary inputs/private SQL/bypass cleanup. Residual window/baseline/
   settlement flags remain false; A–D/full-D remains open.
-- MA-11 exact project-verified time/fixture approval is complete: literal owner
+- Historical MA-11 exact project-verified time/fixture approval is complete: literal owner
   reply **Approve exact project-verified packet** at reviewed8eb6e2e /
   CI39823333289 all five jobs plus Vercel. Approval5eb38cbe is pinned/reviewed;
   affected21/21, fresh reviewed-source/CI recheck and approved public readiness
@@ -1135,7 +1192,34 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
-### MA-02 — actual fixed-project access verified
+### MA-04 / MA-11 — one persistent missing-entry initialization
+
+Actual inventory finds Admin/Management/Writer/ApifyRead missing from both the
+persistent dev store and approved temporary files. After focused local tests and
+review pass, open Windows PowerShell under this same account and run:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03AcceptanceHandoff.ps1' -Action Initialize -Kind All
+```
+
+Hidden prompts use saved EXISTING values: emr-dev postgres password for
+`zmotjsbzhzjvpelxvxlf`; n8n Management key for `muhhammedsayed.app.n8n.cloud`;
+emr-dev `n8n_writer` password; same-owner Apify Actor runs/Datasets/Key-value
+stores READ token. No reset/rotation/new key, Machine input, production value or
+shared native-token extraction. Expected `M03_DEV_ACCESS_READY`; close that
+PowerShell window, keep saved originals, reply **M03 persistent dev access ready**,
+and send no values/files. Persistent CurrentUser-DPAPI originals are retained;
+future approved attempts automatically create/clean only disposable copies.
+Initialization/status is not authentication evidence. Exact source/status/update
+details are in [ENVIRONMENT](../../docs/ENVIRONMENT.md#persistent-development-access--current-policy-23-october-2026).
+
+No time-only/hash-only approval, billing questionnaire, support contact, new
+Machine or Vercel login is requested. Other owner actions below are dated
+historical records; they do not request another disposable delivery. Genuine
+provider expiry/MFA, unsafe ambiguity, exhausted limits, production/merge and
+M04 remain separate boundaries.
+
+### Historical MA-02 — dated fixed-project access verified
 
 The owner restoration is verified by saved-file metadata and the later once-only
 actual fixed-project GET **f2121a** at **17:04:25.170 UTC**: HTTP200/native0,
@@ -1145,7 +1229,7 @@ No repeated login, value, new key or credential delivery is requested. Storage
 backend and historical failed-GET cause remain unestablished. The read fence
 and all A–D windows remain spent; no new admission from this result.
 
-### MA-11 — exact remaining time/fixture decision complete
+### Historical MA-11 — exact remaining time/fixture decision complete
 
 Owner literal reply: **Approve exact project-verified packet**. This approves
 [the exact packet](evidence/dev-acceptance-project-verified-packet-20261022.md)
@@ -1164,7 +1248,7 @@ are prepared for only those absent pairs. No reset/new key/credential recreation
 reuse. Production, schedules, private incident execution, merge/M03 closure and
 M04 stay excluded.
 
-### MA-04 / MA-11 — saved-value delivery and cleanup complete
+### Historical MA-04 / MA-11 — saved-value delivery and cleanup complete
 
 Native dev Admin authentication/history14 passed; no migration operation.
 Both close receipts/outer native1/EOF prove credential children closed. All
@@ -1602,6 +1686,14 @@ Run in Windows PowerShell under the same account:
 Completed native0 with exact10-version parity; no new Admin delivery or replay is needed. Historical hidden input was EXISTING emr-dev postgres password, only for approved migration20261018070042. Expected `GW01_ENCRYPTED_HANDOFF_READY: Admin.` Close the shell and reply `GW-01 Admin ready`. No value/file contents, reset, writer/admin substitution or runtime delivery. Consumer review and17 isolated DPAPI/native-CLI cases pass; exact9+1packet is sealed. Do not rerun the spent old two-migration consumer.
 
 ## Decisions & deviations
+
+- 2026-10-23 Cairo: Owner explicitly approved persistent reusable dev access and
+  standing M03 delivery authority. Updated AGENTS/current decision/environment/
+  manual/progress instructions once; immutable past packets/approvals/failures
+  remain unchanged. Existing helper/coordinator adaptation and its focused tests
+  are in progress, not live acceptance. Preserve6/201/207 requests, actors0/2/USD2,
+  all14 dev migrations/data/workflows, retention/privacy/zero-actor gates and the
+  24October tooling follow-up. No new production/private R2/merge/M04 authority.
 
 - 2026-10-19 Cairo: Implemented/reviewed the finite inactive delivery consumer,
   public physical source/Node/Zod closure, operation lock, lease and no-retry

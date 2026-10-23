@@ -328,3 +328,114 @@ test('synthetic project-verified public readiness and genuine claim preserve all
     f.cleanup();
   }
 });
+
+test('standing M03 authority permits a fresh technical attempt after proven no-effect closure, preserving its spent admission and claim', async () => {
+  const f = await syntheticProjectVerifiedContinuation();
+  try {
+    const first = f.claim(f.admit());
+    const admission = readFileSync(f.paths.admission, 'utf8');
+    const claim = readFileSync(f.paths.claim, 'utf8');
+    f.setTime(first.hardDeadlineAt + 1000);
+    f.put(
+      f.checkpoint.admissionRelative.replace(/\.json$/, '.closed.json'),
+      JSON.stringify({
+        kind: 'm03_project_verified_technical_closed',
+        version: 1,
+        admissionSha256: (await import('node:crypto')).createHash('sha256').update(admission).digest('hex'),
+        parentProcessId: process.ppid,
+        runtimeProcessId: process.pid,
+        closedAt: first.hardDeadlineAt,
+        childClosed: true,
+        credentialChildrenClosed: true,
+        emergencyShutdown: false,
+        pendingMachinePreserved: true,
+        nativeExit: 0,
+        bypassHandoffDeleted: true,
+        closureVerified: true,
+      }) + '\n',
+    );
+    assert.equal(f.check().kind, 'project_verified_continuation_ready');
+    const second = f.admit();
+    assert.equal(second.startsAt, f.now());
+    assert.equal(second.deadlineAt - second.startsAt, 3600000);
+    assert.equal(second.carriedManagementAttempts, 4);
+    assert.equal(second.carriedControlAttempts, 1);
+    assert.equal(readFileSync(f.paths.admission, 'utf8'), admission);
+    assert.equal(readFileSync(f.paths.claim, 'utf8'), claim);
+    assert.equal(f.claim(second).startsAt, second.startsAt);
+    assert.equal(f.read().startsAt, second.startsAt);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('technical retry requires reconciliation for missing closure, live children, effects, mutation intents and changed counters', async () => {
+  for (const fault of [
+    'missing-close',
+    'unclosed',
+    'live-child',
+    'effect',
+    'counter',
+    'missing-native-exit',
+    'emergency',
+    'orphan-technical-claim',
+    'orphan-technical-close',
+    'runtime-journal',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation();
+    try {
+      const p = f.claim(f.admit());
+      const admission = readFileSync(f.paths.admission, 'utf8');
+      f.setTime(p.hardDeadlineAt + 1000);
+      if (fault !== 'missing-close')
+        f.put(
+          f.checkpoint.admissionRelative.replace(/\.json$/, '.closed.json'),
+          JSON.stringify({
+            kind: 'm03_project_verified_technical_closed',
+            version: 1,
+            admissionSha256: (await import('node:crypto'))
+              .createHash('sha256')
+              .update(admission)
+              .digest('hex'),
+            parentProcessId: process.ppid,
+            runtimeProcessId: process.pid,
+            closedAt: p.hardDeadlineAt,
+            childClosed: fault !== 'unclosed',
+            credentialChildrenClosed: true,
+            emergencyShutdown: fault === 'emergency',
+            pendingMachinePreserved: true,
+            nativeExit: fault === 'missing-native-exit' ? null : 0,
+            bypassHandoffDeleted: true,
+            closureVerified: true,
+          }) + '\n',
+        );
+      if (fault === 'live-child') f.io.processAlive = (pid) => pid === process.pid;
+      if (fault === 'effect')
+        f.put(
+          `scripts/db/out/m03-foundation-project-verified-continuation-${p.segmentId}-attempt.json`,
+          '{}\n',
+        );
+      if (fault === 'counter')
+        appendFileSync(
+          f.paths.control,
+          JSON.stringify({ event: 'control_request_intent', ordinal: 201, kind: 'discovery' }) + '\n',
+        );
+      if (fault.startsWith('orphan-technical-'))
+        f.put(
+          f.checkpoint.admissionRelative.replace(
+            /\.json$/,
+            fault.endsWith('claim') ? '.technical-2.runtime-claim.json' : '.technical-2.closed.json',
+          ),
+          '{}\n',
+        );
+      if (fault === 'runtime-journal') f.put('scripts/n8n/out/foundation/live/runtime.jsonl', '{}\n');
+      assert.equal(
+        f.module.reconcileFoundationProjectVerifiedContinuation({ now: f.now }, f.io).status,
+        'reconciliation_required',
+      );
+      assert.throws(() => f.admit());
+    } finally {
+      f.cleanup();
+    }
+  }
+});

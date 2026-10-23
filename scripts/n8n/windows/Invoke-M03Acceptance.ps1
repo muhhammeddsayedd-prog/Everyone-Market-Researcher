@@ -11,6 +11,7 @@ $errorDraining=$false;$outputDiscarding=$false;$lineTask=$null;$errorTask=$null;
 $bypassCreated=$false;$script:closureVerified=$false;$script:credentialClosureVerified=$false
 $resumeDeadlineAt=$null
 $amendmentClock=$null
+$runtimeProcessId=$null
 $script:projectVerifiedMetadataClosed=$true
 $secret=$null;$bstr=[IntPtr]::Zero;$packet=$null;$private=$null;$machine=$null;$bypass=$null
 $needles=[Collections.Generic.List[string]]::new();$knownWorkflowIds=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
@@ -43,6 +44,37 @@ function Plain-Dpapi([string]$Cipher){
   if($address -ne [IntPtr]::Zero){[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($address)}
   if($null -ne $value){$value.Dispose()}
  }
+}
+function Initialize-M03AcceptanceDevCredentials([string]$Repository,[IO.FileStream]$CoordinatorLock){
+ # The persistent current-user originals are never handed to this runtime.
+ # This small adapter copies only the four purpose-bound encrypted inputs;
+ # the administrator copy is decrypted solely by its existing DB child.
+ . (Public-File (Join-Path $Repository 'scripts/n8n/windows/Dev-CredentialStore.ps1') 524288)
+ foreach($kind in @('Admin','Management','Writer','ApifyRead')){
+  Ensure-M03DevRuntimeHandoff -Kind $kind -AdminMode ProjectVerifiedContinuation -CoordinatorLock $CoordinatorLock
+ }
+}
+function Write-M03ProjectVerifiedTechnicalClosure([string]$Repository,$Clock,$Receipt,$RuntimeId,[bool]$Verified){
+ if($null -eq $Clock){return}
+ $base='scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74'
+ $found=$null
+ for($ordinal=1;$ordinal -le 1024;$ordinal++){
+  $stem=$base+$(if($ordinal -eq 1){''}else{'.technical-'+$ordinal})
+  $candidate=Join-Path $Repository ($stem+'.json')
+  if(-not (Test-Path -LiteralPath $candidate)){break}
+  $candidate=Public-File $candidate 16384
+  $admission=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($candidate))
+  if($admission.startsAt -eq $Clock.startsAt){$found=[pscustomobject]@{path=$candidate;stem=$stem;parent=$admission.parentProcessId};break}
+ }
+ if($null -eq $found -or $found.parent -ne $PID){throw 'blocked'}
+ $close=[ordered]@{kind='m03_project_verified_technical_closed';version=1;admissionSha256=(Get-FileHash -LiteralPath $found.path -Algorithm SHA256).Hash.ToLowerInvariant();parentProcessId=$PID;runtimeProcessId=$RuntimeId;closedAt=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds();childClosed=$Receipt.childClosed;credentialChildrenClosed=$Receipt.credentialChildrenClosed;emergencyShutdown=$Receipt.emergencyShutdown;pendingMachinePreserved=$Receipt.pendingMachinePreserved;nativeExit=$Receipt.nativeExit;bypassHandoffDeleted=$Receipt.bypassHandoffDeleted;closureVerified=$Verified}
+ $path=Join-Path $Repository ($found.stem+'.closed.json')
+ $stream=$null;$bytes=$null
+ try{
+  $stream=[IO.File]::Open($path,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+  $bytes=[Text.UTF8Encoding]::new($false).GetBytes(($close|ConvertTo-Json -Compress)+"`n")
+  $stream.Write($bytes,0,$bytes.Length);$stream.Flush($true)
+ }finally{if($null -ne $stream){$stream.Dispose()};if($null -ne $bytes){[Array]::Clear($bytes,0,$bytes.Length)}}
 }
 function Initialize-BoundedIo {
  if('EmrM03AcceptanceBoundedIo' -as [type]){throw 'blocked'}
@@ -466,6 +498,12 @@ try{
  if($metadata -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($machineKeys|Sort-Object) @($metadata.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $metadata.version -isnot [int] -or $metadata.version -ne 1 -or $metadata.windowId -cne $seal.windowId -or $metadata.purpose -cne 'pending_inactive_m03_runtime_delivery' -or $metadata.credentialId -cne 'EmrM03Machine19' -or $metadata.audience -cne $old.audience -or $metadata.sourceCommitSha -cne $old.sourceCommitSha -or $metadata.createdAt -isnot [string] -or $metadata.createdAt -cnotmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3,7}(?:Z|\+00:00)$'){throw 'blocked'}
  if([DateTimeOffset]::Parse($metadata.createdAt,[Globalization.CultureInfo]::InvariantCulture) -gt [DateTimeOffset]::UtcNow){throw 'blocked'}
  $machinePath=Public-File (Join-Path $pending 'machine.dpapi')
+ # Under standing M03 dev authorization, consumed/expired disposable copies
+ # are regenerated from retained originals without another credential prompt.
+ # Public source/access, mutex and retained Machine provenance already passed.
+ if($ProjectVerifiedContinuation){
+  Initialize-M03AcceptanceDevCredentials $repo $lock
+ }
  $private=@{};$handoffs=@{};$leases=@{};$minimumExpiry=[DateTimeOffset]::UtcNow.AddHours(2)
  foreach($kind in @('Management','Writer','ApifyRead')){
   $stem='emr-m03-acceptance-'+$kind.ToLowerInvariant()
@@ -495,8 +533,9 @@ try{
  $bypassFile=Join-Path $directory 'emr-m03-acceptance-protection-bypass.dpapi'
  if(Test-Path -LiteralPath $bypassFile){throw 'blocked'}
  if($admittedClockMode){
-  # One durable segment, only after source/transport/provenance/lease checks.
-  # Never delete or recreate its admission/claim, even after a zero-effect exit.
+  # One bounded technical attempt, after source/transport/provenance/lease checks.
+  # Standing milestone authority permits only reconciled no-effect retries;
+  # every earlier admission, claim and closed clock remains immutable.
   $amendmentClock=Invoke-ClockAmendmentPublic $node $repo 'Admit' ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation)
   $resumeDeadlineAt=[long]$amendmentClock.deadlineAt
   $amendmentLeaseFloor=[DateTimeOffset]::FromUnixTimeMilliseconds([long]$amendmentClock.startsAt).AddMinutes(75)
@@ -536,6 +575,7 @@ try{
  foreach($name in @('SystemRoot','WINDIR','PATH','USERPROFILE','LOCALAPPDATA','APPDATA','TEMP','TMP')){if(Test-Path ('Env:'+ $name)){$start.EnvironmentVariables[$name]=[Environment]::GetEnvironmentVariable($name)}}
  $child=[Diagnostics.Process]::new();$child.StartInfo=$start
  $started=$child.Start();if(-not $started){throw 'blocked'};$closed=$false
+ $runtimeProcessId=$child.Id
  $childDeadline=if($admittedClockMode -or $ResumeZeroSetup){[DateTimeOffset]::FromUnixTimeMilliseconds($resumeDeadlineAt).AddMinutes(10)}else{[DateTimeOffset]::UtcNow.AddMinutes(70)}
  $child.StandardInput.WriteLine(($packet|ConvertTo-Json -Depth 5 -Compress));$child.StandardInput.Flush()
  $packet=$null;$private=$null;$machine=$null;$bypass=$null
@@ -609,6 +649,12 @@ try{
  if($null -ne $lock){$lock.Dispose();if($safeToDeleteCredentials){try{[IO.File]::Delete($lockPath)}catch{$exitCode=1}}}
  if($bypassCreated -and $safeToDeleteBypass){
   try{$null=Public-File $bypassFile;[IO.File]::Delete($bypassFile);$receipt.bypassHandoffDeleted=-not (Test-Path -LiteralPath $bypassFile)}catch{$exitCode=1}
+ }
+ if($ProjectVerifiedContinuation -and $null -ne $amendmentClock){
+  try{
+   if(-not $bypassCreated){$receipt.bypassHandoffDeleted=-not (Test-Path -LiteralPath (Join-Path $directory 'emr-m03-acceptance-protection-bypass.dpapi'))}
+   Write-M03ProjectVerifiedTechnicalClosure $repo $amendmentClock $receipt $runtimeProcessId ([bool](-not $started -or $script:closureVerified))
+  }catch{$exitCode=1}
  }
  # Otherwise preserve the owned encrypted bypass for explicit residual follow-up.
  if(-not $closed -or -not $deleted -or ($started -and -not $script:closureVerified)){$exitCode=1}

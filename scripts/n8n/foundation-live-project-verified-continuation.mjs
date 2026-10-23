@@ -570,13 +570,14 @@ function journals(x, initial = false) {
 }
 function initial(x, beforePrivate = true, admitted = false) {
   const values = journals(x, true);
+  const active = technicalPaths(x);
+  if (active.exists && !admitted) closedTechnicalAttempt(x, active);
+  if (admitted && x.physical(join(repo, active.claimRelative), true)) fail();
   for (const name of ['preflight', 'runtime']) {
     const t = x.file(`scripts/n8n/out/foundation/live/${name}.jsonl`, { optional: true });
     if (t !== null && t !== '') fail();
   }
   for (const path of [
-    ...(admitted ? [] : [c.admissionRelative]),
-    c.claimRelative,
     'scripts/n8n/out/foundation/live/runtime.operation.lock',
     'scripts/db/out/m03-foundation-owner-provision-attempt.json',
     'scripts/db/out/m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-owner-provision-attempt.json',
@@ -615,8 +616,95 @@ function initial(x, beforePrivate = true, admitted = false) {
   }
   return values;
 }
-function record(x) {
-  const text = x.file(c.admissionRelative),
+// Technical retries use this existing coordinator and immutable sibling records.
+// The original admission/claim and all closed clocks remain untouched. A retry
+// is automatic only for a proven no-effect closure at the exact pinned journals;
+// any database/runtime intent or changed counter requires engineering readback.
+function attemptPaths(ordinal) {
+  const stem = c.admissionRelative.slice(0, -5) + (ordinal === 1 ? '' : `.technical-${ordinal}`);
+  return {
+    ordinal,
+    admissionRelative: stem + '.json',
+    claimRelative: stem + '.runtime-claim.json',
+    closedRelative: stem + '.closed.json',
+  };
+}
+function technicalPaths(x) {
+  let active = attemptPaths(1);
+  active.exists = !!x.physical(join(repo, active.admissionRelative), true);
+  if (!active.exists) {
+    if (
+      x.physical(join(repo, active.claimRelative), true) ||
+      x.physical(join(repo, active.closedRelative), true)
+    )
+      fail();
+    return active;
+  }
+  for (let ordinal = 2; ordinal <= 1024; ordinal++) {
+    const next = attemptPaths(ordinal);
+    if (!x.physical(join(repo, next.admissionRelative), true)) {
+      if (
+        x.physical(join(repo, next.claimRelative), true) ||
+        x.physical(join(repo, next.closedRelative), true)
+      )
+        fail();
+      return active;
+    }
+    const closed = closedTechnicalAttempt(x, active);
+    const nextData = record(x, { paths: next, allowExpired: true, checkParent: false });
+    if (nextData.r.startsAt < closed.closedAt) fail();
+    active = { ...next, exists: true };
+  }
+  fail();
+}
+function closedTechnicalAttempt(x, paths) {
+  const data = record(x, { paths, allowExpired: true, checkParent: false });
+  const text = x.file(paths.closedRelative),
+    close = JSON.parse(text);
+  if (
+    !exact(close, [
+      'kind',
+      'version',
+      'admissionSha256',
+      'parentProcessId',
+      'runtimeProcessId',
+      'closedAt',
+      'childClosed',
+      'credentialChildrenClosed',
+      'emergencyShutdown',
+      'pendingMachinePreserved',
+      'nativeExit',
+      'bypassHandoffDeleted',
+      'closureVerified',
+    ]) ||
+    close.kind !== 'm03_project_verified_technical_closed' ||
+    close.version !== 1 ||
+    close.admissionSha256 !== hash(data.text) ||
+    close.parentProcessId !== data.r.parentProcessId ||
+    !(close.runtimeProcessId === null || positive(close.runtimeProcessId)) ||
+    (data.claim && close.runtimeProcessId !== data.claim.processId) ||
+    !Number.isSafeInteger(close.closedAt) ||
+    close.closedAt < data.r.startsAt ||
+    close.closedAt > x.clock() ||
+    close.childClosed !== true ||
+    close.credentialChildrenClosed !== true ||
+    close.emergencyShutdown !== false ||
+    close.pendingMachinePreserved !== true ||
+    !(
+      (close.runtimeProcessId === null && close.nativeExit === null) ||
+      (Number.isSafeInteger(close.nativeExit) && close.nativeExit >= 0)
+    ) ||
+    close.bypassHandoffDeleted !== true ||
+    close.closureVerified !== true ||
+    text !== JSON.stringify(close) + '\n' ||
+    x.io.processAlive(close.parentProcessId) !== false ||
+    (close.runtimeProcessId !== null && x.io.processAlive(close.runtimeProcessId) !== false)
+  )
+    fail();
+  return close;
+}
+function record(x, { paths = technicalPaths(x), allowExpired = false, checkParent = true } = {}) {
+  const text = x.file(paths.admissionRelative),
     r = JSON.parse(text);
   if (
     !exact(r, [
@@ -646,12 +734,12 @@ function record(x) {
     !positive(r.parentProcessId) ||
     text !== JSON.stringify(r) + '\n' ||
     x.clock() < r.startsAt ||
-    x.clock() >= r.stopNewAt
+    (!allowExpired && x.clock() >= r.stopNewAt)
   )
     fail();
-  x.parent(r.parentProcessId);
+  if (checkParent) x.parent(r.parentProcessId);
   journals(x);
-  const ct = x.file(c.claimRelative, { optional: true }),
+  const ct = x.file(paths.claimRelative, { optional: true }),
     claim = ct === null ? null : JSON.parse(ct);
   if (
     claim !== null &&
@@ -676,7 +764,7 @@ function record(x) {
       ct !== JSON.stringify(claim) + '\n')
   )
     fail();
-  return { r, text, claim, checkpoint: x.checkpoint };
+  return { r, text, claim, checkpoint: x.checkpoint, paths };
 }
 function proof(data, claimed = false) {
   const p = Object.freeze({
@@ -775,6 +863,17 @@ export function verifyFoundationProjectVerifiedContinuation(options = {}, depend
     fail();
   }
 }
+export function reconcileFoundationProjectVerifiedContinuation(options = {}, dependencies = {}) {
+  try {
+    const x = context(options, dependencies);
+    checkpoint(x);
+    approval(x);
+    initial(x, false);
+    return Object.freeze({ status: 'ready_no_effects', privateRead: false, networkRequests: 0 });
+  } catch {
+    return Object.freeze({ status: 'reconciliation_required', privateRead: false, networkRequests: 0 });
+  }
+}
 export function admitFoundationProjectVerifiedContinuation(options = {}, dependencies = {}) {
   try {
     const x = context(options, dependencies);
@@ -783,7 +882,9 @@ export function admitFoundationProjectVerifiedContinuation(options = {}, depende
     const values = initial(x),
       parent = x.parent(undefined, true),
       startsAt = x.clock();
-    x.create(c.admissionRelative, {
+    const previous = technicalPaths(x),
+      paths = previous.exists ? attemptPaths(previous.ordinal + 1) : previous;
+    x.create(paths.admissionRelative, {
       kind: 'm03_project_verified_continuation_admission',
       version: 1,
       segmentId: c.segmentId,
@@ -848,7 +949,7 @@ export function claimFoundationProjectVerifiedContinuation(p, options = {}, depe
     const values = initial(x, false, true);
     if (values.management.rows.length !== 3) fail();
     x.parent(data.r.parentProcessId, true);
-    x.create(c.claimRelative, {
+    x.create(data.paths.claimRelative, {
       kind: 'm03_project_verified_continuation_runtime_claim',
       version: 1,
       segmentId: c.segmentId,
@@ -881,15 +982,17 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (process.argv.length !== 3) fail();
     const mode = process.argv[2];
     const out =
-      mode === 'CheckOnly'
-        ? verifyFoundationProjectVerifiedContinuation()
-        : mode === 'Admit'
-          ? publicProof(admitFoundationProjectVerifiedContinuation())
-          : mode === 'Read'
-            ? publicProof(readFoundationProjectVerifiedContinuation())
-            : mode === 'ReadClaimed'
-              ? publicProof(readClaimedFoundationProjectVerifiedContinuation())
-              : fail();
+      mode === 'Reconcile'
+        ? reconcileFoundationProjectVerifiedContinuation()
+        : mode === 'CheckOnly'
+          ? verifyFoundationProjectVerifiedContinuation()
+          : mode === 'Admit'
+            ? publicProof(admitFoundationProjectVerifiedContinuation())
+            : mode === 'Read'
+              ? publicProof(readFoundationProjectVerifiedContinuation())
+              : mode === 'ReadClaimed'
+                ? publicProof(readClaimedFoundationProjectVerifiedContinuation())
+                : fail();
     process.stdout.write(JSON.stringify(out) + '\n');
   } catch {
     process.stdout.write(

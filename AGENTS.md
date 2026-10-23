@@ -25,10 +25,15 @@ Owner and approver: **Mohamed Abdelrahman** (mohamed.abdelrahman@everyone.film).
   4. Tick it in `PROGRESS.md`.
   5. Add a dated log line: what changed, which files, the test result.
 - Update `PROGRESS.md` **before you stop for any reason**: end of session, blocked, or context running out. The next session (maybe a fresh one) must be able to continue from it alone.
+- Within the active milestone, the owner's development authorization persists until completion or revocation. Implement, test, debug, make scoped commits, update the milestone PR, deploy protected dev previews, configure owned dev resources and finish already-approved integration work without ordinary step-by-step approvals. M03 A–D retains its existing cumulative scope and limits; this does not replenish them.
+- Technical timeouts, shutdown reserves and provider expiry still apply. After a safely closed attempt, reconcile actual side effects and counters, repair the defect and continue the incomplete step. Do not reopen closed windows, reuse spent mutation claims, overlap uncertain work or blindly repeat a paid start. A local lease/window expiry, consumed runtime copy, session resume, ordinary failure or tested source-hash change alone is not an owner-approval gate.
+- Reuse native integrations and persistent CurrentUser-DPAPI development entries outside Git at `%LOCALAPPDATA%\Everyone-Market-Radar-Private\secrets\dev\`, restricted to the intended Windows account and SYSTEM. Keep encrypted originals across attempts/sessions; automatically create narrowly scoped disposable copies only where existing consumers need them, then delete those copies and scratch after their children close. Administrative credentials stay in the separate bounded administrative path, never n8n or web runtime. No persistent entry has an artificial two-hour expiry.
 - When something needs the owner:
   1. Add it to the milestone's `PROGRESS.md` under "Manual actions needed" with exact click-by-click steps and why it's needed. Reuse the matching ID from `docs/MANUAL_ACTIONS.md`.
   2. Keep doing every task that doesn't depend on it.
   3. If nothing else can proceed, set the status to `Blocked: waiting on owner — MA-xx`.
+- Ask only for genuinely missing/revoked credentials, required MFA/consent, enforced permission changes, exhausted approved limits, consequential unresolved decisions, unsafe ambiguous side effects, production/destructive work, shared credential rotation, external messaging or unapproved recurring activity. Request genuinely missing inputs together through one hidden-prompt initialization/update interface; never request values in chat or extract unrelated saved secrets.
+- One coordinator owns hosted writes. Reuse existing helpers and targeted reviewers; locally test syntax, native contracts and error handling before real credential use. Preserve historical evidence and batch documentation with meaningful changes; do not add replacement-window script families or CI-announcement-only commits.
 - When all acceptance criteria pass:
   1. Paste the evidence.
   2. Fill in "Hand-off to next milestone".
@@ -89,12 +94,14 @@ If two documents disagree:
     - Regenerate the types after every migration.
 12. **Idempotency:** re-running any job on the same window must not duplicate rows or re-run AI.
 
+The owner's 23 October 2026 development-autonomy reset supersedes older project-level disposable-secret and repeated time-only approval requirements. It does not override enforced platform/organization controls, actual provider expiry, production boundaries or spending limits. Production credentials are excluded from the default dev profile. The unrelated private R2 incident and PR merge decisions remain separate; M04 must not start before the owner's next instruction.
+
 ## 5. Tools you may use
 
 - **GitHub:** branches and PRs.
 - **Supabase CLI and Supabase MCP**, with the owner's **scoped** token. Use the dev project by default.
 - **n8n MCP**, connected by the owner, to create, update and run workflows. Export each workflow's JSON to `n8n/workflows/` after changing it.
-- **Vercel:** Git integration. The CLI only if the owner provides a token.
+- **Vercel:** Git integration and the owner's existing authorized native CLI session. Request private sign-in only when actually required; do not manipulate OAuth caches or create replacement tokens merely to resume development.
 - **Local:** pnpm, Node 24, Docker (for `supabase start`) and Playwright.
 
 ## 6. Conventions

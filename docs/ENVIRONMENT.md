@@ -20,6 +20,44 @@ Where every secret lives, who creates it, and which milestone needs it. **Never 
 
 ## 2. Variables by runtime
 
+### Persistent development access — current policy, 23 October 2026
+
+The owner's development-autonomy reset replaces the earlier per-attempt secret
+delivery requirement. Reuse supported native GitHub/Vercel/MCP authentication
+and existing n8n credentials by actual ID/type. Do not extract n8n provider
+secrets or search unrelated stores. Four local approved dev inputs use the
+existing CurrentUser-DPAPI code at
+`%LOCALAPPDATA%\Everyone-Market-Radar-Private\secrets\dev\`: emr-dev postgres
+password, emr-dev `n8n_writer` password, existing n8n Management key, and same-owner
+Apify READ token. Filesystem access is limited to the intended Windows user and
+SYSTEM. This protects at rest; it does not isolate the files from every program
+running as that same user. Production and private-incident credentials stay out.
+
+The one initialization/update interface is the existing helper:
+
+```powershell
+& 'D:\Everyone\everyone Market Research\everyone-market-radar\scripts\n8n\windows\New-M03AcceptanceHandoff.ps1' -Action Initialize -Kind All
+```
+
+It imports compatible purpose-approved dev handoffs when available, then prompts
+only for genuinely missing entries, in order: Admin, Management, Writer, ApifyRead.
+Use saved existing values; do not reset or create credentials. The expected
+success marker is `M03_DEV_ACCESS_READY`; this establishes local encrypted
+storage, not endpoint authentication. `-Action Status -Kind All` reports only
+entry names/presence and missing names. To replace an actually revoked/expired
+entry, use `-Action Update -Kind Admin|Management|Writer|ApifyRead` with one actual
+kind, through its hidden prompt. It does not reset or rotate the provider value.
+
+Encrypted originals persist across attempts and sessions without an artificial
+two-hour expiry. The existing coordinator automatically creates only its required
+disposable runtime copies after readiness gates, and deletes those copies/private
+scratch after child closure. It never deletes the persistent source entries.
+Admin remains in the bounded database child, never n8n/web runtime; runtime
+children receive only task-required inputs. Existing Machine ciphertext is reused
+without regeneration. No environment/secret dump, print-secret operation, raw
+credential-bearing error, build/install/test exposure or password in arguments.
+Actual expiry/revocation/MFA and enforced tool policies remain real gates.
+
 ### Vercel (web app, API, MCP)
 | Name | Public? | Value / source | Milestone |
 |---|---|---|---|
@@ -35,9 +73,12 @@ Where every secret lives, who creates it, and which milestone needs it. **Never 
 | `N8N_WEBHOOK_BASE` | **no** | n8n instance base URL (e.g. `https://<instance>.app.n8n.cloud`); WF-60 onboarding webhook path per `docs/N8N_WORKFLOWS.md` | M11 / M15 |
 | `N8N_WEBHOOK_SECRET` | **no** | header value the app sends to the WF-60 onboarding webhook; WF-60 verifies it (credential `EMR webhook in · App`) | M11 / M15 |
 
-### M03 GW-01 dev gateway: branch Preview only
+### Historical M03 GW-01 dev gateway: branch Preview only
 
-GW-01 is a separate, approved dev transport exception. Its route is
+GW-01 is a completed, closed historical dev transport exception. The following
+records its original controls, not instructions to recreate handoffs, enable the
+route or reopen its trial. Current foundation work uses the persistent-dev policy
+above and the current M03 progress. Its route was
 `/api/internal/n8n/rpc`; it does not reuse `INTERNAL_WEBHOOK_SECRET`, an agent
 credential or a Supabase secret key. The implementation and local checks do not
 establish hosted gateway acceptance. The one additive dev migration is applied
@@ -136,17 +177,17 @@ saved-state/endpoint results are in M03's credential evidence.
 | Name | Where | Notes |
 |---|---|---|
 | `SUPABASE_ACCESS_TOKEN` | Codex env + GitHub Actions secret | **Scoped** personal access token (dev project; prod only when the owner allows) |
-| `SUPABASE_DB_PASSWORD_DEV` / `_PROD` | local only | for `supabase db push` |
+| `SUPABASE_DB_PASSWORD_DEV` / `_PROD` | separate bounded administrative paths only | Dev uses the persistent CurrentUser-DPAPI entry; production is never part of the default dev profile. Existing14 M03 versions must not be replayed. |
 | `SUPABASE_PROJECT_REF_DEV` / `_PROD` | repo variable | not secret |
 | `SEED_DATABASE_URL` | bounded owner seed child only | Password-free, fixed-project session-pooler URI for M02; never an application-role URL |
-| `PGPASSWORD` | bounded owner seed child only | Existing dev DB password decrypted from the M02 temporary Windows DPAPI handoff; no parent environment, `.env`, arguments or CI secret |
+| `PGPASSWORD` | bounded approved DB/owner-seed child only | Load only the task-required dev database entry through the existing administrative consumer; no n8n/web/build/install/test parent, `.env`, arguments or CI secret. Historical M02 temporary delivery receipts stay separate. |
 | `SUPABASE_URL` | M02 owner seed child | Non-secret verified dev URL used by the logo Storage client |
 | `SUPABASE_SECRET_KEY` | M02 owner seed child only | Dev secret key for owner-run logo seed; separate from the later Vercel media-route configuration |
 | `VIMEO_TOKEN` / `YOUTUBE_API_KEY` | M02 owner seed child only | Public-scope Vimeo token / YouTube Data API v3 restricted key; retain originals for later n8n setup |
 | `N8N_API_KEY` / n8n MCP config | Codex MCP config | to create/update workflows |
 | `VERCEL_TOKEN` | optional | only if Codex deploys via CLI |
 
-M02's exact private delivery commands and cleanup are in
+M02's historical exact private delivery commands and cleanup are in
 [`scripts/seed/README.md`](../scripts/seed/README.md). The Windows helper stores
 only temporary DPAPI ciphertext under the current user's local Temp directory.
 The reviewed consumer verifies the source/data/packet seal before decryption,

@@ -75,6 +75,101 @@ const readyDto = `([ordered]@{kind='project_verified_continuation_ready';segment
 const metadataDto = `([pscustomobject][ordered]@{kind='m03_vercel_saved_auth_metadata';status='metadata_covers_75_minutes';metadataValid=$true;unexpired=$true;covers75Minutes=$true;effectiveBackendEstablished=$false;networkRequests=0;authenticationAttempted=$false;refreshAttempted=$false;configWritten=$false;childClosed=$true})`;
 
 test(
+  'dev coordinator materializes only its four scoped disposable inputs after public and Machine provenance gates',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-project-dev-materialization-'));
+    const adapter = join(directory, 'synthetic-store.ps1');
+    try {
+      writeFileSync(
+        adapter,
+        `function Ensure-M03DevRuntimeHandoff { param($Kind,$AdminMode,$CoordinatorLock)\nif($AdminMode -cne 'ProjectVerifiedContinuation' -or $CoordinatorLock -isnot [IO.FileStream] -or -not $CoordinatorLock.CanWrite){throw 'WRONG_ADMIN_PURPOSE_OR_MUTEX'}\nif($Kind -ceq $script:fault){throw 'SYNTHETIC_MISSING'}\n$script:calls.Add($Kind)\n}\n`,
+      );
+      for (const fault of ['', 'Writer']) {
+        const output = powershell(`
+${definitions(['Initialize-M03AcceptanceDevCredentials'], wrapper)}
+$script:calls=[Collections.Generic.List[string]]::new();$script:fault=${quote(fault)}
+function Public-File($Path,$Maximum){
+ if(-not $Path.EndsWith('scripts\\n8n\\windows\\Dev-CredentialStore.ps1') -or $Maximum -ne 524288){throw 'WRONG_ADAPTER'}
+ return ${quote(adapter)}
+}
+$testLock=[IO.File]::Open(${quote(join(directory, 'synthetic-held.lock'))},[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::Write,[IO.FileShare]::Read)
+$blocked=$false;try{Initialize-M03AcceptanceDevCredentials 'C:\\__emr_synthetic_never_accessed' $testLock}catch{$blocked=$true}finally{$testLock.Dispose()}
+[ordered]@{calls=@($script:calls.ToArray());blocked=$blocked}|ConvertTo-Json -Compress
+`);
+        const result = JSON.parse(output);
+        assert.equal(result.blocked, fault !== '');
+        assert.deepEqual(
+          result.calls,
+          fault === '' ? ['Admin', 'Management', 'Writer', 'ApifyRead'] : ['Admin', 'Management'],
+        );
+      }
+      const value = source(wrapper);
+      const materialize = value.indexOf(' Initialize-M03AcceptanceDevCredentials $repo');
+      assert.ok(materialize > value.indexOf(' Confirm-ProjectVerifiedVercelMetadata $node $repo'));
+      assert.ok(materialize > value.indexOf("$machinePath=Public-File (Join-Path $pending 'machine.dpapi')"));
+      assert.ok(materialize < value.indexOf("foreach($kind in @('Management','Writer','ApifyRead')){"));
+      assert.ok(value.indexOf(' if($CheckOnly){') < materialize);
+    } finally {
+      removeOwnedTemporary(directory);
+    }
+  },
+);
+
+test(
+  'technical closure is an immutable fixed projection tied to the actual wrapper admission',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-project-technical-close-'));
+    const stem = `scripts/n8n/out/foundation/live/project-verified-continuation-${segment}`;
+    mkdirSync(join(directory, 'scripts/n8n/out/foundation/live'), { recursive: true });
+    try {
+      const output = powershell(`
+${definitions(['Public-File', 'Write-M03ProjectVerifiedTechnicalClosure'], wrapper)}
+$admission=[ordered]@{startsAt=123456;parentProcessId=$PID}
+$file=Join-Path ${quote(directory)} ${quote(stem + '.json')}
+[IO.File]::WriteAllText($file,($admission|ConvertTo-Json -Compress)+"\`n",[Text.UTF8Encoding]::new($false))
+$receipt=[ordered]@{childClosed=$true;credentialChildrenClosed=$true;emergencyShutdown=$false;pendingMachinePreserved=$true;nativeExit=$null;bypassHandoffDeleted=$true}
+Write-M03ProjectVerifiedTechnicalClosure ${quote(directory)} ([pscustomobject]@{startsAt=123456}) $receipt $null $true
+$path=Join-Path ${quote(directory)} ${quote(stem + '.closed.json')}
+$first=[IO.File]::ReadAllText($path);$blocked=$false
+try{Write-M03ProjectVerifiedTechnicalClosure ${quote(directory)} ([pscustomobject]@{startsAt=123456}) $receipt $null $true}catch{$blocked=$true}
+if(-not $blocked -or [IO.File]::ReadAllText($path) -cne $first){throw 'CLOSURE_OVERWRITTEN'}
+$value=ConvertFrom-Json -InputObject $first
+if($value.parentProcessId -ne $PID -or $value.kind -cne 'm03_project_verified_technical_closed' -or $value.admissionSha256 -cne (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant() -or $value.runtimeProcessId -ne $null -or -not $value.closureVerified){throw 'BAD_CLOSURE_PROJECTION'}
+Write-Output 'IMMUTABLE_TECHNICAL_CLOSE_VERIFIED'
+`);
+      assert.equal(output, 'IMMUTABLE_TECHNICAL_CLOSE_VERIFIED');
+    } finally {
+      removeOwnedTemporary(directory);
+    }
+  },
+);
+
+test(
+  'native administrator resolves the current technical sibling and rejects an orphan claim without an admission',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const output = powershell(`
+${definitions(['Resolve-FoundationProjectVerifiedTechnicalPaths'])}
+$repo='C:\\__emr_synthetic_never_accessed';$script:fault=$false
+function Test-Path {param($LiteralPath)
+ if($LiteralPath.EndsWith('.technical-2.json')){return $true}
+ if($script:fault -and $LiteralPath.EndsWith('.technical-3.runtime-claim.json')){return $true}
+ return $false
+}
+function Assert-Path($Root,$Relative){return Join-Path $Root $Relative}
+$value=Resolve-FoundationProjectVerifiedTechnicalPaths
+if(-not $value.admission.EndsWith('.technical-2.json') -or -not $value.claim.EndsWith('.technical-2.runtime-claim.json')){throw 'WRONG_TECHNICAL_SELECTION'}
+$script:fault=$true;$blocked=$false;try{$null=Resolve-FoundationProjectVerifiedTechnicalPaths}catch{$blocked=$true}
+if(-not $blocked){throw 'ORPHAN_CLAIM_NOT_RECONCILED'}
+Write-Output 'TECHNICAL_ANCESTRY_PATHS_VERIFIED'
+`);
+    assert.equal(output, 'TECHNICAL_ANCESTRY_PATHS_VERIFIED');
+  },
+);
+
+test(
   'project-verified metadata projection rejects secret fields and impossible or unclosed readiness',
   { skip: process.platform !== 'win32' },
   () => {
@@ -157,6 +252,7 @@ test(
         writeFileSync(lockPath, 'synthetic-owned-mutex');
         const output = powershell(`
 $script:projectVerifiedMetadataClosed=$${closed};$script:credentialClosureVerified=$false;$script:closureVerified=$false
+$ProjectVerifiedContinuation=$true;$amendmentClock=$null;$runtimeProcessId=$null
 $consumed=[Collections.Generic.List[string]]::new();$closed=$true;$started=$false;$treeClosed=$false;$emergency=$false;$bypassCreated=$false;$exitCode=1
 $lockPath=${quote(lockPath)};$lock=[IO.File]::Open($lockPath,[IO.FileMode]::Open,[IO.FileAccess]::Write,[IO.FileShare]::Read)
 $receipt=[ordered]@{kind='m03_acceptance_wrapper_closed';childClosed=$true;credentialChildrenClosed=$false;emergencyShutdown=$false;nativeExit=$null;handoffsDeleted=$false;bypassHandoffDeleted=$false;pendingMachinePreserved=$true;privateRead=$false;code='M03_ACCEPTANCE_VERCEL_METADATA_BLOCKED'}
@@ -439,7 +535,7 @@ test(
   { skip: process.platform !== 'win32' },
   () => {
     powershell(`
-${definitions(['Assert-Keys', 'Read-FoundationKernelProcess', 'Assert-FoundationProjectVerifiedContinuationProcessAncestry'])}
+${definitions(['Assert-Keys', 'Read-FoundationKernelProcess', 'Resolve-FoundationProjectVerifiedTechnicalPaths', 'Assert-FoundationProjectVerifiedContinuationProcessAncestry'])}
 $ProjectVerifiedContinuation=$true;$StartupReplacement=$false;$RemainingContinuation=$false;$CheckOnly=$false;$repo='C:\\__emr_synthetic_never_accessed';$env:LOCALAPPDATA=$repo
 $now=[DateTimeOffset]::UtcNow;$start=$now.AddMinutes(-1);$claimed=$now.AddSeconds(-45);$script:fault=''
 $clock=[pscustomobject]@{segmentId='${segment}';startsAt=$start.ToUnixTimeMilliseconds();stopNewAt=$start.AddMinutes(50).ToUnixTimeMilliseconds()}
@@ -578,7 +674,7 @@ test(
       const result = powershell(`
 $env:LOCALAPPDATA=${quote(directory)};$repo=${quote(directory)};$directory=${quote(directory)}
 $seal=[pscustomobject]@{windowId='df4f29ec-e2dc-4d82-a276-62a4e695e6f9';approvedHead='${head}';approvedPacketSha256='synthetic-public-packet'}
-$node='synthetic-never-spawned';$ResumeZeroSetup=$false;$ClockAmendment=$false;$PostcheckContinuation=$false;$RemainingContinuation=$false;$ProjectVerifiedContinuation=$true;$StartupReplacement=$false;$admittedClockMode=$true;$resumeDeadlineAt=$null;$script:admissions=0;$script:fault=''
+$node='synthetic-never-spawned';$ResumeZeroSetup=$false;$ClockAmendment=$false;$PostcheckContinuation=$false;$RemainingContinuation=$false;$ProjectVerifiedContinuation=$true;$StartupReplacement=$false;$admittedClockMode=$true;$resumeDeadlineAt=$null;$lock=$null;$script:admissions=0;$script:fault=''
 function Public-File($Path,$Maximum=0){
  if($Path.EndsWith('foundation-delivery-packet.json')){return ${quote(delivery)}}
  if($Path.EndsWith('emr-m03-foundation-dev-migration-password.lease.json')){if($script:fault -ceq 'old-admin-purpose'){return ${quote(oldAdmin)}};if($script:fault -ceq 'short-admin-lease'){return ${quote(shortAdmin)}};return ${quote(admin)}}
@@ -599,6 +695,7 @@ function Invoke-ClockAmendmentPublic($Node,$Repository,$Mode,$PostcheckClock,$Re
  return [pscustomobject]@{startsAt=$start;deadlineAt=$start+3600000}
 }
 function Plain-Dpapi {throw 'DPAPI_MUST_NOT_BE_REACHED'}
+function Initialize-M03AcceptanceDevCredentials { }
 foreach($fault in @('missing-runtime','short-lease','machine-provenance','old-admin-purpose','short-admin-lease')){
  $script:fault=$fault;$blocked=$false
  try{${preAdmit}}catch{$blocked=$true}
