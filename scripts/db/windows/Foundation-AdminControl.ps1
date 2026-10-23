@@ -103,11 +103,12 @@ function Close-FoundationOwnedWindow($Binding) {
   $audience=Foundation-Literal $Binding.audience;$sha=Foundation-Literal $Binding.commitSha;$deployment=Foundation-Literal $Binding.deploymentId
   $owned=Invoke-FoundationQuery "select jsonb_build_object('owned',bound_audience=$audience and bound_commit_sha=$sha and bound_deployment_id=$deployment) as ownership from ops.foundation_gateway_rate_windows where window_id='$window';" 'ownership'
   if($owned.owned -ne $true){throw 'blocked'}
-  $answer=Invoke-FoundationQuery "select ops.foundation_gateway_admit('$window','00000000-0000-4000-8000-000000000021','identity.read','{}','close') as closed;" 'closed'
-  if($answer.state -cne 'closed' -or $answer.window.closed -ne $true){throw 'blocked'}
+  # The runtime must close through its actual restricted Writer connection.
+  # postgres cannot impersonate that session_user. This owner path only proves
+  # the resulting closure; it never repeats the writer mutation on cleanup.
   $verified=Invoke-FoundationQuery "select jsonb_build_object('closed',w.closed_at is not null and w.close_count=1 and exists(select 1 from ops.apify_launch_approvals a where a.window_id=w.window_id and a.closed_at is not null) and not exists(select 1 from ops.foundation_gateway_leases l where l.window_id=w.window_id and l.request_id is not null) and not exists(select 1 from ops.foundation_gateway_requests r where r.window_id=w.window_id and r.state='reserved')) as closure from ops.foundation_gateway_rate_windows w where w.window_id='$window';" 'closure'
   if($verified.closed -ne $true){throw 'blocked'}
-  return $answer
+  return [ordered]@{state='closed';window=[ordered]@{id=$window;closed=$true}}
 }
 function Assert-FoundationContinuationVacant([switch]$RefreshHistory) {
   $startupMode=[bool](Get-Variable -Name StartupReplacement -ValueOnly -ErrorAction SilentlyContinue)

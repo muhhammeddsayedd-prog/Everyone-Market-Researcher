@@ -26,6 +26,7 @@ import {
   reconcileFoundationRuntimeReadOnly,
   createFoundationRuntimeBinding,
   runtimeGraphHash,
+  foundationRuntimeGuardDiagnostic,
 } from './foundation-runtime-control.mjs';
 import {
   createFoundationControlJournal,
@@ -479,6 +480,7 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
             return Object.freeze({ status: 'shared_management_reserve_required' });
           return runFoundationRuntimeSetup(plan, ports);
         }),
+      diagnostics: () => foundationRuntimeGuardDiagnostic(journal),
       saveCase: (caseId, options = {}) =>
         exclusive(() => {
           if (budget.snapshot().attempts + 3 + 142 > 512)

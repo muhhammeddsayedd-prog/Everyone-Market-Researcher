@@ -26,6 +26,7 @@ export {
   foundationRequest,
   foundationReceipt,
   foundationWindowId,
+  foundationWindowIds,
   foundationOperations,
   foundationSmokeInput,
   foundationTerminal,

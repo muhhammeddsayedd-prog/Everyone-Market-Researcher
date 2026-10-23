@@ -3,8 +3,273 @@ import { resolveInstance } from './inventory.mjs';
 import { validateFoundationAddresses } from './foundation-management-transport.mjs';
 import { foundationRuntimeRequestAllowed } from './foundation-runtime-control.mjs';
 import { randomUUID } from 'node:crypto';
+import { nativeWriterClient } from './gw01-writer.mjs';
 
 const blocked = () => Error('FOUNDATION_LIVE_MANAGEMENT_BLOCKED');
+
+// Reuse only GW-01's pinned dev Client constructor. Its application_name is
+// informational; neither the old trial consumer nor its SQL window is used.
+export function createFoundationLiveWriterCloser(
+  {
+    password,
+    audience,
+    sourceCommitSha,
+    deploymentId,
+    deadlineAt,
+    previousEvents,
+    append,
+    windowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+  },
+  dependencies = {},
+) {
+  const knownWindowIds = ['df4f29ec-e2dc-4d82-a276-62a4e695e6f9', '38b3708d-61b0-41d2-8170-5ed91c66b4dc'];
+  const requestId = '00000000-0000-4000-8000-000000000021';
+  const now = dependencies.now ?? Date.now;
+  const exact = (v, keys) =>
+    v !== null &&
+    typeof v === 'object' &&
+    !Array.isArray(v) &&
+    Object.keys(v).length === keys.length &&
+    keys.every((k) => Object.hasOwn(v, k));
+  if (
+    !knownWindowIds.includes(windowId) ||
+    typeof password !== 'string' ||
+    !password ||
+    password.length > 4096 ||
+    !/^https:\/\/everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(audience) ||
+    !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
+    !/^dpl_[A-Za-z0-9_-]{1,100}$/.test(deploymentId) ||
+    !Number.isFinite(deadlineAt) ||
+    typeof append !== 'function' ||
+    !Array.isArray(previousEvents)
+  )
+    throw blocked();
+  const prior = previousEvents.filter(
+    (r) => r?.event === 'foundation_writer_close_intent' && r.windowId === windowId,
+  );
+  if (
+    prior.length > 1 ||
+    prior.some(
+      (r) =>
+        !exact(r, ['event', 'windowId', 'requestId', 'audience', 'sourceCommitSha', 'deploymentId', 'at']) ||
+        r.windowId !== windowId ||
+        r.requestId !== requestId ||
+        r.audience !== audience ||
+        r.sourceCommitSha !== sourceCommitSha ||
+        r.deploymentId !== deploymentId ||
+        typeof r.at !== 'string' ||
+        !Number.isFinite(Date.parse(r.at)),
+    )
+  )
+    throw blocked();
+  const timeoutMs = dependencies.timeoutMs ?? 10000;
+  const closeTimeoutMs = dependencies.closeTimeoutMs ?? 10000;
+  if (![timeoutMs, closeTimeoutMs].every((v) => Number.isSafeInteger(v) && v > 0 && v <= 10000))
+    throw blocked();
+  let key = password,
+    client,
+    pending = false,
+    physicalOpen = false,
+    stopped = false,
+    running;
+  function bounded(value, ms) {
+    let timer;
+    return Promise.race([
+      Promise.resolve(value),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(blocked()), ms);
+      }),
+    ]).finally(() => clearTimeout(timer));
+  }
+  function write(row) {
+    const r = append(row);
+    if (r !== undefined) {
+      if (r?.then) Promise.resolve(r).catch(() => {});
+      throw blocked();
+    }
+  }
+  function oneRow(r, keys) {
+    if (!Array.isArray(r?.rows) || r.rows.length !== 1 || !exact(r.rows[0], keys)) throw blocked();
+    return r.rows[0];
+  }
+  async function identity() {
+    const r = oneRow(
+      await bounded(
+        client.query(
+          'select current_user as "currentUser",session_user as "sessionUser",current_database() as database,\'zmotjsbzhzjvpelxvxlf\'::text as "projectRef"',
+        ),
+        timeoutMs,
+      ),
+      ['currentUser', 'sessionUser', 'database', 'projectRef'],
+    );
+    if (
+      r.currentUser !== 'n8n_writer' ||
+      r.sessionUser !== 'n8n_writer' ||
+      r.database !== 'postgres' ||
+      r.projectRef !== 'zmotjsbzhzjvpelxvxlf'
+    )
+      throw blocked();
+  }
+  async function control(mode) {
+    const row = oneRow(
+      await bounded(
+        client.query(
+          "select ops.foundation_gateway_admit($1::uuid,$2::uuid,'identity.read','{}'::jsonb,$3::text) as receipt",
+          [windowId, requestId, mode],
+        ),
+        timeoutMs,
+      ),
+      ['receipt'],
+    );
+    const r = row.receipt,
+      w = r?.window;
+    if (
+      !exact(r, ['state', 'code', 'result', 'replayed', 'operation', 'window']) ||
+      !['admitted', 'closed'].includes(r.state) ||
+      ![null, 'window_closed', 'window_expired'].includes(r.code) ||
+      r.result !== null ||
+      r.replayed !== false ||
+      r.operation !== 'identity.read' ||
+      !exact(w, [
+        'id',
+        'startsAt',
+        'expiresAt',
+        'closed',
+        'totalAdmitted',
+        'boundAudience',
+        'boundCommitSha',
+        'boundDeploymentId',
+      ]) ||
+      w.id !== windowId ||
+      typeof w.closed !== 'boolean' ||
+      !Number.isSafeInteger(w.totalAdmitted) ||
+      w.totalAdmitted < 0 ||
+      w.totalAdmitted > 256 ||
+      (w.startsAt === null) !== (w.expiresAt === null) ||
+      (w.startsAt !== null &&
+        (typeof w.startsAt !== 'string' ||
+          typeof w.expiresAt !== 'string' ||
+          !Number.isFinite(Date.parse(w.startsAt)) ||
+          !Number.isFinite(Date.parse(w.expiresAt)) ||
+          Date.parse(w.expiresAt) <= Date.parse(w.startsAt) ||
+          Date.parse(w.expiresAt) - Date.parse(w.startsAt) > 3600000)) ||
+      w.boundAudience !== audience ||
+      w.boundCommitSha !== sourceCommitSha ||
+      w.boundDeploymentId !== deploymentId
+    )
+      throw blocked();
+    return r.state === 'closed' && r.code === 'window_closed' && w.closed === true;
+  }
+  return Object.freeze({
+    closeWindow() {
+      if (running) return running;
+      running = (async () => {
+        const out = {
+          identityVerified: false,
+          bindingVerified: false,
+          closeAttempted: false,
+          closeAcknowledged: false,
+          closeVerified: false,
+          connectionClosed: true,
+        };
+        let verified = false;
+        try {
+          if (stopped || now() >= deadlineAt + 600000) throw blocked();
+          client = (dependencies.createClient ?? nativeWriterClient)(key);
+          key = null;
+          physicalOpen = true;
+          out.connectionClosed = false;
+          pending = true;
+          client.on('error', () => {});
+          client.once('end', () => {
+            physicalOpen = false;
+          });
+          await bounded(client.connect(), timeoutMs);
+          await identity();
+          out.identityVerified = true;
+          const alreadyClosed = await control('inspect');
+          out.bindingVerified = true;
+          if (!alreadyClosed && prior.length === 0) {
+            write({
+              event: 'foundation_writer_close_intent',
+              windowId,
+              requestId,
+              audience,
+              sourceCommitSha,
+              deploymentId,
+              at: new Date(now()).toISOString(),
+            });
+            out.closeAttempted = true;
+            try {
+              out.closeAcknowledged = await control('close');
+            } catch {
+              /* Inspect only after an unknown acknowledgement. */
+            }
+          }
+          await identity();
+          verified = await control('inspect');
+        } catch {
+          verified = false;
+        } finally {
+          key = null;
+          if (client) {
+            let ended;
+            const nativeEnd = new Promise((resolve) => {
+              client.once('end', resolve);
+            });
+            try {
+              ended = Promise.resolve(client.end()).then(() => {
+                physicalOpen = false;
+              });
+              await bounded(Promise.race([ended, nativeEnd]), closeTimeoutMs);
+            } catch {
+              try {
+                client.connection.stream.destroy();
+              } catch {
+                /* Unknown native closure remains owned. */
+              }
+              try {
+                await bounded(nativeEnd, closeTimeoutMs);
+              } catch {
+                /* Preserve the unclosed transport state. */
+              }
+            }
+          }
+          pending = false;
+          out.connectionClosed = !physicalOpen;
+          out.closeVerified = verified && out.connectionClosed;
+        }
+        if (out.closeVerified)
+          try {
+            write({
+              event: 'foundation_writer_close_verified',
+              windowId,
+              identityVerified: true,
+              bindingVerified: true,
+              closeAcknowledged: out.closeAcknowledged,
+              connectionClosed: true,
+              at: new Date(now()).toISOString(),
+            });
+          } catch {
+            out.closeVerified = false;
+          }
+        return Object.freeze(out);
+      })();
+      return running;
+    },
+    state: () => Object.freeze({ pendingRequests: pending ? 1 : 0, unclosedResponses: physicalOpen ? 1 : 0 }),
+    close() {
+      stopped = true;
+      key = null;
+      if (physicalOpen)
+        try {
+          client.connection.stream.destroy();
+        } catch {
+          /* No invented native completion. */
+        }
+    },
+  });
+}
 
 // A new runtime-only transport. The completed inactive/GW01 consumers and their
 // request guards are never changed or repurposed. Returned DTOs stay private.

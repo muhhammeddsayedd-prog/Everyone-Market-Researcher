@@ -3,7 +3,7 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import {
   foundationRequest,
   foundationReceipt,
-  foundationWindowId,
+  foundationWindowIds,
   type FoundationRequest,
 } from '@emr/shared';
 import { readBody, response } from './dispatcher';
@@ -13,18 +13,19 @@ export interface FoundationConfig {
   audience: string;
   password: string;
   verifier: string;
-  windowId: typeof foundationWindowId;
+  windowId: (typeof foundationWindowIds)[number];
   commitSha: string;
   deploymentId: string;
   apifyReadToken: string;
 }
 export function foundationConfig(env: Record<string, string | undefined>): FoundationConfig {
+  const windowId = foundationWindowIds.find((id) => id === env.EMR_M03_FOUNDATION_WINDOW_ID);
   if (
     env.EMR_M03_FOUNDATION_ENABLED !== 'true' ||
     env.VERCEL_ENV !== 'preview' ||
     env.VERCEL_GIT_COMMIT_REF !== 'm03-n8n-foundation' ||
     env.VERCEL_PROJECT_ID !== 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' ||
-    env.EMR_M03_FOUNDATION_WINDOW_ID !== foundationWindowId ||
+    !windowId ||
     !env.EMR_M03_FOUNDATION_WRITER_PASSWORD ||
     !env.EMR_M03_FOUNDATION_APIFY_READ_TOKEN ||
     !/^[a-f0-9]{64}$/.test(env.EMR_M03_FOUNDATION_TOKEN_SHA256 ?? '') ||
@@ -39,7 +40,7 @@ export function foundationConfig(env: Record<string, string | undefined>): Found
     audience: 'https://' + env.VERCEL_URL,
     password: env.EMR_M03_FOUNDATION_WRITER_PASSWORD,
     verifier: env.EMR_M03_FOUNDATION_TOKEN_SHA256!,
-    windowId: foundationWindowId,
+    windowId,
     commitSha: env.VERCEL_GIT_COMMIT_SHA!,
     deploymentId: env.VERCEL_DEPLOYMENT_ID!,
     apifyReadToken: env.EMR_M03_FOUNDATION_APIFY_READ_TOKEN,
@@ -94,6 +95,11 @@ export function createFoundationHandler(deps: Dependencies) {
       const value = await readBody(request, controller.signal);
       try {
         parsed = foundationRequest(value);
+        if (
+          parsed.operation === 'launch.authorize' &&
+          (parsed.args.launch as { window_id: string }).window_id !== config.windowId
+        )
+          throw Error('invalid_request');
       } catch {
         throw new WorkerFailure('invalid_request', 400);
       }
@@ -105,6 +111,7 @@ export function createFoundationHandler(deps: Dependencies) {
       let result;
       try {
         result = foundationReceipt(raw, parsed.operation);
+        if (result.window.id !== config.windowId) throw Error('invalid_result');
       } catch {
         throw new WorkerFailure('outcome_unknown', 503);
       }

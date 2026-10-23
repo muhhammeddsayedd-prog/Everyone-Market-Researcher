@@ -13,6 +13,21 @@ const window = {
   boundDeploymentId: 'dpl_example',
 };
 describe('separate bounded M03 foundation protocol', () => {
+  it('accepts the reviewed fresh foundation window but rejects unrelated or unknown windows', () => {
+    const receipt = {
+      state: 'admitted',
+      code: null,
+      result: null,
+      operation: 'identity.read',
+      replayed: false,
+      window: { ...window, id: '38b3708d-61b0-41d2-8170-5ed91c66b4dc' },
+    };
+    expect(foundationReceipt(receipt, 'identity.read').window.id).toBe(receipt.window.id);
+    for (const id of ['76c2ad42-c094-4ba4-9a0b-566e19b97780', requestId])
+      expect(() => foundationReceipt({ ...receipt, window: { ...window, id } }, 'identity.read')).toThrow(
+        'invalid_result',
+      );
+  });
   it('permits only measured keyed Apify cost replay, including nullable optional attribution', () => {
     const e = {
       provider: 'apify',

@@ -7,7 +7,9 @@ import { join } from 'node:path';
 import {
   runFoundationLiveRuntimeCli,
   createFoundationLiveAcceptanceSession,
+  projectFoundationBaselineDiagnostic,
 } from './foundation-live-runtime-cli.mjs';
+import * as liveSql from './foundation-live-runtime-cli.mjs';
 import { fixture } from './foundation-live-runtime-fixtures.mjs';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 
@@ -23,6 +25,232 @@ const privatePacket = () => ({
   machineToken: 'M'.repeat(43),
   protectionBypass: 'B'.repeat(32),
   leaseExpiry: Date.now() + 7200000,
+});
+
+const replaySnapshot = () => ({
+  items: 1,
+  rawSnapshots: 1,
+  aiExtractQueue: 1,
+  embedQueue: 1,
+  mediaQueue: 0,
+  costEntries: 1,
+  itemsSha256: 'a'.repeat(64),
+  rawSnapshotsSha256: 'b'.repeat(64),
+  queuesSha256: 'c'.repeat(64),
+  costsSha256: 'd'.repeat(64),
+});
+test('strict replay parity validates exactly six counts/four hashes and ignores property order', () => {
+  const before = replaySnapshot(),
+    after = Object.fromEntries(Object.entries(before).reverse());
+  assert.equal(liveSql.verifyFoundationLiveReplaySnapshots(before, after), true);
+  const malformed = [
+    undefined,
+    null,
+    {},
+    [],
+    { ...before, extra: true },
+    { ...before, items: -1 },
+    { ...before, items: 0.5 },
+    { ...before, items: Number.MAX_SAFE_INTEGER + 1 },
+    { ...before, items: NaN },
+    { ...before, items: '1' },
+    { ...before, itemsSha256: 'A'.repeat(64) },
+    { ...before, costsSha256: 'd'.repeat(63) },
+  ];
+  const missing = { ...before };
+  delete missing.items;
+  malformed.push(missing);
+  const symbol = { ...before, [Symbol('SYNTHETIC_PRIVATE_FIELD')]: true };
+  malformed.push(symbol);
+  const accessor = { ...before };
+  Object.defineProperty(accessor, 'items', {
+    enumerable: true,
+    get() {
+      throw Error('SYNTHETIC_PRIVATE_SQL');
+    },
+  });
+  malformed.push(accessor);
+  for (const bad of malformed) {
+    assert.throws(
+      () => liveSql.verifyFoundationLiveReplaySnapshots(bad, bad),
+      /FOUNDATION_LIVE_CHILD_BLOCKED/,
+    );
+    assert.throws(
+      () => liveSql.verifyFoundationLiveReplaySnapshots(before, bad),
+      /FOUNDATION_LIVE_CHILD_BLOCKED/,
+    );
+  }
+  for (const change of [{ items: 2 }, { costsSha256: 'e'.repeat(64) }])
+    assert.throws(
+      () => liveSql.verifyFoundationLiveReplaySnapshots(before, { ...before, ...change }),
+      /FOUNDATION_LIVE_CHILD_BLOCKED/,
+    );
+});
+function callbackSqlFixture(options = {}) {
+  const {
+    caseId = 'callback.equal_replay',
+    readFault,
+    cleanup = true,
+    cleanupFault = false,
+    nativeState = 'native_settled',
+  } = options;
+  const before = Object.hasOwn(options, 'before') ? options.before : replaySnapshot(),
+    after = Object.hasOwn(options, 'after') ? options.after : replaySnapshot();
+  const calls = [],
+    events = [];
+  let reads = 0;
+  return {
+    calls,
+    events,
+    run: () =>
+      liveSql.verifyFoundationLiveCallbackSqlCase({
+        caseId,
+        async readSnapshot() {
+          calls.push('read' + reads);
+          if (readFault === reads++) throw Error('SYNTHETIC_PRIVATE_SQL');
+          return reads === 1 ? before : after;
+        },
+        async start() {
+          calls.push('native');
+          return { state: nativeState, caseId, executionIds: ['123', '124'] };
+        },
+        async cleanup() {
+          calls.push('cleanup');
+          if (cleanupFault) throw Error('SYNTHETIC_PRIVATE_CLEANUP');
+          return cleanup;
+        },
+        append(event) {
+          calls.push('append');
+          events.push(event);
+        },
+        now: () => Date.parse('2026-10-23T12:00:00Z'),
+      }),
+  };
+}
+test('callback and concurrent-pair parity read before start/after settlement and clean exact native records', async () => {
+  for (const caseId of [
+    'callback.unknown',
+    'callback.equal_replay',
+    'callback.concurrent_pair',
+    'callback.recovery_drill',
+  ]) {
+    const f = callbackSqlFixture({
+        caseId,
+        after: Object.fromEntries(Object.entries(replaySnapshot()).reverse()),
+      }),
+      r = await f.run();
+    assert.equal(r.status, 'native_settled_and_cleaned');
+    assert.equal(r.residual, false);
+    assert.deepEqual(f.calls, ['read0', 'native', 'read1', 'append', 'cleanup']);
+    assert.deepEqual(f.events, [
+      {
+        event: 'callback_replay_sql_parity_verified',
+        caseId,
+        countsUnchanged: true,
+        hashesUnchanged: true,
+        at: '2026-10-23T12:00:00.000Z',
+      },
+    ]);
+    assert.doesNotMatch(
+      JSON.stringify(r) + JSON.stringify(f.events),
+      /SYNTHETIC_PRIVATE|Sha256|aaaa|bbbb|cccc|dddd/,
+    );
+  }
+});
+test('undefined/malformed/failed pre-callback SQL prevents every native start', async () => {
+  for (const options of [{ before: undefined }, { before: {} }, { readFault: 0 }]) {
+    const f = callbackSqlFixture(options);
+    await assert.rejects(f.run(), /FOUNDATION_LIVE_CHILD_BLOCKED/);
+    assert.deepEqual(f.calls, ['read0']);
+    assert.deepEqual(f.events, []);
+  }
+  for (const caseId of ['callback.not_owned', 'callback.concurrent_a', 'callback.concurrent_b', undefined]) {
+    let queries = 0;
+    await assert.rejects(
+      liveSql.verifyFoundationLiveCallbackSqlCase({
+        caseId,
+        readSnapshot() {
+          queries++;
+          return replaySnapshot();
+        },
+        start() {
+          throw Error('UNEXPECTED_START');
+        },
+        cleanup() {
+          throw Error('UNEXPECTED_CLEANUP');
+        },
+        append() {
+          throw Error('UNEXPECTED_APPEND');
+        },
+      }),
+      /FOUNDATION_LIVE_CHILD_BLOCKED/,
+    );
+    assert.equal(queries, 0);
+  }
+});
+test('changed/malformed/failed post-callback SQL still cleans and reports unresolved SQL without parity evidence', async () => {
+  for (const options of [
+    { after: { ...replaySnapshot(), items: 2 } },
+    { after: {} },
+    { readFault: 1 },
+    { after: { ...replaySnapshot(), costsSha256: 'e'.repeat(64) }, cleanup: false },
+  ]) {
+    const f = callbackSqlFixture(options),
+      r = await f.run();
+    assert.equal(r.status, 'sql_acceptance_unresolved');
+    assert.equal(r.residual, true);
+    assert.deepEqual(f.calls, ['read0', 'native', 'read1', 'cleanup']);
+    assert.deepEqual(f.events, []);
+    assert.doesNotMatch(JSON.stringify(r), /SYNTHETIC_PRIVATE/);
+  }
+});
+test('successful SQL cannot conceal native or cleanup failure', async () => {
+  for (const options of [{ cleanup: false }, { cleanupFault: true }]) {
+    const f = callbackSqlFixture(options),
+      r = await f.run();
+    assert.equal(r.status, 'cleanup_unresolved');
+    assert.equal(r.residual, true);
+    assert.equal(f.events.length, 1);
+  }
+  const f = callbackSqlFixture({ nativeState: 'native_unresolved' }),
+    r = await f.run();
+  assert.equal(r.status, 'native_unresolved');
+  assert.equal(r.residual, true);
+  assert.deepEqual(f.calls, ['read0', 'native']);
+  assert.deepEqual(f.events, []);
+});
+
+test('baseline diagnostic projection exposes only fixed codes and component booleans', () => {
+  const diagnostic = {
+    version: 1,
+    workflowKey: 'WF-00',
+    failedChecks: ['version_mismatch'],
+    components: { nameEqual: true, nodesEqual: true, connectionsEqual: true, settingsEqual: true },
+  };
+  assert.deepEqual(projectFoundationBaselineDiagnostic({ diagnostics: () => diagnostic }), {
+    baselineWorkflowKey: 'WF-00',
+    baselineFailureCodes: ['version_mismatch'],
+    baselineNameEqual: true,
+    baselineNodesEqual: true,
+    baselineConnectionsEqual: true,
+    baselineSettingsEqual: true,
+  });
+  for (const value of [
+    null,
+    { ...diagnostic, raw: 'PRIVATE_DIAGNOSTIC_CANARY' },
+    { ...diagnostic, workflowKey: 'PRIVATE_DIAGNOSTIC_CANARY' },
+    { ...diagnostic, failedChecks: ['PRIVATE_DIAGNOSTIC_CANARY'] },
+    { ...diagnostic, components: { ...diagnostic.components, nameEqual: 'PRIVATE_DIAGNOSTIC_CANARY' } },
+  ])
+    assert.deepEqual(projectFoundationBaselineDiagnostic({ diagnostics: () => value }), {});
+  assert.deepEqual(
+    projectFoundationBaselineDiagnostic({
+      diagnostics() {
+        throw Error('PRIVATE_DIAGNOSTIC_CANARY');
+      },
+    }),
+    {},
+  );
 });
 
 test('effectful continuation reaches the actual session constructor with retained counters and diagnostic, without starting a child', async () => {
@@ -216,6 +444,8 @@ test('fixed minute50 admission stop closes the same persistent child without a n
 for (const mode of [
   'normal',
   'sql_close_failure',
+  'writer_close_unknown_ack',
+  'writer_close_unknown_native_end',
   'graph_restore_failure',
   'identity_replayed',
   'identity_wrong_request',
@@ -246,7 +476,8 @@ for (const mode of [
     let adminClosed = false,
       adminEnded = false,
       adminAborted = false,
-      aborts = 0;
+      aborts = 0,
+      writerCloseCalls = 0;
     const finalAdminReceipt = () => ({
       childrenClosed: true,
       handoffDeleted: true,
@@ -287,9 +518,10 @@ for (const mode of [
         approvalCount: 1,
       }),
       close: async () => {
+        assert.equal(writerCloseCalls, 1, 'restricted Writer precedes independent Admin readback');
         if (mode === 'sql_close_failure') throw Error('PRIVATE_UNKNOWN_CLOSE');
         adminClosed = true;
-        return { state: 'closed' };
+        return { state: 'closed', window: { id: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9', closed: true } };
       },
       archive: async () => ({ result: 'M03_SMOKE_FIXTURE_ARCHIVED' }),
       end: async () => {
@@ -438,6 +670,24 @@ for (const mode of [
         storage: { directory: f.directory },
         startAdmin: async () => admin,
         createNativeTransport: () => nativeTransport,
+        createWriterCloser: (args) => {
+          assert.equal(args.password, packet.writerPassword);
+          assert.equal(args.sourceCommitSha, packet.sourceCommitSha);
+          assert.equal(args.audience, audience);
+          assert.equal(args.deploymentId, 'dpl_SyntheticSession');
+          return {
+            async closeWindow() {
+              writerCloseCalls++;
+              if (mode === 'writer_close_unknown_ack') throw Error('SYNTHETIC_PRIVATE_WRITER_ACK');
+              return { closeVerified: true, connectionClosed: true };
+            },
+            state: () => ({
+              pendingRequests: 0,
+              unclosedResponses: mode === 'writer_close_unknown_native_end' ? 1 : 0,
+            }),
+            close() {},
+          };
+        },
         createSetupTransport: () => setupTransport,
         // Post-setup unit behavior is isolated behind explicit factory ports.
         // This stub is not a successful real-component/provider setup receipt.
@@ -609,7 +859,7 @@ for (const mode of [
       assert.equal(envs.length, 7);
       restoreFault = mode === 'graph_restore_failure';
       const closed = await session.close();
-      assert.equal(closed.residual, mode !== 'normal');
+      assert.equal(closed.residual, !['normal', 'writer_close_unknown_ack'].includes(mode));
       assert.equal(closed.baselineRestored, !identityFailure && mode !== 'graph_restore_failure');
       assert.equal(closed.environmentCleanupVerified, true);
       assert.equal(closed.windowClosed, mode !== 'sql_close_failure');
@@ -618,7 +868,11 @@ for (const mode of [
       assert.equal(adminEnded, !['sql_close_failure', 'admin_abort_missing_descendants'].includes(mode));
       assert.equal(adminAborted, ['sql_close_failure', 'admin_abort_missing_descendants'].includes(mode));
       assert.equal(closed.adminChildClosed, mode !== 'admin_abort_missing_descendants');
-      assert.equal(closed.childTransportsClosed, mode !== 'admin_abort_missing_descendants');
+      assert.equal(
+        closed.childTransportsClosed,
+        !['admin_abort_missing_descendants', 'writer_close_unknown_native_end'].includes(mode),
+      );
+      assert.equal(writerCloseCalls, 1);
       assert.equal(envs.length, 0);
       assert.equal(Object.keys(bypass).length, 0);
       assert.equal(wire.length, closed.baselineRestored ? 100 : 50);

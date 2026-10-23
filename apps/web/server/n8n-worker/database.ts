@@ -164,6 +164,7 @@ async function dispatchBoundDatabase(
       !('window' in binding) ||
       !binding.window ||
       typeof binding.window !== 'object' ||
+      (profile === 'foundation' && (!('id' in binding.window) || binding.window.id !== config.windowId)) ||
       !('boundAudience' in binding.window) ||
       binding.window.boundAudience !== config.audience ||
       !('boundCommitSha' in binding.window) ||

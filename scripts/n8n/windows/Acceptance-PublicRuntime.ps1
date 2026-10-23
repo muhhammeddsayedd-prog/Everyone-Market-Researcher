@@ -9,6 +9,87 @@ function Get-M03AcceptancePhysicalPath([string]$Path,[switch]$File) {
  if($File -and ([IO.File]::GetAttributes($absolute) -band [IO.FileAttributes]::Directory) -ne 0){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
  return $absolute
 }
+function Assert-M03AcceptancePgLink([string]$Parent,[string]$Name,[string]$Target) {
+ $parent=Get-M03AcceptancePhysicalPath $Parent
+ $link=Get-Item -LiteralPath (Join-Path $parent $Name) -Force -ErrorAction Stop
+ if(($link.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0 -or @($link.Target).Count -ne 1 -or @($link.Target)[0] -isnot [string]){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+ $resolved=[IO.Path]::GetFullPath([IO.Path]::Combine($parent,@($link.Target)[0]))
+ if(-not $resolved.Equals($Target,[StringComparison]::OrdinalIgnoreCase)){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+}
+function Get-M03AcceptancePgPublicFiles([string]$Root) {
+ try {
+  $root=Get-M03AcceptancePhysicalPath $Root
+  # Reviewed installed resolution graph from pnpm-lock.yaml. The manifests and
+  # all executable files are added to the existing files dictionary, not a new
+  # credential store or runtime/seal format. No package code is executed here.
+  $packages=@{
+   'pg'=@{version='8.23.1';folder='pg@8.23.1';deps=@('pg-connection-string','pg-pool','pg-protocol','pg-types','pgpass');optional=@('pg-cloudflare');peers=@('pg-native')}
+   'pg-connection-string'=@{version='2.14.1';folder='pg-connection-string@2.14.1';deps=@();optional=@();peers=@()}
+   'pg-pool'=@{version='3.14.0';folder='pg-pool@3.14.0_pg@8.23.1';deps=@();optional=@();peers=@('pg')}
+   'pg-protocol'=@{version='1.16.1';folder='pg-protocol@1.16.1';deps=@();optional=@();peers=@()}
+   'pg-types'=@{version='2.2.0';folder='pg-types@2.2.0';deps=@('pg-int8','postgres-array','postgres-bytea','postgres-date','postgres-interval');optional=@();peers=@()}
+   'pgpass'=@{version='1.0.5';folder='pgpass@1.0.5';deps=@('split2');optional=@();peers=@()}
+   'pg-cloudflare'=@{version='1.4.1';folder='pg-cloudflare@1.4.1';deps=@();optional=@();peers=@()}
+   'pg-int8'=@{version='1.0.1';folder='pg-int8@1.0.1';deps=@();optional=@();peers=@()}
+   'postgres-array'=@{version='2.0.0';folder='postgres-array@2.0.0';deps=@();optional=@();peers=@()}
+   'postgres-bytea'=@{version='1.0.1';folder='postgres-bytea@1.0.1';deps=@();optional=@();peers=@()}
+   'postgres-date'=@{version='1.0.7';folder='postgres-date@1.0.7';deps=@();optional=@();peers=@()}
+   'postgres-interval'=@{version='1.2.0';folder='postgres-interval@1.2.0';deps=@('xtend');optional=@();peers=@()}
+   'xtend'=@{version='4.0.2';folder='xtend@4.0.2';deps=@();optional=@();peers=@()}
+   'split2'=@{version='4.2.0';folder='split2@4.2.0';deps=@();optional=@();peers=@()}
+  }
+  $physical=@{}
+  foreach($name in $packages.Keys){$physical[$name]=[IO.Path]::GetFullPath((Join-Path $root ('node_modules/.pnpm/'+$packages[$name].folder+'/node_modules/'+$name)))}
+  Assert-M03AcceptancePgLink (Join-Path $root 'apps/web/node_modules') 'pg' $physical.pg
+  # The consumer clears its child environment and selects pg.Client, never
+  # pg.native. An unexpectedly resolvable optional native binding is refused.
+  foreach($relative in @('node_modules/pg-native','node_modules/.pnpm/node_modules/pg-native')){
+   if(Test-Path -LiteralPath (Join-Path $root $relative)){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+  }
+  $queue=[Collections.Generic.Queue[string]]::new();$queue.Enqueue('pg')
+  $seen=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+  $paths=[Collections.Generic.List[string]]::new();$entries=0;$bytes=0L
+  while($queue.Count -gt 0){
+   $name=$queue.Dequeue();if(-not $seen.Add($name)){continue}
+   $spec=$packages[$name];$packageRoot=Get-M03AcceptancePhysicalPath $physical[$name]
+   $manifestPath=Get-M03AcceptancePhysicalPath (Join-Path $packageRoot 'package.json') -File
+   if((Get-Item -LiteralPath $manifestPath).Length -gt 65536){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+   $manifest=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($manifestPath)) -ErrorAction Stop
+   if($manifest.name -isnot [string] -or $manifest.name -cne $name -or $manifest.version -isnot [string] -or $manifest.version -cne $spec.version){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+   foreach($field in @('dependencies','optionalDependencies','peerDependencies')){
+    $expected=if($field -ceq 'dependencies'){@($spec.deps)}elseif($field -ceq 'optionalDependencies'){@($spec.optional)}else{@($spec.peers)}
+    $property=$manifest.PSObject.Properties[$field];$actual=@()
+    if($null -ne $property){
+     if($property.Value -isnot [PSCustomObject]){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+     $actual=@($property.Value.PSObject.Properties|ForEach-Object {$_.Name})
+     foreach($p in $property.Value.PSObject.Properties){if($p.Value -isnot [string] -or $p.Value.Length -gt 100){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}}
+    }
+    if(@(Compare-Object -CaseSensitive @($expected|Sort-Object) @($actual|Sort-Object)).Count -ne 0){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+   }
+   $modules=Get-M03AcceptancePhysicalPath ([IO.Directory]::GetParent($packageRoot).FullName)
+   $allowed=@($name)+@($spec.deps)+@($spec.peers|Where-Object {$_ -cne 'pg-native'})
+   foreach($dependency in (@($spec.deps)+@($spec.optional)+@($spec.peers|Where-Object {$_ -cne 'pg-native'}))){
+    $dependencyLink=Join-Path $modules $dependency
+    if($spec.optional -ccontains $dependency -and -not (Test-Path -LiteralPath $dependencyLink)){continue}
+    Assert-M03AcceptancePgLink $modules $dependency $physical[$dependency]
+    $allowed+=@($dependency);$queue.Enqueue($dependency)
+   }
+   if(@(Compare-Object -CaseSensitive @($allowed|Sort-Object -Unique) @((Get-ChildItem -LiteralPath $modules -Force).Name|Sort-Object -Unique)).Count -ne 0){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+   $directories=[Collections.Generic.Queue[string]]::new();$directories.Enqueue($packageRoot)
+   while($directories.Count -gt 0){
+    foreach($entry in Get-ChildItem -LiteralPath $directories.Dequeue() -Force){
+     $entries++;if($entries -gt 5000 -or ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+     if($entry.PSIsContainer){if($entry.Name -ceq 'node_modules'){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'};$directories.Enqueue($entry.FullName)}
+     elseif($entry.Extension -cin @('.js','.mjs','.cjs','.json','.wasm','.node','.ts','.mts','.cts','.exe','.dll') -and $entry.Name -cnotmatch '\.d\.(?:ts|mts|cts)$'){
+      $bytes+=$entry.Length;if($entry.Length -gt 16777216 -or $bytes -gt 33554432 -or $paths.Count -ge 256){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+      $paths.Add($entry.FullName.Substring($root.Length+1).Replace('\','/'))
+     }
+    }
+   }
+  }
+  return @($paths|Sort-Object -Unique -CaseSensitive)
+ }catch{throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+}
 function Get-M03AcceptancePublicFiles([string]$Root) {
  $files=@(
   'scripts/n8n/windows/Acceptance-PublicRuntime.ps1',
@@ -18,6 +99,9 @@ function Get-M03AcceptancePublicFiles([string]$Root) {
   'scripts/n8n/windows/Invoke-M03Acceptance.ps1',
   'scripts/n8n/windows/Foundation-PublicRuntime.ps1',
   'scripts/n8n/foundation-live-runtime-cli.mjs',
+  'scripts/n8n/gw01-writer.mjs',
+  'apps/web/package.json',
+  'scripts/seed/certs/supabase-root-2021.crt',
   'scripts/db/foundation-admin-client.mjs',
   'scripts/db/windows/Invoke-M03FoundationMigrations.ps1',
   'scripts/db/windows/New-M03FoundationMigrationHandoff.ps1',
@@ -64,6 +148,7 @@ function Get-M03AcceptancePublicFiles([string]$Root) {
  foreach($entry in Get-ChildItem -LiteralPath (Get-M03AcceptancePhysicalPath (Join-Path $Root 'n8n/workflows')) -File -Filter '*.json'){
   $files+=('n8n/workflows/'+$entry.Name)
  }
+ $files+=@(Get-M03AcceptancePgPublicFiles $Root)
  return @($files|Sort-Object -Unique -CaseSensitive)
 }
 function Import-M03AcceptanceFoundationPublicModule([string]$Root,$BaseSeal) {
@@ -77,7 +162,7 @@ function Assert-M03AcceptancePublicSeal([string]$Root,$Seal) {
  $keys=@('version','windowId','approvedHead','approvedPacketSha256','files','base','vercel')
  if($Seal -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($keys|Sort-Object) @($Seal.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $Seal.version -isnot [int] -or $Seal.version -ne 1 -or $Seal.windowId -isnot [string] -or $Seal.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or $Seal.approvedHead -isnot [string] -or $Seal.approvedHead -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $Seal.approvedPacketSha256 -isnot [string] -or $Seal.approvedPacketSha256 -cne '009415eccce00939fe5731e846d006728295522fd90849555c197b931ad6a712' -or $Seal.files -isnot [PSCustomObject]){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
  $expected=Get-M03AcceptancePublicFiles $Root
- if($expected.Count -gt 200 -or @(Compare-Object -CaseSensitive @($expected|Sort-Object) @($Seal.files.PSObject.Properties.Name|Sort-Object)).Count -ne 0){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
+ if($expected.Count -gt 512 -or @(Compare-Object -CaseSensitive @($expected|Sort-Object) @($Seal.files.PSObject.Properties.Name|Sort-Object)).Count -ne 0){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}
  foreach($relative in $expected){
   $path=Get-M03AcceptancePhysicalPath (Join-Path $Root $relative) -File
   if($Seal.files.$relative -isnot [string] -or $Seal.files.$relative -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant() -cne $Seal.files.$relative){throw 'M03_ACCEPTANCE_SOURCE_BLOCKED'}

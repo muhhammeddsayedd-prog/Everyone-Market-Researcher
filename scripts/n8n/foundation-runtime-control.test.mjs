@@ -15,6 +15,133 @@ import {
   assertFoundationRuntimeCaseReceipt,
 } from './foundation-runtime-control.mjs';
 import * as runtimeControl from './foundation-runtime-control.mjs';
+import * as checkpointDiagnostics from './foundation-runtime-checkpoint.mjs';
+
+test('fixed WF00 forensics identify reviewed component variants without adopting their version', () => {
+  const f = fixture(),
+    b = f.plan.baseline.find((v) => v.key === 'WF-00'),
+    dto = structuredClone(f.workflows.get(b.id));
+  for (const n of dto.nodes) if (n.type === 'n8n-nodes-base.scheduleTrigger') n.disabled = true;
+  dto.settings.availableInMCP = true;
+  dto.settings.saveManualExecutions = true;
+  dto.versionId = 'SYNTHETIC_PRIVATE_NEW_VERSION';
+  const result = checkpointDiagnostics.diagnoseFoundationRuntimeBaselineVariants(dto, b);
+  assert.equal(result.knownVariants.stagedC01ManualGraphEqual, true);
+  assert.equal(result.knownVariants.c01RetentionGraphEqual, false);
+  assert.equal(result.nodeCategories.behaviorEqual, false);
+  assert.equal(result.nodeCategories.parametersEqual, true);
+  assert.equal(result.settingsCategories.retentionEqual, false);
+  assert.equal(result.settingsCategories.mcpVisibilityEqual, false);
+  assert.equal(result.settingsCategories.otherEqual, true);
+  assert.deepEqual(runtimeControl.diagnoseFoundationRuntimeBaseline(dto, b, f.plan.projectId).failedChecks, [
+    'version_mismatch',
+    'graph_nodes',
+    'graph_settings',
+  ]);
+  assert.doesNotMatch(JSON.stringify(result), /SYNTHETIC_PRIVATE|versionId|parameters":|sha256/);
+});
+
+test('fixed WF00 forensics classify unknown edits by fixed categories and never print field names or values', () => {
+  const f = fixture(),
+    b = f.plan.baseline.find((v) => v.key === 'WF-00'),
+    dto = structuredClone(f.workflows.get(b.id));
+  dto.settings.SYNTHETIC_PRIVATE_FIELD = 'SYNTHETIC_PRIVATE_SETTING';
+  dto.nodes[0].parameters = { private: 'SYNTHETIC_PRIVATE_NODE' };
+  dto.nodes[0].position = [99, 88];
+  const result = checkpointDiagnostics.diagnoseFoundationRuntimeBaselineVariants(dto, b);
+  assert.equal(result.nodeCategories.parametersEqual, false);
+  assert.equal(result.nodeCategories.layoutEqual, false);
+  assert.equal(result.settingsCategories.otherEqual, false);
+  assert.equal(Object.values(result.knownVariants).some(Boolean), false);
+  assert.doesNotMatch(JSON.stringify(result), /SYNTHETIC_PRIVATE|99|88/);
+});
+
+test('pure baseline diagnostic reports every fixed mismatch without copying external values', () => {
+  const f = fixture(),
+    b = f.plan.baseline.find((v) => v.key === 'WF-00');
+  const dto = structuredClone(f.workflows.get(b.id));
+  const good = runtimeControl.diagnoseFoundationRuntimeBaseline(dto, b, f.plan.projectId);
+  assert.deepEqual(good.failedChecks, []);
+  assert.deepEqual(good.components, {
+    nameEqual: true,
+    nodesEqual: true,
+    connectionsEqual: true,
+    settingsEqual: true,
+  });
+  dto.versionId = 'SYNTHETIC_PRIVATE_VERSION';
+  dto.name = 'SYNTHETIC_PRIVATE_NAME';
+  dto.settings.executionTimeout = 123;
+  dto.nodes[0].parameters = { token: 'SYNTHETIC_PRIVATE_NODE_VALUE' };
+  const bad = runtimeControl.diagnoseFoundationRuntimeBaseline(dto, b, f.plan.projectId);
+  assert.deepEqual(bad.failedChecks, ['version_mismatch', 'graph_name', 'graph_nodes', 'graph_settings']);
+  assert.deepEqual(bad.components, {
+    nameEqual: false,
+    nodesEqual: false,
+    connectionsEqual: true,
+    settingsEqual: false,
+  });
+  assert.doesNotMatch(JSON.stringify(bad), /SYNTHETIC_PRIVATE|123|token|sha256|hash|parameters/);
+});
+
+test('baseline diagnostic retains existing metadata and false-default graph semantics', () => {
+  const f = fixture(),
+    b = f.plan.baseline.find((v) => v.key === 'WF-00');
+  const dto = structuredClone(f.workflows.get(b.id));
+  dto.updatedAt = 'SYNTHETIC_IGNORED_METADATA';
+  dto.meta = { private: 'SYNTHETIC_PRIVATE_METADATA' };
+  for (const n of dto.nodes)
+    for (const k of ['retryOnFail', 'continueOnFail', 'executeOnce', 'alwaysOutputData'])
+      if (!Object.hasOwn(n, k)) n[k] = false;
+  assert.deepEqual(
+    runtimeControl.diagnoseFoundationRuntimeBaseline(dto, b, f.plan.projectId).failedChecks,
+    [],
+  );
+  dto.nodes[0].unrecognizedPrivateField = 'SYNTHETIC_PRIVATE_NODE_FIELD';
+  const bad = runtimeControl.diagnoseFoundationRuntimeBaseline(dto, b, f.plan.projectId);
+  assert.ok(bad.failedChecks.includes('node_shape'));
+  assert.doesNotMatch(JSON.stringify(bad), /SYNTHETIC_|unrecognizedPrivateField/);
+});
+
+test('baseline diagnostic isolates all ownership/publication/tag/pin gates', () => {
+  const f = fixture(),
+    b = f.plan.baseline.find((v) => v.key === 'WF-00');
+  const dto = structuredClone(f.workflows.get(b.id));
+  Object.assign(dto, {
+    id: 'wrong-id',
+    versionId: null,
+    isArchived: true,
+    active: true,
+    activeVersionId: 'wrong-active',
+    shared: [],
+    tags: [],
+    pinData: { private: 'SYNTHETIC_PRIVATE_PIN' },
+  });
+  const bad = runtimeControl.diagnoseFoundationRuntimeBaseline(dto, b, f.plan.projectId);
+  assert.deepEqual(bad.failedChecks, [
+    'workflow_id',
+    'archive_state',
+    'activation_state',
+    'active_version',
+    'version_shape',
+    'version_mismatch',
+    'owner_project',
+    'tags_mismatch',
+    'pinned_data',
+  ]);
+  assert.doesNotMatch(JSON.stringify(bad), /wrong-id|wrong-active|SYNTHETIC_PRIVATE_PIN/);
+});
+
+test('production baseline guard records diagnostic and still refuses every mutation on graph drift', async () => {
+  const f = fixture();
+  const b = f.plan.baseline.find((v) => v.key === 'WF-00');
+  f.workflows.get(b.id).settings.executionTimeout = 123;
+  const r = await runFoundationRuntimeSetup(f.plan, f.ports);
+  assert.equal(r.status, 'blocked');
+  assert.equal(f.calls.filter((c) => c.method !== 'GET').length, 0);
+  assert.deepEqual(runtimeControl.foundationRuntimeGuardDiagnostic(f.journal).failedChecks, [
+    'graph_settings',
+  ]);
+});
 
 function fixture({ durableAppend, fault, sharedLimit = 512 } = {}) {
   const bindings = JSON.parse(

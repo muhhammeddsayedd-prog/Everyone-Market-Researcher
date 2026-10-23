@@ -1,0 +1,160 @@
+{
+  "kind": "m03_sole_default_independent_readbacks",
+  "version": 1,
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "parentAttempt": "dev-acceptance-sole-default-attempt-20261023.json",
+  "database": {
+    "version": 1,
+    "runId": "12b99879-b66c-4aeb-ac22-93b2c2a6eee5",
+    "environment": "dev",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "host": "aws-1-eu-central-1.pooler.supabase.com",
+    "port": 5432,
+    "status": "inspection_verified",
+    "authenticationAttempted": true,
+    "authenticationVerified": true,
+    "historyBefore": "complete",
+    "historyAfter": "complete",
+    "dryRunMatched": false,
+    "dryRunCheck": "not_attempted",
+    "dryRunNativeExit": null,
+    "pushAttempted": false,
+    "pushNativeExit": null,
+    "childrenClosed": true,
+    "handoffDeleted": true,
+    "leaseDeleted": true,
+    "scratchDeleted": true,
+    "pendingVersions": [],
+    "phaseAControl": false,
+    "phaseACommands": 0,
+    "phaseAClosed": false,
+    "observedAt": "2026-10-23T16:08:31.1507409Z",
+    "inspectOnly": true,
+    "inspection": {
+      "activeLeaseCount": 0,
+      "actorRunCount": 0,
+      "approval": {
+        "actorBuild": "0.3.99",
+        "batchMaxUsd": 2,
+        "closed": false,
+        "expiresAt": "2026-10-23T16:47:55.265665+00:00",
+        "maxChargeUsd": 1
+      },
+      "audits": {
+        "creationCount": 1,
+        "originalCount": 1,
+        "startupCount": 1,
+        "technical2Count": 1,
+        "technical2Exact": true
+      },
+      "collectedItemCount": 0,
+      "costEntryCount": 0,
+      "costUsd": 0,
+      "fixture": {
+        "accountActive": true,
+        "accountId": "bd23314c-591f-4fb7-92fd-b7450634eeb6",
+        "accountPaused": false,
+        "competitorActive": true,
+        "competitorArchived": false,
+        "competitorId": "d51a39f6-fe87-4d17-aee9-3070c45693aa",
+        "itemsCount": 0,
+        "locked": false,
+        "progressPresent": false
+      },
+      "identity": true,
+      "incompleteRequests": 0,
+      "kind": "m03_foundation_inspection",
+      "launchCount": 0,
+      "requestCount": 1,
+      "reservedRequests": 0,
+      "scrapeRunCount": 0,
+      "window": {
+        "admittedCount": 1,
+        "audience": "https://everyone-market-researcher-eb5no2yxz-muhammed-abdelrahman.vercel.app",
+        "closeCount": 0,
+        "closedAt": null,
+        "commitSha": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+        "deploymentId": "dpl_8gyW2MmNfAK4ARLKcKEWkbDxtuiv",
+        "expiresAt": "2026-10-23T16:47:55.265665+00:00",
+        "id": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+        "startsAt": "2026-10-23T15:47:55.265665+00:00"
+      },
+      "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+    },
+    "bindingMatchesPriorProvision": true,
+    "inspectParentLockDeleted": true,
+    "receiptPath": "scripts/db/out/m03-foundation-inspect-12b99879-b66c-4aeb-ac22-93b2c2a6eee5-latest.json",
+    "receiptSha256": "44b354fed26b910c2ffc9e41ec0cc726e39251175bb15b7d513a63f642b7ff2f",
+    "rootToolReceipt": "90a258",
+    "fixedQueryCalls": 2,
+    "mutations": 0
+  },
+  "workflow": {
+    "workflowKey": "WF-00",
+    "workflowId": "MzimjpsuyPuK7SKe",
+    "rootToolReceipts": [
+      "6a1d30",
+      "5e09bf"
+    ],
+    "actualGetCalls": 2,
+    "authenticationVerified": true,
+    "projectVerified": true,
+    "httpStatus": 200,
+    "tlsVerified": true,
+    "socketsAndChildrenClosed": true,
+    "disposableCopiesDeleted": true,
+    "failedChecks": [
+      "version_mismatch",
+      "graph_nodes",
+      "graph_settings"
+    ],
+    "components": {
+      "nameEqual": true,
+      "nodesEqual": false,
+      "connectionsEqual": true,
+      "settingsEqual": false
+    },
+    "forensics": {
+      "nodeCategories": {
+        "identityEqual": true,
+        "parametersEqual": false,
+        "credentialsEqual": true,
+        "behaviorEqual": true,
+        "layoutEqual": false,
+        "annotationsEqual": true
+      },
+      "settingsCategories": {
+        "retentionEqual": true,
+        "mcpVisibilityEqual": true,
+        "errorRoutingEqual": true,
+        "otherEqual": false
+      },
+      "reviewedVariantMatches": 0,
+      "reviewedVariantComparisons": 9
+    },
+    "originEstablished": false,
+    "definitionChangedByThisRead": false,
+    "ownerDefinitionDecisionPending": true
+  },
+  "accounting": {
+    "mainManagementAttempts": 92,
+    "priorOutsideManagement": 4,
+    "newIndependentManagement": 2,
+    "aggregateManagementAttempts": 98,
+    "mainControlAttempts": 300,
+    "priorOutsideControl": 1,
+    "aggregateControlAttempts": 301,
+    "aggregateCombinedAttempts": 399,
+    "managementMaximum": 512,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "independentOwnerDatabaseReadQueries": 2,
+    "independentSupabaseProjectMetadataReadsFailed": 2,
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "remaining": "Repair intended dev cleanup using actual restricted writer Close, then separate Admin verification/archive. WF-00 restoration/adoption awaits the exact owner definition choice; no migrations, production, merge or M04."
+}

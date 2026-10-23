@@ -20,7 +20,9 @@ const window = {
   boundCommitSha: config.commitSha,
   boundDeploymentId: config.deploymentId,
 };
-function fixture(options: { cached?: boolean; foreign?: boolean; owner?: boolean } = {}) {
+function fixture(
+  options: { cached?: boolean; foreign?: boolean; owner?: boolean; foreignWindow?: boolean } = {},
+) {
   const events = new EventEmitter(),
     calls: string[] = [],
     release = vi.fn();
@@ -52,7 +54,11 @@ function fixture(options: { cached?: boolean; foreign?: boolean; owner?: boolean
             {
               receipt: {
                 state: options.cached && !sql.includes('inspect') ? 'completed' : 'admitted',
-                window: { ...window, ...(options.foreign ? { boundDeploymentId: 'dpl_foreign' } : {}) },
+                window: {
+                  ...window,
+                  ...(options.foreign ? { boundDeploymentId: 'dpl_foreign' } : {}),
+                  ...(options.foreignWindow ? { id: '38b3708d-61b0-41d2-8170-5ed91c66b4dc' } : {}),
+                },
               },
             },
           ],
@@ -93,7 +99,7 @@ describe('fixed foundation database and external read sequence', () => {
     expect(s.release).toHaveBeenCalledExactlyOnceWith();
   });
   it('never repeats provider reads for cached outcomes or an owner/foreign deployment identity', async () => {
-    for (const options of [{ cached: true }, { owner: true }, { foreign: true }]) {
+    for (const options of [{ cached: true }, { owner: true }, { foreign: true }, { foreignWindow: true }]) {
       const s = fixture(options),
         work = dispatchFoundationDatabase(
           { connect: async () => s.client },

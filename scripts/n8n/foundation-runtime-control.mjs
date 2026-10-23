@@ -7,6 +7,12 @@ import {
   runtimeHash,
 } from './foundation-runtime-plan.mjs';
 import { assertFoundationRuntimeMachinePatch } from './foundation-runtime-machine.mjs';
+import {
+  foundationRuntimeGraphHash,
+  foundationRuntimePublishedHash,
+  diagnoseFoundationRuntimeBaseline,
+} from './foundation-runtime-checkpoint.mjs';
+export { diagnoseFoundationRuntimeBaseline } from './foundation-runtime-checkpoint.mjs';
 
 const fail = () => {
   throw Error('FOUNDATION_RUNTIME_CONTROL_BLOCKED');
@@ -16,34 +22,10 @@ const id = (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(v);
 const sha = (v) => typeof v === 'string' && /^[a-f0-9]{64}$/.test(v);
 const exact = (v, k) =>
   object(v) && Object.keys(v).length === k.length && k.every((x) => Object.hasOwn(v, x));
-const falseDefaults = new Set([
-  'disabled',
-  'retryOnFail',
-  'continueOnFail',
-  'executeOnce',
-  'alwaysOutputData',
-]);
-const nodeKeys = new Set([
-  'id',
-  'name',
-  'type',
-  'typeVersion',
-  'parameters',
-  'position',
-  'credentials',
-  'webhookId',
-  'notes',
-  'notesInFlow',
-  'disabled',
-  'retryOnFail',
-  'onError',
-  'continueOnFail',
-  'executeOnce',
-  'alwaysOutputData',
-  'maxTries',
-  'waitBetweenTries',
-  'extendsCredential',
-]);
+const guardDiagnostics = new WeakMap();
+export function foundationRuntimeGuardDiagnostic(journal) {
+  return guardDiagnostics.get(journal) ?? null;
+}
 const initialStates = new WeakMap();
 const frozenGraphHashes = new WeakMap();
 const checkedJournals = new WeakSet();
@@ -80,32 +62,13 @@ function sorted(v) {
       .map((k) => [k, sorted(v[k])]),
   );
 }
-function nodes(v) {
-  if (!Array.isArray(v) || v.length > 200) fail();
-  return v.map((n) => {
-    if (!object(n) || Object.keys(n).some((k) => !nodeKeys.has(k))) fail();
-    return Object.fromEntries(
-      Object.entries(n).filter(([k, value]) => !(falseDefaults.has(k) && value === false)),
-    );
-  });
-}
 export function runtimeGraphHash(body) {
-  if (!object(body) || typeof body.name !== 'string' || !object(body.settings) || !object(body.connections))
-    fail();
   if (Object.isFrozen(body) && frozenGraphHashes.has(body)) return frozenGraphHashes.get(body);
-  const value = runtimeHash(
-    sorted({
-      name: body.name,
-      nodes: nodes(body.nodes),
-      connections: body.connections,
-      settings: body.settings,
-    }),
-  );
+  const value = foundationRuntimeGraphHash(body);
   if (Object.isFrozen(body)) frozenGraphHashes.set(body, value);
   return value;
 }
-const publishedHash = (body) =>
-  runtimeHash(sorted({ nodes: nodes(body.nodes), connections: body.connections }));
+const publishedHash = foundationRuntimePublishedHash;
 function metadata(dto, plan) {
   if (
     !object(dto) ||
@@ -380,15 +343,24 @@ function controller(plan, ports) {
     return r.body;
   };
   const read = async (key, want = state().workflows[key]) => {
-    const receipt = graphReceipt(
-      await request(
-        'GET',
-        '/api/v1/workflows/' + plan.baseline.find((b) => b.key === key).id + '?excludePinnedData=true',
-      ),
-      plan,
-      key,
-      want,
+    guardDiagnostics.delete(ports.journal);
+    const dto = await request(
+      'GET',
+      '/api/v1/workflows/' + plan.baseline.find((b) => b.key === key).id + '?excludePinnedData=true',
     );
+    let receipt;
+    try {
+      receipt = graphReceipt(dto, plan, key, want);
+    } catch {
+      const baseline = plan.baseline.find((b) => b.key === key);
+      if (
+        want.versionId === baseline.versionId &&
+        want.activeVersionId === null &&
+        want.graphHash === runtimeGraphHash(baseline.body)
+      )
+        guardDiagnostics.set(ports.journal, diagnoseFoundationRuntimeBaseline(dto, baseline, plan.projectId));
+      throw Error('FOUNDATION_RUNTIME_CONTROL_BLOCKED');
+    }
     if (!nativeGraphObservations.has(ports.journal)) nativeGraphObservations.set(ports.journal, new Map());
     nativeGraphObservations.get(ports.journal).set(key, {
       plan,

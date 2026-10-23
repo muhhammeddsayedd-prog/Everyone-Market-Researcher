@@ -389,12 +389,19 @@ function Safe-PublicLine($Value){
  # All other private protocol kinds require the finite CLI's safe projection.
  # Until that exact projection is installed/reviewed, refuse rather than echo.
  if($Value.kind -cnotin @('m03_acceptance_result','m03_acceptance_ready','m03_acceptance_closed')){throw 'blocked'}
- $allowed=@('kind','id','status','code','command','caseId','executionIds','phaseBReady','domainProofReady','businessAcceptanceProven','managementAttempts','controlAttempts','gatewayPreflightAttempts','providerDirectAttempts','nativeExecutions','startedActors','baselineRestored','environmentCleanupVerified','windowClosed','fixtureArchived','remoteWorkSettled','residual','childTransportsClosed','adminChildClosed','approvedHead','sourceCommitSha','deadlineAt')
+ $allowed=@('kind','id','status','code','command','caseId','executionIds','phaseBReady','domainProofReady','businessAcceptanceProven','managementAttempts','controlAttempts','gatewayPreflightAttempts','providerDirectAttempts','nativeExecutions','startedActors','baselineRestored','environmentCleanupVerified','windowClosed','fixtureArchived','remoteWorkSettled','residual','childTransportsClosed','adminChildClosed','approvedHead','sourceCommitSha','deadlineAt','baselineWorkflowKey','baselineFailureCodes','baselineNameEqual','baselineNodesEqual','baselineConnectionsEqual','baselineSettingsEqual')
  if(@($Value.PSObject.Properties.Name|Where-Object{$_ -cnotin $allowed}).Count -ne 0){throw 'blocked'}
  foreach($property in $Value.PSObject.Properties){
   $v=$property.Value
-  if($property.Name -cin @('phaseBReady','domainProofReady','businessAcceptanceProven','baselineRestored','environmentCleanupVerified','windowClosed','fixtureArchived','remoteWorkSettled','residual','childTransportsClosed','adminChildClosed')){
+  if($property.Name -cin @('phaseBReady','domainProofReady','businessAcceptanceProven','baselineRestored','environmentCleanupVerified','windowClosed','fixtureArchived','remoteWorkSettled','residual','childTransportsClosed','adminChildClosed','baselineNameEqual','baselineNodesEqual','baselineConnectionsEqual','baselineSettingsEqual')){
    if($v -isnot [bool]){throw 'blocked'}
+  }
+  elseif($property.Name -ceq 'baselineWorkflowKey'){
+   if($v -isnot [string] -or $v -cnotin @('WF-00','WF-10','WF-11','WF-12','WF-13','WF-18','WF-18b','WF-19','WF-21','WF-22','WF-23','WF-30','WF-32','WF-40','WF-50','WF-70','WF-80','WF-90','WF-91','WF-99','SUB-START','SUB-FINISH','SUB-INGEST','SUB-COST','SUB-NOTIFY')){throw 'blocked'}
+  }
+  elseif($property.Name -ceq 'baselineFailureCodes'){
+   $codes=@('expected_shape','dto_shape','workflow_id','archive_state','activation_state','active_version','version_shape','version_mismatch','owner_project','tags_shape','tags_mismatch','pinned_data','graph_shape','node_shape','graph_name','graph_nodes','graph_connections','graph_settings')
+   if($v -isnot [Array] -or $v.Count -gt $codes.Count -or @($v|Where-Object{$_ -isnot [string] -or $_ -cnotin $codes}).Count -ne 0){throw 'blocked'}
   }
   elseif($property.Name -ceq 'executionIds'){
    if($v -isnot [Array] -or $v.Count -gt 120 -or @($v|Where-Object{$_ -isnot [string] -or $_ -cnotmatch '^[1-9][0-9]{0,31}$'}).Count -ne 0){throw 'blocked'}

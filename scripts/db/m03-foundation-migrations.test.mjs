@@ -65,6 +65,16 @@ const clockPublicFiles = [
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-packet-20261022.md',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-attempt-20261021.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-vercel-postlogin-actual-20261022.json',
+  'scripts/n8n/foundation-live-startup-replacement.mjs',
+  'scripts/assert/m03_smoke_reactivate_startup.sql',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md',
+  'scripts/n8n/foundation-live-project-verified-continuation.mjs',
+  'scripts/assert/m03_smoke_reactivate_project_verified.sql',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md',
+  'scripts/db/foundation-inspect.sql',
+  'scripts/n8n/windows/Dev-CredentialStore.ps1',
 ];
 
 function consumerFixture(mode = 'success') {

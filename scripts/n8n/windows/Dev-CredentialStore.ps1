@@ -201,3 +201,73 @@ function Ensure-M03DevRuntimeHandoff {
   if($null -ne $lock){$lock.Dispose()}
  }
 }
+
+function Ensure-M03DevReadOnlyHandoff {
+ param([ValidateSet('Admin','Management')][string]$Kind,[IO.FileStream]$CoordinatorLock)
+ # Both existing read-only consumers share the acceptance coordinator's mutex.
+ # A closed acceptance record is not reopened and no acceptance clock is used.
+ $parent=Join-Path $env:LOCALAPPDATA 'Temp\emr-m03-acceptance-parent.operation.lock'
+ if($null -eq $CoordinatorLock -or -not $CoordinatorLock.CanWrite -or $CoordinatorLock.SafeFileHandle.IsClosed -or [IO.Path]::GetFullPath($CoordinatorLock.Name) -cne [IO.Path]::GetFullPath($parent)){throw 'M03_DEV_READ_ONLY_COORDINATOR_BLOCKED'}
+ $parentEntry=Assert-M03DevPlainPath $parent $false
+ if($parentEntry.Length -gt 1024){throw 'M03_DEV_READ_ONLY_COORDINATOR_BLOCKED'}
+ $reader=$null;$readerStream=$null
+ try{
+  $readerStream=[IO.File]::Open($parent,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::ReadWrite)
+  $reader=[IO.StreamReader]::new($readerStream)
+  $owner=ConvertFrom-Json -InputObject ($reader.ReadToEnd()) -ErrorAction Stop
+ }finally{if($null -ne $reader){$reader.Dispose()}elseif($null -ne $readerStream){$readerStream.Dispose()}}
+ if(@(Compare-Object -CaseSensitive @('kind','version','processId'|Sort-Object) @($owner.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $owner.kind -cne 'm03_read_only_inspect_parent' -or $owner.version -isnot [int] -or $owner.version -ne 1 -or $owner.processId -ne $PID){throw 'M03_DEV_READ_ONLY_COORDINATOR_BLOCKED'}
+ $spec=Get-M03DevCredentialSpec $Kind
+ $root=Get-M03DevCredentialRoot
+ Assert-M03DevPrivateAcl $root $true;Assert-M03DevPrivateAcl ([IO.Path]::GetDirectoryName($spec.Source)) $true
+ if(-not (Test-Path -LiteralPath $spec.Source)){throw ('M03_DEV_CREDENTIAL_MISSING_'+$Kind.ToUpperInvariant())}
+ Assert-M03DevPrivateAcl $spec.Source $false
+ $null=Assert-M03DevPlainPath (Join-Path $env:LOCALAPPDATA 'Temp') $true
+ $target=if($Kind -ceq 'Admin'){$spec.Cipher}else{Join-Path $env:LOCALAPPDATA 'Temp\emr-m03-n8n-api-key.dpapi'}
+ $lease=if($Kind -ceq 'Admin'){$spec.Lease}else{$null}
+ $lock=$null;$bytes=$null;$leaseBytes=$null;$copy=$null;$stream=$null;$created=@()
+ try{
+  $lock=[IO.File]::Open((Join-Path $root 'store.operation.lock'),[IO.FileMode]::Open,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
+  $bytes=[IO.File]::ReadAllBytes($spec.Source);Assert-M03DevCipherFraming $bytes
+  $hasTarget=Test-Path -LiteralPath $target
+  $hasLease=$null -ne $lease -and (Test-Path -LiteralPath $lease)
+  if($null -ne $lease -and $hasTarget -ne $hasLease){throw 'M03_DEV_ACCESS_TEMPORARY_AMBIGUOUS'}
+  if($hasTarget){
+   Assert-M03DevPrivateAcl $target $false
+   if((Get-Item -LiteralPath $target -Force).Length -gt 65536){throw 'M03_DEV_ACCESS_TEMPORARY_AMBIGUOUS'}
+   $copy=[IO.File]::ReadAllBytes($target);$same=$bytes.Length -eq $copy.Length
+   if($same){for($i=0;$i -lt $bytes.Length;$i++){if($bytes[$i] -ne $copy[$i]){$same=$false;break}}}
+   if(-not $same){throw 'M03_DEV_ACCESS_TEMPORARY_AMBIGUOUS'}
+  }
+  if($null -ne $lease){
+   $now=[DateTime]::UtcNow
+   $metadata=[ordered]@{version=1;environment='dev';projectRef='zmotjsbzhzjvpelxvxlf';purpose='m03-foundation-inspect-only-dev';approvalSha='f42930f90c2de43c84f61ad6d966d0ee6074d70e';createdAt=$now.ToString('o');expiresAt=$now.AddHours(2).ToString('o')}
+   if($hasLease){
+    Assert-M03DevPrivateAcl $lease $false
+    if((Get-Item -LiteralPath $lease -Force).Length -gt 4096){throw 'M03_DEV_ACCESS_TEMPORARY_AMBIGUOUS'}
+    $old=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($lease)) -ErrorAction Stop
+    if(@(Compare-Object -CaseSensitive @($metadata.Keys|Sort-Object) @($old.PSObject.Properties.Name|Sort-Object)).Count -ne 0){throw 'M03_DEV_ACCESS_TEMPORARY_AMBIGUOUS'}
+    foreach($key in $metadata.Keys){if($key -cnotin @('createdAt','expiresAt') -and $old.$key -cne $metadata[$key]){throw 'M03_DEV_ACCESS_TEMPORARY_AMBIGUOUS'}}
+    $createdAt=[DateTimeOffset]::MinValue;$expiresAt=[DateTimeOffset]::MinValue
+    if(-not [DateTimeOffset]::TryParse($old.createdAt,[ref]$createdAt) -or -not [DateTimeOffset]::TryParse($old.expiresAt,[ref]$expiresAt) -or $createdAt -gt [DateTimeOffset]::UtcNow.AddMinutes(1) -or $expiresAt -ne $createdAt.AddHours(2)){throw 'M03_DEV_ACCESS_TEMPORARY_AMBIGUOUS'}
+   }
+   $leaseBytes=[Text.UTF8Encoding]::new($false).GetBytes(($metadata|ConvertTo-Json -Compress))
+  }
+  if(-not $hasTarget){
+   $stream=[IO.File]::Open($target,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);$created+=,$target
+   Set-M03DevPrivateAcl $target $false;$stream.Write($bytes,0,$bytes.Length);$stream.Flush($true);$stream.Dispose();$stream=$null
+  }
+  if($null -ne $lease){
+   $mode=if($hasLease){[IO.FileMode]::Open}else{[IO.FileMode]::CreateNew}
+   $stream=[IO.File]::Open($lease,$mode,[IO.FileAccess]::Write,[IO.FileShare]::None)
+   if(-not $hasLease){$created+=,$lease;Set-M03DevPrivateAcl $lease $false}
+   $stream.Write($leaseBytes,0,$leaseBytes.Length);$stream.SetLength($leaseBytes.Length);$stream.Flush($true);$stream.Dispose();$stream=$null
+  }
+  $created=@()
+ }finally{
+  if($null -ne $stream){$stream.Dispose()}
+  foreach($buffer in @($bytes,$leaseBytes,$copy)){if($null -ne $buffer){[Array]::Clear($buffer,0,$buffer.Length)}}
+  foreach($path in $created){[IO.File]::Delete($path)}
+  if($null -ne $lock){$lock.Dispose()}
+ }
+}

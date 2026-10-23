@@ -75,6 +75,277 @@ const readyDto = `([ordered]@{kind='project_verified_continuation_ready';segment
 const metadataDto = `([pscustomobject][ordered]@{kind='m03_vercel_saved_auth_metadata';status='metadata_covers_75_minutes';metadataValid=$true;unexpired=$true;covers75Minutes=$true;effectiveBackendEstablished=$false;networkRequests=0;authenticationAttempted=$false;refreshAttempted=$false;configWritten=$false;childClosed=$true})`;
 
 test(
+  'normal administrator Close is readback-only and requires actual owned closure before returning proof',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const output = powershell(`
+${definitions(['Foundation-Literal', 'Close-FoundationOwnedWindow'], control)}
+$script:closed=$true;$script:calls=[Collections.Generic.List[string]]::new()
+function Invoke-FoundationQuery($Sql,$Field){if($Sql -match 'foundation_gateway_admit|update |delete |insert '){throw 'ADMIN_CLOSE_ATTEMPTED_WRITER_MUTATION'};$script:calls.Add($Field);if($Field -ceq 'ownership'){return [pscustomobject]@{owned=$true}};return [pscustomobject]@{closed=$script:closed}}
+$binding=[pscustomobject]@{audience='synthetic';commitSha='synthetic';deploymentId='synthetic'}
+$value=Close-FoundationOwnedWindow $binding;if($value.state -cne 'closed' -or $value.window.closed -ne $true){throw 'CLOSURE_PROOF_MISSING'}
+$script:closed=$false;$denied=$false;try{$null=Close-FoundationOwnedWindow $binding}catch{$denied=$true}
+if(-not $denied -or $script:calls.Count -ne 4){throw 'UNVERIFIED_ADMIN_CLOSE_ACCEPTED'};Write-Output 'ADMIN_CLOSE_READBACK_ONLY'
+`);
+    assert.equal(output, 'ADMIN_CLOSE_READBACK_ONLY');
+  },
+);
+
+test(
+  'ArchiveFixture requires independent closed binding, zero work, exact technical2 audit and expected statuses',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const output = powershell(`
+${definitions(['Assert-FoundationArchiveInspection'])}
+$expected=[pscustomobject]@{id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9';audience='synthetic';commitSha='synthetic';deploymentId='synthetic';startsAt='synthetic-start';expiresAt='synthetic-expiry';closedAt='synthetic-closed'}
+$window=[ordered]@{id=$expected.id;audience=$expected.audience;commitSha=$expected.commitSha;deploymentId=$expected.deploymentId;startsAt=$expected.startsAt;expiresAt=$expected.expiresAt;closedAt=$expected.closedAt;closeCount=1;admittedCount=2}
+$dto=[ordered]@{window=[pscustomobject]$window;requestCount=1;reservedRequests=0;incompleteRequests=0;activeLeaseCount=0;launchCount=0;actorRunCount=0;scrapeRunCount=0;costEntryCount=0;costUsd=0;collectedItemCount=0;approval=[pscustomobject]@{closed=$true};fixture=[pscustomobject]@{itemsCount=0;locked=$false;progressPresent=$false;competitorArchived=$false;accountPaused=$false;competitorActive=$true;accountActive=$true};audits=[pscustomobject]@{creationCount=1;startupCount=1;originalCount=1;technical2Count=1;technical2Exact=$true}}
+Assert-FoundationArchiveInspection $dto $expected $false
+$denied=0
+foreach($fault in @('open','count','binding','actor','reserved','lease','audit','human-progress')){
+ switch($fault){'open'{$dto.window.closedAt=$null};'count'{$dto.window.closeCount=0};'binding'{$dto.window.deploymentId='other'};'actor'{$dto.actorRunCount=1};'reserved'{$dto.reservedRequests=1};'lease'{$dto.activeLeaseCount=1};'audit'{$dto.audits.technical2Exact=$false};'human-progress'{$dto.fixture.progressPresent=$true}}
+ try{Assert-FoundationArchiveInspection $dto $expected $false}catch{$denied++}
+ $dto.window.closedAt=$expected.closedAt;$dto.window.closeCount=1;$dto.window.deploymentId=$expected.deploymentId;$dto.actorRunCount=0;$dto.reservedRequests=0;$dto.activeLeaseCount=0;$dto.audits.technical2Exact=$true;$dto.fixture.progressPresent=$false
+}
+$dto.fixture.competitorArchived=$true;$dto.fixture.accountPaused=$true;$dto.fixture.competitorActive=$false;$dto.fixture.accountActive=$false
+Assert-FoundationArchiveInspection $dto $expected $true
+if($denied -ne 8){throw 'ARCHIVE_PROJECTION_GATE_FAILED'};Write-Output 'CLOSED_OWNED_QUIESCENT_ARCHIVE_ONLY'
+`);
+    assert.equal(output, 'CLOSED_OWNED_QUIESCENT_ARCHIVE_ONLY');
+  },
+);
+
+test(
+  'ArchiveFixture permits only fixed history, inspect and teardown files, with one durable mutation intent',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const output = powershell(`
+${definitions(['Invoke-Cli'])}
+$ArchiveFixture=$true;$WriterClose=$false;$InspectOnly=$false;$PostcheckContinuation=$false;$RemainingContinuation=$false;$StartupReplacement=$false;$ProjectVerifiedContinuation=$false
+$leaseExpires=[DateTime]::UtcNow.AddMinutes(5);$phaseAControlHardDeadline=$null;$queryFile='history.sql';$inspectQueryFile='inspect.sql';$archiveFile='archive.sql'
+$cliPath='never-started.exe';$scratch='synthetic';$dbUri='synthetic';$password='synthetic-unused';$receipt=[ordered]@{childrenClosed=$true};$script:children=0
+function Invoke-Bounded {$script:children++;return [pscustomobject]@{closed=$true;ok=$true}}
+foreach($file in @($queryFile,$inspectQueryFile,$archiveFile)){$null=Invoke-Cli @('db','query','--file',$file) 5000}
+$denied=0;foreach($args in @(@('db','push'),@('db','advisors'),@('gen','types'),@('db','query','--file','other.sql'))){try{$null=Invoke-Cli $args 5000}catch{$denied++}}
+if($script:children -ne 3 -or $denied -ne 4){throw 'ARCHIVE_DISPATCH_NOT_FIXED'};Write-Output 'FIXED_ARCHIVE_FILES_ONLY'
+`);
+    assert.equal(output, 'FIXED_ARCHIVE_FILES_ONLY');
+    const value = source(consumer);
+    const intent = value.indexOf("purpose='exact-owned-fixture-archive-after-independent-close'");
+    const mutation = value.indexOf("$archive=Invoke-Cli @('db','query','--file',$archiveFile)");
+    assert.ok(
+      intent > value.indexOf('Assert-FoundationArchiveInspection $beforeArchive') && mutation > intent,
+    );
+    assert.equal(
+      (value.match(/\$archive=Invoke-Cli @\('db','query','--file',\$archiveFile\)/g) || []).length,
+      1,
+    );
+    const check = value.indexOf('if($CheckOnly -and $ArchiveFixture){');
+    assert.ok(check > 0 && check < value.indexOf('$writerSpec=Get-M03DevCredentialSpec -Kind Admin'));
+  },
+);
+
+test(
+  'WriterClose accepts only direct restricted identity, exact binding and the once-incremented close response',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const output = powershell(`
+${definitions(['Assert-Keys', 'Read-FoundationWriterControl'])}
+$expected=[pscustomobject]@{audience='https://everyone-market-researcher-synthetic.vercel.app';commitSha='f42930f90c2de43c84f61ad6d966d0ee6074d70e';deploymentId='dpl_synthetic';startsAt='2026-10-23T15:47:55.265665+00:00';expiresAt='2026-10-23T16:47:55.265665+00:00';admittedCount=1}
+$dto=[ordered]@{currentUser='n8n_writer';sessionUser='n8n_writer';database='postgres';control=[ordered]@{state='admitted';code=$null;result=$null;replayed=$false;operation='identity.read';window=[ordered]@{id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9';startsAt=$expected.startsAt;expiresAt=$expected.expiresAt;closed=$false;totalAdmitted=1;boundAudience=$expected.audience;boundCommitSha=$expected.commitSha;boundDeploymentId=$expected.deploymentId}}}
+function Run-Projection([bool]$Closed){return Read-FoundationWriterControl ([pscustomobject]@{ok=$true;closed=$true;text=('[{"writer_receipt":'+($dto|ConvertTo-Json -Depth 10 -Compress)+'}]')}) $expected $Closed}
+$null=Run-Projection $false
+$dto.control.state='closed';$dto.control.code='window_expired';$dto.control.window.closed=$true;$null=Run-Projection $false
+$dto.control.code='window_closed';$dto.control.window.totalAdmitted=2;$null=Run-Projection $true
+$denied=0
+foreach($fault in @('owner-session','wrong-binding','extra-secret','wrong-counter','wrong-code','wrong-field-type')){
+ switch($fault){'owner-session'{$dto.sessionUser='postgres'};'wrong-binding'{$dto.control.window.boundDeploymentId='dpl_other'};'extra-secret'{$dto['secret']='SYNTHETIC_WRITER_SECRET'};'wrong-counter'{$dto.control.window.totalAdmitted=3};'wrong-code'{$dto.control.code='window_expired'};'wrong-field-type'{$dto.control.window.closed='true'}}
+ try{$null=Run-Projection $true}catch{$denied++}
+ $dto.sessionUser='n8n_writer';$dto.control.window.boundDeploymentId=$expected.deploymentId;$dto.Remove('secret');$dto.control.window.totalAdmitted=2;$dto.control.code='window_closed';$dto.control.window.closed=$true
+}
+try{$null=Read-FoundationWriterControl ([pscustomobject]@{ok=$false;closed=$true;text='SYNTHETIC_WRITER_SECRET'}) $expected $true}catch{$denied++}
+if($denied -ne 7){throw 'WRITER_CLOSE_PROJECTION_NOT_ENFORCED'};Write-Output 'DIRECT_WRITER_CLOSE_ONLY'
+`);
+    assert.equal(output, 'DIRECT_WRITER_CLOSE_ONLY');
+    assert.doesNotMatch(output, /SYNTHETIC_WRITER_SECRET/);
+  },
+);
+
+test(
+  'WriterClose dispatcher excludes administrator history, arbitrary SQL and migration commands',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const output = powershell(`
+${definitions(['Invoke-Cli'])}
+$WriterClose=$true;$InspectOnly=$false;$PostcheckContinuation=$false;$RemainingContinuation=$false;$StartupReplacement=$false;$ProjectVerifiedContinuation=$false
+$leaseExpires=[DateTime]::UtcNow.AddMinutes(5);$phaseAControlHardDeadline=$null;$writerInspectFile='C:\\synthetic\\writer-inspect.sql';$writerCloseFile='C:\\synthetic\\writer-close.sql';$queryFile='C:\\synthetic\\history.sql'
+$cliPath='never-started.exe';$scratch='synthetic';$dbUri='synthetic';$password='synthetic-unused';$receipt=[ordered]@{childrenClosed=$true};$script:children=0
+function Invoke-Bounded {$script:children++;return [pscustomobject]@{closed=$true;ok=$true}}
+foreach($file in @($writerInspectFile,$writerCloseFile)){$null=Invoke-Cli @('db','query','--file',$file) 5000}
+$denied=0;foreach($args in @(@('db','push'),@('db','advisors'),@('gen','types'),@('db','query','--file',$queryFile),@('db','query','--file','other.sql'))){try{$null=Invoke-Cli $args 5000}catch{$denied++}}
+if($script:children -ne 2 -or $denied -ne 5){throw 'WRITER_SCOPE_NOT_ENFORCED'};Write-Output 'WRITER_FILES_ONLY'
+`);
+    assert.equal(output, 'WRITER_FILES_ONLY');
+    const value = source(consumer);
+    const intent = value.indexOf("purpose='restricted-writer-owned-window-close'");
+    const mutate = value.indexOf("$close=Invoke-Cli @('db','query','--file',$writerCloseFile)");
+    assert.ok(
+      intent > value.indexOf("$receipt['writerBefore']=Read-FoundationWriterControl") && mutate > intent,
+    );
+    assert.equal(
+      (value.match(/\$close=Invoke-Cli @\('db','query','--file',\$writerCloseFile\)/g) || []).length,
+      1,
+    );
+    assert.ok(
+      value.includes(
+        'if (-not $WriterClose -and -not $ArchiveFixture -and ($consumed -or $inspectMaterialized)',
+      ),
+    );
+    assert.ok(value.includes('$writerSpec=Get-M03DevCredentialSpec -Kind Writer'));
+  },
+);
+
+test(
+  'InspectOnly dispatch permits only the two sealed SELECT files before any native child',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const output = powershell(`
+${definitions(['Invoke-Cli'])}
+$InspectOnly=$true;$PostcheckContinuation=$false;$RemainingContinuation=$false;$StartupReplacement=$false;$ProjectVerifiedContinuation=$false
+$leaseExpires=[DateTime]::UtcNow.AddMinutes(10);$phaseAControlHardDeadline=$null;$queryFile='C:\\synthetic\\history.sql';$inspectQueryFile='C:\\synthetic\\inspect.sql'
+$cliPath='never-started.exe';$scratch='synthetic';$dbUri='synthetic';$password='synthetic-unused';$receipt=[ordered]@{childrenClosed=$true};$script:children=0
+function Invoke-Bounded {param($Executable,$Arguments,$WorkingDirectory,$TimeoutMs,$PrivatePassword) $script:children++;return [pscustomobject]@{closed=$true;ok=$true}}
+foreach($file in @($queryFile,$inspectQueryFile)){$null=Invoke-Cli @('db','query','--file',$file) 5000}
+$denied=0
+foreach($args in @(@('db','push'),@('db','advisors'),@('gen','types'),@('db','query','--file','C:\\synthetic\\other.sql'),@('db','query','--file',$inspectQueryFile,'--unsafe'))){
+ try{$null=Invoke-Cli $args 5000}catch{$denied++}
+}
+if($script:children -ne 2 -or $denied -ne 5){throw 'READ_ONLY_DISPATCH_NOT_ENFORCED'}
+Write-Output 'FIXED_SELECT_ONLY'
+`);
+    assert.equal(output, 'FIXED_SELECT_ONLY');
+  },
+);
+
+test(
+  'InspectOnly accepts open residual projections and rejects secret fields, wrong identity and malformed data',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const dto = {
+      kind: 'm03_foundation_inspection',
+      windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+      identity: true,
+      window: {
+        id: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+        audience: 'https://everyone-market-researcher-synthetic.vercel.app',
+        commitSha: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+        deploymentId: 'dpl_synthetic',
+        startsAt: '2026-10-23T15:47:00+00:00',
+        expiresAt: '2026-10-23T16:47:00+00:00',
+        closedAt: null,
+        admittedCount: 2,
+        closeCount: 0,
+      },
+      requestCount: 2,
+      reservedRequests: 0,
+      incompleteRequests: 0,
+      activeLeaseCount: 0,
+      approval: {
+        closed: false,
+        expiresAt: '2026-10-23T16:47:00.123456+00:00',
+        actorBuild: '0.3.99',
+        maxChargeUsd: 1,
+        batchMaxUsd: 2,
+      },
+      launchCount: 0,
+      actorRunCount: 0,
+      scrapeRunCount: 0,
+      costEntryCount: 0,
+      costUsd: 0,
+      collectedItemCount: 0,
+      fixture: {
+        competitorId: 'd51a39f6-fe87-4d17-aee9-3070c45693aa',
+        accountId: 'bd23314c-591f-4fb7-92fd-b7450634eeb6',
+        competitorArchived: false,
+        competitorActive: true,
+        accountPaused: false,
+        accountActive: true,
+        itemsCount: 0,
+        locked: false,
+        progressPresent: false,
+      },
+      audits: {
+        creationCount: 1,
+        startupCount: 1,
+        originalCount: 1,
+        technical2Count: 1,
+        technical2Exact: true,
+      },
+    };
+    const inputs = [
+      dto,
+      { ...dto, window: null, approval: null, fixture: null },
+      { ...dto, token: 'SYNTHETIC_SECRET_CANARY' },
+      { ...dto, identity: false },
+      { ...dto, requestCount: 'SYNTHETIC_SECRET_CANARY' },
+      { ...dto, window: { ...dto.window, audience: 'SYNTHETIC_SECRET_CANARY' } },
+      { ...dto, approval: { ...dto.approval, secret: 'SYNTHETIC_SECRET_CANARY' } },
+      { ...dto, fixture: { ...dto.fixture, progressPresent: 'false' } },
+    ];
+    const output = powershell(`
+${definitions(['Assert-Keys', 'Read-FoundationInspection'])}
+$inputs=ConvertFrom-Json -InputObject ${quote(JSON.stringify(inputs.map((inspection) => JSON.stringify([{ inspection }]))))}
+$accepted=0;$denied=0
+foreach($inputText in $inputs){$result=[pscustomobject]@{ok=$true;closed=$true;text=$inputText};try{$null=Read-FoundationInspection $result;$accepted++}catch{$denied++}}
+foreach($raw in @('SYNTHETIC_SECRET_CANARY','[{"inspection":"SYNTHETIC_SECRET_CANARY"}]')){try{$null=Read-FoundationInspection ([pscustomobject]@{ok=$true;closed=$true;text=$raw})}catch{$denied++}}
+if($accepted -ne 2 -or $denied -ne 8){throw 'UNSAFE_INSPECTION_PROJECTION'}
+Write-Output 'FINITE_INSPECTION_ONLY'
+`);
+    assert.equal(output, 'FINITE_INSPECTION_ONLY');
+    assert.equal(output.includes('SYNTHETIC_SECRET_CANARY'), false);
+  },
+);
+
+test(
+  'InspectOnly requires the exact physically closed technical2 chain while permitting its unresolved remote state',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-project-inspection-chain-'));
+    const liveStem = `scripts/n8n/out/foundation/live/project-verified-continuation-${segment}.technical-2`;
+    const dbStem = `scripts/db/out/m03-foundation-project-verified-continuation-${segment}-technical-2`;
+    mkdirSync(join(directory, 'scripts/n8n/out/foundation/live'), { recursive: true });
+    mkdirSync(join(directory, 'scripts/db/out'), { recursive: true });
+    try {
+      const output = powershell(`
+${definitions(['Assert-Keys', 'Assert-Path', 'Read-Json', 'File-Hash', 'Assert-FoundationInspectClosed'])}
+$repo=${quote(directory)};$script:live=$false
+function Get-CimInstance {param($ClassName,$Filter,$Property,$ErrorAction) if($script:live){return [pscustomobject]@{ProcessId=123456789}}}
+$now=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds();$start=$now-10000
+$admission=[ordered]@{kind='m03_project_verified_continuation_admission';version=1;segmentId='${segment}';sourceCommitSha='f42930f90c2de43c84f61ad6d966d0ee6074d70e';windowId='df4f29ec-e2dc-4d82-a276-62a4e695e6f9';approvalSha256='5eb38cbe8740ed9a9f72d2356de3fa2e9ce77c8de3710020a7d3de7a6ebdd610';startsAt=$start;deadlineAt=$start+3600000;stopNewAt=$start+3000000;hardDeadlineAt=$start+4200000;parentProcessId=123456789}
+$path=Join-Path $repo '${liveStem}.json';[IO.File]::WriteAllText($path,($admission|ConvertTo-Json -Compress));$hash=File-Hash $path
+$claim=[ordered]@{kind='m03_project_verified_continuation_runtime_claim';version=1;segmentId='${segment}';admissionSha256=$hash;processId=123456788;parentProcessId=123456789;claimedAt=$start+1000}
+[IO.File]::WriteAllText((Join-Path $repo '${liveStem}.runtime-claim.json'),($claim|ConvertTo-Json -Compress))
+$closed=[ordered]@{kind='m03_project_verified_technical_closed';version=1;admissionSha256=$hash;parentProcessId=123456789;runtimeProcessId=123456788;closedAt=$start+2000;childClosed=$true;credentialChildrenClosed=$true;emergencyShutdown=$false;pendingMachinePreserved=$true;nativeExit=1;bypassHandoffDeleted=$false;closureVerified=$false}
+$closeFile=Join-Path $repo '${liveStem}.closed.json';[IO.File]::WriteAllText($closeFile,($closed|ConvertTo-Json -Compress))
+$latest=[ordered]@{runId='52cd6a97-a23a-4061-a694-00c50c700b00';environment='dev';projectRef='zmotjsbzhzjvpelxvxlf';authenticationVerified=$true;historyBefore='complete';historyAfter='complete';pushAttempted=$false;childrenClosed=$true;handoffDeleted=$true;leaseDeleted=$true;scratchDeleted=$true;technicalAttemptOrdinal=2;status='phase_a_control_failed';reactivationState='acknowledged_and_verified';phaseAClosed=$false}
+$latestFile=Join-Path $repo '${dbStem}-latest.json';[IO.File]::WriteAllText($latestFile,($latest|ConvertTo-Json -Compress))
+$provision=[ordered]@{version=1;runId=$latest.runId;windowId=$admission.windowId;packet=[ordered]@{audience='https://everyone-market-researcher-synthetic.vercel.app';commitSha=$admission.sourceCommitSha;deploymentId='dpl_synthetic';actorBuild='0.3.99';approvalReference='M03-A-D-f42930f-20261021';maxTotalChargeUsd=1;batchMaxUsd=2};createdAt=[DateTime]::UtcNow.ToString('o')}
+[IO.File]::WriteAllText((Join-Path $repo '${dbStem}-owner-provision-attempt.json'),($provision|ConvertTo-Json -Compress -Depth 5))
+$good=Assert-FoundationInspectClosed;if($good.deploymentId -cne 'dpl_synthetic'){throw 'WRONG_BINDING'}
+$denied=0;$script:live=$true;try{$null=Assert-FoundationInspectClosed}catch{$denied++};$script:live=$false
+$closed.credentialChildrenClosed=$false;[IO.File]::WriteAllText($closeFile,($closed|ConvertTo-Json -Compress));try{$null=Assert-FoundationInspectClosed}catch{$denied++}
+$closed.credentialChildrenClosed=$true;$closed.admissionSha256=('0'*64);[IO.File]::WriteAllText($closeFile,($closed|ConvertTo-Json -Compress));try{$null=Assert-FoundationInspectClosed}catch{$denied++}
+$closed.admissionSha256=$hash;[IO.File]::WriteAllText($closeFile,($closed|ConvertTo-Json -Compress));$latest.runId='00000000-0000-4000-8000-000000000001';[IO.File]::WriteAllText($latestFile,($latest|ConvertTo-Json -Compress));try{$null=Assert-FoundationInspectClosed}catch{$denied++}
+if($denied -ne 4){throw 'UNSAFE_PHYSICAL_CHAIN'};Write-Output 'PHYSICAL_CLOSED_REMOTE_UNRESOLVED'
+`);
+      assert.equal(output, 'PHYSICAL_CLOSED_REMOTE_UNRESOLVED');
+    } finally {
+      removeOwnedTemporary(directory);
+    }
+  },
+);
+
+test(
   'dev coordinator materializes only its four scoped disposable inputs after public and Machine provenance gates',
   { skip: process.platform !== 'win32' },
   () => {

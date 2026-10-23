@@ -3,6 +3,8 @@ import { request } from 'node:https';
 import { isIP } from 'node:net';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 
 const host = 'muhhammedsayed.app.n8n.cloud';
 const projectId = 'pHvQjDmjxVZ3KQLT';
@@ -794,15 +796,238 @@ export async function runInventory(key, dependencies = {}) {
   return result;
 }
 
+// Exactly one owned workflow GET. This diagnostic neither creates a runtime
+// plan nor admits a window, reads credentials/variables, saves or adopts a graph.
+export async function runWorkflowBaselineDiagnostic(key, dependencies = {}) {
+  const result = {
+    version: 1,
+    environment: 'dev',
+    host,
+    projectId,
+    status: 'not_attempted',
+    requestCount: 0,
+    authenticationVerified: false,
+    projectVerified: false,
+    workflowKey: 'WF-00',
+    baseline: null,
+    forensics: null,
+    diagnostics: { version: 1, dns: 'not_attempted', requests: [] },
+  };
+  if (!key) {
+    result.status = 'missing_key';
+    return result;
+  }
+  if (typeof key !== 'string' || key.length > 4096 || !/^[\x21-\x7e]+$/.test(key)) {
+    result.status = 'invalid_key';
+    return result;
+  }
+  let baseline, diagnoseFoundationRuntimeBaseline, diagnoseFoundationRuntimeBaselineVariants;
+  try {
+    const checkpoint = await import('./foundation-runtime-checkpoint.mjs');
+    const { foundationRuntimeCheckpoint } = checkpoint;
+    diagnoseFoundationRuntimeBaseline = checkpoint.diagnoseFoundationRuntimeBaseline;
+    diagnoseFoundationRuntimeBaselineVariants = checkpoint.diagnoseFoundationRuntimeBaselineVariants;
+    const pinned = foundationRuntimeCheckpoint.workflows['WF-00'];
+    const record = JSON.parse(
+      readFileSync(new URL('../../n8n/workflows/WF-00.json', import.meta.url), 'utf8'),
+    );
+    if (
+      record.key !== 'WF-00' ||
+      record.id !== pinned.id ||
+      record.versionId !== pinned.versionId ||
+      record.projectId !== projectId ||
+      createHash('sha256').update(JSON.stringify(record)).digest('hex') !== pinned.recordHash
+    )
+      reject();
+    baseline = {
+      key: 'WF-00',
+      id: pinned.id,
+      versionId: pinned.versionId,
+      body: {
+        name: record.workflow.name,
+        nodes: record.workflow.nodes,
+        connections: record.workflow.connections,
+        settings: record.workflow.settings,
+      },
+      tags: record.workflow.tags,
+    };
+    if (diagnoseFoundationRuntimeBaseline(null, baseline, projectId).failedChecks.includes('expected_shape'))
+      reject();
+  } catch {
+    result.status = 'response_rejected';
+    return result;
+  }
+  const timeoutMs = dependencies.timeoutMs ?? 20000;
+  if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 20000) {
+    result.status = 'invalid_options';
+    return result;
+  }
+  const controller = new AbortController();
+  let timedOut = false,
+    requestIssued = false,
+    resolveClosed;
+  const closed = new Promise((done) => {
+    resolveClosed = done;
+  });
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+  const timeout = new Promise((_, fail) =>
+    controller.signal.addEventListener('abort', () => fail(new InventoryError('timeout')), { once: true }),
+  );
+  const operation = async () => {
+    result.diagnostics.dns = 'resolving';
+    const addresses = validatedAddresses(await (dependencies.lookup ?? resolveInstance)(controller.signal));
+    if (controller.signal.aborted) reject('timeout');
+    result.diagnostics.dns = 'complete';
+    const diagnostic = requestDiagnostic('workflows', 1);
+    result.diagnostics.requests.push(diagnostic);
+    result.requestCount = 1;
+    requestIssued = true;
+    const transport = dependencies.request
+      ? (input) => nativeRequest(input, dependencies.request)
+      : (dependencies.transport ?? nativeRequest);
+    const response = await transport({
+      url: new URL(`https://${host}/api/v1/workflows/MzimjpsuyPuK7SKe?excludePinnedData=true`),
+      method: 'GET',
+      headers: {
+        'x-n8n-api-key': key,
+        accept: 'application/json',
+        'user-agent': 'everyone-market-radar-m03-baseline-read-only/1',
+      },
+      address: addresses[0],
+      signal: controller.signal,
+      maxBytes,
+      rejectUnauthorized: true,
+      servername: host,
+      diagnostic,
+      onSocketClosed: resolveClosed,
+    });
+    if (controller.signal.aborted) reject('timeout');
+    if (
+      !record(response) ||
+      !Number.isInteger(response.status) ||
+      response.status < 100 ||
+      response.status > 599
+    )
+      reject();
+    diagnostic.httpStatus = response.status;
+    if (response.status !== 200) {
+      const code =
+        response.status >= 300 && response.status < 400
+          ? 'redirect_refused'
+          : response.status === 401
+            ? 'unauthorized'
+            : 'http_failed';
+      diagnosticFailure(diagnostic, 'status', code);
+      reject(code);
+    }
+    if (!(response.body instanceof Uint8Array) || response.body.byteLength > maxBytes) {
+      diagnosticFailure(diagnostic, 'body_read', 'body_too_large');
+      reject('body_too_large');
+    }
+    diagnostic.bodyRead = 'complete';
+    let dto;
+    try {
+      dto = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(response.body));
+      diagnostic.jsonParsed = true;
+    } catch {
+      diagnosticFailure(diagnostic, 'parse', 'invalid_json');
+      reject();
+    }
+    const pending = [dto];
+    let visited = 0;
+    while (pending.length) {
+      if (++visited > 100000) reject();
+      const value = pending.pop();
+      if (typeof value === 'string' && value.includes(key)) {
+        diagnosticFailure(diagnostic, 'schema', 'confidentiality_rejected');
+        reject('confidentiality_rejected');
+      }
+      if (Array.isArray(value)) pending.push(...value);
+      else if (record(value)) pending.push(...Object.values(value));
+    }
+    result.authenticationVerified = true;
+    result.baseline = diagnoseFoundationRuntimeBaseline(dto, baseline, projectId);
+    result.forensics = diagnoseFoundationRuntimeBaselineVariants(dto, baseline);
+    result.projectVerified =
+      !result.baseline.failedChecks.includes('owner_project') &&
+      !result.baseline.failedChecks.includes('dto_shape');
+    diagnostic.schemaValidated = !result.baseline.failedChecks.includes('dto_shape');
+    result.status = result.baseline.failedChecks.length === 0 ? 'matching_baseline' : 'baseline_mismatch';
+  };
+  try {
+    await Promise.race([operation(), timeout]);
+  } catch (error) {
+    if (result.diagnostics.dns === 'resolving') result.diagnostics.dns = timedOut ? 'timeout' : 'failed';
+    const last = result.diagnostics.requests.at(-1);
+    if (last?.failureStage === 'none')
+      diagnosticFailure(
+        last,
+        last.jsonParsed ? 'schema' : 'unknown',
+        timedOut ? 'timeout' : last.jsonParsed ? 'invalid_schema' : 'network_failed',
+      );
+    result.status = timedOut
+      ? 'timeout'
+      : [
+            'unsafe_dns',
+            'timeout',
+            'unauthorized',
+            'redirect_refused',
+            'response_rejected',
+            'network_failed',
+            'http_failed',
+            'body_too_large',
+            'confidentiality_rejected',
+          ].includes(error?.code)
+        ? error.code
+        : 'network_failed';
+    result.baseline = null;
+    result.forensics = null;
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
+    key = null;
+    if (requestIssued && !result.diagnostics.requests[0].socketClosed) {
+      let closeTimer;
+      try {
+        await Promise.race([
+          closed,
+          new Promise((done) => {
+            closeTimer = setTimeout(done, 5000);
+          }),
+        ]);
+      } finally {
+        clearTimeout(closeTimer);
+      }
+      if (!result.diagnostics.requests[0].socketClosed) {
+        result.status = 'network_failed';
+        result.baseline = null;
+        result.forensics = null;
+      }
+    }
+  }
+  return result;
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const key = process.env.M03_N8N_API_KEY;
   delete process.env.M03_N8N_API_KEY;
-  if (process.argv.length !== 2) {
+  if (!(
+    process.argv.length === 2 ||
+    (process.argv.length === 3 && process.argv[2] === '--workflow-baseline-diagnostic')
+  )) {
     process.stdout.write(JSON.stringify({ version: 1, status: 'argument_rejected' }) + '\n');
     process.exitCode = 1;
   } else {
-    const result = await runInventory(key);
+    const result =
+      process.argv.length === 3 ? await runWorkflowBaselineDiagnostic(key) : await runInventory(key);
     process.stdout.write(JSON.stringify(result) + '\n');
-    process.exitCode = ['complete', 'partial'].includes(result.status) ? 0 : 1;
+    process.exitCode = ['complete', 'partial', 'matching_baseline', 'baseline_mismatch'].includes(
+      result.status,
+    )
+      ? 0
+      : 1;
   }
 }

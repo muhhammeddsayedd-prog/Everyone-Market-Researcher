@@ -245,3 +245,86 @@ Write-Output 'MALFORMED_IMPORT_BLOCKED'
     );
   }),
 );
+
+const readonlyParent = `
+$parent=Join-Path $env:LOCALAPPDATA 'Temp\\emr-m03-acceptance-parent.operation.lock'
+$coordinator=[IO.File]::Open($parent,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::Read)
+$metadata=[ordered]@{kind='m03_read_only_inspect_parent';version=1;processId=$PID}
+$parentBytes=[Text.UTF8Encoding]::new($false).GetBytes(($metadata|ConvertTo-Json -Compress));$coordinator.Write($parentBytes,0,$parentBytes.Length);$coordinator.Flush($true)
+`;
+
+test(
+  'read-only inventory copies only Management into its existing consumer filename and retains the original',
+  { skip: !windows },
+  () =>
+    fixture((directory) => {
+      run(
+        directory,
+        `${initialize}
+${readonlyParent}
+try{
+ Ensure-M03DevReadOnlyHandoff -Kind Management -CoordinatorLock $coordinator
+ $target=Join-Path $env:LOCALAPPDATA 'Temp\\emr-m03-n8n-api-key.dpapi'
+ Assert-M03DevPrivateAcl $target $false
+ if((Get-ChildItem -LiteralPath (Join-Path $env:LOCALAPPDATA 'Temp') -File).Count -ne 2){throw 'EXCESS_ROLE_DELIVERY'}
+ [IO.File]::Delete($target)
+ Ensure-M03DevReadOnlyHandoff -Kind Management -CoordinatorLock $coordinator
+ Ensure-M03DevReadOnlyHandoff -Kind Management -CoordinatorLock $coordinator
+ if(-not (Test-Path -LiteralPath (Get-M03DevCredentialSpec Management).Source)){throw 'ORIGINAL_REMOVED'}
+ Write-Output 'READ_ONLY_MANAGEMENT_REUSED'
+}finally{$coordinator.Dispose()}
+`,
+      );
+    }),
+);
+
+test(
+  'read-only Admin delivery has its own exact purpose and refreshes an expired matching copy under the current read mutex',
+  { skip: !windows },
+  () =>
+    fixture((directory) => {
+      run(
+        directory,
+        `${initialize}
+${readonlyParent}
+try{
+ Ensure-M03DevReadOnlyHandoff -Kind Admin -CoordinatorLock $coordinator
+ $spec=Get-M03DevCredentialSpec Admin
+ $lease=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($spec.Lease))
+ if($lease.purpose -cne 'm03-foundation-inspect-only-dev' -or $lease.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $lease.PSObject.Properties.Name.Count -ne 7){throw 'WRONG_INSPECT_PURPOSE'}
+ $expired=[DateTime]::UtcNow.AddHours(-3);$lease.createdAt=$expired.ToString('o');$lease.expiresAt=$expired.AddHours(2).ToString('o');$lease|ConvertTo-Json -Compress|Set-Content -LiteralPath $spec.Lease -Encoding UTF8
+ Ensure-M03DevReadOnlyHandoff -Kind Admin -CoordinatorLock $coordinator
+ $fresh=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($spec.Lease))
+ if([DateTimeOffset]::Parse($fresh.expiresAt) -lt [DateTimeOffset]::UtcNow.AddMinutes(110)){throw 'READ_ONLY_EXPIRED_COPY_NOT_REFRESHED'}
+ foreach($kind in @('Management','Writer','ApifyRead')){if(Test-Path -LiteralPath (Get-M03DevCredentialSpec $kind).Cipher){throw 'OTHER_ROLE_DELIVERED'}}
+ Write-Output 'READ_ONLY_ADMIN_PURPOSE_AND_REFRESH_VERIFIED'
+}finally{$coordinator.Dispose()}
+`,
+      );
+    }),
+);
+
+test(
+  'read-only delivery refuses absent or foreign coordinator metadata and mismatched existing ciphertext without replacement',
+  { skip: !windows },
+  () =>
+    fixture((directory) => {
+      run(
+        directory,
+        `${initialize}
+$blocked=$false;try{Ensure-M03DevReadOnlyHandoff -Kind Management}catch{$blocked=$true};if(-not $blocked){throw 'MISSING_COORDINATOR_ACCEPTED'}
+${readonlyParent}
+try{
+ $wrong=[Text.UTF8Encoding]::new($false).GetBytes(([ordered]@{kind='foreign';version=1;processId=$PID}|ConvertTo-Json -Compress));$coordinator.Position=0;$coordinator.Write($wrong,0,$wrong.Length);$coordinator.SetLength($wrong.Length);$coordinator.Flush($true)
+ $blocked=$false;try{Ensure-M03DevReadOnlyHandoff -Kind Management -CoordinatorLock $coordinator}catch{$blocked=$true};if(-not $blocked){throw 'FOREIGN_COORDINATOR_ACCEPTED'}
+ $coordinator.Position=0;$coordinator.Write($parentBytes,0,$parentBytes.Length);$coordinator.SetLength($parentBytes.Length);$coordinator.Flush($true)
+ Ensure-M03DevReadOnlyHandoff -Kind Management -CoordinatorLock $coordinator
+ $target=Join-Path $env:LOCALAPPDATA 'Temp\\emr-m03-n8n-api-key.dpapi'
+ [IO.File]::WriteAllText($target,'SYNTHETIC_UNRELATED_EXISTING_CIPHER')
+ $blocked=$false;try{Ensure-M03DevReadOnlyHandoff -Kind Management -CoordinatorLock $coordinator}catch{$blocked=$true};if(-not $blocked -or [IO.File]::ReadAllText($target) -cne 'SYNTHETIC_UNRELATED_EXISTING_CIPHER'){throw 'FOREIGN_CIPHER_REPLACED'}
+ Write-Output 'READ_ONLY_OWNERSHIP_REFUSALS_VERIFIED'
+}finally{$coordinator.Dispose()}
+`,
+      );
+    }),
+);

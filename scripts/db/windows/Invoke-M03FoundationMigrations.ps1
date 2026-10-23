@@ -1,10 +1,10 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement,[switch]$ProjectVerifiedContinuation)
+param([switch]$CheckOnly,[switch]$InspectOnly,[switch]$WriterClose,[switch]$ArchiveFixture,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement,[switch]$ProjectVerifiedContinuation)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 # Validate the caller's modes before sharing only the reviewed no-push path.
-if(@($ClockAmendment,$PostcheckContinuation,$RemainingContinuation,$StartupReplacement,$ProjectVerifiedContinuation|Where-Object{$_}).Count -gt 1 -or
+if(($ArchiveFixture -and ($WriterClose -or $InspectOnly -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or ($WriterClose -and ($InspectOnly -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or ($InspectOnly -and ($PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or @($ClockAmendment,$PostcheckContinuation,$RemainingContinuation,$StartupReplacement,$ProjectVerifiedContinuation|Where-Object{$_}).Count -gt 1 -or
    (($RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation) -and (-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 0))){Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting continuation modes; no private access.';exit 1}
 if($RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation){$PostcheckContinuation=$true}
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
@@ -37,6 +37,7 @@ $requiredFiles+=@('scripts/n8n/foundation-live-startup-replacement.mjs','scripts
 $requiredFiles+=@('scripts/n8n/foundation-live-project-verified-continuation.mjs','scripts/assert/m03_smoke_reactivate_project_verified.sql',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md')
+$requiredFiles+=@('scripts/db/foundation-inspect.sql','scripts/n8n/windows/Dev-CredentialStore.ps1')
 $versions = @('20261017172928','20261017172931','20261017172934','20261017172937','20261017172940','20261017172943','20261017172945','20261018034220','20261018035417','20261018070042','20261018231756','20261018232014','20261018232922','20261018233338')
 $names = @('extensions_schemas_roles','core_tables','auth_rls_views','rpc_pipeline_core','rpc_app_search','storage_cron','seed_taxonomies','rpc_n8n_foundation','price_book_plan','n8n_worker_gateway_admission','m03_actor_launch_admission','m03_foundation_gateway','m03_foundation_safety_receipts','m03_foundation_boundary_hardening')
 $queryTimeoutMs = 30000
@@ -48,6 +49,9 @@ $secret = $null
 $bstr = [IntPtr]::Zero
 $consumed = $false
 $sessionLock = $null
+$inspectParentLock=$null;$inspectParentPath=$null;$inspectQueryFile=$null;$inspectMaterialized=$false
+$writerInspectFile=$null;$writerCloseFile=$null;$writerPrior=$null
+$archiveFile=$null;$archivePrior=$null
 $leaseExpires = $null
 $phaseAStart = $null
 $originalPhaseAStart = $null
@@ -70,6 +74,9 @@ if($PostcheckContinuation){$receipt.pendingVersions=@();$receipt['postcheckConti
 if($RemainingContinuation){$receipt['remainingContinuation']=$true}
 if($StartupReplacement){$receipt['startupReplacement']=$true}
 if($ProjectVerifiedContinuation){$receipt['projectVerifiedContinuation']=$true}
+if($InspectOnly){$receipt.pendingVersions=@();$receipt['inspectOnly']=$true}
+if($WriterClose){$receipt.pendingVersions=@();$receipt['writerClose']=$true;$receipt['administratorLoaded']=$false;$receipt['writerCloseAttempted']=$false;$receipt['writerCloseAcknowledged']=$false;$receipt['writerCloseNativeExit']=$null;$receipt['writerRpcClosed']=$false;$receipt['persistentWriterPreserved']=$true}
+if($ArchiveFixture){$receipt.pendingVersions=@();$receipt['archiveFixture']=$true;$receipt['archiveAttempted']=$false;$receipt['archiveAcknowledged']=$false;$receipt['archiveNativeExit']=$null;$receipt['fixtureArchived']=$false;$receipt['persistentAdminPreserved']=$true}
 
 function Assert-Keys($Value, [string[]]$Expected) {
   if ($Value -isnot [PSCustomObject]) { throw 'blocked' }
@@ -108,6 +115,168 @@ function Write-NewJson([string]$File, $Value) {
     $stream = [IO.File]::Open($File,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
     $stream.Write($bytes,0,$bytes.Length); $stream.Flush($true)
   } finally { if ($null -ne $stream) { $stream.Dispose() } }
+}
+function Assert-FoundationInspectClosed {
+  # This mode reconciles remote residuals, so physical closure is required but
+  # closureVerified/phaseAClosed/archive are deliberately not assumed true.
+  $stem='scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-2'
+  $admissionPath=Assert-Path $repo ($stem+'.json')
+  $admission=Read-Json $admissionPath
+  $claim=Read-Json (Assert-Path $repo ($stem+'.runtime-claim.json'))
+  $closed=Read-Json (Assert-Path $repo ($stem+'.closed.json'))
+  Assert-Keys $admission @('kind','version','segmentId','sourceCommitSha','windowId','approvalSha256','startsAt','deadlineAt','stopNewAt','hardDeadlineAt','parentProcessId')
+  Assert-Keys $claim @('kind','version','segmentId','admissionSha256','processId','parentProcessId','claimedAt')
+  Assert-Keys $closed @('kind','version','admissionSha256','parentProcessId','runtimeProcessId','closedAt','childClosed','credentialChildrenClosed','emergencyShutdown','pendingMachinePreserved','nativeExit','bypassHandoffDeleted','closureVerified')
+  if($admission.kind -cne 'm03_project_verified_continuation_admission' -or $admission.version -ne 1 -or $admission.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or
+     $admission.sourceCommitSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or $admission.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or
+     $claim.kind -cne 'm03_project_verified_continuation_runtime_claim' -or $claim.version -ne 1 -or $claim.segmentId -cne $admission.segmentId -or $claim.admissionSha256 -cne (File-Hash $admissionPath) -or
+     $closed.kind -cne 'm03_project_verified_technical_closed' -or $closed.version -ne 1 -or $closed.admissionSha256 -cne $claim.admissionSha256 -or
+     $admission.parentProcessId -isnot [int] -or $admission.parentProcessId -le 0 -or $claim.processId -isnot [int] -or $claim.processId -le 0 -or
+     $claim.parentProcessId -ne $admission.parentProcessId -or $closed.parentProcessId -ne $admission.parentProcessId -or $closed.runtimeProcessId -ne $claim.processId -or
+     $closed.childClosed -isnot [bool] -or -not $closed.childClosed -or $closed.credentialChildrenClosed -isnot [bool] -or -not $closed.credentialChildrenClosed -or
+     $closed.emergencyShutdown -isnot [bool] -or $closed.emergencyShutdown -or $closed.pendingMachinePreserved -isnot [bool] -or -not $closed.pendingMachinePreserved -or $closed.nativeExit -isnot [int]){throw 'blocked'}
+  foreach($key in @('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')){if($admission.$key -isnot [long]){throw 'blocked'}}
+  if($admission.approvalSha256 -cne '5eb38cbe8740ed9a9f72d2356de3fa2e9ce77c8de3710020a7d3de7a6ebdd610' -or
+     $admission.deadlineAt-$admission.startsAt -ne 3600000 -or $admission.stopNewAt-$admission.startsAt -ne 3000000 -or $admission.hardDeadlineAt-$admission.startsAt -ne 4200000 -or
+     $claim.claimedAt -isnot [long] -or $closed.closedAt -isnot [long] -or $claim.claimedAt -lt $admission.startsAt -or $closed.closedAt -lt $claim.claimedAt -or $closed.closedAt -gt [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()+1000){throw 'blocked'}
+  foreach($processId in @($admission.parentProcessId,$claim.processId)){
+    $live=@(Get-CimInstance -ClassName Win32_Process -Filter ('ProcessId = '+$processId) -Property ProcessId -ErrorAction Stop)
+    if($live.Count -ne 0){throw 'blocked'}
+  }
+  foreach($name in @('.technical-3.json','.technical-3.runtime-claim.json','.technical-3.closed.json')){
+    if(Test-Path -LiteralPath (Join-Path $repo ($stem.Replace('.technical-2','')+$name))){throw 'blocked'}
+  }
+  $dbStem='scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-2'
+  $latest=Read-Json (Assert-Path $repo ($dbStem+'-latest.json'))
+  $provision=Read-Json (Assert-Path $repo ($dbStem+'-owner-provision-attempt.json'))
+  Assert-Keys $provision @('version','runId','windowId','packet','createdAt')
+  Assert-Keys $provision.packet @('audience','commitSha','deploymentId','actorBuild','approvalReference','maxTotalChargeUsd','batchMaxUsd')
+  if($latest.runId -cne '52cd6a97-a23a-4061-a694-00c50c700b00' -or $latest.runId -cne $provision.runId -or $latest.environment -cne 'dev' -or $latest.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or
+     $latest.authenticationVerified -ne $true -or $latest.historyBefore -cne 'complete' -or $latest.historyAfter -cne 'complete' -or $latest.pushAttempted -ne $false -or
+     $latest.childrenClosed -ne $true -or $latest.handoffDeleted -ne $true -or $latest.leaseDeleted -ne $true -or $latest.scratchDeleted -ne $true -or $latest.technicalAttemptOrdinal -ne 2 -or
+     $latest.status -cne 'phase_a_control_failed' -or $latest.reactivationState -cne 'acknowledged_and_verified' -or $latest.phaseAClosed -ne $false -or
+     $provision.version -ne 1 -or $provision.windowId -cne $admission.windowId -or $provision.packet.commitSha -cne $admission.sourceCommitSha -or
+     $provision.packet.audience -cnotmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$' -or $provision.packet.deploymentId -cnotmatch '^dpl_[A-Za-z0-9_-]{1,100}$' -or
+     $provision.packet.actorBuild -cne '0.3.99' -or $provision.packet.approvalReference -cne 'M03-A-D-f42930f-20261021' -or $provision.packet.maxTotalChargeUsd -ne 1 -or $provision.packet.batchMaxUsd -ne 2){throw 'blocked'}
+  return $provision.packet
+}
+function Read-FoundationInspection($Result) {
+  if(-not $Result.ok -or -not $Result.closed -or $Result.text -notmatch '^\s*\['){throw 'blocked'}
+  $rows=ConvertFrom-Json -InputObject $Result.text -ErrorAction Stop
+  if($rows -isnot [Array] -or $rows.Count -ne 1){throw 'blocked'}
+  Assert-Keys $rows[0] @('inspection');$value=$rows[0].inspection
+  Assert-Keys $value @('kind','windowId','identity','window','requestCount','reservedRequests','incompleteRequests','activeLeaseCount','approval','launchCount','actorRunCount','scrapeRunCount','costEntryCount','costUsd','collectedItemCount','fixture','audits')
+  if($value.kind -cne 'm03_foundation_inspection' -or $value.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or $value.identity -isnot [bool] -or -not $value.identity){throw 'blocked'}
+  foreach($key in @('requestCount','reservedRequests','incompleteRequests','activeLeaseCount','launchCount','actorRunCount','scrapeRunCount','costEntryCount','collectedItemCount')){
+    if(($value.$key -isnot [int] -and $value.$key -isnot [long]) -or $value.$key -lt 0){throw 'blocked'}
+  }
+  if(($value.costUsd -isnot [int] -and $value.costUsd -isnot [long] -and $value.costUsd -isnot [double] -and $value.costUsd -isnot [decimal]) -or $value.costUsd -lt 0 -or $value.costUsd -gt 999999999){throw 'blocked'}
+  if($null -ne $value.window){
+    Assert-Keys $value.window @('id','audience','commitSha','deploymentId','startsAt','expiresAt','closedAt','admittedCount','closeCount')
+    if($value.window.id -cne $value.windowId -or $value.window.audience -cnotmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$' -or $value.window.commitSha -cnotmatch '^[a-f0-9]{40}$' -or $value.window.deploymentId -cnotmatch '^dpl_[A-Za-z0-9_-]{1,100}$'){throw 'blocked'}
+    foreach($key in @('admittedCount','closeCount')){if($value.window.$key -isnot [int] -or $value.window.$key -lt 0 -or $value.window.$key -gt 256){throw 'blocked'}}
+    foreach($key in @('startsAt','expiresAt','closedAt')){if($null -ne $value.window.$key -and ($value.window.$key -isnot [string] -or $value.window.$key -cnotmatch '^\d{4}-\d\d-\d\d[T ]\d\d:\d\d:\d\d(?:\.\d{1,6})?(?:Z|[+-]\d\d(?::?\d\d)?)$')){throw 'blocked'}}
+  }
+  if($null -ne $value.approval){
+    Assert-Keys $value.approval @('closed','expiresAt','actorBuild','maxChargeUsd','batchMaxUsd')
+    if($value.approval.closed -isnot [bool] -or $value.approval.actorBuild -cne '0.3.99' -or $value.approval.maxChargeUsd -ne 1 -or $value.approval.batchMaxUsd -ne 2 -or $value.approval.expiresAt -isnot [string] -or $value.approval.expiresAt -cnotmatch '^\d{4}-\d\d-\d\d[T ]\d\d:\d\d:\d\d(?:\.\d{1,6})?(?:Z|[+-]\d\d(?::?\d\d)?)$'){throw 'blocked'}
+  }
+  if($null -ne $value.fixture){
+    Assert-Keys $value.fixture @('competitorId','accountId','competitorArchived','competitorActive','accountPaused','accountActive','itemsCount','locked','progressPresent')
+    if($value.fixture.competitorId -cne 'd51a39f6-fe87-4d17-aee9-3070c45693aa' -or $value.fixture.accountId -cne 'bd23314c-591f-4fb7-92fd-b7450634eeb6' -or ($value.fixture.itemsCount -isnot [int] -and $value.fixture.itemsCount -isnot [long]) -or $value.fixture.itemsCount -lt 0){throw 'blocked'}
+    foreach($key in @('competitorArchived','competitorActive','accountPaused','accountActive','locked','progressPresent')){if($value.fixture.$key -isnot [bool]){throw 'blocked'}}
+  }
+  Assert-Keys $value.audits @('creationCount','startupCount','originalCount','technical2Count','technical2Exact')
+  foreach($key in @('creationCount','startupCount','originalCount','technical2Count')){if(($value.audits.$key -isnot [int] -and $value.audits.$key -isnot [long]) -or $value.audits.$key -lt 0){throw 'blocked'}}
+  if($value.audits.technical2Exact -isnot [bool]){throw 'blocked'}
+  return $value
+}
+function Read-FoundationWriterClosePrior {
+  $binding=Assert-FoundationInspectClosed
+  $path=Assert-Path $repo 'scripts/db/out/m03-foundation-inspect-12b99879-b66c-4aeb-ac22-93b2c2a6eee5-latest.json'
+  if((File-Hash $path) -cne '44b354fed26b910c2ffc9e41ec0cc726e39251175bb15b7d513a63f642b7ff2f'){throw 'blocked'}
+  $prior=Read-Json $path
+  if($prior.runId -cne '12b99879-b66c-4aeb-ac22-93b2c2a6eee5' -or $prior.status -cne 'inspection_verified' -or $prior.environment -cne 'dev' -or $prior.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or
+     $prior.authenticationVerified -ne $true -or $prior.historyBefore -cne 'complete' -or $prior.historyAfter -cne 'complete' -or $prior.pushAttempted -ne $false -or $prior.bindingMatchesPriorProvision -ne $true -or
+     $prior.childrenClosed -ne $true -or $prior.handoffDeleted -ne $true -or $prior.leaseDeleted -ne $true -or $prior.scratchDeleted -ne $true -or $prior.inspectParentLockDeleted -ne $true){throw 'blocked'}
+  $value=Read-FoundationInspection ([pscustomobject]@{ok=$true;closed=$true;text=('[{"inspection":'+($prior.inspection|ConvertTo-Json -Depth 12 -Compress)+'}]')})
+  foreach($key in @('reservedRequests','incompleteRequests','activeLeaseCount','launchCount','actorRunCount','scrapeRunCount','costEntryCount','costUsd','collectedItemCount')){if($value.$key -ne 0){throw 'blocked'}}
+  if($null -eq $value.window -or $value.window.closedAt -ne $null -or $value.window.closeCount -ne 0 -or $value.window.admittedCount -ne 1 -or $value.requestCount -ne 1 -or
+     $value.window.audience -cne $binding.audience -or $value.window.commitSha -cne $binding.commitSha -or $value.window.deploymentId -cne $binding.deploymentId -or $null -eq $value.window.startsAt -or $null -eq $value.window.expiresAt -or
+     $null -eq $value.approval -or $value.approval.closed -ne $false -or $null -eq $value.fixture -or $value.fixture.competitorActive -ne $true -or $value.fixture.accountActive -ne $true -or $value.fixture.itemsCount -ne 0 -or $value.fixture.locked -ne $false -or $value.fixture.progressPresent -ne $false){throw 'blocked'}
+  foreach($key in @('creationCount','startupCount','originalCount','technical2Count')){if($value.audits.$key -ne 1){throw 'blocked'}}
+  if($value.audits.technical2Exact -ne $true){throw 'blocked'}
+  return $value.window
+}
+function Read-FoundationWriterControl($Result,$Expected,[bool]$Closed) {
+  if(-not $Result.ok -or -not $Result.closed -or $Result.text -notmatch '^\s*\['){throw 'blocked'}
+  $rows=ConvertFrom-Json -InputObject $Result.text -ErrorAction Stop
+  if($rows -isnot [Array] -or $rows.Count -ne 1){throw 'blocked'}
+  Assert-Keys $rows[0] @('writer_receipt');$value=$rows[0].writer_receipt
+  Assert-Keys $value @('currentUser','sessionUser','database','control')
+  if($value.currentUser -cne 'n8n_writer' -or $value.sessionUser -cne 'n8n_writer' -or $value.database -cne 'postgres'){throw 'blocked'}
+  Assert-Keys $value.control @('state','code','result','replayed','operation','window')
+  if($value.control.result -ne $null -or $value.control.replayed -isnot [bool] -or $value.control.replayed -or $value.control.operation -cne 'identity.read'){throw 'blocked'}
+  $window=$value.control.window
+  Assert-Keys $window @('id','startsAt','expiresAt','closed','totalAdmitted','boundAudience','boundCommitSha','boundDeploymentId')
+  if($window.id -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or $window.startsAt -cne $Expected.startsAt -or $window.expiresAt -cne $Expected.expiresAt -or
+     $window.boundAudience -cne $Expected.audience -or $window.boundCommitSha -cne $Expected.commitSha -or $window.boundDeploymentId -cne $Expected.deploymentId -or
+     $window.closed -isnot [bool] -or $window.totalAdmitted -isnot [int]){throw 'blocked'}
+  if($Closed){
+    if($value.control.state -cne 'closed' -or $value.control.code -cne 'window_closed' -or -not $window.closed -or $window.totalAdmitted -ne $Expected.admittedCount+1){throw 'blocked'}
+  }else{
+    if($window.totalAdmitted -ne $Expected.admittedCount -or -not (($value.control.state -ceq 'admitted' -and $value.control.code -eq $null -and -not $window.closed) -or ($value.control.state -ceq 'closed' -and $value.control.code -ceq 'window_expired' -and $window.closed))){throw 'blocked'}
+  }
+  return [ordered]@{currentUser='n8n_writer';sessionUser='n8n_writer';bindingVerified=$true;closed=$window.closed;totalAdmitted=$window.totalAdmitted;state=$value.control.state;code=$value.control.code}
+}
+function Assert-FoundationArchiveInspection($Value,$Expected,[bool]$Archived) {
+  foreach($key in @('reservedRequests','incompleteRequests','activeLeaseCount','launchCount','actorRunCount','scrapeRunCount','costEntryCount','costUsd','collectedItemCount')){if($Value.$key -ne 0){throw 'blocked'}}
+  if($null -eq $Value.window -or $null -eq $Value.window.closedAt -or $Value.window.closeCount -ne 1 -or $Value.window.admittedCount -ne 2 -or $Value.requestCount -ne 1 -or $null -eq $Value.approval -or $Value.approval.closed -ne $true){throw 'blocked'}
+  foreach($key in @('id','audience','commitSha','deploymentId','startsAt','expiresAt','closedAt')){if($Value.window.$key -cne $Expected.$key){throw 'blocked'}}
+  if($null -eq $Value.fixture -or $Value.fixture.itemsCount -ne 0 -or $Value.fixture.locked -ne $false -or $Value.fixture.progressPresent -ne $false -or $Value.fixture.competitorArchived -ne $Archived -or $Value.fixture.accountPaused -ne $Archived -or $Value.fixture.competitorActive -eq $Archived -or $Value.fixture.accountActive -eq $Archived){throw 'blocked'}
+  foreach($key in @('creationCount','startupCount','originalCount','technical2Count')){if($Value.audits.$key -ne 1){throw 'blocked'}}
+  if($Value.audits.technical2Exact -ne $true){throw 'blocked'}
+}
+function Read-FoundationArchivePrior {
+  $binding=Assert-FoundationInspectClosed
+  $writerPath=Assert-Path $repo 'scripts/db/out/m03-foundation-writer-close-df4f29ec-e2dc-4d82-a276-62a4e695e6f9-latest.json'
+  $inspectPath=Assert-Path $repo 'scripts/db/out/m03-foundation-inspect-82f55b86-3bc8-42bd-95b4-82039af7b9fc-latest.json'
+  if((File-Hash $writerPath) -cne '78e718069962421d1b88f1b2d794a7b691ec7ab1efb0ad6940e4e45e472d4c6e' -or (File-Hash $inspectPath) -cne '3e8972d1e27ac0d829b506878753c305202c5acc0cc5ffff23965586c3108437'){throw 'blocked'}
+  $writer=Read-Json $writerPath;$prior=Read-Json $inspectPath
+  if($writer.runId -cne '5a23a5b9-88f1-44bb-8a21-79d07d068885' -or $writer.status -cne 'writer_close_verified' -or $writer.authenticationVerified -ne $true -or $writer.administratorLoaded -ne $false -or $writer.writerRpcClosed -ne $true -or $writer.childrenClosed -ne $true -or $writer.scratchDeleted -ne $true -or $writer.persistentWriterPreserved -ne $true -or $writer.inspectParentLockDeleted -ne $true -or
+     $prior.runId -cne '82f55b86-3bc8-42bd-95b4-82039af7b9fc' -or $prior.status -cne 'inspection_verified' -or $prior.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $prior.environment -cne 'dev' -or $prior.authenticationVerified -ne $true -or $prior.historyBefore -cne 'complete' -or $prior.historyAfter -cne 'complete' -or $prior.pushAttempted -ne $false -or $prior.bindingMatchesPriorProvision -ne $true -or $prior.childrenClosed -ne $true -or $prior.handoffDeleted -ne $true -or $prior.leaseDeleted -ne $true -or $prior.scratchDeleted -ne $true -or $prior.inspectParentLockDeleted -ne $true){throw 'blocked'}
+  $value=Read-FoundationInspection ([pscustomobject]@{ok=$true;closed=$true;text=('[{"inspection":'+($prior.inspection|ConvertTo-Json -Depth 12 -Compress)+'}]')})
+  if($value.window.audience -cne $binding.audience -or $value.window.commitSha -cne $binding.commitSha -or $value.window.deploymentId -cne $binding.deploymentId){throw 'blocked'}
+  Assert-FoundationArchiveInspection $value $value.window $false
+  return $value.window
+}
+function Foundation-ArchiveFixtureSql($Expected) {
+  $body=Foundation-FixtureSql 'm03_smoke_teardown.sql'
+  $update="update app.competitors set status='archived' where id=v_comp.id and status<>'archived';"
+  if([regex]::Matches($body,[regex]::Escape($update)).Count -ne 1){throw 'blocked'}
+  $audience=Foundation-Literal $Expected.audience;$sha=Foundation-Literal $Expected.commitSha;$deployment=Foundation-Literal $Expected.deploymentId;$closedAt=Foundation-Literal $Expected.closedAt
+  $guard=@"
+lock table ops.audit_log in share mode;
+  if v_comp.id is distinct from 'd51a39f6-fe87-4d17-aee9-3070c45693aa'::uuid or v_account.id is distinct from 'bd23314c-591f-4fb7-92fd-b7450634eeb6'::uuid
+    or v_comp.status<>'active' or v_account.status<>'active' or v_account.locked_until is not null or v_account.last_run_id is not null or v_account.last_success_at is not null or v_account.items_count<>0
+    or not exists(select 1 from ops.foundation_gateway_rate_windows w join ops.apify_launch_approvals a using(window_id)
+      where w.window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and w.bound_audience=$audience and w.bound_commit_sha=$sha and w.bound_deployment_id=$deployment
+        and w.closed_at=${closedAt}::timestamptz and w.close_count=1 and w.admitted_count=2 and a.closed_at is not null and a.actor_build='0.3.99' and a.max_total_charge_usd=1 and a.batch_max_usd=2)
+    or (select count(*) from ops.foundation_gateway_requests where window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9')<>1
+    or exists(select 1 from ops.foundation_gateway_requests where window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and (state='reserved' or completed_at is null))
+    or exists(select 1 from ops.foundation_gateway_leases where window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and request_id is not null)
+    or exists(select 1 from ops.apify_launch_admissions) or exists(select 1 from ops.apify_runs) or exists(select 1 from ops.scrape_runs) or exists(select 1 from ops.cost_ledger) or exists(select 1 from app.items)
+    or (select count(*) from ops.audit_log where entity_id in ('d51a39f6-fe87-4d17-aee9-3070c45693aa','bd23314c-591f-4fb7-92fd-b7450634eeb6'))<>4
+    or (select count(*) from ops.audit_log l where l.actor_type='system' and l.actor_id='m03_smoke_reactivate.v1:20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-2'
+      and l.action='m03_smoke_fixture_reactivated' and l.entity_type='competitor' and l.entity_id=v_comp.id::text
+      and l.before=jsonb_build_object('competitor_status','archived','account_status','paused')
+      and l.after=jsonb_build_object('fixture_version',1,'project_ref','zmotjsbzhzjvpelxvxlf','segment_id','20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-2',
+        'competitor_id',v_comp.id,'account_id',v_account.id,'competitor_status','active','account_status','active','original_creation_audit_id',v_marker.id))<>1 then
+    raise exception using errcode='55000',message='M03_ARCHIVE_OWNERSHIP_OR_QUIESCENCE_CHANGED';
+  end if;
+
+"@
+  return $body.Replace($update,$guard+$update)
 }
 function Read-FoundationOriginalStart([long]$Value,[DateTime]$Now=[DateTime]::UtcNow) {
   if(-not $PhaseAControl -or $Value -ne 1792584023481){throw 'blocked'}
@@ -394,6 +563,17 @@ function Invoke-Cli([string[]]$Arguments, [int]$TimeoutMs) {
     $TimeoutMs=[Math]::Min($TimeoutMs,$remaining)
   }
   if ($Arguments.Count -lt 2 -or -not (($Arguments[0] -ceq 'db' -and $Arguments[1] -cin @('query','push','advisors')) -or ($Arguments[0] -ceq 'gen' -and $Arguments[1] -ceq 'types'))) { throw 'blocked' }
+  if([bool](Get-Variable -Name InspectOnly -ValueOnly -ErrorAction SilentlyContinue)){
+    # Fixed sealed SELECT sources only. The pinned CLI has no read-only query
+    # option; this does not assert a hosted transaction_read_only setting.
+    if($Arguments.Count -ne 4 -or $Arguments[0] -cne 'db' -or $Arguments[1] -cne 'query' -or $Arguments[2] -cne '--file' -or $Arguments[3] -cnotin @($queryFile,$inspectQueryFile)){throw 'blocked'}
+  }
+  if([bool](Get-Variable -Name WriterClose -ValueOnly -ErrorAction SilentlyContinue)){
+    if($Arguments.Count -ne 4 -or $Arguments[0] -cne 'db' -or $Arguments[1] -cne 'query' -or $Arguments[2] -cne '--file' -or $Arguments[3] -cnotin @($writerInspectFile,$writerCloseFile)){throw 'blocked'}
+  }
+  if([bool](Get-Variable -Name ArchiveFixture -ValueOnly -ErrorAction SilentlyContinue)){
+    if($Arguments.Count -ne 4 -or $Arguments[0] -cne 'db' -or $Arguments[1] -cne 'query' -or $Arguments[2] -cne '--file' -or $Arguments[3] -cnotin @($queryFile,$inspectQueryFile,$archiveFile)){throw 'blocked'}
+  }
   # The continuation cannot reach a migration write even if another branch is
   # accidentally changed later. Its scratch workdir contains no migrations.
   if($PostcheckContinuation -and $Arguments[1] -ceq 'push'){throw 'blocked'}
@@ -526,6 +706,23 @@ try {
   $out = Assert-Path $repo 'scripts/db/out' -Directory
   $attemptFile = Join-Path $out 'm03-foundation-dev-migration-attempt.json'
   $latestFile = Join-Path $out 'm03-foundation-dev-migration-latest.json'
+  if($InspectOnly){
+    $inspectExpectedBinding=Assert-FoundationInspectClosed
+    $attemptFile=Join-Path $out ('m03-foundation-inspect-'+$runId+'-attempt.json')
+    $latestFile=Join-Path $out ('m03-foundation-inspect-'+$runId+'-latest.json')
+  }
+  if($WriterClose){
+    $writerPrior=Read-FoundationWriterClosePrior
+    $attemptFile=Join-Path $out 'm03-foundation-writer-close-df4f29ec-e2dc-4d82-a276-62a4e695e6f9-attempt.json'
+    $latestFile=Join-Path $out 'm03-foundation-writer-close-df4f29ec-e2dc-4d82-a276-62a4e695e6f9-latest.json'
+    if((Test-Path -LiteralPath $attemptFile) -or (Test-Path -LiteralPath $latestFile)){Write-Output 'M03_FOUNDATION WRITER_CLOSE_RECORDED. Reconcile the existing fixed Close receipt; no credential read or automatic replay.';exit 1}
+  }
+  if($ArchiveFixture){
+    $archivePrior=Read-FoundationArchivePrior
+    $attemptFile=Join-Path $out 'm03-foundation-archive-df4f29ec-e2dc-4d82-a276-62a4e695e6f9-attempt.json'
+    $latestFile=Join-Path $out 'm03-foundation-archive-df4f29ec-e2dc-4d82-a276-62a4e695e6f9-latest.json'
+    if((Test-Path -LiteralPath $attemptFile) -or (Test-Path -LiteralPath $latestFile)){Write-Output 'M03_FOUNDATION ARCHIVE_RECORDED. Reconcile the existing fixed archive receipt; no credential read or automatic replay.';exit 1}
+  }
   if($PostcheckContinuation){
     $outputSegment=if($ProjectVerifiedContinuation){(Foundation-ProjectVerifiedTechnicalIdentity).outputSegment}else{$postcheckContinuationSegment}
     if($ProjectVerifiedContinuation){$receipt['technicalAttemptOrdinal']=(Foundation-ProjectVerifiedTechnicalIdentity).ordinal}
@@ -560,10 +757,32 @@ try {
   exit 1
 }
 if($CheckOnly -and $ProjectVerifiedContinuation){Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY. Project-verified public sources and approval checked; no credential metadata, private contents or authentication read.';exit 4}
+if($CheckOnly -and $InspectOnly){Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY. Exact dev public sources and physical closed-chain prerequisites checked; no credential metadata, private contents or authentication read.';exit 4}
+if($CheckOnly -and $WriterClose){Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY. Fixed writer Close and actual inspection prerequisites checked; no credential metadata, private contents or authentication read.';exit 4}
+if($CheckOnly -and $ArchiveFixture){Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY. Fixed archive and actual independent closed-window inspection checked; no credential metadata, private contents or authentication read.';exit 4}
 try {
   if ([string]::IsNullOrEmpty($env:LOCALAPPDATA)) { throw 'blocked' }
+  if($InspectOnly -or $WriterClose -or $ArchiveFixture){
+    $null=Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp' -Directory
+    $inspectParentPath=Join-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-acceptance-parent.operation.lock'
+    $inspectParentLock=[IO.File]::Open($inspectParentPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::ReadWrite,[IO.FileShare]::Read)
+    $lockBytes=[Text.Encoding]::UTF8.GetBytes(([ordered]@{kind=$(if($WriterClose){'m03_writer_close_parent'}elseif($ArchiveFixture){'m03_archive_parent'}else{'m03_read_only_inspect_parent'});version=1;processId=$PID}|ConvertTo-Json -Compress))
+    $inspectParentLock.Write($lockBytes,0,$lockBytes.Length);$inspectParentLock.Flush($true)
+    $inspectExpectedBinding=Assert-FoundationInspectClosed
+    . (Assert-Path $repo 'scripts/n8n/windows/Dev-CredentialStore.ps1')
+    if($InspectOnly){Ensure-M03DevReadOnlyHandoff -Kind Admin -CoordinatorLock $inspectParentLock;$inspectMaterialized=$true}
+  }
+  if($WriterClose -or $ArchiveFixture){
+    if($WriterClose){$writerPrior=Read-FoundationWriterClosePrior}else{$archivePrior=Read-FoundationArchivePrior}
+    if($WriterClose){$writerSpec=Get-M03DevCredentialSpec -Kind Writer}else{$writerSpec=Get-M03DevCredentialSpec -Kind Admin}
+    Assert-M03DevPrivateAcl (Get-M03DevCredentialRoot) $true
+    Assert-M03DevPrivateAcl ([IO.Path]::GetDirectoryName($writerSpec.Source)) $true
+    Assert-M03DevPrivateAcl $writerSpec.Source $false
+    $handoff=$writerSpec.Source;$leaseExpires=[DateTime]::UtcNow.AddMinutes(5)
+  }else{
   $handoff = Join-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-foundation-dev-migration-password.dpapi'
   if (-not (Test-Path -LiteralPath $handoff -PathType Leaf)) {
+    if($InspectOnly){throw 'blocked'}
     Write-Output 'M03_FOUNDATION HANDOFF_MISSING. No decryption or authentication attempted.'; exit 2
   }
   $handoff = Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-foundation-dev-migration-password.dpapi'
@@ -572,7 +791,7 @@ try {
   $lease = Read-Json $leaseFile 4096
   Assert-Keys $lease @('version','environment','projectRef','purpose','approvalSha','createdAt','expiresAt')
   if ($lease.version -ne 1 -or $lease.environment -cne 'dev' -or $lease.projectRef -cne $projectRef -or
-      $lease.purpose -cne $(if($ProjectVerifiedContinuation){'m03-foundation-project-verified-continuation-dev:20275b22-b7fe-4737-a9a4-c50c2feadb74'}else{'m03-foundation-phase-a-dev'}) -or $lease.approvalSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or
+      $lease.purpose -cne $(if($InspectOnly){'m03-foundation-inspect-only-dev'}elseif($ProjectVerifiedContinuation){'m03-foundation-project-verified-continuation-dev:20275b22-b7fe-4737-a9a4-c50c2feadb74'}else{'m03-foundation-phase-a-dev'}) -or $lease.approvalSha -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -or
       $lease.createdAt -isnot [string] -or $lease.expiresAt -isnot [string]) { throw 'blocked' }
   $leaseCreated = [DateTime]::ParseExact($lease.createdAt,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
   $leaseExpires = [DateTime]::ParseExact($lease.expiresAt,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
@@ -582,7 +801,14 @@ try {
     if($CheckOnly -and ($ClockAmendment -or $PostcheckContinuation)){Write-Output 'M03_FOUNDATION HANDOFF_LEASE_NOT_READY. Public inputs verified; the unchanged two-hour admin lease does not cover this admission. No private file read, decryption or authentication attempted.';exit 2}
     throw 'blocked'
   }
-} catch { Write-Output 'M03_FOUNDATION HANDOFF_PATH_BLOCKED. No private file read, decryption or authentication attempted.'; exit 1 }
+  }
+} catch {
+  if(($InspectOnly -or $WriterClose -or $ArchiveFixture) -and $null -ne $inspectParentLock){
+    if($inspectMaterialized){foreach($name in @('emr-m03-foundation-dev-migration-password.dpapi','emr-m03-foundation-dev-migration-password.lease.json')){try{[IO.File]::Delete((Join-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) ('Temp/'+$name)))}catch{}}}
+    try{$inspectParentLock.Dispose();[IO.File]::Delete($inspectParentPath)}catch{}
+  }
+  Write-Output 'M03_FOUNDATION HANDOFF_PATH_BLOCKED. No private file read, decryption or authentication attempted.'; exit 1
+}
 if ($CheckOnly) { Write-Output 'M03_FOUNDATION CHECK_ONLY_READY. Exact dev target, public seals and encrypted handoff presence verified; no decryption, TCP connection or authentication attempted.'; exit 0 }
 
 try {
@@ -609,21 +835,32 @@ try {
   Write-NewJson (Join-Path $scratch 'owned.json') ([ordered]@{runId=$runId;projectRef=$projectRef})
   $null = New-Item -ItemType Directory -Path (Join-Path $scratch 'supabase/migrations') -Force
   [IO.File]::WriteAllText((Join-Path $scratch 'supabase/config.toml'),"project_id = `"emr-m03-foundation-dev-migration`"`n[db.seed]`nenabled = false`nsql_paths = []`n")
-  if(-not $PostcheckContinuation){foreach ($migration in $migrations) { [IO.File]::Copy((Assert-Path $repo $migration.file),(Join-Path $scratch $migration.file),$false) }}
+  if(-not $PostcheckContinuation -and -not $InspectOnly -and -not $WriterClose -and -not $ArchiveFixture){foreach ($migration in $migrations) { [IO.File]::Copy((Assert-Path $repo $migration.file),(Join-Path $scratch $migration.file),$false) }}
   $scratchCa = Join-Path $scratch 'supabase-root-2021.crt'
   [IO.File]::Copy($caPath,$scratchCa,$false)
   if ((File-Hash $scratchCa) -cne $caHash) { throw 'blocked' }
-  if(-not $PostcheckContinuation){foreach ($migration in $migrations) { if ((File-Hash (Assert-Path $scratch $migration.file)) -cne $migration.sha256) { throw 'blocked' } }}
+  if(-not $PostcheckContinuation -and -not $InspectOnly -and -not $WriterClose -and -not $ArchiveFixture){foreach ($migration in $migrations) { if ((File-Hash (Assert-Path $scratch $migration.file)) -cne $migration.sha256) { throw 'blocked' } }}
   $historySql = @'
 select jsonb_build_object('current_user',current_user,'session_user',session_user,'database',current_database(),'migrations',(select coalesce(jsonb_agg(jsonb_build_object('version',version,'name',name,'historySha256',encode(extensions.digest(array_to_string(statements,E'\n'),'sha256'),'hex')) order by version),'[]'::jsonb) from supabase_migrations.schema_migrations)) as receipt;
 '@
   $queryFile = Join-Path $scratch 'history.sql'
   [IO.File]::WriteAllText($queryFile,$historySql)
-  $dbUri = 'postgresql://postgres.' + $projectRef + '@' + $poolerHost + ':5432/postgres?sslmode=verify-full&sslrootcert=' + [Uri]::EscapeDataString($scratchCa)
+  if($InspectOnly -or $ArchiveFixture){
+    $inspectQueryFile=Join-Path $scratch 'inspect.sql'
+    [IO.File]::Copy((Assert-Path $repo 'scripts/db/foundation-inspect.sql'),$inspectQueryFile,$false)
+    if((File-Hash $inspectQueryFile) -cne $packet.files.'scripts/db/foundation-inspect.sql'){throw 'blocked'}
+  }
+  if($ArchiveFixture){$archiveFile=Join-Path $scratch 'archive.sql';[IO.File]::WriteAllText($archiveFile,(Foundation-ArchiveFixtureSql $archivePrior))}
+  if($WriterClose){
+    $writerInspectFile=Join-Path $scratch 'writer-inspect.sql';$writerCloseFile=Join-Path $scratch 'writer-close.sql'
+    $writerSql="select jsonb_build_object('currentUser',current_user,'sessionUser',session_user,'database',current_database(),'control',ops.foundation_gateway_admit('df4f29ec-e2dc-4d82-a276-62a4e695e6f9','00000000-0000-4000-8000-000000000021','identity.read','{}','__MODE__')) as writer_receipt;"
+    [IO.File]::WriteAllText($writerInspectFile,$writerSql.Replace('__MODE__','inspect'));[IO.File]::WriteAllText($writerCloseFile,$writerSql.Replace('__MODE__','close'))
+  }
+  $dbUri = 'postgresql://' + $(if($WriterClose){'n8n_writer.'}else{'postgres.'}) + $projectRef + '@' + $poolerHost + ':5432/postgres?sslmode=verify-full&sslrootcert=' + [Uri]::EscapeDataString($scratchCa)
 
   # The only private read is the new purpose-bound foundation DPAPI file. No old administrator,
   # writer, provider or production credential is opened or used.
-  $null = Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-foundation-dev-migration-password.dpapi'
+  if($WriterClose -or $ArchiveFixture){Assert-M03DevPrivateAcl $handoff $false}else{$null = Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-foundation-dev-migration-password.dpapi'}
   if($null -ne $originalPhaseAStart -and [DateTime]::UtcNow -ge $originalPhaseAStart.AddMinutes(50)){throw 'blocked'}
   if($null -ne $clockAmendmentStart -and [DateTime]::UtcNow -ge $clockAmendmentStart.AddMinutes(50)){throw 'blocked'}
   if($null -ne $postcheckContinuationStart -and [DateTime]::UtcNow -ge $postcheckContinuationStart.AddMinutes(50)){throw 'blocked'}
@@ -632,12 +869,31 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
       if($ProjectVerifiedContinuation){$null=Assert-FoundationProjectVerifiedContinuationProcessAncestry $clock}
   $consumed = $true
   $phaseAStart = if($null -ne $originalPhaseAStart){$originalPhaseAStart}elseif($null -ne $clockAmendmentStart){$clockAmendmentStart}elseif($null -ne $postcheckContinuationStart){$postcheckContinuationStart}else{[DateTime]::UtcNow}
-  $secret = ConvertTo-SecureString -String ([IO.File]::ReadAllText($handoff).Trim()) -ErrorAction Stop
+  if($WriterClose -or $ArchiveFixture){$cipherBytes=[IO.File]::ReadAllBytes($handoff);try{Assert-M03DevCipherFraming $cipherBytes;$secret=ConvertTo-SecureString -String ([Text.Encoding]::ASCII.GetString($cipherBytes)) -ErrorAction Stop}finally{[Array]::Clear($cipherBytes,0,$cipherBytes.Length);$cipherBytes=$null}}
+  else{$secret = ConvertTo-SecureString -String ([IO.File]::ReadAllText($handoff).Trim()) -ErrorAction Stop}
   $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
   $password = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
   [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr); $bstr = [IntPtr]::Zero
   $secret.Dispose(); $secret = $null
   if ([string]::IsNullOrEmpty($password)) { throw 'blocked' }
+  if($WriterClose){
+    $read=Invoke-Cli @('db','query','--file',$writerInspectFile) $queryTimeoutMs
+    if($read.started){$receipt.authenticationAttempted=$null}
+    try{$receipt['writerBefore']=Read-FoundationWriterControl $read $writerPrior $false}finally{$read.text=$null}
+    $receipt.authenticationAttempted=$true;$receipt.authenticationVerified=$true
+    $receipt['historyReusedFromInspection']='12b99879-b66c-4aeb-ac22-93b2c2a6eee5'
+    Write-NewJson $attemptFile ([ordered]@{version=1;runId=$runId;projectRef=$projectRef;windowId='df4f29ec-e2dc-4d82-a276-62a4e695e6f9';requestId='00000000-0000-4000-8000-000000000021';purpose='restricted-writer-owned-window-close';priorInspectionRunId='12b99879-b66c-4aeb-ac22-93b2c2a6eee5';createdAt=[DateTime]::UtcNow.ToString('o')})
+    $receipt.writerCloseAttempted=$true
+    $close=Invoke-Cli @('db','query','--file',$writerCloseFile) $queryTimeoutMs
+    $receipt.writerCloseNativeExit=$close.nativeExit
+    try{$null=Read-FoundationWriterControl $close $writerPrior $true;$receipt.writerCloseAcknowledged=$true}catch{}finally{$close.text=$null}
+    if(-not $close.closed){throw 'blocked'}
+    # Read-only reconciliation is safe even when the one Close ACK was lost.
+    # The durable intent is never removed and forbids a second mutation child.
+    $after=Invoke-Cli @('db','query','--file',$writerInspectFile) $queryTimeoutMs
+    try{$receipt['writerAfter']=Read-FoundationWriterControl $after $writerPrior $true}finally{$after.text=$null}
+    $receipt.writerRpcClosed=$true;$receipt.status=if($receipt.writerCloseAcknowledged){'writer_close_verified'}else{'writer_close_reconciled'};$exitCode=0
+  }else{
   $before = Invoke-Cli @('db','query','--file',$queryFile) $queryTimeoutMs
   # A launched command with a failed/ambiguous response does not prove either
   # authentication or its absence. Only validated identity/history proves it.
@@ -645,7 +901,32 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   $receipt.historyBefore = History-State $before
   if ($receipt.historyBefore -in @('baseline','complete')) { $receipt.authenticationAttempted = $true; $receipt.authenticationVerified = $true }
   $before.text = $null
-  if($PostcheckContinuation){
+  if($ArchiveFixture){
+    if($receipt.historyBefore -cne 'complete'){$receipt.status='history_rejected'}
+    else{
+      $read=Invoke-Cli @('db','query','--file',$inspectQueryFile) $queryTimeoutMs
+      try{$beforeArchive=Read-FoundationInspection $read;Assert-FoundationArchiveInspection $beforeArchive $archivePrior $false;$receipt['archiveBefore']=$beforeArchive}finally{$read.text=$null}
+      Write-NewJson $attemptFile ([ordered]@{version=1;runId=$runId;projectRef=$projectRef;windowId='df4f29ec-e2dc-4d82-a276-62a4e695e6f9';competitorId='d51a39f6-fe87-4d17-aee9-3070c45693aa';accountId='bd23314c-591f-4fb7-92fd-b7450634eeb6';purpose='exact-owned-fixture-archive-after-independent-close';priorInspectionRunId='82f55b86-3bc8-42bd-95b4-82039af7b9fc';createdAt=[DateTime]::UtcNow.ToString('o')})
+      $receipt.archiveAttempted=$true;$archive=Invoke-Cli @('db','query','--file',$archiveFile) $queryTimeoutMs
+      $receipt.archiveNativeExit=$archive.nativeExit;$receipt.archiveAcknowledged=$archive.ok -and $archive.closed;$archive.text=$null
+      if(-not $archive.closed){throw 'blocked'}
+      $read=Invoke-Cli @('db','query','--file',$inspectQueryFile) $queryTimeoutMs
+      try{$afterArchive=Read-FoundationInspection $read;Assert-FoundationArchiveInspection $afterArchive $archivePrior $true;$receipt['archiveAfter']=$afterArchive}finally{$read.text=$null}
+      $receipt.fixtureArchived=$true;$receipt.historyAfter='complete';$receipt.status=if($receipt.archiveAcknowledged){'archive_verified'}else{'archive_reconciled'};$exitCode=0
+    }
+  }
+  elseif($InspectOnly){
+    if($receipt.historyBefore -cne 'complete'){$receipt.status='history_rejected'}
+    else{
+      Write-NewJson $attemptFile ([ordered]@{version=1;runId=$runId;projectRef=$projectRef;purpose='fixed-read-only-reconciliation';priorRunId='52cd6a97-a23a-4061-a694-00c50c700b00';createdAt=[DateTime]::UtcNow.ToString('o')})
+      $inspection=Invoke-Cli @('db','query','--file',$inspectQueryFile) $queryTimeoutMs
+      try{$receipt['inspection']=Read-FoundationInspection $inspection}finally{$inspection.text=$null}
+      $receipt['bindingMatchesPriorProvision']=$null
+      if($null -ne $receipt.inspection.window){$receipt.bindingMatchesPriorProvision=$receipt.inspection.window.audience -ceq $inspectExpectedBinding.audience -and $receipt.inspection.window.commitSha -ceq $inspectExpectedBinding.commitSha -and $receipt.inspection.window.deploymentId -ceq $inspectExpectedBinding.deploymentId}
+      $receipt.status='inspection_verified';$receipt.historyAfter='complete';$exitCode=0
+    }
+  }
+  elseif($PostcheckContinuation){
     if($receipt.historyBefore -cne 'complete'){$receipt.status='history_rejected'}
     else{
       Write-NewJson $attemptFile ([ordered]@{version=1;runId=$runId;projectRef=$projectRef;segmentId=$postcheckContinuationSegment;purpose='postcheck-only-continuation';createdAt=[DateTime]::UtcNow.ToString('o')})
@@ -685,6 +966,7 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
     $receipt.phaseAControl = $true
     Invoke-FoundationAdminControl
   }
+  }
 } catch {
   $exitCode=1
   if ($receipt.phaseAControl) { $receipt.status = 'phase_a_control_failed' }
@@ -695,7 +977,7 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   if ($bstr -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
   if ($null -ne $secret) { $secret.Dispose() }
   $password = $null; $secret = $null; $dbUri = $null
-  if ($consumed) {
+  if (-not $WriterClose -and -not $ArchiveFixture -and ($consumed -or $inspectMaterialized) -and (-not $InspectOnly -or $receipt.childrenClosed)) {
     try { [IO.File]::Delete($handoff); $receipt.handoffDeleted = -not (Test-Path -LiteralPath $handoff) } catch { $receipt.handoffDeleted = $false }
     try { [IO.File]::Delete($leaseFile); $receipt.leaseDeleted = -not (Test-Path -LiteralPath $leaseFile) } catch { $receipt.leaseDeleted = $false }
   }
@@ -714,10 +996,16 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
     } catch { $receipt.scratchDeleted = $false }
   }
   if ($null -ne $sessionLock) { try { $sessionLock.Dispose() } catch { $exitCode = 1 } }
-  if (-not $receipt.childrenClosed -or ($consumed -and (-not $receipt.handoffDeleted -or -not $receipt.leaseDeleted)) -or -not $receipt.scratchDeleted) { $exitCode = 1 }
+  if($null -ne $inspectParentLock){
+    try{$inspectParentLock.Dispose();if($receipt.childrenClosed -and $receipt.scratchDeleted -and ($WriterClose -or $ArchiveFixture -or ($receipt.handoffDeleted -and $receipt.leaseDeleted))){[IO.File]::Delete($inspectParentPath)}}catch{$exitCode=1}
+    $receipt['inspectParentLockDeleted']=-not(Test-Path -LiteralPath $inspectParentPath)
+  }
+  if($WriterClose){$receipt.persistentWriterPreserved=Test-Path -LiteralPath $handoff}
+  if($ArchiveFixture){$receipt.persistentAdminPreserved=Test-Path -LiteralPath $handoff}
+  if (-not $receipt.childrenClosed -or (-not $WriterClose -and -not $ArchiveFixture -and $consumed -and (-not $receipt.handoffDeleted -or -not $receipt.leaseDeleted)) -or -not $receipt.scratchDeleted) { $exitCode = 1 }
   $receipt.observedAt = [DateTime]::UtcNow.ToString('o')
   try {
-    if($PostcheckContinuation){Write-NewJson $latestFile $receipt}
+    if($PostcheckContinuation -or $InspectOnly -or $WriterClose -or $ArchiveFixture){Write-NewJson $latestFile $receipt}
     else{
       if (Test-Path -LiteralPath $latestFile) { $null = Assert-Path $repo 'scripts/db/out/m03-foundation-dev-migration-latest.json' }
       [IO.File]::WriteAllText($latestFile,($receipt | ConvertTo-Json -Depth 8))

@@ -3,6 +3,7 @@ import { before, after, describe, test } from 'node:test';
 import { spawnSync, spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
 const path = new URL('../assert/m03_smoke_reactivate_project_verified.sql', import.meta.url);
 const competitor = 'd51a39f6-fe87-4d17-aee9-3070c45693aa';
@@ -11,6 +12,29 @@ const segment = '20275b22-b7fe-4737-a9a4-c50c2feadb74';
 const auditSegment = segment + ':technical-2';
 const source = () => readFileSync(path, 'utf8');
 const body = () => source().match(/do \$smoke_reactivate\$[\s\S]*?\$smoke_reactivate\$;/)?.[0];
+function nativeArchiveBody() {
+  const quote = (s) => "'" + s.replaceAll("'", "''") + "'";
+  const consumer = fileURLToPath(new URL('./windows/Invoke-M03FoundationMigrations.ps1', import.meta.url));
+  const control = fileURLToPath(new URL('./windows/Foundation-AdminControl.ps1', import.meta.url));
+  const code = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
+$repo=${quote(process.cwd())};$PostcheckContinuation=$false;$RemainingContinuation=$false;$StartupReplacement=$false;$ProjectVerifiedContinuation=$false
+function Assert-Path($Root,$Relative){return Join-Path $Root $Relative}
+foreach($entry in @(@{File=${quote(control)};Names=@('Foundation-Literal','Foundation-FixtureSql')},@{File=${quote(consumer)};Names=@('Foundation-ArchiveFixtureSql')})){
+ $errors=$null;$tokens=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($entry.File,[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'ARCHIVE_SOURCE_PARSE'}
+ foreach($name in $entry.Names){$matches=@($ast.FindAll({param($item)$item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true));if($matches.Count -ne 1){throw 'ARCHIVE_SOURCE_FUNCTION'};Invoke-Expression $matches[0].Extent.Text}
+}
+$expected=[pscustomobject]@{audience='https://everyone-market-researcher-synthetic.vercel.app';commitSha='f42930f90c2de43c84f61ad6d966d0ee6074d70e';deploymentId='dpl_synthetic';closedAt='2026-10-23T16:25:54.94722+00:00'}
+Write-Output (Foundation-ArchiveFixtureSql $expected)
+`;
+  const result = spawnSync(
+    'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
+    ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(code, 'utf16le').toString('base64')],
+    { env: env(), encoding: 'utf8', timeout: 15000, windowsHide: true, maxBuffer: 131072 },
+  );
+  assert.equal(result.status, 0, 'NATIVE_ARCHIVE_CONVERTER');
+  assert.equal(result.stderr, '');
+  return result.stdout.trim();
+}
 const env = () =>
   Object.fromEntries(
     [
@@ -173,6 +197,29 @@ describe(
         new URL('../../supabase/migrations/20261017172934_auth_rls_views.sql', import.meta.url),
         'utf8',
       );
+      const gateway = readFileSync(
+        new URL('../../supabase/migrations/20261018232014_m03_foundation_gateway.sql', import.meta.url),
+        'utf8',
+      );
+      const boundary = readFileSync(
+        new URL(
+          '../../supabase/migrations/20261018233338_m03_foundation_boundary_hardening.sql',
+          import.meta.url,
+        ),
+        'utf8',
+      );
+      const gatewayTable = (n) => {
+        const match = gateway.match(new RegExp('create table ops\\.' + n + ' \\([\\s\\S]*?\\n\\);'));
+        assert.ok(match, n);
+        return match[0];
+      };
+      const gatewayFunction = (sql, n) => {
+        const match = sql.match(
+          new RegExp('create (?:or replace )?function ops\\.' + n + '\\([\\s\\S]*?\\n\\$\\$;'),
+        );
+        assert.ok(match, n);
+        return match[0];
+      };
       const table = (n) => {
         const match = core.match(
           new RegExp('create table ' + n.replace('.', '\\.') + ' \\([\\s\\S]*?\\n\\);'),
@@ -187,7 +234,7 @@ describe(
       create extension pgcrypto with schema extensions;create extension unaccent with schema extensions;
       ${typeSql.match(/create type app\.[\s\S]*?;/g).join('\n')}
       ${table('app.competitors')}${table('app.competitor_accounts')}${table('ops.audit_log')}${trigger}
-      create role synthetic_denied;
+      create role synthetic_denied;create role n8n_writer login;
       create table app.items(id uuid,competitor_id uuid,account_id uuid,locked_fields text[]);
       create table app.campaigns(id uuid,production_competitor_id uuid,locked_by_human boolean);
       create table app.website_pages(account_id uuid,competitor_id uuid);
@@ -195,7 +242,18 @@ describe(
       create table app.stats_daily(competitor_id uuid);
       create table ops.scrape_runs(id uuid,status text);create table ops.scrape_run_accounts(run_id uuid,account_id uuid);
       create table ops.apify_runs(apify_run_id text,account_ids uuid[],processed_at timestamptz);
-      create table ops.cost_ledger(competitor_id uuid,meta jsonb not null default '{}');
+      create table ops.cost_ledger(competitor_id uuid,meta jsonb not null default '{}',cost_usd numeric not null default 0);
+      ${gatewayTable('foundation_gateway_rate_windows')}
+      ${gatewayTable('foundation_gateway_requests')}
+      ${gatewayTable('foundation_gateway_leases')}
+      create table ops.apify_launch_approvals(window_id uuid,closed_at timestamptz,expires_at timestamptz,actor_build text,max_total_charge_usd numeric,batch_max_usd numeric);
+      create table ops.apify_launch_admissions(window_id uuid);
+      ${gatewayFunction(gateway, 'foundation_gateway_response')}
+      ${gatewayFunction(boundary, 'foundation_gateway_validate')}
+      ${gatewayFunction(boundary, 'foundation_gateway_admit')}
+      revoke all on function ops.foundation_gateway_response(uuid,text,text,text,jsonb,boolean),ops.foundation_gateway_validate(uuid,uuid,text,jsonb),ops.foundation_gateway_admit(uuid,uuid,text,jsonb,text) from public;
+      grant usage on schema ops to n8n_writer;
+      grant execute on function ops.foundation_gateway_admit(uuid,uuid,text,jsonb,text) to n8n_writer;
       create table ingest.raw_items(account_id uuid);
       ${['q_ai_extract', 'a_ai_extract', 'q_embed', 'a_embed', 'q_media', 'a_media'].map((n) => `create table pgmq.${n}(msg_id bigint,message jsonb);`).join('\n')}
       insert into app.competitors(company_code,slug,name,priority_tier)select 'C'||lpad(n::text,3,'0'),'baseline-'||n,'Synthetic baseline '||n,'adjacent' from generate_series(0,284)n;
@@ -252,6 +310,97 @@ describe(
       ${verification}rollback;${snapshot}`);
       assert.deepEqual(JSON.parse(result), baseline, 'ROLLBACK_PRESERVES_BASELINE');
     }
+    test('fixed reconciliation SELECT executes under PostgreSQL READ ONLY and leaves the actual baseline unchanged', () => {
+      const inspection = readFileSync(new URL('./foundation-inspect.sql', import.meta.url), 'utf8');
+      assert.equal(
+        /\b(?:insert|update|delete|truncate|alter|grant|revoke|call|do)\b/i.test(
+          inspection.replace(/--[^\n]*/g, ''),
+        ),
+        false,
+      );
+      const result = psql(`begin read only;${inspection}rollback;${snapshot}`).split('\n');
+      const value = JSON.parse(result[0]);
+      assert.equal(value.kind, 'm03_foundation_inspection');
+      assert.equal(value.identity, true);
+      assert.equal(value.window, null);
+      assert.equal(value.approval, null);
+      assert.equal(value.requestCount, 0);
+      assert.equal(value.costUsd, 0);
+      assert.equal(value.fixture.competitorArchived, true);
+      assert.equal(value.audits.creationCount, 1);
+      assert.equal(value.audits.technical2Count, 0);
+      assert.deepEqual(JSON.parse(result.at(-1)), baseline);
+      // This is an actual server SQLSTATE assertion, not a generic failure.
+      psql(
+        `begin read only;do $deny$begin begin update app.competitors set name=name;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'25006' then raise exception 'WRONG_READ_ONLY_DENIAL';end if;end;end;$deny$;rollback;`,
+      );
+      assert.deepEqual(JSON.parse(psql(snapshot)), baseline);
+    });
+    test('actual restricted writer session closes the fixed window once; owner SET ROLE is denied by SQLSTATE42501', () => {
+      const windowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9';
+      const rpc = (mode) =>
+        `ops.foundation_gateway_admit('${windowId}','00000000-0000-4000-8000-000000000021','identity.read','{}','${mode}')`;
+      for (const expired of [false, true]) {
+        const starts = expired
+          ? "transaction_timestamp()-interval '61 minutes'"
+          : "transaction_timestamp()-interval '1 minute'";
+        const expires = expired
+          ? "transaction_timestamp()-interval '1 minute'"
+          : "transaction_timestamp()+interval '59 minutes'";
+        psql(`insert into ops.foundation_gateway_rate_windows(namespace,window_id,project_ref,environment,bound_audience,bound_commit_sha,bound_deployment_id,starts_at,expires_at,admitted_count)values('m03-foundation-dev','${windowId}','zmotjsbzhzjvpelxvxlf','dev','https://everyone-market-researcher-synthetic.vercel.app','f42930f90c2de43c84f61ad6d966d0ee6074d70e','dpl_synthetic',${starts},${expires},1);
+      insert into ops.apify_launch_approvals(window_id,expires_at,actor_build,max_total_charge_usd,batch_max_usd) values('${windowId}',${expires},'0.3.99',1,2);
+      insert into ops.foundation_gateway_leases(window_id,slot) values('${windowId}',1),('${windowId}',2);`);
+        try {
+          psql(`do $deny$begin begin perform ${rpc('close')};raise exception using errcode='P9999';exception when others then if SQLSTATE<>'42501' then raise exception 'OWNER_IDENTITY_DENIAL_WRONG';end if;end;end;$deny$;
+        begin;set local role n8n_writer;do $deny$begin begin perform ${rpc('close')};raise exception using errcode='P9999';exception when others then if SQLSTATE<>'42501' then raise exception 'SET_ROLE_IDENTITY_DENIAL_WRONG';end if;end;end;$deny$;rollback;`);
+          const writer = docker(
+            [
+              'exec',
+              '-i',
+              name,
+              'psql',
+              '-X',
+              '-U',
+              'n8n_writer',
+              '-d',
+              'postgres',
+              '-qAt',
+              '-v',
+              'ON_ERROR_STOP=1',
+            ],
+            `begin;
+        select jsonb_build_object('currentUser',current_user,'sessionUser',session_user,'control',${rpc('inspect')});
+        do $deny$begin begin update ops.foundation_gateway_rate_windows set admitted_count=admitted_count;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'42501' then raise exception 'DIRECT_WRITER_DML_DENIAL_WRONG';end if;end;end;$deny$;
+        select ${rpc('close')};select ${rpc('close')};select ${rpc('inspect')};commit;`,
+          )
+            .split('\n')
+            .map((line) => JSON.parse(line));
+          assert.equal(writer[0].currentUser, 'n8n_writer');
+          assert.equal(writer[0].sessionUser, 'n8n_writer');
+          assert.equal(writer[0].control.window.totalAdmitted, 1);
+          assert.equal(writer[0].control.window.closed, expired);
+          assert.equal(writer[0].control.state, expired ? 'closed' : 'admitted');
+          assert.equal(writer[0].control.code, expired ? 'window_expired' : null);
+          for (const close of writer.slice(1)) {
+            assert.equal(close.state, 'closed');
+            assert.equal(close.code, 'window_closed');
+            assert.equal(close.window.closed, true);
+            assert.equal(close.window.totalAdmitted, 2);
+          }
+          const owner = JSON.parse(
+            psql(
+              `select jsonb_build_object('count',admitted_count,'closeCount',close_count,'closed',closed_at is not null,'approvalClosed',(select closed_at is not null from ops.apify_launch_approvals where window_id='${windowId}')) from ops.foundation_gateway_rate_windows where window_id='${windowId}';`,
+            ),
+          );
+          assert.deepEqual(owner, { count: 2, closeCount: 1, closed: true, approvalClosed: true });
+        } finally {
+          psql(
+            `delete from ops.foundation_gateway_leases where window_id='${windowId}';delete from ops.apify_launch_approvals where window_id='${windowId}';delete from ops.foundation_gateway_rate_windows where window_id='${windowId}';`,
+          );
+        }
+      }
+      assert.deepEqual(JSON.parse(psql(snapshot)), baseline);
+    });
     test('exact archived fixture becomes active with one separate audit; only status/normal competitor timestamp changes', () =>
       runCase(
         `create temporary table saved_audits as select to_jsonb(l) as value from ops.audit_log l;create temporary table saved as select to_jsonb(c) as c,to_jsonb(a) as a from app.competitors c join app.competitor_accounts a on a.competitor_id=c.id where c.id='${competitor}';`,
@@ -605,6 +754,43 @@ describe(
       psql(`begin;${settings}set local emr.smoke_technical_ordinal='3';${body()}
         do $verify$begin if (select count(*) from ops.audit_log)<>5 or not exists(select 1 from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}:technical-3') then raise exception 'CONTIGUOUS_TECHNICAL_AUDIT_MISSING';end if;end;$verify$;rollback;`);
       assert.deepEqual(JSON.parse(psql(snapshot)), afterSecond);
+    });
+    test('native converted archive preserves data and refuses changed closure, work or audit state before status updates', () => {
+      const archive = nativeArchiveBody();
+      const saved = JSON.parse(psql(snapshot));
+      const window = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9';
+      const setup = `begin;update app.competitors set status='active' where id='${competitor}';update app.competitor_accounts set status='active' where id='${account}';
+      insert into ops.foundation_gateway_rate_windows(namespace,window_id,project_ref,environment,bound_audience,bound_commit_sha,bound_deployment_id,starts_at,expires_at,closed_at,admitted_count,close_count)values('m03-foundation-dev','${window}','zmotjsbzhzjvpelxvxlf','dev','https://everyone-market-researcher-synthetic.vercel.app','f42930f90c2de43c84f61ad6d966d0ee6074d70e','dpl_synthetic','2026-10-23T15:47:55.265665+00:00','2026-10-23T16:47:55.265665+00:00','2026-10-23T16:25:54.94722+00:00',2,1);
+      insert into ops.apify_launch_approvals(window_id,closed_at,expires_at,actor_build,max_total_charge_usd,batch_max_usd)values('${window}','2026-10-23T16:25:54.94722+00:00','2026-10-23T16:47:55.265665+00:00','0.3.99',1,2);
+      insert into ops.foundation_gateway_leases(window_id,slot)values('${window}',1),('${window}',2);
+      insert into ops.foundation_gateway_requests(window_id,request_id,operation,payload_sha256,state,lease_expires_at,completed_at,result)values('${window}','00000000-0000-4000-8000-000000000001','identity.read',repeat('0',64),'completed',clock_timestamp(),clock_timestamp(),'{}');`;
+      const changes = [
+        ['pass', ''],
+        ['55000', `update ops.foundation_gateway_rate_windows set closed_at=null,close_count=0;`],
+        ['55000', `update ops.foundation_gateway_rate_windows set bound_deployment_id='dpl_other';`],
+        [
+          '55000',
+          `update ops.foundation_gateway_requests set state='reserved',completed_at=null,result=null;`,
+        ],
+        [
+          '55000',
+          `insert into ops.apify_runs(apify_run_id,account_ids)values('synthetic',array['${account}'::uuid]);`,
+        ],
+        [
+          '55000',
+          `insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id)values('user','synthetic-human','edit','competitor','${competitor}');`,
+        ],
+      ];
+      for (const [expected, change] of changes) {
+        const verify =
+          expected === 'pass'
+            ? `if (select status from app.competitors where id='${competitor}')<>'archived' or (select status from app.competitor_accounts where id='${account}')<>'paused' or (select count(*) from ops.audit_log)<>4 or (select count(*) from app.items)<>0 then raise exception 'ARCHIVE_EXPECTATION';end if;`
+            : 'null;';
+        const result = psql(
+          `${setup}${change}do $archive_case$begin begin execute $archive_body$${archive}$archive_body$;${expected === 'pass' ? 'null;' : "raise exception using errcode='P9999';"}exception when others then ${expected === 'pass' ? 'raise;' : `if SQLSTATE<>'${expected}' then raise exception 'ARCHIVE_DENIAL_STATE_%',SQLSTATE;end if;`}end;${verify}end;$archive_case$;rollback;${snapshot}`,
+        );
+        assert.deepEqual(JSON.parse(result), saved, 'ARCHIVE_ROLLBACK_PRESERVES_ALL_DATA');
+      }
     });
   },
 );

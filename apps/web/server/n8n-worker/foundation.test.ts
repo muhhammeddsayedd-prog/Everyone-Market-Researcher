@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 import { createFoundationHandler, foundationConfig } from './foundation';
 import { createHash } from 'node:crypto';
-import { foundationWindowId } from '@emr/shared';
+import { foundationWindowId, foundationSmokeInput } from '@emr/shared';
 const token = 'synthetic_token_only_local_1234567890';
 const audience = 'https://everyone-market-researcher-test.vercel.app';
 const env = {
@@ -45,6 +45,57 @@ const request = (body: unknown = input, path = '/api/internal/n8n/foundation') =
     body: JSON.stringify(body),
   });
 describe('closed foundation deployment admission', () => {
+  it('selects only a reviewed source-known dev window and rejects a receipt from another known window', async () => {
+    const fresh = '38b3708d-61b0-41d2-8170-5ed91c66b4dc';
+    expect(foundationConfig({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: fresh }).windowId).toBe(fresh);
+    expect(() => foundationConfig({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: requestId })).toThrow(
+      'unavailable',
+    );
+    const dispatch = vi.fn(async () => ({
+      state: 'completed',
+      code: null,
+      operation: 'run.start',
+      replayed: false,
+      result: { run_id: requestId },
+      window,
+    }));
+    const handle = createFoundationHandler({
+      environment: () => ({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: fresh }),
+      dispatch,
+      log: vi.fn(),
+    });
+    const response = await handle(request());
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ requestId, error: { code: 'outcome_unknown' } });
+  });
+  it('rejects launch arguments for another reviewed window before dispatch', async () => {
+    const dispatch = vi.fn();
+    const handle = createFoundationHandler({ environment: () => env, dispatch, log: vi.fn() });
+    const response = await handle(
+      request({
+        version: 1,
+        requestId,
+        operation: 'launch.authorize',
+        args: {
+          launch: {
+            window_id: '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+            launch_id: requestId,
+            run_id: requestId,
+            account_id: requestId,
+            execution_id: '42',
+            actor_id: 'aYG0l9s7dbB7j3gbS',
+            actor_build: '0.3.99',
+            input: foundationSmokeInput,
+            memory_mb: 1024,
+            timeout_seconds: 300,
+            max_total_charge_usd: 1,
+          },
+        },
+      }),
+    );
+    expect(response.status).toBe(400);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
   it('requires separate variables and cannot reuse the closed GW01 window or run in production', () => {
     expect(foundationConfig(env)).toMatchObject({ windowId: foundationWindowId, audience });
     for (const patch of [

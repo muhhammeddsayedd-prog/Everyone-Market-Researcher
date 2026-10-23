@@ -8,6 +8,8 @@ import {
   createFoundationLiveProviderReader,
   createFoundationLiveGatewayProbe,
 } from './foundation-live-runtime-transport.mjs';
+import * as liveTransport from './foundation-live-runtime-transport.mjs';
+import { nativeWriterClient } from './gw01-writer.mjs';
 
 function plan() {
   const bindings = JSON.parse(
@@ -264,4 +266,287 @@ test('gateway probes correlate durable request IDs and never send Machine auth o
   assert.equal(f.options[1].headers.Authorization, undefined);
   assert.deepEqual(f.t.state(), { pendingRequests: 0, unclosedResponses: 0 });
   f.t.close();
+});
+
+function writerCloseFixture({
+  fault,
+  prior = [],
+  append,
+  endHangs = false,
+  destroyCloses = true,
+  windowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+} = {}) {
+  const rows = [],
+    queries = [];
+  let nativeClosed = false,
+    closed = false,
+    ends = 0,
+    clients = 0;
+  const binding = {
+    audience: 'https://everyone-market-researcher-synthetic-close.vercel.app',
+    sourceCommitSha: 'a'.repeat(40),
+    deploymentId: 'dpl_SyntheticClose',
+  };
+  const identity = () => ({
+    currentUser: 'n8n_writer',
+    sessionUser: 'n8n_writer',
+    database: 'postgres',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+  });
+  const receipt = () => ({
+    state: closed ? 'closed' : 'admitted',
+    code: closed ? 'window_closed' : null,
+    result: null,
+    replayed: false,
+    operation: 'identity.read',
+    window: {
+      id: windowId,
+      startsAt: null,
+      expiresAt: null,
+      closed,
+      totalAdmitted: closed ? 1 : 0,
+      boundAudience: binding.audience,
+      boundCommitSha: binding.sourceCommitSha,
+      boundDeploymentId: binding.deploymentId,
+    },
+  });
+  const client = new EventEmitter();
+  client.connect = async () => {};
+  client.query = async (text, values) => {
+    queries.push({ text, values });
+    const mode = values?.[2];
+    if (mode === 'close') {
+      assert.equal(
+        rows.some((r) => r.event === 'foundation_writer_close_intent'),
+        true,
+      );
+      closed = true;
+    }
+    const value = values ? { receipt: receipt() } : identity();
+    const changed = fault?.({ mode, value, queries });
+    if (changed?.then) return await changed;
+    return { rows: [changed ?? value] };
+  };
+  const finish = () => {
+    nativeClosed = true;
+    client.emit('end');
+  };
+  client.end = () => {
+    ends++;
+    if (endHangs) return new Promise(() => {});
+    finish();
+    return Promise.resolve();
+  };
+  client.connection = {
+    stream: {
+      destroy() {
+        if (destroyCloses) finish();
+      },
+    },
+  };
+  const t = liveTransport.createFoundationLiveWriterCloser(
+    {
+      password: 'SYNTHETIC_PRIVATE_WRITER_CLOSE',
+      ...binding,
+      windowId,
+      deadlineAt: Date.now() + 60000,
+      previousEvents: prior,
+      append:
+        append ??
+        ((r) => {
+          rows.push(r);
+        }),
+    },
+    {
+      createClient(password) {
+        assert.equal(password, 'SYNTHETIC_PRIVATE_WRITER_CLOSE');
+        clients++;
+        return client;
+      },
+      timeoutMs: 15,
+      closeTimeoutMs: 5,
+    },
+  );
+  return {
+    t,
+    rows,
+    queries,
+    binding,
+    clients: () => clients,
+    ends: () => ends,
+    nativeClosed: () => nativeClosed,
+  };
+}
+
+test('restricted Writer Close verifies identity/binding, durably admits once and awaits native end', async () => {
+  const f = writerCloseFixture();
+  const result = await f.t.closeWindow();
+  assert.deepEqual(result, {
+    identityVerified: true,
+    bindingVerified: true,
+    closeAttempted: true,
+    closeAcknowledged: true,
+    closeVerified: true,
+    connectionClosed: true,
+  });
+  assert.equal(f.clients(), 1);
+  assert.equal(f.ends(), 1);
+  assert.equal(f.nativeClosed(), true);
+  assert.deepEqual(
+    f.queries.map((q) => q.values?.[2] ?? 'identity'),
+    ['identity', 'inspect', 'close', 'identity', 'inspect'],
+  );
+  assert.equal(f.queries.filter((q) => q.values?.[2] === 'close').length, 1);
+  assert.equal(f.rows[0].event, 'foundation_writer_close_intent');
+  assert.equal(f.rows[1].event, 'foundation_writer_close_verified');
+  assert.equal(JSON.stringify({ result, rows: f.rows }).includes('SYNTHETIC_PRIVATE_WRITER_CLOSE'), false);
+  assert.deepEqual(await f.t.closeWindow(), result);
+  assert.deepEqual(f.t.state(), { pendingRequests: 0, unclosedResponses: 0 });
+});
+
+test('Writer Close refuses wrong actual login or binding before durable mutation intent', async () => {
+  for (const wrong of ['identity', 'binding']) {
+    const f = writerCloseFixture({
+      fault({ mode, value }) {
+        if (wrong === 'identity' && mode === undefined) value.sessionUser = 'postgres';
+        if (wrong === 'binding' && mode === 'inspect') value.receipt.window.boundDeploymentId = 'dpl_Foreign';
+      },
+    });
+    const result = await f.t.closeWindow();
+    assert.equal(result.closeVerified, false);
+    assert.equal(result.connectionClosed, true);
+    assert.equal(f.rows.length, 0);
+    assert.equal(
+      f.queries.some((q) => q.values?.[2] === 'close'),
+      false,
+    );
+  }
+});
+
+test('lost Writer Close acknowledgement reconciles by inspect without replaying the mutation', async () => {
+  const f = writerCloseFixture({
+    fault({ mode }) {
+      if (mode === 'close') throw Error('SYNTHETIC_PRIVATE_PASSWORD_URL');
+    },
+  });
+  const result = await f.t.closeWindow();
+  assert.equal(result.closeAcknowledged, false);
+  assert.equal(result.closeVerified, true);
+  assert.equal(f.queries.filter((q) => q.values?.[2] === 'close').length, 1);
+  assert.equal(JSON.stringify(result).includes('SYNTHETIC_PRIVATE_PASSWORD_URL'), false);
+});
+
+test('existing durable Close intent permits read-only reconciliation only; async append never authorizes RPC', async () => {
+  const first = writerCloseFixture();
+  await first.t.closeWindow();
+  const f = writerCloseFixture({ prior: [first.rows[0]] });
+  const result = await f.t.closeWindow();
+  assert.equal(result.closeVerified, false);
+  assert.equal(result.closeAttempted, false);
+  assert.equal(
+    f.queries.some((q) => q.values?.[2] === 'close'),
+    false,
+  );
+  const asyncIntent = writerCloseFixture({ append: async () => {} });
+  assert.equal((await asyncIntent.t.closeWindow()).closeVerified, false);
+  assert.equal(
+    asyncIntent.queries.some((q) => q.values?.[2] === 'close'),
+    false,
+  );
+});
+
+test('Writer Close never accepts expired-only state as permanent closure and requires post-RPC proof', async () => {
+  const f = writerCloseFixture({
+    fault({ mode, value, queries }) {
+      if (mode === 'inspect' && !queries.some((q) => q.values?.[2] === 'close')) {
+        value.receipt.state = 'closed';
+        value.receipt.code = 'window_expired';
+        value.receipt.window.closed = true;
+      }
+    },
+  });
+  assert.equal((await f.t.closeWindow()).closeVerified, true);
+  assert.equal(f.queries.filter((q) => q.values?.[2] === 'close').length, 1);
+  const badPost = writerCloseFixture({
+    fault({ mode, value, queries }) {
+      if (mode === 'inspect' && queries.some((q) => q.values?.[2] === 'close'))
+        value.receipt.window.closed = false;
+    },
+  });
+  assert.equal((await badPost.t.closeWindow()).closeVerified, false);
+});
+
+test('Writer Close bounds physical end and retains transport authority when native closure is unknown', async () => {
+  const forced = writerCloseFixture({ endHangs: true });
+  assert.equal((await forced.t.closeWindow()).connectionClosed, true);
+  assert.deepEqual(forced.t.state(), { pendingRequests: 0, unclosedResponses: 0 });
+  const unknown = writerCloseFixture({ endHangs: true, destroyCloses: false });
+  const result = await unknown.t.closeWindow();
+  assert.equal(result.connectionClosed, false);
+  assert.equal(result.closeVerified, false);
+  assert.equal(
+    unknown.rows.some((r) => r.event === 'foundation_writer_close_verified'),
+    false,
+  );
+  unknown.t.close();
+  assert.deepEqual(unknown.t.state(), { pendingRequests: 0, unclosedResponses: 1 });
+  assert.equal(unknown.ends(), 1);
+});
+
+test('Writer Close query timeout and credential-bearing errors are bounded fixed refusals before admission', async () => {
+  for (const fault of [
+    () => {
+      throw Error('postgres://private-user:synthetic-password-writer@example.invalid');
+    },
+    () => new Promise(() => {}),
+  ]) {
+    const f = writerCloseFixture({ fault });
+    const result = await f.t.closeWindow();
+    assert.equal(result.closeAttempted, false);
+    assert.equal(result.connectionClosed, true);
+    assert.equal(f.rows.length, 0);
+    assert.equal(JSON.stringify(result).includes('synthetic-password-writer'), false);
+    assert.deepEqual(f.t.state(), { pendingRequests: 0, unclosedResponses: 0 });
+  }
+});
+
+test('Writer Close refuses duplicate or foreign durable intents before constructing a Client', async () => {
+  const f = writerCloseFixture();
+  await f.t.closeWindow();
+  for (const prior of [[f.rows[0], f.rows[0]], [{ ...f.rows[0], deploymentId: 'dpl_Foreign' }]])
+    assert.throws(() => writerCloseFixture({ prior }), /FOUNDATION_LIVE_MANAGEMENT_BLOCKED/);
+});
+
+test('Writer Close permits exactly the two reviewed window identities without reusing historical Close intent', async () => {
+  const old = writerCloseFixture();
+  await old.t.closeWindow();
+  const fresh = writerCloseFixture({
+    windowId: '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+    prior: [old.rows[0]],
+  });
+  assert.equal((await fresh.t.closeWindow()).closeVerified, true);
+  assert.equal(
+    fresh.queries.every((q) => !q.values || q.values[0] === '38b3708d-61b0-41d2-8170-5ed91c66b4dc'),
+    true,
+  );
+  assert.throws(
+    () => writerCloseFixture({ windowId: '11111111-1111-4111-8111-111111111111' }),
+    /FOUNDATION_LIVE_MANAGEMENT_BLOCKED/,
+  );
+});
+
+test('reused native Writer factory pins only the existing strict dev session connection without connecting', async () => {
+  const c = nativeWriterClient('SYNTHETIC_NATIVE_WRITER_NOT_USED');
+  assert.equal(c.host, 'aws-1-eu-central-1.pooler.supabase.com');
+  assert.equal(c.port, 5432);
+  assert.equal(c.database, 'postgres');
+  assert.equal(c.user, 'n8n_writer.zmotjsbzhzjvpelxvxlf');
+  assert.equal(c.ssl.rejectUnauthorized, true);
+  assert.equal(c.ssl.minVersion, 'TLSv1.2');
+  assert.equal(typeof c.ssl.checkServerIdentity, 'function');
+  assert.equal(c.ssl.servername, c.host);
+  assert.equal(c.connectionParameters.statement_timeout, 8000);
+  assert.equal(c.connectionParameters.query_timeout, 10000);
+  assert.equal(c._connected, false);
+  await c.end();
 });

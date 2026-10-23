@@ -12,6 +12,7 @@ import { createFoundationLiveMcpBridge } from './foundation-live-runtime-mcp.mjs
 import {
   createFoundationLiveProviderReader,
   createFoundationLiveGatewayProbe,
+  createFoundationLiveWriterCloser,
 } from './foundation-live-runtime-transport.mjs';
 import {
   createFoundationLiveSetup,
@@ -38,6 +39,10 @@ import {
 } from './foundation-control-state.mjs';
 import { createFoundationNativeCleanup } from './foundation-native-cleanup.mjs';
 import { foundationAcceptancePlan } from '../../n8n/foundation/materialize-acceptance-case.mjs';
+import {
+  foundationRuntimeCheckpoint,
+  foundationRuntimeBaselineFailureCodes,
+} from './foundation-runtime-checkpoint.mjs';
 import { createApifyRecoveryRuntime } from '../../packages/shared/src/n8n-apify-recovery.ts';
 import {
   verifyFoundationLiveZeroSetup,
@@ -84,6 +89,32 @@ const exact = (v, keys) =>
   !Array.isArray(v) &&
   Object.keys(v).length === keys.length &&
   keys.every((k) => Object.hasOwn(v, k));
+export function projectFoundationBaselineDiagnostic(runtime) {
+  try {
+    const value = runtime?.diagnostics?.();
+    if (
+      !exact(value, ['version', 'workflowKey', 'failedChecks', 'components']) ||
+      value.version !== 1 ||
+      !Object.hasOwn(foundationRuntimeCheckpoint.workflows, value.workflowKey) ||
+      !Array.isArray(value.failedChecks) ||
+      value.failedChecks.length > foundationRuntimeBaselineFailureCodes.length ||
+      value.failedChecks.some((code) => !foundationRuntimeBaselineFailureCodes.includes(code)) ||
+      !exact(value.components, ['nameEqual', 'nodesEqual', 'connectionsEqual', 'settingsEqual']) ||
+      Object.values(value.components).some((v) => typeof v !== 'boolean')
+    )
+      return {};
+    return {
+      baselineWorkflowKey: value.workflowKey,
+      baselineFailureCodes: [...new Set(value.failedChecks)],
+      baselineNameEqual: value.components.nameEqual,
+      baselineNodesEqual: value.components.nodesEqual,
+      baselineConnectionsEqual: value.components.connectionsEqual,
+      baselineSettingsEqual: value.components.settingsEqual,
+    };
+  } catch {
+    return {};
+  }
+}
 const setupFailureStages = new Set([
   'not_started',
   'starting',
@@ -168,6 +199,114 @@ const selected = new Map(
     .cases.filter((c) => c.recommendedLive)
     .map((c) => [c.id, c]),
 );
+
+const replayCountKeys = Object.freeze([
+  'items',
+  'rawSnapshots',
+  'aiExtractQueue',
+  'embedQueue',
+  'mediaQueue',
+  'costEntries',
+]);
+const replayHashKeys = Object.freeze(['itemsSha256', 'rawSnapshotsSha256', 'queuesSha256', 'costsSha256']);
+const replayKeys = Object.freeze([...replayCountKeys, ...replayHashKeys]);
+function checkedReplaySnapshot(value) {
+  try {
+    if (!exact(value, replayKeys) || Reflect.ownKeys(value).length !== replayKeys.length) fail();
+    const descriptors = Object.getOwnPropertyDescriptors(value),
+      normalized = {};
+    for (const key of replayKeys) {
+      const d = descriptors[key];
+      if (!d || !Object.hasOwn(d, 'value')) fail();
+      const v = d.value;
+      if (
+        replayCountKeys.includes(key)
+          ? !Number.isSafeInteger(v) || v < 0
+          : typeof v !== 'string' || !/^[a-f0-9]{64}$/.test(v)
+      )
+        fail();
+      normalized[key] = v;
+    }
+    return Object.freeze(normalized);
+  } catch {
+    fail();
+  }
+}
+export function verifyFoundationLiveReplaySnapshots(before, after) {
+  const a = checkedReplaySnapshot(before),
+    b = checkedReplaySnapshot(after);
+  if (replayKeys.some((key) => a[key] !== b[key])) fail();
+  return true;
+}
+export async function verifyFoundationLiveCallbackSqlCase({
+  caseId,
+  readSnapshot,
+  start,
+  cleanup,
+  append,
+  now = Date.now,
+} = {}) {
+  if (
+    ![
+      'callback.unknown',
+      'callback.equal_replay',
+      'callback.concurrent_pair',
+      'callback.recovery_drill',
+    ].includes(caseId) ||
+    [readSnapshot, start, cleanup, append, now].some((fn) => typeof fn !== 'function')
+  )
+    fail();
+  let before, r;
+  try {
+    // Validate before invoking a callback transport/native admission. Undefined
+    // or equal malformed values are never evidence of a no-op.
+    before = checkedReplaySnapshot(await readSnapshot());
+    r = await start();
+    if (
+      !r ||
+      r.caseId !== caseId ||
+      !Array.isArray(r.executionIds) ||
+      r.executionIds.length > 120 ||
+      r.executionIds.some((id) => typeof id !== 'string' || !/^[1-9][0-9]{0,31}$/.test(id))
+    )
+      fail();
+  } catch {
+    fail();
+  }
+  const result = (status) => ({
+    status,
+    caseId,
+    executionIds: [...r.executionIds],
+    residual: status !== 'native_settled_and_cleaned',
+  });
+  if (r.state !== 'native_settled') return result('native_unresolved');
+  let sqlVerified = false;
+  try {
+    verifyFoundationLiveReplaySnapshots(before, await readSnapshot());
+    const written = append({
+      event: 'callback_replay_sql_parity_verified',
+      caseId,
+      countsUnchanged: true,
+      hashesUnchanged: true,
+      at: new Date(now()).toISOString(),
+    });
+    if (written !== undefined) {
+      if (written && typeof written.then === 'function') Promise.resolve(written).catch(() => {});
+      fail();
+    }
+    sqlVerified = true;
+  } catch {
+    /* SQL/evidence failure does not skip cleanup of settled native work. */
+  }
+  let cleaned = false;
+  try {
+    cleaned = (await cleanup(caseId)) === true;
+  } catch {
+    /* Fixed residual classification only. */
+  }
+  if (!sqlVerified) return result('sql_acceptance_unresolved');
+  return result(cleaned ? 'native_settled_and_cleaned' : 'cleanup_unresolved');
+}
 
 // Fixed post-settlement SQL assertion: no actor, new input, price, SQL string or
 // provider ID can be supplied independently of the genuine native/SQL proof.
@@ -392,6 +531,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     cleanup,
     provider,
     gateway,
+    writerCloser,
     nativeTransport,
     fixture,
     preflight,
@@ -453,6 +593,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     ...(adminStartupFailure
       ? { code: 'FOUNDATION_ADMIN_' + adminStartupFailure.diagnostic.toUpperCase() }
       : {}),
+    ...projectFoundationBaselineDiagnostic(runtime),
     ...extra,
   });
   const bindingFor = (key) =>
@@ -624,6 +765,20 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       });
       fail();
     }
+    writerCloser = (dependencies.createWriterCloser ?? createFoundationLiveWriterCloser)(
+      {
+        windowId,
+        password: input.writerPassword,
+        audience: deployment.audience,
+        sourceCommitSha: input.sourceCommitSha,
+        deploymentId: deployment.deploymentId,
+        deadlineAt,
+        previousEvents: ownerPreflight.previousEvents,
+        append: ownerPreflight.append,
+      },
+      dependencies.writerTransport ?? {},
+    );
+    budget.attachTransport(writerCloser);
     provisionAttempted = true;
     const provision = await admin.provision({
       audience: deployment.audience,
@@ -840,7 +995,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     const receipt = await runtime.saveCase(caseId, options);
     if (receipt.status !== 'case_draft_verified') fail();
     latest.set(spec.workflowKey, receipt);
-    const before = spec.requiresFirstRunEvidence ? await admin.replaySnapshot() : null;
+    const before = spec.requiresFirstRunEvidence ? checkedReplaySnapshot(await admin.replaySnapshot()) : null;
     attemptedCaseIds.add(caseId);
     const outcome = await native.runCase({
       caseId,
@@ -855,7 +1010,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     let sqlVerified = true;
     try {
       if (before) {
-        if (JSON.stringify(await admin.replaySnapshot()) !== JSON.stringify(before)) fail();
+        verifyFoundationLiveReplaySnapshots(before, await admin.replaySnapshot());
         const e = options.firstRunEvidence;
         ownerPreflight.append({
           event: 'sub_replay_sql_parity_verified',
@@ -967,6 +1122,28 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       archived = true;
     }
   }
+  async function closeOwnedWindow() {
+    if (!provisionAttempted || windowClosed) return;
+    if (!closeAttempted) {
+      closeAttempted = true;
+      try {
+        await writerCloser.closeWindow();
+      } catch {
+        /* A lost Writer acknowledgement permits only independent readback. */
+      }
+    }
+    try {
+      const r = await admin.close();
+      windowClosed =
+        exact(r, ['state', 'window']) &&
+        r.state === 'closed' &&
+        exact(r.window, ['id', 'closed']) &&
+        r.window.id === windowId &&
+        r.window.closed === true;
+    } catch {
+      /* The owner SELECT cannot invent closure or repeat the Writer mutation. */
+    }
+  }
   async function restore() {
     native?.closeAdmission();
     for (const executionId of native?.snapshot().residualExecutionIds ?? []) {
@@ -1031,15 +1208,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         /* Retain the unknown provider condition and continue independent shutdown. */
       }
     }
-    if (provisionAttempted && !closeAttempted) {
-      closeAttempted = true;
-      try {
-        const r = await admin.close();
-        windowClosed = r?.state === 'closed';
-      } catch {
-        /* Unknown Close is never replayed. */
-      }
-    }
+    await closeOwnedWindow();
     if (runtime && !baselineRestored) {
       try {
         const r = await runtime.restore();
@@ -1173,20 +1342,24 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
           });
         }
         if (command.command === 'run_callback' || command.command === 'run_callback_pair') {
-          attemptedCaseIds.add(
-            command.command === 'run_callback_pair' ? 'callback.concurrent_pair' : command.caseId,
-          );
-          const r =
-            command.command === 'run_callback_pair'
-              ? await native.runConcurrentCallbackCases()
-              : await native.runCallbackCase(command.caseId);
-          const verified = r.state === 'native_settled' && (await cleanupCase(r.caseId));
-          if (!verified) failed = true;
-          return result(verified ? 'native_settled_and_cleaned' : 'native_unresolved', {
-            caseId: r.caseId,
-            executionIds: r.executionIds,
-            residual: !verified,
+          if (command.command === 'run_callback_pair' && Object.hasOwn(command, 'caseId')) fail();
+          const caseId =
+            command.command === 'run_callback_pair' ? 'callback.concurrent_pair' : command.caseId;
+          const { status, ...outcome } = await verifyFoundationLiveCallbackSqlCase({
+            caseId,
+            readSnapshot: () => admin.replaySnapshot(),
+            start: () => {
+              attemptedCaseIds.add(caseId);
+              return command.command === 'run_callback_pair'
+                ? native.runConcurrentCallbackCases()
+                : native.runCallbackCase(caseId);
+            },
+            cleanup: cleanupCase,
+            append: ownerPreflight.append,
+            now,
           });
+          if (outcome.residual) failed = true;
+          return result(status, outcome);
         }
         if (command.command === 'restore') return await restore();
         fail();
@@ -1207,10 +1380,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         if (setup || runtime || canArchiveUnprovisionedFixture()) {
           const r = await restore();
           restored = r.residual === false;
-        } else if (provisionAttempted && !windowClosed) {
-          await admin.close();
-          windowClosed = true;
-        }
+        } else if (provisionAttempted && !windowClosed) await closeOwnedWindow();
       } catch {
         /* residual stays explicit */
       }
@@ -1218,6 +1388,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       nativeTransport?.close();
       provider?.close();
       gateway?.close();
+      writerCloser?.close();
       runtime?.close();
       try {
         setup?.close();

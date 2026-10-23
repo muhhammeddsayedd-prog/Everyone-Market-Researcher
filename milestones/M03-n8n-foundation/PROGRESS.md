@@ -5,13 +5,23 @@
 
 ## Current operational checkpoint
 
+- 2026-10-23 actual archive completed native0: the same [cleanup receipt](evidence/dev-acceptance-sole-default-cleanup-20261023.json) appends separate run e9a3477a. Fresh14 history and pre/post closed-window/quiescence checks passed; one guarded transaction archived only owned C999 and paused its one account. No deletion, source/human-field overwrite, actor, provider spend or collected item. Persistent Admin original preserved, scratch/child/lock closed. Presence-only root check7a8b7a confirms all11 named disposable leaves absent; Status325f40 confirms four originals ready without claiming authentication for every provider. Eleven cumulative owner DB calls remain separate from98/301/399 management/control. The failed technical2 receipt stays unchanged; subsequent cleanup does not retroactively prove its full-D restoration.
+
+- Forward continuation is local work under standing M03 authority: the applied schema's singleton namespace/window constraints and validator hardcode the permanently closed df4 window. It cannot safely be reused. A bounded forward-only repair must retain that row and all14 original migration versions/hashes, allow a fresh owned logical window, and enforce the original cumulative gateway/actor/spending limits across both. No reset, history fabrication, migration replay, new allowance or replacement-window script family. Actual dev application is pending concrete implementation, local tests and independent review. WF-00's unknown saved definition remains preserved pending the exact owner choice.
+
+- 2026-10-23 actual cleanup reconciliation: [Writer Close and independent readback](evidence/dev-acceptance-sole-default-cleanup-20261023.json). Direct restricted `n8n_writer` authentication on strict dev session5432 verified both login identities and exact binding; one durable-intent Close succeeded native0. Separate Admin SELECT-only run authenticated and preserved14-version parity, confirmed close_count1/admitted2/approval closed, and zero reserved/incomplete requests, leases, actors, runs, costs or collected items. Both children/scratch closed, Admin disposable pair deleted, Writer original preserved. No Admin credential entered the Writer process. C999 archive/pause remains a separate cleanup step, not claimed by Close. Seven cumulative owner DB calls are separate from98/301/399 control accounting. WF-00 decision and full A-D remain open; no production, merge or M04.
+
+- 2026-10-23 independent reconciliation: [Readbacks](evidence/dev-acceptance-sole-default-readback-20261023.json). The fixed SELECT-only Admin consumer authenticated and confirmed all14 versions, exact Preview binding, an open SQL window with close_count0, one completed identity request and no reserved work, active leases, actors, runs, costs or collected items. C999 remains active/unlocked with zero progress; cleanup is being repaired through an actual restricted Writer login, followed by independent Admin readback. Two bounded WF-00 GETs authenticated: version, node parameters/layout and other settings differ; none of nine reviewed variants matches. No n8n write/execution occurred. Preserve this unknown definition pending the [exact owner choice](evidence/wf00-drift-decision-20261023.md); do not weaken the checkpoint. Actual cumulative usage98 management/301 control/399 combined, actors0/2/USD2. Independent owner DB queries2 and failed MCP metadata reads2 are recorded separately. Persistent originals remain ready; no credential/time-only request.
+
+- 2026-10-23 actual technical2: [Receipt](evidence/dev-acceptance-sole-default-attempt-20261023.json). Source025c2a2 / CI39979789918 all five jobs+Vercel pass. Saved credentials reused automatically. Sole owned default was read back explicitly true; exact protected dev Preview dpl_8gyW2MmNfAK4ARLKcKEWkbDxtuiv became READY, with14 dev versions preserved and gateway identity checks reached. Preparation then stopped at WF-00 baseline receipt before any n8n write or execution. Restore/Close repeated only baseline GETs (48 total); exact failure gate remains unestablished. Environment/bypass removal verified. Native1 physical closure, both credential-bearing children closed, disposable pairs removed, local bypass removed separately and parent lock absent; four originals ready. Database Close/archive/remote-settlement remain false/unverified. Local review found Admin Close invokes a writer-session-only RPC; actual database state must be read before repair. Dev MCP project-URL reads failed twice (no SQL read/auth claim). Usage96 management/301 control/397 combined, native0, gateway preflight2, content-provider0, actors0/2/USD2 reserve. Root is adding narrow read-only reconciliation/classification to existing consumers, not restarting acceptance or requesting inputs/time approval. Production, merge and M04 untouched.
+
 - 2026-10-23: Named sole/default implementation and closed-attempt recovery are complete locally. The existing coordinator pins the original receipt, raw journal prefixes and approval, creates an immutable technical sibling, and carries13/251/264 usage. Fresh DB filenames/audit identity derive from the native admission ordinal; exact prior audit chain and archived fixture are required. No migrations changed or replayed. Setup18/18, coordinator/runtime/control41/41, native PowerShell21/21 and independent final PostgreSQL75/75 pass. Independent security reviews report no remaining P1/P2. Root's actual session-constructor regression passes with13/251 and no child start. Public Reconcile/CheckOnly pass without private access; the DB public gate returns its expected native4. The first seal captured a concurrently corrected test fixture; wrapper refused before private reads/admission. Rebuilding the seal from frozen reviewed sources. Hosted A-D/full-D is still unverified; no new actor/provider call or owner input.
 
 - 2026-10-23: Owner replied "I approve" to the exact sole/default packet at9e7a8be. Approval is recorded separately; original reviewed packet and failed receipt remain unchanged. Implementing named exception and safe closed-attempt reconciliation. No owner input currently required; all four persistent inputs are present (Status only, not proof of every endpoint). Actual A-D/full-D remains open.
 
 - 2026-10-23: Delivered persistent dev access and the fail-before-create provider guard at9e7a8be. CI39967815404 all five jobs and Vercel pass. Four originals remain ready; consumed runtime copies, bypass and children are cleaned up. Actual dev receipt verifies14 versions/no migration replay, C999 archived and usage13/251/264/actors0. At that checkpoint the exact sole/default decision was pending; the approval above now supersedes that pending state. Latest CI/delivery observation is in the ignored autonomy-delivery-20261023.json; this operational note is batched into the next meaningful change, not a CI-announcement-only commit.
 
-## Current provider prerequisite correction
+## Historical provider prerequisite correction — superseded by verified exception
 
 The Vercel update body is supported, but its sole bypass must be the default.
 The actual failed PATCH's HTTP status remains unknown. The corrected consumer
@@ -29,12 +39,15 @@ unit stubs are not hosted acceptance. Targeted lint/format pass. The original fa
 The [reviewed sole/default exception](evidence/sole-bypass-scope-decision-20261023.md)
 is a separate project-security/default and future-build exposure decision.
 Persistent access is complete; no credential or time-only approval is pending.
-Approval is now recorded in [the separate receipt](evidence/sole-bypass-scope-approval-20261023.json); implementation/readback are still required. Preserve the closed attempt,
-13/251/264 counters, zero actor starts and all restoration residuals.
+Approval is recorded in [the separate receipt](evidence/sole-bypass-scope-approval-20261023.json).
+The subsequent actual technical2 receipt above verifies the named sole/default
+exception and revocation; the original approval receipt is preserved unchanged.
+Its earlier13/251/264 carry has advanced to98/301/399 through recorded operations,
+with zero actor starts and no allowance replenishment.
 
 ## Status
 
-**In progress: exact sole/default exception approved at reviewed9e7a8be. Implementing and reconciling before actual dev acceptance. Persistent access ready; no owner input currently required. CI39967815404/Vercel passed the prior head; changed delivery receives normal checks. A-D/full-D remains open.**
+**In progress: sole/default dev exception verified. Database closure and exact C999 archive are verified. WF-00 has unrecognized saved changes; its exact restore/preserve decision is pending. Source025c2a2 / CI39979789918 passed all five jobs and Vercel; changed delivery receives normal checks. Persistent access ready; no credential or time renewal needed. A-D/full-D remains open.**
 
 Historical e803 deliveries and 75-minute metadata coverage passed before admission. Prepare
 then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
@@ -51,13 +64,13 @@ production, private incident R2 execution, PR8 merge or M04.
 | Last updated                   | 2026-10-23 Cairo                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Finished                       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Branch / PR                    | `m03-n8n-foundation`, [PR #8](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8), draft and unmerged; A–D approved at `f42930f90c2de43c84f61ad6d966d0ee6074d70e` / CI39205222326, with all earlier evidence preserved and no reset                                                                                                                                                                                       |
-| Current delivery checkpoint | Helperheade8a151b9340e59522fb264b73e655b189f2823e4 at admission; deliveryheadeda73b6e0356f6d5668ec45063d92c19fe3bf1c2 by Close. Only intervening diff is handoff.test; consumed runtime files unchanged. Root verified CI39965113905/eda73b6 all five jobs+Vercel success; subsequent bugfix receives normal CI. |
+| Current delivery checkpoint | Source025c2a2c0127566df71cef77797db277f1565568 / CI39979789918 all five jobs and Vercel pass. Current diagnostic/cleanup changes receive normal new-head checks. |
 | Selected runtime source        | Immutable runtime source `3d141fb9d971d39237e744f2770cf42e425f0420` used for the completed trial, preserved separately from later delivery/helper commits. The initial cached GitHub read and three failed Preview reads are preserved; later source CI passed. Native read e33f91 verified the exact q3 READY Preview at 10:14:06.622 UTC, with three GETs and closed children. [Actual metadata](evidence/gw01-runtime-readback-20261018.json). |
 | Selected-source CI             | Root verified [CI39117331294](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294) on 3d141fb9: all five jobs passed (c9f1be). This is source CI, not fresh Preview/runtime or gateway acceptance.                                                                                                                                                                                                       |
 | Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                              |
 | GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                |
-| Current task | Actual attempt closed native1 after second new Vercel PATCH; owned bypass create/removal acknowledged and absent verified, C999 archived. Source/wrapper child closure captured but restoration/window/settlement residuals remain. Originals ready; no new credential input. Usage13/251/264, actors0/2/USD2. |
-| Next step | Preserve/reconcile project-wide bypass create/removal and residuals. Implement approved sole/default exception and safe continuation under standing authority. No credential/time-only request or completed-setup replay. |
+| Current task | Actual restricted Close, independent Admin readback and guarded C999 archive verified. Forward-only continuation repair remains local; WF-00 drift preserved pending owner choice. Usage98/301/399, native0, actors0/2/USD2; no credential input. |
+| Next step | Finish local fresh-window compatibility without reopening df4 or replenishing quotas. Preserve all14 applied migration bytes/history. Resolve exact WF-00 choice and documented Vercel50 subcap boundary before new hosted acceptance; no clock renewal. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.      |
 
 ## 23 October development-autonomy reset — current operating state
@@ -1183,7 +1196,7 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 - [x] AC3 — Dev RPC/database requirement verified: CI39622010384 database job passes the14-version local replay/pgTAP/advisor/concurrency checks, including10_n8n_foundation. New actual dev run3860e4ad verifies complete14 history, fresh catalog/RLS/ACL booleans, both native CLI advisors at zero WARN/ERROR (sealed source order; no standalone per-advisor receipt), and fresh4schema/6table/9RPC types/AST coverage. [Completed dev postchecks](evidence/dev-acceptance-postcheck-attempt-20261021.json). Historical formatting-only failure and unchanged original candidate remain preserved; the separate historical dashboard Auth warning is not erased. This completes the database criterion, not native workflow/business acceptance.
 - [ ] AC4 — Actual dev17 reviewed Apify prices and daily alert budget25 verified. Three fixed-fee amounts and other documented unknown prices remain unknown under the owner's instruction; no false zero fees or shared-service budget change. [Readback](evidence/dev-post-migration-schema-20261018.json).
 - [ ] AC5 — End-to-end smoke remains unrun. Local graph9/9 and shared80/80 (55 new recovery cases) pass; new generator source is not an actual saved Cloud export or actor receipt.
-- [ ] AC6 — Local saved replay, early registration, stable cost and ambiguous-write recovery pass. Saved-only recovery reports payloadEqualityVerified:false and suppresses dispatch; no fake SQL JSONB digest or exactly-once external delivery. Hosted duplicate/interruption acceptance remains pending.
+- [ ] AC6 — Local saved replay, early registration, stable cost and ambiguous-write recovery pass. Callback and sub-replay controls now require exact validated before/after SQL counts and hashes; undefined/malformed snapshots cannot prove no-op, and settled native work is cleaned even after SQL verification fails. Focused independent five-case review passes; no callback or actor was run on dev in this attempt. Saved-only recovery reports payloadEqualityVerified:false and suppresses dispatch; no fake SQL JSONB digest or exactly-once external delivery. Hosted duplicate/interruption acceptance remains pending.
 - [ ] AC7 — Exact durable `apify_callback_rejected` source and rollback-only denial/zero-side-effect tests pass. Actual hosted forged/unrelated callback receipt remains pending; generic workflow-error logging is not substituted.
 - [ ] AC8 — Error routing: canonical24links/runtime restore procedure and four-error/nine-execution native causal/settlement/cleanup control implemented and reviewed locally. Saved Cloud links remain deferred; actual automatic Error Trigger/cooldown/Notify receipts require the approved A–D batch.
 - [ ] AC9 — Orchestrator dispatch: fixed15slot/unknown cases, native manual-draft path and private terminal/child/body receipt reducer implemented/tested locally under the approved temporary-retention design. Cloud remains retention-off/schedules disabled/WF00 unpublished; actual dispatch acceptance remains pending.
@@ -1280,6 +1293,16 @@ See [case plan](../../n8n/foundation/acceptance-cases.md) and the existing
 
 ## Manual actions needed from the owner
 
+### MA-11 — resolve only the changed WF-00 definition
+
+Review [the exact drift decision](evidence/wf00-drift-decision-20261023.md).
+Reply **Restore reviewed WF-00** to authorize the exact inactive reviewed
+definition, with an encrypted rollback snapshot and fresh drift check first;
+or **Preserve current WF-00** with the intended parameter/settings changes.
+The workflow is `MzimjpsuyPuK7SKe` in n8n Personal on
+`muhhammedsayed.app.n8n.cloud`. No credential, new clock, execution or actor is
+requested. Database cleanup and local verification continue independently.
+
 ### MA-04 / MA-11 — persistent initialization complete; no credential action
 
 The owner completed the single initialization. Actual fresh Status confirms
@@ -1303,9 +1326,9 @@ Initialization/status is not authentication evidence. Exact source/status/update
 details are in [ENVIRONMENT](../../docs/ENVIRONMENT.md#persistent-development-access--current-policy-23-october-2026).
 
 No time-only/hash-only approval, billing questionnaire, support contact, new
-Machine or Vercel login is requested. The separate project-security-default
-exception is a consequential decision being prepared by root, not a renewal of
-development authority. Other owner actions below are dated
+Machine or Vercel login is requested. The project-security-default exception
+was approved and verified on dev; only the changed WF-00 definition decision
+above is pending. Other owner actions below are dated
 historical records; they do not request another disposable delivery. Genuine
 provider expiry/MFA, unsafe ambiguity, exhausted limits, production/merge and
 M04 remain separate boundaries.

@@ -1,11 +1,13 @@
 [CmdletBinding()]
-param([switch]$CheckOnly)
+param([switch]$CheckOnly,[switch]$WorkflowBaselineDiagnostic)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $fixedHost = 'muhhammedsayed.app.n8n.cloud'
 $projectId = 'pHvQjDmjxVZ3KQLT'
 $files = @('scripts/n8n/windows/New-M03N8nApiHandoff.ps1','scripts/n8n/windows/Invoke-M03N8nInventory.ps1','scripts/n8n/inventory.mjs')
+$baselineFiles = @('scripts/n8n/foundation-runtime-checkpoint.mjs','n8n/workflows/WF-00.json','scripts/n8n/windows/Dev-CredentialStore.ps1')
+$baselineFailureCodes = @('expected_shape','dto_shape','workflow_id','archive_state','activation_state','active_version','version_shape','version_mismatch','owner_project','tags_shape','tags_mismatch','pinned_data','graph_shape','node_shape','graph_name','graph_nodes','graph_connections','graph_settings')
 $childTimeoutMs = 75000
 $middleDot = [string][char]0x00b7
 $credentialCandidates = @(
@@ -90,6 +92,30 @@ function Validate-Inventory($Value) {
     }
   }
 }
+function Validate-BaselineDiagnostic($Value) {
+  Assert-Keys $Value @('version','environment','host','projectId','status','requestCount','authenticationVerified','projectVerified','workflowKey','baseline','forensics','diagnostics')
+  if($Value.version -ne 1 -or $Value.environment -cne 'dev' -or $Value.host -cne $fixedHost -or $Value.projectId -cne $projectId -or $Value.workflowKey -cne 'WF-00' -or $Value.status -cnotin @('matching_baseline','baseline_mismatch','missing_key','invalid_key','invalid_options','unsafe_dns','timeout','unauthorized','redirect_refused','response_rejected','network_failed','http_failed','body_too_large','confidentiality_rejected') -or $Value.requestCount -isnot [int] -or $Value.requestCount -lt 0 -or $Value.requestCount -gt 1 -or $Value.authenticationVerified -isnot [bool] -or $Value.projectVerified -isnot [bool]){throw 'blocked'}
+  Validate-Diagnostics $Value.diagnostics $Value.requestCount
+  foreach($row in $Value.diagnostics.requests){if($row.resource -cne 'workflows' -or $row.page -ne 1){throw 'blocked'}}
+  if($Value.status -cin @('matching_baseline','baseline_mismatch')){
+    if($Value.requestCount -ne 1 -or -not $Value.authenticationVerified -or -not $Value.diagnostics.requests[0].socketClosed){throw 'blocked'}
+    Assert-Keys $Value.baseline @('version','workflowKey','failedChecks','components')
+    if($Value.baseline.version -ne 1 -or $Value.baseline.workflowKey -cne 'WF-00' -or $Value.baseline.failedChecks -isnot [Array] -or $Value.baseline.failedChecks.Count -gt $baselineFailureCodes.Count){throw 'blocked'}
+    $seen=@{}
+    foreach($code in $Value.baseline.failedChecks){if($code -isnot [string] -or $code -cnotin $baselineFailureCodes -or $seen.ContainsKey($code)){throw 'blocked'};$seen[$code]=$true}
+    Assert-Keys $Value.baseline.components @('nameEqual','nodesEqual','connectionsEqual','settingsEqual')
+    foreach($name in @('nameEqual','nodesEqual','connectionsEqual','settingsEqual')){if($Value.baseline.components.$name -isnot [bool]){throw 'blocked'}}
+    if(($Value.status -ceq 'matching_baseline') -ne ($Value.baseline.failedChecks.Count -eq 0)){throw 'blocked'}
+    if($Value.status -ceq 'matching_baseline' -and (-not $Value.projectVerified -or @($Value.baseline.components.PSObject.Properties.Value | Where-Object {$_ -ne $true}).Count -gt 0)){throw 'blocked'}
+    if($null -ne $Value.forensics){
+      Assert-Keys $Value.forensics @('nodeCategories','settingsCategories','knownVariants')
+      Assert-Keys $Value.forensics.nodeCategories @('identityEqual','parametersEqual','credentialsEqual','behaviorEqual','layoutEqual','annotationsEqual')
+      Assert-Keys $Value.forensics.settingsCategories @('retentionEqual','mcpVisibilityEqual','errorRoutingEqual','otherEqual')
+      Assert-Keys $Value.forensics.knownVariants @('c01RetentionSettingsEqual','c01RuntimeSettingsEqual','c01ManualSettingsEqual','stagingMcpSettingsEqual','stagingManualSettingsEqual','schedulesDisabledNodesEqual','c01RetentionGraphEqual','stagedManualGraphEqual','stagedC01ManualGraphEqual')
+      foreach($group in $Value.forensics.PSObject.Properties.Value){foreach($property in $group.PSObject.Properties){if($property.Value -isnot [bool]){throw 'blocked'}}}
+    }elseif($Value.status -ceq 'matching_baseline'){throw 'blocked'}
+  }elseif($null -ne $Value.baseline -or $null -ne $Value.forensics){throw 'blocked'}
+}
 function Assert-NoKeyReflection($Value,[string]$PrivateKey) {
   if ($Value -is [string]) { if ($Value.Contains($PrivateKey)) { throw 'blocked' }; return }
   if ($Value -is [Array]) { foreach ($item in $Value) { Assert-NoKeyReflection $item $PrivateKey }; return }
@@ -99,24 +125,45 @@ try {
   $sealPath = Confined-File $repo 'scripts/n8n/m03-inventory-seal.json'
   if ((Get-Item -LiteralPath $sealPath).Length -gt 32768) { throw 'blocked' }
   $seal = ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($sealPath)) -ErrorAction Stop
-  Assert-Keys $seal @('version','host','projectId','files')
+  if($null -ne $seal.PSObject.Properties['baselineFiles']){Assert-Keys $seal @('version','host','projectId','files','baselineFiles')}else{Assert-Keys $seal @('version','host','projectId','files')}
   if ($seal.version -ne 1 -or $seal.host -cne $fixedHost -or $seal.projectId -cne $projectId) { throw 'blocked' }
   Assert-Keys $seal.files $files
   foreach ($name in $files) {
     if ($seal.files.$name -isnot [string] -or $seal.files.$name -cnotmatch '^[a-f0-9]{64}$' -or
         (Get-FileHash -LiteralPath (Confined-File $repo $name) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seal.files.$name) { throw 'blocked' }
   }
+  if($WorkflowBaselineDiagnostic){
+    Assert-Keys $seal.baselineFiles $baselineFiles
+    foreach($name in $baselineFiles){if($seal.baselineFiles.$name -isnot [string] -or $seal.baselineFiles.$name -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath (Confined-File $repo $name) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seal.baselineFiles.$name){throw 'blocked'}}
+  }
   $node = (Get-Command node.exe -CommandType Application -ErrorAction Stop).Source
   $runner = Confined-File $repo 'scripts/n8n/inventory.mjs'
 } catch { Write-Output 'M03 N8N_PREFLIGHT_BLOCKED. No private file read, decryption or API request.'; exit 1 }
+$readOnlyLock=$null;$readOnlyLockPath=$null;$readOnlyLockOwned=$false;$readOnlyHandoffPrepared=$false
+if($WorkflowBaselineDiagnostic -and $CheckOnly){Write-Output 'M03 N8N_BASELINE_CHECK_ONLY_READY. One fixed owned WF-00 GET; public sources verified. No private read, decryption, runtime admission or network.';exit 0}
 try {
   if ([string]::IsNullOrEmpty($env:LOCALAPPDATA)) { throw 'blocked' }
   $privateRoot = [IO.Path]::GetFullPath($env:LOCALAPPDATA)
+  if($WorkflowBaselineDiagnostic){
+    . (Confined-File $repo 'scripts/n8n/windows/Dev-CredentialStore.ps1')
+    $null=Assert-M03DevPlainPath (Join-Path $privateRoot 'Temp') $true
+    $readOnlyLockPath=Join-Path $privateRoot 'Temp/emr-m03-acceptance-parent.operation.lock'
+    $readOnlyLock=[IO.File]::Open($readOnlyLockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::Read);$readOnlyLockOwned=$true
+    $lockBytes=[Text.UTF8Encoding]::new($false).GetBytes((([ordered]@{kind='m03_read_only_inspect_parent';version=1;processId=$PID})|ConvertTo-Json -Compress))
+    $readOnlyLock.Write($lockBytes,0,$lockBytes.Length);$readOnlyLock.Flush($true)
+    Ensure-M03DevReadOnlyHandoff -Kind Management -CoordinatorLock $readOnlyLock
+    $readOnlyHandoffPrepared=$true
+  }
   $handoff = Join-Path $privateRoot 'Temp/emr-m03-n8n-api-key.dpapi'
   if (-not (Test-Path -LiteralPath $handoff -PathType Leaf)) { Write-Output 'M03 N8N_HANDOFF_MISSING. No private file read, decryption or API request.'; exit 2 }
   $handoff = Confined-File $privateRoot 'Temp/emr-m03-n8n-api-key.dpapi'
   if ((Get-Item -LiteralPath $handoff).Length -gt 32768) { throw 'blocked' }
-} catch { Write-Output 'M03 N8N_HANDOFF_PATH_BLOCKED. No private file read, decryption or API request.'; exit 1 }
+} catch {
+  if($readOnlyHandoffPrepared){try{[IO.File]::Delete((Join-Path $privateRoot 'Temp/emr-m03-n8n-api-key.dpapi'))}catch{}}
+  if($null -ne $readOnlyLock){$readOnlyLock.Dispose();$readOnlyLock=$null}
+  if($readOnlyLockOwned){try{[IO.File]::Delete($readOnlyLockPath)}catch{}}
+  Write-Output 'M03 N8N_HANDOFF_PATH_BLOCKED. No decryption or API request.'; exit 1
+}
 if ($CheckOnly) { Write-Output 'M03 N8N_CHECK_ONLY_READY. Fixed instance/Personal project, public seals and encrypted handoff presence verified. Authentication not tested; no decryption or network.'; exit 0 }
 
 $receipt = [ordered]@{version=1;host=$fixedHost;projectId=$projectId;status='private_process_failed';nativeExit=$null;childClosed=$true;handoffDeleted=$false;inventory=$null}
@@ -135,6 +182,7 @@ try {
   if ($runner -match '["\r\n\x00]') { throw 'blocked' }
   $start = New-Object Diagnostics.ProcessStartInfo
   $start.FileName = $node; $start.Arguments = '"' + $runner + '"'; $start.WorkingDirectory = $repo
+  if($WorkflowBaselineDiagnostic){$start.Arguments+=' --workflow-baseline-diagnostic'}
   $start.UseShellExecute = $false; $start.CreateNoWindow = $true; $start.RedirectStandardOutput = $true; $start.RedirectStandardError = $true
   $start.EnvironmentVariables.Clear()
   foreach ($name in @('SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA','APPDATA','USERPROFILE')) {
@@ -155,8 +203,8 @@ try {
   $text = [Text.Encoding]::UTF8.GetString($buffer,0,[int]$memory.Position)
   $inventory = ConvertFrom-Json -InputObject $text -ErrorAction Stop
   Assert-NoKeyReflection $inventory $key
-  Validate-Inventory $inventory
-  if (($receipt.nativeExit -eq 0) -ne ($inventory.status -in @('complete','partial'))) { throw 'blocked' }
+  if($WorkflowBaselineDiagnostic){Validate-BaselineDiagnostic $inventory}else{Validate-Inventory $inventory}
+  if (($receipt.nativeExit -eq 0) -ne ($inventory.status -in @('complete','partial','matching_baseline','baseline_mismatch'))) { throw 'blocked' }
   $receipt.inventory = $inventory
   $receipt.status = 'inventory_failed'
   if ($receipt.nativeExit -eq 0) { $receipt.status = 'complete'; $exitCode = 0 }
@@ -177,8 +225,12 @@ try {
   if ($null -ne $memory) { $memory.Dispose() }
   if ($null -ne $buffer) { [Array]::Clear($buffer,0,$buffer.Length) }
   $receipt.childClosed = $closed
-  if ($consumed) { try { [IO.File]::Delete($handoff); $receipt.handoffDeleted = -not (Test-Path -LiteralPath $handoff) } catch { $receipt.handoffDeleted = $false } }
+  if ($consumed -and $closed) { try { [IO.File]::Delete($handoff); $receipt.handoffDeleted = -not (Test-Path -LiteralPath $handoff) } catch { $receipt.handoffDeleted = $false } }
   if (-not $closed -or ($consumed -and -not $receipt.handoffDeleted)) { $exitCode = 1 }
+  if($null -ne $readOnlyLock){$readOnlyLock.Dispose();$readOnlyLock=$null}
+  # Retain the marker and encrypted runtime copy when native closure is unknown.
+  # A future coordinator must reconcile that child; it may not overlap it.
+  if($readOnlyLockOwned -and $closed){try{[IO.File]::Delete($readOnlyLockPath);if(Test-Path -LiteralPath $readOnlyLockPath){$exitCode=1}}catch{$exitCode=1}}
 }
 Write-Output ($receipt | ConvertTo-Json -Depth 12 -Compress)
 exit $exitCode

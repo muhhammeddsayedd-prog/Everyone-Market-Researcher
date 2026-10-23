@@ -4,6 +4,10 @@ import { gatewayIdentity, gatewayBusinessResult } from './n8n-worker-contracts';
 
 // Source contract only: this UUID creates no hosted window or launch authority.
 export const foundationWindowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9';
+// Source-known compatibility only; SQL owner registration and cumulative caps
+// remain required. Adding an ID here never opens or reopens a database window.
+export const foundationWindowIds = [foundationWindowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc'] as const;
+const knownWindow = z.enum(foundationWindowIds);
 const id = z.uuid(),
   empty = z.strictObject({});
 const identifier = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/);
@@ -72,7 +76,7 @@ const smokeInput = z.strictObject({
   respectRobotsTxtFile: z.literal(true),
 });
 const launch = z.strictObject({
-  window_id: z.literal(foundationWindowId),
+  window_id: knownWindow,
   launch_id: id,
   run_id: id,
   account_id: id,
@@ -325,7 +329,7 @@ const resultSchemas: Record<Exclude<FoundationOperation, 'request.status'>, z.Zo
 };
 const windowSchema = z
   .strictObject({
-    id: z.literal(foundationWindowId),
+    id: knownWindow,
     startsAt: timestamp.nullable(),
     expiresAt: timestamp.nullable(),
     closed: z.boolean(),

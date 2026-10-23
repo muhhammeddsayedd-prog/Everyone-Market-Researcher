@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
+
 // Exact saved staging identity; this is not a runtime/deployment or live-acceptance receipt.
 export const foundationRuntimeCheckpoint = {
   kind: 'actual_inactive_checkpoint_only',
@@ -163,3 +166,299 @@ export const foundationRuntimeCheckpoint = {
     },
   },
 };
+
+// Shared pure comparison only. Importing this module performs no file, secret,
+// network or runtime-admission operation. Canonical semantics match the original
+// runtime guard; diagnostics never relax those checks or adopt a newer graph.
+const graphObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const graphId = (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(v);
+const graphFalseDefaults = new Set([
+  'disabled',
+  'retryOnFail',
+  'continueOnFail',
+  'executeOnce',
+  'alwaysOutputData',
+]);
+const graphNodeKeys = new Set([
+  'id',
+  'name',
+  'type',
+  'typeVersion',
+  'parameters',
+  'position',
+  'credentials',
+  'webhookId',
+  'notes',
+  'notesInFlow',
+  'disabled',
+  'retryOnFail',
+  'onError',
+  'continueOnFail',
+  'executeOnce',
+  'alwaysOutputData',
+  'maxTries',
+  'waitBetweenTries',
+  'extendsCredential',
+]);
+function graphBlocked() {
+  throw Error('FOUNDATION_RUNTIME_CONTROL_BLOCKED');
+}
+function graphSorted(v) {
+  if (Array.isArray(v)) return v.map(graphSorted);
+  if (!graphObject(v)) return v;
+  return Object.fromEntries(
+    Object.keys(v)
+      .sort()
+      .map((k) => [k, graphSorted(v[k])]),
+  );
+}
+function graphNodes(v) {
+  if (!Array.isArray(v) || v.length > 200) graphBlocked();
+  return v.map((n) => {
+    if (!graphObject(n) || Object.keys(n).some((k) => !graphNodeKeys.has(k))) graphBlocked();
+    return Object.fromEntries(
+      Object.entries(n).filter(([k, value]) => !(graphFalseDefaults.has(k) && value === false)),
+    );
+  });
+}
+const graphCanonical = (v) => JSON.stringify(graphSorted(v));
+export function foundationRuntimeGraphHash(body) {
+  if (
+    !graphObject(body) ||
+    typeof body.name !== 'string' ||
+    !graphObject(body.settings) ||
+    !graphObject(body.connections)
+  )
+    graphBlocked();
+  return createHash('sha256')
+    .update(
+      graphCanonical({
+        name: body.name,
+        nodes: graphNodes(body.nodes),
+        connections: body.connections,
+        settings: body.settings,
+      }),
+    )
+    .digest('hex');
+}
+export function foundationRuntimePublishedHash(body) {
+  return createHash('sha256')
+    .update(graphCanonical({ nodes: graphNodes(body.nodes), connections: body.connections }))
+    .digest('hex');
+}
+export const foundationRuntimeBaselineFailureCodes = Object.freeze([
+  'expected_shape',
+  'dto_shape',
+  'workflow_id',
+  'archive_state',
+  'activation_state',
+  'active_version',
+  'version_shape',
+  'version_mismatch',
+  'owner_project',
+  'tags_shape',
+  'tags_mismatch',
+  'pinned_data',
+  'graph_shape',
+  'node_shape',
+  'graph_name',
+  'graph_nodes',
+  'graph_connections',
+  'graph_settings',
+]);
+export function diagnoseFoundationRuntimeBaseline(dto, baseline, projectId) {
+  const failedChecks = [];
+  const components = { nameEqual: false, nodesEqual: false, connectionsEqual: false, settingsEqual: false };
+  const workflowKey =
+    graphObject(baseline) && Object.hasOwn(foundationRuntimeCheckpoint.workflows, baseline.key)
+      ? baseline.key
+      : 'unknown';
+  const done = () =>
+    Object.freeze({
+      version: 1,
+      workflowKey,
+      failedChecks: Object.freeze(failedChecks),
+      components: Object.freeze(components),
+    });
+  const check = (ok, code) => {
+    if (!ok) failedChecks.push(code);
+  };
+  try {
+    if (
+      !graphObject(baseline) ||
+      !graphId(baseline.id) ||
+      !graphId(baseline.versionId) ||
+      !graphId(projectId) ||
+      !Array.isArray(baseline.tags)
+    ) {
+      failedChecks.push('expected_shape');
+      return done();
+    }
+    foundationRuntimeGraphHash(baseline.body);
+  } catch {
+    failedChecks.push('expected_shape');
+    return done();
+  }
+  if (!graphObject(dto)) {
+    failedChecks.push('dto_shape');
+    return done();
+  }
+  try {
+    check(dto.id === baseline.id, 'workflow_id');
+    check(dto.isArchived === false, 'archive_state');
+    check(dto.active === false, 'activation_state');
+    check(dto.activeVersionId === null, 'active_version');
+    check(graphId(dto.versionId), 'version_shape');
+    check(dto.versionId === baseline.versionId, 'version_mismatch');
+    check(
+      Array.isArray(dto.shared) &&
+        dto.shared.some((s) => graphObject(s) && s.projectId === projectId && s.role === 'workflow:owner'),
+      'owner_project',
+    );
+    const tagsValid =
+      Array.isArray(dto.tags) &&
+      dto.tags.every((t) => graphObject(t) && typeof t.id === 'string' && typeof t.name === 'string');
+    check(tagsValid, 'tags_shape');
+    if (tagsValid)
+      check(
+        isDeepStrictEqual(
+          graphSorted(
+            dto.tags.map((t) => ({ id: t.id, name: t.name })).sort((a, z) => a.id.localeCompare(z.id)),
+          ),
+          graphSorted([...baseline.tags].sort((a, z) => a.id.localeCompare(z.id))),
+        ),
+        'tags_mismatch',
+      );
+    check(
+      dto.pinData == null || (graphObject(dto.pinData) && Object.keys(dto.pinData).length === 0),
+      'pinned_data',
+    );
+    const graphValid =
+      typeof dto.name === 'string' && graphObject(dto.settings) && graphObject(dto.connections);
+    check(graphValid, 'graph_shape');
+    components.nameEqual = typeof dto.name === 'string' && dto.name === baseline.body.name;
+    try {
+      components.nodesEqual =
+        graphCanonical(graphNodes(dto.nodes)) === graphCanonical(graphNodes(baseline.body.nodes));
+    } catch {
+      failedChecks.push('node_shape');
+    }
+    components.connectionsEqual =
+      graphObject(dto.connections) &&
+      graphCanonical(dto.connections) === graphCanonical(baseline.body.connections);
+    components.settingsEqual =
+      graphObject(dto.settings) && graphCanonical(dto.settings) === graphCanonical(baseline.body.settings);
+    for (const [name, code] of [
+      ['nameEqual', 'graph_name'],
+      ['nodesEqual', 'graph_nodes'],
+      ['connectionsEqual', 'graph_connections'],
+      ['settingsEqual', 'graph_settings'],
+    ])
+      check(components[name], code);
+  } catch {
+    if (!failedChecks.includes('dto_shape')) failedChecks.push('dto_shape');
+  }
+  return done();
+}
+
+// Diagnostic profile equality is never provenance, ownership or authority to
+// accept/restore an edited version. C01 was a local retention design; its local
+// synthetic-state deletion did not establish any Cloud workflow edit/cleanup.
+export function diagnoseFoundationRuntimeBaselineVariants(dto, baseline) {
+  try {
+    if (!graphObject(dto) || baseline?.key !== 'WF-00' || !graphObject(dto.settings)) return null;
+    foundationRuntimeGraphHash(baseline.body);
+    const actual = graphNodes(dto.nodes),
+      wanted = graphNodes(baseline.body.nodes);
+    const pick = (v, fields) =>
+      Object.fromEntries(fields.filter((k) => Object.hasOwn(v, k)).map((k) => [k, v[k]]));
+    const equal = (a, b) => graphCanonical(a) === graphCanonical(b);
+    const categories = {
+      identity: ['id', 'name', 'type', 'typeVersion'],
+      parameters: ['parameters'],
+      credentials: ['credentials', 'extendsCredential'],
+      behavior: [
+        'disabled',
+        'retryOnFail',
+        'onError',
+        'continueOnFail',
+        'executeOnce',
+        'alwaysOutputData',
+        'maxTries',
+        'waitBetweenTries',
+      ],
+      layout: ['position'],
+      annotations: ['notes', 'notesInFlow', 'webhookId'],
+    };
+    const nodeCategories = Object.fromEntries(
+      Object.entries(categories).map(([name, fields]) => [
+        name + 'Equal',
+        equal(
+          actual.map((n) => pick(n, fields)),
+          wanted.map((n) => pick(n, fields)),
+        ),
+      ]),
+    );
+    const retention = [
+      'saveDataSuccessExecution',
+      'saveDataErrorExecution',
+      'saveManualExecutions',
+      'saveExecutionProgress',
+    ];
+    const visibility = ['availableInMCP'],
+      routing = ['errorWorkflow'],
+      fixed = new Set([...retention, ...visibility, ...routing]);
+    const remainder = (v) => Object.fromEntries(Object.entries(v).filter(([k]) => !fixed.has(k)));
+    const settings = baseline.body.settings;
+    const settingsCategories = {
+      retentionEqual: equal(pick(dto.settings, retention), pick(settings, retention)),
+      mcpVisibilityEqual: equal(pick(dto.settings, visibility), pick(settings, visibility)),
+      errorRoutingEqual: equal(pick(dto.settings, routing), pick(settings, routing)),
+      otherEqual: equal(remainder(dto.settings), remainder(settings)),
+    };
+    // Exact fixed WF00 settings from the reviewed C01 inventory/runtime/case
+    // source; none is inferred from the received DTO or its current version.
+    const c01 = {
+      ...settings,
+      saveDataSuccessExecution: 'none',
+      saveDataErrorExecution: 'none',
+      saveManualExecutions: true,
+      saveExecutionProgress: false,
+    };
+    const c01Runtime = {
+      ...c01,
+      availableInMCP: false,
+      errorWorkflow: foundationRuntimeCheckpoint.workflows['WF-90'].id,
+    };
+    const c01Manual = { ...c01Runtime, availableInMCP: true };
+    const stagingMcp = { ...settings, availableInMCP: true };
+    const stagingManual = { ...c01, availableInMCP: true };
+    const disabled = structuredClone(baseline.body.nodes);
+    for (const n of disabled) if (n.type === 'n8n-nodes-base.scheduleTrigger') n.disabled = true;
+    const schedulesDisabledNodesEqual = equal(actual, graphNodes(disabled));
+    const sameNameConnections =
+      dto.name === baseline.body.name &&
+      graphObject(dto.connections) &&
+      equal(dto.connections, baseline.body.connections);
+    const knownVariants = {
+      c01RetentionSettingsEqual: equal(dto.settings, c01),
+      c01RuntimeSettingsEqual: equal(dto.settings, c01Runtime),
+      c01ManualSettingsEqual: equal(dto.settings, c01Manual),
+      stagingMcpSettingsEqual: equal(dto.settings, stagingMcp),
+      stagingManualSettingsEqual: equal(dto.settings, stagingManual),
+      schedulesDisabledNodesEqual,
+      c01RetentionGraphEqual: sameNameConnections && equal(actual, wanted) && equal(dto.settings, c01),
+      stagedManualGraphEqual:
+        sameNameConnections && schedulesDisabledNodesEqual && equal(dto.settings, stagingMcp),
+      stagedC01ManualGraphEqual:
+        sameNameConnections && schedulesDisabledNodesEqual && equal(dto.settings, stagingManual),
+    };
+    return Object.freeze({
+      nodeCategories: Object.freeze(nodeCategories),
+      settingsCategories: Object.freeze(settingsCategories),
+      knownVariants: Object.freeze(knownVariants),
+    });
+  } catch {
+    return null;
+  }
+}
