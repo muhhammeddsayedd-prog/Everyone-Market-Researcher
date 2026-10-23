@@ -1,12 +1,12 @@
--- Proposed dev-only retained-fixture operation; this file grants no live/time
--- authority. Only a separately reviewed future ProjectVerifiedContinuation
--- consumer may select it after its separate owner decision; existing consumers
--- cannot use this proposed file as authority.
--- Requires the separately approved consumer's exact history/catalog/window,
+-- Dev-only retained-fixture operation under standing M03 authority. This file
+-- itself grants no hosted access or permission to reopen a closed attempt.
+-- Requires the reviewed consumer's exact history/catalog/window,
 -- connection identity, durable one-attempt intent and deadline preflight.
 -- PostgreSQL17 row/advisory locks: https://www.postgresql.org/docs/17/explicit-locking.html
 -- Required psql -v emr_project_ref=zmotjsbzhzjvpelxvxlf
 --   -v emr_smoke_reactivation_segment=20275b22-b7fe-4737-a9a4-c50c2feadb74
+-- Optional -v emr_smoke_technical_ordinal=1 (consumer derives it from the
+-- immutable selected admission; later attempts require every exact prior audit).
 -- Optional -v emr_smoke_rollback=true (all table changes roll back).
 \set ON_ERROR_STOP on
 \if :{?emr_project_ref}
@@ -21,6 +21,10 @@
 \else
   \set emr_smoke_rollback false
 \endif
+\if :{?emr_smoke_technical_ordinal}
+\else
+  \set emr_smoke_technical_ordinal 1
+\endif
 
 begin;
 set local search_path = pg_catalog;
@@ -29,6 +33,7 @@ set local statement_timeout = '30s';
 set local emr.smoke_project_ref = :'emr_project_ref';
 set local emr.smoke_reactivation_segment = :'emr_smoke_reactivation_segment';
 set local emr.smoke_rollback = :'emr_smoke_rollback';
+set local emr.smoke_technical_ordinal = :'emr_smoke_technical_ordinal';
 
 do $smoke_reactivate$
 declare
@@ -36,19 +41,35 @@ declare
   v_account app.competitor_accounts%rowtype;
   v_marker ops.audit_log%rowtype;
   v_previous ops.audit_log%rowtype;
-  v_previous_segment constant text := '1c69c89e-7807-46d5-b7b8-ca28285ff2b4';
+  v_previous_segment text;
+  v_known_audit_ids bigint[];
+  v_previous_id bigint;
+  v_previous_at timestamptz;
+  v_technical_text text;
+  v_technical integer;
+  v_index integer;
   v_comp_id constant uuid := 'd51a39f6-fe87-4d17-aee9-3070c45693aa';
   v_account_id constant uuid := 'bd23314c-591f-4fb7-92fd-b7450634eeb6';
-  v_segment constant text := '20275b22-b7fe-4737-a9a4-c50c2feadb74';
+  v_family_segment constant text := '20275b22-b7fe-4737-a9a4-c50c2feadb74';
+  v_segment text;
   v_url constant text := 'https://everyone.film/about-everyone';
   v_changed integer;
 begin
   -- A supplied project ref is a guard, not independent hosted-server proof.
   if current_setting('emr.smoke_project_ref', true) is distinct from 'zmotjsbzhzjvpelxvxlf'
-     or current_setting('emr.smoke_reactivation_segment', true) is distinct from v_segment
+     or current_setting('emr.smoke_reactivation_segment', true) is distinct from v_family_segment
      or current_database() <> 'postgres' or session_user <> 'postgres' or current_user <> 'postgres' then
     raise exception using errcode='42501', message='M03_REACTIVATION_OWNER_CONTEXT_REQUIRED';
   end if;
+  v_technical_text:=coalesce(nullif(current_setting('emr.smoke_technical_ordinal',true),''),'1');
+  if v_technical_text !~ '^[1-9][0-9]{0,3}$' then
+    raise exception using errcode='22023', message='M03_REACTIVATION_TECHNICAL_ORDINAL_REQUIRED';
+  end if;
+  if v_technical_text::integer>1023 then
+    raise exception using errcode='22023', message='M03_REACTIVATION_TECHNICAL_ORDINAL_REQUIRED';
+  end if;
+  v_technical:=v_technical_text::integer;
+  v_segment:=v_family_segment||case when v_technical=1 then '' else ':technical-'||v_technical end;
   if current_setting('emr.smoke_rollback', true) is null
      or current_setting('emr.smoke_rollback', true) not in ('true','false') then
     raise exception using errcode='22023', message='M03_REACTIVATION_ROLLBACK_MODE_REQUIRED';
@@ -100,18 +121,23 @@ begin
        'resolve_status',v_account.resolve_status,'cadence',v_account.cadence,'backfill_from',v_account.backfill_from) then
     raise exception using errcode='55000', message='M03_REACTIVATION_ORIGINAL_IDENTITIES_CHANGED';
   end if;
-  -- The previous successful startup reactivation is the only additional audit
-  -- allowed. Its later archive had no SQL audit: the future guard must pin the
-  -- actual archive receipt. SQL verifies its current state and ordering only;
-  -- it cannot identify the process that performed that archive.
-  if (select count(*) from ops.audit_log l
+  -- The immutable native admission selects the ordinal. Require the exact
+  -- contiguous known lifecycle: startup, original20275, then technical2...N-1.
+  -- Archives have no SQL audit: the coordinator separately pins their actual
+  -- receipts. SQL proves current archived state/order, not archive-process identity.
+  v_known_audit_ids:=array[v_marker.id];
+  v_previous_id:=v_marker.id;v_previous_at:=v_marker.created_at;
+  for v_index in 0..v_technical-1 loop
+    v_previous_segment:=case when v_index=0 then '1c69c89e-7807-46d5-b7b8-ca28285ff2b4'
+      when v_index=1 then v_family_segment else v_family_segment||':technical-'||v_index end;
+    if (select count(*) from ops.audit_log l
       where l.actor_id='m03_smoke_reactivate.v1:'||v_previous_segment
          or (l.action='m03_smoke_fixture_reactivated' and l.after->>'segment_id'=v_previous_segment))<>1 then
-    raise exception using errcode='55000', message='M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED';
-  end if;
-  select l.* into v_previous from ops.audit_log l
-    where l.actor_id='m03_smoke_reactivate.v1:'||v_previous_segment for share;
-  if not found or v_previous.actor_type<>'system'
+      raise exception using errcode='55000', message='M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED';
+    end if;
+    select l.* into v_previous from ops.audit_log l
+      where l.actor_id='m03_smoke_reactivate.v1:'||v_previous_segment for share;
+    if not found or v_previous.actor_type<>'system'
      or v_previous.action<>'m03_smoke_fixture_reactivated'
      or v_previous.entity_type is distinct from 'competitor'
      or v_previous.entity_id is distinct from v_comp_id::text
@@ -120,19 +146,28 @@ begin
        'fixture_version',1,'project_ref','zmotjsbzhzjvpelxvxlf','segment_id',v_previous_segment,
        'competitor_id',v_comp_id,'account_id',v_account_id,'competitor_status','active','account_status','active',
        'original_creation_audit_id',v_marker.id)
-     or v_previous.id<=v_marker.id or v_previous.created_at<=v_marker.created_at
-     or v_comp.created_at is distinct from v_marker.created_at
+     or v_previous.id<=v_previous_id or v_previous.created_at<=v_previous_at then
+      raise exception using errcode='55000', message='M03_REACTIVATION_PRIOR_LIFECYCLE_CHANGED';
+    end if;
+    v_known_audit_ids:=array_append(v_known_audit_ids,v_previous.id);
+    v_previous_id:=v_previous.id;v_previous_at:=v_previous.created_at;
+  end loop;
+  if v_comp.created_at is distinct from v_marker.created_at
      or v_account.created_at is distinct from v_marker.created_at
      or v_account.updated_at is distinct from v_account.created_at
-     or v_comp.updated_at<=v_previous.created_at or v_comp.updated_at>transaction_timestamp() then
+     or v_comp.updated_at<=v_previous_at or v_comp.updated_at>transaction_timestamp() then
     raise exception using errcode='55000', message='M03_REACTIVATION_PRIOR_LIFECYCLE_CHANGED';
   end if;
   -- Reject unknown/human/API edits, including fixture references hidden behind
-  -- a different entity_id. Preserve both known audit rows byte-for-byte.
-  if exists(select 1 from ops.audit_log l where l.id not in (v_marker.id,v_previous.id)
+  -- a different entity_id. Preserve every known audit row byte-for-byte.
+  if exists(select 1 from ops.audit_log l where l.id<>all(v_known_audit_ids)
        and (l.entity_id in (v_comp_id::text,v_account_id::text)
          or l.before->>'competitor_id'=v_comp_id::text or l.after->>'competitor_id'=v_comp_id::text
-         or l.before->>'account_id'=v_account_id::text or l.after->>'account_id'=v_account_id::text))
+         or l.before->>'account_id'=v_account_id::text or l.after->>'account_id'=v_account_id::text
+         or l.actor_id='m03_smoke_reactivate.v1:'||v_family_segment
+         or l.actor_id like 'm03_smoke_reactivate.v1:'||v_family_segment||':technical-%'
+         or l.after->>'segment_id'=v_family_segment
+         or l.after->>'segment_id' like v_family_segment||':technical-%'))
      or exists(select 1 from ops.audit_log l
        where l.actor_id='m03_smoke_reactivate.v1:'||v_segment or l.after->>'segment_id'=v_segment) then
     raise exception using errcode='55000', message='M03_REACTIVATION_PRIOR_EDIT_OR_ATTEMPT_PRESENT';

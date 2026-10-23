@@ -21,7 +21,7 @@ Initial inventory found the store and all four disposable inputs absent. The
 owner completed the single setup below; actual Status now verifies all four
 persistent entries present with correct ACLs and no missing entries. This is
 storage readiness, not endpoint authentication. No credential-delivery action is
-pending. The separate security-default decision below is being prepared. Keep the command below for genuinely missing entries or explicit updates. Existing Machine ciphertext is retained and reused;
+pending. The separate security-default exception below is approved. Keep the command below for genuinely missing entries or explicit updates. Existing Machine ciphertext is retained and reused;
 shared n8n provider credentials and native GitHub/Vercel/MCP stores are not copied
 or recreated. The tested/reviewed missing-only initialization command in Windows PowerShell
 under this same Windows account is:
@@ -50,25 +50,24 @@ valid. Missing-entry status is available through the same command with
 Actual23October coordinator project reads and owned temporary bypass create/
 removal succeeded; the second PATCH failed native1. Current official API review
 identifies the sole-bypass/default constraint, rather than a saved-credential
-rejection. Root is preparing the separate consequential project-security-default
-exception decision. The bypass was project-wide, may automatically have been
+rejection. The owner approved the exact consequential project-security-default
+exception at reviewed9e7a8be; implementation and verification remain. The bypass was project-wide, may automatically have been
 default, and was removed with acknowledged/verified absence; no production
 deployment/data/env-target/workflow change is claimed. Four originals remain
 ready, disposable inputs/local bypass/lock are gone, no entry/login/time-only
 action is needed. [Actual receipt](../milestones/M03-n8n-foundation/evidence/dev-acceptance-persistent-attempt-20261023.json).
 Private R2, recurring activity, merge and M04 remain separate.
 
-## MA-11 - genuine remaining security-default decision
+## MA-11 - temporary security-default exception approved
 
 The actual provider prerequisite requires a sole automation bypass to be the
-default; the existing non-default-only path cannot satisfy it. The locally
-corrected consumer stops before creating one. Review the exact proposed
+default. The owner approved the exact
 [temporary sole/default exception](../milestones/M03-n8n-foundation/evidence/sole-bypass-scope-decision-20261023.md).
 It explains the project-wide credential and default-variable exposure on future
-builds, including Production builds started by another actor. Approval would
-permit only the bounded remaining M03 dev use and cleanup, with all cumulative
+builds, including Production builds started by another actor. Approval permits
+only the bounded remaining M03 dev use and cleanup, with all cumulative
 limits unchanged. No credential, new time window, production operation or merge
-approval is requested. The four persistent entries remain ready.
+approval is requested. [Approval receipt](../milestones/M03-n8n-foundation/evidence/sole-bypass-scope-approval-20261023.json). The four persistent entries remain ready; no owner action is currently pending.
 
 ## Historical M03 owner actions and receipts
 

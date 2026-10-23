@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { appendFileSync, existsSync, lstatSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 import { syntheticRemainingContinuation } from './foundation-live-remaining-fixtures.mjs';
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
@@ -438,4 +438,128 @@ test('technical retry requires reconciliation for missing closure, live children
       f.cleanup();
     }
   }
+});
+
+test('pinned CLOSED effectful attempt permits a distinct immutable technical sibling with all actual counters retained', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ effectful: true });
+  let budget;
+  try {
+    const original = [
+      f.paths.admission,
+      f.paths.claim,
+      f.paths.admission.replace(/\.json$/, '.closed.json'),
+    ].map((path) => readFileSync(path, 'utf8'));
+    assert.equal(f.check().kind, 'project_verified_continuation_ready');
+    assert.equal(
+      f.scoped(() => f.module.reconcileFoundationProjectVerifiedContinuation({ now: f.now }, f.io)).status,
+      'ready_reconciled_effects',
+    );
+    const p = f.claim(f.admit());
+    assert.deepEqual(f.module.foundationProjectVerifiedContinuationResumeCheckpoint(p), {
+      mainManagementAttempts: 9,
+      aggregateManagementAttempts: 13,
+      mainControlAttempts: 250,
+      aggregateControlAttempts: 251,
+      setupRows: 13,
+      setupAttempts: 9,
+      preflightRows: 1,
+      technicalAttemptOrdinal: 2,
+    });
+    assert.throws(() => f.module.foundationProjectVerifiedContinuationResumeCheckpoint({ ...p }));
+    for (const [i, path] of [
+      f.paths.admission,
+      f.paths.claim,
+      f.paths.admission.replace(/\.json$/, '.closed.json'),
+    ].entries())
+      assert.equal(readFileSync(path, 'utf8'), original[i]);
+    assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-2.json')), true);
+    const management = await f.copy('foundation-live-runtime.mjs');
+    budget = management.createFoundationLiveManagementBudget(
+      { sourceCommitSha: p.sourceCommitSha, deadlineAt: p.deadlineAt },
+      { directory: dirname(f.paths.management), now: f.now, projectVerifiedContinuationProof: p },
+    );
+    assert.equal(budget.snapshot().attempts, 13);
+    budget.admit();
+    assert.equal(budget.snapshot().attempts, 14);
+    const control = await f.copy('foundation-control-state.mjs');
+    const journal = control.createFoundationControlJournal({
+      previousEvents: readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+      durableAppend: () => {},
+    });
+    const controlBudget = control.createFoundationControlBudget({
+      journal,
+      deadlineAt: p.deadlineAt,
+      now: f.now,
+      projectVerifiedContinuationProof: p,
+    });
+    assert.equal(controlBudget.snapshot().attempts, 251);
+    controlBudget.admit({ kind: 'discovery' });
+    assert.equal(controlBudget.snapshot().attempts, 252);
+    assert.throws(() => f.admit());
+  } finally {
+    budget?.close();
+    f.cleanup();
+  }
+});
+
+test('effectful recovery requires pinned truthful closure, zero actor/workflow work, archive and independently approved scope', async () => {
+  for (const effectFault of ['archive', 'actor', 'children', 'bypass', 'sql-window']) {
+    const f = await syntheticProjectVerifiedContinuation({ effectful: true, effectFault });
+    try {
+      assert.throws(() => f.check());
+      assert.throws(() => f.admit());
+    } finally {
+      f.cleanup();
+    }
+  }
+  for (const fault of [
+    'missing-approval',
+    'changed-proposal',
+    'live-parent',
+    'live-runtime',
+    'unknown-db-intent',
+    'orphan-technical',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ effectful: true });
+    try {
+      if (fault === 'missing-approval')
+        unlinkSync(
+          join(
+            f.directory,
+            'milestones/M03-n8n-foundation/evidence/sole-bypass-scope-approval-20261023.json',
+          ),
+        );
+      if (fault === 'changed-proposal')
+        f.put('milestones/M03-n8n-foundation/evidence/sole-bypass-scope-decision-20261023.md', 'CHANGED\n');
+      if (fault === 'live-parent') f.io.processAlive = (pid) => pid === 30232;
+      if (fault === 'live-runtime') f.io.processAlive = (pid) => pid === 63592;
+      if (fault === 'unknown-db-intent')
+        f.put(
+          `scripts/db/out/m03-foundation-project-verified-continuation-${f.checkpoint.segmentId}-owner-provision-attempt.json`,
+          '{}\n',
+        );
+      if (fault === 'orphan-technical')
+        f.put(f.checkpoint.admissionRelative.replace(/\.json$/, '.technical-2.runtime-claim.json'), '{}\n');
+      assert.throws(() => f.check());
+      assert.throws(() => f.admit());
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('effectful raw journal and preflight prefixes cannot be edited, normalized or extended before admission', async () => {
+  for (const name of ['management', 'control', 'setup', 'preflight'])
+    for (const extension of [false, true]) {
+      const f = await syntheticProjectVerifiedContinuation({ effectful: true });
+      try {
+        const path = join(f.directory, 'scripts/n8n/out/foundation/live/' + name + '.jsonl');
+        const text = readFileSync(path, 'utf8');
+        writeFileSync(path, extension ? text + '{}\n' : text.replace('{', '{ '));
+        assert.throws(() => f.check());
+        assert.throws(() => f.admit());
+      } finally {
+        f.cleanup();
+      }
+    }
 });

@@ -7,7 +7,8 @@ import { assertFoundationStartupReplacementSetupResume } from './foundation-live
 import { assertFoundationProjectVerifiedContinuationSetupResume } from './foundation-live-project-verified-continuation.mjs';
 
 // Only the approved dev project's seven temporary branch entries and one new
-// non-default bypass are mutable. Native workflow/API/SQL work is elsewhere.
+// sole/default bypass are mutable under the 23 October named M03 exception.
+// Native workflow/API/SQL work is elsewhere; no GW-01 token/scope is reused.
 export const foundationLiveSetupScope = Object.freeze({
   projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
   teamId: 'team_gboXPxTevpCOZuaA8eY9PmR1',
@@ -32,6 +33,19 @@ const freeze = (v) => {
   }
   return v;
 };
+export function foundationLiveSetupRequestPlan(previousAttempts) {
+  if (!Number.isInteger(previousAttempts) || previousAttempts < 0 || previousAttempts > maximum) fail();
+  // Fourteen fixed preparation requests include the final protected-project
+  // readback. All eighteen restoration requests remain reserved separately.
+  const buildPollLimit = Math.max(0, Math.min(12, maximum - previousAttempts - 14 - cleanupReserve));
+  return freeze({
+    previousAttempts,
+    buildPollLimit,
+    maximumNewPrepareRequests: 14 + buildPollLimit,
+    cleanupReserve,
+    maximumRequests: maximum,
+  });
+}
 const sync = (fn, value) => {
   let result;
   try {
@@ -65,6 +79,9 @@ const eventKeys = new Set([
   'state',
   'unresolved',
   'sourceCommitSha',
+  'soleOwnedDefaultVerified',
+  'nonDefaultVerified',
+  'observedDefaultFlag',
 ]);
 const envKeys = Object.freeze([
   'EMR_M03_FOUNDATION_ENABLED',
@@ -106,11 +123,19 @@ export function createFoundationLiveSetupJournal({ sourceCommitSha, durableAppen
           ? ['event', 'kind', ...meta]
           : ['setup_ack', 'setup_verified'].includes(row.event) && row.kind === 'deployment'
             ? [...common, 'deploymentId', 'audience']
-            : row.event === 'setup_intent' && row.kind === 'environment'
-              ? [...common, 'key']
-              : row.event.startsWith('setup_cleanup_') && row.kind === 'environment'
-                ? [...common, 'id', 'key']
-                : common;
+            : row.event === 'setup_verified' && row.kind === 'bypass'
+              ? [
+                  ...common,
+                  'createdAt',
+                  'soleOwnedDefaultVerified',
+                  'nonDefaultVerified',
+                  'observedDefaultFlag',
+                ]
+              : row.event === 'setup_intent' && row.kind === 'environment'
+                ? [...common, 'key']
+                : row.event.startsWith('setup_cleanup_') && row.kind === 'environment'
+                  ? [...common, 'id', 'key']
+                  : common;
     if (
       !exact(row, expected) ||
       !['environment', 'bypass', 'deployment', 'GET', 'POST', 'PATCH', 'DELETE'].includes(row.kind)
@@ -127,6 +152,15 @@ export function createFoundationLiveSetupJournal({ sourceCommitSha, durableAppen
     } else if (!['environment', 'bypass', 'deployment'].includes(row.kind)) fail();
     if (Object.hasOwn(row, 'at') && (!Number.isSafeInteger(row.at) || row.at < 0)) fail();
     if (Object.hasOwn(row, 'key') && !envKeys.includes(row.key)) fail();
+    if (
+      row.event === 'setup_verified' &&
+      row.kind === 'bypass' &&
+      (row.soleOwnedDefaultVerified !== true ||
+        row.nonDefaultVerified !== false ||
+        !['true', 'omitted'].includes(row.observedDefaultFlag) ||
+        !Number.isFinite(row.createdAt))
+    )
+      fail();
     if (Object.hasOwn(row, 'id') && (typeof row.id !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(row.id)))
       fail();
     if (
@@ -261,7 +295,11 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
     bypassRevokeAttempted = false,
     proof = null,
     deploymentIntentAt = null,
-    prerequisiteCode = null;
+    prerequisiteCode = null,
+    bypassIntentAt = null,
+    ownedBypassCreatedAt = null,
+    soleOwnedDefaultVerified = false,
+    buildPollLimit = 0;
   const safe = (row) => {
     const text = JSON.stringify(row);
     if (denied.some((s) => text.includes(s))) fail();
@@ -303,7 +341,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
       dto.ssoProtection?.deploymentType !== 'all_except_custom_domains'
     )
       fail();
-    const map = dto.protectionBypass ?? {};
+    const map = dto.protectionBypass;
     if (!object(map)) fail();
     const keys = Object.keys(map);
     if (own) {
@@ -316,8 +354,10 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
       !object(row) ||
       row.scope !== 'automation-bypass' ||
       row.note !== comment ||
-      (cleanup ? typeof row.isEnvVar !== 'boolean' : row.isEnvVar !== false) ||
-      !Number.isFinite(row.createdAt)
+      (Object.hasOwn(row, 'isEnvVar') &&
+        (cleanup ? typeof row.isEnvVar !== 'boolean' : row.isEnvVar !== true)) ||
+      !Number.isFinite(row.createdAt) ||
+      (ownedBypassCreatedAt !== null && row.createdAt !== ownedBypassCreatedAt)
     )
       fail();
   }
@@ -387,6 +427,10 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
         if (originals.some((e) => e.id === item.id || e.key === item.key)) fail();
         originals.push(item);
       } else if (row.kind === 'bypass') bypassOwned = true;
+    } else if (row.event === 'setup_verified' && row.kind === 'bypass') {
+      if (!bypassOwned) fail();
+      ownedBypassCreatedAt = row.createdAt;
+      soleOwnedDefaultVerified = true;
     } else if (row.event === 'setup_cleanup_intent' || row.event === 'setup_cleanup_unknown') {
       if (row.kind === 'environment') {
         deleteAttempted.add(row.id);
@@ -405,6 +449,15 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
         unresolved.delete('bypass_revoke');
       }
     }
+  }
+  if (resumed) {
+    // The branded resume assertion above pins the fully revoked prior bypass
+    // and exact journals. Its historical revoke fence must not suppress the
+    // one new owned entry's cleanup; no unresolved/active resource is adopted.
+    if (unresolved.size || bypassOwned || originals.length) fail();
+    bypassRevokeAttempted = false;
+    ownedBypassCreatedAt = null;
+    soleOwnedDefaultVerified = false;
   }
   const exclusive = async (fn) => {
     if (busy || closed) fail();
@@ -426,6 +479,8 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
       return exclusive(async () => {
         if (started || failed || stopping) fail();
         started = true;
+        buildPollLimit = foundationLiveSetupRequestPlan(attempts).buildPollLimit;
+        if (buildPollLimit < 1) fail();
         const sharedAttempts = managementBudget.snapshot().attempts;
         if (!Number.isInteger(sharedAttempts) || sharedAttempts < 0 || sharedAttempts + 45 + 134 + 142 > 512)
           fail();
@@ -442,14 +497,11 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
         let r = await request('GET', projectPath);
         if (r.status !== 200) fail();
         project(r.data);
-        // Vercel requires exactly one default automation bypass whenever any
-        // entries exist. This approved path requires an empty map followed by
-        // a non-default owned entry, so its prerequisite cannot be satisfied.
-        // Stop before even a create intent; do not create a default and try to
-        // unset the sole default, adopt another entry, or reuse GW-01 scope.
-        prerequisiteCode = 'nondefault_bypass_prerequisite';
-        fail();
+        // The approved 23 October exception permits exactly one newly owned
+        // default. The verified empty map above forbids adopting or modifying
+        // another entry; generation never changes default-selection flags.
         if ((await envs()).some((e) => envKeys.includes(e.key))) fail();
+        bypassIntentAt = now();
         emit({ event: 'setup_intent', kind: 'bypass', at: now() });
         unresolved.add('bypass_create');
         r = await request('PATCH', bypassPath, {
@@ -463,15 +515,33 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
           r.data.protectionBypass[sensitive.protectionBypass].note !== comment
         )
           fail();
+        // The API treats omitted isEnvVar as default. Keep that distinction in
+        // the public receipt; never normalize it into a non-default claim.
+        // Establish ownership independently of acceptance. An explicit false
+        // default fails preparation below, but its acknowledged owned entry
+        // must remain eligible for exact cleanup rather than be orphaned.
+        checkBypass(r.data.protectionBypass?.[sensitive.protectionBypass], true);
+        ownedBypassCreatedAt = r.data.protectionBypass[sensitive.protectionBypass].createdAt;
+        if (ownedBypassCreatedAt < bypassIntentAt - 30000 || ownedBypassCreatedAt > now() + 30000) fail();
         bypassOwned = true;
         unresolved.delete('bypass_create');
         emit({ event: 'setup_ack', kind: 'bypass', at: now() });
-        // A generated entry must itself meet the non-default gate. There is
-        // no blind follow-up update that attempts to unset a sole default.
-        checkBypass(r.data.protectionBypass?.[sensitive.protectionBypass]);
+        checkBypass(r.data.protectionBypass[sensitive.protectionBypass]);
         r = await request('GET', projectPath);
         if (r.status !== 200) fail();
         project(r.data, true);
+        soleOwnedDefaultVerified = true;
+        emit({
+          event: 'setup_verified',
+          kind: 'bypass',
+          at: now(),
+          createdAt: ownedBypassCreatedAt,
+          soleOwnedDefaultVerified: true,
+          nonDefaultVerified: false,
+          observedDefaultFlag: Object.hasOwn(r.data.protectionBypass[sensitive.protectionBypass], 'isEnvVar')
+            ? 'true'
+            : 'omitted',
+        });
         const values = [
           'true',
           S.windowId,
@@ -530,14 +600,18 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
           audience: current.audience,
           at: now(),
         });
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < buildPollLimit; i++) {
           r = await request('GET', '/v13/deployments/' + current.deploymentId + '?teamId=' + S.teamId);
           if (r.status !== 200) fail();
           const actual = deployment(r.data);
           if (actual.deploymentId !== current.deploymentId || actual.audience !== current.audience) fail();
           current = actual;
           if (current.readyState === 'READY') break;
-          if (!['QUEUED', 'INITIALIZING', 'BUILDING'].includes(current.readyState) || i === 11) fail();
+          if (
+            !['QUEUED', 'INITIALIZING', 'BUILDING'].includes(current.readyState) ||
+            i === buildPollLimit - 1
+          )
+            fail();
           await pause(15000);
           deadline();
         }
@@ -683,6 +757,9 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
         busy,
         closed,
         prerequisiteCode,
+        soleOwnedDefaultVerified,
+        nonDefaultVerified: false,
+        buildPollLimit,
       });
     },
     close() {

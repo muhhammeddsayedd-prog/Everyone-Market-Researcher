@@ -54,6 +54,7 @@ $originalPhaseAStart = $null
 $clockAmendmentStart = $null
 $clockAmendmentSegment = $null
 $postcheckContinuationStart = $null
+$script:projectVerifiedTechnicalOrdinal = 1
 $postcheckContinuationSegment = 'a570212a-634c-444f-90a2-578ae47e8d27'
 $continuationOutputStem='m03-foundation-postcheck-continuation-'
 if($RemainingContinuation){$postcheckContinuationSegment='e8035391-dba8-48c9-97e0-139ba980d86e';$continuationOutputStem='m03-foundation-remaining-continuation-'}
@@ -284,14 +285,14 @@ function Assert-FoundationStartupReplacementProcessAncestry($Clock) {
 
 function Resolve-FoundationProjectVerifiedTechnicalPaths {
   $base='scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74'
-  $stem=$base
+  $stem=$base;$selectedOrdinal=1
   for($ordinal=2;$ordinal -le 1024;$ordinal++){
     $next=$base+'.technical-'+$ordinal
     if(-not (Test-Path -LiteralPath (Join-Path $repo ($next+'.json')))){
       if((Test-Path -LiteralPath (Join-Path $repo ($next+'.runtime-claim.json'))) -or (Test-Path -LiteralPath (Join-Path $repo ($next+'.closed.json')))){throw 'blocked'}
-      return [pscustomobject]@{admission=(Assert-Path $repo ($stem+'.json'));claim=(Assert-Path $repo ($stem+'.runtime-claim.json'))}
+      return [pscustomobject]@{admission=(Assert-Path $repo ($stem+'.json'));claim=(Assert-Path $repo ($stem+'.runtime-claim.json'));technicalOrdinal=$selectedOrdinal}
     }
-    $stem=$next
+    $stem=$next;$selectedOrdinal=$ordinal
   }
   throw 'blocked'
 }
@@ -320,6 +321,7 @@ function Assert-FoundationProjectVerifiedContinuationProcessAncestry($Clock) {
      $runtime.parentProcessId -ne $claim.parentProcessId -or $wrapper.processId -ne $claim.parentProcessId -or
      $wrapperCreatedMs -gt $Clock.startsAt -or $runtimeCreatedMs -lt $Clock.startsAt -or $runtimeCreatedMs -gt $claim.claimedAt -or
      $admin.createdAt -lt $runtime.createdAt -or $admin.createdAt -gt [DateTime]::UtcNow){throw 'blocked'}
+  $script:projectVerifiedTechnicalOrdinal=$paths.technicalOrdinal
   return $true
 }
 
@@ -509,6 +511,14 @@ try {
       $postcheckContinuationStart=[DateTimeOffset]::FromUnixTimeMilliseconds($clock.startsAt).UtcDateTime
       $phaseAControlHardDeadline=$postcheckContinuationStart.AddMinutes(70)
       $receipt['clockSegmentId']=$postcheckContinuationSegment
+    }elseif($ProjectVerifiedContinuation -and $CheckOnly){
+      # JS CheckOnly already verified the immutable closed chain/receipts.
+      # Predict only the next public output names; Run must instead derive the
+      # active ordinal from ReadClaimed and the actual native process ancestry.
+      $firstAdmission='scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.json'
+      if(Test-Path -LiteralPath (Join-Path $repo $firstAdmission)){
+        $script:projectVerifiedTechnicalOrdinal=(Resolve-FoundationProjectVerifiedTechnicalPaths).technicalOrdinal+1
+      }
     }
   }
   $out = Join-Path $repo 'scripts/db/out'
@@ -517,8 +527,10 @@ try {
   $attemptFile = Join-Path $out 'm03-foundation-dev-migration-attempt.json'
   $latestFile = Join-Path $out 'm03-foundation-dev-migration-latest.json'
   if($PostcheckContinuation){
-    $attemptFile=Join-Path $out ($continuationOutputStem+$postcheckContinuationSegment+'-attempt.json')
-    $latestFile=Join-Path $out ($continuationOutputStem+$postcheckContinuationSegment+'-latest.json')
+    $outputSegment=if($ProjectVerifiedContinuation){(Foundation-ProjectVerifiedTechnicalIdentity).outputSegment}else{$postcheckContinuationSegment}
+    if($ProjectVerifiedContinuation){$receipt['technicalAttemptOrdinal']=(Foundation-ProjectVerifiedTechnicalIdentity).ordinal}
+    $attemptFile=Join-Path $out ($continuationOutputStem+$outputSegment+'-attempt.json')
+    $latestFile=Join-Path $out ($continuationOutputStem+$outputSegment+'-latest.json')
     if((Test-Path -LiteralPath $attemptFile) -or (Test-Path -LiteralPath $latestFile)){
       Write-Output 'M03_FOUNDATION CONTINUATION_ALREADY_RECORDED. No decryption, migration operation or automatic replay. Preserve and reconcile the separate continuation receipts.';exit 1
     }

@@ -1,5 +1,15 @@
 # Dot-sourced only after the NEW public packet verifies this exact file.
 # No command accepts SQL, filenames, role changes or arbitrary CLI arguments.
+function Foundation-ProjectVerifiedTechnicalIdentity {
+  if(-not $ProjectVerifiedContinuation){throw 'blocked'}
+  # Derived only by the native admission/claim/process-chain verifier. It is
+  # never an owner input, command argument or runtime request property.
+  $ordinal=Get-Variable -Name projectVerifiedTechnicalOrdinal -ValueOnly -ErrorAction SilentlyContinue
+  if($null -eq $ordinal){$ordinal=1}
+  if($ordinal -isnot [int] -or $ordinal -lt 1 -or $ordinal -gt 1023){throw 'blocked'}
+  $segment='20275b22-b7fe-4737-a9a4-c50c2feadb74'
+  return [pscustomobject]@{ordinal=$ordinal;outputSegment=($segment+$(if($ordinal -gt 1){'-technical-'+$ordinal}else{''}));auditSegment=($segment+$(if($ordinal -gt 1){':technical-'+$ordinal}else{''}))}
+}
 function Invoke-FoundationQuery([string]$Sql,[string]$Field) {
   $file = Join-Path $scratch 'foundation-control.sql'
   [IO.File]::WriteAllText($file,$Sql,[Text.UTF8Encoding]::new($false))
@@ -51,6 +61,8 @@ function Foundation-FixtureSql([string]$Name,$ExpectedFixture=$null) {
   if($Name -ceq 'm03_smoke_reactivate_project_verified.sql'){
     if(-not $projectMode){throw 'blocked'}
     $settings+="  perform pg_catalog.set_config('emr.smoke_reactivation_segment','20275b22-b7fe-4737-a9a4-c50c2feadb74',true);`n"
+    $technical=Foundation-ProjectVerifiedTechnicalIdentity
+    $settings+="  perform pg_catalog.set_config('emr.smoke_technical_ordinal','"+$technical.ordinal+"',true);`n"
   }
   $body=$body.Replace($needle,$settings)
   if($PostcheckContinuation -and $Name -ceq 'm03_smoke_setup.sql'){
@@ -120,8 +132,10 @@ select jsonb_build_object('windowId','df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
   foreach($key in @('windows','approvals','launches','requests','bindings','leases')){
     if(($value.$key -isnot [int] -and $value.$key -isnot [long]) -or $value.$key -ne 0){throw 'blocked'}
   }
-  $priorIntents=@('scripts/db/out/m03-foundation-owner-provision-attempt.json','scripts/db/out/m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-owner-provision-attempt.json',$(if($startupMode -or $projectMode){'scripts/db/out/m03-foundation-remaining-continuation-e8035391-dba8-48c9-97e0-139ba980d86e-owner-provision-attempt.json'}else{'scripts/db/out/m03-foundation-owner-provision-attempt.json'}),('scripts/db/out/'+$continuationOutputStem+$postcheckContinuationSegment+'-owner-provision-attempt.json'))
+  $outputSegment=if($projectMode){(Foundation-ProjectVerifiedTechnicalIdentity).outputSegment}else{$postcheckContinuationSegment}
+  $priorIntents=@('scripts/db/out/m03-foundation-owner-provision-attempt.json','scripts/db/out/m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-owner-provision-attempt.json',$(if($startupMode -or $projectMode){'scripts/db/out/m03-foundation-remaining-continuation-e8035391-dba8-48c9-97e0-139ba980d86e-owner-provision-attempt.json'}else{'scripts/db/out/m03-foundation-owner-provision-attempt.json'}),('scripts/db/out/'+$continuationOutputStem+$outputSegment+'-owner-provision-attempt.json'))
   if($projectMode){$priorIntents+='scripts/db/out/m03-foundation-startup-replacement-1c69c89e-7807-46d5-b7b8-ca28285ff2b4-owner-provision-attempt.json'}
+  if($projectMode){for($technicalOrdinal=1;$technicalOrdinal -lt (Foundation-ProjectVerifiedTechnicalIdentity).ordinal;$technicalOrdinal++){$priorSegment=$postcheckContinuationSegment+$(if($technicalOrdinal -gt 1){'-technical-'+$technicalOrdinal}else{''});$priorIntents+=('scripts/db/out/'+$continuationOutputStem+$priorSegment+'-owner-provision-attempt.json')}}
   foreach($relative in $priorIntents){
     if(Test-Path -LiteralPath (Join-Path $repo $relative)){throw 'blocked'}
   }
@@ -147,12 +161,14 @@ function Archive-FoundationUnprovisionedFixture($Expected) {
   if(-not $PostcheckContinuation -or $null -eq $Expected){throw 'blocked'}
   Assert-FoundationContinuationVacant -RefreshHistory
   $current=if($projectMode){Read-FoundationProjectVerifiedContinuationReactivatedFixture}elseif($startupMode){Read-FoundationStartupReplacementReactivatedFixture}elseif($RemainingContinuation){Read-FoundationRemainingReactivatedFixture}else{Read-FoundationFixture};Assert-FoundationContinuationFixture $current $Expected
-  $priorIntents=@('m03-foundation-owner-provision-attempt.json','m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-owner-provision-attempt.json',$(if($startupMode -or $projectMode){'m03-foundation-remaining-continuation-e8035391-dba8-48c9-97e0-139ba980d86e-owner-provision-attempt.json'}else{'m03-foundation-owner-provision-attempt.json'}),($continuationOutputStem+$postcheckContinuationSegment+'-owner-provision-attempt.json'))
+  $outputSegment=if($projectMode){(Foundation-ProjectVerifiedTechnicalIdentity).outputSegment}else{$postcheckContinuationSegment}
+  $priorIntents=@('m03-foundation-owner-provision-attempt.json','m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-owner-provision-attempt.json',$(if($startupMode -or $projectMode){'m03-foundation-remaining-continuation-e8035391-dba8-48c9-97e0-139ba980d86e-owner-provision-attempt.json'}else{'m03-foundation-owner-provision-attempt.json'}),($continuationOutputStem+$outputSegment+'-owner-provision-attempt.json'))
   if($projectMode){$priorIntents+='m03-foundation-startup-replacement-1c69c89e-7807-46d5-b7b8-ca28285ff2b4-owner-provision-attempt.json'}
+  if($projectMode){for($technicalOrdinal=1;$technicalOrdinal -lt (Foundation-ProjectVerifiedTechnicalIdentity).ordinal;$technicalOrdinal++){$priorSegment=$postcheckContinuationSegment+$(if($technicalOrdinal -gt 1){'-technical-'+$technicalOrdinal}else{''});$priorIntents+=($continuationOutputStem+$priorSegment+'-owner-provision-attempt.json')}}
   foreach($name in $priorIntents){
     if(Test-Path -LiteralPath (Join-Path $out $name)){throw 'blocked'}
   }
-  $intent=Join-Path $out ($continuationOutputStem+$postcheckContinuationSegment+'-unprovisioned-archive-attempt.json')
+  $intent=Join-Path $out ($continuationOutputStem+$outputSegment+'-unprovisioned-archive-attempt.json')
   Write-NewJson $intent ([ordered]@{version=1;runId=$runId;segmentId=$postcheckContinuationSegment;competitorId=$Expected.competitor_id;accountId=$Expected.account_id;createdAt=[DateTime]::UtcNow.ToString('o')})
   # The durable one-attempt intent precedes the unchanged reviewed teardown.
   # An ambiguous native result cannot authorize another mutation.
@@ -276,7 +292,8 @@ function Reactivate-FoundationProjectVerifiedContinuationFixture {
   if(-not $ProjectVerifiedContinuation){throw 'blocked'}
   Assert-FoundationContinuationVacant -RefreshHistory
   $null=Assert-FoundationRemainingArchivedFixture
-  $intent=Join-Path $out ($continuationOutputStem+$postcheckContinuationSegment+'-reactivation-attempt.json')
+  $technical=Foundation-ProjectVerifiedTechnicalIdentity
+  $intent=Join-Path $out ($continuationOutputStem+$technical.outputSegment+'-reactivation-attempt.json')
   Write-NewJson $intent ([ordered]@{version=1;runId=$runId;segmentId=$postcheckContinuationSegment;competitorId='d51a39f6-fe87-4d17-aee9-3070c45693aa';accountId='bd23314c-591f-4fb7-92fd-b7450634eeb6';createdAt=[DateTime]::UtcNow.ToString('o')})
   if([DateTime]::UtcNow -ge $phaseAStart.AddMinutes(50)){throw 'blocked'}
   $receipt['reactivationState']='attempted'
@@ -292,7 +309,8 @@ function Reactivate-FoundationProjectVerifiedContinuationFixture {
   return $value
 }
 function Read-FoundationProjectVerifiedContinuationReactivatedFixture {
-  $value=Invoke-FoundationQuery @'
+  $technical=Foundation-ProjectVerifiedTechnicalIdentity
+  $sql=@'
 select jsonb_build_object('result','M03_SMOKE_FIXTURE_READY','company_code',c.company_code,'competitor_id',c.id,'account_id',a.id,'platform',a.platform,'url',a.url,'competitor_status',c.status,'account_status',a.status) as fixture
 from app.competitors c join app.competitor_accounts a on a.competitor_id=c.id
 where c.id='d51a39f6-fe87-4d17-aee9-3070c45693aa' and c.company_code='C999' and c.slug='emr-smoke-test' and c.status='active'
@@ -306,7 +324,9 @@ and (select count(*) from ops.audit_log l join ops.audit_log o on o.id::text=l.a
  and (select count(*) from pg_catalog.jsonb_object_keys(l.after))=8
  and o.actor_type='system' and o.actor_id='m03_smoke_setup.v1' and o.action='m03_smoke_fixture_created' and o.entity_type='competitor' and o.entity_id=c.id::text
  and o.after->>'competitor_id'=c.id::text and o.after->>'account_id'=a.id::text)=1;
-'@ 'fixture'
+'@
+  $sql=$sql.Replace('20275b22-b7fe-4737-a9a4-c50c2feadb74',$technical.auditSegment)
+  $value=Invoke-FoundationQuery $sql 'fixture'
   Assert-FoundationContinuationFixture $value
   if($value.competitor_id -cne 'd51a39f6-fe87-4d17-aee9-3070c45693aa' -or $value.account_id -cne 'bd23314c-591f-4fb7-92fd-b7450634eeb6'){throw 'blocked'}
   return $value
@@ -439,7 +459,7 @@ function Invoke-FoundationAdminControl {
       }
       if([DateTime]::UtcNow -ge $stopNewAt){throw 'blocked'}
       $intent=Join-Path $out 'm03-foundation-owner-provision-attempt.json'
-      if($PostcheckContinuation){$intent=Join-Path $out ($continuationOutputStem+$postcheckContinuationSegment+'-owner-provision-attempt.json')}
+      if($PostcheckContinuation){$outputSegment=if($projectMode){(Foundation-ProjectVerifiedTechnicalIdentity).outputSegment}else{$postcheckContinuationSegment};$intent=Join-Path $out ($continuationOutputStem+$outputSegment+'-owner-provision-attempt.json')}
       Write-NewJson $intent ([ordered]@{version=1;runId=$runId;windowId=$window;packet=$packet;createdAt=[DateTime]::UtcNow.ToString('o')})
       $provisionPacket=$packet;$provisionAttempted=$true
       $json=Foundation-Json $packet

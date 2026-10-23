@@ -279,3 +279,22 @@ separate. Historical approvals and closed records below/linked from milestone
 evidence are unchanged; their superseded time-only and disposable-input wording
 does not govern current development continuations. Implementation/tests/live
 acceptance are recorded separately in the existing progress records.
+
+## M03 temporary sole/default Preview bypass — approved 23 October 2026
+
+The owner replied **“I approve”** to the exact [security-scope packet at9e7a8be](../milestones/M03-n8n-foundation/evidence/sole-bypass-scope-decision-20261023.md).
+[The approval record](../milestones/M03-n8n-foundation/evidence/sole-bypass-scope-approval-20261023.json)
+records authority; it is not a hosted verification receipt. The proposed packet
+remains unchanged as historical review evidence.
+
+For remaining M03 dev acceptance only, permit at most one owned temporary
+automation bypass on the named existing Vercel project/team/branch. Require an
+empty initial map, verify the sole owned default and report
+`soleOwnedDefaultVerified:true`, `nonDefaultVerified:false`; revoke it and verify
+absence on cleanup. Do not adopt, edit or revoke another entry. This knowingly
+permits the project-wide default variable to populate future builds, including a
+Production build started by another actor while present; it does not authorize
+our production operations. All prior attempts/counters, standing M03 authority,
+technical timeout/closure guards and aggregate limits remain unchanged. No
+migration replay, recurring activation, external notification, private R2
+execution, PR8 merge or M04 is authorized by this exception.

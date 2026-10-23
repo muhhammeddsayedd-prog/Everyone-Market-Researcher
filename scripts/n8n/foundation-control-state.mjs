@@ -10,6 +10,7 @@ import {
 import {
   assertFoundationLiveProjectVerifiedContinuationProof,
   assertFoundationProjectVerifiedContinuationControlResume,
+  foundationProjectVerifiedContinuationResumeCheckpoint,
 } from './foundation-live-project-verified-continuation.mjs';
 
 const journals = new WeakSet();
@@ -213,6 +214,9 @@ export function createFoundationControlBudget({
       fail();
   };
   const carriedAttempts = continuation ? continuation.carriedControlAttempts : 0;
+  const verifiedInitialControl = verified
+    ? foundationProjectVerifiedContinuationResumeCheckpoint(verified).mainControlAttempts
+    : 0;
   if (verified)
     assertFoundationProjectVerifiedContinuationControlResume(verified, {
       deadlineAt,
@@ -226,8 +230,8 @@ export function createFoundationControlBudget({
     prior.length + carriedAttempts > 2048 ||
     prior.some((r, i) => r.ordinal !== i + 1) ||
     (continuation &&
-      (prior.length !== (verified ? 200 : startup ? 150 : 100) ||
-        journal.rows.length !== (verified ? 200 : startup ? 150 : 100) ||
+      (prior.length !== (verified ? verifiedInitialControl : startup ? 150 : 100) ||
+        journal.rows.length !== (verified ? verifiedInitialControl : startup ? 150 : 100) ||
         prior.some((r) => r.kind !== 'discovery' || Object.hasOwn(r, 'executionId'))))
   )
     fail();

@@ -3,6 +3,14 @@
 > Codex keeps this file current. Read it first in every session; update it after every task.
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
+## Current operational checkpoint
+
+- 2026-10-23: Named sole/default implementation and closed-attempt recovery are complete locally. The existing coordinator pins the original receipt, raw journal prefixes and approval, creates an immutable technical sibling, and carries13/251/264 usage. Fresh DB filenames/audit identity derive from the native admission ordinal; exact prior audit chain and archived fixture are required. No migrations changed or replayed. Setup18/18, coordinator/runtime/control41/41, native PowerShell21/21 and independent final PostgreSQL75/75 pass. Independent security reviews report no remaining P1/P2. Root's actual session-constructor regression passes with13/251 and no child start. Public Reconcile/CheckOnly pass without private access; the DB public gate returns its expected native4. The first seal captured a concurrently corrected test fixture; wrapper refused before private reads/admission. Rebuilding the seal from frozen reviewed sources. Hosted A-D/full-D is still unverified; no new actor/provider call or owner input.
+
+- 2026-10-23: Owner replied "I approve" to the exact sole/default packet at9e7a8be. Approval is recorded separately; original reviewed packet and failed receipt remain unchanged. Implementing named exception and safe closed-attempt reconciliation. No owner input currently required; all four persistent inputs are present (Status only, not proof of every endpoint). Actual A-D/full-D remains open.
+
+- 2026-10-23: Delivered persistent dev access and the fail-before-create provider guard at9e7a8be. CI39967815404 all five jobs and Vercel pass. Four originals remain ready; consumed runtime copies, bypass and children are cleaned up. Actual dev receipt verifies14 versions/no migration replay, C999 archived and usage13/251/264/actors0. At that checkpoint the exact sole/default decision was pending; the approval above now supersedes that pending state. Latest CI/delivery observation is in the ignored autonomy-delivery-20261023.json; this operational note is batched into the next meaningful change, not a CI-announcement-only commit.
+
 ## Current provider prerequisite correction
 
 The Vercel update body is supported, but its sole bypass must be the default.
@@ -16,18 +24,17 @@ Affected 71/71 local cases pass across the corrected runs. Focused independent
 review has no remaining P1/P2; independent 47/47 native cases, 24 numeric-status
 boundaries and six runtime JSON injection denials pass. Realistic first-entry
 fixtures block before writes; hypothetical acknowledged cleanup and post-setup
-unit stubs are not hosted acceptance. Targeted lint/format pass. The correction
-has not been run against hosted state and receives normal PR checks.
+unit stubs are not hosted acceptance. Targeted lint/format pass. The original fail-before-create correction was not run against hosted state. The now-approved sole/default implementation receives targeted tests and normal changed-head PR checks before use.
 
-The [exact proposed sole/default exception](evidence/sole-bypass-scope-decision-20261023.md)
+The [reviewed sole/default exception](evidence/sole-bypass-scope-decision-20261023.md)
 is a separate project-security/default and future-build exposure decision.
 Persistent access is complete; no credential or time-only approval is pending.
-Do not execute the exception before approval. Preserve the closed attempt,
+Approval is now recorded in [the separate receipt](evidence/sole-bypass-scope-approval-20261023.json); implementation/readback are still required. Preserve the closed attempt,
 13/251/264 counters, zero actor starts and all restoration residuals.
 
 ## Status
 
-**In progress — persistent-dev access implemented/tested and reused in the actual closed attempt. Second Vercel PATCH diagnosis and residual reconciliation remain; existing M03 authority persists, A–D/full-D stays open. No repeated credential or time-only approval request.**
+**In progress: exact sole/default exception approved at reviewed9e7a8be. Implementing and reconciling before actual dev acceptance. Persistent access ready; no owner input currently required. CI39967815404/Vercel passed the prior head; changed delivery receives normal checks. A-D/full-D remains open.**
 
 Historical e803 deliveries and 75-minute metadata coverage passed before admission. Prepare
 then blocked after 50 baseline GETs. A held-open public-lock reader defect is now
@@ -50,7 +57,7 @@ production, private incident R2 execution, PR8 merge or M04.
 | Prior CI checkpoint            | Reviewed `e529576ac50f08e22ca8773dae9617e315da034e`, [CI39101964206](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101964206), all five jobs and Vercel passed. Current changes receive normal CI; no extra documentation commit solely to announce its result.                                                                                                                                              |
 | GW-01 CI checkpoint            | Delivered `4d4d13ebf241f12df64de772b0024bf6d5a067e0`, [CI39108227413](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39108227413): quality/unit/build/e2e passed; db-tests failed the stale ops-table count10 versus13. Corrected count now passes21/21 targeted local assertions; this source delivery receives normal five-job CI. No historical pass is relabeled as current-head acceptance.                |
 | Current task | Actual attempt closed native1 after second new Vercel PATCH; owned bypass create/removal acknowledged and absent verified, C999 archived. Source/wrapper child closure captured but restoration/window/settlement residuals remain. Originals ready; no new credential input. Usage13/251/264, actors0/2/USD2. |
-| Next step | Preserve/reconcile project-wide bypass create/removal and residuals. Root prepares the genuine security-default exception decision for the verified sole-bypass constraint; continue independent engineering under standing authority. No credential/time-only request or completed-setup replay. |
+| Next step | Preserve/reconcile project-wide bypass create/removal and residuals. Implement approved sole/default exception and safe continuation under standing authority. No credential/time-only request or completed-setup replay. |
 | Historical source continuation | `8746eef`, `cac4e64`, `9719cc849f35f7a0e19dc826a022f4a845192433`; [CI39177818722](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39177818722) passed all five jobs. Verified disabled Preview `dpl_9unUfg4bApFVsuSfzdSEocZ4tKfb`. At that historical checkpoint the four forward versions were hosted-pending; they are now applied to dev as14 versions. New helper delivery receives normal new-head CI.      |
 
 ## 23 October development-autonomy reset — current operating state

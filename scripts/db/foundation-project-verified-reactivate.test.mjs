@@ -8,6 +8,7 @@ const path = new URL('../assert/m03_smoke_reactivate_project_verified.sql', impo
 const competitor = 'd51a39f6-fe87-4d17-aee9-3070c45693aa';
 const account = 'bd23314c-591f-4fb7-92fd-b7450634eeb6';
 const segment = '20275b22-b7fe-4737-a9a4-c50c2feadb74';
+const auditSegment = segment + ':technical-2';
 const source = () => readFileSync(path, 'utf8');
 const body = () => source().match(/do \$smoke_reactivate\$[\s\S]*?\$smoke_reactivate\$;/)?.[0];
 const env = () =>
@@ -111,7 +112,7 @@ describe(
       );
     const snapshot = `select jsonb_build_object('database',current_database(),'principal',current_user,'competitors',(select count(*) from app.competitors),'accounts',(select count(*) from app.competitor_accounts),'audit',(select count(*) from ops.audit_log),
     'hash',encode(extensions.digest(jsonb_build_object('c',(select jsonb_agg(to_jsonb(c) order by id) from app.competitors c),'a',(select jsonb_agg(to_jsonb(a) order by id) from app.competitor_accounts a),'audit',(select jsonb_agg(to_jsonb(l) order by id) from ops.audit_log l))::text,'sha256'),'hex'));`;
-    const settings = `set local search_path=pg_catalog;set local statement_timeout='5s';set local lock_timeout='100ms';set local emr.smoke_project_ref='zmotjsbzhzjvpelxvxlf';set local emr.smoke_reactivation_segment='${segment}';set local emr.smoke_rollback='true';`;
+    const settings = `set local search_path=pg_catalog;set local statement_timeout='5s';set local lock_timeout='100ms';set local emr.smoke_project_ref='zmotjsbzhzjvpelxvxlf';set local emr.smoke_reactivation_segment='${segment}';set local emr.smoke_technical_ordinal='2';set local emr.smoke_rollback='true';`;
     before(async () => {
       assert.ok(
         !process.env.DOCKER_HOST || /^(?:unix:\/\/\/|npipe:\/\/)/.test(process.env.DOCKER_HOST),
@@ -218,10 +219,19 @@ describe(
           priorSql,
       );
       psql('\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n' + teardownSql);
+      // Actually execute the successful original20275 reactivation and archive
+      // before testing its technical continuation. Do not fabricate a prior audit.
+      psql(
+        '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n\\set emr_smoke_reactivation_segment ' +
+          segment +
+          '\n' +
+          source(),
+      );
+      psql('\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n' + teardownSql);
       baseline = JSON.parse(psql(snapshot));
       assert.equal(baseline.competitors, 286);
       assert.equal(baseline.accounts, 1755);
-      assert.equal(baseline.audit, 2);
+      assert.equal(baseline.audit, 3);
     });
     after(() => {
       if (owned) {
@@ -249,14 +259,14 @@ describe(
         `
     do $verify$begin
       if (select jsonb_agg(value order by value->>'id') from saved_audits) is distinct from
-         (select jsonb_agg(to_jsonb(l) order by to_jsonb(l)->>'id') from ops.audit_log l where l.actor_id<>'m03_smoke_reactivate.v1:${segment}') then raise exception 'PRIOR_AUDIT_DRIFT';end if;
+         (select jsonb_agg(to_jsonb(l) order by to_jsonb(l)->>'id') from ops.audit_log l where l.actor_id<>'m03_smoke_reactivate.v1:${auditSegment}') then raise exception 'PRIOR_AUDIT_DRIFT';end if;
       if (select status from app.competitors where id='${competitor}')<>'active' or (select status from app.competitor_accounts where id='${account}')<>'active' then raise exception 'NOT_ACTIVE';end if;
-      if (select count(*) from ops.audit_log)<>3 or not exists(select 1 from ops.audit_log where action='m03_smoke_fixture_reactivated' and after->>'segment_id'='${segment}') then raise exception 'AUDIT_MISSING';end if;
+      if (select count(*) from ops.audit_log)<>4 or not exists(select 1 from ops.audit_log where action='m03_smoke_fixture_reactivated' and after->>'segment_id'='${auditSegment}') then raise exception 'AUDIT_MISSING';end if;
       if (select c-array['status','updated_at','search_tsv'] from saved) is distinct from (select to_jsonb(c)-array['status','updated_at','search_tsv'] from app.competitors c where id='${competitor}') or
         (select a-'status' from saved) is distinct from (select to_jsonb(a)-'status' from app.competitor_accounts a where id='${account}') then raise exception 'NON_STATUS_DRIFT';end if;
     end;$verify$;`,
       ));
-    test('the preserved prior gate rejects this legitimate two-audit lifecycle', () => {
+    test('the preserved prior gate rejects this legitimate three-audit lifecycle', () => {
       const old = readFileSync(
         new URL('../assert/m03_smoke_reactivate_startup.sql', import.meta.url),
         'utf8',
@@ -272,12 +282,37 @@ describe(
       runCase(
         "insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id)values('system','unrelated-owner','unrelated','other','unrelated');",
         'pass',
-        "do $verify$begin if (select count(*) from ops.audit_log)<>4 or not exists(select 1 from ops.audit_log where actor_id='unrelated-owner') then raise exception 'UNRELATED_AUDIT_LOST';end if;end;$verify$;",
+        "do $verify$begin if (select count(*) from ops.audit_log)<>5 or not exists(select 1 from ops.audit_log where actor_id='unrelated-owner') then raise exception 'UNRELATED_AUDIT_LOST';end if;end;$verify$;",
       ));
     const previous = "actor_id='m03_smoke_reactivate.v1:1c69c89e-7807-46d5-b7b8-ca28285ff2b4'";
     const marker = "actor_id='m03_smoke_setup.v1'";
     const cases = [
       ['wrong project', "set local emr.smoke_project_ref='not-dev';", '42501'],
+      [
+        'missing intermediate original20275 audit',
+        `delete from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}';`,
+      ],
+      [
+        'changed intermediate original20275 audit',
+        `update ops.audit_log set after=after||'{"extra":true}' where actor_id='m03_smoke_reactivate.v1:${segment}';`,
+      ],
+      [
+        'duplicate intermediate original20275 audit',
+        `insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id,before,after,created_at)select actor_type,actor_id,action,entity_type,entity_id,before,after,created_at from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}';`,
+      ],
+      [
+        'partial future technical actor audit under another entity',
+        `insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id,after)values('system','m03_smoke_reactivate.v1:${segment}:technical-3','unknown','other','unrelated','{}');`,
+      ],
+      [
+        'partial future technical segment audit under another actor',
+        `insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id,after)values('system','other','unknown','other','unrelated',jsonb_build_object('segment_id','${segment}:technical-3'));`,
+      ],
+      ['skipped technical ordinal', "set local emr.smoke_technical_ordinal='3';"],
+      ['noncanonical technical ordinal', "set local emr.smoke_technical_ordinal='02';", '22023'],
+      ['malformed technical ordinal', "set local emr.smoke_technical_ordinal='not-an-ordinal';", '22023'],
+      ['zero technical ordinal', "set local emr.smoke_technical_ordinal='0';", '22023'],
+      ['unbounded technical ordinal', "set local emr.smoke_technical_ordinal='1024';", '22023'],
       ['creation audit scalar after', `update ops.audit_log set after='42' where ${marker};`],
       ['creation audit array after', `update ops.audit_log set after='[]' where ${marker};`],
       ['creation audit null after', `update ops.audit_log set after=null where ${marker};`],
@@ -337,7 +372,7 @@ describe(
       ],
       [
         'new-segment replay under other entity',
-        `insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id,after)values('system','m03_smoke_reactivate.v1:${segment}','m03_smoke_fixture_reactivated','other','unrelated','{}');`,
+        `insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id,after)values('system','m03_smoke_reactivate.v1:${auditSegment}','m03_smoke_fixture_reactivated','other','unrelated','{}');`,
       ],
       [
         'baseline account drift',
@@ -453,6 +488,8 @@ describe(
           '-v',
           'emr_smoke_reactivation_segment=' + segment,
           '-v',
+          'emr_smoke_technical_ordinal=2',
+          '-v',
           'emr_smoke_rollback=true',
         ],
         source(),
@@ -554,6 +591,20 @@ describe(
         await closed;
       }
       assert.deepEqual(JSON.parse(psql(snapshot)), baseline);
+    });
+    test('a later technical attempt requires the actually committed contiguous audit chain and preserves it', () => {
+      const wrapper =
+        '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n\\set emr_smoke_reactivation_segment ' + segment + '\n';
+      psql(wrapper + '\\set emr_smoke_technical_ordinal 2\n' + source());
+      psql(
+        '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n' +
+          readFileSync(new URL('../assert/m03_smoke_teardown.sql', import.meta.url), 'utf8'),
+      );
+      const afterSecond = JSON.parse(psql(snapshot));
+      assert.equal(afterSecond.audit, 4);
+      psql(`begin;${settings}set local emr.smoke_technical_ordinal='3';${body()}
+        do $verify$begin if (select count(*) from ops.audit_log)<>5 or not exists(select 1 from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}:technical-3') then raise exception 'CONTIGUOUS_TECHNICAL_AUDIT_MISSING';end if;end;$verify$;rollback;`);
+      assert.deepEqual(JSON.parse(psql(snapshot)), afterSecond);
     });
   },
 );

@@ -67,6 +67,7 @@ import {
   readFoundationProjectVerifiedContinuation,
   claimFoundationProjectVerifiedContinuation,
   assertFoundationLiveProjectVerifiedContinuationProof,
+  foundationProjectVerifiedContinuationResumeCheckpoint,
 } from './foundation-live-project-verified-continuation.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
@@ -266,6 +267,9 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   if ([resume, amendment, previousContinuation, remaining, startup, verified].filter(Boolean).length > 1)
     fail();
   const continuation = verified || startup || remaining || previousContinuation;
+  const verifiedCheckpoint = verified
+    ? foundationProjectVerifiedContinuationResumeCheckpoint(verified)
+    : null;
   const admittedClock = continuation || amendment;
   if (
     !exact(input, [
@@ -322,13 +326,14 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   );
   if (
     (resume || admittedClock) &&
-    budget.snapshot().attempts !== (verified ? 6 : startup || remaining ? 4 : 0)
+    budget.snapshot().attempts !==
+      (verified ? verifiedCheckpoint.aggregateManagementAttempts : startup || remaining ? 4 : 0)
   ) {
     budget.close();
     fail();
   }
   const ownerPreflight = foundationLiveAuxiliaryStorage(budget, 'preflight');
-  if (ownerPreflight.previousEvents.length) {
+  if (ownerPreflight.previousEvents.length !== (verified ? verifiedCheckpoint.preflightRows : 0)) {
     budget.close();
     fail();
   }
@@ -339,7 +344,8 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   }
   if (
     continuation &&
-    (nativeStorage.previousEvents.length !== (verified ? 200 : startup ? 150 : remaining ? 100 : 50) ||
+    (nativeStorage.previousEvents.length !==
+      (verified ? verifiedCheckpoint.mainControlAttempts : startup ? 150 : remaining ? 100 : 50) ||
       nativeStorage.previousEvents.some(
         (row, index) =>
           row.event !== 'control_request_intent' || row.kind !== 'discovery' || row.ordinal !== index + 1,
@@ -362,7 +368,8 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   });
   if (
     continuation &&
-    controlBudget.snapshot().attempts !== (verified ? 201 : startup ? 151 : remaining ? 101 : 50)
+    controlBudget.snapshot().attempts !==
+      (verified ? verifiedCheckpoint.aggregateControlAttempts : startup ? 151 : remaining ? 101 : 50)
   ) {
     budget.close();
     fail();

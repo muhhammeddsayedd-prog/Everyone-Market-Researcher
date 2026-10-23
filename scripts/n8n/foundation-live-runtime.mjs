@@ -58,6 +58,7 @@ import {
   assertFoundationLiveProjectVerifiedContinuationProof,
   foundationProjectVerifiedContinuationCheckpoint,
   assertFoundationProjectVerifiedContinuationJournalPrefixes,
+  foundationProjectVerifiedContinuationResumeCheckpoint,
 } from './foundation-live-project-verified-continuation.mjs';
 
 const fail = () => {
@@ -244,7 +245,13 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       header.version !== 1 ||
       header.sourceCommitSha !== sourceCommitSha ||
       header.deadlineAt !== headerDeadlineAt ||
-      (reuse && rows.length !== (verified ? 2 : startup || remaining ? 1 : 0)) ||
+      (reuse &&
+        rows.length !==
+          (verified
+            ? foundationProjectVerifiedContinuationResumeCheckpoint(verified).mainManagementAttempts
+            : startup || remaining
+              ? 1
+              : 0)) ||
       rows.some(
         (r, i) => Object.keys(r).length !== 2 || r.event !== 'management_attempt' || r.ordinal !== i + 1,
       )

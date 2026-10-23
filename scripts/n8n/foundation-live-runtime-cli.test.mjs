@@ -9,6 +9,7 @@ import {
   createFoundationLiveAcceptanceSession,
 } from './foundation-live-runtime-cli.mjs';
 import { fixture } from './foundation-live-runtime-fixtures.mjs';
+import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 
 const privatePacket = () => ({
   kind: 'm03_acceptance_private_input',
@@ -22,6 +23,57 @@ const privatePacket = () => ({
   machineToken: 'M'.repeat(43),
   protectionBypass: 'B'.repeat(32),
   leaseExpiry: Date.now() + 7200000,
+});
+
+test('effectful continuation reaches the actual session constructor with retained counters and diagnostic, without starting a child', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ effectful: true });
+  let session;
+  try {
+    const proof = f.claim(f.admit());
+    const bindings = JSON.parse(
+      readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
+    );
+    for (const name of ['bindings.dev.json', 'transport.dev.json'])
+      f.put(
+        'n8n/foundation/' + name,
+        readFileSync(new URL('../../n8n/foundation/' + name, import.meta.url), 'utf8'),
+      );
+    for (const key of Object.keys(bindings.workflowRefs))
+      f.put(
+        'n8n/workflows/' + key + '.json',
+        readFileSync(new URL('../../n8n/workflows/' + key + '.json', import.meta.url), 'utf8'),
+      );
+    const copied = await f.copy('foundation-live-runtime-cli.mjs');
+    session = f.scoped(() =>
+      copied.createFoundationLiveAcceptanceSession(
+        {
+          ...privatePacket(),
+          sourceCommitSha: proof.sourceCommitSha,
+          leaseExpiry: f.now() + 7200000,
+        },
+        () => {},
+        {
+          now: f.now,
+          projectVerifiedContinuationProof: proof,
+          startAdmin() {
+            throw Error('UNEXPECTED_CHILD');
+          },
+        },
+      ),
+    );
+    const result = await session.command({
+      kind: 'm03_acceptance_command',
+      id: 'retained',
+      command: 'state',
+    });
+    assert.equal(result.managementAttempts, 13);
+    assert.equal(result.controlAttempts, 251);
+    assert.equal(result.nativeExecutions, 0);
+    assert.equal(result.status, 'not_prepared');
+  } finally {
+    if (session) await session.close();
+    f.cleanup();
+  }
 });
 
 test('public CLI CheckOnly reads no handoff, launches nothing and does not claim a verified MCP port', async () => {
@@ -176,7 +228,7 @@ for (const mode of [
   'setup_throwing_diagnostics',
   'setup_missing_diagnostics',
   'setup_malformed_diagnostics',
-  'setup_prerequisite',
+  'setup_foreign_bypass',
 ])
   test('same-child exact route / independent shutdown: ' + mode, async () => {
     let restoreFault = false;
@@ -277,7 +329,7 @@ for (const mode of [
         if (mode.startsWith('setup_')) {
           assert.equal(spec.method, 'GET');
           assert.equal(spec.path, '/v9/projects/' + projectId + '?teamId=' + teamId);
-          if (!['setup_http', 'setup_contract', 'setup_prerequisite'].includes(mode))
+          if (!['setup_http', 'setup_contract', 'setup_foreign_bypass'].includes(mode))
             throw Error('SYNTHETIC_PRIVATE_TRANSPORT_FAILURE');
           if (mode === 'setup_http')
             return { status: 401, data: { error: packet.writerPassword }, closed: true };
@@ -291,7 +343,10 @@ for (const mode of [
             framework: 'nextjs',
             link: { type: 'github', org: 'muhhammeddsayedd-prog', repo: 'Everyone-Market-Researcher' },
             ssoProtection: { deploymentType: 'all_except_custom_domains' },
-            protectionBypass: structuredClone(bypass),
+            protectionBypass:
+              mode === 'setup_foreign_bypass'
+                ? { SYNTHETIC_UNRELATED: { scope: 'automation-bypass', isEnvVar: true } }
+                : structuredClone(bypass),
           };
         else if (spec.path.includes('/protection-bypass')) {
           const b = spec.body;
@@ -344,7 +399,7 @@ for (const mode of [
         if (mode === 'setup_throwing_diagnostics') throw Error(packet.writerPassword);
         if (mode === 'setup_missing_diagnostics') return undefined;
         return {
-          stage: ['setup_http', 'setup_contract', 'setup_prerequisite'].includes(mode)
+          stage: ['setup_http', 'setup_contract', 'setup_foreign_bypass'].includes(mode)
             ? 'completed'
             : 'native_exit',
           code:
@@ -358,10 +413,10 @@ for (const mode of [
               ? '200'
               : mode === 'setup_http'
                 ? 401
-                : ['setup_contract', 'setup_prerequisite'].includes(mode)
+                : ['setup_contract', 'setup_foreign_bypass'].includes(mode)
                   ? 200
                   : null,
-          nativeExit: ['setup_http', 'setup_contract', 'setup_prerequisite'].includes(mode) ? 0 : 1,
+          nativeExit: ['setup_http', 'setup_contract', 'setup_foreign_bypass'].includes(mode) ? 0 : 1,
           childStarted: true,
           childClosed: true,
           aborted: false,
@@ -505,25 +560,22 @@ for (const mode of [
           receipt.stage,
           unknown
             ? 'unknown'
-            : ['setup_http', 'setup_contract', 'setup_prerequisite'].includes(mode)
+            : ['setup_http', 'setup_contract', 'setup_foreign_bypass'].includes(mode)
               ? 'completed'
               : 'native_exit',
         );
-        assert.equal(
-          receipt.code,
-          mode === 'setup_expired'
-            ? 'saved_auth_expired'
-            : mode === 'setup_prerequisite'
-              ? 'nondefault_bypass_prerequisite'
-              : 'unknown',
-        );
+        assert.equal(receipt.code, mode === 'setup_expired' ? 'saved_auth_expired' : 'unknown');
         assert.equal(
           receipt.httpStatus,
-          mode === 'setup_http' ? 401 : ['setup_contract', 'setup_prerequisite'].includes(mode) ? 200 : null,
+          mode === 'setup_http'
+            ? 401
+            : ['setup_contract', 'setup_foreign_bypass'].includes(mode)
+              ? 200
+              : null,
         );
         assert.equal(
           receipt.nativeExit,
-          unknown ? null : ['setup_http', 'setup_contract', 'setup_prerequisite'].includes(mode) ? 0 : 1,
+          unknown ? null : ['setup_http', 'setup_contract', 'setup_foreign_bypass'].includes(mode) ? 0 : 1,
         );
         assert.equal(receipt.childStarted, !unknown);
         assert.equal(receipt.childClosed, !unknown);

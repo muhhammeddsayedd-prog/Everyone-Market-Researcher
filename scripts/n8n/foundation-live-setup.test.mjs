@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
+import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 import {
   createFoundationLiveSetup,
   createFoundationLiveSetupJournal,
   foundationLiveSetupScope,
   assertFoundationLiveDeployment,
+  foundationLiveSetupRequestPlan,
 } from './foundation-live-setup.mjs';
 
 // Scripted Vercel API boundaries only: no actual deployment, key or network.
@@ -17,7 +20,85 @@ const secret = {
   apifyReadToken: 'SYNTHETIC_SEPARATE_APIFY_READER',
   protectionBypass: 'N'.repeat(32),
 };
-function fixture({ fault, previousEvents = [], persist = () => {} } = {}) {
+test('setup request plan carries all prior attempts and preserves eighteen cleanup requests before any write', () => {
+  for (const [used, polls] of [
+    [0, 12],
+    [9, 9],
+    [17, 1],
+    [18, 0],
+    [50, 0],
+  ]) {
+    const p = foundationLiveSetupRequestPlan(used);
+    assert.equal(p.buildPollLimit, polls);
+    assert.equal(p.cleanupReserve, 18);
+    if (polls) assert.ok(used + p.maximumNewPrepareRequests + p.cleanupReserve <= 50);
+  }
+  for (const invalid of [-1, 51, 1.5, '9']) assert.throws(() => foundationLiveSetupRequestPlan(invalid));
+});
+test('sole/default journal receipts reject non-default relabeling and arbitrary default-state values', () => {
+  const row = {
+    event: 'setup_verified',
+    kind: 'bypass',
+    at: epoch,
+    createdAt: epoch,
+    soleOwnedDefaultVerified: true,
+    nonDefaultVerified: false,
+    observedDefaultFlag: 'omitted',
+  };
+  const build = (value) =>
+    createFoundationLiveSetupJournal({ sourceCommitSha: sha, durableAppend() {}, previousEvents: [value] });
+  assert.equal(build(row).rows[0].observedDefaultFlag, 'omitted');
+  for (const value of [
+    { ...row, soleOwnedDefaultVerified: false },
+    { ...row, nonDefaultVerified: true },
+    { ...row, observedDefaultFlag: 'false' },
+    { ...row, observedDefaultFlag: 'SYNTHETIC_PRIVATE' },
+    { ...row, createdAt: 'SYNTHETIC_PRIVATE' },
+  ])
+    assert.throws(() => build(value), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+});
+test('trusted cleaned effectful resume carries nine requests, resets only the old revoke fence and revokes the new owned default once', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ effectful: true });
+  try {
+    const proof = f.claim(f.admit());
+    const setupModule = await f.copy('foundation-live-setup.mjs');
+    const previousEvents = readFileSync(f.paths.setup, 'utf8').trimEnd().split('\n').map(JSON.parse);
+    const current = fixture({
+      setupModule,
+      sourceSha: proof.sourceCommitSha,
+      startsAt: proof.startsAt,
+      projectVerifiedContinuationProof: proof,
+      previousEvents,
+      fault: 'omitted_default',
+    });
+    assert.equal(current.setup.snapshot().requestCount, 9);
+    await current.setup.prepare();
+    assert.equal(current.setup.snapshot().buildPollLimit, 9);
+    assert.equal(current.setup.snapshot().soleOwnedDefaultVerified, true);
+    const close = await current.setup.cleanup();
+    assert.equal(close.state, 'setup_resources_removed');
+    assert.equal(current.calls.filter((c) => c.body?.generate).length, 1);
+    assert.equal(current.calls.filter((c) => c.body?.revoke).length, 1);
+    assert.equal(
+      current.calls.some((c) => c.body?.update),
+      false,
+    );
+    assert.equal(current.setup.snapshot().requestCount, 9 + current.calls.length);
+    assert.ok(current.setup.snapshot().requestCount <= 50);
+    assert.deepEqual(current.bypass, {});
+  } finally {
+    f.cleanup();
+  }
+});
+function fixture({
+  fault,
+  previousEvents = [],
+  persist = () => {},
+  setupModule,
+  sourceSha = sha,
+  startsAt = epoch,
+  projectVerifiedContinuationProof,
+} = {}) {
   const calls = [],
     rows = [],
     envs = [],
@@ -39,10 +120,10 @@ function fixture({ fault, previousEvents = [], persist = () => {} } = {}) {
     url: 'everyone-market-researcher-synthetic21.vercel.app',
     target: null,
     readyState: 'READY',
-    createdAt: fault === 'old_deployment' ? epoch - 60000 : epoch,
-    meta: { githubCommitSha: sha, githubCommitRef: scope.branch },
+    createdAt: fault === 'old_deployment' ? startsAt - 60000 : startsAt,
+    meta: { githubCommitSha: sourceSha, githubCommitRef: scope.branch },
   };
-  let clock = epoch,
+  let clock = startsAt,
     attempts = 0,
     readyReads = 0,
     polls = 0;
@@ -55,8 +136,8 @@ function fixture({ fault, previousEvents = [], persist = () => {} } = {}) {
     },
     attachTransport() {},
   };
-  const journal = createFoundationLiveSetupJournal({
-    sourceCommitSha: sha,
+  const journal = (setupModule?.createFoundationLiveSetupJournal ?? createFoundationLiveSetupJournal)({
+    sourceCommitSha: sourceSha,
     previousEvents,
     durableAppend(row) {
       persist(row);
@@ -76,11 +157,28 @@ function fixture({ fault, previousEvents = [], persist = () => {} } = {}) {
             scope: 'automation-bypass',
             createdAt: clock,
             note: spec.body.generate.note,
-            isEnvVar: true,
+            ...(fault === 'omitted_default'
+              ? {}
+              : {
+                  isEnvVar:
+                    fault === 'false_default'
+                      ? false
+                      : fault === 'invalid_default'
+                        ? 'SYNTHETIC_PRIVATE_FLAG'
+                        : true,
+                }),
           };
         if (spec.body.update && spec.body.update.isEnvVar === false && Object.keys(bypass).length === 1)
           return { status: 400, data: { error: 'SOLE_DEFAULT_REQUIRED' }, closed: true };
         if (spec.body.revoke) delete bypass[spec.body.revoke.secret];
+        if (spec.body.generate && fault === 'lost_bypass_ack') throw Error(secret.protectionBypass);
+        if (spec.body.generate && fault === 'foreign_after_create')
+          bypass.UNRELATED = {
+            scope: 'automation-bypass',
+            isEnvVar: true,
+            createdAt: clock,
+            note: 'Other owner',
+          };
         return { status: 200, data: { protectionBypass: structuredClone(bypass) }, closed: true };
       }
       if (spec.method === 'GET' && spec.path.includes('/env?'))
@@ -127,15 +225,16 @@ function fixture({ fault, previousEvents = [], persist = () => {} } = {}) {
       throw Error('unexpected scripted route');
     },
   };
-  const setup = createFoundationLiveSetup(
+  const setup = (setupModule?.createFoundationLiveSetup ?? createFoundationLiveSetup)(
     {
-      sourceCommitSha: sha,
+      sourceCommitSha: sourceSha,
       transport,
       journal,
       managementBudget: budget,
       sensitive: secret,
       now: () => clock,
-      deadlineAt: epoch + 3600000,
+      deadlineAt: projectVerifiedContinuationProof?.deadlineAt ?? startsAt + 3600000,
+      ...(projectVerifiedContinuationProof ? { projectVerifiedContinuationProof } : {}),
       pause: async (ms) => {
         clock += ms;
       },
@@ -201,33 +300,41 @@ function acknowledgedCleanupFixture(fault, priorAttempts = 0) {
     scope: 'automation-bypass',
     createdAt: epoch,
     note: 'M03 foundation temporary dev ' + scope.windowId,
-    isEnvVar: false,
+    isEnvVar: true,
   };
   return f;
 }
-test('real provider default invariant blocks an empty baseline before every bypass, environment or deployment intent', async () => {
-  const f = fixture();
-  await assert.rejects(f.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
-  assert.equal(f.readyReads(), 1);
-  assert.equal(f.setup.snapshot().prerequisiteCode, 'nondefault_bypass_prerequisite');
-  assert.equal(f.setup.snapshot().deploymentReady, false);
-  assert.deepEqual(
-    f.calls.map((c) => c.method),
-    ['GET'],
+for (const fault of [undefined, 'omitted_default'])
+  test(
+    'approved sole/default exception prepares one owned bypass without updating any default: ' +
+      (fault ?? 'explicit_true'),
+    async () => {
+      const f = fixture({ fault });
+      const proof = await f.setup.prepare();
+      assert.equal(f.readyReads(), 1);
+      assert.equal(f.setup.snapshot().soleOwnedDefaultVerified, true);
+      assert.equal(f.setup.snapshot().nonDefaultVerified, false);
+      assert.equal(f.setup.snapshot().deploymentReady, true);
+      assert.equal(f.envs.length, 7);
+      assert.equal(f.calls.filter((c) => c.body?.generate).length, 1);
+      assert.equal(f.calls.filter((c) => c.body?.update).length, 0);
+      assert.equal(assertFoundationLiveDeployment(proof), proof);
+      const observed = f.rows.find((r) => r.event === 'setup_verified' && r.kind === 'bypass');
+      assert.equal(observed.soleOwnedDefaultVerified, true);
+      assert.equal(observed.nonDefaultVerified, false);
+      assert.equal(observed.observedDefaultFlag, fault === 'omitted_default' ? 'omitted' : 'true');
+      assert.equal(f.attempts(), f.calls.length);
+      assert.throws(() => assertFoundationLiveDeployment({ version: 1 }));
+      const publicText = JSON.stringify({ snapshot: f.setup.snapshot(), rows: f.rows });
+      for (const value of Object.values(secret)) assert.equal(publicText.includes(value), false);
+      const closed = await f.setup.cleanup();
+      assert.equal(closed.state, 'setup_resources_removed');
+      assert.equal(f.envs.length, 0);
+      assert.deepEqual(f.bypass, {});
+      assert.equal(closed.deploymentSnapshotsErased, false);
+      assert.equal(f.attempts(), f.calls.length);
+    },
   );
-  assert.equal(f.rows.filter((r) => r.event === 'setup_intent').length, 0);
-  assert.equal(f.envs.length, 0);
-  assert.equal(f.attempts(), f.calls.length);
-  assert.throws(() => assertFoundationLiveDeployment({ version: 1 }));
-  const publicText = JSON.stringify({ snapshot: f.setup.snapshot(), rows: f.rows });
-  for (const value of Object.values(secret)) assert.equal(publicText.includes(value), false);
-  const closed = await f.setup.cleanup();
-  assert.equal(closed.state, 'setup_resources_removed');
-  assert.equal(f.envs.length, 0);
-  assert.deepEqual(f.bypass, {});
-  assert.equal(closed.deploymentSnapshotsErased, false);
-  assert.equal(f.attempts(), f.calls.length);
-});
 test('existing owned-key environment or another bypass blocks before every mutation', async () => {
   for (const kind of ['env', 'bypass']) {
     const f = fixture();
@@ -241,6 +348,83 @@ test('existing owned-key environment or another bypass blocks before every mutat
     else f.bypass.foreign = { scope: 'automation-bypass', isEnvVar: true };
     await assert.rejects(f.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
     assert.equal(f.calls.filter((c) => c.method !== 'GET').length, 0);
+  }
+});
+test('sole/default exception never adopts another existing entry or an ambiguous missing bypass map', async () => {
+  for (const flag of ['true', 'omitted', 'false', 'missing_map']) {
+    const f = fixture();
+    if (flag === 'missing_map') delete f.project.protectionBypass;
+    else
+      f.bypass.UNRELATED = {
+        scope: 'automation-bypass',
+        ...(flag === 'omitted' ? {} : { isEnvVar: flag === 'true' }),
+      };
+    await assert.rejects(f.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+    assert.equal(f.calls.filter((c) => c.method !== 'GET').length, 0);
+    assert.equal(
+      f.rows.some((r) => r.event === 'setup_intent'),
+      false,
+    );
+  }
+});
+test('explicit false or non-boolean generated default never produces a default receipt or environment/deployment mutation', async () => {
+  for (const fault of ['false_default', 'invalid_default']) {
+    const f = fixture({ fault });
+    await assert.rejects(f.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+    assert.equal(f.calls.filter((c) => c.body?.generate).length, 1);
+    assert.equal(f.calls.filter((c) => c.body?.update).length, 0);
+    assert.equal(f.calls.filter((c) => c.method === 'POST').length, 0);
+    assert.equal(
+      f.rows.some((r) => r.event === 'setup_verified' && r.kind === 'bypass'),
+      false,
+    );
+    assert.equal(f.setup.snapshot().soleOwnedDefaultVerified, false);
+  }
+});
+test('acknowledged owned false-default generation fails acceptance but revokes exactly once with verified empty readback', async () => {
+  const f = fixture({ fault: 'false_default' });
+  await assert.rejects(f.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+  assert.equal(
+    f.rows.some((r) => r.event === 'setup_ack' && r.kind === 'bypass'),
+    true,
+  );
+  assert.equal(
+    f.rows.some((r) => r.event === 'setup_verified' && r.kind === 'bypass'),
+    false,
+  );
+  assert.equal(f.setup.snapshot().soleOwnedDefaultVerified, false);
+  assert.equal(f.setup.snapshot().nonDefaultVerified, false);
+  assert.equal(f.calls.filter((c) => c.method === 'POST').length, 0);
+  const cleaned = await f.setup.cleanup();
+  assert.equal(cleaned.state, 'setup_resources_removed');
+  assert.equal(f.calls.filter((c) => c.body?.generate).length, 1);
+  assert.equal(f.calls.filter((c) => c.body?.revoke).length, 1);
+  assert.equal(
+    f.calls.some((c) => c.body?.update),
+    false,
+  );
+  assert.deepEqual(f.bypass, {});
+  const after = f.calls.length;
+  assert.equal((await f.setup.cleanup()).state, 'setup_resources_removed');
+  assert.equal(f.calls.length, after);
+});
+test('lost generation ACK or an unexpected extra entry remains ambiguous without another create or blind revoke', async () => {
+  for (const fault of ['lost_bypass_ack', 'foreign_after_create']) {
+    const f = fixture({ fault });
+    await assert.rejects(f.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+    const before = f.calls.length;
+    await assert.rejects(f.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+    assert.equal(f.calls.length, before);
+    const cleaned = await f.setup.cleanup();
+    assert.equal(cleaned.state, 'setup_cleanup_incomplete');
+    assert.deepEqual(cleaned.unresolved, ['bypass_create']);
+    assert.equal(f.calls.filter((c) => c.body?.generate).length, 1);
+    assert.equal(
+      f.calls.some((c) => c.body?.update || c.body?.revoke),
+      false,
+    );
+    assert.equal(f.setup.snapshot().soleOwnedDefaultVerified, false);
+    assert.equal(JSON.stringify(f.rows).includes(secret.protectionBypass), false);
   }
 });
 test('ambiguous create is never replayed; known resources can still clean up without raw errors', async () => {
@@ -299,7 +483,7 @@ test('durable intent failure, parallel callers, replay journals and missing read
   const g = fixture();
   const first = g.setup.prepare();
   await assert.rejects(g.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
-  await assert.rejects(first, /FOUNDATION_LIVE_SETUP_BLOCKED/);
+  await first;
   const prior = fixture({ previousEvents: g.rows });
   await assert.rejects(prior.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
   assert.equal(prior.calls.length, 0);

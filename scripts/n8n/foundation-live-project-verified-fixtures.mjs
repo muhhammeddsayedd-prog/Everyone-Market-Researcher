@@ -12,6 +12,8 @@ export async function syntheticProjectVerifiedContinuation({
   cleanupFault,
   priorFault,
   projectFault,
+  effectful = false,
+  effectFault,
 } = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'emr-project-verified-synthetic-'));
   const ownedDirectory = realpathSync(directory);
@@ -147,6 +149,141 @@ export async function syntheticProjectVerifiedContinuation({
     put(snapshot.journals[name].path, text);
     snapshot.journals[name].sha256 = digest(text);
   }
+  let recoveryConfiguration;
+  if (effectful) {
+    const base =
+      'scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74';
+    const db =
+      'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74';
+    const receiptRelative =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-persistent-attempt-20261023.json';
+    const approvalRelative =
+      'milestones/M03-n8n-foundation/evidence/sole-bypass-scope-approval-20261023.json';
+    const packetRelative = 'milestones/M03-n8n-foundation/evidence/sole-bypass-scope-decision-20261023.md';
+    const receipt = JSON.parse(readFileSync(join(sourceRoot, receiptRelative), 'utf8'));
+    if (effectFault === 'archive') receipt.database.unprovisionedFixtureArchived = false;
+    if (effectFault === 'actor') receipt.accounting.actorStarts = 1;
+    if (effectFault === 'children') receipt.wrapperClose.credentialChildrenClosed = false;
+    if (effectFault === 'bypass') receipt.vercelSetup.ownedBypassRemovalAcknowledgedAndAbsentVerified = false;
+    if (effectFault === 'sql-window') receipt.acceptance.sqlFoundationWindowProvisioned = true;
+    const pins = {};
+    // Self-contained synthetic journals/clock/DB metadata. Clean CI does not
+    // contain ignored live output, and these are never hosted receipts.
+    const json = (value) => JSON.stringify(value) + '\n';
+    const rows = (values) => values.map(json).join('');
+    const start = receipt.clock.startsAt;
+    const synthetic = {
+      [base + '.json']: json({
+        kind: 'm03_project_verified_continuation_admission',
+        version: 1,
+        segmentId: snapshot.proposedSegmentId,
+        sourceCommitSha: snapshot.applicationSource,
+        windowId: snapshot.windowId,
+        approvalSha256: '0'.repeat(64),
+        startsAt: start,
+        deadlineAt: start + 3600000,
+        stopNewAt: start + 3000000,
+        hardDeadlineAt: start + 4200000,
+        parentProcessId: 30232,
+      }),
+      [base + '.runtime-claim.json']: json({
+        kind: 'm03_project_verified_continuation_runtime_claim',
+        version: 1,
+        segmentId: snapshot.proposedSegmentId,
+        admissionSha256: '0'.repeat(64),
+        processId: 63592,
+        parentProcessId: 30232,
+        claimedAt: start + 1000,
+      }),
+      [base + '.closed.json']: json({
+        kind: 'm03_project_verified_technical_closed',
+        version: 1,
+        admissionSha256: '0'.repeat(64),
+        parentProcessId: 30232,
+        runtimeProcessId: 63592,
+        closedAt: receipt.clock.closedAt,
+        childClosed: true,
+        credentialChildrenClosed: true,
+        emergencyShutdown: false,
+        pendingMachinePreserved: true,
+        nativeExit: 1,
+        bypassHandoffDeleted: false,
+        closureVerified: false,
+      }),
+      [snapshot.journals.management.path]:
+        management +
+        rows(Array.from({ length: 7 }, (_, i) => ({ event: 'management_attempt', ordinal: i + 3 }))),
+      [snapshot.journals.control.path]:
+        control +
+        rows(
+          Array.from({ length: 50 }, (_, i) => ({
+            event: 'control_request_intent',
+            ordinal: i + 201,
+            kind: 'discovery',
+            at: new Date(start).toISOString(),
+          })),
+        ),
+      [snapshot.journals.setup.path]:
+        setup +
+        rows([
+          { event: 'setup_attempt', ordinal: 3, kind: 'GET', at: start + 100 },
+          { event: 'setup_attempt', ordinal: 4, kind: 'GET', at: start + 200 },
+          { event: 'setup_intent', kind: 'bypass', at: start + 300 },
+          { event: 'setup_attempt', ordinal: 5, kind: 'PATCH', at: start + 301 },
+          { event: 'setup_ack', kind: 'bypass', at: start + 400 },
+          { event: 'setup_attempt', ordinal: 6, kind: 'PATCH', at: start + 401 },
+          { event: 'setup_attempt', ordinal: 7, kind: 'GET', at: start + 500 },
+          { event: 'setup_cleanup_intent', kind: 'bypass', at: start + 600 },
+          { event: 'setup_attempt', ordinal: 8, kind: 'PATCH', at: start + 601 },
+          { event: 'setup_attempt', ordinal: 9, kind: 'GET', at: start + 700 },
+          { event: 'setup_cleanup_absent', kind: 'bypass', at: start + 800 },
+        ]),
+      ['scripts/n8n/out/foundation/live/preflight.jsonl']: json({
+        ...receipt.prepare.failureDiagnostic,
+        at: new Date(start + 500).toISOString(),
+      }),
+    };
+    for (const suffix of ['attempt', 'latest', 'reactivation-attempt', 'unprovisioned-archive-attempt'])
+      synthetic[db + '-' + suffix + '.json'] = json({
+        version: 1,
+        runId: 'synthetic-closed-attempt',
+        projectRef: 'zmotjsbzhzjvpelxvxlf',
+        kind: suffix,
+        retained: true,
+      });
+    for (const [path, text] of Object.entries(synthetic)) {
+      put(path, text);
+      pins[path] = digest(text);
+    }
+    for (const [name, count] of [
+      ['management', 3],
+      ['control', 200],
+      ['setup', 2],
+    ]) {
+      const text = readFileSync(join(directory, snapshot.journals[name].path), 'utf8');
+      snapshot.journals[name].sha256 = digest(text.trimEnd().split('\n').slice(0, count).join('\n') + '\n');
+    }
+    const approvalText = readFileSync(join(sourceRoot, approvalRelative), 'utf8');
+    const packetText = readFileSync(join(sourceRoot, packetRelative), 'utf8');
+    const receiptText = JSON.stringify(receipt) + '\n';
+    put(receiptRelative, receiptText);
+    put(approvalRelative, approvalText);
+    put(packetRelative, packetText);
+    recoveryConfiguration = {
+      approvalRelative,
+      approvalSha256: digest(approvalText),
+      packetRelative,
+      packetSha256: digest(packetText),
+      receiptRelative,
+      receiptSha256: digest(receiptText),
+      mainManagementAttempts: 9,
+      mainControlAttempts: 250,
+      setupRows: 13,
+      setupAttempts: 9,
+      preflightRows: 1,
+      pins,
+    };
+  }
   const checkpointText = JSON.stringify(snapshot) + '\n';
   const checkpointPath =
     'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json';
@@ -189,6 +326,29 @@ export async function syntheticProjectVerifiedContinuation({
     },
   };
   const approvalText = JSON.stringify(approval) + '\n';
+  if (recoveryConfiguration) {
+    const base =
+      'scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74';
+    const admission = JSON.parse(readFileSync(join(directory, base + '.json'), 'utf8'));
+    admission.approvalSha256 = digest(approvalText);
+    const admissionText = JSON.stringify(admission) + '\n';
+    put(base + '.json', admissionText);
+    recoveryConfiguration.pins[base + '.json'] = digest(admissionText);
+    for (const suffix of ['.runtime-claim.json', '.closed.json']) {
+      const value = JSON.parse(readFileSync(join(directory, base + suffix), 'utf8'));
+      value.admissionSha256 = digest(admissionText);
+      const text = JSON.stringify(value) + '\n';
+      put(base + suffix, text);
+      recoveryConfiguration.pins[base + suffix] = digest(text);
+    }
+    const receipt = JSON.parse(readFileSync(join(directory, recoveryConfiguration.receiptRelative), 'utf8'));
+    receipt.clock.admissionSha256 = recoveryConfiguration.pins[base + '.json'];
+    receipt.clock.runtimeClaimSha256 = recoveryConfiguration.pins[base + '.runtime-claim.json'];
+    receipt.clock.technicalClosureSha256 = recoveryConfiguration.pins[base + '.closed.json'];
+    const text = JSON.stringify(receipt) + '\n';
+    put(recoveryConfiguration.receiptRelative, text);
+    recoveryConfiguration.receiptSha256 = digest(text);
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -205,6 +365,11 @@ export async function syntheticProjectVerifiedContinuation({
     )
     .replace(/packetSha256: (?:null|'[a-f0-9]{64}')/, `packetSha256: '${digest(packetText)}'`)
     .replace(/checkpointSha256: (?:null|'[a-f0-9]{64}')/, `checkpointSha256: '${digest(checkpointText)}'`);
+  if (recoveryConfiguration)
+    source = source.replace(
+      /const effectfulRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      'const effectfulRecovery = Object.freeze(' + JSON.stringify(recoveryConfiguration) + ');',
+    );
   const modulePath = put('scripts/n8n/foundation-live-project-verified-continuation.mjs', source);
   const module = await import(pathToFileURL(modulePath).href);
   const localAppData = join(directory, 'synthetic-localappdata');
@@ -218,7 +383,7 @@ export async function syntheticProjectVerifiedContinuation({
       processId: process.ppid,
     }) + '\n',
   );
-  let time = Date.parse('2026-10-22T18:00:00.000Z');
+  let time = Date.parse(effectful ? '2026-10-23T15:00:00.000Z' : '2026-10-22T18:00:00.000Z');
   const now = () => time,
     io = { processAlive: () => false };
   const scoped = (run) => {

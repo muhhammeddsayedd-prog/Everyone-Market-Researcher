@@ -27,6 +27,46 @@ export const foundationProjectVerifiedContinuationCheckpoint = Object.freeze({
   carriedControlAttempts: 1,
 });
 const c = foundationProjectVerifiedContinuationCheckpoint;
+// Exact public reconciliation of the first CLOSED persistent-access attempt.
+// This permits an immutable technical sibling, never reopening the old clock
+// or forgetting its acknowledged temporary writes, residuals or usage.
+const effectfulRecovery = Object.freeze({
+  approvalRelative: 'milestones/M03-n8n-foundation/evidence/sole-bypass-scope-approval-20261023.json',
+  approvalSha256: '38faad6db1cf73045c81c410cb5aaec657c9e213c2aea00b9d5609ad2d54c574',
+  packetRelative: 'milestones/M03-n8n-foundation/evidence/sole-bypass-scope-decision-20261023.md',
+  packetSha256: '4856982665b2fb5265ec31e1c3251e719595f65889a4bd6318601e28b1a00def',
+  receiptRelative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-persistent-attempt-20261023.json',
+  receiptSha256: '1d2455a5134e7b39339bf7612b48d0cb0de44a42e83e38a4b75c91804441eb6c',
+  mainManagementAttempts: 9,
+  mainControlAttempts: 250,
+  setupRows: 13,
+  setupAttempts: 9,
+  preflightRows: 1,
+  pins: Object.freeze({
+    'scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.json':
+      '8e0392a73ca29ccdf64cc0bfcb4da2f19a48ad7378f0a7eac1a0d0f298da86ed',
+    'scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.runtime-claim.json':
+      '9bb55db624da03de06b008a969557254b82f6115841e7308dbaab80d55a89340',
+    'scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.closed.json':
+      '507a7a75ba34ecff8676c8b54568ae2316bb0cdd7f6265c6f1baa4e029b7bebd',
+    'scripts/n8n/out/foundation/live/management.jsonl':
+      '5816c9937e68473d73ca577b359f02bee064989423fde3877bb3ec8d74837bd5',
+    'scripts/n8n/out/foundation/live/control.jsonl':
+      '07daf2c74525b9e7dc0561395b1719e6081817eccaa6843c8107e7b04e29dc8c',
+    'scripts/n8n/out/foundation/live/setup.jsonl':
+      '83927b3ab4acfd0bf5d7b541d9846e7ae5092c19e06480be3027e8a94ecf069f',
+    'scripts/n8n/out/foundation/live/preflight.jsonl':
+      'ff31cdf66e1b7e2dee718a61fb6d5a48eb65e4a9cc3f3c5b5d12d5713513711b',
+    'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-attempt.json':
+      'de5a06a29bd9c40f9236d18568b8ec8fc74f99819ce4582ca9ffcaa5f95d794f',
+    'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-latest.json':
+      '732414828c862cb86b18eb1f322ceb2b3405d51923dae7ca2137f3ceb80eda8b',
+    'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-reactivation-attempt.json':
+      '7980c9fa89b6d8a739b1104fa24ad51ec2a27e12e4ce8990dc00289b4ed69080',
+    'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-unprovisioned-archive-attempt.json':
+      '52b2fe10c2d1a60eff7be1d307495bd25592e92d757d1d845361484c8bf97dd7',
+  }),
+});
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
 };
@@ -255,7 +295,118 @@ function checkpoint(x) {
   priorCleanup(x);
   priorCurrentStartup(x, p);
   positiveProjectRead(x, p);
+  x.recovery = reconciledEffectfulAttempt(x);
+  recoveryPreflight(x);
   return p;
+}
+function reconciledEffectfulAttempt(x) {
+  const text = x.file(effectfulRecovery.receiptRelative, { optional: true });
+  if (text === null) return null;
+  if (hash(text) !== effectfulRecovery.receiptSha256) fail();
+  const r = JSON.parse(text);
+  const approvalText = x.file(effectfulRecovery.approvalRelative);
+  if (
+    hash(approvalText) !== effectfulRecovery.approvalSha256 ||
+    hash(x.file(effectfulRecovery.packetRelative)) !== effectfulRecovery.packetSha256
+  )
+    fail();
+  const owner = JSON.parse(approvalText);
+  if (
+    owner.kind !== 'm03_temporary_sole_default_bypass_approval' ||
+    owner.version !== 1 ||
+    owner.ownerReply !== 'I approve' ||
+    owner.packet !== effectfulRecovery.packetRelative ||
+    owner.projectId !== 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' ||
+    owner.teamId !== 'team_gboXPxTevpCOZuaA8eY9PmR1' ||
+    owner.branch !== 'm03-n8n-foundation' ||
+    owner.maximumConcurrentOwnedBypasses !== 1 ||
+    owner.requireEmptyInitialMap !== true ||
+    owner.requireRevokeAndVerifiedAbsence !== true ||
+    owner.allowancesReplenished !== false ||
+    owner.priorAttemptsPreserved !== true ||
+    owner.productionOperationsApproved !== false ||
+    owner.mergeApproved !== false ||
+    owner.m04Approved !== false
+  )
+    fail();
+  for (const [path, expected] of Object.entries(effectfulRecovery.pins)) {
+    if (!path.endsWith('.jsonl') && hash(x.file(path)) !== expected) fail();
+  }
+  if (
+    r.kind !== 'm03_persistent_dev_acceptance_attempt' ||
+    r.version !== 1 ||
+    r.environment !== 'dev' ||
+    r.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+    r.applicationSource !== c.sourceCommitSha ||
+    r.clock.segmentId !== c.segmentId ||
+    r.clock.parentProcessId !== 30232 ||
+    r.clock.runtimeProcessId !== 63592 ||
+    r.clock.closedRecordReopened !== false ||
+    r.clock.closedAt > x.clock() ||
+    r.clock.admissionSha256 !== effectfulRecovery.pins[c.admissionRelative] ||
+    r.clock.runtimeClaimSha256 !== effectfulRecovery.pins[c.claimRelative] ||
+    r.clock.technicalClosureSha256 !==
+      effectfulRecovery.pins[c.admissionRelative.replace(/\.json$/, '.closed.json')] ||
+    r.vercelSetup.setupJournalRows !== 13 ||
+    r.vercelSetup.newSetupAttempts !== 7 ||
+    r.vercelSetup.ownedBypassCreateAcknowledged !== true ||
+    r.vercelSetup.ownedBypassRemovalAcknowledgedAndAbsentVerified !== true ||
+    r.vercelSetup.failedPatchIntentPreserved !== true ||
+    r.vercelSetup.environmentEntriesCreated !== 0 ||
+    r.vercelSetup.deploymentsCreated !== 0 ||
+    r.database.authenticationVerified !== true ||
+    r.database.reviewedMigrationVersions !== 14 ||
+    r.database.pushAttempted !== false ||
+    r.database.unprovisionedFixtureArchived !== true ||
+    r.database.reactivationState !== 'acknowledged_and_verified' ||
+    r.database.childrenClosed !== true ||
+    r.sourceClose.status !== 'closed' ||
+    r.sourceClose.childTransportsClosed !== true ||
+    r.sourceClose.adminChildClosed !== true ||
+    r.sourceClose.residual !== true ||
+    r.wrapperClose.childClosed !== true ||
+    r.wrapperClose.credentialChildrenClosed !== true ||
+    r.wrapperClose.emergencyShutdown !== false ||
+    r.wrapperClose.nativeExit !== 1 ||
+    r.subsequentLocalBypassCleanup.nativeExit !== 0 ||
+    r.subsequentLocalBypassCleanup.temporaryFileAbsent !== true ||
+    r.subsequentLocalBypassCleanup.localBypassHandoffPresent !== false ||
+    r.subsequentLocalBypassCleanup.parentOperationLockPresent !== false ||
+    r.subsequentLocalBypassCleanup.privateContentsRead !== false ||
+    r.accounting.mainManagementAttempts !== 9 ||
+    r.accounting.outsideManagementAttempts !== 4 ||
+    r.accounting.aggregateManagementAttempts !== 13 ||
+    r.accounting.mainControlAttempts !== 250 ||
+    r.accounting.outsideControlAttempts !== 1 ||
+    r.accounting.aggregateControlAttempts !== 251 ||
+    r.accounting.aggregateCombinedAttempts !== 264 ||
+    r.accounting.allowancesReplenished !== false ||
+    r.accounting.nativeWorkflowExecutions !== 0 ||
+    r.accounting.gatewayAttempts !== 0 ||
+    r.accounting.providerGetAttempts !== 0 ||
+    r.accounting.actorStarts !== 0 ||
+    r.acceptance.sqlFoundationWindowProvisioned !== false ||
+    r.acceptance.workflowTransitions !== 0 ||
+    r.acceptance.newCollectedItems !== 0 ||
+    r.acceptance.phaseB !== false ||
+    r.acceptance.fullD !== false ||
+    r.acceptance.m03Complete !== false
+  )
+    fail();
+  return effectfulRecovery;
+}
+function recoveryPreflight(x, initial = false) {
+  if (!x.recovery) return;
+  const path = 'scripts/n8n/out/foundation/live/preflight.jsonl';
+  const text = x.file(path),
+    rows = jsonl(text, 500);
+  const prefix = rows.lines.slice(0, x.recovery.preflightRows).join('\n') + '\n';
+  if (
+    rows.rows.length < x.recovery.preflightRows ||
+    hash(prefix) !== x.recovery.pins[path] ||
+    (initial && text !== prefix)
+  )
+    fail();
 }
 function priorCurrentStartup(x, p) {
   const path =
@@ -532,7 +683,22 @@ function journals(x, initial = false) {
     const text = x.file(j[name].path),
       v = jsonl(text, maximum),
       first = v.lines.slice(0, prefix).join('\n') + '\n';
-    if (v.lines.length < prefix || hash(first) !== j[name].sha256 || (initial && text !== first)) fail();
+    const recoveredPrefix = x.recovery
+      ? {
+          management: x.recovery.mainManagementAttempts + 1,
+          control: x.recovery.mainControlAttempts,
+          setup: x.recovery.setupRows,
+        }[name]
+      : prefix;
+    const recoveredText = v.lines.slice(0, recoveredPrefix).join('\n') + '\n';
+    if (
+      v.lines.length < prefix ||
+      hash(first) !== j[name].sha256 ||
+      (x.recovery &&
+        (v.lines.length < recoveredPrefix || hash(recoveredText) !== x.recovery.pins[j[name].path])) ||
+      (initial && text !== recoveredText)
+    )
+      fail();
     values[name] = { text, rows: v.rows };
   }
   const [header, ...management] = values.management.rows;
@@ -553,7 +719,7 @@ function journals(x, initial = false) {
     control.length + 1 > 2048 ||
     control.some((r, i) => r.ordinal !== i + 1) ||
     (initial &&
-      (control.length !== 200 ||
+      (control.length !== (x.recovery?.mainControlAttempts ?? 200) ||
         control.some((r) => r.kind !== 'discovery' || Object.hasOwn(r, 'executionId'))))
   )
     fail();
@@ -575,7 +741,14 @@ function initial(x, beforePrivate = true, admitted = false) {
   if (admitted && x.physical(join(repo, active.claimRelative), true)) fail();
   for (const name of ['preflight', 'runtime']) {
     const t = x.file(`scripts/n8n/out/foundation/live/${name}.jsonl`, { optional: true });
-    if (t !== null && t !== '') fail();
+    if (x.recovery && name === 'preflight') {
+      if (
+        t === null ||
+        hash(t) !== x.recovery.pins[`scripts/n8n/out/foundation/live/${name}.jsonl`] ||
+        jsonl(t, x.recovery.preflightRows).rows.length !== x.recovery.preflightRows
+      )
+        fail();
+    } else if (t !== null && t !== '') fail();
   }
   for (const path of [
     'scripts/n8n/out/foundation/live/runtime.operation.lock',
@@ -600,7 +773,31 @@ function initial(x, beforePrivate = true, admitted = false) {
       'reactivation-attempt',
     ].map((n) => `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-${n}.json`),
   ])
-    if (x.physical(join(repo, path), true)) fail();
+    if (
+      x.physical(join(repo, path), true) &&
+      (!x.recovery || x.recovery.pins[path] === undefined || hash(x.file(path)) !== x.recovery.pins[path])
+    )
+      fail();
+  if (x.recovery) {
+    const ordinal = admitted ? active.ordinal : active.ordinal + 1;
+    for (const suffix of [
+      'attempt',
+      'latest',
+      'owner-provision-attempt',
+      'unprovisioned-archive-attempt',
+      'reactivation-attempt',
+    ])
+      if (
+        x.physical(
+          join(
+            repo,
+            `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-technical-${ordinal}-${suffix}.json`,
+          ),
+          true,
+        )
+      )
+        fail();
+  }
   const prior = JSON.parse(
     x.file('milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-attempt-20261021.json'),
   );
@@ -618,8 +815,8 @@ function initial(x, beforePrivate = true, admitted = false) {
 }
 // Technical retries use this existing coordinator and immutable sibling records.
 // The original admission/claim and all closed clocks remain untouched. A retry
-// is automatic only for a proven no-effect closure at the exact pinned journals;
-// any database/runtime intent or changed counter requires engineering readback.
+// is automatic for a proven no-effect closure, or the separately pinned public
+// effect reconciliation above. Unrecognized effects/counters still fail closed.
 function attemptPaths(ordinal) {
   const stem = c.admissionRelative.slice(0, -5) + (ordinal === 1 ? '' : `.technical-${ordinal}`);
   return {
@@ -661,6 +858,7 @@ function closedTechnicalAttempt(x, paths) {
   const data = record(x, { paths, allowExpired: true, checkParent: false });
   const text = x.file(paths.closedRelative),
     close = JSON.parse(text);
+  const reconciled = paths.ordinal === 1 && x.recovery !== null && x.recovery !== undefined;
   if (
     !exact(close, [
       'kind',
@@ -694,8 +892,7 @@ function closedTechnicalAttempt(x, paths) {
       (close.runtimeProcessId === null && close.nativeExit === null) ||
       (Number.isSafeInteger(close.nativeExit) && close.nativeExit >= 0)
     ) ||
-    close.bypassHandoffDeleted !== true ||
-    close.closureVerified !== true ||
+    (!reconciled && (close.bypassHandoffDeleted !== true || close.closureVerified !== true)) ||
     text !== JSON.stringify(close) + '\n' ||
     x.io.processAlive(close.parentProcessId) !== false ||
     (close.runtimeProcessId !== null && x.io.processAlive(close.runtimeProcessId) !== false)
@@ -764,7 +961,7 @@ function record(x, { paths = technicalPaths(x), allowExpired = false, checkParen
       ct !== JSON.stringify(claim) + '\n')
   )
     fail();
-  return { r, text, claim, checkpoint: x.checkpoint, paths };
+  return { r, text, claim, checkpoint: x.checkpoint, paths, recovery: x.recovery };
 }
 function proof(data, claimed = false) {
   const p = Object.freeze({
@@ -783,8 +980,20 @@ function proof(data, claimed = false) {
     admissionSha256: hash(data.text),
     claimed,
     processId: data.claim?.processId,
-    controlPrefixSha256: data.checkpoint.journals.control.sha256,
+    controlPrefixSha256:
+      data.recovery?.pins[data.checkpoint.journals.control.path] ?? data.checkpoint.journals.control.sha256,
     checkpoint: data.checkpoint,
+    recovery: data.recovery,
+    resume: Object.freeze({
+      mainManagementAttempts: data.recovery?.mainManagementAttempts ?? 2,
+      aggregateManagementAttempts: (data.recovery?.mainManagementAttempts ?? 2) + 4,
+      mainControlAttempts: data.recovery?.mainControlAttempts ?? 200,
+      aggregateControlAttempts: (data.recovery?.mainControlAttempts ?? 200) + 1,
+      setupRows: data.recovery?.setupRows ?? 2,
+      setupAttempts: data.recovery?.setupAttempts ?? 2,
+      preflightRows: data.recovery?.preflightRows ?? 0,
+      technicalAttemptOrdinal: data.paths.ordinal,
+    }),
   });
   return p;
 }
@@ -794,22 +1003,30 @@ export function assertFoundationLiveProjectVerifiedContinuationProof(p, { claime
     fail();
   return p;
 }
+export function foundationProjectVerifiedContinuationResumeCheckpoint(p) {
+  assertFoundationLiveProjectVerifiedContinuationProof(p, { claimed: true });
+  return proofs.get(p).resume;
+}
 export function assertFoundationProjectVerifiedContinuationSetupResume(
   p,
   { sourceCommitSha, deadlineAt, previousEvents },
 ) {
   assertFoundationLiveProjectVerifiedContinuationProof(p, { claimed: true });
   assertFoundationProjectVerifiedContinuationJournalPrefixes(p);
+  const meta = proofs.get(p);
   if (
     sourceCommitSha !== c.sourceCommitSha ||
     deadlineAt !== p.deadlineAt ||
     !Array.isArray(previousEvents) ||
-    previousEvents.length !== 2 ||
-    JSON.stringify(previousEvents) !==
-      JSON.stringify([
-        { event: 'setup_attempt', ordinal: 1, kind: 'GET', at: 1792608136543 },
-        { event: 'setup_attempt', ordinal: 2, kind: 'GET', at: 1792666486587 },
-      ])
+    previousEvents.length !== meta.resume.setupRows ||
+    (meta.recovery
+      ? hash(previousEvents.map((r) => JSON.stringify(r) + '\n').join('')) !==
+        meta.recovery.pins[meta.checkpoint.journals.setup.path]
+      : JSON.stringify(previousEvents) !==
+        JSON.stringify([
+          { event: 'setup_attempt', ordinal: 1, kind: 'GET', at: 1792608136543 },
+          { event: 'setup_attempt', ordinal: 2, kind: 'GET', at: 1792666486587 },
+        ]))
   )
     fail();
   return p;
@@ -820,7 +1037,7 @@ export function assertFoundationProjectVerifiedContinuationControlResume(p, { de
   if (
     deadlineAt !== p.deadlineAt ||
     !Array.isArray(previousEvents) ||
-    previousEvents.length !== 200 ||
+    previousEvents.length !== proofs.get(p).resume.mainControlAttempts ||
     hash(previousEvents.map((r) => JSON.stringify(r) + '\n').join('')) !== proofs.get(p).controlPrefixSha256
   )
     fail();
@@ -832,6 +1049,8 @@ export function assertFoundationProjectVerifiedContinuationJournalPrefixes(p, op
     fail();
   const x = context();
   x.checkpoint = proofs.get(p).checkpoint;
+  x.recovery = proofs.get(p).recovery;
+  recoveryPreflight(x);
   const current = journals(x);
   if (
     options.managementText !== undefined &&
@@ -869,7 +1088,11 @@ export function reconcileFoundationProjectVerifiedContinuation(options = {}, dep
     checkpoint(x);
     approval(x);
     initial(x, false);
-    return Object.freeze({ status: 'ready_no_effects', privateRead: false, networkRequests: 0 });
+    return Object.freeze({
+      status: x.recovery ? 'ready_reconciled_effects' : 'ready_no_effects',
+      privateRead: false,
+      networkRequests: 0,
+    });
   } catch {
     return Object.freeze({ status: 'reconciliation_required', privateRead: false, networkRequests: 0 });
   }
@@ -947,7 +1170,7 @@ export function claimFoundationProjectVerifiedContinuation(p, options = {}, depe
     if (meta.claimed || meta.admissionSha256 !== hash(data.text) || data.claim) fail();
     // Admission already exists; the rest of the initial snapshot must still be exact.
     const values = initial(x, false, true);
-    if (values.management.rows.length !== 3) fail();
+    if (values.management.rows.length !== (x.recovery?.mainManagementAttempts ?? 2) + 1) fail();
     x.parent(data.r.parentProcessId, true);
     x.create(data.paths.claimRelative, {
       kind: 'm03_project_verified_continuation_runtime_claim',

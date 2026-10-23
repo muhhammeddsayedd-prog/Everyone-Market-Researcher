@@ -63,7 +63,7 @@ function powershell(code, expectedStatus = 0) {
 const definitions = (names, file = consumer) => `
 $errors=$null;$tokens=$null;$ast=[Management.Automation.Language.Parser]::ParseFile(${quote(resolve(file))},[ref]$tokens,[ref]$errors)
 if($errors.Count -ne 0){throw 'SOURCE_PARSE_FAILED'}
-foreach($name in @(${names.map(quote).join(',')})){
+foreach($name in @(${[...new Set([...(file === control ? ['Foundation-ProjectVerifiedTechnicalIdentity'] : []), ...names])].map(quote).join(',')})){
  $found=@($ast.FindAll({param($item) $item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true))
  if($found.Count -ne 1){throw 'EXPECTED_FUNCTION_MISSING'};Invoke-Expression $found[0].Extent.Text
 }`;
@@ -160,12 +160,45 @@ function Test-Path {param($LiteralPath)
 }
 function Assert-Path($Root,$Relative){return Join-Path $Root $Relative}
 $value=Resolve-FoundationProjectVerifiedTechnicalPaths
-if(-not $value.admission.EndsWith('.technical-2.json') -or -not $value.claim.EndsWith('.technical-2.runtime-claim.json')){throw 'WRONG_TECHNICAL_SELECTION'}
+if(-not $value.admission.EndsWith('.technical-2.json') -or -not $value.claim.EndsWith('.technical-2.runtime-claim.json') -or $value.technicalOrdinal -ne 2){throw 'WRONG_TECHNICAL_SELECTION'}
 $script:fault=$true;$blocked=$false;try{$null=Resolve-FoundationProjectVerifiedTechnicalPaths}catch{$blocked=$true}
 if(-not $blocked){throw 'ORPHAN_CLAIM_NOT_RECONCILED'}
 Write-Output 'TECHNICAL_ANCESTRY_PATHS_VERIFIED'
 `);
     assert.equal(output, 'TECHNICAL_ANCESTRY_PATHS_VERIFIED');
+  },
+);
+
+test(
+  'technical DB output and audit identities are bounded and derive only from the native selected ordinal',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const output = powershell(`
+${definitions(['Foundation-ProjectVerifiedTechnicalIdentity'], control)}
+$ProjectVerifiedContinuation=$true;$script:projectVerifiedTechnicalOrdinal=2
+$value=Foundation-ProjectVerifiedTechnicalIdentity
+if($value.outputSegment -cne '${segment}-technical-2' -or $value.auditSegment -cne '${segment}:technical-2' -or $value.ordinal -ne 2){throw 'WRONG_TECHNICAL_IDENTITIES'}
+foreach($bad in @('2',0,1024)){$script:projectVerifiedTechnicalOrdinal=$bad;$blocked=$false;try{$null=Foundation-ProjectVerifiedTechnicalIdentity}catch{$blocked=$true};if(-not $blocked){throw 'UNBOUNDED_ORDINAL_ACCEPTED'}}
+Write-Output 'TECHNICAL_DB_IDENTITIES_VERIFIED'
+`);
+    assert.equal(output, 'TECHNICAL_DB_IDENTITIES_VERIFIED');
+  },
+);
+
+test(
+  'technical fixture SQL sets its native selected ordinal before validating the exact retained lifecycle',
+  { skip: process.platform !== 'win32' },
+  () => {
+    const output = powershell(`
+${definitions(['Foundation-FixtureSql'], control)}
+$ProjectVerifiedContinuation=$true;$StartupReplacement=$false;$RemainingContinuation=$false;$PostcheckContinuation=$true;$script:projectVerifiedTechnicalOrdinal=2;$repo=${quote(resolve('.'))}
+function Assert-Path($Root,$Relative){return Join-Path $Root $Relative}
+$sql=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'
+if(-not $sql.Contains("set_config('emr.smoke_technical_ordinal','2',true)") -or $sql.IndexOf("set_config('emr.smoke_technical_ordinal','2',true)") -gt $sql.IndexOf('v_technical_text:=')){throw 'TECHNICAL_SETTING_ORDER_CHANGED'}
+if($sql.Contains('\\set') -or -not $sql.Contains('v_known_audit_ids') -or -not $sql.Contains('M03_REACTIVATION_ORIGINAL_BASELINE_CHANGED')){throw 'SQL_BOUNDARY_WEAKENED'}
+Write-Output 'TECHNICAL_SQL_SETTINGS_VERIFIED'
+`);
+    assert.equal(output, 'TECHNICAL_SQL_SETTINGS_VERIFIED');
   },
 );
 
@@ -595,10 +628,10 @@ test(
   () => {
     powershell(`
 ${definitions(['Reactivate-FoundationProjectVerifiedContinuationFixture'], control)}
-$ProjectVerifiedContinuation=$true;$RemainingContinuation=$false;$phaseAStart=[DateTime]::UtcNow;$out='C:\\__emr_synthetic_never_accessed';$runId='synthetic';$continuationOutputStem='m03-foundation-project-verified-continuation-';$postcheckContinuationSegment='${segment}';$receipt=[ordered]@{};$script:remainingOwnedFixture=$null;$script:intent=0;$script:mutations=0;$script:readbackFails=$false;$script:history=0;$script:archived=0
+$ProjectVerifiedContinuation=$true;$RemainingContinuation=$false;$script:projectVerifiedTechnicalOrdinal=2;$phaseAStart=[DateTime]::UtcNow;$out='C:\\__emr_synthetic_never_accessed';$runId='synthetic';$continuationOutputStem='m03-foundation-project-verified-continuation-';$postcheckContinuationSegment='${segment}';$receipt=[ordered]@{};$script:remainingOwnedFixture=$null;$script:intent=0;$script:mutations=0;$script:readbackFails=$false;$script:history=0;$script:archived=0
 function Assert-FoundationContinuationVacant {param([switch]$RefreshHistory) if(-not $RefreshHistory){throw 'FRESH14_REQUIRED'};$script:history++}
 function Assert-FoundationRemainingArchivedFixture {$script:archived++;return 'synthetic-verified'}
-function Write-NewJson($Path,$Value){if($script:intent -ne 0){throw 'ONCE_ONLY'};if($script:history -ne 1 -or $script:archived -ne 1 -or -not $Path.EndsWith('m03-foundation-project-verified-continuation-${segment}-reactivation-attempt.json') -or $Value.segmentId -cne '${segment}' -or $Value.competitorId -cne 'd51a39f6-fe87-4d17-aee9-3070c45693aa' -or $Value.accountId -cne 'bd23314c-591f-4fb7-92fd-b7450634eeb6'){throw 'WRONG_REACTIVATION_INTENT'};$script:intent++}
+function Write-NewJson($Path,$Value){if($script:intent -ne 0){throw 'ONCE_ONLY'};if($script:history -ne 1 -or $script:archived -ne 1 -or -not $Path.EndsWith('m03-foundation-project-verified-continuation-${segment}-technical-2-reactivation-attempt.json') -or $Value.segmentId -cne '${segment}' -or $Value.competitorId -cne 'd51a39f6-fe87-4d17-aee9-3070c45693aa' -or $Value.accountId -cne 'bd23314c-591f-4fb7-92fd-b7450634eeb6'){throw 'WRONG_REACTIVATION_INTENT'};$script:intent++}
 function Foundation-FixtureSql($Name){if($Name -cne 'm03_smoke_reactivate_project_verified.sql'){throw 'WRONG_SQL'};return 'synthetic-reactivation'}
 function Invoke-FoundationMutation($Sql){if($script:intent -ne 1){throw 'NO_INTENT'};$script:mutations++;return [ordered]@{childrenClosed=$true;acknowledged=$false}}
 function Read-FoundationProjectVerifiedContinuationReactivatedFixture {if($script:readbackFails){throw 'UNKNOWN_READBACK'};return [pscustomobject]@{result='M03_SMOKE_FIXTURE_READY';company_code='C999';competitor_id='d51a39f6-fe87-4d17-aee9-3070c45693aa';account_id='bd23314c-591f-4fb7-92fd-b7450634eeb6';platform='website_work_page';url='https://everyone.film/about-everyone';competitor_status='active';account_status='active'}}
@@ -619,9 +652,9 @@ test(
     powershell(`
 ${definitions(['Read-FoundationProjectVerifiedContinuationReactivatedFixture', 'Assert-FoundationContinuationFixture'], control)}
 ${definitions(['Assert-Keys'])}
-$script:foreign=$false
+$ProjectVerifiedContinuation=$true;$script:projectVerifiedTechnicalOrdinal=2;$script:foreign=$false
 function Invoke-FoundationQuery($Sql,$Field){
- if($Field -cne 'fixture' -or -not $Sql.Contains("l.actor_id='m03_smoke_reactivate.v1:${segment}'") -or -not $Sql.Contains("l.after->>'segment_id'='${segment}'") -or $Sql.Contains('${previous}') -or -not $Sql.Contains("o.action='m03_smoke_fixture_created'")){throw 'WRONG_REACTIVATION_AUDIT'}
+ if($Field -cne 'fixture' -or -not $Sql.Contains("l.actor_id='m03_smoke_reactivate.v1:${segment}:technical-2'") -or -not $Sql.Contains("l.after->>'segment_id'='${segment}:technical-2'") -or $Sql.Contains('${previous}') -or -not $Sql.Contains("o.action='m03_smoke_fixture_created'")){throw 'WRONG_REACTIVATION_AUDIT'}
  return [pscustomobject]@{result='M03_SMOKE_FIXTURE_READY';company_code='C999';competitor_id=$(if($script:foreign){'90000000-0000-4000-8000-000000000001'}else{'d51a39f6-fe87-4d17-aee9-3070c45693aa'});account_id='bd23314c-591f-4fb7-92fd-b7450634eeb6';platform='website_work_page';url='https://everyone.film/about-everyone';competitor_status='active';account_status='active'}
 }
 $value=Read-FoundationProjectVerifiedContinuationReactivatedFixture
