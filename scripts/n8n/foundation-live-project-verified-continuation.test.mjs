@@ -187,6 +187,197 @@ test('isolated approved-budget fixture claims only fresh window/source and prese
   }
 });
 
+test('claimed fresh-window read preserves closed journal prefixes while accepting charged baseline discovery appends', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true });
+  try {
+    const proof = f.claim(f.admit());
+    f.io.processAlive = (pid) => pid === process.pid || pid === process.ppid;
+    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+    const managementBefore = readFileSync(f.paths.management, 'utf8');
+    const controlBefore = readFileSync(f.paths.control, 'utf8');
+    for (let i = 0; i < 25; i++)
+      appendFileSync(
+        f.paths.management,
+        JSON.stringify({ event: 'management_attempt', ordinal: 93 + i }) + '\n',
+      );
+    for (let i = 0; i < 50; i++)
+      appendFileSync(
+        f.paths.control,
+        JSON.stringify({ event: 'control_request_intent', ordinal: 301 + i, kind: 'discovery' }) + '\n',
+      );
+    const current = f.readClaimed();
+    assert.equal(current.sourceCommitSha, proof.sourceCommitSha);
+    assert.equal(current.windowId, proof.windowId);
+    assert.equal(current.carriedManagementAttempts, 10);
+    assert.equal(readFileSync(f.paths.management, 'utf8').startsWith(managementBefore), true);
+    assert.equal(readFileSync(f.paths.control, 'utf8').startsWith(controlBefore), true);
+    for (const [path, text] of [
+      [f.paths.management, managementBefore],
+      [f.paths.control, controlBefore],
+    ]) {
+      const currentText = readFileSync(path, 'utf8');
+      const rows = currentText.trimEnd().split('\n').map(JSON.parse);
+      rows[1].ordinal = 999;
+      writeFileSync(path, rows.map(JSON.stringify).join('\n') + '\n');
+      assert.throws(() => f.readClaimed(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      writeFileSync(path, currentText);
+      assert.equal(readFileSync(path, 'utf8').startsWith(text), true);
+    }
+    assert.equal(f.readClaimed().windowId, proof.windowId);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('claimed closed-window journal prefix changes and immutable historical runtime changes remain blocked', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true });
+  try {
+    f.claim(f.admit());
+    f.io.processAlive = (pid) => pid === process.pid || pid === process.ppid;
+    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+    for (const name of ['management', 'control', 'setup', 'preflight', 'runtime']) {
+      const path = join(f.directory, 'scripts/n8n/out/foundation/live', name + '.jsonl');
+      const text = readFileSync(path, 'utf8');
+      writeFileSync(path, text.replace('{', '{ '));
+      assert.throws(() => f.readClaimed(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      writeFileSync(path, text);
+    }
+    const oldRuntime = join(f.directory, 'scripts/n8n/out/foundation/live/runtime.jsonl');
+    const before = readFileSync(oldRuntime, 'utf8');
+    appendFileSync(oldRuntime, '{}\n');
+    assert.throws(() => f.readClaimed(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+    writeFileSync(oldRuntime, before);
+    assert.equal(f.readClaimed().carriedManagementAttempts, 10);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('closed read-only technical3 admits only an immutable technical4 and retains all127/351 charges and false historical closure', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ readonlyPrepare: true });
+  try {
+    const base = f.paths.admission.slice(0, -5);
+    const preserved = [
+      '.technical-3.json',
+      '.technical-3.runtime-claim.json',
+      '.technical-3.closed.json',
+    ].map((suffix) => [base + suffix, readFileSync(base + suffix, 'utf8')]);
+    assert.equal(f.check().kind, 'project_verified_continuation_ready');
+    const proof = f.claim(f.admit());
+    const current = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(current.technicalAttemptOrdinal, 4);
+    assert.equal(current.runtimeFilename, 'runtime.technical-4.jsonl');
+    assert.equal(current.mainManagementAttempts, 117);
+    assert.equal(current.aggregateManagementAttempts, 127);
+    assert.equal(current.mainControlAttempts, 350);
+    assert.equal(current.aggregateControlAttempts, 351);
+    assert.equal(current.setupAttempts, 44);
+    assert.equal(current.setupMaximum, 88);
+    assert.equal(current.gatewayPreflightAttempts, 2);
+    assert.equal(current.legacySqlAdmitted, 2);
+    assert.equal(existsSync(base + '.technical-4.json'), true);
+    assert.equal(existsSync(base + '.technical-4.runtime-claim.json'), true);
+    for (const [path, text] of preserved) assert.equal(readFileSync(path, 'utf8'), text);
+    const closed = JSON.parse(preserved[2][1]);
+    assert.equal(closed.closureVerified, false);
+    assert.equal(closed.bypassHandoffDeleted, false);
+    f.io.processAlive = (pid) => pid === process.pid || pid === process.ppid;
+    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+    assert.equal(f.readClaimed().carriedManagementAttempts, 10);
+    assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('read-only technical3 recovery rejects changed usage, effects, cleanup and rewritten closure assertions', async () => {
+  for (const readonlyPrepareFault of ['usage', 'side-effect', 'actor', 'cleanup', 'closure-rewritten']) {
+    const f = await syntheticProjectVerifiedContinuation({ readonlyPrepare: true, readonlyPrepareFault });
+    try {
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-4.json')), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('read-only technical3 recovery requires immutable receipts, prefixes, closed owners and no new side-effect intent', async () => {
+  for (const fault of [
+    'receipt',
+    'attempt',
+    'admission',
+    'claim',
+    'closed',
+    'management',
+    'control',
+    'live-owner',
+    'new-intent',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ readonlyPrepare: true });
+    try {
+      const base = f.paths.admission.slice(0, -5);
+      const paths = {
+        receipt: join(
+          f.directory,
+          'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical3-reconciliation-20261023.json',
+        ),
+        attempt: join(
+          f.directory,
+          'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical3-attempt-20261023.json',
+        ),
+        admission: base + '.technical-3.json',
+        claim: base + '.technical-3.runtime-claim.json',
+        closed: base + '.technical-3.closed.json',
+        management: f.paths.management,
+        control: f.paths.control,
+      };
+      if (Object.hasOwn(paths, fault)) {
+        const text = readFileSync(paths[fault], 'utf8');
+        writeFileSync(paths[fault], text.replace('{', '{ '));
+      }
+      if (fault === 'live-owner') f.io.processAlive = (pid) => pid === 91001;
+      if (fault === 'new-intent')
+        f.put(
+          'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-4-owner-provision-attempt.json',
+          '{}\n',
+        );
+      assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(existsSync(base + '.technical-4.json'), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('read-only technical3 recovery refuses every prior DB output or runtime journal collision', async () => {
+  for (const suffix of [
+    'attempt',
+    'latest',
+    'owner-provision-attempt',
+    'reactivation-attempt',
+    'unprovisioned-archive-attempt',
+    'runtime',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ readonlyPrepare: true });
+    try {
+      const path =
+        suffix === 'runtime'
+          ? 'scripts/n8n/out/foundation/live/runtime.technical-3.jsonl'
+          : 'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-3-' +
+            suffix +
+            '.json';
+      f.put(path, '{}\n');
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+      assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-4.json')), false);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
 test('fresh logical plan uses an immutable runtime sibling while original runtime and global journals remain historical', async () => {
   const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true }),
     live = liveRuntimeFixture();

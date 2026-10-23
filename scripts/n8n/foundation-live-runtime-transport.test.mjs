@@ -117,6 +117,8 @@ const path = '/api/v1/workflows/' + p.baseline[0].id + '?excludePinnedData=true'
 
 test('readonly baseline preflight uses only25 source-owned GETs and admits each against the existing budget', async () => {
   let attempts = 0;
+  const managementBudget = Object.freeze({ syntheticBudgetOwner: true }),
+    deadlineAt = Date.now() + 60000;
   const dto = (b) => ({
     ...structuredClone(b.body),
     settings: { ...structuredClone(b.body.settings), ...(b.nativeReadonlySettings ?? {}) },
@@ -141,7 +143,8 @@ test('readonly baseline preflight uses only25 source-owned GETs and admits each 
             JSON.parse(readFileSync(new URL('../../n8n/workflows/' + key + '.json', import.meta.url))),
           ),
           apiKey: 'SYNTHETIC_PRIVATE_PREFLIGHT',
-          deadlineAt: Date.now() + 60000,
+          deadlineAt,
+          managementBudget,
           admitManagementAttempt() {
             attempts++;
           },
@@ -149,7 +152,19 @@ test('readonly baseline preflight uses only25 source-owned GETs and admits each 
         d,
       ),
   });
-  assert.deepEqual(await f.t.read(), { verifiedWorkflows: 25 });
+  const receipt = await f.t.read();
+  assert.deepEqual(receipt, { verifiedWorkflows: 25 });
+  const scope = { baseline: p.baseline, deadlineAt, managementBudget };
+  assert.equal(liveTransport.assertFoundationLiveBaselineReceipt(receipt, scope), receipt);
+  for (const [proof, context] of [
+    [{ ...receipt }, scope],
+    [receipt, { ...scope, deadlineAt: deadlineAt + 1 }],
+    [receipt, { ...scope, managementBudget: {} }],
+    [receipt, { ...scope, baseline: p.baseline.slice(1) }],
+  ])
+    assert.throws(() => liveTransport.assertFoundationLiveBaselineReceipt(proof, context));
+  liveTransport.claimFoundationLiveBaselineReceipt(receipt, scope);
+  assert.throws(() => liveTransport.claimFoundationLiveBaselineReceipt(receipt, scope));
   assert.equal(attempts, 25);
   assert.equal(f.options.length, 25);
   assert.equal(

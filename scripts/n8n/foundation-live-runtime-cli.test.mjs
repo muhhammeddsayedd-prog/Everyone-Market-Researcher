@@ -10,7 +10,7 @@ import {
   projectFoundationBaselineDiagnostic,
 } from './foundation-live-runtime-cli.mjs';
 import * as liveSql from './foundation-live-runtime-cli.mjs';
-import { fixture } from './foundation-live-runtime-fixtures.mjs';
+import { fixture, syntheticBaselinePreflight } from './foundation-live-runtime-fixtures.mjs';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 
 const privatePacket = () => ({
@@ -38,6 +38,58 @@ const replaySnapshot = () => ({
   rawSnapshotsSha256: 'b'.repeat(64),
   queuesSha256: 'c'.repeat(64),
   costsSha256: 'd'.repeat(64),
+});
+test('early native metadata preflight charges once, reads only the exact saved version and never executes', async () => {
+  const workflow = { id: 'MzimjpsuyPuK7SKe', versionId: 'f5f755b7-9683-4fb6-a26d-87b001127244' };
+  const order = [];
+  const args = {
+    workflow,
+    now: () => 1792782000000,
+    admit(value) {
+      order.push('charge');
+      assert.deepEqual(value, { kind: 'discovery', workflowId: workflow.id });
+    },
+    append(value) {
+      order.push('verified');
+      assert.equal(value.workflowId, workflow.id);
+    },
+    port: {
+      async details(value) {
+        order.push('details');
+        assert.deepEqual(value, { workflowId: workflow.id });
+        return { ...workflow, canExecute: false, scopes: ['workflow:read'] };
+      },
+      start() {
+        throw Error('NATIVE_START_FORBIDDEN');
+      },
+    },
+  };
+  assert.deepEqual(await liveSql.verifyFoundationLiveNativeMetadata(args), {
+    metadataVerified: true,
+    executionsStarted: 0,
+  });
+  assert.deepEqual(order, ['charge', 'details', 'verified']);
+  for (const value of [
+    null,
+    { ...workflow, canExecute: false, scopes: [], extra: true },
+    { ...workflow, versionId: 'changed', canExecute: true, scopes: [] },
+    { ...workflow, id: 'foreign', canExecute: true, scopes: [] },
+    { ...workflow, canExecute: 'true', scopes: [] },
+  ]) {
+    let verified = false;
+    await assert.rejects(
+      () =>
+        liveSql.verifyFoundationLiveNativeMetadata({
+          ...args,
+          append() {
+            verified = true;
+          },
+          port: { details: async () => value },
+        }),
+      /FOUNDATION_LIVE_CHILD_BLOCKED/,
+    );
+    assert.equal(verified, false);
+  }
 });
 test('strict replay parity validates exactly six counts/four hashes and ignores property order', () => {
   const before = replaySnapshot(),
@@ -718,15 +770,7 @@ for (const mode of [
         storage: { directory: f.directory },
         startAdmin: async () => admin,
         createNativeTransport: () => nativeTransport,
-        createBaselinePreflight: ({ admitManagementAttempt }) => ({
-          async read() {
-            for (let i = 0; i < 25; i++) admitManagementAttempt();
-            return { verifiedWorkflows: 25 };
-          },
-          state: () => ({ pendingRequests: 0, unclosedResponses: 0 }),
-          diagnostics: () => null,
-          close() {},
-        }),
+        createBaselinePreflight: (input) => syntheticBaselinePreflight(input, { workflows: f.workflows }),
         createWriterCloser: (args) => {
           assert.equal(args.password, packet.writerPassword);
           assert.equal(args.sourceCommitSha, packet.sourceCommitSha);

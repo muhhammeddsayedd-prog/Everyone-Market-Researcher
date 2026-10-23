@@ -36,7 +36,10 @@ import {
   assertFoundationControlBudget,
 } from './foundation-control-state.mjs';
 import { prepareFoundationRuntimeMachinePatch } from './foundation-runtime-machine.mjs';
-import { createFoundationLiveManagementTransport } from './foundation-live-runtime-transport.mjs';
+import {
+  createFoundationLiveManagementTransport,
+  assertFoundationLiveBaselineReceipt,
+} from './foundation-live-runtime-transport.mjs';
 import { assertFoundationLiveZeroSetupProof } from './foundation-live-zero-setup.mjs';
 import {
   assertFoundationLiveClockAmendmentProof,
@@ -379,6 +382,13 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
   assertFoundationLiveManagementBudget(budget);
   const scope = managementBudgets.get(budget);
   if (scope.sourceCommitSha !== input.setup.sourceCommitSha || scope.deadlineAt !== input.deadlineAt) fail();
+  const baselinePreflightReceipt = dependencies.baselinePreflightReceipt;
+  if (baselinePreflightReceipt !== undefined)
+    assertFoundationLiveBaselineReceipt(baselinePreflightReceipt, {
+      baseline: plan.baseline,
+      deadlineAt: input.deadlineAt,
+      managementBudget: budget,
+    });
   const directory = scope.directory;
   let transport,
     closed = false,
@@ -440,6 +450,13 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
       protectionBypass = input.protectionBypass;
     const ports = {
       journal,
+      ...(baselinePreflightReceipt === undefined
+        ? {}
+        : {
+            baselinePreflightReceipt,
+            deadlineAt: input.deadlineAt,
+            managementBudget: budget,
+          }),
       send: (method, path, body) => transport.send(method, path, body),
       admitManagementAttempt() {
         if (closed || failed || now() >= input.deadlineAt) fail();
@@ -481,14 +498,15 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
           status: 'local_runtime_ready',
           privateFileRead: false,
           hostedActions: 0,
-          setupDriftGuardGetCount: 25,
+          setupDriftGuardGetCount: baselinePreflightReceipt === undefined ? 25 : 0,
           managementMaximum: 512,
           controlMaximum: 2048,
         }),
       setup: () =>
         exclusive(() => {
           const state = foundationRuntimeState(plan, journal);
-          if (state.requestCount === 0 && budget.snapshot().attempts + 134 + 142 > 512)
+          const setupRequests = baselinePreflightReceipt === undefined ? 134 : 109;
+          if (state.requestCount === 0 && budget.snapshot().attempts + setupRequests + 142 > 512)
             return Object.freeze({ status: 'shared_management_reserve_required' });
           return runFoundationRuntimeSetup(plan, ports);
         }),

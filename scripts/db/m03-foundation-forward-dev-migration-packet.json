@@ -153,14 +153,14 @@
     "scripts/assert/m03_smoke_reactivate_startup.sql": "cc2654e4d499cbd5fc1a6c75c30d991ea8f46bef3fa37f66bd415ad8b192e202",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json": "e144d73dfbcab1e5a286ab9ba11df28bcbd10c8a9ad39eecb7852fee3d61d758",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0",
-    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "d8ec4004ac87f68b0d16ea5bf3d39da98c8daf597b75b19fec501bcf63f884c4",
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "fadc558be74ce11c4e38ca391dacd6b53a9e31adf4de95bedf8764513a991f3f",
     "scripts/assert/m03_smoke_reactivate_project_verified.sql": "c5490233a5ed67e45ea6e94acb190170c14243126ef4b9bb3fdb346028b306c4",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json": "e21e515ae446dcde7983dba87d09221ce1bf3cd2ad06d08329368a8241e6ba10",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md": "13d19460cdb889378dec5ae4d93af4708baf85290c164e07961add18e7243650",
     "scripts/db/foundation-inspect.sql": "51ca08cd0e9be3ed4abf14c526933c57419d03bd5c277d6a4337d5bf3adce434",
     "scripts/n8n/windows/Dev-CredentialStore.ps1": "49c16b64f9b57c4e27cf6ad92dc16cd05c6cf29a7ada7f9c7fa6e8f64ca5fc13",
     "scripts/db/foundation-forward-postcheck.sql": "8ebe8951deab86a7d93c0826aa9299dd9215b84bfeb8fa215bee1843527e300d",
-    "scripts/db/m03-foundation-dev-migration-packet.json": "f053f2d4769218dc6d73af9045b0a311364dc034306e4c5041901874995df2e1"
+    "scripts/db/m03-foundation-dev-migration-packet.json": "a491ddb0093577e0fcb782d3df9572dcaf7194c8c41b5f42e6c51c67ebf3b68a"
   },
   "node": {
     "path": "C:\\Program Files\\nodejs\\node.exe",

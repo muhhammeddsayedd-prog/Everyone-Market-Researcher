@@ -1,0 +1,179 @@
+{
+  "kind": "actual_m03_technical3_prepare_failure",
+  "recordedAt": "2026-10-23T18:50:30.336Z",
+  "environment": "dev",
+  "delivery": {
+    "head": "479d22beaa7b703e0a9d8f3e68bd4e523061baf6",
+    "ciRun": 40005120693,
+    "ciConclusion": "success",
+    "ciJobs": [
+      "quality",
+      "unit",
+      "build",
+      "e2e",
+      "db-tests"
+    ],
+    "vercelCheck": "success",
+    "ciReadbackTool": "1fe462",
+    "prReadbackTool": "048b09",
+    "pr8Draft": true,
+    "pr8Merged": false
+  },
+  "actual": {
+    "coordinatorNativeProcessSession": 33971,
+    "technicalAttemptOrdinal": 3,
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "appSourceCommitSha": "a5e746736893d5040e93032ae740a0878f748837",
+    "plannedWindowId": "38b3708d-61b0-41d2-8170-5ed91c66b4dc",
+    "startsAt": "2026-10-23T18:46:32.737Z",
+    "deadlineAt": "2026-10-23T19:46:32.737Z",
+    "stopNewAt": "2026-10-23T19:36:32.737Z",
+    "hardDeadlineAt": "2026-10-23T19:56:32.737Z",
+    "transportAcknowledged": true,
+    "savedSessionMetadataCovers75": true,
+    "privateChildReady": true,
+    "prepareOperationId": "m03_live_001",
+    "prepareStatus": "blocked",
+    "diagnosticCode": "FOUNDATION_ADMIN_PREFLIGHT_BLOCKED",
+    "residual": true,
+    "baselineWorkflowGetsSucceeded": 25,
+    "executionDiscoveryGets": 50,
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "adminDpapiOpened": false,
+    "adminAuthenticationAttempted": false,
+    "newPreviewOrSetupRequests": 0,
+    "databaseOrFixtureWindowWritesReached": false,
+    "attemptedNextCloseOperationId": "m03_live_002",
+    "nextCloseProtocolReceiptProduced": false,
+    "limitation": "The wrapper had already exited before the next Close. Preserve the process result; no protocol Close or complete restoration receipt is fabricated.",
+    "rootCause": null,
+    "rootCauseEstablished": false
+  },
+  "physicalClosure": {
+    "kind": "m03_project_verified_technical_closed",
+    "version": 1,
+    "admissionSha256": "5b668844b625608e5434aac60f2d5a2fd6f96adcf81be100d8f799296a86790e",
+    "parentProcessId": 10936,
+    "runtimeProcessId": 43044,
+    "closedAt": 1792781261354,
+    "childClosed": true,
+    "credentialChildrenClosed": true,
+    "emergencyShutdown": false,
+    "pendingMachinePreserved": true,
+    "nativeExit": 1,
+    "bypassHandoffDeleted": false,
+    "closureVerified": false,
+    "closedAtIso": "2026-10-23T18:47:41.354Z",
+    "childClosureDoesNotEstablishRemoteSettlement": true,
+    "persistentOriginalsRetained": true,
+    "bypassHandoffDeletedFalsePreserved": true,
+    "disposableCleanupNotEstablishedByThisRecord": true
+  },
+  "usage": {
+    "before": {
+      "management": 102,
+      "control": 301,
+      "combined": 403
+    },
+    "mainManagement": 117,
+    "carriedManagement": 10,
+    "management": 127,
+    "mainControl": 350,
+    "carriedControl": 1,
+    "control": 351,
+    "combined": 478,
+    "thisAttempt": {
+      "management": 25,
+      "control": 50,
+      "combined": 75
+    },
+    "vercelSetupUsed": 44,
+    "vercelSetupMaximum": 88,
+    "managementMaximum": 512,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "nativeExecutions": 0,
+    "nativeMaximum": 120,
+    "actorStarts": 0,
+    "actorStartsMaximum": 2,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "actorSpendUsd": 0,
+    "allowancesReplenished": false
+  },
+  "publicSourceRecords": {
+    "admission": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-3.json",
+      "bytes": 446,
+      "sha256": "5b668844b625608e5434aac60f2d5a2fd6f96adcf81be100d8f799296a86790e"
+    },
+    "runtimeClaim": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-3.runtime-claim.json",
+      "bytes": 275,
+      "sha256": "6af507439aabcfe3dcc37556b3a584434077265d619f42e5a1dc24f83cd94bf6"
+    },
+    "closed": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-3.closed.json",
+      "bytes": 396,
+      "sha256": "95622cb4b4b82381758b4889be770588522b62b0469204f328fb9212a38c7783"
+    },
+    "management": {
+      "path": "scripts/n8n/out/foundation/live/management.jsonl",
+      "bytes": 5287,
+      "sha256": "79d556144e111625be9b90d9743dae118b90c6e64eac4ab43b7f13f337506a97",
+      "rowCount": 118,
+      "attemptRows": 117
+    },
+    "control": {
+      "path": "scripts/n8n/out/foundation/live/control.jsonl",
+      "bytes": 46092,
+      "sha256": "2977c9a399e170f3b437e63190526b0e915cc94f786ac0b40870653e0bf2c3ff",
+      "rowCount": 350
+    },
+    "setup": {
+      "path": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "bytes": 9102,
+      "sha256": "0cad48fd9550da762c0b629ee63364e4668f4829c3a89bd6f75ec2843d32f624",
+      "newAttemptRequests": 0
+    },
+    "runtime": {
+      "path": "scripts/n8n/out/foundation/live/runtime.jsonl",
+      "bytes": 5713,
+      "sha256": "3f1c85ad7d185481da33c8989b34b82cbbef26aa3ec01209bc13561bd3481378",
+      "newAttemptRequests": 0
+    }
+  },
+  "evidenceLimitations": {
+    "publicRecordReadOnly": true,
+    "privateContentsReadForThisRecord": false,
+    "hostedCallsForThisRecord": 0,
+    "rawRuntimePayloadsExcluded": true,
+    "adminPreflightCauseNotYetConfirmed": true,
+    "oldClosedDf4AndArchivedC999": "Last verified state preserved; this attempt reached no database/fixture write. No new hosted SQL readback is claimed.",
+    "bypassFalseIsNotAClaimOfRemoteExposure": true,
+    "closureVerified": false
+  },
+  "preserved": {
+    "original14Fingerprints": true,
+    "appliedDevMigrationCount": 15,
+    "seededDataExclusionsLogos": true,
+    "wf00VerifiedRestoreAndOther24Pins": true,
+    "retentionConditions": true,
+    "priorAttemptsClosedWindowsAndCounters": true,
+    "persistentCredentialOriginals": true
+  },
+  "acceptance": {
+    "technicalAttemptAdmitted": true,
+    "prepareSucceeded": false,
+    "m03DevAcceptanceVerified": false,
+    "remoteSettlementVerified": false,
+    "newOwnerCredentialOrTimeActionRequired": false,
+    "productionChanged": false,
+    "recurringActivityStarted": false,
+    "externalNotificationsSent": false,
+    "pr8Merged": false,
+    "m04Started": false
+  },
+  "nextStep": "Reconcile exact local Admin preflight boundary and actual side effects, fix and test the defect, then safely continue incomplete M03 dev acceptance under standing authority and unchanged cumulative caps. No replay, credential handoff or time-only approval."
+}

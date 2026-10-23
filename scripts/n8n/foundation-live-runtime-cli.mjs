@@ -14,7 +14,10 @@ import {
   createFoundationLiveGatewayProbe,
   createFoundationLiveWriterCloser,
   createFoundationLiveBaselinePreflight,
+  assertFoundationLiveBaselineReceipt,
 } from './foundation-live-runtime-transport.mjs';
+import { assertFoundationRuntimeRestorationAudit } from './foundation-runtime-control.mjs';
+import { createFoundationRuntimeBaseline } from './foundation-runtime-plan.mjs';
 import {
   createFoundationLiveSetup,
   createFoundationLiveSetupJournal,
@@ -90,6 +93,45 @@ const exact = (v, keys) =>
   !Array.isArray(v) &&
   Object.keys(v).length === keys.length &&
   keys.every((k) => Object.hasOwn(v, k));
+// Metadata access is checked before expensive owned DB/Preview preparation.
+// This proves native read access only; it never tests execution or an actor.
+export async function verifyFoundationLiveNativeMetadata({ port, workflow, admit, append, now }) {
+  if (
+    !port ||
+    typeof port.details !== 'function' ||
+    !workflow ||
+    typeof admit !== 'function' ||
+    typeof append !== 'function' ||
+    typeof now !== 'function'
+  )
+    fail();
+  const charged = admit({ kind: 'discovery', workflowId: workflow.id });
+  if (charged !== undefined) {
+    if (charged?.then) Promise.resolve(charged).catch(() => {});
+    fail();
+  }
+  const value = await port.details({ workflowId: workflow.id });
+  if (
+    !exact(value, ['id', 'versionId', 'canExecute', 'scopes']) ||
+    value.id !== workflow.id ||
+    value.versionId !== workflow.versionId ||
+    typeof value.canExecute !== 'boolean' ||
+    !Array.isArray(value.scopes) ||
+    value.scopes.length > 64 ||
+    !value.scopes.every((v) => typeof v === 'string' && /^[a-zA-Z0-9:_*-]{1,80}$/.test(v))
+  )
+    fail();
+  if (
+    append({
+      event: 'native_port_preflight_verified',
+      workflowId: workflow.id,
+      versionId: workflow.versionId,
+      at: new Date(now()).toISOString(),
+    }) !== undefined
+  )
+    fail();
+  return Object.freeze({ metadataVerified: true, executionsStarted: 0 });
+}
 export function projectFoundationBaselineDiagnostic(runtime) {
   try {
     const value = runtime?.diagnostics?.();
@@ -541,6 +583,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     gateway,
     writerCloser,
     baselinePreflight,
+    baselinePreflightReceipt,
     nativeTransport,
     fixture,
     preflight,
@@ -571,6 +614,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     shutdownResult;
   let adminPhysicalClosed = true;
   let adminStartupFailure = null;
+  let nativeMetadataFailure = false;
   let adminLifecycleVerified = true,
     adminEndAttempted = false;
   const attemptedCaseIds = new Set(),
@@ -602,6 +646,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     ...(adminStartupFailure
       ? { code: 'FOUNDATION_ADMIN_' + adminStartupFailure.diagnostic.toUpperCase() }
       : {}),
+    ...(nativeMetadataFailure ? { code: 'FOUNDATION_NATIVE_METADATA_BLOCKED' } : {}),
     ...projectFoundationBaselineDiagnostic(runtime ?? baselinePreflight),
     ...extra,
   });
@@ -675,8 +720,21 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     if (preparing || prepared || closed) fail();
     preparing = true;
     // Twenty-five source-only GETs precede all owner DB/Preview/fixture writes.
-    // Reserve the bounded44-request delivery plus332 runtime/restoration work.
-    if (budget.snapshot().attempts + 25 + 44 + 332 > 512) fail();
+    // Reuse this actual25-read proof in runtime setup, and its own final25
+    // restoration audit, retaining every fresh per-write GET/PUT/GET.
+    // 109setup +24drafts*3 +2Machine reads +124restore =307.
+    if (budget.snapshot().attempts + 25 + 44 + 307 > 512) fail();
+    if (verifiedCheckpoint?.closedWindow) {
+      nativeMetadataFailure = true;
+      await verifyFoundationLiveNativeMetadata({
+        port: bridge.port,
+        workflow: records.find((record) => record.key === 'WF-00'),
+        admit: (args) => controlBudget.admit(args),
+        append,
+        now,
+      });
+      nativeMetadataFailure = false;
+    }
     baselinePreflight = (dependencies.createBaselinePreflight ?? createFoundationLiveBaselinePreflight)(
       {
         bindings,
@@ -684,11 +742,20 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         apiKey: input.managementKey,
         deadlineAt,
         admitManagementAttempt: () => budget.admit(),
+        managementBudget: budget,
       },
       dependencies.baselineTransport ?? {},
     );
     budget.attachTransport(baselinePreflight);
-    if ((await baselinePreflight.read()).verifiedWorkflows !== 25) fail();
+    baselinePreflightReceipt = await baselinePreflight.read();
+    if (
+      assertFoundationLiveBaselineReceipt(baselinePreflightReceipt, {
+        baseline: createFoundationRuntimeBaseline({ bindings, records }),
+        deadlineAt,
+        managementBudget: budget,
+      }).verifiedWorkflows !== 25
+    )
+      fail();
     composeReader();
     baselineIdsByKey = {};
     for (const key of Object.keys(bindings.workflowRefs)) {
@@ -925,7 +992,14 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         protectionBypass: input.protectionBypass,
         deadlineAt,
       },
-      { managementBudget: budget, controlJournal, controlBudget, now, ...(dependencies.runtime ?? {}) },
+      {
+        managementBudget: budget,
+        controlJournal,
+        controlBudget,
+        now,
+        ...(dependencies.runtime ?? {}),
+        baselinePreflightReceipt,
+      },
     );
     if ((await runtime.setup()).status !== 'runtime_setup_verified') fail();
     const ports = composeNative();
@@ -1248,7 +1322,9 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       try {
         const r = await runtime.restore();
         baselineRestored = r.status === 'exact_staging_restored_unpublished';
-        if (baselineRestored) baselineRestored = (await runtime.finalAudit()).verifiedWorkflows === 25;
+        if (baselineRestored)
+          baselineRestored =
+            assertFoundationRuntimeRestorationAudit(r, { plan: runtime.plan }).verifiedWorkflows === 25;
       } catch {
         baselineRestored = false;
       }

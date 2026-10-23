@@ -7,6 +7,7 @@ import {
   runtimeHash,
 } from './foundation-runtime-plan.mjs';
 import { assertFoundationRuntimeMachinePatch } from './foundation-runtime-machine.mjs';
+import { claimFoundationLiveBaselineReceipt } from './foundation-live-runtime-transport.mjs';
 import {
   foundationRuntimeGraphHash,
   foundationRuntimePublishedHash,
@@ -35,6 +36,20 @@ const checkedCaseReceipts = new WeakSet();
 const savedCaseBodies = new WeakMap();
 const nativeGraphObservations = new WeakMap();
 const checkedBindings = new WeakMap();
+const restorationAudits = new WeakMap();
+export function assertFoundationRuntimeRestorationAudit(receipt, { plan }) {
+  const meta = receipt && restorationAudits.get(receipt);
+  if (!meta || !Object.isFrozen(receipt) || meta.plan !== plan) fail();
+  const state = foundationRuntimeState(plan, meta.journal);
+  if (
+    !state.restoreComplete ||
+    state.pending ||
+    state.machineRebound ||
+    state.requestCount !== meta.requestCount
+  )
+    fail();
+  return receipt;
+}
 function requireSynchronousVoid(value) {
   if (value !== undefined) {
     if (value && typeof value.then === 'function') Promise.resolve(value).catch(() => {});
@@ -506,7 +521,15 @@ export async function runFoundationRuntimeSetup(plan, ports) {
   try {
     if (c.state().requestCount || c.state().setupComplete || c.state().pending)
       return result(c, 'reconciliation_required');
-    for (const b of plan.baseline) await c.read(b.key);
+    if (ports.baselinePreflightReceipt === undefined) {
+      for (const b of plan.baseline) await c.read(b.key);
+    } else {
+      claimFoundationLiveBaselineReceipt(ports.baselinePreflightReceipt, {
+        baseline: plan.baseline,
+        deadlineAt: ports.deadlineAt,
+        managementBudget: ports.managementBudget,
+      });
+    }
     const schema = await c.request('GET', '/api/v1/credentials/schema/httpCustomAuth');
     if (
       !object(schema?.properties) ||
@@ -685,7 +708,12 @@ export async function restoreFoundationRuntime(plan, ports) {
     if (c.state().machineRebound) await c.changeMachine(true);
     for (const b of plan.baseline) await c.read(b.key);
     ports.journal.append({ event: 'restore_complete' });
-    return result(c, 'exact_staging_restored_unpublished');
+    const receipt = Object.freeze({
+      ...result(c, 'exact_staging_restored_unpublished'),
+      verifiedWorkflows: 25,
+    });
+    restorationAudits.set(receipt, { plan, journal: ports.journal, requestCount: c.state().requestCount });
+    return receipt;
   } catch {
     return result(c, c.state().pending ? 'reconciliation_required' : 'blocked');
   } finally {

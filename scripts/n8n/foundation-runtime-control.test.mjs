@@ -485,6 +485,10 @@ test('all actual publications are removed, all25 exact baseline bodies restored 
   const r = await restoreFoundationRuntime(f.plan, f.ports);
   assert.equal(r.status, 'exact_staging_restored_unpublished');
   assert.equal(r.requestCount, 134 + 3 + 99 + 25);
+  assert.equal(runtimeControl.assertFoundationRuntimeRestorationAudit(r, { plan: f.plan }), r);
+  assert.equal(r.verifiedWorkflows, 25);
+  assert.throws(() => runtimeControl.assertFoundationRuntimeRestorationAudit({ ...r }, { plan: f.plan }));
+  assert.throws(() => runtimeControl.assertFoundationRuntimeRestorationAudit(r, { plan: fixture().plan }));
   assert.equal(r.currentlyPublished.length, 0);
   assert.equal(f.credentialData.allowedDomains, new URL(f.plan.oldAudience).hostname);
   assert.deepEqual(JSON.parse(f.credentialData.json), {

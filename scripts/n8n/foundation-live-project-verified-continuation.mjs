@@ -145,6 +145,10 @@ const wf00RestoreRecovery = Object.freeze({
   journalSha256: '53b1620b0ee3bdd54645076cd81cfc2c80d6040ee58d2c0cdb6511fc68b5298b',
   priorJournalSha256: '22c18ac86b7e0e03762cf19ad98a33560344af664fcf25f0a45673906fdc955d',
 });
+const readonlyPrepareRecovery = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical3-reconciliation-20261023.json',
+  sha256: '176831e9c435b174e7d19e436c42c40d825b72ca677f7fb0ab1bd3b1f14e610b',
+});
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
 };
@@ -376,6 +380,7 @@ function checkpoint(x) {
   x.recovery = reconciledEffectfulAttempt(x);
   x.recovery = reconciledClosedWindow(x) ?? x.recovery;
   x.recovery = reconciledWf00Restore(x) ?? x.recovery;
+  x.recovery = reconciledReadonlyPrepare(x) ?? x.recovery;
   if (x.recovery?.closedWindow) assertSetupAllocationApproval(x);
   recoveryPreflight(x);
   return p;
@@ -486,8 +491,23 @@ function reconciledClosedWindow(x) {
     hash(x.file(closedWindowRecovery.readbackRelative)) !== closedWindowRecovery.readbackSha256
   )
     fail();
-  for (const [path, expected] of Object.entries(closedWindowRecovery.pins))
-    if (hash(x.file(path)) !== expected) fail();
+  const appendOnlyPrefixes = {
+    'scripts/n8n/out/foundation/live/management.jsonl': closedWindowRecovery.mainManagementAttempts + 1,
+    'scripts/n8n/out/foundation/live/control.jsonl': closedWindowRecovery.mainControlAttempts,
+    'scripts/n8n/out/foundation/live/setup.jsonl': closedWindowRecovery.setupRows,
+    'scripts/n8n/out/foundation/live/preflight.jsonl': closedWindowRecovery.preflightRows,
+  };
+  for (const [path, expected] of Object.entries(closedWindowRecovery.pins)) {
+    const text = x.file(path);
+    if (Object.hasOwn(appendOnlyPrefixes, path)) {
+      // Global journals append during this claimed attempt. Preserve the exact
+      // reconciled prefix; journals()/recoveryPreflight() validate later rows.
+      const rows = jsonl(text, 8000),
+        length = appendOnlyPrefixes[path];
+      if (rows.lines.length < length || hash(rows.lines.slice(0, length).join('\n') + '\n') !== expected)
+        fail();
+    } else if (hash(text) !== expected) fail();
+  }
   const attempt = JSON.parse(text),
     cleanup = JSON.parse(x.file(closedWindowRecovery.cleanupRelative));
   const readback = JSON.parse(x.file(closedWindowRecovery.readbackRelative));
@@ -812,6 +832,100 @@ function reconciledWf00Restore(x) {
     carriedManagementAttempts: x.recovery.carriedManagementAttempts + 4,
   });
 }
+function reconciledReadonlyPrepare(x) {
+  const text = x.file(readonlyPrepareRecovery.relative, { optional: true });
+  if (text === null) return null;
+  // This exact attempt stopped before the Admin child could reach any SQL.
+  // A newly discovered prior mutation/output invalidates that classification.
+  for (const suffix of [
+    'attempt',
+    'latest',
+    'owner-provision-attempt',
+    'reactivation-attempt',
+    'unprovisioned-archive-attempt',
+  ])
+    if (
+      x.physical(
+        join(
+          repo,
+          `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-technical-3-${suffix}.json`,
+        ),
+        true,
+      )
+    )
+      fail();
+  if (x.physical(join(repo, 'scripts/n8n/out/foundation/live/runtime.technical-3.jsonl'), true)) fail();
+  if (
+    hash(text) !== readonlyPrepareRecovery.sha256 ||
+    !x.recovery?.closedWindow ||
+    x.recovery.mainManagementAttempts !== 92 ||
+    x.recovery.carriedManagementAttempts !== 10 ||
+    x.recovery.mainControlAttempts !== 300
+  )
+    fail();
+  const r = JSON.parse(text);
+  if (
+    r.kind !== 'm03_technical3_closed_readonly_reconciliation' ||
+    r.version !== 1 ||
+    r.environment !== 'dev' ||
+    r.usage.mainManagement !== 117 ||
+    r.usage.carriedManagement !== 10 ||
+    r.usage.management !== 127 ||
+    r.usage.mainControl !== 350 ||
+    r.usage.carriedControl !== 1 ||
+    r.usage.control !== 351 ||
+    r.usage.combined !== 478 ||
+    r.usage.vercelSetupUsed !== 44 ||
+    r.usage.vercelSetupMaximum !== 88 ||
+    r.usage.allowancesReplenished !== false ||
+    r.actualSideEffects.baselineGets !== 25 ||
+    r.actualSideEffects.executionDiscoveryGets !== 50 ||
+    r.actualSideEffects.newHostedWritesReached !== false ||
+    r.actualSideEffects.nativeExecutions !== 0 ||
+    r.actualSideEffects.actorStarts !== 0 ||
+    r.actualSideEffects.contentProviderCalls !== 0 ||
+    r.actualCleanup.nativeExit !== 0 ||
+    r.actualCleanup.bypassFilePresent !== false ||
+    r.actualCleanup.acceptanceParentLockAbsent !== true ||
+    r.actualCleanup.privateContentsRead !== false ||
+    r.actualCleanup.persistentOriginalsUntouched !== true ||
+    r.acceptance.actualM03DevAcceptanceVerified !== false ||
+    r.immutableTechnicalRecords.closureVerifiedRemainsFalse !== true
+  )
+    fail();
+  if (hash(x.file(r.frozenAttempt.path)) !== r.frozenAttempt.sha256) fail();
+  const pins = { ...x.recovery.pins };
+  for (const key of ['admission', 'runtimeClaim', 'closed']) {
+    const p = r.immutableTechnicalRecords[key];
+    if (hash(x.file(p.path)) !== p.sha256) fail();
+    pins[p.path] = p.sha256;
+  }
+  for (const [name, retainedRows] of [
+    ['management', 118],
+    ['control', 350],
+    ['setup', 84],
+    ['preflight', 4],
+    ['runtime', 50],
+  ]) {
+    const p = r.actualPublicJournals[name],
+      current = x.file(p.path),
+      parsed = jsonl(current, 8000);
+    if (
+      parsed.lines.length < retainedRows ||
+      hash(parsed.lines.slice(0, retainedRows).join('\n') + '\n') !== p.sha256 ||
+      (name === 'runtime' && current !== parsed.lines.slice(0, retainedRows).join('\n') + '\n')
+    )
+      fail();
+    pins[p.path] = p.sha256;
+  }
+  return Object.freeze({
+    ...x.recovery,
+    mainManagementAttempts: 117,
+    mainControlAttempts: 350,
+    readonlyTechnicalAttempt: 3,
+    pins: Object.freeze(pins),
+  });
+}
 function assertSetupAllocationApproval(x) {
   const maximum = foundationProjectVerifiedActiveRuntime.setupMaximum;
   if (maximum === 50) return;
@@ -843,11 +957,11 @@ function assertSetupAllocationApproval(x) {
     a.unchangedGlobalCaps.actorReserveUsd !== caps.actorReserveUsd ||
     a.unchangedGlobalCaps.actorsSequential !== true ||
     a.unchangedGlobalCaps.newDistinctCollectedItems !== 1 ||
-    a.actualPriorUsage.management !==
-      x.recovery.mainManagementAttempts + x.recovery.carriedManagementAttempts ||
-    a.actualPriorUsage.control !== x.recovery.mainControlAttempts + x.recovery.carriedControlAttempts ||
+    // The owner record pins usage at the decision, not later charged reads.
+    a.actualPriorUsage.management !== 102 ||
+    a.actualPriorUsage.control !== 301 ||
     a.actualPriorUsage.combined !== 403 ||
-    a.actualPriorUsage.carriedManagement !== x.recovery.carriedManagementAttempts ||
+    a.actualPriorUsage.carriedManagement !== 10 ||
     a.actualPriorUsage.actorStarts !== 0 ||
     a.actualPriorUsage.actorSpendUsd !== 0 ||
     a.actualPriorUsage.receiptPath !== wf00RestoreRecovery.receiptRelative ||
@@ -1377,7 +1491,8 @@ function closedTechnicalAttempt(x, paths) {
     close = JSON.parse(text);
   const reconciled =
     (paths.ordinal === 1 && x.recovery !== null && x.recovery !== undefined) ||
-    (paths.ordinal === 2 && x.recovery?.closedWindow === true);
+    (paths.ordinal === 2 && x.recovery?.closedWindow === true) ||
+    (paths.ordinal === 3 && x.recovery?.readonlyTechnicalAttempt === 3);
   if (
     !exact(close, [
       'kind',

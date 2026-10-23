@@ -2,28 +2,64 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { EventEmitter } from 'node:events';
 import { createFoundationLiveRuntime } from './foundation-live-runtime.mjs';
+import { createFoundationLiveBaselinePreflight } from './foundation-live-runtime-transport.mjs';
+import { createFoundationRuntimeBaseline } from './foundation-runtime-plan.mjs';
 
-// Explicit network-free dependency for session protocol tests that isolate
-// behavior after a successful baseline read. The real preflight transport and
-// source comparisons have their own tests; this fixture charges all25 attempts.
-export function syntheticBaselinePreflight({ admitManagementAttempt }) {
-  assert.equal(typeof admitManagementAttempt, 'function');
-  let read = false,
-    closed = false;
-  return {
-    async read() {
-      assert.equal(read, false);
-      assert.equal(closed, false);
-      read = true;
-      for (let i = 0; i < 25; i++) admitManagementAttempt();
-      return { verifiedWorkflows: 25 };
+// Network-free HTTPS fixture for the actual25-read preflight and capability
+// constructor. It exercises source comparisons and closure; it never supplies
+// an independently minted "actual" receipt or claims a hosted endpoint pass.
+export function syntheticBaselinePreflight(input, { workflows } = {}) {
+  const baseline = createFoundationRuntimeBaseline(input);
+  return createFoundationLiveBaselinePreflight(input, {
+    now: () => input.deadlineAt - 60000,
+    resolveInstance: async () => [{ address: '1.1.1.1', family: 4 }],
+    request(options, callback) {
+      const request = new EventEmitter(),
+        socket = new EventEmitter();
+      socket.authorized = true;
+      socket.remoteAddress = '1.1.1.1';
+      socket.remoteFamily = 'IPv4';
+      socket.destroy = () => socket.emit('close');
+      request.destroy = () => request.emit('close');
+      request.end = () =>
+        setImmediate(() => {
+          request.emit('socket', socket);
+          socket.emit('secureConnect');
+          const b = baseline.find(
+            (v) => options.path === '/api/v1/workflows/' + v.id + '?excludePinnedData=true',
+          );
+          const dto = workflows?.get(b.id) ?? {
+            ...structuredClone(b.body),
+            id: b.id,
+            versionId: b.versionId,
+            settings: { ...structuredClone(b.body.settings), ...(b.nativeReadonlySettings ?? {}) },
+            active: false,
+            activeVersionId: null,
+            activeVersion: null,
+            isArchived: false,
+            pinData: {},
+            shared: [{ projectId: input.bindings.projectId, role: 'workflow:owner' }],
+            tags: structuredClone(b.tags),
+          };
+          const bytes = Buffer.from(JSON.stringify(dto)),
+            response = new EventEmitter();
+          response.statusCode = 200;
+          response.complete = true;
+          response.headers = { 'content-type': 'application/json', 'content-length': String(bytes.length) };
+          response.rawHeaders = Object.entries(response.headers).flat();
+          response.destroy = () => response.emit('close');
+          callback(response);
+          response.emit('data', bytes);
+          response.emit('end');
+          response.emit('close');
+          request.emit('close');
+          socket.emit('close');
+        });
+      return request;
     },
-    state: () => ({ pendingRequests: 0, unclosedResponses: 0 }),
-    close() {
-      closed = true;
-    },
-  };
+  });
 }
 
 export function fixture({ fault } = {}) {

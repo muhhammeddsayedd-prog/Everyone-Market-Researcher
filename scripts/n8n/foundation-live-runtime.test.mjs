@@ -8,8 +8,122 @@ import {
   foundationLiveAuxiliaryStorage,
 } from './foundation-live-runtime.mjs';
 import { isFoundationNativeDomainProbeBody } from './foundation-live-domain-probe.mjs';
-import { fixture } from './foundation-live-runtime-fixtures.mjs';
+import { fixture, syntheticBaselinePreflight } from './foundation-live-runtime-fixtures.mjs';
+import { foundationAcceptancePlan } from '../../n8n/foundation/materialize-acceptance-case.mjs';
+import { assertFoundationRuntimeRestorationAudit } from './foundation-runtime-control.mjs';
 import { syntheticZeroSetup } from './foundation-live-runtime-resume-fixtures.mjs';
+
+test('one genuine same-attempt early baseline plus one actual restoration audit completes the full307 runtime request bound', async () => {
+  const f = fixture();
+  let runtime, budget, early;
+  try {
+    budget = createFoundationLiveManagementBudget(
+      { sourceCommitSha: f.input.setup.sourceCommitSha, deadlineAt: f.input.deadlineAt },
+      { directory: f.directory },
+    );
+    for (let i = 0; i < 127; i++) budget.admit();
+    early = syntheticBaselinePreflight(
+      {
+        bindings: f.input.bindings,
+        records: f.input.records,
+        apiKey: f.input.managementKey,
+        deadlineAt: f.input.deadlineAt,
+        managementBudget: budget,
+        admitManagementAttempt: () => budget.admit(),
+      },
+      { workflows: f.workflows },
+    );
+    const baselinePreflightReceipt = await early.read();
+    assert.equal(budget.snapshot().attempts, 152);
+    for (let i = 0; i < 26; i++) budget.admit(); // bounded Preview preparation;18cleanup still reserved
+    const start = budget.snapshot().attempts;
+    runtime = createFoundationLiveRuntime(f.input, {
+      ...f.dependencies,
+      managementBudget: budget,
+      baselinePreflightReceipt,
+    });
+    assert.equal(runtime.checkOnly().setupDriftGuardGetCount, 0);
+    assert.equal((await runtime.setup()).status, 'runtime_setup_verified');
+    assert.equal(budget.snapshot().attempts - start, 109);
+    const selected = foundationAcceptancePlan().cases.filter((v) => v.recommendedLive);
+    assert.equal(selected.length, 23);
+    // Counter/transport fixture only: all23drafts use the same valid harmless
+    // graph here. Individual acceptance-case contents are tested separately.
+    for (let i = 0; i < selected.length; i++)
+      assert.equal((await runtime.saveCase('dispatch.vimeo')).status, 'case_draft_verified');
+    assert.equal((await runtime.saveDomainProbe()).status, 'case_draft_verified');
+    for (let i = 0; i < 2; i++)
+      assert.equal((await runtime.verifyMachine()).status, 'owned_machine_metadata_unchanged');
+    const beforeRestore = budget.snapshot().attempts;
+    const restored = await runtime.restore();
+    assert.equal(
+      assertFoundationRuntimeRestorationAudit(restored, { plan: runtime.plan }).verifiedWorkflows,
+      25,
+    );
+    assert.equal(budget.snapshot().attempts - beforeRestore, 124);
+    assert.equal(budget.snapshot().attempts - start, 307);
+    for (let i = 0; i < 18; i++) budget.admit();
+    assert.equal(budget.snapshot().attempts, 503);
+    assert.equal(budget.snapshot().maximum, 512);
+    assert.equal(f.calls.filter((c) => c.method === 'PUT').length, 26 + 24 + 25);
+    assert.throws(() =>
+      createFoundationLiveRuntime(f.input, {
+        ...f.dependencies,
+        managementBudget: budget,
+        baselinePreflightReceipt: { ...baselinePreflightReceipt },
+      }),
+    );
+  } finally {
+    runtime?.close();
+    early?.close();
+    budget?.close();
+    f.cleanup();
+  }
+});
+
+test('a reused early baseline never replaces the fresh per-write drift check or restores an external graph edit', async () => {
+  const f = fixture();
+  let runtime, budget, early;
+  try {
+    budget = createFoundationLiveManagementBudget(
+      { sourceCommitSha: f.input.setup.sourceCommitSha, deadlineAt: f.input.deadlineAt },
+      { directory: f.directory },
+    );
+    early = syntheticBaselinePreflight(
+      {
+        bindings: f.input.bindings,
+        records: f.input.records,
+        apiKey: f.input.managementKey,
+        deadlineAt: f.input.deadlineAt,
+        managementBudget: budget,
+        admitManagementAttempt: () => budget.admit(),
+      },
+      { workflows: f.workflows },
+    );
+    const receipt = await early.read(),
+      wf00 = f.input.bindings.workflowRefs['WF-00'].id;
+    f.workflows.get(wf00).name = 'SYNTHETIC_EXTERNAL_EDIT';
+    runtime = createFoundationLiveRuntime(f.input, {
+      ...f.dependencies,
+      managementBudget: budget,
+      baselinePreflightReceipt: receipt,
+    });
+    assert.equal((await runtime.setup()).status, 'blocked');
+    assert.equal(
+      f.calls.some((c) => c.method === 'PUT' && c.path.startsWith('/api/v1/workflows/' + wf00)),
+      false,
+    );
+    assert.equal(f.workflows.get(wf00).name, 'SYNTHETIC_EXTERNAL_EDIT');
+    const restored = await runtime.restore();
+    assert.throws(() => assertFoundationRuntimeRestorationAudit(restored, { plan: runtime.plan }));
+    assert.equal(f.workflows.get(wf00).name, 'SYNTHETIC_EXTERNAL_EDIT');
+  } finally {
+    runtime?.close();
+    early?.close();
+    budget?.close();
+    f.cleanup();
+  }
+});
 
 test('live composition is network-inert at construction and uses original25-guard setup/case/restore', async () => {
   const f = fixture();

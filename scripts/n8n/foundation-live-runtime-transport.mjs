@@ -6,11 +6,32 @@ import { randomUUID } from 'node:crypto';
 import { nativeWriterClient } from './gw01-writer.mjs';
 import { createFoundationRuntimeBaseline } from './foundation-runtime-plan.mjs';
 import { diagnoseFoundationRuntimeBaseline } from './foundation-runtime-checkpoint.mjs';
+import { isDeepStrictEqual } from 'node:util';
 
 const blocked = () => Error('FOUNDATION_LIVE_MANAGEMENT_BLOCKED');
+const baselineReceipts = new WeakMap();
+export function assertFoundationLiveBaselineReceipt(receipt, { baseline, deadlineAt, managementBudget }) {
+  const meta = receipt && baselineReceipts.get(receipt);
+  if (
+    !meta ||
+    !Object.isFrozen(receipt) ||
+    meta.claimed ||
+    meta.deadlineAt !== deadlineAt ||
+    !managementBudget ||
+    meta.managementBudget !== managementBudget ||
+    !isDeepStrictEqual(meta.baseline, baseline)
+  )
+    throw blocked();
+  return receipt;
+}
+export function claimFoundationLiveBaselineReceipt(receipt, scope) {
+  assertFoundationLiveBaselineReceipt(receipt, scope);
+  baselineReceipts.get(receipt).claimed = true;
+  return receipt;
+}
 
 export function createFoundationLiveBaselinePreflight(
-  { bindings, records, apiKey, deadlineAt, admitManagementAttempt },
+  { bindings, records, apiKey, deadlineAt, admitManagementAttempt, managementBudget },
   dependencies = {},
 ) {
   const baseline = createFoundationRuntimeBaseline({ bindings, records });
@@ -48,7 +69,9 @@ export function createFoundationLiveBaselinePreflight(
           throw blocked();
         }
       }
-      return Object.freeze({ verifiedWorkflows: 25 });
+      const receipt = Object.freeze({ verifiedWorkflows: 25 });
+      baselineReceipts.set(receipt, { baseline, deadlineAt, managementBudget, claimed: false });
+      return receipt;
     },
     diagnostics: () => diagnostic,
     state: t.state,

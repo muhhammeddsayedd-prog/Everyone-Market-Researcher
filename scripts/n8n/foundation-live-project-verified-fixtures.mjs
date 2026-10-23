@@ -12,11 +12,13 @@ export async function syntheticProjectVerifiedContinuation({
   cleanupFault,
   priorFault,
   projectFault,
-  closedWindow = false,
+  readonlyPrepare = false,
+  readonlyPrepareFault,
+  closedWindow = readonlyPrepare,
   closedFault,
   restoreFault,
   allocationFault,
-  proposedBudgetApproved = false,
+  proposedBudgetApproved = readonlyPrepare,
   effectful = closedWindow,
   effectFault,
 } = {}) {
@@ -354,7 +356,7 @@ export async function syntheticProjectVerifiedContinuation({
     put(recoveryConfiguration.receiptRelative, text);
     recoveryConfiguration.receiptSha256 = digest(text);
   }
-  let closedConfiguration, restoreConfiguration, allocationConfiguration;
+  let closedConfiguration, restoreConfiguration, allocationConfiguration, readonlyPrepareConfiguration;
   if (closedWindow) {
     const base =
       'scripts/n8n/out/foundation/live/project-verified-continuation-' + snapshot.proposedSegmentId;
@@ -539,6 +541,105 @@ export async function syntheticProjectVerifiedContinuation({
       allocationConfiguration = { relative: allocationRelative, sha256: digest(text) };
     }
   }
+  if (readonlyPrepare) {
+    if (!closedWindow || !proposedBudgetApproved) throw Error('SYNTHETIC_READONLY_PREPARE_PREREQUISITES');
+    const relative =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical3-reconciliation-20261023.json';
+    const receipt = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8'));
+    const json = (v) => JSON.stringify(v) + '\n';
+    const base =
+      'scripts/n8n/out/foundation/live/project-verified-continuation-' + snapshot.proposedSegmentId;
+    const start = Date.parse('2026-10-23T17:00:00.000Z');
+    const admission = {
+      kind: 'm03_project_verified_continuation_admission',
+      version: 1,
+      segmentId: snapshot.proposedSegmentId,
+      sourceCommitSha: 'a5e746736893d5040e93032ae740a0878f748837',
+      windowId: '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+      approvalSha256: digest(approvalText),
+      startsAt: start,
+      deadlineAt: start + 3600000,
+      stopNewAt: start + 3000000,
+      hardDeadlineAt: start + 4200000,
+      parentProcessId: 91001,
+    };
+    const admissionText = json(admission);
+    const claim = {
+      kind: 'm03_project_verified_continuation_runtime_claim',
+      version: 1,
+      segmentId: snapshot.proposedSegmentId,
+      admissionSha256: digest(admissionText),
+      processId: 91002,
+      parentProcessId: admission.parentProcessId,
+      claimedAt: start + 1000,
+    };
+    const closed = {
+      kind: 'm03_project_verified_technical_closed',
+      version: 1,
+      admissionSha256: digest(admissionText),
+      parentProcessId: admission.parentProcessId,
+      runtimeProcessId: claim.processId,
+      closedAt: start + 60000,
+      childClosed: true,
+      credentialChildrenClosed: true,
+      emergencyShutdown: false,
+      pendingMachinePreserved: true,
+      nativeExit: 1,
+      bypassHandoffDeleted: false,
+      closureVerified: false,
+    };
+    for (const [key, suffix, value] of [
+      ['admission', '.json', admission],
+      ['runtimeClaim', '.runtime-claim.json', claim],
+      ['closed', '.closed.json', closed],
+    ]) {
+      const path = base + '.technical-3' + suffix;
+      const text = json(value);
+      put(path, text);
+      receipt.immutableTechnicalRecords[key] = { path, bytes: Buffer.byteLength(text), sha256: digest(text) };
+    }
+    for (const [name, previous, count] of [
+      ['management', 92, 25],
+      ['control', 300, 50],
+    ]) {
+      const path = snapshot.journals[name].path;
+      let text = readFileSync(join(directory, path), 'utf8');
+      for (let ordinal = previous + 1; ordinal <= previous + count; ordinal++)
+        text += json(
+          name === 'management'
+            ? { event: 'management_attempt', ordinal }
+            : {
+                event: 'control_request_intent',
+                ordinal,
+                kind: 'discovery',
+                at: new Date(start).toISOString(),
+              },
+        );
+      put(path, text);
+    }
+    for (const name of ['management', 'control', 'setup', 'preflight', 'runtime']) {
+      const value = receipt.actualPublicJournals[name];
+      const text = readFileSync(join(directory, value.path), 'utf8');
+      value.sha256 = digest(text);
+      value.bytes = Buffer.byteLength(text);
+      value.rowCount = text.trimEnd().split('\n').length;
+    }
+    // Copy only the tracked, frozen public attempt. Never read actual ignored
+    // runtime records; all sibling records and journals above are synthetic.
+    const attemptText = readFileSync(join(sourceRoot, receipt.frozenAttempt.path), 'utf8');
+    put(receipt.frozenAttempt.path, attemptText);
+    receipt.frozenAttempt.sha256 = digest(attemptText);
+    receipt.frozenAttempt.bytes = Buffer.byteLength(attemptText);
+    if (readonlyPrepareFault === 'usage') receipt.usage.management = 102;
+    if (readonlyPrepareFault === 'side-effect') receipt.actualSideEffects.newHostedWritesReached = true;
+    if (readonlyPrepareFault === 'actor') receipt.actualSideEffects.actorStarts = 1;
+    if (readonlyPrepareFault === 'cleanup') receipt.actualCleanup.bypassFilePresent = true;
+    if (readonlyPrepareFault === 'closure-rewritten')
+      receipt.immutableTechnicalRecords.closureVerifiedRemainsFalse = false;
+    const text = json(receipt);
+    put(relative, text);
+    readonlyPrepareConfiguration = { relative, sha256: digest(text) };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -574,6 +675,11 @@ export async function syntheticProjectVerifiedContinuation({
     source = source.replace(
       /const setupAllocationApproval = Object\.freeze\(\{[\s\S]*?\n\}\);/,
       'const setupAllocationApproval = Object.freeze(' + JSON.stringify(allocationConfiguration) + ');',
+    );
+  if (readonlyPrepareConfiguration)
+    source = source.replace(
+      /const readonlyPrepareRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      'const readonlyPrepareRecovery = Object.freeze(' + JSON.stringify(readonlyPrepareConfiguration) + ');',
     );
   // Explicitly retain the exhausted old50 branch as a synthetic regression.
   source = source.replace(/setupMaximum: (?:50|88),/, `setupMaximum: ${proposedBudgetApproved ? 88 : 50},`);
