@@ -425,6 +425,7 @@ export async function verifyFoundationLiveSmokeSql({
       '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
       'eda4fae1-1e19-47db-81b8-beac1a4ed883',
       '3c46c791-e140-4eb9-890a-eecfa251f65e',
+      '4c602549-2c42-4ec3-9328-714d7cb66a77',
     ].includes(activeWindowId) ||
     proof.windowId !== activeWindowId ||
     !['smoke.first', 'smoke.second'].includes(caseId) ||
@@ -519,6 +520,8 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   const verifiedCheckpoint = verified
     ? foundationProjectVerifiedContinuationResumeCheckpoint(verified)
     : null;
+  const restoredBaselineScope =
+    verifiedCheckpoint?.managementMaximum === 1024 ? { projectVerifiedContinuationProof: verified } : {};
   const activeWindowId = verified?.windowId ?? windowId;
   const admittedClock = continuation || amendment;
   if (
@@ -573,7 +576,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       ...(remaining ? { remainingContinuationProof: remaining } : {}),
       ...(startup ? { startupReplacementProof: startup } : {}),
       ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
-      ...([576, 640, 704, 832].includes(verifiedCheckpoint?.managementMaximum)
+      ...([576, 640, 704, 832, 1024].includes(verifiedCheckpoint?.managementMaximum)
         ? {
             controlAttempts: () =>
               controlBudget?.snapshot().attempts ?? verifiedCheckpoint.aggregateControlAttempts,
@@ -633,7 +636,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     ...(remaining ? { remainingContinuationProof: remaining } : {}),
     ...(startup ? { startupReplacementProof: startup } : {}),
     ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
-    ...([576, 640, 704, 832].includes(verifiedCheckpoint?.managementMaximum)
+    ...([576, 640, 704, 832, 1024].includes(verifiedCheckpoint?.managementMaximum)
       ? { managementAttempts: () => budget.snapshot().attempts }
       : {}),
   });
@@ -841,6 +844,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         deadlineAt,
         admitManagementAttempt: () => budget.admit(),
         managementBudget: budget,
+        ...restoredBaselineScope,
       },
       dependencies.baselineTransport ?? {},
     );
@@ -848,8 +852,13 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     baselinePreflightReceipt = await baselinePreflight.read();
     if (
       assertFoundationLiveBaselineReceipt(baselinePreflightReceipt, {
-        baseline: createFoundationRuntimeBaseline({ bindings, records }),
+        baseline: createFoundationRuntimeBaseline({
+          bindings,
+          records,
+          ...restoredBaselineScope,
+        }),
         deadlineAt,
+        ...restoredBaselineScope,
         managementBudget: budget,
       }).verifiedWorkflows !== 25
     )
@@ -1090,6 +1099,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         records,
         activeWindowId,
         setup: { ...deployment, protectionTransportVerified: true, sqlAudienceBindingVerified: true },
+        ...restoredBaselineScope,
         managementKey: input.managementKey,
         machineToken: input.machineToken,
         protectionBypass: input.protectionBypass,

@@ -701,6 +701,149 @@ Write-Output 'SOURCE_SELECTED_FORWARD_PROFILE'
   );
 });
 
+test('post-restoration public adapter binds exact1024 allocation and fifth-window source', native, () => {
+  assert.equal(
+    run(`
+${definitions(['Assert-Keys', 'Read-FoundationPostcheckContinuation'])}
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$PhaseAControl=$true;$PostcheckContinuation=$true;$ClockAmendment=$false;$OriginalDeadlineAtMs=0;$RemainingContinuation=$false;$StartupReplacement=$false;$CheckOnly=$true;$postcheckContinuationSegment='20275b22-b7fe-4737-a9a4-c50c2feadb74';$repo='synthetic';$node='never-spawned'
+$valid=[ordered]@{kind='project_verified_continuation_ready';segmentId=$postcheckContinuationSegment;sourceCommitSha='5087d4d93d2f6ffdca0bc0096b365723005446fc';windowId='4c602549-2c42-4ec3-9328-714d7cb66a77';privateRead=$false;networkRequests=0;managementMaximum=1024;managementAttempts=524;controlAttempts=841;combinedAttempts=1365};$script:dto=[pscustomobject]$valid
+function Assert-Path($Root,$Relative){return 'synthetic-fixed-module'}
+function Invoke-Bounded{return [pscustomobject]@{ok=$true;closed=$true;text=ConvertTo-Json $script:dto -Compress}}
+$null=Read-FoundationPostcheckContinuation
+if($script:projectVerifiedForwardWindowId -cne $valid.windowId -or $script:projectVerifiedForwardSource -cne $valid.sourceCommitSha){throw 'FIFTH_PROFILE_NOT_SELECTED'}
+foreach($mutation in @(@{key='managementMaximum';value=832},@{key='managementMaximum';value=1025},@{key='managementMaximum';value='1024'},@{key='managementAttempts';value=401},@{key='controlAttempts';value=840},@{key='combinedAttempts';value=1364},@{key='sourceCommitSha';value='7b1837201ac7925591577a1517d7288936ca3464'},@{key='windowId';value='3c46c791-e140-4eb9-890a-eecfa251f65e'},@{key='privateRead';value=$true},@{key='networkRequests';value=1},@{key='extra';value=$true})){
+ $mixed=[ordered]@{};foreach($name in $valid.Keys){$mixed[$name]=$valid[$name]};$mixed[$mutation.key]=$mutation.value;$script:dto=[pscustomobject]$mixed;$denied=$false
+ try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MIXED_POST_RESTORATION_PROFILE_ACCEPTED'}
+}
+foreach($missing in @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){
+ $mixed=[ordered]@{};foreach($name in $valid.Keys){if($name -cne $missing){$mixed[$name]=$valid[$name]}};$script:dto=[pscustomobject]$mixed;$denied=$false
+ try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'PARTIAL_POST_RESTORATION_PROFILE_ACCEPTED'}
+}
+Write-Output 'EXACT_1024_POST_RESTORATION_PUBLIC_PROFILE'
+`),
+    'EXACT_1024_POST_RESTORATION_PUBLIC_PROFILE',
+  );
+});
+
+test(
+  'fifth registered window requires four closed predecessors and typed12/13 fixture audits',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys', 'Foundation-Technical13AuditPredicate'])}
+${definitions(['Foundation-Literal', 'Assert-FoundationForwardWindowState'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$out='synthetic';$continuationOutputStem='synthetic';$projectVerifiedForwardWindowId='4c602549-2c42-4ec3-9328-714d7cb66a77';$projectVerifiedForwardSource='5087d4d93d2f6ffdca0bc0096b365723005446fc'
+function Read-FoundationForwardPrior{return [pscustomobject]@{}}
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=14;outputSegment='synthetic14'}}
+$script:forwardWindowBinding=[pscustomobject]@{audience='https://everyone-market-researcher-synthetic.vercel.app';deploymentId='dpl_Synthetic'}
+$script:value=[pscustomobject]@{identity=$true;legacyClosed=$true;intermediateClosed=$true;runtimeClosed=$true;restorationClosed=$true;fixtureAuditCount=6;technical12Exact=$true;technical13Exact=$true;windows=4;freshWindows=0;freshPrepared=$false;globalAdmitted=7;requests=3;activeLeases=0;launches=0;bindings=0;progress=0}
+function Invoke-FoundationQuery($Sql,$Column){
+ if($Column -ceq 'ownership'){if(-not $Sql.Contains("where w.window_id='4c602549-2c42-4ec3-9328-714d7cb66a77'")){throw 'WRONG_FRESH_OWNERSHIP'};return [pscustomobject]@{owned=$true}}
+ foreach($needle in @("'restorationClosed'","'fixtureAuditCount'","'technical12Exact'","'technical13Exact'","'dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25'","bound_commit_sha='5087d4d93d2f6ffdca0bc0096b365723005446fc'","jsonb_build_object('fixture_version',1")){if(-not $Sql.Contains($needle)){throw 'RESTORED_PREDECESSOR_OR_AUDIT_NOT_EXACT'}}
+ return $script:value
+}
+Assert-FoundationForwardWindowState $false
+$script:value.windows=5;$script:value.freshWindows=1;$script:value.freshPrepared=$true;Assert-FoundationForwardWindowState $true
+foreach($key in @('legacyClosed','intermediateClosed','runtimeClosed','restorationClosed','technical12Exact','technical13Exact','freshPrepared')){$script:value.$key=$false;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$true;if(-not $denied){throw 'UNCLOSED_OR_CHANGED_RESTORATION_ACCEPTED'}}
+foreach($key in @('fixtureAuditCount','windows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){$saved=$script:value.$key;$script:value.$key=$saved+1;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$saved;if(-not $denied){throw 'UNRECONCILED_FIFTH_PROGRESS_ACCEPTED'}}
+$script:value.fixtureAuditCount='6';$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'COERCED_FIXTURE_AUDIT_COUNT_ACCEPTED'};$script:value.fixtureAuditCount=6
+$projectVerifiedForwardSource='7b1837201ac7925591577a1517d7288936ca3464';$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'MIXED_FIFTH_SOURCE_ACCEPTED'}
+Write-Output 'FOUR_CLOSED_PREDECESSORS_AND_TYPED_AUDITS'
+`),
+      'FOUR_CLOSED_PREDECESSORS_AND_TYPED_AUDITS',
+    );
+  },
+);
+
+test(
+  'technical14 native fixture readback requires the exact typed audit and both prior lifecycle receipts',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys', 'Foundation-Technical13AuditPredicate'])}
+${definitions(['Foundation-Literal', 'Read-FoundationProjectVerifiedContinuationReactivatedFixture', 'Assert-FoundationContinuationFixture'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$projectVerifiedForwardWindowId='4c602549-2c42-4ec3-9328-714d7cb66a77';$projectVerifiedForwardSource='5087d4d93d2f6ffdca0bc0096b365723005446fc';$script:ordinal=14;$script:queryCount=0
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=$script:ordinal;auditSegment=('20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-'+$script:ordinal)}}
+function Invoke-FoundationQuery($Sql,$Field){
+ $script:queryCount++
+ foreach($needle in @("l.actor_id='m03_smoke_reactivate.v1:20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-14'","l.after=jsonb_build_object('fixture_version',1","'original_creation_audit_id',o.id)","count(*)=7","m03_smoke_reactivate.v1:20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-12","m03_smoke_reactivate.v1:20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-13")){if(-not $Sql.Contains($needle)){throw 'TYPED_TECHNICAL14_LIFECYCLE_NOT_BOUND'}}
+ return [pscustomobject]@{result='M03_SMOKE_FIXTURE_READY';company_code='C999';competitor_id='d51a39f6-fe87-4d17-aee9-3070c45693aa';account_id='bd23314c-591f-4fb7-92fd-b7450634eeb6';platform='website_work_page';url='https://everyone.film/about-everyone';competitor_status='active';account_status='active'}
+}
+$null=Read-FoundationProjectVerifiedContinuationReactivatedFixture
+$script:ordinal=13;$denied=$false;try{$null=Read-FoundationProjectVerifiedContinuationReactivatedFixture}catch{$denied=$true};if(-not $denied -or $script:queryCount -ne 1){throw 'WRONG_TECHNICAL_AUDIT_QUERIED'}
+Write-Output 'EXACT_TYPED_TECHNICAL14_READBACK'
+`),
+      'EXACT_TYPED_TECHNICAL14_READBACK',
+    );
+  },
+);
+
+test('technical14 native ancestry binds its own fifth-window admission before private access', native, () => {
+  assert.equal(
+    run(`
+${definitions(['Assert-Keys', 'Read-FoundationKernelProcess', 'Resolve-FoundationProjectVerifiedTechnicalPaths', 'Assert-FoundationProjectVerifiedContinuationProcessAncestry'])}
+$ProjectVerifiedContinuation=$true;$ForwardWindow=$true;$CheckOnly=$false;$repo='C:\\__emr_synthetic_never_accessed';$env:LOCALAPPDATA=$repo;$script:fault=''
+$now=[DateTimeOffset]::UtcNow;$start=$now.AddMinutes(-1);$claimed=$now.AddSeconds(-45)
+$clock=[pscustomobject]@{segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';sourceCommitSha='5087d4d93d2f6ffdca0bc0096b365723005446fc';windowId='4c602549-2c42-4ec3-9328-714d7cb66a77';startsAt=$start.ToUnixTimeMilliseconds();stopNewAt=$start.AddMinutes(50).ToUnixTimeMilliseconds()}
+function Test-Path($LiteralPath){if($LiteralPath -cmatch '\\.technical-(\\d+)\\.json$'){return [int]$Matches[1] -le 14};return $false}
+function Assert-Path($Root,$Relative){if($Relative -notin @('scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-14.json','scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-14.runtime-claim.json','Temp/emr-m03-acceptance-parent.operation.lock')){throw 'UNEXPECTED_CUSTODY_PATH'};return Join-Path $Root $Relative}
+function File-Hash{return 'synthetic-admission-hash'}
+function Read-Json($Path){
+ if($Path.EndsWith('.runtime-claim.json')){return [pscustomobject]@{kind='m03_project_verified_continuation_runtime_claim';version=1;segmentId=$clock.segmentId;admissionSha256='synthetic-admission-hash';processId=90001;parentProcessId=90002;claimedAt=$claimed.ToUnixTimeMilliseconds()}}
+ $value=[pscustomobject]@{kind='m03_project_verified_continuation_admission';segmentId=$clock.segmentId;startsAt=$clock.startsAt;parentProcessId=90002;sourceCommitSha=$clock.sourceCommitSha;windowId=$clock.windowId}
+ if($script:fault -ceq 'old-source'){$value.sourceCommitSha='7b1837201ac7925591577a1517d7288936ca3464'};if($script:fault -ceq 'old-window'){$value.windowId='3c46c791-e140-4eb9-890a-eecfa251f65e'};return $value
+}
+function Read-FoundationParentLock($Path){return [pscustomobject]@{kind='m03_clock_admission_parent';version=1;segmentId=$clock.segmentId;processId=90002}}
+function Get-CimInstance($ClassName,$Filter,$Property,$ErrorAction){$number=[long]($Filter -replace '^ProcessId = ','');if($number -eq $PID){return [pscustomobject]@{ProcessId=$number;ParentProcessId=$(if($script:fault -ceq 'foreign-admin'){90099}else{90001});CreationDate=$now.AddSeconds(-40).UtcDateTime}};if($number -eq 90001){return [pscustomobject]@{ProcessId=$number;ParentProcessId=90002;CreationDate=$now.AddSeconds(-50).UtcDateTime}};if($number -eq 90002){return [pscustomobject]@{ProcessId=$number;ParentProcessId=1;CreationDate=$now.AddMinutes(-2).UtcDateTime}};throw 'UNEXPECTED_PROCESS'}
+if((Assert-FoundationProjectVerifiedContinuationProcessAncestry $clock) -ne $true -or $script:projectVerifiedTechnicalOrdinal -ne 14){throw 'VALID_TECHNICAL14_ANCESTRY_DENIED'}
+foreach($fault in @('old-source','old-window','foreign-admin')){$script:fault=$fault;$denied=$false;try{$null=Assert-FoundationProjectVerifiedContinuationProcessAncestry $clock}catch{$denied=$true};if(-not $denied){throw 'UNOWNED_TECHNICAL14_CHAIN_ACCEPTED'}}
+Write-Output 'EXACT_TECHNICAL14_NATIVE_ANCESTRY'
+`),
+    'EXACT_TECHNICAL14_NATIVE_ANCESTRY',
+  );
+});
+
+test(
+  'post-restoration prior requires its immutable archive, native receipt and cleanup without adopting an older baseline',
+  native,
+  () => {
+    const archive = JSON.parse(
+      readFileSync(
+        'milestones/M03-n8n-foundation/evidence/runtime-restoration-fixture-archive-20261024.json',
+        'utf8',
+      ),
+    );
+    const cleanup = JSON.parse(
+      readFileSync(
+        'milestones/M03-n8n-foundation/evidence/runtime-restoration-cleanup-20261024.json',
+        'utf8',
+      ),
+    );
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys', 'Assert-FoundationArchiveInspection', 'Read-FoundationForwardPrior'])}
+${definitions([], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$TechnicalResidual13=$false;$repo='synthetic';$script:projectVerifiedForwardWindowId='4c602549-2c42-4ec3-9328-714d7cb66a77';$script:projectVerifiedForwardSource='5087d4d93d2f6ffdca0bc0096b365723005446fc';$script:fault=''
+$original=ConvertFrom-Json ${quote(JSON.stringify(archive))};$script:archive=$original;$script:cleanup=ConvertFrom-Json ${quote(JSON.stringify(cleanup))}
+function Assert-Path($Root,$Relative){return $Relative}
+function File-Hash($Path){switch -Wildcard($Path){'*fixture-archive*'{return $(if($script:fault -ceq 'archiveHash'){'0'*64}else{'37c3f0dc518799700cde6c56f18569634c33b919ba26b4bbac1e6d2d09baa656'})};'*cleanup*'{return $(if($script:fault -ceq 'cleanupHash'){'0'*64}else{'50b274b1f6e26d6ba34b602c2cae45136aea19353073d185a1b25ba4b9cc016a'})};'*latest.json'{return $(if($script:fault -ceq 'nativeHash'){'0'*64}else{'05cf944a0f3a04aa7c87d8e1cdce4f27e0644d30f7dcf6cf849e06529556e8e3'})};default{throw 'UNEXPECTED_PUBLIC_HASH'}}}
+function Read-Json($Path){if($Path -like '*fixture-archive*'){return $script:archive};if($Path -like '*cleanup*'){return $script:cleanup};throw 'UNEXPECTED_PUBLIC_RECORD'}
+function Read-FoundationTechnical13Closed{if($script:fault -ceq 'notRestored'){throw 'RESTORATION_UNVERIFIED'};return $original.actualNativeResult.archiveAfter.window}
+$checked=Read-FoundationForwardPrior;if($checked.fixtureAuditCount -ne 6 -or -not $checked.fixture.competitorArchived -or -not $checked.fixture.accountPaused){throw 'EXACT_ARCHIVED_BASELINE_NOT_SELECTED'}
+foreach($fault in @('archiveHash','cleanupHash','nativeHash','notRestored','wrongRun','authFalse','pushTrue','activeFixture','auditCount')){
+ $script:fault=$fault;$script:archive=$original|ConvertTo-Json -Depth 16|ConvertFrom-Json
+ switch($fault){'wrongRun'{$script:archive.actualNativeResult.runId='unknown'};'authFalse'{$script:archive.actualNativeResult.authenticationVerified=$false};'pushTrue'{$script:archive.actualNativeResult.pushAttempted=$true};'activeFixture'{$script:archive.actualNativeResult.archiveAfter.fixture.competitorArchived=$false};'auditCount'{$script:archive.actualNativeResult.archiveAfter.fixtureAuditCount=5}}
+ $denied=$false;try{$null=Read-FoundationForwardPrior}catch{$denied=$true};if(-not $denied){throw 'UNVERIFIED_RESTORED_BASELINE_ACCEPTED'}
+}
+Write-Output 'EXACT_POST_RESTORATION_PRIOR_ONLY'
+`),
+      'EXACT_POST_RESTORATION_PRIOR_ONLY',
+    );
+  },
+);
+
 test(
   'ForwardWindow public adapter accepts only the exact approved management CheckOnly fields',
   native,
@@ -768,7 +911,7 @@ Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
 );
 
 test(
-  'actual forward packet has all61 source-required public pins and retains every old migration field',
+  'actual forward packet has all63 source-required public pins and retains every old migration field',
   native,
   () => {
     assert.equal(
@@ -782,12 +925,12 @@ Invoke-Expression $source.Substring($start,$end-$start)
 $packet=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
 $old=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-dev-migration-packet.json'))}))
 Assert-Keys $packet.files $requiredFiles
-if($requiredFiles.Count -ne 61 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+if($requiredFiles.Count -ne 63 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
 $prior=@($old.baseline)+@($old.pending)
 for($i=0;$i -lt 14;$i++){foreach($field in @('version','name','file','sha256','historySha256')){if($prior[$i].$field -cne $packet.baseline[$i].$field){throw 'ORIGINAL_MIGRATION_REWRITTEN'}}}
-Write-Output 'EXACT_PUBLIC_61_AND_OLD14'
+Write-Output 'EXACT_PUBLIC_63_AND_OLD14'
 `),
-      'EXACT_PUBLIC_61_AND_OLD14',
+      'EXACT_PUBLIC_63_AND_OLD14',
     );
   },
 );
@@ -810,6 +953,15 @@ for (const profile of [
     controlAttempts: 740,
     combinedAttempts: 1141,
     technicalOrdinal: 13,
+  },
+  {
+    name: 'post13-restoration',
+    options: { runtimeRestorationClosed: true, runtimeRestorationAllocation: true },
+    managementMaximum: 1024,
+    managementAttempts: 524,
+    controlAttempts: 841,
+    combinedAttempts: 1365,
+    technicalOrdinal: 14,
   },
 ])
   test(

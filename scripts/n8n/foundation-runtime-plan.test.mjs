@@ -36,6 +36,95 @@ export function runtimeFixture() {
   return { bindings, transport, records, setup };
 }
 
+test('restored baseline versions reject every unbranded continuation proof before plan construction', () => {
+  const f = runtimeFixture();
+  for (const projectVerifiedContinuationProof of [
+    undefined,
+    {},
+    { windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77' },
+    { 'SUB-NOTIFY': 'synthetic-untrusted-version', 'WF-90': 'synthetic-untrusted-version' },
+  ]) {
+    assert.throws(() => createFoundationRuntimeBaseline({ ...f, projectVerifiedContinuationProof }));
+    assert.throws(() => createFoundationRuntimePlan({ ...f, projectVerifiedContinuationProof }));
+  }
+});
+
+test('no-proof technical13 reconstruction retains the immutable actual runtime plan hash', () => {
+  const original = runtimeFixture();
+  const plan = createFoundationRuntimePlan({
+    ...original,
+    activeWindowId: '3c46c791-e140-4eb9-890a-eecfa251f65e',
+    setup: {
+      ...original.setup,
+      sourceCommitSha: '7b1837201ac7925591577a1517d7288936ca3464',
+      deploymentId: 'dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25',
+      audience: 'https://everyone-market-researcher-7fcbxykan-muhammed-abdelrahman.vercel.app',
+    },
+  });
+  // Immutable technical13 runtime header, separately preserved after cleanup.
+  assert.equal(plan.planHash, '93a983e7e5acd2a03e1999576be9f9570da223ca0e2b77925152064c8e6ffac0');
+});
+
+test('genuine restored1024 proof changes only two validated output versions and preserves historical plans', async () => {
+  const { syntheticProjectVerifiedContinuation } =
+    await import('./foundation-live-project-verified-fixtures.mjs');
+  const f = await syntheticProjectVerifiedContinuation({
+    runtimeRestorationClosed: true,
+    runtimeRestorationAllocation: true,
+  });
+  try {
+    const original = runtimeFixture();
+    const originalPlan = createFoundationRuntimePlan({
+      ...original,
+      activeWindowId: '3c46c791-e140-4eb9-890a-eecfa251f65e',
+    });
+    const canonicalBefore = JSON.stringify(original.records);
+    const proof = f.claim(f.admit());
+    const versions = f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof);
+    assert.deepEqual(Object.keys(versions).sort(), ['SUB-NOTIFY', 'WF-90']);
+    assert.equal(Object.isFrozen(versions), true);
+    const module = await f.copy('foundation-runtime-plan.mjs');
+    const input = {
+      ...original,
+      setup: { ...original.setup, sourceCommitSha: proof.sourceCommitSha },
+      activeWindowId: proof.windowId,
+      projectVerifiedContinuationProof: proof,
+    };
+    const baseline = module.createFoundationRuntimeBaseline(input);
+    const plan = module.createFoundationRuntimePlan(input);
+    assert.equal(plan.windowId, '4c602549-2c42-4ec3-9328-714d7cb66a77');
+    assert.deepEqual(plan.baseline, baseline);
+    assert.equal(baseline.length, 25);
+    for (const row of baseline) {
+      const old = originalPlan.baseline.find((b) => b.key === row.key);
+      assert.equal(row.versionId, versions[row.key] ?? old.versionId);
+      if (Object.hasOwn(versions, row.key)) assert.notEqual(row.versionId, old.versionId);
+      assert.deepEqual({ ...row, versionId: old.versionId }, old);
+    }
+    assert.equal(JSON.stringify(original.records), canonicalBefore);
+    assert.deepEqual(
+      createFoundationRuntimePlan({ ...original, activeWindowId: originalPlan.windowId }),
+      originalPlan,
+    );
+    for (const projectVerifiedContinuationProof of [structuredClone(proof), versions])
+      assert.throws(() =>
+        module.createFoundationRuntimeBaseline({ ...input, projectVerifiedContinuationProof }),
+      );
+    const changed = { ...input, records: structuredClone(input.records) };
+    changed.records.find((r) => r.key === 'SUB-NOTIFY').versionId = versions['SUB-NOTIFY'];
+    assert.throws(() => module.createFoundationRuntimeBaseline(changed));
+    assert.throws(() => module.createFoundationRuntimePlan({ ...input, setup: original.setup }));
+    assert.throws(() =>
+      module.createFoundationRuntimePlan({ ...input, activeWindowId: originalPlan.windowId }),
+    );
+    const noProof = { ...input };
+    delete noProof.projectVerifiedContinuationProof;
+    assert.throws(() => module.createFoundationRuntimePlan(noProof));
+  } finally {
+    f.cleanup();
+  }
+});
+
 test('fresh active window compiles exact new response guards while preserving reviewed inactive baseline', () => {
   const f = runtimeFixture(),
     old = createFoundationRuntimePlan(f);

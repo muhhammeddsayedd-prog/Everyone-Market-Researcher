@@ -35,6 +35,30 @@ Write-Output (Foundation-ArchiveFixtureSql $expected)
   assert.equal(result.stderr, '');
   return result.stdout.trim();
 }
+function nativeTechnical14ReadbackQuery() {
+  const quote = (s) => "'" + s.replaceAll("'", "''") + "'";
+  const consumer = fileURLToPath(new URL('./windows/Invoke-M03FoundationMigrations.ps1', import.meta.url));
+  const control = fileURLToPath(new URL('./windows/Foundation-AdminControl.ps1', import.meta.url));
+  const code = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
+foreach($entry in @(@{File=${quote(control)};Names=@('Foundation-Literal','Foundation-ForwardWindowId','Read-FoundationProjectVerifiedContinuationReactivatedFixture')},@{File=${quote(consumer)};Names=@('Foundation-Technical13AuditPredicate')})){
+ $errors=$null;$tokens=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($entry.File,[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'READBACK_SOURCE_PARSE'}
+ foreach($name in $entry.Names){$matches=@($ast.FindAll({param($item)$item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true));if($matches.Count -ne 1){throw 'READBACK_SOURCE_FUNCTION'};Invoke-Expression $matches[0].Extent.Text}
+}
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$projectVerifiedForwardWindowId='4c602549-2c42-4ec3-9328-714d7cb66a77';$projectVerifiedForwardSource='5087d4d93d2f6ffdca0bc0096b365723005446fc';$script:captured=$null
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=14;auditSegment='20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-14'}}
+function Invoke-FoundationQuery($Sql,$Field){if($Field -cne 'fixture'){throw 'READBACK_FIELD'};$script:captured=$Sql;throw 'READBACK_CAPTURED'}
+try{$null=Read-FoundationProjectVerifiedContinuationReactivatedFixture}catch{if($_.Exception.Message -cne 'READBACK_CAPTURED'){throw}}
+if($script:captured -isnot [string]){throw 'READBACK_NOT_CAPTURED'};Write-Output $script:captured
+`;
+  const result = spawnSync(
+    'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
+    ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(code, 'utf16le').toString('base64')],
+    { env: env(), encoding: 'utf8', timeout: 15000, windowsHide: true, maxBuffer: 131072 },
+  );
+  assert.equal(result.status, 0, 'NATIVE_TECHNICAL14_READBACK');
+  assert.equal(result.stderr, '');
+  return result.stdout.trim();
+}
 const env = () =>
   Object.fromEntries(
     [
@@ -898,7 +922,7 @@ describe(
       }
     });
 
-    test('technical13 requires the real technical12 reactivation and archive while preserving the absent3to11 audit gap', () => {
+    test('technical13 and14 require real typed prior lifecycle audits while preserving the absent3to11 gap', () => {
       const wrapper =
         '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n\\set emr_smoke_reactivation_segment ' + segment + '\n';
       const teardown = readFileSync(new URL('../assert/m03_smoke_teardown.sql', import.meta.url), 'utf8');
@@ -958,6 +982,37 @@ describe(
         exception when others then if SQLSTATE<>'55000' or SQLERRM not in ('M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED','M03_REACTIVATION_PRIOR_LIFECYCLE_CHANGED') then raise exception 'MISSING_OR_CHANGED_TECHNICAL12_ACCEPTED';end if;end;end;$deny$;rollback;`);
         assert.deepEqual(JSON.parse(psql(snapshot)), afterTwelve);
       }
+      psql(wrapper + '\\set emr_smoke_technical_ordinal 13\n' + source());
+      psql('\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n' + teardown);
+      const afterThirteen = JSON.parse(psql(snapshot)),
+        priorThirteen = psql('select jsonb_agg(to_jsonb(l) order by id) from ops.audit_log l;'),
+        readback = nativeTechnical14ReadbackQuery();
+      assert.equal(afterThirteen.audit, 6);
+      const fourteen = JSON.parse(
+        psql(`begin;${settings}set local emr.smoke_technical_ordinal='14';${body()}${readback}rollback;`),
+      );
+      assert.equal(fourteen.result, 'M03_SMOKE_FIXTURE_READY');
+      assert.equal(fourteen.competitor_id, competitor);
+      assert.equal(fourteen.account_id, account);
+      for (const ordinal of [12, 13]) {
+        for (const change of [
+          `delete from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}:technical-${ordinal}'`,
+          `update ops.audit_log set after=jsonb_set(after,'{original_creation_audit_id}',to_jsonb(after->>'original_creation_audit_id')) where actor_id='m03_smoke_reactivate.v1:${segment}:technical-${ordinal}'`,
+        ]) {
+          psql(
+            `begin;${settings}${change};set local emr.smoke_technical_ordinal='14';do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' then raise exception 'TECHNICAL14_PRIOR_NOT_DENIED';end if;end;end;$deny$;rollback;`,
+          );
+          assert.deepEqual(JSON.parse(psql(snapshot)), afterThirteen);
+        }
+      }
+      assert.equal(
+        psql(`begin;${settings}set local emr.smoke_technical_ordinal='14';${body()}
+update ops.audit_log set after=jsonb_set(after,'{original_creation_audit_id}',to_jsonb(after->>'original_creation_audit_id')) where actor_id='m03_smoke_reactivate.v1:${segment}:technical-14';${readback}rollback;`),
+        '',
+        'native14 readback rejects a string substituted for the numeric creation audit ID',
+      );
+      assert.equal(psql('select jsonb_agg(to_jsonb(l) order by id) from ops.audit_log l;'), priorThirteen);
+      assert.deepEqual(JSON.parse(psql(snapshot)), afterThirteen);
     });
   },
 );

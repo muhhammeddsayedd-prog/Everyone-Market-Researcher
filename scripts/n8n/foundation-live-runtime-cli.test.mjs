@@ -550,6 +550,14 @@ for (const profile of [
     mainControl: 737,
     options: { runtimePreparationClosed: true, runtimeMetadataAllocation: true },
   },
+  {
+    maximum: 1024,
+    management: 524,
+    control: 841,
+    controlRows: 846,
+    mainControl: 838,
+    options: { runtimeRestorationClosed: true, runtimeRestorationAllocation: true },
+  },
 ])
   test(`approved${profile.maximum} session composes genuine mixed-row budgets before any child or network`, async () => {
     const f = await syntheticProjectVerifiedContinuation(profile.options);
@@ -633,6 +641,15 @@ for (const profile of [
     window: '3c46c791-e140-4eb9-890a-eecfa251f65e',
     options: { runtimePreparationClosed: true, runtimeMetadataAllocation: true },
   },
+  {
+    maximum: 1024,
+    ordinal: 14,
+    management: 524,
+    control: 841,
+    source: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
+    window: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+    options: { runtimeRestorationClosed: true, runtimeRestorationAllocation: true },
+  },
 ])
   test(`post-reconciliation genuine${profile.maximum} CLI prepare crosses the actual Admin client and native protocol before every Preview operation`, async () => {
     const f = await syntheticProjectVerifiedContinuation(profile.options);
@@ -666,6 +683,9 @@ for (const profile of [
         );
       const copied = await f.copy('foundation-live-runtime-cli.mjs');
       const adminModule = await f.copy('foundation-admin-client.mjs');
+      const restoredPlan = profile.maximum === 1024 ? await f.copy('foundation-runtime-plan.mjs') : null;
+      const restoredTransport =
+        profile.maximum === 1024 ? await f.copy('foundation-live-runtime-transport.mjs') : null;
       const spawn = (executable, args, options) => {
         spawns++;
         assert.match(executable, /WindowsPowerShell/);
@@ -772,7 +792,18 @@ for (const profile of [
             now: f.now,
             projectVerifiedContinuationProof: proof,
             startAdmin: (args) => adminModule.startFoundationAdminClient(args, { spawn }),
-            createBaselinePreflight: (args) => syntheticBaselinePreflight(args),
+            createBaselinePreflight: (args) => {
+              if (profile.maximum === 1024) assert.equal(args.projectVerifiedContinuationProof, proof);
+              return syntheticBaselinePreflight(
+                args,
+                profile.maximum === 1024
+                  ? {
+                      createBaseline: restoredPlan.createFoundationRuntimeBaseline,
+                      createPreflight: restoredTransport.createFoundationLiveBaselinePreflight,
+                    }
+                  : {},
+              );
+            },
             createNativeTransport: () => ({
               async request(spec) {
                 assert.equal(spec.method, 'GET');

@@ -275,17 +275,19 @@ test('new576 control pool refuses missing, throwing, invalid or backwards author
   }
 });
 
-for (const profile of [576, 640, 704, 832])
+for (const profile of [576, 640, 704, 832, 1024])
   test(`genuine linked${profile} Management andControl snapshots enforce2560 in both directions with no counter or intent reset`, async () => {
     for (const direction of ['management', 'control']) {
       const f = await syntheticProjectVerifiedContinuation(
-        profile === 832
-          ? { runtimePreparationClosed: true, runtimeMetadataAllocation: true }
-          : profile === 704
-            ? { catalogReadonly: true, catalogManagementAllocation: true }
-            : profile === 640
-              ? { closedFixture: true }
-              : { managementAllocation: true },
+        profile === 1024
+          ? { runtimeRestorationClosed: true, runtimeRestorationAllocation: true }
+          : profile === 832
+            ? { runtimePreparationClosed: true, runtimeMetadataAllocation: true }
+            : profile === 704
+              ? { catalogReadonly: true, catalogManagementAllocation: true }
+              : profile === 640
+                ? { closedFixture: true }
+                : { managementAllocation: true },
       );
       let management;
       try {
@@ -317,7 +319,8 @@ for (const profile of [576, 640, 704, 832])
           projectVerifiedContinuationProof: proof,
           managementAttempts: () => management.snapshot().attempts,
         });
-        const managementTarget = direction === 'management' ? 512 : profile;
+        const managementTarget =
+          direction === 'management' ? Math.max(512, checkpoint.aggregateManagementAttempts) : profile;
         while (management.snapshot().attempts < managementTarget) management.admit();
         while (control.snapshot().attempts < 2560 - managementTarget)
           control.admit({ kind: 'discovery', workflowId });

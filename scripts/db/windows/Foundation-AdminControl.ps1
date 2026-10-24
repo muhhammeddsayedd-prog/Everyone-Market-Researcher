@@ -106,7 +106,8 @@ function Foundation-ForwardWindowId {
   $source=Get-Variable -Name projectVerifiedForwardSource -ValueOnly -ErrorAction SilentlyContinue
   if(($selected -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc' -and $source -ceq 'a5e746736893d5040e93032ae740a0878f748837') -or
      ($selected -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883' -and $source -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803') -or
-     ($selected -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e' -and $source -ceq '7b1837201ac7925591577a1517d7288936ca3464')){return $selected}
+     ($selected -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e' -and $source -ceq '7b1837201ac7925591577a1517d7288936ca3464') -or
+     ($selected -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77' -and $source -ceq '5087d4d93d2f6ffdca0bc0096b365723005446fc')){return $selected}
   throw 'blocked'
 }
 function Close-FoundationOwnedWindow($Binding) {
@@ -160,8 +161,10 @@ function Assert-FoundationForwardWindowState([bool]$Prepared) {
   if(-not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -or -not $ProjectVerifiedContinuation){throw 'blocked'}
   $null=Read-FoundationForwardPrior
   $window=Foundation-ForwardWindowId
-  $next=$window -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e'
-  $fresh=$window -cin @('eda4fae1-1e19-47db-81b8-beac1a4ed883','3c46c791-e140-4eb9-890a-eecfa251f65e')
+  $restored=$window -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77'
+  if($restored -and (Foundation-ProjectVerifiedTechnicalIdentity).ordinal -ne 14){throw 'blocked'}
+  $next=$window -cin @('3c46c791-e140-4eb9-890a-eecfa251f65e','4c602549-2c42-4ec3-9328-714d7cb66a77')
+  $fresh=$window -cin @('eda4fae1-1e19-47db-81b8-beac1a4ed883','3c46c791-e140-4eb9-890a-eecfa251f65e','4c602549-2c42-4ec3-9328-714d7cb66a77')
   $stateSql=@'
 select jsonb_build_object(
  'identity',current_user='postgres' and session_user='postgres' and current_database()='postgres',
@@ -177,7 +180,7 @@ select jsonb_build_object(
  'progress',(select count(*) from app.items)+(select count(*) from ops.scrape_runs)+(select count(*) from ops.apify_runs)+(select count(*) from ops.cost_ledger)) as registered_preflight;
 '@
   if($fresh){
-    $selectedSource=if($next){'7b1837201ac7925591577a1517d7288936ca3464'}else{'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'}
+    $selectedSource=if($restored){'5087d4d93d2f6ffdca0bc0096b365723005446fc'}elseif($next){'7b1837201ac7925591577a1517d7288936ca3464'}else{'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'}
     $stateSql=$stateSql.Replace('38b3708d-61b0-41d2-8170-5ed91c66b4dc',$window).Replace('a5e746736893d5040e93032ae740a0878f748837',$selectedSource)
     $prior="'intermediateClosed',(select count(*)=1 and bool_and(w.closed_at is not null and w.close_count=1 and w.admitted_count=1 and w.starts_at is null and w.bound_commit_sha='a5e746736893d5040e93032ae740a0878f748837' and w.bound_deployment_id='dpl_HPq8ot1nNvBZRLTyAoEnXHXuhTPF' and w.bound_audience='https://everyone-market-researcher-j94yqflt0-muhammed-abdelrahman.vercel.app' and exists(select 1 from ops.apify_launch_approvals a where a.window_id=w.window_id and a.closed_at is not null and a.actor_build='0.3.99' and a.max_total_charge_usd=1 and a.batch_max_usd=2 and a.approval_reference='M03-A-D-f42930f-20261021')) from ops.foundation_gateway_rate_windows w where w.window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc'),`n 'windows'"
     $stateSql=$stateSql.Replace("'windows'",$prior)
@@ -188,15 +191,24 @@ select jsonb_build_object(
     $runtimePrior="'runtimeClosed',(select count(*)=1 and bool_and(w.closed_at is not null and w.close_count=1 and w.admitted_count=2 and w.starts_at is not null and w.expires_at is not null and w.bound_commit_sha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803' and w.bound_deployment_id='dpl_ABN1zsMeta6kHd4eRTqT9FbLqkEY' and w.bound_audience='https://everyone-market-researcher-ocnyxyafr-muhammed-abdelrahman.vercel.app' and exists(select 1 from ops.apify_launch_approvals a where a.window_id=w.window_id and a.closed_at is not null and a.actor_build='0.3.99' and a.max_total_charge_usd=1 and a.batch_max_usd=2 and a.approval_reference='M03-A-D-f42930f-20261021')) from ops.foundation_gateway_rate_windows w where w.window_id='eda4fae1-1e19-47db-81b8-beac1a4ed883'),`n 'windows'"
     $stateSql=$stateSql.Replace("'windows'",$runtimePrior)
   }
+  if($restored){
+    $restoredPrior="'restorationClosed',(select count(*)=1 and bool_and(w.closed_at='2026-10-24T10:57:10.209766+00:00'::timestamptz and w.close_count=1 and w.admitted_count=2 and w.starts_at is not null and w.expires_at is not null and w.bound_commit_sha='7b1837201ac7925591577a1517d7288936ca3464' and w.bound_deployment_id='dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25' and w.bound_audience='https://everyone-market-researcher-7fcbxykan-muhammed-abdelrahman.vercel.app' and exists(select 1 from ops.apify_launch_approvals a where a.window_id=w.window_id and a.closed_at is not null and a.actor_build='0.3.99' and a.max_total_charge_usd=1 and a.batch_max_usd=2 and a.approval_reference='M03-A-D-f42930f-20261021')) from ops.foundation_gateway_rate_windows w where w.window_id='3c46c791-e140-4eb9-890a-eecfa251f65e'),`n 'fixtureAuditCount',(select count(*) from ops.audit_log where entity_id in ('d51a39f6-fe87-4d17-aee9-3070c45693aa','bd23314c-591f-4fb7-92fd-b7450634eeb6')),`n 'technical12Exact',$(Foundation-Technical13AuditPredicate 12),`n 'technical13Exact',$(Foundation-Technical13AuditPredicate 13),`n 'windows'"
+    $stateSql=$stateSql.Replace("'windows'",$restoredPrior)
+    $progress="+(select count(*) from ops.cost_ledger)"
+    if([regex]::Matches($stateSql,[regex]::Escape($progress)).Count -ne 1){throw 'blocked'}
+    $stateSql=$stateSql.Replace($progress,$progress+"+(select count(*) from ops.foundation_gateway_requests where state='reserved' or completed_at is null)+(select count(*) from ops.apify_launch_approvals where window_id<>'4c602549-2c42-4ec3-9328-714d7cb66a77' and closed_at is null)")
+  }
   $value=Invoke-FoundationQuery $stateSql 'registered_preflight'
   $keys=@('identity','legacyClosed','windows','freshWindows','freshPrepared','globalAdmitted','requests','activeLeases','launches','bindings','progress')
   $booleans=@('identity','legacyClosed','freshPrepared')
   if($fresh){$keys+='intermediateClosed';$booleans+='intermediateClosed'}
   if($next){$keys+='runtimeClosed';$booleans+='runtimeClosed'}
+  if($restored){$keys+=@('restorationClosed','fixtureAuditCount','technical12Exact','technical13Exact');$booleans+=@('restorationClosed','technical12Exact','technical13Exact')}
   Assert-Keys $value $keys
   foreach($key in $booleans){if($value.$key -isnot [bool]){throw 'blocked'}}
   foreach($key in @('windows','freshWindows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){if(($value.$key -isnot [int] -and $value.$key -isnot [long]) -or $value.$key -lt 0){throw 'blocked'}}
-  $priorWindows=if($next){3}elseif($fresh){2}else{1};$priorAdmitted=if($next){5}elseif($fresh){3}else{2};$priorRequests=if($next){2}else{1}
+  if($restored -and (($value.fixtureAuditCount -isnot [int] -and $value.fixtureAuditCount -isnot [long]) -or $value.fixtureAuditCount -ne 6 -or $value.restorationClosed -ne $true -or $value.technical12Exact -ne $true -or $value.technical13Exact -ne $true)){throw 'blocked'}
+  $priorWindows=if($restored){4}elseif($next){3}elseif($fresh){2}else{1};$priorAdmitted=if($restored){7}elseif($next){5}elseif($fresh){3}else{2};$priorRequests=if($restored){3}elseif($next){2}else{1}
   if($value.identity -ne $true -or $value.legacyClosed -ne $true -or ($fresh -and $value.intermediateClosed -ne $true) -or ($next -and $value.runtimeClosed -ne $true) -or $value.windows -ne ($priorWindows+$(if($Prepared){1}else{0})) -or $value.freshWindows -ne $(if($Prepared){1}else{0}) -or
      $value.globalAdmitted -ne $priorAdmitted -or $value.requests -ne $priorRequests -or $value.activeLeases -ne 0 -or $value.launches -ne 0 -or $value.bindings -ne 0 -or $value.progress -ne 0 -or ($Prepared -and $value.freshPrepared -ne $true)){throw 'blocked'}
   # Later settled actor/item progress needs its own engineering reconciliation;
@@ -398,6 +410,13 @@ and (select count(*) from ops.audit_log l join ops.audit_log o on o.id::text=l.a
  and o.after->>'competitor_id'=c.id::text and o.after->>'account_id'=a.id::text)=1;
 '@
   $sql=$sql.Replace('20275b22-b7fe-4737-a9a4-c50c2feadb74',$technical.auditSegment)
+  if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77'){
+    if($technical.ordinal -ne 14){throw 'blocked'}
+    $needle="and o.after->>'competitor_id'=c.id::text and o.after->>'account_id'=a.id::text)=1;"
+    if([regex]::Matches($sql,[regex]::Escape($needle)).Count -ne 1){throw 'blocked'}
+    $exact="and o.after->>'competitor_id'=c.id::text and o.after->>'account_id'=a.id::text and l.after=jsonb_build_object('fixture_version',1,'project_ref','zmotjsbzhzjvpelxvxlf','segment_id',$(Foundation-Literal $technical.auditSegment),'competitor_id',c.id,'account_id',a.id,'competitor_status','active','account_status','active','original_creation_audit_id',o.id))=1 and (select count(*)=7 from ops.audit_log where entity_id in (c.id::text,a.id::text)) and $(Foundation-Technical13AuditPredicate 12) and $(Foundation-Technical13AuditPredicate 13);"
+    $sql=$sql.Replace($needle,$exact)
+  }
   $value=Invoke-FoundationQuery $sql 'fixture'
   Assert-FoundationContinuationFixture $value
   if($value.competitor_id -cne 'd51a39f6-fe87-4d17-aee9-3070c45693aa' -or $value.account_id -cne 'bd23314c-591f-4fb7-92fd-b7450634eeb6'){throw 'blocked'}

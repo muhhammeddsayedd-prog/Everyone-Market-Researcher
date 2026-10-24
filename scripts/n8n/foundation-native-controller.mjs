@@ -125,6 +125,7 @@ export function createFoundationNativeController({
         '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
         'eda4fae1-1e19-47db-81b8-beac1a4ed883',
         '3c46c791-e140-4eb9-890a-eecfa251f65e',
+        '4c602549-2c42-4ec3-9328-714d7cb66a77',
       ].includes(activeWindowId) ||
       typeof bindingFor !== 'function' ||
       typeof port?.details !== 'function' ||

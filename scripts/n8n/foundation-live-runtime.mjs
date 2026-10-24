@@ -158,7 +158,7 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     ? foundationProjectVerifiedContinuationResumeCheckpoint(verified)
     : null;
   const managementMaximum = verifiedCheckpoint?.managementMaximum ?? 512;
-  if (![512, 576, 640, 704, 832].includes(managementMaximum)) fail();
+  if (![512, 576, 640, 704, 832, 1024].includes(managementMaximum)) fail();
   const sharedMaximum = managementMaximum !== 512;
   let observedControlAttempts = verifiedCheckpoint?.aggregateControlAttempts;
   const readControlAttempts = () => {
@@ -353,6 +353,7 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       sourceCommitSha,
       deadlineAt,
       ...(verified ? { runtimeFilename: verifiedCheckpoint.runtimeFilename } : {}),
+      ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
     });
     return budget;
   } catch {
@@ -417,12 +418,18 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
   const scope = managementBudgets.get(budget);
   const managementMaximum = budget.snapshot().maximum;
   if (scope.sourceCommitSha !== input.setup.sourceCommitSha || scope.deadlineAt !== input.deadlineAt) fail();
+  if (
+    (managementMaximum === 1024 || Object.hasOwn(input, 'projectVerifiedContinuationProof')) &&
+    scope.projectVerifiedContinuationProof !== input.projectVerifiedContinuationProof
+  )
+    fail();
   const baselinePreflightReceipt = dependencies.baselinePreflightReceipt;
   if (baselinePreflightReceipt !== undefined)
     assertFoundationLiveBaselineReceipt(baselinePreflightReceipt, {
       baseline: plan.baseline,
       deadlineAt: input.deadlineAt,
       managementBudget: budget,
+      projectVerifiedContinuationProof: input.projectVerifiedContinuationProof,
     });
   const directory = scope.directory;
   let transport,
@@ -491,6 +498,7 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
             baselinePreflightReceipt,
             deadlineAt: input.deadlineAt,
             managementBudget: budget,
+            projectVerifiedContinuationProof: input.projectVerifiedContinuationProof,
           }),
       send: (method, path, body) => transport.send(method, path, body),
       admitManagementAttempt() {

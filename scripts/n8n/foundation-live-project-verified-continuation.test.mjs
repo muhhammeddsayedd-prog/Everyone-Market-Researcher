@@ -15,6 +15,234 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('approved1024 post-restoration profile preserves524/841 charges and derives only two restored baseline versions', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    runtimeRestorationClosed: true,
+    runtimeRestorationAllocation: true,
+  });
+  try {
+    const prior = 'scripts/n8n/out/foundation/live/runtime.technical-13.jsonl',
+      old = readFileSync(join(f.directory, prior), 'utf8');
+    const ready = f.check();
+    assert.deepEqual(
+      [ready.managementMaximum, ready.managementAttempts, ready.controlAttempts, ready.combinedAttempts],
+      [1024, 524, 841, 1365],
+    );
+    assert.equal(ready.sourceCommitSha, '5087d4d93d2f6ffdca0bc0096b365723005446fc');
+    assert.equal(ready.windowId, '4c602549-2c42-4ec3-9328-714d7cb66a77');
+    assert.equal(ready.privateRead, false);
+    assert.equal(ready.networkRequests, 0);
+    const proof = f.claim(f.admit()),
+      resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof),
+      versions = f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof);
+    assert.deepEqual(
+      [
+        resume.technicalAttemptOrdinal,
+        resume.setupRows,
+        resume.setupAttempts,
+        resume.setupMaximum,
+        resume.preflightRows,
+        resume.gatewayPreflightAttempts,
+      ],
+      [14, 297, 149, 224, 16, 6],
+    );
+    assert.deepEqual(
+      [
+        resume.mainManagementAttempts,
+        resume.aggregateManagementAttempts,
+        resume.mainControlAttempts,
+        resume.aggregateControlAttempts,
+      ],
+      [513, 524, 838, 841],
+    );
+    assert.equal(
+      resume.legacySqlAdmitted,
+      7,
+      'only the restored four-window profile carries all seven historical SQL admissions',
+    );
+    assert.equal(resume.historicalWindowIds.length, 4);
+    assert.equal(resume.runtimeFilename, 'runtime.technical-14.jsonl');
+    assert.deepEqual(Object.keys(versions).sort(), ['SUB-NOTIFY', 'WF-90']);
+    assert.equal(Object.isFrozen(versions), true);
+    assert.equal(new Set(Object.values(versions)).size, 2);
+    assert.equal(readFileSync(join(f.directory, prior), 'utf8'), old);
+    assert.throws(() =>
+      f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(Object.freeze({ ...proof })),
+    );
+    const managementBefore = readFileSync(f.paths.management, 'utf8');
+    appendFileSync(f.paths.management, JSON.stringify({ event: 'management_attempt', ordinal: 514 }) + '\n');
+    assert.deepEqual(f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof), versions);
+    assert.equal(readFileSync(f.paths.management, 'utf8').startsWith(managementBefore), true);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('post-restoration caps remain unavailable without exact allocation or verified source delivery', async () => {
+  for (const options of [
+    { runtimeRestorationClosed: true },
+    { runtimeRestorationClosed: true, runtimeRestorationAllocation: true, runtimeSourceUnverified: true },
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation(options);
+    try {
+      const result = f.check();
+      assert.equal(
+        result.status,
+        options.runtimeSourceUnverified ? 'application_source_unselected' : 'setup_cap_insufficient',
+      );
+      assert.deepEqual(
+        [result.managementAttempts, result.controlAttempts, result.combinedAttempts, result.setupAttempts],
+        [524, 841, 1365, 149],
+      );
+      assert.equal(result.setupMaximum, options.runtimeSourceUnverified ? 224 : 176);
+      assert.equal(result.proposedSetupMaximum, 224);
+      assert.throws(() => f.admit());
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('post-restoration ReadClaimed keeps immutable closed prefixes after the real25Management51Control baseline charges', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    runtimeRestorationClosed: true,
+    runtimeRestorationAllocation: true,
+  });
+  try {
+    const proof = f.claim(f.admit()),
+      management = readFileSync(f.paths.management, 'utf8'),
+      control = readFileSync(f.paths.control, 'utf8');
+    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+    f.io.processAlive = (pid) => [process.pid, process.ppid].includes(pid);
+    for (let i = 0; i < 25; i++)
+      appendFileSync(
+        f.paths.management,
+        JSON.stringify({ event: 'management_attempt', ordinal: 514 + i }) + '\n',
+      );
+    for (let i = 0; i < 51; i++)
+      appendFileSync(
+        f.paths.control,
+        JSON.stringify({
+          event: 'control_request_intent',
+          ordinal: 839 + i,
+          kind: 'discovery',
+          workflowId: 'MzimjpsuyPuK7SKe',
+          at: new Date(f.now()).toISOString(),
+        }) + '\n',
+      );
+    const read = f.readClaimed();
+    assert.equal(read.sourceCommitSha, proof.sourceCommitSha);
+    assert.equal(read.windowId, proof.windowId);
+    assert.equal(readFileSync(f.paths.management, 'utf8').startsWith(management), true);
+    assert.equal(readFileSync(f.paths.control, 'utf8').startsWith(control), true);
+    assert.throws(() => f.check(), 'initial readiness may not consume charged current-attempt tails');
+    for (const path of [f.paths.management, f.paths.control]) {
+      const before = readFileSync(path, 'utf8'),
+        rows = before.trimEnd().split('\n').map(JSON.parse);
+      rows.at(-1).ordinal--;
+      writeFileSync(path, rows.map(JSON.stringify).join('\n') + '\n');
+      assert.throws(() => f.readClaimed());
+      writeFileSync(path, before);
+    }
+    assert.equal(f.readClaimed().windowId, proof.windowId);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('post-restoration recovery rejects unknown acknowledgement replay, false cleanup, reset charges and malformed native versions', async () => {
+  for (const runtimeRestorationFault of [
+    'raw-closure',
+    'readback',
+    'recovery-version',
+    'recovery-replay',
+    'settlement',
+    'usage',
+    'archive',
+    'cleanup',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      runtimeRestorationClosed: true,
+      runtimeRestorationAllocation: true,
+      runtimeRestorationFault,
+    });
+    try {
+      assert.throws(() => f.check(), undefined, runtimeRestorationFault);
+      assert.throws(() => f.admit(), undefined, runtimeRestorationFault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('post-restoration allocation rejects repinned cap, usage, actor, production and closed-window changes', async () => {
+  for (const runtimeRestorationAllocationFault of [
+    'maximum',
+    'vercel',
+    'usage',
+    'actor',
+    'boundary',
+    'window',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      runtimeRestorationClosed: true,
+      runtimeRestorationAllocation: true,
+      runtimeRestorationAllocationFault,
+    });
+    try {
+      assert.throws(() => f.check(), undefined, runtimeRestorationAllocationFault);
+      assert.throws(() => f.admit(), undefined, runtimeRestorationAllocationFault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('claimed restored baseline carry stays pinned to immutable old13 and49-row recovery while historical proofs return null', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    runtimeRestorationClosed: true,
+    runtimeRestorationAllocation: true,
+  });
+  try {
+    const proof = f.claim(f.admit());
+    for (const relative of [
+      'scripts/n8n/out/foundation/live/runtime.technical-13.jsonl',
+      'scripts/n8n/out/foundation/runtime-technical13-restoration.jsonl',
+      'scripts/n8n/out/foundation/runtime-technical13-restoration-attempt.json',
+      'scripts/n8n/out/foundation/runtime-technical13-restoration-result.json',
+      'milestones/M03-n8n-foundation/evidence/runtime-restoration-20261024.json',
+      'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-runtime-restoration-approval-20261024.json',
+    ]) {
+      const path = join(f.directory, relative),
+        before = readFileSync(path, 'utf8');
+      appendFileSync(path, ' ');
+      assert.throws(
+        () => f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof),
+        undefined,
+        relative,
+      );
+      writeFileSync(path, before);
+    }
+    assert.equal(
+      Object.keys(f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof)).length,
+      2,
+    );
+  } finally {
+    f.cleanup();
+  }
+  const historical = await syntheticProjectVerifiedContinuation();
+  try {
+    assert.equal(
+      historical.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(
+        historical.claim(historical.admit()),
+      ),
+      null,
+    );
+  } finally {
+    historical.cleanup();
+  }
+});
+
 test('closed technical12 and the separate one-GET diagnostic retain every charge before new allocation', async () => {
   const f = await syntheticProjectVerifiedContinuation({ runtimePreparationClosed: true });
   try {

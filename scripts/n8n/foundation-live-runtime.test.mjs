@@ -59,18 +59,20 @@ test('shared native fixture keeps settings/name-only versions and rotates struct
   }
 });
 
-for (const profile of [640, 704, 832])
+for (const profile of [640, 704, 832, 1024])
   test(`genuine${profile} allocation retains every charged request and the shared2560 ceiling without replacing historical headers`, async () => {
     for (const [controlAttempts, expectedLimit] of [
-      [profile === 832 ? 740 : profile === 704 ? 588 : 486, profile],
-      [2048, 512],
+      [profile === 1024 ? 841 : profile === 832 ? 740 : profile === 704 ? 588 : 486, profile],
+      [profile === 1024 ? 2036 : 2048, profile === 1024 ? 524 : 512],
     ]) {
       const f = await syntheticProjectVerifiedContinuation(
-        profile === 832
-          ? { runtimePreparationClosed: true, runtimeMetadataAllocation: true }
-          : profile === 704
-            ? { catalogReadonly: true, catalogManagementAllocation: true }
-            : { closedFixture: true },
+        profile === 1024
+          ? { runtimeRestorationClosed: true, runtimeRestorationAllocation: true }
+          : profile === 832
+            ? { runtimePreparationClosed: true, runtimeMetadataAllocation: true }
+            : profile === 704
+              ? { catalogReadonly: true, catalogManagementAllocation: true }
+              : { closedFixture: true },
       );
       let budget;
       try {
@@ -86,7 +88,10 @@ for (const profile of [640, 704, 832])
             controlAttempts: () => controlAttempts,
           },
         );
-        assert.equal(budget.snapshot().attempts, profile === 832 ? 401 : profile === 704 ? 288 : 237);
+        assert.equal(
+          budget.snapshot().attempts,
+          profile === 1024 ? 524 : profile === 832 ? 401 : profile === 704 ? 288 : 237,
+        );
         assert.equal(budget.snapshot().carriedAttempts, profile >= 704 ? 11 : 10);
         assert.equal(budget.snapshot().maximum, profile);
         while (budget.snapshot().attempts < expectedLimit) budget.admit();
@@ -95,7 +100,7 @@ for (const profile of [640, 704, 832])
         assert.equal(budget.snapshot().attempts, expectedLimit);
         assert.throws(() => budget.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
         assert.equal(readFileSync(f.paths.management, 'utf8'), atLimit);
-        if (controlAttempts === 2048) assert.equal(budget.snapshot().attempts + controlAttempts, 2560);
+        if (controlAttempts >= 2036) assert.equal(budget.snapshot().attempts + controlAttempts, 2560);
       } finally {
         budget?.close();
         f.cleanup();
@@ -103,17 +108,19 @@ for (const profile of [640, 704, 832])
     }
   });
 
-for (const profile of [640, 704, 832])
+for (const profile of [640, 704, 832, 1024])
   test(`genuine${profile} requires current Control custody and conservatively retains an uncertain append charge`, async () => {
     const f = await syntheticProjectVerifiedContinuation(
-      profile === 832
-        ? { runtimePreparationClosed: true, runtimeMetadataAllocation: true }
-        : profile === 704
-          ? { catalogReadonly: true, catalogManagementAllocation: true }
-          : { closedFixture: true },
+      profile === 1024
+        ? { runtimeRestorationClosed: true, runtimeRestorationAllocation: true }
+        : profile === 832
+          ? { runtimePreparationClosed: true, runtimeMetadataAllocation: true }
+          : profile === 704
+            ? { catalogReadonly: true, catalogManagementAllocation: true }
+            : { closedFixture: true },
     );
-    const initialControl = profile === 832 ? 740 : profile === 704 ? 588 : 486;
-    const initialManagement = profile === 832 ? 401 : profile === 704 ? 288 : 237;
+    const initialControl = profile === 1024 ? 841 : profile === 832 ? 740 : profile === 704 ? 588 : 486;
+    const initialManagement = profile === 1024 ? 524 : profile === 832 ? 401 : profile === 704 ? 288 : 237;
     let budget,
       moved = false,
       directoryCreated = false;
@@ -160,7 +167,7 @@ for (const profile of [640, 704, 832])
     }
   });
 
-for (const profile of [640, 704, 832])
+for (const profile of [640, 704, 832, 1024])
   test(`a plain requested${profile} profile cannot raise the historical512 budget or require a new callback`, () => {
     const f = fixture();
     let budget;
@@ -307,6 +314,99 @@ test('an uncertain576 journal append stays charged and stops paired Control at t
       if (moved) renameSync(saved, f.paths.management);
       f.cleanup();
     }
+  }
+});
+
+test('restored1024 runtime composes the qualified baseline through setup, one draft and exact restoration', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    runtimeRestorationClosed: true,
+    runtimeRestorationAllocation: true,
+  });
+  const live = fixture();
+  let budget, runtime, controlBudget;
+  try {
+    const proof = f.claim(f.admit());
+    const module = await f.copy('foundation-live-runtime.mjs');
+    const control = await f.copy('foundation-control-state.mjs');
+    const planModule = await f.copy('foundation-runtime-plan.mjs');
+    const transportModule = await f.copy('foundation-live-runtime-transport.mjs');
+    const versions = f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof);
+    for (const [key, versionId] of Object.entries(versions))
+      live.workflows.get(live.input.bindings.workflowRefs[key].id).versionId = versionId;
+    budget = module.createFoundationLiveManagementBudget(
+      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        controlAttempts: () => controlBudget?.snapshot().attempts ?? 841,
+      },
+    );
+    const controlJournal = control.createFoundationControlJournal({
+      previousEvents: readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+      durableAppend: (row) => writeFileSync(f.paths.control, JSON.stringify(row) + '\n', { flag: 'a' }),
+    });
+    controlBudget = control.createFoundationControlBudget({
+      journal: controlJournal,
+      now: f.now,
+      deadlineAt: proof.deadlineAt,
+      projectVerifiedContinuationProof: proof,
+      managementAttempts: () => budget.snapshot().attempts,
+    });
+    const preflight = syntheticBaselinePreflight(
+      {
+        bindings: live.input.bindings,
+        records: live.input.records,
+        apiKey: live.input.managementKey,
+        deadlineAt: proof.deadlineAt,
+        admitManagementAttempt: () => budget.admit(),
+        managementBudget: budget,
+        projectVerifiedContinuationProof: proof,
+      },
+      {
+        workflows: live.workflows,
+        createBaseline: planModule.createFoundationRuntimeBaseline,
+        createPreflight: transportModule.createFoundationLiveBaselinePreflight,
+      },
+    );
+    budget.attachTransport(preflight);
+    const baselinePreflightReceipt = await preflight.read();
+    assert.equal(budget.snapshot().attempts, 524 + 25);
+    runtime = module.createFoundationLiveRuntime(
+      {
+        ...live.input,
+        activeWindowId: proof.windowId,
+        setup: { ...live.input.setup, sourceCommitSha: proof.sourceCommitSha },
+        deadlineAt: proof.deadlineAt,
+        projectVerifiedContinuationProof: proof,
+      },
+      {
+        ...live.dependencies,
+        managementBudget: budget,
+        controlJournal,
+        controlBudget,
+        now: f.now,
+        baselinePreflightReceipt,
+      },
+    );
+    assert.equal(runtime.checkOnly().managementMaximum, 1024);
+    assert.equal(runtime.state().managementAttempts, 524 + 25);
+    assert.equal(runtime.checkOnly().setupDriftGuardGetCount, 0);
+    assert.equal((await runtime.setup()).status, 'runtime_setup_verified');
+    assert.equal(runtime.state().requestCount, 110);
+    assert.equal(budget.snapshot().attempts, 524 + 135);
+    assert.equal((await runtime.saveCase('dispatch.vimeo')).status, 'case_draft_verified');
+    assert.equal((await runtime.restore()).status, 'exact_staging_restored_unpublished');
+    assert.equal(runtime.state().managementMaximum, 1024);
+    assert.equal(
+      live.calls.some((c) => /\/executions|actor/.test(c.path)),
+      false,
+    );
+  } finally {
+    runtime?.close();
+    budget?.close();
+    live.cleanup();
+    f.cleanup();
   }
 });
 

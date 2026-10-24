@@ -7,17 +7,25 @@ import {
 } from './foundation-native-settlement.mjs';
 import { verifyFoundationLiveSmokeSql } from './foundation-live-runtime-cli.mjs';
 
-async function scripted(caseId) {
+async function scripted(caseId, activeWindowId) {
   let ports;
   const f = providerFixture({
     configureSettlement(p) {
       ports = p;
+      if (activeWindowId !== undefined) p.windowId = activeWindowId;
       const read = p.readGateway;
       p.readGateway = async (args) => {
         const value = await read(args);
+        if (activeWindowId !== undefined) {
+          value.window_id = activeWindowId;
+          for (const row of value.providers) row.launch.window_id = activeWindowId;
+        }
         if (caseId === 'smoke.second') for (const row of value.providers) row.launch.ordinal = 2;
         return value;
       };
+    },
+    beforeCreate({ ports }) {
+      if (activeWindowId !== undefined) ports.activeWindowId = activeWindowId;
     },
   });
   await verifyAndCleanPhaseB(f);
@@ -66,8 +74,27 @@ async function scripted(caseId) {
     calls,
     audit,
     original: f.original,
+    ...(activeWindowId === undefined ? {} : { activeWindowId }),
   };
 }
+
+test('fifth-window smoke SQL requires its actual branded settlement and exact window', async () => {
+  const activeWindowId = '4c602549-2c42-4ec3-9328-714d7cb66a77';
+  const f = await scripted('smoke.first', activeWindowId);
+  await verifyFoundationLiveSmokeSql(f);
+  assert.equal(f.calls.length, 1);
+  assert.equal(f.audit.length, 1);
+  assert.equal(f.audit[0].expectedItemsNew, 1);
+  await assert.rejects(
+    verifyFoundationLiveSmokeSql({ ...f, activeWindowId: '3c46c791-e140-4eb9-890a-eecfa251f65e' }),
+    /FOUNDATION_LIVE_CHILD_BLOCKED/,
+  );
+  await assert.rejects(
+    verifyFoundationLiveSmokeSql({ ...f, settlement: structuredClone(f.settlement) }),
+    /PROOF_BRAND/,
+  );
+  assert.equal(f.calls.length, 1);
+});
 
 for (const [caseId, expected] of [
   ['smoke.first', 1],

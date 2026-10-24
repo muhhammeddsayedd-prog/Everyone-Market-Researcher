@@ -7,6 +7,7 @@ import { graphBody, inactiveNativeStagingGraph } from './foundation-bind.mjs';
 import { materializeFoundationAcceptanceCase } from '../../n8n/foundation/materialize-acceptance-case.mjs';
 import { buildFoundationGatewayWorkflows } from '../../n8n/foundation/build-foundation-gateway.mjs';
 import { buildFoundationNativeDomainProbe } from './foundation-live-domain-probe.mjs';
+import { foundationProjectVerifiedContinuationRestoredBaselineVersions } from './foundation-live-project-verified-continuation.mjs';
 import {
   createFoundationApprovedRetentionPolicy,
   assertFoundationApprovedRetentionPolicy,
@@ -83,7 +84,8 @@ function bodyFor(record) {
 }
 // Source-only baseline for preflight; constructing it grants no runtime plan,
 // deployment, publication or mutation authority.
-export function createFoundationRuntimeBaseline({ bindings, records }) {
+export function createFoundationRuntimeBaseline(input) {
+  const { bindings, records } = input;
   if (
     !object(bindings) ||
     bindings.projectId !== foundationRuntimeCheckpoint.projectId ||
@@ -115,6 +117,11 @@ export function createFoundationRuntimeBaseline({ bindings, records }) {
     byKey.set(record.key, record);
     if (Object.hasOwn(record, 'nativeReadonlySettings')) foundationRuntimeNativeReadonlyPin(record);
   }
+  // Validate every canonical source record before applying only the qualified
+  // native versions left by the separately reconciled restoration.
+  const restoredVersions = Object.hasOwn(input, 'projectVerifiedContinuationProof')
+    ? foundationProjectVerifiedContinuationRestoredBaselineVersions(input.projectVerifiedContinuationProof)
+    : null;
   return freezeRuntimeValue(
     keys.map((key) => {
       const record = byKey.get(key);
@@ -122,7 +129,7 @@ export function createFoundationRuntimeBaseline({ bindings, records }) {
       return {
         key,
         id: record.id,
-        versionId: record.versionId,
+        versionId: restoredVersions?.[key] ?? record.versionId,
         body: bodyFor(record),
         tags: structuredClone(record.workflow.tags),
         ...(Object.hasOwn(record, 'nativeReadonlySettings')
@@ -148,13 +155,9 @@ function runtimeBody(graph, setup, errorLink, retentionPolicy) {
   else delete body.settings.errorWorkflow;
   return body;
 }
-export function createFoundationRuntimePlan({
-  bindings,
-  transport,
-  records,
-  setup,
-  activeWindowId = foundationRuntimeCheckpoint.windowId,
-}) {
+export function createFoundationRuntimePlan(input) {
+  const { bindings, transport, records, activeWindowId = foundationRuntimeCheckpoint.windowId } = input;
+  let { setup } = input;
   setup = createFoundationRuntimeSetupOutput(setup);
   if (
     ![
@@ -162,6 +165,7 @@ export function createFoundationRuntimePlan({
       '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
       'eda4fae1-1e19-47db-81b8-beac1a4ed883',
       '3c46c791-e140-4eb9-890a-eecfa251f65e',
+      '4c602549-2c42-4ec3-9328-714d7cb66a77',
     ].includes(activeWindowId) ||
     !object(bindings) ||
     bindings.projectId !== foundationRuntimeCheckpoint.projectId ||
@@ -177,7 +181,15 @@ export function createFoundationRuntimePlan({
       JSON.stringify({ id: machine.id, name: machine.name, type: machine.type })
   )
     blocked();
-  const baseline = createFoundationRuntimeBaseline({ bindings, records });
+  const baseline = createFoundationRuntimeBaseline(input);
+  const continuationProof = input.projectVerifiedContinuationProof;
+  if (
+    (activeWindowId === '4c602549-2c42-4ec3-9328-714d7cb66a77' ||
+      Object.hasOwn(input, 'projectVerifiedContinuationProof')) &&
+    (continuationProof?.windowId !== activeWindowId ||
+      continuationProof?.sourceCommitSha !== setup.sourceCommitSha)
+  )
+    blocked();
   const byKey = new Map(records.map((record) => [record.key, record]));
   const retentionPolicy = createFoundationApprovedRetentionPolicy({ bindings, records });
   const oldTransport = {

@@ -42,6 +42,72 @@ function plan() {
   });
 }
 const p = plan();
+
+test('restored1024 baseline preflight uses the same claimed proof for all25 GETs and receipt custody', async () => {
+  const { syntheticProjectVerifiedContinuation } =
+    await import('./foundation-live-project-verified-fixtures.mjs');
+  const shared = await import('./foundation-live-runtime-fixtures.mjs');
+  const f = await syntheticProjectVerifiedContinuation({
+    runtimeRestorationClosed: true,
+    runtimeRestorationAllocation: true,
+  });
+  const native = shared.fixture();
+  let preflight;
+  try {
+    const proof = f.claim(f.admit());
+    const module = await f.copy('foundation-live-runtime-transport.mjs');
+    const runtimePlan = await f.copy('foundation-runtime-plan.mjs');
+    const input = { ...native.input, projectVerifiedContinuationProof: proof };
+    const baseline = runtimePlan.createFoundationRuntimeBaseline(input);
+    for (const row of baseline) native.workflows.get(row.id).versionId = row.versionId;
+    let attempts = 0,
+      constructorInput;
+    const managementBudget = {};
+    const configured = fixture({
+      value: (o) => native.workflows.get(o.path.split('/')[4].split('?')[0]),
+      create: (dependencies) => {
+        constructorInput = {
+          ...input,
+          apiKey: 'SYNTHETIC_PRIVATE_MANAGEMENT_KEY',
+          deadlineAt: proof.deadlineAt,
+          managementBudget,
+          admitManagementAttempt() {
+            attempts++;
+          },
+        };
+        return module.createFoundationLiveBaselinePreflight(constructorInput, dependencies);
+      },
+    });
+    preflight = configured.t;
+    constructorInput.projectVerifiedContinuationProof = {};
+    const receipt = await preflight.read();
+    assert.equal(receipt.verifiedWorkflows, 25);
+    assert.equal(attempts, 25);
+    assert.equal(configured.options.length, 25);
+    assert.equal(configured.writes.length, 0);
+    assert.ok(
+      configured.options.every((o) => o.method === 'GET' && o.path.endsWith('?excludePinnedData=true')),
+    );
+    const scope = {
+      baseline,
+      deadlineAt: proof.deadlineAt,
+      managementBudget,
+      projectVerifiedContinuationProof: proof,
+    };
+    assert.equal(module.assertFoundationLiveBaselineReceipt(receipt, scope), receipt);
+    for (const projectVerifiedContinuationProof of [undefined, structuredClone(proof), {}])
+      assert.throws(() =>
+        module.assertFoundationLiveBaselineReceipt(receipt, { ...scope, projectVerifiedContinuationProof }),
+      );
+    module.claimFoundationLiveBaselineReceipt(receipt, scope);
+    assert.throws(() => module.assertFoundationLiveBaselineReceipt(receipt, scope));
+  } finally {
+    preflight?.close();
+    native.cleanup();
+    f.cleanup();
+  }
+});
+
 function fixture({
   value = { ok: true },
   rawBody,
@@ -506,6 +572,19 @@ test('Writer Close binds the exact third owned window without reusing either clo
 
 test('Writer Close binds the fourth owned window and keeps all three predecessor intents closed', async () => {
   const windowId = '3c46c791-e140-4eb9-890a-eecfa251f65e';
+  const f = writerCloseFixture({ windowId });
+  assert.equal((await f.t.closeWindow()).closeVerified, true);
+  assert.equal(f.rows[0].windowId, windowId);
+  assert.equal(f.queries.filter((q) => q.values?.[2] === 'close').length, 1);
+  assert.equal(
+    f.queries.filter((q) => q.values).every((q) => q.values[0] === windowId),
+    true,
+  );
+  assert.equal(f.ends(), 1);
+});
+
+test('Writer Close binds the fifth owned window without replaying any predecessor close', async () => {
+  const windowId = '4c602549-2c42-4ec3-9328-714d7cb66a77';
   const f = writerCloseFixture({ windowId });
   assert.equal((await f.t.closeWindow()).closeVerified, true);
   assert.equal(f.rows[0].windowId, windowId);

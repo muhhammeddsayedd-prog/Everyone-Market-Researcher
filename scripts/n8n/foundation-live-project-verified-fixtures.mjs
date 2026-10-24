@@ -13,9 +13,13 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  runtimePreparationClosed = false,
+  runtimeRestorationClosed = false,
+  runtimeRestorationFault,
+  runtimeRestorationAllocation = false,
+  runtimeRestorationAllocationFault,
+  runtimePreparationClosed = runtimeRestorationClosed,
   runtimePreparationFault,
-  runtimeMetadataAllocation = false,
+  runtimeMetadataAllocation = runtimeRestorationClosed,
   runtimeMetadataAllocationFault,
   runtimeSourceUnverified = false,
   adminAdmissionReadonly = runtimePreparationClosed,
@@ -402,6 +406,8 @@ export async function syntheticProjectVerifiedContinuation({
     adminAdmissionReadonlyConfiguration,
     runtimePreparationConfiguration,
     runtimeMetadataAllocationConfiguration,
+    runtimeRestorationConfiguration,
+    runtimeRestorationAllocationConfiguration,
     catalogManagementAllocationConfiguration,
     controlManagementAllocationConfiguration;
   if (closedWindow) {
@@ -2180,6 +2186,402 @@ export async function syntheticProjectVerifiedContinuation({
       packetSha256: digest(packet),
     };
   }
+  if (runtimeRestorationClosed) {
+    const relative =
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json',
+      readbackRelative =
+        'milestones/M03-n8n-foundation/evidence/runtime-reconciliation-readback-20261024.json',
+      restorationRelative = 'milestones/M03-n8n-foundation/evidence/runtime-restoration-20261024.json',
+      archiveRelative =
+        'milestones/M03-n8n-foundation/evidence/runtime-restoration-fixture-archive-20261024.json',
+      cleanupRelative = 'milestones/M03-n8n-foundation/evidence/runtime-restoration-cleanup-20261024.json',
+      r = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8')),
+      d = JSON.parse(readFileSync(join(sourceRoot, readbackRelative), 'utf8')),
+      s = JSON.parse(readFileSync(join(sourceRoot, restorationRelative), 'utf8')),
+      a = JSON.parse(readFileSync(join(sourceRoot, archiveRelative), 'utf8')),
+      z = JSON.parse(readFileSync(join(sourceRoot, cleanupRelative), 'utf8')),
+      json = (v) => JSON.stringify(v) + '\n',
+      root = `scripts/n8n/out/foundation/live/project-verified-continuation-${snapshot.proposedSegmentId}.technical-13`,
+      db = `scripts/db/out/m03-foundation-project-verified-continuation-${snapshot.proposedSegmentId}-technical-13`,
+      liveRoot = 'scripts/n8n/out/foundation/live/',
+      load = (path) => readFileSync(join(directory, path), 'utf8'),
+      rows = (path) => load(path).trimEnd().split('\n').map(JSON.parse),
+      writeRows = (path, value) => put(path, value.map(json).join(''));
+    const { fixture } = await import('./foundation-live-runtime-fixtures.mjs'),
+      { createFoundationRuntimePlan } = await import('./foundation-runtime-plan.mjs'),
+      runtime = await import('./foundation-runtime-control.mjs'),
+      { prepareFoundationRuntimeMachinePatch } = await import('./foundation-runtime-machine.mjs');
+    const f = fixture();
+    let originalRuntime, recoveryRows, restoredVersions;
+    try {
+      const plan = createFoundationRuntimePlan({
+          ...f.input,
+          activeWindowId: r.attempt.windowId,
+          setup: {
+            ...f.input.setup,
+            sourceCommitSha: r.source.applicationSource,
+            audience: r.provisionAttempt.packet.audience,
+            deploymentId: r.provisionAttempt.packet.deploymentId,
+          },
+        }),
+        old = runtime.createFoundationRuntimeJournal(plan, [], () => {});
+      let lost = false;
+      const send = async (method, path, body) => {
+        const response = await f.dependencies.send(method, path, body);
+        if (
+          !lost &&
+          method === 'PUT' &&
+          path.includes('/tiEhU3dXrMifOnTL?') &&
+          body.settings.errorWorkflow === 'S9NHRkKFUIiXX2wv'
+        ) {
+          lost = true;
+          throw Error('SYNTHETIC_UNKNOWN_SETTINGS_ACK');
+        }
+        return response;
+      };
+      const prepareMachinePatch = ({ audience, restore }) =>
+        prepareFoundationRuntimeMachinePatch({
+          audience,
+          restore,
+          machineToken: f.input.machineToken,
+          ...(restore ? {} : { protectionBypass: f.input.protectionBypass }),
+        });
+      const failed = await runtime.runFoundationRuntimeSetup(plan, {
+        journal: old,
+        send,
+        prepareMachinePatch,
+        admitManagementAttempt() {},
+      });
+      if (failed.status !== 'reconciliation_required' || !lost)
+        throw Error('SYNTHETIC_ORIGINAL13_NOT_REPRODUCED');
+      const historical = old.rows
+        .filter((row) => row.event !== 'request' || row.number > 25)
+        .map((row) => {
+          const copy = structuredClone(row);
+          if (copy.event === 'request') copy.number -= 25;
+          if (copy.event === 'intent' && copy.sequence === 7) copy.target.versionId = null;
+          return copy;
+        });
+      originalRuntime = [
+        { event: 'file_header', version: 1, planHash: plan.planHash, deadlineAt: r.rawAdmission.deadlineAt },
+        ...historical,
+      ];
+      const fresh = [],
+        journal = runtime.createFoundationRuntimeJournal(plan, historical, (row) => {
+          fresh.push(row);
+        }),
+        ports = { journal, send, prepareMachinePatch, admitManagementAttempt() {} };
+      const adopted = await runtime.adoptFoundationRuntimeSettingsSaveForRestoration(plan, ports),
+        restored = await runtime.restoreFoundationRuntime(plan, ports);
+      if (
+        adopted.status !== 'settings_save_readback_verified_original_ack_unknown' ||
+        restored.status !== 'exact_staging_restored_unpublished'
+      )
+        throw Error('SYNTHETIC_RESTORATION_NOT_VERIFIED');
+      recoveryRows = fresh;
+      const state = runtime.foundationRuntimeState(plan, journal);
+      restoredVersions = Object.fromEntries(
+        ['SUB-NOTIFY', 'WF-90'].map((key) => [key, state.workflows[key].versionId]),
+      );
+      for (const [key, record] of f.input.records.map((record) => [
+        Object.keys(f.input.bindings.workflowRefs).find(
+          (key) => f.input.bindings.workflowRefs[key].id === record.id,
+        ),
+        record,
+      ]))
+        put('n8n/workflows/' + key + '.json', json(record));
+      put('n8n/foundation/bindings.dev.json', json(f.input.bindings));
+      put('n8n/foundation/transport.dev.json', json(f.input.transport));
+    } finally {
+      f.cleanup();
+    }
+    writeRows(liveRoot + 'runtime.technical-13.jsonl', originalRuntime);
+    const managementPath = snapshot.journals.management.path,
+      controlPath = snapshot.journals.control.path,
+      setupPath = snapshot.journals.setup.path,
+      preflightPath = liveRoot + 'preflight.jsonl';
+    writeRows(managementPath, [
+      ...rows(managementPath),
+      ...Array.from({ length: 82 }, (_, i) => ({ event: 'management_attempt', ordinal: 391 + i })),
+    ]);
+    const controls = rows(controlPath),
+      ids = [
+        ...new Set(controls.filter((v) => v.event === 'control_request_intent').map((v) => v.workflowId)),
+      ].slice(0, 25);
+    writeRows(controlPath, [
+      ...controls,
+      {
+        event: 'control_request_intent',
+        ordinal: 738,
+        kind: 'discovery',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        at: '2026-10-24T10:54:00.000Z',
+      },
+      {
+        event: 'browser_port_preflight_verified',
+        kind: 'browser_ui',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        at: '2026-10-24T10:54:00.100Z',
+      },
+      ...Array.from({ length: 50 }, (_, i) => ({
+        event: 'control_request_intent',
+        ordinal: 739 + i,
+        kind: 'discovery',
+        workflowId: ids[i % 25],
+        at: '2026-10-24T10:54:01.000Z',
+      })),
+    ]);
+    const setups = rows(setupPath),
+      newSetup = setups
+        .slice(-71)
+        .map((v) =>
+          JSON.parse(
+            JSON.stringify(v)
+              .replaceAll('eda4fae1-1e19-47db-81b8-beac1a4ed883', r.attempt.windowId)
+              .replaceAll('syntheticEda12', 'synthetic3c13'),
+          ),
+        );
+    let setupOrdinal = 114;
+    for (const row of newSetup) {
+      if (row.event === 'setup_attempt') row.ordinal = ++setupOrdinal;
+      if (typeof row.at === 'number') row.at = r.attempt.startsAt + 5000;
+    }
+    writeRows(setupPath, [...setups, ...newSetup]);
+    const preflight = rows(preflightPath),
+      newPreflight = preflight
+        .slice(-5)
+        .map((v) =>
+          JSON.parse(
+            JSON.stringify(v)
+              .replaceAll('eda4fae1-1e19-47db-81b8-beac1a4ed883', r.attempt.windowId)
+              .replaceAll('aff94f2b2d8055cf93b5405e6b11d4e7d9c86803', r.source.applicationSource),
+          ),
+        );
+    newPreflight[0].ordinal = 5;
+    newPreflight[1].ordinal = 6;
+    writeRows(preflightPath, [...preflight, ...newPreflight]);
+    r.rawAdmission.approvalSha256 = digest(approvalText);
+    const admissionText = json(r.rawAdmission);
+    r.rawRuntimeClaim.admissionSha256 = digest(admissionText);
+    r.rawTechnicalClose.admissionSha256 = digest(admissionText);
+    put(root + '.json', admissionText);
+    put(root + '.runtime-claim.json', json(r.rawRuntimeClaim));
+    put(root + '.closed.json', json(r.rawTechnicalClose));
+    const frames = rows(root.replace('.technical-13', '.technical-12') + '.public-frames.jsonl');
+    Object.assign(frames[0], {
+      helperHead: r.source.helperHead,
+      applicationSource: r.source.applicationSource,
+      technicalAttempt: 13,
+      parentProcessId: r.attempt.parentProcessId,
+      windowId: r.attempt.windowId,
+    });
+    frames[3].deadlineAt = r.rawAdmission.deadlineAt;
+    [r.rawPrepare, r.rawRestore, r.rawSourceClose, r.rawWrapperClose].forEach((v, i) => {
+      frames[i + 5] = structuredClone(v);
+    });
+    writeRows(root + '.public-frames.jsonl', frames);
+    put(
+      db + '-attempt.json',
+      json({
+        version: 1,
+        runId: r.database.runId,
+        projectRef: r.projectRef,
+        segmentId: snapshot.proposedSegmentId,
+        purpose: 'postcheck-only-continuation',
+      }),
+    );
+    put(db + '-latest.json', json(r.rawDatabaseLatest));
+    put(db + '-owner-provision-attempt.json', json(r.provisionAttempt));
+    put(db + '-reactivation-attempt.json', json(r.reactivationAttempt));
+    for (const path of Object.keys(r.pins)) r.pins[path] = digest(load(path));
+    if (runtimeRestorationFault === 'raw-closure') r.rawTechnicalClose.closureVerified = true;
+    const originalText = json(r);
+    put(relative, originalText);
+    writeRows(managementPath, [
+      ...rows(managementPath),
+      ...Array.from({ length: 3 }, (_, i) => ({ event: 'management_attempt', ordinal: 473 + i })),
+    ]);
+    d.originalAttemptReceiptSha256 = digest(originalText);
+    d.pins[relative] = digest(originalText);
+    d.pins[managementPath] = digest(load(managementPath));
+    d.pins[controlPath] = digest(load(controlPath));
+    const diagnosticPath =
+      'scripts/n8n/out/foundation/runtime-reconciliation-diagnostic-technical13-20261024.jsonl';
+    put(
+      diagnosticPath,
+      json({
+        kind: 'm03_runtime_reconciliation_diagnostic',
+        version: 1,
+        technicalAttempt: 13,
+        receiptSha256: digest(originalText),
+        managementAttempts: 483,
+        controlAttempts: 791,
+        maximumRequests: 3,
+        processId: 91301,
+        parentProcessId: 91302,
+      }),
+    );
+    d.pins[diagnosticPath] = digest(load(diagnosticPath));
+    d.pins[liveRoot + 'runtime.technical-13.jsonl'] = r.pins[liveRoot + 'runtime.technical-13.jsonl'];
+    if (runtimeRestorationFault === 'readback')
+      d.actualNativeResult.inventory.workflows['SUB-NOTIFY'].targetGraphEqual = false;
+    const readbackText = json(d);
+    put(readbackRelative, readbackText);
+    const recoveryPath = 'scripts/n8n/out/foundation/runtime-technical13-restoration.jsonl';
+    const recovery = [
+      {
+        kind: 'm03_technical13_restore_journal',
+        version: 1,
+        sourceRuntime: liveRoot + 'runtime.technical-13.jsonl',
+        sourceRuntimeSha256: r.pins[liveRoot + 'runtime.technical-13.jsonl'],
+        sourceRuntimeRows: 38,
+        receiptSha256: digest(originalText),
+        readbackSha256: digest(readbackText),
+      },
+      ...recoveryRows,
+    ];
+    if (runtimeRestorationFault === 'recovery-version')
+      recovery.find((v) => v.event === 'verified' && v.sequence === 9).after.versionId = null;
+    if (runtimeRestorationFault === 'recovery-replay') recovery[1].method = 'PUT';
+    writeRows(recoveryPath, recovery);
+    const restoreAttempt = 'scripts/n8n/out/foundation/runtime-technical13-restoration-attempt.json',
+      restoreResult = 'scripts/n8n/out/foundation/runtime-technical13-restoration-result.json';
+    put(
+      restoreAttempt,
+      json({
+        kind: 'm03_technical13_restore_intent',
+        version: 1,
+        receiptSha256: digest(originalText),
+        readbackSha256: digest(readbackText),
+        oldRuntimeSha256: r.pins[liveRoot + 'runtime.technical-13.jsonl'],
+        oldRuntimeRows: 38,
+        managementAttempts: 486,
+        controlAttempts: 791,
+        maximumManagementRequests: 40,
+        maximumControlRequests: 50,
+        processId: 91303,
+        parentProcessId: 91304,
+        at: '2026-10-24T11:33:45.493Z',
+      }),
+    );
+    writeRows(managementPath, [
+      ...rows(managementPath),
+      ...Array.from({ length: 38 }, (_, i) => ({ event: 'management_attempt', ordinal: 476 + i })),
+    ]);
+    writeRows(controlPath, [
+      ...rows(controlPath),
+      ...Array.from({ length: 50 }, (_, i) => ({
+        event: 'control_request_intent',
+        ordinal: 789 + i,
+        kind: 'discovery',
+        workflowId: ids[i % 25],
+        at: '2026-10-24T11:34:10.000Z',
+      })),
+    ]);
+    s.originalAttemptReceiptSha256 = digest(originalText);
+    s.readbackReceiptSha256 = digest(readbackText);
+    const result = Object.fromEntries(
+      Object.entries(s).filter(
+        ([key]) =>
+          ![
+            'observedAt',
+            'toolReceipt',
+            'outerNativeExit',
+            'publicSealTool',
+            'publicCheckOnlyTool',
+            'originalAttemptReceiptSha256',
+            'readbackReceiptSha256',
+            'aclTighteningReceiptSha256',
+            'sourceQualification',
+            'pins',
+            'interpretation',
+          ].includes(key),
+      ),
+    );
+    put(restoreResult, json(result));
+    for (const path of [
+      restoreAttempt,
+      restoreResult,
+      recoveryPath,
+      managementPath,
+      controlPath,
+      liveRoot + 'runtime.technical-13.jsonl',
+    ])
+      s.pins[path] = digest(load(path));
+    if (runtimeRestorationFault === 'settlement') s.remoteWorkSettled = false;
+    if (runtimeRestorationFault === 'usage') s.managementAttempts = 523;
+    const restorationText = json(s);
+    put(restorationRelative, restorationText);
+    const archivePaths = Object.keys(a.pins).filter((path) => path.startsWith('scripts/db/out/'));
+    for (const path of archivePaths)
+      put(
+        path,
+        json(
+          path.endsWith('-latest.json')
+            ? a.actualNativeResult
+            : {
+                version: 1,
+                runId: a.actualNativeResult.runId,
+                projectRef: r.projectRef,
+                windowId: r.attempt.windowId,
+                purpose: 'exact-owned-fixture-archive-after-independent-close',
+              },
+        ),
+      );
+    for (const path of archivePaths) a.pins[path] = digest(load(path));
+    a.pins[restorationRelative] = digest(restorationText);
+    if (runtimeRestorationFault === 'archive')
+      a.actualNativeResult.archiveAfter.fixture.competitorArchived = false;
+    const archiveText = json(a);
+    put(archiveRelative, archiveText);
+    z.runtimeRestorationReceiptSha256 = digest(restorationText);
+    z.fixtureArchiveReceiptSha256 = digest(archiveText);
+    if (runtimeRestorationFault === 'cleanup') z.actualNativeResult.allDisposableLeavesAbsent = false;
+    const cleanupText = json(z);
+    put(cleanupRelative, cleanupText);
+    runtimeRestorationConfiguration = {
+      relative,
+      sha256: digest(originalText),
+      readbackRelative,
+      readbackSha256: digest(readbackText),
+      restorationRelative,
+      restorationSha256: digest(restorationText),
+      archiveRelative,
+      archiveSha256: digest(archiveText),
+      cleanupRelative,
+      cleanupSha256: digest(cleanupText),
+    };
+    if (runtimeRestorationAllocation) {
+      const relative =
+          'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-runtime-restoration-approval-20261024.json',
+        approval = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8')),
+        packetRelative = approval.referencePacket.path,
+        packet = 'Synthetic post-restoration allocation\n';
+      put(packetRelative, packet);
+      approval.referencePacket.sha256 = digest(packet);
+      Object.assign(approval.actualPriorUsage, {
+        runtimeRestorationSha256: digest(restorationText),
+        fixtureArchiveSha256: digest(archiveText),
+        cleanupSha256: digest(cleanupText),
+      });
+      if (runtimeRestorationAllocationFault === 'maximum') approval.allocation.managementMaximum = 1025;
+      if (runtimeRestorationAllocationFault === 'vercel') approval.allocation.vercelMaximum = 225;
+      if (runtimeRestorationAllocationFault === 'usage') approval.actualPriorUsage.management = 523;
+      if (runtimeRestorationAllocationFault === 'actor') approval.unchangedCaps.actorStarts = 3;
+      if (runtimeRestorationAllocationFault === 'boundary') approval.boundaries.productionApproved = true;
+      if (runtimeRestorationAllocationFault === 'window')
+        approval.continuation.plannedWindowId = r.attempt.windowId;
+      const text = json(approval);
+      put(relative, text);
+      runtimeRestorationAllocationConfiguration = {
+        relative,
+        sha256: digest(text),
+        packetRelative,
+        packetSha256: digest(packet),
+      };
+    }
+    void restoredVersions;
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -2313,6 +2715,8 @@ export async function syntheticProjectVerifiedContinuation({
   for (const [name, configuration] of Object.entries({
     runtimePreparationRecovery: runtimePreparationConfiguration,
     runtimeMetadataAllocationApproval: runtimeMetadataAllocationConfiguration,
+    runtimeRestorationRecovery: runtimeRestorationConfiguration,
+    runtimeRestorationAllocationApproval: runtimeRestorationAllocationConfiguration,
   }))
     source = source.replace(
       new RegExp('const ' + name + ' = Object\\.freeze\\(\\{[\\s\\S]*?\\n\\}\\);'),
@@ -2327,6 +2731,11 @@ export async function syntheticProjectVerifiedContinuation({
       /export const foundationProjectVerifiedNextRuntime = Object\.freeze\(\{[\s\S]*?\n\}\);/,
       (block) => block.replace('allFiveCiJobsPassed: true', 'allFiveCiJobsPassed: false'),
     );
+  if (runtimeRestorationClosed && runtimeSourceUnverified)
+    source = source.replace(
+      /export const foundationProjectVerifiedRestoredRuntime = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      (block) => block.replace('allFiveCiJobsPassed: true', 'allFiveCiJobsPassed: false'),
+    );
   if (closedFixture)
     source = source.replace(
       /export const foundationProjectVerifiedActiveRuntime = Object\.freeze\(\{[\s\S]*?\n\}\);/,
@@ -2338,6 +2747,11 @@ export async function syntheticProjectVerifiedContinuation({
     );
   // Explicitly retain the exhausted old50 branch as a synthetic regression.
   source = source.replace(/setupMaximum: (?:50|88),/, `setupMaximum: ${proposedBudgetApproved ? 88 : 50},`);
+  for (const [match, relative] of [...source.matchAll(/from '(\.\.?\/[^']+)'/g)])
+    source = source.replaceAll(
+      match,
+      `from '${pathToFileURL(join(sourceRoot, 'scripts/n8n', relative)).href}'`,
+    );
   const modulePath = put('scripts/n8n/foundation-live-project-verified-continuation.mjs', source);
   const module = await import(pathToFileURL(modulePath).href);
   const localAppData = join(directory, 'synthetic-localappdata');
@@ -2352,21 +2766,23 @@ export async function syntheticProjectVerifiedContinuation({
     }) + '\n',
   );
   let time = Date.parse(
-    runtimePreparationClosed
-      ? '2026-10-24T11:00:00.000Z'
-      : adminAdmissionReadonly
-        ? '2026-10-24T10:00:00.000Z'
-        : catalogReadonly
-          ? '2026-10-24T02:40:00.000Z'
-          : preprivateAdmin
-            ? '2026-10-24T02:00:00.000Z'
-            : closedFixture
-              ? '2026-10-24T00:46:00.000Z'
-              : closedWindow
-                ? '2026-10-23T18:00:00.000Z'
-                : effectful
-                  ? '2026-10-23T15:00:00.000Z'
-                  : '2026-10-22T18:00:00.000Z',
+    runtimeRestorationClosed
+      ? '2026-10-24T15:00:00.000Z'
+      : runtimePreparationClosed
+        ? '2026-10-24T11:00:00.000Z'
+        : adminAdmissionReadonly
+          ? '2026-10-24T10:00:00.000Z'
+          : catalogReadonly
+            ? '2026-10-24T02:40:00.000Z'
+            : preprivateAdmin
+              ? '2026-10-24T02:00:00.000Z'
+              : closedFixture
+                ? '2026-10-24T00:46:00.000Z'
+                : closedWindow
+                  ? '2026-10-23T18:00:00.000Z'
+                  : effectful
+                    ? '2026-10-23T15:00:00.000Z'
+                    : '2026-10-22T18:00:00.000Z',
   );
   const now = () => time,
     io = { processAlive: () => false };
@@ -2382,11 +2798,40 @@ export async function syntheticProjectVerifiedContinuation({
     }
   };
   const copied = new Map();
+  const coherentModules = new Set();
   const copy = (name) => {
     if (copied.has(name)) return copied.get(name);
     const loading = (async () => {
       const relativePath =
         name === 'foundation-admin-client.mjs' ? 'scripts/db/' + name : 'scripts/n8n/' + name;
+      if (runtimeRestorationClosed) {
+        // Only the restored-version profile crosses the new proof→plan boundary.
+        // Keep its existing WeakMap brands in one isolated module graph; old
+        // fixtures retain their original root-factory receipt identities.
+        const pending = [relativePath];
+        while (pending.length) {
+          const path = pending.shift();
+          if (coherentModules.has(path)) continue;
+          coherentModules.add(path);
+          const originalPath = join(sourceRoot, path);
+          let text = readFileSync(originalPath, 'utf8');
+          for (const match of [...text.matchAll(/(?:from\s*|import\s*\()'?(\.?\.?\/[^']+)'/g)]) {
+            const imported = match[1],
+              absolute = join(dirname(originalPath), imported),
+              child = relative(sourceRoot, absolute).replaceAll('\\', '/');
+            let target = absolute;
+            if (child === 'scripts/n8n/foundation-live-project-verified-continuation.mjs')
+              target = modulePath;
+            else if (child.endsWith('.mjs') && child.startsWith('scripts/')) {
+              target = join(directory, child);
+              pending.push(child);
+            }
+            text = text.replaceAll("'" + imported + "'", "'" + pathToFileURL(target).href + "'");
+          }
+          put(path, text);
+        }
+        return import(pathToFileURL(join(directory, relativePath)).href);
+      }
       const sourcePath = join(sourceRoot, relativePath);
       let text = readFileSync(sourcePath, 'utf8');
       for (const [match, relative] of [...text.matchAll(/from '(\.\.?\/[^']+)'/g)]) {

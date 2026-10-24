@@ -112,14 +112,16 @@ const cleanedLegacySetupJsonl = `{"event":"setup_attempt","ordinal":1,"kind":"GE
 const cleanedLegacySetupRows = cleanedLegacySetupJsonl.trimEnd().split('\n').map(JSON.parse);
 const cleanedLegacySetupSha256 = '0cad48fd9550da762c0b629ee63364e4668f4829c3a89bd6f75ec2843d32f624';
 
-for (const profile of [640, 704, 832])
+for (const profile of [640, 704, 832, 1024])
   test(`genuine${profile} profile replays every closed window and retains all setup requests before the fresh owned window`, async () => {
     const f = await syntheticProjectVerifiedContinuation({
-      ...(profile === 832
-        ? { runtimePreparationClosed: true, runtimeMetadataAllocation: true }
-        : profile === 704
-          ? { catalogReadonly: true, catalogManagementAllocation: true }
-          : { closedFixture: true }),
+      ...(profile === 1024
+        ? { runtimeRestorationClosed: true, runtimeRestorationAllocation: true }
+        : profile === 832
+          ? { runtimePreparationClosed: true, runtimeMetadataAllocation: true }
+          : profile === 704
+            ? { catalogReadonly: true, catalogManagementAllocation: true }
+            : { closedFixture: true }),
       historicalSetupEvents: cleanedLegacySetupRows,
     });
     let budget, current;
@@ -130,18 +132,19 @@ for (const profile of [640, 704, 832])
         setupModule = await f.copy('foundation-live-setup.mjs'),
         previousText = readFileSync(f.paths.setup, 'utf8'),
         previousEvents = previousText.trimEnd().split('\n').map(JSON.parse);
-      const setupMaximum = profile === 832 ? 176 : 132;
-      const priorAttempts = profile === 832 ? 114 : 79;
+      const setupMaximum = profile === 1024 ? 224 : profile === 832 ? 176 : 132;
+      const priorAttempts = profile === 1024 ? 149 : profile === 832 ? 114 : 79;
       const historical = [
         scope.windowId,
         '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
-        ...(profile === 832 ? ['eda4fae1-1e19-47db-81b8-beac1a4ed883'] : []),
+        ...(profile >= 832 ? ['eda4fae1-1e19-47db-81b8-beac1a4ed883'] : []),
+        ...(profile === 1024 ? ['3c46c791-e140-4eb9-890a-eecfa251f65e'] : []),
       ];
       assert.equal(resume.managementMaximum, profile);
       assert.equal(resume.setupMaximum, setupMaximum);
       assert.deepEqual(resume.historicalWindowIds, historical);
       assert.equal(Object.isFrozen(resume.historicalWindowIds), true);
-      assert.equal(previousEvents.length, profile === 832 ? 226 : 155);
+      assert.equal(previousEvents.length, profile === 1024 ? 297 : profile === 832 ? 226 : 155);
       assert.equal(previousEvents.filter((v) => v.event === 'setup_attempt').length, priorAttempts);
       assert.deepEqual(
         [
@@ -488,6 +491,11 @@ test('setup request plan carries all prior attempts and preserves eighteen clean
   assert.equal(current.buildPollLimit, 12);
   assert.equal(current.cleanupReserve, 18);
   assert.equal(79 + current.maximumNewPrepareRequests + current.cleanupReserve, 123);
+  const restored = foundationLiveSetupRequestPlan(149, 224);
+  assert.equal(restored.buildPollLimit, 12);
+  assert.equal(restored.cleanupReserve, 18);
+  assert.equal(149 + restored.maximumNewPrepareRequests + restored.cleanupReserve, 193);
+  assert.throws(() => foundationLiveSetupRequestPlan(149, 225));
 });
 
 test('setup reserves the second Machine read before any request at the shared one-request boundary', async () => {

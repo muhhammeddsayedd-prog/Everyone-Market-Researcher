@@ -11,9 +11,16 @@ import { createFoundationRuntimeBaseline } from './foundation-runtime-plan.mjs';
 // Network-free HTTPS fixture for the actual25-read preflight and capability
 // constructor. It exercises source comparisons and closure; it never supplies
 // an independently minted "actual" receipt or claims a hosted endpoint pass.
-export function syntheticBaselinePreflight(input, { workflows } = {}) {
-  const baseline = createFoundationRuntimeBaseline(input);
-  return createFoundationLiveBaselinePreflight(input, {
+export function syntheticBaselinePreflight(
+  input,
+  {
+    workflows,
+    createBaseline = createFoundationRuntimeBaseline,
+    createPreflight = createFoundationLiveBaselinePreflight,
+  } = {},
+) {
+  const baseline = createBaseline(input);
+  return createPreflight(input, {
     now: () => input.deadlineAt - 60000,
     resolveInstance: async () => [{ address: '1.1.1.1', family: 4 }],
     request(options, callback) {

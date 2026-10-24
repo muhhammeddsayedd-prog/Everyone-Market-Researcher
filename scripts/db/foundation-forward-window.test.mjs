@@ -31,13 +31,13 @@ function nativeRemainingStateQuery(
   const file = new URL('./windows/Foundation-AdminControl.ps1', import.meta.url).pathname;
   const nativePath = process.platform === 'win32' ? decodeURIComponent(file.slice(1)) : file;
   const code = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
-$tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile(${literal(nativePath)},[ref]$tokens,[ref]$errors)
-if($errors.Count -ne 0){throw 'NATIVE_SOURCE_PARSE_FAILED'}
-foreach($name in @('Foundation-ForwardWindowId','Assert-FoundationForwardWindowState')){
- $found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'FUNCTION_NOT_EXACT'};Invoke-Expression $found[0].Extent.Text
+foreach($entry in @(@(${literal(nativePath.replace('Foundation-AdminControl.ps1', 'Invoke-M03FoundationMigrations.ps1'))},@('Foundation-Technical13AuditPredicate')),@(${literal(nativePath)},@('Foundation-ForwardWindowId','Assert-FoundationForwardWindowState')))){
+ $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($entry[0],[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'NATIVE_SOURCE_PARSE_FAILED'}
+ foreach($name in $entry[1]){$found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'FUNCTION_NOT_EXACT'};Invoke-Expression $found[0].Extent.Text}
 }
 $ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$projectVerifiedForwardWindowId=${literal(window)};$projectVerifiedForwardSource=${literal(commitSha)};$script:query=$null
 function Read-FoundationForwardPrior{}
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=14}}
 function Invoke-FoundationQuery($Sql,$Field){if($Field -cne 'registered_preflight'){throw 'WRONG_PROJECTION'};$script:query=$Sql;throw 'QUERY_CAPTURED'}
 try{Assert-FoundationForwardWindowState $false}catch{if($_.Exception.Message -cne 'QUERY_CAPTURED'){throw}}
 if($script:query -isnot [string]){throw 'QUERY_NOT_CAPTURED'};Write-Output $script:query
@@ -100,7 +100,7 @@ function nativeForwardCatalogQuery(
   };
   const catalog = new URL('./foundation-forward-postcheck.sql', import.meta.url).pathname;
   const code = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
-foreach($entry in @(@(${literal(nativePath('Invoke-M03FoundationMigrations.ps1'))},@('Assert-Keys','Invoke-FoundationForwardPostcheck')),@(${literal(nativePath('Foundation-AdminControl.ps1'))},@('Foundation-ForwardWindowId')))){
+foreach($entry in @(@(${literal(nativePath('Invoke-M03FoundationMigrations.ps1'))},@('Assert-Keys','Invoke-FoundationForwardPostcheck','Foundation-Technical13FamilyPredicate')),@(${literal(nativePath('Foundation-AdminControl.ps1'))},@('Foundation-ForwardWindowId')))){
  $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($entry[0],[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'PUBLIC_SOURCE_PARSE_FAILED'}
  foreach($name in $entry[1]){$found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'FUNCTION_NOT_EXACT'};Invoke-Expression $found[0].Extent.Text}
 }
@@ -658,7 +658,7 @@ describe(
     );
 
     test(
-      'technical13 archive uses exact typed12/13 audits and four closed windows without changing history or unrelated data',
+      'technical13 archive and next fifth-window registration preserve exact typed12/13 audits and prior history',
       { skip: process.platform !== 'win32' },
       () => {
         const { inspection, archive } = nativeTechnical13ArchiveQueries(),
@@ -732,6 +732,72 @@ insert into app.competitors(id,company_code,slug,name,priority_tier,status)value
             `select jsonb_build_object('windows',(select jsonb_agg(to_jsonb(w) order by window_id)from ops.foundation_gateway_rate_windows w),'audits',(select jsonb_agg(to_jsonb(l) order by id)from ops.audit_log l),'other',(select to_jsonb(c)from app.competitors c where company_code='C998'));`,
           ),
           immutable,
+        );
+        const next = '4c602549-2c42-4ec3-9328-714d7cb66a77',
+          nextSource = '5087d4d93d2f6ffdca0bc0096b365723005446fc';
+        const stateSql = nativeRemainingStateQuery(next, nextSource),
+          catalog = nativeForwardCatalogQuery(true, next, nextSource),
+          predicate = catalog.match(/'no_new_window',([\s\S]*?),\r?\n\s*'schemas'/)?.[1];
+        assert.ok(predicate, 'actual fifth-window catalog predicate');
+        assert.equal(/\b(update|insert|delete|truncate|grant|revoke)\b/i.test(stateSql + predicate), false);
+        psql(`update ops.foundation_gateway_rate_windows set closed_at='2026-10-23T16:25:54.94722+00:00' where window_id='${oldWindow}';
+update ops.foundation_gateway_rate_windows set starts_at='2026-10-24T10:56:42.479643+00:00',expires_at='2026-10-24T11:56:42.479643+00:00',closed_at='2026-10-24T10:57:10.209766+00:00' where window_id='${current}';`);
+        const stateRead = (sql = stateSql) => JSON.parse(psql('begin read only;' + sql + 'rollback;'));
+        const expected = {
+          identity: true,
+          legacyClosed: true,
+          intermediateClosed: true,
+          runtimeClosed: true,
+          restorationClosed: true,
+          fixtureAuditCount: 6,
+          technical12Exact: true,
+          technical13Exact: true,
+          windows: 4,
+          freshWindows: 0,
+          freshPrepared: false,
+          globalAdmitted: 7,
+          requests: 3,
+          activeLeases: 0,
+          launches: 0,
+          bindings: 0,
+          progress: 0,
+        };
+        assert.deepEqual(stateRead(), expected);
+        assert.equal(psql('select ' + predicate + ';'), 't');
+        for (const [change, field] of [
+          [
+            `update ops.foundation_gateway_rate_windows set bound_deployment_id='dpl_other' where window_id='${current}'`,
+            'restorationClosed',
+          ],
+          [
+            `update ops.audit_log set after=jsonb_set(after,'{original_creation_audit_id}',to_jsonb(after->>'original_creation_audit_id')) where actor_id like '%:technical-12'`,
+            'technical12Exact',
+          ],
+          [`delete from ops.audit_log where actor_id like '%:technical-13'`, 'technical13Exact'],
+        ]) {
+          assert.equal(JSON.parse(psql('begin;' + change + ';' + stateSql + 'rollback;'))[field], false);
+          assert.deepEqual(stateRead(), expected);
+        }
+        for (const change of [
+          `update ops.foundation_gateway_requests set state='reserved',completed_at=null,result=null where window_id='${current}'`,
+          `update ops.apify_launch_approvals set closed_at=null where window_id='${oldWindow}'`,
+        ]) {
+          assert.notEqual(JSON.parse(psql('begin;' + change + ';' + stateSql + 'rollback;')).progress, 0);
+          assert.deepEqual(stateRead(), expected);
+        }
+        const priorRows = psql(
+          `select jsonb_agg(to_jsonb(w) order by window_id) from ops.foundation_gateway_rate_windows w;`,
+        );
+        psql(
+          `select ops.foundation_gateway_provision('${next}',${literal(JSON.stringify({ ...packet, commitSha: nextSource }))}::jsonb);`,
+        );
+        assert.deepEqual(stateRead(), { ...expected, windows: 5, freshWindows: 1, freshPrepared: true });
+        assert.equal(psql('select ' + predicate + ';'), 'f', 'registered fifth window is no longer vacant');
+        assert.equal(
+          psql(
+            `select jsonb_agg(to_jsonb(w) order by window_id) from ops.foundation_gateway_rate_windows w where window_id<>'${next}';`,
+          ),
+          priorRows,
         );
       },
     );

@@ -53,6 +53,7 @@ $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technic
   'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-approval-20261024.json')
 $forwardSchema=[bool]($ForwardMigration -or $ForwardWindow -or $TechnicalResidual13)
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/runtime-restoration-20261024.json')
+$requiredFiles+=@('milestones/M03-n8n-foundation/evidence/runtime-restoration-fixture-archive-20261024.json','milestones/M03-n8n-foundation/evidence/runtime-restoration-cleanup-20261024.json')
 if($forwardSchema){$requiredFiles+=@('scripts/db/foundation-forward-postcheck.sql','scripts/db/m03-foundation-dev-migration-packet.json')}
 $versions = @('20261017172928','20261017172931','20261017172934','20261017172937','20261017172940','20261017172943','20261017172945','20261018034220','20261018035417','20261018070042','20261018231756','20261018232014','20261018232922','20261018233338')
 $names = @('extensions_schemas_roles','core_tables','auth_rls_views','rpc_pipeline_core','rpc_app_search','storage_cron','seed_taxonomies','rpc_n8n_foundation','price_book_plan','n8n_worker_gateway_admission','m03_actor_launch_admission','m03_foundation_gateway','m03_foundation_safety_receipts','m03_foundation_boundary_hardening')
@@ -482,8 +483,10 @@ function Read-FoundationPostcheckContinuation {
     $approvalKind=if($projectMode){'project_verified_continuation_approval_required'}elseif($startupMode){'startup_replacement_approval_required'}else{'remaining_continuation_approval_required'}
     $freshMode=$forwardMode -and $projectMode -and $value.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
     $nextMode=$forwardMode -and $projectMode -and $value.windowId -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e'
+    $restoredMode=$forwardMode -and $projectMode -and $value.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77'
     if($freshMode){$expectedSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';$expectedWindow='eda4fae1-1e19-47db-81b8-beac1a4ed883'}
     if($nextMode){$expectedSource='7b1837201ac7925591577a1517d7288936ca3464';$expectedWindow='3c46c791-e140-4eb9-890a-eecfa251f65e'}
+    if($restoredMode){$expectedSource='5087d4d93d2f6ffdca0bc0096b365723005446fc';$expectedWindow='4c602549-2c42-4ec3-9328-714d7cb66a77'}
     if($CheckOnly -and ($remainingMode -or $startupMode -or $projectMode) -and $value.kind -ceq $approvalKind){
       Assert-Keys $value @('kind','status','approvalRequired','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
       if($value.status -cne 'approval_required' -or $value.approvalRequired -isnot [bool] -or $value.approvalRequired -ne $true -or $value.privateRead -isnot [bool] -or $value.privateRead -ne $false -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0 -or $value.segmentId -cne $postcheckContinuationSegment -or $value.sourceCommitSha -cne $expectedSource -or $value.windowId -cne $expectedWindow){throw 'blocked'}
@@ -492,11 +495,11 @@ function Read-FoundationPostcheckContinuation {
     $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
     $managementFields=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')
     $managementPresent=@($managementFields|Where-Object{$_ -cin $value.PSObject.Properties.Name})
-    if($CheckOnly -and ($freshMode -or $nextMode) -and $managementPresent.Count -ne 4){throw 'blocked'}
+    if($CheckOnly -and ($freshMode -or $nextMode -or $restoredMode) -and $managementPresent.Count -ne 4){throw 'blocked'}
     if($managementPresent.Count -gt 0){
       if(-not $CheckOnly -or -not $projectMode -or -not $forwardMode -or $managementPresent.Count -ne 4){throw 'blocked'}
       # Exact known read-only reconciliation, never a replenished allowance.
-      $managementExpected=if($nextMode){@{managementMaximum=832;managementAttempts=401;controlAttempts=740;combinedAttempts=1141}}elseif($freshMode -and $value.managementAttempts -eq 313){@{managementMaximum=704;managementAttempts=313;controlAttempts=639;combinedAttempts=952}}elseif($freshMode -and $value.managementAttempts -eq 288){@{managementMaximum=704;managementAttempts=288;controlAttempts=588;combinedAttempts=876}}elseif($freshMode -and $value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800}}elseif($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
+      $managementExpected=if($restoredMode){@{managementMaximum=1024;managementAttempts=524;controlAttempts=841;combinedAttempts=1365}}elseif($nextMode){@{managementMaximum=832;managementAttempts=401;controlAttempts=740;combinedAttempts=1141}}elseif($freshMode -and $value.managementAttempts -eq 313){@{managementMaximum=704;managementAttempts=313;controlAttempts=639;combinedAttempts=952}}elseif($freshMode -and $value.managementAttempts -eq 288){@{managementMaximum=704;managementAttempts=288;controlAttempts=588;combinedAttempts=876}}elseif($freshMode -and $value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800}}elseif($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
       $keys+=$managementFields
     }
@@ -780,6 +783,26 @@ function Read-FoundationForwardPrior {
   # ForwardWindow already passed the sealed current ReadClaimed/native ancestry
   # gate, which verifies the immutable prior closure while allowing its new sibling.
   if(-not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){$null=Assert-FoundationInspectClosed}
+  if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77'){
+    # Current continuation uses the actual four-window archived baseline. Keep
+    # the older migration/profile receipt and the failed13 record unchanged.
+    $TechnicalResidual13=$true
+    $expected=Read-FoundationTechnical13Closed
+    $path=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/runtime-restoration-fixture-archive-20261024.json'
+    if((File-Hash $path) -cne '37c3f0dc518799700cde6c56f18569634c33b919ba26b4bbac1e6d2d09baa656'){throw 'blocked'}
+    $archive=Read-Json $path;$prior=$archive.actualNativeResult
+    if($archive.kind -cne 'actual_m03_technical13_fixture_archive' -or $archive.version -ne 1 -or $archive.nativeExit -ne 0 -or $prior.status -cne 'archive_verified' -or $prior.runId -cne 'bcc59dcd-3e17-468e-85d9-c1e0e3f15c8e' -or
+       $prior.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $prior.environment -cne 'dev' -or $prior.authenticationVerified -ne $true -or $prior.historyBefore -cne 'complete' -or $prior.historyAfter -cne 'complete' -or $prior.pushAttempted -ne $false -or $prior.fixtureArchived -ne $true -or
+       $prior.childrenClosed -ne $true -or $prior.scratchDeleted -ne $true -or $prior.inspectParentLockDeleted -ne $true -or $prior.persistentAdminPreserved -ne $true){throw 'blocked'}
+    $nativePath=Assert-Path $repo 'scripts/db/out/m03-foundation-archive-3c46c791-e140-4eb9-890a-eecfa251f65e-latest.json'
+    if((File-Hash $nativePath) -cne '05cf944a0f3a04aa7c87d8e1cdce4f27e0644d30f7dcf6cf849e06529556e8e3'){throw 'blocked'}
+    $cleanupPath=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/runtime-restoration-cleanup-20261024.json'
+    if((File-Hash $cleanupPath) -cne '50b274b1f6e26d6ba34b602c2cae45136aea19353073d185a1b25ba4b9cc016a'){throw 'blocked'}
+    $cleanup=Read-Json $cleanupPath
+    if($cleanup.kind -cne 'actual_m03_technical13_cleanup_completion' -or $cleanup.nativeExit -ne 0 -or $cleanup.actualNativeResult.status -cne 'local_cleanup_verified' -or $cleanup.runtimeRestorationReceiptSha256 -cne '365c8bb069e6f7246c89261fb543b8fa9dbd8f38587500da64d5f4d38e065946' -or $cleanup.fixtureArchiveReceiptSha256 -cne (File-Hash $path)){throw 'blocked'}
+    Assert-FoundationArchiveInspection $prior.archiveAfter $expected $true
+    return $prior.archiveAfter
+  }
   $path=Assert-Path $repo 'scripts/db/out/m03-foundation-archive-df4f29ec-e2dc-4d82-a276-62a4e695e6f9-latest.json'
   if((File-Hash $path) -cne 'c2d67c19b2a449f020b6d944ef1e0f6ec3a1e5bff3e4c4083b36162352596de1'){throw 'blocked'}
   $prior=Read-Json $path
@@ -817,7 +840,7 @@ function Invoke-FoundationForwardPostcheck {
       $window=Foundation-ForwardWindowId
       Assert-FoundationForwardWindowState $false
       $sql=[IO.File]::ReadAllText($forwardCheckFile)
-      if($window -cin @('eda4fae1-1e19-47db-81b8-beac1a4ed883','3c46c791-e140-4eb9-890a-eecfa251f65e')){
+      if($window -cin @('eda4fae1-1e19-47db-81b8-beac1a4ed883','3c46c791-e140-4eb9-890a-eecfa251f65e','4c602549-2c42-4ec3-9328-714d7cb66a77')){
         # The migration-time catalog deliberately required the sole legacy
         # window. Acceptance now has two immutable closed predecessors and
         # must still prove the current window absent before provisioning.
@@ -826,6 +849,9 @@ function Invoke-FoundationForwardPostcheck {
         $replacement="'no_new_window',(select count(*)=2 and bool_and(closed_at is not null and close_count=1 and ((window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and admitted_count=2 and bound_commit_sha='f42930f90c2de43c84f61ad6d966d0ee6074d70e') or (window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc' and admitted_count=1 and starts_at is null and bound_commit_sha='a5e746736893d5040e93032ae740a0878f748837'))) from ops.foundation_gateway_rate_windows) and not exists(select 1 from ops.foundation_gateway_rate_windows where window_id='eda4fae1-1e19-47db-81b8-beac1a4ed883')"
         if($window -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e'){
           $replacement="'no_new_window',(select count(*)=3 and bool_and(closed_at is not null and close_count=1 and ((window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and admitted_count=2 and bound_commit_sha='f42930f90c2de43c84f61ad6d966d0ee6074d70e') or (window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc' and admitted_count=1 and starts_at is null and bound_commit_sha='a5e746736893d5040e93032ae740a0878f748837') or (window_id='eda4fae1-1e19-47db-81b8-beac1a4ed883' and admitted_count=2 and starts_at is not null and bound_commit_sha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'))) from ops.foundation_gateway_rate_windows) and not exists(select 1 from ops.foundation_gateway_rate_windows where window_id='3c46c791-e140-4eb9-890a-eecfa251f65e')"
+        }
+        if($window -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77'){
+          $replacement="'no_new_window',$(Foundation-Technical13FamilyPredicate) and not exists(select 1 from ops.foundation_gateway_rate_windows where window_id='4c602549-2c42-4ec3-9328-714d7cb66a77')"
         }
         $sql=$sql.Replace($needle,$replacement)
       }

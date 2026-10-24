@@ -220,7 +220,7 @@ export function createFoundationControlBudget({
     : null;
   const verifiedInitialControl = verifiedCheckpoint?.mainControlAttempts ?? 0;
   const managementMaximum = verifiedCheckpoint?.managementMaximum ?? 512;
-  const expandedManagement = [576, 640, 704, 832].includes(managementMaximum);
+  const expandedManagement = [576, 640, 704, 832, 1024].includes(managementMaximum);
   let lastManagementAttempts = verifiedCheckpoint?.aggregateManagementAttempts ?? 0;
   const authoritativeManagementAttempts = () => {
     if (!expandedManagement) return 0;

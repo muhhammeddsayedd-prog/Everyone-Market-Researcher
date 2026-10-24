@@ -10,7 +10,10 @@ import { isDeepStrictEqual } from 'node:util';
 
 const blocked = () => Error('FOUNDATION_LIVE_MANAGEMENT_BLOCKED');
 const baselineReceipts = new WeakMap();
-export function assertFoundationLiveBaselineReceipt(receipt, { baseline, deadlineAt, managementBudget }) {
+export function assertFoundationLiveBaselineReceipt(
+  receipt,
+  { baseline, deadlineAt, managementBudget, projectVerifiedContinuationProof },
+) {
   const meta = receipt && baselineReceipts.get(receipt);
   if (
     !meta ||
@@ -19,6 +22,7 @@ export function assertFoundationLiveBaselineReceipt(receipt, { baseline, deadlin
     meta.deadlineAt !== deadlineAt ||
     !managementBudget ||
     meta.managementBudget !== managementBudget ||
+    meta.projectVerifiedContinuationProof !== projectVerifiedContinuationProof ||
     !isDeepStrictEqual(meta.baseline, baseline)
   )
     throw blocked();
@@ -30,11 +34,16 @@ export function claimFoundationLiveBaselineReceipt(receipt, scope) {
   return receipt;
 }
 
-export function createFoundationLiveBaselinePreflight(
-  { bindings, records, apiKey, deadlineAt, admitManagementAttempt, managementBudget },
-  dependencies = {},
-) {
-  const baseline = createFoundationRuntimeBaseline({ bindings, records });
+export function createFoundationLiveBaselinePreflight(input, dependencies = {}) {
+  const {
+    bindings,
+    apiKey,
+    deadlineAt,
+    admitManagementAttempt,
+    managementBudget,
+    projectVerifiedContinuationProof,
+  } = input;
+  const baseline = createFoundationRuntimeBaseline(input);
   if (typeof admitManagementAttempt !== 'function') throw blocked();
   const paths = new Set(baseline.map((b) => '/api/v1/workflows/' + b.id + '?excludePinnedData=true'));
   const t = privateJsonTransport(
@@ -70,7 +79,13 @@ export function createFoundationLiveBaselinePreflight(
         }
       }
       const receipt = Object.freeze({ verifiedWorkflows: 25 });
-      baselineReceipts.set(receipt, { baseline, deadlineAt, managementBudget, claimed: false });
+      baselineReceipts.set(receipt, {
+        baseline,
+        deadlineAt,
+        managementBudget,
+        projectVerifiedContinuationProof,
+        claimed: false,
+      });
       return receipt;
     },
     diagnostics: () => diagnostic,
@@ -99,6 +114,7 @@ export function createFoundationLiveWriterCloser(
     '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
     'eda4fae1-1e19-47db-81b8-beac1a4ed883',
     '3c46c791-e140-4eb9-890a-eecfa251f65e',
+    '4c602549-2c42-4ec3-9328-714d7cb66a77',
   ];
   const requestId = '00000000-0000-4000-8000-000000000021';
   const now = dependencies.now ?? Date.now;

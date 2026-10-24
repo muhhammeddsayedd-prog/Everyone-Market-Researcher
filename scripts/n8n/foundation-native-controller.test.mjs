@@ -403,6 +403,7 @@ for (const activeWindowId of [
   '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
   'eda4fae1-1e19-47db-81b8-beac1a4ed883',
   '3c46c791-e140-4eb9-890a-eecfa251f65e',
+  '4c602549-2c42-4ec3-9328-714d7cb66a77',
 ])
   test(`fresh ${activeWindowId} browser dispatch and four errors accept only their real branded settlement while retaining legacy batch identity`, async () => {
     const f = fixture({ browserUi: true, activeWindowId });
@@ -431,7 +432,11 @@ test('unknown active SQL window is refused before browser control or any native 
     fixed,
   );
 });
-for (const activeWindowId of ['eda4fae1-1e19-47db-81b8-beac1a4ed883', '3c46c791-e140-4eb9-890a-eecfa251f65e'])
+for (const activeWindowId of [
+  'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+  '3c46c791-e140-4eb9-890a-eecfa251f65e',
+  '4c602549-2c42-4ec3-9328-714d7cb66a77',
+])
   test(`fresh ${activeWindowId} smoke original and final settlement retain the active SQL window through real proof brands`, async () => {
     const f = providerFixture({
       configureSettlement(ports) {

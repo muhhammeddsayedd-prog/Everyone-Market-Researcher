@@ -546,6 +546,7 @@ export async function runFoundationRuntimeSetup(plan, ports) {
         baseline: plan.baseline,
         deadlineAt: ports.deadlineAt,
         managementBudget: ports.managementBudget,
+        projectVerifiedContinuationProof: ports.projectVerifiedContinuationProof,
       });
     }
     const schema = await c.request('GET', '/api/v1/credentials/schema/httpCustomAuth');
