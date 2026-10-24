@@ -461,7 +461,7 @@ function Safe-PublicLine($Value){
   elseif($v -is [string]){
    if($v -cnotmatch '^[A-Za-z0-9_.:-]{1,128}$'){throw 'blocked'}
    if($property.Name -ceq 'approvedHead' -and $v -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e'){throw 'blocked'}
-   if($property.Name -ceq 'sourceCommitSha' -and $v -cnotin @('f42930f90c2de43c84f61ad6d966d0ee6074d70e','a5e746736893d5040e93032ae740a0878f748837')){throw 'blocked'}
+   if($property.Name -ceq 'sourceCommitSha' -and $v -cnotin @('f42930f90c2de43c84f61ad6d966d0ee6074d70e','a5e746736893d5040e93032ae740a0878f748837','aff94f2b2d8055cf93b5405e6b11d4e7d9c86803')){throw 'blocked'}
    if($property.Name -ceq 'code' -and $v -cnotmatch '^[A-Z][A-Z0-9_]{1,100}$'){throw 'blocked'}
    if($property.Name -ceq 'status' -and $v -cnotin @('private_child_ready','blocked','dev_runtime_prepared','native_unresolved','cleanup_unresolved','sql_acceptance_unresolved','native_settled_and_cleaned','restoration_verified','restoration_residual','prepared','not_prepared','closed','residual','domain_verified','domain_proof_unresolved','native_domain_denial_and_cleanup_verified')){throw 'blocked'}
   }

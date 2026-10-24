@@ -9,7 +9,22 @@ How this works:
 3. The owner does it, ticks it in the milestone `PROGRESS.md`, and adds any non-secret value (project ref, URL) there.
 4. Secrets go only into approved native stores or the current-user-encrypted dev store below, never into the repo or chat.
 
-## Current M03 decision — request allowances approved, 24 October 2026
+## Completed M03 access restoration — 24 October 2026
+
+**MA-11:** Implementation head `a3e3451acbb7dff957f4a8f22bd9bc367bd4af79` passed all five CI40047557479 jobs and Vercel. Public reconciliation and the sealed Windows CheckOnly pass. The remaining gate is browser access: the old browser ID is unavailable, and the currently listed Chrome **Person 1** profile times out on tab/session operations. This does not establish that n8n is logged out. No new live window, credential consumption, SQL registration or hosted acceptance action occurred; usage stays 237 Management / 486 Control / 723 combined / 79 Vercel, actors 0.
+
+The owner replied **WF-00 visible; browser control reconnected**. That report is retained, but the subsequent exact WF-00 tab bind and a fresh browser inventory read both timed out before admission. One bounded native details read and one inventory search also returned connector errors. The details error alone may reflect the historical MCP-disabled workflow setting; neither read establishes an authentication failure or a working fallback. No further discovery/login loop is authorized by those errors.
+
+1. Save work, then fully close and reopen Chrome **Person 1**.
+2. Restart the Codex client. If Codex runs in VS Code, use **Ctrl+Shift+P → Developer: Reload Window** instead. Reopen this repository and conversation.
+3. Open `https://muhhammedsayed.app.n8n.cloud/workflow/MzimjpsuyPuK7SKe`, reconnect the existing browser-control extension/panel if prompted, and leave **WF-00** visible without clicking Execute or changing credentials.
+4. Reply **Chrome and Codex reloaded; WF-00 visible**. Expected non-secret result: browser inventory and the exact workflow metadata read respond successfully. A stated reconnection or visible page alone is not a control receipt; Codex must verify actual access before admission.
+
+The owner then replied **Chrome and Codex reloaded; WF-00 visible**. Actual browser inventory now responds, and a fresh owned tab in Chrome Person 1 displays **WF-00 · Orchestrator [dev]**, the Personal project and the whole-workflow Execute control. This verifies browser control and the current signed-in editor, independently of the still-unverified native connector. No Execute was clicked during this access check.
+
+No further owner access action is needed. Public reconciliation passes, all four persistent entries are present, and native Vercel metadata covers 75 minutes; these checks do not establish every endpoint's authentication. Before credential use, a local review found the wrapper's output source allowlist omitted the already-selected `aff94f2` application source. The exact allowlist correction receives native regression tests, independent review, a new public seal and normal PR CI. Standing authorization and all charged requests remain unchanged. Production, recurring activity, merge and M04 remain untouched.
+
+## Completed M03 decision — request allowances approved, 24 October 2026
 
 **MA-11:** The owner approved the [exact remaining request-allocation packet](../milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md) at reviewed head `8ee16f6d05041ee8b8927b95452431f3ccb5643a`, after all five CI40043938844 jobs and Vercel passed. The [immutable approval](../milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json) raises only cumulative Management 576 to 640 and the included Vercel sub-pool 88 to 132. All 237 Management / 486 Control / 723 combined / 79 Vercel requests remain charged; the original two-start/USD2 actor reserve is unchanged.
 

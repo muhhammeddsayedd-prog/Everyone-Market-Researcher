@@ -589,6 +589,20 @@ test(
         { kind: 'm03_acceptance_result', status: 'blocked', nativeReaderWorkflowKey: 'Foreign' },
         { kind: 'm03_acceptance_result', status: 'blocked', nativeReaderStage: 'PrivateKeyAlpha47' },
         { kind: 'm03_acceptance_result', status: 'blocked', nativeReaderHttpStatus: 600 },
+        {
+          kind: 'm03_acceptance_ready',
+          status: 'private_child_ready',
+          approvedHead: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+          sourceCommitSha: 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803',
+          deadlineAt: Date.now() + 3600000,
+        },
+        {
+          kind: 'm03_acceptance_ready',
+          status: 'private_child_ready',
+          approvedHead: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+          sourceCommitSha: 'c'.repeat(40),
+          deadlineAt: Date.now() + 3600000,
+        },
       ];
       const script = join(directory, 'projection.ps1');
       writeFileSync(
@@ -642,6 +656,8 @@ $out|ConvertTo-Json -Compress
         'accepted',
         'rejected',
         'rejected',
+        'rejected',
+        'accepted',
         'rejected',
       ]);
       assert.doesNotMatch(r.stdout, /PrivateKeyAlpha47/);
