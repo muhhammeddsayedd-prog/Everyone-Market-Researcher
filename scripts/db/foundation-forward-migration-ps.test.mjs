@@ -56,6 +56,244 @@ function run(code) {
 const native = { skip: process.platform !== 'win32' };
 
 test(
+  'technical16 archive requires a separately pinned typed native settlement and exact durable deletion accounting',
+  native,
+  () => {
+    // Synthetic validator contract only. The real consumer's settlement pin stays
+    // null, and no live qualification, receipt, credential or database is created.
+    const directory = mkdtempSync(join(tmpdir(), 'emr-technical16-settlement-'));
+    const digest = (bytes) => createHash('sha256').update(bytes).digest('hex');
+    const put = (path, value) => {
+      const target = join(directory, path);
+      mkdirSync(dirname(target), { recursive: true });
+      const text = typeof value === 'string' ? value : JSON.stringify(value) + '\n';
+      writeFileSync(target, text);
+      return digest(text);
+    };
+    const original =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-reconciliation-20261024.json';
+    const resolution =
+      'milestones/M03-n8n-foundation/evidence/technical16-executed-parameters-resolution-20261024.json';
+    const attempt = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt.json';
+    const journal = 'scripts/n8n/out/foundation/technical16-native-cleanup.jsonl';
+    const result = 'scripts/n8n/out/foundation/technical16-native-cleanup-result.json';
+    const settlement = 'milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json';
+    const source = '5087d4d93d2f6ffdca0bc0096b365723005446fc';
+    const windowId = '4c602549-2c42-4ec3-9328-714d7cb66a77';
+    try {
+      const originalSha = put(original, '{}\n'),
+        resolutionSha = put(resolution, '{"synthetic":true}\n');
+      const bindings = readFileSync('n8n/foundation/bindings.dev.json');
+      put('n8n/foundation/bindings.dev.json', bindings.toString());
+      const ids = Object.values(JSON.parse(bindings).workflowRefs).map((row) => row.id);
+      const requests = [];
+      const add = (kind, workflowId, executionId) =>
+        requests.push({
+          event: 'technical16_http_intent',
+          ordinal: requests.length + 1,
+          kind,
+          workflowId,
+          ...(executionId ? { executionId } : {}),
+          managementAttempts: 830 + requests.length,
+          controlAttempts: 961 + requests.length,
+          at: '2026-10-24T18:00:00.000Z',
+        });
+      for (const [id, wf] of [
+        ['31130', 'MzimjpsuyPuK7SKe'],
+        ['31131', '4JMHLDBSdgGxhPlk'],
+      ]) {
+        add('metadata', wf, id);
+        add('full', wf, id);
+      }
+      for (const id of ids) {
+        add('discovery', id);
+        add('discovery', id);
+      }
+      for (const id of ids) add('workflow', id);
+      add('metadata', '4JMHLDBSdgGxhPlk', '31131');
+      add('metadata', 'MzimjpsuyPuK7SKe', '31130');
+      const rows = [
+        {
+          event: 'technical16_cleanup_header',
+          version: 1,
+          resolutionSha256: resolutionSha,
+          originalAttemptSha256: originalSha,
+        },
+        ...requests,
+      ];
+      for (const [i, [id, wf]] of [
+        ['31131', '4JMHLDBSdgGxhPlk'],
+        ['31130', 'MzimjpsuyPuK7SKe'],
+      ].entries()) {
+        rows.push({ event: 'native_cleanup_evidence', executionId: id, workflowId: wf });
+        rows.push({
+          event: 'native_cleanup_intent',
+          batchId: 'technical16-postclose-native-cleanup',
+          caseId: 'dispatch.vimeo-reconciliation',
+          executionId: id,
+          workflowId: wf,
+          ordinal: i + 1,
+          at: '2026-10-24T18:00:00.000Z',
+        });
+        add('delete', wf, id);
+        rows.push(requests.at(-1));
+        rows.push({
+          event: 'native_cleanup_absence_intent',
+          batchId: 'technical16-postclose-native-cleanup',
+          caseId: 'dispatch.vimeo-reconciliation',
+          executionId: id,
+          workflowId: wf,
+          ordinal: i + 1,
+          at: '2026-10-24T18:00:00.000Z',
+        });
+        add('absence', wf, id);
+        rows.push(requests.at(-1));
+        rows.push({
+          event: 'native_cleanup_result',
+          batchId: 'technical16-postclose-native-cleanup',
+          caseId: 'dispatch.vimeo-reconciliation',
+          executionId: id,
+          workflowId: wf,
+          state: 'native_record_deleted',
+          deleteAcknowledged: true,
+          absenceVerified: true,
+          residual: false,
+          at: '2026-10-24T18:00:00.000Z',
+        });
+      }
+      const n = requests.length;
+      assert.equal(n, 85);
+      const inner = {
+        kind: 'm03_technical16_native_cleanup',
+        version: 1,
+        environment: 'dev',
+        projectRef: 'zmotjsbzhzjvpelxvxlf',
+        windowId,
+        sourceCommitSha: source,
+        status: 'native_cleanup_verified',
+        requestCount: n,
+        controlRequestCount: n,
+        managementAttempts: 829 + n,
+        controlAttempts: 960 + n,
+        combinedAttempts: 1789 + 2 * n,
+        canonicalWorkflowsVerified: 25,
+        qualifiedSideEffects: true,
+        recordsDeleted: 2,
+        deleteAcknowledged: true,
+        absenceVerified: true,
+        remoteWorkSettled: true,
+        networkCompletionVerified: true,
+        originalPublicRecordsUnchanged: true,
+        nativeAcceptanceProven: false,
+        originalMaskedFirstFailureRecovered: false,
+        executionCount: 0,
+        actorStarts: 0,
+        workflowWrites: 0,
+        credentialWrites: 0,
+        migrationOperations: 0,
+        diagnosticStage: 'complete',
+        diagnosticCode: 'none',
+      };
+      const usage = {
+        management: 829 + n,
+        control: 960 + n,
+        combined: 1789 + 2 * n,
+        vercel: 184,
+        nativeExecutionsReserved: 3,
+        actorStarts: 0,
+        providerReads: 0,
+      };
+      const pins = {
+        [original]: originalSha,
+        [resolution]: resolutionSha,
+        [attempt]: put(attempt, {
+          kind: 'm03_technical16_cleanup_once',
+          version: 1,
+          resolutionSha256: resolutionSha,
+          executionIds: ['31131', '31130'],
+          processId: 111,
+          parentProcessId: 222,
+          usage: { management: 829, control: 960, combined: 1789 },
+          maximumRequests: 158,
+          maximumControlRequests: 158,
+          at: '2026-10-24T18:00:00.000Z',
+        }),
+        [journal]: put(journal, rows.map((row) => JSON.stringify(row) + '\n').join('')),
+        [result]: put(result, inner),
+      };
+      put(settlement, {
+        kind: 'm03_technical16_native_settlement',
+        version: 1,
+        environment: 'dev',
+        projectRef: 'zmotjsbzhzjvpelxvxlf',
+        technicalAttempt: 16,
+        windowId,
+        sourceCommitSha: source,
+        originalAttemptSha256: originalSha,
+        resolutionSha256: resolutionSha,
+        outerNativeExit: 0,
+        rawResult: {
+          ...inner,
+          nativeExit: 0,
+          childClosed: true,
+          credentialChildrenClosed: true,
+          parentLockDeleted: true,
+          privateRead: true,
+          persistentManagementRetained: true,
+        },
+        cleanup: {
+          parentAbsent: true,
+          childAbsent: true,
+          parentLockAbsent: true,
+          runtimeLockAbsent: true,
+          persistentManagementRetained: true,
+          privateContentsRead: false,
+          networkRequests: 0,
+        },
+        pins,
+        usage,
+      });
+      assert.equal(
+        run(`
+${definitions(['Assert-Keys', 'Assert-Path', 'File-Hash', 'Read-Json', 'Assert-FoundationTechnical16Settled'])}
+$repo=${quote(directory)};$projectRef='zmotjsbzhzjvpelxvxlf';$script:liveParent=$false
+function Get-CimInstance{if($script:liveParent){return @([pscustomobject]@{ProcessId=111})};return @()}
+$expected=[pscustomobject]@{id='${windowId}';commitSha='${source}'}
+$denied=$false;try{$null=Assert-FoundationTechnical16Settled $expected}catch{$denied=$true};if(-not $denied){throw 'NULL_REAL_PIN_GRANTED'}
+$fn=(Get-Command Assert-FoundationTechnical16Settled).ScriptBlock.ToString().Replace('$settlementSha256=$null','$settlementSha256=$script:syntheticSettlementSha').Replace('d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb','${originalSha}').Replace('e0c919ab2a12aa9306be3d2b3656b7d0c43d97c21ddc6376ffa12bbfbb89d07b','${resolutionSha}')
+Set-Item -Path Function:Assert-FoundationTechnical16Settled -Value ([scriptblock]::Create($fn))
+$file=Join-Path $repo ${quote(settlement)};$original=Read-Json $file;$journal=Join-Path $repo ${quote(journal)};$saved=[IO.File]::ReadAllText($journal)
+function Persist($v){[IO.File]::WriteAllText($file,($v|ConvertTo-Json -Depth 30 -Compress)+[char]10,[Text.UTF8Encoding]::new($false));$script:syntheticSettlementSha=File-Hash $file}
+Persist $original;$verified=Assert-FoundationTechnical16Settled $expected;if($verified.rawResult.recordsDeleted -ne 2){throw 'TYPED_FIXTURE_FAILED'}
+foreach($fault in @('kindArray','outerType','nativeExit','requestType','wrongCount','acceptance','masked','childOpen','noParentCleanup','noManagement','notSettled','missingAck','missingAbsence','recordsOne','wrongSource','wrongIds','extraPin','wrongPin','journalDrift','ordinalDrift','foreignWorkflow','duplicateDelete','incompleteCanonical','lostAck','liveParent','wrongUsage')){
+ $v=$original|ConvertTo-Json -Depth 30|ConvertFrom-Json;[IO.File]::WriteAllText($journal,$saved,[Text.UTF8Encoding]::new($false));$script:liveParent=$false
+ switch($fault){
+  'kindArray'{$v.rawResult.kind=@('m03_technical16_native_cleanup')} 'outerType'{$v.outerNativeExit='0'} 'nativeExit'{$v.rawResult.nativeExit=1} 'requestType'{$v.rawResult.requestCount='85'} 'wrongCount'{$v.rawResult.requestCount=84} 'acceptance'{$v.rawResult.nativeAcceptanceProven=$true} 'masked'{$v.rawResult.originalMaskedFirstFailureRecovered=$true}
+  'childOpen'{$v.rawResult.childClosed=$false} 'noParentCleanup'{$v.cleanup.parentLockAbsent=$false} 'noManagement'{$v.rawResult.persistentManagementRetained=$false} 'notSettled'{$v.rawResult.remoteWorkSettled=$false} 'missingAck'{$v.rawResult.deleteAcknowledged=$false} 'missingAbsence'{$v.rawResult.absenceVerified=$false} 'recordsOne'{$v.rawResult.recordsDeleted=1} 'wrongSource'{$v.sourceCommitSha='a'*40} 'wrongIds'{$v.windowId='00000000-0000-4000-8000-000000000001'} 'extraPin'{$v.pins|Add-Member NoteProperty unexpected ('a'*64)} 'wrongPin'{$v.pins.${quote(result)}='a'*64} 'journalDrift'{[IO.File]::AppendAllText($journal,'{}'+[char]10)} 'liveParent'{$script:liveParent=$true} 'wrongUsage'{$v.usage.nativeExecutionsReserved=0}
+  {$_ -cin @('ordinalDrift','foreignWorkflow','duplicateDelete','incompleteCanonical','lostAck')} {
+   $r=@($saved.TrimEnd([char]10) -split [char]10|ForEach-Object{ConvertFrom-Json $_})
+   if($fault -ceq 'ordinalDrift'){$r[1].ordinal=2}
+   if($fault -ceq 'foreignWorkflow'){$r[1].workflowId='foreign'}
+   if($fault -ceq 'duplicateDelete'){$r+=($r|Where-Object{$_.event -ceq 'native_cleanup_intent'}|Select-Object -First 1)}
+   if($fault -ceq 'incompleteCanonical'){$r=@($r|Where-Object{-not ($_.event -ceq 'technical16_http_intent' -and $_.kind -ceq 'workflow')})}
+   if($fault -ceq 'lostAck'){($r|Where-Object{$_.event -ceq 'native_cleanup_result'}|Select-Object -First 1).deleteAcknowledged=$false}
+   [IO.File]::WriteAllText($journal,(($r|ForEach-Object{$_|ConvertTo-Json -Depth 12 -Compress}) -join [char]10)+[char]10,[Text.UTF8Encoding]::new($false));$v.pins.${quote(journal)}=File-Hash $journal
+  }
+ }
+ Persist $v;$denied=$false;try{$null=Assert-FoundationTechnical16Settled $expected}catch{$denied=$true};if(-not $denied){throw ('SETTLEMENT_ACCEPTED_'+$fault)}
+}
+Write-Output 'TYPED_SETTLEMENT_AND26_DENIALS'
+`),
+        'TYPED_SETTLEMENT_AND26_DENIALS',
+      );
+    } finally {
+      assert.ok(resolve(directory).startsWith(resolve(tmpdir()) + sep));
+      rmSync(directory, { recursive: true });
+    }
+  },
+);
+
+test(
   'technical16 mode and public-private binding are revalidated before the bounded Admin copy',
   native,
   () => {

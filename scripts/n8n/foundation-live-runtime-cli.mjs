@@ -524,8 +524,9 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   const unadmittedUsage = verified
     ? foundationProjectVerifiedContinuationUnadmittedUsage(verified)
     : { nativeExecutions: 0, gatewayHttpAttempts: 0 };
-  const restoredBaselineScope =
-    verifiedCheckpoint?.managementMaximum === 1024 ? { projectVerifiedContinuationProof: verified } : {};
+  const restoredBaselineScope = [1024, 1408].includes(verifiedCheckpoint?.managementMaximum)
+    ? { projectVerifiedContinuationProof: verified }
+    : {};
   const activeWindowId = verified?.windowId ?? windowId;
   const admittedClock = continuation || amendment;
   if (
@@ -580,7 +581,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       ...(remaining ? { remainingContinuationProof: remaining } : {}),
       ...(startup ? { startupReplacementProof: startup } : {}),
       ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
-      ...([576, 640, 704, 832, 1024].includes(verifiedCheckpoint?.managementMaximum)
+      ...([576, 640, 704, 832, 1024, 1408].includes(verifiedCheckpoint?.managementMaximum)
         ? {
             controlAttempts: () =>
               controlBudget?.snapshot().attempts ?? verifiedCheckpoint.aggregateControlAttempts,
@@ -640,7 +641,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     ...(remaining ? { remainingContinuationProof: remaining } : {}),
     ...(startup ? { startupReplacementProof: startup } : {}),
     ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
-    ...([576, 640, 704, 832, 1024].includes(verifiedCheckpoint?.managementMaximum)
+    ...([576, 640, 704, 832, 1024, 1408].includes(verifiedCheckpoint?.managementMaximum)
       ? { managementAttempts: () => budget.snapshot().attempts }
       : {}),
   });

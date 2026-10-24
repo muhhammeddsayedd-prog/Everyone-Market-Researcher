@@ -11,6 +11,7 @@ import {
   assertFoundationLiveProjectVerifiedContinuationProof,
   assertFoundationProjectVerifiedContinuationControlResume,
   foundationProjectVerifiedContinuationResumeCheckpoint,
+  foundationProjectVerifiedContinuationRequestCaps,
 } from './foundation-live-project-verified-continuation.mjs';
 
 const journals = new WeakSet();
@@ -219,8 +220,11 @@ export function createFoundationControlBudget({
     ? foundationProjectVerifiedContinuationResumeCheckpoint(verified)
     : null;
   const verifiedInitialControl = verifiedCheckpoint?.mainControlAttempts ?? 0;
-  const managementMaximum = verifiedCheckpoint?.managementMaximum ?? 512;
-  const expandedManagement = [576, 640, 704, 832, 1024].includes(managementMaximum);
+  const requestCaps = verified
+    ? foundationProjectVerifiedContinuationRequestCaps(verified)
+    : { management: 512, control: 2048, combined: 2560 };
+  const managementMaximum = requestCaps.management;
+  const expandedManagement = [576, 640, 704, 832, 1024, 1408].includes(managementMaximum);
   let lastManagementAttempts = verifiedCheckpoint?.aggregateManagementAttempts ?? 0;
   const authoritativeManagementAttempts = () => {
     if (!expandedManagement) return 0;
@@ -235,7 +239,11 @@ export function createFoundationControlBudget({
     return value;
   };
   if (expandedManagement && typeof managementAttempts !== 'function') fail();
-  if (expandedManagement && prior.length + carriedAttempts + authoritativeManagementAttempts() > 2560) fail();
+  if (
+    expandedManagement &&
+    prior.length + carriedAttempts + authoritativeManagementAttempts() > requestCaps.combined
+  )
+    fail();
   if (verified)
     assertFoundationProjectVerifiedContinuationControlResume(verified, {
       deadlineAt,
@@ -246,7 +254,7 @@ export function createFoundationControlBudget({
   if (remaining)
     assertFoundationRemainingControlResume(remaining, { deadlineAt, previousEvents: journal.rows });
   if (
-    prior.length + carriedAttempts > 2048 ||
+    prior.length + carriedAttempts > requestCaps.control ||
     prior.some((r, i) => r.ordinal !== i + 1) ||
     (continuation &&
       (prior.length !== (verified ? verifiedInitialControl : startup ? 150 : 100) ||
@@ -256,7 +264,7 @@ export function createFoundationControlBudget({
     fail();
   prior.forEach(context);
   let count = prior.length,
-    stopped = count + carriedAttempts > 2048;
+    stopped = count + carriedAttempts > requestCaps.control;
   const polls = new Map();
   for (const row of prior)
     if (row.kind === 'metadata') {
@@ -265,11 +273,17 @@ export function createFoundationControlBudget({
     }
   const budget = Object.freeze({
     admit({ kind, workflowId, executionId } = {}) {
-      if (stopped || !kinds.has(kind) || count + carriedAttempts >= 2048 || now() >= deadlineAt) fail();
+      if (
+        stopped ||
+        !kinds.has(kind) ||
+        count + carriedAttempts >= requestCaps.control ||
+        now() >= deadlineAt
+      )
+        fail();
       context({ kind, workflowId, executionId });
       if (expandedManagement) {
         try {
-          if (count + carriedAttempts + authoritativeManagementAttempts() >= 2560) {
+          if (count + carriedAttempts + authoritativeManagementAttempts() >= requestCaps.combined) {
             stopped = true;
             fail();
           }
@@ -304,7 +318,7 @@ export function createFoundationControlBudget({
         attempts: count + carriedAttempts,
         mainAttempts: count,
         carriedAttempts,
-        maximum: 2048,
+        maximum: requestCaps.control,
         stopped,
         deadlineAt,
       }),

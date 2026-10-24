@@ -23,6 +23,30 @@ import { syntheticProjectVerifiedContinuation } from './foundation-live-project-
 const initial = Date.parse('2026-10-19T12:00:00.000Z');
 const iso = (n) => new Date(initial + n).toISOString();
 const fixed = /FOUNDATION_NATIVE_CONTROL_BLOCKED/;
+test('shutdown reserve arithmetic uses the branded budget maximum without changing the460 floor', () => {
+  // Exercise only the pure arithmetic extracted from the production closure;
+  // these plain snapshots are not budgets and grant no controller authority.
+  const source = readFileSync(new URL('./foundation-native-controller.mjs', import.meta.url), 'utf8');
+  const closure = source.match(/const preserveShutdown = \(needed\) => \{[\s\S]*?\n  \};/)?.[0];
+  assert.ok(closure);
+  const calculate = (maximum, attempts, needed, text = closure) =>
+    Function(
+      'controlBudget',
+      'foundationNativeAdmissionReserve',
+      'fail',
+      text + '; return preserveShutdown;',
+    )({ snapshot: () => ({ maximum, attempts }) }, { shutdown: 460 }, () => {
+      throw Error('RESERVE_BLOCKED');
+    })(needed);
+  for (const maximum of [2048, 3456]) {
+    assert.doesNotThrow(() => calculate(maximum, maximum - 460 - 100, 100));
+    assert.throws(() => calculate(maximum, maximum - 460 - 100 + 1, 100), /RESERVE_BLOCKED/);
+  }
+  assert.throws(
+    () => calculate(3456, 2896, 100, closure.replace('snapshot.maximum', '2048')),
+    /RESERVE_BLOCKED/,
+  );
+});
 function fixture(options = {}) {
   const bindings = JSON.parse(
     readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),

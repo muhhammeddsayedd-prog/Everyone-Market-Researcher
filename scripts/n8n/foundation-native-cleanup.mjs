@@ -1,4 +1,9 @@
-import { assertFoundationNativeReader, assertFoundationNativeReceipt } from './foundation-native-reader.mjs';
+import {
+  assertFoundationNativeReader,
+  assertFoundationNativeReceipt,
+  assertFoundationTechnical16CleanupQualification,
+  claimFoundationTechnical16CleanupQualification,
+} from './foundation-native-reader.mjs';
 import {
   assertFoundationNativeClosure,
   assertFoundationControlJournal,
@@ -197,10 +202,17 @@ export function createFoundationNativeCleanup({
     return value;
   };
 
-  async function request(operation, receipt) {
+  async function request(operation, receipt, qualification = null) {
     const method = operation === 'delete_ack' ? 'DELETE' : 'GET';
     const path = '/api/v1/executions/' + receipt.executionId + (method === 'GET' ? '?includeData=false' : '');
     remaining();
+    const reserveWrite = () => {
+      if (qualification !== null && operation === 'delete_ack') {
+        assertFoundationTechnical16CleanupQualification(qualification, { reader });
+        if (remaining() < 2 * requestTimeoutMs + 5000) blocked();
+      }
+    };
+    reserveWrite();
     synchronousVoid(
       admitControlAttempt({
         kind: operation === 'delete_ack' ? 'delete' : 'absence',
@@ -211,15 +223,27 @@ export function createFoundationNativeCleanup({
     // A durable budget ledger can advance the clock. Recheck immediately
     // before the transport boundary as well as before its asynchronous turn.
     remaining();
+    reserveWrite();
     const controller = new AbortController();
     let timer;
     state.pendingCalls++;
     const work = Promise.resolve()
       .then(() => {
         remaining();
+        reserveWrite();
         return transport.request({ method, path, signal: controller.signal });
       })
-      .then((response) => reader.cleanupResponse({ response, receipt, operation, signal: controller.signal }))
+      .then((response) =>
+        qualification === null
+          ? reader.cleanupResponse({ response, receipt, operation, signal: controller.signal })
+          : reader.technical16CleanupResponse({
+              response,
+              qualification,
+              executionId: receipt.executionId,
+              operation,
+              signal: controller.signal,
+            }),
+      )
       .finally(() => {
         state.pendingCalls--;
       });
@@ -240,136 +264,189 @@ export function createFoundationNativeCleanup({
     }
   }
 
-  return Object.freeze({
-    async cleanup({ receipt, closure } = {}) {
-      let full, closed;
-      try {
+  async function cleanupOne({ receipt, closure, technical16 = false }) {
+    let full, closed;
+    try {
+      if (technical16) {
+        closed = assertFoundationTechnical16CleanupQualification(closure, { reader });
+        if (!closed.records.includes(receipt)) blocked();
+        full = receipt;
+      } else {
         full = assertFoundationNativeReceipt(receipt);
         closed = closureValidator(closure, { receipt });
+      }
+      if (
+        !positiveId(full.executionId) ||
+        !terminal.has(full.status) ||
+        full.waitTill !== null ||
+        closed?.kind !==
+          (technical16 ? 'foundation_technical16_cleanup_qualification' : 'foundation_native_closure') ||
+        closed.settled !== true ||
+        typeof closed.batchId !== 'string' ||
+        typeof closed.caseId !== 'string' ||
+        closed.owner !== 'Mohamed Abdelrahman' ||
+        !Array.isArray(closed.executionIds) ||
+        !closed.executionIds.includes(full.executionId) ||
+        (state.batchId !== null && state.batchId !== closed.batchId) ||
+        state.entries.has(full.executionId) ||
+        state.deleteAttempts >= 120 ||
+        state.busy
+      )
+        blocked();
+      remaining();
+      if (technical16 && remaining() < 2 * requestTimeoutMs + 5000) blocked();
+    } catch {
+      blocked();
+    }
+    // Acquire both the ID fence and the shared journal lock before awaiting
+    // anything. Even journal failure never silently re-arms this ID.
+    state.busy = true;
+    state.batchId = closed.batchId;
+    const entry = {
+      executionId: full.executionId,
+      workflowId: full.workflowId,
+      state: 'cleanup_blocked',
+      deleteAcknowledged: false,
+      absenceVerified: false,
+      residual: true,
+    };
+    state.entries.set(full.executionId, entry);
+    let intentPersisted = false,
+      absenceReadConfirmed = false;
+    try {
+      append(safeEvidence(full, closed));
+      append({
+        event: 'native_cleanup_intent',
+        batchId: closed.batchId,
+        caseId: closed.caseId,
+        executionId: full.executionId,
+        workflowId: full.workflowId,
+        ordinal: state.deleteAttempts + 1,
+        at: at(),
+      });
+      intentPersisted = true;
+      state.deleteAttempts++;
+      try {
+        const ack = await request('delete_ack', full, technical16 ? closed : null);
+        entry.deleteAcknowledged =
+          ack?.kind === 'foundation_native_delete_ack' &&
+          ack.executionId === full.executionId &&
+          ack.acknowledged === true &&
+          ack.transportClosed === true &&
+          ack.privacyChecked === true;
+      } catch {
+        // A lost acknowledgement may still have mutated native storage.
+        // Exactly one read-only reconciliation is allowed; never replay it.
+      }
+      if (state.absenceReads < 120) {
+        try {
+          remaining();
+          append({
+            event: 'native_cleanup_absence_intent',
+            batchId: closed.batchId,
+            caseId: closed.caseId,
+            executionId: full.executionId,
+            workflowId: full.workflowId,
+            ordinal: state.absenceReads + 1,
+            at: at(),
+          });
+          state.absenceReads++;
+          const absence = await request('absence', full, technical16 ? closed : null);
+          if (
+            absence?.kind === 'foundation_native_absence' &&
+            absence.executionId === full.executionId &&
+            absence.transportClosed === true &&
+            absence.privacyChecked === true &&
+            typeof absence.absent === 'boolean'
+          ) {
+            absenceReadConfirmed = true;
+            entry.absenceVerified = absence.absent === true;
+          }
+        } catch {
+          // Failure/timeout/expiry remains an unresolved residual. Ingress
+          // closure and runtime restoration belong to the caller's finally.
+        }
+      }
+      entry.state = entry.deleteAcknowledged
+        ? entry.absenceVerified
+          ? 'native_record_deleted'
+          : absenceReadConfirmed
+            ? 'record_remaining'
+            : 'cleanup_ambiguous'
+        : 'cleanup_ambiguous';
+      entry.residual = entry.state !== 'native_record_deleted';
+      append({
+        event: 'native_cleanup_result',
+        batchId: closed.batchId,
+        caseId: closed.caseId,
+        executionId: full.executionId,
+        workflowId: full.workflowId,
+        state: entry.state,
+        deleteAcknowledged: entry.deleteAcknowledged,
+        absenceVerified: entry.absenceVerified,
+        residual: entry.residual,
+        at: at(),
+      });
+    } catch {
+      entry.state = intentPersisted ? 'cleanup_ambiguous' : 'cleanup_blocked';
+      entry.residual = true;
+    } finally {
+      state.busy = false;
+    }
+    const result = Object.freeze({
+      ...entry,
+      followUpOwner: 'Mohamed Abdelrahman',
+      expectedCleanupAt: new Date(deadlineAt).toISOString(),
+      physicalErasureVerified: false,
+    });
+    if (!technical16) cleanupReceipts.set(result, { receipt: full, closure: closed });
+    return result;
+  }
+  return Object.freeze({
+    cleanup({ receipt, closure } = {}) {
+      return cleanupOne({ receipt, closure });
+    },
+    async cleanupTechnical16({ qualification } = {}) {
+      // This path never invokes the optional unit-test closure validator.
+      // Only the real reader's fresh, single-use qualification can cross it.
+      try {
+        claimFoundationTechnical16CleanupQualification(qualification, { reader });
         if (
-          !positiveId(full.executionId) ||
-          !terminal.has(full.status) ||
-          full.waitTill !== null ||
-          closed?.kind !== 'foundation_native_closure' ||
-          closed.settled !== true ||
-          typeof closed.batchId !== 'string' ||
-          typeof closed.caseId !== 'string' ||
-          closed.owner !== 'Mohamed Abdelrahman' ||
-          !Array.isArray(closed.executionIds) ||
-          !closed.executionIds.includes(full.executionId) ||
-          (state.batchId !== null && state.batchId !== closed.batchId) ||
-          state.entries.has(full.executionId) ||
-          state.deleteAttempts >= 120 ||
-          state.busy
+          state.busy ||
+          state.entries.size !== 0 ||
+          qualification.records.length !== 2 ||
+          qualification.executionIds.join(',') !== '31131,31130' ||
+          qualification.records.some(
+            (record, index) => record.executionId !== qualification.executionIds[index],
+          )
         )
           blocked();
-        remaining();
       } catch {
         blocked();
       }
-      // Acquire both the ID fence and the shared journal lock before awaiting
-      // anything. Even journal failure never silently re-arms this ID.
-      state.busy = true;
-      state.batchId = closed.batchId;
-      const entry = {
-        executionId: full.executionId,
-        workflowId: full.workflowId,
-        state: 'cleanup_blocked',
-        deleteAcknowledged: false,
-        absenceVerified: false,
-        residual: true,
-      };
-      state.entries.set(full.executionId, entry);
-      let intentPersisted = false,
-        absenceReadConfirmed = false;
-      try {
-        append(safeEvidence(full, closed));
-        append({
-          event: 'native_cleanup_intent',
-          batchId: closed.batchId,
-          caseId: closed.caseId,
-          executionId: full.executionId,
-          workflowId: full.workflowId,
-          ordinal: state.deleteAttempts + 1,
-          at: at(),
-        });
-        intentPersisted = true;
-        state.deleteAttempts++;
+      const results = [];
+      for (const receipt of qualification.records) {
+        let result;
         try {
-          const ack = await request('delete_ack', full);
-          entry.deleteAcknowledged =
-            ack?.kind === 'foundation_native_delete_ack' &&
-            ack.executionId === full.executionId &&
-            ack.acknowledged === true &&
-            ack.transportClosed === true &&
-            ack.privacyChecked === true;
+          result = await cleanupOne({ receipt, closure: qualification, technical16: true });
         } catch {
-          // A lost acknowledgement may still have mutated native storage.
-          // Exactly one read-only reconciliation is allowed; never replay it.
+          break;
         }
-        if (state.absenceReads < 120) {
-          try {
-            remaining();
-            append({
-              event: 'native_cleanup_absence_intent',
-              batchId: closed.batchId,
-              caseId: closed.caseId,
-              executionId: full.executionId,
-              workflowId: full.workflowId,
-              ordinal: state.absenceReads + 1,
-              at: at(),
-            });
-            state.absenceReads++;
-            const absence = await request('absence', full);
-            if (
-              absence?.kind === 'foundation_native_absence' &&
-              absence.executionId === full.executionId &&
-              absence.transportClosed === true &&
-              absence.privacyChecked === true &&
-              typeof absence.absent === 'boolean'
-            ) {
-              absenceReadConfirmed = true;
-              entry.absenceVerified = absence.absent === true;
-            }
-          } catch {
-            // Failure/timeout/expiry remains an unresolved residual. Ingress
-            // closure and runtime restoration belong to the caller's finally.
-          }
-        }
-        entry.state = entry.deleteAcknowledged
-          ? entry.absenceVerified
-            ? 'native_record_deleted'
-            : absenceReadConfirmed
-              ? 'record_remaining'
-              : 'cleanup_ambiguous'
-          : 'cleanup_ambiguous';
-        entry.residual = entry.state !== 'native_record_deleted';
-        append({
-          event: 'native_cleanup_result',
-          batchId: closed.batchId,
-          caseId: closed.caseId,
-          executionId: full.executionId,
-          workflowId: full.workflowId,
-          state: entry.state,
-          deleteAcknowledged: entry.deleteAcknowledged,
-          absenceVerified: entry.absenceVerified,
-          residual: entry.residual,
-          at: at(),
-        });
-      } catch {
-        entry.state = intentPersisted ? 'cleanup_ambiguous' : 'cleanup_blocked';
-        entry.residual = true;
-      } finally {
-        state.busy = false;
+        results.push(result);
+        if (result.state !== 'native_record_deleted' || result.residual) break;
       }
-      const result = Object.freeze({
-        ...entry,
-        followUpOwner: 'Mohamed Abdelrahman',
-        expectedCleanupAt: new Date(deadlineAt).toISOString(),
+      return Object.freeze({
+        kind: 'foundation_technical16_native_cleanup',
+        version: 1,
+        status:
+          results.length === 2 && results.every((result) => !result.residual)
+            ? 'native_records_deleted'
+            : 'cleanup_reconciliation_required',
+        results: Object.freeze(results),
+        nativeAcceptanceProven: false,
+        liveClosureMinted: false,
         physicalErasureVerified: false,
       });
-      cleanupReceipts.set(result, { receipt: full, closure: closed });
-      return result;
     },
     snapshot: () =>
       Object.freeze({

@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { isDeepStrictEqual } from 'node:util';
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { createFoundationRuntimePlan, materializeFoundationRuntimeCase } from './foundation-runtime-plan.mjs';
 import { prepareFoundationRuntimeMachinePatch } from './foundation-runtime-machine.mjs';
 import {
@@ -17,6 +18,141 @@ import {
 } from './foundation-runtime-control.mjs';
 import * as runtimeControl from './foundation-runtime-control.mjs';
 import * as checkpointDiagnostics from './foundation-runtime-checkpoint.mjs';
+
+test('execution parameter model covers all80 reviewed source profiles without mutating source or current graph fences', async () => {
+  const { buildFoundationGatewayWorkflows } =
+      await import('../../n8n/foundation/build-foundation-gateway.mjs'),
+    { materializeFoundationAcceptanceCase, foundationAcceptancePlan } =
+      await import('../../n8n/foundation/materialize-acceptance-case.mjs'),
+    { buildFoundationNativeDomainProbe } = await import('./foundation-live-domain-probe.mjs'),
+    input = {
+      bindings: JSON.parse(
+        readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url), 'utf8'),
+      ),
+      transport: JSON.parse(
+        readFileSync(new URL('../../n8n/foundation/transport.dev.json', import.meta.url), 'utf8'),
+      ),
+    },
+    { bindings } = input,
+    transport = {
+      audience: input.transport.audience,
+      windowId: input.transport.windowId,
+      credential: input.transport.credential,
+    },
+    source = readFileSync(
+      new URL('../../n8n/foundation/materialize-acceptance-case.test.mjs', import.meta.url),
+      'utf8',
+    ),
+    synthetic = runInNewContext(
+      source.slice(source.indexOf('const fixture = {'), source.indexOf('const node = ')) +
+        source.slice(source.indexOf('const originalItem = {'), source.indexOf('const stableState = {')) +
+        ';({fixture,firstRunEvidence});',
+      { transport },
+    ),
+    cases = foundationAcceptancePlan().cases,
+    options = (c) => ({
+      ...(c.requiresFixtureReceipt ? { fixtureReceipt: synthetic.fixture } : {}),
+      ...(c.requiresFirstRunEvidence ? { firstRunEvidence: synthetic.firstRunEvidence } : {}),
+    }),
+    graphs = [
+      ...buildFoundationGatewayWorkflows(bindings, transport),
+      ...buildFoundationGatewayWorkflows(bindings, transport, { launchEnabled: true }),
+      ...cases.map((c) => materializeFoundationAcceptanceCase(bindings, transport, c.id, options(c))),
+      ...cases
+        .filter((c) => c.id.startsWith('smoke.'))
+        .map((c) =>
+          materializeFoundationAcceptanceCase(bindings, transport, c.id, {
+            ...options(c),
+            release: { launchEnabled: true },
+          }),
+        ),
+      buildFoundationNativeDomainProbe({
+        runtimeAudience: 'https://everyone-market-researcher-source-only.vercel.app',
+        settings: {
+          saveManualExecutions: true,
+          saveExecutionProgress: false,
+          saveDataSuccessExecution: 'none',
+          saveDataErrorExecution: 'none',
+          availableInMCP: true,
+        },
+      }),
+    ];
+  let count = 0;
+  const types = new Set();
+  for (const g of graphs) {
+    const body = {
+        name: g.workflow.name,
+        nodes: g.workflow.nodes,
+        connections: g.workflow.connections,
+        settings: g.workflow.settings,
+      },
+      before = JSON.stringify(body),
+      raw = runtimeGraphHash(body),
+      c = checkpointDiagnostics.foundationRuntimeExecutionParameterCandidates(body);
+    assert.equal(JSON.stringify(body), before);
+    assert.equal(runtimeGraphHash(body), raw);
+    assert.ok(
+      Object.isFrozen(c) &&
+        Object.isFrozen(c.nativeDefaults) &&
+        Object.isFrozen(c.nativeDefaults.nodes[0].parameters),
+    );
+    assert.equal(c.nativeDefaults.nodes.length, body.nodes.length);
+    for (const [i, n] of c.nativeDefaults.nodes.entries()) {
+      count++;
+      types.add(n.type + '@' + n.typeVersion);
+      assert.deepEqual({ ...n, parameters: body.nodes[i].parameters }, body.nodes[i]);
+      if (n.type === 'n8n-nodes-base.code') assert.equal(n.parameters.language, 'javaScript');
+      if (n.type === 'n8n-nodes-base.httpRequest')
+        assert.equal(n.parameters.options.redirect.redirect.maxRedirects, undefined);
+    }
+    if (c.nativeDefaultsAndSetOutput) {
+      const sets = c.nativeDefaultsAndSetOutput.nodes.filter((n) => n.type === 'n8n-nodes-base.set');
+      assert.equal(sets.length, 1);
+      assert.equal(sets[0].parameters.includeOtherFields, false);
+      assert.equal(sets[0].parameters.options.include, 'none');
+    }
+  }
+  assert.equal(graphs.length, 80);
+  assert.equal(count, 1350);
+  assert.equal(types.size, 13);
+});
+test('execution parameter model rejects unsupported source and keeps Set execution qualification separate', () => {
+  const model = checkpointDiagnostics.foundationRuntimeExecutionParameterCandidates,
+    body = {
+      name: 'synthetic public source',
+      nodes: [
+        {
+          id: 'known',
+          name: 'Known Set',
+          type: 'n8n-nodes-base.set',
+          typeVersion: 3.5,
+          parameters: {
+            mode: 'manual',
+            includeOtherFields: false,
+            assignments: { assignments: [] },
+            options: {},
+          },
+        },
+      ],
+      connections: {},
+      settings: { executionOrder: 'v1' },
+    };
+  assert.equal(model(body).nativeDefaultsAndSetOutput.nodes[0].parameters.options.include, 'none');
+  const custom = structuredClone(body);
+  custom.nodes[0].parameters.options.include = 'all';
+  assert.equal(model(custom).nativeDefaultsAndSetOutput, null);
+  for (const mutate of [
+    (b) => (b.nodes[0].type = 'unknown'),
+    (b) => (b.nodes[0].typeVersion = 3.6),
+    (b) => (b.settings.SYNTHETIC_PRIVATE = true),
+    (b) => (b.nodes[0].parameters.SYNTHETIC_PRIVATE = true),
+    (b) => b.nodes.push(structuredClone(b.nodes[0])),
+  ]) {
+    const bad = structuredClone(body);
+    mutate(bad);
+    assert.throws(() => model(bad), /^Error: FOUNDATION_RUNTIME_CONTROL_BLOCKED$/);
+  }
+});
 
 test('editable settings comparison explicitly isolates only known native binary mode without relaxing raw guards', () => {
   const f = fixture(),

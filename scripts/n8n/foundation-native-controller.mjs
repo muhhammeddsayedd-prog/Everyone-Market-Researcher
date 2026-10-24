@@ -213,7 +213,8 @@ export function createFoundationNativeController({
   };
   const at = () => new Date(now()).toISOString();
   const preserveShutdown = (needed) => {
-    if (2048 - controlBudget.snapshot().attempts < foundationNativeAdmissionReserve.shutdown + needed) fail();
+    const snapshot = controlBudget.snapshot();
+    if (snapshot.maximum - snapshot.attempts < foundationNativeAdmissionReserve.shutdown + needed) fail();
   };
   const admitCaseCapacity = (upper) =>
     preserveShutdown(

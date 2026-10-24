@@ -172,6 +172,27 @@ test('cleanup has no implicit transport, journal, budget or deadline defaults', 
   }
 });
 
+test('technical16 cleanup ignores the ordinary test closure override and denies forged qualifications before DELETE', async () => {
+  const f = await fixture();
+  for (const qualification of [
+    f.receipt,
+    f.closure,
+    {
+      kind: 'foundation_technical16_cleanup_qualification',
+      executionIds: ['31131', '31130'],
+      records: [f.receipt, f.receipt],
+      settled: true,
+    },
+  ]) {
+    await assert.rejects(
+      f.cleanup.cleanupTechnical16({ qualification }),
+      /FOUNDATION_NATIVE_CLEANUP_BLOCKED/,
+    );
+  }
+  assert.equal(f.calls.length, 0);
+  assert.equal(f.events.length, 0);
+});
+
 test('safe evidence is flushed before exact DELETE; matching acknowledgement and absence are both required', async () => {
   let f;
   f = await fixture({

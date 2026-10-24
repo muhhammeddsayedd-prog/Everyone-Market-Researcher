@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { runtimeGraphHash } from './foundation-runtime-control.mjs';
+import { foundationRuntimeExecutionParameterCandidates } from './foundation-runtime-checkpoint.mjs';
 import { gatewayOperationNodes } from '../../n8n/foundation/build-foundation-gateway.mjs';
 import {
   createFoundationNativeReader,
   assertFoundationNativeReader,
   assertFoundationNativeMetadataReceipt,
   assertFoundationNativeReceipt,
+  assertFoundationTechnical16CleanupQualification,
   foundationNativeReaderLimits,
 } from './foundation-native-reader.mjs';
 
@@ -323,6 +325,107 @@ test('native persisted snapshot omits active-version and pins while exact top-le
   assert.equal(proof.bodyHash, f.binding.bodyHash);
   f.full.workflowVersionId = 'wrong-native-version';
   await assert.rejects(f.reader.read(f.args), fixed);
+});
+
+test('executed snapshots accept only source-derived native parameter defaults while the current saved body stays exact', async () => {
+  const f = nativeReaderFixture();
+  const sourceBefore = structuredClone(f.binding.body);
+  f.full.workflowData = {
+    id: f.workflow.id,
+    ...foundationRuntimeExecutionParameterCandidates(f.binding.body).nativeDefaults,
+  };
+  const snapshotBefore = structuredClone(f.full.workflowData);
+  assert.equal((await f.reader.read(f.args)).bodyHash, f.binding.bodyHash);
+  assert.deepEqual(f.binding.body, sourceBefore);
+  assert.deepEqual(f.full.workflowData, snapshotBefore);
+  for (const mutate of [
+    (g) => {
+      g.full.workflowData.nodes[0].parameters.operation = 'SYNTHETIC_UNKNOWN_OPERATION';
+    },
+    (g) => {
+      g.full.workflowData.nodes[0].parameters.unknown = true;
+    },
+    (g) => {
+      g.full.workflowData.nodes[0].credentials = { httpHeaderAuth: { id: 'other', name: 'other' } };
+    },
+    (g) => {
+      g.workflow.nodes[0].parameters.operation = 'call_workflow';
+    },
+  ]) {
+    const g = nativeReaderFixture();
+    g.full.workflowData = {
+      id: g.workflow.id,
+      ...structuredClone(foundationRuntimeExecutionParameterCandidates(g.binding.body).nativeDefaults),
+    };
+    mutate(g);
+    await assert.rejects(g.reader.read(g.args), fixed);
+  }
+});
+
+test('native Set output expansion needs a nonempty actual task for the sole known Set node', async () => {
+  function fixture(withTask) {
+    const f = nativeReaderFixture();
+    const node = {
+      id: 'set',
+      name: 'Known Set',
+      type: 'n8n-nodes-base.set',
+      typeVersion: 3.5,
+      position: [0, 0],
+      parameters: {
+        mode: 'manual',
+        includeOtherFields: false,
+        assignments: { assignments: [] },
+        options: {},
+      },
+    };
+    for (const body of [f.binding.body, f.workflow]) body.nodes.push(structuredClone(node));
+    f.binding.bodyHash = runtimeGraphHash(f.binding.body);
+    f.full.workflowData = {
+      id: f.workflow.id,
+      ...foundationRuntimeExecutionParameterCandidates(f.binding.body).nativeDefaultsAndSetOutput,
+    };
+    if (withTask) f.full.data.resultData.runData[node.name] = [{ data: { main: [[{ json: {} }]] } }];
+    return f;
+  }
+  const good = fixture(true);
+  assert.equal((await good.reader.read(good.args)).bodyHash, good.binding.bodyHash);
+  for (const tasks of [undefined, [], null, {}]) {
+    const bad = fixture(false);
+    if (tasks !== undefined) bad.full.data.resultData.runData['Known Set'] = tasks;
+    await assert.rejects(bad.reader.read(bad.args), fixed);
+  }
+});
+
+test('technical16 cleanup cannot qualify caller-built booleans or an ordinary live receipt', async () => {
+  const f = nativeReaderFixture();
+  for (const context of [
+    {},
+    {
+      kind: 'm03_technical16_cleanup_context',
+      qualifiedSideEffects: true,
+      executionIds: ['31131', '31130'],
+      canonicalWorkflowsVerified: 25,
+      settled: true,
+    },
+  ]) {
+    await assert.rejects(
+      f.reader.qualifyTechnical16Cleanup({ context }),
+      /FOUNDATION_NATIVE_CLEANUP_QUALIFICATION/,
+    );
+  }
+  assert.equal(f.calls.length, 0);
+  const ordinary = await f.reader.read(f.args);
+  assert.throws(
+    () => assertFoundationTechnical16CleanupQualification(ordinary),
+    /FOUNDATION_NATIVE_CLEANUP_QUALIFICATION/,
+  );
+  assert.throws(
+    () =>
+      assertFoundationTechnical16CleanupQualification(
+        Object.freeze({ ...ordinary, kind: 'foundation_technical16_cleanup_qualification' }),
+      ),
+    /FOUNDATION_NATIVE_CLEANUP_QUALIFICATION/,
+  );
 });
 
 test('pinned native mode is checked separately on current graph and executed snapshot', async () => {

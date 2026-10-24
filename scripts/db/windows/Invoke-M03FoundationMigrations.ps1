@@ -363,13 +363,89 @@ function Read-FoundationTechnical16Closed {
   return [pscustomobject]@{id=$provision.windowId;audience=$provision.packet.audience;commitSha=$provision.packet.commitSha;deploymentId=$provision.packet.deploymentId}
 }
 function Assert-FoundationTechnical16Settled($Expected) {
-  # Deliberately unavailable until the separate actual native-settlement result
-  # is reviewed and its exact SHA is pinned here. A root UI success is insufficient.
+  # Keep the actual artifact unavailable until its result and bytes are reviewed.
+  # The validator below checks evidence; it never performs a network operation.
   $settlementSha256=$null
   if($settlementSha256 -isnot [string] -or $settlementSha256 -cnotmatch '^[a-f0-9]{64}$'){throw 'blocked'}
   $path=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json'
   if((File-Hash $path) -cne $settlementSha256){throw 'blocked'}
-  throw 'blocked' # The actual typed settlement contract must be reviewed with that pin.
+  $value=Read-Json $path
+  Assert-Keys $value @('kind','version','environment','projectRef','technicalAttempt','windowId','sourceCommitSha','originalAttemptSha256','resolutionSha256','outerNativeExit','rawResult','cleanup','pins','usage')
+  foreach($key in @('kind','environment','projectRef','windowId','sourceCommitSha','originalAttemptSha256','resolutionSha256')){if($value.$key -isnot [string]){throw 'blocked'}}
+  foreach($key in @('version','technicalAttempt','outerNativeExit')){if($value.$key -isnot [int]){throw 'blocked'}}
+  if($value.kind -cne 'm03_technical16_native_settlement' -or $value.version -ne 1 -or $value.environment -cne 'dev' -or $value.projectRef -cne $projectRef -or $value.technicalAttempt -ne 16 -or $value.windowId -cne '4c602549-2c42-4ec3-9328-714d7cb66a77' -or $Expected.id -cne $value.windowId -or $Expected.commitSha -cne '5087d4d93d2f6ffdca0bc0096b365723005446fc' -or $value.sourceCommitSha -cne $Expected.commitSha -or $value.outerNativeExit -ne 0 -or $value.originalAttemptSha256 -cne 'd6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb' -or $value.resolutionSha256 -cne 'e0c919ab2a12aa9306be3d2b3656b7d0c43d97c21ddc6376ffa12bbfbb89d07b'){throw 'blocked'}
+  $original='milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-reconciliation-20261024.json'
+  $resolution='milestones/M03-n8n-foundation/evidence/technical16-executed-parameters-resolution-20261024.json'
+  $attempt='scripts/n8n/out/foundation/technical16-native-cleanup-attempt.json'
+  $journal='scripts/n8n/out/foundation/technical16-native-cleanup.jsonl'
+  $result='scripts/n8n/out/foundation/technical16-native-cleanup-result.json'
+  Assert-Keys $value.pins @($original,$resolution,$attempt,$journal,$result)
+  foreach($pin in $value.pins.PSObject.Properties){if($pin.Value -isnot [string] -or $pin.Value -cnotmatch '^[a-f0-9]{64}$' -or (File-Hash (Assert-Path $repo $pin.Name)) -cne $pin.Value){throw 'blocked'}}
+  if($value.pins.$original -cne $value.originalAttemptSha256 -or $value.pins.$resolution -cne $value.resolutionSha256){throw 'blocked'}
+  $raw=$value.rawResult
+  $innerKeys=@('kind','version','environment','projectRef','windowId','sourceCommitSha','status','requestCount','controlRequestCount','managementAttempts','controlAttempts','combinedAttempts','canonicalWorkflowsVerified','qualifiedSideEffects','recordsDeleted','deleteAcknowledged','absenceVerified','remoteWorkSettled','networkCompletionVerified','originalPublicRecordsUnchanged','nativeAcceptanceProven','originalMaskedFirstFailureRecovered','executionCount','actorStarts','workflowWrites','credentialWrites','migrationOperations','diagnosticStage','diagnosticCode')
+  Assert-Keys $raw ($innerKeys+@('nativeExit','childClosed','credentialChildrenClosed','parentLockDeleted','privateRead','persistentManagementRetained'))
+  foreach($key in @('kind','environment','projectRef','windowId','sourceCommitSha','status','diagnosticStage','diagnosticCode')){if($raw.$key -isnot [string]){throw 'blocked'}}
+  foreach($key in @('version','requestCount','controlRequestCount','managementAttempts','controlAttempts','combinedAttempts','canonicalWorkflowsVerified','recordsDeleted','executionCount','actorStarts','workflowWrites','credentialWrites','migrationOperations','nativeExit')){if($raw.$key -isnot [int]){throw 'blocked'}}
+  $n=$raw.requestCount
+  if($n -lt 4 -or $n -gt 158 -or $raw.kind -cne 'm03_technical16_native_cleanup' -or $raw.version -ne 1 -or $raw.environment -cne 'dev' -or $raw.projectRef -cne $projectRef -or $raw.windowId -cne $value.windowId -or $raw.sourceCommitSha -cne $value.sourceCommitSha -or $raw.status -cne 'native_cleanup_verified' -or $raw.controlRequestCount -ne $n -or $raw.managementAttempts -ne 829+$n -or $raw.controlAttempts -ne 960+$n -or $raw.combinedAttempts -ne 1789+2*$n -or $raw.canonicalWorkflowsVerified -ne 25 -or $raw.recordsDeleted -ne 2 -or $raw.nativeExit -ne 0 -or $raw.diagnosticStage -cne 'complete' -or $raw.diagnosticCode -cne 'none'){throw 'blocked'}
+  foreach($key in @('executionCount','actorStarts','workflowWrites','credentialWrites','migrationOperations')){if($raw.$key -ne 0){throw 'blocked'}}
+  foreach($key in @('qualifiedSideEffects','deleteAcknowledged','absenceVerified','remoteWorkSettled','networkCompletionVerified','originalPublicRecordsUnchanged','childClosed','credentialChildrenClosed','parentLockDeleted','privateRead','persistentManagementRetained')){if($raw.$key -isnot [bool] -or $raw.$key -ne $true){throw 'blocked'}}
+  foreach($key in @('nativeAcceptanceProven','originalMaskedFirstFailureRecovered')){if($raw.$key -isnot [bool] -or $raw.$key -ne $false){throw 'blocked'}}
+  $inner=Read-Json (Assert-Path $repo $result);Assert-Keys $inner $innerKeys
+  foreach($key in $innerKeys){if($inner.$key.GetType() -ne $raw.$key.GetType() -or $inner.$key -cne $raw.$key){throw 'blocked'}}
+  Assert-Keys $value.cleanup @('parentAbsent','childAbsent','parentLockAbsent','runtimeLockAbsent','persistentManagementRetained','privateContentsRead','networkRequests')
+  foreach($key in @('parentAbsent','childAbsent','parentLockAbsent','runtimeLockAbsent','persistentManagementRetained')){if($value.cleanup.$key -isnot [bool] -or $value.cleanup.$key -ne $true){throw 'blocked'}}
+  if($value.cleanup.privateContentsRead -isnot [bool] -or $value.cleanup.privateContentsRead -ne $false -or $value.cleanup.networkRequests -isnot [int] -or $value.cleanup.networkRequests -ne 0){throw 'blocked'}
+  Assert-Keys $value.usage @('management','control','combined','vercel','nativeExecutionsReserved','actorStarts','providerReads')
+  foreach($key in @('management','control','combined','vercel','nativeExecutionsReserved','actorStarts','providerReads')){if($value.usage.$key -isnot [int]){throw 'blocked'}}
+  if($value.usage.management -ne $raw.managementAttempts -or $value.usage.control -ne $raw.controlAttempts -or $value.usage.combined -ne $raw.combinedAttempts -or $value.usage.vercel -ne 184 -or $value.usage.nativeExecutionsReserved -ne 3 -or $value.usage.actorStarts -ne 0 -or $value.usage.providerReads -ne 0){throw 'blocked'}
+  $once=Read-Json (Assert-Path $repo $attempt)
+  Assert-Keys $once @('kind','version','resolutionSha256','executionIds','processId','parentProcessId','usage','maximumRequests','maximumControlRequests','at')
+  foreach($key in @('kind','resolutionSha256','at')){if($once.$key -isnot [string]){throw 'blocked'}}
+  if($once.executionIds -isnot [Array] -or @($once.executionIds|Where-Object{$_ -isnot [string]}).Count -ne 0){throw 'blocked'}
+  if($once.kind -cne 'm03_technical16_cleanup_once' -or $once.version -isnot [int] -or $once.version -ne 1 -or $once.resolutionSha256 -cne $value.resolutionSha256 -or $once.executionIds -isnot [Array] -or ($once.executionIds -join ',') -cne '31131,31130' -or $once.maximumRequests -isnot [int] -or $once.maximumRequests -ne 158 -or $once.maximumControlRequests -isnot [int] -or $once.maximumControlRequests -ne 158){throw 'blocked'}
+  foreach($key in @('processId','parentProcessId')){if($once.$key -isnot [int] -or $once.$key -le 0 -or @(Get-CimInstance -ClassName Win32_Process -Filter ('ProcessId = '+$once.$key) -Property ProcessId -ErrorAction Stop).Count -ne 0){throw 'blocked'}}
+  if($once.usage.management -isnot [int] -or $once.usage.management -ne 829 -or $once.usage.control -isnot [int] -or $once.usage.control -ne 960 -or $once.usage.combined -isnot [int] -or $once.usage.combined -ne 1789){throw 'blocked'}
+  $text=[IO.File]::ReadAllText((Assert-Path $repo $journal))
+  if(-not $text.EndsWith("`n") -or $text.Length -gt 1048576){throw 'blocked'}
+  $rows=@($text.TrimEnd("`n") -split "`n"|ForEach-Object{ConvertFrom-Json -InputObject $_})
+  foreach($row in $rows){if($row.event -isnot [string]){throw 'blocked'}}
+  $header=$rows[0];Assert-Keys $header @('event','version','resolutionSha256','originalAttemptSha256')
+  if($header.event -cne 'technical16_cleanup_header' -or $header.version -isnot [int] -or $header.version -ne 1 -or $header.resolutionSha256 -cne $value.resolutionSha256 -or $header.originalAttemptSha256 -cne $value.originalAttemptSha256){throw 'blocked'}
+  if(@($rows|Where-Object{$_.event -cnotin @('technical16_cleanup_header','technical16_http_intent','native_cleanup_evidence','native_cleanup_intent','native_cleanup_absence_intent','native_cleanup_result')}).Count -ne 0){throw 'blocked'}
+  $http=@($rows|Where-Object{$_.event -ceq 'technical16_http_intent'})
+  if($http.Count -ne $n -or $rows.Count -ne $n+9 -or @($rows|Where-Object{$_.event -ceq 'technical16_cleanup_header'}).Count -ne 1 -or @($rows|Where-Object{$_.event -ceq 'native_cleanup_evidence'}).Count -ne 2){throw 'blocked'}
+  $bindingsPath=Assert-Path $repo 'n8n/foundation/bindings.dev.json'
+  if((File-Hash $bindingsPath) -cne '89081f429a25e454dd098365debacc681b2a65d7c3d2b60f372e87be8897a3f3'){throw 'blocked'}
+  $bindings=Read-Json $bindingsPath;$knownWorkflowIds=@($bindings.workflowRefs.PSObject.Properties|ForEach-Object{$_.Value.id})
+  if($knownWorkflowIds.Count -ne 25 -or @($knownWorkflowIds|Select-Object -Unique).Count -ne 25){throw 'blocked'}
+  for($i=0;$i -lt $n;$i++){
+    $row=$http[$i];$keys=@('event','ordinal','kind','workflowId','managementAttempts','controlAttempts','at');if($null -ne $row.PSObject.Properties['executionId']){$keys+='executionId'};Assert-Keys $row $keys
+    foreach($key in @('kind','workflowId','at')){if($row.$key -isnot [string]){throw 'blocked'}}
+    foreach($key in @('ordinal','managementAttempts','controlAttempts')){if($row.$key -isnot [int]){throw 'blocked'}}
+    if($row.ordinal -ne $i+1 -or $row.managementAttempts -ne 830+$i -or $row.controlAttempts -ne 961+$i -or $row.kind -cnotin @('workflow','metadata','full','discovery','delete','absence') -or $row.workflowId -isnot [string] -or $row.workflowId -cnotin $knownWorkflowIds){throw 'blocked'}
+    if($row.kind -cin @('metadata','full','delete','absence')){if($row.executionId -isnot [string] -or ($row.executionId -ceq '31130' -and $row.workflowId -cne 'MzimjpsuyPuK7SKe') -or ($row.executionId -ceq '31131' -and $row.workflowId -cne '4JMHLDBSdgGxhPlk') -or $row.executionId -cnotin @('31130','31131')){throw 'blocked'}}elseif($null -ne $row.PSObject.Properties['executionId']){throw 'blocked'}
+  }
+  $canonical=@($http|Where-Object{$_.kind -ceq 'workflow'});$discovery=@($http|Where-Object{$_.kind -ceq 'discovery'})
+  if($canonical.Count -ne 25 -or @($canonical.workflowId|Select-Object -Unique).Count -ne 25 -or $discovery.Count -lt 50 -or $discovery.Count -gt 100 -or @($discovery.workflowId|Select-Object -Unique).Count -ne 25 -or @($http|Where-Object{$_.kind -ceq 'metadata'}).Count -ne 4 -or @($http|Where-Object{$_.kind -ceq 'full'}).Count -ne 2){throw 'blocked'}
+  foreach($kind in @('native_cleanup_intent','native_cleanup_absence_intent','native_cleanup_result')){
+    $entries=@($rows|Where-Object{$_.event -ceq $kind});if($entries.Count -ne 2){throw 'blocked'}
+    for($i=0;$i -lt 2;$i++){
+      $row=$entries[$i];$id=@('31131','31130')[$i];$workflow=@('4JMHLDBSdgGxhPlk','MzimjpsuyPuK7SKe')[$i]
+      foreach($key in @('executionId','workflowId','batchId','caseId')){if($row.$key -isnot [string]){throw 'blocked'}}
+      if($row.executionId -cne $id -or $row.workflowId -cne $workflow -or $row.batchId -cne 'technical16-postclose-native-cleanup' -or $row.caseId -cne 'dispatch.vimeo-reconciliation'){throw 'blocked'}
+      if($kind -ceq 'native_cleanup_result'){
+        if($row.state -cne 'native_record_deleted'){throw 'blocked'}
+        foreach($key in @('deleteAcknowledged','absenceVerified')){if($row.$key -isnot [bool] -or -not $row.$key){throw 'blocked'}}
+        if($row.residual -isnot [bool] -or $row.residual){throw 'blocked'}
+      }elseif($row.ordinal -isnot [int] -or $row.ordinal -ne $i+1){throw 'blocked'}
+    }
+  }
+  $writes=@($http|Where-Object{$_.kind -cin @('delete','absence')})
+  if($writes.Count -ne 4){throw 'blocked'}
+  for($i=0;$i -lt 4;$i++){if($writes[$i].kind -cne @('delete','absence','delete','absence')[$i] -or $writes[$i].executionId -cne @('31131','31131','31130','31130')[$i] -or $writes[$i].workflowId -cne @('4JMHLDBSdgGxhPlk','4JMHLDBSdgGxhPlk','MzimjpsuyPuK7SKe','MzimjpsuyPuK7SKe')[$i]){throw 'blocked'}}
+  return $value
 }
 function Foundation-Technical16FamilyPredicate {
   return @'

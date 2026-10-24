@@ -114,6 +114,30 @@ export const foundationProjectVerifiedRestoredRuntime = Object.freeze({
   setupMaximum: 224,
   proposedSetupMaximum: 224,
 });
+export const foundationProjectVerifiedTechnical17Runtime = Object.freeze({
+  windowId: 'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
+  sourceCommitSha: 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80',
+  sourceCi: 40116191618,
+  allFiveCiJobsPassed: true,
+  vercelPassed: true,
+  setupMaximum: 256,
+  proposedSetupMaximum: 256,
+});
+const technical17Recovery = Object.freeze({
+  actualRelative:
+    'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-reconciliation-20261024.json',
+  actualSha256: 'd6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb',
+  custodyRelative: 'milestones/M03-n8n-foundation/evidence/technical16-postclose-custody-20261024.json',
+  custodySha256: 'a0bf0dccf6bcf19027d1aba99601fe61a117fec8900128800d3bf3cfa63874cf',
+  approvalRelative:
+    'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-snapshot-diagnosis-approval-20261024.json',
+  approvalSha256: 'd10aa18e2efde3d4cad9279891dba45b8c5ede19ef1dfc487ec9acbc79d43c2e',
+  packetRelative:
+    'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-snapshot-diagnosis-20261024.md',
+  packetSha256: 'aa0a1a106ab2ade523368f1bdfc917aa66a58280916ffb8ba13e5b7dfecad28e',
+  settlementSha256: null,
+  archiveSha256: null,
+});
 // Selection names the next dev target. Its larger capacities remain unavailable
 // until the separately pinned allocation is validated below.
 const activeRuntime = (recovery) =>
@@ -465,6 +489,7 @@ function context(options = {}, dependencies = {}) {
   return { io, clock, physical, file, parent, create, pid, ppid };
 }
 function checkpoint(x) {
+  assertTechnical17Prerequisites(x);
   if (typeof c.checkpointSha256 !== 'string' || hash(x.file(c.checkpointRelative)) !== c.checkpointSha256)
     fail();
   const p = JSON.parse(x.file(c.checkpointRelative));
@@ -567,6 +592,23 @@ function checkpoint(x) {
   if (x.recovery?.closedWindow) assertSetupAllocationApproval(x);
   recoveryPreflight(x);
   return p;
+}
+function assertTechnical17Prerequisites(x) {
+  const actual = x.file(technical17Recovery.actualRelative, { optional: true });
+  if (actual === null) return;
+  for (const [relative, sha256] of [
+    [technical17Recovery.actualRelative, technical17Recovery.actualSha256],
+    [technical17Recovery.custodyRelative, technical17Recovery.custodySha256],
+    [technical17Recovery.approvalRelative, technical17Recovery.approvalSha256],
+    [technical17Recovery.packetRelative, technical17Recovery.packetSha256],
+  ])
+    if (hash(x.file(relative)) !== sha256) fail();
+  // Approval raises limits only. It does not qualify the failed execution tree,
+  // archive C999 or reset its counters. Keep every old profile immutable while
+  // the actual settlement/archive contract and complete charged cleanup journal
+  // are unavailable. Reviewed real pins and replay are required before minting17.
+  if (technical17Recovery.settlementSha256 === null || technical17Recovery.archiveSha256 === null) fail();
+  fail();
 }
 function reconciledEffectfulAttempt(x) {
   const text = x.file(effectfulRecovery.receiptRelative, { optional: true });
@@ -6489,6 +6531,31 @@ export function assertFoundationLiveProjectVerifiedContinuationProof(p, { claime
 export function foundationProjectVerifiedContinuationResumeCheckpoint(p) {
   assertFoundationLiveProjectVerifiedContinuationProof(p, { claimed: true });
   return proofs.get(p).resume;
+}
+export function foundationProjectVerifiedContinuationRequestCaps(p) {
+  const r = foundationProjectVerifiedContinuationResumeCheckpoint(p) ?? {};
+  assertFoundationProjectVerifiedContinuationJournalPrefixes(p);
+  const management = r.managementMaximum ?? 512;
+  if (management === 1408) {
+    if (
+      p.windowId !== foundationProjectVerifiedTechnical17Runtime.windowId ||
+      p.sourceCommitSha !== foundationProjectVerifiedTechnical17Runtime.sourceCommitSha ||
+      !Number.isSafeInteger(r.technicalAttemptOrdinal) ||
+      r.technicalAttemptOrdinal < 17 ||
+      r.controlMaximum !== 3456 ||
+      r.combinedMaximum !== 4864 ||
+      r.setupMaximum !== 256
+    )
+      fail();
+    return Object.freeze({ management: 1408, control: 3456, combined: 4864 });
+  }
+  if (
+    ![512, 576, 640, 704, 832, 1024].includes(management) ||
+    (r.controlMaximum !== undefined && r.controlMaximum !== 2048) ||
+    (r.combinedMaximum !== undefined && r.combinedMaximum !== 2560)
+  )
+    fail();
+  return Object.freeze({ management, control: 2048, combined: 2560 });
 }
 export function foundationProjectVerifiedContinuationRestoredBaselineVersions(p) {
   assertFoundationLiveProjectVerifiedContinuationProof(p, { claimed: true });

@@ -12,6 +12,17 @@ import {
   foundationLiveSetupRequestPlan,
 } from './foundation-live-setup.mjs';
 
+test('technical17 Vercel capacity256 is planning only and never a caller supplied setup grant', () => {
+  const p = foundationLiveSetupRequestPlan(184, 256);
+  assert.equal(p.buildPollLimit, 12);
+  assert.equal(p.cleanupReserve, 18);
+  assert.equal(184 + p.maximumNewPrepareRequests + p.cleanupReserve, 228);
+  assert.throws(() =>
+    fixture({ maximumRequests: 256, activeWindowId: 'edbc6d11-7c1f-43a7-b745-1ded06deb29f' }),
+  );
+  assert.throws(() => foundationLiveSetupRequestPlan(184, 257));
+});
+
 // Scripted Vercel API boundaries only: no actual deployment, key or network.
 const scope = foundationLiveSetupScope;
 const sha = 'f'.repeat(40),

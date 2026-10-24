@@ -15,6 +15,48 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('technical17 allocation stays unavailable until actual16 settlement and archive are independently pinned', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ unadmittedWf00Reconciled: true });
+  try {
+    assert.deepEqual(f.module.foundationProjectVerifiedTechnical17Runtime, {
+      windowId: 'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
+      sourceCommitSha: 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80',
+      sourceCi: 40116191618,
+      allFiveCiJobsPassed: true,
+      vercelPassed: true,
+      setupMaximum: 256,
+      proposedSetupMaximum: 256,
+    });
+    assert.equal(f.check().managementMaximum, 1024, 'historical proof retains its original cap');
+    const actual16 =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-reconciliation-20261024.json';
+    f.put(actual16, '{}\n');
+    assert.throws(() => f.check(), 'a later actual attempt cannot fall back to sibling16 authority');
+    unlinkSync(join(f.directory, actual16));
+    const proof = f.claim(f.admit());
+    assert.deepEqual(
+      f.scoped(() => f.module.foundationProjectVerifiedContinuationRequestCaps(proof)),
+      {
+        management: 1024,
+        control: 2048,
+        combined: 2560,
+      },
+    );
+    assert.throws(() =>
+      f.module.foundationProjectVerifiedContinuationRequestCaps({
+        ...proof,
+        managementMaximum: 1408,
+        controlMaximum: 3456,
+        combinedMaximum: 4864,
+      }),
+    );
+    for (const proof of [{}, { managementMaximum: 1408, controlMaximum: 3456, combinedMaximum: 4864 }])
+      assert.throws(() => f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof));
+  } finally {
+    f.cleanup();
+  }
+});
+
 test('reconciled unadmitted WF00 carries527/846 and native1 without changing journals or SQL admissions before sibling16', async () => {
   const f = await syntheticProjectVerifiedContinuation({ unadmittedWf00Reconciled: true });
   try {

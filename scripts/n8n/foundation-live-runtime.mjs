@@ -64,6 +64,7 @@ import {
   foundationProjectVerifiedContinuationCheckpoint,
   assertFoundationProjectVerifiedContinuationJournalPrefixes,
   foundationProjectVerifiedContinuationResumeCheckpoint,
+  foundationProjectVerifiedContinuationRequestCaps,
 } from './foundation-live-project-verified-continuation.mjs';
 
 const fail = () => {
@@ -157,8 +158,10 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
   const verifiedCheckpoint = verified
     ? foundationProjectVerifiedContinuationResumeCheckpoint(verified)
     : null;
-  const managementMaximum = verifiedCheckpoint?.managementMaximum ?? 512;
-  if (![512, 576, 640, 704, 832, 1024].includes(managementMaximum)) fail();
+  const requestCaps = verified
+    ? foundationProjectVerifiedContinuationRequestCaps(verified)
+    : { management: 512, control: 2048, combined: 2560 };
+  const managementMaximum = requestCaps.management;
   const sharedMaximum = managementMaximum !== 512;
   let observedControlAttempts = verifiedCheckpoint?.aggregateControlAttempts;
   const readControlAttempts = () => {
@@ -168,7 +171,8 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     } catch {
       fail();
     }
-    if (!Number.isSafeInteger(value) || value < observedControlAttempts || value > 2048) fail();
+    if (!Number.isSafeInteger(value) || value < observedControlAttempts || value > requestCaps.control)
+      fail();
     observedControlAttempts = value;
     return value;
   };
@@ -177,7 +181,7 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
       typeof dependencies.controlAttempts !== 'function' ||
       !Number.isSafeInteger(observedControlAttempts) ||
       observedControlAttempts < 0 ||
-      observedControlAttempts > 2048
+      observedControlAttempts > requestCaps.control
     )
       fail();
     readControlAttempts();
@@ -301,7 +305,7 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
             stopped = true;
             fail();
           }
-          if (attempts + carriedAttempts + controlAttempts >= 2560) fail();
+          if (attempts + carriedAttempts + controlAttempts >= requestCaps.combined) fail();
         }
         try {
           const ordinal = attempts + 1;
@@ -419,7 +423,7 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
   const managementMaximum = budget.snapshot().maximum;
   if (scope.sourceCommitSha !== input.setup.sourceCommitSha || scope.deadlineAt !== input.deadlineAt) fail();
   if (
-    (managementMaximum === 1024 || Object.hasOwn(input, 'projectVerifiedContinuationProof')) &&
+    ([1024, 1408].includes(managementMaximum) || Object.hasOwn(input, 'projectVerifiedContinuationProof')) &&
     scope.projectVerifiedContinuationProof !== input.projectVerifiedContinuationProof
   )
     fail();
@@ -543,7 +547,7 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
           hostedActions: 0,
           setupDriftGuardGetCount: baselinePreflightReceipt === undefined ? 25 : 0,
           managementMaximum,
-          controlMaximum: 2048,
+          controlMaximum: controlBudget.snapshot().maximum,
         }),
       setup: () =>
         exclusive(() => {
@@ -670,7 +674,7 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
           managementAttempts: budget.snapshot().attempts,
           managementMaximum,
           controlAttempts: controlBudget.snapshot().attempts,
-          controlMaximum: 2048,
+          controlMaximum: controlBudget.snapshot().maximum,
           pendingTransport: transport.state(),
           closed,
         }),

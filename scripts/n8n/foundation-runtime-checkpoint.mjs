@@ -308,6 +308,181 @@ export function foundationRuntimePublishedHash(body) {
     .update(graphCanonical({ nodes: graphNodes(body.nodes), connections: body.connections }))
     .digest('hex');
 }
+
+// n8n2.43.5 Workflow constructs execution snapshots with default-expanded node
+// parameters (workflow.ts101-110 / NodeHelpers.getNodeParameters(true,false)).
+// This is an expected-source-only model for the reviewed M03 types, not a
+// sanitizer for received snapshots or a relaxation of current-workflow fences.
+export function foundationRuntimeExecutionParameterCandidates(expectedBody) {
+  foundationRuntimeGraphHash(expectedBody);
+  const settings = new Set([
+    'executionOrder',
+    'timezone',
+    'executionTimeout',
+    'callerPolicy',
+    'callerIds',
+    'availableInMCP',
+    'saveDataErrorExecution',
+    'saveDataSuccessExecution',
+    'saveManualExecutions',
+    'saveExecutionProgress',
+    'errorWorkflow',
+    'timeSavedPerExecution',
+    'executionConcurrency',
+    'binaryMode',
+  ]);
+  if (Object.keys(expectedBody.settings).some((k) => !settings.has(k))) graphBlocked();
+  const types = {
+      executeWorkflowTrigger: [1.3, ['inputSource', 'workflowInputs', 'events']],
+      manualTrigger: [1, ['notice']],
+      code: [2, ['mode', 'jsCode', 'language', 'notice']],
+      set: [3.5, ['mode', 'includeOtherFields', 'assignments', 'options', 'duplicateItem']],
+      httpRequest: [
+        4.5,
+        [
+          'authentication',
+          'genericAuthType',
+          'nodeCredentialType',
+          'method',
+          'url',
+          'sendBody',
+          'specifyBody',
+          'jsonBody',
+          'sendHeaders',
+          'sendQuery',
+          'queryParameters',
+          'options',
+          'curlImport',
+          'provideSslCertificates',
+          'contentType',
+          'infoMessage',
+          'specifyQuery',
+        ],
+      ],
+      if: [2.3, ['conditions', 'options', 'looseTypeValidation']],
+      executeWorkflow: [1.4, ['mode', 'options', 'source', 'workflowId', 'workflowInputs', 'operation']],
+      errorTrigger: [1, ['notice']],
+      scheduleTrigger: [
+        1.4,
+        ['misfireGraceSeconds', 'misfirePolicy', 'rule', 'notice', 'skipDurableScheduler'],
+      ],
+      switch: [3.4, ['mode', 'options', 'rules', 'looseTypeValidation']],
+      webhook: [
+        2.2,
+        [
+          'authentication',
+          'httpMethod',
+          'options',
+          'path',
+          'responseMode',
+          'multipleMethods',
+          'webhookNotice',
+        ],
+      ],
+      wait: [1.1, ['amount', 'resume', 'unit']],
+      respondToWebhook: [
+        1.5,
+        ['options', 'respondWith', 'responseBody', 'enableResponseOutput', 'generalNotice', 'webhookNotice'],
+      ],
+    },
+    nativeDefaults = structuredClone(expectedBody);
+  let setIndex = null;
+  for (const [index, node] of nativeDefaults.nodes.entries()) {
+    const type = node.type?.startsWith('n8n-nodes-base.') ? node.type.slice(15) : null,
+      schema = types[type],
+      p = node.parameters;
+    if (
+      !schema ||
+      node.typeVersion !== schema[0] ||
+      !graphObject(p) ||
+      Object.keys(p).some((k) => !schema[1].includes(k))
+    )
+      graphBlocked();
+    const add = (k, value) => {
+      if (!Object.hasOwn(p, k)) p[k] = value;
+    };
+    switch (type) {
+      case 'executeWorkflowTrigger':
+        if (!['workflowInputs', 'passthrough'].includes(p.inputSource)) graphBlocked();
+        add('events', 'worklfow_call');
+        if (p.inputSource === 'passthrough') delete p.workflowInputs;
+        break;
+      case 'manualTrigger':
+      case 'errorTrigger':
+        add('notice', '');
+        break;
+      case 'code':
+        add('language', 'javaScript');
+        add('notice', '');
+        break;
+      case 'set':
+        if (setIndex !== null || !graphObject(p.options)) graphBlocked();
+        setIndex = index;
+        add('duplicateItem', false);
+        break;
+      case 'if':
+      case 'switch':
+        add('looseTypeValidation', false);
+        break;
+      case 'executeWorkflow':
+        add('operation', 'call_workflow');
+        break;
+      case 'scheduleTrigger':
+        if (
+          !graphObject(p.rule) ||
+          !Array.isArray(p.rule.interval) ||
+          p.rule.interval.length > 100 ||
+          p.rule.interval.some((v) => !graphObject(v))
+        )
+          graphBlocked();
+        add('notice', '');
+        add('skipDurableScheduler', false);
+        for (const row of p.rule.interval) if (!Object.hasOwn(row, 'notice')) row.notice = '';
+        break;
+      case 'httpRequest':
+        add('curlImport', '');
+        add('provideSslCertificates', false);
+        add('infoMessage', '');
+        if (p.sendBody === true) add('contentType', 'json');
+        if (p.sendQuery === true) add('specifyQuery', 'keypair');
+        // Native displayOptions hide maxRedirects when redirects are disabled.
+        if (p.options?.redirect?.redirect?.followRedirects === false)
+          delete p.options.redirect.redirect.maxRedirects;
+        break;
+      case 'webhook':
+        add('multipleMethods', false);
+        add('webhookNotice', '');
+        break;
+      case 'respondToWebhook':
+        add('enableResponseOutput', false);
+        add('generalNotice', '');
+        add('webhookNotice', '');
+        break;
+      case 'wait':
+        break;
+      default:
+        graphBlocked();
+    }
+  }
+  let nativeDefaultsAndSetOutput = null;
+  if (setIndex !== null) {
+    const p = nativeDefaults.nodes[setIndex].parameters;
+    if (p.includeOtherFields === false && !Object.hasOwn(p.options, 'include')) {
+      // SetV2.execute340-341 may derive this exact option. A received snapshot
+      // may use this candidate only with actual runData for this known Set.
+      nativeDefaultsAndSetOutput = structuredClone(nativeDefaults);
+      nativeDefaultsAndSetOutput.nodes[setIndex].parameters.options.include = 'none';
+    }
+  }
+  const freeze = (v) => {
+    if (v && typeof v === 'object') {
+      Object.values(v).forEach(freeze);
+      Object.freeze(v);
+    }
+    return v;
+  };
+  return freeze({ nativeDefaults, nativeDefaultsAndSetOutput });
+}
 export const foundationRuntimeBaselineFailureCodes = Object.freeze([
   'expected_shape',
   'dto_shape',

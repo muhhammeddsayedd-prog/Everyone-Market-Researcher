@@ -5,6 +5,8 @@ import {
   foundationRuntimeCheckpoint,
   foundationRuntimeNativeReadonlyPin,
   foundationRuntimeObservedGraphHash,
+  foundationRuntimeExecutionParameterCandidates,
+  diagnoseFoundationRuntimeBaseline,
 } from './foundation-runtime-checkpoint.mjs';
 import { freezeRuntimeValue } from './foundation-runtime-plan.mjs';
 import * as runtimeControl from './foundation-runtime-control.mjs';
@@ -25,6 +27,7 @@ export const foundationNativeReaderLimits = Object.freeze({
 });
 const nativeReceipts = new WeakSet(),
   metadataReceipts = new WeakMap(),
+  technical16Qualifications = new WeakMap(),
   readers = new WeakSet();
 const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const identifier = (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(v);
@@ -115,6 +118,7 @@ export const foundationNativeFailureCodes = Object.freeze([
   'DISCOVERY_CURSOR',
   'DISCOVERY_INCOMPLETE',
   'CLEANUP_ARGS',
+  'CLEANUP_QUALIFICATION',
   'CLEANUP_HTTP',
   'DELETE_ACK',
   'WEBHOOK_ARGS',
@@ -180,6 +184,33 @@ export function assertFoundationNativeMetadataReceipt(receipt) {
 export function assertFoundationNativeReceipt(receipt) {
   if (!nativeReceipts.has(receipt)) fail('RECEIPT_BRAND');
   return receipt;
+}
+export function assertFoundationTechnical16CleanupQualification(qualification, { reader } = {}) {
+  const value = technical16Qualifications.get(qualification);
+  if (
+    !value ||
+    !Object.isFrozen(qualification) ||
+    (reader !== undefined && value.reader !== reader) ||
+    value.now() < value.observedAt ||
+    value.now() - value.observedAt > foundationNativeReaderLimits.metadataFreshMs
+  )
+    fail('CLEANUP_QUALIFICATION');
+  value.assertCurrent();
+  // Pin verification can perform bounded local IO. Freshness must still hold
+  // after it, immediately before a new mutation can cross the transport gate.
+  if (
+    value.now() < value.observedAt ||
+    value.now() - value.observedAt > foundationNativeReaderLimits.metadataFreshMs
+  )
+    fail('CLEANUP_QUALIFICATION');
+  return qualification;
+}
+export function claimFoundationTechnical16CleanupQualification(qualification, { reader } = {}) {
+  assertFoundationTechnical16CleanupQualification(qualification, { reader });
+  const value = technical16Qualifications.get(qualification);
+  if (value.claimed) fail('CLEANUP_QUALIFICATION');
+  value.claimed = true;
+  return qualification;
 }
 
 export function createFoundationNativeReader({
@@ -522,6 +553,24 @@ export function createFoundationNativeReader({
         ? { nativeReadonlySettings: binding.nativeReadonlySettings }
         : {}),
     });
+  }
+  function executedGraphMatches(snapshot, key, binding, runData) {
+    const observed = observedGraphHash(snapshot, key, binding);
+    if (observed === binding.bodyHash) return true;
+    const candidates = foundationRuntimeExecutionParameterCandidates(binding.body);
+    if (observed === runtimeControl.runtimeGraphHash(candidates.nativeDefaults)) return true;
+    if (candidates.nativeDefaultsAndSetOutput !== null) {
+      const setters = binding.body.nodes.filter((node) => node.type === 'n8n-nodes-base.set');
+      const tasks = setters.length === 1 && runData?.[setters[0].name];
+      if (
+        Array.isArray(tasks) &&
+        tasks.length > 0 &&
+        tasks.every(object) &&
+        observed === runtimeControl.runtimeGraphHash(candidates.nativeDefaultsAndSetOutput)
+      )
+        return true;
+    }
+    return false;
   }
   function metadataProjection(row, key, id, { binding, expectedMode, intentAt, list = false } = {}) {
     const workflowId = scope(key);
@@ -884,7 +933,398 @@ export function createFoundationNativeReader({
     );
     bindingFor(key, b);
   }
+  function fullProjection(dto, status, args, b, m, expectedTraces = null) {
+    if (status !== 200) fail(status === 404 ? 'NOT_FOUND' : 'HTTP');
+    const projected = metadataProjection(dto, args.workflowKey, args.executionId, {
+      ...args,
+      binding: b,
+    });
+    const original = Object.fromEntries(Object.keys(projected).map((k) => [k, m[k]]));
+    if (!isDeepStrictEqual(projected, original)) fail('OBSERVATION_CHANGED');
+    const snapshot = dto.workflowData;
+    // Pinned toWorkflowSnapshot persists source fields only; its native
+    // DTO has no activeVersionId. That fence belongs to currentBinding
+    // above, while execution identity uses workflowVersionId and this
+    // persisted source-body hash.
+    if (
+      !object(snapshot) ||
+      snapshot.id !== scope(args.workflowKey) ||
+      !executedGraphMatches(snapshot, args.workflowKey, b, dto.data?.resultData?.runData) ||
+      !object(dto.data) ||
+      !object(dto.data.resultData) ||
+      !object(dto.data.resultData.runData) ||
+      Object.keys(dto.data.resultData.runData).some(
+        (name) => !b.body.nodes.some((node) => node.name === name),
+      )
+    )
+      fail('EXECUTED_BODY');
+    const executedPins = dto.data.resultData.pinData;
+    if (executedPins !== undefined) {
+      if (!object(executedPins)) fail('EXECUTED_PIN_DATA');
+      if (Object.keys(executedPins).length) {
+        // Pinned execute-workflow.tool's no-input ManualTrigger path
+        // creates this empty bootstrap item itself. It supplies no
+        // business data and is the sole accepted nonempty pin map.
+        const triggers = b.body.nodes.filter(
+          (n) =>
+            n.disabled !== true &&
+            [
+              'n8n-nodes-base.manualTrigger',
+              'n8n-nodes-base.scheduleTrigger',
+              'n8n-nodes-base.webhook',
+              'n8n-nodes-base.formTrigger',
+              '@n8n/n8n-nodes-langchain.chatTrigger',
+            ].includes(n.type),
+        );
+        const trigger = triggers[0],
+          items = trigger && executedPins[trigger.name];
+        if (
+          projected.mode !== 'manual' ||
+          b.body.settings.availableInMCP !== true ||
+          triggers.length !== 1 ||
+          trigger.type !== 'n8n-nodes-base.manualTrigger' ||
+          !exact(executedPins, [trigger.name]) ||
+          !Array.isArray(items) ||
+          items.length !== 1 ||
+          !exact(items[0], ['json']) ||
+          !exact(items[0].json, [])
+        )
+          fail('EXECUTED_PIN_DATA');
+      }
+    }
+    if (
+      dto.data.redactionInfo !== undefined &&
+      (!object(dto.data.redactionInfo) ||
+        dto.data.redactionInfo.isRedacted !== false ||
+        dto.data.redactionInfo.provisional === true)
+    )
+      fail('REDACTED_DATA');
+    const errorTarget = b.body.settings.errorWorkflow;
+    if (errorTarget !== undefined && errorTarget !== refs['WF-90'].id) fail('ERROR_DISPATCH_TARGET');
+    const errorDispatchExpected =
+      projected.mode !== 'manual' &&
+      projected.status === 'error' &&
+      errorTarget === refs['WF-90'].id &&
+      projected.workflowId !== refs['WF-90'].id;
+    let traceparent;
+    if (expectedTraces !== null) {
+      if (projected.mode !== 'webhook') fail('TRACE_MODE');
+      const hooks = b.body.nodes.filter(
+        (node) => node.type === 'n8n-nodes-base.webhook' && node.disabled !== true,
+      );
+      if (hooks.length !== 1) fail('TRACE_NODE');
+      const hook = hooks[0];
+      if (object(dto.data.resultData.pinData) && Object.hasOwn(dto.data.resultData.pinData, hook.name))
+        fail('TRACE_PINNED');
+      const runs = dto.data.resultData.runData[hook.name];
+      const actualTrace = runs?.[0]?.data?.main?.[0]?.[0]?.json?.headers?.traceparent;
+      if (
+        !Array.isArray(runs) ||
+        runs.length !== 1 ||
+        runs[0]?.data?.main?.[0]?.length !== 1 ||
+        !expectedTraces.includes(actualTrace)
+      )
+        fail('TRACE_MISMATCH');
+      traceparent = actualTrace;
+    }
+    const domain =
+      args.workflowKey === 'WF-99' &&
+      typeof b.runtimeAudience === 'string' &&
+      isFoundationNativeDomainProbeBody(b.body, { runtimeAudience: b.runtimeAudience });
+    const nativeDomainDenial = domain
+      ? projectFoundationNativeDomainDenial({
+          resultData: dto.data.resultData,
+          body: b.body,
+          runtimeAudience: b.runtimeAudience,
+        })
+      : null;
+    return {
+      ...projected,
+      ...links(dto.data, b, args.workflowKey, args.executionId),
+      nativeGatewayRequests: gatewayRequests(dto.data, b, args.workflowKey, args.executionId),
+      nativeProviderCallback: providerCallback(dto, b, args.workflowKey, projected.mode),
+      ...(nativeDomainDenial ? { nativeDomainDenial } : {}),
+      errorDispatchExpected,
+      ...(traceparent ? { traceparent } : {}),
+    };
+  }
+  async function discoverCandidates(args) {
+    if (
+      !exact(args, ['workflowKey', 'baselineIds']) ||
+      !Array.isArray(args.baselineIds) ||
+      args.baselineIds.length > 240 ||
+      args.baselineIds.some((id) => !executionId(id)) ||
+      new Set(args.baselineIds).size !== args.baselineIds.length
+    )
+      fail('ARGS');
+    const workflowId = scope(args.workflowKey),
+      rows = new Map(),
+      baseline = new Set(args.baselineIds);
+    for (const running of [false, true]) {
+      let cursor = null;
+      const cursors = new Set();
+      for (let page = 0; page < foundationNativeReaderLimits.discoveryPagesPerFilter; page++) {
+        const path =
+          '/api/v1/executions?workflowId=' +
+          workflowId +
+          '&includeData=false&limit=120' +
+          (running ? '&status=running' : '') +
+          (cursor ? '&cursor=' + encodeURIComponent(cursor) : '');
+        const next = await exchange(
+          path,
+          (dto, status) => {
+            if (
+              status !== 200 ||
+              !object(dto) ||
+              !Array.isArray(dto.data) ||
+              dto.data.length > 120 ||
+              !Object.hasOwn(dto, 'nextCursor') ||
+              (dto.nextCursor !== null &&
+                (typeof dto.nextCursor !== 'string' || !/^[\x21-\x7e]{1,400}$/.test(dto.nextCursor)))
+            )
+              fail('DISCOVERY');
+            for (const row of dto.data) {
+              if (!executionId(row?.id)) fail('DISCOVERY');
+              const r = metadataProjection(row, args.workflowKey, row.id, { list: true });
+              if (rows.has(r.executionId) && !isDeepStrictEqual(rows.get(r.executionId), r))
+                fail('DISCOVERY_CHANGED');
+              rows.set(r.executionId, r);
+            }
+            return dto.nextCursor;
+          },
+          { kind: 'discovery', workflowId },
+        );
+        if (next === null) {
+          cursor = null;
+          break;
+        }
+        if (cursors.has(next)) fail('DISCOVERY_CURSOR');
+        cursors.add(next);
+        cursor = next;
+      }
+      if (cursor !== null) fail('DISCOVERY_INCOMPLETE');
+    }
+    return freezeRuntimeValue({
+      kind: 'foundation_native_candidates',
+      workflowId,
+      key: args.workflowKey,
+      candidates: [...rows.values()].filter((r) => !baseline.has(r.executionId)),
+      paginationComplete: true,
+      adoptionProven: false,
+      drainProven: false,
+      observedAt: new Date(now()).toISOString(),
+      privacyChecked: true,
+      transportClosed: true,
+    });
+  }
+  function cleanupProjection(dto, status, receipt, operation) {
+    if (operation === 'absence') {
+      if (status !== 404 && status !== 200) fail('CLEANUP_HTTP');
+      if (status === 200) {
+        const current = metadataProjection(dto, receipt.key, receipt.executionId, {
+          expectedMode: receipt.mode,
+        });
+        if (current.versionId !== receipt.versionId) fail('VERSION');
+      }
+      return freezeRuntimeValue({
+        kind: 'foundation_native_absence',
+        executionId: receipt.executionId,
+        absent: status === 404,
+        transportClosed: true,
+        privacyChecked: true,
+      });
+    }
+    if (
+      status !== 200 ||
+      !object(dto) ||
+      !Number.isSafeInteger(dto.id) ||
+      dto.id <= 0 ||
+      String(dto.id) !== receipt.executionId
+    )
+      fail('DELETE_ACK');
+    const projected = metadataProjection({ ...dto, id: String(dto.id) }, receipt.key, receipt.executionId, {
+      expectedMode: receipt.mode,
+    });
+    for (const key of ['workflowId', 'versionId', 'mode', 'status', 'startedAt', 'stoppedAt'])
+      if (projected[key] !== receipt[key]) fail('DELETE_ACK');
+    return freezeRuntimeValue({
+      kind: 'foundation_native_delete_ack',
+      executionId: receipt.executionId,
+      workflowId: receipt.workflowId,
+      versionId: receipt.versionId,
+      mode: receipt.mode,
+      status: receipt.status,
+      startedAt: receipt.startedAt,
+      stoppedAt: receipt.stoppedAt,
+      acknowledged: true,
+      transportClosed: true,
+      privacyChecked: true,
+    });
+  }
   const reader = {
+    qualifyTechnical16Cleanup(args) {
+      return exclusive(async () => {
+        if (!exact(args, ['context'])) fail('CLEANUP_ARGS');
+        let context;
+        try {
+          const { assertTechnical16CleanupContext } = await import('./foundation-provision-cli.mjs');
+          context = assertTechnical16CleanupContext(args.context);
+        } catch {
+          fail('CLEANUP_QUALIFICATION');
+        }
+        if (context.bindings.projectId !== bindings.projectId || context.baseline.length !== 25)
+          fail('CLEANUP_QUALIFICATION');
+        const readOwned = async (key, id, binding, expectedMode) => {
+          const args = { workflowKey: key, executionId: id, expectedMode, intentAt: context.intentAt };
+          const metadata = await obtainMetadata(args, binding);
+          if (metadata.status !== 'success' || metadata.waitTill !== null) fail('CLEANUP_QUALIFICATION');
+          const output = await exchange(
+            '/api/v1/executions/' + id + '?includeData=true',
+            (dto, status) => fullProjection(dto, status, args, binding, metadata),
+            { kind: 'full', workflowId: scope(key), executionId: id },
+          );
+          return freezeRuntimeValue({
+            ...output,
+            bodyHash: binding.bodyHash,
+            observedAt: new Date(now()).toISOString(),
+            privacyChecked: true,
+            transportClosed: true,
+          });
+        };
+        const root = await readOwned('WF-00', '31130', context.rootBinding, 'manual');
+        const child = await readOwned('WF-10', '31131', context.childBinding, 'integrated');
+        if (
+          root.nativeParent !== null ||
+          root.nativeChildren.length !== 1 ||
+          root.nativeChildren[0].executionId !== '31131' ||
+          root.nativeChildren[0].key !== 'WF-10' ||
+          root.missingNativeChildCalls.length !== 0 ||
+          child.nativeParent?.executionId !== '31130' ||
+          child.nativeParent.workflowId !== root.workflowId ||
+          child.nativeChildren.length !== 0 ||
+          child.missingNativeChildCalls.length !== 0 ||
+          child.nativeParent.key !== 'WF-00' ||
+          Date.parse(child.createdAt) < Date.parse(root.createdAt) ||
+          Date.parse(child.startedAt) < Date.parse(root.startedAt) ||
+          Date.parse(child.stoppedAt) > Date.parse(root.stoppedAt) ||
+          root.errorDispatchExpected ||
+          child.errorDispatchExpected ||
+          root.nativeProviderCallback !== null ||
+          child.nativeProviderCallback !== null
+        )
+          fail('CLEANUP_QUALIFICATION');
+        const owned = new Map([
+          [root.executionId, root],
+          [child.executionId, child],
+        ]);
+        for (const baseline of context.baseline) {
+          const scan = await discoverCandidates({ workflowKey: baseline.key, baselineIds: [] });
+          if (!scan.paginationComplete) fail('DISCOVERY_INCOMPLETE');
+          for (const candidate of scan.candidates) {
+            const expected = owned.get(candidate.executionId);
+            if (
+              !expected ||
+              candidate.key !== expected.key ||
+              candidate.status !== expected.status ||
+              candidate.mode !== expected.mode ||
+              candidate.startedAt !== expected.startedAt ||
+              candidate.stoppedAt !== expected.stoppedAt ||
+              candidate.waitTill !== null ||
+              (candidate.versionId !== null && candidate.versionId !== expected.versionId)
+            )
+              fail('CLEANUP_QUALIFICATION');
+          }
+        }
+        // Current restored drafts are fenced separately from immutable executed
+        // snapshots. Restored version changes never weaken currentBinding(read).
+        for (const baseline of context.baseline) {
+          if (scope(baseline.key) !== baseline.id) fail('SCOPE');
+          await exchange(
+            '/api/v1/workflows/' + baseline.id + '?excludePinnedData=true',
+            (dto, status) => {
+              if (
+                status !== 200 ||
+                diagnoseFoundationRuntimeBaseline(dto, baseline, bindings.projectId).failedChecks.length
+              )
+                fail('CURRENT_BODY');
+              return null;
+            },
+            { kind: 'workflow', workflowId: baseline.id },
+          );
+        }
+        // Refresh both terminal observations after the bounded inventories.
+        for (const receipt of [child, root]) {
+          const metadata = await obtainMetadata(
+            {
+              workflowKey: receipt.key,
+              executionId: receipt.executionId,
+              expectedMode: receipt.mode,
+              intentAt: context.intentAt,
+            },
+            receipt.key === 'WF-00' ? context.rootBinding : context.childBinding,
+          );
+          for (const key of [
+            'versionId',
+            'mode',
+            'status',
+            'createdAt',
+            'startedAt',
+            'stoppedAt',
+            'waitTill',
+          ])
+            if (metadata[key] !== receipt[key]) fail('OBSERVATION_CHANGED');
+        }
+        context.assertCurrent();
+        const qualification = freezeRuntimeValue({
+          kind: 'foundation_technical16_cleanup_qualification',
+          version: 1,
+          technicalAttempt: 16,
+          windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+          sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
+          batchId: 'technical16-postclose-native-cleanup',
+          caseId: 'dispatch.vimeo-reconciliation',
+          owner: 'Mohamed Abdelrahman',
+          records: [child, root],
+          executionIds: ['31131', '31130'],
+          canonicalWorkflowsVerified: 25,
+          inventoryComplete: true,
+          settled: true,
+          observedAt: new Date(now()).toISOString(),
+          acceptanceProven: false,
+          liveClosureMinted: false,
+        });
+        technical16Qualifications.set(qualification, {
+          reader,
+          now,
+          observedAt: now(),
+          claimed: false,
+          assertCurrent: context.assertCurrent,
+        });
+        return qualification;
+      });
+    },
+    technical16CleanupResponse({ response, qualification, executionId, operation, signal }) {
+      return exclusive(async () => {
+        // A new DELETE requires fresh qualification. Processing the response to
+        // an already issued intent cannot acquire new mutation authority.
+        const info = technical16Qualifications.get(qualification);
+        if (
+          !info ||
+          info.reader !== reader ||
+          !info.claimed ||
+          !signal ||
+          typeof signal.addEventListener !== 'function' ||
+          !['delete_ack', 'absence'].includes(operation)
+        )
+          fail('CLEANUP_ARGS');
+        info.assertCurrent();
+        const receipt = qualification.records.find((value) => value.executionId === executionId);
+        if (!receipt) fail('CLEANUP_ARGS');
+        return privateResponse(response, signal, (dto, status) =>
+          cleanupProjection(dto, status, receipt, operation),
+        );
+      });
+    },
     verifyBinding(args) {
       return exclusive(async () => {
         if (!exact(args, ['workflowKey', 'binding'])) fail('ARGS');
@@ -948,124 +1388,7 @@ export function createFoundationNativeReader({
         );
         const output = await exchange(
           '/api/v1/executions/' + args.executionId + '?includeData=true',
-          (dto, status) => {
-            if (status !== 200) fail(status === 404 ? 'NOT_FOUND' : 'HTTP');
-            const projected = metadataProjection(dto, args.workflowKey, args.executionId, {
-              ...args,
-              binding: b,
-            });
-            const original = Object.fromEntries(Object.keys(projected).map((k) => [k, m[k]]));
-            if (!isDeepStrictEqual(projected, original)) fail('OBSERVATION_CHANGED');
-            const snapshot = dto.workflowData;
-            // Pinned toWorkflowSnapshot persists source fields only; its native
-            // DTO has no activeVersionId. That fence belongs to currentBinding
-            // above, while execution identity uses workflowVersionId and this
-            // persisted source-body hash.
-            if (
-              !object(snapshot) ||
-              snapshot.id !== scope(args.workflowKey) ||
-              observedGraphHash(snapshot, args.workflowKey, b) !== b.bodyHash ||
-              !object(dto.data) ||
-              !object(dto.data.resultData) ||
-              !object(dto.data.resultData.runData) ||
-              Object.keys(dto.data.resultData.runData).some(
-                (name) => !b.body.nodes.some((node) => node.name === name),
-              )
-            )
-              fail('EXECUTED_BODY');
-            const executedPins = dto.data.resultData.pinData;
-            if (executedPins !== undefined) {
-              if (!object(executedPins)) fail('EXECUTED_PIN_DATA');
-              if (Object.keys(executedPins).length) {
-                // Pinned execute-workflow.tool's no-input ManualTrigger path
-                // creates this empty bootstrap item itself. It supplies no
-                // business data and is the sole accepted nonempty pin map.
-                const triggers = b.body.nodes.filter(
-                  (n) =>
-                    n.disabled !== true &&
-                    [
-                      'n8n-nodes-base.manualTrigger',
-                      'n8n-nodes-base.scheduleTrigger',
-                      'n8n-nodes-base.webhook',
-                      'n8n-nodes-base.formTrigger',
-                      '@n8n/n8n-nodes-langchain.chatTrigger',
-                    ].includes(n.type),
-                );
-                const trigger = triggers[0],
-                  items = trigger && executedPins[trigger.name];
-                if (
-                  projected.mode !== 'manual' ||
-                  b.body.settings.availableInMCP !== true ||
-                  triggers.length !== 1 ||
-                  trigger.type !== 'n8n-nodes-base.manualTrigger' ||
-                  !exact(executedPins, [trigger.name]) ||
-                  !Array.isArray(items) ||
-                  items.length !== 1 ||
-                  !exact(items[0], ['json']) ||
-                  !exact(items[0].json, [])
-                )
-                  fail('EXECUTED_PIN_DATA');
-              }
-            }
-            if (
-              dto.data.redactionInfo !== undefined &&
-              (!object(dto.data.redactionInfo) ||
-                dto.data.redactionInfo.isRedacted !== false ||
-                dto.data.redactionInfo.provisional === true)
-            )
-              fail('REDACTED_DATA');
-            const errorTarget = b.body.settings.errorWorkflow;
-            if (errorTarget !== undefined && errorTarget !== refs['WF-90'].id) fail('ERROR_DISPATCH_TARGET');
-            const errorDispatchExpected =
-              projected.mode !== 'manual' &&
-              projected.status === 'error' &&
-              errorTarget === refs['WF-90'].id &&
-              projected.workflowId !== refs['WF-90'].id;
-            let traceparent;
-            if (expectedTraces !== null) {
-              if (projected.mode !== 'webhook') fail('TRACE_MODE');
-              const hooks = b.body.nodes.filter(
-                (node) => node.type === 'n8n-nodes-base.webhook' && node.disabled !== true,
-              );
-              if (hooks.length !== 1) fail('TRACE_NODE');
-              const hook = hooks[0];
-              if (
-                object(dto.data.resultData.pinData) &&
-                Object.hasOwn(dto.data.resultData.pinData, hook.name)
-              )
-                fail('TRACE_PINNED');
-              const runs = dto.data.resultData.runData[hook.name];
-              const actualTrace = runs?.[0]?.data?.main?.[0]?.[0]?.json?.headers?.traceparent;
-              if (
-                !Array.isArray(runs) ||
-                runs.length !== 1 ||
-                runs[0]?.data?.main?.[0]?.length !== 1 ||
-                !expectedTraces.includes(actualTrace)
-              )
-                fail('TRACE_MISMATCH');
-              traceparent = actualTrace;
-            }
-            const domain =
-              args.workflowKey === 'WF-99' &&
-              typeof b.runtimeAudience === 'string' &&
-              isFoundationNativeDomainProbeBody(b.body, { runtimeAudience: b.runtimeAudience });
-            const nativeDomainDenial = domain
-              ? projectFoundationNativeDomainDenial({
-                  resultData: dto.data.resultData,
-                  body: b.body,
-                  runtimeAudience: b.runtimeAudience,
-                })
-              : null;
-            return {
-              ...projected,
-              ...links(dto.data, b, args.workflowKey, args.executionId),
-              nativeGatewayRequests: gatewayRequests(dto.data, b, args.workflowKey, args.executionId),
-              nativeProviderCallback: providerCallback(dto, b, args.workflowKey, projected.mode),
-              ...(nativeDomainDenial ? { nativeDomainDenial } : {}),
-              errorDispatchExpected,
-              ...(traceparent ? { traceparent } : {}),
-            };
-          },
+          (dto, status) => fullProjection(dto, status, args, b, m, expectedTraces),
           { kind: 'full', workflowId: scope(args.workflowKey), executionId: args.executionId },
         );
         bindingFor(args.workflowKey, args.binding);
@@ -1082,75 +1405,7 @@ export function createFoundationNativeReader({
       });
     },
     discover(args) {
-      return exclusive(async () => {
-        if (
-          !exact(args, ['workflowKey', 'baselineIds']) ||
-          !Array.isArray(args.baselineIds) ||
-          args.baselineIds.length > 240 ||
-          args.baselineIds.some((id) => !executionId(id)) ||
-          new Set(args.baselineIds).size !== args.baselineIds.length
-        )
-          fail('ARGS');
-        const workflowId = scope(args.workflowKey),
-          rows = new Map(),
-          baseline = new Set(args.baselineIds);
-        for (const running of [false, true]) {
-          let cursor = null;
-          const cursors = new Set();
-          for (let page = 0; page < foundationNativeReaderLimits.discoveryPagesPerFilter; page++) {
-            const path =
-              '/api/v1/executions?workflowId=' +
-              workflowId +
-              '&includeData=false&limit=120' +
-              (running ? '&status=running' : '') +
-              (cursor ? '&cursor=' + encodeURIComponent(cursor) : '');
-            const next = await exchange(
-              path,
-              (dto, status) => {
-                if (
-                  status !== 200 ||
-                  !object(dto) ||
-                  !Array.isArray(dto.data) ||
-                  dto.data.length > 120 ||
-                  !Object.hasOwn(dto, 'nextCursor') ||
-                  (dto.nextCursor !== null &&
-                    (typeof dto.nextCursor !== 'string' || !/^[\x21-\x7e]{1,400}$/.test(dto.nextCursor)))
-                )
-                  fail('DISCOVERY');
-                for (const row of dto.data) {
-                  if (!executionId(row?.id)) fail('DISCOVERY');
-                  const r = metadataProjection(row, args.workflowKey, row.id, { list: true });
-                  if (rows.has(r.executionId) && !isDeepStrictEqual(rows.get(r.executionId), r))
-                    fail('DISCOVERY_CHANGED');
-                  rows.set(r.executionId, r);
-                }
-                return dto.nextCursor;
-              },
-              { kind: 'discovery', workflowId },
-            );
-            if (next === null) {
-              cursor = null;
-              break;
-            }
-            if (cursors.has(next)) fail('DISCOVERY_CURSOR');
-            cursors.add(next);
-            cursor = next;
-          }
-          if (cursor !== null) fail('DISCOVERY_INCOMPLETE');
-        }
-        return freezeRuntimeValue({
-          kind: 'foundation_native_candidates',
-          workflowId,
-          key: args.workflowKey,
-          candidates: [...rows.values()].filter((r) => !baseline.has(r.executionId)),
-          paginationComplete: true,
-          adoptionProven: false,
-          drainProven: false,
-          observedAt: new Date(now()).toISOString(),
-          privacyChecked: true,
-          transportClosed: true,
-        });
-      });
+      return exclusive(() => discoverCandidates(args));
     },
     cleanupResponse({ response, receipt, operation, signal }) {
       return exclusive(async () => {
@@ -1162,53 +1417,9 @@ export function createFoundationNativeReader({
           now() >= deadlineAt
         )
           fail('CLEANUP_ARGS');
-        return privateResponse(response, signal, (dto, status) => {
-          if (operation === 'absence') {
-            if (status !== 404 && status !== 200) fail('CLEANUP_HTTP');
-            if (status === 200) {
-              const current = metadataProjection(dto, receipt.key, receipt.executionId, {
-                expectedMode: receipt.mode,
-              });
-              if (current.versionId !== receipt.versionId) fail('VERSION');
-            }
-            return freezeRuntimeValue({
-              kind: 'foundation_native_absence',
-              executionId: receipt.executionId,
-              absent: status === 404,
-              transportClosed: true,
-              privacyChecked: true,
-            });
-          }
-          if (
-            status !== 200 ||
-            !object(dto) ||
-            !Number.isSafeInteger(dto.id) ||
-            dto.id <= 0 ||
-            String(dto.id) !== receipt.executionId
-          )
-            fail('DELETE_ACK');
-          const projected = metadataProjection(
-            { ...dto, id: String(dto.id) },
-            receipt.key,
-            receipt.executionId,
-            { expectedMode: receipt.mode },
-          );
-          for (const key of ['workflowId', 'versionId', 'mode', 'status', 'startedAt', 'stoppedAt'])
-            if (projected[key] !== receipt[key]) fail('DELETE_ACK');
-          return freezeRuntimeValue({
-            kind: 'foundation_native_delete_ack',
-            executionId: receipt.executionId,
-            workflowId: receipt.workflowId,
-            versionId: receipt.versionId,
-            mode: receipt.mode,
-            status: receipt.status,
-            startedAt: receipt.startedAt,
-            stoppedAt: receipt.stoppedAt,
-            acknowledged: true,
-            transportClosed: true,
-            privacyChecked: true,
-          });
-        });
+        return privateResponse(response, signal, (dto, status) =>
+          cleanupProjection(dto, status, receipt, operation),
+        );
       });
     },
     webhookResponse({ response, signal, expectedHttpStatus }) {

@@ -1,0 +1,101 @@
+{
+  "kind": "m03_local_native_execution_parameter_default_parity",
+  "version": 1,
+  "observedAt": "2026-10-24 17:53:30 UTC",
+  "environment": "isolated_local_source_only",
+  "status": "exact_native_parameter_parity",
+  "runtime": {
+    "n8n": "2.43.5",
+    "image": "n8nio/n8n:2.43.5",
+    "imageId": "sha256:4fc4c67bf5fb990201a71d94c7070abf8dd0619cb8af1d059877a447f3640392",
+    "repoDigest": "n8nio/n8n@sha256:4fc4c67bf5fb990201a71d94c7070abf8dd0619cb8af1d059877a447f3640392",
+    "sourceTag": "n8n@2.43.5",
+    "sourceCommit": "d811f5e87dfc164999f34d75b17017876d41a54a",
+    "sourceCommitVerification": "Actual public git ls-remote returned this commit for refs/tags/n8n@2.43.5; image version and digest were independently inspected."
+  },
+  "coverage": {
+    "runtimeGraphs": 25,
+    "launchEnabledRuntimeGraphs": 25,
+    "manualCaseGraphs": 27,
+    "launchEnabledSmokeGraphs": 2,
+    "nativeDomainProbeGraphs": 1,
+    "totalGraphs": 80,
+    "totalNodes": 1350,
+    "exactTypeVersionPairs": 13,
+    "mismatchCount": 0,
+    "allSourceDefinitionsUnchanged": true,
+    "syntheticReplayInputBoundary": "Only existing public unit-test inputs materialized replay shapes. They are not real provider results, SQL fixtures, hosted receipts or execution authority."
+  },
+  "nativeContract": {
+    "method": "For every source node, compare the actual exported expected-only helper output to installed NodeHelpers.getNodeParameters(description.properties, sourceParameters, true, false, node, description), using that exact native node type/version.",
+    "expectedSourceOnly": true,
+    "receivedSnapshotNormalization": false,
+    "currentWorkflowFenceChanged": false,
+    "setExecutionCandidate": "A separate exact Set options.include=none candidate requires a sole known source Set with includeOtherFields=false and no custom include. Actual qualification additionally requires nonempty runData for that known Set; this local parameter parity run does not prove a retained execution used that candidate.",
+    "unknownTypeVersionSettingsRejected": true
+  },
+  "resources": {
+    "existingImageReused": true,
+    "imagePulls": 0,
+    "networkMode": "none",
+    "readOnlyFilesystem": true,
+    "droppedCapabilities": "ALL",
+    "cpuLimit": 1,
+    "memoryMiB": 512,
+    "pidLimit": 128,
+    "networkRequests": 0,
+    "credentials": 0,
+    "workflowExecutions": 0,
+    "providerCalls": 0,
+    "hostedOperations": 0,
+    "existingContainersModified": 0,
+    "ownedContainerAutomaticRemoval": true
+  },
+  "sourcePins": {
+    "scripts/n8n/foundation-runtime-checkpoint.mjs": "e4e3fcf4b7f3b5d1555e69fef123bcea8515ea954b34db8167303e9636f06039",
+    "scripts/n8n/foundation-runtime-control.test.mjs": "6b50b7e9193df084f7c8ac56c3dccd954d53cdf17bb42946c2d63daa4892bad7"
+  },
+  "primarySources": [
+    "https://github.com/n8n-io/n8n/blob/d811f5e87dfc164999f34d75b17017876d41a54a/packages/workflow/src/workflow.ts#L101-L110",
+    "https://github.com/n8n-io/n8n/blob/d811f5e87dfc164999f34d75b17017876d41a54a/packages/workflow/src/node-helpers.ts#L736-L1117",
+    "https://github.com/n8n-io/n8n/blob/d811f5e87dfc164999f34d75b17017876d41a54a/packages/frontend/editor-ui/src/app/utils/nodes/nodeTransforms.ts#L174-L220",
+    "https://github.com/n8n-io/n8n/blob/d811f5e87dfc164999f34d75b17017876d41a54a/packages/nodes-base/nodes/Set/v2/SetV2.node.ts#L340-L341",
+    "https://github.com/n8n-io/n8n/blob/d811f5e87dfc164999f34d75b17017876d41a54a/packages/nodes-base/nodes/HttpRequest/V3/Description.ts#L860-L901"
+  ],
+  "toolResults": {
+    "nativeParitySession": 90894,
+    "nativeParityResult": "94871e",
+    "implementationParitySession": 90894,
+    "implementationParityResult": "94871e",
+    "imageProvenance": "5a5ecf",
+    "sourceCommit": "358ac0",
+    "pureModelTests": "5a5ecf",
+    "portableFixtureCausalGuard": "593821",
+    "affectedDiagnosticTests": "913552",
+    "nativeDefaultDtoConsumer": "a4add1",
+    "nativePublicGate": "055a0a"
+  },
+  "validation": {
+    "pureModelTestsPassed": 2,
+    "affectedDiagnosticTestsPassed": 49,
+    "nativeDefaultConsumerCasesPassed": 5,
+    "nativePublicGateCasesPassed": 49,
+    "nativeProcessExits": 0,
+    "ciPortabilityCorrection": {
+      "priorCiRun": "40117285241",
+      "priorUnitResult": "177/178; sole failure was ENOENT for ignored workstation technical16 output in the category public-chain test, as verified by the coordinator and independent reviewer.",
+      "cause": "The earlier test copied actual ignored output files rather than constructing an isolated synthetic chain.",
+      "correction": "Construct all public receipt/journal/image inputs inside the temporary test workspace, substitute only their fixed test pins, and preserve actual production validators and hash/prefix/one-use refusal assertions.",
+      "causalGuard": "A child test process forbids every read beneath the real checkout scripts/n8n/out and scripts/db/out roots. Both category828 and parameter-defaults829 public-chain tests pass against synthetic temporary inputs.",
+      "ignoredRuntimeArtifactsCommitted": false,
+      "assertionsRemoved": false,
+      "productionValidationRelaxed": false
+    }
+  },
+  "limitations": [
+    "Local native parameter parity is not hosted n8n acceptance or proof that retained execution31130 uses a modeled candidate.",
+    "The original native CLOSE failure and its first failing operation remain unestablished.",
+    "This receipt does not authorize execution deletion, fixture archival, production, merge, schedules, another actor start or allowance replenishment.",
+    "The separate fixed829 read must establish actual retained-graph equality before a cleanup resolution receipt can qualify the bounded recovery consumer."
+  ]
+}

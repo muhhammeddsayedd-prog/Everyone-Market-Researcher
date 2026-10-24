@@ -144,7 +144,7 @@ function bindingJournal() {
     }
   });
 }
-async function input(requireMachine = false, restore = false, technical13 = false) {
+async function input(requireMachine = false, restore = false, technical13 = false, technical16 = false) {
   const chunks = [];
   let bytes = 0;
   try {
@@ -162,12 +162,19 @@ async function input(requireMachine = false, restore = false, technical13 = fals
       Object.keys(p).sort().join(',') !==
         (requireMachine ? 'expiresAt,key,machine,purpose,windowId' : 'expiresAt,key,purpose,windowId') ||
       p.purpose !==
-        (technical13
-          ? 'm03_technical13_runtime_restoration'
-          : restore
-            ? 'm03_owned_wf00_restore'
-            : 'm03_owned_inactive_provision') ||
-      p.windowId !== (technical13 ? '3c46c791-e140-4eb9-890a-eecfa251f65e' : foundationScope.windowId)
+        (technical16
+          ? 'm03_technical16_native_cleanup'
+          : technical13
+            ? 'm03_technical13_runtime_restoration'
+            : restore
+              ? 'm03_owned_wf00_restore'
+              : 'm03_owned_inactive_provision') ||
+      p.windowId !==
+        (technical16
+          ? '4c602549-2c42-4ec3-9328-714d7cb66a77'
+          : technical13
+            ? '3c46c791-e140-4eb9-890a-eecfa251f65e'
+            : foundationScope.windowId)
     )
       fail();
     const expiry = Date.parse(p.expiresAt),
@@ -462,6 +469,542 @@ const technical13 = Object.freeze({
   journalFile: 'scripts/n8n/out/foundation/runtime-technical13-restoration.jsonl',
   resultFile: 'scripts/n8n/out/foundation/runtime-technical13-restoration-result.json',
 });
+export const foundationTechnical16CleanupScope = Object.freeze({
+  technicalAttempt: 16,
+  windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+  sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
+  executionIds: Object.freeze(['31131', '31130']),
+  maximumRequests: 158,
+  maximumControlRequests: 158,
+  forensicAllocationMaximum: 160,
+  forensicRequestsAlreadyCharged: 2,
+  canonicalWorkflowCount: 25,
+  maximumDrainRequests: 100,
+});
+const technical16Cleanup = Object.freeze({
+  executedBodyResolutionFile:
+    'milestones/M03-n8n-foundation/evidence/technical16-executed-parameters-resolution-20261024.json',
+  // This qualifies the source-derived parameter candidate only; the fresh
+  // cleanup-only reader still has to prove ownership, terminal links and drain.
+  executedBodyResolutionSha256: 'e0c919ab2a12aa9306be3d2b3656b7d0c43d97c21ddc6376ffa12bbfbb89d07b',
+  attemptFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt.json',
+  journalFile: 'scripts/n8n/out/foundation/technical16-native-cleanup.jsonl',
+  resultFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-result.json',
+});
+const technical16CleanupContexts = new WeakMap();
+export function assertTechnical16CleanupContext(context) {
+  const value = technical16CleanupContexts.get(context);
+  if (!value || !Object.isFrozen(context)) fail();
+  value.assertCurrent();
+  return value;
+}
+export async function checkTechnical16Cleanup() {
+  if (
+    typeof technical16Cleanup.executedBodyResolutionSha256 !== 'string' ||
+    !/^[a-f0-9]{64}$/.test(technical16Cleanup.executedBodyResolutionSha256)
+  )
+    fail();
+  const pins = new Map();
+  const read = (path, expected) => {
+    const absolute = noLinks(join(repo, path)),
+      stat = lstatSync(absolute);
+    if (!stat.isFile() || stat.nlink !== 1 || stat.size > 2097152) fail();
+    const bytes = readFileSync(absolute),
+      hash = publicHash(bytes);
+    if (expected !== undefined && hash !== expected) fail();
+    pins.set(path, hash);
+    return bytes.toString('utf8');
+  };
+  const evidence = 'milestones/M03-n8n-foundation/evidence/';
+  const original = JSON.parse(
+    read(
+      evidence + 'dev-acceptance-technical16-reconciliation-20261024.json',
+      'd6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb',
+    ),
+  );
+  const cleanup = JSON.parse(
+    read(
+      evidence + 'dev-acceptance-technical16-cleanup-20261024.json',
+      '49192237b29231f20f67595fdc7522b49926f10c8e278bea3871cf75a9788b57',
+    ),
+  );
+  const custody = JSON.parse(
+    read(
+      evidence + 'technical16-postclose-custody-20261024.json',
+      'a0bf0dccf6bcf19027d1aba99601fe61a117fec8900128800d3bf3cfa63874cf',
+    ),
+  );
+  const db = JSON.parse(
+    read(
+      evidence + 'technical16-postclose-db-readback-20261024.json',
+      '68f02df7aab0b468ff202ec99630207650fa503eda57b46f81a1166fad9ab222',
+    ),
+  );
+  const resolution = JSON.parse(
+    read(technical16Cleanup.executedBodyResolutionFile, technical16Cleanup.executedBodyResolutionSha256),
+  );
+  if (
+    original.attempt?.technicalAttempt !== 16 ||
+    original.attempt.nativeExit !== 1 ||
+    original.attempt.executionIdObserved !== '31130' ||
+    original.attempt.caseId !== 'dispatch.vimeo' ||
+    original.source?.applicationSource !== foundationTechnical16CleanupScope.sourceCommitSha ||
+    original.rawTechnicalClose?.childClosed !== true ||
+    original.rawTechnicalClose.credentialChildrenClosed !== true ||
+    cleanup.allTenDisposableLeavesAbsent !== true ||
+    cleanup.parentProcessAbsent !== true ||
+    cleanup.runtimeProcessAbsent !== true ||
+    cleanup.parentLockAbsent !== true ||
+    cleanup.runtimeLockAbsent !== true ||
+    custody.restoration?.restoreComplete !== true ||
+    custody.restoration.finalWorkflowAudits !== 25 ||
+    custody.restoration.pendingIntents !== 0 ||
+    custody.restoration.baselineRestored !== true ||
+    db.rawResult?.status !== 'inspection_verified' ||
+    db.rawResult.childrenClosed !== true ||
+    db.rawResult.inspection?.familyWindowCount !== 5 ||
+    db.rawResult.inspection.globalAdmittedCount !== 9 ||
+    db.rawResult.inspection.globalRequestCount !== 4 ||
+    db.rawResult.inspection.fixtureAuditCount !== 7 ||
+    db.rawResult.inspection.globalLaunchCount !== 0 ||
+    resolution.kind !== 'm03_technical16_executed_parameters_resolution' ||
+    resolution.version !== 1 ||
+    resolution.environment !== 'dev' ||
+    resolution.technicalAttempt !== 16 ||
+    resolution.originalAttemptSha256 !== 'd6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb' ||
+    resolution.rootExecutionId !== '31130' ||
+    resolution.childExecutionId !== '31131' ||
+    resolution.sourceCommitSha !== foundationTechnical16CleanupScope.sourceCommitSha ||
+    resolution.windowId !== foundationTechnical16CleanupScope.windowId ||
+    resolution.parametersQualified !== true ||
+    resolution.nativeAcceptanceProven !== false ||
+    resolution.settlementProven !== false ||
+    resolution.originalMaskedFirstFailureRecovered !== false ||
+    resolution.usage?.management !== 829 ||
+    resolution.usage.control !== 960 ||
+    resolution.usage.combined !== 1789 ||
+    resolution.usage.vercel !== 184
+  )
+    fail();
+  for (const name of [
+    'activeLeaseCount',
+    'actorRunCount',
+    'collectedItemCount',
+    'costEntryCount',
+    'costUsd',
+    'incompleteRequests',
+    'launchCount',
+    'reservedRequests',
+    'scrapeRunCount',
+  ])
+    if (db.rawResult.inspection[name] !== 0) fail();
+  for (const [path, hash] of Object.entries(original.pins ?? {})) read(path, hash);
+  for (const [path, hash] of Object.entries(custody.pins ?? {})) read(path, hash);
+  const dbLatest = 'scripts/db/out/m03-foundation-inspect-1b7b1987-ac32-4e3a-914c-9bda1b1b6d74-latest.json';
+  const rawDb = JSON.parse(read(dbLatest, db.pins?.[dbLatest]));
+  if (JSON.stringify(rawDb) !== JSON.stringify(db.rawResult)) fail();
+  const rows = read('scripts/n8n/out/foundation/live/runtime.technical-16.jsonl')
+    .trimEnd()
+    .split('\n')
+    .map(JSON.parse);
+  const controls = read('scripts/n8n/out/foundation/live/control.jsonl')
+    .trimEnd()
+    .split('\n')
+    .map(JSON.parse);
+  const ack = controls.filter((row) => row.event === 'native_start_ack' && row.executionId === '31130');
+  if (
+    ack.length !== 1 ||
+    ack[0].caseId !== 'dispatch.vimeo' ||
+    ack[0].workflowKey !== 'WF-00' ||
+    !Number.isFinite(Date.parse(ack[0].intentAt))
+  )
+    fail();
+  const [
+    { materializeFoundationAcceptanceCase },
+    { buildFoundationGatewayWorkflows },
+    { graphBody },
+    retention,
+    { createFoundationRuntimeBaseline, freezeRuntimeValue },
+    { foundationRuntimeGraphHash },
+  ] = await Promise.all([
+    import('../../n8n/foundation/materialize-acceptance-case.mjs'),
+    import('../../n8n/foundation/build-foundation-gateway.mjs'),
+    import('./foundation-bind.mjs'),
+    import('./foundation-retention-proposal.mjs'),
+    import('./foundation-runtime-plan.mjs'),
+    import('./foundation-runtime-checkpoint.mjs'),
+  ]);
+  const bindings = JSON.parse(read('n8n/foundation/bindings.dev.json'));
+  const transport = JSON.parse(read('n8n/foundation/transport.dev.json'));
+  const records = Object.keys(bindings.workflowRefs).map((key) =>
+    JSON.parse(read('n8n/workflows/' + key + '.json')),
+  );
+  const versions = custody.restoration.restoredVersions;
+  if (
+    !versions ||
+    Object.keys(versions).length !== 25 ||
+    publicHash(JSON.stringify(versions)) !==
+      '4cd07e958dc736cf07fb83c7b83a9805f67dc755f2628c8613acd3acae356de2'
+  )
+    fail();
+  const baseline = createFoundationRuntimeBaseline({ bindings, records }).map((record) => ({
+    ...record,
+    versionId: versions[record.key],
+  }));
+  if (baseline.some((record) => !/^[A-Za-z0-9_-]{1,128}$/.test(record.versionId))) fail();
+  const retentionPolicy = retention.createFoundationApprovedRetentionPolicy({ bindings, records });
+  const runtimeTransport = {
+    credential: transport.credential,
+    audience: db.rawResult.inspection.window.audience,
+    windowId: foundationTechnical16CleanupScope.windowId,
+  };
+  const rootGraph = materializeFoundationAcceptanceCase(bindings, runtimeTransport, 'dispatch.vimeo');
+  const rootBody = graphBody(rootGraph);
+  rootBody.settings = retention.applyFoundationApprovedRetentionSettings(
+    retentionPolicy,
+    'WF-00',
+    rootBody.settings,
+  );
+  rootBody.settings.availableInMCP = true;
+  for (const node of rootBody.nodes)
+    if (
+      node.type !== 'n8n-nodes-base.manualTrigger' &&
+      (/Trigger$/.test(node.type) || ['n8n-nodes-base.webhook', 'n8n-nodes-base.form'].includes(node.type))
+    )
+      node.disabled = true;
+  const childGraph = buildFoundationGatewayWorkflows(bindings, runtimeTransport).find(
+    (graph) => graph.key === 'WF-10',
+  );
+  const childBody = graphBody(childGraph);
+  for (const node of childBody.nodes)
+    if (node.type === 'n8n-nodes-base.scheduleTrigger') node.disabled = true;
+  childBody.settings = retention.applyFoundationApprovedRetentionSettings(
+    retentionPolicy,
+    'WF-10',
+    childBody.settings,
+  );
+  childBody.settings.availableInMCP = false;
+  childBody.settings.errorWorkflow = bindings.workflowRefs['WF-90'].id;
+  const historicalBinding = (key, body, exactSequence) => {
+    const hash = foundationRuntimeGraphHash(body);
+    const intents = rows.filter(
+      (row) =>
+        row.event === 'intent' &&
+        row.key === key &&
+        row.action === 'save' &&
+        row.sequence <= 37 &&
+        row.target?.graphHash === hash &&
+        (exactSequence === undefined || row.sequence === exactSequence),
+    );
+    const intent = intents.at(-1),
+      verified = rows.filter((row) => row.event === 'verified' && row.sequence === intent?.sequence);
+    if (
+      !intent ||
+      verified.length !== 1 ||
+      verified[0].after?.graphHash !== hash ||
+      !/^[A-Za-z0-9_-]{1,128}$/.test(verified[0].after.versionId)
+    )
+      fail();
+    const record = baseline.find((value) => value.key === key);
+    return {
+      workflowId: record.id,
+      versionId: verified[0].after.versionId,
+      activeVersionId: verified[0].after.activeVersionId,
+      bodyHash: hash,
+      body,
+      ...(record.nativeReadonlySettings ? { nativeReadonlySettings: record.nativeReadonlySettings } : {}),
+    };
+  };
+  const rootBinding = historicalBinding('WF-00', rootBody, 37),
+    childBinding = historicalBinding('WF-10', childBody);
+  if (rootBinding.versionId !== ack[0].versionId) fail();
+  for (const name of ['attemptFile', 'journalFile', 'resultFile'])
+    if (existsSync(noLinks(join(repo, technical16Cleanup[name])))) fail();
+  if (existsSync(noLinks(join(repo, 'scripts/n8n/out/foundation/live/runtime.operation.lock')))) fail();
+  const value = freezeRuntimeValue({
+    bindings,
+    baseline,
+    rootBinding,
+    childBinding,
+    intentAt: Date.parse(ack[0].intentAt),
+    resolutionSha256: technical16Cleanup.executedBodyResolutionSha256,
+    usage: resolution.usage,
+    assertCurrent() {
+      for (const [path, hash] of pins) {
+        const absolute = noLinks(join(repo, path)),
+          stat = lstatSync(absolute);
+        if (
+          !stat.isFile() ||
+          stat.nlink !== 1 ||
+          stat.size > 2097152 ||
+          publicHash(readFileSync(absolute)) !== hash
+        )
+          fail();
+      }
+    },
+  });
+  const context = Object.freeze({
+    kind: 'm03_technical16_cleanup_context',
+    version: 1,
+    technicalAttempt: 16,
+    windowId: foundationTechnical16CleanupScope.windowId,
+    sourceCommitSha: foundationTechnical16CleanupScope.sourceCommitSha,
+    qualifiedSideEffects: false,
+    executionCount: 0,
+    actorStarts: 0,
+  });
+  technical16CleanupContexts.set(context, value);
+  return context;
+}
+export function createTechnical16CleanupBudget({ context, deadlineAt, now = Date.now, append }) {
+  const value = assertTechnical16CleanupContext(context);
+  if (
+    !Number.isFinite(deadlineAt) ||
+    typeof now !== 'function' ||
+    now() >= deadlineAt ||
+    typeof append !== 'function'
+  )
+    fail();
+  let count = 0,
+    uncertain = false;
+  const state = () =>
+    Object.freeze({
+      requestCount: count,
+      controlRequestCount: count,
+      managementAttempts: value.usage.management + count,
+      controlAttempts: value.usage.control + count,
+      combinedAttempts: value.usage.combined + 2 * count,
+    });
+  return Object.freeze({
+    state,
+    admit(args) {
+      value.assertCurrent();
+      const usage = state(),
+        ids = new Set(Object.values(value.bindings.workflowRefs).map((row) => row.id));
+      if (
+        uncertain ||
+        now() >= deadlineAt ||
+        count >= foundationTechnical16CleanupScope.maximumRequests ||
+        usage.managementAttempts + 1 > 1024 ||
+        usage.controlAttempts + 1 > 2048 ||
+        usage.combinedAttempts + 2 > 2560 ||
+        !['workflow', 'metadata', 'full', 'discovery', 'delete', 'absence'].includes(args?.kind) ||
+        !ids.has(args.workflowId) ||
+        (['metadata', 'full', 'delete', 'absence'].includes(args.kind) &&
+          !['31130', '31131'].includes(args.executionId))
+      )
+        fail();
+      count++;
+      try {
+        const returned = append(
+          Object.freeze({
+            event: 'technical16_http_intent',
+            ordinal: count,
+            kind: args.kind,
+            workflowId: args.workflowId,
+            ...(args.executionId ? { executionId: args.executionId } : {}),
+            managementAttempts: value.usage.management + count,
+            controlAttempts: value.usage.control + count,
+            at: new Date(now()).toISOString(),
+          }),
+        );
+        if (returned !== undefined) {
+          if (returned?.then) Promise.resolve(returned).catch(() => {});
+          fail();
+        }
+      } catch {
+        uncertain = true;
+        fail();
+      }
+    },
+  });
+}
+async function runTechnical16Cleanup(context, privateInput) {
+  const value = assertTechnical16CleanupContext(context);
+  const [
+    { createFoundationNativeReader, assertFoundationTechnical16CleanupQualification },
+    { createFoundationNativeTransport },
+    { createFoundationNativeCleanup },
+    { createFoundationControlJournal },
+  ] = await Promise.all([
+    import('./foundation-native-reader.mjs'),
+    import('./foundation-native-transport.mjs'),
+    import('./foundation-native-cleanup.mjs'),
+    import('./foundation-control-state.mjs'),
+  ]);
+  const lockPath = noLinks(join(repo, 'scripts/n8n/out/foundation/live/runtime.operation.lock'));
+  let journalFd,
+    lock,
+    transport,
+    reader,
+    qualified = false,
+    networkClosed = false,
+    journalExpected = '',
+    uncertainAppend = false;
+  const result = {
+    kind: 'm03_technical16_native_cleanup',
+    version: 1,
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    windowId: foundationTechnical16CleanupScope.windowId,
+    sourceCommitSha: foundationTechnical16CleanupScope.sourceCommitSha,
+    status: 'cleanup_blocked',
+    requestCount: 0,
+    controlRequestCount: 0,
+    managementAttempts: value.usage.management,
+    controlAttempts: value.usage.control,
+    combinedAttempts: value.usage.combined,
+    canonicalWorkflowsVerified: 0,
+    qualifiedSideEffects: false,
+    recordsDeleted: 0,
+    deleteAcknowledged: false,
+    absenceVerified: false,
+    remoteWorkSettled: false,
+    networkCompletionVerified: false,
+    originalPublicRecordsUnchanged: false,
+    nativeAcceptanceProven: false,
+    originalMaskedFirstFailureRecovered: false,
+    executionCount: 0,
+    actorStarts: 0,
+    workflowWrites: 0,
+    credentialWrites: 0,
+    migrationOperations: 0,
+    diagnosticStage: 'one_use_claim',
+    diagnosticCode: 'not_attempted',
+  };
+  const append = (row) => {
+    if (
+      uncertainAppend ||
+      journalFd === undefined ||
+      readFileSync(join(repo, technical16Cleanup.journalFile), 'utf8') !== journalExpected
+    )
+      fail();
+    const text = JSON.stringify(row) + '\n';
+    try {
+      writeCompleteSync(journalFd, text);
+      fsyncSync(journalFd);
+      journalExpected += text;
+    } catch {
+      uncertainAppend = true;
+      fail();
+    }
+  };
+  const budget = createTechnical16CleanupBudget({ context, deadlineAt: privateInput.deadlineMs, append });
+  try {
+    const claim = openSync(noLinks(join(repo, technical16Cleanup.attemptFile)), 'wx');
+    try {
+      writeCompleteSync(
+        claim,
+        JSON.stringify({
+          kind: 'm03_technical16_cleanup_once',
+          version: 1,
+          resolutionSha256: value.resolutionSha256,
+          executionIds: ['31131', '31130'],
+          processId: process.pid,
+          parentProcessId: process.ppid,
+          usage: value.usage,
+          maximumRequests: 158,
+          maximumControlRequests: 158,
+          at: new Date().toISOString(),
+        }) + '\n',
+      );
+      fsyncSync(claim);
+    } finally {
+      closeSync(claim);
+    }
+    lock = openSync(lockPath, 'wx');
+    writeCompleteSync(lock, 'emr-m03-foundation-live-runtime-v1\n');
+    fsyncSync(lock);
+    journalFd = openSync(noLinks(join(repo, technical16Cleanup.journalFile)), 'wx');
+    append({
+      event: 'technical16_cleanup_header',
+      version: 1,
+      resolutionSha256: value.resolutionSha256,
+      originalAttemptSha256: 'd6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb',
+    });
+    const journal = createFoundationControlJournal({ durableAppend: append });
+    transport = createFoundationNativeTransport({
+      apiKey: privateInput.key,
+      bindings: value.bindings,
+      authorizeExecution: ({ method, executionId }) =>
+        ['31130', '31131'].includes(executionId) && (method === 'GET' || (qualified && method === 'DELETE')),
+    });
+    reader = createFoundationNativeReader({
+      bindings: value.bindings,
+      transport,
+      admitControlAttempt: budget.admit,
+      now: Date.now,
+      deadlineAt: privateInput.deadlineMs,
+      sensitiveValues: [privateInput.key],
+    });
+    const cleanup = createFoundationNativeCleanup({
+      reader,
+      transport,
+      admitControlAttempt: budget.admit,
+      journal,
+      now: Date.now,
+      deadlineAt: privateInput.deadlineMs,
+    });
+    result.diagnosticStage = 'qualification';
+    const qualification = await reader.qualifyTechnical16Cleanup({ context });
+    assertFoundationTechnical16CleanupQualification(qualification, { reader });
+    qualified = true;
+    result.qualifiedSideEffects = true;
+    result.canonicalWorkflowsVerified = 25;
+    result.diagnosticStage = 'cleanup';
+    const deleted = await cleanup.cleanupTechnical16({ qualification });
+    result.recordsDeleted = deleted.results.filter(
+      (row) => row.state === 'native_record_deleted' && !row.residual,
+    ).length;
+    result.deleteAcknowledged =
+      deleted.results.length === 2 && deleted.results.every((row) => row.deleteAcknowledged);
+    result.absenceVerified =
+      deleted.results.length === 2 && deleted.results.every((row) => row.absenceVerified);
+    result.remoteWorkSettled = deleted.status === 'native_records_deleted' && result.recordsDeleted === 2;
+    result.status = result.remoteWorkSettled ? 'native_cleanup_verified' : 'cleanup_reconciliation_required';
+    result.diagnosticCode = result.remoteWorkSettled ? 'none' : 'native_cleanup_residual';
+  } catch {
+    result.status = 'cleanup_reconciliation_required';
+    result.diagnosticCode = reader?.lastFailure()?.code
+      ? 'native_' + reader.lastFailure().code
+      : 'fixed_boundary_blocked';
+  } finally {
+    const failedStage = result.status === 'native_cleanup_verified' ? null : result.diagnosticStage;
+    result.diagnosticStage = failedStage ?? 'closure';
+    transport?.close();
+    if (transport) {
+      const until = Date.now() + 5000;
+      while (transport.state().pendingRequests + transport.state().unclosedResponses && Date.now() < until)
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      networkClosed = transport.state().pendingRequests === 0 && transport.state().unclosedResponses === 0;
+    } else networkClosed = true;
+    try {
+      value.assertCurrent();
+      if (
+        uncertainAppend ||
+        (journalFd !== undefined &&
+          readFileSync(join(repo, technical16Cleanup.journalFile), 'utf8') !== journalExpected)
+      )
+        fail();
+      result.originalPublicRecordsUnchanged = true;
+    } catch {
+      result.status = 'cleanup_reconciliation_required';
+    }
+    for (const fd of [journalFd, lock]) if (fd !== undefined) closeSync(fd);
+    Object.assign(result, budget.state());
+    result.networkCompletionVerified = networkClosed;
+    if (!networkClosed || !result.originalPublicRecordsUnchanged || !result.remoteWorkSettled)
+      result.status = 'cleanup_reconciliation_required';
+    if (result.status === 'native_cleanup_verified') unlinkSync(lockPath);
+    if (result.status === 'native_cleanup_verified') result.diagnosticStage = 'complete';
+    privateInput.key = null;
+  }
+  writeFileSync(noLinks(join(repo, technical16Cleanup.resultFile)), JSON.stringify(result, null, 2) + '\n', {
+    flag: 'wx',
+  });
+  return result;
+}
+
 const publicHash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 function technical13PublicFile(relative) {
   const path = noLinks(join(repo, relative)),
@@ -812,10 +1355,65 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         'RestoreWF00',
         'RestoreTechnical13CheckOnly',
         'RestoreTechnical13',
+        'CleanupTechnical16CheckOnly',
+        'CleanupTechnical16',
       ].includes(mode)
     )
       fail();
-    if (mode === 'RestoreTechnical13CheckOnly' || mode === 'RestoreTechnical13') {
+    if (mode === 'CleanupTechnical16CheckOnly' || mode === 'CleanupTechnical16') {
+      let context = null;
+      try {
+        context = await checkTechnical16Cleanup();
+      } catch {
+        /* Fixed public refusal below. */
+      }
+      if (mode === 'CleanupTechnical16CheckOnly' || !context) {
+        report({
+          kind: 'm03_technical16_cleanup_public',
+          version: 1,
+          status: context ? 'technical16_cleanup_public_ready' : 'technical16_cleanup_public_blocked',
+          windowId: foundationTechnical16CleanupScope.windowId,
+          privateRead: false,
+          networkRequests: 0,
+          maximumRequests: foundationTechnical16CleanupScope.maximumRequests,
+          maximumControlRequests: foundationTechnical16CleanupScope.maximumControlRequests,
+          canonicalWorkflowCount: foundationTechnical16CleanupScope.canonicalWorkflowCount,
+          maximumDrainRequests: foundationTechnical16CleanupScope.maximumDrainRequests,
+          maximumNativeRecords: foundationTechnical16CleanupScope.executionIds.length,
+          executionCount: 0,
+          actorStarts: 0,
+          qualifiedSideEffects: false,
+          cleanupQualificationReady: context !== null,
+        });
+        process.exitCode = context ? 0 : 1;
+      } else {
+        const parentPath = noLinks(
+          join(process.env.LOCALAPPDATA, 'Temp/emr-m03-acceptance-parent.operation.lock'),
+        );
+        const parent = JSON.parse(readFileSync(parentPath, 'utf8'));
+        if (
+          parent.kind !== 'm03_technical16_cleanup_parent' ||
+          parent.version !== 1 ||
+          parent.processId !== process.ppid
+        )
+          fail();
+        let held = false,
+          probe;
+        try {
+          probe = openSync(parentPath, 'r+');
+        } catch {
+          held = true;
+        } finally {
+          if (probe !== undefined) closeSync(probe);
+        }
+        if (!held) fail();
+        privateReadAttempted = true;
+        const privateInput = await input(false, true, false, true);
+        const result = await runTechnical16Cleanup(context, privateInput);
+        report(result);
+        process.exitCode = result.status === 'native_cleanup_verified' ? 0 : 1;
+      }
+    } else if (mode === 'RestoreTechnical13CheckOnly' || mode === 'RestoreTechnical13') {
       let context = null;
       try {
         context = await checkTechnical13Restoration();

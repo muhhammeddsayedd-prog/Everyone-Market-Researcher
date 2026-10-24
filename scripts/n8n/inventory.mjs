@@ -493,6 +493,11 @@ const execution31130Checkpoint = Object.freeze({
   childUiReceiptSha256: '2c9100fd58caf7715838462de11337e8d06bcd691ab13b20b380413b6c3e4ba3',
   snapshotClaim: 'scripts/n8n/out/foundation/execution-31130-snapshot-diagnostic-20261024.jsonl',
   categoryClaim: 'scripts/n8n/out/foundation/execution-31130-category-diagnostic-20261024.jsonl',
+  parameterDefaultsClaim:
+    'scripts/n8n/out/foundation/execution-31130-parameter-defaults-diagnostic-20261024.jsonl',
+  categoryReceipt:
+    'milestones/M03-n8n-foundation/evidence/technical16-execution31130-parameter-category-readback-20261024.json',
+  categoryReceiptSha256: '414874a3dc27f724d399e0dad3bc1a07f96a75fe1709175114c6c5084b795a7c',
   snapshotReceipt:
     'milestones/M03-n8n-foundation/evidence/technical16-execution31130-native-snapshot-readback-20261024.json',
   snapshotReceiptSha256: '6db76fb75d2956c2835c6a9adb5c2bd7700f53b39b377968e8ec4d1139c842e7',
@@ -819,13 +824,74 @@ async function readCategoryExecution31130Context(root) {
     throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
   return { ...context, expectedBody, categoryPins };
 }
-export function checkExecution31130MetadataDiagnostic(root, native = false) {
-  if (![false, true, 'snapshot', 'categories'].includes(native))
+async function readParameterDefaultsExecution31130Context(root) {
+  const context = await readCategoryExecution31130Context(root),
+    cfg = execution31130Checkpoint,
+    text = readRuntimePublicFile(context.root, cfg.categoryReceipt),
+    claim = readRuntimePublicFile(context.root, cfg.categoryClaim),
+    r = JSON.parse(text),
+    rows = claim.trimEnd().split('\n').map(JSON.parse),
+    raw = r.rawResult;
+  if (
+    publicDigest(text) !== cfg.categoryReceiptSha256 ||
+    r.kind !== 'm03_technical16_native_parameter_category_readback' ||
+    r.originalAttemptSha256 !== cfg.sha256 ||
+    r.snapshotReadbackSha256 !== cfg.snapshotReceiptSha256 ||
+    r.pins?.[cfg.categoryClaim] !== publicDigest(claim) ||
+    rows.length !== 3 ||
+    rows[0].kind !== 'm03_execution_31130_category_diagnostic_budget' ||
+    rows[0].managementAttempts !== 827 ||
+    rows[0].controlAttempts !== 958 ||
+    JSON.stringify(rows[1]) !== JSON.stringify({ event: 'management_attempt', ordinal: 828 }) ||
+    JSON.stringify(rows[2]) !==
+      JSON.stringify({
+        event: 'native_read_control_reservation',
+        ordinal: 959,
+        additionalHttpRequest: false,
+      }) ||
+    r.usage?.management !== 828 ||
+    r.usage.control !== 959 ||
+    r.usage.combined !== 1787 ||
+    r.usage.vercel !== 184 ||
+    raw?.status !== 'complete' ||
+    raw.nativeExit !== 0 ||
+    raw.childClosed !== true ||
+    raw.handoffDeleted !== true ||
+    raw.inventory?.status !== 'native_snapshot_classified' ||
+    raw.inventory.requestCount !== 1 ||
+    raw.inventory.httpStatus !== 200 ||
+    raw.inventory.tlsVerified !== true ||
+    raw.inventory.networkCompletionVerified !== true ||
+    raw.inventory.acceptanceProven !== false ||
+    raw.inventory.transportState?.pendingRequests !== 0 ||
+    raw.inventory.transportState.unclosedResponses !== 0 ||
+    [
+      'parentAbsent',
+      'childAbsent',
+      'managementCopyAbsent',
+      'parentLockAbsent',
+      'persistentManagementRetained',
+    ].some((k) => r.cleanup?.[k] !== true) ||
+    r.cleanup.privateContentsRead !== false ||
+    r.cleanup.networkRequests !== 0
+  )
     throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
-  if (native === 'categories')
-    return readCategoryExecution31130Context(root).then((context) =>
-      checkExecution31130Context(context, native),
-    );
+  const { foundationRuntimeExecutionParameterCandidates } =
+    await import('./foundation-runtime-checkpoint.mjs');
+  foundationRuntimeExecutionParameterCandidates(context.expectedBody);
+  context.categoryPins[cfg.categoryReceipt] = publicDigest(text);
+  context.categoryPins[cfg.categoryClaim] = publicDigest(claim);
+  return context;
+}
+export function checkExecution31130MetadataDiagnostic(root, native = false) {
+  if (![false, true, 'snapshot', 'categories', 'parameter_defaults'].includes(native))
+    throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  if (native === 'categories' || native === 'parameter_defaults')
+    return (
+      native === 'parameter_defaults'
+        ? readParameterDefaultsExecution31130Context(root)
+        : readCategoryExecution31130Context(root)
+    ).then((context) => checkExecution31130Context(context, native));
   const context =
     native === 'snapshot'
       ? readSnapshotExecution31130Context(root)
@@ -839,13 +905,15 @@ function checkExecution31130Context(context, native) {
     lstatSync(
       join(
         context.root,
-        native === 'categories'
-          ? execution31130Checkpoint.categoryClaim
-          : native === 'snapshot'
-            ? execution31130Checkpoint.snapshotClaim
-            : native
-              ? execution31130Checkpoint.nativeClaim
-              : execution31130Checkpoint.claim,
+        native === 'parameter_defaults'
+          ? execution31130Checkpoint.parameterDefaultsClaim
+          : native === 'categories'
+            ? execution31130Checkpoint.categoryClaim
+            : native === 'snapshot'
+              ? execution31130Checkpoint.snapshotClaim
+              : native
+                ? execution31130Checkpoint.nativeClaim
+                : execution31130Checkpoint.claim,
       ),
     );
     throw Error();
@@ -854,28 +922,59 @@ function checkExecution31130Context(context, native) {
   }
   return Object.freeze({
     kind:
-      native === 'categories'
-        ? 'm03_execution_31130_category_check'
-        : native === 'snapshot'
-          ? 'm03_execution_31130_snapshot_check'
-          : native
-            ? 'm03_execution_31130_native_metadata_check'
-            : 'm03_execution_31130_metadata_check',
+      native === 'parameter_defaults'
+        ? 'm03_execution_31130_parameter_defaults_check'
+        : native === 'categories'
+          ? 'm03_execution_31130_category_check'
+          : native === 'snapshot'
+            ? 'm03_execution_31130_snapshot_check'
+            : native
+              ? 'm03_execution_31130_native_metadata_check'
+              : 'm03_execution_31130_metadata_check',
     status: 'ready',
     technicalAttempt: 16,
     sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
     windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
-    managementAttempts: native === 'categories' ? 827 : native === 'snapshot' ? 826 : native ? 825 : 824,
-    controlAttempts: native === 'categories' ? 958 : native === 'snapshot' ? 957 : 955,
-    combinedAttempts: native === 'categories' ? 1785 : native === 'snapshot' ? 1783 : native ? 1780 : 1779,
+    managementAttempts:
+      native === 'parameter_defaults'
+        ? 828
+        : native === 'categories'
+          ? 827
+          : native === 'snapshot'
+            ? 826
+            : native
+              ? 825
+              : 824,
+    controlAttempts:
+      native === 'parameter_defaults'
+        ? 959
+        : native === 'categories'
+          ? 958
+          : native === 'snapshot'
+            ? 957
+            : 955,
+    combinedAttempts:
+      native === 'parameter_defaults'
+        ? 1787
+        : native === 'categories'
+          ? 1785
+          : native === 'snapshot'
+            ? 1783
+            : native
+              ? 1780
+              : 1779,
     maximumRequests: 1,
     privateRead: false,
     networkRequests: 0,
   });
 }
 export function openExecution31130MetadataDiagnosticBudget(root, native = false) {
-  if (native === 'categories')
-    return readCategoryExecution31130Context(root).then((context) => {
+  if (native === 'categories' || native === 'parameter_defaults')
+    return (
+      native === 'parameter_defaults'
+        ? readParameterDefaultsExecution31130Context(root)
+        : readCategoryExecution31130Context(root)
+    ).then((context) => {
       checkExecution31130Context(context, native);
       return openExecution31130ContextBudget(context, native);
     });
@@ -890,13 +989,15 @@ export function openExecution31130MetadataDiagnosticBudget(root, native = false)
 }
 function openExecution31130ContextBudget(context, native) {
   const claim =
-      native === 'categories'
-        ? execution31130Checkpoint.categoryClaim
-        : native === 'snapshot'
-          ? execution31130Checkpoint.snapshotClaim
-          : native
-            ? execution31130Checkpoint.nativeClaim
-            : execution31130Checkpoint.claim,
+      native === 'parameter_defaults'
+        ? execution31130Checkpoint.parameterDefaultsClaim
+        : native === 'categories'
+          ? execution31130Checkpoint.categoryClaim
+          : native === 'snapshot'
+            ? execution31130Checkpoint.snapshotClaim
+            : native
+              ? execution31130Checkpoint.nativeClaim
+              : execution31130Checkpoint.claim,
     path = join(context.root, claim);
   let fd,
     expected = '',
@@ -907,18 +1008,39 @@ function openExecution31130ContextBudget(context, native) {
     expected =
       JSON.stringify({
         kind:
-          native === 'categories'
-            ? 'm03_execution_31130_category_diagnostic_budget'
-            : native === 'snapshot'
-              ? 'm03_execution_31130_snapshot_diagnostic_budget'
-              : native
-                ? 'm03_execution_31130_native_metadata_diagnostic_budget'
-                : 'm03_execution_31130_metadata_diagnostic_budget',
+          native === 'parameter_defaults'
+            ? 'm03_execution_31130_parameter_defaults_diagnostic_budget'
+            : native === 'categories'
+              ? 'm03_execution_31130_category_diagnostic_budget'
+              : native === 'snapshot'
+                ? 'm03_execution_31130_snapshot_diagnostic_budget'
+                : native
+                  ? 'm03_execution_31130_native_metadata_diagnostic_budget'
+                  : 'm03_execution_31130_metadata_diagnostic_budget',
         version: 1,
         checkpointSha256: execution31130Checkpoint.sha256,
         cleanupSha256: execution31130Checkpoint.cleanupSha256,
-        managementAttempts: native === 'categories' ? 827 : native === 'snapshot' ? 826 : native ? 825 : 824,
-        controlAttempts: native === 'categories' ? 958 : native === 'snapshot' ? 957 : 955,
+        managementAttempts:
+          native === 'parameter_defaults'
+            ? 828
+            : native === 'categories'
+              ? 827
+              : native === 'snapshot'
+                ? 826
+                : native
+                  ? 825
+                  : 824,
+        controlAttempts:
+          native === 'parameter_defaults'
+            ? 959
+            : native === 'categories'
+              ? 958
+              : native === 'snapshot'
+                ? 957
+                : 955,
+        ...(native === 'parameter_defaults'
+          ? { categoryReceiptSha256: execution31130Checkpoint.categoryReceiptSha256 }
+          : {}),
         ...(native === 'categories'
           ? { snapshotReceiptSha256: execution31130Checkpoint.snapshotReceiptSha256 }
           : {}),
@@ -942,7 +1064,7 @@ function openExecution31130ContextBudget(context, native) {
   return Object.freeze({
     admit() {
       if (closed || used) throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
-      if (native === 'categories') {
+      if (native === 'categories' || native === 'parameter_defaults') {
         // Recheck every public pin immediately before the synchronous debit.
         readSnapshotExecution31130Context(context.root);
         for (const [path, sha] of Object.entries(context.categoryPins))
@@ -966,13 +1088,29 @@ function openExecution31130ContextBudget(context, native) {
       const charges = [
         {
           event: 'management_attempt',
-          ordinal: native === 'categories' ? 828 : native === 'snapshot' ? 827 : native ? 826 : 825,
+          ordinal:
+            native === 'parameter_defaults'
+              ? 829
+              : native === 'categories'
+                ? 828
+                : native === 'snapshot'
+                  ? 827
+                  : native
+                    ? 826
+                    : 825,
         },
         ...(native
           ? [
               {
                 event: 'native_read_control_reservation',
-                ordinal: native === 'categories' ? 959 : native === 'snapshot' ? 958 : 956,
+                ordinal:
+                  native === 'parameter_defaults'
+                    ? 960
+                    : native === 'categories'
+                      ? 959
+                      : native === 'snapshot'
+                        ? 958
+                        : 956,
                 additionalHttpRequest: false,
               },
             ]
@@ -2754,6 +2892,95 @@ const execution31130SettingFields = Object.freeze([
   'executionConcurrency',
   'binaryMode',
 ]);
+export async function projectExecution31130ParameterDefaults(dto, context) {
+  const {
+      foundationRuntimeGraphHash,
+      foundationRuntimeObservedGraphHash,
+      foundationRuntimeExecutionParameterCandidates,
+    } = await import('./foundation-runtime-checkpoint.mjs'),
+    source = context?.expectedBody;
+  if (!source || foundationRuntimeGraphHash(source) !== context.bodyHash)
+    throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  const candidates = foundationRuntimeExecutionParameterCandidates(source),
+    snapshot = dto?.workflowData,
+    sets = source.nodes.filter((n) => n.type === 'n8n-nodes-base.set'),
+    tasks = sets.length === 1 ? dto?.data?.resultData?.runData?.[sets[0].name] : null,
+    knownSetExecuted = Array.isArray(tasks) && tasks.length > 0 && tasks.length <= 256 && tasks.every(record),
+    matches = (body) => {
+      try {
+        return (
+          body !== null &&
+          foundationRuntimeObservedGraphHash(snapshot, {
+            key: 'WF-00',
+            id: 'MzimjpsuyPuK7SKe',
+            nativeReadonlySettings: { binaryMode: 'separate' },
+          }) === foundationRuntimeGraphHash(body)
+        );
+      } catch {
+        return false;
+      }
+    },
+    nativeDefaultsMatch = matches(candidates.nativeDefaults),
+    nativeDefaultsAndSetOutputMatch = knownSetExecuted && matches(candidates.nativeDefaultsAndSetOutput),
+    nodeTypes = Object.fromEntries(
+      [
+        'executeWorkflowTrigger',
+        'manualTrigger',
+        'code',
+        'set',
+        'httpRequest',
+        'if',
+        'executeWorkflow',
+        'errorTrigger',
+        'scheduleTrigger',
+        'switch',
+        'webhook',
+        'wait',
+        'respondToWebhook',
+      ].map((type) => {
+        const selected = source.nodes
+            .map((n, i) => ({ node: n, index: i }))
+            .filter((v) => v.node.type === 'n8n-nodes-base.' + type),
+          match = (body) =>
+            body !== null &&
+            selected.every(
+              (v) =>
+                record(snapshot?.nodes?.[v.index]) &&
+                snapshot.nodes[v.index].id === v.node.id &&
+                snapshot.nodes[v.index].type === v.node.type &&
+                snapshot.nodes[v.index].typeVersion === v.node.typeVersion &&
+                isDeepStrictEqual(snapshot.nodes[v.index].parameters, body.nodes[v.index].parameters),
+            );
+        return [
+          type,
+          {
+            present: selected.length > 0,
+            parametersMatch:
+              match(candidates.nativeDefaults) ||
+              (knownSetExecuted && match(candidates.nativeDefaultsAndSetOutput)),
+          },
+        ];
+      }),
+    ),
+    rootIdentityMatches =
+      dto?.id === '31130' && dto.workflowId === 'MzimjpsuyPuK7SKe' && snapshot?.id === 'MzimjpsuyPuK7SKe',
+    versionMatchesIntent = dto?.workflowVersionId === context.versionId;
+  return {
+    fields: {
+      sourceBodyHashMatches: true,
+      rootIdentityMatches,
+      versionMatchesIntent,
+      knownSetExecuted,
+      nativeDefaultsMatch,
+      nativeDefaultsAndSetOutputMatch,
+      graphQualified:
+        rootIdentityMatches &&
+        versionMatchesIntent &&
+        (nativeDefaultsMatch || nativeDefaultsAndSetOutputMatch),
+    },
+    nodeTypes,
+  };
+}
 export async function projectExecution31130Categories(dto, context) {
   const {
     foundationRuntimeGraphHash,
@@ -3110,7 +3337,8 @@ export async function runNativeExecution31130MetadataDiagnostic(
     readerState: null,
     transportState: null,
   };
-  if (![false, true, 'categories'].includes(snapshotMode)) throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  if (![false, true, 'categories', 'parameter_defaults'].includes(snapshotMode))
+    throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
   if (snapshotMode) Object.assign(result, { forensics: null, snapshotStage: 'not_attempted' });
   if (!key) {
     result.status = 'missing_key';
@@ -3145,17 +3373,25 @@ export async function runNativeExecution31130MetadataDiagnostic(
   try {
     context = await (
       dependencies.readContext ??
-      (snapshotMode === 'categories'
-        ? readCategoryExecution31130Context
-        : snapshotMode
-          ? readSnapshotExecution31130Context
-          : readNativeExecution31130Context)
+      (snapshotMode === 'parameter_defaults'
+        ? readParameterDefaultsExecution31130Context
+        : snapshotMode === 'categories'
+          ? readCategoryExecution31130Context
+          : snapshotMode
+            ? readSnapshotExecution31130Context
+            : readNativeExecution31130Context)
     )();
     budget = await (dependencies.openBudget
       ? dependencies.openBudget()
       : openExecution31130MetadataDiagnosticBudget(
           undefined,
-          snapshotMode === 'categories' ? 'categories' : snapshotMode ? 'snapshot' : true,
+          snapshotMode === 'parameter_defaults'
+            ? 'parameter_defaults'
+            : snapshotMode === 'categories'
+              ? 'categories'
+              : snapshotMode
+                ? 'snapshot'
+                : true,
         ));
   } catch {
     result.status = 'budget_blocked';
@@ -3276,6 +3512,8 @@ export async function runNativeExecution31130MetadataDiagnostic(
         result.forensics = await projectExecution31130Snapshot(dto, context);
         if (snapshotMode === 'categories')
           result.forensics.categories = await projectExecution31130Categories(dto, context);
+        if (snapshotMode === 'parameter_defaults')
+          result.forensics.parameterDefaults = await projectExecution31130ParameterDefaults(dto, context);
         const knownStatus = [
           'new',
           'running',
@@ -3365,6 +3603,8 @@ export const runExecution31130SnapshotDiagnostic = (key, dependencies = {}) =>
   runNativeExecution31130MetadataDiagnostic(key, dependencies, true);
 export const runExecution31130CategoryDiagnostic = (key, dependencies = {}) =>
   runNativeExecution31130MetadataDiagnostic(key, dependencies, 'categories');
+export const runExecution31130ParameterDefaultsDiagnostic = (key, dependencies = {}) =>
+  runNativeExecution31130MetadataDiagnostic(key, dependencies, 'parameter_defaults');
 
 // Fixed single-ID structural diagnosis only. No run data is traversed, no
 // response-defined field names or values escape, and no native receipt is made.
@@ -4196,6 +4436,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     '--execution-31130-native-metadata-check-only',
     '--execution-31130-snapshot-check-only',
     '--execution-31130-category-check-only',
+    '--execution-31130-parameter-defaults-check-only',
   ].includes(process.argv[2])
     ? undefined
     : process.env.M03_N8N_API_KEY;
@@ -4215,10 +4456,12 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         '--execution-31130-native-metadata-check-only',
         '--execution-31130-snapshot-check-only',
         '--execution-31130-category-check-only',
+        '--execution-31130-parameter-defaults-check-only',
         '--execution-31130-metadata-diagnostic',
         '--execution-31130-native-metadata-diagnostic',
         '--execution-31130-snapshot-diagnostic',
         '--execution-31130-category-diagnostic',
+        '--execution-31130-parameter-defaults-diagnostic',
       ].includes(process.argv[2]))
   )) {
     process.stdout.write(JSON.stringify({ version: 1, status: 'argument_rejected' }) + '\n');
@@ -4230,11 +4473,18 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       '--execution-31130-snapshot-check-only',
       '--execution-31130-snapshot-diagnostic',
       '--execution-31130-category-check-only',
+      '--execution-31130-parameter-defaults-check-only',
       '--execution-31130-category-diagnostic',
+      '--execution-31130-parameter-defaults-diagnostic',
     ].includes(process.argv[2])
   ) {
-    const category = process.argv[2].startsWith('--execution-31130-category-'),
-      snapshot = category ? 'categories' : process.argv[2].startsWith('--execution-31130-snapshot-'),
+    const parameterDefaults = process.argv[2].startsWith('--execution-31130-parameter-defaults-'),
+      category = process.argv[2].startsWith('--execution-31130-category-'),
+      snapshot = parameterDefaults
+        ? 'parameter_defaults'
+        : category
+          ? 'categories'
+          : process.argv[2].startsWith('--execution-31130-snapshot-'),
       check = process.argv[2].endsWith('-check-only');
     // Native modules import this inventory module. Defer their dynamic imports
     // until this entry module has finished evaluating.
@@ -4244,7 +4494,13 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
           check
             ? checkExecution31130MetadataDiagnostic(
                 undefined,
-                category ? 'categories' : snapshot ? 'snapshot' : true,
+                parameterDefaults
+                  ? 'parameter_defaults'
+                  : category
+                    ? 'categories'
+                    : snapshot
+                      ? 'snapshot'
+                      : true,
               )
             : runNativeExecution31130MetadataDiagnostic(key, {}, snapshot),
         )
