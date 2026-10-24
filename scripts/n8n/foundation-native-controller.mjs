@@ -22,6 +22,7 @@ import {
 } from './foundation-native-settlement.mjs';
 import { assertFoundationNativeCleanupReceipt } from './foundation-native-cleanup.mjs';
 import { assertFoundationCallbackCases, assertFoundationCallbackCase } from './foundation-callback-cases.mjs';
+import { foundationProjectVerifiedContinuationUnadmittedUsage } from './foundation-live-project-verified-continuation.mjs';
 
 // The existing execution-controller entry selects this private native branch.
 // No default transport, credential loader, live admission or approval exists.
@@ -112,8 +113,15 @@ export function createFoundationNativeController({
   caseReceiptValidator = assertFoundationRuntimeCaseReceipt,
   runtimeBindingValidator = assertFoundationRuntimeBinding,
   callbackCases,
+  projectVerifiedContinuationProof,
 }) {
+  let carriedNativeExecutions = 0;
   try {
+    if (projectVerifiedContinuationProof !== undefined) {
+      const usage = foundationProjectVerifiedContinuationUnadmittedUsage(projectVerifiedContinuationProof);
+      if (projectVerifiedContinuationProof.windowId !== activeWindowId) fail();
+      carriedNativeExecutions = usage.nativeExecutions;
+    }
     bindings = parseN8nBindings(bindings);
     assertFoundationNativeReader(nativeReader);
     assertFoundationControlJournal(journal);
@@ -178,7 +186,7 @@ export function createFoundationNativeController({
     cleanedIds = new Set(),
     unknownCandidates = new Map();
   let unknownInventoryComplete = true;
-  let reserved = 0,
+  let reserved = carriedNativeExecutions,
     pendingCalls = 0,
     stopped = false,
     admissionClosed = false,

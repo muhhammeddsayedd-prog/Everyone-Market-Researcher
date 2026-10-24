@@ -1,0 +1,28 @@
+{
+  "kind": "m03_wf00_unadmitted_local_cleanup",
+  "version": 1,
+  "recordedAt": "2026-10-24T16:02:17.868Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "toolReceipt": "d6a729",
+  "nativeExit": 0,
+  "checkpointSha256": "9c49750496d602781903de09459d729c6a3061b433a78cfea6aabdb4d796e99f",
+  "databaseReceiptSha256": "3e7ad86a3417716b052cb150866b2f1baa5faf61288fffc10e6c55526d49bcf0",
+  "apiReceiptSha256": "8eea80405984958d46623f9c20be7421e629cde85dfd515ac89ee27320dac0c2",
+  "actualPresenceResult": {
+    "kind": "m03_unadmitted_local_cleanup_verified",
+    "childProcessesAbsent": true,
+    "allElevenDisposableLeavesAbsent": true,
+    "runtimeLockAbsent": true,
+    "persistentFourAndMachineRetained": true,
+    "privateContentsRead": false,
+    "networkRequests": 0
+  },
+  "apiProcessIds": [
+    10396,
+    7612
+  ],
+  "originalJournalsUnchanged": true,
+  "executionIdAndNativeTerminalReceiptRemainUnestablished": true,
+  "businessAcceptanceVerified": false
+}

@@ -135,7 +135,7 @@ foreach($entry in @(@(${literal(nativePath('Invoke-M03FoundationMigrations.ps1')
 $repo=${literal(process.cwd())};$PostcheckContinuation=$false;$RemainingContinuation=$false;$StartupReplacement=$false;$ProjectVerifiedContinuation=$false
 function Assert-Path($Base,$Relative){return Join-Path $Base $Relative}
 $expected=[pscustomobject]@{id='3c46c791-e140-4eb9-890a-eecfa251f65e';audience='https://everyone-market-researcher-7fcbxykan-muhammed-abdelrahman.vercel.app';commitSha='7b1837201ac7925591577a1517d7288936ca3464';deploymentId='dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25'}
-[ordered]@{inspection=(Foundation-Technical13InspectionSql);archive=(Foundation-Technical13ArchiveSql $expected)}|ConvertTo-Json -Compress -Depth 4
+[ordered]@{inspection=(Foundation-Technical13InspectionSql);currentInspection=(Foundation-Technical13InspectionSql -ReadOnlyCurrent $true);archive=(Foundation-Technical13ArchiveSql $expected)}|ConvertTo-Json -Compress -Depth 4
 `;
   const result = spawnSync(
     'powershell.exe',
@@ -661,10 +661,24 @@ describe(
       'technical13 archive and next fifth-window registration preserve exact typed12/13 audits and prior history',
       { skip: process.platform !== 'win32' },
       () => {
-        const { inspection, archive } = nativeTechnical13ArchiveQueries(),
+        const { inspection, currentInspection, archive } = nativeTechnical13ArchiveQueries(),
           current = '3c46c791-e140-4eb9-890a-eecfa251f65e',
           previous = 'eda4fae1-1e19-47db-81b8-beac1a4ed883';
         assert.equal(/\b(delete|truncate|grant|revoke|alter\s+role|create\s+role)\b/i.test(archive), false);
+        assert.equal(
+          /\b(update|insert|delete|truncate|grant|revoke|alter|create|call)\b/i.test(currentInspection),
+          false,
+        );
+        assert.ok(
+          currentInspection.includes(
+            "'globalLaunchCount',(select count(*) from ops.apify_launch_admissions)",
+          ),
+        );
+        assert.equal(
+          inspection.includes("'globalLaunchCount'"),
+          false,
+          'historical archive projection unchanged',
+        );
         assert.equal(
           (archive.match(/update app\.(competitors|competitor_accounts) set status=/g) || []).length,
           2,
@@ -727,6 +741,8 @@ insert into app.competitors(id,company_code,slug,name,priority_tier,status)value
         assert.equal(after.fixture.accountPaused, true);
         assert.equal(after.fixtureAuditCount, 6);
         assert.equal(after.familyClosed, true);
+        const currentReadback = JSON.parse(psql('begin read only;' + currentInspection + 'rollback;'));
+        assert.deepEqual(currentReadback, { ...after, globalLaunchCount: 0 });
         assert.equal(
           psql(
             `select jsonb_build_object('windows',(select jsonb_agg(to_jsonb(w) order by window_id)from ops.foundation_gateway_rate_windows w),'audits',(select jsonb_agg(to_jsonb(l) order by id)from ops.audit_log l),'other',(select to_jsonb(c)from app.competitors c where company_code='C998'));`,

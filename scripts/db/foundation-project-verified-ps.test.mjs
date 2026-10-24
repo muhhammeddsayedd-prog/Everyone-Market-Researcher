@@ -294,6 +294,7 @@ test(
     ];
     const output = powershell(`
 ${definitions(['Assert-Keys', 'Read-FoundationInspection'])}
+$TechnicalResidual13=$false;$InspectOnly=$true
 $inputs=ConvertFrom-Json -InputObject ${quote(JSON.stringify(inputs.map((inspection) => JSON.stringify([{ inspection }]))))}
 $accepted=0;$denied=0
 foreach($inputText in $inputs){$result=[pscustomobject]@{ok=$true;closed=$true;text=$inputText};try{$null=Read-FoundationInspection $result;$accepted++}catch{$denied++}}

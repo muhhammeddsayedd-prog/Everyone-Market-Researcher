@@ -137,6 +137,7 @@ export function createFoundationExecutionController({
   baselineIdsByKey,
   runtimeBindingValidator,
   callbackCases,
+  projectVerifiedContinuationProof,
 }) {
   if (nativeReader !== undefined)
     return createFoundationNativeController({
@@ -155,8 +156,10 @@ export function createFoundationExecutionController({
       callTimeoutMs,
       caseReceiptValidator,
       callbackCases,
+      ...(projectVerifiedContinuationProof === undefined ? {} : { projectVerifiedContinuationProof }),
       ...(runtimeBindingValidator === undefined ? {} : { runtimeBindingValidator }),
     });
+  if (projectVerifiedContinuationProof !== undefined) fail('CONTROL_JOURNAL');
   bindings = parseN8nBindings(bindings);
   if (typeof journal?.append !== 'function' || !Array.isArray(previousEvents)) fail('CONTROL_JOURNAL');
   if (

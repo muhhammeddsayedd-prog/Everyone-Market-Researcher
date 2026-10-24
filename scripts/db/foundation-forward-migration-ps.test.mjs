@@ -206,6 +206,18 @@ foreach($fault in @('flagString','countString','requestString','false12','false1
 }
 $after=$original|ConvertTo-Json -Depth 12|ConvertFrom-Json;$after.fixture.competitorArchived=$true;$after.fixture.competitorActive=$false;$after.fixture.accountPaused=$true;$after.fixture.accountActive=$false
 Check $after $true
+$InspectOnly=$true;$current=$after|ConvertTo-Json -Depth 12|ConvertFrom-Json;$current|Add-Member NoteProperty globalLaunchCount 0
+Check $current $true
+foreach($fault in @('missingGlobal','stringGlobal','launch','actor','scrape','cost','item','activeFixture','familyChanged','auditChanged')){
+ $value=$current|ConvertTo-Json -Depth 12|ConvertFrom-Json
+ switch($fault){
+  'missingGlobal'{$value.PSObject.Properties.Remove('globalLaunchCount')} 'stringGlobal'{$value.globalLaunchCount='0'} 'launch'{$value.globalLaunchCount=1}
+  'actor'{$value.actorRunCount=1} 'scrape'{$value.scrapeRunCount=1} 'cost'{$value.costEntryCount=1} 'item'{$value.collectedItemCount=1}
+  'activeFixture'{$value.fixture.competitorArchived=$false;$value.fixture.competitorActive=$true}
+  'familyChanged'{$value.familyClosed=$false} 'auditChanged'{$value.fixtureAuditCount=7}
+ }
+ $blocked=$false;try{Check $value $true}catch{$blocked=$true};if(-not $blocked){throw ('READ_ONLY_CURRENT_ACCEPTED_'+$fault)}
+}
 Write-Output 'TECHNICAL13_ARCHIVE_TYPED_JSON'
 `);
     assert.equal(result, 'TECHNICAL13_ARCHIVE_TYPED_JSON');
@@ -506,6 +518,86 @@ test('forward mode conflicts fail before packet, credential or network access', 
 });
 
 test(
+  'current read-only residual inspection accepts only its exact mode before any public or private read',
+  native,
+  () => {
+    const source = readFileSync(consumer, 'utf8');
+    const initialModes = source.slice(source.indexOf('if($TechnicalResidual13'), source.indexOf('$repo ='));
+    assert.ok(initialModes.length > 0);
+    assert.equal(
+      run(`
+$CheckOnly=$true;$InspectOnly=$true;$TechnicalResidual13=$true;$ArchiveFixture=$false;$WriterClose=$false;$ForwardMigration=$false;$ForwardWindow=$false;$PhaseAControl=$false;$OriginalDeadlineAtMs=0;$ClockAmendment=$false;$PostcheckContinuation=$false;$RemainingContinuation=$false;$StartupReplacement=$false;$ProjectVerifiedContinuation=$false
+${initialModes}
+Write-Output 'CURRENT_READ_ONLY_MODE_ACCEPTED_WITHOUT_READS'
+`),
+      'CURRENT_READ_ONLY_MODE_ACCEPTED_WITHOUT_READS',
+    );
+    for (const flags of [
+      ['-TechnicalResidual13'],
+      ['-TechnicalResidual13', '-InspectOnly', '-ArchiveFixture'],
+      ['-TechnicalResidual13', '-InspectOnly', '-ForwardMigration'],
+      ['-TechnicalResidual13', '-InspectOnly', '-ForwardWindow'],
+      ['-TechnicalResidual13', '-InspectOnly', '-PhaseAControl'],
+    ]) {
+      const result = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', consumer, ...flags], {
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 15000,
+        env: Object.fromEntries(
+          ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP'].map((name) => [name, process.env[name]]),
+        ),
+      });
+      assert.equal(result.status, 1);
+      assert.equal(result.stderr, '');
+      assert.equal(
+        result.stdout.trim(),
+        'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting residual read/archive modes; no private access.',
+      );
+    }
+  },
+);
+
+test(
+  'current read-only public and private preparation select the same revalidated technical13 binding',
+  native,
+  () => {
+    const source = readFileSync(consumer, 'utf8');
+    const publicSelection = source.match(
+      /\$inspectExpectedBinding=if\(\$TechnicalResidual13\)\{Read-FoundationTechnical13Closed\}else\{Assert-FoundationInspectClosed\}/,
+    )?.[0];
+    assert.ok(publicSelection, 'actual public selection retained');
+    const privateStart = source.indexOf(
+      'if($InspectOnly -or $WriterClose -or $ArchiveFixture -or $ForwardMigration){',
+      source.indexOf('if($CheckOnly -and $ForwardMigration){Write-Output'),
+    );
+    assert.ok(privateStart > 0);
+    const privatePreparation = source.slice(
+      privateStart,
+      source.indexOf('if($WriterClose -or $ArchiveFixture -or $ForwardMigration){', privateStart),
+    );
+    const recheck = privatePreparation.indexOf('$inspectExpectedBinding=Assert-FoundationInspectClosed');
+    const materialize = privatePreparation.indexOf('Ensure-M03DevReadOnlyHandoff');
+    assert.ok(recheck >= 0 && materialize > recheck);
+    assert.equal(
+      run(`
+${definitions(['Assert-FoundationInspectClosed'])}
+$TechnicalResidual13=$true;$script:valid=$true;$script:reads=0
+function Assert-Path{throw 'HISTORICAL_INSPECTION_READ_NOT_ALLOWED'}
+function Read-FoundationTechnical13Closed{if(-not $script:valid){throw 'SYNTHETIC_PRIOR_CHANGED'};$script:reads++;return [pscustomobject]@{id='3c46c791-e140-4eb9-890a-eecfa251f65e';commitSha='7b1837201ac7925591577a1517d7288936ca3464'}}
+${publicSelection}
+$public=$inspectExpectedBinding
+$inspectExpectedBinding=Assert-FoundationInspectClosed
+if($script:reads -ne 2 -or $public.id -cne $inspectExpectedBinding.id -or $public.commitSha -cne $inspectExpectedBinding.commitSha){throw 'PUBLIC_PRIVATE_BINDING_CHANGED'}
+$script:valid=$false
+foreach($path in @('public','private')){$denied=$false;try{if($path -ceq 'public'){${publicSelection}}else{$inspectExpectedBinding=Assert-FoundationInspectClosed}}catch{$denied=$true};if(-not $denied){throw 'CHANGED_PRIOR_ACCEPTED'}}
+Write-Output 'SAME_CURRENT_BINDING_REVALIDATED_BEFORE_ADMIN_COPY'
+`),
+      'SAME_CURRENT_BINDING_REVALIDATED_BEFORE_ADMIN_COPY',
+    );
+  },
+);
+
+test(
   'forward baseline refuses any reopened window, changed archived fixture or hidden extra family row',
   native,
   () => {
@@ -743,6 +835,10 @@ foreach($mutation in @(@{key='managementMaximum';value=832},@{key='managementAtt
  try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'RESET_OR_MIXED_BROWSER_CHARGE_ACCEPTED'}
 }
 $next=[ordered]@{};foreach($name in $valid.Keys){$next[$name]=$valid[$name]};$next.controlAttempts=843;$next.combinedAttempts=1367;$script:dto=[pscustomobject]$next;$null=Read-FoundationPostcheckContinuation
+$carry=[ordered]@{};foreach($name in $next.Keys){$carry[$name]=$next[$name]};$carry.managementAttempts=527;$carry.controlAttempts=846;$carry.combinedAttempts=1373;$script:dto=[pscustomobject]$carry;$null=Read-FoundationPostcheckContinuation
+foreach($mutation in @(@{key='managementAttempts';value=524},@{key='managementAttempts';value='527'},@{key='controlAttempts';value=843},@{key='combinedAttempts';value=1370})){
+ $bad=[ordered]@{};foreach($name in $carry.Keys){$bad[$name]=$carry[$name]};$bad[$mutation.key]=$mutation.value;$script:dto=[pscustomobject]$bad;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'UNADMITTED_CARRY_NATIVE_RESET_ACCEPTED'}
+}
 foreach($mutation in @(@{key='controlAttempts';value=842},@{key='combinedAttempts';value=1366},@{key='controlAttempts';value='843'})){$mixed=[ordered]@{};foreach($name in $next.Keys){$mixed[$name]=$next[$name]};$mixed[$mutation.key]=$mutation.value;$script:dto=[pscustomobject]$mixed;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'SECOND_BROWSER_CHARGE_RESET_ACCEPTED'}}
 $script:dto=[pscustomobject]$next;$script:proofValid=$false;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MISSING_NO_ADMIN_PROOF_ACCEPTED'}
 Write-Output 'EXACT_POST_BROWSER_NATIVE_TUPLE'
@@ -1011,7 +1107,7 @@ Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
 );
 
 test(
-  'actual forward packet has all67 source-required public pins and retains every old migration field',
+  'actual forward packet has all71 source-required public pins and retains every old migration field',
   native,
   () => {
     assert.equal(
@@ -1025,12 +1121,12 @@ Invoke-Expression $source.Substring($start,$end-$start)
 $packet=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
 $old=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-dev-migration-packet.json'))}))
 Assert-Keys $packet.files $requiredFiles
-if($requiredFiles.Count -ne 67 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+if($requiredFiles.Count -ne 71 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
 $prior=@($old.baseline)+@($old.pending)
 for($i=0;$i -lt 14;$i++){foreach($field in @('version','name','file','sha256','historySha256')){if($prior[$i].$field -cne $packet.baseline[$i].$field){throw 'ORIGINAL_MIGRATION_REWRITTEN'}}}
-Write-Output 'EXACT_PUBLIC_67_AND_OLD14'
+Write-Output 'EXACT_PUBLIC_71_AND_OLD14'
 `),
-      'EXACT_PUBLIC_67_AND_OLD14',
+      'EXACT_PUBLIC_71_AND_OLD14',
     );
   },
 );
@@ -1081,6 +1177,15 @@ for (const profile of [
     combinedAttempts: 1367,
     technicalOrdinal: 16,
   },
+  {
+    name: 'unadmitted-carry',
+    options: { unadmittedWf00Reconciled: true },
+    managementMaximum: 1024,
+    managementAttempts: 527,
+    controlAttempts: 846,
+    combinedAttempts: 1373,
+    technicalOrdinal: 16,
+  },
 ])
   test(
     `${profile.name} fresh ForwardWindow completes the full native public Run preflight before the private boundary`,
@@ -1117,7 +1222,11 @@ for (const profile of [
           }
         }
         let helperSource = readFileSync(consumer, 'utf8');
-        if (profile.options.restoredBrowserDiscovery || profile.options.restoredBrowserRetryDiscovery) {
+        if (
+          profile.options.restoredBrowserDiscovery ||
+          profile.options.restoredBrowserRetryDiscovery ||
+          profile.options.unadmittedWf00Reconciled
+        ) {
           // Bind the native guard to this isolated receipt's coherent synthetic
           // ancestry/prefixes. Production receipt pins and consumer stay unchanged.
           for (const [relative, original] of [
@@ -1129,7 +1238,7 @@ for (const profile of [
               'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json',
               'aabddbc205c3582ba51beb16ca734c35378cf6caa79c288184aaa13c08c4406c',
             ],
-            ...(profile.options.restoredBrowserRetryDiscovery
+            ...(profile.options.restoredBrowserRetryDiscovery || profile.options.unadmittedWf00Reconciled
               ? [
                   [
                     'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical15-reconciliation-20261024.json',

@@ -509,6 +509,61 @@ test('effectful continuation reaches the actual session constructor with retaine
   }
 });
 
+test('reconciled unadmitted native start is counted by the actual CLI state before any new child or acceptance case', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ unadmittedWf00Reconciled: true });
+  let session,
+    childStarts = 0;
+  try {
+    const proof = f.claim(f.admit()),
+      bindings = JSON.parse(readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)));
+    for (const name of ['bindings.dev.json', 'transport.dev.json'])
+      f.put(
+        'n8n/foundation/' + name,
+        readFileSync(new URL('../../n8n/foundation/' + name, import.meta.url), 'utf8'),
+      );
+    for (const key of Object.keys(bindings.workflowRefs))
+      f.put(
+        'n8n/workflows/' + key + '.json',
+        readFileSync(new URL('../../n8n/workflows/' + key + '.json', import.meta.url), 'utf8'),
+      );
+    const copied = await f.copy('foundation-live-runtime-cli.mjs');
+    session = f.scoped(() =>
+      copied.createFoundationLiveAcceptanceSession(
+        {
+          ...privatePacket(),
+          sourceCommitSha: proof.sourceCommitSha,
+          leaseExpiry: f.now() + 7200000,
+        },
+        () => {},
+        {
+          now: f.now,
+          projectVerifiedContinuationProof: proof,
+          startAdmin() {
+            childStarts++;
+            throw Error('UNEXPECTED_CHILD');
+          },
+        },
+      ),
+    );
+    const result = await session.command({ kind: 'm03_acceptance_command', id: 'carry', command: 'state' });
+    assert.deepEqual(
+      [result.managementAttempts, result.controlAttempts, result.nativeExecutions],
+      [527, 846, 1],
+    );
+    assert.equal(
+      result.gatewayPreflightAttempts,
+      6,
+      'two rejected HTTP sends do not fabricate SQL admissions or gateway probes',
+    );
+    assert.equal(result.status, 'not_prepared');
+    assert.equal(childStarts, 0);
+    assert.equal(result.businessAcceptanceProven, false);
+  } finally {
+    if (session) await session.close();
+    f.cleanup();
+  }
+});
+
 for (const profile of [
   {
     maximum: 576,

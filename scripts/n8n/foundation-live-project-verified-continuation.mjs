@@ -305,6 +305,16 @@ const restoredBrowserDiscoveryRecovery = Object.freeze({
     cleanupSha256: '21d4d3c897b67189999ae502906dac4cfeb33e187011a8958913bb6fba705b29',
   }),
 });
+const unadmittedWf00Recovery = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-checkpoint-20261024.json',
+  sha256: '9c49750496d602781903de09459d729c6a3061b433a78cfea6aabdb4d796e99f',
+  databaseRelative: 'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-db-readback-20261024.json',
+  databaseSha256: '3e7ad86a3417716b052cb150866b2f1baa5faf61288fffc10e6c55526d49bcf0',
+  apiRelative: 'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-api-readback-20261024.json',
+  apiSha256: '8eea80405984958d46623f9c20be7421e629cde85dfd515ac89ee27320dac0c2',
+  cleanupRelative: 'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-cleanup-20261024.json',
+  cleanupSha256: '7a79792ee2143f99680346bbd704d3cb274a141a57eade33be117205b1e198c9',
+});
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
 };
@@ -553,6 +563,7 @@ function checkpoint(x) {
   x.recovery = reconciledRuntimeRestoration(x) ?? x.recovery;
   x.recovery = approvedRuntimeRestorationAllocation(x) ?? x.recovery;
   x.recovery = reconciledRestoredBrowserDiscovery(x) ?? x.recovery;
+  x.recovery = reconciledUnadmittedWf00(x) ?? x.recovery;
   if (x.recovery?.closedWindow) assertSetupAllocationApproval(x);
   recoveryPreflight(x);
   return p;
@@ -5404,6 +5415,397 @@ function reconciledRestoredBrowserDiscovery(x, cfg = restoredBrowserDiscoveryRec
     ? (reconciledRestoredBrowserDiscovery({ ...x, recovery: recovered }, cfg.next) ?? recovered)
     : recovered;
 }
+function reconciledUnadmittedWf00(x) {
+  const cfg = unadmittedWf00Recovery;
+  if (!cfg || x.recovery?.restoredBrowserDiscoveryTechnicalAttempt !== 15) return null;
+  const present = [cfg.relative, cfg.databaseRelative, cfg.apiRelative, cfg.cleanupRelative].map((path) =>
+    x.file(path, { optional: true }),
+  );
+  if (present.every((text) => text === null)) {
+    if (
+      x.file('scripts/n8n/out/foundation/wf00-execution-diagnostic-20261024.jsonl', { optional: true }) !==
+      null
+    )
+      fail();
+    return null;
+  }
+  if (present.some((text) => text === null)) fail();
+  const pins = { ...x.recovery.pins };
+  const read = (path, sha) => {
+    const text = x.file(path);
+    if (hash(text) !== sha) fail();
+    pins[path] = sha;
+    return JSON.parse(text);
+  };
+  const r = read(cfg.relative, cfg.sha256),
+    d = read(cfg.databaseRelative, cfg.databaseSha256),
+    a = read(cfg.apiRelative, cfg.apiSha256),
+    z = read(cfg.cleanupRelative, cfg.cleanupSha256);
+  const same = (value, expected) => {
+    if (!value || Object.entries(expected).some(([key, v]) => value[key] !== v)) fail();
+  };
+  if (
+    x.recovery.mainManagementAttempts !== 513 ||
+    x.recovery.carriedManagementAttempts !== 11 ||
+    x.recovery.mainControlAttempts !== 840 ||
+    x.recovery.carriedControlAttempts !== 3 ||
+    x.recovery.setupAttempts !== 149 ||
+    x.recovery.legacySqlAdmitted !== 7
+  )
+    fail();
+  same(r, {
+    kind: 'm03_unadmitted_wf00_manual_execution_checkpoint',
+    version: 1,
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    helperHead: '17f83cfaf82118e3baf641d447b0ac49e480ac30',
+    pr: 8,
+    prDraft: true,
+  });
+  same(r.event, {
+    workflowId: 'MzimjpsuyPuK7SKe',
+    startedAt: '2026-10-24T15:41:07.249Z',
+    acceptanceAdmitted: false,
+    executionId: null,
+    executionIdVerified: false,
+    nativeStartsObserved: 1,
+    gatewayHttpRequestsObserved: 2,
+    finalNodeStatus: 'error',
+    fixedErrorCode: 'EMR_FOUNDATION_RESPONSE_UNCONFIRMED',
+    rawExecutionPayloadRead: false,
+    furtherExecutionStopped: true,
+    claimedAcceptancePass: false,
+  });
+  same(r.priorUsage, {
+    management: 524,
+    control: 843,
+    combined: 1367,
+    vercel: 149,
+    nativeExecutions: 0,
+    actorStarts: 0,
+  });
+  same(r.conservativeAdditionalReservation, {
+    management: 0,
+    control: 3,
+    combined: 3,
+    nativeExecutions: 1,
+    gatewayHttpRequests: 2,
+  });
+  same(r.reservedCumulativeUsage, {
+    management: 524,
+    control: 846,
+    combined: 1370,
+    vercel: 149,
+    nativeExecutions: 1,
+  });
+  same(r.limits, {
+    management: 1024,
+    control: 2048,
+    combined: 2560,
+    vercel: 224,
+    nativeExecutions: 120,
+    actorStarts: 2,
+    actorReserveUsd: 2,
+    allowancesReplenished: false,
+  });
+  if (
+    !exact(
+      r.pins,
+      ['management', 'control', 'setup', 'preflight', 'runtime', 'runtime.technical-13'].map(
+        (name) => 'scripts/n8n/out/foundation/live/' + name + '.jsonl',
+      ),
+    )
+  )
+    fail();
+  for (const [path, sha] of Object.entries(r.pins)) {
+    if (sha !== x.recovery.pins[path]) fail();
+    const text = x.file(path),
+      name = path.match(/\/([^/]+)\.jsonl$/)?.[1];
+    const count = { management: 514, control: 848, setup: 297, preflight: 16 }[name];
+    if (count) {
+      const rows = jsonl(text, 8000);
+      if (rows.lines.length < count || hash(rows.lines.slice(0, count).join('\n') + '\n') !== sha) fail();
+    } else if (hash(text) !== sha) fail();
+  }
+  same(d, {
+    kind: 'm03_wf00_unadmitted_dev_database_reconciliation',
+    version: 1,
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    checkpointSha256: cfg.sha256,
+    nativeExit: 0,
+    readOnly: true,
+    selectQueries: 2,
+    mutationAttempted: false,
+    migrationReplayAttempted: false,
+  });
+  same(d.rawResult, {
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    status: 'inspection_verified',
+    authenticationVerified: true,
+    historyBefore: 'complete',
+    historyAfter: 'complete',
+    pushAttempted: false,
+    childrenClosed: true,
+    handoffDeleted: true,
+    leaseDeleted: true,
+    scratchDeleted: true,
+    inspectOnly: true,
+    technicalResidual13: true,
+    activeWindowId: '3c46c791-e140-4eb9-890a-eecfa251f65e',
+    bindingMatchesPriorProvision: true,
+    inspectParentLockDeleted: true,
+  });
+  const inspection = d.rawResult.inspection;
+  same(inspection, {
+    identity: true,
+    kind: 'm03_foundation_inspection',
+    windowId: '3c46c791-e140-4eb9-890a-eecfa251f65e',
+    familyClosed: true,
+    fixtureAuditCount: 6,
+    technical12Exact: true,
+    technical13Exact: true,
+    globalLaunchCount: 0,
+    launchCount: 0,
+    actorRunCount: 0,
+    scrapeRunCount: 0,
+    costEntryCount: 0,
+    costUsd: 0,
+    collectedItemCount: 0,
+    reservedRequests: 0,
+    incompleteRequests: 0,
+    activeLeaseCount: 0,
+  });
+  same(inspection.fixture, {
+    competitorId: 'd51a39f6-fe87-4d17-aee9-3070c45693aa',
+    accountId: 'bd23314c-591f-4fb7-92fd-b7450634eeb6',
+    competitorArchived: true,
+    competitorActive: false,
+    accountPaused: true,
+    accountActive: false,
+    itemsCount: 0,
+    locked: false,
+    progressPresent: false,
+  });
+  same(d.familyPredicateVerified, {
+    exactClosedWindows: 4,
+    globalAdmitted: 7,
+    completedNonreservedRequests: 3,
+    fixtureAudits: 6,
+    globalActorLaunches: 0,
+    reservedOrIncompleteWork: false,
+  });
+  if (
+    d.resultPin.path !== `scripts/db/out/m03-foundation-inspect-${d.rawResult.runId}-latest.json` ||
+    hash(x.file(d.resultPin.path)) !== d.resultPin.sha256 ||
+    JSON.stringify(JSON.parse(x.file(d.resultPin.path))) !== JSON.stringify(d.rawResult)
+  )
+    fail();
+  pins[d.resultPin.path] = d.resultPin.sha256;
+  same(a, {
+    kind: 'm03_wf00_unadmitted_execution_metadata_reconciliation',
+    version: 1,
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    checkpointSha256: cfg.sha256,
+    databaseReceiptSha256: cfg.databaseSha256,
+    nativeExit: 0,
+    originalJournalsUnchanged: true,
+  });
+  same(a.rawNativeResult, {
+    host: 'muhhammedsayed.app.n8n.cloud',
+    projectId: 'pHvQjDmjxVZ3KQLT',
+    status: 'complete',
+    nativeExit: 0,
+    childClosed: true,
+    handoffDeleted: true,
+  });
+  const v = a.rawNativeResult.inventory;
+  same(v, {
+    version: 1,
+    environment: 'dev',
+    host: 'muhhammedsayed.app.n8n.cloud',
+    projectId: 'pHvQjDmjxVZ3KQLT',
+    workflowKey: 'WF-00',
+    status: 'execution_metadata_observed',
+    requestCount: 3,
+    maximumRequests: 3,
+    authenticationVerified: true,
+    networkCompletionVerified: true,
+    runningEmpty: true,
+    runningPaginationComplete: true,
+    latestPaginationComplete: true,
+    unadmittedExecutionIdEstablished: false,
+    allActiveExecutionsAbsentProven: false,
+    savedWorkflowVerified: true,
+    manualRetentionDisabled: true,
+  });
+  if (
+    !Array.isArray(v.latest) ||
+    v.latest.length !== 0 ||
+    !exact(v.baseline, [
+      'versionMatches',
+      'definitionMatches',
+      'settingsMatch',
+      'ownershipMatches',
+      'inactive',
+    ]) ||
+    Object.values(v.baseline).some((value) => value !== true)
+  )
+    fail();
+  if (
+    v.diagnostics.version !== 1 ||
+    v.diagnostics.dns !== 'complete' ||
+    !Array.isArray(v.diagnostics.requests) ||
+    v.diagnostics.requests.length !== 3
+  )
+    fail();
+  for (const [i, row] of v.diagnostics.requests.entries())
+    same(row, {
+      resource: ['executions', 'executions', 'workflows'][i],
+      page: [1, 2, 1][i],
+      tcpConnected: true,
+      tlsVerified: true,
+      httpStatus: 200,
+      bodyRead: 'complete',
+      jsonParsed: true,
+      schemaValidated: true,
+      socketClosed: true,
+      failureStage: 'none',
+      failureCode: 'none',
+    });
+  const journalRelative = 'scripts/n8n/out/foundation/wf00-execution-diagnostic-20261024.jsonl';
+  same(a.diagnosticJournal, { path: journalRelative, rows: 4, neverResetOrReplay: true });
+  if (JSON.stringify(a.diagnosticJournal.requestOrdinals) !== JSON.stringify([525, 526, 527])) fail();
+  const text = x.file(journalRelative),
+    journal = jsonl(text, 4);
+  if (
+    hash(text) !== a.diagnosticJournal.sha256 ||
+    journal.rows.length !== 4 ||
+    text !== journal.rows.map((row) => JSON.stringify(row) + '\n').join('')
+  )
+    fail();
+  const header = journal.rows[0];
+  if (
+    !exact(header, [
+      'kind',
+      'version',
+      'checkpointSha256',
+      'managementAttempts',
+      'controlAttempts',
+      'maximumRequests',
+      'processId',
+      'parentProcessId',
+    ]) ||
+    !positive(header.processId) ||
+    !positive(header.parentProcessId)
+  )
+    fail();
+  same(header, {
+    kind: 'm03_wf00_execution_diagnostic_budget',
+    version: 1,
+    checkpointSha256: cfg.sha256,
+    managementAttempts: 524,
+    controlAttempts: 846,
+    maximumRequests: 3,
+  });
+  journal.rows.slice(1).forEach((row, i) => {
+    if (!exact(row, ['event', 'ordinal']) || row.event !== 'management_attempt' || row.ordinal !== 525 + i)
+      fail();
+  });
+  same(a.usage, {
+    mainManagement: 513,
+    carriedManagement: 14,
+    management: 527,
+    mainControl: 840,
+    carriedControl: 6,
+    control: 846,
+    combined: 1373,
+    vercel: 149,
+    nativeExecutions: 1,
+    nativeMaximum: 120,
+    actorStarts: 0,
+    actorMaximum: 2,
+    actorReserveUsd: 2,
+    managementMaximum: 1024,
+    controlMaximum: 2048,
+    combinedMaximum: 2560,
+    vercelMaximum: 224,
+    allowancesReplenished: false,
+  });
+  for (const key of [
+    'executionIdAndNativeTerminalReceiptRemainUnestablished',
+    'notAnAcceptancePass',
+    'globalWorkflowQuiescenceNotProvenByTheseThreeGets',
+    'full25WorkflowNativePreflightRemainsRequired',
+    'savedDefinitionVersionOwnershipSettingsInactiveVerified',
+    'twoObservedHttpSendsInformational',
+    'checkpointGatewayHttpRequests256WasHistoricalMislabel',
+    'bindingGatewayLimitIsSqlAdmissions256',
+    'verifiedSqlAdmissionsRemain7',
+    'noSqlAdmissionsFabricated',
+  ])
+    if (a.qualifications[key] !== true) fail();
+  same(a.boundaries, {
+    mutationRequests: 0,
+    executionsStartedByDiagnostic: 0,
+    providerCalls: 0,
+    productionTouched: false,
+    notificationsSent: 0,
+    r2Touched: false,
+    merged: false,
+    m04Started: false,
+  });
+  same(z, {
+    kind: 'm03_wf00_unadmitted_local_cleanup',
+    version: 1,
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    nativeExit: 0,
+    checkpointSha256: cfg.sha256,
+    databaseReceiptSha256: cfg.databaseSha256,
+    apiReceiptSha256: cfg.apiSha256,
+    originalJournalsUnchanged: true,
+    executionIdAndNativeTerminalReceiptRemainUnestablished: true,
+    businessAcceptanceVerified: false,
+  });
+  same(z.actualPresenceResult, {
+    kind: 'm03_unadmitted_local_cleanup_verified',
+    childProcessesAbsent: true,
+    allElevenDisposableLeavesAbsent: true,
+    runtimeLockAbsent: true,
+    persistentFourAndMachineRetained: true,
+    privateContentsRead: false,
+    networkRequests: 0,
+  });
+  if (
+    JSON.stringify(z.apiProcessIds) !== JSON.stringify([header.parentProcessId, header.processId]) ||
+    z.apiProcessIds.some((pid) => x.io.processAlive(pid) !== false)
+  )
+    fail();
+  const times = [r.recordedAt, d.recordedAt, a.recordedAt, z.recordedAt].map(Date.parse);
+  if (times.some((time, i) => !Number.isFinite(time) || time > x.clock() || (i > 0 && time < times[i - 1])))
+    fail();
+  pins[journalRelative] = a.diagnosticJournal.sha256;
+  return Object.freeze({
+    ...x.recovery,
+    carriedManagementAttempts: 14,
+    carriedControlAttempts: 6,
+    unadmittedWf00Reconciled: true,
+    carriedNativeExecutions: 1,
+    carriedGatewayHttpAttempts: 2,
+    unadmittedWf00Pins: Object.freeze([
+      cfg.relative,
+      cfg.databaseRelative,
+      cfg.apiRelative,
+      cfg.cleanupRelative,
+      d.resultPin.path,
+      journalRelative,
+    ]),
+    pins: Object.freeze(pins),
+  });
+}
 function recoveryPreflight(x, initial = false) {
   if (!x.recovery) return;
   const path = 'scripts/n8n/out/foundation/live/preflight.jsonl';
@@ -6042,6 +6444,9 @@ function proof(data, claimed = false) {
       mainControlAttempts: data.recovery?.mainControlAttempts ?? 200,
       aggregateControlAttempts:
         (data.recovery?.mainControlAttempts ?? 200) + (data.recovery?.carriedControlAttempts ?? 1),
+      ...(data.recovery?.unadmittedWf00Reconciled
+        ? { carriedNativeExecutions: 1, carriedGatewayHttpAttempts: 2 }
+        : {}),
       setupRows: data.recovery?.setupRows ?? 2,
       setupAttempts: data.recovery?.setupAttempts ?? 2,
       preflightRows: data.recovery?.preflightRows ?? 0,
@@ -6188,6 +6593,9 @@ export function assertFoundationProjectVerifiedContinuationJournalPrefixes(p, op
   if ([14, 15].includes(x.recovery?.restoredBrowserDiscoveryTechnicalAttempt))
     for (const path of x.recovery.restoredBrowserDiscoveryPins)
       if (hash(x.file(path)) !== x.recovery.pins[path]) fail();
+  if (x.recovery?.unadmittedWf00Reconciled)
+    for (const path of x.recovery.unadmittedWf00Pins)
+      if (hash(x.file(path)) !== x.recovery.pins[path]) fail();
   if (x.recovery?.runtimeRestorationAllocationApproved === true)
     for (const [path, expected] of [
       [runtimeRestorationAllocationApproval.relative, runtimeRestorationAllocationApproval.sha256],
@@ -6208,6 +6616,14 @@ export function assertFoundationProjectVerifiedContinuationJournalPrefixes(p, op
   )
     fail();
   return p;
+}
+export function foundationProjectVerifiedContinuationUnadmittedUsage(p) {
+  assertFoundationProjectVerifiedContinuationJournalPrefixes(p);
+  return Object.freeze(
+    proofs.get(p).recovery?.unadmittedWf00Reconciled
+      ? { nativeExecutions: 1, gatewayHttpAttempts: 2 }
+      : { nativeExecutions: 0, gatewayHttpAttempts: 0 },
+  );
 }
 export function verifyFoundationProjectVerifiedContinuation(options = {}, dependencies = {}) {
   try {

@@ -15,6 +15,163 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('reconciled unadmitted WF00 carries527/846 and native1 without changing journals or SQL admissions before sibling16', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ unadmittedWf00Reconciled: true });
+  try {
+    const paths = ['management', 'control', 'setup', 'preflight', 'runtime', 'runtime.technical-13'].map(
+      (name) => join(f.directory, 'scripts/n8n/out/foundation/live/' + name + '.jsonl'),
+    );
+    const original = paths.map((path) => readFileSync(path, 'utf8'));
+    assert.deepEqual(
+      Object.fromEntries(
+        Object.entries(f.check()).filter(([key]) =>
+          ['managementMaximum', 'managementAttempts', 'controlAttempts', 'combinedAttempts'].includes(key),
+        ),
+      ),
+      { managementMaximum: 1024, managementAttempts: 527, controlAttempts: 846, combinedAttempts: 1373 },
+    );
+    const admitted = f.admit();
+    assert.throws(() => f.module.foundationProjectVerifiedContinuationUnadmittedUsage(admitted));
+    const proof = f.claim(admitted),
+      resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(resume.technicalAttemptOrdinal, 16);
+    assert.equal(resume.mainManagementAttempts, 513);
+    assert.equal(resume.aggregateManagementAttempts, 527);
+    assert.equal(resume.mainControlAttempts, 840);
+    assert.equal(resume.aggregateControlAttempts, 846);
+    assert.equal(resume.legacySqlAdmitted, 7);
+    assert.deepEqual(
+      f.scoped(() => f.module.foundationProjectVerifiedContinuationUnadmittedUsage(proof)),
+      { nativeExecutions: 1, gatewayHttpAttempts: 2 },
+    );
+    assert.throws(() => f.module.foundationProjectVerifiedContinuationUnadmittedUsage({ ...proof }));
+    for (const [index, path] of paths.entries()) assert.equal(readFileSync(path, 'utf8'), original[index]);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('unadmitted WF00 reconciliation refuses missing or contradictory proof, counters and cleanup', async () => {
+  for (const unadmittedWf00Fault of [
+    'native-reset',
+    'control-reset',
+    'db-active',
+    'db-actor',
+    'api-running',
+    'api-overclaim',
+    'api-baseline',
+    'api-reset',
+    'diagnostic-reset',
+    'cleanup',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      unadmittedWf00Reconciled: true,
+      unadmittedWf00Fault,
+    });
+    try {
+      assert.throws(() => f.check(), unadmittedWf00Fault);
+      assert.throws(() => f.admit(), unadmittedWf00Fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+  for (const fault of ['missing-db', 'missing-api', 'missing-checkpoint', 'purpose-tail', 'live-api']) {
+    const f = await syntheticProjectVerifiedContinuation({ unadmittedWf00Reconciled: true });
+    try {
+      if (fault.startsWith('missing-'))
+        unlinkSync(
+          join(
+            f.directory,
+            'milestones/M03-n8n-foundation/evidence/' +
+              {
+                'missing-db': 'wf00-unadmitted-db-readback-20261024.json',
+                'missing-api': 'wf00-unadmitted-api-readback-20261024.json',
+                'missing-checkpoint': 'wf00-unadmitted-manual-checkpoint-20261024.json',
+              }[fault],
+          ),
+        );
+      if (fault === 'purpose-tail')
+        appendFileSync(
+          join(f.directory, 'scripts/n8n/out/foundation/wf00-execution-diagnostic-20261024.jsonl'),
+          '{"event":"management_attempt","ordinal":528}\n',
+        );
+      if (fault === 'live-api') f.io.processAlive = (pid) => pid === 7612;
+      assert.throws(() => f.check(), fault);
+      assert.throws(() => f.admit(), fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('unadmitted WF00 claimed carry validates immutable pins while permitting the existing legitimate25M51C tail', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ unadmittedWf00Reconciled: true });
+  try {
+    const proof = f.claim(f.admit());
+    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+    f.io.processAlive = (pid) => [process.pid, process.ppid].includes(pid);
+    for (let ordinal = 514; ordinal <= 538; ordinal++)
+      appendFileSync(f.paths.management, JSON.stringify({ event: 'management_attempt', ordinal }) + '\n');
+    for (let ordinal = 841; ordinal <= 891; ordinal++)
+      appendFileSync(
+        f.paths.control,
+        JSON.stringify({
+          event: 'control_request_intent',
+          ordinal,
+          kind: 'discovery',
+          workflowId: 'MzimjpsuyPuK7SKe',
+          at: new Date(f.now()).toISOString(),
+        }) + '\n',
+      );
+    assert.deepEqual(
+      f.scoped(() => f.module.foundationProjectVerifiedContinuationUnadmittedUsage(proof)),
+      { nativeExecutions: 1, gatewayHttpAttempts: 2 },
+    );
+    f.scoped(() => f.module.readClaimedFoundationProjectVerifiedContinuation({ now: f.now }, f.io));
+    appendFileSync(
+      join(f.directory, 'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-api-readback-20261024.json'),
+      ' ',
+    );
+    assert.throws(() => f.scoped(() => f.module.foundationProjectVerifiedContinuationUnadmittedUsage(proof)));
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('historical technical15 with no unadmitted event retains524/843 and zero native carry', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ restoredBrowserRetryDiscovery: true });
+  try {
+    assert.equal(f.check().managementAttempts, 524);
+    assert.equal(f.check().controlAttempts, 843);
+    const proof = f.claim(f.admit());
+    assert.deepEqual(
+      f.scoped(() => f.module.foundationProjectVerifiedContinuationUnadmittedUsage(proof)),
+      { nativeExecutions: 0, gatewayHttpAttempts: 0 },
+    );
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('only complete absence of the optional unadmitted event permits the historical no-event profile', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ unadmittedWf00Reconciled: true });
+  try {
+    for (const name of ['manual-checkpoint', 'db-readback', 'api-readback', 'cleanup'])
+      unlinkSync(
+        join(
+          f.directory,
+          'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-' + name + '-20261024.json',
+        ),
+      );
+    assert.throws(() => f.check(), 'an orphan one-use diagnostic remains a charged event');
+    unlinkSync(join(f.directory, 'scripts/n8n/out/foundation/wf00-execution-diagnostic-20261024.jsonl'));
+    assert.equal(f.check().managementAttempts, 524);
+    assert.equal(f.check().controlAttempts, 843);
+  } finally {
+    f.cleanup();
+  }
+});
+
 test('closed technical15 browser timeout preserves both failed discoveries and524/843 charges before sibling16', async () => {
   const f = await syntheticProjectVerifiedContinuation({ restoredBrowserRetryDiscovery: true });
   try {

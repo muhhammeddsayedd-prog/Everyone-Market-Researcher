@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import {
   createFoundationExecutionController,
   createFoundationControlJournal,
@@ -13,6 +15,7 @@ import { createFoundationNativeCleanup } from './foundation-native-cleanup.mjs';
 import { runtimeGraphHash } from './foundation-runtime-control.mjs';
 import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
 import { providerFixture, verifyAndCleanPhaseB } from './foundation-native-controller-fixtures.mjs';
+import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 
 // Scripted public-API boundary, not native/Cloud execution evidence. Runtime
 // binding/case ports are explicit trusted test substitutes. Reader, settlement,
@@ -356,7 +359,7 @@ function fixture(options = {}) {
     },
   };
   options.beforeCreate?.({ executions, bodies, bound, workflows, baselineIdsByKey, ports });
-  const controller = createFoundationExecutionController(ports);
+  const controller = (options.controllerFactory ?? createFoundationExecutionController)(ports);
   return {
     controller,
     ports,
@@ -385,6 +388,97 @@ function fixture(options = {}) {
     },
   };
 }
+
+test('native aggregate carry refuses a copied or caller-shaped continuation before any native start', () => {
+  assert.throws(
+    () =>
+      fixture({
+        activeWindowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+        beforeCreate({ ports }) {
+          ports.projectVerifiedContinuationProof = Object.freeze({
+            windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+            carriedNativeExecutions: 1,
+            carriedGatewayHttpAttempts: 2,
+          });
+        },
+      }),
+    fixed,
+  );
+});
+
+test('genuine reconciled native carry preserves the consumed start and refuses121 without changing SQL gateway accounting', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ unadmittedWf00Reconciled: true });
+  try {
+    const proof = f.claim(f.admit());
+    // Keep the existing native-reader/journal/settlement brands. Only the
+    // guarded proof import points to this isolated synthetic authority.
+    const rewrite = (path, overrides) => {
+      let text = readFileSync(resolve(path), 'utf8');
+      for (const [match, relative] of [...text.matchAll(/from '(\.\.?\/[^']+)'/g)]) {
+        const target = overrides[relative] ?? resolve(dirname(path), relative);
+        text = text.replaceAll(match, `from '${pathToFileURL(target).href}'`);
+      }
+      return text;
+    };
+    const native = f.put(
+        'scripts/n8n/carry-native-controller.mjs',
+        rewrite('scripts/n8n/foundation-native-controller.mjs', {
+          './foundation-live-project-verified-continuation.mjs': join(
+            f.directory,
+            'scripts/n8n/foundation-live-project-verified-continuation.mjs',
+          ),
+        }),
+      ),
+      control = f.put(
+        'scripts/n8n/carry-execution-control.mjs',
+        rewrite('scripts/n8n/foundation-execution-control.mjs', {
+          './foundation-native-controller.mjs': native,
+        }),
+      ),
+      module = await import(pathToFileURL(control).href),
+      options = {
+        activeWindowId: proof.windowId,
+        controllerFactory: module.createFoundationExecutionController,
+        beforeCreate({ ports }) {
+          ports.projectVerifiedContinuationProof = proof;
+          ports.carriedNativeExecutions = 0; // Never an accepted authority input.
+          ports.gatewayHttpAttempts = 0;
+        },
+      };
+    const carried = fixture(options);
+    assert.equal(carried.controller.snapshot().nativeExecutions, 1);
+    assert.equal(carried.controller.snapshot().observedExecutionIds, 0);
+    assert.equal(carried.rows.length, 0, 'no synthetic SQL/native admission is fabricated');
+    assert.equal(carried.starts(), 0);
+    assert.equal(carried.sqlReads(), 0);
+    assert.equal(f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof).legacySqlAdmitted, 7);
+    assert.equal(fixture().controller.snapshot().nativeExecutions, 0);
+    assert.equal(
+      fixture({
+        ...options,
+        previousEvents: [{ event: 'native_case_intent', nativeExecutions: 119 }],
+      }).controller.snapshot().nativeExecutions,
+      120,
+    );
+    assert.throws(
+      () => fixture({ ...options, previousEvents: [{ event: 'native_case_intent', nativeExecutions: 120 }] }),
+      fixed,
+    );
+    assert.throws(
+      () =>
+        fixture({
+          ...options,
+          beforeCreate({ ports }) {
+            ports.projectVerifiedContinuationProof = Object.freeze({ ...proof });
+          },
+        }),
+      fixed,
+    );
+    assert.throws(() => fixture({ ...options, activeWindowId: foundationRuntimeCheckpoint.windowId }), fixed);
+  } finally {
+    f.cleanup();
+  }
+});
 
 test('browser whole-workflow control uses fresh actual binding and native URL receipt without fake MCP scopes', async () => {
   const f = fixture({ browserUi: true, callTimeoutMs: 5, detailsDelay: 20 });

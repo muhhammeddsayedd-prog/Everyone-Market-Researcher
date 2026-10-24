@@ -83,6 +83,29 @@ const input = {
   versionId: 'owned-version-1',
   caseReceipt: savedCase,
 };
+test('a continuation carry proof cannot fall back to the legacy execution controller', () => {
+  let calls = 0;
+  assert.throws(
+    () =>
+      realController({
+        bindings,
+        projectVerifiedContinuationProof: Object.freeze({ carriedNativeExecutions: 0 }),
+        port: {
+          start() {
+            calls++;
+          },
+        },
+        journal: {
+          append() {
+            calls++;
+          },
+        },
+      }),
+    /FOUNDATION_CONTROL_JOURNAL/,
+  );
+  assert.equal(calls, 0);
+});
+
 test('fixed manual start omits inputs and journals intent before start; exact terminal identity required', async () => {
   const f = fixture();
   const receipt = await f.controller.runCase(input);

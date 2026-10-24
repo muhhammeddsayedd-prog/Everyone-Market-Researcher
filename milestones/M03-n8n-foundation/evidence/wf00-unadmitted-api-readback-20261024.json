@@ -1,0 +1,152 @@
+{
+  "kind": "m03_wf00_unadmitted_execution_metadata_reconciliation",
+  "version": 1,
+  "recordedAt": "2026-10-24T16:01:46.837Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "checkpointSha256": "9c49750496d602781903de09459d729c6a3061b433a78cfea6aabdb4d796e99f",
+  "databaseReceiptSha256": "3e7ad86a3417716b052cb150866b2f1baa5faf61288fffc10e6c55526d49bcf0",
+  "toolReceipt": "cdb79b",
+  "nativeExit": 0,
+  "rawNativeResult": {
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "complete",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": {
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "workflowKey": "WF-00",
+      "status": "execution_metadata_observed",
+      "requestCount": 3,
+      "maximumRequests": 3,
+      "authenticationVerified": true,
+      "networkCompletionVerified": true,
+      "runningEmpty": true,
+      "runningPaginationComplete": true,
+      "latest": [],
+      "latestPaginationComplete": true,
+      "unadmittedExecutionIdEstablished": false,
+      "allActiveExecutionsAbsentProven": false,
+      "savedWorkflowVerified": true,
+      "manualRetentionDisabled": true,
+      "baseline": {
+        "versionMatches": true,
+        "definitionMatches": true,
+        "settingsMatch": true,
+        "ownershipMatches": true,
+        "inactive": true
+      },
+      "diagnostics": {
+        "version": 1,
+        "dns": "complete",
+        "requests": [
+          {
+            "resource": "executions",
+            "page": 1,
+            "tcpConnected": true,
+            "tlsVerified": true,
+            "httpStatus": 200,
+            "bodyRead": "complete",
+            "jsonParsed": true,
+            "schemaValidated": true,
+            "socketClosed": true,
+            "failureStage": "none",
+            "failureCode": "none"
+          },
+          {
+            "resource": "executions",
+            "page": 2,
+            "tcpConnected": true,
+            "tlsVerified": true,
+            "httpStatus": 200,
+            "bodyRead": "complete",
+            "jsonParsed": true,
+            "schemaValidated": true,
+            "socketClosed": true,
+            "failureStage": "none",
+            "failureCode": "none"
+          },
+          {
+            "resource": "workflows",
+            "page": 1,
+            "tcpConnected": true,
+            "tlsVerified": true,
+            "httpStatus": 200,
+            "bodyRead": "complete",
+            "jsonParsed": true,
+            "schemaValidated": true,
+            "socketClosed": true,
+            "failureStage": "none",
+            "failureCode": "none"
+          }
+        ]
+      }
+    }
+  },
+  "rawResultProvenance": "Exact structured public result transcribed from tool receipt cdb79b; no native output file was emitted.",
+  "diagnosticJournal": {
+    "path": "scripts/n8n/out/foundation/wf00-execution-diagnostic-20261024.jsonl",
+    "sha256": "0d70e04d4908a05bc63fca1bd3ef58d6b77d5cd05c1f5964d226061567496c97",
+    "rows": 4,
+    "requestOrdinals": [
+      525,
+      526,
+      527
+    ],
+    "neverResetOrReplay": true
+  },
+  "originalJournalsUnchanged": true,
+  "sourcePins": {
+    "scripts/n8n/inventory.mjs": "c300ff37b4a2e76b516d82666cbf8649222929a835be069c9d32676dd0da03c0",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "23c17f6cef56f84454f0ff0982ae490b26db7dbb7655cda5de5c1d4608fedc36",
+    "scripts/n8n/m03-inventory-seal.json": "805e8daf417cc2616b94c2a1052bd5534f1f870bd3818006214b8ec608a96c61"
+  },
+  "usage": {
+    "mainManagement": 513,
+    "carriedManagement": 14,
+    "management": 527,
+    "mainControl": 840,
+    "carriedControl": 6,
+    "control": 846,
+    "combined": 1373,
+    "vercel": 149,
+    "nativeExecutions": 1,
+    "nativeMaximum": 120,
+    "actorStarts": 0,
+    "actorMaximum": 2,
+    "actorReserveUsd": 2,
+    "managementMaximum": 1024,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "vercelMaximum": 224,
+    "allowancesReplenished": false
+  },
+  "qualifications": {
+    "executionIdAndNativeTerminalReceiptRemainUnestablished": true,
+    "notAnAcceptancePass": true,
+    "globalWorkflowQuiescenceNotProvenByTheseThreeGets": true,
+    "full25WorkflowNativePreflightRemainsRequired": true,
+    "savedDefinitionVersionOwnershipSettingsInactiveVerified": true,
+    "twoObservedHttpSendsInformational": true,
+    "checkpointGatewayHttpRequests256WasHistoricalMislabel": true,
+    "bindingGatewayLimitIsSqlAdmissions256": true,
+    "verifiedSqlAdmissionsRemain7": true,
+    "noSqlAdmissionsFabricated": true
+  },
+  "boundaries": {
+    "mutationRequests": 0,
+    "executionsStartedByDiagnostic": 0,
+    "providerCalls": 0,
+    "productionTouched": false,
+    "notificationsSent": 0,
+    "r2Touched": false,
+    "merged": false,
+    "m04Started": false
+  }
+}

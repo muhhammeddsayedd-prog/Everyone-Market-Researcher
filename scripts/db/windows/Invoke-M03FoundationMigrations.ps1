@@ -3,7 +3,7 @@ param([switch]$CheckOnly,[switch]$InspectOnly,[switch]$WriterClose,[switch]$Arch
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-if($TechnicalResidual13 -and (-not $ArchiveFixture -or $ForwardMigration -or $ForwardWindow -or $InspectOnly -or $WriterClose -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)){Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting residual archive modes; no private access.';exit 1}
+if($TechnicalResidual13 -and (-not ($ArchiveFixture -xor $InspectOnly) -or $ForwardMigration -or $ForwardWindow -or $WriterClose -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)){Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting residual read/archive modes; no private access.';exit 1}
 # Validate the caller's modes before sharing only the reviewed no-push path.
 if(($ForwardWindow -and (-not $PhaseAControl -or -not $ProjectVerifiedContinuation -or $ForwardMigration -or $InspectOnly -or $WriterClose -or $ArchiveFixture -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $RemainingContinuation -or $StartupReplacement)) -or ($ForwardMigration -and ($ArchiveFixture -or $WriterClose -or $InspectOnly -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or ($ArchiveFixture -and ($WriterClose -or $InspectOnly -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or ($WriterClose -and ($InspectOnly -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or ($InspectOnly -and ($PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)) -or @($ClockAmendment,$PostcheckContinuation,$RemainingContinuation,$StartupReplacement,$ProjectVerifiedContinuation|Where-Object{$_}).Count -gt 1 -or
    (($RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation) -and (-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 0))){Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting continuation modes; no private access.';exit 1}
@@ -56,6 +56,7 @@ $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technic
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/runtime-restoration-fixture-archive-20261024.json','milestones/M03-n8n-foundation/evidence/runtime-restoration-cleanup-20261024.json')
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json')
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technical15-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical15-cleanup-20261024.json')
+$requiredFiles+=@('milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-checkpoint-20261024.json','milestones/M03-n8n-foundation/evidence/wf00-unadmitted-db-readback-20261024.json','milestones/M03-n8n-foundation/evidence/wf00-unadmitted-api-readback-20261024.json','milestones/M03-n8n-foundation/evidence/wf00-unadmitted-cleanup-20261024.json')
 if($forwardSchema){$requiredFiles+=@('scripts/db/foundation-forward-postcheck.sql','scripts/db/m03-foundation-dev-migration-packet.json')}
 $versions = @('20261017172928','20261017172931','20261017172934','20261017172937','20261017172940','20261017172943','20261017172945','20261018034220','20261018035417','20261018070042','20261018231756','20261018232014','20261018232922','20261018233338')
 $names = @('extensions_schemas_roles','core_tables','auth_rls_views','rpc_pipeline_core','rpc_app_search','storage_cron','seed_taxonomies','rpc_n8n_foundation','price_book_plan','n8n_worker_gateway_admission','m03_actor_launch_admission','m03_foundation_gateway','m03_foundation_safety_receipts','m03_foundation_boundary_hardening')
@@ -192,6 +193,8 @@ function Read-FoundationInspection($Result) {
   Assert-Keys $rows[0] @('inspection');$value=$rows[0].inspection
   $keys=@('kind','windowId','identity','window','requestCount','reservedRequests','incompleteRequests','activeLeaseCount','approval','launchCount','actorRunCount','scrapeRunCount','costEntryCount','costUsd','collectedItemCount','fixture','audits')
   if($TechnicalResidual13){$keys+=@('familyClosed','fixtureAuditCount','technical12Exact','technical13Exact')}
+  $currentReadOnly=[bool](Get-Variable -Name InspectOnly -ValueOnly -ErrorAction SilentlyContinue) -and $TechnicalResidual13
+  if($currentReadOnly){$keys+=@('globalLaunchCount')}
   Assert-Keys $value $keys
   $expectedWindow=if($TechnicalResidual13){'3c46c791-e140-4eb9-890a-eecfa251f65e'}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
   if($value.kind -cne 'm03_foundation_inspection' -or $value.windowId -cne $expectedWindow -or $value.identity -isnot [bool] -or -not $value.identity){throw 'blocked'}
@@ -202,6 +205,7 @@ function Read-FoundationInspection($Result) {
   foreach($key in @('requestCount','reservedRequests','incompleteRequests','activeLeaseCount','launchCount','actorRunCount','scrapeRunCount','costEntryCount','collectedItemCount')){
     if(($value.$key -isnot [int] -and $value.$key -isnot [long]) -or $value.$key -lt 0){throw 'blocked'}
   }
+  if($currentReadOnly -and (($value.globalLaunchCount -isnot [int] -and $value.globalLaunchCount -isnot [long]) -or $value.globalLaunchCount -ne 0)){throw 'blocked'}
   if(($value.costUsd -isnot [int] -and $value.costUsd -isnot [long] -and $value.costUsd -isnot [double] -and $value.costUsd -isnot [decimal]) -or $value.costUsd -lt 0 -or $value.costUsd -gt 999999999){throw 'blocked'}
   if($null -ne $value.window){
     Assert-Keys $value.window @('id','audience','commitSha','deploymentId','startsAt','expiresAt','closedAt','admittedCount','closeCount')
@@ -267,6 +271,7 @@ function Assert-FoundationArchiveInspection($Value,$Expected,[bool]$Archived) {
   $bindingKeys=if($TechnicalResidual13){@('id','audience','commitSha','deploymentId')}else{@('id','audience','commitSha','deploymentId','startsAt','expiresAt','closedAt')}
   foreach($key in $bindingKeys){if($Value.window.$key -cne $Expected.$key){throw 'blocked'}}
   if($TechnicalResidual13){
+    if([bool](Get-Variable -Name InspectOnly -ValueOnly -ErrorAction SilentlyContinue) -and ($Value.globalLaunchCount -ne 0 -or -not $Archived)){throw 'blocked'}
     foreach($key in @('startsAt','expiresAt','closedAt')){if($null -eq $Value.window.$key){throw 'blocked'}}
     if([DateTimeOffset]::Parse($Value.window.expiresAt) -le [DateTimeOffset]::Parse($Value.window.startsAt) -or [DateTimeOffset]::Parse($Value.window.closedAt) -lt [DateTimeOffset]::Parse($Value.window.startsAt) -or [DateTimeOffset]::Parse($Value.window.closedAt) -gt [DateTimeOffset]::UtcNow.AddSeconds(5)){throw 'blocked'}
     if(-not $Value.familyClosed -or -not $Value.technical12Exact -or -not $Value.technical13Exact -or $Value.fixtureAuditCount -ne 6){throw 'blocked'}
@@ -332,11 +337,12 @@ function Foundation-Technical13AuditPredicate([int]$Ordinal) {
  and o.actor_type='system' and o.actor_id='m03_smoke_setup.v1' and o.action='m03_smoke_fixture_created' and o.entity_type='competitor' and o.entity_id=l.entity_id)
 "@
 }
-function Foundation-Technical13InspectionSql {
+function Foundation-Technical13InspectionSql([bool]$ReadOnlyCurrent=$false) {
   $sql=[IO.File]::ReadAllText((Assert-Path $repo 'scripts/db/foundation-inspect.sql')).Replace('df4f29ec-e2dc-4d82-a276-62a4e695e6f9','3c46c791-e140-4eb9-890a-eecfa251f65e')
   $needle="'audits',jsonb_build_object("
   if([regex]::Matches($sql,[regex]::Escape($needle)).Count -ne 1){throw 'blocked'}
   $extra="'familyClosed',$(Foundation-Technical13FamilyPredicate),`n 'fixtureAuditCount',(select count(*) from ops.audit_log where entity_id in ('d51a39f6-fe87-4d17-aee9-3070c45693aa','bd23314c-591f-4fb7-92fd-b7450634eeb6')),`n 'technical12Exact',$(Foundation-Technical13AuditPredicate 12),`n 'technical13Exact',$(Foundation-Technical13AuditPredicate 13),`n "
+  if($ReadOnlyCurrent){$extra="'globalLaunchCount',(select count(*) from ops.apify_launch_admissions),`n "+$extra}
   return $sql.Replace($needle,$extra+$needle)
 }
 function Foundation-Technical13ArchiveSql($Expected) {
@@ -542,10 +548,10 @@ function Read-FoundationPostcheckContinuation {
     if($managementPresent.Count -gt 0){
       if(-not $CheckOnly -or -not $projectMode -or -not $forwardMode -or $managementPresent.Count -ne 4){throw 'blocked'}
       # Exact known read-only reconciliation, never a replenished allowance.
-      $managementExpected=if($restoredMode -and $value.controlAttempts -eq 843){@{managementMaximum=1024;managementAttempts=524;controlAttempts=843;combinedAttempts=1367}}elseif($restoredMode -and $value.controlAttempts -eq 842){@{managementMaximum=1024;managementAttempts=524;controlAttempts=842;combinedAttempts=1366}}elseif($restoredMode){@{managementMaximum=1024;managementAttempts=524;controlAttempts=841;combinedAttempts=1365}}elseif($nextMode){@{managementMaximum=832;managementAttempts=401;controlAttempts=740;combinedAttempts=1141}}elseif($freshMode -and $value.managementAttempts -eq 313){@{managementMaximum=704;managementAttempts=313;controlAttempts=639;combinedAttempts=952}}elseif($freshMode -and $value.managementAttempts -eq 288){@{managementMaximum=704;managementAttempts=288;controlAttempts=588;combinedAttempts=876}}elseif($freshMode -and $value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800}}elseif($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
+      $managementExpected=if($restoredMode -and $value.controlAttempts -eq 846){@{managementMaximum=1024;managementAttempts=527;controlAttempts=846;combinedAttempts=1373}}elseif($restoredMode -and $value.controlAttempts -eq 843){@{managementMaximum=1024;managementAttempts=524;controlAttempts=843;combinedAttempts=1367}}elseif($restoredMode -and $value.controlAttempts -eq 842){@{managementMaximum=1024;managementAttempts=524;controlAttempts=842;combinedAttempts=1366}}elseif($restoredMode){@{managementMaximum=1024;managementAttempts=524;controlAttempts=841;combinedAttempts=1365}}elseif($nextMode){@{managementMaximum=832;managementAttempts=401;controlAttempts=740;combinedAttempts=1141}}elseif($freshMode -and $value.managementAttempts -eq 313){@{managementMaximum=704;managementAttempts=313;controlAttempts=639;combinedAttempts=952}}elseif($freshMode -and $value.managementAttempts -eq 288){@{managementMaximum=704;managementAttempts=288;controlAttempts=588;combinedAttempts=876}}elseif($freshMode -and $value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800}}elseif($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
       if($restoredMode -and $value.controlAttempts -eq 842){$null=Read-FoundationTechnical14NoAdmin}
-      if($restoredMode -and $value.controlAttempts -eq 843){$null=Read-FoundationTechnical14NoAdmin -Ordinal 15}
+      if($restoredMode -and $value.controlAttempts -in @(843,846)){$null=Read-FoundationTechnical14NoAdmin -Ordinal 15}
       $keys+=$managementFields
     }
     if(-not $CheckOnly){$keys+=@('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')}
@@ -1086,7 +1092,7 @@ try {
     if(Test-Path -LiteralPath $attemptFile){Assert-FoundationForwardIntent (Read-Json (Assert-Path $repo 'scripts/db/out/m03-foundation-forward-20261023163755-attempt.json'))}
   }
   if($InspectOnly){
-    $inspectExpectedBinding=Assert-FoundationInspectClosed
+    $inspectExpectedBinding=if($TechnicalResidual13){Read-FoundationTechnical13Closed}else{Assert-FoundationInspectClosed}
     $attemptFile=Join-Path $out ('m03-foundation-inspect-'+$runId+'-attempt.json')
     $latestFile=Join-Path $out ('m03-foundation-inspect-'+$runId+'-latest.json')
   }
@@ -1232,7 +1238,7 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
     $inspectQueryFile=Join-Path $scratch 'inspect.sql'
     [IO.File]::Copy((Assert-Path $repo 'scripts/db/foundation-inspect.sql'),$inspectQueryFile,$false)
     if((File-Hash $inspectQueryFile) -cne $packet.files.'scripts/db/foundation-inspect.sql'){throw 'blocked'}
-    if($TechnicalResidual13){[IO.File]::WriteAllText($inspectQueryFile,(Foundation-Technical13InspectionSql))}
+    if($TechnicalResidual13){[IO.File]::WriteAllText($inspectQueryFile,(Foundation-Technical13InspectionSql -ReadOnlyCurrent ([bool]$InspectOnly)))}
   }
   if($forwardSchema){
     $forwardCheckFile=Join-Path $scratch 'forward-postcheck.sql';$forwardFamilyFile=Join-Path $scratch 'forward-family.sql'
@@ -1314,6 +1320,7 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
       Write-NewJson $attemptFile ([ordered]@{version=1;runId=$runId;projectRef=$projectRef;purpose='fixed-read-only-reconciliation';priorRunId='52cd6a97-a23a-4061-a694-00c50c700b00';createdAt=[DateTime]::UtcNow.ToString('o')})
       $inspection=Invoke-Cli @('db','query','--file',$inspectQueryFile) $queryTimeoutMs
       try{$receipt['inspection']=Read-FoundationInspection $inspection}finally{$inspection.text=$null}
+      if($TechnicalResidual13){Assert-FoundationArchiveInspection $receipt.inspection $inspectExpectedBinding $true}
       $receipt['bindingMatchesPriorProvision']=$null
       if($null -ne $receipt.inspection.window){$receipt.bindingMatchesPriorProvision=$receipt.inspection.window.audience -ceq $inspectExpectedBinding.audience -and $receipt.inspection.window.commitSha -ceq $inspectExpectedBinding.commitSha -and $receipt.inspection.window.deploymentId -ceq $inspectExpectedBinding.deploymentId}
       $receipt.status='inspection_verified';$receipt.historyAfter='complete';$exitCode=0

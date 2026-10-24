@@ -82,6 +82,7 @@ import {
   assertFoundationLiveProjectVerifiedContinuationProof,
   assertFoundationProjectVerifiedContinuationControlResume,
   foundationProjectVerifiedContinuationResumeCheckpoint,
+  foundationProjectVerifiedContinuationUnadmittedUsage,
 } from './foundation-live-project-verified-continuation.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
@@ -520,6 +521,9 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
   const verifiedCheckpoint = verified
     ? foundationProjectVerifiedContinuationResumeCheckpoint(verified)
     : null;
+  const unadmittedUsage = verified
+    ? foundationProjectVerifiedContinuationUnadmittedUsage(verified)
+    : { nativeExecutions: 0, gatewayHttpAttempts: 0 };
   const restoredBaselineScope =
     verifiedCheckpoint?.managementMaximum === 1024 ? { projectVerifiedContinuationProof: verified } : {};
   const activeWindowId = verified?.windowId ?? windowId;
@@ -729,7 +733,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     status,
     managementAttempts: budget.snapshot().attempts,
     controlAttempts: controlBudget.snapshot().attempts,
-    nativeExecutions: native?.snapshot().nativeExecutions ?? 0,
+    nativeExecutions: native?.snapshot().nativeExecutions ?? unadmittedUsage.nativeExecutions,
     gatewayPreflightAttempts: gatewayAttempts,
     providerDirectAttempts: providerAttempts,
     phaseBReady: native?.snapshot().phaseBReady ?? false,
@@ -1120,6 +1124,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     const ports = composeNative();
     native = createFoundationExecutionController({
       activeWindowId,
+      ...(unadmittedUsage.nativeExecutions === 1 ? { projectVerifiedContinuationProof: verified } : {}),
       bindings,
       port: bridge.port,
       journal: runtime.controlJournal,

@@ -13,7 +13,9 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  restoredBrowserRetryDiscovery = false,
+  unadmittedWf00Reconciled = false,
+  unadmittedWf00Fault,
+  restoredBrowserRetryDiscovery = unadmittedWf00Reconciled,
   restoredBrowserRetryDiscoveryFault,
   restoredBrowserDiscovery = restoredBrowserRetryDiscovery,
   restoredBrowserDiscoveryFault,
@@ -2732,6 +2734,78 @@ export async function syntheticProjectVerifiedContinuation({
     if (ordinal === 14) restoredBrowserDiscoveryConfiguration = configuration;
     else restoredBrowserDiscoveryConfiguration.next = configuration;
   }
+  let unadmittedWf00Configuration;
+  if (unadmittedWf00Reconciled) {
+    const root = 'milestones/M03-n8n-foundation/evidence/',
+      relative = root + 'wf00-unadmitted-manual-checkpoint-20261024.json',
+      databaseRelative = root + 'wf00-unadmitted-db-readback-20261024.json',
+      apiRelative = root + 'wf00-unadmitted-api-readback-20261024.json',
+      cleanupRelative = root + 'wf00-unadmitted-cleanup-20261024.json',
+      checkpoint = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8')),
+      database = JSON.parse(readFileSync(join(sourceRoot, databaseRelative), 'utf8')),
+      api = JSON.parse(readFileSync(join(sourceRoot, apiRelative), 'utf8')),
+      cleanup = JSON.parse(readFileSync(join(sourceRoot, cleanupRelative), 'utf8')),
+      json = (value) => JSON.stringify(value) + '\n';
+    for (const path of Object.keys(checkpoint.pins))
+      checkpoint.pins[path] = digest(readFileSync(join(directory, path), 'utf8'));
+    if (unadmittedWf00Fault === 'native-reset')
+      checkpoint.conservativeAdditionalReservation.nativeExecutions = 0;
+    if (unadmittedWf00Fault === 'control-reset') checkpoint.conservativeAdditionalReservation.control = 0;
+    const text = json(checkpoint);
+    put(relative, text);
+    database.checkpointSha256 = digest(text);
+    if (unadmittedWf00Fault === 'db-active') database.rawResult.inspection.fixture.competitorArchived = false;
+    if (unadmittedWf00Fault === 'db-actor') database.rawResult.inspection.actorRunCount = 1;
+    const databaseResult = json(database.rawResult);
+    put(database.resultPin.path, databaseResult);
+    database.resultPin.sha256 = digest(databaseResult);
+    const databaseText = json(database);
+    put(databaseRelative, databaseText);
+    api.checkpointSha256 = digest(text);
+    api.databaseReceiptSha256 = digest(databaseText);
+    const rows = [
+      {
+        kind: 'm03_wf00_execution_diagnostic_budget',
+        version: 1,
+        checkpointSha256: digest(text),
+        managementAttempts: 524,
+        controlAttempts: 846,
+        maximumRequests: 3,
+        processId: 7612,
+        parentProcessId: 10396,
+      },
+      ...[525, 526, 527].map((ordinal) => ({ event: 'management_attempt', ordinal })),
+    ];
+    if (unadmittedWf00Fault === 'diagnostic-reset') rows[1].ordinal = 524;
+    const journal = rows.map(json).join('');
+    put(api.diagnosticJournal.path, journal);
+    api.diagnosticJournal.sha256 = digest(journal);
+    if (unadmittedWf00Fault === 'api-running') api.rawNativeResult.inventory.runningEmpty = false;
+    if (unadmittedWf00Fault === 'api-overclaim')
+      api.rawNativeResult.inventory.allActiveExecutionsAbsentProven = true;
+    if (unadmittedWf00Fault === 'api-baseline')
+      api.rawNativeResult.inventory.baseline.definitionMatches = false;
+    if (unadmittedWf00Fault === 'api-reset') api.usage.carriedControl = 3;
+    const apiText = json(api);
+    put(apiRelative, apiText);
+    cleanup.checkpointSha256 = digest(text);
+    cleanup.databaseReceiptSha256 = digest(databaseText);
+    cleanup.apiReceiptSha256 = digest(apiText);
+    if (unadmittedWf00Fault === 'cleanup')
+      cleanup.actualPresenceResult.allElevenDisposableLeavesAbsent = false;
+    const cleanupText = json(cleanup);
+    put(cleanupRelative, cleanupText);
+    unadmittedWf00Configuration = {
+      relative,
+      sha256: digest(text),
+      databaseRelative,
+      databaseSha256: digest(databaseText),
+      apiRelative,
+      apiSha256: digest(apiText),
+      cleanupRelative,
+      cleanupSha256: digest(cleanupText),
+    };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -2868,6 +2942,7 @@ export async function syntheticProjectVerifiedContinuation({
     runtimeRestorationRecovery: runtimeRestorationConfiguration,
     runtimeRestorationAllocationApproval: runtimeRestorationAllocationConfiguration,
     restoredBrowserDiscoveryRecovery: restoredBrowserDiscoveryConfiguration,
+    unadmittedWf00Recovery: unadmittedWf00Configuration,
   }))
     source = source.replace(
       new RegExp('const ' + name + ' = Object\\.freeze\\(\\{[\\s\\S]*?\\n\\}\\);'),
@@ -2917,27 +2992,29 @@ export async function syntheticProjectVerifiedContinuation({
     }) + '\n',
   );
   let time = Date.parse(
-    restoredBrowserRetryDiscovery
-      ? '2026-10-24T15:40:00.000Z'
-      : restoredBrowserDiscovery
-        ? '2026-10-24T15:10:00.000Z'
-        : runtimeRestorationClosed
-          ? '2026-10-24T15:00:00.000Z'
-          : runtimePreparationClosed
-            ? '2026-10-24T11:00:00.000Z'
-            : adminAdmissionReadonly
-              ? '2026-10-24T10:00:00.000Z'
-              : catalogReadonly
-                ? '2026-10-24T02:40:00.000Z'
-                : preprivateAdmin
-                  ? '2026-10-24T02:00:00.000Z'
-                  : closedFixture
-                    ? '2026-10-24T00:46:00.000Z'
-                    : closedWindow
-                      ? '2026-10-23T18:00:00.000Z'
-                      : effectful
-                        ? '2026-10-23T15:00:00.000Z'
-                        : '2026-10-22T18:00:00.000Z',
+    unadmittedWf00Reconciled
+      ? '2026-10-24T16:10:00.000Z'
+      : restoredBrowserRetryDiscovery
+        ? '2026-10-24T15:40:00.000Z'
+        : restoredBrowserDiscovery
+          ? '2026-10-24T15:10:00.000Z'
+          : runtimeRestorationClosed
+            ? '2026-10-24T15:00:00.000Z'
+            : runtimePreparationClosed
+              ? '2026-10-24T11:00:00.000Z'
+              : adminAdmissionReadonly
+                ? '2026-10-24T10:00:00.000Z'
+                : catalogReadonly
+                  ? '2026-10-24T02:40:00.000Z'
+                  : preprivateAdmin
+                    ? '2026-10-24T02:00:00.000Z'
+                    : closedFixture
+                      ? '2026-10-24T00:46:00.000Z'
+                      : closedWindow
+                        ? '2026-10-23T18:00:00.000Z'
+                        : effectful
+                          ? '2026-10-23T15:00:00.000Z'
+                          : '2026-10-22T18:00:00.000Z',
   );
   const now = () => time,
     io = { processAlive: () => false };

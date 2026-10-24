@@ -124,6 +124,12 @@ foreach($mutation in @(@{key='controlAttempts';value=842},@{key='controlAttempts
  $mixed=[ordered]@{};foreach($name in $browserLate.Keys){$mixed[$name]=$browserLate[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
  try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'LATE_DISCOVERY_CHARGE_OR_BINDING_RESET'}
 }
+$unadmitted=[ordered]@{};foreach($name in $browserLate.Keys){$unadmitted[$name]=$browserLate[$name]};$unadmitted.managementAttempts=527;$unadmitted.controlAttempts=846;$unadmitted.combinedAttempts=1373
+if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$unadmitted) $true 'CheckOnly') -ne 1024){throw 'RECONCILED_UNADMITTED_CHARGE_NOT_PROJECTED'}
+foreach($mutation in @(@{key='managementAttempts';value=524},@{key='managementAttempts';value='527'},@{key='controlAttempts';value=843},@{key='controlAttempts';value=847},@{key='controlAttempts';value='846'},@{key='combinedAttempts';value=1372},@{key='managementMaximum';value=1025},@{key='sourceCommitSha';value=$next.sourceCommitSha},@{key='windowId';value=$next.windowId})){
+ $mixed=[ordered]@{};foreach($name in $unadmitted.Keys){$mixed[$name]=$unadmitted[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'UNADMITTED_CHARGE_OR_BINDING_RESET'}
+}
 foreach($mutation in @(@{key='managementMaximum';value=832},@{key='managementMaximum';value=1025},@{key='managementMaximum';value='1024'},@{key='managementAttempts';value=523},@{key='controlAttempts';value=840},@{key='combinedAttempts';value=1364},@{key='sourceCommitSha';value=$next.sourceCommitSha},@{key='windowId';value=$next.windowId},@{key='privateRead';value=$true},@{key='networkRequests';value=1})){
  $mixed=[ordered]@{};foreach($name in $restored.Keys){$mixed[$name]=$restored[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
  try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED_RESTORED_1024_PROFILE_ACCEPTED'}

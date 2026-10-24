@@ -8,8 +8,238 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
 
 const key = 'synthetic-diagnostic-key-only';
+test('WF00 execution diagnostic makes only three charged fixed GETs and never adopts an unretained run', async () => {
+  const calls = [],
+    charges = [];
+  let budgetClosed = false;
+  const r = await inventory.runWf00ExecutionDiagnostic(key, {
+    lookup: async () => [{ address: '1.1.1.1', family: 4 }],
+    openBudget: () => ({
+      admit() {
+        charges.push(charges.length + 525);
+      },
+      close() {
+        budgetClosed = true;
+      },
+    }),
+    transport: async (input) => {
+      calls.push(input);
+      assert.equal(charges.length, calls.length);
+      assert.equal(input.method, 'GET');
+      assert.equal(input.url.hostname, 'muhhammedsayed.app.n8n.cloud');
+      assert.equal(input.rejectUnauthorized, true);
+      assert.equal(input.maxBytes, calls.length === 3 ? 524288 : 65536);
+      input.diagnostic.tcpConnected = true;
+      input.diagnostic.tlsVerified = true;
+      input.onSocketClosed();
+      return {
+        status: 200,
+        body: Buffer.from(
+          JSON.stringify(
+            calls.length === 3
+              ? baselineFixture().dto
+              : { data: [], nextCursor: null, ignored: 'SYNTHETIC_PRIVATE' },
+          ),
+        ),
+      };
+    },
+  });
+  assert.deepEqual(
+    calls.map((c) => c.url.pathname + c.url.search),
+    [
+      '/api/v1/executions?workflowId=MzimjpsuyPuK7SKe&includeData=false&limit=2&status=running',
+      '/api/v1/executions?workflowId=MzimjpsuyPuK7SKe&includeData=false&limit=2',
+      '/api/v1/workflows/MzimjpsuyPuK7SKe?excludePinnedData=true',
+    ],
+  );
+  assert.deepEqual(charges, [525, 526, 527]);
+  assert.equal(r.status, 'execution_metadata_observed');
+  assert.equal(r.runningEmpty, true);
+  assert.equal(r.runningPaginationComplete, true);
+  assert.deepEqual(r.latest, []);
+  assert.equal(r.unadmittedExecutionIdEstablished, false);
+  assert.equal(r.savedWorkflowVerified, true);
+  assert.equal(r.manualRetentionDisabled, true);
+  assert.equal(r.allActiveExecutionsAbsentProven, false);
+  assert.equal(r.authenticationVerified, true);
+  assert.equal(r.networkCompletionVerified, true);
+  assert.equal(budgetClosed, true);
+  assert.doesNotMatch(JSON.stringify(r), /SYNTHETIC_PRIVATE|"data"|resultData|workflowData/);
+});
+
+test('WF00 execution metadata limits, permission failures and uncertain sockets stop without retry or payload output', async () => {
+  for (const mode of ['http', 'foreign', 'payload', 'duplicate', 'too-large', 'unclosed']) {
+    let calls = 0,
+      charges = 0,
+      closed = false;
+    const r = await inventory.runWf00ExecutionDiagnostic(key, {
+      closeTimeoutMs: 1,
+      lookup: async () => [{ address: '1.1.1.1', family: 4 }],
+      openBudget: () => ({
+        admit() {
+          charges++;
+        },
+        close() {
+          closed = true;
+        },
+      }),
+      transport: async (input) => {
+        calls++;
+        input.diagnostic.tcpConnected = true;
+        input.diagnostic.tlsVerified = true;
+        if (mode !== 'unclosed') input.onSocketClosed();
+        const row = {
+          id: '12345',
+          workflowId: 'MzimjpsuyPuK7SKe',
+          mode: 'manual',
+          status: 'running',
+          startedAt: '2026-10-24T15:41:07.249Z',
+          stoppedAt: null,
+        };
+        if (mode === 'foreign') row.workflowId = 'SYNTHETIC_FOREIGN';
+        if (mode === 'payload') row.data = { secret: 'SYNTHETIC_PRIVATE' };
+        return {
+          status: mode === 'http' ? 403 : 200,
+          body:
+            mode === 'too-large'
+              ? Buffer.alloc(65537)
+              : Buffer.from(
+                  JSON.stringify({
+                    data: mode === 'unclosed' ? [] : mode === 'duplicate' ? [row, row] : [row],
+                    nextCursor: null,
+                    unknown: 'SYNTHETIC_PRIVATE',
+                  }),
+                ),
+        };
+      },
+    });
+    assert.equal(calls, 1, mode);
+    assert.equal(charges, 1, mode);
+    assert.equal(closed, true, mode);
+    assert.notEqual(r.status, 'execution_metadata_observed', mode);
+    assert.equal(r.unadmittedExecutionIdEstablished, false);
+    assert.doesNotMatch(JSON.stringify(r), /SYNTHETIC_PRIVATE|SYNTHETIC_FOREIGN|resultData|"data"/);
+  }
+});
+
+test('WF00 retained metadata is a bounded candidate and cursors never create extra requests or execution authority', async () => {
+  let calls = 0,
+    charges = 0;
+  const r = await inventory.runWf00ExecutionDiagnostic(key, {
+    lookup: async () => [{ address: '1.1.1.1', family: 4 }],
+    openBudget: () => ({
+      admit() {
+        charges++;
+      },
+      close() {},
+    }),
+    transport: async (input) => {
+      calls++;
+      input.diagnostic.tcpConnected = true;
+      input.diagnostic.tlsVerified = true;
+      input.onSocketClosed();
+      const row = {
+        id: '12345',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        mode: 'manual',
+        status: 'error',
+        startedAt: '2026-10-24T15:41:07.249Z',
+        stoppedAt: '2026-10-24T15:41:09.628Z',
+        unknown: 'SYNTHETIC_PRIVATE',
+      };
+      return {
+        status: 200,
+        body: Buffer.from(
+          JSON.stringify(
+            calls === 3
+              ? baselineFixture((dto) => {
+                  dto.versionId = 'ChangedVersion';
+                }).dto
+              : { data: calls === 1 ? [] : [row], nextCursor: 'SYNTHETIC_OPAQUE_CURSOR' },
+          ),
+        ),
+      };
+    },
+  });
+  assert.equal(calls, 3);
+  assert.equal(charges, 3);
+  assert.equal(r.status, 'execution_metadata_observed');
+  assert.equal(r.runningEmpty, false);
+  assert.equal(r.runningPaginationComplete, false);
+  assert.equal(r.latestPaginationComplete, false);
+  assert.equal(r.latest[0].executionId, '12345');
+  assert.equal(r.latest[0].withinObservedInterval, true);
+  assert.equal(r.unadmittedExecutionIdEstablished, false);
+  assert.equal(r.allActiveExecutionsAbsentProven, false);
+  assert.equal(r.savedWorkflowVerified, false);
+  assert.equal(r.baseline.versionMatches, false);
+  assert.equal(r.manualRetentionDisabled, true);
+  assert.doesNotMatch(JSON.stringify(r), /ChangedVersion|SYNTHETIC_PRIVATE|SYNTHETIC_OPAQUE_CURSOR/);
+});
+
+test('WF00 diagnostic one-use journal durably charges three reads without rewriting the six prior ledgers', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'emr-wf00-metadata-budget-'));
+  try {
+    const checkpointPath =
+        'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-checkpoint-20261024.json',
+      checkpoint = JSON.parse(readFileSync(resolve(checkpointPath), 'utf8')),
+      put = (path, text) => {
+        const absolute = join(root, path);
+        mkdirSync(resolve(absolute, '..'), { recursive: true });
+        writeFileSync(absolute, text);
+        return absolute;
+      },
+      digest = (text) => createHash('sha256').update(text).digest('hex'),
+      originals = {};
+    for (const path of Object.keys(checkpoint.pins)) {
+      const text = JSON.stringify({ kind: 'synthetic_public_ledger', path }) + '\n';
+      put(path, text);
+      originals[path] = text;
+      checkpoint.pins[path] = digest(text);
+    }
+    const text = JSON.stringify(checkpoint) + '\n';
+    put(checkpointPath, text);
+    const source = readFileSync(resolve('scripts/n8n/inventory.mjs'), 'utf8').replace(
+        '9c49750496d602781903de09459d729c6a3061b433a78cfea6aabdb4d796e99f',
+        digest(text),
+      ),
+      path = put('scripts/n8n/inventory.mjs', source),
+      module = await import(pathToFileURL(path).href),
+      ready = module.checkWf00ExecutionDiagnostic(root);
+    assert.equal(ready.privateRead, false);
+    assert.equal(ready.networkRequests, 0);
+    assert.deepEqual(
+      [ready.managementAttempts, ready.controlAttempts, ready.combinedAttempts],
+      [524, 846, 1370],
+    );
+    const budget = module.openWf00ExecutionDiagnosticBudget(root);
+    assert.throws(() => module.openWf00ExecutionDiagnosticBudget(root));
+    for (let i = 0; i < 3; i++) budget.admit();
+    assert.throws(() => budget.admit());
+    budget.close();
+    assert.throws(() => module.checkWf00ExecutionDiagnostic(root));
+    const rows = readFileSync(
+      join(root, 'scripts/n8n/out/foundation/wf00-execution-diagnostic-20261024.jsonl'),
+      'utf8',
+    )
+      .trim()
+      .split('\n')
+      .map(JSON.parse);
+    assert.equal(rows.length, 4);
+    assert.deepEqual(
+      rows.slice(1).map((v) => v.ordinal),
+      [525, 526, 527],
+    );
+    for (const [path, before] of Object.entries(originals))
+      assert.equal(readFileSync(join(root, path), 'utf8'), before);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('runtime residual workflow projection compares only known graph/version/publication profiles', async () => {
   const graph = { name: 'Synthetic owned workflow', nodes: [], connections: {}, settings: {} };
   const { foundationRuntimeGraphHash } = await import('./foundation-runtime-checkpoint.mjs');
@@ -644,6 +874,7 @@ function baselineFixture(change = () => {}, status = 200) {
   change(dto);
   const calls = [];
   return {
+    dto,
     calls,
     dependencies: {
       lookup: async () => [{ address: '8.8.8.8', family: 4 }],

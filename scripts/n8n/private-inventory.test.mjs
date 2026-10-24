@@ -21,7 +21,8 @@ function fixture(mode = 'success') {
   const discoveryMode = mode.startsWith('wf70');
   const machineMode = mode.startsWith('machine');
   const runtimeMode = mode.startsWith('runtime');
-  const persistentMode = baselineMode || discoveryMode || machineMode || runtimeMode;
+  const wf00Mode = mode.startsWith('wf00');
+  const persistentMode = baselineMode || discoveryMode || machineMode || runtimeMode || wf00Mode;
   const root = mkdtempSync(join(tmpdir(), 'emr-m03-n8n-fixture-'));
   roots.push(root);
   const put = (path, value) => {
@@ -54,6 +55,11 @@ function fixture(mode = 'success') {
     consumerSource = consumerSource.replace(
       'if($RuntimeReconciliationDiagnostic){$node=Assert-RuntimeReconciliationPublic}',
       'if($RuntimeReconciliationDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
+    );
+  if (wf00Mode)
+    consumerSource = consumerSource.replace(
+      'if($Wf00ExecutionDiagnostic){$node=Assert-RuntimeReconciliationPublic $true}',
+      'if($Wf00ExecutionDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
     );
   if (mode === 'baselineUnknownClose')
     consumerSource = consumerSource.replace('$closed = $child.WaitForExit(5000)', '$closed = $false');
@@ -434,8 +440,57 @@ function fixture(mode = 'success') {
     if (mode === 'runtimeUnsafe') result.workflows['SUB-NOTIFY'].privateValue = 'synthetic-private-value';
     if (mode === 'runtimeBadBool') result.metadata.updatedAtMatchesJournal = 'synthetic-private-value';
   }
+  if (wf00Mode) {
+    for (const k of Object.keys(result)) delete result[k];
+    Object.assign(result, {
+      version: 1,
+      environment: 'dev',
+      host: 'muhhammedsayed.app.n8n.cloud',
+      projectId: 'pHvQjDmjxVZ3KQLT',
+      workflowKey: 'WF-00',
+      status: 'execution_metadata_observed',
+      requestCount: 3,
+      maximumRequests: 3,
+      authenticationVerified: true,
+      networkCompletionVerified: true,
+      runningEmpty: true,
+      runningPaginationComplete: true,
+      latest: [],
+      latestPaginationComplete: true,
+      unadmittedExecutionIdEstablished: false,
+      allActiveExecutionsAbsentProven: false,
+      savedWorkflowVerified: true,
+      manualRetentionDisabled: true,
+      baseline: {
+        versionMatches: true,
+        definitionMatches: true,
+        settingsMatch: true,
+        ownershipMatches: true,
+        inactive: true,
+      },
+      diagnostics: {
+        version: 1,
+        dns: 'complete',
+        requests: ['executions', 'executions', 'workflows'].map((resource, i) => ({
+          resource,
+          page: i === 1 ? 2 : 1,
+          tcpConnected: true,
+          tlsVerified: true,
+          httpStatus: 200,
+          bodyRead: 'complete',
+          jsonParsed: true,
+          schemaValidated: true,
+          socketClosed: true,
+          failureStage: 'none',
+          failureCode: 'none',
+        })),
+      },
+    });
+    if (mode === 'wf00Unsafe') result.latest = [{ privateValue: 'SYNTHETIC_PRIVATE' }];
+    if (mode === 'wf00BadBool') result.manualRetentionDisabled = 'SYNTHETIC_PRIVATE';
+  }
   const code = `import {writeFileSync} from 'node:fs';
- const good=process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : machineMode ? "&&process.argv.length===3&&process.argv[2]==='--machine-metadata-diagnostic'" : runtimeMode ? "&&process.argv.length===3&&process.argv[2]==='--runtime-reconciliation-diagnostic'" : ''};
+ const good=${wf00Mode ? "process.argv[2]==='--wf00-execution-diagnostic'&&" : ''}process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : machineMode ? "&&process.argv.length===3&&process.argv[2]==='--machine-metadata-diagnostic'" : runtimeMode ? "&&process.argv.length===3&&process.argv[2]==='--runtime-reconciliation-diagnostic'" : ''};
  writeFileSync(new URL('./called.txt',import.meta.url),good?'only-n8n-key':'wrong-env');
  delete process.env.M03_N8N_API_KEY;
  console.error('synthetic-private-stderr-must-stay-hidden');
@@ -532,6 +587,7 @@ $s=[IO.File]::Open($store,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.Fi
         ...(machineMode ? ['-MachineMetadataDiagnostic'] : []),
         ...(runtimeMode ? ['-RuntimeReconciliationDiagnostic'] : []),
         ...(discoveryMode ? ['-Wf70DiscoveryDiagnostic'] : []),
+        ...(wf00Mode ? ['-Wf00ExecutionDiagnostic'] : []),
       ]),
   };
 }
@@ -542,7 +598,7 @@ describe(
   'M03 n8n bounded private inventory consumer, isolated synthetic Windows DPAPI only',
   { skip: process.platform !== 'win32' },
   () => {
-    it('Runtime reconciliation actual native public gate bounds its child and denies changed counters or private output before any credential path', () => {
+    it('Runtime andWF00 reconciliation actual native public gate bounds its child and denies changed counters or private output before any credential path', () => {
       const root = mkdtempSync(join(tmpdir(), 'emr-runtime-public-'));
       roots.push(root);
       const put = (p, text) => {
@@ -575,41 +631,85 @@ describe(
         privateRead: false,
         networkRequests: 0,
       };
-      for (const mode of ['ready', 'stale', 'stringCounter', 'private', 'extra', 'overflow', 'stderr']) {
-        const dto = structuredClone(result);
-        if (mode === 'stale') dto.managementAttempts = 482;
-        if (mode === 'stringCounter') dto.controlAttempts = '791';
-        if (mode === 'private') dto.privateRead = true;
-        if (mode === 'extra') dto.raw = 'SYNTHETIC_PRIVATE_VALUE';
-        put(
-          'scripts/n8n/inventory.mjs',
-          `if(process.argv[2]!=='--runtime-reconciliation-check-only'||process.env.M03_N8N_API_KEY||process.env.PGPASSWORD||process.env.SUPABASE_ACCESS_TOKEN||process.env.NODE_OPTIONS)process.exit(7);${mode === 'stderr' ? "console.error('SYNTHETIC_PRIVATE_STDERR');" : ''}console.log(${JSON.stringify(mode === 'overflow' ? 'X'.repeat(5000) : JSON.stringify(dto))});`,
-        );
-        const script = put(
-          'public.ps1',
-          `$ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+      for (const wf00Mode of [false, true]) {
+        for (const mode of ['ready', 'stale', 'stringCounter', 'private', 'extra', 'overflow', 'stderr']) {
+          const dto = structuredClone(result);
+          if (wf00Mode)
+            Object.assign(dto, {
+              kind: 'm03_wf00_execution_check',
+              technicalAttempt: 15,
+              sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
+              windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+              managementAttempts: 524,
+              controlAttempts: 846,
+              combinedAttempts: 1370,
+            });
+          if (mode === 'stale') dto.managementAttempts--;
+          if (mode === 'stringCounter') dto.controlAttempts = String(dto.controlAttempts);
+          if (mode === 'private') dto.privateRead = true;
+          if (mode === 'extra') dto.raw = 'SYNTHETIC_PRIVATE_VALUE';
+          put(
+            'scripts/n8n/inventory.mjs',
+            `if(process.argv[2]!==${JSON.stringify(wf00Mode ? '--wf00-execution-check-only' : '--runtime-reconciliation-check-only')}||process.env.M03_N8N_API_KEY||process.env.PGPASSWORD||process.env.SUPABASE_ACCESS_TOKEN||process.env.NODE_OPTIONS)process.exit(7);${mode === 'stderr' ? "console.error('SYNTHETIC_PRIVATE_STDERR');" : ''}console.log(${JSON.stringify(mode === 'overflow' ? 'X'.repeat(5000) : JSON.stringify(dto))});`,
+          );
+          const script = put(
+            'public.ps1',
+            `$ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 $repo=${quote(root)};$source=${quote(resolve('scripts/n8n/windows/Invoke-M03N8nInventory.ps1'))}
 $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($source,[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'PARSE_FAILED'}
 foreach($name in @('Assert-Keys','Assert-RuntimeReconciliationPublic')){$found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'MISSING_FUNCTION'};Invoke-Expression $found[0].Extent.Text}
 function Confined-File($Root,$Relative){return Join-Path $Root $Relative}
-try{$value=Assert-RuntimeReconciliationPublic;if($value -cne ${quote(node)}){throw 'WRONG_NODE'};Write-Output 'PUBLIC_READY'}catch{Write-Output 'PUBLIC_BLOCKED'}
+try{$value=Assert-RuntimeReconciliationPublic ${wf00Mode ? '$true' : '$false'};if($value -cne ${quote(node)}){throw 'WRONG_NODE'};Write-Output 'PUBLIC_READY'}catch{Write-Output 'PUBLIC_BLOCKED'}
 `,
+          );
+          const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', script], {
+            env: {
+              ...osEnv(),
+              M03_N8N_API_KEY: 'SYNTHETIC_PRIVATE_KEY',
+              PGPASSWORD: 'SYNTHETIC_PRIVATE_DATABASE',
+              SUPABASE_ACCESS_TOKEN: 'SYNTHETIC_PRIVATE_TOKEN',
+              NODE_OPTIONS: '--no-warnings',
+            },
+            encoding: 'utf8',
+            windowsHide: true,
+            timeout: 10000,
+          });
+          assert.equal(r.status, 0, r.stderr);
+          assert.equal(r.stdout.trim(), mode === 'ready' ? 'PUBLIC_READY' : 'PUBLIC_BLOCKED');
+          assert.doesNotMatch(r.stdout + r.stderr, /SYNTHETIC_PRIVATE/);
+        }
+      }
+    });
+    it('WF00 fixed read-only mode preserves the persistent Management original, closes children and rejects unsafe output', () => {
+      for (const mode of ['wf00Success', 'wf00Unsafe', 'wf00BadBool']) {
+        const f = fixture(mode),
+          check = f.run(true);
+        assert.equal(check.status, 0, check.stderr);
+        assert.match(check.stdout, /WF00_EXECUTION_CHECK_ONLY_READY/);
+        assert.equal(existsSync(f.handoff), false);
+        const original = join(
+            f.root,
+            'private/Everyone-Market-Radar-Private/secrets/dev/runtime/management.dpapi',
+          ),
+          before = readFileSync(original);
+        const run = f.run();
+        assert.equal(run.status, mode === 'wf00Success' ? 0 : 1, run.stderr);
+        assert.doesNotMatch(
+          run.stdout + run.stderr,
+          /SYNTHETIC_PRIVATE|synthetic-private|synthetic-n8n-key|unrelated-db-secret|unrelated-api-secret/,
         );
-        const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', script], {
-          env: {
-            ...osEnv(),
-            M03_N8N_API_KEY: 'SYNTHETIC_PRIVATE_KEY',
-            PGPASSWORD: 'SYNTHETIC_PRIVATE_DATABASE',
-            SUPABASE_ACCESS_TOKEN: 'SYNTHETIC_PRIVATE_TOKEN',
-            NODE_OPTIONS: '--no-warnings',
-          },
-          encoding: 'utf8',
-          windowsHide: true,
-          timeout: 10000,
-        });
-        assert.equal(r.status, 0, r.stderr);
-        assert.equal(r.stdout.trim(), mode === 'ready' ? 'PUBLIC_READY' : 'PUBLIC_BLOCKED');
-        assert.doesNotMatch(r.stdout + r.stderr, /SYNTHETIC_PRIVATE/);
+        const receipt = JSON.parse(run.stdout);
+        assert.equal(receipt.childClosed, true);
+        assert.equal(receipt.handoffDeleted, true);
+        assert.equal(existsSync(f.handoff), false);
+        assert.deepEqual(readFileSync(original), before);
+        assert.equal(readFileSync(join(f.root, 'scripts/n8n/called.txt'), 'utf8'), 'only-n8n-key');
+        assert.equal(
+          existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')),
+          false,
+        );
+        if (mode === 'wf00Success') assert.equal(receipt.inventory.savedWorkflowVerified, true);
+        else assert.equal(receipt.inventory, null);
       }
     });
     it('WF70 native public gate binds cumulative snapshots before any credential path and refuses a reused fence', () => {
