@@ -27,6 +27,10 @@ function fixture({
   statusCode = 200,
   tlsAuthorized = true,
   remoteAddress = '1.1.1.1',
+  preResponseErrors = [],
+  preResponseTlsVerified = true,
+  setupError = null,
+  postResponseError = null,
 } = {}) {
   const calls = [],
     sockets = [],
@@ -43,6 +47,7 @@ function fixture({
       },
       request(options, callback) {
         calls.push(options);
+        if (setupError !== null) throw setupError;
         const req = new EventEmitter(),
           socket = new EventEmitter();
         sockets.push(socket);
@@ -68,13 +73,23 @@ function fixture({
           requestBodies.push(body);
           return queueMicrotask(() => {
             req.emit('socket', socket);
-            socket.emit('secureConnect');
+            if (preResponseTlsVerified) socket.emit('secureConnect');
+            if (preResponseErrors.length) {
+              for (const { origin, error } of preResponseErrors)
+                (origin === 'request_error' ? req : socket).emit('error', error);
+              return;
+            }
+            if (!preResponseTlsVerified) socket.emit('secureConnect');
             res = new PassThrough();
             res.statusCode = statusCode;
             res.headers = headers;
             res.rawHeaders = rawHeaders ?? Object.entries(headers).flat();
             res.complete = complete;
             callback(res);
+            if (postResponseError !== null) {
+              socket.emit('error', postResponseError);
+              return;
+            }
             if (bodyError) {
               res.emit('error', Error('SYNTHETIC_PRIVATE_ERROR_' + key));
               close();
@@ -159,6 +174,160 @@ test('native framing rejection does not inspect an arbitrary thrown error messag
   assert.equal(nativeTransport.foundationNativeTransportErrorCode(error), 'FRAMING');
   assert.equal(reads, 0);
   f.transport.close();
+});
+
+test('native transport provenance binds finite native OS codes to its first error event and physical closure', async () => {
+  for (const [origin, code, tlsVerified] of [
+    ['request_error', 'ECONNRESET', true],
+    ['socket_error', 'ECONNRESET', false],
+    ['request_error', 'ECONNREFUSED', false],
+    ['request_error', 'CERT_HAS_EXPIRED', false],
+    ['request_error', 'ABORT_ERR', true],
+  ]) {
+    const error = Object.assign(new Error('SYNTHETIC_PRIVATE_NATIVE_ERROR'), { code });
+    const f = fixture({ preResponseErrors: [{ origin, error }], preResponseTlsVerified: tlsVerified });
+    const rejected = await f.transport.request({ method: 'GET', path: workflowPath }).catch((e) => e);
+    assert.equal(typeof nativeTransport.foundationNativeTransportErrorDetails, 'function');
+    const details = nativeTransport.foundationNativeTransportErrorDetails(rejected, f.transport);
+    assert.deepEqual(details, {
+      transportCode: origin === 'request_error' ? 'REQUEST' : 'SOCKET',
+      nativeOSCode: code,
+      origin,
+      responseSeen: false,
+      tlsVerified,
+      physicalClosureVerified: true,
+    });
+    assert.equal(Object.isFrozen(details), true);
+    assert.equal(nativeTransport.foundationNativeTransportErrorDetails(rejected), details);
+    const other = fixture();
+    assert.equal(nativeTransport.foundationNativeTransportErrorDetails(rejected, other.transport), null);
+    assert.deepEqual(f.transport.state(), { pendingRequests: 0, unclosedResponses: 0 });
+    assert.doesNotMatch(JSON.stringify(details), /SYNTHETIC|PRIVATE|message|stack/);
+    f.transport.close();
+    other.transport.close();
+  }
+  const reset = Object.assign(new Error('SYNTHETIC_FIRST'), { code: 'ECONNRESET' });
+  const certificate = Object.assign(new Error('SYNTHETIC_SECOND'), { code: 'CERT_HAS_EXPIRED' });
+  const f = fixture({
+    preResponseErrors: [
+      { origin: 'request_error', error: reset },
+      { origin: 'socket_error', error: certificate },
+    ],
+  });
+  const rejected = await f.transport.request({ method: 'GET', path: workflowPath }).catch((e) => e);
+  assert.equal(
+    nativeTransport.foundationNativeTransportErrorDetails(rejected, f.transport).nativeOSCode,
+    'ECONNRESET',
+  );
+  assert.equal(
+    nativeTransport.foundationNativeTransportErrorDetails(rejected, f.transport).origin,
+    'request_error',
+  );
+  f.transport.close();
+  const reversed = fixture({
+    preResponseErrors: [
+      { origin: 'request_error', error: certificate },
+      { origin: 'socket_error', error: reset },
+    ],
+  });
+  const secondRejected = await reversed.transport
+    .request({ method: 'GET', path: workflowPath })
+    .catch((e) => e);
+  assert.equal(
+    nativeTransport.foundationNativeTransportErrorDetails(secondRejected, reversed.transport).nativeOSCode,
+    'CERT_HAS_EXPIRED',
+  );
+  reversed.transport.close();
+});
+
+test('native transport provenance ignores code accessors proxies non-native values and unapproved native codes', async () => {
+  let reads = 0;
+  const getter = new Error('SYNTHETIC_PRIVATE_GETTER');
+  Object.defineProperty(getter, 'code', {
+    get() {
+      reads++;
+      throw Error('SYNTHETIC_PRIVATE_READ');
+    },
+  });
+  const proxy = new Proxy(new Error('SYNTHETIC_PRIVATE_PROXY'), {
+    get() {
+      reads++;
+      throw Error('SYNTHETIC_PRIVATE_READ');
+    },
+    getOwnPropertyDescriptor() {
+      reads++;
+      throw Error('SYNTHETIC_PRIVATE_DESCRIPTOR');
+    },
+    getPrototypeOf() {
+      reads++;
+      throw Error('SYNTHETIC_PRIVATE_PROTOTYPE');
+    },
+  });
+  const revoked = Proxy.revocable(new Error('SYNTHETIC_PRIVATE_REVOKED'), {});
+  revoked.revoke();
+  for (const error of [
+    getter,
+    proxy,
+    revoked.proxy,
+    { code: 'ECONNRESET' },
+    Object.assign(new Error('SYNTHETIC_PRIVATE'), { code: 'SYNTHETIC_PRIVATE_CODE' }),
+  ]) {
+    const f = fixture({ preResponseErrors: [{ origin: 'request_error', error }] });
+    const rejected = await f.transport.request({ method: 'GET', path: workflowPath }).catch((e) => e);
+    assert.equal(
+      nativeTransport.foundationNativeTransportErrorDetails(rejected, f.transport).nativeOSCode,
+      null,
+    );
+    assert.equal(reads, 0);
+    f.transport.close();
+  }
+  for (const error of [proxy, revoked.proxy, getter, new Error('FOUNDATION_NATIVE_TRANSPORT_REQUEST')])
+    assert.equal(nativeTransport.foundationNativeTransportErrorDetails(error), null);
+  assert.equal(reads, 0);
+});
+
+test('native transport provenance never turns setup post-response or unclosed resets into pre-response closed faults', async () => {
+  const reset = Object.assign(new Error('SYNTHETIC_PRIVATE_RESET'), { code: 'ECONNRESET' });
+  const setup = fixture({ setupError: reset });
+  const setupError = await setup.transport.request({ method: 'GET', path: workflowPath }).catch((e) => e);
+  assert.deepEqual(nativeTransport.foundationNativeTransportErrorDetails(setupError, setup.transport), {
+    transportCode: 'CLOSE',
+    nativeOSCode: 'ECONNRESET',
+    origin: 'setup',
+    responseSeen: false,
+    tlsVerified: false,
+    physicalClosureVerified: false,
+  });
+  setup.transport.close();
+  const unknown = fixture({
+    preResponseErrors: [{ origin: 'request_error', error: reset }],
+    neverClose: true,
+  });
+  const unclosedError = await unknown.transport
+    .request({ method: 'GET', path: workflowPath })
+    .catch((e) => e);
+  assert.equal(
+    nativeTransport.foundationNativeTransportErrorDetails(unclosedError, unknown.transport)
+      .physicalClosureVerified,
+    false,
+  );
+  assert.equal(
+    nativeTransport.foundationNativeTransportErrorDetails(unclosedError, unknown.transport).transportCode,
+    'CLOSE',
+  );
+  unknown.transport.close();
+  const afterHeaders = fixture({ postResponseError: reset });
+  const response = await afterHeaders.transport.request({ method: 'GET', path: workflowPath });
+  const afterError = await consume(response).catch((e) => e);
+  assert.equal(
+    nativeTransport.foundationNativeTransportErrorDetails(afterError, afterHeaders.transport).responseSeen,
+    true,
+  );
+  assert.equal(
+    nativeTransport.foundationNativeTransportErrorDetails(afterError, afterHeaders.transport).nativeOSCode,
+    'ECONNRESET',
+  );
+  afterHeaders.transport.close();
 });
 
 test('fixed private host uses pinned public DNS, strict TLS and an isolated socket', async () => {

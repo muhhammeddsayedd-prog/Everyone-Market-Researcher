@@ -1,5 +1,6 @@
 import { request as httpsRequest } from 'node:https';
 import { Transform } from 'node:stream';
+import { types } from 'node:util';
 import { parseN8nBindings } from '../../packages/shared/src/n8n-bindings.ts';
 import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
 import { validateFoundationAddresses } from './foundation-management-transport.mjs';
@@ -14,6 +15,28 @@ const host = 'muhhammedsayed.app.n8n.cloud';
 const responseBytes = 8 * 1024 * 1024;
 const transports = new WeakSet();
 const transportErrors = new WeakMap();
+const transportErrorDetails = new WeakMap(),
+  transportOwners = new WeakMap();
+const nativeErrorCodes = new Set([
+  'ECONNRESET',
+  'ECONNREFUSED',
+  'ECONNABORTED',
+  'EPIPE',
+  'ETIMEDOUT',
+  'ENETUNREACH',
+  'EHOSTUNREACH',
+  'EADDRNOTAVAIL',
+  'EAI_AGAIN',
+  'ENOTFOUND',
+  'ABORT_ERR',
+  'ERR_TLS_CERT_ALTNAME_INVALID',
+  'CERT_HAS_EXPIRED',
+  'CERT_NOT_YET_VALID',
+  'DEPTH_ZERO_SELF_SIGNED_CERT',
+  'SELF_SIGNED_CERT_IN_CHAIN',
+  'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
+  'UNABLE_TO_GET_ISSUER_CERT_LOCALLY',
+]);
 export const foundationNativeTransportFailureCodes = Object.freeze([
   'CONFIG',
   'BRAND',
@@ -35,14 +58,34 @@ export const foundationNativeTransportFailureCodes = Object.freeze([
 const transportFailureCodes = new Set(foundationNativeTransportFailureCodes);
 const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const executionId = (v) => /^[1-9]\d{0,31}$/.test(v);
-const fixed = (code) => {
+const fixed = (code, details = null, owner = null) => {
   const safeCode = transportFailureCodes.has(code) ? code : 'REQUEST';
   const error = Error('FOUNDATION_NATIVE_TRANSPORT_' + safeCode);
   transportErrors.set(error, safeCode);
+  if (details !== null)
+    transportErrorDetails.set(error, {
+      owner,
+      value: Object.freeze({ transportCode: safeCode, ...details }),
+    });
   return error;
 };
 export function foundationNativeTransportErrorCode(error) {
   return transportErrors.get(error) ?? null;
+}
+export function foundationNativeTransportErrorDetails(error, transport) {
+  const entry = transportErrorDetails.get(error);
+  if (!entry || (transport !== undefined && transportOwners.get(transport) !== entry.owner)) return null;
+  return entry.value;
+}
+function nativeErrorCode(error) {
+  if (!types.isNativeError(error)) return null;
+  const descriptor = Object.getOwnPropertyDescriptor(error, 'code');
+  return descriptor &&
+    Object.hasOwn(descriptor, 'value') &&
+    typeof descriptor.value === 'string' &&
+    nativeErrorCodes.has(descriptor.value)
+    ? descriptor.value
+    : null;
 }
 const fail = (code) => {
   throw fixed(code);
@@ -187,6 +230,7 @@ export function createFoundationNativeTransport({ apiKey, bindings, authorizeExe
     fail('CONFIG');
   }
   let privateKey = apiKey;
+  const owner = {};
   const active = new Set(),
     unclosedResponses = new Set(),
     send = dependencies.request ?? httpsRequest,
@@ -248,6 +292,7 @@ export function createFoundationNativeTransport({ apiKey, bindings, authorizeExe
       socket,
       stream,
       fault,
+      faultProvenance = null,
       ended = false,
       tlsVerified = false,
       reqClosed = false,
@@ -267,6 +312,13 @@ export function createFoundationNativeTransport({ apiKey, bindings, authorizeExe
     });
     closed.catch(() => {});
     const physicallyClosed = () => reqClosed && (!res || resClosed) && socket && socketClosed;
+    const provenance = (physicalClosureVerified = false) => ({
+      nativeOSCode: faultProvenance?.nativeOSCode ?? null,
+      origin: faultProvenance?.origin ?? null,
+      responseSeen: faultProvenance?.responseSeen ?? res !== undefined,
+      tlsVerified: faultProvenance?.tlsVerified ?? tlsVerified,
+      physicalClosureVerified,
+    });
     const releasePhysical = () => {
       if (physicallyClosed()) {
         active.delete(abort);
@@ -301,7 +353,11 @@ export function createFoundationNativeTransport({ apiKey, bindings, authorizeExe
       if (closeUnknown) destroyPhysical();
       cleanup();
       if (closeUnknown || fault || !ended) {
-        const error = fixed(closeUnknown ? 'CLOSE' : (fault ?? 'TRUNCATED'));
+        const error = fixed(
+          closeUnknown ? 'CLOSE' : (fault ?? 'TRUNCATED'),
+          provenance(physicallyClosed() === true),
+          owner,
+        );
         stream?.destroy(error);
         rejectHeaders(error);
         rejectClosed(error);
@@ -310,14 +366,22 @@ export function createFoundationNativeTransport({ apiKey, bindings, authorizeExe
     const boundClosure = () => {
       if (!closeTimer) closeTimer = setTimeout(() => settle(true), closeTimeoutMs);
     };
-    const abort = (code = 'ABORTED') => {
+    const abort = (code = 'ABORTED', nativeError = null, origin = null) => {
       if (settled) {
         if (!physicallyClosed()) destroyPhysical();
         releasePhysical();
         return;
       }
-      if (!fault) fault = code;
-      stream?.destroy(fixed(fault));
+      if (!fault) {
+        fault = code;
+        faultProvenance = Object.freeze({
+          nativeOSCode: nativeErrorCode(nativeError),
+          origin,
+          responseSeen: res !== undefined,
+          tlsVerified,
+        });
+      }
+      stream?.destroy(fixed(fault, provenance(), owner));
       destroyPhysical();
       boundClosure();
       settle();
@@ -409,7 +473,7 @@ export function createFoundationNativeTransport({ apiKey, bindings, authorizeExe
               try {
                 for await (const chunk of stream) yield chunk;
               } catch {
-                throw fixed(fault ?? 'STREAM');
+                throw fixed(fault ?? 'STREAM', provenance(physicallyClosed() === true), owner);
               } finally {
                 if (!ended && !fault) abort('ABORTED');
               }
@@ -431,7 +495,7 @@ export function createFoundationNativeTransport({ apiKey, bindings, authorizeExe
           socketClosed = true;
           settle();
         });
-        socket.on('error', () => abort('SOCKET'));
+        socket.on('error', (error) => abort('SOCKET', error, 'socket_error'));
         socket.on('secureConnect', () => {
           if (
             socket.encrypted !== true ||
@@ -444,14 +508,14 @@ export function createFoundationNativeTransport({ apiKey, bindings, authorizeExe
           tlsVerified = true;
         });
       });
-      req.on('error', () => abort('REQUEST'));
+      req.on('error', (error) => abort('REQUEST', error, 'request_error'));
       req.on('close', () => {
         reqClosed = true;
         settle();
       });
       req.end(traceparent === null ? undefined : (callbackBody ?? '{}'));
-    } catch {
-      abort('REQUEST');
+    } catch (error) {
+      abort('REQUEST', error, 'setup');
     }
     return headersPromise;
   };
@@ -495,5 +559,6 @@ export function createFoundationNativeTransport({ apiKey, bindings, authorizeExe
     },
   });
   transports.add(transport);
+  transportOwners.set(transport, owner);
   return transport;
 }

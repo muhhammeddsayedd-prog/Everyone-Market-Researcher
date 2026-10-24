@@ -591,6 +591,100 @@ async function technical16CleanupFixture({
         '9a6463326e06719dc0a4123145df96f49ebcf9f4125be81f727f496f5f635c39',
         put(probePath, probe),
       );
+      const fifthPath = evidence + 'technical16-native-cleanup-attempt5-20261024.json',
+        fifth = json(fifthPath),
+        fifthOncePath = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.json',
+        fifthJournalPath = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.jsonl',
+        fifthResultPath = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5-result.json',
+        fifthSealPath = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.provision-seal.json',
+        fourthArchive = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.runtime-lock';
+      const fifthOnce = {
+        ...structuredClone(fourthOnce),
+        cleanupAttempt: 5,
+        priorFailedAttemptSha256: replacements.get(
+          '68fecd32ceda855b5f522bf9448f5fa94c1411dc4bd4950ea6d7a3979602bc72',
+        ),
+        priorOnceSha256: fourth.pins[fourthOncePath],
+        priorJournalSha256: fourth.pins[fourthJournalPath],
+        processId: 2147483640,
+        parentProcessId: 2147483641,
+        usage: { ...structuredClone(once.usage), management: 863, control: 994, combined: 1857 },
+        maximumRequests: 124,
+        maximumControlRequests: 124,
+      };
+      delete fifthOnce.qualificationOnly;
+      fifth.cleanup.childProcessId = fifthOnce.processId;
+      fifth.cleanup.parentProcessId = fifthOnce.parentProcessId;
+      fifth.originalAttemptSha256 = newOriginalSha;
+      fifth.resolutionSha256 = once.resolutionSha256;
+      fifth.priorFailedAttemptSha256 = fifthOnce.priorFailedAttemptSha256;
+      const fifthResult = Object.fromEntries(
+        Object.entries(fifth.rawResult).filter(
+          ([key]) =>
+            ![
+              'nativeExit',
+              'childClosed',
+              'credentialChildrenClosed',
+              'parentLockDeleted',
+              'privateRead',
+              'persistentManagementRetained',
+            ].includes(key),
+        ),
+      );
+      const fifthRows = [
+        {
+          ...structuredClone(fourthRows[0]),
+          cleanupAttempt: 5,
+          priorFailedAttemptSha256: fifthOnce.priorFailedAttemptSha256,
+          priorOnceSha256: fifthOnce.priorOnceSha256,
+          priorJournalSha256: fifthOnce.priorJournalSha256,
+        },
+        ...Array.from({ length: 11 }, (_, index) => {
+          const prefix = index < 4,
+            rootExecution = index < 2;
+          return {
+            event: 'technical16_http_intent',
+            ordinal: index + 1,
+            kind: prefix ? (index % 2 === 0 ? 'metadata' : 'full') : 'discovery',
+            workflowId: prefix
+              ? bindings.workflowRefs[rootExecution ? 'WF-00' : 'WF-10'].id
+              : orderedBaseline[Math.floor((index - 4) / 2)].id,
+            ...(prefix ? { executionId: rootExecution ? '31130' : '31131' } : {}),
+            managementAttempts: 864 + index,
+            controlAttempts: 995 + index,
+            at: '2026-10-24T19:23:00.000Z',
+          };
+        }),
+      ];
+      fifth.pins[fifthOncePath] = put(fifthOncePath, fifthOnce);
+      fifth.pins[fifthJournalPath] = put(fifthJournalPath, fifthRows.map(JSON.stringify).join('\n') + '\n');
+      fifth.pins[fifthResultPath] = put(fifthResultPath, fifthResult);
+      fifth.pins[fourthArchive] = put(fourthArchive, 'emr-m03-foundation-live-runtime-v1\n');
+      fifth.pins[fifthSealPath] = put(fifthSealPath, {
+        version: 2,
+        windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+        files: historicalFilesFor(96, {
+          'scripts/n8n/foundation-provision-cli.mjs':
+            '53b4d149ecc7e1769ddbb88108e7356998379fbae5aed2ec7ec244ce018baf33',
+          'scripts/n8n/foundation-native-reader.mjs':
+            '5d13095af52dd02a5e3fd0aedbd1009774c04043b39f1a5a8257ee94a1eada90',
+          'scripts/n8n/foundation-native-transport.mjs':
+            '2aa1a1d0f5a021e736edd54e0a1fc6921e9d653b68f03232a30613a5eca0f858',
+          'scripts/n8n/windows/Invoke-M03FoundationProvision.ps1':
+            '126e791fb61cfb6fffa103bc108ff848e10e2c268f9146787793e72554870d96',
+        }),
+      });
+      for (const [before, path] of [
+        ['ab3ad645c29b1d21db2a1df3b9f5b968b8c0c6774a2f79a0eabeabf70ffa36bb', fifthOncePath],
+        ['8c3e54a720e0d9488a7e8026c88c95103430d790d9cb5caecd71cbf018a2b970', fifthJournalPath],
+        ['199e4499e30e362a5a72048846e782dd08a25afb444bd43aaf9467ffeb38d02a', fifthResultPath],
+        ['968943a6f5de2322a48ab6cbfe514d6a80e750ea0356978448d82b843e50dfc3', fifthSealPath],
+      ])
+        replacements.set(before, fifth.pins[path]);
+      replacements.set(
+        '7aa4ab07f9be3f837a49cbc69dbedc2c19720493740e05157ff852b9161ced55',
+        put(fifthPath, fifth),
+      );
     } else if (existsSync(join(root, failedPath))) rmSync(join(root, failedPath));
     const cliPath = join(root, 'scripts/n8n/foundation-provision-cli.mjs');
     let cliText = readFileSync(cliPath, 'utf8');
@@ -617,6 +711,10 @@ async function technical16CleanupFixture({
       };
     const context = await cli.checkTechnical16Cleanup(),
       source = cli.assertTechnical16CleanupContext(context);
+    assert.equal(source.cleanupAttempt, 6);
+    assert.equal(source.usage.management, 874);
+    assert.equal(source.usage.control, 1005);
+    assert.equal(source.usage.combined, 1879);
     const readerModule = await import(
       pathToFileURL(join(root, 'scripts/n8n/foundation-native-reader.mjs')).href
     );
@@ -828,7 +926,10 @@ async function technical16CleanupFixture({
 // Spawn the actual copied entry module rather than importing it first. A real
 // PowerShell parent holds the required Windows file lock; only the copied HTTP
 // transport is replaced with a finite, local DTO adapter.
-function runTechnical16CleanupEntry(f, { qualificationOnly = false, extraDiscoveryPages = 0 } = {}) {
+function runTechnical16CleanupEntry(
+  f,
+  { qualificationOnly = false, extraDiscoveryPages = 0, firstReadFailure = null, repeatedFailures = 1 } = {},
+) {
   const put = (path, value) => writeFileSync(join(f.root, path), value);
   put(
     'technical16-entry-data.json',
@@ -837,6 +938,8 @@ function runTechnical16CleanupEntry(f, { qualificationOnly = false, extraDiscove
       snapshots: [...f.snapshots],
       workflows: [...f.workflows],
       extraDiscoveryPages,
+      firstReadFailure,
+      repeatedFailures,
     }),
   );
   put(
@@ -844,6 +947,8 @@ function runTechnical16CleanupEntry(f, { qualificationOnly = false, extraDiscove
     `import {readFileSync,appendFileSync} from 'node:fs';
 const root=new URL('../../',import.meta.url), rows=JSON.parse(readFileSync(new URL('technical16-entry-data.json',root),'utf8'));
 export function foundationNativeTransportErrorCode(){return null;}
+export function foundationNativeTransportErrorDetails(){return null;}
+export function assertFoundationNativeTransport(){throw Error('SYNTHETIC_NON_NATIVE_TRANSPORT');}
 export function createFoundationNativeTransport({apiKey,authorizeExecution}){
  if(apiKey!=='SYNTHETIC_TECHNICAL16_PRIVATE_KEY')throw Error('SYNTHETIC_KEY_BLOCKED');
  const metadata=new Map(rows.metadata),snapshots=new Map(rows.snapshots),workflows=new Map(rows.workflows),deleted=new Set();let closed=false,extraPages=rows.extraDiscoveryPages;
@@ -861,6 +966,48 @@ export function createFoundationNativeTransport({apiKey,authorizeExecution}){
 }
 `,
   );
+  if (firstReadFailure !== null) {
+    put(
+      'scripts/n8n/foundation-native-transport.real.mjs',
+      readFileSync('scripts/n8n/foundation-native-transport.mjs'),
+    );
+    put(
+      'scripts/n8n/foundation-native-transport.mjs',
+      `
+import {readFileSync,appendFileSync} from 'node:fs';
+import {EventEmitter} from 'node:events';
+import {PassThrough} from 'node:stream';
+import {createFoundationNativeTransport as createReal} from './foundation-native-transport.real.mjs';
+export {foundationNativeTransportErrorCode,foundationNativeTransportErrorDetails,assertFoundationNativeTransport} from './foundation-native-transport.real.mjs';
+const root=new URL('../../',import.meta.url),rows=JSON.parse(readFileSync(new URL('technical16-entry-data.json',root),'utf8'));
+export function createFoundationNativeTransport(input){
+ const metadata=new Map(rows.metadata),snapshots=new Map(rows.snapshots),workflows=new Map(rows.workflows),deleted=new Set();let failed=0,extraPages=rows.extraDiscoveryPages;
+ const value=createReal(input,{resolveInstance:async()=>[{address:'1.1.1.1',family:4}],request(options,callback){
+  appendFileSync(new URL('technical16-entry-calls.jsonl',root),JSON.stringify({method:options.method,path:options.path})+'\\n');
+  const req=new EventEmitter(),socket=new EventEmitter();let res,closed=false;
+  socket.encrypted=true;socket.authorized=true;socket.remoteAddress='1.1.1.1';
+  const close=()=>{if(closed)return;closed=true;res?.destroy();req.emit('close');queueMicrotask(()=>socket.emit('close'));};
+  req.destroy=close;socket.destroy=close;
+  req.end=()=>queueMicrotask(()=>{
+   req.emit('socket',socket);
+   const fail=failed<rows.repeatedFailures;
+   if(!fail||!rows.firstReadFailure.includes('CERT'))socket.emit('secureConnect');
+   if(fail){failed++;req.emit('error',Object.assign(new Error('SYNTHETIC_PRIVATE_NATIVE_FAILURE'),{code:rows.firstReadFailure}));return;}
+   let dto,status=200;const execution=/^\\/api\\/v1\\/executions\\/(\\d+)(?:\\?includeData=(false|true))?$/.exec(options.path);
+   if(execution){const id=execution[1];if(options.method==='DELETE'){deleted.add(id);dto={...metadata.get(id),id:Number(id)};}
+    else if(deleted.has(id)){dto={message:'not found'};status=404;}else dto=execution[2]==='true'?snapshots.get(id):metadata.get(id);}
+   else {const workflow=/^\\/api\\/v1\\/workflows\\/([^?]+)/.exec(options.path);
+    if(workflow)dto=workflows.get(workflow[1]);else{const url=new URL('https://synthetic.invalid'+options.path);const nextCursor=!url.searchParams.has('cursor')&&extraPages-->0?'synthetic-next':null;
+     dto={data:url.searchParams.has('status')||url.searchParams.has('cursor')?[]:[...metadata.values()].filter(row=>row.workflowId===url.searchParams.get('workflowId')),nextCursor};}}
+   res=new PassThrough();res.statusCode=status;res.headers={'content-type':'application/json'};res.rawHeaders=['content-type','application/json'];res.complete=true;
+   callback(res);res.once('end',close);res.end(JSON.stringify(dto));
+  });return req;
+ }});
+ return value;
+}
+`,
+    );
+  }
   const ps = (value) => "'" + value.replaceAll("'", "''") + "'";
   const coordinator = readFileSync(
       join(f.root, 'scripts/n8n/windows/Invoke-M03FoundationProvision.ps1'),
@@ -913,17 +1060,77 @@ $result|ConvertTo-Json -Compress
 }
 
 test(
+  'technical16 actual cleanup ENTRY preserves genuine native GET retry provenance as a charged linked row',
+  { skip: process.platform !== 'win32' },
+  async () => {
+    const f = await technical16CleanupFixture();
+    try {
+      const child = runTechnical16CleanupEntry(f, { firstReadFailure: 'ECONNRESET' });
+      assert.equal(child.nativeExit, 0);
+      assert.equal(child.stderr, '');
+      const result = JSON.parse(child.stdout);
+      assert.equal(result.status, 'native_cleanup_verified');
+      assert.equal(result.requestCount, 86);
+      assert.equal(result.managementAttempts, 960);
+      assert.equal(result.controlAttempts, 1091);
+      assert.equal(result.combinedAttempts, 2051);
+      const journal = readFileSync(
+        join(f.root, 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.jsonl'),
+        'utf8',
+      )
+        .trimEnd()
+        .split('\n')
+        .map(JSON.parse);
+      const http = journal.filter((row) => row.event === 'technical16_http_intent');
+      assert.equal(http.length, 86);
+      assert.equal(http[0].retryOf, undefined);
+      assert.equal(http[1].retryOf, 1);
+      assert.equal(http[1].workflowId, http[0].workflowId);
+      assert.equal(http[1].executionId, http[0].executionId);
+      assert.equal(http.filter((row) => row.kind === 'metadata').length, 5);
+      assert.equal(http.filter((row) => row.kind === 'metadata' && row.retryOf === undefined).length, 4);
+      assert.equal(result.networkCompletionVerified, true);
+      assert.equal(result.originalPublicRecordsUnchanged, true);
+    } finally {
+      f.close();
+    }
+  },
+);
+
+test(
+  'technical16 actual cleanup ENTRY retains finite certificate provenance without retry or DELETE',
+  { skip: process.platform !== 'win32' },
+  async () => {
+    const f = await technical16CleanupFixture();
+    try {
+      const child = runTechnical16CleanupEntry(f, { firstReadFailure: 'CERT_HAS_EXPIRED' });
+      assert.equal(child.nativeExit, 1);
+      assert.equal(child.stderr, '');
+      const result = JSON.parse(child.stdout);
+      assert.equal(result.requestCount, 1);
+      assert.equal(result.diagnosticCode, 'native_T_REQ_CERT_EXPIRED_RQ_PRE_NTLS_C');
+      assert.equal(result.qualifiedSideEffects, false);
+      assert.equal(result.recordsDeleted, 0);
+      assert.equal(result.networkCompletionVerified, true);
+      assert.doesNotMatch(child.stdout, /SYNTHETIC_PRIVATE|message|stack/);
+    } finally {
+      f.close();
+    }
+  },
+);
+
+test(
   'technical16 actual cleanup ENTRY reserves four final requests before enabling any DELETE after long pagination',
   { skip: process.platform !== 'win32' },
   async () => {
     const f = await technical16CleanupFixture();
     try {
-      const child = runTechnical16CleanupEntry(f, { extraDiscoveryPages: 40 });
+      const child = runTechnical16CleanupEntry(f, { extraDiscoveryPages: 29 });
       assert.equal(child.nativeExit, 1);
       assert.equal(child.stderr, '');
       const result = JSON.parse(child.stdout);
       assert.equal(result.status, 'cleanup_reconciliation_required');
-      assert.equal(result.requestCount, 121);
+      assert.equal(result.requestCount, 110);
       assert.equal(result.qualifiedSideEffects, false);
       assert.equal(result.recordsDeleted, 0);
       assert.equal(result.networkCompletionVerified, true);
@@ -966,10 +1173,10 @@ test(
       assert.equal(result.requestCount, 85);
       const output = join(f.root, 'scripts/n8n/out/foundation/');
       assert.deepEqual(
-        JSON.parse(readFileSync(join(output, 'technical16-native-cleanup-attempt5-result.json'), 'utf8')),
+        JSON.parse(readFileSync(join(output, 'technical16-native-cleanup-attempt6-result.json'), 'utf8')),
         result,
       );
-      const journal = readFileSync(join(output, 'technical16-native-cleanup-attempt5.jsonl'), 'utf8')
+      const journal = readFileSync(join(output, 'technical16-native-cleanup-attempt6.jsonl'), 'utf8')
         .trimEnd()
         .split('\n')
         .map(JSON.parse);
@@ -978,7 +1185,7 @@ test(
         journal.filter((row) => row.event === 'native_cleanup_result').map((row) => row.executionId),
         ['31131', '31130'],
       );
-      assert.equal(existsSync(join(output, 'technical16-native-cleanup-attempt5.json')), true);
+      assert.equal(existsSync(join(output, 'technical16-native-cleanup-attempt6.json')), true);
       assert.equal(existsSync(join(output, 'live/runtime.operation.lock')), false);
       assert.equal(existsSync(join(f.root, 'technical16-entry-closed')), true);
     } finally {
@@ -988,7 +1195,7 @@ test(
 );
 
 test(
-  'technical16 actual cleanup ENTRY retains four failed claims and all36 charged forensic reads using new ordinal5 files',
+  'technical16 actual cleanup ENTRY retains five failed claims and all47 charged forensic reads using new ordinal6 files',
   { skip: process.platform !== 'win32' },
   async () => {
     const f = await technical16CleanupFixture({ cleanupEntryRetry: true });
@@ -1003,28 +1210,28 @@ test(
       const result = JSON.parse(child.stdout);
       assert.equal(result.status, 'native_cleanup_verified');
       assert.equal(result.requestCount, 85);
-      assert.equal(result.managementAttempts, 948);
-      assert.equal(result.controlAttempts, 1079);
+      assert.equal(result.managementAttempts, 959);
+      assert.equal(result.controlAttempts, 1090);
       assert.equal(result.nativeAcceptanceProven, false);
       assert.deepEqual(readFileSync(join(output, 'technical16-native-cleanup-attempt.json')), originalOnce);
       assert.deepEqual(readFileSync(join(output, 'technical16-native-cleanup.jsonl')), originalJournal);
       assert.deepEqual(
-        readFileSync(join(output, 'technical16-native-cleanup-attempt4.runtime-lock')),
+        readFileSync(join(output, 'technical16-native-cleanup-attempt5.runtime-lock')),
         originalLock,
       );
-      const once5 = JSON.parse(
-        readFileSync(join(output, 'technical16-native-cleanup-attempt5.json'), 'utf8'),
+      const once6 = JSON.parse(
+        readFileSync(join(output, 'technical16-native-cleanup-attempt6.json'), 'utf8'),
       );
-      assert.equal(once5.cleanupAttempt, 5);
-      assert.equal(once5.maximumRequests, 124);
-      assert.equal(once5.usage.management, 863);
-      const journal = readFileSync(join(output, 'technical16-native-cleanup-attempt5.jsonl'), 'utf8')
+      assert.equal(once6.cleanupAttempt, 6);
+      assert.equal(once6.maximumRequests, 113);
+      assert.equal(once6.usage.management, 874);
+      const journal = readFileSync(join(output, 'technical16-native-cleanup-attempt6.jsonl'), 'utf8')
         .trimEnd()
         .split('\n')
         .map(JSON.parse);
-      assert.equal(journal[0].cleanupAttempt, 5);
+      assert.equal(journal[0].cleanupAttempt, 6);
       assert.equal(journal.filter((row) => row.event === 'technical16_http_intent').length, 85);
-      assert.equal(existsSync(join(output, 'technical16-native-cleanup-attempt5-result.json')), true);
+      assert.equal(existsSync(join(output, 'technical16-native-cleanup-attempt6-result.json')), true);
       assert.equal(existsSync(join(output, 'technical16-native-cleanup-result.json')), false);
       assert.equal(existsSync(join(output, 'live/runtime.operation.lock')), false);
     } finally {
@@ -1059,7 +1266,7 @@ test(
       assert.equal(existsSync(join(f.root, 'technical16-entry-closed')), true);
       assert.equal(
         existsSync(
-          join(f.root, 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5-result.json'),
+          join(f.root, 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6-result.json'),
         ),
         true,
       );
@@ -1069,7 +1276,7 @@ test(
   },
 );
 
-test('technical16 cleanup5 refuses missing or altered failed4 and one-GET diagnostic custody before private input', async () => {
+test('technical16 cleanup6 refuses missing or altered spent artifacts and one-GET diagnostic custody before private input', async () => {
   const f = await technical16CleanupFixture();
   try {
     const paths = [
@@ -1078,6 +1285,12 @@ test('technical16 cleanup5 refuses missing or altered failed4 and one-GET diagno
       'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.jsonl',
       'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4-result.json',
       'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.provision-seal.json',
+      'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.runtime-lock',
+      'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt5-20261024.json',
+      'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.json',
+      'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.jsonl',
+      'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5-result.json',
+      'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.provision-seal.json',
       'milestones/M03-n8n-foundation/evidence/technical16-wf32-discovery-readback-20261024.json',
       'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.jsonl',
       'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.inventory-seal.json',
@@ -1108,7 +1321,7 @@ test('technical16 cleanup5 refuses missing or altered failed4 and one-GET diagno
     }
     assert.equal(f.calls.length, 0);
     assert.equal(
-      existsSync(join(f.root, 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.json')),
+      existsSync(join(f.root, 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.json')),
       false,
     );
   } finally {
@@ -1124,7 +1337,7 @@ test('technical16 spent zero-intent recovery refuses missing or changed old arti
       journal = join(output, 'technical16-native-cleanup.jsonl'),
       lock = join(output, 'live/runtime.operation.lock'),
       oldResult = join(output, 'technical16-native-cleanup-result.json'),
-      archive = join(output, 'technical16-native-cleanup-attempt4.runtime-lock');
+      archive = join(output, 'technical16-native-cleanup-attempt5.runtime-lock');
     const failedRecord = join(
       f.root,
       'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt1-20261024.json',
@@ -1157,7 +1370,7 @@ test('technical16 spent zero-intent recovery refuses missing or changed old arti
       assert.equal(result.privateRead, false);
       assert.equal(result.networkRequests, 0);
       assert.doesNotMatch(child.stdout, /SYNTHETIC_PRIVATE/);
-      assert.equal(existsSync(join(output, 'technical16-native-cleanup-attempt5.json')), false);
+      assert.equal(existsSync(join(output, 'technical16-native-cleanup-attempt6.json')), false);
       for (const [path, bytes] of originals) writeFileSync(path, bytes);
       for (const path of [oldResult, archive]) if (existsSync(path)) rmSync(path);
     }
@@ -1192,7 +1405,7 @@ fs.readFileSync=function(path,...args){if(typeof path!=='number'){const p=resolv
         pathToFileURL(guard).href,
         '--test',
         '--test-name-pattern',
-        'retains four failed claims|genuine public context',
+        'retains five failed claims|genuine public context',
         'scripts/n8n/foundation-handoff.test.mjs',
       ],
       { env: env(), encoding: 'utf8', timeout: 120000, windowsHide: true },
@@ -1200,7 +1413,7 @@ fs.readFileSync=function(path,...args){if(typeof path!=='number'){const p=resolv
     assert.equal(child.status, 0, child.stdout + child.stderr);
     assert.doesNotMatch(child.stdout + child.stderr, /SYNTHETIC_REAL_IGNORED_OUTPUT_READ_BLOCKED/);
     assert.match(child.stdout, /genuine public context/);
-    if (process.platform === 'win32') assert.match(child.stdout, /retains four failed claims/);
+    if (process.platform === 'win32') assert.match(child.stdout, /retains five failed claims/);
   } finally {
     assert.equal(dirname(root), tmpdir());
     assert.ok(basename(root).startsWith('emr-technical16-fixture-portability-'));
@@ -1359,11 +1572,11 @@ test(
       assert.equal(result.networkCompletionVerified, true);
       assert.equal(result.originalPublicRecordsUnchanged, true);
       const output = join(f.root, 'scripts/n8n/out/foundation/');
-      const once = JSON.parse(readFileSync(join(output, 'technical16-native-cleanup-attempt5.json'), 'utf8'));
+      const once = JSON.parse(readFileSync(join(output, 'technical16-native-cleanup-attempt6.json'), 'utf8'));
       assert.equal(once.cleanupAttempt, 4);
       assert.equal(once.maximumRequests, 4);
       assert.equal(once.qualificationOnly, true);
-      const journal = readFileSync(join(output, 'technical16-native-cleanup-attempt5.jsonl'), 'utf8')
+      const journal = readFileSync(join(output, 'technical16-native-cleanup-attempt6.jsonl'), 'utf8')
         .trimEnd()
         .split('\n')
         .map(JSON.parse);
@@ -1445,8 +1658,8 @@ test('technical16 cleanup selectors refuse unresolved executed-body qualificatio
         windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
         privateRead: false,
         networkRequests: 0,
-        maximumRequests: 124,
-        maximumControlRequests: 124,
+        maximumRequests: 113,
+        maximumControlRequests: 113,
         canonicalWorkflowCount: 25,
         maximumDrainRequests: 100,
         maximumNativeRecords: 2,
@@ -1473,9 +1686,9 @@ test('technical16 cleanup scope keeps exact child-first targets and public resol
       foundationTechnical16CleanupScope.sourceCommitSha,
       '5087d4d93d2f6ffdca0bc0096b365723005446fc',
     );
-    assert.equal(foundationTechnical16CleanupScope.maximumRequests, 124);
-    assert.equal(foundationTechnical16CleanupScope.maximumControlRequests, 124);
-    assert.equal(foundationTechnical16CleanupScope.forensicRequestsAlreadyCharged, 36);
+    assert.equal(foundationTechnical16CleanupScope.maximumRequests, 113);
+    assert.equal(foundationTechnical16CleanupScope.maximumControlRequests, 113);
+    assert.equal(foundationTechnical16CleanupScope.forensicRequestsAlreadyCharged, 47);
     assert.equal(
       foundationTechnical16CleanupScope.maximumRequests +
         foundationTechnical16CleanupScope.forensicRequestsAlreadyCharged,
@@ -1527,9 +1740,9 @@ test('technical16 genuine public context composes fresh native qualification and
     assert.deepEqual(f.budget.state(), {
       requestCount: 85,
       controlRequestCount: 85,
-      managementAttempts: 948,
-      controlAttempts: 1079,
-      combinedAttempts: 2027,
+      managementAttempts: 959,
+      controlAttempts: 1090,
+      combinedAttempts: 2049,
     });
     assert.equal(f.charges.length, 85);
     await assert.rejects(
@@ -1540,20 +1753,174 @@ test('technical16 genuine public context composes fresh native qualification and
     // These are conservative durable admissions only, not additional HTTP.
     // Two parameter diagnostics, both four-read attempts,25 failed discovery reads
     // and the one-read WF32 diagnostic retain36 charges against160.
-    while (f.budget.state().requestCount < 124)
+    while (f.budget.state().requestCount < 113)
       f.budget.admit({ kind: 'workflow', workflowId: f.source.baseline[0].id });
     assert.throws(
       () => f.budget.admit({ kind: 'workflow', workflowId: f.source.baseline[0].id }),
       /FOUNDATION_CHILD_BLOCKED/,
     );
     assert.deepEqual(f.budget.state(), {
-      requestCount: 124,
-      controlRequestCount: 124,
+      requestCount: 113,
+      controlRequestCount: 113,
       managementAttempts: 987,
       controlAttempts: 1118,
       combinedAttempts: 2105,
     });
     assert.equal(f.calls.length, 85);
+  } finally {
+    f.close();
+  }
+});
+
+test('technical16 fixed transport diagnostic ignores forged errors and hostile property traps', async () => {
+  const f = await technical16CleanupFixture({ unresolved: true });
+  try {
+    let reads = 0;
+    const hostile = new Proxy(new Error('SYNTHETIC_PRIVATE'), {
+      get() {
+        reads++;
+        throw Error('SYNTHETIC_PRIVATE_GET');
+      },
+      getPrototypeOf() {
+        reads++;
+        throw Error('SYNTHETIC_PRIVATE_PROTOTYPE');
+      },
+    });
+    const revoked = Proxy.revocable({}, {});
+    revoked.revoke();
+    for (const value of [
+      hostile,
+      revoked.proxy,
+      new Error('FOUNDATION_NATIVE_TRANSPORT_REQUEST'),
+      { nativeOSCode: 'ECONNRESET' },
+    ])
+      assert.equal(await f.cli.projectTechnical16CleanupTransportCode(value), null);
+    assert.equal(reads, 0);
+  } finally {
+    f.close();
+  }
+});
+
+test('technical16 every finite native OS diagnostic alias fits the existing PowerShell code contract', async () => {
+  const f = await technical16CleanupFixture({ unresolved: true });
+  try {
+    const transportModule = await import(
+      pathToFileURL(join(f.root, 'scripts/n8n/foundation-native-transport.mjs')).href
+    );
+    const readerModule = await import(
+      pathToFileURL(join(f.root, 'scripts/n8n/foundation-native-reader.mjs')).href
+    );
+    const bindings = JSON.parse(readFileSync(join(f.root, 'n8n/foundation/bindings.dev.json'), 'utf8'));
+    for (const code of [
+      'ECONNRESET',
+      'ECONNREFUSED',
+      'ECONNABORTED',
+      'EPIPE',
+      'ETIMEDOUT',
+      'ENETUNREACH',
+      'EHOSTUNREACH',
+      'EADDRNOTAVAIL',
+      'EAI_AGAIN',
+      'ENOTFOUND',
+      'ABORT_ERR',
+      'ERR_TLS_CERT_ALTNAME_INVALID',
+      'CERT_HAS_EXPIRED',
+      'CERT_NOT_YET_VALID',
+      'DEPTH_ZERO_SELF_SIGNED_CERT',
+      'SELF_SIGNED_CERT_IN_CHAIN',
+      'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
+      'UNABLE_TO_GET_ISSUER_CERT_LOCALLY',
+      'SYNTHETIC_PRIVATE_UNKNOWN',
+    ]) {
+      const transport = transportModule.createFoundationNativeTransport(
+        { apiKey: 'SYNTHETIC_PRIVATE_ALIAS_ONLY', bindings, authorizeExecution: () => false },
+        {
+          resolveInstance: async () => [{ address: '1.1.1.1', family: 4 }],
+          closeTimeoutMs: 1,
+          request: () => {
+            throw Object.assign(new Error('SYNTHETIC_PRIVATE_NATIVE_MESSAGE'), { code });
+          },
+        },
+      );
+      const reader = readerModule.createFoundationNativeReader({
+        bindings,
+        transport,
+        admitControlAttempt: () => {},
+        now: Date.now,
+        deadlineAt: Date.now() + 5000,
+        sensitiveValues: ['SYNTHETIC_PRIVATE_ALIAS_ONLY'],
+      });
+      const error = await reader.discover({ workflowKey: 'WF-32', baselineIds: [] }).catch((e) => e);
+      const projected = await f.cli.projectTechnical16CleanupTransportCode(error);
+      assert.match(projected, /^native_[A-Z_]{1,64}$/);
+      assert.ok(projected.length <= 64);
+      assert.doesNotMatch(projected, /SYNTHETIC|PRIVATE|MESSAGE/);
+      if (code === 'SYNTHETIC_PRIVATE_UNKNOWN') assert.match(projected, /_UNKNOWN_/);
+      transport.close();
+    }
+  } finally {
+    f.close();
+  }
+});
+
+test('technical16 cleanup budget preserves separately charged immediate same-GET retry links and refuses forged or repeated retry metadata', async () => {
+  const f = await technical16CleanupFixture();
+  try {
+    const args = Object.freeze({ kind: 'workflow', workflowId: f.source.baseline[0].id });
+    f.budget.admit(args);
+    f.budget.admit(args, Object.freeze({ retryOfPreviousAttempt: true }));
+    assert.equal(f.charges[0].retryOf, undefined);
+    assert.equal(f.charges[1].retryOf, 1);
+    assert.equal(f.budget.state().requestCount, 2);
+    assert.throws(() => f.budget.admit(args, { retryOfPreviousAttempt: true }), /FOUNDATION_CHILD_BLOCKED/);
+    assert.throws(
+      () => f.budget.admit({ ...args }, { retryOfPreviousAttempt: true }),
+      /FOUNDATION_CHILD_BLOCKED/,
+    );
+    for (const variant of ['clone', 'changed', 'extra', 'coerced']) {
+      const budget = f.cli.createTechnical16CleanupBudget({
+        context: f.context,
+        deadlineAt: f.instant + 60000,
+        now: () => f.instant,
+        append: () => {},
+      });
+      const same = { ...args };
+      budget.admit(same);
+      const marker =
+        variant === 'extra'
+          ? { retryOfPreviousAttempt: true, extra: true }
+          : { retryOfPreviousAttempt: variant === 'coerced' ? 'true' : true };
+      if (variant === 'changed') same.workflowId = f.source.baseline[1].id;
+      assert.throws(
+        () => budget.admit(variant === 'clone' ? { ...same } : same, marker),
+        /FOUNDATION_CHILD_BLOCKED/,
+      );
+      assert.equal(budget.state().requestCount, 1);
+    }
+    for (const kind of ['delete', 'absence']) {
+      const rows = [];
+      const budget = f.cli.createTechnical16CleanupBudget({
+        context: f.context,
+        deadlineAt: f.instant + 60000,
+        now: () => f.instant,
+        append: (row) => {
+          rows.push(row);
+        },
+      });
+      const mutation = { kind, workflowId: f.source.bindings.workflowRefs['WF-00'].id, executionId: '31130' };
+      budget.admit(mutation);
+      assert.throws(
+        () => budget.admit(mutation, { retryOfPreviousAttempt: true }),
+        /FOUNDATION_CHILD_BLOCKED/,
+      );
+      assert.equal(rows.length, 1);
+    }
+    for (let i = 0; i < 100; i++) f.budget.admit({ kind: 'discovery', workflowId: args.workflowId });
+    assert.throws(
+      () => f.budget.admit({ kind: 'discovery', workflowId: args.workflowId }),
+      /FOUNDATION_CHILD_BLOCKED/,
+    );
+    assert.equal(f.calls.length, 0);
   } finally {
     f.close();
   }
@@ -1714,9 +2081,9 @@ test(
       status: 'native_cleanup_verified',
       requestCount: 85,
       controlRequestCount: 85,
-      managementAttempts: 948,
-      controlAttempts: 1079,
-      combinedAttempts: 2027,
+      managementAttempts: 959,
+      controlAttempts: 1090,
+      combinedAttempts: 2049,
       canonicalWorkflowsVerified: 25,
       qualifiedSideEffects: true,
       recordsDeleted: 2,
@@ -1810,8 +2177,8 @@ test(
       windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
       privateRead: false,
       networkRequests: 0,
-      maximumRequests: 124,
-      maximumControlRequests: 124,
+      maximumRequests: 113,
+      maximumControlRequests: 113,
       canonicalWorkflowCount: 25,
       maximumDrainRequests: 100,
       maximumNativeRecords: 2,
@@ -1825,7 +2192,7 @@ test(
     try {
       const variants = [
         valid,
-        { ...valid, maximumRequests: '124' },
+        { ...valid, maximumRequests: '113' },
         { ...valid, qualifiedSideEffects: true },
         { ...valid, canonicalWorkflowCount: 2 },
         { ...valid, cleanupQualificationReady: false },
@@ -2359,8 +2726,8 @@ test('isolated All without a public delivery packet blocks before stdin/private 
   try {
     const list = readFileSync('scripts/n8n/windows/Foundation-PublicRuntime.ps1', 'utf8');
     const relatives = [...list.matchAll(/^  '([^']+)'/gm)].map((x) => x[1]);
-    assert.equal(relatives.length, 96);
-    assert.equal(new Set(relatives).size, 96);
+    assert.equal(relatives.length, 97);
+    assert.equal(new Set(relatives).size, 97);
     const seen = new Set(),
       pending = ['scripts/n8n/foundation-provision-cli.mjs'];
     while (pending.length) {

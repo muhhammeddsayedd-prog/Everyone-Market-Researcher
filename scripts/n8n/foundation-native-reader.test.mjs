@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { EventEmitter } from 'node:events';
+import { PassThrough } from 'node:stream';
 import { runtimeGraphHash } from './foundation-runtime-control.mjs';
 import { foundationRuntimeExecutionParameterCandidates } from './foundation-runtime-checkpoint.mjs';
 import { gatewayOperationNodes } from '../../n8n/foundation/build-foundation-gateway.mjs';
@@ -136,6 +138,321 @@ export function nativeReaderFixture(options = {}) {
   };
 }
 const fixed = /^Error: FOUNDATION_NATIVE_[A-Z_]+$/;
+
+function nativeGetRetryFixture({
+  failures = ['ECONNRESET', null],
+  delays = [],
+  neverClose = false,
+  denyAdmissionAt = null,
+  expireOnRetry = false,
+  expireInRetryTurn = false,
+  expireDuringResponse = false,
+} = {}) {
+  const seed = nativeReaderFixture(),
+    sent = [],
+    charged = [],
+    markers = [],
+    admissionValues = [],
+    sockets = [];
+  let admissionCalls = 0;
+  const transport = createFoundationNativeTransport(
+    {
+      apiKey: secret,
+      bindings: seed.bindings,
+      authorizeExecution: ({ method, executionId }) => method === 'GET' && executionId === '101',
+    },
+    {
+      closeTimeoutMs: 20,
+      resolveInstance: async () => [{ address: '1.1.1.1', family: 4 }],
+      request(options, callback) {
+        const index = sent.length;
+        sent.push(options);
+        const req = new EventEmitter(),
+          socket = new EventEmitter();
+        sockets.push(socket);
+        socket.encrypted = true;
+        socket.authorized = true;
+        socket.remoteAddress = '1.1.1.1';
+        let closed = false,
+          response,
+          work;
+        const close = () => {
+          if (closed) return;
+          closed = true;
+          clearTimeout(work);
+          response?.destroy();
+          req.emit('close');
+          if (!neverClose) socket.emit('close');
+        };
+        req.destroy = close;
+        socket.destroy = close;
+        req.end = () =>
+          queueMicrotask(() => {
+            const failure = failures[index] ?? null;
+            req.emit('socket', socket);
+            if (failure !== 'CERT_HAS_EXPIRED') socket.emit('secureConnect');
+            const run = () => {
+              if (closed) return;
+              if (failure && failure !== 'BODY_RESET' && failure !== 'HTTP_503') {
+                const error = new Error('SYNTHETIC_PRIVATE_ERROR_NEVER_PROJECTED');
+                if (failure !== 'UNKNOWN') error.code = failure === 'SOCKET_RESET' ? 'ECONNRESET' : failure;
+                if (failure === 'SOCKET_RESET') socket.emit('error', error);
+                else req.emit('error', error);
+                return;
+              }
+              response = new PassThrough();
+              response.statusCode = failure === 'HTTP_503' ? 503 : 200;
+              response.headers = { 'content-type': 'application/json' };
+              response.rawHeaders = ['content-type', 'application/json'];
+              response.complete = true;
+              callback(response);
+              if (expireDuringResponse && index === 1) queueMicrotask(() => f.setClock(instant + 15000));
+              if (failure === 'BODY_RESET') {
+                const error = new Error('SYNTHETIC_PRIVATE_BODY_ERROR');
+                error.code = 'ECONNRESET';
+                response.emit('error', error);
+                return;
+              }
+              response.once('end', close);
+              response.end(JSON.stringify(seed.metadata));
+            };
+            if (delays[index]) work = setTimeout(run, delays[index]);
+            else run();
+          });
+        return req;
+      },
+    },
+  );
+  const f = nativeReaderFixture({
+    transport,
+    admitControlAttempt(admission, marker) {
+      admissionCalls++;
+      markers.push(marker);
+      admissionValues.push(admission);
+      if (admissionCalls === denyAdmissionAt) return false;
+      charged.push(structuredClone(admission));
+      if (admissionCalls === 2 && expireOnRetry) f.setClock(instant + 15000);
+      if (admissionCalls === 2 && expireInRetryTurn) queueMicrotask(() => f.setClock(instant + 15000));
+    },
+  });
+  return {
+    ...f,
+    transport,
+    sent,
+    charged,
+    markers,
+    admissionValues,
+    admissionCalls: () => admissionCalls,
+    close() {
+      transport.close();
+      for (const socket of sockets) socket.emit('close');
+    },
+  };
+}
+
+test('native reader retries one physically closed pre-response reset with a second durable GET admission', async () => {
+  const f = nativeGetRetryFixture();
+  try {
+    const receipt = await f.reader.metadata(f.args);
+    assert.equal(receipt.executionId, '101');
+    assert.equal(f.sent.length, 2);
+    assert.equal(f.charged.length, 2);
+    assert.deepEqual(f.charged[1], f.charged[0]);
+    assert.equal(f.admissionValues[1], f.admissionValues[0]);
+    assert.equal(f.markers[0], undefined);
+    assert.deepEqual(f.markers[1], { retryOfPreviousAttempt: true });
+    assert.equal(Object.isFrozen(f.markers[1]), true);
+    assert.equal(f.sent[1].method, 'GET');
+    assert.equal(f.sent[1].path, f.sent[0].path);
+    assert.equal(f.reader.state().requests, 2);
+    assert.deepEqual(f.transport.state(), { pendingRequests: 0, unclosedResponses: 0 });
+    assert.equal(f.reader.lastFailure(), null);
+  } finally {
+    f.close();
+  }
+});
+
+test('native reader never retries a second reset certificate refusal unknown body HTTP or uncertain closure', async () => {
+  for (const [failures, maximum, neverClose] of [
+    [['ECONNRESET', 'ECONNRESET', null], 2, false],
+    [['CERT_HAS_EXPIRED', null], 1, false],
+    [['ECONNREFUSED', null], 1, false],
+    [['UNKNOWN', null], 1, false],
+    [['BODY_RESET', null], 1, false],
+    [['HTTP_503', null], 1, false],
+    [['ECONNRESET', null], 1, true],
+  ]) {
+    const f = nativeGetRetryFixture({ failures, neverClose });
+    try {
+      await assert.rejects(f.reader.metadata(f.args), fixed);
+      assert.equal(f.sent.length, maximum);
+      assert.equal(f.charged.length, maximum);
+    } finally {
+      f.close();
+    }
+  }
+});
+
+test('native reader permits the same one-retry rule for a genuine pre-response socket reset', async () => {
+  const f = nativeGetRetryFixture({ failures: ['SOCKET_RESET', null] });
+  try {
+    const receipt = await f.reader.metadata(f.args);
+    assert.equal(receipt.executionId, '101');
+    assert.equal(f.sent.length, 2);
+    assert.equal(f.charged.length, 2);
+    assert.equal(f.admissionValues[1], f.admissionValues[0]);
+    assert.deepEqual(f.markers[1], { retryOfPreviousAttempt: true });
+    assert.deepEqual(f.transport.state(), { pendingRequests: 0, unclosedResponses: 0 });
+  } finally {
+    f.close();
+  }
+});
+
+test('native reader reset retry refuses an exhausted second admission before another native HTTP send', async () => {
+  const f = nativeGetRetryFixture({ denyAdmissionAt: 2 });
+  try {
+    await assert.rejects(f.reader.metadata(f.args), /^Error: FOUNDATION_NATIVE_ADMISSION$/);
+    assert.equal(f.admissionCalls(), 2);
+    assert.equal(f.charged.length, 1);
+    assert.equal(f.sent.length, 1);
+    assert.equal(f.reader.state().requests, 1);
+    assert.equal(f.reader.lastFailure().stage, 'admission');
+    assert.deepEqual(f.transport.state(), { pendingRequests: 0, unclosedResponses: 0 });
+  } finally {
+    f.close();
+  }
+});
+
+test('native reader reset retry consumes the existing eight metadata attempt allowance', async () => {
+  const f = nativeGetRetryFixture({
+    failures: [null, null, null, null, null, null, null, 'ECONNRESET', null],
+  });
+  try {
+    for (let i = 0; i < 7; i++) await f.reader.metadata(f.args);
+    await assert.rejects(f.reader.metadata(f.args), /^Error: FOUNDATION_NATIVE_POLL_LIMIT$/);
+    assert.equal(f.sent.length, 8);
+    assert.equal(f.charged.length, 8);
+  } finally {
+    f.close();
+  }
+});
+
+test('native reader reset retry checks the original deadline again after its second durable admission', async () => {
+  const f = nativeGetRetryFixture({ expireOnRetry: true });
+  try {
+    await assert.rejects(f.reader.metadata(f.args), /^Error: FOUNDATION_NATIVE_DEADLINE$/);
+    assert.equal(f.sent.length, 1);
+    assert.equal(f.charged.length, 2);
+    assert.equal(f.reader.state().requests, 1);
+    assert.deepEqual(f.transport.state(), { pendingRequests: 0, unclosedResponses: 0 });
+  } finally {
+    f.close();
+  }
+});
+
+test('native reader reset retry fences the later transport microtask against the original logical deadline', async () => {
+  const f = nativeGetRetryFixture({ expireInRetryTurn: true });
+  try {
+    await assert.rejects(f.reader.metadata(f.args), /^Error: FOUNDATION_NATIVE_DEADLINE$/);
+    assert.equal(f.sent.length, 1);
+    assert.equal(f.charged.length, 2);
+    assert.equal(f.reader.state().requests, 2);
+    assert.deepEqual(f.transport.state(), { pendingRequests: 0, unclosedResponses: 0 });
+  } finally {
+    f.close();
+  }
+});
+
+test('native reader reset retry never returns a receipt after processing crosses the logical deadline', async () => {
+  const f = nativeGetRetryFixture({ expireDuringResponse: true });
+  try {
+    await assert.rejects(f.reader.metadata(f.args), /^Error: FOUNDATION_NATIVE_DEADLINE$/);
+    assert.equal(f.sent.length, 2);
+    assert.equal(f.charged.length, 2);
+    assert.deepEqual(f.transport.state(), { pendingRequests: 0, unclosedResponses: 0 });
+  } finally {
+    f.close();
+  }
+});
+
+test('native reader transport cause remains private branded and cannot grant retry to a borrowed error wrapper', async () => {
+  const f = nativeGetRetryFixture({ failures: ['ECONNRESET', 'ECONNRESET'] });
+  try {
+    const error = await f.reader.metadata(f.args).catch((value) => value);
+    const cause = nativeReader.foundationNativeReaderTransportCause(error);
+    assert.deepEqual(cause, {
+      transportCode: 'REQUEST',
+      nativeOSCode: 'ECONNRESET',
+      origin: 'request_error',
+      responseSeen: false,
+      tlsVerified: true,
+      physicalClosureVerified: true,
+    });
+    assert.equal(Object.isFrozen(cause), true);
+    let unsafeReads = 0,
+      requests = 0;
+    const hostile = new Proxy(
+      {},
+      {
+        get() {
+          unsafeReads++;
+          throw Error('SYNTHETIC_PRIVATE');
+        },
+        getPrototypeOf() {
+          unsafeReads++;
+          throw Error('SYNTHETIC_PRIVATE');
+        },
+      },
+    );
+    const revoked = Proxy.revocable({}, {});
+    revoked.revoke();
+    for (const value of [{ ...error }, Object.create(error), hostile, revoked.proxy, null, 'ECONNRESET'])
+      assert.equal(nativeReader.foundationNativeReaderTransportCause(value), null);
+    const wrapper = {
+      request() {
+        requests++;
+        return Promise.reject(error);
+      },
+    };
+    Object.defineProperty(wrapper, 'state', {
+      get() {
+        unsafeReads++;
+        throw Error('SYNTHETIC_PRIVATE');
+      },
+    });
+    const unbranded = nativeReaderFixture({ transport: wrapper });
+    await assert.rejects(
+      unbranded.reader.metadata(unbranded.args),
+      /^Error: FOUNDATION_NATIVE_TRANSPORT_REQUEST$/,
+    );
+    assert.equal(requests, 1);
+    assert.equal(unsafeReads, 0);
+  } finally {
+    f.close();
+  }
+});
+
+test('native reader reset retry shares one logical15second deadline instead of renewing its timer', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const f = nativeGetRetryFixture({ delays: [10000, 10000] });
+  try {
+    const result = f.reader.metadata(f.args).catch((error) => error);
+    await new Promise((resolve) => setImmediate(resolve));
+    t.mock.timers.tick(10000);
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(f.sent.length, 2);
+    t.mock.timers.tick(5000);
+    await new Promise((resolve) => setImmediate(resolve));
+    const error = await result;
+    assert.match(String(error), /^Error: FOUNDATION_NATIVE_(?:TRANSPORT_)?DEADLINE$/);
+    assert.equal(f.sent.length, 2);
+    assert.equal(f.charged.length, 2);
+    assert.deepEqual(f.transport.state(), { pendingRequests: 0, unclosedResponses: 0 });
+  } finally {
+    f.close();
+    t.mock.timers.reset();
+  }
+});
 
 test('native reader error-code getter projects only genuine private errors without inspecting hostile values', async () => {
   const f = nativeReaderFixture(),

@@ -10,7 +10,11 @@ import {
 } from './foundation-runtime-checkpoint.mjs';
 import { freezeRuntimeValue } from './foundation-runtime-plan.mjs';
 import * as runtimeControl from './foundation-runtime-control.mjs';
-import { foundationNativeTransportErrorCode } from './foundation-native-transport.mjs';
+import {
+  assertFoundationNativeTransport,
+  foundationNativeTransportErrorCode,
+  foundationNativeTransportErrorDetails,
+} from './foundation-native-transport.mjs';
 import {
   isFoundationNativeDomainProbeBody,
   projectFoundationNativeDomainDenial,
@@ -166,9 +170,13 @@ export const foundationNativeFailureCodes = Object.freeze([
   'REJECTED',
 ]);
 const safeFailureCodes = new Set(foundationNativeFailureCodes),
-  errorCodes = new WeakMap();
+  errorCodes = new WeakMap(),
+  transportCauses = new WeakMap();
 export function foundationNativeReaderErrorCode(error) {
   return errorCodes.get(error) ?? null;
+}
+export function foundationNativeReaderTransportCause(error) {
+  return transportCauses.get(error) ?? null;
 }
 class NativeReaderError extends Error {
   constructor(code) {
@@ -200,7 +208,10 @@ function date(v) {
 function fixedError(e) {
   if (errorCodes.has(e)) return e;
   const transportCode = foundationNativeTransportErrorCode(e);
-  return new NativeReaderError(transportCode === null ? 'REJECTED' : 'TRANSPORT_' + transportCode);
+  const safe = new NativeReaderError(transportCode === null ? 'REJECTED' : 'TRANSPORT_' + transportCode);
+  const cause = foundationNativeTransportErrorDetails(e);
+  if (cause !== null) transportCauses.set(safe, cause);
+  return safe;
 }
 function raceAbort(promise, signal) {
   if (signal.aborted) {
@@ -506,40 +517,85 @@ export function createFoundationNativeReader({
       httpStatus: null,
     };
     currentContext = context;
-    if (now() >= deadlineAt) fail('DEADLINE');
-    try {
-      syncVoid(admitControlAttempt(admission));
-    } catch (e) {
-      throw fixedError(e);
-    }
-    if (now() >= deadlineAt) fail('DEADLINE');
-    requests++;
-    context.stage = 'request';
     const controller = new AbortController();
-    const timer = setTimeout(
-      () => controller.abort(),
-      Math.min(foundationNativeReaderLimits.timeoutMs, deadlineAt - now()),
-    );
+    let timer,
+      logicalDeadlineAt = deadlineAt;
     try {
-      pendingRequests++;
-      const requestPromise = Promise.resolve()
-        .then(() => transport.request({ method: 'GET', path, signal: controller.signal }))
-        .then((response) => {
-          if (controller.signal.aborted) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        context.stage = 'admission';
+        if (controller.signal.aborted || now() >= logicalDeadlineAt) fail('DEADLINE');
+        if (attempt > 0 && admission?.kind === 'metadata') {
+          const count = polls.get(admission.executionId) ?? 0;
+          if (count >= foundationNativeReaderLimits.metadataPollsPerId) fail('POLL_LIMIT');
+          polls.set(admission.executionId, count + 1);
+        }
+        try {
+          syncVoid(
+            attempt === 0
+              ? admitControlAttempt(admission)
+              : admitControlAttempt(admission, Object.freeze({ retryOfPreviousAttempt: true })),
+          );
+        } catch (e) {
+          throw fixedError(e);
+        }
+        if (controller.signal.aborted || now() >= logicalDeadlineAt) fail('DEADLINE');
+        requests++;
+        context.stage = 'request';
+        if (timer === undefined) {
+          logicalDeadlineAt = Math.min(deadlineAt, now() + foundationNativeReaderLimits.timeoutMs);
+          timer = setTimeout(() => controller.abort(), logicalDeadlineAt - now());
+        }
+        let response;
+        try {
+          pendingRequests++;
+          const requestPromise = Promise.resolve()
+            .then(() => {
+              if (controller.signal.aborted || now() >= logicalDeadlineAt) fail('DEADLINE');
+              return transport.request({ method: 'GET', path, signal: controller.signal });
+            })
+            .then((value) => {
+              if (controller.signal.aborted) {
+                try {
+                  responseClosure(value);
+                } catch {}
+                try {
+                  value?.abort?.();
+                } catch {}
+              }
+              return value;
+            })
+            .finally(() => {
+              pendingRequests--;
+            });
+          response = await raceAbort(requestPromise, controller.signal);
+        } catch (e) {
+          let retry = false;
+          if (attempt === 0 && !controller.signal.aborted && now() < logicalDeadlineAt) {
             try {
-              responseClosure(response);
-            } catch {}
-            try {
-              response?.abort?.();
+              assertFoundationNativeTransport(transport);
+              const details = foundationNativeTransportErrorDetails(e, transport);
+              const state = transport.state();
+              retry =
+                details !== null &&
+                ['REQUEST', 'SOCKET'].includes(details.transportCode) &&
+                ['request_error', 'socket_error'].includes(details.origin) &&
+                details.nativeOSCode === 'ECONNRESET' &&
+                details.responseSeen === false &&
+                details.physicalClosureVerified === true &&
+                pendingRequests === 0 &&
+                unclosedResponses === 0 &&
+                state.pendingRequests === 0 &&
+                state.unclosedResponses === 0;
             } catch {}
           }
-          return response;
-        })
-        .finally(() => {
-          pendingRequests--;
-        });
-      const response = await raceAbort(requestPromise, controller.signal);
-      return await consume(response, controller.signal, project, context);
+          if (retry) continue;
+          throw fixedError(e);
+        }
+        const result = await consume(response, controller.signal, project, context);
+        if (controller.signal.aborted || now() >= logicalDeadlineAt) fail('DEADLINE');
+        return result;
+      }
+      fail('REJECTED');
     } catch (e) {
       controller.abort();
       throw fixedError(e);
