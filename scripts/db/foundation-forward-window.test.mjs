@@ -48,6 +48,44 @@ if($script:query -isnot [string]){throw 'QUERY_NOT_CAPTURED'};Write-Output $scri
   assert.equal(result.stderr, '');
   return result.stdout.trim();
 }
+function nativeReplaySnapshotQuery(window, commitSha) {
+  const nativePath = (name) => {
+    const path = new URL('./windows/' + name, import.meta.url).pathname;
+    return process.platform === 'win32' ? decodeURIComponent(path.slice(1)) : path;
+  };
+  const forward = window !== oldWindow;
+  const code = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
+foreach($entry in @(@(${literal(nativePath('Invoke-M03FoundationMigrations.ps1'))},@('Assert-Keys')),@(${literal(nativePath('Foundation-AdminControl.ps1'))},@('Foundation-ForwardWindowId','Invoke-FoundationAdminControl')))){
+ $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($entry[0],[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'PUBLIC_SOURCE_PARSE_FAILED'}
+ foreach($name in $entry[1]){$found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'FUNCTION_NOT_EXACT'};Invoke-Expression $found[0].Extent.Text}
+}
+$ForwardWindow=$${forward};$ProjectVerifiedContinuation=$true;$StartupReplacement=$false;$RemainingContinuation=$false;$PostcheckContinuation=$false;$ClockAmendment=$false
+$projectVerifiedForwardWindowId=${literal(window)};$projectVerifiedForwardSource=${literal(commitSha)}
+$phaseAStart=[DateTime]::UtcNow;$runId='synthetic';$projectRef='zmotjsbzhzjvpelxvxlf';$out='synthetic';$receipt=[ordered]@{phaseACommands=0;phaseAClosed=$false};$repo=${literal(process.cwd())};$script:query=$null
+$script:commands=[Collections.Generic.Queue[object]]::new()
+foreach($kind in @(${(forward ? ['postcheck', 'provision', 'fixture', 'replaySnapshot', 'close', 'end'] : ['postcheck', 'fixture', 'replaySnapshot', 'end']).map(literal).join(',')})){$value=[pscustomobject]@{};if($kind -ceq 'provision'){$value=[pscustomobject]@{audience='https://everyone-market-researcher-synthetic.vercel.app';commitSha=${literal(commitSha)};deploymentId='dpl_Synthetic'}};$script:commands.Enqueue([pscustomobject]@{id=[Guid]::NewGuid().ToString();kind=$kind;args=$value})}
+function Read-FoundationCommand($Deadline){return $script:commands.Dequeue()}
+function Invoke-FoundationPostcheck{return [pscustomobject]@{ready=$true}}
+function Write-NewJson($Path,$Value){}
+function Foundation-Json($Value){return "'{}'::jsonb"}
+function Invoke-FoundationMutation($Sql){return [pscustomobject]@{childrenClosed=$true;acknowledged=$true}}
+function Invoke-FoundationQuery($Sql,$Field){if($Field -ceq 'snapshot'){$script:query=$Sql;return [pscustomobject]@{}};if($Field -cne 'provision'){throw 'WRONG_PROJECTION'};return [pscustomobject]@{started=$false;closed=$false;totalAdmitted=0;approvalCount=1;boundAudience='https://everyone-market-researcher-synthetic.vercel.app';boundCommitSha=${literal(commitSha)};boundDeploymentId='dpl_Synthetic'}}
+function Assert-FoundationForwardWindowState($Prepared){}
+function Reactivate-FoundationProjectVerifiedContinuationFixture{return [pscustomobject]@{competitor_id='synthetic';account_id='synthetic'}}
+function Close-FoundationOwnedWindow($Binding){return [pscustomobject]@{state='closed'}}
+function Assert-Path($Base,$Relative){return Join-Path $Base $Relative}
+$null=Invoke-FoundationAdminControl
+if($script:query -isnot [string]){throw 'QUERY_NOT_CAPTURED'};Write-Output $script:query
+`;
+  const result = spawnSync(
+    'powershell.exe',
+    ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(code, 'utf16le').toString('base64')],
+    { env: env(), encoding: 'utf8', windowsHide: true, timeout: 15000 },
+  );
+  assert.equal(result.status, 0, 'NATIVE_REPLAY_SQL_GENERATION');
+  assert.equal(result.stderr, '');
+  return result.stdout.trim();
+}
 const env = () =>
   Object.fromEntries(
     [
@@ -280,6 +318,60 @@ describe(
        values('${oldWindow}',${literal(packet.approvalReference)},'zmotjsbzhzjvpelxvxlf','0.3.99',1,2,clock_timestamp()-interval '2 hours',clock_timestamp()-interval '1 hour',clock_timestamp());`);
     }
     beforeEach(reset);
+
+    test(
+      'actual native replay snapshots bind each validated window and detect fresh cost changes',
+      { skip: process.platform !== 'win32' },
+      () => {
+        const latestWindow = 'eda4fae1-1e19-47db-81b8-beac1a4ed883';
+        const latestSql = nativeReplaySnapshotQuery(latestWindow, 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803');
+        const middleSql = nativeReplaySnapshotQuery(freshWindow, 'a5e746736893d5040e93032ae740a0878f748837');
+        const legacySql = nativeReplaySnapshotQuery(oldWindow, 'f42930f90c2de43c84f61ad6d966d0ee6074d70e');
+        const rows = [oldWindow, freshWindow, latestWindow].map((window, index) => ({
+          window,
+          run: randomUUID(),
+          launch: randomUUID(),
+          costCount: index + 1,
+        }));
+        const setup = rows
+          .map(
+            ({ window, run, launch, costCount }) => `
+        ${window === oldWindow ? '' : `insert into ops.apify_launch_approvals select '${window}',approval_reference,project_ref,actor_build,max_total_charge_usd,batch_max_usd,not_before,expires_at,closed_at from ops.apify_launch_approvals where window_id='${oldWindow}';`}
+        insert into ops.scrape_runs(id,workflow,platform,mode,env,n8n_execution_id)values('${run}','WF-99','website_work_page','manual','dev','SyntheticReplay');
+        insert into ops.apify_launch_admissions(launch_id,window_id,ordinal,run_id,account_id,execution_id,actor_id,actor_build,input,max_total_charge_usd)values('${launch}','${window}',1,'${run}','${account}','SyntheticReplay','aYG0l9s7dbB7j3gbS','0.3.99','{}',1);
+        insert into ops.cost_ledger(provider,category,unit,cost_usd,run_id)select 'apify','scrape','result',0.01,'${run}' from generate_series(1,${costCount});
+      `,
+          )
+          .join('\n');
+        const result = psql(`begin;
+        create table ingest.raw_items(id uuid,account_id uuid);
+        create table pgmq.q_ai_extract(msg_id bigint,message jsonb);
+        create table pgmq.q_embed(msg_id bigint,message jsonb);
+        create table pgmq.q_media(msg_id bigint,message jsonb);
+        ${setup}
+        ${latestSql}
+        ${middleSql}
+        ${legacySql}
+        update ops.cost_ledger set cost_usd=0.02 where run_id='${rows[2].run}';
+        ${latestSql}
+        ${legacySql}
+        insert into ops.cost_ledger(provider,category,unit,cost_usd,run_id)values('apify','scrape','result',0.01,'${rows[2].run}');
+        ${latestSql}
+        rollback;
+      `)
+          .split(/\r?\n/)
+          .map((row) => JSON.parse(row));
+        const [latest, middle, legacy, changed, legacyAfter, added] = result;
+        assert.equal(latest.costEntries, 3, 'FRESH_COST_ROWS_SELECTED');
+        assert.equal(middle.costEntries, 2, 'PREVIOUS_FORWARD_BINDING_RETAINED');
+        assert.equal(legacy.costEntries, 1, 'LEGACY_BINDING_RETAINED');
+        assert.equal(changed.costEntries, 3);
+        assert.notEqual(changed.costsSha256, latest.costsSha256, 'SAME_COUNT_COST_MUTATION_DETECTED');
+        assert.deepEqual(legacyAfter, legacy, 'UNRELATED_LEGACY_COSTS_UNCHANGED');
+        assert.equal(added.costEntries, 4, 'NEW_COST_ROW_DETECTED');
+        assert.notEqual(added.costsSha256, changed.costsSha256);
+      },
+    );
 
     test('actual Admin forward-state query parses and returns only the finite read-only projection', () => {
       const admin = readFileSync(new URL('./windows/Foundation-AdminControl.ps1', import.meta.url), 'utf8');

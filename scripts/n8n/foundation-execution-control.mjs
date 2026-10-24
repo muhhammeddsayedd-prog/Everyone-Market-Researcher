@@ -120,6 +120,7 @@ function metadataProjection(row, workflowId, executionId, intentAt, observedAt, 
  * still need the observable-terminal capability described in the packet.
  */
 export function createFoundationExecutionController({
+  activeWindowId,
   bindings,
   port,
   journal,
@@ -139,6 +140,7 @@ export function createFoundationExecutionController({
 }) {
   if (nativeReader !== undefined)
     return createFoundationNativeController({
+      ...(activeWindowId === undefined ? {} : { activeWindowId }),
       bindings,
       port,
       journal,

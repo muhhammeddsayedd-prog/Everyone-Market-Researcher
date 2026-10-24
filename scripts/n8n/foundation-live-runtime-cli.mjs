@@ -1104,6 +1104,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     if ((await runtime.setup()).status !== 'runtime_setup_verified') fail();
     const ports = composeNative();
     native = createFoundationExecutionController({
+      activeWindowId,
       bindings,
       port: bridge.port,
       journal: runtime.controlJournal,

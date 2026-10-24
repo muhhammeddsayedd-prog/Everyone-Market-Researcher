@@ -473,6 +473,7 @@ function Invoke-FoundationAdminControl {
   $script:remainingOwnedFixture=$null
   $script:phaseAControlHardDeadline=$hardDeadline
   $window=if($forwardMode){Foundation-ForwardWindowId}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
+  $forwardSource=if($forwardMode){if($window -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc'){'a5e746736893d5040e93032ae740a0878f748837'}else{$script:projectVerifiedForwardSource}}else{$null}
   if($PostcheckContinuation){$receipt['unprovisionedFixtureArchived']=$false}
   $readyEnvelope=[ordered]@{type='foundation_admin_ready';runId=$runId;historyAfter='complete';projectRef=$projectRef;hardDeadline=$hardDeadline.ToString('o');actionDeadline=$actionDeadline.ToString('o');stopNewAt=$stopNewAt.ToString('o');postchecksVerified=$false}
   if($ClockAmendment){$readyEnvelope['clockSegmentId']=$clockAmendmentSegment}
@@ -516,7 +517,7 @@ function Invoke-FoundationAdminControl {
     } elseif($kind -ceq 'provision'){
       Assert-Keys $args @('audience','commitSha','deploymentId')
       if(-not $postchecked -or ((-not $forwardMode -and -not $fixtureReady) -or ($forwardMode -and $fixtureReady)) -or $provisionAttempted -or $unprovisionedArchiveAttempted -or $args.audience -isnot [string] -or $args.audience -cnotmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$' -or $args.commitSha -isnot [string] -or $args.commitSha -cnotmatch '^[a-f0-9]{40}$' -or $args.deploymentId -isnot [string] -or $args.deploymentId -cnotmatch '^dpl_[A-Za-z0-9_-]{1,100}$'){throw 'blocked'}
-      if($forwardMode -and $args.commitSha -cne 'a5e746736893d5040e93032ae740a0878f748837'){throw 'blocked'}
+      if($forwardMode -and $args.commitSha -cne $forwardSource){throw 'blocked'}
       $packet=[ordered]@{audience=$args.audience;commitSha=$args.commitSha;deploymentId=$args.deploymentId;actorBuild='0.3.99';approvalReference='M03-A-D-f42930f-20261021';maxTotalChargeUsd=1;batchMaxUsd=2}
       if($PostcheckContinuation){
         Assert-FoundationContinuationVacant -RefreshHistory
@@ -578,7 +579,9 @@ where l.window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and l.ordinal=1 and a.p
       $value=Invoke-FoundationQuery ("with p as(select $json as j) select jsonb_build_object('matched',coalesce((select j->>'p_apify_run_id'=a.apify_run_id and j->>'p_status'=a.status and j->>'p_dataset_id'=a.dataset_id and (j->>'p_usage_usd')::numeric=a.usage_usd and encode(extensions.digest((j->'p_groups')::text,'sha256'),'hex')=a.processing_result->>'groups_sha256' from p,ops.apify_launch_admissions l join ops.apify_runs a using(apify_run_id) where l.window_id='$window' and l.ordinal=1 and a.processed_at is not null),false)) as verified;") 'verified'
     } elseif($kind -ceq 'replaySnapshot'){
       Assert-Keys $args @();if(-not $fixtureReady){throw 'blocked'}
-      $value=Invoke-FoundationQuery ([IO.File]::ReadAllText((Assert-Path $repo 'scripts/db/foundation-replay-snapshot.sql'))) 'snapshot'
+      $sql=[IO.File]::ReadAllText((Assert-Path $repo 'scripts/db/foundation-replay-snapshot.sql'))
+      if($forwardMode){$sql=$sql.Replace('df4f29ec-e2dc-4d82-a276-62a4e695e6f9',$window)}
+      $value=Invoke-FoundationQuery $sql 'snapshot'
     } elseif($kind -ceq 'smokeAssert'){
       Assert-Keys $args @('runId','apifyRunId','expectedItemsNew')
       if(-not $provisioned -or $args.runId -isnot [string] -or $args.runId -cnotmatch '^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$' -or $args.apifyRunId -isnot [string] -or $args.apifyRunId -cnotmatch '^[A-Za-z0-9_-]{1,128}$' -or $args.expectedItemsNew -isnot [int] -or $args.expectedItemsNew -notin @(0,1)){throw 'blocked'}

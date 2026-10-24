@@ -150,7 +150,35 @@ Invoke-FoundationAdminControl
 if(-not $receipt.phaseAClosed -or ($script:events -join '|') -notmatch 'intent\\|register\\|prepared\\|reactivate\\|readonly-close-proof'){throw 'FRESH_LIFECYCLE_ORDER_WRONG'}
 Write-Output 'FRESH_REGISTER_BEFORE_REACTIVATE'
 `;
-    assert.equal(run(code).split('\n').at(-1), 'FRESH_REGISTER_BEFORE_REACTIVATE');
+    const latest = code
+      .replace(
+        '$ForwardWindow=$true;',
+        "$projectVerifiedForwardWindowId='eda4fae1-1e19-47db-81b8-beac1a4ed883';$projectVerifiedForwardSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';$ForwardWindow=$true;",
+      )
+      .replaceAll('38b3708d-61b0-41d2-8170-5ed91c66b4dc', 'eda4fae1-1e19-47db-81b8-beac1a4ed883')
+      .replaceAll('a5e746736893d5040e93032ae740a0878f748837', 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803');
+    for (const valid of [code, latest]) {
+      assert.equal(run(valid).split('\n').at(-1), 'FRESH_REGISTER_BEFORE_REACTIVATE');
+    }
+    for (const source of ['a5e746736893d5040e93032ae740a0878f748837', 'f'.repeat(40)]) {
+      const wrongSource = latest
+        .replace("commitSha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'", `commitSha='${source}'`)
+        .replace(
+          'Invoke-FoundationAdminControl\nif(',
+          "try{Invoke-FoundationAdminControl;throw 'WRONG_SOURCE_ACCEPTED'}catch{if($_.Exception.Message -cne 'blocked' -or $script:events.Contains('intent') -or $script:events.Contains('register')){throw 'WRONG_SOURCE_MUTATED'}}\nreturn\nif(",
+        );
+      assert.doesNotThrow(() => run(wrongSource));
+    }
+    const wrongPair = latest
+      .replace(
+        "$projectVerifiedForwardSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'",
+        "$projectVerifiedForwardSource='a5e746736893d5040e93032ae740a0878f748837'",
+      )
+      .replace(
+        'Invoke-FoundationAdminControl\nif(',
+        "try{Invoke-FoundationAdminControl;throw 'WRONG_PAIR_ACCEPTED'}catch{if($_.Exception.Message -cne 'blocked' -or $script:events.Count -ne 0){throw 'WRONG_PAIR_MUTATED'}}\nreturn\nif(",
+      );
+    assert.doesNotThrow(() => run(wrongPair));
     const premature = code
       .replace("@('postcheck','provision','fixture','close','end')", "@('postcheck','fixture','end')")
       .replace(

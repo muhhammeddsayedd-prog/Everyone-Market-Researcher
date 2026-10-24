@@ -94,6 +94,9 @@ function policy(binding, key, manual) {
 }
 
 export function createFoundationNativeController({
+  // SQL evidence follows the current registered window; closure.batchId below
+  // keeps the original cumulative journal namespace across continuations.
+  activeWindowId = foundationRuntimeCheckpoint.windowId,
   bindings,
   port,
   journal,
@@ -117,6 +120,11 @@ export function createFoundationNativeController({
     assertFoundationSettlementReader(settlementReader);
     if (callbackCases !== undefined) assertFoundationCallbackCases(callbackCases);
     if (
+      ![
+        foundationRuntimeCheckpoint.windowId,
+        '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+        'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+      ].includes(activeWindowId) ||
       typeof bindingFor !== 'function' ||
       typeof port?.details !== 'function' ||
       typeof port?.start !== 'function' ||
@@ -499,7 +507,7 @@ export function createFoundationNativeController({
       );
       if (
         originals.caseId !== state.caseId ||
-        originals.windowId !== foundationRuntimeCheckpoint.windowId ||
+        originals.windowId !== activeWindowId ||
         originals.settlementProven !== false ||
         originals.providerOrigins.length !== 1 ||
         originals.providerOrigins[0].nativeExecutionId !== root.executionId ||
@@ -602,7 +610,7 @@ export function createFoundationNativeController({
     const verified = assertFoundationSettlementReceipt(settled);
     if (
       verified.caseId !== state.caseId ||
-      verified.windowId !== foundationRuntimeCheckpoint.windowId ||
+      verified.windowId !== activeWindowId ||
       verified.transportSettled !== true ||
       JSON.stringify([...verified.executionIds].sort()) !==
         JSON.stringify(receiptList.map((x) => x.executionId).sort()) ||

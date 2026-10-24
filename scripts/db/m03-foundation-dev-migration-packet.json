@@ -109,7 +109,7 @@
   "files": {
     "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "344c56dd54cf2cb76ec5d5b237cb94845e0b72601a91b9c0b66ba495a62ae522",
     "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "b95e60dd2b3d2abf972f53000db83676e4f96947e6fc1a5dfc086a2c646393a3",
-    "scripts/db/windows/Foundation-AdminControl.ps1": "83154731513f8c5a547fb96cdf54a0979bd598f81c78e3a28e02a5c394e5a90b",
+    "scripts/db/windows/Foundation-AdminControl.ps1": "9f05a77fdc34444c7afa79fc779defd05d0d6f8dbd2fd3ba27ec3b4da4eee19f",
     "scripts/db/foundation-settlement.sql": "94ce66c3c12a305bba196bef441a51c9879cc0764403bef2241d3660baaa91e9",
     "scripts/db/foundation-postcheck.sql": "f5ee87926275b368c476258a4b826f4a63c7b2775c4fbfabb24af774e6fc5f52",
     "scripts/db/foundation-replay-snapshot.sql": "f32c8251a11b14b34680025b8e05ee2ca90e87af45ce12a0b90bca31aec7af70",

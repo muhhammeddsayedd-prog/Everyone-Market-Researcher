@@ -12,6 +12,7 @@ import { createFoundationSettlementReader } from './foundation-native-settlement
 import { createFoundationNativeCleanup } from './foundation-native-cleanup.mjs';
 import { runtimeGraphHash } from './foundation-runtime-control.mjs';
 import { foundationRuntimeCheckpoint } from './foundation-runtime-checkpoint.mjs';
+import { providerFixture, verifyAndCleanPhaseB } from './foundation-native-controller-fixtures.mjs';
 
 // Scripted public-API boundary, not native/Cloud execution evidence. Runtime
 // binding/case ports are explicit trusted test substitutes. Reader, settlement,
@@ -250,6 +251,7 @@ function fixture(options = {}) {
     bindingValidator: (b) => b,
   });
   const settlement = createFoundationSettlementReader({
+    windowId: options.settlementWindowId ?? options.activeWindowId ?? foundationRuntimeCheckpoint.windowId,
     now: () => clock,
     pause: async (ms) => {
       clock += ms;
@@ -269,7 +271,8 @@ function fixture(options = {}) {
       if (options.sqlDelay) await new Promise((resolve) => setTimeout(resolve, options.sqlDelay));
       if (options.unsettled) throw Error('SYNTHETIC_PRIVATE_SQL_ERROR');
       return {
-        window_id: foundationRuntimeCheckpoint.windowId,
+        window_id:
+          options.settlementWindowId ?? options.activeWindowId ?? foundationRuntimeCheckpoint.windowId,
         window_exists: true,
         observed_at: new Date(clock).toISOString(),
         requests: params[1].map((request_id) => ({
@@ -292,6 +295,7 @@ function fixture(options = {}) {
     versionId: bound.get('WF-00').versionId,
   };
   const ports = {
+    ...(options.activeWindowId === undefined ? {} : { activeWindowId: options.activeWindowId }),
     bindings,
     journal,
     nativeReader: reader,
@@ -393,6 +397,60 @@ test('browser whole-workflow control uses fresh actual binding and native URL re
     ['301', '302'],
   );
   assert.equal(f.calls[0].path, '/api/v1/workflows/' + f.savedCase.workflowId + '?excludePinnedData=true');
+});
+
+for (const activeWindowId of ['38b3708d-61b0-41d2-8170-5ed91c66b4dc', 'eda4fae1-1e19-47db-81b8-beac1a4ed883'])
+  test(`fresh ${activeWindowId} browser dispatch and four errors accept only their real branded settlement while retaining legacy batch identity`, async () => {
+    const f = fixture({ browserUi: true, activeWindowId });
+    assert.equal((await f.controller.runCase(f.input)).state, 'native_settled');
+    assert.equal(f.controller.caseSettlement(f.input.caseId).windowId, activeWindowId);
+    assert.equal(f.controller.caseClosure(f.input.caseId).batchId, foundationRuntimeCheckpoint.windowId);
+    for (let ordinal = 1; ordinal <= 4; ordinal++)
+      assert.equal((await f.controller.runAutomaticErrorCase(ordinal)).state, 'native_settled');
+    assert.equal(f.controller.snapshot().phaseBReady, false); // Native records still require exact cleanup.
+    assert.equal(f.starts(), 1);
+    const wrong = fixture({
+      browserUi: true,
+      activeWindowId,
+      settlementWindowId: foundationRuntimeCheckpoint.windowId,
+    });
+    assert.equal((await wrong.controller.runCase(wrong.input)).state, 'native_unresolved');
+    assert.equal(wrong.controller.caseClosure(wrong.input.caseId), null);
+  });
+test('unknown active SQL window is refused before browser control or any native start', () => {
+  assert.throws(
+    () =>
+      fixture({
+        activeWindowId: '11111111-1111-4111-8111-111111111111',
+        settlementWindowId: foundationRuntimeCheckpoint.windowId,
+      }),
+    fixed,
+  );
+});
+test('fresh eda4 smoke original and final settlement retain the active SQL window through real proof brands', async () => {
+  const activeWindowId = 'eda4fae1-1e19-47db-81b8-beac1a4ed883';
+  const f = providerFixture({
+    configureSettlement(ports) {
+      ports.windowId = activeWindowId;
+      const read = ports.readGateway;
+      ports.readGateway = async (args) => {
+        const value = await read(args);
+        value.window_id = activeWindowId;
+        for (const provider of value.providers) provider.launch.window_id = activeWindowId;
+        return value;
+      };
+    },
+    beforeCreate({ ports }) {
+      ports.activeWindowId = activeWindowId;
+    },
+  });
+  await verifyAndCleanPhaseB(f);
+  const result = await f.controller.runCase(f.smoke);
+  assert.equal(result.state, 'native_settled');
+  assert.equal(f.controller.caseSettlement('smoke.first').windowId, activeWindowId);
+  assert.equal(result.closure.batchId, foundationRuntimeCheckpoint.windowId);
+  assert.equal(f.actorStarts(), 1); // Scripted in-memory route; no provider is called.
+  assert.equal(f.providerReads(), 2);
 });
 
 test('browser foreign readiness, mixed sources, changed actual workflow or mismatched URL cannot prove a native start', async () => {
