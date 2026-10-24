@@ -1,0 +1,302 @@
+{
+  "kind": "m03_technical8_closed_fixture_preflight_reconciliation",
+  "version": 1,
+  "recordedAt": "2026-10-24T00:07:28.796Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "source": {
+    "head": "f9e999a46427392ef9b9cb3f45090fda639fc551",
+    "applicationSource": "a5e746736893d5040e93032ae740a0878f748837",
+    "ciRun": 40042065141,
+    "allFiveJobsPassed": true,
+    "vercelPassed": true
+  },
+  "immutableTechnicalRecords": {
+    "admission": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-8.json",
+      "sha256": "ec3872399fea4b855a9f6451d9d70e7cd20139ec7061711a758f0d3c19fb258e",
+      "bytes": 446
+    },
+    "runtimeClaim": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-8.runtime-claim.json",
+      "sha256": "cea15f1dfc7dcd60534f29ac7191870a23d262dc382f791435b88575555e3ecc",
+      "bytes": 275
+    },
+    "closed": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-8.closed.json",
+      "sha256": "d899069794528a2ae5985d7ebe7bd5cfece6d10df8d2424483aab5fda16100c2",
+      "bytes": 396
+    },
+    "rawClosureVerifiedRemainsFalse": true,
+    "rawBypassHandoffDeletedRemainsFalse": true,
+    "parentProcessId": 54564,
+    "runtimeProcessId": 10176
+  },
+  "actualAttempt": {
+    "baselineSourceGets": 25,
+    "executionDiscoveryGets": 50,
+    "browserDiscoveryAttempts": 1,
+    "previewPrepared": true,
+    "previewDeployment": "dpl_HPq8ot1nNvBZRLTyAoEnXHXuhTPF",
+    "previewAudience": "https://everyone-market-researcher-j94yqflt0-muhammed-abdelrahman.vercel.app",
+    "ownerProvisionIntentPresent": true,
+    "reactivationIntentPresent": true,
+    "fixtureReactivationCommitted": false,
+    "failedStage": "owned_fixture_reactivation_preflight",
+    "originalSqlErrorRetained": false,
+    "limitation": "Original native SQL error was not retained. Later independent state and local exact SQL reproduction establish the missing-prior-audit predicate separately; the raw attempt remains a generic blocked result.",
+    "nativeWorkflowExecutions": 0,
+    "actorStarts": 0
+  },
+  "administrativeResult": {
+    "pins": [
+      {
+        "path": "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-8-attempt.json",
+        "sha256": "aaf577aab16d6d5f14d180997becba8f2c4f5067542d92fdcb398e8a83e33908",
+        "bytes": 230
+      },
+      {
+        "path": "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-8-latest.json",
+        "sha256": "62b077cc4700f84a4496f92dafc1c6fde887bb084baf7f0b5e667e779f6be18b",
+        "bytes": 1091
+      },
+      {
+        "path": "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-8-owner-provision-attempt.json",
+        "sha256": "ad315e81ff1c1c252447d2f11f860da4314aca29e86ae84f21d6efdde6cc05a5",
+        "bytes": 466
+      },
+      {
+        "path": "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-8-reactivation-attempt.json",
+        "sha256": "a6891acdcd9e78d0a6143bb88f0151da73d39743d28f7626b2bed759491a2cc5",
+        "bytes": 259
+      },
+      {
+        "path": "scripts/db/out/m03-foundation-continuation-ce98ed25-9288-4af2-b66b-25bea0b763f5-db.types.ts",
+        "sha256": "de2854863855f3551dd562fc80f450a76032e084b8e7c84abdc7788d80497f59",
+        "bytes": 96847
+      }
+    ],
+    "admin": {
+      "runId": "ce98ed25-9288-4af2-b66b-25bea0b763f5",
+      "status": "phase_a_control_failed",
+      "authenticationAttempted": true,
+      "authenticationVerified": true,
+      "historyBefore": "complete",
+      "historyAfter": "complete",
+      "pushAttempted": false,
+      "childrenClosed": true,
+      "handoffDeleted": true,
+      "leaseDeleted": true,
+      "scratchDeleted": true,
+      "phaseACommands": 4,
+      "phaseAClosed": false,
+      "postcheckStage": "complete",
+      "forwardWindow": true,
+      "unprovisionedFixtureArchived": false,
+      "postcheckCandidate": "scripts/db/out/m03-foundation-continuation-ce98ed25-9288-4af2-b66b-25bea0b763f5-db.types.ts"
+    },
+    "reactivation": {
+      "version": 1,
+      "runId": "ce98ed25-9288-4af2-b66b-25bea0b763f5",
+      "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+      "competitorId": "d51a39f6-fe87-4d17-aee9-3070c45693aa",
+      "accountId": "bd23314c-591f-4fb7-92fd-b7450634eeb6",
+      "createdAt": "2026-10-24T00:00:37.8674228Z"
+    }
+  },
+  "actualPublicJournals": {
+    "management": {
+      "path": "scripts/n8n/out/foundation/live/management.jsonl",
+      "sha256": "6bfd555fb852054b7435876c7ab87528825679600e23a52fbb500d09733c94b1",
+      "bytes": 10237,
+      "rows": 228
+    },
+    "control": {
+      "path": "scripts/n8n/out/foundation/live/control.jsonl",
+      "sha256": "3edf65b1d44f6f4b146ed0dcc1c009b55dbe5c9b1066c0a6db308d3300efb31b",
+      "bytes": 64032,
+      "rows": 486
+    },
+    "setup": {
+      "path": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "sha256": "7d0559ec3ab6bd80319c468a0cba4705ac752939d767bd0d4477c1d477b73951",
+      "bytes": 17315,
+      "rows": 155
+    },
+    "preflight": {
+      "path": "scripts/n8n/out/foundation/live/preflight.jsonl",
+      "sha256": "b49d0d85d19befc768ac03e0c3e1d8cd116db5472ba5b0e77f7a4ab07d239998",
+      "bytes": 1538,
+      "rows": 6
+    },
+    "runtime": {
+      "path": "scripts/n8n/out/foundation/live/runtime.jsonl",
+      "sha256": "3f1c85ad7d185481da33c8989b34b82cbbef26aa3ec01209bc13561bd3481378",
+      "bytes": 5713,
+      "rows": 50
+    }
+  },
+  "setup": {
+    "newRequests": 35,
+    "methodCounts": {
+      "GET": 18,
+      "PATCH": 2,
+      "POST": 8,
+      "DELETE": 7
+    },
+    "environmentCreated": 7,
+    "environmentAbsenceVerified": 7,
+    "bypassAbsenceVerified": 1,
+    "coordinatorCleanupVerified": true
+  },
+  "restrictedWriterClose": {
+    "source": "actual public preflight journal",
+    "intentAt": "2026-10-24T00:01:02.910Z",
+    "verifiedAt": "2026-10-24T00:01:03.159Z",
+    "windowId": "38b3708d-61b0-41d2-8170-5ed91c66b4dc",
+    "verified": true,
+    "administratorSubstituted": false
+  },
+  "protocolClose": {
+    "status": "closed",
+    "childTransportsClosed": true,
+    "adminChildClosed": true,
+    "windowClosed": false,
+    "fixtureArchived": false,
+    "baselineRestored": false,
+    "environmentCleanupVerified": true,
+    "remoteWorkSettled": false,
+    "residual": true
+  },
+  "wrapperClose": {
+    "kind": "m03_acceptance_wrapper_closed",
+    "childClosed": true,
+    "credentialChildrenClosed": true,
+    "emergencyShutdown": false,
+    "nativeExit": 1,
+    "handoffsDeleted": true,
+    "bypassHandoffDeleted": false,
+    "pendingMachinePreserved": true,
+    "privateRead": true,
+    "code": "M03_ACCEPTANCE_BLOCKED"
+  },
+  "subsequentReadback": {
+    "observedAt": "2026-10-24T00:05:32.033291+00:00",
+    "surface": "authenticated Supabase SQL Editor, emr-dev route",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "migrationCount": 15,
+    "mutations": 0,
+    "readQueries": 2,
+    "fixture": {
+      "competitorId": "d51a39f6-fe87-4d17-aee9-3070c45693aa",
+      "accountId": "bd23314c-591f-4fb7-92fd-b7450634eeb6",
+      "competitorStatus": "archived",
+      "accountStatus": "paused",
+      "itemsCount": 0
+    },
+    "audits": [
+      "m03_smoke_setup.v1",
+      "m03_smoke_reactivate.v1:1c69c89e-7807-46d5-b7b8-ca28285ff2b4",
+      "m03_smoke_reactivate.v1:20275b22-b7fe-4737-a9a4-c50c2feadb74",
+      "m03_smoke_reactivate.v1:20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-2"
+    ],
+    "eachAuditCount": 1,
+    "windowFamily": [
+      {
+        "id": "38b3708d-61b0-41d2-8170-5ed91c66b4dc",
+        "closed": true,
+        "started": false,
+        "closeCount": 1,
+        "admitted": 1,
+        "commit": "a5e746736893d5040e93032ae740a0878f748837",
+        "deployment": "dpl_HPq8ot1nNvBZRLTyAoEnXHXuhTPF",
+        "audience": "https://everyone-market-researcher-j94yqflt0-muhammed-abdelrahman.vercel.app"
+      },
+      {
+        "id": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+        "closed": true,
+        "started": true,
+        "closeCount": 1,
+        "admitted": 2
+      }
+    ],
+    "vacancy": {
+      "items": 0,
+      "runs": 0,
+      "apifyRuns": 0,
+      "launches": 0,
+      "costEntries": 0,
+      "runningRuns": 0,
+      "activeLeases": 0,
+      "incompleteRequests": 0
+    }
+  },
+  "actualCleanup": {
+    "toolReceipt": "2d0d5a",
+    "nativeExit": 0,
+    "bothKnownProcessesDead": true,
+    "allEightInputFilesAbsent": true,
+    "parentLockAbsent": true,
+    "bypassCopyAbsent": true,
+    "ciphertextRead": false,
+    "decrypted": false,
+    "networkRequests": 0,
+    "persistentOriginalsUntouched": true,
+    "retainedMachinePreserved": true
+  },
+  "usage": {
+    "mainManagement": 227,
+    "carriedManagement": 10,
+    "management": 237,
+    "mainControl": 483,
+    "carriedControl": 3,
+    "control": 486,
+    "combined": 723,
+    "vercel": 79,
+    "managementMaximum": 576,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "vercelMaximum": 88,
+    "actorStarts": 0,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "sqlFamilyAdmitted": 3,
+    "allowancesReplenished": false
+  },
+  "nextBoundary": {
+    "anotherFullRunWithinCurrentCaps": false,
+    "conservativeAdditionalManagement": 376,
+    "cumulativeManagementPlan": 613,
+    "conservativeAdditionalVercel": 44,
+    "cumulativeVercelPlan": 123,
+    "productionAllowed": false,
+    "mergeAllowed": false,
+    "m04Allowed": false,
+    "newCredentialHandoffNeeded": false,
+    "timeOnlyApprovalNeeded": false,
+    "permanentlyClosedWindows": [
+      "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+      "38b3708d-61b0-41d2-8170-5ed91c66b4dc"
+    ],
+    "proposedFreshWindow": "eda4fae1-1e19-47db-81b8-beac1a4ed883",
+    "newMigrationRequired": false,
+    "reason": "Existing fifteenth migration already supports owner registration of a fresh UUID with cumulative family caps; no registration is performed by this record."
+  },
+  "acceptance": {
+    "actualM03DevAcceptanceVerified": false,
+    "fullDVerified": false,
+    "subsequentEnvironmentCleanupVerified": true,
+    "subsequentSqlFamilyClosedVerified": true,
+    "subsequentFixtureArchivedVerified": true,
+    "zeroActorsAndOutstandingWorkVerified": true,
+    "productionChanged": false,
+    "pr8Merged": false,
+    "m04Started": false
+  },
+  "recordUpdates": {
+    "existingProgressMutationBlocked": true,
+    "prBodyUpdateBlocked": true,
+    "reason": "Automatic approval review: blocked by policy",
+    "updatesRetried": false
+  }
+}

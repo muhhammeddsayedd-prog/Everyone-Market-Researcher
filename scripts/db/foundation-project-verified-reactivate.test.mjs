@@ -755,6 +755,50 @@ describe(
         do $verify$begin if (select count(*) from ops.audit_log)<>5 or not exists(select 1 from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}:technical-3') then raise exception 'CONTIGUOUS_TECHNICAL_AUDIT_MISSING';end if;end;$verify$;rollback;`);
       assert.deepEqual(JSON.parse(psql(snapshot)), afterSecond);
     });
+    test('ordinal9 preserves the actual four-audit lifecycle across closed attempts3to8 and rejects any unexpected gap audit', () => {
+      const wrapper =
+        '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n\\set emr_smoke_reactivation_segment ' + segment + '\n';
+      const technical2 = Number(
+        psql(`select count(*) from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${auditSegment}';`),
+      );
+      assert.ok(technical2 === 0 || technical2 === 1);
+      if (technical2 === 0) {
+        psql(wrapper + '\\set emr_smoke_technical_ordinal 2\n' + source());
+        psql(
+          '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n' +
+            readFileSync(new URL('../assert/m03_smoke_teardown.sql', import.meta.url), 'utf8'),
+        );
+      }
+      const before = JSON.parse(psql(snapshot));
+      assert.equal(before.audit, 4);
+      psql(`begin;${settings}set local emr.smoke_technical_ordinal='9';
+        create temporary table retained_audits as select to_jsonb(l) as value from ops.audit_log l;
+        ${body()}
+        do $verify$begin
+          if (select status from app.competitors where id='${competitor}')<>'active' or (select status from app.competitor_accounts where id='${account}')<>'active'
+            or (select count(*) from ops.audit_log)<>5 or not exists(select 1 from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}:technical-9') then raise exception 'NEW_FIXTURE_AUDIT_NOT_EXACT';end if;
+          if (select jsonb_agg(value order by value->>'id') from retained_audits) is distinct from
+            (select jsonb_agg(to_jsonb(l) order by to_jsonb(l)->>'id') from ops.audit_log l where actor_id<>'m03_smoke_reactivate.v1:${segment}:technical-9') then raise exception 'PRIOR_AUDIT_DRIFT';end if;
+          if exists(select 1 from ops.audit_log where actor_id in (${[3, 4, 5, 6, 7, 8].map((n) => `'m03_smoke_reactivate.v1:${segment}:technical-${n}'`).join(',')})) then raise exception 'CLOSED_ATTEMPT_AUDIT_FABRICATED';end if;
+        end;$verify$;rollback;`);
+      assert.deepEqual(JSON.parse(psql(snapshot)), before);
+      for (const ordinal of [3, 4, 5, 6, 7, 8]) {
+        psql(`begin;${settings}set local emr.smoke_technical_ordinal='9';
+          insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id,before,after)
+            select actor_type,'m03_smoke_reactivate.v1:${segment}:technical-${ordinal}',action,entity_type,entity_id,before,jsonb_set(after,'{segment_id}',to_jsonb('${segment}:technical-${ordinal}'::text))
+            from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${auditSegment}';
+          do $deny$begin begin execute $under_test$${body()}$under_test$;
+            raise exception using errcode='P9999',message='UNKNOWN_GAP_AUDIT_ACCEPTED';
+          exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_PRIOR_EDIT_OR_ATTEMPT_PRESENT' then raise exception 'GAP_DENIAL_NOT_EXACT';end if;end;end;$deny$;rollback;`);
+        assert.deepEqual(JSON.parse(psql(snapshot)), before);
+      }
+      // Only the known closed3..8 gap is covered. Later missing successful
+      // reactivation history still requires explicit reconciliation.
+      psql(`begin;${settings}set local emr.smoke_technical_ordinal='10';do $deny$begin begin execute $under_test$${body()}$under_test$;
+        raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED' then raise exception 'UNKNOWN_LATER_GAP_ACCEPTED';end if;end;end;$deny$;rollback;`);
+      assert.deepEqual(JSON.parse(psql(snapshot)), before);
+    });
+
     test('native converted archive preserves data and refuses changed closure, work or audit state before status updates', () => {
       const archive = nativeArchiveBody();
       const saved = JSON.parse(psql(snapshot));

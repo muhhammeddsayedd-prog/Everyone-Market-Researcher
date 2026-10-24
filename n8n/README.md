@@ -80,6 +80,23 @@ environment entries before preparing the new window; current entries retain
 the strict new-window identity. Closed attempt 7 stays consumed. A safe next
 technical attempt retains all charges and the unchanged actor/spending limits.
 
+[Technical attempt 8](../milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json)
+prepared the Preview and registered its new SQL binding, then stopped before a
+fixture mutation. The original SQL error was not retained. A separate local
+reproduction found that the retained SQL demanded audits for earlier read-only
+attempts. The restricted Writer closed that new binding, all temporary environment
+entries and its bypass were removed, and independent readback confirms both old
+SQL windows closed, C999 archived/paused and no collected items, runs, launches,
+costs or outstanding work. The raw failed attempt remains unverified full D.
+The retained SQL now skips only the reconciled no-reactivation ordinals 3–8;
+unexpected audits and missing future lifecycle entries still fail.
+Current usage is 237/576 management, 486/2048 control, 723/2560 combined and
+79/88 Vercel requests. The [remaining allocation packet](../milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md)
+proposes 640 Management and 132 Vercel, retaining all charges and the original
+two-start/USD2 actor reserve. Those increases are pending; another full run is
+blocked by the existing caps. Persistent credentials need no new delivery, and
+the existing 15 migrations need no replay or replacement.
+
 M00 provides the canonical plain JavaScript helpers in
 `normalizers/_common.js`, copied from `docs/N8N_WORKFLOWS.md` §7, with Vitest
 tests. The guarded CommonJS export supports Node tests; the helper definitions

@@ -9,7 +9,15 @@ How this works:
 3. The owner does it, ticks it in the milestone `PROGRESS.md`, and adds any non-secret value (project ref, URL) there.
 4. Secrets go only into approved native stores or the current-user-encrypted dev store below, never into the repo or chat.
 
-## Current M03 action — persistent access, 23 October 2026
+## Current M03 decision — request allowances, 24 October 2026
+
+**MA-11:** Review the [exact remaining request-allocation packet](../milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md) after its fixture repair, independent review and normal PR checks pass. Actual use is 237/576 Management, 486/2048 Control, 723/2560 combined and 79/88 Vercel requests. Another full run would reach 613 Management and 123 Vercel, exceeding both existing ceilings. The proposal raises only those two ceilings to 640 and 132 and retains every charged request and the unchanged two-start/USD2 actor reserve.
+
+The exact reply is **Approve cumulative Management 640 and Vercel 132; retain 237 Management and 79 Vercel requests charged, all 486 Control requests, and every other existing aggregate, actor, spending, data and cleanup limit.** No command, secret, new credential handoff or time-only decision is needed. The current limits remain enforced until this separate allowance decision is recorded. No production, recurring activity, merge or M04 is included.
+
+All four persistent encrypted dev entries and retained Machine custody are available. The initialization instructions below are historical setup instructions; do not repeat them unless a current Status check identifies a genuinely missing/revoked input.
+
+## Persistent access completed — 23 October 2026
 
 The owner's development-autonomy reset is approved. No replacement-window or
 ordinary task approval is needed within the existing M03 scope and cumulative
