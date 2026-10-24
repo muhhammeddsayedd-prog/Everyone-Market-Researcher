@@ -1,0 +1,102 @@
+{
+  "kind": "m03_owned_machine_metadata_diagnostic",
+  "version": 1,
+  "environment": "dev",
+  "observedAt": "2026-10-24T10:21:36.622Z",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "toolRef": "7ee79a",
+  "outerNativeExit": 0,
+  "originalAttemptReceipt": "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical12-reconciliation-20261024.json",
+  "originalAttemptUnmodified": true,
+  "actualNativeResult": {
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "complete",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": {
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "credentialId": "EmrM03Machine19",
+      "expectedCreatedAt": "2026-10-19T00:25:21.669Z",
+      "status": "metadata_observed",
+      "requestCount": 1,
+      "httpStatus": 200,
+      "authenticationVerified": true,
+      "networkCompletionVerified": true,
+      "metadata": {
+        "objectShape": true,
+        "dataPresent": false,
+        "idMatches": true,
+        "nameMatches": true,
+        "typeMatches": true,
+        "createdAtMatches": true,
+        "updatedAtValid": true,
+        "flagsCompatible": true,
+        "resolverCompatible": true,
+        "updatedAtMatchesCreatedAt": false
+      },
+      "diagnostics": {
+        "version": 1,
+        "dns": "complete",
+        "requests": [
+          {
+            "resource": "credentials",
+            "page": 1,
+            "tcpConnected": true,
+            "tlsVerified": true,
+            "httpStatus": 200,
+            "bodyRead": "complete",
+            "jsonParsed": true,
+            "schemaValidated": true,
+            "socketClosed": true,
+            "failureStage": "none",
+            "failureCode": "none"
+          }
+        ]
+      }
+    }
+  },
+  "qualification": {
+    "currentTimestampEqualityGuardFails": true,
+    "originalTechnical12ExactHttpOrSubgateRetained": false,
+    "laterManualEditProven": false,
+    "credentialRuntimeUseProven": false,
+    "credentialDataRead": false,
+    "unknownTimestampValuePrinted": false,
+    "credentialMutation": false,
+    "workflowExecution": false,
+    "actorStart": false,
+    "windowAdmission": false,
+    "administratorCredentialUsed": false,
+    "writerCredentialUsed": false
+  },
+  "usage": {
+    "mainManagement": 390,
+    "carriedManagement": 11,
+    "management": 401,
+    "mainControl": 737,
+    "carriedControl": 3,
+    "control": 740,
+    "combined": 1141,
+    "vercel": 114,
+    "managementMaximum": 704,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "vercelMaximum": 132,
+    "actorStarts": 0,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "pins": {
+    "scripts/n8n/inventory.mjs": "ba6799abfa5546285f72b877923a3145248b3bf9142a460d32869943d7c1e3a2",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "3e3e86422d9c45e5dca55e4a268a28c5274dfa55e594fc0147030f09692959e3",
+    "scripts/n8n/m03-inventory-seal.json": "454e2e5a9a1deccfd85ca359c42062fc5b04cc7ddd84a202a1628d1fb88bf7a7",
+    "scripts/n8n/out/foundation/live/management.jsonl": "b0d74ab2d8ebbf38e1469a22c58f3764ca02d872f6e1deb8aeadc709704dc653",
+    "scripts/n8n/out/foundation/live/control.jsonl": "badae95523d4c57dd4370be827cfaf6c1da6c067913b703384a772646b5a18d1"
+  }
+}

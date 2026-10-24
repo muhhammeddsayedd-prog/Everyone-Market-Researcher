@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { EventEmitter } from 'node:events';
+import * as inventory from './inventory.mjs';
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import {
   inventoryWorkflowNames,
   probePublicInventoryTransport,
@@ -12,6 +18,226 @@ const key = 'synthetic-n8n-key-for-local-tests-only';
 const projectId = 'pHvQjDmjxVZ3KQLT';
 const host = 'muhhammedsayed.app.n8n.cloud';
 const bytes = (value) => Buffer.from(JSON.stringify(value));
+describe('owned Machine one-GET metadata diagnostic, synthetic transport only', () => {
+  const dto = () => ({
+    id: 'EmrM03Machine19',
+    name: 'M03 foundation machine [dev]',
+    type: 'httpCustomAuth',
+    createdAt: '2026-10-19T00:25:21.669Z',
+    updatedAt: '2026-10-19T00:25:21.670Z',
+    isManaged: false,
+    isGlobal: false,
+    isResolvable: false,
+    resolverId: null,
+  });
+  function machine(options = {}) {
+    const calls = [],
+      charges = [];
+    return {
+      calls,
+      charges,
+      dependencies: {
+        timeoutMs: 50,
+        closeTimeoutMs: 10,
+        lookup: async () => [{ address: '1.1.1.1', family: 4 }],
+        admitManagementAttempt() {
+          charges.push('charged');
+          if (options.admissionFailure) throw Error('SYNTHETIC_PRIVATE_BUDGET');
+        },
+        transport: async (input) => {
+          calls.push(input);
+          assert.equal(charges.length, 1);
+          assert.equal(input.method, 'GET');
+          assert.equal(input.url.href, `https://${host}/api/v1/credentials/EmrM03Machine19`);
+          assert.equal(input.rejectUnauthorized, true);
+          assert.equal(input.servername, host);
+          Object.assign(input.diagnostic, { tcpConnected: true, tlsVerified: true });
+          if (!options.unclosed) {
+            input.diagnostic.socketClosed = true;
+            input.onSocketClosed();
+          }
+          if (options.error) throw options.error;
+          return { status: options.status ?? 200, body: options.body ?? bytes(options.dto ?? dto()) };
+        },
+      },
+    };
+  }
+  it('isolates actual metadata predicates and timestamp mismatch without reading or exposing credential data', async () => {
+    const value = dto();
+    Object.defineProperty(value, 'data', { enumerable: true, value: { secret: 'SYNTHETIC_PRIVATE_VALUE' } });
+    const f = machine({ dto: value });
+    const result = await inventory.runMachineMetadataDiagnostic(key, f.dependencies);
+    assert.equal(result.status, 'metadata_observed');
+    assert.equal(result.authenticationVerified, true);
+    assert.equal(result.httpStatus, 200);
+    assert.equal(result.networkCompletionVerified, true);
+    assert.deepEqual(result.metadata, {
+      objectShape: true,
+      dataPresent: true,
+      idMatches: true,
+      nameMatches: true,
+      typeMatches: true,
+      createdAtMatches: true,
+      updatedAtValid: true,
+      flagsCompatible: true,
+      resolverCompatible: true,
+      updatedAtMatchesCreatedAt: false,
+    });
+    assert.equal(f.calls.length, 1);
+    assert.equal(f.charges.length, 1);
+    assert.doesNotMatch(JSON.stringify(result), /SYNTHETIC_PRIVATE|synthetic-n8n-key|00:25:21\.670|"secret"/);
+  });
+  it('updatedAt validity mirrors the runtime Date.parse predicate without projecting unknown timestamp values', async () => {
+    for (const updatedAt of [
+      '2026-10-19T00:25:21.670+00:00',
+      '2026-10-19T00:25:22Z',
+      'SYNTHETIC_PRIVATE_INVALID_TIME',
+    ]) {
+      const f = machine({ dto: { ...dto(), updatedAt } });
+      const result = await inventory.runMachineMetadataDiagnostic(key, f.dependencies);
+      assert.equal(result.metadata.updatedAtValid, Number.isFinite(Date.parse(updatedAt)));
+      assert.equal(result.metadata.updatedAtMatchesCreatedAt, false);
+      assert.equal(JSON.stringify(result).includes(updatedAt), false);
+    }
+  });
+  for (const status of [401, 403, 404, 405, 429, 500])
+    it(`preserves numeric HTTP ${status} with no body projection, retry or false authentication`, async () => {
+      const f = machine({ status, body: bytes({ data: key, message: 'SYNTHETIC_PRIVATE_ERROR' }) });
+      const result = await inventory.runMachineMetadataDiagnostic(key, f.dependencies);
+      assert.equal(result.status, status === 401 ? 'unauthorized' : 'http_failed');
+      assert.equal(result.httpStatus, status);
+      assert.equal(result.authenticationVerified, false);
+      assert.equal(result.metadata, null);
+      assert.equal(f.calls.length, 1);
+      assert.doesNotMatch(JSON.stringify(result), /SYNTHETIC_PRIVATE|synthetic-n8n-key|message/);
+    });
+  it('refuses missing key or failed durable admission before HTTP and does not expose raw errors', async () => {
+    const missing = machine();
+    assert.equal(
+      (await inventory.runMachineMetadataDiagnostic('', missing.dependencies)).status,
+      'missing_key',
+    );
+    assert.equal(missing.calls.length, 0);
+    const f = machine({ admissionFailure: true });
+    const r = await inventory.runMachineMetadataDiagnostic(key, f.dependencies);
+    assert.equal(r.status, 'budget_blocked');
+    assert.equal(f.calls.length, 0);
+    assert.equal(r.requestCount, 0);
+    assert.doesNotMatch(JSON.stringify(r), /SYNTHETIC_PRIVATE/);
+  });
+  it('keeps unknown socket closure and malformed JSON explicit without metadata success', async () => {
+    for (const options of [{ unclosed: true }, { body: Buffer.from('SYNTHETIC_PRIVATE_INVALID_JSON') }]) {
+      const f = machine(options),
+        r = await inventory.runMachineMetadataDiagnostic(key, f.dependencies);
+      assert.notEqual(r.status, 'metadata_observed');
+      assert.equal(r.metadata, null);
+      assert.doesNotMatch(JSON.stringify(r), /SYNTHETIC_PRIVATE/);
+    }
+  });
+  for (const declared of [true, false])
+    it(`native Machine response limit stops ${declared ? 'declared' : 'chunked'} oversized bytes before parsing`, async () => {
+      const f = machine();
+      delete f.dependencies.transport;
+      let requests = 0;
+      f.dependencies.request = (_url, _options, callback) => {
+        requests++;
+        const req = new EventEmitter(),
+          socket = new EventEmitter();
+        socket.encrypted = true;
+        socket.authorized = true;
+        let closed = false;
+        const close = () => {
+          if (!closed) {
+            closed = true;
+            socket.emit('close');
+          }
+        };
+        req.destroy = close;
+        req.end = () =>
+          setImmediate(() => {
+            req.emit('socket', socket);
+            socket.emit('connect');
+            socket.emit('secureConnect');
+            const response = new EventEmitter(),
+              body = bytes({ ...dto(), description: 'x'.repeat(65536) });
+            response.statusCode = 200;
+            response.headers = declared ? { 'content-length': String(body.length) } : {};
+            response.complete = true;
+            response.destroy = close;
+            callback(response);
+            response.emit('data', body);
+            response.emit('end');
+            close();
+          });
+        return req;
+      };
+      const result = await inventory.runMachineMetadataDiagnostic(key, f.dependencies);
+      assert.equal(requests, 1);
+      assert.equal(result.status, 'body_too_large');
+      assert.equal(result.diagnostics.requests[0].bodyRead, 'too_large');
+      assert.equal(result.diagnostics.requests[0].jsonParsed, false);
+      assert.equal(result.metadata, null);
+      assert.equal(result.networkCompletionVerified, true);
+    });
+  it('durably debits only the pinned existing Management prefix once and rejects replay or changed Control', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'emr-machine-budget-'));
+    const directory = join(root, 'scripts/n8n/out/foundation/live');
+    mkdirSync(directory, { recursive: true });
+    const management =
+      JSON.stringify({
+        event: 'management_header',
+        version: 1,
+        sourceCommitSha: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+        deadlineAt: 1792584023481,
+      }) +
+      '\n' +
+      Array.from(
+        { length: 389 },
+        (_, i) => JSON.stringify({ event: 'management_attempt', ordinal: i + 1 }) + '\n',
+      ).join('');
+    const control =
+      Array.from(
+        { length: 737 },
+        (_, i) => JSON.stringify({ event: 'control_request_intent', ordinal: i + 1 }) + '\n',
+      ).join('') + Array.from({ length: 7 }, () => '{"event":"synthetic_closed_marker"}\n').join('');
+    const mp = join(directory, 'management.jsonl'),
+      cp = join(directory, 'control.jsonl');
+    const digest = (text) => createHash('sha256').update(text).digest('hex');
+    const source = readFileSync(new URL('./inventory.mjs', import.meta.url), 'utf8')
+      .replace(/managementSha256:\s*'[a-f0-9]{64}'/, `managementSha256: '${digest(management)}'`)
+      .replace(/controlSha256:\s*'[a-f0-9]{64}'/, `controlSha256: '${digest(control)}'`);
+    const copied = join(root, 'synthetic-inventory.mjs');
+    writeFileSync(copied, source);
+    let budget;
+    try {
+      const module = await import(pathToFileURL(copied).href);
+      writeFileSync(mp, management);
+      writeFileSync(cp, control);
+      budget = module.openMachineMetadataDiagnosticBudget(root);
+      budget.admit();
+      const after = readFileSync(mp, 'utf8');
+      assert.equal(after, management + '{"event":"management_attempt","ordinal":390}\n');
+      assert.throws(() => budget.admit(), /MACHINE_DIAGNOSTIC_BUDGET_BLOCKED/);
+      budget.close();
+      budget = null;
+      assert.throws(
+        () => module.openMachineMetadataDiagnosticBudget(root),
+        /MACHINE_DIAGNOSTIC_BUDGET_BLOCKED/,
+      );
+      assert.equal(readFileSync(mp, 'utf8'), after);
+      writeFileSync(mp, management);
+      writeFileSync(cp, control + ' ');
+      assert.throws(
+        () => module.openMachineMetadataDiagnosticBudget(root),
+        /MACHINE_DIAGNOSTIC_BUDGET_BLOCKED/,
+      );
+      assert.equal(readFileSync(mp, 'utf8'), management);
+    } finally {
+      budget?.close();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
 const good = {
   discover: {
     data: {

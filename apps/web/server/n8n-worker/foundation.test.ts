@@ -45,34 +45,46 @@ const request = (body: unknown = input, path = '/api/internal/n8n/foundation') =
     body: JSON.stringify(body),
   });
 describe('closed foundation deployment admission', () => {
-  it.each(['38b3708d-61b0-41d2-8170-5ed91c66b4dc', 'eda4fae1-1e19-47db-81b8-beac1a4ed883'])(
-    'selects only reviewed dev window %s and rejects another known receipt or production',
-    async (fresh) => {
-      expect(foundationConfig({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: fresh }).windowId).toBe(fresh);
-      expect(() => foundationConfig({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: requestId })).toThrow(
-        'unavailable',
-      );
-      expect(() =>
-        foundationConfig({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: fresh, VERCEL_ENV: 'production' }),
-      ).toThrow('unavailable');
-      const dispatch = vi.fn(async () => ({
-        state: 'completed',
-        code: null,
-        operation: 'run.start',
-        replayed: false,
-        result: { run_id: requestId },
-        window,
-      }));
-      const handle = createFoundationHandler({
-        environment: () => ({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: fresh }),
-        dispatch,
-        log: vi.fn(),
-      });
-      const response = await handle(request());
-      expect(response.status).toBe(503);
-      expect(await response.json()).toEqual({ requestId, error: { code: 'outcome_unknown' } });
-    },
-  );
+  it.each([
+    '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+    'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+    '3c46c791-e140-4eb9-890a-eecfa251f65e',
+  ])('selects only reviewed dev window %s and rejects another known receipt or production', async (fresh) => {
+    expect(foundationConfig({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: fresh }).windowId).toBe(fresh);
+    expect(() => foundationConfig({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: requestId })).toThrow(
+      'unavailable',
+    );
+    expect(() =>
+      foundationConfig({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: fresh, VERCEL_ENV: 'production' }),
+    ).toThrow('unavailable');
+    const dispatch = vi.fn(async () => ({
+      state: 'completed',
+      code: null,
+      operation: 'run.start',
+      replayed: false,
+      result: { run_id: requestId },
+      window,
+    }));
+    const handle = createFoundationHandler({
+      environment: () => ({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: fresh }),
+      dispatch,
+      log: vi.fn(),
+    });
+    const response = await handle(request());
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ requestId, error: { code: 'outcome_unknown' } });
+    dispatch.mockResolvedValueOnce({
+      state: 'completed',
+      code: null,
+      operation: 'run.start',
+      replayed: false,
+      result: { run_id: requestId },
+      window: { ...window, id: fresh },
+    });
+    const matching = await handle(request());
+    expect(matching.status).toBe(200);
+    expect(await matching.json()).toMatchObject({ operation: 'run.start', window: { id: fresh } });
+  });
   it('rejects launch arguments for another reviewed window before dispatch', async () => {
     const dispatch = vi.fn();
     const handle = createFoundationHandler({ environment: () => env, dispatch, log: vi.fn() });

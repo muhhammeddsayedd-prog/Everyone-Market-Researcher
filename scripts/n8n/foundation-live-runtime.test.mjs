@@ -416,7 +416,7 @@ test('a plain requested576 cap does not change the historical default512 budget'
   }
 });
 
-test('one genuine same-attempt early baseline plus one actual restoration audit completes the full307 runtime request bound', async () => {
+test('one genuine same-attempt early baseline plus one actual restoration audit completes the full308 runtime request bound', async () => {
   const f = fixture();
   let runtime, budget, early;
   try {
@@ -447,7 +447,7 @@ test('one genuine same-attempt early baseline plus one actual restoration audit 
     });
     assert.equal(runtime.checkOnly().setupDriftGuardGetCount, 0);
     assert.equal((await runtime.setup()).status, 'runtime_setup_verified');
-    assert.equal(budget.snapshot().attempts - start, 109);
+    assert.equal(budget.snapshot().attempts - start, 110);
     const selected = foundationAcceptancePlan().cases.filter((v) => v.recommendedLive);
     assert.equal(selected.length, 23);
     // Counter/transport fixture only: all23drafts use the same valid harmless
@@ -464,9 +464,9 @@ test('one genuine same-attempt early baseline plus one actual restoration audit 
       25,
     );
     assert.equal(budget.snapshot().attempts - beforeRestore, 124);
-    assert.equal(budget.snapshot().attempts - start, 307);
+    assert.equal(budget.snapshot().attempts - start, 308);
     for (let i = 0; i < 18; i++) budget.admit();
-    assert.equal(budget.snapshot().attempts, 503);
+    assert.equal(budget.snapshot().attempts, 504);
     assert.equal(budget.snapshot().maximum, 512);
     assert.equal(f.calls.filter((c) => c.method === 'PUT').length, 26 + 24 + 25);
     assert.throws(() =>
@@ -538,7 +538,7 @@ test('live composition is network-inert at construction and uses original25-guar
     assert.equal(runtime.checkOnly().setupDriftGuardGetCount, 25);
     assert.equal(f.calls.length, 0);
     assert.equal((await runtime.setup()).status, 'runtime_setup_verified');
-    assert.equal(runtime.state().managementAttempts, 134);
+    assert.equal(runtime.state().managementAttempts, 135);
     const receipt = await runtime.saveCase('dispatch.vimeo');
     assert.equal(receipt.status, 'case_draft_verified');
     assert.equal(runtime.bindingFor('WF-00', { caseReceipt: receipt }).versionId, receipt.versionId);
@@ -580,7 +580,7 @@ test('Vercel and runtime attempts share the pre-plan durable512 pool and preserv
     for (let i = 0; i < 45; i++) budget.admit({ host: 'api.vercel.com', method: 'GET', path: '/synthetic' });
     runtime = createFoundationLiveRuntime(f.input, { ...f.dependencies, managementBudget: budget });
     assert.equal((await runtime.setup()).status, 'runtime_setup_verified');
-    assert.equal(runtime.state().managementAttempts, 179);
+    assert.equal(runtime.state().managementAttempts, 180);
     for (let i = 0; i < 190; i++) budget.admit();
     const before = f.calls.length;
     assert.equal((await runtime.saveCase('dispatch.vimeo')).status, 'shared_management_reserve_required');
@@ -588,7 +588,7 @@ test('Vercel and runtime attempts share the pre-plan durable512 pool and preserv
     runtime.close();
     runtime = null;
     assert.equal(budget.snapshot().closed, false);
-    assert.equal(budget.snapshot().attempts, 369);
+    assert.equal(budget.snapshot().attempts, 370);
     budget.close();
     budget = null;
   } finally {
@@ -648,9 +648,9 @@ test('exclusive operation lock and durable admission survive restarts without re
     runtime.close();
     runtime = null;
     runtime = f.create();
-    assert.equal(runtime.state().managementAttempts, 134);
+    assert.equal(runtime.state().managementAttempts, 135);
     assert.equal((await runtime.setup()).status, 'reconciliation_required');
-    assert.equal(runtime.state().managementAttempts, 134);
+    assert.equal(runtime.state().managementAttempts, 135);
     assert.equal(runtime.state().controlAttempts, 0);
   } finally {
     runtime?.close();

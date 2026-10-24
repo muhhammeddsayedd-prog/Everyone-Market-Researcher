@@ -13,24 +13,25 @@ const window = {
   boundDeploymentId: 'dpl_example',
 };
 describe('separate bounded M03 foundation protocol', () => {
-  it.each(['38b3708d-61b0-41d2-8170-5ed91c66b4dc', 'eda4fae1-1e19-47db-81b8-beac1a4ed883'])(
-    'accepts reviewed window %s but rejects unrelated or unknown windows',
-    (fresh) => {
-      const receipt = {
-        state: 'admitted',
-        code: null,
-        result: null,
-        operation: 'identity.read',
-        replayed: false,
-        window: { ...window, id: fresh },
-      };
-      expect(foundationReceipt(receipt, 'identity.read').window.id).toBe(receipt.window.id);
-      for (const id of ['76c2ad42-c094-4ba4-9a0b-566e19b97780', requestId])
-        expect(() => foundationReceipt({ ...receipt, window: { ...window, id } }, 'identity.read')).toThrow(
-          'invalid_result',
-        );
-    },
-  );
+  it.each([
+    '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+    'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+    '3c46c791-e140-4eb9-890a-eecfa251f65e',
+  ])('accepts reviewed window %s but rejects unrelated or unknown windows', (fresh) => {
+    const receipt = {
+      state: 'admitted',
+      code: null,
+      result: null,
+      operation: 'identity.read',
+      replayed: false,
+      window: { ...window, id: fresh },
+    };
+    expect(foundationReceipt(receipt, 'identity.read').window.id).toBe(receipt.window.id);
+    for (const id of ['76c2ad42-c094-4ba4-9a0b-566e19b97780', requestId])
+      expect(() => foundationReceipt({ ...receipt, window: { ...window, id } }, 'identity.read')).toThrow(
+        'invalid_result',
+      );
+  });
   it('permits only measured keyed Apify cost replay, including nullable optional attribution', () => {
     const e = {
       provider: 'apify',

@@ -578,7 +578,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
           (sharedMaximum !== 512 && resumeCheckpoint?.managementMaximum !== sharedMaximum) ||
           !Number.isInteger(sharedAttempts) ||
           sharedAttempts < 0 ||
-          sharedAttempts + 45 + 134 + 142 > sharedMaximum
+          sharedAttempts + 45 + 135 + 142 > sharedMaximum
         )
           fail();
         const ready = await verifyDevReady();

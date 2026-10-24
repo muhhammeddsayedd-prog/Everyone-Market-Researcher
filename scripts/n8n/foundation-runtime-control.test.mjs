@@ -283,7 +283,7 @@ test('ordinary WF00 guards require the actual native pin while keeping every oth
   );
 });
 
-function fixture({ durableAppend, fault, sharedLimit = 512 } = {}) {
+function fixture({ durableAppend, fault, sharedLimit = 512, machineUpdatedAt } = {}) {
   const bindings = JSON.parse(
     readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
   );
@@ -331,7 +331,7 @@ function fixture({ durableAppend, fault, sharedLimit = 512 } = {}) {
     );
   const credential = {
     ...plan.machine,
-    updatedAt: plan.machine.createdAt,
+    updatedAt: machineUpdatedAt ?? plan.machine.createdAt,
     isManaged: false,
     isGlobal: false,
     isResolvable: false,
@@ -442,7 +442,7 @@ test('finite setup uses exact recorded identities, native error validation and s
     before = f.credentialData.json;
   const r = await runFoundationRuntimeSetup(f.plan, f.ports);
   assert.equal(r.status, 'runtime_setup_verified');
-  assert.equal(r.requestCount, 134);
+  assert.equal(r.requestCount, 135);
   assert.equal(r.currentlyPublished.length, 7);
   assert.equal(
     JSON.parse(f.credentialData.json).headers.Authorization,
@@ -477,6 +477,108 @@ test('finite setup uses exact recorded identities, native error validation and s
   assert.equal(r.executionsStarted, 0);
 });
 
+test('qualified current Machine metadata can differ from creation while a fresh version check precedes the same-token rebind', async () => {
+  const baseline = '2026-10-19T00:25:21.670Z';
+  const f = fixture({ machineUpdatedAt: baseline });
+  const before = f.credentialData.json;
+  const result = await runFoundationRuntimeSetup(f.plan, f.ports);
+  assert.equal(result.status, 'runtime_setup_verified');
+  const patch = f.calls.findIndex((c) => c.method === 'PATCH');
+  assert.equal(
+    f.calls.slice(0, patch).filter((c) => c.path === '/api/v1/credentials/EmrM03Machine19').length,
+    2,
+  );
+  assert.equal(f.journal.rows.find((r) => r.event === 'machine_observed').updatedAt, baseline);
+  assert.equal(
+    JSON.parse(f.credentialData.json).headers.Authorization,
+    JSON.parse(before).headers.Authorization,
+  );
+  assert.equal(
+    (await restoreFoundationRuntime(f.plan, f.ports)).status,
+    'exact_staging_restored_unpublished',
+  );
+  assert.deepEqual(f.credentialData, {
+    json: before,
+    allowedHttpRequestDomains: 'domains',
+    allowedDomains: new URL(f.plan.oldAudience).hostname,
+  });
+});
+
+test('a changed Machine version at the immediate fresh check blocks before intent, PATCH or workflow writes', async () => {
+  let observations = 0;
+  const f = fixture({
+    fault({ method, path, credential }) {
+      if (method === 'GET' && path === '/api/v1/credentials/EmrM03Machine19' && ++observations === 2)
+        credential.updatedAt = '2026-10-19T00:25:21.670Z';
+    },
+  });
+  const before = structuredClone(f.credentialData);
+  assert.equal((await runFoundationRuntimeSetup(f.plan, f.ports)).status, 'blocked');
+  assert.equal(observations, 2);
+  assert.equal(
+    f.calls.some((c) => c.method !== 'GET'),
+    false,
+  );
+  assert.equal(
+    f.journal.rows.some((r) => r.event === 'intent'),
+    false,
+  );
+  assert.deepEqual(f.credentialData, before);
+});
+
+test('Machine version metadata rejects Date.parse-valid private comments before journaling or mutation', async () => {
+  const stamp = 'October 19, 2026 00:25:22 GMT (SYNTHETIC_PRIVATE_COMMENT)';
+  assert.equal(Number.isFinite(Date.parse(stamp)), true);
+  const f = fixture({ machineUpdatedAt: stamp });
+  assert.equal((await runFoundationRuntimeSetup(f.plan, f.ports)).status, 'blocked');
+  assert.equal(
+    f.journal.rows.some((r) => r.event === 'machine_observed'),
+    false,
+  );
+  assert.equal(
+    f.calls.some((c) => c.method !== 'GET'),
+    false,
+  );
+  assert.doesNotMatch(JSON.stringify(f.journal.rows), /SYNTHETIC_PRIVATE/);
+});
+
+test('Machine version metadata accepts bounded ISO dates with milliseconds, offsets or no milliseconds without canonicalizing them', async () => {
+  for (const stamp of ['2026-10-19T00:25:21.670Z', '2026-10-19T00:25:22+00:00', '2026-10-19T00:25:22Z']) {
+    const f = fixture({ machineUpdatedAt: stamp });
+    assert.equal((await runFoundationRuntimeSetup(f.plan, f.ports)).status, 'runtime_setup_verified');
+    assert.equal(f.journal.rows.find((r) => r.event === 'machine_observed').updatedAt, stamp);
+  }
+});
+
+test('Machine observations still require the qualified creation identity, non-secret shape and security flags', async () => {
+  for (const change of [
+    { id: 'foreign' },
+    { name: 'foreign' },
+    { type: 'httpHeaderAuth' },
+    { createdAt: '2026-10-19T00:25:21.670Z' },
+    { updatedAt: 'SYNTHETIC_PRIVATE_INVALID' },
+    { data: { secret: 'SYNTHETIC_PRIVATE_VALUE' } },
+    { isManaged: true },
+    { isGlobal: true },
+    { isResolvable: true },
+    { resolverId: 'foreign' },
+  ]) {
+    const f = fixture({
+      fault({ method, path, credential }) {
+        if (method === 'GET' && path === '/api/v1/credentials/EmrM03Machine19')
+          Object.assign(credential, change);
+      },
+    });
+    const result = await runFoundationRuntimeSetup(f.plan, f.ports);
+    assert.equal(result.status, 'blocked');
+    assert.equal(
+      f.calls.some((c) => c.method !== 'GET'),
+      false,
+    );
+    assert.doesNotMatch(JSON.stringify(result), /SYNTHETIC_PRIVATE|foreign/);
+  }
+});
+
 test('all actual publications are removed, all25 exact baseline bodies restored and DEFAULT clears merged links', async () => {
   const f = fixture();
   assert.equal((await runFoundationRuntimeSetup(f.plan, f.ports)).status, 'runtime_setup_verified');
@@ -484,7 +586,7 @@ test('all actual publications are removed, all25 exact baseline bodies restored 
   assert.equal((await saveFoundationRuntimeCase(f.plan, draft, f.ports)).status, 'case_draft_verified');
   const r = await restoreFoundationRuntime(f.plan, f.ports);
   assert.equal(r.status, 'exact_staging_restored_unpublished');
-  assert.equal(r.requestCount, 134 + 3 + 99 + 25);
+  assert.equal(r.requestCount, 135 + 3 + 99 + 25);
   assert.equal(runtimeControl.assertFoundationRuntimeRestorationAudit(r, { plan: f.plan }), r);
   assert.equal(r.verifiedWorkflows, 25);
   assert.throws(() => runtimeControl.assertFoundationRuntimeRestorationAudit({ ...r }, { plan: f.plan }));
@@ -766,8 +868,9 @@ test('only an exact factory-and-GET-verified case receipt carries the execution-
   );
 });
 
-test('a Machine edited since its pinned creation is not silently adopted or rebound', async () => {
+test('a Machine changed after its verified runtime rebind is not overwritten during restoration', async () => {
   const f = fixture();
+  assert.equal((await runFoundationRuntimeSetup(f.plan, f.ports)).status, 'runtime_setup_verified');
   const original = f.ports.send;
   f.ports.send = async (...args) => {
     const r = await original(...args);
@@ -775,12 +878,14 @@ test('a Machine edited since its pinned creation is not silently adopted or rebo
       r.body.updatedAt = '2026-10-20T00:00:00.000Z';
     return r;
   };
-  assert.equal((await runFoundationRuntimeSetup(f.plan, f.ports)).status, 'blocked');
+  const patches = f.calls.filter((c) => c.method === 'PATCH').length;
+  assert.equal((await restoreFoundationRuntime(f.plan, f.ports)).status, 'blocked');
+  assert.equal(f.calls.filter((c) => c.method === 'PATCH').length, patches);
+  assert.equal(foundationRuntimeState(f.plan, f.journal).machineRebound, true);
   assert.equal(
-    f.calls.some((c) => c.method === 'PATCH'),
+    f.journal.rows.some((r) => r.event === 'intent' && r.action === 'machine_restore'),
     false,
   );
-  assert.equal(foundationRuntimeState(f.plan, f.journal).machineRebound, false);
 });
 
 test('journal requires an explicit durable port and exposed row snapshots cannot forge confirmation', () => {

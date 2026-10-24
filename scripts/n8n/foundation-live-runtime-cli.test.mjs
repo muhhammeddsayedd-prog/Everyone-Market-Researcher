@@ -1056,6 +1056,7 @@ for (const mode of [
   'preflight_contract',
   'transport_constructor',
   'definition_constructor',
+  'runtime_setup',
 ])
   test('same-child exact route / independent shutdown: ' + mode, async () => {
     let restoreFault = false;
@@ -1063,6 +1064,8 @@ for (const mode of [
         fault({ method, path }) {
           if (restoreFault && method === 'POST' && path.endsWith('/unpublish'))
             throw Error('SYNTHETIC_UNKNOWN_RESTORE');
+          if (mode === 'runtime_setup' && method === 'GET' && path === '/api/v1/credentials/EmrM03Machine19')
+            throw Error('SYNTHETIC_PRIVATE_RUNTIME_FAILURE');
         },
       }),
       packet = privatePacket();
@@ -1380,7 +1383,11 @@ for (const mode of [
         id: 'prepare1',
         command: 'prepare',
       });
-      if (['preflight_contract', 'transport_constructor', 'definition_constructor'].includes(mode)) {
+      if (
+        ['preflight_contract', 'transport_constructor', 'definition_constructor', 'runtime_setup'].includes(
+          mode,
+        )
+      ) {
         assert.equal(prepared.status, 'blocked');
         assert.equal(
           prepared.code,
@@ -1389,6 +1396,7 @@ for (const mode of [
               preflight_contract: 'PREFLIGHT_CONTRACT',
               transport_constructor: 'SETUP_TRANSPORT',
               definition_constructor: 'SETUP_CONSTRUCTOR',
+              runtime_setup: 'RUNTIME_SETUP',
             }[mode] +
             '_BLOCKED',
         );
@@ -1396,6 +1404,7 @@ for (const mode of [
         assert.equal(prepared.nativeExecutions, 0);
         assert.equal(rows.length, 0);
         const publicJson = JSON.stringify(prepared);
+        assert.equal(publicJson.includes('SYNTHETIC_PRIVATE_RUNTIME_FAILURE'), false);
         for (const key of [
           'managementKey',
           'writerPassword',

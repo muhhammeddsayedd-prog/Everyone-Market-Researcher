@@ -146,7 +146,7 @@
     "scripts/assert/m03_smoke_reactivate_startup.sql": "cc2654e4d499cbd5fc1a6c75c30d991ea8f46bef3fa37f66bd415ad8b192e202",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json": "e144d73dfbcab1e5a286ab9ba11df28bcbd10c8a9ad39eecb7852fee3d61d758",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0",
-    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "c8a6254ebd3cc6ab20830efd027c455b8dabed5da8651322b43ac3fb12bc81b5",
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "dc6dd809c17b6c7563c9ee6d61b4e3777666170b4ba5ff5d035c6f58f554c28d",
     "scripts/assert/m03_smoke_reactivate_project_verified.sql": "f0cb73a5d048bfaef960d241141e4b5689427e4cd31be9cecf7871a189220b7b",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json": "e21e515ae446dcde7983dba87d09221ce1bf3cd2ad06d08329368a8241e6ba10",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md": "13d19460cdb889378dec5ae4d93af4708baf85290c164e07961add18e7243650",

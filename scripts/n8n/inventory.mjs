@@ -18,6 +18,82 @@ import { createHash } from 'node:crypto';
 const host = 'muhhammedsayed.app.n8n.cloud';
 const projectId = 'pHvQjDmjxVZ3KQLT';
 const maxBytes = 4 * 1024 * 1024;
+const machineMetadataCheckpoint = Object.freeze({
+  managementSha256: '96f1b856d23f4cd384014e715420b305dbf2f108c8ad2b446f9f8b036fc2b994',
+  controlSha256: 'badae95523d4c57dd4370be827cfaf6c1da6c067913b703384a772646b5a18d1',
+  mainManagement: 389,
+  mainControl: 737,
+  management: 400,
+  control: 740,
+});
+export function openMachineMetadataDiagnosticBudget(
+  repositoryRoot = fileURLToPath(new URL('../../', import.meta.url)),
+) {
+  const directory = join(repositoryRoot, 'scripts/n8n/out/foundation/live');
+  let fd,
+    used = false,
+    closed = false;
+  const read = (path, writable = false) => {
+    for (let cursor = path; ; cursor = dirname(cursor)) {
+      if (lstatSync(cursor).isSymbolicLink()) throw Error('MACHINE_DIAGNOSTIC_BUDGET_BLOCKED');
+      if (dirname(cursor) === cursor) break;
+    }
+    const handle = openSync(
+      path,
+      (writable ? constants.O_RDWR | constants.O_APPEND : constants.O_RDONLY) | (constants.O_NOFOLLOW ?? 0),
+    );
+    if (writable) fd = handle;
+    try {
+      const stat = fstatSync(handle);
+      if (!stat.isFile() || stat.nlink !== 1 || stat.size > 2097152)
+        throw Error('MACHINE_DIAGNOSTIC_BUDGET_BLOCKED');
+      return readFileSync(handle, 'utf8');
+    } finally {
+      if (!writable) closeSync(handle);
+    }
+  };
+  try {
+    const management = read(join(directory, 'management.jsonl'), true),
+      control = read(join(directory, 'control.jsonl'));
+    const digest = (text) => createHash('sha256').update(text).digest('hex');
+    if (
+      digest(management) !== machineMetadataCheckpoint.managementSha256 ||
+      digest(control) !== machineMetadataCheckpoint.controlSha256
+    )
+      throw Error('MACHINE_DIAGNOSTIC_BUDGET_BLOCKED');
+    const m = management.trimEnd().split('\n').map(JSON.parse),
+      c = control.trimEnd().split('\n').map(JSON.parse);
+    if (
+      m.length !== 390 ||
+      m.filter((r) => r.event === 'management_attempt').length !== machineMetadataCheckpoint.mainManagement ||
+      c.length !== 744 ||
+      c.filter((r) => r.event === 'control_request_intent').length !==
+        machineMetadataCheckpoint.mainControl ||
+      machineMetadataCheckpoint.management + 1 > 704 ||
+      machineMetadataCheckpoint.management + machineMetadataCheckpoint.control + 1 > 2560
+    )
+      throw Error('MACHINE_DIAGNOSTIC_BUDGET_BLOCKED');
+  } catch {
+    if (fd !== undefined) closeSync(fd);
+    throw Error('MACHINE_DIAGNOSTIC_BUDGET_BLOCKED');
+  }
+  return Object.freeze({
+    admit() {
+      if (closed || used) throw Error('MACHINE_DIAGNOSTIC_BUDGET_BLOCKED');
+      used = true;
+      const text = JSON.stringify({ event: 'management_attempt', ordinal: 390 }) + '\n';
+      if (writeSync(fd, text, null, 'utf8') !== Buffer.byteLength(text))
+        throw Error('MACHINE_DIAGNOSTIC_BUDGET_BLOCKED');
+      fsyncSync(fd);
+    },
+    close() {
+      if (!closed) {
+        closed = true;
+        closeSync(fd);
+      }
+    },
+  });
+}
 export const inventoryDiagnosticVersion = 1;
 export const wf70DiscoveryReceiptSha256 = '258a6c7d15c59323f4e95c5315d42d839f735ea40d70834b8aa171ff00b9ca66';
 export function openWf70DiscoveryBudget(repositoryRoot = fileURLToPath(new URL('../../', import.meta.url))) {
@@ -293,6 +369,9 @@ function validatedAddresses(addresses) {
   return addresses;
 }
 function nativeRequest(input, requestImpl = request) {
+  const responseMaximum = input.maxBytes ?? maxBytes;
+  if (!Number.isInteger(responseMaximum) || responseMaximum < 1 || responseMaximum > maxBytes)
+    return Promise.reject(new InventoryError('body_too_large'));
   return new Promise((done, fail) => {
     const diagnostic = input.diagnostic;
     let settled = false;
@@ -345,11 +424,14 @@ function nativeRequest(input, requestImpl = request) {
           response.headers['content-length'] === undefined
             ? null
             : Number(response.headers['content-length']);
-        if (declared !== null && (!Number.isSafeInteger(declared) || declared < 0 || declared > maxBytes)) {
+        if (
+          declared !== null &&
+          (!Number.isSafeInteger(declared) || declared < 0 || declared > responseMaximum)
+        ) {
           failed(
             'body_read',
-            declared > maxBytes ? 'body_too_large' : 'body_failed',
-            declared > maxBytes ? 'too_large' : 'failed',
+            declared > responseMaximum ? 'body_too_large' : 'body_failed',
+            declared > responseMaximum ? 'too_large' : 'failed',
           );
           response.destroy();
           req.destroy();
@@ -359,7 +441,7 @@ function nativeRequest(input, requestImpl = request) {
         let size = 0;
         response.on('data', (chunk) => {
           size += chunk.length;
-          if (size > maxBytes) {
+          if (size > responseMaximum) {
             failed('body_read', 'body_too_large', 'too_large');
             response.destroy();
             req.destroy();
@@ -892,6 +974,213 @@ export async function runInventory(key, dependencies = {}) {
 
 // Exactly one owned workflow GET. This diagnostic neither creates a runtime
 // plan nor admits a window, reads credentials/variables, saves or adopts a graph.
+export async function runMachineMetadataDiagnostic(key, dependencies = {}) {
+  const result = {
+    version: 1,
+    environment: 'dev',
+    host,
+    projectId,
+    credentialId: 'EmrM03Machine19',
+    expectedCreatedAt: '2026-10-19T00:25:21.669Z',
+    status: 'not_attempted',
+    requestCount: 0,
+    httpStatus: null,
+    authenticationVerified: false,
+    networkCompletionVerified: false,
+    metadata: null,
+    diagnostics: { version: 1, dns: 'not_attempted', requests: [] },
+  };
+  if (!key) {
+    result.status = 'missing_key';
+    return result;
+  }
+  if (typeof key !== 'string' || key.length > 4096 || !/^[\x21-\x7e]+$/.test(key)) {
+    result.status = 'invalid_key';
+    return result;
+  }
+  const timeoutMs = dependencies.timeoutMs ?? 20000,
+    closeTimeoutMs = dependencies.closeTimeoutMs ?? 5000;
+  if (
+    !Number.isInteger(timeoutMs) ||
+    timeoutMs < 1 ||
+    timeoutMs > 20000 ||
+    !Number.isInteger(closeTimeoutMs) ||
+    closeTimeoutMs < 1 ||
+    closeTimeoutMs > 5000
+  ) {
+    result.status = 'invalid_options';
+    return result;
+  }
+  let budget;
+  try {
+    if (dependencies.admitManagementAttempt === undefined) budget = openMachineMetadataDiagnosticBudget();
+    else if (typeof dependencies.admitManagementAttempt !== 'function') throw Error();
+  } catch {
+    result.status = 'budget_blocked';
+    return result;
+  }
+  const controller = new AbortController();
+  let timedOut = false,
+    requestIssued = false,
+    resolveClosed;
+  const closed = new Promise((done) => {
+    resolveClosed = done;
+  });
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+  const timeout = new Promise((_, fail) =>
+    controller.signal.addEventListener('abort', () => fail(new InventoryError('timeout')), { once: true }),
+  );
+  const operation = async () => {
+    result.diagnostics.dns = 'resolving';
+    const addresses = validatedAddresses(await (dependencies.lookup ?? resolveInstance)(controller.signal));
+    if (controller.signal.aborted) reject('timeout');
+    result.diagnostics.dns = 'complete';
+    try {
+      const answer = (dependencies.admitManagementAttempt ?? (() => budget.admit()))();
+      if (answer !== undefined) {
+        if (answer?.then) Promise.resolve(answer).catch(() => {});
+        throw Error();
+      }
+    } catch {
+      reject('budget_blocked');
+    }
+    const diagnostic = requestDiagnostic('credentials', 1);
+    result.diagnostics.requests.push(diagnostic);
+    result.requestCount = 1;
+    requestIssued = true;
+    const transport = dependencies.request
+      ? (input) => nativeRequest(input, dependencies.request)
+      : (dependencies.transport ?? nativeRequest);
+    const response = await transport({
+      url: new URL(`https://${host}/api/v1/credentials/EmrM03Machine19`),
+      method: 'GET',
+      headers: {
+        'x-n8n-api-key': key,
+        accept: 'application/json',
+        'user-agent': 'everyone-market-radar-m03-machine-metadata/1',
+      },
+      address: addresses[0],
+      signal: controller.signal,
+      maxBytes: 65536,
+      rejectUnauthorized: true,
+      servername: host,
+      diagnostic,
+      onSocketClosed() {
+        diagnostic.socketClosed = true;
+        resolveClosed();
+      },
+    });
+    if (controller.signal.aborted) reject('timeout');
+    if (
+      !record(response) ||
+      !Number.isInteger(response.status) ||
+      response.status < 100 ||
+      response.status > 599
+    )
+      reject();
+    result.httpStatus = diagnostic.httpStatus = response.status;
+    if (response.status !== 200) {
+      const code =
+        response.status === 401
+          ? 'unauthorized'
+          : response.status >= 300 && response.status < 400
+            ? 'redirect_refused'
+            : 'http_failed';
+      diagnosticFailure(diagnostic, 'status', code);
+      reject(code);
+    }
+    result.authenticationVerified = true;
+    if (!(response.body instanceof Uint8Array) || response.body.byteLength > 65536) {
+      diagnosticFailure(diagnostic, 'body_read', 'body_too_large');
+      reject('body_too_large');
+    }
+    diagnostic.bodyRead = 'complete';
+    let dto;
+    try {
+      dto = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(response.body));
+      diagnostic.jsonParsed = true;
+    } catch {
+      diagnosticFailure(diagnostic, 'parse', 'invalid_json');
+      reject();
+    }
+    // Never traverse, read or stringify dto.data. Only fixed public predicates
+    // escape this child; no response values, descriptions or unknown timestamps.
+    const shape = record(dto),
+      updatedAt = shape ? dto.updatedAt : undefined;
+    result.metadata = {
+      objectShape: shape,
+      dataPresent: shape && Object.hasOwn(dto, 'data'),
+      idMatches: shape && dto.id === result.credentialId,
+      nameMatches: shape && dto.name === 'M03 foundation machine [dev]',
+      typeMatches: shape && dto.type === 'httpCustomAuth',
+      createdAtMatches: shape && dto.createdAt === result.expectedCreatedAt,
+      updatedAtValid: typeof updatedAt === 'string' && Number.isFinite(Date.parse(updatedAt)),
+      flagsCompatible:
+        shape &&
+        ['isManaged', 'isGlobal', 'isResolvable'].every((k) => dto[k] === undefined || dto[k] === false),
+      resolverCompatible: shape && (dto.resolverId === undefined || dto.resolverId === null),
+      updatedAtMatchesCreatedAt: shape && dto.updatedAt === result.expectedCreatedAt,
+    };
+    diagnostic.schemaValidated = shape;
+    result.status = 'metadata_observed';
+  };
+  try {
+    await Promise.race([operation(), timeout]);
+  } catch (error) {
+    if (result.diagnostics.dns === 'resolving') result.diagnostics.dns = timedOut ? 'timeout' : 'failed';
+    const last = result.diagnostics.requests.at(-1);
+    if (last?.httpStatus !== null && last?.httpStatus !== undefined) result.httpStatus = last.httpStatus;
+    if (last?.failureStage === 'none')
+      diagnosticFailure(
+        last,
+        last.jsonParsed ? 'schema' : 'unknown',
+        timedOut ? 'timeout' : last.jsonParsed ? 'invalid_schema' : 'network_failed',
+      );
+    result.status = timedOut
+      ? 'timeout'
+      : [
+            'budget_blocked',
+            'unsafe_dns',
+            'unauthorized',
+            'redirect_refused',
+            'response_rejected',
+            'network_failed',
+            'http_failed',
+            'body_too_large',
+          ].includes(error?.code)
+        ? error.code
+        : 'network_failed';
+    result.metadata = null;
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
+    key = null;
+    if (requestIssued && !result.diagnostics.requests[0].socketClosed) {
+      let closeTimer;
+      try {
+        await Promise.race([
+          closed,
+          new Promise((done) => {
+            closeTimer = setTimeout(done, closeTimeoutMs);
+          }),
+        ]);
+      } finally {
+        clearTimeout(closeTimer);
+      }
+    }
+    result.networkCompletionVerified = requestIssued && result.diagnostics.requests[0].socketClosed;
+    if (requestIssued && !result.networkCompletionVerified) {
+      result.status = 'network_failed';
+      result.metadata = null;
+    }
+    budget?.close();
+  }
+  return result;
+}
+
 export async function runWorkflowBaselineDiagnostic(key, dependencies = {}) {
   const result = {
     version: 1,
@@ -1330,10 +1619,18 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (!(
     process.argv.length === 2 ||
     (process.argv.length === 3 &&
-      ['--workflow-baseline-diagnostic', '--wf70-discovery-diagnostic'].includes(process.argv[2]))
+      [
+        '--workflow-baseline-diagnostic',
+        '--wf70-discovery-diagnostic',
+        '--machine-metadata-diagnostic',
+      ].includes(process.argv[2]))
   )) {
     process.stdout.write(JSON.stringify({ version: 1, status: 'argument_rejected' }) + '\n');
     process.exitCode = 1;
+  } else if (process.argv[2] === '--machine-metadata-diagnostic') {
+    const result = await runMachineMetadataDiagnostic(key);
+    process.stdout.write(JSON.stringify(result) + '\n');
+    process.exitCode = result.status === 'metadata_observed' ? 0 : 1;
   } else if (process.argv[2] === '--wf70-discovery-diagnostic') {
     // The reader's runtime-control dependency imports resolveInstance above.
     // Schedule only this new mode after module evaluation, avoiding a circular

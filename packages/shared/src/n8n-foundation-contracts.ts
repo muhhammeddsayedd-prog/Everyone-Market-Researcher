@@ -10,6 +10,7 @@ export const foundationWindowIds = [
   foundationWindowId,
   '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
   'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+  '3c46c791-e140-4eb9-890a-eecfa251f65e',
 ] as const;
 const knownWindow = z.enum(foundationWindowIds);
 const id = z.uuid(),

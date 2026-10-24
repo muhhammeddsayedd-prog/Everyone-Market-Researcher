@@ -817,8 +817,8 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     // Twenty-five source-only GETs precede all owner DB/Preview/fixture writes.
     // Reuse this actual25-read proof in runtime setup, and its own final25
     // restoration audit, retaining every fresh per-write GET/PUT/GET.
-    // 109setup +24drafts*3 +2Machine reads +124restore =307.
-    if (budget.snapshot().attempts + 25 + 44 + 307 > budget.snapshot().maximum) fail();
+    // 110setup +24drafts*3 +2Machine reads +124restore =308.
+    if (budget.snapshot().attempts + 25 + 44 + 308 > budget.snapshot().maximum) fail();
     if (verifiedCheckpoint?.closedWindow) {
       nativeMetadataFailure = true;
       await verifyFoundationLiveNativeMetadata({
@@ -1101,7 +1101,9 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         baselinePreflightReceipt,
       },
     );
+    preparationStage = 'RUNTIME_SETUP';
     if ((await runtime.setup()).status !== 'runtime_setup_verified') fail();
+    preparationStage = null;
     const ports = composeNative();
     native = createFoundationExecutionController({
       activeWindowId,

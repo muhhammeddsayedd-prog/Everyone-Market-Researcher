@@ -4,8 +4,8 @@
   "projectId": "pHvQjDmjxVZ3KQLT",
   "files": {
     "scripts/n8n/windows/New-M03N8nApiHandoff.ps1": "c8c9d34855ef55c5391f5b14c80a7768b51761a149982f4917b910c391c788e2",
-    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "90a1f01e2c4f2480eb36c9789b2772e313dc0460940006d706321ea53d22f899",
-    "scripts/n8n/inventory.mjs": "f7cf66ae8c447d002e37b413f35c38c12bcbd68b954d439f2d6ce97ec03eaaf3"
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "3e3e86422d9c45e5dca55e4a268a28c5274dfa55e594fc0147030f09692959e3",
+    "scripts/n8n/inventory.mjs": "ba6799abfa5546285f72b877923a3145248b3bf9142a460d32869943d7c1e3a2"
   },
   "baselineFiles": {
     "scripts/n8n/foundation-runtime-checkpoint.mjs": "c41ff516535c7c87a710a88667ec690ad2e051e6f49790c47da52f1ad942c4c2",

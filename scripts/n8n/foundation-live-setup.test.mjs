@@ -481,6 +481,25 @@ test('setup request plan carries all prior attempts and preserves eighteen clean
   assert.equal(79 + current.maximumNewPrepareRequests + current.cleanupReserve, 123);
 });
 
+test('setup reserves the second Machine read before any request at the shared one-request boundary', async () => {
+  const ready = fixture({ managementInitialAttempts: 190 });
+  try {
+    await ready.setup.prepare();
+    assert.equal(ready.calls.length > 0, true);
+    assert.equal((await ready.setup.cleanup()).state, 'setup_resources_removed');
+  } finally {
+    ready.setup.close();
+  }
+  const blocked = fixture({ managementInitialAttempts: 191 });
+  try {
+    await assert.rejects(blocked.setup.prepare(), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+    assert.equal(blocked.calls.length, 0);
+    assert.equal(blocked.attempts(), 191);
+  } finally {
+    blocked.setup.close();
+  }
+});
+
 test('isolated approved cumulative88 fixture uses fresh window in exactly seven Preview entries and preserves44 spent requests', async () => {
   const f = await syntheticProjectVerifiedContinuation({ closedWindow: true, proposedBudgetApproved: true });
   try {

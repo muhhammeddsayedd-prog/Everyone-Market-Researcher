@@ -540,7 +540,7 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
       setup: () =>
         exclusive(() => {
           const state = foundationRuntimeState(plan, journal);
-          const setupRequests = baselinePreflightReceipt === undefined ? 134 : 109;
+          const setupRequests = baselinePreflightReceipt === undefined ? 135 : 110;
           if (
             state.requestCount === 0 &&
             budget.snapshot().attempts + setupRequests + 142 > managementMaximum

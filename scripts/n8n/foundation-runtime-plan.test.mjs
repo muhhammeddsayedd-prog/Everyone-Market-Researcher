@@ -99,7 +99,7 @@ test('plan binds exact25 checkpoint IDs/versions, future Preview rules and finit
   assert.equal(Object.isFrozen(p), true);
   assert.equal(Object.isFrozen(p.baseline[0].body), true);
   assert.equal(p.maximumManagementRequests, 512);
-  assert.equal(runtimeManagementCounts(p).setup, 134);
+  assert.equal(runtimeManagementCounts(p).setup, 135);
   assert.equal(runtimeManagementCounts(p).restore, 124);
   assert.equal(runtimeManagementCounts(p).finalAudit, 25);
 });
@@ -201,5 +201,5 @@ test('approved local retention design reaches every runtime save and case withou
   for (const [field, value] of Object.entries(expected(draft.key)))
     assert.equal(draft.body.settings[field], value);
   assert.equal(draft.body.settings.availableInMCP, true);
-  assert.equal(runtimeManagementCounts(p, 23).nominalTotal, 352);
+  assert.equal(runtimeManagementCounts(p, 23).nominalTotal, 353);
 });

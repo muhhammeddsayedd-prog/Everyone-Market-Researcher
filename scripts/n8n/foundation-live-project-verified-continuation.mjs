@@ -3555,7 +3555,7 @@ function currentReadiness(x) {
   if (activeRuntime(x.recovery).setupMaximum - x.recovery.setupAttempts < 14 + 18)
     return 'setup_cap_insufficient';
   if (
-    x.recovery.mainManagementAttempts + x.recovery.carriedManagementAttempts + 25 + 44 + 307 >
+    x.recovery.mainManagementAttempts + x.recovery.carriedManagementAttempts + 25 + 44 + 308 >
     (x.recovery.managementMaximum ?? caps.runtimeManagement)
   )
     return 'management_cap_insufficient';

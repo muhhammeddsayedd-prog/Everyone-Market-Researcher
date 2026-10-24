@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$WorkflowBaselineDiagnostic,[switch]$Wf70DiscoveryDiagnostic)
+param([switch]$CheckOnly,[switch]$WorkflowBaselineDiagnostic,[switch]$Wf70DiscoveryDiagnostic,[switch]$MachineMetadataDiagnostic)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
@@ -164,8 +164,20 @@ function Assert-NoKeyReflection($Value,[string]$PrivateKey) {
   if ($Value -is [Array]) { foreach ($item in $Value) { Assert-NoKeyReflection $item $PrivateKey }; return }
   if ($Value -is [PSCustomObject]) { foreach ($property in $Value.PSObject.Properties) { Assert-NoKeyReflection $property.Value $PrivateKey } }
 }
+function Validate-MachineMetadataDiagnostic($Value) {
+  Assert-Keys $Value @('version','environment','host','projectId','credentialId','expectedCreatedAt','status','requestCount','httpStatus','authenticationVerified','networkCompletionVerified','metadata','diagnostics')
+  if($Value.version -ne 1 -or $Value.environment -cne 'dev' -or $Value.host -cne $fixedHost -or $Value.projectId -cne $projectId -or $Value.credentialId -cne 'EmrM03Machine19' -or $Value.expectedCreatedAt -cne '2026-10-19T00:25:21.669Z' -or $Value.status -cnotin @('metadata_observed','missing_key','invalid_key','invalid_options','budget_blocked','unsafe_dns','timeout','unauthorized','redirect_refused','response_rejected','network_failed','http_failed','body_too_large') -or $Value.requestCount -isnot [int] -or $Value.requestCount -lt 0 -or $Value.requestCount -gt 1 -or $Value.authenticationVerified -isnot [bool] -or $Value.networkCompletionVerified -isnot [bool] -or ($null -ne $Value.httpStatus -and ($Value.httpStatus -isnot [int] -or $Value.httpStatus -lt 100 -or $Value.httpStatus -gt 599))){throw 'blocked'}
+  Validate-Diagnostics $Value.diagnostics $Value.requestCount @('credentials')
+  if($Value.requestCount -eq 1){$d=$Value.diagnostics.requests[0];if($d.page -ne 1 -or $d.httpStatus -ne $Value.httpStatus -or $d.socketClosed -ne $Value.networkCompletionVerified){throw 'blocked'}}
+  if($Value.authenticationVerified -and ($Value.httpStatus -ne 200 -or $Value.requestCount -ne 1 -or $Value.diagnostics.requests[0].tlsVerified -ne $true)){throw 'blocked'}
+  if($Value.status -ceq 'metadata_observed'){
+    if($Value.requestCount -ne 1 -or $Value.httpStatus -ne 200 -or -not $Value.authenticationVerified -or -not $Value.networkCompletionVerified -or -not $Value.diagnostics.requests[0].jsonParsed){throw 'blocked'}
+    Assert-Keys $Value.metadata @('objectShape','dataPresent','idMatches','nameMatches','typeMatches','createdAtMatches','updatedAtValid','flagsCompatible','resolverCompatible','updatedAtMatchesCreatedAt')
+    foreach($property in $Value.metadata.PSObject.Properties){if($property.Value -isnot [bool]){throw 'blocked'}}
+  }elseif($null -ne $Value.metadata){throw 'blocked'}
+}
 try {
-  if($WorkflowBaselineDiagnostic -and $Wf70DiscoveryDiagnostic){throw 'blocked'}
+  if(@($WorkflowBaselineDiagnostic,$Wf70DiscoveryDiagnostic,$MachineMetadataDiagnostic|Where-Object{$_}).Count -gt 1){throw 'blocked'}
   $sealPath = Confined-File $repo 'scripts/n8n/m03-inventory-seal.json'
   if ((Get-Item -LiteralPath $sealPath).Length -gt 32768) { throw 'blocked' }
   $seal = ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($sealPath)) -ErrorAction Stop
@@ -176,7 +188,7 @@ try {
     if ($seal.files.$name -isnot [string] -or $seal.files.$name -cnotmatch '^[a-f0-9]{64}$' -or
         (Get-FileHash -LiteralPath (Confined-File $repo $name) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seal.files.$name) { throw 'blocked' }
   }
-  if($WorkflowBaselineDiagnostic){
+  if($WorkflowBaselineDiagnostic -or $MachineMetadataDiagnostic){
     Assert-Keys $seal.baselineFiles $baselineFiles
     foreach($name in $baselineFiles){if($seal.baselineFiles.$name -isnot [string] -or $seal.baselineFiles.$name -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath (Confined-File $repo $name) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seal.baselineFiles.$name){throw 'blocked'}}
   }
@@ -187,11 +199,12 @@ try {
 $readOnlyLock=$null;$readOnlyLockPath=$null;$readOnlyLockOwned=$false;$readOnlyHandoffPrepared=$false
 if($WorkflowBaselineDiagnostic -and $CheckOnly){Write-Output 'M03 N8N_BASELINE_CHECK_ONLY_READY. One fixed owned WF-00 GET; public sources verified. No private read, decryption, runtime admission or network.';exit 0}
 if($Wf70DiscoveryDiagnostic -and $CheckOnly){Write-Output 'M03 N8N_WF70_CHECK_ONLY_READY. Fixed WF-70 metadata discovery, at most four charged GETs; public scope, cumulative budget and sources verified. No private read, decryption or network.';exit 0}
+if($MachineMetadataDiagnostic -and $CheckOnly){Write-Output 'M03 N8N_MACHINE_METADATA_CHECK_ONLY_READY. One fixed owned Machine metadata GET; public sources verified. No private read, decryption, ledger debit, runtime admission or network.';exit 0}
 try {
   if($Wf70DiscoveryDiagnostic){New-Wf70DiscoveryBudget}
   if ([string]::IsNullOrEmpty($env:LOCALAPPDATA)) { throw 'blocked' }
   $privateRoot = [IO.Path]::GetFullPath($env:LOCALAPPDATA)
-  if($WorkflowBaselineDiagnostic -or $Wf70DiscoveryDiagnostic){
+  if($WorkflowBaselineDiagnostic -or $Wf70DiscoveryDiagnostic -or $MachineMetadataDiagnostic){
     . (Confined-File $repo 'scripts/n8n/windows/Dev-CredentialStore.ps1')
     $null=Assert-M03DevPlainPath (Join-Path $privateRoot 'Temp') $true
     $readOnlyLockPath=Join-Path $privateRoot 'Temp/emr-m03-acceptance-parent.operation.lock'
@@ -231,6 +244,7 @@ try {
   $start.FileName = $node; $start.Arguments = '"' + $runner + '"'; $start.WorkingDirectory = $repo
   if($WorkflowBaselineDiagnostic){$start.Arguments+=' --workflow-baseline-diagnostic'}
   if($Wf70DiscoveryDiagnostic){$start.Arguments+=' --wf70-discovery-diagnostic'}
+  if($MachineMetadataDiagnostic){$start.Arguments+=' --machine-metadata-diagnostic'}
   $start.UseShellExecute = $false; $start.CreateNoWindow = $true; $start.RedirectStandardOutput = $true; $start.RedirectStandardError = $true
   $start.EnvironmentVariables.Clear()
   foreach ($name in @('SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA','APPDATA','USERPROFILE')) {
@@ -251,8 +265,8 @@ try {
   $text = [Text.Encoding]::UTF8.GetString($buffer,0,[int]$memory.Position)
   $inventory = ConvertFrom-Json -InputObject $text -ErrorAction Stop
   Assert-NoKeyReflection $inventory $key
-  if($Wf70DiscoveryDiagnostic){Validate-Wf70Discovery $inventory}elseif($WorkflowBaselineDiagnostic){Validate-BaselineDiagnostic $inventory}else{Validate-Inventory $inventory}
-  if (($receipt.nativeExit -eq 0) -ne ($inventory.status -in @('complete','partial','matching_baseline','baseline_mismatch','discovery_complete'))) { throw 'blocked' }
+  if($MachineMetadataDiagnostic){Validate-MachineMetadataDiagnostic $inventory}elseif($Wf70DiscoveryDiagnostic){Validate-Wf70Discovery $inventory}elseif($WorkflowBaselineDiagnostic){Validate-BaselineDiagnostic $inventory}else{Validate-Inventory $inventory}
+  if (($receipt.nativeExit -eq 0) -ne ($inventory.status -in @('complete','partial','matching_baseline','baseline_mismatch','discovery_complete','metadata_observed'))) { throw 'blocked' }
   $receipt.inventory = $inventory
   $receipt.status = 'inventory_failed'
   if ($receipt.nativeExit -eq 0) { $receipt.status = 'complete'; $exitCode = 0 }

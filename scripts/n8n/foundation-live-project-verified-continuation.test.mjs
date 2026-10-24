@@ -15,6 +15,40 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('current readiness reserves the second Machine read without changing historical allocation claims', async () => {
+  const source = readFileSync(
+    new URL('./foundation-live-project-verified-continuation.mjs', import.meta.url),
+    'utf8',
+  );
+  const start = source.indexOf('function currentReadiness(x) {');
+  const end = source.indexOf('function blockedReadiness(', start);
+  assert.ok(start > 0 && end > start);
+  // Isolate the actual production capacity reducer. This test module supplies
+  // only source-known prerequisite stubs and cannot mint an admission/proof.
+  const { currentReadiness } = await import(
+    'data:text/javascript,' +
+      encodeURIComponent(`
+    const assertSetupAllocationApproval=()=>{};
+    const activeRuntime=()=>({setupMaximum:132,sourceCommitSha:'${'a'.repeat(40)}',sourceCi:1,allFiveCiJobsPassed:true,vercelPassed:true});
+    const caps={runtimeManagement:512},c={sourceCommitSha:'${'f'.repeat(40)}'};
+    const positive=value=>Number.isSafeInteger(value)&&value>0;
+    ${source.slice(start, end)}
+    export {currentReadiness};
+  `)
+  );
+  const recovery = {
+    closedWindow: true,
+    setupAttempts: 79,
+    managementMaximum: 704,
+    carriedManagementAttempts: 11,
+  };
+  assert.equal(currentReadiness({ recovery: { ...recovery, mainManagementAttempts: 316 } }), null);
+  assert.equal(
+    currentReadiness({ recovery: { ...recovery, mainManagementAttempts: 317 } }),
+    'management_cap_insufficient',
+  );
+});
+
 test('the retained old50 setup-cap regression preserves all usage and still blocks fresh admission', async () => {
   const f = await syntheticProjectVerifiedContinuation({ closedWindow: true });
   try {
@@ -1530,7 +1564,7 @@ test('fresh logical plan uses an immutable runtime sibling while original runtim
     assert.equal(readFileSync(oldRuntime, 'utf8'), before);
     assert.equal(existsSync(join(dirname(oldRuntime), 'runtime.technical-3.jsonl')), true);
     assert.equal(controlBudget.snapshot().attempts, 301);
-    assert.equal(budget.snapshot().attempts, 102 + 134);
+    assert.equal(budget.snapshot().attempts, 102 + 135);
   } finally {
     runtime?.close();
     budget?.close();

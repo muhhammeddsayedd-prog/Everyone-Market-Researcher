@@ -22,6 +22,10 @@ const fail = () => {
 const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const id = (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(v);
 const sha = (v) => typeof v === 'string' && /^[a-f0-9]{64}$/.test(v);
+const versionTimestamp = (v) =>
+  typeof v === 'string' &&
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/.test(v) &&
+  Number.isFinite(Date.parse(v));
 const exact = (v, k) =>
   object(v) && Object.keys(v).length === k.length && k.every((x) => Object.hasOwn(v, x));
 const guardDiagnostics = new WeakMap();
@@ -93,8 +97,7 @@ function metadata(dto, plan) {
     dto.name !== plan.machine.name ||
     dto.type !== 'httpCustomAuth' ||
     dto.createdAt !== plan.machine.createdAt ||
-    typeof dto.updatedAt !== 'string' ||
-    !Number.isFinite(Date.parse(dto.updatedAt)) ||
+    !versionTimestamp(dto.updatedAt) ||
     ['isManaged', 'isGlobal', 'isResolvable'].some((k) => dto[k] !== undefined && dto[k] !== false) ||
     (dto.resolverId !== undefined && dto.resolverId !== null)
   )
@@ -251,12 +254,7 @@ function reduce(plan, rows) {
       const p = s.pending;
       if (!p || !exact(r, ['event', 'sequence', 'after']) || r.sequence !== p.sequence) fail();
       if (p.action.startsWith('machine_')) {
-        if (
-          !exact(r.after, ['updatedAt']) ||
-          typeof r.after.updatedAt !== 'string' ||
-          !Number.isFinite(Date.parse(r.after.updatedAt))
-        )
-          fail();
+        if (!exact(r.after, ['updatedAt']) || !versionTimestamp(r.after.updatedAt)) fail();
         s.machineUpdatedAt = r.after.updatedAt;
         s.machineRebound = p.action === 'machine_rebind';
       } else {
@@ -278,8 +276,7 @@ function reduce(plan, rows) {
         s.pending ||
         s.machineUpdatedAt !== null ||
         !exact(r, ['event', 'updatedAt']) ||
-        typeof r.updatedAt !== 'string' ||
-        !Number.isFinite(Date.parse(r.updatedAt))
+        !versionTimestamp(r.updatedAt)
       )
         fail();
       s.machineUpdatedAt = r.updatedAt;
@@ -540,15 +537,14 @@ export async function runFoundationRuntimeSetup(plan, ports) {
       fail();
     const patchScope = { audience: plan.setup.audience, restore: false };
     const patch = prepareSynchronousMachinePatch(ports, patchScope);
-    // changeMachine includes its own fresh GET; this separate observation is
-    // omitted by setting the baseline metadata only from that first GET below.
     const first = metadata(await c.request('GET', '/api/v1/credentials/' + plan.machine.id), plan);
-    // The preserved public staging receipt did not retain updatedAt or encrypted
-    // data. Any normal saved edit after creation therefore requires explicit
-    // reconciliation rather than silently adopting its domain as ours to replace.
-    if (first.updatedAt !== plan.machine.createdAt) fail();
+    // Creation identifies the dedicated owned credential; it does not establish
+    // its saved update version or reveal its token/domain. Qualify the current
+    // version, then require an immediate fresh match before the known-custody
+    // temporary rebind. This is a conflict guard, not compare-and-swap.
     ports.journal.append({ event: 'machine_observed', updatedAt: first.updatedAt });
-    // We just observed it immediately above; avoid charging a duplicate GET.
+    const current = metadata(await c.request('GET', '/api/v1/credentials/' + plan.machine.id), plan);
+    if (!isDeepStrictEqual(current, first)) fail();
     const sequence = ports.journal.rows.filter((r) => r.event === 'intent').length + 1;
     ports.journal.append({
       event: 'intent',

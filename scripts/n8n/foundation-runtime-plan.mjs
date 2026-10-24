@@ -273,7 +273,7 @@ export function assertFoundationRuntimePlan(plan) {
 export function runtimeManagementCounts(plan, caseCount = 0) {
   assertFoundationRuntimePlan(plan);
   if (!Number.isSafeInteger(caseCount) || caseCount < 0 || caseCount > 32) blocked();
-  const setup = 25 + 4 + plan.setupSteps.length * 3;
+  const setup = 25 + 5 + plan.setupSteps.length * 3;
   const restore = plan.publishKeys.length * 3 + 25 * 3 + 3 + 25;
   return {
     setup,
@@ -287,7 +287,7 @@ export function runtimeManagementCounts(plan, caseCount = 0) {
 export function foundationRuntimePreparationInventory(caseCount = 23) {
   if (!Number.isSafeInteger(caseCount) || caseCount < 0 || caseCount > 32) blocked();
   const publishActions = foundationRuntimePublishOrder.length + 1;
-  const setup = 25 + 4 + (26 + publishActions + 1) * 3;
+  const setup = 25 + 5 + (26 + publishActions + 1) * 3;
   const restore = foundationRuntimePublishOrder.length * 3 + 25 * 3 + 3 + 25;
   return freezeRuntimeValue({
     kind: 'source_only_runtime_preparation',

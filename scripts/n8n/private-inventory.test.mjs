@@ -19,7 +19,8 @@ const osEnv = () =>
 function fixture(mode = 'success') {
   const baselineMode = mode.startsWith('baseline');
   const discoveryMode = mode.startsWith('wf70');
-  const persistentMode = baselineMode || discoveryMode;
+  const machineMode = mode.startsWith('machine');
+  const persistentMode = baselineMode || discoveryMode || machineMode;
   const root = mkdtempSync(join(tmpdir(), 'emr-m03-n8n-fixture-'));
   roots.push(root);
   const put = (path, value) => {
@@ -303,14 +304,66 @@ function fixture(mode = 'success') {
       };
     }
   }
+  if (machineMode) {
+    for (const k of Object.keys(result)) delete result[k];
+    Object.assign(result, {
+      version: 1,
+      environment: 'dev',
+      host: 'muhhammedsayed.app.n8n.cloud',
+      projectId: 'pHvQjDmjxVZ3KQLT',
+      credentialId: 'EmrM03Machine19',
+      expectedCreatedAt: '2026-10-19T00:25:21.669Z',
+      status: mode === 'machineHttp' ? 'http_failed' : 'metadata_observed',
+      requestCount: 1,
+      httpStatus: mode === 'machineHttp' ? 405 : 200,
+      authenticationVerified: mode !== 'machineHttp',
+      networkCompletionVerified: true,
+      metadata:
+        mode === 'machineHttp'
+          ? null
+          : {
+              objectShape: true,
+              dataPresent: false,
+              idMatches: true,
+              nameMatches: true,
+              typeMatches: true,
+              createdAtMatches: true,
+              updatedAtValid: true,
+              flagsCompatible: true,
+              resolverCompatible: true,
+              updatedAtMatchesCreatedAt: false,
+            },
+      diagnostics: {
+        version: 1,
+        dns: 'complete',
+        requests: [
+          {
+            resource: 'credentials',
+            page: 1,
+            tcpConnected: true,
+            tlsVerified: true,
+            httpStatus: mode === 'machineHttp' ? 405 : 200,
+            bodyRead: mode === 'machineHttp' ? 'not_observed' : 'complete',
+            jsonParsed: mode !== 'machineHttp',
+            schemaValidated: mode !== 'machineHttp',
+            socketClosed: true,
+            failureStage: mode === 'machineHttp' ? 'status' : 'none',
+            failureCode: mode === 'machineHttp' ? 'http_failed' : 'none',
+          },
+        ],
+      },
+    });
+    if (mode === 'machineUnsafe') result.metadata.data = 'synthetic-private-value';
+    if (mode === 'machineBadBool') result.metadata.idMatches = 'synthetic-private-value';
+  }
   const code = `import {writeFileSync} from 'node:fs';
- const good=process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : ''};
+ const good=process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : machineMode ? "&&process.argv.length===3&&process.argv[2]==='--machine-metadata-diagnostic'" : ''};
  writeFileSync(new URL('./called.txt',import.meta.url),good?'only-n8n-key':'wrong-env');
  delete process.env.M03_N8N_API_KEY;
  console.error('synthetic-private-stderr-must-stay-hidden');
- ${['timeout', 'baselineTimeout', 'baselineUnknownClose'].includes(mode) ? 'await new Promise(r=>setTimeout(r,10000));' : ''}
+ ${['timeout', 'baselineTimeout', 'baselineUnknownClose', 'machineTimeout'].includes(mode) ? 'await new Promise(r=>setTimeout(r,10000));' : ''}
  console.log(${mode === 'badJson' ? "'synthetic-private-stdout-must-stay-hidden'" : mode === 'unsafeSchema' ? JSON.stringify(JSON.stringify({ ...result, privateSecret: 'synthetic-private-value' })) : JSON.stringify(JSON.stringify(result))});
- ${mode === 'failure' ? 'process.exitCode=7;' : ['workflowBodyFailure', 'wf70Http'].includes(mode) ? 'process.exitCode=1;' : ''}`;
+ ${mode === 'failure' ? 'process.exitCode=7;' : ['workflowBodyFailure', 'wf70Http', 'machineHttp'].includes(mode) ? 'process.exitCode=1;' : ''}`;
   put('scripts/n8n/inventory.mjs', code);
   const paths = [
     'scripts/n8n/windows/New-M03N8nApiHandoff.ps1',
@@ -388,6 +441,7 @@ $s=[IO.File]::Open($store,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.Fi
       runFile(consumer, [
         ...(check ? ['-CheckOnly'] : []),
         ...(baselineMode ? ['-WorkflowBaselineDiagnostic'] : []),
+        ...(machineMode ? ['-MachineMetadataDiagnostic'] : []),
         ...(discoveryMode ? ['-Wf70DiscoveryDiagnostic'] : []),
       ]),
   };
@@ -638,6 +692,39 @@ $out=@();foreach($value in $cases){try{Validate-Wf70Discovery $value;$out+=$true
       assert.equal(existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')), false);
       assert.equal(existsSync(join(f.root, 'scripts/n8n/called.txt')), false);
     });
+    it('Machine CheckOnly validates only public sources with no runtime copy, lock or child', () => {
+      const f = fixture('machineSuccess'),
+        r = f.run(true);
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, /MACHINE_METADATA_CHECK_ONLY_READY/);
+      assert.equal(existsSync(f.handoff), false);
+      assert.equal(existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')), false);
+      assert.equal(existsSync(join(f.root, 'scripts/n8n/called.txt')), false);
+    });
+    for (const mode of ['machineSuccess', 'machineHttp', 'machineUnsafe', 'machineBadBool', 'machineTimeout'])
+      it(`Machine metadata consumer ${mode} retains persistent Management and suppresses all unreviewed output`, () => {
+        const f = fixture(mode),
+          persistent = join(
+            f.root,
+            'private/Everyone-Market-Radar-Private/secrets/dev/runtime/management.dpapi',
+          ),
+          before = readFileSync(persistent),
+          r = f.run();
+        assert.equal(r.status, mode === 'machineSuccess' ? 0 : 1, r.stdout + r.stderr);
+        const receipt = JSON.parse(r.stdout);
+        assert.equal(receipt.childClosed, true);
+        assert.equal(receipt.handoffDeleted, true);
+        assert.deepEqual(readFileSync(persistent), before);
+        assert.equal(existsSync(f.handoff), false);
+        assert.equal(
+          existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')),
+          false,
+        );
+        assert.doesNotMatch(r.stdout + r.stderr, /synthetic-private|unrelated-|synthetic-n8n-key/);
+        if (mode === 'machineHttp') assert.equal(receipt.inventory.httpStatus, 405);
+        if (['machineUnsafe', 'machineBadBool', 'machineTimeout'].includes(mode))
+          assert.equal(receipt.inventory, null);
+      });
     for (const mode of [
       'baselineSuccess',
       'baselineMismatch',
