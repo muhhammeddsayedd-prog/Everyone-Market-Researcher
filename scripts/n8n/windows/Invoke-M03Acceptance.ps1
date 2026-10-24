@@ -16,6 +16,7 @@ $script:projectVerifiedMetadataClosed=$true
 $secret=$null;$bstr=[IntPtr]::Zero;$packet=$null;$private=$null;$machine=$null;$bypass=$null
 $needles=[Collections.Generic.List[string]]::new();$knownWorkflowIds=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $receipt=[ordered]@{kind='m03_acceptance_wrapper_closed';childClosed=$true;credentialChildrenClosed=$false;emergencyShutdown=$false;nativeExit=$null;handoffsDeleted=$false;bypassHandoffDeleted=$false;pendingMachinePreserved=$true;privateRead=$false;code='M03_ACCEPTANCE_BLOCKED'}
+$preparationStage='mode_validation'
 function Public-File([string]$Path,[int]$Maximum=524288){
  $absolute=[IO.Path]::GetFullPath($Path);$cursor=$absolute
  while($null -ne $cursor){
@@ -506,6 +507,7 @@ function Safe-PublicLine($Value){
 try{
  if(@($ResumeZeroSetup,$ClockAmendment,$PostcheckContinuation,$RemainingContinuation,$StartupReplacement,$ProjectVerifiedContinuation|Where-Object{$_}).Count -gt 1){throw 'blocked'}
  $admittedClockMode=$ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation
+ $preparationStage='public_seal'
  $sealFile=Public-File (Join-Path $repo 'scripts/n8n/foundation-acceptance-seal.json') 2097152
  $seal=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($sealFile))
  $module=Public-File (Join-Path $PSScriptRoot 'Acceptance-PublicRuntime.ps1')
@@ -514,8 +516,11 @@ try{
  . $module
  $node=Assert-M03AcceptancePublicSeal $repo $seal
  $entry=Public-File (Join-Path $repo 'scripts/n8n/foundation-live-runtime-cli.mjs')
+ $preparationStage='bounded_io'
  Initialize-BoundedIo
+ $preparationStage='public_composition'
  Invoke-PublicCompositionCheck $node $entry $repo
+ $preparationStage='public_clock'
  if(-not $ResumeZeroSetup -and -not $admittedClockMode -and (Test-Path -LiteralPath (Join-Path $repo 'scripts/n8n/out/foundation/live/management.jsonl'))){throw 'blocked'}
  if($ResumeZeroSetup){$resumeDeadlineAt=Invoke-ZeroSetupPublicCheck $node $repo}
  $remainingAuthorityReady=$true
@@ -542,7 +547,9 @@ try{
  $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq '7b1837201ac7925591577a1517d7288936ca3464' -and $publicClock.windowId -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e')
  $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq '5087d4d93d2f6ffdca0bc0096b365723005446fc' -and $publicClock.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77')
  $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' -and $publicClock.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f')
+ $preparationStage='database_public'
  $adminPublicReady=Invoke-PublicDatabaseCheck $repo ([bool]$CheckOnly) $resumeDeadlineAt ([bool]$ClockAmendment) ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation) ([bool]$forwardWindowPublic)
+ $preparationStage='workflow_bindings'
  $bindings=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'n8n/foundation/bindings.dev.json'))))
  foreach($property in $bindings.workflowRefs.PSObject.Properties){$null=$knownWorkflowIds.Add($property.Value.id)}
  if($knownWorkflowIds.Count -ne 25){throw 'blocked'}
@@ -555,7 +562,9 @@ try{
   [ordered]@{status='check_only_ready';privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$true;adminHandoffReady=$adminPublicReady;actualMcpPortVerified=$false;windowId=$seal.windowId;managementMaximum=$effectiveManagementMaximum;controlMaximum=$(if($effectiveManagementMaximum -eq 1408){3456}else{2048})}|ConvertTo-Json -Compress
   exit 0
  }
+ $preparationStage='transport'
  Confirm-PublicTransport
+ $preparationStage='parent_lock'
  $directory=[IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA 'Temp'))
  $null=Get-M03AcceptancePhysicalPath $directory
  $lockPath=Join-Path $directory 'emr-m03-acceptance-parent.operation.lock'
@@ -566,6 +575,7 @@ try{
   $parentMetadata=[ordered]@{kind='m03_clock_admission_parent';version=1;segmentId=$parentSegment;processId=$PID}
   $parentBytes=[Text.UTF8Encoding]::new($false).GetBytes(($parentMetadata|ConvertTo-Json -Compress))
   $lock.Write($parentBytes,0,$parentBytes.Length);$lock.Flush($true);[Array]::Clear($parentBytes,0,$parentBytes.Length)
+  $preparationStage='locked_clock'
   $lockedPublicClock=Invoke-ClockAmendmentPublic $node $repo 'CheckOnly' ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation)
   if($ProjectVerifiedContinuation -and $lockedPublicClock.kind -cne 'project_verified_continuation_ready'){throw 'blocked'}
  }
@@ -575,11 +585,13 @@ try{
  # This separate receipt describes saved metadata; privateRead below remains
  # the existing batch-DPAPI indicator, not a claim that no metadata was read.
  if($ProjectVerifiedContinuation){
+  $preparationStage='vercel_metadata'
   $receipt.code='M03_ACCEPTANCE_VERCEL_METADATA_BLOCKED'
   Confirm-ProjectVerifiedVercelMetadata $node $repo
   $receipt.code='M03_ACCEPTANCE_BLOCKED'
  }
  # Verify retained input provenance before consuming any new lease/ciphertext.
+ $preparationStage='machine_provenance'
  $old=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'scripts/n8n/foundation-delivery-packet.json'))))
  $pending=Join-Path $env:LOCALAPPDATA 'Everyone-Market-Radar-Private\foundation\df4f29ec-e2dc-4d82-a276-62a4e695e6f9'
  $metadata=ConvertFrom-Json -InputObject (Read-LockedText (Join-Path $pending 'pending-runtime.json'))
@@ -591,8 +603,10 @@ try{
  # are regenerated from retained originals without another credential prompt.
  # Public source/access, mutex and retained Machine provenance already passed.
  if($ProjectVerifiedContinuation){
+  $preparationStage='persistent_copies'
   Initialize-M03AcceptanceDevCredentials $repo $lock
  }
+ $preparationStage='runtime_leases'
  $private=@{};$handoffs=@{};$leases=@{};$minimumExpiry=[DateTimeOffset]::UtcNow.AddHours(2)
  foreach($kind in @('Management','Writer','ApifyRead')){
   $stem='emr-m03-acceptance-'+$kind.ToLowerInvariant()
@@ -610,6 +624,7 @@ try{
  }
  # The separate sealed administrator child owns its own credential. Verify only
  # its delivery metadata/presence here, before consuming the runtime inputs.
+ $preparationStage='admin_lease'
  $adminStem=Join-Path $directory 'emr-m03-foundation-dev-migration-password'
  $null=Public-File ($adminStem+'.dpapi')
  $adminLease=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File ($adminStem+'.lease.json') 16384)))
@@ -619,17 +634,21 @@ try{
  $adminExpiry=[DateTime]::ParseExact($adminLease.expiresAt,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
  $adminRequiredUntil=if($ResumeZeroSetup){[DateTimeOffset]::FromUnixTimeMilliseconds($resumeDeadlineAt).AddMinutes(15).UtcDateTime}else{[DateTime]::UtcNow.AddMinutes(75)}
  if($adminCreated.Kind -ne [DateTimeKind]::Utc -or $adminExpiry.Kind -ne [DateTimeKind]::Utc -or $adminCreated -gt [DateTime]::UtcNow.AddMinutes(1) -or $adminExpiry -ne $adminCreated.AddHours(2) -or $adminExpiry -le $adminRequiredUntil){throw 'blocked'}
+ $preparationStage='bypass_vacancy'
  $bypassFile=Join-Path $directory 'emr-m03-acceptance-protection-bypass.dpapi'
  if(Test-Path -LiteralPath $bypassFile){throw 'blocked'}
  if($admittedClockMode){
   # One bounded technical attempt, after source/transport/provenance/lease checks.
   # Standing milestone authority permits only reconciled no-effect retries;
   # every earlier admission, claim and closed clock remains immutable.
+  $preparationStage='admit'
   $amendmentClock=Invoke-ClockAmendmentPublic $node $repo 'Admit' ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation)
   $resumeDeadlineAt=[long]$amendmentClock.deadlineAt
+  $preparationStage='lease_floor'
   $amendmentLeaseFloor=[DateTimeOffset]::FromUnixTimeMilliseconds([long]$amendmentClock.startsAt).AddMinutes(75)
   if($minimumExpiry -lt $amendmentLeaseFloor -or $adminExpiry -le $amendmentLeaseFloor.UtcDateTime){throw 'blocked'}
  }
+ $preparationStage='lease_floor'
  if($ResumeZeroSetup -and [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -ge $resumeDeadlineAt-600000){throw 'blocked'}
  $receipt.privateRead=$true
  $machine=Plain-Dpapi (Read-LockedText $machinePath)
@@ -707,6 +726,9 @@ try{
  if($closed -and $child.ExitCode -eq 0){$exitCode=0;$receipt.code='M03_ACCEPTANCE_CHILD_CLOSED'}
 } catch {
  # No raw exceptions, decrypted values, child stderr or unprojected stdout escape.
+ if(-not $started -and $receipt.privateRead -eq $false -and $preparationStage -cin @('mode_validation','public_seal','bounded_io','public_composition','public_clock','database_public','workflow_bindings','transport','parent_lock','locked_clock','vercel_metadata','machine_provenance','persistent_copies','runtime_leases','admin_lease','bypass_vacancy','admit','lease_floor')){
+  [ordered]@{kind='m03_acceptance_preparation_blocked';stage=$preparationStage;credentialDecryptionAttempted=$false}|ConvertTo-Json -Compress|Write-Output
+ }
  if($started -and $null -ne $child -and -not $closed){try{Wait-AcceptanceNormalClose}catch{}}
 } finally {
  if($null -ne $secret){$secret.Dispose()}

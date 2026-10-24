@@ -660,6 +660,118 @@ Write-Output 'PUBLIC_SYNTAX_PASS: 4'
 });
 
 test(
+  'preparation diagnostics identify transport EOF and bad Machine provenance without reflecting private text',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-acceptance-stages-'));
+    try {
+      const path = resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1');
+      const source = readFileSync(path, 'utf8');
+      const io = source.slice(
+        source.indexOf('function Initialize-BoundedIo'),
+        source.indexOf('function Invoke-PublicCompositionCheck'),
+      );
+      const transport = source.slice(
+        source.indexOf('function Confirm-PublicTransport'),
+        source.indexOf('function Get-OwnedProcessTree'),
+      );
+      const publicFiles = source.slice(
+        source.indexOf('function Public-File'),
+        source.indexOf('function Plain-Dpapi'),
+      );
+      const machineStart = source.indexOf(" $preparationStage='machine_provenance'");
+      const machineEnd = source.indexOf(' $machinePath=Public-File', machineStart);
+      assert.ok(machineStart > 0 && machineEnd > machineStart);
+      const canary = 'SYNTHETIC_PRIVATE_PROVENANCE_DO_NOT_PRINT';
+      const pending = join(
+        directory,
+        'Everyone-Market-Radar-Private/foundation/df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+      );
+      mkdirSync(pending, { recursive: true });
+      mkdirSync(join(directory, 'scripts/n8n'), { recursive: true });
+      writeFileSync(
+        join(directory, 'scripts/n8n/foundation-delivery-packet.json'),
+        JSON.stringify({
+          audience: 'https://synthetic.invalid',
+          sourceCommitSha: 'a'.repeat(40),
+        }),
+      );
+      writeFileSync(
+        join(pending, 'pending-runtime.json'),
+        JSON.stringify({
+          version: 1,
+          windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+          purpose: canary,
+          audience: 'https://synthetic.invalid',
+          sourceCommitSha: 'a'.repeat(40),
+          credentialId: 'EmrM03Machine19',
+          createdAt: '2026-10-01T00:00:00.000Z',
+        }),
+      );
+      const script = join(directory, 'stages.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+$tokens=$null;$errors=$null
+$ast=[Management.Automation.Language.Parser]::ParseFile('${path.replaceAll("'", "''")}',[ref]$tokens,[ref]$errors)
+$main=@($ast.EndBlock.Statements|Where-Object{$_ -is [Management.Automation.Language.TryStatementAst]})[0]
+$body=$main.CatchClauses[0].Body.Extent.Text
+$blocked=[scriptblock]::Create($body.Substring(1,$body.Length-2))
+$repo='${directory.replaceAll("'", "''")}'
+$opened=[Collections.Generic.List[IO.FileStream]]::new()
+$receipt=@{privateRead=$false};$started=$false;$child=$null;$closed=$true
+$seal=[pscustomobject]@{windowId='df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
+${publicFiles}
+${io}
+${transport}
+Initialize-BoundedIo
+$preparationStage='transport'
+try{Confirm-PublicTransport}catch{. $blocked}
+try{
+${source.slice(machineStart, machineEnd)}
+}catch{. $blocked}
+foreach($variant in @('decryption','started','unrecognized_stage')){
+ $receipt.privateRead=($variant -ceq 'decryption');$started=($variant -ceq 'started')
+ $preparationStage=if($variant -ceq 'unrecognized_stage'){'${canary}'}else{'machine_provenance'}
+ try{throw '${canary}'}catch{. $blocked}
+}
+foreach($stream in $opened){$stream.Dispose()}
+Write-Output '{"kind":"synthetic_completion","suppressionCases":3}'
+`,
+      );
+      const r = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: safeEnvironment(directory),
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 10000,
+      });
+      assert.equal(r.status, 0);
+      assert.equal(r.stderr, '');
+      const frames = r.stdout
+        .trim()
+        .split(/\r?\n/)
+        .map((line) => JSON.parse(line));
+      assert.equal(frames.length, 4);
+      assert.equal(frames[0].kind, 'm03_acceptance_transport_ready');
+      for (const [frame, stage] of [
+        [frames[1], 'transport'],
+        [frames[2], 'machine_provenance'],
+      ])
+        assert.deepEqual(frame, {
+          kind: 'm03_acceptance_preparation_blocked',
+          stage,
+          credentialDecryptionAttempted: false,
+        });
+      assert.deepEqual(frames[3], { kind: 'synthetic_completion', suppressionCases: 3 });
+      assert.doesNotMatch(r.stdout + r.stderr, /SYNTHETIC_PRIVATE_PROVENANCE_DO_NOT_PRINT|exceptionClass/);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
   'missing public seal refuses before any private read and preserves synthetic handoffs',
   windowsOnly,
   () => {
@@ -681,7 +793,29 @@ test(
       });
       assert.equal(r.status, 1);
       assert.equal(r.stderr, '');
-      const receipt = JSON.parse(r.stdout);
+      const frames = r.stdout
+        .trim()
+        .split(/\r?\n/)
+        .map((line) => JSON.parse(line));
+      assert.equal(frames.length, 2);
+      assert.deepEqual(frames[0], {
+        kind: 'm03_acceptance_preparation_blocked',
+        stage: 'public_seal',
+        credentialDecryptionAttempted: false,
+      });
+      const receipt = frames[1];
+      assert.deepEqual(Object.keys(receipt).sort(), [
+        'bypassHandoffDeleted',
+        'childClosed',
+        'code',
+        'credentialChildrenClosed',
+        'emergencyShutdown',
+        'handoffsDeleted',
+        'kind',
+        'nativeExit',
+        'pendingMachinePreserved',
+        'privateRead',
+      ]);
       assert.equal(receipt.code, 'M03_ACCEPTANCE_BLOCKED');
       assert.equal(receipt.privateRead, false);
       assert.equal(receipt.childClosed, true);
