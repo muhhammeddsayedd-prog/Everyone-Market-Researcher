@@ -1821,6 +1821,9 @@ test(
   'sixth forward baseline requires the separately pinned actual16 settlement and exact archived fixture',
   native,
   () => {
+    const archivePins = readFileSync(consumer, 'utf8').match(/\$archiveSha256=(?:\$null|'[a-f0-9]{64}')/g);
+    assert.equal(archivePins?.length, 1);
+    const archivePinDeclaration = archivePins[0];
     const directory = mkdtempSync(join(tmpdir(), 'emr-sixth-archive-'));
     try {
       const inspection = JSON.parse(
@@ -1893,8 +1896,12 @@ function Persist($v){
  [IO.File]::WriteAllText((Join-Path $repo $relative),($v|ConvertTo-Json -Depth 40 -Compress),[Text.UTF8Encoding]::new($false));$script:archiveSha=File-Hash (Join-Path $repo $relative)
 }
 Persist $archive
+$fn=(Get-Command Read-FoundationForwardPrior).ScriptBlock.ToString();$declaration=${quote(archivePinDeclaration)}
+Set-Item -Path Function:Read-FoundationForwardPrior -Value ([scriptblock]::Create($fn.Replace($declaration,'$archiveSha256=$null')))
 $denied=$false;try{$null=Read-FoundationForwardPrior}catch{$denied=$true};if(-not $denied){throw 'NULL_ACTUAL_ARCHIVE_PIN_GRANTED'}
-$fn=(Get-Command Read-FoundationForwardPrior).ScriptBlock.ToString().Replace('$archiveSha256=$null','$archiveSha256=$script:archiveSha');Set-Item -Path Function:Read-FoundationForwardPrior -Value ([scriptblock]::Create($fn))
+Set-Item -Path Function:Read-FoundationForwardPrior -Value ([scriptblock]::Create($fn))
+$denied=$false;try{$null=Read-FoundationForwardPrior}catch{$denied=$true};if(-not $denied){throw 'REAL_PIN_AUTHORIZED_SYNTHETIC_ARCHIVE'}
+Set-Item -Path Function:Read-FoundationForwardPrior -Value ([scriptblock]::Create($fn.Replace($declaration,'$archiveSha256=$script:archiveSha')))
 $actual=Read-FoundationForwardPrior;if($actual.fixtureAuditCount -ne 7 -or -not $actual.fixture.competitorArchived -or -not $actual.technical16Exact){throw 'ARCHIVED_SIXTH_BASELINE_NOT_SELECTED'}
 foreach($fault in @('auth','history','archiveExit','before','after','audits','prior16','admitted','requests','pending','cleanup','network','settlement')){
  $v=ConvertFrom-Json -InputObject $original
@@ -1910,7 +1917,6 @@ Write-Output 'PINNED_SETTLEMENT_AND_ARCHIVED_SEVEN_AUDITS'
     }
   },
 );
-
 test(
   'technical14 native fixture readback requires the exact typed audit and both prior lifecycle receipts',
   native,
@@ -2098,7 +2104,7 @@ Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
 );
 
 test(
-  'technical16 source closure requires only observed settlement and failed preflight assets',
+  'technical16 source closure requires the observed settlement archive and failed preflight assets',
   native,
   () => {
     assert.equal(
@@ -2109,19 +2115,18 @@ if($start -lt 0 -or $end -le $start){throw 'PUBLIC_DECLARATIONS_NOT_FOUND'}
 $ForwardWindow=$false;$TechnicalResidual13=$false;$TechnicalResidual16=$false;$caRelative='scripts/seed/certs/supabase-root-2021.crt';$cliRelative='node_modules/.pnpm/@supabase+cli-windows-x64@2.121.0/node_modules/@supabase/cli-windows-x64/bin/supabase.exe'
 foreach($forward in @($false,$true)){
  $ForwardMigration=$forward;Invoke-Expression $source.Substring($start,$end-$start)
- if($requiredFiles.Count -ne $(if($forward){75}else{73}) -or @($requiredFiles|Select-Object -Unique).Count -ne $requiredFiles.Count){throw 'EXACT_PUBLIC_SOURCE_COUNT_CHANGED'}
- foreach($relative in @('milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json','milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-preflight-failure-20261024.json')){if(@($requiredFiles|Where-Object{$_ -ceq $relative}).Count -ne 1){throw 'OBSERVED_SOURCE_NOT_PINNED_ONCE'}}
- if(@($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json'}).Count -ne 0){throw 'UNOBSERVED_ARCHIVE_REQUIRED'}
+ if($requiredFiles.Count -ne $(if($forward){76}else{74}) -or @($requiredFiles|Select-Object -Unique).Count -ne $requiredFiles.Count){throw 'EXACT_PUBLIC_SOURCE_COUNT_CHANGED'}
+ foreach($relative in @('milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json','milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-preflight-failure-20261024.json','milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json')){if(@($requiredFiles|Where-Object{$_ -ceq $relative}).Count -ne 1){throw 'OBSERVED_SOURCE_NOT_PINNED_ONCE'}}
 }
-Write-Output 'PUBLIC_REGULAR73_FORWARD75_OBSERVED_ONLY'
+Write-Output 'PUBLIC_REGULAR74_FORWARD76_OBSERVED_ONLY'
 `),
-      'PUBLIC_REGULAR73_FORWARD75_OBSERVED_ONLY',
+      'PUBLIC_REGULAR74_FORWARD76_OBSERVED_ONLY',
     );
   },
 );
 
 test(
-  'actual forward packet has all75 source-required public pins and retains every old migration field',
+  'actual forward packet has all76 source-required public pins and retains every old migration field',
   native,
   () => {
     assert.equal(
@@ -2135,13 +2140,13 @@ Invoke-Expression $source.Substring($start,$end-$start)
 $packet=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
 $old=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-dev-migration-packet.json'))}))
 Assert-Keys $packet.files $requiredFiles
-if($requiredFiles.Count -ne 75 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
-if(@($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json'}).Count -ne 1 -or @($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-preflight-failure-20261024.json'}).Count -ne 1 -or @($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json'}).Count -ne 0){throw 'UNOBSERVED_ARCHIVE_REQUIRED'}
+if($requiredFiles.Count -ne 76 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+foreach($relative in @('milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json','milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-preflight-failure-20261024.json','milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json')){if(@($requiredFiles|Where-Object{$_ -ceq $relative}).Count -ne 1){throw 'OBSERVED_SOURCE_NOT_PINNED_ONCE'}}
 $prior=@($old.baseline)+@($old.pending)
 for($i=0;$i -lt 14;$i++){foreach($field in @('version','name','file','sha256','historySha256')){if($prior[$i].$field -cne $packet.baseline[$i].$field){throw 'ORIGINAL_MIGRATION_REWRITTEN'}}}
-Write-Output 'EXACT_PUBLIC_75_AND_OLD14'
+Write-Output 'EXACT_PUBLIC_76_AND_OLD14'
 `),
-      'EXACT_PUBLIC_75_AND_OLD14',
+      'EXACT_PUBLIC_76_AND_OLD14',
     );
   },
 );
@@ -2320,9 +2325,10 @@ for (const profile of [
           }
           for (const [originalHash, syntheticHash] of replacements)
             helperSource = helperSource.replaceAll(originalHash, syntheticHash);
-          assert.equal((helperSource.match(/\$archiveSha256=\$null/g) ?? []).length, 1);
+          const archivePins = helperSource.match(/\$archiveSha256=(?:\$null|'[a-f0-9]{64}')/g);
+          assert.equal(archivePins?.length, 1);
           helperSource = helperSource.replace(
-            '$archiveSha256=$null',
+            archivePins[0],
             "$archiveSha256='" +
               hash(
                 readFileSync(join(fixture.directory, evidence + 'technical16-fixture-archive-20261024.json')),

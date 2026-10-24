@@ -61,6 +61,7 @@ $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-cleanup-20261024.json')
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json')
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-preflight-failure-20261024.json')
+$requiredFiles+=@('milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json')
 if($forwardSchema){$requiredFiles+=@('scripts/db/foundation-forward-postcheck.sql','scripts/db/m03-foundation-dev-migration-packet.json')}
 $versions = @('20261017172928','20261017172931','20261017172934','20261017172937','20261017172940','20261017172943','20261017172945','20261018034220','20261018035417','20261018070042','20261018231756','20261018232014','20261018232922','20261018233338')
 $names = @('extensions_schemas_roles','core_tables','auth_rls_views','rpc_pipeline_core','rpc_app_search','storage_cron','seed_taxonomies','rpc_n8n_foundation','price_book_plan','n8n_worker_gateway_admission','m03_actor_launch_admission','m03_foundation_gateway','m03_foundation_safety_receipts','m03_foundation_boundary_hardening')
@@ -1119,9 +1120,9 @@ function Read-FoundationForwardPrior {
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'){
     $technical=Foundation-ProjectVerifiedTechnicalIdentity
     if($technical.ordinal -ne 17){throw 'blocked'}
-    # No actual archive has yet qualified this target. This fixed pin remains
-    # unavailable until the separate result is captured and independently read.
-    $archiveSha256=$null
+    # The separately captured and independently verified native archive qualifies
+    # only this fixed successor; preserve the original zero-auth failed output.
+    $archiveSha256='d8177cbc39dd0805b831cfddbf0f0d25ab8ce749243b1eab0a0fdf0e4ccae97d'
     if($archiveSha256 -isnot [string] -or $archiveSha256 -cnotmatch '^[a-f0-9]{64}$'){throw 'blocked'}
     $TechnicalResidual16=$true
     $expected=Read-FoundationTechnical16Closed

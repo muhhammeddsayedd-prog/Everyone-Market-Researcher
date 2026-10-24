@@ -114,7 +114,7 @@
     }
   ],
   "files": {
-    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "3b19941d66d9786284a93b7f31cc0bfb9387e01953013824433a032b89da2716",
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "752c68219e0f6255e5930e2e9779833a6e951040b78f871fd22ab26780570cd0",
     "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "b95e60dd2b3d2abf972f53000db83676e4f96947e6fc1a5dfc086a2c646393a3",
     "scripts/db/windows/Foundation-AdminControl.ps1": "a6435b82101ad795288f23f8350ca22ba38e7292b7073ab742171b9dc17df6a3",
     "scripts/db/foundation-settlement.sql": "94ce66c3c12a305bba196bef441a51c9879cc0764403bef2241d3660baaa91e9",
@@ -153,14 +153,14 @@
     "scripts/assert/m03_smoke_reactivate_startup.sql": "cc2654e4d499cbd5fc1a6c75c30d991ea8f46bef3fa37f66bd415ad8b192e202",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json": "e144d73dfbcab1e5a286ab9ba11df28bcbd10c8a9ad39eecb7852fee3d61d758",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0",
-    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "41ce848725cd134788f73d3eee60b36a0ada23b979ed8d42f13bfd33500e83a3",
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "12ff60ebc0c3be2b9ff26a440377d3971935bded99789d3076e03723e3462382",
     "scripts/assert/m03_smoke_reactivate_project_verified.sql": "4c6eb904117029525101f736aa5127568463492a8799dc06d6cdae96add88b81",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json": "e21e515ae446dcde7983dba87d09221ce1bf3cd2ad06d08329368a8241e6ba10",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md": "13d19460cdb889378dec5ae4d93af4708baf85290c164e07961add18e7243650",
     "scripts/db/foundation-inspect.sql": "51ca08cd0e9be3ed4abf14c526933c57419d03bd5c277d6a4337d5bf3adce434",
     "scripts/n8n/windows/Dev-CredentialStore.ps1": "49c16b64f9b57c4e27cf6ad92dc16cd05c6cf29a7ada7f9c7fa6e8f64ca5fc13",
     "scripts/db/foundation-forward-postcheck.sql": "8ebe8951deab86a7d93c0826aa9299dd9215b84bfeb8fa215bee1843527e300d",
-    "scripts/db/m03-foundation-dev-migration-packet.json": "30a493551343e803430ca8991add044362d6238e504c1caad4af9bb4a6b6b16b",
+    "scripts/db/m03-foundation-dev-migration-packet.json": "ae3d35e7613860612adb21e8959fb296871227ba2f53a52695beea291497300d",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json": "e0435f69edc0223195b167e59c94cf87e9f41aa147941a35fb8486f51382c94c",
     "milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md": "dddc18288e44fcb0fde06ee6de6fc86bbc21f65353cd089988b10f5dd0714fa2",
     "milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json": "72ffb37faa1854ac86893f8bf166949daa4034be19ec2af5c217bde8383f65e2",
@@ -188,7 +188,8 @@
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-reconciliation-20261024.json": "d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-cleanup-20261024.json": "49192237b29231f20f67595fdc7522b49926f10c8e278bea3871cf75a9788b57",
     "milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json": "56b05930af80343cc66d4cb95891f6e59d50c7a3bbe536450e775a9bea6c584d",
-    "milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-preflight-failure-20261024.json": "635736c1bff404046d3805e356a6640bf8e5e2148434404a29bc85bc0095901d"
+    "milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-preflight-failure-20261024.json": "635736c1bff404046d3805e356a6640bf8e5e2148434404a29bc85bc0095901d",
+    "milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json": "d8177cbc39dd0805b831cfddbf0f0d25ab8ce749243b1eab0a0fdf0e4ccae97d"
   },
   "node": {
     "path": "C:\\Program Files\\nodejs\\node.exe",

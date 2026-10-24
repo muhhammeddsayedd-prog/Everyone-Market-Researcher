@@ -271,7 +271,7 @@ const technical17Recovery = Object.freeze({
   settlementRelative: 'milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json',
   settlementSha256: '56b05930af80343cc66d4cb95891f6e59d50c7a3bbe536450e775a9bea6c584d',
   archiveRelative: 'milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json',
-  archiveSha256: null,
+  archiveSha256: 'd8177cbc39dd0805b831cfddbf0f0d25ab8ce749243b1eab0a0fdf0e4ccae97d',
 });
 // Selection names the next dev target. Its larger capacities remain unavailable
 // until the separately pinned allocation is validated below.
