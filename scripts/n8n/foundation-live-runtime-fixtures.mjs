@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { EventEmitter } from 'node:events';
+import { isDeepStrictEqual } from 'node:util';
 import { createFoundationLiveRuntime } from './foundation-live-runtime.mjs';
 import { createFoundationLiveBaselinePreflight } from './foundation-live-runtime-transport.mjs';
 import { createFoundationRuntimeBaseline } from './foundation-runtime-plan.mjs';
@@ -147,9 +148,13 @@ export function fixture({ fault } = {}) {
       w = workflows.get(m?.[1]);
     if (!w) throw Error('SYNTHETIC_ROUTE_REJECTED');
     if (method === 'PUT') {
+      // n8n2.43.5 rotates structural workflow versions, not name/settings-only saves.
+      const structuralChange =
+        !isDeepStrictEqual(w.nodes, body.nodes) || !isDeepStrictEqual(w.connections, body.connections);
+      const versionId = structuralChange ? 'synthetic-live-version-' + ++serial : w.versionId;
       const settings = { ...w.settings, ...structuredClone(body.settings) };
       if (settings.errorWorkflow === 'DEFAULT') delete settings.errorWorkflow;
-      Object.assign(w, structuredClone(body), { settings, versionId: 'synthetic-live-version-' + ++serial });
+      Object.assign(w, structuredClone(body), { settings, versionId });
     } else if (method === 'POST' && m[2] === '/publish') {
       assert.equal(body.versionId, w.versionId);
       w.active = true;

@@ -22,6 +22,43 @@ import { assertFoundationRuntimeRestorationAudit } from './foundation-runtime-co
 import { syntheticZeroSetup } from './foundation-live-runtime-resume-fixtures.mjs';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 
+test('shared native fixture keeps settings/name-only versions and rotates structural workflow versions', async () => {
+  const f = fixture();
+  try {
+    const workflow = f.workflows.get(f.input.bindings.workflowRefs['SUB-NOTIFY'].id);
+    const path = '/api/v1/workflows/' + workflow.id + '?excludePinnedData=true';
+    const writePath = '/api/v1/workflows/' + workflow.id + '?publishIfActive=false';
+    const originalVersion = workflow.versionId;
+    const settingsBody = {
+      name: workflow.name + ' synthetic renamed',
+      nodes: structuredClone(workflow.nodes),
+      connections: structuredClone(workflow.connections),
+      settings: { ...structuredClone(workflow.settings), executionTimeout: 899 },
+    };
+    const settingsSave = await f.dependencies.send('PUT', writePath, settingsBody);
+    assert.equal(settingsSave.status, 200);
+    assert.equal(settingsSave.body.versionId, originalVersion);
+    assert.equal(settingsSave.body.name, settingsBody.name);
+    assert.equal(settingsSave.body.settings.executionTimeout, 899);
+    const settingsRead = await f.dependencies.send('GET', path);
+    assert.equal(settingsRead.body.versionId, originalVersion);
+    assert.deepEqual(settingsRead.body.nodes, settingsBody.nodes);
+    const structuralBody = { ...settingsBody, nodes: structuredClone(settingsBody.nodes) };
+    structuralBody.nodes[0].position = [
+      structuralBody.nodes[0].position[0] + 1,
+      structuralBody.nodes[0].position[1],
+    ];
+    const structuralSave = await f.dependencies.send('PUT', writePath, structuralBody);
+    assert.equal(structuralSave.status, 200);
+    assert.notEqual(structuralSave.body.versionId, originalVersion);
+    assert.deepEqual(structuralSave.body.nodes, structuralBody.nodes);
+    assert.equal((await f.dependencies.send('GET', path)).body.versionId, structuralSave.body.versionId);
+    assert.equal(f.calls.length, 4);
+  } finally {
+    f.cleanup();
+  }
+});
+
 for (const profile of [640, 704, 832])
   test(`genuine${profile} allocation retains every charged request and the shared2560 ceiling without replacing historical headers`, async () => {
     for (const [controlAttempts, expectedLimit] of [
