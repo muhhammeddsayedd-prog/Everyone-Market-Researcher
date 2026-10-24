@@ -114,7 +114,7 @@
     }
   ],
   "files": {
-    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "600f508140931d2b43045252e931d28649882d243681be523e58cda6eb1c93db",
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "af58ba2889be6f0c27784e5af3e87578f150a13910735e7274b5e470748e5621",
     "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "b95e60dd2b3d2abf972f53000db83676e4f96947e6fc1a5dfc086a2c646393a3",
     "scripts/db/windows/Foundation-AdminControl.ps1": "ec90a12ed8c5b86ccc44a1b41702e3ed5ec6d40de7e0e24b48fa9d0ba95639bd",
     "scripts/db/foundation-settlement.sql": "94ce66c3c12a305bba196bef441a51c9879cc0764403bef2241d3660baaa91e9",
@@ -160,7 +160,7 @@
     "scripts/db/foundation-inspect.sql": "51ca08cd0e9be3ed4abf14c526933c57419d03bd5c277d6a4337d5bf3adce434",
     "scripts/n8n/windows/Dev-CredentialStore.ps1": "49c16b64f9b57c4e27cf6ad92dc16cd05c6cf29a7ada7f9c7fa6e8f64ca5fc13",
     "scripts/db/foundation-forward-postcheck.sql": "8ebe8951deab86a7d93c0826aa9299dd9215b84bfeb8fa215bee1843527e300d",
-    "scripts/db/m03-foundation-dev-migration-packet.json": "03f56980a70af6eee6dac093fa6fff08f691f39de6a34f245adace030a23fc45",
+    "scripts/db/m03-foundation-dev-migration-packet.json": "8a8170625c7cfa87892415574d403906b2879b3262062a69f479efa89cd4b6f0",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json": "e0435f69edc0223195b167e59c94cf87e9f41aa147941a35fb8486f51382c94c",
     "milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md": "dddc18288e44fcb0fde06ee6de6fc86bbc21f65353cd089988b10f5dd0714fa2",
     "milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json": "72ffb37faa1854ac86893f8bf166949daa4034be19ec2af5c217bde8383f65e2",
@@ -184,7 +184,9 @@
     "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-checkpoint-20261024.json": "9c49750496d602781903de09459d729c6a3061b433a78cfea6aabdb4d796e99f",
     "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-db-readback-20261024.json": "3e7ad86a3417716b052cb150866b2f1baa5faf61288fffc10e6c55526d49bcf0",
     "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-api-readback-20261024.json": "8eea80405984958d46623f9c20be7421e629cde85dfd515ac89ee27320dac0c2",
-    "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-cleanup-20261024.json": "7a79792ee2143f99680346bbd704d3cb274a141a57eade33be117205b1e198c9"
+    "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-cleanup-20261024.json": "7a79792ee2143f99680346bbd704d3cb274a141a57eade33be117205b1e198c9",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-reconciliation-20261024.json": "d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-cleanup-20261024.json": "49192237b29231f20f67595fdc7522b49926f10c8e278bea3871cf75a9788b57"
   },
   "node": {
     "path": "C:\\Program Files\\nodejs\\node.exe",

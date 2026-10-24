@@ -9,6 +9,7 @@ import {
   copyFileSync,
   mkdirSync,
   existsSync,
+  appendFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, join, sep, dirname } from 'node:path';
@@ -53,6 +54,237 @@ function run(code) {
   }
 }
 const native = { skip: process.platform !== 'win32' };
+
+test(
+  'technical16 mode and public-private binding are revalidated before the bounded Admin copy',
+  native,
+  () => {
+    const source = readFileSync(consumer, 'utf8');
+    const initialModes = source.slice(source.indexOf('if($TechnicalResidual16'), source.indexOf('$repo ='));
+    assert.equal(
+      run(`
+$CheckOnly=$true;$InspectOnly=$true;$TechnicalResidual13=$false;$TechnicalResidual16=$true;$ArchiveFixture=$false;$WriterClose=$false;$ForwardMigration=$false;$ForwardWindow=$false;$PhaseAControl=$false;$OriginalDeadlineAtMs=0;$ClockAmendment=$false;$PostcheckContinuation=$false;$RemainingContinuation=$false;$StartupReplacement=$false;$ProjectVerifiedContinuation=$false
+${initialModes}
+${definitions(['Assert-FoundationInspectClosed'])}
+$script:valid=$true;$script:reads=0
+function Read-FoundationTechnical16Closed{if(-not $script:valid){throw 'SYNTHETIC16_PROOF_CHANGED'};$script:reads++;return [pscustomobject]@{id='4c602549-2c42-4ec3-9328-714d7cb66a77'}}
+function Read-FoundationTechnical13Closed{throw 'OLD_BINDING_SUBSTITUTED'}
+$public=Assert-FoundationInspectClosed;$private=Assert-FoundationInspectClosed
+if($script:reads -ne 2 -or $public.id -cne $private.id){throw 'CURRENT_BINDING_NOT_REVALIDATED'}
+$script:valid=$false;$denied=$false;try{$null=Assert-FoundationInspectClosed}catch{$denied=$true};if(-not $denied){throw 'CHANGED_CURRENT_BINDING_ACCEPTED'}
+Write-Output 'TECHNICAL16_FIXED_MODE_AND_BINDING'
+`),
+      'TECHNICAL16_FIXED_MODE_AND_BINDING',
+    );
+    const privateStart = source.indexOf(
+      'if($InspectOnly -or $WriterClose -or $ArchiveFixture -or $ForwardMigration){',
+      source.indexOf('if($CheckOnly -and $ForwardMigration){Write-Output'),
+    );
+    const privatePreparation = source.slice(
+      privateStart,
+      source.indexOf('if($WriterClose -or $ArchiveFixture -or $ForwardMigration){', privateStart),
+    );
+    assert.ok(
+      privatePreparation.indexOf('$inspectExpectedBinding=Assert-FoundationInspectClosed') <
+        privatePreparation.indexOf('Ensure-M03DevReadOnlyHandoff'),
+    );
+    for (const flags of [
+      ['-TechnicalResidual16'],
+      ['-TechnicalResidual16', '-InspectOnly', '-ArchiveFixture'],
+      ['-TechnicalResidual16', '-TechnicalResidual13', '-InspectOnly'],
+      ['-TechnicalResidual16', '-InspectOnly', '-ForwardWindow'],
+    ]) {
+      const result = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', consumer, ...flags], {
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 15000,
+        env: Object.fromEntries(
+          ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP'].flatMap((name) =>
+            process.env[name] === undefined ? [] : [[name, process.env[name]]],
+          ),
+        ),
+      });
+      assert.equal(result.status, 1);
+      assert.equal(result.stderr, '');
+      assert.equal(
+        result.stdout.trim(),
+        'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting residual read/archive modes; no private access.',
+      );
+    }
+  },
+);
+
+test(
+  'technical16 read-only mode requires all fifteen original migration fingerprints without a push',
+  native,
+  () => {
+    const packet = JSON.parse(
+      readFileSync('scripts/db/m03-foundation-forward-dev-migration-packet.json', 'utf8'),
+    );
+    const history = [...packet.baseline, ...packet.pending].map(({ version, name, historySha256 }) => ({
+      version,
+      name,
+      historySha256,
+    }));
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys', 'History-State'])}
+$TechnicalResidual16=$true;$migrations=ConvertFrom-Json ${quote(JSON.stringify(history))}
+function Result($Count){return [pscustomobject]@{ok=$true;closed=$true;text=(ConvertTo-Json -InputObject @([pscustomobject]@{receipt=[pscustomobject]@{current_user='postgres';session_user='postgres';database='postgres';migrations=@($migrations|Select-Object -First $Count)}}) -Depth 12 -Compress)}}
+if((History-State (Result 15)) -cne 'complete' -or (History-State (Result 14)) -cne 'baseline'){throw 'FIFTEEN_VERSION_RECEIPT_REQUIRED'}
+$bad=Result 15;$rows=ConvertFrom-Json $bad.text;$rows[0].receipt.migrations[4].historySha256='0'*64;$bad.text=ConvertTo-Json -InputObject @($rows) -Depth 12 -Compress
+if((History-State $bad) -cne 'rejected'){throw 'OLD_MIGRATION_DRIFT_ACCEPTED'}
+Write-Output 'TECHNICAL16_FIFTEEN_HISTORY_NO_PUSH'
+`),
+      'TECHNICAL16_FIFTEEN_HISTORY_NO_PUSH',
+    );
+  },
+);
+
+test(
+  'technical16 physical closure permits fixed inspection but never substitutes for missing native settlement',
+  native,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-technical16-public-'));
+    const receiptPath =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-reconciliation-20261024.json';
+    const cleanupPath =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-cleanup-20261024.json';
+    const actual = JSON.parse(readFileSync(receiptPath, 'utf8'));
+    const stem =
+      'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-16';
+    try {
+      for (const file of [
+        receiptPath,
+        cleanupPath,
+        ...Object.keys(actual.pins),
+        ...['-latest.json', '-owner-provision-attempt.json', '-reactivation-attempt.json'].map(
+          (suffix) => stem + suffix,
+        ),
+      ]) {
+        const destination = join(directory, file);
+        mkdirSync(dirname(destination), { recursive: true });
+        copyFileSync(file, destination);
+      }
+      // Genuine public copies retain immutable hashes, with independently charged tails.
+      for (const name of ['management', 'control', 'setup', 'preflight'])
+        appendFileSync(
+          join(directory, 'scripts/n8n/out/foundation/live/' + name + '.jsonl'),
+          '{"laterChargedPublicRow":true}\n',
+        );
+      assert.equal(
+        run(`
+${definitions(['Assert-Path', 'Read-Json', 'File-Hash', 'Read-FoundationTechnical16Closed', 'Assert-FoundationTechnical16Settled', 'Assert-FoundationInspectClosed', 'Read-FoundationArchivePrior'])}
+$repo=${quote(directory)};$projectRef='zmotjsbzhzjvpelxvxlf';$TechnicalResidual13=$false;$TechnicalResidual16=$true
+function Get-CimInstance{return @()}
+$binding=Assert-FoundationInspectClosed
+if($binding.id -cne '4c602549-2c42-4ec3-9328-714d7cb66a77' -or $binding.commitSha -cne '5087d4d93d2f6ffdca0bc0096b365723005446fc'){throw 'PUBLIC16_BINDING_CHANGED'}
+$denied=$false;try{$null=Read-FoundationArchivePrior}catch{$denied=$true};if(-not $denied){throw 'PHYSICAL_CLOSE_SUBSTITUTED_FOR_NATIVE_SETTLEMENT'}
+$runtime=Join-Path $repo 'scripts/n8n/out/foundation/live/runtime.technical-16.jsonl';$original=[IO.File]::ReadAllText($runtime);[IO.File]::AppendAllText($runtime,"{}\n")
+$denied=$false;try{$null=Assert-FoundationInspectClosed}catch{$denied=$true};[IO.File]::WriteAllText($runtime,$original);if(-not $denied){throw 'HISTORICAL_RUNTIME_DRIFT_ACCEPTED'}
+$management=Join-Path $repo 'scripts/n8n/out/foundation/live/management.jsonl';$original=[IO.File]::ReadAllText($management);[IO.File]::WriteAllText($management,' '+$original)
+$denied=$false;try{$null=Assert-FoundationInspectClosed}catch{$denied=$true};[IO.File]::WriteAllText($management,$original);if(-not $denied){throw 'HISTORICAL_LEDGER_PREFIX_DRIFT_ACCEPTED'}
+function Get-CimInstance{return @([pscustomobject]@{ProcessId=26268})}
+$denied=$false;try{$null=Assert-FoundationInspectClosed}catch{$denied=$true};if(-not $denied){throw 'LIVE_PARENT_ACCEPTED'}
+Write-Output 'ACTUAL_STYLE16_PUBLIC_INSPECTION_NOT_SETTLEMENT'
+`),
+        'ACTUAL_STYLE16_PUBLIC_INSPECTION_NOT_SETTLEMENT',
+      );
+    } finally {
+      assert.ok(resolve(directory).startsWith(resolve(tmpdir()) + sep));
+      assert.equal(realpathSync.native(directory).toLowerCase(), resolve(directory).toLowerCase());
+      rmSync(directory, { recursive: true });
+    }
+  },
+);
+
+test(
+  'technical16 inspection requires its exact current closed family and typed seven-audit readback',
+  native,
+  () => {
+    const value = {
+      kind: 'm03_foundation_inspection',
+      windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+      identity: true,
+      window: {
+        id: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+        audience: 'https://everyone-market-researcher-13wnnoywv-muhammed-abdelrahman.vercel.app',
+        commitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
+        deploymentId: 'dpl_Hqcn7hxpuEUz6Bbq9tTtmQs5MdYd',
+        startsAt: '2026-10-24T16:00:00Z',
+        expiresAt: '2026-10-24T17:00:00Z',
+        closedAt: '2026-10-24T16:35:00Z',
+        admittedCount: 2,
+        closeCount: 1,
+      },
+      requestCount: 1,
+      reservedRequests: 0,
+      incompleteRequests: 0,
+      activeLeaseCount: 0,
+      approval: {
+        closed: true,
+        expiresAt: '2026-10-24T17:00:00Z',
+        actorBuild: '0.3.99',
+        maxChargeUsd: 1,
+        batchMaxUsd: 2,
+      },
+      launchCount: 0,
+      actorRunCount: 0,
+      scrapeRunCount: 0,
+      costEntryCount: 0,
+      costUsd: 0,
+      collectedItemCount: 0,
+      fixture: {
+        competitorId: 'd51a39f6-fe87-4d17-aee9-3070c45693aa',
+        accountId: 'bd23314c-591f-4fb7-92fd-b7450634eeb6',
+        competitorArchived: false,
+        competitorActive: true,
+        accountPaused: false,
+        accountActive: true,
+        itemsCount: 0,
+        locked: false,
+        progressPresent: false,
+      },
+      audits: {
+        creationCount: 1,
+        startupCount: 1,
+        originalCount: 1,
+        technical2Count: 1,
+        technical2Exact: true,
+      },
+      familyClosed: true,
+      familyWindowCount: 5,
+      globalAdmittedCount: 9,
+      globalRequestCount: 4,
+      globalLaunchCount: 0,
+      fixtureAuditCount: 7,
+      technical12Exact: true,
+      technical13Exact: true,
+      technical16Exact: true,
+    };
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys', 'Read-FoundationInspection', 'Assert-FoundationArchiveInspection'])}
+$TechnicalResidual13=$false;$TechnicalResidual16=$true;$InspectOnly=$true;$original=ConvertFrom-Json ${quote(JSON.stringify(value))};$expected=$original.window
+function Check($Value,[bool]$Archived=$false){$read=Read-FoundationInspection ([pscustomobject]@{ok=$true;closed=$true;text=('[{"inspection":'+($Value|ConvertTo-Json -Depth 12 -Compress)+'}]')});Assert-FoundationArchiveInspection $read $expected $Archived}
+Check $original
+foreach($fault in @('stringCount','wrongWindows','wrongAdmitted','wrongRequests','missing16','false12','false13','false16','extraAudit','reserved','launch','actor','scrape','cost','item','progress','wrongBinding','archived','extra')){
+ $value=$original|ConvertTo-Json -Depth 12|ConvertFrom-Json
+ switch($fault){
+  'stringCount'{$value.globalAdmittedCount='9'} 'wrongWindows'{$value.familyWindowCount=4} 'wrongAdmitted'{$value.globalAdmittedCount=10} 'wrongRequests'{$value.globalRequestCount=5}
+  'missing16'{$value.PSObject.Properties.Remove('technical16Exact')} 'false12'{$value.technical12Exact=$false} 'false13'{$value.technical13Exact=$false} 'false16'{$value.technical16Exact=$false} 'extraAudit'{$value.fixtureAuditCount=8}
+  'reserved'{$value.reservedRequests=1} 'launch'{$value.globalLaunchCount=1} 'actor'{$value.actorRunCount=1} 'scrape'{$value.scrapeRunCount=1} 'cost'{$value.costEntryCount=1} 'item'{$value.collectedItemCount=1} 'progress'{$value.fixture.progressPresent=$true}
+  'wrongBinding'{$value.window.commitSha='f'*40} 'archived'{$value.fixture.competitorArchived=$true;$value.fixture.competitorActive=$false} 'extra'{$value|Add-Member NoteProperty unexpected $true}
+ }
+ $denied=$false;try{Check $value}catch{$denied=$true};if(-not $denied){throw ('TECHNICAL16_DTO_ACCEPTED_'+$fault)}
+}
+$InspectOnly=$false;$after=$original|ConvertTo-Json -Depth 12|ConvertFrom-Json;$after.fixture.competitorArchived=$true;$after.fixture.competitorActive=$false;$after.fixture.accountPaused=$true;$after.fixture.accountActive=$false;Check $after $true
+Write-Output 'TECHNICAL16_EXACT_TYPED_CURRENT_READBACK'
+`),
+      'TECHNICAL16_EXACT_TYPED_CURRENT_READBACK',
+    );
+  },
+);
 
 test('forward mode admits exact14/15 history only and preserves old hash comparisons', native, () => {
   const old = JSON.parse(readFileSync('scripts/db/m03-foundation-dev-migration-packet.json', 'utf8'));

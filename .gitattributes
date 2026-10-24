@@ -21,3 +21,4 @@ milestones/M02-seed-data/evidence/dev-report-recovery-20261018.json -text whites
 milestones/M02-seed-data/evidence/dev-youtube-continuation-reconciliation-20261018.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # Preserve the native PowerShell cleanup receipt's already-pinned CRLF bytes.
 milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-cleanup-20261024.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

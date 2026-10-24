@@ -22,7 +22,16 @@ function fixture(mode = 'success') {
   const machineMode = mode.startsWith('machine');
   const runtimeMode = mode.startsWith('runtime');
   const wf00Mode = mode.startsWith('wf00');
-  const persistentMode = baselineMode || discoveryMode || machineMode || runtimeMode || wf00Mode;
+  const execution31130Mode = mode.startsWith('execution31130');
+  const native31130Mode = mode.startsWith('native31130');
+  const persistentMode =
+    baselineMode ||
+    discoveryMode ||
+    machineMode ||
+    runtimeMode ||
+    wf00Mode ||
+    execution31130Mode ||
+    native31130Mode;
   const root = mkdtempSync(join(tmpdir(), 'emr-m03-n8n-fixture-'));
   roots.push(root);
   const put = (path, value) => {
@@ -60,6 +69,30 @@ function fixture(mode = 'success') {
     consumerSource = consumerSource.replace(
       'if($Wf00ExecutionDiagnostic){$node=Assert-RuntimeReconciliationPublic $true}',
       'if($Wf00ExecutionDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
+    );
+  if (execution31130Mode)
+    consumerSource = consumerSource.replace(
+      'if($Execution31130MetadataDiagnostic){$node=Assert-RuntimeReconciliationPublic $false $true}',
+      mode === 'execution31130PublicBlocked'
+        ? "if($Execution31130MetadataDiagnostic){[IO.File]::WriteAllText((Join-Path $repo 'public-gate.txt'),'reached');throw 'SYNTHETIC_PRIVATE_PUBLIC_ERROR'}"
+        : 'if($Execution31130MetadataDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
+    );
+  if (mode === 'execution31130PublicBlocked')
+    consumerSource = consumerSource.replace(
+      '  $privateRoot = [IO.Path]::GetFullPath($env:LOCALAPPDATA)',
+      "  [IO.File]::WriteAllText((Join-Path $repo 'private-sentinel.txt'),'reached');throw 'SYNTHETIC_PRIVATE_SENTINEL'",
+    );
+  if (native31130Mode)
+    consumerSource = consumerSource.replace(
+      'if($Execution31130NativeMetadataDiagnostic){$node=Assert-RuntimeReconciliationPublic $false $false $true}',
+      mode === 'native31130PublicBlocked'
+        ? "if($Execution31130NativeMetadataDiagnostic){[IO.File]::WriteAllText((Join-Path $repo 'public-gate.txt'),'reached');throw 'SYNTHETIC_PRIVATE_PUBLIC_ERROR'}"
+        : 'if($Execution31130NativeMetadataDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
+    );
+  if (mode === 'native31130PublicBlocked')
+    consumerSource = consumerSource.replace(
+      '  $privateRoot = [IO.Path]::GetFullPath($env:LOCALAPPDATA)',
+      "  [IO.File]::WriteAllText((Join-Path $repo 'private-sentinel.txt'),'reached');throw 'SYNTHETIC_PRIVATE_SENTINEL'",
     );
   if (mode === 'baselineUnknownClose')
     consumerSource = consumerSource.replace('$closed = $child.WaitForExit(5000)', '$closed = $false');
@@ -489,14 +522,155 @@ function fixture(mode = 'success') {
     if (mode === 'wf00Unsafe') result.latest = [{ privateValue: 'SYNTHETIC_PRIVATE' }];
     if (mode === 'wf00BadBool') result.manualRetentionDisabled = 'SYNTHETIC_PRIVATE';
   }
+  if (execution31130Mode) {
+    for (const k of Object.keys(result)) delete result[k];
+    const fieldNames = [
+      'objectShape',
+      'idPresent',
+      'idString',
+      'idMatches',
+      'workflowIdPresent',
+      'workflowIdString',
+      'workflowIdMatches',
+      'modePresent',
+      'modeKnown',
+      'modeManual',
+      'statusPresent',
+      'statusKnown',
+      'versionPresent',
+      'versionNull',
+      'versionIdentifier',
+      'versionMatchesBinding',
+      'createdAtPresent',
+      'createdAtString',
+      'createdAtCanonical',
+      'createdAtWithinIntent',
+      'timestampsNotFuture',
+      'startedAtPresent',
+      'startedAtNull',
+      'startedAtCanonical',
+      'stoppedAtPresent',
+      'stoppedAtNull',
+      'stoppedAtCanonical',
+      'waitTillPresent',
+      'waitTillNull',
+      'waitTillCanonical',
+      'terminalTimestampsOrdered',
+      'terminalWaitNull',
+      'payloadAbsent',
+      'sizeFlagPresent',
+      'sizeFlagBoolean',
+      'sizeFlagSafe',
+      'finishedPresent',
+      'finishedBoolean',
+      'readerMetadataContractSatisfied',
+    ];
+    Object.assign(result, {
+      version: 1,
+      environment: 'dev',
+      host: 'muhhammedsayed.app.n8n.cloud',
+      projectId: 'pHvQjDmjxVZ3KQLT',
+      technicalAttempt: 16,
+      status: 'execution_metadata_classified',
+      requestCount: 1,
+      maximumRequests: 1,
+      httpStatus: 200,
+      authenticationVerified: true,
+      networkCompletionVerified: true,
+      acceptanceProven: false,
+      metadata: { executionId: '31130', workflowId: 'MzimjpsuyPuK7SKe', mode: 'manual', status: 'success' },
+      fields: Object.fromEntries(
+        fieldNames.map((k) => [
+          k,
+          ![
+            'versionNull',
+            'startedAtNull',
+            'stoppedAtNull',
+            'waitTillCanonical',
+            'sizeFlagPresent',
+            'sizeFlagBoolean',
+          ].includes(k),
+        ]),
+      ),
+      diagnostics: {
+        version: 1,
+        dns: 'complete',
+        requests: [
+          {
+            resource: 'executions',
+            page: 1,
+            tcpConnected: true,
+            tlsVerified: true,
+            httpStatus: 200,
+            bodyRead: 'complete',
+            jsonParsed: true,
+            schemaValidated: true,
+            socketClosed: true,
+            failureStage: 'none',
+            failureCode: 'none',
+          },
+        ],
+      },
+    });
+    if (mode === 'execution31130Unsafe') result.fields.raw = 'SYNTHETIC_PRIVATE';
+    if (mode === 'execution31130BadBool') result.fields.idMatches = 'SYNTHETIC_PRIVATE';
+    if (mode === 'execution31130WrongId') result.metadata.executionId = 'SYNTHETIC_PRIVATE';
+  }
+  if (native31130Mode) {
+    for (const k of Object.keys(result)) delete result[k];
+    Object.assign(result, {
+      version: 1,
+      environment: 'dev',
+      host: 'muhhammedsayed.app.n8n.cloud',
+      projectId: 'pHvQjDmjxVZ3KQLT',
+      technicalAttempt: 16,
+      status: 'native_metadata_verified',
+      requestCount: 1,
+      maximumRequests: 1,
+      httpStatus: 200,
+      tlsVerified: true,
+      readerMetadataVerified: true,
+      networkCompletionVerified: true,
+      controlReservationConservative: true,
+      acceptanceProven: false,
+      metadata: {
+        executionId: '31130',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        mode: 'manual',
+        status: 'success',
+        versionMatchesIntent: true,
+      },
+      readerFailure: null,
+      transportFailureCode: null,
+      readerState: { requests: 1, pendingRequests: 0, unclosedResponses: 0, busy: false },
+      transportState: { pendingRequests: 0, unclosedResponses: 0 },
+    });
+    if (mode === 'native31130Unsafe') result.raw = 'SYNTHETIC_PRIVATE';
+    if (mode === 'native31130BadBool') result.tlsVerified = 'SYNTHETIC_PRIVATE';
+    if (mode === 'native31130WrongCounter') result.readerState.pendingRequests = '0';
+    if (mode === 'native31130Failure') {
+      result.status = 'native_metadata_failed';
+      result.readerMetadataVerified = false;
+      result.metadata = null;
+      result.readerFailure = {
+        version: 1,
+        workflowKey: 'WF-00',
+        operation: 'metadata',
+        stage: 'projection',
+        classification: 'contract',
+        code: 'METADATA',
+        httpStatus: 200,
+      };
+    }
+  }
   const code = `import {writeFileSync} from 'node:fs';
- const good=${wf00Mode ? "process.argv[2]==='--wf00-execution-diagnostic'&&" : ''}process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : machineMode ? "&&process.argv.length===3&&process.argv[2]==='--machine-metadata-diagnostic'" : runtimeMode ? "&&process.argv.length===3&&process.argv[2]==='--runtime-reconciliation-diagnostic'" : ''};
+ const good=${native31130Mode ? "process.argv[2]==='--execution-31130-native-metadata-diagnostic'&&" : ''}${execution31130Mode ? "process.argv[2]==='--execution-31130-metadata-diagnostic'&&" : ''}${wf00Mode ? "process.argv[2]==='--wf00-execution-diagnostic'&&" : ''}process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : machineMode ? "&&process.argv.length===3&&process.argv[2]==='--machine-metadata-diagnostic'" : runtimeMode ? "&&process.argv.length===3&&process.argv[2]==='--runtime-reconciliation-diagnostic'" : ''};
  writeFileSync(new URL('./called.txt',import.meta.url),good?'only-n8n-key':'wrong-env');
  delete process.env.M03_N8N_API_KEY;
  console.error('synthetic-private-stderr-must-stay-hidden');
  ${['timeout', 'baselineTimeout', 'baselineUnknownClose', 'machineTimeout', 'runtimeTimeout'].includes(mode) ? 'await new Promise(r=>setTimeout(r,10000));' : ''}
  console.log(${mode === 'badJson' ? "'synthetic-private-stdout-must-stay-hidden'" : mode === 'unsafeSchema' ? JSON.stringify(JSON.stringify({ ...result, privateSecret: 'synthetic-private-value' })) : JSON.stringify(JSON.stringify(result))});
- ${mode === 'failure' ? 'process.exitCode=7;' : ['workflowBodyFailure', 'wf70Http', 'machineHttp', 'runtimeHttp'].includes(mode) ? 'process.exitCode=1;' : ''}`;
+ ${mode === 'failure' ? 'process.exitCode=7;' : ['workflowBodyFailure', 'wf70Http', 'machineHttp', 'runtimeHttp', 'native31130Failure'].includes(mode) ? 'process.exitCode=1;' : ''}`;
   put('scripts/n8n/inventory.mjs', code);
   const paths = [
     'scripts/n8n/windows/New-M03N8nApiHandoff.ps1',
@@ -588,6 +762,8 @@ $s=[IO.File]::Open($store,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.Fi
         ...(runtimeMode ? ['-RuntimeReconciliationDiagnostic'] : []),
         ...(discoveryMode ? ['-Wf70DiscoveryDiagnostic'] : []),
         ...(wf00Mode ? ['-Wf00ExecutionDiagnostic'] : []),
+        ...(execution31130Mode ? ['-Execution31130MetadataDiagnostic'] : []),
+        ...(native31130Mode ? ['-Execution31130NativeMetadataDiagnostic'] : []),
       ]),
   };
 }
@@ -631,7 +807,10 @@ describe(
         privateRead: false,
         networkRequests: 0,
       };
-      for (const wf00Mode of [false, true]) {
+      for (const publicMode of ['runtime', 'wf00', 'execution31130', 'native31130']) {
+        const wf00Mode = publicMode === 'wf00',
+          execution31130Mode = publicMode === 'execution31130',
+          native31130Mode = publicMode === 'native31130';
         for (const mode of ['ready', 'stale', 'stringCounter', 'private', 'extra', 'overflow', 'stderr']) {
           const dto = structuredClone(result);
           if (wf00Mode)
@@ -644,13 +823,35 @@ describe(
               controlAttempts: 846,
               combinedAttempts: 1370,
             });
+          if (execution31130Mode)
+            Object.assign(dto, {
+              kind: 'm03_execution_31130_metadata_check',
+              technicalAttempt: 16,
+              sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
+              windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+              managementAttempts: 824,
+              controlAttempts: 955,
+              combinedAttempts: 1779,
+              maximumRequests: 1,
+            });
+          if (native31130Mode)
+            Object.assign(dto, {
+              kind: 'm03_execution_31130_native_metadata_check',
+              technicalAttempt: 16,
+              sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
+              windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+              managementAttempts: 825,
+              controlAttempts: 955,
+              combinedAttempts: 1780,
+              maximumRequests: 1,
+            });
           if (mode === 'stale') dto.managementAttempts--;
           if (mode === 'stringCounter') dto.controlAttempts = String(dto.controlAttempts);
           if (mode === 'private') dto.privateRead = true;
           if (mode === 'extra') dto.raw = 'SYNTHETIC_PRIVATE_VALUE';
           put(
             'scripts/n8n/inventory.mjs',
-            `if(process.argv[2]!==${JSON.stringify(wf00Mode ? '--wf00-execution-check-only' : '--runtime-reconciliation-check-only')}||process.env.M03_N8N_API_KEY||process.env.PGPASSWORD||process.env.SUPABASE_ACCESS_TOKEN||process.env.NODE_OPTIONS)process.exit(7);${mode === 'stderr' ? "console.error('SYNTHETIC_PRIVATE_STDERR');" : ''}console.log(${JSON.stringify(mode === 'overflow' ? 'X'.repeat(5000) : JSON.stringify(dto))});`,
+            `if(process.argv[2]!==${JSON.stringify(native31130Mode ? '--execution-31130-native-metadata-check-only' : execution31130Mode ? '--execution-31130-metadata-check-only' : wf00Mode ? '--wf00-execution-check-only' : '--runtime-reconciliation-check-only')}||process.env.M03_N8N_API_KEY||process.env.PGPASSWORD||process.env.SUPABASE_ACCESS_TOKEN||process.env.NODE_OPTIONS)process.exit(7);${mode === 'stderr' ? "console.error('SYNTHETIC_PRIVATE_STDERR');" : ''}console.log(${JSON.stringify(mode === 'overflow' ? 'X'.repeat(5000) : JSON.stringify(dto))});`,
           );
           const script = put(
             'public.ps1',
@@ -659,7 +860,7 @@ $repo=${quote(root)};$source=${quote(resolve('scripts/n8n/windows/Invoke-M03N8nI
 $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($source,[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'PARSE_FAILED'}
 foreach($name in @('Assert-Keys','Assert-RuntimeReconciliationPublic')){$found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'MISSING_FUNCTION'};Invoke-Expression $found[0].Extent.Text}
 function Confined-File($Root,$Relative){return Join-Path $Root $Relative}
-try{$value=Assert-RuntimeReconciliationPublic ${wf00Mode ? '$true' : '$false'};if($value -cne ${quote(node)}){throw 'WRONG_NODE'};Write-Output 'PUBLIC_READY'}catch{Write-Output 'PUBLIC_BLOCKED'}
+try{$value=Assert-RuntimeReconciliationPublic ${wf00Mode ? '$true' : '$false'} ${execution31130Mode ? '$true' : '$false'} ${native31130Mode ? '$true' : '$false'};if($value -cne ${quote(node)}){throw 'WRONG_NODE'};Write-Output 'PUBLIC_READY'}catch{Write-Output 'PUBLIC_BLOCKED'}
 `,
           );
           const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', script], {
@@ -678,6 +879,98 @@ try{$value=Assert-RuntimeReconciliationPublic ${wf00Mode ? '$true' : '$false'};i
           assert.equal(r.stdout.trim(), mode === 'ready' ? 'PUBLIC_READY' : 'PUBLIC_BLOCKED');
           assert.doesNotMatch(r.stdout + r.stderr, /SYNTHETIC_PRIVATE/);
         }
+      }
+    });
+    it('native31130 native Management child validates fixed failure metadata and rejects unsafe output', () => {
+      for (const mode of [
+        'native31130Success',
+        'native31130Unsafe',
+        'native31130BadBool',
+        'native31130WrongCounter',
+        'native31130Failure',
+      ]) {
+        const f = fixture(mode),
+          check = f.run(true);
+        assert.equal(check.status, 0, check.stderr);
+        assert.match(check.stdout, /EXECUTION_31130_NATIVE_METADATA_CHECK_ONLY_READY/);
+        const original = join(
+            f.root,
+            'private/Everyone-Market-Radar-Private/secrets/dev/runtime/management.dpapi',
+          ),
+          before = readFileSync(original);
+        const r = f.run();
+        assert.equal(r.status, mode === 'native31130Success' ? 0 : 1, r.stderr);
+        assert.doesNotMatch(
+          r.stdout + r.stderr,
+          /SYNTHETIC_PRIVATE|synthetic-private|synthetic-n8n-key|unrelated-/,
+        );
+        const receipt = JSON.parse(r.stdout);
+        assert.equal(receipt.childClosed, true);
+        assert.equal(receipt.handoffDeleted, true);
+        assert.deepEqual(readFileSync(original), before);
+        assert.equal(existsSync(f.handoff), false);
+        assert.equal(readFileSync(join(f.root, 'scripts/n8n/called.txt'), 'utf8'), 'only-n8n-key');
+        if (mode === 'native31130Success') assert.equal(receipt.inventory.status, 'native_metadata_verified');
+        else if (mode === 'native31130Failure')
+          assert.equal(receipt.inventory.readerFailure.code, 'METADATA');
+        else assert.equal(receipt.inventory, null);
+      }
+    });
+    it('execution31130 public refusal stops the whole native consumer before its private-path sentinel', () => {
+      for (const mode of ['execution31130PublicBlocked', 'native31130PublicBlocked']) {
+        const f = fixture(mode);
+        for (const check of [true, false]) {
+          const r = f.run(check);
+          assert.equal(r.status, 1, r.stderr);
+          assert.match(r.stdout, /N8N_PREFLIGHT_BLOCKED/);
+          assert.equal(readFileSync(join(f.root, 'public-gate.txt'), 'utf8'), 'reached');
+          assert.equal(existsSync(join(f.root, 'private-sentinel.txt')), false);
+          assert.equal(existsSync(join(f.root, 'scripts/n8n/called.txt')), false);
+          assert.equal(existsSync(f.handoff), false);
+          assert.equal(
+            existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')),
+            false,
+          );
+          assert.doesNotMatch(r.stdout + r.stderr, /SYNTHETIC_PRIVATE/);
+        }
+      }
+    });
+    it('execution31130 fixed mode preserves Management and rejects unsafe metadata without private output', () => {
+      for (const mode of [
+        'execution31130Success',
+        'execution31130Unsafe',
+        'execution31130BadBool',
+        'execution31130WrongId',
+      ]) {
+        const f = fixture(mode),
+          check = f.run(true);
+        assert.equal(check.status, 0, check.stderr);
+        assert.match(check.stdout, /EXECUTION_31130_METADATA_CHECK_ONLY_READY/);
+        assert.equal(existsSync(f.handoff), false);
+        const original = join(
+            f.root,
+            'private/Everyone-Market-Radar-Private/secrets/dev/runtime/management.dpapi',
+          ),
+          before = readFileSync(original);
+        const run = f.run();
+        assert.equal(run.status, mode === 'execution31130Success' ? 0 : 1, run.stderr);
+        assert.doesNotMatch(
+          run.stdout + run.stderr,
+          /SYNTHETIC_PRIVATE|synthetic-private|synthetic-n8n-key|unrelated-/,
+        );
+        const receipt = JSON.parse(run.stdout);
+        assert.equal(receipt.childClosed, true);
+        assert.equal(receipt.handoffDeleted, true);
+        assert.deepEqual(readFileSync(original), before);
+        assert.equal(existsSync(f.handoff), false);
+        assert.equal(readFileSync(join(f.root, 'scripts/n8n/called.txt'), 'utf8'), 'only-n8n-key');
+        assert.equal(
+          existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')),
+          false,
+        );
+        if (mode === 'execution31130Success')
+          assert.equal(receipt.inventory.status, 'execution_metadata_classified');
+        else assert.equal(receipt.inventory, null);
       }
     });
     it('WF00 fixed read-only mode preserves the persistent Management original, closes children and rejects unsafe output', () => {

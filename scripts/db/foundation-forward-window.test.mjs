@@ -122,20 +122,21 @@ if($script:query -isnot [string]){throw 'QUERY_NOT_CAPTURED'};Write-Output $scri
   assert.equal(result.stderr, '');
   return result.stdout.trim();
 }
-function nativeTechnical13ArchiveQueries() {
+function nativeTechnical13ArchiveQueries(technical16 = false) {
   const nativePath = (name) => {
     const path = new URL('./windows/' + name, import.meta.url).pathname;
     return process.platform === 'win32' ? decodeURIComponent(path.slice(1)) : path;
   };
   const code = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
-foreach($entry in @(@(${literal(nativePath('Invoke-M03FoundationMigrations.ps1'))},@('Foundation-Technical13FamilyPredicate','Foundation-Technical13AuditPredicate','Foundation-Technical13InspectionSql','Foundation-Technical13ArchiveSql')),@(${literal(nativePath('Foundation-AdminControl.ps1'))},@('Foundation-Literal','Foundation-FixtureSql')))){
+foreach($entry in @(@(${literal(nativePath('Invoke-M03FoundationMigrations.ps1'))},@('Foundation-Technical13FamilyPredicate','Foundation-Technical16FamilyPredicate','Foundation-Technical13AuditPredicate','Foundation-Technical13InspectionSql','Foundation-Technical13ArchiveSql')),@(${literal(nativePath('Foundation-AdminControl.ps1'))},@('Foundation-Literal','Foundation-FixtureSql')))){
  $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($entry[0],[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'ARCHIVE_SOURCE_PARSE_FAILED'}
  foreach($name in $entry[1]){$found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'ARCHIVE_FUNCTION_NOT_EXACT'};Invoke-Expression $found[0].Extent.Text}
 }
 $repo=${literal(process.cwd())};$PostcheckContinuation=$false;$RemainingContinuation=$false;$StartupReplacement=$false;$ProjectVerifiedContinuation=$false
 function Assert-Path($Base,$Relative){return Join-Path $Base $Relative}
 $expected=[pscustomobject]@{id='3c46c791-e140-4eb9-890a-eecfa251f65e';audience='https://everyone-market-researcher-7fcbxykan-muhammed-abdelrahman.vercel.app';commitSha='7b1837201ac7925591577a1517d7288936ca3464';deploymentId='dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25'}
-[ordered]@{inspection=(Foundation-Technical13InspectionSql);currentInspection=(Foundation-Technical13InspectionSql -ReadOnlyCurrent $true);archive=(Foundation-Technical13ArchiveSql $expected)}|ConvertTo-Json -Compress -Depth 4
+if($${technical16}){$expected=[pscustomobject]@{id='4c602549-2c42-4ec3-9328-714d7cb66a77';audience='https://everyone-market-researcher-13wnnoywv-muhammed-abdelrahman.vercel.app';commitSha='5087d4d93d2f6ffdca0bc0096b365723005446fc';deploymentId='dpl_Hqcn7hxpuEUz6Bbq9tTtmQs5MdYd'}}
+[ordered]@{inspection=(Foundation-Technical13InspectionSql -Technical16 $${technical16});currentInspection=(Foundation-Technical13InspectionSql -ReadOnlyCurrent $${!technical16} -Technical16 $${technical16});archive=(Foundation-Technical13ArchiveSql $expected -Technical16 $${technical16})}|ConvertTo-Json -Compress -Depth 4
 `;
   const result = spawnSync(
     'powershell.exe',
@@ -653,6 +654,101 @@ describe(
             `select jsonb_agg(to_jsonb(w) order by window_id) from ops.foundation_gateway_rate_windows w where window_id<>'${next}';`,
           ),
           previous,
+        );
+      },
+    );
+
+    test(
+      'technical16 inspection and status-only archive preserve five closed windows and seven typed lifecycle audits',
+      { skip: process.platform !== 'win32' },
+      () => {
+        const { inspection, archive } = nativeTechnical13ArchiveQueries(true);
+        const current = '4c602549-2c42-4ec3-9328-714d7cb66a77';
+        assert.equal(
+          /\b(update|insert|delete|truncate|grant|revoke|alter|create|call)\b/i.test(inspection),
+          false,
+        );
+        assert.equal(/\b(delete|truncate|grant|revoke|alter\s+role|create\s+role)\b/i.test(archive), false);
+        assert.equal(
+          (archive.match(/update app\.(competitors|competitor_accounts) set status=/g) || []).length,
+          2,
+        );
+        assert.ok(archive.includes('ops.foundation_gateway_run_bindings,ops.apify_launch_approvals'));
+        psql(`update ops.foundation_gateway_rate_windows set bound_commit_sha='f42930f90c2de43c84f61ad6d966d0ee6074d70e' where window_id='${oldWindow}';
+insert into ops.foundation_gateway_rate_windows(namespace,window_id,project_ref,environment,bound_audience,bound_commit_sha,bound_deployment_id,starts_at,expires_at,closed_at,admitted_count,close_count)
+values('m03-foundation-dev','${freshWindow}','zmotjsbzhzjvpelxvxlf','dev','https://everyone-market-researcher-j94yqflt0-muhammed-abdelrahman.vercel.app','a5e746736893d5040e93032ae740a0878f748837','dpl_HPq8ot1nNvBZRLTyAoEnXHXuhTPF',null,null,clock_timestamp(),1,1),
+('m03-foundation-dev','eda4fae1-1e19-47db-81b8-beac1a4ed883','zmotjsbzhzjvpelxvxlf','dev','https://everyone-market-researcher-ocnyxyafr-muhammed-abdelrahman.vercel.app','aff94f2b2d8055cf93b5405e6b11d4e7d9c86803','dpl_ABN1zsMeta6kHd4eRTqT9FbLqkEY',transaction_timestamp()-interval '2 hours',transaction_timestamp()-interval '1 hour',clock_timestamp(),2,1),
+('m03-foundation-dev','3c46c791-e140-4eb9-890a-eecfa251f65e','zmotjsbzhzjvpelxvxlf','dev','https://everyone-market-researcher-7fcbxykan-muhammed-abdelrahman.vercel.app','7b1837201ac7925591577a1517d7288936ca3464','dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25',transaction_timestamp()-interval '2 hours',transaction_timestamp()-interval '1 hour',clock_timestamp(),2,1),
+('m03-foundation-dev','${current}','zmotjsbzhzjvpelxvxlf','dev','https://everyone-market-researcher-13wnnoywv-muhammed-abdelrahman.vercel.app','5087d4d93d2f6ffdca0bc0096b365723005446fc','dpl_Hqcn7hxpuEUz6Bbq9tTtmQs5MdYd',transaction_timestamp()-interval '2 hours',transaction_timestamp()-interval '1 hour',clock_timestamp(),2,1);
+insert into ops.apify_launch_approvals(window_id,approval_reference,project_ref,actor_build,max_total_charge_usd,batch_max_usd,not_before,expires_at,closed_at)
+select w,approval_reference,project_ref,actor_build,max_total_charge_usd,batch_max_usd,not_before,expires_at,closed_at from ops.apify_launch_approvals cross join unnest(array['${freshWindow}'::uuid,'eda4fae1-1e19-47db-81b8-beac1a4ed883'::uuid,'3c46c791-e140-4eb9-890a-eecfa251f65e'::uuid,'${current}'::uuid]) w where window_id='${oldWindow}';
+insert into ops.foundation_gateway_requests(window_id,request_id,operation,payload_sha256,state,lease_expires_at,completed_at,result)
+values('eda4fae1-1e19-47db-81b8-beac1a4ed883','00000000-0000-4000-8000-000000000012','identity.read',repeat('0',64),'completed',clock_timestamp(),clock_timestamp(),'{}'),('3c46c791-e140-4eb9-890a-eecfa251f65e','00000000-0000-4000-8000-000000000013','identity.read',repeat('0',64),'completed',clock_timestamp(),clock_timestamp(),'{}'),('${current}','00000000-0000-4000-8000-000000000016','identity.read',repeat('0',64),'completed',clock_timestamp(),clock_timestamp(),'{}');
+insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id,before,after)
+select 'system','m03_smoke_reactivate.v1:'||segment,'m03_smoke_fixture_reactivated','competitor',c.id::text,
+ jsonb_build_object('competitor_status','archived','account_status','paused'),
+ jsonb_build_object('fixture_version',1,'project_ref','zmotjsbzhzjvpelxvxlf','segment_id',segment,'competitor_id',c.id,'account_id',a.id,'competitor_status','active','account_status','active','original_creation_audit_id',o.id)
+from app.competitors c join app.competitor_accounts a on a.competitor_id=c.id join ops.audit_log o on o.entity_id=c.id::text and o.actor_id='m03_smoke_setup.v1'
+cross join unnest(array['1c69c89e-7807-46d5-b7b8-ca28285ff2b4','20275b22-b7fe-4737-a9a4-c50c2feadb74','20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-2','20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-12','20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-13','20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-16'])segment where c.id='${competitor}';
+update app.competitors set status='active' where id='${competitor}';update app.competitor_accounts set status='active' where id='${account}';
+insert into app.competitors(id,company_code,slug,name,priority_tier,status)values('00000000-0000-4000-8000-000000000998','C998','unrelated-test','Unrelated local company','adjacent','active');`);
+        const read = () => JSON.parse(psql('begin read only;' + inspection + 'rollback;'));
+        const before = read();
+        assert.equal(before.identity, true);
+        assert.equal(before.familyClosed, true);
+        assert.deepEqual(
+          [
+            before.familyWindowCount,
+            before.globalAdmittedCount,
+            before.globalRequestCount,
+            before.fixtureAuditCount,
+            before.globalLaunchCount,
+          ],
+          [5, 9, 4, 7, 0],
+        );
+        assert.deepEqual(
+          [before.technical12Exact, before.technical13Exact, before.technical16Exact],
+          [true, true, true],
+        );
+        assert.equal(before.fixture.competitorActive, true);
+        const immutableSql = `select jsonb_build_object('windows',(select jsonb_agg(to_jsonb(w) order by window_id)from ops.foundation_gateway_rate_windows w),'audits',(select jsonb_agg(to_jsonb(l) order by id)from ops.audit_log l),'other',(select to_jsonb(c)from app.competitors c where company_code='C998'));`;
+        const immutable = psql(immutableSql);
+        const changes = [
+          ...[12, 13, 16].map(
+            (ordinal) => `delete from ops.audit_log where actor_id like '%:technical-${ordinal}'`,
+          ),
+          `update ops.audit_log set after=jsonb_set(after,'{original_creation_audit_id}',to_jsonb(after->>'original_creation_audit_id')) where actor_id like '%:technical-16'`,
+          `update ops.audit_log set after=jsonb_set(after,'{account_id}','"00000000-0000-4000-8000-000000000999"') where actor_id like '%:technical-16'`,
+          `insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id)values('system','m03_smoke_reactivate.v1:unexpected-technical-14','m03_smoke_fixture_reactivated','competitor','${competitor}')`,
+          `update ops.foundation_gateway_rate_windows set admitted_count=3 where window_id='${current}'`,
+          `update ops.foundation_gateway_rate_windows set closed_at=null where window_id='${current}'`,
+          `update ops.foundation_gateway_rate_windows set bound_deployment_id='dpl_other' where window_id='${current}'`,
+          `update ops.foundation_gateway_requests set state='reserved',completed_at=null,result=null where window_id='${current}'`,
+          `insert into ops.foundation_gateway_leases(window_id,slot,request_id,expires_at)values('${current}',1,'00000000-0000-4000-8000-000000000016',clock_timestamp()+interval '1 minute')`,
+          `insert into app.items(id,account_id,competitor_id)values('00000000-0000-4000-8000-000000000997','${account}','${competitor}')`,
+          `update app.competitor_accounts set last_success_at=clock_timestamp() where id='${account}'`,
+          `update app.competitors set name='Human correction' where id='${competitor}'`,
+        ];
+        for (const [index, change] of changes.entries()) {
+          try {
+            psql(
+              `do $guard$begin begin ${change};${archive}raise exception using errcode='P9999',message='ARCHIVE_SHOULD_DENY';exception when others then if SQLSTATE<>'55000' then raise exception using errcode=SQLSTATE,message='WRONG_ARCHIVE_DENIAL';end if;end;end;$guard$;`,
+            );
+          } catch {
+            throw Error('TECHNICAL16_ARCHIVE_VARIANT_' + index);
+          }
+          assert.deepEqual(read(), before, 'denied16 mutation remains atomic');
+        }
+        psql(archive);
+        const after = read();
+        assert.equal(after.fixture.competitorArchived, true);
+        assert.equal(after.fixture.accountPaused, true);
+        assert.equal(after.fixtureAuditCount, 7);
+        assert.equal(after.familyClosed, true);
+        assert.equal(
+          psql(immutableSql),
+          immutable,
+          'archive leaves every historical audit/window and unrelated company unchanged',
         );
       },
     );

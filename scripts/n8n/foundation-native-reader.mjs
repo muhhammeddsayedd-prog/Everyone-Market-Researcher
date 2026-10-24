@@ -401,11 +401,13 @@ export function createFoundationNativeReader({
       try {
         await raceAbort(closure.promise, signal);
       } catch {
-        fault = new NativeReaderError('CLOSE');
-        if (context) context.stage = 'close';
+        if (fault === null) {
+          fault = new NativeReaderError('CLOSE');
+          if (context) context.stage = 'close';
+        }
       }
     }
-    if (closure && !closure.closed) fault = new NativeReaderError('CLOSE');
+    if (closure && !closure.closed) fault = fault ?? new NativeReaderError('CLOSE');
     if (signal.aborted || now() >= deadlineAt) fault = fault ?? new NativeReaderError('DEADLINE');
     if (fault) throw fault;
     return result;

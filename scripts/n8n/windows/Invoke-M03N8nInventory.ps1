@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$WorkflowBaselineDiagnostic,[switch]$Wf70DiscoveryDiagnostic,[switch]$MachineMetadataDiagnostic,[switch]$RuntimeReconciliationDiagnostic,[switch]$Wf00ExecutionDiagnostic)
+param([switch]$CheckOnly,[switch]$WorkflowBaselineDiagnostic,[switch]$Wf70DiscoveryDiagnostic,[switch]$MachineMetadataDiagnostic,[switch]$RuntimeReconciliationDiagnostic,[switch]$Wf00ExecutionDiagnostic,[switch]$Execution31130MetadataDiagnostic,[switch]$Execution31130NativeMetadataDiagnostic)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
@@ -209,7 +209,34 @@ function Validate-Wf00ExecutionDiagnostic($Value) {
   if($Value.manualRetentionDisabled -and ($null -eq $Value.baseline -or -not $Value.baseline.settingsMatch)){throw 'blocked'}
   if($Value.status -ceq 'execution_metadata_observed' -and ($Value.requestCount -ne 3 -or -not $Value.authenticationVerified -or -not $Value.networkCompletionVerified -or $null -eq $Value.runningEmpty -or $null -eq $Value.baseline -or @($Value.diagnostics.requests|Where-Object{$_.httpStatus -ne 200 -or $_.tlsVerified -ne $true -or -not $_.jsonParsed -or -not $_.schemaValidated -or -not $_.socketClosed}).Count -ne 0)){throw 'blocked'}
 }
-function Assert-RuntimeReconciliationPublic([bool]$Wf00Mode=$false) {
+function Validate-Execution31130MetadataDiagnostic($Value) {
+  Assert-Keys $Value @('version','environment','host','projectId','technicalAttempt','status','requestCount','maximumRequests','httpStatus','authenticationVerified','networkCompletionVerified','acceptanceProven','metadata','fields','diagnostics')
+  if($Value.version -ne 1 -or $Value.environment -cne 'dev' -or $Value.host -cne $fixedHost -or $Value.projectId -cne $projectId -or $Value.technicalAttempt -ne 16 -or $Value.maximumRequests -ne 1 -or $Value.requestCount -isnot [int] -or $Value.requestCount -lt 0 -or $Value.requestCount -gt 1 -or $Value.status -cnotin @('execution_metadata_classified','missing_key','invalid_key','invalid_options','budget_blocked','unsafe_dns','timeout','unauthorized','redirect_refused','response_rejected','network_failed','http_failed','body_too_large')){throw 'blocked'}
+  foreach($key in @('version','technicalAttempt','maximumRequests')){if($Value.$key -isnot [int]){throw 'blocked'}}
+  foreach($key in @('authenticationVerified','networkCompletionVerified','acceptanceProven')){if($Value.$key -isnot [bool]){throw 'blocked'}}
+  if($Value.acceptanceProven -or ($null -ne $Value.httpStatus -and ($Value.httpStatus -isnot [int] -or $Value.httpStatus -lt 100 -or $Value.httpStatus -gt 599))){throw 'blocked'}
+  Validate-Diagnostics $Value.diagnostics $Value.requestCount @('executions') $true
+  if($null -ne $Value.fields){
+    Assert-Keys $Value.fields @('objectShape','idPresent','idString','idMatches','workflowIdPresent','workflowIdString','workflowIdMatches','modePresent','modeKnown','modeManual','statusPresent','statusKnown','versionPresent','versionNull','versionIdentifier','versionMatchesBinding','createdAtPresent','createdAtString','createdAtCanonical','createdAtWithinIntent','timestampsNotFuture','startedAtPresent','startedAtNull','startedAtCanonical','stoppedAtPresent','stoppedAtNull','stoppedAtCanonical','waitTillPresent','waitTillNull','waitTillCanonical','terminalTimestampsOrdered','terminalWaitNull','payloadAbsent','sizeFlagPresent','sizeFlagBoolean','sizeFlagSafe','finishedPresent','finishedBoolean','readerMetadataContractSatisfied')
+    foreach($p in $Value.fields.PSObject.Properties){if($p.Value -isnot [bool]){throw 'blocked'}}
+    Assert-Keys $Value.metadata @('executionId','workflowId','mode','status')
+    if(($null -ne $Value.metadata.executionId -and $Value.metadata.executionId -cne '31130') -or ($null -ne $Value.metadata.workflowId -and $Value.metadata.workflowId -cne 'MzimjpsuyPuK7SKe') -or ($null -ne $Value.metadata.mode -and $Value.metadata.mode -cnotin @('manual','integrated','error','webhook','trigger')) -or ($null -ne $Value.metadata.status -and $Value.metadata.status -cnotin @('new','running','waiting','unknown','success','error','canceled','crashed'))){throw 'blocked'}
+  }elseif($null -ne $Value.metadata){throw 'blocked'}
+  if($Value.status -ceq 'execution_metadata_classified' -and ($Value.requestCount -ne 1 -or $Value.httpStatus -ne 200 -or -not $Value.authenticationVerified -or -not $Value.networkCompletionVerified -or $null -eq $Value.fields -or @($Value.diagnostics.requests|Where-Object{$_.httpStatus -ne 200 -or $_.tlsVerified -ne $true -or -not $_.jsonParsed -or -not $_.schemaValidated -or -not $_.socketClosed}).Count -ne 0)){throw 'blocked'}
+}
+function Validate-Execution31130NativeMetadataDiagnostic($Value) {
+  Assert-Keys $Value @('version','environment','host','projectId','technicalAttempt','status','requestCount','maximumRequests','httpStatus','tlsVerified','readerMetadataVerified','networkCompletionVerified','controlReservationConservative','acceptanceProven','metadata','readerFailure','transportFailureCode','readerState','transportState')
+  foreach($key in @('version','technicalAttempt','requestCount','maximumRequests')){if($Value.$key -isnot [int]){throw 'blocked'}}
+  if($Value.version -ne 1 -or $Value.environment -cne 'dev' -or $Value.host -cne $fixedHost -or $Value.projectId -cne $projectId -or $Value.technicalAttempt -ne 16 -or $Value.maximumRequests -ne 1 -or $Value.requestCount -lt 0 -or $Value.requestCount -gt 1 -or $Value.status -cnotin @('native_metadata_verified','native_metadata_failed','missing_key','invalid_key','invalid_options','budget_blocked')){throw 'blocked'}
+  foreach($key in @('tlsVerified','readerMetadataVerified','networkCompletionVerified','controlReservationConservative','acceptanceProven')){if($Value.$key -isnot [bool]){throw 'blocked'}}
+  if($Value.acceptanceProven -or -not $Value.controlReservationConservative -or ($null -ne $Value.httpStatus -and ($Value.httpStatus -isnot [int] -or $Value.httpStatus -lt 100 -or $Value.httpStatus -gt 599))){throw 'blocked'}
+  if($null -ne $Value.metadata){Assert-Keys $Value.metadata @('executionId','workflowId','mode','status','versionMatchesIntent');if($Value.metadata.executionId -cne '31130' -or $Value.metadata.workflowId -cne 'MzimjpsuyPuK7SKe' -or $Value.metadata.mode -cne 'manual' -or $Value.metadata.status -cnotin @('new','running','waiting','unknown','success','error','canceled','crashed') -or $Value.metadata.versionMatchesIntent -isnot [bool]){throw 'blocked'}}
+  if($null -ne $Value.readerFailure){$f=$Value.readerFailure;Assert-Keys $f @('version','workflowKey','operation','stage','classification','code','httpStatus');if($f.version -ne 1 -or ($null -ne $f.workflowKey -and $f.workflowKey -cne 'WF-00') -or $f.operation -cnotin @('metadata','unknown') -or $f.stage -cnotin @('unknown','admission','request','framing','body','parse','projection','close','http_status') -or $f.classification -cnotin @('unknown','contract','http','timeout','closure','confidentiality','parse','framing') -or $f.code -cnotin @('ADMISSION','DEADLINE','REJECTED','TRANSPORT_SHAPE','FRAMING','RESPONSE_LIMIT','STREAM','TRUNCATED','JSON','NATIVE_SIZE_LIMIT','SENSITIVE_REFLECTION','STRUCTURE','CLOSE','METADATA','TIMES','VERSION','MODE','OWNERSHIP_TIME','NOT_FOUND','HTTP') -or ($null -ne $f.httpStatus -and ($f.httpStatus -isnot [int] -or $f.httpStatus -lt 100 -or $f.httpStatus -gt 599))){throw 'blocked'}}
+  if($null -ne $Value.transportFailureCode -and $Value.transportFailureCode -cnotin @('CONFIG','REQUEST','DNS','DEADLINE','SOCKET','TLS','STATUS','FRAMING','RESPONSE_LIMIT','TRUNCATED','RESPONSE','ABORTED','STREAM','CLOSE','CLOSED')){throw 'blocked'}
+  foreach($name in @('readerState','transportState')){if($null -ne $Value.$name){$fields=@('pendingRequests','unclosedResponses');if($name -ceq 'readerState'){$fields+=@('requests','busy')};Assert-Keys $Value.$name $fields;foreach($field in $fields){if($field -ceq 'busy'){if($Value.$name.$field -isnot [bool]){throw 'blocked'}}elseif($Value.$name.$field -isnot [int] -or $Value.$name.$field -lt 0 -or $Value.$name.$field -gt 1){throw 'blocked'}}}}
+  if($Value.status -ceq 'native_metadata_verified' -and ($Value.requestCount -ne 1 -or $Value.httpStatus -ne 200 -or -not $Value.tlsVerified -or -not $Value.readerMetadataVerified -or -not $Value.networkCompletionVerified -or $null -eq $Value.metadata -or -not $Value.metadata.versionMatchesIntent -or $null -ne $Value.readerFailure -or $null -ne $Value.transportFailureCode -or $null -eq $Value.readerState -or $null -eq $Value.transportState -or $Value.readerState.requests -ne 1 -or $Value.readerState.pendingRequests -ne 0 -or $Value.readerState.unclosedResponses -ne 0 -or $Value.readerState.busy -or $Value.transportState.pendingRequests -ne 0 -or $Value.transportState.unclosedResponses -ne 0)){throw 'blocked'}
+}
+function Assert-RuntimeReconciliationPublic([bool]$Wf00Mode=$false,[bool]$Execution31130Mode=$false,[bool]$Execution31130NativeMode=$false) {
   $acceptance=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Confined-File $repo 'scripts/n8n/foundation-acceptance-seal.json')))
   $module=Confined-File $repo 'scripts/n8n/windows/Acceptance-PublicRuntime.ps1'
   if((Get-FileHash -LiteralPath $module -Algorithm SHA256).Hash.ToLowerInvariant() -cne $acceptance.files.'scripts/n8n/windows/Acceptance-PublicRuntime.ps1'){throw 'blocked'}
@@ -217,22 +244,22 @@ function Assert-RuntimeReconciliationPublic([bool]$Wf00Mode=$false) {
   $executable=Assert-M03AcceptancePublicSeal $repo $acceptance
   $info=$null;$process=$null;$started=$false;$closed=$true;$outMemory=$null;$errMemory=$null;$outBuffer=$null;$errBuffer=$null
   try{
-    $info=[Diagnostics.ProcessStartInfo]::new();$info.FileName=$executable;$publicArgument=if($Wf00Mode){'--wf00-execution-check-only'}else{'--runtime-reconciliation-check-only'};$info.Arguments='"'+(Confined-File $repo 'scripts/n8n/inventory.mjs')+'" '+$publicArgument;$info.WorkingDirectory=$repo;$info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.EnvironmentVariables.Clear()
+    $info=[Diagnostics.ProcessStartInfo]::new();$info.FileName=$executable;$publicArgument=if($Execution31130NativeMode){'--execution-31130-native-metadata-check-only'}elseif($Execution31130Mode){'--execution-31130-metadata-check-only'}elseif($Wf00Mode){'--wf00-execution-check-only'}else{'--runtime-reconciliation-check-only'};$info.Arguments='"'+(Confined-File $repo 'scripts/n8n/inventory.mjs')+'" '+$publicArgument;$info.WorkingDirectory=$repo;$info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.RedirectStandardInput=$true;$info.EnvironmentVariables.Clear()
     foreach($key in @('SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA','APPDATA','USERPROFILE')){if(Test-Path ('Env:'+$key)){$info.EnvironmentVariables[$key]=[Environment]::GetEnvironmentVariable($key)}}
-    $process=[Diagnostics.Process]::new();$process.StartInfo=$info;$started=$process.Start();if(-not $started){throw 'blocked'};$closed=$false
+    $process=[Diagnostics.Process]::new();$process.StartInfo=$info;$started=$process.Start();if(-not $started){throw 'blocked'};$closed=$false;$process.StandardInput.Close()
     $outBuffer=New-Object byte[] 4096;$errBuffer=New-Object byte[] 1024;$outMemory=[IO.MemoryStream]::new([byte[]]$outBuffer,$true);$errMemory=[IO.MemoryStream]::new([byte[]]$errBuffer,$true)
     $out=$process.StandardOutput.BaseStream.CopyToAsync($outMemory);$err=$process.StandardError.BaseStream.CopyToAsync($errMemory);$closed=$process.WaitForExit(15000)
     if(-not $closed -or $process.ExitCode -ne 0 -or -not [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($out,$err)).Wait(5000) -or $errMemory.Position -ne 0){throw 'blocked'}
     $value=ConvertFrom-Json -InputObject ([Text.Encoding]::UTF8.GetString($outBuffer,0,[int]$outMemory.Position));Assert-Keys $value @('kind','status','technicalAttempt','sourceCommitSha','windowId','managementAttempts','controlAttempts','combinedAttempts','maximumRequests','privateRead','networkRequests')
     foreach($key in @('technicalAttempt','managementAttempts','controlAttempts','combinedAttempts','maximumRequests','networkRequests')){if($value.$key -isnot [int] -and $value.$key -isnot [long]){throw 'blocked'}}
-    $expected=if($Wf00Mode){@{kind='m03_wf00_execution_check';status='ready';technicalAttempt=15;sourceCommitSha='5087d4d93d2f6ffdca0bc0096b365723005446fc';windowId='4c602549-2c42-4ec3-9328-714d7cb66a77';managementAttempts=524;controlAttempts=846;combinedAttempts=1370;maximumRequests=3;privateRead=$false;networkRequests=0}}else{@{kind='m03_runtime_reconciliation_check';status='ready';technicalAttempt=13;sourceCommitSha='7b1837201ac7925591577a1517d7288936ca3464';windowId='3c46c791-e140-4eb9-890a-eecfa251f65e';managementAttempts=483;controlAttempts=791;combinedAttempts=1274;maximumRequests=3;privateRead=$false;networkRequests=0}}
+    $expected=if($Execution31130NativeMode){@{kind='m03_execution_31130_native_metadata_check';status='ready';technicalAttempt=16;sourceCommitSha='5087d4d93d2f6ffdca0bc0096b365723005446fc';windowId='4c602549-2c42-4ec3-9328-714d7cb66a77';managementAttempts=825;controlAttempts=955;combinedAttempts=1780;maximumRequests=1;privateRead=$false;networkRequests=0}}elseif($Execution31130Mode){@{kind='m03_execution_31130_metadata_check';status='ready';technicalAttempt=16;sourceCommitSha='5087d4d93d2f6ffdca0bc0096b365723005446fc';windowId='4c602549-2c42-4ec3-9328-714d7cb66a77';managementAttempts=824;controlAttempts=955;combinedAttempts=1779;maximumRequests=1;privateRead=$false;networkRequests=0}}elseif($Wf00Mode){@{kind='m03_wf00_execution_check';status='ready';technicalAttempt=15;sourceCommitSha='5087d4d93d2f6ffdca0bc0096b365723005446fc';windowId='4c602549-2c42-4ec3-9328-714d7cb66a77';managementAttempts=524;controlAttempts=846;combinedAttempts=1370;maximumRequests=3;privateRead=$false;networkRequests=0}}else{@{kind='m03_runtime_reconciliation_check';status='ready';technicalAttempt=13;sourceCommitSha='7b1837201ac7925591577a1517d7288936ca3464';windowId='3c46c791-e140-4eb9-890a-eecfa251f65e';managementAttempts=483;controlAttempts=791;combinedAttempts=1274;maximumRequests=3;privateRead=$false;networkRequests=0}}
     foreach($name in $expected.Keys){if($value.$name -cne $expected[$name]){throw 'blocked'}}
     if($value.privateRead -isnot [bool]){throw 'blocked'}
     return $executable
   }finally{if($null -ne $process){if($started -and -not $closed){try{$process.Kill();$closed=$process.WaitForExit(5000)}catch{}};$process.Dispose()};if($null -ne $info){$info.EnvironmentVariables.Clear()};foreach($stream in @($outMemory,$errMemory)){if($null -ne $stream){$stream.Dispose()}};foreach($bytes in @($outBuffer,$errBuffer)){if($null -ne $bytes){[Array]::Clear($bytes,0,$bytes.Length)}};if(-not $closed){throw 'blocked'}}
 }
 try {
-  if(@($WorkflowBaselineDiagnostic,$Wf70DiscoveryDiagnostic,$MachineMetadataDiagnostic,$RuntimeReconciliationDiagnostic,$Wf00ExecutionDiagnostic|Where-Object{$_}).Count -gt 1){throw 'blocked'}
+  if(@($WorkflowBaselineDiagnostic,$Wf70DiscoveryDiagnostic,$MachineMetadataDiagnostic,$RuntimeReconciliationDiagnostic,$Wf00ExecutionDiagnostic,$Execution31130MetadataDiagnostic,$Execution31130NativeMetadataDiagnostic|Where-Object{$_}).Count -gt 1){throw 'blocked'}
   $sealPath = Confined-File $repo 'scripts/n8n/m03-inventory-seal.json'
   if ((Get-Item -LiteralPath $sealPath).Length -gt 32768) { throw 'blocked' }
   $seal = ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($sealPath)) -ErrorAction Stop
@@ -243,7 +270,7 @@ try {
     if ($seal.files.$name -isnot [string] -or $seal.files.$name -cnotmatch '^[a-f0-9]{64}$' -or
         (Get-FileHash -LiteralPath (Confined-File $repo $name) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seal.files.$name) { throw 'blocked' }
   }
-  if($WorkflowBaselineDiagnostic -or $MachineMetadataDiagnostic -or $RuntimeReconciliationDiagnostic -or $Wf00ExecutionDiagnostic){
+  if($WorkflowBaselineDiagnostic -or $MachineMetadataDiagnostic -or $RuntimeReconciliationDiagnostic -or $Wf00ExecutionDiagnostic -or $Execution31130MetadataDiagnostic -or $Execution31130NativeMetadataDiagnostic){
     Assert-Keys $seal.baselineFiles $baselineFiles
     foreach($name in $baselineFiles){if($seal.baselineFiles.$name -isnot [string] -or $seal.baselineFiles.$name -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath (Confined-File $repo $name) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seal.baselineFiles.$name){throw 'blocked'}}
   }
@@ -252,6 +279,8 @@ try {
   if($Wf70DiscoveryDiagnostic){$node=Assert-Wf70DiscoveryPublic}
   if($RuntimeReconciliationDiagnostic){$node=Assert-RuntimeReconciliationPublic}
   if($Wf00ExecutionDiagnostic){$node=Assert-RuntimeReconciliationPublic $true}
+  if($Execution31130MetadataDiagnostic){$node=Assert-RuntimeReconciliationPublic $false $true}
+  if($Execution31130NativeMetadataDiagnostic){$node=Assert-RuntimeReconciliationPublic $false $false $true}
   $runner = Confined-File $repo 'scripts/n8n/inventory.mjs'
 } catch { Write-Output 'M03 N8N_PREFLIGHT_BLOCKED. No private file read, decryption or API request.'; exit 1 }
 $readOnlyLock=$null;$readOnlyLockPath=$null;$readOnlyLockOwned=$false;$readOnlyHandoffPrepared=$false
@@ -259,12 +288,14 @@ if($WorkflowBaselineDiagnostic -and $CheckOnly){Write-Output 'M03 N8N_BASELINE_C
 if($Wf70DiscoveryDiagnostic -and $CheckOnly){Write-Output 'M03 N8N_WF70_CHECK_ONLY_READY. Fixed WF-70 metadata discovery, at most four charged GETs; public scope, cumulative budget and sources verified. No private read, decryption or network.';exit 0}
 if($MachineMetadataDiagnostic -and $CheckOnly){Write-Output 'M03 N8N_MACHINE_METADATA_CHECK_ONLY_READY. One fixed owned Machine metadata GET; public sources verified. No private read, decryption, ledger debit, runtime admission or network.';exit 0}
 if($RuntimeReconciliationDiagnostic -and $CheckOnly){Write-Output 'M03 N8N_RUNTIME_RECONCILIATION_CHECK_ONLY_READY. Three fixed owned metadata GETs; public context and483/791 prefix verified. No private read, decryption, ledger debit or network.';exit 0}
+if($Execution31130NativeMetadataDiagnostic -and $CheckOnly){Write-Output 'M03 N8N_EXECUTION_31130_NATIVE_METADATA_CHECK_ONLY_READY. One native metadata GET; immutable16/825readback and825/955 usage verified. No private read, decryption, debit or network.';exit 0}
+if($Execution31130MetadataDiagnostic -and $CheckOnly){Write-Output 'M03 N8N_EXECUTION_31130_METADATA_CHECK_ONLY_READY. One fixed metadata GET; immutable16/cleanup and824/955 usage verified. No private read, decryption, debit or network.';exit 0}
 if($Wf00ExecutionDiagnostic -and $CheckOnly){Write-Output 'M03 N8N_WF00_EXECUTION_CHECK_ONLY_READY. Three fixed owned GETs; public checkpoint, unchanged consumer ledgers and reserved524/846 usage verified. No private read, decryption, ledger debit or network.';exit 0}
 try {
   if($Wf70DiscoveryDiagnostic){New-Wf70DiscoveryBudget}
   if ([string]::IsNullOrEmpty($env:LOCALAPPDATA)) { throw 'blocked' }
   $privateRoot = [IO.Path]::GetFullPath($env:LOCALAPPDATA)
-  if($WorkflowBaselineDiagnostic -or $Wf70DiscoveryDiagnostic -or $MachineMetadataDiagnostic -or $RuntimeReconciliationDiagnostic -or $Wf00ExecutionDiagnostic){
+  if($WorkflowBaselineDiagnostic -or $Wf70DiscoveryDiagnostic -or $MachineMetadataDiagnostic -or $RuntimeReconciliationDiagnostic -or $Wf00ExecutionDiagnostic -or $Execution31130MetadataDiagnostic -or $Execution31130NativeMetadataDiagnostic){
     . (Confined-File $repo 'scripts/n8n/windows/Dev-CredentialStore.ps1')
     $null=Assert-M03DevPlainPath (Join-Path $privateRoot 'Temp') $true
     $readOnlyLockPath=Join-Path $privateRoot 'Temp/emr-m03-acceptance-parent.operation.lock'
@@ -307,6 +338,8 @@ try {
   if($MachineMetadataDiagnostic){$start.Arguments+=' --machine-metadata-diagnostic'}
   if($RuntimeReconciliationDiagnostic){$start.Arguments+=' --runtime-reconciliation-diagnostic'}
   if($Wf00ExecutionDiagnostic){$start.Arguments+=' --wf00-execution-diagnostic'}
+  if($Execution31130MetadataDiagnostic){$start.Arguments+=' --execution-31130-metadata-diagnostic'}
+  if($Execution31130NativeMetadataDiagnostic){$start.Arguments+=' --execution-31130-native-metadata-diagnostic'}
   $start.UseShellExecute = $false; $start.CreateNoWindow = $true; $start.RedirectStandardOutput = $true; $start.RedirectStandardError = $true
   $start.EnvironmentVariables.Clear()
   foreach ($name in @('SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA','APPDATA','USERPROFILE')) {
@@ -327,8 +360,8 @@ try {
   $text = [Text.Encoding]::UTF8.GetString($buffer,0,[int]$memory.Position)
   $inventory = ConvertFrom-Json -InputObject $text -ErrorAction Stop
   Assert-NoKeyReflection $inventory $key
-  if($Wf00ExecutionDiagnostic){Validate-Wf00ExecutionDiagnostic $inventory}elseif($RuntimeReconciliationDiagnostic){Validate-RuntimeReconciliationDiagnostic $inventory}elseif($MachineMetadataDiagnostic){Validate-MachineMetadataDiagnostic $inventory}elseif($Wf70DiscoveryDiagnostic){Validate-Wf70Discovery $inventory}elseif($WorkflowBaselineDiagnostic){Validate-BaselineDiagnostic $inventory}else{Validate-Inventory $inventory}
-  if (($receipt.nativeExit -eq 0) -ne ($inventory.status -in @('complete','partial','matching_baseline','baseline_mismatch','discovery_complete','metadata_observed','readback_observed','execution_metadata_observed'))) { throw 'blocked' }
+  if($Execution31130NativeMetadataDiagnostic){Validate-Execution31130NativeMetadataDiagnostic $inventory}elseif($Execution31130MetadataDiagnostic){Validate-Execution31130MetadataDiagnostic $inventory}elseif($Wf00ExecutionDiagnostic){Validate-Wf00ExecutionDiagnostic $inventory}elseif($RuntimeReconciliationDiagnostic){Validate-RuntimeReconciliationDiagnostic $inventory}elseif($MachineMetadataDiagnostic){Validate-MachineMetadataDiagnostic $inventory}elseif($Wf70DiscoveryDiagnostic){Validate-Wf70Discovery $inventory}elseif($WorkflowBaselineDiagnostic){Validate-BaselineDiagnostic $inventory}else{Validate-Inventory $inventory}
+  if (($receipt.nativeExit -eq 0) -ne ($inventory.status -in @('complete','partial','matching_baseline','baseline_mismatch','discovery_complete','metadata_observed','readback_observed','execution_metadata_observed','execution_metadata_classified','native_metadata_verified'))) { throw 'blocked' }
   $receipt.inventory = $inventory
   $receipt.status = 'inventory_failed'
   if ($receipt.nativeExit -eq 0) { $receipt.status = 'complete'; $exitCode = 0 }

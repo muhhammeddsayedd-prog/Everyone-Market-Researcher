@@ -215,6 +215,76 @@ test('native reader diagnostics distinguish obtained HTTP rejection from unknown
   assert.equal(privateReads, 0);
 });
 
+for (const failure of ['JSON', 'METADATA'])
+  test(`native reader preserves first fixed ${failure} failure when response closure also rejects`, async () => {
+    const f = nativeReaderFixture();
+    let privateReads = 0,
+      aborted = false;
+    const raw = Object.create(null);
+    for (const key of ['message', 'code', 'stack', 'body'])
+      Object.defineProperty(raw, key, {
+        get() {
+          privateReads++;
+          throw Error(secret);
+        },
+      });
+    f.answers.set('/api/v1/executions/101?includeData=false', () => {
+      const closed = Promise.reject(raw);
+      closed.catch(() => {});
+      return f.wire(
+        { ...f.metadata, workflowVersionId: undefined },
+        {
+          ...(failure === 'JSON'
+            ? {
+                body: (async function* () {
+                  yield Buffer.from('{');
+                })(),
+              }
+            : {}),
+          closed,
+          abort() {
+            aborted = true;
+          },
+        },
+      );
+    });
+    await assert.rejects(f.reader.metadata(f.args), new RegExp('^Error: FOUNDATION_NATIVE_' + failure + '$'));
+    assert.deepEqual(f.reader.lastFailure(), {
+      version: 1,
+      workflowKey: 'WF-00',
+      operation: 'metadata',
+      stage: failure === 'JSON' ? 'parse' : 'projection',
+      classification: failure === 'JSON' ? 'parse' : 'contract',
+      code: failure,
+      httpStatus: 200,
+    });
+    assert.equal(aborted, true);
+    assert.equal(privateReads, 0);
+    assert.equal(f.reader.state().unclosedResponses, 1, 'unconfirmed closure remains blocking');
+    assert.equal(f.reader.state().pendingRequests, 0);
+    assert.doesNotMatch(JSON.stringify(f.reader.lastFailure()), /SYNTHETIC|PRIVATE|123456|body|message/);
+  });
+
+test('native reader still refuses valid metadata when response closure alone rejects', async () => {
+  const f = nativeReaderFixture();
+  f.answers.set('/api/v1/executions/101?includeData=false', () => {
+    const closed = Promise.reject(Error(secret));
+    closed.catch(() => {});
+    return f.wire(f.metadata, { closed });
+  });
+  await assert.rejects(f.reader.metadata(f.args), /^Error: FOUNDATION_NATIVE_CLOSE$/);
+  assert.deepEqual(f.reader.lastFailure(), {
+    version: 1,
+    workflowKey: 'WF-00',
+    operation: 'metadata',
+    stage: 'close',
+    classification: 'closure',
+    code: 'CLOSE',
+    httpStatus: 200,
+  });
+  assert.equal(f.reader.state().unclosedResponses, 1);
+});
+
 test('metadata is one request; full read reuses fresh branded metadata and emits only safe fields', async () => {
   const f = nativeReaderFixture();
   assert.equal(assertFoundationNativeReader(f.reader), f.reader);

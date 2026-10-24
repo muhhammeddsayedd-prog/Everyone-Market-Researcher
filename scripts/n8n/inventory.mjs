@@ -37,7 +37,7 @@ const runtimeReconciliationPaths = Object.freeze({
   claim: 'scripts/n8n/out/foundation/runtime-reconciliation-diagnostic-technical13-20261024.jsonl',
 });
 const publicDigest = (v) => createHash('sha256').update(v).digest('hex');
-function readRuntimePublicFile(root, relative) {
+function readRuntimePublicFile(root, relative, encoding = 'utf8') {
   if (
     typeof relative !== 'string' ||
     /[:\x00]|(?:^|[/\\])\.\.(?:[/\\]|$)/.test(relative) ||
@@ -54,7 +54,7 @@ function readRuntimePublicFile(root, relative) {
     const stat = fstatSync(fd);
     if (!stat.isFile() || stat.nlink !== 1 || stat.size > 2097152)
       throw Error('RUNTIME_RECONCILIATION_BLOCKED');
-    return readFileSync(fd, 'utf8');
+    return readFileSync(fd, encoding);
   } finally {
     closeSync(fd);
   }
@@ -469,6 +469,246 @@ export function openWf00ExecutionDiagnosticBudget(
         throw Error('WF00_EXECUTION_DIAGNOSTIC_BLOCKED');
       fsyncSync(fd);
       expected += line;
+    },
+    close() {
+      if (!closed) {
+        closed = true;
+        closeSync(fd);
+      }
+    },
+  });
+}
+const execution31130Checkpoint = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-reconciliation-20261024.json',
+  sha256: 'd6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb',
+  cleanup: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-cleanup-20261024.json',
+  cleanupSha256: '49192237b29231f20f67595fdc7522b49926f10c8e278bea3871cf75a9788b57',
+  claim: 'scripts/n8n/out/foundation/execution-31130-metadata-diagnostic-20261024.jsonl',
+  nativeClaim: 'scripts/n8n/out/foundation/execution-31130-native-metadata-diagnostic-20261024.jsonl',
+  metadataReceipt:
+    'milestones/M03-n8n-foundation/evidence/technical16-execution31130-metadata-readback-20261024.json',
+  metadataReceiptSha256: 'ea613ccfaa51b2fadcbfd93a7b3608b9e0d6a6df453400fb7aa7abe01725d470',
+});
+function readExecution31130Context(root = fileURLToPath(new URL('../../', import.meta.url))) {
+  root = resolve(root);
+  const cfg = execution31130Checkpoint,
+    text = readRuntimePublicFile(root, cfg.relative),
+    cleanupText = readRuntimePublicFile(root, cfg.cleanup);
+  if (publicDigest(text) !== cfg.sha256 || publicDigest(cleanupText) !== cfg.cleanupSha256)
+    throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  const r = JSON.parse(text),
+    cleanup = JSON.parse(cleanupText);
+  if (
+    r.kind !== 'm03_technical16_native_reader_reconciliation' ||
+    r.environment !== 'dev' ||
+    r.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+    r.attempt?.technicalAttempt !== 16 ||
+    r.attempt.windowId !== '4c602549-2c42-4ec3-9328-714d7cb66a77' ||
+    r.attempt.nativeExit !== 1 ||
+    r.attempt.executionIdObserved !== '31130' ||
+    r.attempt.caseId !== 'dispatch.vimeo' ||
+    r.usage?.management !== 824 ||
+    r.usage.control !== 955 ||
+    r.usage.combined !== 1779 ||
+    r.usage.vercel !== 184 ||
+    r.usage.actorStarts !== 0 ||
+    r.usage.managementMaximum !== 1024 ||
+    r.usage.controlMaximum !== 2048 ||
+    r.usage.combinedMaximum !== 2560 ||
+    cleanup.kind !== 'm03_technical16_local_cleanup' ||
+    cleanup.technicalAttempt !== 16 ||
+    cleanup.attemptReceiptSha256 !== cfg.sha256 ||
+    cleanup.nativeExit !== 0 ||
+    cleanup.privateContentsRead !== false ||
+    cleanup.networkRequests !== 0 ||
+    [
+      'allTenDisposableLeavesAbsent',
+      'parentProcessAbsent',
+      'runtimeProcessAbsent',
+      'parentLockAbsent',
+      'runtimeLockAbsent',
+      'persistentOriginalsRetained',
+      'machineRetained',
+      'originalFailedAttemptPreserved',
+    ].some((k) => cleanup[k] !== true) ||
+    cleanup.managementAttempts !== 824 ||
+    cleanup.controlAttempts !== 955 ||
+    cleanup.combinedAttempts !== 1779 ||
+    !record(r.pins) ||
+    Object.keys(r.pins).length !== 12
+  )
+    throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  for (const [path, pin] of Object.entries(r.pins)) {
+    if (
+      !/^(?:scripts\/n8n\/out\/foundation\/live\/|milestones\/M03-n8n-foundation\/evidence\/technical16-wf00-dispatch-ui-20261024\.png$)/.test(
+        path,
+      ) ||
+      typeof pin !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(pin) ||
+      publicDigest(readRuntimePublicFile(root, path, null)) !== pin
+    )
+      throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  }
+  const controlPath = 'scripts/n8n/out/foundation/live/control.jsonl';
+  if (!Object.hasOwn(r.pins, controlPath)) throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  const ack = readRuntimePublicFile(root, controlPath)
+    .trimEnd()
+    .split('\n')
+    .map(JSON.parse)
+    .filter((v) => v.event === 'native_start_ack' && v.executionId === '31130');
+  if (
+    ack.length !== 1 ||
+    ack[0].caseId !== 'dispatch.vimeo' ||
+    ack[0].workflowKey !== 'WF-00' ||
+    ack[0].workflowId !== 'MzimjpsuyPuK7SKe' ||
+    !/^[A-Za-z0-9_-]{1,128}$/.test(ack[0].versionId) ||
+    typeof ack[0].intentAt !== 'string' ||
+    !Number.isFinite(Date.parse(ack[0].intentAt))
+  )
+    throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  return { root, pins: r.pins, versionId: ack[0].versionId, intentAt: Date.parse(ack[0].intentAt) };
+}
+function readNativeExecution31130Context(root) {
+  const context = readExecution31130Context(root),
+    cfg = execution31130Checkpoint,
+    text = readRuntimePublicFile(context.root, cfg.metadataReceipt);
+  if (publicDigest(text) !== cfg.metadataReceiptSha256) throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  const r = JSON.parse(text),
+    raw = r.rawResult,
+    claim = readRuntimePublicFile(context.root, cfg.claim),
+    rows = claim.trimEnd().split('\n').map(JSON.parse);
+  if (
+    r.kind !== 'm03_technical16_execution_metadata_readback' ||
+    r.originalAttemptSha256 !== cfg.sha256 ||
+    r.technicalAttempt !== 16 ||
+    r.environment !== 'dev' ||
+    r.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+    r.usage?.management !== 825 ||
+    r.usage.control !== 955 ||
+    r.usage.combined !== 1780 ||
+    r.usage.vercel !== 184 ||
+    raw?.status !== 'complete' ||
+    raw.nativeExit !== 0 ||
+    raw.childClosed !== true ||
+    raw.handoffDeleted !== true ||
+    raw.inventory?.status !== 'execution_metadata_classified' ||
+    raw.inventory.acceptanceProven !== false ||
+    raw.inventory.fields?.readerMetadataContractSatisfied !== true ||
+    raw.inventory.requestCount !== 1 ||
+    !record(r.pins) ||
+    r.pins[cfg.claim] !== publicDigest(claim) ||
+    rows.length !== 2 ||
+    rows[0].kind !== 'm03_execution_31130_metadata_diagnostic_budget' ||
+    rows[0].checkpointSha256 !== cfg.sha256 ||
+    rows[0].managementAttempts !== 824 ||
+    rows[0].controlAttempts !== 955 ||
+    JSON.stringify(rows[1]) !== JSON.stringify({ event: 'management_attempt', ordinal: 825 }) ||
+    [
+      'parentAbsent',
+      'childAbsent',
+      'managementCopyAbsent',
+      'parentLockAbsent',
+      'persistentManagementRetained',
+    ].some((k) => r.cleanup?.[k] !== true) ||
+    r.cleanup.privateContentsRead !== false ||
+    r.cleanup.networkRequests !== 0
+  )
+    throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  return context;
+}
+export function checkExecution31130MetadataDiagnostic(root, native = false) {
+  if (typeof native !== 'boolean') throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  const context = native ? readNativeExecution31130Context(root) : readExecution31130Context(root);
+  try {
+    lstatSync(
+      join(context.root, native ? execution31130Checkpoint.nativeClaim : execution31130Checkpoint.claim),
+    );
+    throw Error();
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  }
+  return Object.freeze({
+    kind: native ? 'm03_execution_31130_native_metadata_check' : 'm03_execution_31130_metadata_check',
+    status: 'ready',
+    technicalAttempt: 16,
+    sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
+    windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+    managementAttempts: native ? 825 : 824,
+    controlAttempts: 955,
+    combinedAttempts: native ? 1780 : 1779,
+    maximumRequests: 1,
+    privateRead: false,
+    networkRequests: 0,
+  });
+}
+export function openExecution31130MetadataDiagnosticBudget(root, native = false) {
+  checkExecution31130MetadataDiagnostic(root, native);
+  const context = native ? readNativeExecution31130Context(root) : readExecution31130Context(root),
+    claim = native ? execution31130Checkpoint.nativeClaim : execution31130Checkpoint.claim,
+    path = join(context.root, claim);
+  let fd,
+    expected = '',
+    used = false,
+    closed = false;
+  try {
+    fd = openSync(path, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY, 0o600);
+    expected =
+      JSON.stringify({
+        kind: native
+          ? 'm03_execution_31130_native_metadata_diagnostic_budget'
+          : 'm03_execution_31130_metadata_diagnostic_budget',
+        version: 1,
+        checkpointSha256: execution31130Checkpoint.sha256,
+        cleanupSha256: execution31130Checkpoint.cleanupSha256,
+        managementAttempts: native ? 825 : 824,
+        controlAttempts: 955,
+        maximumRequests: 1,
+        ...(native
+          ? {
+              metadataReceiptSha256: execution31130Checkpoint.metadataReceiptSha256,
+              conservativeControlReservation: true,
+              additionalHttpRequests: 0,
+            }
+          : {}),
+        processId: process.pid,
+        parentProcessId: process.ppid,
+      }) + '\n';
+    if (writeSync(fd, expected, null, 'utf8') !== Buffer.byteLength(expected)) throw Error();
+    fsyncSync(fd);
+  } catch {
+    if (fd !== undefined) closeSync(fd);
+    throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  }
+  return Object.freeze({
+    admit() {
+      if (closed || used) throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+      if (native) readNativeExecution31130Context(context.root);
+      else readExecution31130Context(context.root);
+      const current = lstatSync(path),
+        opened = fstatSync(fd);
+      if (
+        current.isSymbolicLink() ||
+        current.ino !== opened.ino ||
+        current.dev !== opened.dev ||
+        current.nlink !== 1 ||
+        opened.nlink !== 1 ||
+        readRuntimePublicFile(context.root, claim) !== expected
+      )
+        throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+      used = true;
+      const charges = [
+        { event: 'management_attempt', ordinal: native ? 826 : 825 },
+        ...(native
+          ? [{ event: 'native_read_control_reservation', ordinal: 956, additionalHttpRequest: false }]
+          : []),
+      ];
+      for (const charge of charges) {
+        const line = JSON.stringify(charge) + '\n';
+        if (writeSync(fd, line, null, 'utf8') !== Buffer.byteLength(line))
+          throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+        fsyncSync(fd);
+        expected += line;
+      }
     },
     close() {
       if (!closed) {
@@ -2201,6 +2441,495 @@ export async function runWorkflowBaselineDiagnostic(key, dependencies = {}) {
   return result;
 }
 
+// The same native streaming/projection implementations used by acceptance,
+// restricted here to one metadata-only path and a separate charged purpose.
+export async function runNativeExecution31130MetadataDiagnostic(key, dependencies = {}) {
+  const result = {
+    version: 1,
+    environment: 'dev',
+    host,
+    projectId,
+    technicalAttempt: 16,
+    status: 'not_attempted',
+    requestCount: 0,
+    maximumRequests: 1,
+    httpStatus: null,
+    tlsVerified: false,
+    readerMetadataVerified: false,
+    networkCompletionVerified: false,
+    controlReservationConservative: true,
+    acceptanceProven: false,
+    metadata: null,
+    readerFailure: null,
+    transportFailureCode: null,
+    readerState: null,
+    transportState: null,
+  };
+  if (!key) {
+    result.status = 'missing_key';
+    return result;
+  }
+  if (typeof key !== 'string' || key.length < 8 || key.length > 4096 || !/^[\x21-\x7e]+$/.test(key)) {
+    result.status = 'invalid_key';
+    return result;
+  }
+  const timeoutMs = dependencies.timeoutMs ?? 20000,
+    closeTimeoutMs = dependencies.closeTimeoutMs ?? 5000,
+    now = dependencies.now ?? Date.now;
+  if (
+    !Number.isInteger(timeoutMs) ||
+    timeoutMs < 1 ||
+    timeoutMs > 20000 ||
+    !Number.isInteger(closeTimeoutMs) ||
+    closeTimeoutMs < 1 ||
+    closeTimeoutMs > 5000
+  ) {
+    result.status = 'invalid_options';
+    return result;
+  }
+  let context,
+    budget,
+    reader,
+    native,
+    job,
+    timedOut = false,
+    responseClosed = false,
+    sends = 0;
+  try {
+    context = (dependencies.readContext ?? readNativeExecution31130Context)();
+    budget = dependencies.openBudget
+      ? dependencies.openBudget()
+      : openExecution31130MetadataDiagnosticBudget(undefined, true);
+  } catch {
+    result.status = 'budget_blocked';
+    return result;
+  }
+  const nativeCodes = new Set([
+    'CONFIG',
+    'REQUEST',
+    'DNS',
+    'DEADLINE',
+    'SOCKET',
+    'TLS',
+    'STATUS',
+    'FRAMING',
+    'RESPONSE_LIMIT',
+    'TRUNCATED',
+    'RESPONSE',
+    'ABORTED',
+    'STREAM',
+    'CLOSE',
+    'CLOSED',
+  ]);
+  const recordTransportFailure = (error) => {
+    const match = /^FOUNDATION_NATIVE_TRANSPORT_([A-Z_]+)$/.exec(error?.message ?? '');
+    if (match && nativeCodes.has(match[1]) && result.transportFailureCode === null)
+      result.transportFailureCode = match[1];
+  };
+  let rejectTimeout;
+  const timeout = new Promise((_, reject) => {
+    rejectTimeout = reject;
+  });
+  const timer = setTimeout(() => {
+    timedOut = true;
+    native?.close();
+    rejectTimeout(Error('NATIVE_DIAGNOSTIC_TIMEOUT'));
+  }, timeoutMs);
+  try {
+    const [
+      { createFoundationNativeTransport },
+      { createFoundationNativeReader, assertFoundationNativeMetadataReceipt },
+    ] = await Promise.all([
+      import('./foundation-native-transport.mjs'),
+      import('./foundation-native-reader.mjs'),
+    ]);
+    const bindings = JSON.parse(
+      readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url), 'utf8'),
+    );
+    native = createFoundationNativeTransport(
+      {
+        apiKey: key,
+        bindings,
+        authorizeExecution: (args) => args.method === 'GET' && args.executionId === '31130',
+      },
+      dependencies.nativeTransport ?? {},
+    );
+    reader = createFoundationNativeReader({
+      bindings,
+      deadlineAt: now() + timeoutMs,
+      now,
+      sensitiveValues: [key],
+      admitControlAttempt(args) {
+        if (
+          result.requestCount !== 0 ||
+          args.kind !== 'metadata' ||
+          args.workflowId !== 'MzimjpsuyPuK7SKe' ||
+          args.executionId !== '31130'
+        )
+          throw Error('NATIVE_DIAGNOSTIC_ADMISSION');
+        const answer = budget.admit();
+        if (answer !== undefined) {
+          if (answer?.then) Promise.resolve(answer).catch(() => {});
+          throw Error('NATIVE_DIAGNOSTIC_ADMISSION');
+        }
+        result.requestCount = 1;
+      },
+      transport: {
+        async request(input) {
+          if (
+            sends++ !== 0 ||
+            result.requestCount !== 1 ||
+            input.method !== 'GET' ||
+            input.path !== '/api/v1/executions/31130?includeData=false'
+          )
+            throw Error('NATIVE_DIAGNOSTIC_ROUTE');
+          try {
+            const response = await native.request(input);
+            result.httpStatus = response.status;
+            result.tlsVerified = true;
+            response.closed.then(() => {
+              responseClosed = true;
+            }, recordTransportFailure);
+            return response;
+          } catch (error) {
+            recordTransportFailure(error);
+            throw error;
+          }
+        },
+      },
+    });
+    job = reader.metadata({
+      workflowKey: 'WF-00',
+      executionId: '31130',
+      expectedMode: 'manual',
+      intentAt: context.intentAt,
+    });
+    const metadata = assertFoundationNativeMetadataReceipt(await Promise.race([job, timeout]));
+    result.readerMetadataVerified = true;
+    result.metadata = {
+      executionId: '31130',
+      workflowId: 'MzimjpsuyPuK7SKe',
+      mode: metadata.mode,
+      status: metadata.status,
+      versionMatchesIntent: metadata.versionId === context.versionId,
+    };
+    result.status = result.metadata.versionMatchesIntent
+      ? 'native_metadata_verified'
+      : 'native_metadata_failed';
+  } catch {
+    result.readerFailure = reader?.lastFailure() ?? null;
+    result.status = 'native_metadata_failed';
+  } finally {
+    clearTimeout(timer);
+    native?.close();
+    key = null;
+    const until = Date.now() + closeTimeoutMs;
+    while (
+      Date.now() < until &&
+      (reader?.state().busy ||
+        reader?.state().pendingRequests ||
+        native?.state().pendingRequests ||
+        native?.state().unclosedResponses)
+    )
+      await new Promise((done) => setTimeout(done, Math.min(10, Math.max(1, until - Date.now()))));
+    job?.catch(() => {});
+    result.readerState = reader?.state() ?? null;
+    result.transportState = native?.state() ?? null;
+    result.networkCompletionVerified =
+      responseClosed &&
+      result.readerState?.pendingRequests === 0 &&
+      result.readerState.unclosedResponses === 0 &&
+      result.readerState.busy === false &&
+      result.transportState?.pendingRequests === 0 &&
+      result.transportState.unclosedResponses === 0;
+    if (timedOut || !result.networkCompletionVerified) result.status = 'native_metadata_failed';
+    budget.close();
+  }
+  return result;
+}
+
+// Fixed single-ID structural diagnosis only. No run data is traversed, no
+// response-defined field names or values escape, and no native receipt is made.
+export async function runExecution31130MetadataDiagnostic(key, dependencies = {}) {
+  const result = {
+    version: 1,
+    environment: 'dev',
+    host,
+    projectId,
+    technicalAttempt: 16,
+    status: 'not_attempted',
+    requestCount: 0,
+    maximumRequests: 1,
+    httpStatus: null,
+    authenticationVerified: false,
+    networkCompletionVerified: false,
+    acceptanceProven: false,
+    metadata: null,
+    fields: null,
+    diagnostics: { version: 1, dns: 'not_attempted', requests: [] },
+  };
+  if (!key) {
+    result.status = 'missing_key';
+    return result;
+  }
+  if (typeof key !== 'string' || key.length > 4096 || !/^[\x21-\x7e]+$/.test(key)) {
+    result.status = 'invalid_key';
+    return result;
+  }
+  const timeoutMs = dependencies.timeoutMs ?? 20000,
+    closeTimeoutMs = dependencies.closeTimeoutMs ?? 5000;
+  if (
+    !Number.isInteger(timeoutMs) ||
+    timeoutMs < 1 ||
+    timeoutMs > 20000 ||
+    !Number.isInteger(closeTimeoutMs) ||
+    closeTimeoutMs < 1 ||
+    closeTimeoutMs > 5000
+  ) {
+    result.status = 'invalid_options';
+    return result;
+  }
+  let context, budget;
+  try {
+    context = (dependencies.readContext ?? readExecution31130Context)();
+    budget = (dependencies.openBudget ?? openExecution31130MetadataDiagnosticBudget)();
+  } catch {
+    result.status = 'budget_blocked';
+    return result;
+  }
+  const controller = new AbortController();
+  let timedOut = false,
+    issued = false,
+    resolveClosed;
+  const closed = new Promise((done) => {
+    resolveClosed = done;
+  });
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+  const timeout = new Promise((_, fail) =>
+    controller.signal.addEventListener('abort', () => fail(new InventoryError('timeout')), { once: true }),
+  );
+  const operation = async () => {
+    result.diagnostics.dns = 'resolving';
+    const addresses = validatedAddresses(await (dependencies.lookup ?? resolveInstance)(controller.signal));
+    if (controller.signal.aborted) reject('timeout');
+    result.diagnostics.dns = 'complete';
+    try {
+      const answer = budget.admit();
+      if (answer !== undefined) {
+        if (answer?.then) Promise.resolve(answer).catch(() => {});
+        throw Error();
+      }
+    } catch {
+      reject('budget_blocked');
+    }
+    const diagnostic = requestDiagnostic('executions', 1);
+    result.diagnostics.requests.push(diagnostic);
+    result.requestCount = 1;
+    issued = true;
+    const transport = dependencies.request
+      ? (input) => nativeRequest(input, dependencies.request)
+      : (dependencies.transport ?? nativeRequest);
+    const response = await transport({
+      url: new URL(`https://${host}/api/v1/executions/31130?includeData=false`),
+      method: 'GET',
+      headers: {
+        'x-n8n-api-key': key,
+        accept: 'application/json',
+        'user-agent': 'everyone-market-radar-m03-execution-31130-metadata/1',
+      },
+      address: addresses[0],
+      signal: controller.signal,
+      maxBytes: 65536,
+      rejectUnauthorized: true,
+      servername: host,
+      diagnostic,
+      onSocketClosed() {
+        diagnostic.socketClosed = true;
+        resolveClosed();
+      },
+    });
+    if (controller.signal.aborted) reject('timeout');
+    if (
+      !record(response) ||
+      !Number.isInteger(response.status) ||
+      response.status < 100 ||
+      response.status > 599
+    )
+      reject();
+    result.httpStatus = diagnostic.httpStatus = response.status;
+    if (response.status !== 200) {
+      const code =
+        response.status === 401
+          ? 'unauthorized'
+          : response.status >= 300 && response.status < 400
+            ? 'redirect_refused'
+            : 'http_failed';
+      diagnosticFailure(diagnostic, 'status', code);
+      reject(code);
+    }
+    result.authenticationVerified = true;
+    if (!(response.body instanceof Uint8Array) || response.body.byteLength > 65536) {
+      diagnosticFailure(diagnostic, 'body_read', 'body_too_large');
+      reject('body_too_large');
+    }
+    diagnostic.bodyRead = 'complete';
+    let dto;
+    try {
+      dto = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(response.body));
+      diagnostic.jsonParsed = true;
+    } catch {
+      diagnosticFailure(diagnostic, 'parse', 'invalid_json');
+      reject();
+    }
+    const shape = record(dto),
+      own = (k) => shape && Object.hasOwn(dto, k),
+      value = (k) => (shape ? dto[k] : undefined),
+      date = (v) =>
+        typeof v === 'string' &&
+        /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(v) &&
+        Number.isFinite(Date.parse(v)),
+      id = (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(v),
+      modes = ['manual', 'integrated', 'error', 'webhook', 'trigger'],
+      statuses = ['new', 'running', 'waiting', 'unknown', 'success', 'error', 'canceled', 'crashed'],
+      terminal = ['success', 'error', 'canceled', 'crashed'].includes(value('status')),
+      now = (dependencies.now ?? Date.now)(),
+      f = {
+        objectShape: shape,
+        idPresent: own('id'),
+        idString: typeof value('id') === 'string',
+        idMatches: value('id') === '31130',
+        workflowIdPresent: own('workflowId'),
+        workflowIdString: typeof value('workflowId') === 'string',
+        workflowIdMatches: value('workflowId') === 'MzimjpsuyPuK7SKe',
+        modePresent: own('mode'),
+        modeKnown: modes.includes(value('mode')),
+        modeManual: value('mode') === 'manual',
+        statusPresent: own('status'),
+        statusKnown: statuses.includes(value('status')),
+        versionPresent: own('workflowVersionId'),
+        versionNull: value('workflowVersionId') === null,
+        versionIdentifier: id(value('workflowVersionId')),
+        versionMatchesBinding: value('workflowVersionId') === context.versionId,
+        createdAtPresent: own('createdAt'),
+        createdAtString: typeof value('createdAt') === 'string',
+        createdAtCanonical: date(value('createdAt')),
+        createdAtWithinIntent:
+          date(value('createdAt')) && Date.parse(value('createdAt')) >= context.intentAt - 30000,
+        timestampsNotFuture: ['createdAt', 'startedAt', 'stoppedAt'].every(
+          (k) => value(k) === null || (date(value(k)) && Date.parse(value(k)) <= now + 30000),
+        ),
+        startedAtPresent: own('startedAt'),
+        startedAtNull: value('startedAt') === null,
+        startedAtCanonical: date(value('startedAt')),
+        stoppedAtPresent: own('stoppedAt'),
+        stoppedAtNull: value('stoppedAt') === null,
+        stoppedAtCanonical: date(value('stoppedAt')),
+        waitTillPresent: own('waitTill'),
+        waitTillNull: value('waitTill') === null,
+        waitTillCanonical: date(value('waitTill')),
+        terminalTimestampsOrdered:
+          !terminal ||
+          (date(value('startedAt')) &&
+            date(value('stoppedAt')) &&
+            Date.parse(value('stoppedAt')) >= Date.parse(value('startedAt'))),
+        terminalWaitNull: !terminal || value('waitTill') === null,
+        payloadAbsent: !['data', 'workflowData', 'customData'].some(own),
+        sizeFlagPresent: own('dataTooLargeToDisplay'),
+        sizeFlagBoolean: typeof value('dataTooLargeToDisplay') === 'boolean',
+        sizeFlagSafe: !own('dataTooLargeToDisplay') || value('dataTooLargeToDisplay') === false,
+        finishedPresent: own('finished'),
+        finishedBoolean: typeof value('finished') === 'boolean',
+      };
+    f.readerMetadataContractSatisfied =
+      shape &&
+      f.idMatches &&
+      f.workflowIdMatches &&
+      f.modeManual &&
+      f.statusKnown &&
+      f.versionIdentifier &&
+      f.versionMatchesBinding &&
+      f.createdAtCanonical &&
+      f.createdAtWithinIntent &&
+      f.timestampsNotFuture &&
+      f.startedAtPresent &&
+      (f.startedAtNull || f.startedAtCanonical) &&
+      f.stoppedAtPresent &&
+      (f.stoppedAtNull || f.stoppedAtCanonical) &&
+      f.waitTillPresent &&
+      (f.waitTillNull || f.waitTillCanonical) &&
+      f.terminalTimestampsOrdered &&
+      f.terminalWaitNull &&
+      f.sizeFlagSafe &&
+      f.payloadAbsent;
+    result.fields = f;
+    result.metadata = {
+      executionId: f.idMatches ? '31130' : null,
+      workflowId: f.workflowIdMatches ? 'MzimjpsuyPuK7SKe' : null,
+      mode: f.modeKnown ? value('mode') : null,
+      status: f.statusKnown ? value('status') : null,
+    };
+    dto = null;
+    diagnostic.schemaValidated = true;
+    result.status = 'execution_metadata_classified';
+  };
+  try {
+    await Promise.race([operation(), timeout]);
+  } catch (error) {
+    if (result.diagnostics.dns === 'resolving') result.diagnostics.dns = timedOut ? 'timeout' : 'failed';
+    const last = result.diagnostics.requests.at(-1);
+    if (last?.failureStage === 'none')
+      diagnosticFailure(
+        last,
+        last.jsonParsed ? 'schema' : 'unknown',
+        timedOut ? 'timeout' : last.jsonParsed ? 'invalid_schema' : 'network_failed',
+      );
+    result.status = timedOut
+      ? 'timeout'
+      : [
+            'budget_blocked',
+            'unsafe_dns',
+            'unauthorized',
+            'redirect_refused',
+            'response_rejected',
+            'network_failed',
+            'http_failed',
+            'body_too_large',
+          ].includes(error?.code)
+        ? error.code
+        : 'response_rejected';
+    result.fields = null;
+    result.metadata = null;
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
+    key = null;
+    if (issued && !result.diagnostics.requests[0].socketClosed) {
+      let closing;
+      await Promise.race([
+        closed,
+        new Promise((done) => {
+          closing = setTimeout(done, closeTimeoutMs);
+        }),
+      ]);
+      clearTimeout(closing);
+    }
+    result.networkCompletionVerified =
+      issued &&
+      result.diagnostics.requests[0].socketClosed &&
+      result.diagnostics.requests[0].tlsVerified === true;
+    if (issued && !result.networkCompletionVerified) {
+      result.status = 'network_failed';
+      result.fields = null;
+      result.metadata = null;
+    }
+    budget.close();
+  }
+  return result;
+}
+
 // One-use reconciliation only: no execution adoption, mutation or acceptance authority.
 export async function runWf00ExecutionDiagnostic(key, dependencies = {}) {
   const result = {
@@ -2742,7 +3471,12 @@ export async function runWf70DiscoveryDiagnostic(key, dependencies = {}) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const key = ['--runtime-reconciliation-check-only', '--wf00-execution-check-only'].includes(process.argv[2])
+  const key = [
+    '--runtime-reconciliation-check-only',
+    '--wf00-execution-check-only',
+    '--execution-31130-metadata-check-only',
+    '--execution-31130-native-metadata-check-only',
+  ].includes(process.argv[2])
     ? undefined
     : process.env.M03_N8N_API_KEY;
   delete process.env.M03_N8N_API_KEY;
@@ -2757,10 +3491,78 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         '--runtime-reconciliation-diagnostic',
         '--wf00-execution-check-only',
         '--wf00-execution-diagnostic',
+        '--execution-31130-metadata-check-only',
+        '--execution-31130-native-metadata-check-only',
+        '--execution-31130-metadata-diagnostic',
+        '--execution-31130-native-metadata-diagnostic',
       ].includes(process.argv[2]))
   )) {
     process.stdout.write(JSON.stringify({ version: 1, status: 'argument_rejected' }) + '\n');
     process.exitCode = 1;
+  } else if (
+    ['--execution-31130-native-metadata-check-only', '--execution-31130-native-metadata-diagnostic'].includes(
+      process.argv[2],
+    )
+  ) {
+    const check = process.argv[2] === '--execution-31130-native-metadata-check-only';
+    // Native modules import this inventory module. Defer their dynamic imports
+    // until this entry module has finished evaluating.
+    setImmediate(() =>
+      Promise.resolve()
+        .then(() =>
+          check
+            ? checkExecution31130MetadataDiagnostic(undefined, true)
+            : runNativeExecution31130MetadataDiagnostic(key),
+        )
+        .then(
+          (value) => {
+            process.stdout.write(JSON.stringify(value) + '\n');
+            process.exitCode = value.status === (check ? 'ready' : 'native_metadata_verified') ? 0 : 1;
+          },
+          () => {
+            process.stdout.write(
+              JSON.stringify(
+                check
+                  ? {
+                      kind: 'm03_execution_31130_native_metadata_check',
+                      status: 'blocked',
+                      privateRead: false,
+                      networkRequests: 0,
+                    }
+                  : { version: 1, status: 'diagnostic_failed' },
+              ) + '\n',
+            );
+            process.exitCode = 1;
+          },
+        ),
+    );
+  } else if (
+    ['--execution-31130-metadata-check-only', '--execution-31130-metadata-diagnostic'].includes(
+      process.argv[2],
+    )
+  ) {
+    const check = process.argv[2] === '--execution-31130-metadata-check-only';
+    try {
+      const value = check
+        ? checkExecution31130MetadataDiagnostic()
+        : await runExecution31130MetadataDiagnostic(key);
+      process.stdout.write(JSON.stringify(value) + '\n');
+      process.exitCode = value.status === (check ? 'ready' : 'execution_metadata_classified') ? 0 : 1;
+    } catch {
+      process.stdout.write(
+        JSON.stringify(
+          check
+            ? {
+                kind: 'm03_execution_31130_metadata_check',
+                status: 'blocked',
+                privateRead: false,
+                networkRequests: 0,
+              }
+            : { version: 1, status: 'diagnostic_failed' },
+        ) + '\n',
+      );
+      process.exitCode = 1;
+    }
   } else if (['--wf00-execution-check-only', '--wf00-execution-diagnostic'].includes(process.argv[2])) {
     const check = process.argv[2] === '--wf00-execution-check-only';
     try {
