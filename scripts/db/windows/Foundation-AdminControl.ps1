@@ -63,6 +63,11 @@ function Foundation-FixtureSql([string]$Name,$ExpectedFixture=$null) {
     $settings+="  perform pg_catalog.set_config('emr.smoke_reactivation_segment','20275b22-b7fe-4737-a9a4-c50c2feadb74',true);`n"
     $technical=Foundation-ProjectVerifiedTechnicalIdentity
     $settings+="  perform pg_catalog.set_config('emr.smoke_technical_ordinal','"+$technical.ordinal+"',true);`n"
+    if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77' -and $technical.ordinal -eq 15){
+      $proof=Read-FoundationTechnical14NoAdmin
+      if($proof -cne '6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960'){throw 'blocked'}
+      $settings+="  perform pg_catalog.set_config('emr.smoke_technical14_no_reactivation','$proof',true);`n"
+    }
   }
   $body=$body.Replace($needle,$settings)
   if($PostcheckContinuation -and $Name -ceq 'm03_smoke_setup.sql'){
@@ -162,7 +167,7 @@ function Assert-FoundationForwardWindowState([bool]$Prepared) {
   $null=Read-FoundationForwardPrior
   $window=Foundation-ForwardWindowId
   $restored=$window -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77'
-  if($restored -and (Foundation-ProjectVerifiedTechnicalIdentity).ordinal -ne 14){throw 'blocked'}
+  if($restored){$technical=Foundation-ProjectVerifiedTechnicalIdentity;if($technical.ordinal -notin @(14,15)){throw 'blocked'};if($technical.ordinal -eq 15){$null=Read-FoundationTechnical14NoAdmin}}
   $next=$window -cin @('3c46c791-e140-4eb9-890a-eecfa251f65e','4c602549-2c42-4ec3-9328-714d7cb66a77')
   $fresh=$window -cin @('eda4fae1-1e19-47db-81b8-beac1a4ed883','3c46c791-e140-4eb9-890a-eecfa251f65e','4c602549-2c42-4ec3-9328-714d7cb66a77')
   $stateSql=@'
@@ -411,7 +416,8 @@ and (select count(*) from ops.audit_log l join ops.audit_log o on o.id::text=l.a
 '@
   $sql=$sql.Replace('20275b22-b7fe-4737-a9a4-c50c2feadb74',$technical.auditSegment)
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77'){
-    if($technical.ordinal -ne 14){throw 'blocked'}
+    if($technical.ordinal -notin @(14,15)){throw 'blocked'}
+    if($technical.ordinal -eq 15){$null=Read-FoundationTechnical14NoAdmin}
     $needle="and o.after->>'competitor_id'=c.id::text and o.after->>'account_id'=a.id::text)=1;"
     if([regex]::Matches($sql,[regex]::Escape($needle)).Count -ne 1){throw 'blocked'}
     $exact="and o.after->>'competitor_id'=c.id::text and o.after->>'account_id'=a.id::text and l.after=jsonb_build_object('fixture_version',1,'project_ref','zmotjsbzhzjvpelxvxlf','segment_id',$(Foundation-Literal $technical.auditSegment),'competitor_id',c.id,'account_id',a.id,'competitor_status','active','account_status','active','original_creation_audit_id',o.id))=1 and (select count(*)=7 from ops.audit_log where entity_id in (c.id::text,a.id::text)) and $(Foundation-Technical13AuditPredicate 12) and $(Foundation-Technical13AuditPredicate 13);"

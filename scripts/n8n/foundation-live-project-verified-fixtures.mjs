@@ -13,9 +13,11 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  runtimeRestorationClosed = false,
+  restoredBrowserDiscovery = false,
+  restoredBrowserDiscoveryFault,
+  runtimeRestorationClosed = restoredBrowserDiscovery,
   runtimeRestorationFault,
-  runtimeRestorationAllocation = false,
+  runtimeRestorationAllocation = restoredBrowserDiscovery,
   runtimeRestorationAllocationFault,
   runtimePreparationClosed = runtimeRestorationClosed,
   runtimePreparationFault,
@@ -408,6 +410,7 @@ export async function syntheticProjectVerifiedContinuation({
     runtimeMetadataAllocationConfiguration,
     runtimeRestorationConfiguration,
     runtimeRestorationAllocationConfiguration,
+    restoredBrowserDiscoveryConfiguration,
     catalogManagementAllocationConfiguration,
     controlManagementAllocationConfiguration;
   if (closedWindow) {
@@ -2582,6 +2585,144 @@ export async function syntheticProjectVerifiedContinuation({
     }
     void restoredVersions;
   }
+  if (restoredBrowserDiscovery) {
+    const relative =
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-reconciliation-20261024.json',
+      cleanupRelative =
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json',
+      receipt = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8')),
+      cleanup = JSON.parse(readFileSync(join(sourceRoot, cleanupRelative), 'utf8')),
+      json = (value) => JSON.stringify(value) + '\n',
+      base = `scripts/n8n/out/foundation/live/project-verified-continuation-${snapshot.proposedSegmentId}.technical-14`,
+      startsAt = Date.parse('2026-10-24T15:01:00.000Z'),
+      admission = {
+        ...receipt.rawAdmission,
+        approvalSha256: digest(approvalText),
+        startsAt,
+        deadlineAt: startsAt + 3600000,
+        stopNewAt: startsAt + 3000000,
+        hardDeadlineAt: startsAt + 4200000,
+        parentProcessId: 91040,
+      },
+      claim = {
+        ...receipt.rawRuntimeClaim,
+        admissionSha256: digest(json(admission)),
+        processId: 91041,
+        parentProcessId: admission.parentProcessId,
+        claimedAt: startsAt + 1000,
+      },
+      closed = {
+        ...receipt.rawTechnicalClose,
+        admissionSha256: claim.admissionSha256,
+        parentProcessId: admission.parentProcessId,
+        runtimeProcessId: claim.processId,
+        closedAt: startsAt + 60000,
+      };
+    receipt.rawAdmission = admission;
+    receipt.rawRuntimeClaim = claim;
+    receipt.rawTechnicalClose = closed;
+    Object.assign(receipt.attempt, {
+      startsAt,
+      deadlineAt: admission.deadlineAt,
+      parentProcessId: admission.parentProcessId,
+      runtimeProcessId: claim.processId,
+    });
+    if (restoredBrowserDiscoveryFault === 'execution') receipt.attempt.nativeExecutions = 1;
+    if (restoredBrowserDiscoveryFault === 'write') receipt.attempt.workflowWriteAttempted = true;
+    if (restoredBrowserDiscoveryFault === 'admin') receipt.attempt.adminChildStarted = true;
+    if (restoredBrowserDiscoveryFault === 'usage') receipt.usage.control = 841;
+    if (restoredBrowserDiscoveryFault === 'raw-closure') closed.closureVerified = true;
+    if (restoredBrowserDiscoveryFault === 'window') receipt.attempt.windowId = snapshot.windowId;
+    const controlPath = snapshot.journals.control.path,
+      discovery = {
+        event: 'control_request_intent',
+        ordinal: 839,
+        kind: 'discovery',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        at: new Date(startsAt + 6000).toISOString(),
+      };
+    if (restoredBrowserDiscoveryFault === 'control-kind') discovery.kind = 'execution_start';
+    if (restoredBrowserDiscoveryFault === 'control-workflow') discovery.workflowId = 'SYNTHETIC_FOREIGN';
+    put(controlPath, readFileSync(join(directory, controlPath), 'utf8') + json(discovery));
+    const frames = [
+      {
+        kind: 'm03_live_coordinator_checkpoint',
+        technicalAttempt: 14,
+        helperHead: receipt.source.helperHead,
+        ciRunId: receipt.source.ciRunId,
+        allFiveJobsPassed: true,
+        vercelPassed: true,
+        applicationSource: admission.sourceCommitSha,
+        sourceCiRunId: 40103108266,
+        windowId: admission.windowId,
+        managementAttempts: 524,
+        controlAttempts: 841,
+        combinedAttempts: 1365,
+        vercelAttempts: 149,
+        actorStarts: 0,
+        observedAt: new Date(startsAt - 1000).toISOString(),
+        parentProcessId: admission.parentProcessId,
+      },
+      receipt.coordinatorLocalLaunchRefusal,
+      {
+        kind: 'm03_acceptance_transport_ready',
+        nonce: 'a'.repeat(32),
+        privateRead: false,
+        networkRequests: 0,
+      },
+      {
+        kind: 'm03_acceptance_vercel_metadata',
+        status: 'metadata_covers_75_minutes',
+        metadataValid: true,
+        unexpired: true,
+        covers75Minutes: true,
+        effectiveBackendEstablished: false,
+        networkRequests: 0,
+        authenticationAttempted: false,
+        refreshAttempted: false,
+        configWritten: false,
+        childClosed: true,
+      },
+      {
+        kind: 'm03_acceptance_ready',
+        status: 'private_child_ready',
+        deadlineAt: admission.deadlineAt,
+        approvedHead: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+        sourceCommitSha: admission.sourceCommitSha,
+      },
+      {
+        kind: 'mcp_port_request',
+        nonce: 'b'.repeat(32),
+        action: 'browser_discover',
+        workflowId: 'MzimjpsuyPuK7SKe',
+      },
+      receipt.rawPrepare,
+      receipt.rawSourceClose,
+      receipt.rawWrapperClose,
+    ];
+    if (restoredBrowserDiscoveryFault === 'frame') frames[6] = { ...frames[6], command: 'execute' };
+    for (const [suffix, value] of [
+      ['.json', admission],
+      ['.runtime-claim.json', claim],
+      ['.closed.json', closed],
+    ])
+      put(base + suffix, json(value));
+    put(base + '.public-frames.jsonl', frames.map(json).join(''));
+    for (const path of Object.keys(receipt.pins))
+      receipt.pins[path] = digest(readFileSync(join(directory, path), 'utf8'));
+    const receiptText = json(receipt);
+    put(relative, receiptText);
+    cleanup.attemptReceiptSha256 = digest(receiptText);
+    if (restoredBrowserDiscoveryFault === 'cleanup') cleanup.allTenDisposableLeavesAbsent = false;
+    const cleanupText = json(cleanup);
+    put(cleanupRelative, cleanupText);
+    restoredBrowserDiscoveryConfiguration = {
+      relative,
+      sha256: digest(receiptText),
+      cleanupRelative,
+      cleanupSha256: digest(cleanupText),
+    };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -2717,6 +2858,7 @@ export async function syntheticProjectVerifiedContinuation({
     runtimeMetadataAllocationApproval: runtimeMetadataAllocationConfiguration,
     runtimeRestorationRecovery: runtimeRestorationConfiguration,
     runtimeRestorationAllocationApproval: runtimeRestorationAllocationConfiguration,
+    restoredBrowserDiscoveryRecovery: restoredBrowserDiscoveryConfiguration,
   }))
     source = source.replace(
       new RegExp('const ' + name + ' = Object\\.freeze\\(\\{[\\s\\S]*?\\n\\}\\);'),
@@ -2766,23 +2908,25 @@ export async function syntheticProjectVerifiedContinuation({
     }) + '\n',
   );
   let time = Date.parse(
-    runtimeRestorationClosed
-      ? '2026-10-24T15:00:00.000Z'
-      : runtimePreparationClosed
-        ? '2026-10-24T11:00:00.000Z'
-        : adminAdmissionReadonly
-          ? '2026-10-24T10:00:00.000Z'
-          : catalogReadonly
-            ? '2026-10-24T02:40:00.000Z'
-            : preprivateAdmin
-              ? '2026-10-24T02:00:00.000Z'
-              : closedFixture
-                ? '2026-10-24T00:46:00.000Z'
-                : closedWindow
-                  ? '2026-10-23T18:00:00.000Z'
-                  : effectful
-                    ? '2026-10-23T15:00:00.000Z'
-                    : '2026-10-22T18:00:00.000Z',
+    restoredBrowserDiscovery
+      ? '2026-10-24T15:10:00.000Z'
+      : runtimeRestorationClosed
+        ? '2026-10-24T15:00:00.000Z'
+        : runtimePreparationClosed
+          ? '2026-10-24T11:00:00.000Z'
+          : adminAdmissionReadonly
+            ? '2026-10-24T10:00:00.000Z'
+            : catalogReadonly
+              ? '2026-10-24T02:40:00.000Z'
+              : preprivateAdmin
+                ? '2026-10-24T02:00:00.000Z'
+                : closedFixture
+                  ? '2026-10-24T00:46:00.000Z'
+                  : closedWindow
+                    ? '2026-10-23T18:00:00.000Z'
+                    : effectful
+                      ? '2026-10-23T15:00:00.000Z'
+                      : '2026-10-22T18:00:00.000Z',
   );
   const now = () => time,
     io = { processAlive: () => false };

@@ -35,7 +35,7 @@ Write-Output (Foundation-ArchiveFixtureSql $expected)
   assert.equal(result.stderr, '');
   return result.stdout.trim();
 }
-function nativeTechnical14ReadbackQuery() {
+function nativeTechnical14ReadbackQuery(ordinal = 14) {
   const quote = (s) => "'" + s.replaceAll("'", "''") + "'";
   const consumer = fileURLToPath(new URL('./windows/Invoke-M03FoundationMigrations.ps1', import.meta.url));
   const control = fileURLToPath(new URL('./windows/Foundation-AdminControl.ps1', import.meta.url));
@@ -45,7 +45,8 @@ foreach($entry in @(@{File=${quote(control)};Names=@('Foundation-Literal','Found
  foreach($name in $entry.Names){$matches=@($ast.FindAll({param($item)$item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true));if($matches.Count -ne 1){throw 'READBACK_SOURCE_FUNCTION'};Invoke-Expression $matches[0].Extent.Text}
 }
 $ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$projectVerifiedForwardWindowId='4c602549-2c42-4ec3-9328-714d7cb66a77';$projectVerifiedForwardSource='5087d4d93d2f6ffdca0bc0096b365723005446fc';$script:captured=$null
-function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=14;auditSegment='20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-14'}}
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=${ordinal};auditSegment='20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-${ordinal}'}}
+function Read-FoundationTechnical14NoAdmin{return '6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960'}
 function Invoke-FoundationQuery($Sql,$Field){if($Field -cne 'fixture'){throw 'READBACK_FIELD'};$script:captured=$Sql;throw 'READBACK_CAPTURED'}
 try{$null=Read-FoundationProjectVerifiedContinuationReactivatedFixture}catch{if($_.Exception.Message -cne 'READBACK_CAPTURED'){throw}}
 if($script:captured -isnot [string]){throw 'READBACK_NOT_CAPTURED'};Write-Output $script:captured
@@ -922,7 +923,7 @@ describe(
       }
     });
 
-    test('technical13 and14 require real typed prior lifecycle audits while preserving the absent3to11 gap', () => {
+    test('technical13 and14 require real typed prior lifecycle audits and qualified15 skips only absent14', () => {
       const wrapper =
         '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n\\set emr_smoke_reactivation_segment ' + segment + '\n';
       const teardown = readFileSync(new URL('../assert/m03_smoke_teardown.sql', import.meta.url), 'utf8');
@@ -988,6 +989,32 @@ describe(
         priorThirteen = psql('select jsonb_agg(to_jsonb(l) order by id) from ops.audit_log l;'),
         readback = nativeTechnical14ReadbackQuery();
       assert.equal(afterThirteen.audit, 6);
+      const missing14Proof =
+          "set local emr.smoke_technical14_no_reactivation='6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960';",
+        readback15 = nativeTechnical14ReadbackQuery(15);
+      for (const proofSetting of ['', "set local emr.smoke_technical14_no_reactivation='unverified';"]) {
+        psql(
+          `begin;${settings}set local emr.smoke_technical_ordinal='15';${proofSetting}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_TECHNICAL14_PROOF_REQUIRED' then raise exception 'MISSING14_PROOF_NOT_REQUIRED';end if;end;end;$deny$;rollback;`,
+        );
+        assert.deepEqual(JSON.parse(psql(snapshot)), afterThirteen);
+      }
+      const fifteen = JSON.parse(
+        psql(
+          `begin;${settings}set local emr.smoke_technical_ordinal='15';${missing14Proof}${body()}${readback15}rollback;`,
+        ),
+      );
+      assert.equal(fifteen.result, 'M03_SMOKE_FIXTURE_READY');
+      assert.equal(fifteen.competitor_id, competitor);
+      for (const ordinal of [12, 13]) {
+        psql(
+          `begin;${settings}delete from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}:technical-${ordinal}';set local emr.smoke_technical_ordinal='15';${missing14Proof}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' then raise exception 'TECHNICAL15_PRIOR_NOT_REQUIRED';end if;end;end;$deny$;rollback;`,
+        );
+        assert.deepEqual(JSON.parse(psql(snapshot)), afterThirteen);
+      }
+      psql(`begin;${settings}set local emr.smoke_technical_ordinal='14';${body()}
+update app.competitors set status='archived' where id='${competitor}';update app.competitor_accounts set status='paused' where id='${account}';
+set local emr.smoke_technical_ordinal='15';${missing14Proof}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_PRIOR_EDIT_OR_ATTEMPT_PRESENT' then raise exception 'UNEXPECTED14_AUDIT_IGNORED';end if;end;end;$deny$;rollback;`);
+      assert.deepEqual(JSON.parse(psql(snapshot)), afterThirteen);
       const fourteen = JSON.parse(
         psql(`begin;${settings}set local emr.smoke_technical_ordinal='14';${body()}${readback}rollback;`),
       );

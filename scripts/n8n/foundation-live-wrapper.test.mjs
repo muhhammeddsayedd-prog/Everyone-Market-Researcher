@@ -112,6 +112,12 @@ $next=[ordered]@{};foreach($name in $admission.Keys){$next[$name]=$admission[$na
 if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$next) $true 'CheckOnly') -ne 832){throw 'NEXT_832_CHARGES_NOT_PROJECTED'}
 $restored=[ordered]@{};foreach($name in $next.Keys){$restored[$name]=$next[$name]};$restored.managementMaximum=1024;$restored.managementAttempts=524;$restored.controlAttempts=841;$restored.combinedAttempts=1365;$restored.sourceCommitSha='5087d4d93d2f6ffdca0bc0096b365723005446fc';$restored.windowId='4c602549-2c42-4ec3-9328-714d7cb66a77'
 if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$restored) $true 'CheckOnly') -ne 1024){throw 'RESTORED_1024_CHARGES_NOT_PROJECTED'}
+$browserClosed=[ordered]@{};foreach($name in $restored.Keys){$browserClosed[$name]=$restored[$name]};$browserClosed.controlAttempts=842;$browserClosed.combinedAttempts=1366
+if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$browserClosed) $true 'CheckOnly') -ne 1024){throw 'BROWSER_DISCOVERY_CHARGE_NOT_PROJECTED'}
+foreach($mutation in @(@{key='controlAttempts';value=841},@{key='controlAttempts';value=843},@{key='controlAttempts';value='842'},@{key='combinedAttempts';value=1365},@{key='managementAttempts';value=523},@{key='managementMaximum';value=1025},@{key='sourceCommitSha';value=$next.sourceCommitSha},@{key='windowId';value=$next.windowId})){
+ $mixed=[ordered]@{};foreach($name in $browserClosed.Keys){$mixed[$name]=$browserClosed[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'BROWSER_CLOSED_CHARGE_OR_BINDING_RESET'}
+}
 foreach($mutation in @(@{key='managementMaximum';value=832},@{key='managementMaximum';value=1025},@{key='managementMaximum';value='1024'},@{key='managementAttempts';value=523},@{key='controlAttempts';value=840},@{key='combinedAttempts';value=1364},@{key='sourceCommitSha';value=$next.sourceCommitSha},@{key='windowId';value=$next.windowId},@{key='privateRead';value=$true},@{key='networkRequests';value=1})){
  $mixed=[ordered]@{};foreach($name in $restored.Keys){$mixed[$name]=$restored[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
  try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED_RESTORED_1024_PROFILE_ACCEPTED'}

@@ -114,9 +114,9 @@
     }
   ],
   "files": {
-    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "b74022c4a956e9a2d0eea3abd59465678dab3c3cb629b1b0ddb707718dc3e8c2",
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "6ed9e214f1d398f4623e2992a309277cf1183b757369e51110c1566c9dfdbd76",
     "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "b95e60dd2b3d2abf972f53000db83676e4f96947e6fc1a5dfc086a2c646393a3",
-    "scripts/db/windows/Foundation-AdminControl.ps1": "5ea4233f2e1836a1ecb40b8c7bc21d510774a073ec7b3d782fb7adc37f5681f0",
+    "scripts/db/windows/Foundation-AdminControl.ps1": "cdd018dd64941c55ba00c81e09877187868399bb4443df776cf511eb4deb95d3",
     "scripts/db/foundation-settlement.sql": "94ce66c3c12a305bba196bef441a51c9879cc0764403bef2241d3660baaa91e9",
     "scripts/db/foundation-postcheck.sql": "f5ee87926275b368c476258a4b826f4a63c7b2775c4fbfabb24af774e6fc5f52",
     "scripts/db/foundation-replay-snapshot.sql": "f32c8251a11b14b34680025b8e05ee2ca90e87af45ce12a0b90bca31aec7af70",
@@ -153,14 +153,14 @@
     "scripts/assert/m03_smoke_reactivate_startup.sql": "cc2654e4d499cbd5fc1a6c75c30d991ea8f46bef3fa37f66bd415ad8b192e202",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json": "e144d73dfbcab1e5a286ab9ba11df28bcbd10c8a9ad39eecb7852fee3d61d758",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0",
-    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "a1cea9b50d83ed973f5f20876be44befd597e1316e6f26ca0c1d9f9f97d095ef",
-    "scripts/assert/m03_smoke_reactivate_project_verified.sql": "f0cb73a5d048bfaef960d241141e4b5689427e4cd31be9cecf7871a189220b7b",
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "e5292b77b2b7e36eadfd65eae3e8eadd1a9ba5688a6e974f1a6e9bfc548a0c8a",
+    "scripts/assert/m03_smoke_reactivate_project_verified.sql": "f7927310ed687e420cd6b952494a61c57cb6c87d3089ce15fe948ccdd4e33c42",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json": "e21e515ae446dcde7983dba87d09221ce1bf3cd2ad06d08329368a8241e6ba10",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md": "13d19460cdb889378dec5ae4d93af4708baf85290c164e07961add18e7243650",
     "scripts/db/foundation-inspect.sql": "51ca08cd0e9be3ed4abf14c526933c57419d03bd5c277d6a4337d5bf3adce434",
     "scripts/n8n/windows/Dev-CredentialStore.ps1": "49c16b64f9b57c4e27cf6ad92dc16cd05c6cf29a7ada7f9c7fa6e8f64ca5fc13",
     "scripts/db/foundation-forward-postcheck.sql": "8ebe8951deab86a7d93c0826aa9299dd9215b84bfeb8fa215bee1843527e300d",
-    "scripts/db/m03-foundation-dev-migration-packet.json": "2c7b0f275e731b2a6c6bff4b68fa62ab5390ef5d637d17b5ccfb24c0221a57fa",
+    "scripts/db/m03-foundation-dev-migration-packet.json": "79cc233de81ad966d0892f758daced092f4bed3e9b6f9e4c88383e5f93490afb",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json": "e0435f69edc0223195b167e59c94cf87e9f41aa147941a35fb8486f51382c94c",
     "milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md": "dddc18288e44fcb0fde06ee6de6fc86bbc21f65353cd089988b10f5dd0714fa2",
     "milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json": "72ffb37faa1854ac86893f8bf166949daa4034be19ec2af5c217bde8383f65e2",
@@ -176,7 +176,9 @@
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json": "226ed15257e8fb5ac2c81f454631bcf11773f67ce9fdc15d6048184389260983",
     "milestones/M03-n8n-foundation/evidence/runtime-restoration-20261024.json": "365c8bb069e6f7246c89261fb543b8fa9dbd8f38587500da64d5f4d38e065946",
     "milestones/M03-n8n-foundation/evidence/runtime-restoration-fixture-archive-20261024.json": "37c3f0dc518799700cde6c56f18569634c33b919ba26b4bbac1e6d2d09baa656",
-    "milestones/M03-n8n-foundation/evidence/runtime-restoration-cleanup-20261024.json": "50b274b1f6e26d6ba34b602c2cae45136aea19353073d185a1b25ba4b9cc016a"
+    "milestones/M03-n8n-foundation/evidence/runtime-restoration-cleanup-20261024.json": "50b274b1f6e26d6ba34b602c2cae45136aea19353073d185a1b25ba4b9cc016a",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-reconciliation-20261024.json": "6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json": "aabddbc205c3582ba51beb16ca734c35378cf6caa79c288184aaa13c08c4406c"
   },
   "node": {
     "path": "C:\\Program Files\\nodejs\\node.exe",

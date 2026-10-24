@@ -54,6 +54,7 @@ $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technic
 $forwardSchema=[bool]($ForwardMigration -or $ForwardWindow -or $TechnicalResidual13)
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/runtime-restoration-20261024.json')
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/runtime-restoration-fixture-archive-20261024.json','milestones/M03-n8n-foundation/evidence/runtime-restoration-cleanup-20261024.json')
+$requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json')
 if($forwardSchema){$requiredFiles+=@('scripts/db/foundation-forward-postcheck.sql','scripts/db/m03-foundation-dev-migration-packet.json')}
 $versions = @('20261017172928','20261017172931','20261017172934','20261017172937','20261017172940','20261017172943','20261017172945','20261018034220','20261018035417','20261018070042','20261018231756','20261018232014','20261018232922','20261018233338')
 $names = @('extensions_schemas_roles','core_tables','auth_rls_views','rpc_pipeline_core','rpc_app_search','storage_cron','seed_taxonomies','rpc_n8n_foundation','price_book_plan','n8n_worker_gateway_admission','m03_actor_launch_admission','m03_foundation_gateway','m03_foundation_safety_receipts','m03_foundation_boundary_hardening')
@@ -371,6 +372,41 @@ function Read-FoundationArchivePrior {
   Assert-FoundationArchiveInspection $value $value.window $false
   return $value.window
 }
+function Read-FoundationTechnical14NoAdmin {
+  $expected='6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960'
+  $path=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-reconciliation-20261024.json'
+  if((File-Hash $path) -cne $expected){throw 'blocked'}
+  $value=Read-Json $path
+  if($value.kind -cne 'm03_technical14_browser_discovery_reconciliation' -or $value.version -ne 1 -or $value.environment -cne 'dev' -or $value.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $value.source.applicationSource -cne '5087d4d93d2f6ffdca0bc0096b365723005446fc' -or
+     $value.attempt.technicalAttempt -ne 14 -or $value.attempt.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or $value.attempt.windowId -cne '4c602549-2c42-4ec3-9328-714d7cb66a77' -or $value.attempt.nativeExit -ne 1 -or
+     $value.attempt.newManagementRequests -ne 0 -or $value.attempt.newControlRequests -ne 1 -or $value.attempt.baselineDefinitionGets -ne 0 -or $value.attempt.executionDiscoveryGets -ne 0 -or $value.attempt.nativeExecutions -ne 0 -or $value.attempt.actorStarts -ne 0){throw 'blocked'}
+  foreach($key in @('adminChildStarted','databaseAuthenticationAttempted','sqlWindowProvisionAttempted','fixtureReactivationAttempted','previewAttempted','workflowWriteAttempted','migrationOperationAttempted')){if($value.attempt.$key -isnot [bool] -or $value.attempt.$key){throw 'blocked'}}
+  if($value.usage.management -ne 524 -or $value.usage.control -ne 842 -or $value.usage.combined -ne 1366 -or $value.usage.vercel -ne 149 -or $value.usage.managementMaximum -ne 1024 -or $value.usage.controlMaximum -ne 2048 -or $value.usage.combinedMaximum -ne 2560 -or $value.usage.vercelMaximum -ne 224 -or $value.usage.allowancesReplenished -ne $false){throw 'blocked'}
+  foreach($pin in $value.pins.PSObject.Properties){
+    $pinned=Assert-Path $repo $pin.Name
+    if($pin.Name -cmatch '^scripts/n8n/out/foundation/live/(management|control|setup|preflight)\.jsonl$'){
+      $name=$Matches[1];$text=[IO.File]::ReadAllText($pinned);$count=$value.journalCounts.$name
+      if(-not $text.EndsWith("`n") -or $text.Length -gt 2097152 -or $count -isnot [int] -or $count -le 0){throw 'blocked'}
+      $lines=@($text.Substring(0,$text.Length-1) -split "`n");if($lines.Count -lt $count){throw 'blocked'}
+      $digest=[Security.Cryptography.SHA256]::Create()
+      try{$prefix=[Text.Encoding]::UTF8.GetBytes((($lines[0..($count-1)] -join "`n")+"`n"));$hash=([BitConverter]::ToString($digest.ComputeHash($prefix))).Replace('-','').ToLowerInvariant()}finally{$digest.Dispose()}
+      if($hash -cne $pin.Value){throw 'blocked'}
+    }elseif((File-Hash $pinned) -cne $pin.Value){throw 'blocked'}
+  }
+  $closed=Read-Json (Assert-Path $repo 'scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-14.closed.json')
+  if($closed.nativeExit -ne 1 -or $closed.childClosed -ne $true -or $closed.credentialChildrenClosed -ne $true -or $closed.emergencyShutdown -ne $false -or $closed.closureVerified -ne $false -or $closed.parentProcessId -ne $value.attempt.parentProcessId -or $closed.runtimeProcessId -ne $value.attempt.runtimeProcessId){throw 'blocked'}
+  foreach($processId in @($closed.parentProcessId,$closed.runtimeProcessId)){if($processId -isnot [int] -or $processId -le 0 -or @(Get-CimInstance -ClassName Win32_Process -Filter ('ProcessId = '+$processId) -Property ProcessId -ErrorAction Stop).Count -ne 0){throw 'blocked'}}
+  $stem='scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-14'
+  $absent=@(($stem+'-attempt.json'),($stem+'-latest.json'),($stem+'-owner-provision-attempt.json'),($stem+'-reactivation-attempt.json'),'scripts/n8n/out/foundation/live/runtime.technical-14.jsonl')
+  if($value.absentOutputs -isnot [Array] -or $value.absentOutputs.Count -ne $absent.Count){throw 'blocked'}
+  for($index=0;$index -lt $absent.Count;$index++){if($value.absentOutputs[$index] -cne $absent[$index] -or (Test-Path -LiteralPath (Join-Path $repo $absent[$index]))){throw 'blocked'}}
+  $cleanupPath=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json'
+  if((File-Hash $cleanupPath) -cne 'aabddbc205c3582ba51beb16ca734c35378cf6caa79c288184aaa13c08c4406c'){throw 'blocked'}
+  $cleanup=Read-Json $cleanupPath
+  if($cleanup.kind -cne 'm03_technical14_local_cleanup' -or $cleanup.version -ne 1 -or $cleanup.environment -cne 'dev' -or $cleanup.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $cleanup.technicalAttempt -ne 14 -or $cleanup.nativeExit -ne 0 -or $cleanup.attemptReceiptSha256 -cne $expected -or $cleanup.privateContentsRead -ne $false -or $cleanup.networkRequests -ne 0 -or $cleanup.managementAttempts -ne 524 -or $cleanup.controlAttempts -ne 842 -or $cleanup.combinedAttempts -ne 1366 -or $cleanup.vercelAttempts -ne 149 -or $cleanup.actorStarts -ne 0){throw 'blocked'}
+  foreach($key in @('allTenDisposableLeavesAbsent','parentProcessAbsent','runtimeProcessAbsent','parentLockAbsent','runtimeLockAbsent','persistentOriginalsRetained','machineRetained','originalFailedAttemptPreserved')){if($cleanup.$key -isnot [bool] -or -not $cleanup.$key){throw 'blocked'}}
+  return $expected
+}
 function Foundation-ArchiveFixtureSql($Expected) {
   if($TechnicalResidual13){return Foundation-Technical13ArchiveSql $Expected}
   $body=Foundation-FixtureSql 'm03_smoke_teardown.sql'
@@ -499,8 +535,9 @@ function Read-FoundationPostcheckContinuation {
     if($managementPresent.Count -gt 0){
       if(-not $CheckOnly -or -not $projectMode -or -not $forwardMode -or $managementPresent.Count -ne 4){throw 'blocked'}
       # Exact known read-only reconciliation, never a replenished allowance.
-      $managementExpected=if($restoredMode){@{managementMaximum=1024;managementAttempts=524;controlAttempts=841;combinedAttempts=1365}}elseif($nextMode){@{managementMaximum=832;managementAttempts=401;controlAttempts=740;combinedAttempts=1141}}elseif($freshMode -and $value.managementAttempts -eq 313){@{managementMaximum=704;managementAttempts=313;controlAttempts=639;combinedAttempts=952}}elseif($freshMode -and $value.managementAttempts -eq 288){@{managementMaximum=704;managementAttempts=288;controlAttempts=588;combinedAttempts=876}}elseif($freshMode -and $value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800}}elseif($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
+      $managementExpected=if($restoredMode -and $value.controlAttempts -eq 842){@{managementMaximum=1024;managementAttempts=524;controlAttempts=842;combinedAttempts=1366}}elseif($restoredMode){@{managementMaximum=1024;managementAttempts=524;controlAttempts=841;combinedAttempts=1365}}elseif($nextMode){@{managementMaximum=832;managementAttempts=401;controlAttempts=740;combinedAttempts=1141}}elseif($freshMode -and $value.managementAttempts -eq 313){@{managementMaximum=704;managementAttempts=313;controlAttempts=639;combinedAttempts=952}}elseif($freshMode -and $value.managementAttempts -eq 288){@{managementMaximum=704;managementAttempts=288;controlAttempts=588;combinedAttempts=876}}elseif($freshMode -and $value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800}}elseif($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
+      if($restoredMode -and $value.controlAttempts -eq 842){$null=Read-FoundationTechnical14NoAdmin}
       $keys+=$managementFields
     }
     if(-not $CheckOnly){$keys+=@('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')}
@@ -636,6 +673,7 @@ function Assert-FoundationProjectVerifiedContinuationProcessAncestry($Clock) {
      $wrapperCreatedMs -gt $Clock.startsAt -or $runtimeCreatedMs -lt $Clock.startsAt -or $runtimeCreatedMs -gt $claim.claimedAt -or
      $admin.createdAt -lt $runtime.createdAt -or $admin.createdAt -gt [DateTime]::UtcNow){throw 'blocked'}
   $script:projectVerifiedTechnicalOrdinal=$paths.technicalOrdinal
+  if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and $Clock.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77' -and $paths.technicalOrdinal -eq 15){$null=Read-FoundationTechnical14NoAdmin}
   return $true
 }
 
@@ -787,6 +825,9 @@ function Read-FoundationForwardPrior {
     # Current continuation uses the actual four-window archived baseline. Keep
     # the older migration/profile receipt and the failed13 record unchanged.
     $TechnicalResidual13=$true
+    $technical=Foundation-ProjectVerifiedTechnicalIdentity
+    if($technical.ordinal -notin @(14,15)){throw 'blocked'}
+    if($technical.ordinal -eq 15){$null=Read-FoundationTechnical14NoAdmin}
     $expected=Read-FoundationTechnical13Closed
     $path=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/runtime-restoration-fixture-archive-20261024.json'
     if((File-Hash $path) -cne '37c3f0dc518799700cde6c56f18569634c33b919ba26b4bbac1e6d2d09baa656'){throw 'blocked'}

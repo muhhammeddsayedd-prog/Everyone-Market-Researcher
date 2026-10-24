@@ -9,7 +9,11 @@ How this works:
 3. The owner does it, ticks it in the milestone `PROGRESS.md`, and adds any non-secret value (project ref, URL) there.
 4. Secrets go only into approved native stores or the current-user-encrypted dev store below, never into the repo or chat.
 
-## Current M03 checkpoint — technical13 cleanup verified, acceptance open, 24 October 2026
+## Current M03 checkpoint — technical14 closed, browser recovered, acceptance open, 24 October 2026
+
+The [actual technical14 receipt](../milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-reconciliation-20261024.json) preserves its first browser-discovery refusal and all original false acceptance flags. Its helper31691f7 passed all five CI40104537281 jobs and Vercel. Chrome's connection changed from1 to2; the old tab could not attach, while a fresh owned tab in the same signed-in Person1 profile now renders WF-00. No workflow was executed, no Admin child or database authentication began, and no Management, Preview, provider or actor request was made. One Control request was charged, so current usage is **524 Management /842 Control /1366 combined /149 Vercel**, actors0/2. The [separate cleanup receipt](../milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json) verifies native0, both known processes closed, all ten disposable leaves/active locks absent and four persistent originals plus Machine retained. It read no credential contents and made no network request. No owner input is needed. The closed attempt stays closed; the existing guard/native paths are being updated for the next safe sibling under standing authority, using the still-unused fifth SQL target and retaining all counters. Production, schedules, external notifications, R2, merge and M04 stay untouched.
+
+## Approved allocation and historical technical13 cleanup
 
 The [actual runtime restoration](../milestones/M03-n8n-foundation/evidence/runtime-restoration-20261024.json), SHA256 `365c8bb069e6f7246c89261fb543b8fa9dbd8f38587500da64d5f4d38e065946`, completed native0 with 38 Management requests. The owned inactive workflow baseline and original reviewed Machine domain were restored, remote work settled and network/credential children closed. Its separate recovery journal preserves the original38-row technical13 journal and records no pending PUT replay. The original failed preparation and unknown original HTTP acknowledgement remain unchanged. The required 50 discovery reads found no executions across the25 owned workflows; actors remain0.
 
