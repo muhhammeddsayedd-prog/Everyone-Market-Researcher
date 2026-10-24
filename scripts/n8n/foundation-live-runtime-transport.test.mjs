@@ -75,7 +75,10 @@ test('restored1024 baseline preflight uses the same claimed proof for all25 GETs
             attempts++;
           },
         };
-        return module.createFoundationLiveBaselinePreflight(constructorInput, dependencies);
+        return module.createFoundationLiveBaselinePreflight(constructorInput, {
+          ...dependencies,
+          now: f.now,
+        });
       },
     });
     preflight = configured.t;
