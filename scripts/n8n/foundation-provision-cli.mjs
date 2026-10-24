@@ -474,10 +474,10 @@ export const foundationTechnical16CleanupScope = Object.freeze({
   windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
   sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
   executionIds: Object.freeze(['31131', '31130']),
-  maximumRequests: 113,
-  maximumControlRequests: 113,
+  maximumRequests: 109,
+  maximumControlRequests: 109,
   forensicAllocationMaximum: 160,
-  forensicRequestsAlreadyCharged: 47,
+  forensicRequestsAlreadyCharged: 51,
   canonicalWorkflowCount: 25,
   maximumDrainRequests: 100,
 });
@@ -544,6 +544,20 @@ const technical16Cleanup = Object.freeze({
   failedFifthSealFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.provision-seal.json',
   failedFifthSealSha256: '968943a6f5de2322a48ab6cbfe514d6a80e750ea0356978448d82b843e50dfc3',
   failedFifthLockArchiveFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.runtime-lock',
+  failedSixthFile: 'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt6-20261024.json',
+  failedSixthSha256: '1bf2243210b417b8ea7d2ed360adc3c026796a57271c7488f664acc145673a7d',
+  failedSixthOnceFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.json',
+  failedSixthOnceSha256: '2a814ff7c93f2734322796b1214c806cdd8580420933de52f44862024fb54927',
+  failedSixthJournalFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.jsonl',
+  failedSixthJournalSha256: '59a30c4ec18a34c2c49773a61534e4e2149d4bdc73bf8fd45976b06eb7d801e4',
+  failedSixthResultFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6-result.json',
+  failedSixthResultSha256: '85982e616aaac3b37654e70e4c562410e44449ed65944a6d93aacae4c369cc19',
+  failedSixthSealFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.provision-seal.json',
+  failedSixthSealSha256: '162ae09e991e6a18b8c6969663e0c9f71d1b7d7661ba7dc10ec1d41f9f8e7d22',
+  failedSixthLockArchiveFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.runtime-lock',
+  publicDiagnosticsFile:
+    'milestones/M03-n8n-foundation/evidence/technical16-public-transport-diagnostics-20261024.json',
+  publicDiagnosticsSha256: '6185e8af680ebd245a63b33e5fbd8390bd6804e71a994d9fe30db190016789bc',
   discoveryFile: 'milestones/M03-n8n-foundation/evidence/technical16-wf32-discovery-readback-20261024.json',
   discoverySha256: '9a6463326e06719dc0a4123145df96f49ebcf9f4125be81f727f496f5f635c39',
 });
@@ -1538,11 +1552,340 @@ export async function checkTechnical16Cleanup() {
     }
     dead(fifthOnce.processId);
     dead(fifthOnce.parentProcessId);
-    const lockArchive = noLinks(join(repo, technical16Cleanup.failedFifthLockArchiveFile)),
+    read(technical16Cleanup.failedFifthLockArchiveFile, technical16Cleanup.failedLockSha256);
+    const sixth = JSON.parse(read(technical16Cleanup.failedSixthFile, technical16Cleanup.failedSixthSha256)),
+      sixthOnce = JSON.parse(
+        read(technical16Cleanup.failedSixthOnceFile, technical16Cleanup.failedSixthOnceSha256),
+      ),
+      sixthJournal = read(
+        technical16Cleanup.failedSixthJournalFile,
+        technical16Cleanup.failedSixthJournalSha256,
+      ),
+      sixthResult = JSON.parse(
+        read(technical16Cleanup.failedSixthResultFile, technical16Cleanup.failedSixthResultSha256),
+      ),
+      sixthSeal = JSON.parse(
+        read(technical16Cleanup.failedSixthSealFile, technical16Cleanup.failedSixthSealSha256),
+      );
+    const sameSixth = (actual, expected) => {
+      if (
+        !actual ||
+        Object.entries(expected).some(([key, value]) => JSON.stringify(actual[key]) !== JSON.stringify(value))
+      )
+        fail();
+    };
+    sameSixth(sixth, {
+      kind: failed.kind,
+      version: 1,
+      environment: 'dev',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      technicalAttempt: 16,
+      cleanupAttempt: 6,
+      purpose: 'full_native_cleanup',
+      outerNativeExit: 1,
+      consumerCommitSha: '157a2e49b39a0addccf6a45792b6e271bfb1487f',
+      windowId: foundationTechnical16CleanupScope.windowId,
+      rootExecutionId: '31130',
+      childExecutionId: '31131',
+      originalAttemptSha256: failed.originalAttemptSha256,
+      resolutionSha256: once.resolutionSha256,
+      priorFailedAttemptSha256: technical16Cleanup.failedFifthSha256,
+    });
+    sameSixth(sixth.rawResult, {
+      kind: fifth.rawResult.kind,
+      version: 1,
+      environment: 'dev',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      windowId: foundationTechnical16CleanupScope.windowId,
+      sourceCommitSha: foundationTechnical16CleanupScope.sourceCommitSha,
+      status: 'cleanup_reconciliation_required',
+      nativeExit: 1,
+      requestCount: 2,
+      controlRequestCount: 2,
+      managementAttempts: 876,
+      controlAttempts: 1007,
+      combinedAttempts: 1883,
+      canonicalWorkflowsVerified: 0,
+      recordsDeleted: 0,
+      qualifiedSideEffects: false,
+      deleteAcknowledged: false,
+      absenceVerified: false,
+      remoteWorkSettled: false,
+      networkCompletionVerified: true,
+      originalPublicRecordsUnchanged: true,
+      childClosed: true,
+      credentialChildrenClosed: true,
+      parentLockDeleted: true,
+      privateRead: true,
+      persistentManagementRetained: true,
+      nativeAcceptanceProven: false,
+      originalMaskedFirstFailureRecovered: false,
+      executionCount: 0,
+      actorStarts: 0,
+      workflowWrites: 0,
+      credentialWrites: 0,
+      migrationOperations: 0,
+      diagnosticStage: 'qualification',
+      diagnosticCode: 'native_DEADLINE',
+    });
+    sameSixth(sixth.cleanup, {
+      parentAbsent: true,
+      childAbsent: true,
+      parentLockAbsent: true,
+      runtimeLockPresent: true,
+      priorRuntimeMarkerArchived: true,
+      persistentManagementRetained: true,
+      privateContentsRead: false,
+      networkRequests: 0,
+    });
+    sameSixth(sixth.durableState, {
+      onceClaimPreserved: true,
+      journalHeaderCount: 1,
+      httpIntentCount: 2,
+      deleteIntentCount: 0,
+      nativeResultFilePresent: true,
+      consumedMutationClaimReusable: false,
+      retryIntentCount: 1,
+    });
+    sameSixth(sixth.usage, {
+      management: 876,
+      control: 1007,
+      combined: 1883,
+      vercel: 184,
+      nativeExecutionsReserved: 3,
+      actorStarts: 0,
+      providerReads: 0,
+      allowancesReplenished: false,
+    });
+    sameSixth(sixth.cause, {
+      firstAttemptResetQualifiedByReviewedSource: true,
+      firstAttemptPhysicalClosureQualifiedBeforeRetry: true,
+      sharedLogicalDeadlineRetained: true,
+      exactFailureLayerEstablished: false,
+      lastHttpStatusRetained: false,
+      nativeOsErrorCodeRetained: false,
+      rawCredentialBearingErrorRetained: false,
+    });
+    sameSixth(sixthOnce, {
+      kind: once.kind,
+      version: 1,
+      cleanupAttempt: 6,
+      resolutionSha256: once.resolutionSha256,
+      priorFailedAttemptSha256: technical16Cleanup.failedFifthSha256,
+      priorOnceSha256: technical16Cleanup.failedFifthOnceSha256,
+      priorJournalSha256: technical16Cleanup.failedFifthJournalSha256,
+      executionIds: ['31131', '31130'],
+      maximumRequests: 113,
+      maximumControlRequests: 113,
+      usage: { ...once.usage, management: 874, control: 1005, combined: 1879 },
+      processId: sixth.cleanup.childProcessId,
+      parentProcessId: sixth.cleanup.parentProcessId,
+    });
+    if (
+      sixthOnce.qualificationOnly !== undefined ||
+      sixthSeal.version !== 2 ||
+      !sixthSeal.files ||
+      Object.keys(sixthSeal.files).length !== 97
+    )
+      fail();
+    for (const [path, hash] of [
+      [
+        'scripts/n8n/foundation-provision-cli.mjs',
+        '940f819001d3dc23416e86e56a73abee03b4c35b334c96babb5a91b7d9a077fd',
+      ],
+      [
+        'scripts/n8n/foundation-native-reader.mjs',
+        '2b52a728a755b389cb8c0cf8b2db0dc5bdae6b6ac8a2be5452b8fce6f2eba7b7',
+      ],
+      [
+        'scripts/n8n/foundation-native-transport.mjs',
+        '4a65ce8a31a28155a95c89407ec5369e1ebf106ca3f32c784b3644cb0192f930',
+      ],
+      [
+        'scripts/n8n/windows/Invoke-M03FoundationProvision.ps1',
+        '0aff1c0e4fd404e707f24c65fedb7cd03de65f14ab1fa9790e918df52dbbe6e3',
+      ],
+    ])
+      if (sixthSeal.files[path] !== hash || sixth.pins?.[path] !== hash) fail();
+    for (const [path, hash] of [
+      [technical16Cleanup.failedSixthOnceFile, technical16Cleanup.failedSixthOnceSha256],
+      [technical16Cleanup.failedSixthJournalFile, technical16Cleanup.failedSixthJournalSha256],
+      [technical16Cleanup.failedSixthResultFile, technical16Cleanup.failedSixthResultSha256],
+      [technical16Cleanup.failedSixthSealFile, technical16Cleanup.failedSixthSealSha256],
+      [technical16Cleanup.failedFifthLockArchiveFile, technical16Cleanup.failedLockSha256],
+    ])
+      if (sixth.pins?.[path] !== hash) fail();
+    for (const [key, value] of Object.entries(sixthResult))
+      if (JSON.stringify(sixth.rawResult[key]) !== JSON.stringify(value)) fail();
+    const sixthRows = sixthJournal.trimEnd().split('\n').map(JSON.parse);
+    if (!sixthJournal.endsWith('\n') || sixthRows.length !== 3) fail();
+    sameSixth(sixthRows[0], {
+      event: 'technical16_cleanup_header',
+      version: 1,
+      cleanupAttempt: 6,
+      resolutionSha256: once.resolutionSha256,
+      originalAttemptSha256: failed.originalAttemptSha256,
+      priorFailedAttemptSha256: technical16Cleanup.failedFifthSha256,
+      priorOnceSha256: technical16Cleanup.failedFifthOnceSha256,
+      priorJournalSha256: technical16Cleanup.failedFifthJournalSha256,
+    });
+    for (let index = 0; index < 2; index++) {
+      const row = sixthRows[index + 1];
+      sameSixth(row, {
+        event: 'technical16_http_intent',
+        ordinal: index + 1,
+        kind: 'metadata',
+        workflowId: bindings.workflowRefs['WF-00'].id,
+        executionId: '31130',
+        managementAttempts: 875 + index,
+        controlAttempts: 1006 + index,
+      });
+      if (index === 0 ? Object.hasOwn(row, 'retryOf') : row.retryOf !== 1) fail();
+    }
+    dead(sixthOnce.processId);
+    dead(sixthOnce.parentProcessId);
+    const diagnostics = JSON.parse(
+      read(technical16Cleanup.publicDiagnosticsFile, technical16Cleanup.publicDiagnosticsSha256),
+    );
+    sameSixth(diagnostics, {
+      kind: 'm03_technical16_public_transport_diagnostics',
+      version: 1,
+      environment: 'dev',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      sourceCommitSha: '157a2e49b39a0addccf6a45792b6e271bfb1487f',
+      priorFailedAttemptSha256: technical16Cleanup.failedSixthSha256,
+    });
+    sameSixth(diagnostics.usage, {
+      beforeManagement: 876,
+      beforeControl: 1007,
+      additionalManagement: 2,
+      additionalControl: 2,
+      management: 878,
+      control: 1009,
+      combined: 1887,
+      vercel: 184,
+      nativeExecutionsReserved: 3,
+      actorStarts: 0,
+      providerReads: 0,
+      forensicRequestsCharged: 51,
+      forensicRequestsRemaining: 109,
+      allowancesReplenished: false,
+    });
+    sameSixth(diagnostics.boundaries, {
+      realCredentialsRead: false,
+      authenticatedMetadataProven: false,
+      workflowExecutions: 0,
+      actorStarts: 0,
+      deletions: 0,
+      workflowWrites: 0,
+      originalFailureCauseRecovered: false,
+      localTransportDefectProven: false,
+      credentialChildrenStarted: false,
+      diagnosticChildrenClosed: true,
+    });
+    sameSixth(diagnostics.publicHttp, {
+      httpStatus: 401,
+      tlsVerified: true,
+      socketClosed: true,
+      nativeExit: 0,
+      credentialSupplied: false,
+      maximumRequests: 1,
+    });
+    sameSixth(diagnostics.nativePublicHttp, {
+      httpStatus: 401,
+      tlsVerified: true,
+      transportCode: null,
+      transportCause: null,
+      transportState: { pendingRequests: 0, unclosedResponses: 0 },
+      elapsedMs: 8256,
+      credentialSupplied: false,
+      publicConstantHeader: true,
+      maximumRequests: 1,
+    });
+    sameSixth(diagnostics.tlsTiming, {
+      dnsMs: 12,
+      tcpMs: 303,
+      tlsMs: 391,
+      tlsVerified: true,
+      closed: true,
+      failureCode: null,
+      firstFamily: 4,
+      elapsedMs: 394,
+      credentialSupplied: false,
+      httpRequests: 0,
+      physicalConnections: 1,
+      childClosed: true,
+    });
+    const publicJournal = 'scripts/n8n/out/foundation/technical16-public-transport-diagnostic-20261024.jsonl',
+      nativeJournal =
+        'scripts/n8n/out/foundation/technical16-native-public-transport-diagnostic-20261024.jsonl',
+      nativeResult =
+        'scripts/n8n/out/foundation/technical16-native-public-transport-diagnostic-20261024-result.json',
+      timing = 'scripts/n8n/out/foundation/technical16-public-tls-timing-20261024.json';
+    const diagnosticPins = {
+      [publicJournal]: 'db7a307dff3cf2b357bdacdba093614f75a7d371f064ae630ca40f384693b797',
+      [nativeJournal]: '693802c29a5ce12e3ca290e4c80ea3d0d0790394e24eb93e1629c3e9d7100767',
+      [nativeResult]: '822d47f80da7e71ca512463d69fbf6f358f5d45a21a245cb2f8d00d0fcffd287',
+      [timing]: 'd33f411b5cf69f3b95bb96b0178b721946672530f05c3ec10a632b8b0b01dd2b',
+      'scripts/n8n/check-dns.mjs': '9389848715be8aae3e88c9341d256c4278cf18be262730825a849119cc166dbf',
+      'scripts/n8n/check-transport.mjs': '691cea0718737f68a7ab01c5338178968a502f3f6e3931d43e7265f56fae23f8',
+      'scripts/n8n/foundation-native-transport.mjs':
+        '4a65ce8a31a28155a95c89407ec5369e1ebf106ca3f32c784b3644cb0192f930',
+    };
+    if (!diagnostics.pins || Object.keys(diagnostics.pins).length !== 7) fail();
+    for (const [path, hash] of Object.entries(diagnosticPins)) if (diagnostics.pins[path] !== hash) fail();
+    for (const [path, native, management, control] of [
+      [publicJournal, false, 876, 1007],
+      [nativeJournal, true, 877, 1008],
+    ]) {
+      const text = read(path, diagnosticPins[path]),
+        rows = text.trimEnd().split('\n').map(JSON.parse);
+      if (
+        !text.endsWith('\n') ||
+        rows.length !== 3 ||
+        rows.some(
+          (row) => typeof row.at !== 'string' || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(row.at),
+        )
+      )
+        fail();
+      if (
+        JSON.stringify(
+          rows.map((row) => Object.fromEntries(Object.entries(row).filter(([key]) => key !== 'at'))),
+        ) !==
+        JSON.stringify([
+          {
+            kind: native
+              ? 'm03_technical16_native_public_transport_diagnostic_budget'
+              : 'm03_technical16_public_transport_diagnostic_budget',
+            version: 1,
+            checkpointSha256: technical16Cleanup.failedSixthSha256,
+            sourceCommitSha: diagnostics.sourceCommitSha,
+            managementAttempts: management,
+            controlAttempts: control,
+            maximumRequests: 1,
+            method: 'GET',
+            route: native ? '/api/v1/executions/31130?includeData=false' : '/api/v1/discover',
+            credentialSupplied: false,
+            ...(native ? { publicConstantHeader: true } : {}),
+          },
+          { event: 'management_attempt', ordinal: management + 1 },
+          { event: 'native_read_control_reservation', ordinal: control + 1, conservative: true },
+        ])
+      )
+        fail();
+    }
+    if (
+      JSON.stringify(JSON.parse(read(nativeResult, diagnosticPins[nativeResult]))) !==
+        JSON.stringify(diagnostics.nativePublicHttp) ||
+      JSON.stringify(JSON.parse(read(timing, diagnosticPins[timing]))) !==
+        JSON.stringify(diagnostics.tlsTiming)
+    )
+      fail();
+    const lockArchive = noLinks(join(repo, technical16Cleanup.failedSixthLockArchiveFile)),
       stalePresent = existsSync(lockPath),
       archived = existsSync(lockArchive);
     if (stalePresent === archived) fail();
-    // Preserve all five spent claims and the diagnostic. Only the exact stale marker is archived by
+    // Preserve all six spent claims and every charged diagnostic. Only the exact stale marker is archived by
     // the locked PowerShell parent; public CheckOnly never moves it.
     const markerPath = archived ? lockArchive : lockPath,
       stat = lstatSync(markerPath);
@@ -1553,12 +1896,12 @@ export async function checkTechnical16Cleanup() {
       publicHash(readFileSync(markerPath)) !== technical16Cleanup.failedLockSha256
     )
       fail();
-    if (archived) read(technical16Cleanup.failedFifthLockArchiveFile, technical16Cleanup.failedLockSha256);
-    cleanupAttempt = 6;
+    if (archived) read(technical16Cleanup.failedSixthLockArchiveFile, technical16Cleanup.failedLockSha256);
+    cleanupAttempt = 7;
     paths = {
-      attemptFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.json',
-      journalFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.jsonl',
-      resultFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6-result.json',
+      attemptFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt7.json',
+      journalFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt7.jsonl',
+      resultFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt7-result.json',
     };
   } else fail();
   for (const name of ['attemptFile', 'journalFile', 'resultFile'])
@@ -1570,13 +1913,13 @@ export async function checkTechnical16Cleanup() {
     childBinding,
     intentAt: Date.parse(ack[0].intentAt),
     resolutionSha256: technical16Cleanup.executedBodyResolutionSha256,
-    usage: { ...resolution.usage, management: 874, control: 1005, combined: 1879 },
+    usage: { ...resolution.usage, management: 878, control: 1009, combined: 1887 },
     cleanupAttempt,
     paths,
     priorAttempt: {
-      receiptSha256: technical16Cleanup.failedFifthSha256,
-      onceSha256: technical16Cleanup.failedFifthOnceSha256,
-      journalSha256: technical16Cleanup.failedFifthJournalSha256,
+      receiptSha256: technical16Cleanup.failedSixthSha256,
+      onceSha256: technical16Cleanup.failedSixthOnceSha256,
+      journalSha256: technical16Cleanup.failedSixthJournalSha256,
     },
     assertCurrent() {
       for (const [path, hash] of pins) {

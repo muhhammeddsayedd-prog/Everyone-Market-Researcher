@@ -91,6 +91,8 @@ function Get-M03FoundationPublicSourceFiles {
   'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt3-20261024.json',
   'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt4-20261024.json'
   'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt5-20261024.json',
+  'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt6-20261024.json',
+  'milestones/M03-n8n-foundation/evidence/technical16-public-transport-diagnostics-20261024.json',
   'milestones/M03-n8n-foundation/evidence/technical16-wf32-discovery-readback-20261024.json',
   'milestones/M03-n8n-foundation/evidence/local-native-parameter-defaults-20261024.json',
   'package.json',

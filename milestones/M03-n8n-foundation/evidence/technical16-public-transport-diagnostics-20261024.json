@@ -1,0 +1,109 @@
+{
+  "kind": "m03_technical16_public_transport_diagnostics",
+  "version": 1,
+  "observedAt": "2026-10-24T20:39:03.268Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "sourceCommitSha": "157a2e49b39a0addccf6a45792b6e271bfb1487f",
+  "priorFailedAttemptSha256": "1bf2243210b417b8ea7d2ed360adc3c026796a57271c7488f664acc145673a7d",
+  "toolResults": {
+    "dns": "ac7f03",
+    "publicHttp": "771c6b",
+    "nativePublicHttp": "functions native-public diagnostic",
+    "publicTls": "functions public-tls-timing diagnostic"
+  },
+  "dns": {
+    "status": "DNS_CHECK_COMPLETE",
+    "success": true,
+    "results": {
+      "resolve4": {
+        "success": false,
+        "code": "ECONNREFUSED"
+      },
+      "resolve6": {
+        "success": false,
+        "code": "ECONNREFUSED"
+      },
+      "osLookup": {
+        "success": true,
+        "code": "RESOLVED"
+      }
+    },
+    "credentialSupplied": false,
+    "apiRequests": 0
+  },
+  "publicHttp": {
+    "httpStatus": 401,
+    "tlsVerified": true,
+    "socketClosed": true,
+    "nativeExit": 0,
+    "credentialSupplied": false,
+    "maximumRequests": 1
+  },
+  "nativePublicHttp": {
+    "httpStatus": 401,
+    "tlsVerified": true,
+    "transportCode": null,
+    "transportCause": null,
+    "transportState": {
+      "pendingRequests": 0,
+      "unclosedResponses": 0
+    },
+    "elapsedMs": 8256,
+    "credentialSupplied": false,
+    "publicConstantHeader": true,
+    "maximumRequests": 1
+  },
+  "tlsTiming": {
+    "observedAt": "2026-10-24T20:37:45.386Z",
+    "dnsMs": 12,
+    "tcpMs": 303,
+    "tlsMs": 391,
+    "tlsVerified": true,
+    "closed": true,
+    "failureCode": null,
+    "firstFamily": 4,
+    "elapsedMs": 394,
+    "credentialSupplied": false,
+    "httpRequests": 0,
+    "physicalConnections": 1,
+    "childClosed": true
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/technical16-public-transport-diagnostic-20261024.jsonl": "db7a307dff3cf2b357bdacdba093614f75a7d371f064ae630ca40f384693b797",
+    "scripts/n8n/out/foundation/technical16-native-public-transport-diagnostic-20261024.jsonl": "693802c29a5ce12e3ca290e4c80ea3d0d0790394e24eb93e1629c3e9d7100767",
+    "scripts/n8n/out/foundation/technical16-native-public-transport-diagnostic-20261024-result.json": "822d47f80da7e71ca512463d69fbf6f358f5d45a21a245cb2f8d00d0fcffd287",
+    "scripts/n8n/out/foundation/technical16-public-tls-timing-20261024.json": "d33f411b5cf69f3b95bb96b0178b721946672530f05c3ec10a632b8b0b01dd2b",
+    "scripts/n8n/check-dns.mjs": "9389848715be8aae3e88c9341d256c4278cf18be262730825a849119cc166dbf",
+    "scripts/n8n/check-transport.mjs": "691cea0718737f68a7ab01c5338178968a502f3f6e3931d43e7265f56fae23f8",
+    "scripts/n8n/foundation-native-transport.mjs": "4a65ce8a31a28155a95c89407ec5369e1ebf106ca3f32c784b3644cb0192f930"
+  },
+  "usage": {
+    "beforeManagement": 876,
+    "beforeControl": 1007,
+    "additionalManagement": 2,
+    "additionalControl": 2,
+    "management": 878,
+    "control": 1009,
+    "combined": 1887,
+    "vercel": 184,
+    "nativeExecutionsReserved": 3,
+    "actorStarts": 0,
+    "providerReads": 0,
+    "forensicRequestsCharged": 51,
+    "forensicRequestsRemaining": 109,
+    "allowancesReplenished": false
+  },
+  "boundaries": {
+    "realCredentialsRead": false,
+    "authenticatedMetadataProven": false,
+    "workflowExecutions": 0,
+    "actorStarts": 0,
+    "deletions": 0,
+    "workflowWrites": 0,
+    "originalFailureCauseRecovered": false,
+    "localTransportDefectProven": false,
+    "credentialChildrenStarted": false,
+    "diagnosticChildrenClosed": true
+  }
+}
