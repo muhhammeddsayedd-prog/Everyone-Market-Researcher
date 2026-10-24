@@ -1,0 +1,112 @@
+{
+  "kind": "m03_technical16_native_metadata_readback",
+  "version": 1,
+  "observedAt": "2026-10-24T17:06:22.628Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "technicalAttempt": 16,
+  "originalAttemptSha256": "d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb",
+  "metadataReadbackSha256": "ea613ccfaa51b2fadcbfd93a7b3608b9e0d6a6df453400fb7aa7abe01725d470",
+  "toolReceipt": {
+    "public": "782fec",
+    "run": "7da795",
+    "completion": "84e217",
+    "nativeExit": 0,
+    "rawStructuredResultTranscribed": true,
+    "nativeOutputFileEmitted": false
+  },
+  "rawResult": {
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "complete",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": {
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "technicalAttempt": 16,
+      "status": "native_metadata_verified",
+      "requestCount": 1,
+      "maximumRequests": 1,
+      "httpStatus": 200,
+      "tlsVerified": true,
+      "readerMetadataVerified": true,
+      "networkCompletionVerified": true,
+      "controlReservationConservative": true,
+      "acceptanceProven": false,
+      "metadata": {
+        "executionId": "31130",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "mode": "manual",
+        "status": "success",
+        "versionMatchesIntent": true
+      },
+      "readerFailure": null,
+      "transportFailureCode": null,
+      "readerState": {
+        "requests": 1,
+        "pendingRequests": 0,
+        "unclosedResponses": 0,
+        "busy": false
+      },
+      "transportState": {
+        "pendingRequests": 0,
+        "unclosedResponses": 0
+      }
+    }
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/execution-31130-native-metadata-diagnostic-20261024.jsonl": "870024c52978fdfe86ac4e054979ec78177e3a406e1d990bca11693dd36c1cf0",
+    "scripts/n8n/m03-inventory-seal.json": "b0a27b52217757a0ea4756a706abdb29f4b8e23d980d4f846ae725cafe33e002",
+    "scripts/n8n/inventory.mjs": "69f329ae855f7080e81d5726a68b4b1ba2ad1771c9da2cb26423cbca6f498e7b",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "5268bf36277cf2640024b9cf4118333e3aa990038e63ed425c2bf12ed8711344",
+    "scripts/n8n/foundation-native-reader.mjs": "2df2a68f7acb6a36dde5e4ff93d31cb7e08263ee276b02abcdea9271ff7efb9d",
+    "scripts/n8n/foundation-native-transport.mjs": "e33781048875bd68703ad0579a3f95bf863e957095a75622f75b4e7c8218f34a"
+  },
+  "source": {
+    "head": "b5ddf571db113a0d16b871b8e96cb3677dc9d184",
+    "requiredChecksVerifiedSeparately": {
+      "ciRunId": 40114183600,
+      "allFivePassed": true,
+      "vercelPassed": true
+    },
+    "originalNativeReaderAndTransportUsed": true,
+    "optionalLiveBindingOmitted": true,
+    "privateVersionComparedToPinnedAck": true
+  },
+  "usage": {
+    "management": 826,
+    "control": 956,
+    "combined": 1782,
+    "vercel": 184,
+    "nativeExecutionsReserved": 3,
+    "actorStarts": 0,
+    "additionalHttpRequests": 1,
+    "controlReservationConservative": true,
+    "allowancesReplenished": false
+  },
+  "cleanup": {
+    "tool": "06ccd8",
+    "parentProcessId": 68328,
+    "childProcessId": 68100,
+    "parentAbsent": true,
+    "childAbsent": true,
+    "managementCopyAbsent": true,
+    "parentLockAbsent": true,
+    "persistentManagementRetained": true,
+    "privateContentsRead": false,
+    "networkRequests": 0
+  },
+  "interpretation": {
+    "rootTerminalMetadataVerified": true,
+    "nativeExecutedGraphVerified": false,
+    "nativeTreeSettlementVerified": false,
+    "originalReaderFaultEstablished": false,
+    "fullAcceptance": false,
+    "originalFailedAttemptPreserved": true
+  }
+}

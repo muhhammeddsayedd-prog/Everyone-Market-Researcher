@@ -485,6 +485,12 @@ const execution31130Checkpoint = Object.freeze({
   cleanupSha256: '49192237b29231f20f67595fdc7522b49926f10c8e278bea3871cf75a9788b57',
   claim: 'scripts/n8n/out/foundation/execution-31130-metadata-diagnostic-20261024.jsonl',
   nativeClaim: 'scripts/n8n/out/foundation/execution-31130-native-metadata-diagnostic-20261024.jsonl',
+  nativeReceipt:
+    'milestones/M03-n8n-foundation/evidence/technical16-execution31130-native-metadata-readback-20261024.json',
+  nativeReceiptSha256: 'd82862ef3c23f9a4dc51b5a7b246c239890acdcda6df31d2a81c7101f21cd057',
+  childUiReceipt: 'milestones/M03-n8n-foundation/evidence/technical16-child-ui-readback-20261024.json',
+  childUiReceiptSha256: '2c9100fd58caf7715838462de11337e8d06bcd691ab13b20b380413b6c3e4ba3',
+  snapshotClaim: 'scripts/n8n/out/foundation/execution-31130-snapshot-diagnostic-20261024.jsonl',
   metadataReceipt:
     'milestones/M03-n8n-foundation/evidence/technical16-execution31130-metadata-readback-20261024.json',
   metadataReceiptSha256: 'ea613ccfaa51b2fadcbfd93a7b3608b9e0d6a6df453400fb7aa7abe01725d470',
@@ -616,26 +622,128 @@ function readNativeExecution31130Context(root) {
     throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
   return context;
 }
+function readSnapshotExecution31130Context(root) {
+  const context = readNativeExecution31130Context(root),
+    cfg = execution31130Checkpoint,
+    text = readRuntimePublicFile(context.root, cfg.nativeReceipt),
+    uiText = readRuntimePublicFile(context.root, cfg.childUiReceipt);
+  if (publicDigest(text) !== cfg.nativeReceiptSha256 || publicDigest(uiText) !== cfg.childUiReceiptSha256)
+    throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  const r = JSON.parse(text),
+    ui = JSON.parse(uiText),
+    raw = r.rawResult,
+    claim = readRuntimePublicFile(context.root, cfg.nativeClaim),
+    rows = claim.trimEnd().split('\n').map(JSON.parse);
+  if (
+    r.kind !== 'm03_technical16_native_metadata_readback' ||
+    r.originalAttemptSha256 !== cfg.sha256 ||
+    r.metadataReadbackSha256 !== cfg.metadataReceiptSha256 ||
+    r.usage?.management !== 826 ||
+    r.usage.control !== 956 ||
+    r.usage.combined !== 1782 ||
+    raw?.status !== 'complete' ||
+    raw.nativeExit !== 0 ||
+    raw.childClosed !== true ||
+    raw.handoffDeleted !== true ||
+    raw.inventory?.status !== 'native_metadata_verified' ||
+    raw.inventory.acceptanceProven !== false ||
+    raw.inventory.metadata?.versionMatchesIntent !== true ||
+    raw.inventory.networkCompletionVerified !== true ||
+    !record(r.pins) ||
+    r.pins[cfg.nativeClaim] !== publicDigest(claim) ||
+    rows.length !== 3 ||
+    rows[0].managementAttempts !== 825 ||
+    rows[0].controlAttempts !== 955 ||
+    JSON.stringify(rows[1]) !== JSON.stringify({ event: 'management_attempt', ordinal: 826 }) ||
+    JSON.stringify(rows[2]) !==
+      JSON.stringify({
+        event: 'native_read_control_reservation',
+        ordinal: 956,
+        additionalHttpRequest: false,
+      }) ||
+    [
+      'parentAbsent',
+      'childAbsent',
+      'managementCopyAbsent',
+      'parentLockAbsent',
+      'persistentManagementRetained',
+    ].some((k) => r.cleanup?.[k] !== true) ||
+    r.cleanup.privateContentsRead !== false ||
+    r.cleanup.networkRequests !== 0 ||
+    ui.kind !== 'm03_technical16_child_ui_lookup' ||
+    ui.nativeMetadataReadbackSha256 !== cfg.nativeReceiptSha256 ||
+    ui.parent?.executionId !== '31130' ||
+    ui.parent.workflowId !== 'MzimjpsuyPuK7SKe' ||
+    ui.parent.childLinkObserved !== true ||
+    ui.child?.executionId !== '31131' ||
+    ui.child.workflowId !== '4JMHLDBSdgGxhPlk' ||
+    ui.usage?.management !== 826 ||
+    ui.usage.control !== 957 ||
+    ui.usage.combined !== 1783 ||
+    ui.nativeTreeSettlementEstablished !== false ||
+    ui.fullAcceptance !== false ||
+    publicDigest(readRuntimePublicFile(context.root, ui.screenshot?.path, null)) !== ui.screenshot.sha256
+  )
+    throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  const runtime = readRuntimePublicFile(
+      context.root,
+      'scripts/n8n/out/foundation/live/runtime.technical-16.jsonl',
+    )
+      .trimEnd()
+      .split('\n')
+      .map(JSON.parse),
+    intents = runtime.filter((v) => v.event === 'intent' && v.sequence === 37),
+    verified = runtime.filter((v) => v.event === 'verified' && v.sequence === 37);
+  if (
+    intents.length !== 1 ||
+    intents[0].action !== 'save' ||
+    intents[0].key !== 'WF-00' ||
+    verified.length !== 1 ||
+    verified[0].after?.versionId !== context.versionId ||
+    typeof verified[0].after.graphHash !== 'string' ||
+    !/^[a-f0-9]{64}$/.test(verified[0].after.graphHash) ||
+    intents[0].target?.graphHash !== verified[0].after.graphHash
+  )
+    throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  return { ...context, bodyHash: verified[0].after.graphHash };
+}
 export function checkExecution31130MetadataDiagnostic(root, native = false) {
-  if (typeof native !== 'boolean') throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
-  const context = native ? readNativeExecution31130Context(root) : readExecution31130Context(root);
+  if (![false, true, 'snapshot'].includes(native)) throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  const context =
+    native === 'snapshot'
+      ? readSnapshotExecution31130Context(root)
+      : native
+        ? readNativeExecution31130Context(root)
+        : readExecution31130Context(root);
   try {
     lstatSync(
-      join(context.root, native ? execution31130Checkpoint.nativeClaim : execution31130Checkpoint.claim),
+      join(
+        context.root,
+        native === 'snapshot'
+          ? execution31130Checkpoint.snapshotClaim
+          : native
+            ? execution31130Checkpoint.nativeClaim
+            : execution31130Checkpoint.claim,
+      ),
     );
     throw Error();
   } catch (error) {
     if (error.code !== 'ENOENT') throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
   }
   return Object.freeze({
-    kind: native ? 'm03_execution_31130_native_metadata_check' : 'm03_execution_31130_metadata_check',
+    kind:
+      native === 'snapshot'
+        ? 'm03_execution_31130_snapshot_check'
+        : native
+          ? 'm03_execution_31130_native_metadata_check'
+          : 'm03_execution_31130_metadata_check',
     status: 'ready',
     technicalAttempt: 16,
     sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
     windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
-    managementAttempts: native ? 825 : 824,
-    controlAttempts: 955,
-    combinedAttempts: native ? 1780 : 1779,
+    managementAttempts: native === 'snapshot' ? 826 : native ? 825 : 824,
+    controlAttempts: native === 'snapshot' ? 957 : 955,
+    combinedAttempts: native === 'snapshot' ? 1783 : native ? 1780 : 1779,
     maximumRequests: 1,
     privateRead: false,
     networkRequests: 0,
@@ -643,8 +751,18 @@ export function checkExecution31130MetadataDiagnostic(root, native = false) {
 }
 export function openExecution31130MetadataDiagnosticBudget(root, native = false) {
   checkExecution31130MetadataDiagnostic(root, native);
-  const context = native ? readNativeExecution31130Context(root) : readExecution31130Context(root),
-    claim = native ? execution31130Checkpoint.nativeClaim : execution31130Checkpoint.claim,
+  const context =
+      native === 'snapshot'
+        ? readSnapshotExecution31130Context(root)
+        : native
+          ? readNativeExecution31130Context(root)
+          : readExecution31130Context(root),
+    claim =
+      native === 'snapshot'
+        ? execution31130Checkpoint.snapshotClaim
+        : native
+          ? execution31130Checkpoint.nativeClaim
+          : execution31130Checkpoint.claim,
     path = join(context.root, claim);
   let fd,
     expected = '',
@@ -654,14 +772,17 @@ export function openExecution31130MetadataDiagnosticBudget(root, native = false)
     fd = openSync(path, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY, 0o600);
     expected =
       JSON.stringify({
-        kind: native
-          ? 'm03_execution_31130_native_metadata_diagnostic_budget'
-          : 'm03_execution_31130_metadata_diagnostic_budget',
+        kind:
+          native === 'snapshot'
+            ? 'm03_execution_31130_snapshot_diagnostic_budget'
+            : native
+              ? 'm03_execution_31130_native_metadata_diagnostic_budget'
+              : 'm03_execution_31130_metadata_diagnostic_budget',
         version: 1,
         checkpointSha256: execution31130Checkpoint.sha256,
         cleanupSha256: execution31130Checkpoint.cleanupSha256,
-        managementAttempts: native ? 825 : 824,
-        controlAttempts: 955,
+        managementAttempts: native === 'snapshot' ? 826 : native ? 825 : 824,
+        controlAttempts: native === 'snapshot' ? 957 : 955,
         maximumRequests: 1,
         ...(native
           ? {
@@ -682,7 +803,8 @@ export function openExecution31130MetadataDiagnosticBudget(root, native = false)
   return Object.freeze({
     admit() {
       if (closed || used) throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
-      if (native) readNativeExecution31130Context(context.root);
+      if (native === 'snapshot') readSnapshotExecution31130Context(context.root);
+      else if (native) readNativeExecution31130Context(context.root);
       else readExecution31130Context(context.root);
       const current = lstatSync(path),
         opened = fstatSync(fd);
@@ -697,9 +819,15 @@ export function openExecution31130MetadataDiagnosticBudget(root, native = false)
         throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
       used = true;
       const charges = [
-        { event: 'management_attempt', ordinal: native ? 826 : 825 },
+        { event: 'management_attempt', ordinal: native === 'snapshot' ? 827 : native ? 826 : 825 },
         ...(native
-          ? [{ event: 'native_read_control_reservation', ordinal: 956, additionalHttpRequest: false }]
+          ? [
+              {
+                event: 'native_read_control_reservation',
+                ordinal: native === 'snapshot' ? 958 : 956,
+                additionalHttpRequest: false,
+              },
+            ]
           : []),
       ];
       for (const charge of charges) {
@@ -2441,9 +2569,183 @@ export async function runWorkflowBaselineDiagnostic(key, dependencies = {}) {
   return result;
 }
 
+export async function projectExecution31130Snapshot(dto, context) {
+  const shape = record(dto),
+    snapshot = shape ? dto.workflowData : undefined,
+    data = shape ? dto.data : undefined,
+    resultData = record(data) ? data.resultData : undefined,
+    runs = record(resultData) ? resultData.runData : undefined,
+    nodes =
+      record(snapshot) && Array.isArray(snapshot.nodes) && snapshot.nodes.length <= 200 ? snapshot.nodes : [],
+    nodesShape =
+      nodes.length > 0 &&
+      nodes.every((n) => record(n) && typeof n.name === 'string' && n.name.length <= 200) &&
+      new Set(nodes.map((n) => n.name)).size === nodes.length,
+    manual = nodes.filter((n) => n.type === 'n8n-nodes-base.manualTrigger' && n.disabled !== true),
+    eligibleTriggers = nodes.filter(
+      (n) =>
+        n.disabled !== true &&
+        [
+          'n8n-nodes-base.manualTrigger',
+          'n8n-nodes-base.scheduleTrigger',
+          'n8n-nodes-base.webhook',
+          'n8n-nodes-base.formTrigger',
+          '@n8n/n8n-nodes-langchain.chatTrigger',
+        ].includes(n.type),
+    ),
+    pins = record(resultData) ? resultData.pinData : undefined,
+    redaction = record(data) ? data.redactionInfo : undefined,
+    exact = (v, keys) =>
+      record(v) && Object.keys(v).length === keys.length && keys.every((k) => Object.hasOwn(v, k)),
+    emptyJson = (item) => record(item) && exact(item.json, []),
+    items = manual.length === 1 && record(pins) ? pins[manual[0].name] : undefined,
+    singleEmptyPin =
+      manual.length === 1 &&
+      exact(pins, [manual[0].name]) &&
+      Array.isArray(items) &&
+      items.length === 1 &&
+      exact(items[0], ['json']) &&
+      emptyJson(items[0]),
+    f = {
+      objectShape: shape,
+      dataObject: record(data),
+      resultDataObject: record(resultData),
+      idMatches: shape && dto.id === '31130',
+      workflowMatches: shape && dto.workflowId === 'MzimjpsuyPuK7SKe',
+      versionMatchesIntent: shape && dto.workflowVersionId === context.versionId,
+      snapshotObject: record(snapshot),
+      snapshotIdMatches: record(snapshot) && snapshot.id === 'MzimjpsuyPuK7SKe',
+      snapshotVersionMatches: record(snapshot) && snapshot.versionId === context.versionId,
+      graphComputable: false,
+      executedGraphMatches: false,
+      nodesShape,
+      runDataShape: record(runs),
+      runDataNamesKnown:
+        record(runs) && nodesShape && Object.keys(runs).every((k) => nodes.some((n) => n.name === k)),
+      pinsPresent: record(resultData) && Object.hasOwn(resultData, 'pinData'),
+      pinsNull: pins === null,
+      pinsObject: record(pins),
+      pinsEmpty: exact(pins, []),
+      pinsSingleEmptyManual: singleEmptyPin,
+      pinsPassExistingReader:
+        pins === undefined ||
+        exact(pins, []) ||
+        (singleEmptyPin &&
+          dto?.mode === 'manual' &&
+          eligibleTriggers.length === 1 &&
+          eligibleTriggers[0].type === 'n8n-nodes-base.manualTrigger' &&
+          snapshot?.settings?.availableInMCP === true),
+      redactionPresent: record(data) && Object.hasOwn(data, 'redactionInfo'),
+      redactionPassesExistingReader:
+        redaction === undefined ||
+        (record(redaction) && redaction.isRedacted === false && redaction.provisional !== true),
+      rootParentAbsent: record(data) && data.parentExecution === undefined,
+      manualOutputEmptyJson: false,
+      executeRunsShape: true,
+      childLinksShape: true,
+      observedChildLink: false,
+      unexpectedChildLink: false,
+    };
+  try {
+    const { foundationRuntimeObservedGraphHash, foundationRuntimeCheckpoint } =
+      await import('./foundation-runtime-checkpoint.mjs');
+    const hash = foundationRuntimeObservedGraphHash(snapshot, {
+      key: 'WF-00',
+      id: 'MzimjpsuyPuK7SKe',
+      nativeReadonlySettings: foundationRuntimeCheckpoint.workflows['WF-00'].nativeReadonlySettings,
+    });
+    f.graphComputable = true;
+    f.executedGraphMatches = hash === context.bodyHash;
+  } catch {
+    /* Only fixed comparison predicates leave this child. */
+  }
+  if (manual.length === 1 && record(runs)) {
+    const tasks = runs[manual[0].name],
+      item = tasks?.[0]?.data?.main?.[0];
+    f.manualOutputEmptyJson =
+      Array.isArray(tasks) &&
+      tasks.length === 1 &&
+      Array.isArray(item) &&
+      item.length === 1 &&
+      emptyJson(item[0]);
+  }
+  const childIds = new Set();
+  const add = (link, target) => {
+    if (
+      !record(link) ||
+      typeof link.executionId !== 'string' ||
+      !/^[1-9]\d{0,31}$/.test(link.executionId) ||
+      link.workflowId !== '4JMHLDBSdgGxhPlk' ||
+      target !== '4JMHLDBSdgGxhPlk'
+    ) {
+      f.childLinksShape = false;
+      f.unexpectedChildLink = true;
+      return;
+    }
+    if (link.executionId !== '31131') {
+      f.unexpectedChildLink = true;
+      return;
+    }
+    f.observedChildLink = true;
+    if (f.executedGraphMatches) childIds.add('31131');
+  };
+  if (record(runs) && nodesShape) {
+    for (const node of nodes.filter((n) => n.type === 'n8n-nodes-base.executeWorkflow')) {
+      const tasks = runs[node.name] ?? [],
+        target =
+          typeof node.parameters?.workflowId === 'string'
+            ? node.parameters.workflowId
+            : node.parameters?.workflowId?.value;
+      if (!Array.isArray(tasks) || tasks.length > 120) {
+        f.executeRunsShape = false;
+        continue;
+      }
+      for (const task of tasks) {
+        if (!record(task)) {
+          f.executeRunsShape = false;
+          continue;
+        }
+        if (task.metadata?.subExecution !== undefined) add(task.metadata.subExecution, target);
+        const waiting = task.metadata?.waitingChildExecutionIds;
+        if (waiting !== undefined) {
+          if (!Array.isArray(waiting) || waiting.length > 120) f.childLinksShape = false;
+          else for (const id of waiting) add({ executionId: id, workflowId: target }, target);
+        }
+        if (task.data !== undefined) {
+          if (!record(task.data) || Object.keys(task.data).length > 8) {
+            f.executeRunsShape = false;
+            continue;
+          }
+          for (const branches of Object.values(task.data)) {
+            if (!Array.isArray(branches) || branches.length > 120) {
+              f.executeRunsShape = false;
+              continue;
+            }
+            for (const branch of branches) {
+              if (branch === null) continue;
+              if (!Array.isArray(branch) || branch.length > 120) {
+                f.executeRunsShape = false;
+                continue;
+              }
+              for (const item of branch)
+                if (record(item) && item.metadata?.subExecution !== undefined)
+                  add(item.metadata.subExecution, target);
+            }
+          }
+        }
+      }
+    }
+  } else f.executeRunsShape = false;
+  return { fields: f, childExecutionIds: [...childIds], nativeTreeSettlementProven: false };
+}
+
 // The same native streaming/projection implementations used by acceptance,
 // restricted here to one metadata-only path and a separate charged purpose.
-export async function runNativeExecution31130MetadataDiagnostic(key, dependencies = {}) {
+export async function runNativeExecution31130MetadataDiagnostic(
+  key,
+  dependencies = {},
+  snapshotMode = false,
+) {
   const result = {
     version: 1,
     environment: 'dev',
@@ -2465,6 +2767,8 @@ export async function runNativeExecution31130MetadataDiagnostic(key, dependencie
     readerState: null,
     transportState: null,
   };
+  if (typeof snapshotMode !== 'boolean') throw Error('EXECUTION_31130_DIAGNOSTIC_BLOCKED');
+  if (snapshotMode) Object.assign(result, { forensics: null, snapshotStage: 'not_attempted' });
   if (!key) {
     result.status = 'missing_key';
     return result;
@@ -2496,10 +2800,13 @@ export async function runNativeExecution31130MetadataDiagnostic(key, dependencie
     responseClosed = false,
     sends = 0;
   try {
-    context = (dependencies.readContext ?? readNativeExecution31130Context)();
+    context = (
+      dependencies.readContext ??
+      (snapshotMode ? readSnapshotExecution31130Context : readNativeExecution31130Context)
+    )();
     budget = dependencies.openBudget
       ? dependencies.openBudget()
-      : openExecution31130MetadataDiagnosticBudget(undefined, true);
+      : openExecution31130MetadataDiagnosticBudget(undefined, snapshotMode ? 'snapshot' : true);
   } catch {
     result.status = 'budget_blocked';
     return result;
@@ -2554,71 +2861,123 @@ export async function runNativeExecution31130MetadataDiagnostic(key, dependencie
       },
       dependencies.nativeTransport ?? {},
     );
-    reader = createFoundationNativeReader({
-      bindings,
-      deadlineAt: now() + timeoutMs,
-      now,
-      sensitiveValues: [key],
-      admitControlAttempt(args) {
-        if (
-          result.requestCount !== 0 ||
-          args.kind !== 'metadata' ||
-          args.workflowId !== 'MzimjpsuyPuK7SKe' ||
-          args.executionId !== '31130'
-        )
-          throw Error('NATIVE_DIAGNOSTIC_ADMISSION');
-        const answer = budget.admit();
-        if (answer !== undefined) {
-          if (answer?.then) Promise.resolve(answer).catch(() => {});
-          throw Error('NATIVE_DIAGNOSTIC_ADMISSION');
-        }
-        result.requestCount = 1;
-      },
-      transport: {
-        async request(input) {
-          if (
-            sends++ !== 0 ||
-            result.requestCount !== 1 ||
-            input.method !== 'GET' ||
-            input.path !== '/api/v1/executions/31130?includeData=false'
-          )
-            throw Error('NATIVE_DIAGNOSTIC_ROUTE');
-          try {
-            const response = await native.request(input);
-            result.httpStatus = response.status;
-            result.tlsVerified = true;
-            response.closed.then(() => {
-              responseClosed = true;
-            }, recordTransportFailure);
-            return response;
-          } catch (error) {
-            recordTransportFailure(error);
-            throw error;
-          }
-        },
-      },
-    });
-    job = reader.metadata({
-      workflowKey: 'WF-00',
-      executionId: '31130',
-      expectedMode: 'manual',
-      intentAt: context.intentAt,
-    });
-    const metadata = assertFoundationNativeMetadataReceipt(await Promise.race([job, timeout]));
-    result.readerMetadataVerified = true;
-    result.metadata = {
-      executionId: '31130',
-      workflowId: 'MzimjpsuyPuK7SKe',
-      mode: metadata.mode,
-      status: metadata.status,
-      versionMatchesIntent: metadata.versionId === context.versionId,
+    const admit = (args) => {
+      if (
+        result.requestCount !== 0 ||
+        args.kind !== (snapshotMode ? 'full' : 'metadata') ||
+        args.workflowId !== 'MzimjpsuyPuK7SKe' ||
+        args.executionId !== '31130'
+      )
+        throw Error('NATIVE_DIAGNOSTIC_ADMISSION');
+      const answer = budget.admit();
+      if (answer !== undefined) {
+        if (answer?.then) Promise.resolve(answer).catch(() => {});
+        throw Error('NATIVE_DIAGNOSTIC_ADMISSION');
+      }
+      result.requestCount = 1;
     };
-    result.status = result.metadata.versionMatchesIntent
-      ? 'native_metadata_verified'
-      : 'native_metadata_failed';
+    const requestNative = async (input) => {
+      if (
+        sends++ !== 0 ||
+        result.requestCount !== 1 ||
+        input.method !== 'GET' ||
+        input.path !== '/api/v1/executions/31130?includeData=' + String(snapshotMode)
+      )
+        throw Error('NATIVE_DIAGNOSTIC_ROUTE');
+      try {
+        const response = await native.request(input);
+        result.httpStatus = response.status;
+        result.tlsVerified = true;
+        response.closed.then(() => {
+          responseClosed = true;
+        }, recordTransportFailure);
+        return response;
+      } catch (error) {
+        recordTransportFailure(error);
+        throw error;
+      }
+    };
+    if (snapshotMode) {
+      job = (async () => {
+        admit({ kind: 'full', workflowId: 'MzimjpsuyPuK7SKe', executionId: '31130' });
+        result.snapshotStage = 'request';
+        const response = await requestNative({
+          method: 'GET',
+          path: '/api/v1/executions/31130?includeData=true',
+        });
+        if (response.status !== 200) {
+          response.abort();
+          throw Error('SNAPSHOT_HTTP');
+        }
+        result.snapshotStage = 'body';
+        let text = '',
+          bytes = 0;
+        const decoder = new TextDecoder('utf-8', { fatal: true });
+        for await (const chunk of response.body) {
+          if (!(chunk instanceof Uint8Array) || (bytes += chunk.byteLength) > 8 * 1024 * 1024)
+            throw Error('SNAPSHOT_LIMIT');
+          text += decoder.decode(chunk, { stream: true });
+        }
+        text += decoder.decode();
+        result.snapshotStage = 'parse';
+        let dto = JSON.parse(text);
+        text = '';
+        result.snapshotStage = 'projection';
+        result.forensics = await projectExecution31130Snapshot(dto, context);
+        const knownStatus = [
+          'new',
+          'running',
+          'waiting',
+          'unknown',
+          'success',
+          'error',
+          'canceled',
+          'crashed',
+        ];
+        result.metadata = {
+          executionId: dto?.id === '31130' ? '31130' : null,
+          workflowId: dto?.workflowId === 'MzimjpsuyPuK7SKe' ? 'MzimjpsuyPuK7SKe' : null,
+          mode: dto?.mode === 'manual' ? 'manual' : null,
+          status: knownStatus.includes(dto?.status) ? dto.status : null,
+          versionMatchesIntent: dto?.workflowVersionId === context.versionId,
+        };
+        dto = null;
+        await response.closed;
+        result.snapshotStage = 'complete';
+      })();
+      await Promise.race([job, timeout]);
+      result.status = 'native_snapshot_classified';
+    } else {
+      reader = createFoundationNativeReader({
+        bindings,
+        deadlineAt: now() + timeoutMs,
+        now,
+        sensitiveValues: [key],
+        admitControlAttempt: admit,
+        transport: { request: requestNative },
+      });
+      job = reader.metadata({
+        workflowKey: 'WF-00',
+        executionId: '31130',
+        expectedMode: 'manual',
+        intentAt: context.intentAt,
+      });
+      const metadata = assertFoundationNativeMetadataReceipt(await Promise.race([job, timeout]));
+      result.readerMetadataVerified = true;
+      result.metadata = {
+        executionId: '31130',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        mode: metadata.mode,
+        status: metadata.status,
+        versionMatchesIntent: metadata.versionId === context.versionId,
+      };
+      result.status = result.metadata.versionMatchesIntent
+        ? 'native_metadata_verified'
+        : 'native_metadata_failed';
+    }
   } catch {
     result.readerFailure = reader?.lastFailure() ?? null;
-    result.status = 'native_metadata_failed';
+    result.status = snapshotMode ? 'native_snapshot_failed' : 'native_metadata_failed';
   } finally {
     clearTimeout(timer);
     native?.close();
@@ -2637,16 +2996,21 @@ export async function runNativeExecution31130MetadataDiagnostic(key, dependencie
     result.transportState = native?.state() ?? null;
     result.networkCompletionVerified =
       responseClosed &&
-      result.readerState?.pendingRequests === 0 &&
-      result.readerState.unclosedResponses === 0 &&
-      result.readerState.busy === false &&
+      (snapshotMode ||
+        (result.readerState?.pendingRequests === 0 &&
+          result.readerState.unclosedResponses === 0 &&
+          result.readerState.busy === false)) &&
       result.transportState?.pendingRequests === 0 &&
       result.transportState.unclosedResponses === 0;
-    if (timedOut || !result.networkCompletionVerified) result.status = 'native_metadata_failed';
+    if (timedOut || !result.networkCompletionVerified)
+      result.status = snapshotMode ? 'native_snapshot_failed' : 'native_metadata_failed';
     budget.close();
   }
   return result;
 }
+
+export const runExecution31130SnapshotDiagnostic = (key, dependencies = {}) =>
+  runNativeExecution31130MetadataDiagnostic(key, dependencies, true);
 
 // Fixed single-ID structural diagnosis only. No run data is traversed, no
 // response-defined field names or values escape, and no native receipt is made.
@@ -3476,6 +3840,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     '--wf00-execution-check-only',
     '--execution-31130-metadata-check-only',
     '--execution-31130-native-metadata-check-only',
+    '--execution-31130-snapshot-check-only',
   ].includes(process.argv[2])
     ? undefined
     : process.env.M03_N8N_API_KEY;
@@ -3493,31 +3858,41 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         '--wf00-execution-diagnostic',
         '--execution-31130-metadata-check-only',
         '--execution-31130-native-metadata-check-only',
+        '--execution-31130-snapshot-check-only',
         '--execution-31130-metadata-diagnostic',
         '--execution-31130-native-metadata-diagnostic',
+        '--execution-31130-snapshot-diagnostic',
       ].includes(process.argv[2]))
   )) {
     process.stdout.write(JSON.stringify({ version: 1, status: 'argument_rejected' }) + '\n');
     process.exitCode = 1;
   } else if (
-    ['--execution-31130-native-metadata-check-only', '--execution-31130-native-metadata-diagnostic'].includes(
-      process.argv[2],
-    )
+    [
+      '--execution-31130-native-metadata-check-only',
+      '--execution-31130-native-metadata-diagnostic',
+      '--execution-31130-snapshot-check-only',
+      '--execution-31130-snapshot-diagnostic',
+    ].includes(process.argv[2])
   ) {
-    const check = process.argv[2] === '--execution-31130-native-metadata-check-only';
+    const snapshot = process.argv[2].startsWith('--execution-31130-snapshot-'),
+      check = process.argv[2].endsWith('-check-only');
     // Native modules import this inventory module. Defer their dynamic imports
     // until this entry module has finished evaluating.
     setImmediate(() =>
       Promise.resolve()
         .then(() =>
           check
-            ? checkExecution31130MetadataDiagnostic(undefined, true)
-            : runNativeExecution31130MetadataDiagnostic(key),
+            ? checkExecution31130MetadataDiagnostic(undefined, snapshot ? 'snapshot' : true)
+            : runNativeExecution31130MetadataDiagnostic(key, {}, snapshot),
         )
         .then(
           (value) => {
             process.stdout.write(JSON.stringify(value) + '\n');
-            process.exitCode = value.status === (check ? 'ready' : 'native_metadata_verified') ? 0 : 1;
+            process.exitCode =
+              value.status ===
+              (check ? 'ready' : snapshot ? 'native_snapshot_classified' : 'native_metadata_verified')
+                ? 0
+                : 1;
           },
           () => {
             process.stdout.write(

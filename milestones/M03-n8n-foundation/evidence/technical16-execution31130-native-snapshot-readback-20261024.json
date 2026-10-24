@@ -1,0 +1,141 @@
+{
+  "kind": "m03_technical16_native_snapshot_readback",
+  "version": 1,
+  "observedAt": "2026-10-24 17:20:37 UTC",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "technicalAttempt": 16,
+  "originalAttemptSha256": "d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb",
+  "nativeMetadataReadbackSha256": "d82862ef3c23f9a4dc51b5a7b246c239890acdcda6df31d2a81c7101f21cd057",
+  "childUiReadbackSha256": "2c9100fd58caf7715838462de11337e8d06bcd691ab13b20b380413b6c3e4ba3",
+  "sourceCommitBeforeLocalChange": "b5ddf571db113a0d16b871b8e96cb3677dc9d184",
+  "toolResults": {
+    "publicSeal": "835d2c",
+    "checkOnly": "0f06e4",
+    "actual": "98e2c3",
+    "cleanup": "ad7edf"
+  },
+  "rawResult": {
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "complete",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": {
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "technicalAttempt": 16,
+      "status": "native_snapshot_classified",
+      "requestCount": 1,
+      "maximumRequests": 1,
+      "httpStatus": 200,
+      "tlsVerified": true,
+      "readerMetadataVerified": false,
+      "networkCompletionVerified": true,
+      "controlReservationConservative": true,
+      "acceptanceProven": false,
+      "metadata": {
+        "executionId": "31130",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "mode": "manual",
+        "status": "success",
+        "versionMatchesIntent": true
+      },
+      "readerFailure": null,
+      "transportFailureCode": null,
+      "readerState": null,
+      "transportState": {
+        "pendingRequests": 0,
+        "unclosedResponses": 0
+      },
+      "forensics": {
+        "fields": {
+          "objectShape": true,
+          "dataObject": true,
+          "resultDataObject": true,
+          "idMatches": true,
+          "workflowMatches": true,
+          "versionMatchesIntent": true,
+          "snapshotObject": true,
+          "snapshotIdMatches": true,
+          "snapshotVersionMatches": false,
+          "graphComputable": true,
+          "executedGraphMatches": false,
+          "nodesShape": true,
+          "runDataShape": true,
+          "runDataNamesKnown": true,
+          "pinsPresent": true,
+          "pinsNull": false,
+          "pinsObject": true,
+          "pinsEmpty": true,
+          "pinsSingleEmptyManual": false,
+          "pinsPassExistingReader": true,
+          "redactionPresent": false,
+          "redactionPassesExistingReader": true,
+          "rootParentAbsent": true,
+          "manualOutputEmptyJson": true,
+          "executeRunsShape": true,
+          "childLinksShape": true,
+          "observedChildLink": true,
+          "unexpectedChildLink": false
+        },
+        "childExecutionIds": [],
+        "nativeTreeSettlementProven": false
+      },
+      "snapshotStage": "complete"
+    }
+  },
+  "nativeProcessExit": 0,
+  "nativeOutputFileEmitted": false,
+  "pins": {
+    "scripts/n8n/inventory.mjs": "1141e5ef744256d9dfcc221bc90725b425b9498fc7cdefcd882a80195535412b",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "f1e6603dcab2bc05e97375bfe072df081bffae15a7ad105824ad93e0e93b8cd1",
+    "scripts/n8n/m03-inventory-seal.json": "e559c6ad9a550a519a744ad86efdf559aadfc52f1a449fa2faa4f8bb275d0bd0",
+    "scripts/n8n/foundation-acceptance-seal.json": "7d4c525421260e9bd2ab482f689dc3acee4704632b5d09ae85700bb469c4e9ae",
+    "scripts/n8n/out/foundation/execution-31130-snapshot-diagnostic-20261024.jsonl": "f912dcd4d17a3c123c167754f6a49c292f80c7913948e662929aa76fb3cdf178"
+  },
+  "cleanup": {
+    "parentProcessId": 47796,
+    "childProcessId": 16120,
+    "parentAbsent": true,
+    "childAbsent": true,
+    "managementCopyAbsent": true,
+    "parentLockAbsent": true,
+    "persistentManagementRetained": true,
+    "privateContentsRead": false,
+    "networkRequests": 0
+  },
+  "usage": {
+    "management": 827,
+    "control": 958,
+    "combined": 1785,
+    "vercel": 184,
+    "nativeExecutionsReserved": 3,
+    "actorStarts": 0,
+    "additionalHttpRequests": 1,
+    "additionalNativeReadControlReservation": 1,
+    "allowancesReplenished": false
+  },
+  "findings": {
+    "executionIdentityAndTopVersionMatch": true,
+    "rootTerminal": true,
+    "executedPinsEmpty": true,
+    "knownChildLinkObserved": true,
+    "executedGraphMatchesReviewedCase": false,
+    "snapshotVersionMatchesTopVersion": false,
+    "nativeTreeSettlementEstablished": false,
+    "fixtureArchived": false,
+    "fullAcceptance": false
+  },
+  "limitations": [
+    "The diagnostic privately parsed the full retained snapshot; it emitted only fixed predicates and no payload or response-defined names.",
+    "A false snapshotVersionMatches predicate does not distinguish an omitted snapshot version from a different value.",
+    "The executed graph fails the original reviewed graph-hash comparison; the differing field category remains unestablished.",
+    "This separate later read does not recover the original masked first native-reader failure or mint a native acceptance receipt.",
+    "The fixed GET and its three-row purpose journal are spent; no retry or claim reset is authorized."
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "kind": "m03_technical16_child_ui_lookup",
+  "version": 1,
+  "observedAt": "2026-10-24T17:06:22.632Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "technicalAttempt": 16,
+  "nativeMetadataReadbackSha256": "d82862ef3c23f9a4dc51b5a7b246c239890acdcda6df31d2a81c7101f21cd057",
+  "source": "actual rendered n8n history; no hidden application store or API payload read",
+  "parent": {
+    "workflowId": "MzimjpsuyPuK7SKe",
+    "executionId": "31130",
+    "childLinkObserved": true
+  },
+  "child": {
+    "workflowId": "4JMHLDBSdgGxhPlk",
+    "executionId": "31131",
+    "url": "https://muhhammedsayed.app.n8n.cloud/workflow/4JMHLDBSdgGxhPlk/executions/31131",
+    "visibleStatus": "Succeeded",
+    "visibleDurationMs": 62,
+    "visibleStubTrue": true,
+    "visibleWorkflow": "WF-10",
+    "visibleEnvironment": "dev",
+    "noActiveExecutionsDisplayed": true
+  },
+  "screenshot": {
+    "path": "milestones/M03-n8n-foundation/evidence/technical16-wf10-child-ui-20261024.png",
+    "sha256": "208e51a7b30e0b75e3a9e1ff6684c02d39a42410ffcdfc0844959a57445f08a4"
+  },
+  "usage": {
+    "additionalControlReservation": 1,
+    "reason": "conservative outside-consumer child-history lookup",
+    "management": 826,
+    "control": 957,
+    "combined": 1783,
+    "vercel": 184,
+    "nativeExecutionsReserved": 3,
+    "actorStarts": 0,
+    "executionsStarted": 0,
+    "allowancesReplenished": false
+  },
+  "nativeApiChildReceiptEstablished": false,
+  "nativeTreeSettlementEstablished": false,
+  "fullAcceptance": false
+}
