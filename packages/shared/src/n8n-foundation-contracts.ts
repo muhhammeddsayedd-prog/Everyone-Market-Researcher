@@ -6,7 +6,11 @@ import { gatewayIdentity, gatewayBusinessResult } from './n8n-worker-contracts';
 export const foundationWindowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9';
 // Source-known compatibility only; SQL owner registration and cumulative caps
 // remain required. Adding an ID here never opens or reopens a database window.
-export const foundationWindowIds = [foundationWindowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc'] as const;
+export const foundationWindowIds = [
+  foundationWindowId,
+  '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+  'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+] as const;
 const knownWindow = z.enum(foundationWindowIds);
 const id = z.uuid(),
   empty = z.strictObject({});
