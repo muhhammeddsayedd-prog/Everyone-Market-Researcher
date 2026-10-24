@@ -72,13 +72,17 @@ begin
   -- Technical14 stopped at browser discovery before any database child or
   -- fixture operation. The reviewed native consumer verifies its immutable
   -- closed/cleanup receipts before supplying this one fixed missing-audit proof.
-  if v_technical in (15,16,17) and current_setting('emr.smoke_technical14_no_reactivation',true)
+  if v_technical in (15,16,17,18) and current_setting('emr.smoke_technical14_no_reactivation',true)
      is distinct from '6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960' then
     raise exception using errcode='55000', message='M03_REACTIVATION_TECHNICAL14_PROOF_REQUIRED';
   end if;
-  if v_technical in (16,17) and current_setting('emr.smoke_technical15_no_reactivation',true)
+  if v_technical in (16,17,18) and current_setting('emr.smoke_technical15_no_reactivation',true)
      is distinct from '59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd' then
     raise exception using errcode='55000', message='M03_REACTIVATION_TECHNICAL15_PROOF_REQUIRED';
+  end if;
+  if v_technical=18 and current_setting('emr.smoke_technical17_no_reactivation',true)
+     is distinct from 'd16198186698ddefdad06902f4c39d50ac51e46e87686d77bb3d0f3429f491ac' then
+    raise exception using errcode='55000', message='M03_REACTIVATION_TECHNICAL17_PROOF_REQUIRED';
   end if;
   v_segment:=v_family_segment||case when v_technical=1 then '' else ':technical-'||v_technical end;
   if current_setting('emr.smoke_rollback', true) is null
@@ -93,6 +97,11 @@ begin
     app.stats_daily, ops.scrape_runs, ops.scrape_run_accounts, ops.apify_runs,
     ops.cost_ledger, ingest.raw_items, pgmq.q_ai_extract, pgmq.a_ai_extract,
     pgmq.q_embed, pgmq.a_embed, pgmq.q_media, pgmq.a_media in share mode;
+  if v_technical=18 and exists(select 1 from ops.audit_log l
+       where l.actor_id='m03_smoke_reactivate.v1:'||v_family_segment||':technical-17'
+          or l.after->>'segment_id'=v_family_segment||':technical-17') then
+    raise exception using errcode='55000', message='M03_REACTIVATION_PRIOR_EDIT_OR_ATTEMPT_PRESENT';
+  end if;
   select c.* into v_comp from app.competitors c where c.id=v_comp_id for update;
   if not found or v_comp.company_code<>'C999' or v_comp.slug<>'emr-smoke-test' or v_comp.status<>'archived'
      or (select count(*) from app.competitors where company_code='C999' or slug='emr-smoke-test')<>1 then
@@ -146,10 +155,12 @@ begin
   v_previous_id:=v_marker.id;v_previous_at:=v_marker.created_at;
   for v_index in 0..v_technical-1 loop
     continue when (v_technical>=9 and v_index between 3 and 11)
-      or (v_technical in (15,16,17) and v_index=14 and current_setting('emr.smoke_technical14_no_reactivation',true)
+      or (v_technical in (15,16,17,18) and v_index=14 and current_setting('emr.smoke_technical14_no_reactivation',true)
         ='6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960')
-      or (v_technical in (16,17) and v_index=15 and current_setting('emr.smoke_technical15_no_reactivation',true)
-        ='59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd');
+      or (v_technical in (16,17,18) and v_index=15 and current_setting('emr.smoke_technical15_no_reactivation',true)
+        ='59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd')
+      or (v_technical=18 and v_index=17 and current_setting('emr.smoke_technical17_no_reactivation',true)
+        ='d16198186698ddefdad06902f4c39d50ac51e46e87686d77bb3d0f3429f491ac');
     v_previous_segment:=case when v_index=0 then '1c69c89e-7807-46d5-b7b8-ca28285ff2b4'
       when v_index=1 then v_family_segment else v_family_segment||':technical-'||v_index end;
     if (select count(*) from ops.audit_log l

@@ -1100,6 +1100,31 @@ Write-Output 'FIXED_FORWARD_DISPATCH'
 );
 
 test(
+  'technical18 fixture SQL receives the fixed qualified no-command17 marker only for the sixth binding',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Foundation-FixtureSql'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$repo=${quote(resolve('.'))};$ProjectVerifiedContinuation=$true;$ForwardWindow=$true;$PostcheckContinuation=$true;$RemainingContinuation=$false;$StartupReplacement=$false;$projectVerifiedForwardWindowId='edbc6d11-7c1f-43a7-b745-1ded06deb29f';$projectVerifiedForwardSource='effa3de9e1fee6c3f3c08fc347a5e3175db14c80';$script:ordinal=18;$script:proofValid=$true
+function Assert-Path($Root,$Relative){return Join-Path $Root $Relative}
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=$script:ordinal}}
+function Read-FoundationTechnical14NoAdmin([int]$Ordinal=14){if($Ordinal -eq 15){return '59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd'};return '6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960'}
+function Read-FoundationForwardPrior{if(-not $script:proofValid){throw 'QUALIFIED_READCLAIMED_PRIOR_REQUIRED'};return [pscustomobject]@{fixtureAuditCount=7}}
+$marker="set_config('emr.smoke_technical17_no_reactivation','d16198186698ddefdad06902f4c39d50ac51e46e87686d77bb3d0f3429f491ac',true)"
+$body=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql';if(-not $body.Contains($marker)){throw 'QUALIFIED_NO_COMMAND17_MARKER_MISSING'}
+$script:proofValid=$false;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNQUALIFIED18_SQL_EMITTED'};$script:proofValid=$true
+$script:ordinal=17;$body=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql';if($body.Contains($marker)){throw 'HISTORICAL17_SETTING_CHANGED'}
+foreach($ordinal in @(16,19)){$script:ordinal=$ordinal;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SIXTH_ORDINAL_EMITTED'}}
+$script:ordinal=18;$projectVerifiedForwardSource='5087d4d93d2f6ffdca0bc0096b365723005446fc';$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'MIXED_SIXTH_SOURCE_EMITTED'}
+Write-Output 'QUALIFIED_TECHNICAL18_SQL_ONLY'
+`),
+      'QUALIFIED_TECHNICAL18_SQL_ONLY',
+    );
+  },
+);
+
+test(
   'fresh registered-window protocol provisions while archived, then reactivates, then verifies restricted closure',
   native,
   () => {
@@ -1774,6 +1799,8 @@ function Invoke-FoundationQuery($Sql,$Column){
 }
 Assert-FoundationForwardWindowState $false
 $script:value.windows=6;$script:value.freshWindows=1;$script:value.freshPrepared=$true;Assert-FoundationForwardWindowState $true
+$script:ordinal=18;Assert-FoundationForwardWindowState $true
+$script:ordinal=19;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SIXTH_SUCCESSOR_ACCEPTED'};$script:ordinal=17
 foreach($key in @('legacyClosed','intermediateClosed','runtimeClosed','restorationClosed','acceptanceClosed','technical12Exact','technical13Exact','technical16Exact','freshPrepared')){$script:value.$key=$false;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$true;if(-not $denied){throw 'UNQUALIFIED_SIXTH_PREDECESSOR_ACCEPTED'}}
 $script:value.acceptanceClosed=$null;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.acceptanceClosed=$true;if(-not $denied){throw 'NULL_SIXTH_CLOSURE_ACCEPTED'}
 foreach($key in @('fixtureAuditCount','windows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){$saved=$script:value.$key;$script:value.$key=$saved+1;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$saved;if(-not $denied){throw 'UNRECONCILED_SIXTH_PROGRESS_ACCEPTED'}}
@@ -2214,6 +2241,15 @@ for (const profile of [
     combinedAttempts: 2057,
     technicalOrdinal: 17,
   },
+  {
+    name: 'preready18',
+    options: { technical16Settled: true, technical17PreReady: true },
+    managementMaximum: 1408,
+    managementAttempts: 963,
+    controlAttempts: 1094,
+    combinedAttempts: 2057,
+    technicalOrdinal: 18,
+  },
 ])
   test(
     `${profile.name} fresh ForwardWindow completes the full native public Run preflight before the private boundary`,
@@ -2336,6 +2372,16 @@ for (const profile of [
               "'",
           );
         }
+        // Keep the real guard/timeout/closure conditions. This isolated public
+        // copy adds only a finite failure label so a refusal cannot be confused
+        // with a native18 ancestry or archived-baseline failure.
+        const guardChild =
+          "if(-not $answer.ok -or -not $answer.closed){throw 'blocked'}\n    $script:publicPreflightStage='CLAIMED_DTO'";
+        assert.equal(helperSource.split(guardChild).length, 2);
+        helperSource = helperSource.replace(
+          guardChild,
+          "if(-not $answer.ok -or -not $answer.closed){if(-not $answer.started){throw 'SYNTHETIC_GUARD_NOT_STARTED'};if(-not $answer.closed){throw 'SYNTHETIC_GUARD_UNCLOSED'};if($answer.nativeExit -eq 1){throw 'SYNTHETIC_GUARD_EXIT_ONE'};throw 'SYNTHETIC_GUARD_OTHER_EXIT'}\n    $script:publicPreflightStage='CLAIMED_DTO'",
+        );
         const privateBoundary = helperSource.indexOf('if($CheckOnly -and $ForwardMigration){Write-Output');
         assert.ok(privateBoundary > 0);
         // Execute the actual complete Run-only public prefix, not a detached DTO
@@ -2344,11 +2390,11 @@ for (const profile of [
           .slice(0, privateBoundary)
           .replace(
             "Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.'",
-            "Write-Output ('SYNTHETIC_PUBLIC_PREFLIGHT_LINE='+$_.InvocationInfo.ScriptLineNumber)",
+            "if($_.Exception.Message -cin @('SYNTHETIC_GUARD_NOT_STARTED','SYNTHETIC_GUARD_UNCLOSED','SYNTHETIC_GUARD_EXIT_ONE','SYNTHETIC_GUARD_OTHER_EXIT')){Write-Output $_.Exception.Message}else{Write-Output ('SYNTHETIC_PUBLIC_PREFLIGHT_LINE='+$_.InvocationInfo.ScriptLineNumber)}",
           )
           .replace(
             "Write-Output ('M03_FOUNDATION PREFLIGHT_BLOCKED. Stage='+$stage+'; no private file read, decryption or authentication attempted.')",
-            "Write-Output ('SYNTHETIC_PUBLIC_PREFLIGHT_LINE='+$_.InvocationInfo.ScriptLineNumber)",
+            "if($_.Exception.Message -cin @('SYNTHETIC_GUARD_NOT_STARTED','SYNTHETIC_GUARD_UNCLOSED','SYNTHETIC_GUARD_EXIT_ONE','SYNTHETIC_GUARD_OTHER_EXIT')){Write-Output $_.Exception.Message}else{Write-Output ('SYNTHETIC_PUBLIC_PREFLIGHT_LINE='+$_.InvocationInfo.ScriptLineNumber)}",
           );
         const adminPath = put(
           'scripts/db/windows/Invoke-M03FoundationMigrations.ps1',
@@ -2391,7 +2437,7 @@ try {
  stage='NATIVE_PUBLIC_PREFIX';
  const r=spawnSync(${JSON.stringify(powershell)},['-NoProfile','-NonInteractive','-File',${JSON.stringify(adminPath)},'-PhaseAControl','-ProjectVerifiedContinuation','-ForwardWindow'],{cwd:${JSON.stringify(fixture.directory)},env:Object.fromEntries(['SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA','APPDATA','USERPROFILE'].flatMap(k=>process.env[k]===undefined?[]:[[k,process.env[k]]])),windowsHide:true,encoding:'utf8',timeout:40000});
  const line=(r.stdout??'').trim();
- console.log(JSON.stringify({kind:'synthetic_public_run_result',nativeExit:r.status,publicReady:line==='SYNTHETIC_FULL_PUBLIC_RUN_READY',fixedDiagnostic:/^(?:SYNTHETIC_PUBLIC_PREFLIGHT_LINE=\\d+|M03_FOUNDATION PREFLIGHT_BLOCKED\\. Stage=[A-Z_]+; no private file read, decryption or authentication attempted\\.)$/.test(line)?line:null,stderrObserved:Boolean(r.stderr),privateRead:false,networkRequests:0}));
+ console.log(JSON.stringify({kind:'synthetic_public_run_result',nativeExit:r.status,publicReady:line==='SYNTHETIC_FULL_PUBLIC_RUN_READY',fixedDiagnostic:/^(?:SYNTHETIC_GUARD_(?:NOT_STARTED|UNCLOSED|EXIT_ONE|OTHER_EXIT)|SYNTHETIC_PUBLIC_PREFLIGHT_LINE=\\d+|M03_FOUNDATION PREFLIGHT_BLOCKED\\. Stage=[A-Z_]+; no private file read, decryption or authentication attempted\\.)$/.test(line)?line:null,stderrObserved:Boolean(r.stderr),privateRead:false,networkRequests:0}));
  process.exitCode=r.status===0&&line==='SYNTHETIC_FULL_PUBLIC_RUN_READY'?0:1;
 } finally {closeSync(lock);unlinkSync(lockPath);}
 } catch {console.log(JSON.stringify({kind:'synthetic_public_run_result',publicReady:false,fixedDiagnostic:'SYNTHETIC_'+stage+'_BLOCKED',privateRead:false,networkRequests:0}));process.exitCode=1;}

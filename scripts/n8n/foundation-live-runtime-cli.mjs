@@ -485,6 +485,24 @@ export async function verifyFoundationLiveSmokeSql({
 }
 
 export function createFoundationLiveAcceptanceSession(input, emit, dependencies = {}) {
+  let budget;
+  try {
+    return constructFoundationLiveAcceptanceSession(input, emit, dependencies, (opened) => {
+      budget = opened;
+    });
+  } catch (error) {
+    // A constructor refusal has no session.close() owner. Preserve the first
+    // error and let the genuine budget retain its lock if transports are open.
+    try {
+      budget?.close();
+    } catch {
+      /* Cleanup cannot replace the original refusal or claim closure. */
+    }
+    throw error;
+  }
+}
+
+function constructFoundationLiveAcceptanceSession(input, emit, dependencies, openedBudget) {
   const now = dependencies.now ?? Date.now;
   const resume =
     dependencies.zeroSetupProof === undefined
@@ -590,6 +608,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
         : {}),
     },
   );
+  openedBudget(budget);
   if (
     (resume || admittedClock) &&
     budget.snapshot().attempts !==

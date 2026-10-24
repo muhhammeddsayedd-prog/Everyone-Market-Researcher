@@ -967,7 +967,9 @@ function Assert-FoundationProjectVerifiedContinuationProcessAncestry($Clock) {
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and $Clock.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77' -and $paths.technicalOrdinal -eq 15){$null=Read-FoundationTechnical14NoAdmin}
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and $Clock.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77' -and $paths.technicalOrdinal -eq 16){$null=Read-FoundationTechnical14NoAdmin -Ordinal 15}
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and $Clock.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'){
-    if($paths.technicalOrdinal -ne 17){throw 'blocked'}
+    # ReadClaimed qualifies the fixed no-command17 receipt before18 can exist;
+    # the kernel ancestry below still selects this exact active sibling.
+    if($paths.technicalOrdinal -notin @(17,18)){throw 'blocked'}
     $null=Read-FoundationForwardPrior
   }
   return $true
@@ -1119,7 +1121,7 @@ function Read-FoundationForwardPrior {
   if(-not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){$null=Assert-FoundationInspectClosed}
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'){
     $technical=Foundation-ProjectVerifiedTechnicalIdentity
-    if($technical.ordinal -ne 17){throw 'blocked'}
+    if($technical.ordinal -notin @(17,18)){throw 'blocked'}
     # The separately captured and independently verified native archive qualifies
     # only this fixed successor; preserve the original zero-auth failed output.
     $archiveSha256='d8177cbc39dd0805b831cfddbf0f0d25ab8ce749243b1eab0a0fdf0e4ccae97d'

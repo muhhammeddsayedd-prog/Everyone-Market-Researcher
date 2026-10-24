@@ -15,6 +15,145 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('typed preReady17 permits only sibling18 with unchanged charges and preserved false historical closure flags', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ technical17PreReady: true });
+  let management;
+  try {
+    const oldStem = join(
+        f.directory,
+        'scripts/n8n/out/foundation/live/project-verified-continuation-' +
+          f.checkpoint.segmentId +
+          '.technical-17',
+      ),
+      original = ['.json', '.runtime-claim.json', '.closed.json'].map((suffix) =>
+        readFileSync(oldStem + suffix, 'utf8'),
+      );
+    assert.equal(JSON.parse(original[2]).credentialChildrenClosed, false);
+    assert.equal(JSON.parse(original[2]).closureVerified, false);
+    assert.equal(f.check().managementAttempts, 963);
+    const proof = f.claim(f.admit()),
+      resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(resume.technicalAttemptOrdinal, 18);
+    assert.equal(resume.runtimeFilename, 'runtime.technical-18.jsonl');
+    assert.equal(resume.aggregateManagementAttempts, 963);
+    assert.equal(resume.aggregateControlAttempts, 1094);
+    const runtime = await f.copy('foundation-live-runtime.mjs'),
+      core = await f.copy('foundation-control-state.mjs');
+    let control;
+    management = runtime.createFoundationLiveManagementBudget(
+      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        controlAttempts: () => control?.snapshot().attempts ?? 1094,
+      },
+    );
+    const journal = core.createFoundationControlJournal({
+      previousEvents: readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+      durableAppend: (row) => {
+        appendFileSync(f.paths.control, JSON.stringify(row) + '\n');
+      },
+    });
+    control = core.createFoundationControlBudget({
+      journal,
+      now: f.now,
+      deadlineAt: proof.deadlineAt,
+      projectVerifiedContinuationProof: proof,
+      managementAttempts: () => management.snapshot().attempts,
+    });
+    assert.equal(management.snapshot().attempts, 963);
+    assert.equal(management.snapshot().maximum, 1408);
+    assert.equal(control.snapshot().attempts, 1094);
+    assert.equal(control.snapshot().maximum, 3456);
+    assert.deepEqual(
+      f.scoped(() => f.module.foundationProjectVerifiedContinuationRequestCaps(proof)),
+      { management: 1408, control: 3456, combined: 4864 },
+    );
+    assert.equal(resume.setupMaximum, 256);
+    f.io.processAlive = (pid) => pid === process.pid || pid === process.ppid;
+    for (let i = 0; i < 25; i++) management.admit();
+    for (let i = 0; i < 51; i++) control.admit({ kind: 'discovery', workflowId: 'MzimjpsuyPuK7SKe' });
+    assert.equal(f.readClaimed().windowId, proof.windowId);
+    f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof));
+    assert.deepEqual(
+      ['.json', '.runtime-claim.json', '.closed.json'].map((suffix) =>
+        readFileSync(oldStem + suffix, 'utf8'),
+      ),
+      original,
+    );
+    writeFileSync(
+      f.paths.control,
+      readFileSync(f.paths.control, 'utf8').replace('"ordinal":949', '"ordinal":948'),
+    );
+    assert.throws(() =>
+      f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof)),
+    );
+  } finally {
+    management?.close();
+    f.cleanup();
+  }
+});
+
+test('preReady17 refuses coherently repinned false qualifications, rewritten closure, new outputs and missing history', async () => {
+  for (const fault of [
+    'raw-closure',
+    'raw-wrapper',
+    'frame-extra',
+    'qualification',
+    'usage',
+    'claim',
+    'cleanup',
+    'runtime-output',
+    'admin-output',
+    'missing',
+    'changed',
+    'missing-claim',
+    'missing-all',
+    'live-parent',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      technical17PreReady: true,
+      technical17PreReadyFault: fault,
+    });
+    try {
+      const receipt = join(
+        f.directory,
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical17-preready-reconciliation-20261025.json',
+      );
+      if (fault === 'missing') unlinkSync(receipt);
+      if (fault === 'changed') appendFileSync(receipt, ' ');
+      if (fault === 'missing-claim')
+        unlinkSync(
+          join(
+            f.directory,
+            'scripts/n8n/out/foundation/live/project-verified-continuation-' +
+              f.checkpoint.segmentId +
+              '.technical-17.runtime-claim.json',
+          ),
+        );
+      if (fault === 'missing-all') {
+        unlinkSync(receipt);
+        for (const suffix of ['.json', '.runtime-claim.json', '.closed.json'])
+          unlinkSync(
+            join(
+              f.directory,
+              'scripts/n8n/out/foundation/live/project-verified-continuation-' +
+                f.checkpoint.segmentId +
+                '.technical-17' +
+                suffix,
+            ),
+          );
+      }
+      if (fault === 'live-parent') f.io.processAlive = (pid) => pid === 91092;
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/, fault);
+      assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/, fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
 test('technical17 derives all charged cleanup usage and full25 restored versions only from separately settled16', async () => {
   for (const n of [85, 90]) {
     const f = await syntheticProjectVerifiedContinuation({

@@ -275,6 +275,64 @@ test('new576 control pool refuses missing, throwing, invalid or backwards author
   }
 });
 
+test('genuine settled17 control pool preserves the exact reconciled mixed native history and metadata ceiling', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    technical16Settled: true,
+    technical16MixedControl: true,
+  });
+  try {
+    const proof = f.claim(f.admit()),
+      core = await f.copy('foundation-control-state.mjs'),
+      rows = readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+      intents = rows.filter((row) => row.event === 'control_request_intent'),
+      writes = [];
+    assert.equal(rows.length, 964);
+    assert.equal(intents.length, 949);
+    assert.equal(intents.filter((row) => row.kind !== 'discovery').length, 8);
+    const journal = core.createFoundationControlJournal({
+      previousEvents: rows,
+      durableAppend: (row) => {
+        writes.push(row);
+      },
+    });
+    const args = {
+      now: f.now,
+      deadlineAt: proof.deadlineAt,
+      projectVerifiedContinuationProof: proof,
+      managementAttempts: () => 963,
+    };
+    const budget = core.createFoundationControlBudget({ journal, ...args });
+    assert.equal(budget.snapshot().mainAttempts, 949);
+    assert.equal(budget.snapshot().carriedAttempts, 145);
+    assert.equal(budget.snapshot().attempts, 1094);
+    assert.equal(budget.snapshot().maximum, 3456);
+    assert.equal(writes.length, 0);
+    const tampered = structuredClone(rows),
+      metadata = tampered.find((row) => row.event === 'control_request_intent' && row.kind === 'metadata');
+    metadata.kind = 'discovery';
+    delete metadata.executionId;
+    const alteredJournal = core.createFoundationControlJournal({
+      previousEvents: tampered,
+      durableAppend: () => {},
+    });
+    assert.throws(
+      () => core.createFoundationControlBudget({ journal: alteredJournal, ...args }),
+      /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
+    );
+    budget.admit({ kind: 'workflow', workflowId });
+    assert.equal(writes[0].ordinal, 950);
+    for (let i = 0; i < 7; i++) budget.admit({ kind: 'metadata', workflowId, executionId: '31130' });
+    assert.throws(
+      () => budget.admit({ kind: 'metadata', workflowId, executionId: '31130' }),
+      /FOUNDATION_CONTROL_STATE_BLOCKED/,
+    );
+    assert.equal(writes.length, 8);
+    assert.equal(budget.snapshot().attempts, 1102);
+  } finally {
+    f.cleanup();
+  }
+});
+
 for (const profile of [576, 640, 704, 832, 1024])
   test(`genuine linked${profile} Management andControl snapshots enforce2560 in both directions with no counter or intent reset`, async () => {
     for (const direction of ['management', 'control']) {

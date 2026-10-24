@@ -21,7 +21,10 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  technical16Settled = false,
+  technical17PreReady = false,
+  technical17PreReadyFault,
+  technical16Settled = technical17PreReady,
+  technical16MixedControl = technical17PreReady,
   technical16CleanupRequests = 85,
   technical16CleanupRetry = null,
   technical16Fault,
@@ -2746,7 +2749,7 @@ export async function syntheticProjectVerifiedContinuation({
     if (ordinal === 14) restoredBrowserDiscoveryConfiguration = configuration;
     else restoredBrowserDiscoveryConfiguration.next = configuration;
   }
-  let unadmittedWf00Configuration, technical17Configuration;
+  let unadmittedWf00Configuration, technical17Configuration, technical17PreReadyConfiguration;
   if (unadmittedWf00Reconciled) {
     const root = 'milestones/M03-n8n-foundation/evidence/',
       relative = root + 'wf00-unadmitted-manual-checkpoint-20261024.json',
@@ -2858,13 +2861,20 @@ export async function syntheticProjectVerifiedContinuation({
     ]);
     writeRows(l + 'control.jsonl', [
       ...readRows(l + 'control.jsonl'),
-      ...Array.from({ length: 109 }, (_, i) => ({
-        event: 'control_request_intent',
-        ordinal: 841 + i,
-        kind: 'discovery',
-        workflowId: baseline[i % 25].id,
-        at: '2026-10-24T16:32:00.000Z',
-      })),
+      ...Array.from({ length: 109 }, (_, i) => {
+        const mixedKind =
+          technical16MixedControl && i >= 101
+            ? ['details', 'start', 'metadata', 'full', 'workflow', 'workflow', 'workflow', 'stop'][i - 101]
+            : null;
+        return {
+          event: 'control_request_intent',
+          ordinal: 841 + i,
+          kind: mixedKind ?? 'discovery',
+          workflowId: mixedKind ? bindings.workflowRefs['WF-00'].id : baseline[i % 25].id,
+          ...(['metadata', 'full', 'stop'].includes(mixedKind) ? { executionId: '31130' } : {}),
+          at: '2026-10-24T16:32:00.000Z',
+        };
+      }),
       { event: 'native_case_intent', caseId: 'dispatch.vimeo', nativeExecutions: 2 },
       {
         event: 'native_start_intent',
@@ -3639,6 +3649,82 @@ export async function syntheticProjectVerifiedContinuation({
       childUiSha256: digest(load(childUiRelative)),
     };
   }
+  if (technical17PreReady) {
+    if (!technical16Settled || technical16CleanupRequests !== 85) throw Error('SYNTHETIC17_SCOPE');
+    const relative =
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical17-preready-reconciliation-20261025.json',
+      r = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8')),
+      l = 'scripts/n8n/out/foundation/live/',
+      stem = l + 'project-verified-continuation-' + snapshot.proposedSegmentId + '.technical-17',
+      framesPath = l + 'technical17-coordinator-20261024-startup3.jsonl',
+      intentPath = l + 'technical17-pre-ready-cleanup.intent.json',
+      resultPath = l + 'technical17-pre-ready-cleanup.result.json',
+      json = (value) => JSON.stringify(value) + '\n',
+      startsAt = Date.parse('2026-10-24T22:00:00.000Z');
+    r.parentProcessId = 91092;
+    r.runtimeProcessId = 91093;
+    Object.assign(r.rawAdmission, {
+      parentProcessId: r.parentProcessId,
+      approvalSha256: digest(approvalText),
+      startsAt,
+      deadlineAt: startsAt + 3600000,
+      stopNewAt: startsAt + 3000000,
+      hardDeadlineAt: startsAt + 4200000,
+    });
+    const admissionText = json(r.rawAdmission);
+    Object.assign(r.rawRuntimeClaim, {
+      admissionSha256: digest(admissionText),
+      parentProcessId: r.parentProcessId,
+      processId: r.runtimeProcessId,
+      claimedAt: startsAt + 4000,
+    });
+    Object.assign(r.rawTechnicalClose, {
+      admissionSha256: digest(admissionText),
+      parentProcessId: r.parentProcessId,
+      runtimeProcessId: r.runtimeProcessId,
+      closedAt: startsAt + 6000,
+    });
+    if (technical17PreReadyFault === 'raw-closure') r.rawTechnicalClose.credentialChildrenClosed = true;
+    if (technical17PreReadyFault === 'raw-wrapper') r.rawFrames[3].privateRead = false;
+    if (technical17PreReadyFault === 'frame-extra')
+      r.rawFrames.push({ kind: 'm03_acceptance_command', id: 'synthetic_extra', command: 'prepare' });
+    if (technical17PreReadyFault === 'qualification') r.qualification.noPrepareSent = false;
+    if (technical17PreReadyFault === 'usage') r.usage.management++;
+    if (technical17PreReadyFault === 'claim') r.rawRuntimeClaim.claimedAt = startsAt - 1;
+    if (technical17PreReadyFault === 'cleanup') r.cleanup.plaintextRead = true;
+    r.cleanup.observedAt = '2026-10-24T22:02:00.000Z';
+    put(stem + '.json', admissionText);
+    put(stem + '.runtime-claim.json', json(r.rawRuntimeClaim));
+    put(stem + '.closed.json', json(r.rawTechnicalClose));
+    put(framesPath, r.rawFrames.map(json).join(''));
+    const intent = {
+      kind: 'm03_technical17_pre_ready_cleanup_intent',
+      version: 1,
+      parentProcessId: r.parentProcessId,
+      runtimeProcessId: r.runtimeProcessId,
+      targets: r.cleanup.deleted,
+      journalPins: {},
+      plaintextRead: false,
+      networkRequests: 0,
+      bothLocksHeld: true,
+      createdAt: '2026-10-24T22:01:59.000Z',
+    };
+    for (const path of Object.keys(r.pins).slice(0, 5))
+      intent.journalPins[path] = digest(readFileSync(join(directory, path)));
+    put(intentPath, json(intent));
+    put(resultPath, json(r.cleanup));
+    for (const path of Object.keys(r.pins)) r.pins[path] = digest(readFileSync(join(directory, path)));
+    if (technical17PreReadyFault === 'runtime-output') put(l + 'runtime.technical-17.jsonl', '{}\n');
+    if (technical17PreReadyFault === 'admin-output')
+      put(
+        'scripts/db/out/m03-foundation-project-verified-continuation-' +
+          snapshot.proposedSegmentId +
+          '-technical-17-owner-provision-attempt.json',
+        '{}\n',
+      );
+    put(relative, json(r));
+    technical17PreReadyConfiguration = { relative, sha256: digest(json(r)) };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -3653,6 +3739,14 @@ export async function syntheticProjectVerifiedContinuation({
       /const technical17Recovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
       'const technical17Recovery = Object.freeze(' + JSON.stringify(technical17Configuration) + ');',
     );
+  source = source.replace(
+    /const technical17PreReadyRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+    'const technical17PreReadyRecovery = ' +
+      (technical17PreReadyConfiguration
+        ? 'Object.freeze(' + JSON.stringify(technical17PreReadyConfiguration) + ')'
+        : 'null') +
+      ';',
+  );
   source = source
     .replace(
       /approvalSha256: (?:null|'[a-f0-9]{64}')/,

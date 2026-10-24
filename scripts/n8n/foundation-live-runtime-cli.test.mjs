@@ -4,7 +4,7 @@ import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import { mkdtempSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import {
   runFoundationLiveRuntimeCli,
   createFoundationLiveAcceptanceSession,
@@ -456,6 +456,157 @@ test('baseline diagnostic projection exposes only fixed codes and component bool
     }),
     {},
   );
+});
+
+test('genuine technical17 constructor refusal releases its opened Management lock without changing counters or the original error', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    technical16Settled: true,
+    technical16MixedControl: true,
+  });
+  let session;
+  try {
+    const proof = f.claim(f.admit());
+    const copied = await f.copy('foundation-live-runtime-cli.mjs');
+    const lockPath = join(dirname(f.paths.management), 'runtime.operation.lock');
+    const before = Object.fromEntries(
+      ['management', 'control', 'setup'].map((key) => [key, readFileSync(f.paths[key], 'utf8')]),
+    );
+    const refusal = Error('SYNTHETIC_PRIVATE_CONSTRUCTION_REFUSAL');
+    let observedOpenedLock = false,
+      emitted = 0,
+      childStarts = 0,
+      caught;
+    assert.equal(existsSync(lockPath), false);
+    try {
+      session = f.scoped(() =>
+        copied.createFoundationLiveAcceptanceSession(
+          { ...privatePacket(), sourceCommitSha: proof.sourceCommitSha, leaseExpiry: f.now() + 7200000 },
+          () => {
+            emitted++;
+          },
+          {
+            projectVerifiedContinuationProof: proof,
+            now() {
+              if (existsSync(lockPath)) {
+                observedOpenedLock = true;
+                throw refusal;
+              }
+              return f.now();
+            },
+            startAdmin() {
+              childStarts++;
+              throw Error('UNEXPECTED_CHILD');
+            },
+          },
+        ),
+      );
+    } catch (error) {
+      caught = error;
+    }
+    assert.equal(observedOpenedLock, true);
+    assert.equal(existsSync(lockPath), false);
+    assert.equal(caught, refusal);
+    assert.equal(session, undefined);
+    assert.equal(emitted, 0);
+    assert.equal(childStarts, 0);
+    for (const key of Object.keys(before)) assert.equal(readFileSync(f.paths[key], 'utf8'), before[key]);
+  } finally {
+    if (session) await session.close();
+    f.cleanup();
+  }
+});
+
+test('constructor refusal retains the genuine budget lock while an attached transport remains pending', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'emr-constructor-pending-'));
+  const lockPath = join(directory, 'runtime.operation.lock');
+  const freeze = Object.freeze;
+  const refusal = Error('SYNTHETIC_PRIVATE_LATE_CONSTRUCTION_REFUSAL');
+  let budget,
+    caught,
+    pending = true,
+    closes = 0;
+  try {
+    // Inject a synchronous final-allocation failure after the real constructor
+    // has registered its budget and attached its ordinary lifecycle sentinel.
+    Object.freeze = (value) => {
+      if (typeof value?.attachTransport === 'function' && typeof value?.snapshot === 'function')
+        budget = value;
+      if (typeof value?.acceptMcp === 'function' && typeof value?.command === 'function') {
+        budget.attachTransport({
+          close() {
+            closes++;
+          },
+          state: () => ({ pendingRequests: pending ? 1 : 0, unclosedResponses: 0 }),
+        });
+        throw refusal;
+      }
+      return freeze(value);
+    };
+    try {
+      createFoundationLiveAcceptanceSession(privatePacket(), () => {}, { storage: { directory } });
+    } catch (error) {
+      caught = error;
+    }
+    Object.freeze = freeze;
+    assert.equal(caught, refusal);
+    assert.equal(closes, 1);
+    assert.equal(budget.snapshot().closed, false);
+    assert.equal(existsSync(lockPath), true);
+    pending = false;
+    assert.deepEqual(budget.close(), { closed: true, unresolvedTransport: false });
+    assert.equal(existsSync(lockPath), false);
+  } finally {
+    Object.freeze = freeze;
+    pending = false;
+    budget?.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('actual CLI constructor refusal emits only its fixed blocked frame and releases the Management lock', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'emr-constructor-refusal-'));
+  const input = new PassThrough(),
+    output = new PassThrough(),
+    emitted = [];
+  const lockPath = join(directory, 'runtime.operation.lock');
+  const at = Date.now();
+  let observedOpenedLock = false;
+  output.on('data', (chunk) => emitted.push(chunk.toString()));
+  try {
+    const running = runFoundationLiveRuntimeCli({
+      input,
+      output,
+      args: ['Session'],
+      dependencies: {
+        storage: { directory },
+        now() {
+          if (existsSync(lockPath)) {
+            observedOpenedLock = true;
+            throw Error('SYNTHETIC_PRIVATE_CONSTRUCTION_REFUSAL');
+          }
+          return at;
+        },
+      },
+    });
+    input.end(JSON.stringify({ ...privatePacket(), leaseExpiry: at + 7200000 }) + '\n');
+    assert.equal(await running, 1);
+    assert.equal(observedOpenedLock, true);
+    assert.equal(existsSync(lockPath), false);
+    const text = emitted.join('');
+    assert.deepEqual(
+      text
+        .trim()
+        .split(/\r?\n/)
+        .map((line) => JSON.parse(line)),
+      [{ kind: 'm03_acceptance_closed', status: 'blocked', residual: true }],
+    );
+    assert.doesNotMatch(text, /SYNTHETIC_PRIVATE|childTransportsClosed/);
+    assert.equal(readFileSync(join(directory, 'management.jsonl'), 'utf8').trim().split('\n').length, 1);
+  } finally {
+    input.destroy();
+    output.destroy();
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 test('effectful continuation reaches the actual session constructor with retained counters and diagnostic, without starting a child', async () => {
