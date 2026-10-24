@@ -1246,6 +1246,74 @@ test('704 approval rejects altered scope, charge resets, extra authority and all
     f.cleanup();
   }
 });
+test('technical11 preserves raw incomplete closure flags and313/639/952 before only technical12 after independent physical cleanup', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ adminAdmissionReadonly: true });
+  try {
+    const closedPath = f.paths.admission.replace(/\.json$/, '.technical-11.closed.json');
+    const closedBefore = readFileSync(closedPath, 'utf8');
+    const ready = f.check();
+    assert.equal(ready.kind, 'project_verified_continuation_ready');
+    assert.equal(ready.managementMaximum, 704);
+    assert.equal(ready.managementAttempts, 313);
+    assert.equal(ready.controlAttempts, 639);
+    assert.equal(ready.combinedAttempts, 952);
+    const proof = f.claim(f.admit());
+    const resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(resume.technicalAttemptOrdinal, 12);
+    assert.equal(resume.aggregateManagementAttempts, 313);
+    assert.equal(resume.aggregateControlAttempts, 639);
+    assert.equal(resume.setupAttempts, 79);
+    assert.equal(resume.managementMaximum, 704);
+    assert.equal(readFileSync(closedPath, 'utf8'), closedBefore);
+    assert.equal(JSON.parse(closedBefore).credentialChildrenClosed, false);
+    assert.equal(JSON.parse(closedBefore).closureVerified, false);
+    f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof));
+    const path =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical11-reconciliation-20261024.json';
+    f.put(path, readFileSync(join(f.directory, path), 'utf8') + ' ');
+    assert.throws(
+      () => f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof)),
+      /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
+    );
+  } finally {
+    f.cleanup();
+  }
+});
+test('technical11 rejects authentication claims, unknown work, rewritten rawflags, omitted cleanup, counter resets and orphan Admin artifacts', async () => {
+  for (const adminAdmissionReadonlyFault of ['start', 'auth', 'spawn', 'cleanup', 'usage', 'raw', 'code']) {
+    const f = await syntheticProjectVerifiedContinuation({
+      adminAdmissionReadonly: true,
+      adminAdmissionReadonlyFault,
+    });
+    try {
+      assert.throws(
+        () => f.check(),
+        /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
+        adminAdmissionReadonlyFault,
+      );
+    } finally {
+      f.cleanup();
+    }
+  }
+  for (const suffix of [
+    'attempt',
+    'latest',
+    'owner-provision-attempt',
+    'unprovisioned-archive-attempt',
+    'reactivation-attempt',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ adminAdmissionReadonly: true });
+    try {
+      f.put(
+        `scripts/db/out/m03-foundation-project-verified-continuation-${f.checkpoint.segmentId}-technical-11-${suffix}.json`,
+        '{}\n',
+      );
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
 test('technical10 readonly recovery refuses writes, incomplete closure, catalog success rewrites and counter resets', async () => {
   for (const catalogReadonlyFault of [
     'start',

@@ -217,6 +217,10 @@ const catalogManagementAllocationApproval = Object.freeze({
   packetRelative: 'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md',
   packetSha256: '967b0250f7b61b2108d31ca59bc20e12c0367e7fcb8dc8ca877665a9af4071d6',
 });
+const adminAdmissionReadonlyRecovery = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical11-reconciliation-20261024.json',
+  sha256: '92b1628477730b3f32ea93e9724a29028be8019ba73e18e57f8f76d4fa953628',
+});
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
 };
@@ -459,6 +463,7 @@ function checkpoint(x) {
   x.recovery = reconciledPreprivateAdmin(x) ?? x.recovery;
   x.recovery = reconciledCatalogReadonly(x) ?? x.recovery;
   x.recovery = approvedCatalogManagementAllocation(x) ?? x.recovery;
+  x.recovery = reconciledAdminAdmissionReadonly(x) ?? x.recovery;
   if (x.recovery?.closedWindow) assertSetupAllocationApproval(x);
   recoveryPreflight(x);
   return p;
@@ -2536,6 +2541,9 @@ function reconciledClosedFixture(x) {
 }
 function reconcileReadonlyDiscoveryRecords(x, r, journalCounts, additionalPaths = []) {
   const a = r.attempt;
+  // The exact no-spawn failure11 preserves its native incomplete flags. Its
+  // separate immutable reconciliation below proves physical local closure.
+  const noAdminSpawn = a.technicalOrdinal === 11;
   const match = (value, expected) => {
     if (!value || Object.entries(expected).some(([key, v]) => value[key] !== v)) fail();
   };
@@ -2575,7 +2583,7 @@ function reconcileReadonlyDiscoveryRecords(x, r, journalCounts, additionalPaths 
     closedAt: a.closedAt,
     nativeExit: 1,
     childClosed: true,
-    credentialChildrenClosed: true,
+    credentialChildrenClosed: !noAdminSpawn,
     emergencyShutdown: false,
     pendingMachinePreserved: true,
     bypassHandoffDeleted: false,
@@ -2649,9 +2657,10 @@ function reconcileReadonlyDiscoveryRecords(x, r, journalCounts, additionalPaths 
       phaseBReady: false,
       domainProofReady: false,
       businessAcceptanceProven: false,
-      code: a.prepareCode,
+      ...(noAdminSpawn ? {} : { code: a.prepareCode }),
       residual: true,
     });
+  if (noAdminSpawn && frames.slice(5, 8).some((frame) => Object.hasOwn(frame, 'code'))) fail();
   match(frames[5], { id: a.prepareCommand, command: 'prepare', status: 'blocked' });
   match(frames[6], {
     id: a.restoreCommand,
@@ -2664,9 +2673,9 @@ function reconcileReadonlyDiscoveryRecords(x, r, journalCounts, additionalPaths 
     remoteWorkSettled: false,
   });
   match(frames[7], {
-    status: 'closed',
-    childTransportsClosed: true,
-    adminChildClosed: true,
+    status: noAdminSpawn ? 'residual' : 'closed',
+    childTransportsClosed: !noAdminSpawn,
+    adminChildClosed: !noAdminSpawn,
     baselineRestored: false,
     environmentCleanupVerified: false,
     windowClosed: false,
@@ -2675,10 +2684,10 @@ function reconcileReadonlyDiscoveryRecords(x, r, journalCounts, additionalPaths 
   });
   match(frames[8], {
     childClosed: true,
-    credentialChildrenClosed: true,
+    credentialChildrenClosed: !noAdminSpawn,
     emergencyShutdown: false,
     nativeExit: 1,
-    handoffsDeleted: true,
+    handoffsDeleted: !noAdminSpawn,
     bypassHandoffDeleted: false,
     pendingMachinePreserved: true,
     privateRead: true,
@@ -3329,6 +3338,217 @@ function approvedCatalogManagementAllocation(x) {
   });
   return Object.freeze({ ...x.recovery, managementMaximum: 704 });
 }
+function reconciledAdminAdmissionReadonly(x) {
+  if (!adminAdmissionReadonlyRecovery) return null;
+  if (
+    x.recovery?.catalogReadonlyTechnicalAttempt !== 10 ||
+    x.recovery.managementMaximum !== 704 ||
+    x.recovery.mainManagementAttempts !== 277 ||
+    x.recovery.carriedManagementAttempts !== 11 ||
+    x.recovery.mainControlAttempts !== 585 ||
+    x.recovery.carriedControlAttempts !== 3
+  )
+    fail();
+  const text = x.file(adminAdmissionReadonlyRecovery.relative);
+  if (hash(text) !== adminAdmissionReadonlyRecovery.sha256) fail();
+  const r = JSON.parse(text),
+    a = r.attempt;
+  const match = (value, expected) => {
+    if (!value || Object.entries(expected).some(([key, v]) => value[key] !== v)) fail();
+  };
+  match(r, {
+    kind: 'm03_technical11_admin_admission_reconciliation',
+    version: 1,
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+  });
+  if (!Number.isFinite(Date.parse(r.recordedAt)) || Date.parse(r.recordedAt) > x.clock()) fail();
+  match(r.source, {
+    helperHead: '9d9edf37f310f82647837e5b4cef31876a89b244',
+    applicationSource: foundationProjectVerifiedActiveRuntime.sourceCommitSha,
+    ciRun: 40082014843,
+    ciAttempt: 1,
+    allFiveJobsPassed: true,
+    vercelPassed: true,
+    pr: 8,
+    prDraft: true,
+  });
+  match(a, {
+    technicalAttempt: 11,
+    segmentId: c.segmentId,
+    windowId: foundationProjectVerifiedActiveRuntime.windowId,
+    nativeExit: 1,
+    prepareId: 'm03_live_021',
+    prepareStatus: 'blocked',
+    prepareCode: null,
+    restoreId: 'm03_live_022',
+    restoreStatus: 'restoration_residual',
+    closeId: 'm03_live_023',
+    sourceCloseStatus: 'residual',
+    baselineDefinitionGets: 25,
+    executionDiscoveryGets: 50,
+    browserDiscoveryCalls: 1,
+    newGatewayPreflightAttempts: 0,
+    newProviderDirectAttempts: 0,
+    nativeExecutions: 0,
+    actorStarts: 0,
+    previewSetupAttempted: false,
+    sqlProvisionAttempted: false,
+    fixtureReactivationAttempted: false,
+    migrationOperationAttempted: false,
+  });
+  match(r.localCause, {
+    consumerRelative: 'scripts/db/foundation-admin-client.mjs',
+    sealedConsumerSha256: '82e9bd5acf5e412e5c1d54b332c8f7543e8f8497dd4ebb38d3cbae871662249f',
+    predicate: 'forwardWindow && verifiedCheckpoint.managementMaximum === 640',
+    actualManagementMaximum: 704,
+    actualSource: foundationProjectVerifiedActiveRuntime.sourceCommitSha,
+    actualWindowId: foundationProjectVerifiedActiveRuntime.windowId,
+    incorrectSelectedSource: priorActiveRuntime.sourceCommitSha,
+    incorrectSelectedWindowId: priorActiveRuntime.windowId,
+    genericThrowBeforeSpawn: true,
+    adminChildSpawned: false,
+    adminDecryptionAttempted: false,
+    databaseAuthenticationAttempted: false,
+    dbTechnical11FilesAbsent: true,
+    nativeLocalRedSpawnCount: 0,
+    nativeLocalRedFailed: true,
+  });
+  match(r.rawSourceClose, {
+    kind: 'm03_acceptance_closed',
+    status: 'residual',
+    managementAttempts: 313,
+    controlAttempts: 639,
+    nativeExecutions: 0,
+    gatewayPreflightAttempts: 2,
+    providerDirectAttempts: 0,
+    phaseBReady: false,
+    domainProofReady: false,
+    businessAcceptanceProven: false,
+    childTransportsClosed: false,
+    adminChildClosed: false,
+    windowClosed: false,
+    fixtureArchived: false,
+    baselineRestored: false,
+    environmentCleanupVerified: false,
+    remoteWorkSettled: false,
+    residual: true,
+  });
+  match(r.rawWrapperClose, {
+    kind: 'm03_acceptance_wrapper_closed',
+    childClosed: true,
+    credentialChildrenClosed: false,
+    emergencyShutdown: false,
+    nativeExit: 1,
+    handoffsDeleted: false,
+    bypassHandoffDeleted: false,
+    pendingMachinePreserved: true,
+    privateRead: true,
+    code: 'M03_ACCEPTANCE_BLOCKED',
+  });
+  match(r.cleanup, {
+    nativeExit: 0,
+    networkRequests: 0,
+    knownParentAndRuntimeAbsent: true,
+    knownDescendantsAbsent: true,
+    adminChildNeverSpawned: true,
+    allTenLeavesAbsent: true,
+    runtimeLockAbsent: true,
+    allStreamsDestroyed: true,
+    publicReceiptClosed: true,
+    persistentOriginalsPreserved: true,
+    retainedMachinePreserved: true,
+    ciphertextReadForCleanup: false,
+    decryptedForCleanup: false,
+    credentialContentsReadForCleanup: false,
+    temporaryLeavesDeleted: 10,
+  });
+  match(r.usage, {
+    mainManagement: 302,
+    carriedManagement: 11,
+    management: 313,
+    mainControl: 636,
+    carriedControl: 3,
+    control: 639,
+    combined: 952,
+    vercel: 79,
+    managementMaximum: 704,
+    controlMaximum: 2048,
+    combinedMaximum: 2560,
+    vercelMaximum: 132,
+    actorStarts: 0,
+    actorMaximum: 2,
+    actorReserveUsd: 2,
+    allowancesReplenished: false,
+    nextConservativeManagement: 689,
+    nextConservativeVercel: 123,
+  });
+  match(r.acceptance, {
+    actualM03DevAcceptanceVerified: false,
+    fullDVerified: false,
+    freshDatabaseSchemaReverified: false,
+    priorDatabaseReceiptPreserved: catalogReadonlyRecovery.relative,
+    productionTouched: false,
+    mergeApproved: false,
+    m04Started: false,
+  });
+  const counts = { management: 303, control: 642, setup: 155, preflight: 6, runtime: 50 };
+  if (
+    !exact(r.journalCounts, Object.keys(counts)) ||
+    Object.entries(counts).some(([key, v]) => r.journalCounts[key] !== v)
+  )
+    fail();
+  const { pins, immutable } = reconcileReadonlyDiscoveryRecords(
+    x,
+    {
+      ...r,
+      source: { ...r.source, head: r.source.helperHead },
+      attempt: {
+        ...a,
+        technicalOrdinal: a.technicalAttempt,
+        prepareCommand: a.prepareId,
+        restoreCommand: a.restoreId,
+      },
+    },
+    counts,
+  );
+  const base = `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-11`;
+  const frames = jsonl(x.file(base + '.public-frames.jsonl'), 10).rows;
+  if (
+    JSON.stringify(frames[7]) !== JSON.stringify(r.rawSourceClose) ||
+    JSON.stringify(frames[8]) !== JSON.stringify(r.rawWrapperClose) ||
+    JSON.stringify(JSON.parse(x.file(base + '.closed.json'))) !== JSON.stringify(r.rawTechnicalClose)
+  )
+    fail();
+  for (const suffix of [
+    'attempt',
+    'latest',
+    'owner-provision-attempt',
+    'unprovisioned-archive-attempt',
+    'reactivation-attempt',
+  ])
+    if (
+      x.physical(
+        join(
+          repo,
+          `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-technical-11-${suffix}.json`,
+        ),
+        true,
+      )
+    )
+      fail();
+  if (x.physical(join(repo, 'scripts/n8n/out/foundation/live/runtime.technical-11.jsonl'), true)) fail();
+  pins[adminAdmissionReadonlyRecovery.relative] = adminAdmissionReadonlyRecovery.sha256;
+  return Object.freeze({
+    ...x.recovery,
+    mainManagementAttempts: 302,
+    mainControlAttempts: 636,
+    controlRows: 642,
+    adminAdmissionReadonlyTechnicalAttempt: 11,
+    adminAdmissionReadonlyPins: Object.freeze([adminAdmissionReadonlyRecovery.relative, ...immutable]),
+    pins: Object.freeze(pins),
+  });
+}
 function currentReadiness(x) {
   if (!x.recovery?.closedWindow) return null;
   assertSetupAllocationApproval(x);
@@ -3860,7 +4080,10 @@ function closedTechnicalAttempt(x, paths) {
     (paths.ordinal === 7 && x.recovery?.closedPreparationTechnicalAttempt === 7) ||
     (paths.ordinal === 8 && x.recovery?.closedFixtureTechnicalAttempt === 8) ||
     (paths.ordinal === 9 && x.recovery?.preprivateAdminTechnicalAttempt === 9) ||
-    (paths.ordinal === 10 && x.recovery?.catalogReadonlyTechnicalAttempt === 10);
+    (paths.ordinal === 10 && x.recovery?.catalogReadonlyTechnicalAttempt === 10) ||
+    (paths.ordinal === 11 && x.recovery?.adminAdmissionReadonlyTechnicalAttempt === 11);
+  const noAdminSpawnReconciled =
+    paths.ordinal === 11 && x.recovery?.adminAdmissionReadonlyTechnicalAttempt === 11;
   if (
     !exact(close, [
       'kind',
@@ -3887,7 +4110,7 @@ function closedTechnicalAttempt(x, paths) {
     close.closedAt < data.r.startsAt ||
     close.closedAt > x.clock() ||
     close.childClosed !== true ||
-    close.credentialChildrenClosed !== true ||
+    close.credentialChildrenClosed !== !noAdminSpawnReconciled ||
     close.emergencyShutdown !== false ||
     close.pendingMachinePreserved !== true ||
     !(
@@ -4111,6 +4334,9 @@ export function assertFoundationProjectVerifiedContinuationJournalPrefixes(p, op
       if (hash(x.file(path)) !== x.recovery.pins[path]) fail();
   if (x.recovery?.catalogReadonlyTechnicalAttempt === 10)
     for (const path of x.recovery.catalogReadonlyPins)
+      if (hash(x.file(path)) !== x.recovery.pins[path]) fail();
+  if (x.recovery?.adminAdmissionReadonlyTechnicalAttempt === 11)
+    for (const path of x.recovery.adminAdmissionReadonlyPins)
       if (hash(x.file(path)) !== x.recovery.pins[path]) fail();
   if (x.recovery?.closedPreparationTechnicalAttempt === 7)
     for (const path of x.recovery.closedPreparationPins)

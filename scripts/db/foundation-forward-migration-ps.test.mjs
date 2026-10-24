@@ -560,6 +560,12 @@ foreach($mutation in @(@{key='managementMaximum';value=640},@{key='managementMax
  $mixed=[ordered]@{};foreach($name in $catalog.Keys){$mixed[$name]=$catalog[$name]};$mixed[$mutation.key]=$mutation.value;$script:dto=[pscustomobject]$mixed;$denied=$false
  try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MIXED_704_CATALOG_PROFILE_ACCEPTED'}
 }
+$adminBinding=[ordered]@{};foreach($name in $catalog.Keys){$adminBinding[$name]=$catalog[$name]};$adminBinding.managementAttempts=313;$adminBinding.controlAttempts=639;$adminBinding.combinedAttempts=952;$script:dto=[pscustomobject]$adminBinding
+$null=Read-FoundationPostcheckContinuation
+foreach($mutation in @(@{key='managementMaximum';value=640},@{key='managementMaximum';value=705},@{key='managementMaximum';value='704'},@{key='managementAttempts';value=288},@{key='controlAttempts';value=588},@{key='combinedAttempts';value=876},@{key='sourceCommitSha';value=$valid.sourceCommitSha},@{key='windowId';value=$valid.windowId})){
+ $mixed=[ordered]@{};foreach($name in $adminBinding.Keys){$mixed[$name]=$adminBinding[$name]};$mixed[$mutation.key]=$mutation.value;$script:dto=[pscustomobject]$mixed;$denied=$false
+ try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MIXED_704_ADMIN_BINDING_PROFILE_ACCEPTED'}
+}
 foreach($missing in @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){
  $copy=[ordered]@{};foreach($name in $valid.Keys){if($name -cne $missing){$copy[$name]=$valid[$name]}};$script:dto=[pscustomobject]$copy;$denied=$false
  try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'PARTIAL_MANAGEMENT_PROFILE_ACCEPTED'}
@@ -574,7 +580,7 @@ Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
 );
 
 test(
-  'actual forward packet has all54 source-required public pins and retains every old migration field',
+  'actual forward packet has all55 source-required public pins and retains every old migration field',
   native,
   () => {
     assert.equal(
@@ -588,30 +594,36 @@ Invoke-Expression $source.Substring($start,$end-$start)
 $packet=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
 $old=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-dev-migration-packet.json'))}))
 Assert-Keys $packet.files $requiredFiles
-if($requiredFiles.Count -ne 54 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+if($requiredFiles.Count -ne 55 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
 $prior=@($old.baseline)+@($old.pending)
 for($i=0;$i -lt 14;$i++){foreach($field in @('version','name','file','sha256','historySha256')){if($prior[$i].$field -cne $packet.baseline[$i].$field){throw 'ORIGINAL_MIGRATION_REWRITTEN'}}}
-Write-Output 'EXACT_PUBLIC_54_AND_OLD14'
+Write-Output 'EXACT_PUBLIC_55_AND_OLD14'
 `),
-      'EXACT_PUBLIC_54_AND_OLD14',
+      'EXACT_PUBLIC_55_AND_OLD14',
     );
   },
 );
 
 test(
-  'fresh ForwardWindow completes the full native public Run preflight before the private boundary',
+  'post11 fresh ForwardWindow completes the full native public Run preflight before the private boundary',
   native,
   async () => {
-    const fixture = await syntheticProjectVerifiedContinuation({ preprivateAdmin: true });
+    const fixture = await syntheticProjectVerifiedContinuation({ adminAdmissionReadonly: true });
     let primaryFailure;
     try {
+      const readiness = fixture.check();
+      assert.equal(readiness.kind, 'project_verified_continuation_ready', 'synthetic pre-copy authority');
+      assert.equal(readiness.managementMaximum, 704);
+      assert.equal(readiness.managementAttempts, 313);
+      assert.equal(readiness.controlAttempts, 639);
+      assert.equal(readiness.combinedAttempts, 952);
       const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
       const put = (relative, bytes) => fixture.put(relative, bytes);
       const packet = JSON.parse(
         readFileSync(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'), 'utf8'),
       );
       packet.files[
-        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical9-reconciliation-20261024.json'
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical11-reconciliation-20261024.json'
       ] = 'synthetic-public-pin-recomputed-below';
       // Keep all isolated historical authority bytes supplied by the existing
       // fixture. Copy only the public source/CLI/migration inputs it lacks.
@@ -644,6 +656,11 @@ test(
       for (const relative of Object.keys(packet.files))
         packet.files[relative] = hash(readFileSync(join(fixture.directory, relative)));
       put('scripts/db/m03-foundation-forward-dev-migration-packet.json', JSON.stringify(packet) + '\n');
+      assert.equal(
+        fixture.check().kind,
+        'project_verified_continuation_ready',
+        'synthetic post-copy authority',
+      );
       const guardPath = join(
         fixture.directory,
         'scripts/n8n/foundation-live-project-verified-continuation.mjs',
@@ -716,7 +733,7 @@ try {
         existsSync(
           join(
             fixture.directory,
-            'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-10-attempt.json',
+            'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-12-attempt.json',
           ),
         ),
         false,

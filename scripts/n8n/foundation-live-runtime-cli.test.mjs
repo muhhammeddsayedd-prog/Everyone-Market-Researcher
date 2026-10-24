@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import { mkdtempSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -604,6 +605,199 @@ for (const profile of [
       f.cleanup();
     }
   });
+
+test('post11 genuine704 CLI prepare crosses the actual Admin client and native protocol before every Preview operation', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ adminAdmissionReadonly: true });
+  let session,
+    spawns = 0,
+    setupConstructors = 0,
+    nativeReads = 0;
+  const commands = [],
+    emitted = [];
+  try {
+    const proof = f.claim(f.admit());
+    const checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(checkpoint.technicalAttemptOrdinal, 12);
+    assert.equal(checkpoint.managementMaximum, 704);
+    assert.equal(checkpoint.aggregateManagementAttempts, 313);
+    assert.equal(checkpoint.aggregateControlAttempts, 639);
+    assert.equal(proof.sourceCommitSha, 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803');
+    assert.equal(proof.windowId, 'eda4fae1-1e19-47db-81b8-beac1a4ed883');
+    const bindings = JSON.parse(
+      readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
+    );
+    for (const name of ['bindings.dev.json', 'transport.dev.json'])
+      f.put(
+        'n8n/foundation/' + name,
+        readFileSync(new URL('../../n8n/foundation/' + name, import.meta.url), 'utf8'),
+      );
+    for (const key of Object.keys(bindings.workflowRefs))
+      f.put(
+        'n8n/workflows/' + key + '.json',
+        readFileSync(new URL('../../n8n/workflows/' + key + '.json', import.meta.url), 'utf8'),
+      );
+    const copied = await f.copy('foundation-live-runtime-cli.mjs');
+    const adminModule = await f.copy('foundation-admin-client.mjs');
+    const spawn = (executable, args, options) => {
+      spawns++;
+      assert.match(executable, /WindowsPowerShell/);
+      assert.ok(args.includes('-ProjectVerifiedContinuation'));
+      assert.ok(args.includes('-ForwardWindow'));
+      assert.equal(Object.hasOwn(options.env, 'PGPASSWORD'), false);
+      assert.equal(Object.hasOwn(options.env, 'SUPABASE_ACCESS_TOKEN'), false);
+      assert.equal(options.windowsHide, true);
+      const child = new EventEmitter();
+      child.stdin = new PassThrough();
+      child.stdout = new PassThrough();
+      child.stderr = new PassThrough();
+      let buffer = '';
+      child.stdin.on('data', (chunk) => {
+        buffer += chunk.toString();
+        while (buffer.includes('\n')) {
+          const at = buffer.indexOf('\n'),
+            command = JSON.parse(buffer.slice(0, at));
+          buffer = buffer.slice(at + 1);
+          commands.push(command.kind);
+          assert.ok(['postcheck', 'preflight', 'end'].includes(command.kind));
+          const result =
+            command.kind === 'postcheck'
+              ? { ready: true, projectRef: 'zmotjsbzhzjvpelxvxlf', migrationCount: 15 }
+              : command.kind === 'preflight'
+                ? {
+                    projectRef: 'zmotjsbzhzjvpelxvxlf',
+                    dailyBudgetUsd: 25,
+                    statsDailyEnabled: false,
+                    errorCount24h: 0,
+                    notificationCooldownClear: true,
+                    priceBook: { 'apify/website-content-crawler': { unit: 'compute unit', usd: 0.3 } },
+                  }
+                : {};
+          child.stdout.write(
+            JSON.stringify({
+              type: 'foundation_admin_result',
+              id: command.id,
+              kind: command.kind,
+              ok: true,
+              result,
+            }) + '\n',
+          );
+          if (command.kind === 'end') {
+            child.stdout.write(
+              JSON.stringify({
+                version: 1,
+                runId: 'synthetic-post11',
+                phaseAControl: true,
+                childrenClosed: true,
+                handoffDeleted: true,
+                leaseDeleted: true,
+                scratchDeleted: true,
+              }) + '\n',
+            );
+            queueMicrotask(() => child.emit('close', 0, null));
+          }
+        }
+      });
+      queueMicrotask(() =>
+        child.stdout.write(
+          JSON.stringify({
+            type: 'foundation_admin_ready',
+            runId: 'synthetic-post11',
+            historyAfter: 'complete',
+            projectRef: 'zmotjsbzhzjvpelxvxlf',
+            hardDeadline: new Date(proof.hardDeadlineAt).toISOString(),
+            actionDeadline: new Date(proof.deadlineAt).toISOString(),
+            stopNewAt: new Date(proof.stopNewAt).toISOString(),
+            postchecksVerified: false,
+            clockSegmentId: proof.segmentId,
+            postcheckContinuation: true,
+            projectVerifiedContinuation: true,
+          }) + '\n',
+        ),
+      );
+      return child;
+    };
+    session = f.scoped(() =>
+      copied.createFoundationLiveAcceptanceSession(
+        { ...privatePacket(), sourceCommitSha: proof.sourceCommitSha, leaseExpiry: f.now() + 7200000 },
+        (message) => {
+          emitted.push(message);
+          assert.equal(message.kind, 'mcp_port_request');
+          assert.equal(message.action, 'browser_discover');
+          queueMicrotask(() =>
+            assert.equal(
+              session.acceptMcp({
+                ...message,
+                kind: 'mcp_port_result',
+                result: {
+                  source: 'browser_ui',
+                  id: message.workflowId,
+                  renderedName: bindings.workflowRefs['WF-00'].name,
+                  workflowUrl: 'https://muhhammedsayed.app.n8n.cloud/workflow/' + message.workflowId,
+                  executeControlEnabled: true,
+                },
+              }),
+              true,
+            ),
+          );
+        },
+        {
+          now: f.now,
+          projectVerifiedContinuationProof: proof,
+          startAdmin: (args) => adminModule.startFoundationAdminClient(args, { spawn }),
+          createBaselinePreflight: (args) => syntheticBaselinePreflight(args),
+          createNativeTransport: () => ({
+            async request(spec) {
+              assert.equal(spec.method, 'GET');
+              nativeReads++;
+              return {
+                status: 200,
+                body: (async function* () {
+                  yield Buffer.from(JSON.stringify({ data: [], nextCursor: null }));
+                })(),
+                closed: Promise.resolve(),
+              };
+            },
+            state: () => ({ pendingRequests: 0, unclosedResponses: 0 }),
+            close() {},
+          }),
+          createSetupTransport() {
+            setupConstructors++;
+            throw Error('SYNTHETIC_STOP_BEFORE_PREVIEW_NETWORK');
+          },
+        },
+      ),
+    );
+    const result = await session.command({
+      kind: 'm03_acceptance_command',
+      id: 'post11-native-chain',
+      command: 'prepare',
+    });
+    assert.equal(spawns, 1);
+    assert.deepEqual(commands, ['postcheck', 'preflight']);
+    assert.equal(setupConstructors, 1);
+    assert.equal(nativeReads, 50);
+    assert.equal(emitted.length, 1);
+    assert.equal(result.status, 'blocked');
+    assert.equal(result.code, 'FOUNDATION_SETUP_TRANSPORT_BLOCKED');
+    assert.equal(result.managementAttempts, 338);
+    assert.equal(result.controlAttempts, 690);
+    assert.equal(result.nativeExecutions, 0);
+    const closed = await session.close();
+    assert.deepEqual(commands, ['postcheck', 'preflight', 'end']);
+    assert.equal(closed.adminChildClosed, true);
+    assert.equal(closed.childTransportsClosed, true);
+    assert.equal(closed.residual, false);
+    assert.equal(spawns, 1);
+    assert.equal(setupConstructors, 1);
+    assert.doesNotMatch(
+      JSON.stringify(result) + JSON.stringify(closed) + JSON.stringify(emitted),
+      /SYNTHETIC_PRIVATE|SYNTHETIC_STOP/,
+    );
+  } finally {
+    if (session) await session.close();
+    f.cleanup();
+  }
+});
 
 test('a lookalike mixed-row continuation is rejected before session storage, child creation or emitted metadata', () => {
   const time = Date.parse('2026-10-24T01:00:00Z');

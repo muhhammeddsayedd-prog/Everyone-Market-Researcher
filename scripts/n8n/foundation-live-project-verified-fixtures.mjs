@@ -13,9 +13,11 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  catalogReadonly = false,
+  adminAdmissionReadonly = false,
+  adminAdmissionReadonlyFault,
+  catalogReadonly = adminAdmissionReadonly,
   catalogReadonlyFault,
-  catalogManagementAllocation = false,
+  catalogManagementAllocation = adminAdmissionReadonly,
   catalogManagementAllocationFault,
   preprivateAdmin = catalogReadonly,
   preprivateAdminFault,
@@ -392,6 +394,7 @@ export async function syntheticProjectVerifiedContinuation({
     closedFixtureConfiguration,
     preprivateAdminConfiguration,
     catalogReadonlyConfiguration,
+    adminAdmissionReadonlyConfiguration,
     catalogManagementAllocationConfiguration,
     controlManagementAllocationConfiguration;
   if (closedWindow) {
@@ -1792,6 +1795,109 @@ export async function syntheticProjectVerifiedContinuation({
       packetSha256: digest(packet),
     };
   }
+  if (adminAdmissionReadonly) {
+    const relative =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical11-reconciliation-20261024.json';
+    const receipt = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8'));
+    const root = `scripts/n8n/out/foundation/live/project-verified-continuation-${snapshot.proposedSegmentId}`;
+    const base = root + '.technical-11';
+    const json = (v) => JSON.stringify(v) + '\n',
+      start = receipt.attempt.startsAt;
+    const admission = {
+      ...JSON.parse(readFileSync(join(directory, root + '.technical-10.json'), 'utf8')),
+      startsAt: start,
+      deadlineAt: start + 3600000,
+      stopNewAt: start + 3000000,
+      hardDeadlineAt: start + 4200000,
+      parentProcessId: 91117,
+    };
+    const claim = {
+      ...JSON.parse(readFileSync(join(directory, root + '.technical-10.runtime-claim.json'), 'utf8')),
+      admissionSha256: digest(json(admission)),
+      processId: 91118,
+      parentProcessId: 91117,
+      claimedAt: start + 2000,
+    };
+    const close = {
+      ...JSON.parse(readFileSync(join(directory, root + '.technical-10.closed.json'), 'utf8')),
+      admissionSha256: digest(json(admission)),
+      parentProcessId: 91117,
+      runtimeProcessId: 91118,
+      closedAt: receipt.attempt.closedAt,
+      credentialChildrenClosed: false,
+    };
+    Object.assign(receipt.attempt, { parentProcessId: 91117, runtimeProcessId: 91118 });
+    receipt.rawTechnicalClose = structuredClone(close);
+    const frames = readFileSync(join(directory, root + '.technical-10.public-frames.jsonl'), 'utf8')
+      .trimEnd()
+      .split('\n')
+      .map(JSON.parse);
+    Object.assign(frames[0], {
+      helperHead: receipt.source.helperHead,
+      technicalAttempt: 11,
+      parentProcessId: 91117,
+    });
+    frames[1].nonce = 'e'.repeat(32);
+    frames[4].nonce = 'f'.repeat(32);
+    frames[3].deadlineAt = admission.deadlineAt;
+    for (const frame of frames.slice(5, 8)) {
+      frame.managementAttempts = 313;
+      frame.controlAttempts = 639;
+      delete frame.code;
+    }
+    frames[5].id = receipt.attempt.prepareId;
+    frames[6].id = receipt.attempt.restoreId;
+    frames[7] = structuredClone(receipt.rawSourceClose);
+    frames[8] = structuredClone(receipt.rawWrapperClose);
+    const managementPath = snapshot.journals.management.path;
+    put(
+      managementPath,
+      readFileSync(join(directory, managementPath), 'utf8') +
+        Array.from({ length: 25 }, (_, i) => json({ event: 'management_attempt', ordinal: 278 + i })).join(
+          '',
+        ),
+    );
+    const controlPath = snapshot.journals.control.path,
+      prior = readFileSync(join(directory, controlPath), 'utf8').trimEnd().split('\n').map(JSON.parse);
+    const added = [
+      {
+        event: 'control_request_intent',
+        ordinal: 586,
+        kind: 'discovery',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        at: new Date(start + 3000).toISOString(),
+      },
+      {
+        event: 'browser_port_preflight_verified',
+        kind: 'browser_ui',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        at: new Date(start + 3500).toISOString(),
+      },
+      ...prior
+        .slice(-50)
+        .map((row, i) => ({ ...row, ordinal: 587 + i, at: new Date(start + 4000 + i * 100).toISOString() })),
+    ];
+    if (adminAdmissionReadonlyFault === 'start') added[2].kind = 'start';
+    if (adminAdmissionReadonlyFault === 'auth') receipt.localCause.databaseAuthenticationAttempted = true;
+    if (adminAdmissionReadonlyFault === 'spawn') receipt.localCause.adminChildSpawned = true;
+    if (adminAdmissionReadonlyFault === 'cleanup') receipt.cleanup.allTenLeavesAbsent = false;
+    if (adminAdmissionReadonlyFault === 'usage') receipt.usage.carriedManagement = 10;
+    if (adminAdmissionReadonlyFault === 'raw') frames[7].adminChildClosed = true;
+    if (adminAdmissionReadonlyFault === 'code') frames[5].code = 'UNESTABLISHED';
+    put(controlPath, readFileSync(join(directory, controlPath), 'utf8') + added.map(json).join(''));
+    for (const [path, value] of [
+      [base + '.json', admission],
+      [base + '.runtime-claim.json', claim],
+      [base + '.closed.json', close],
+      [base + '.public-frames.jsonl', frames.map(json).join('')],
+    ])
+      put(path, typeof value === 'string' ? value : json(value));
+    for (const path of Object.keys(receipt.pins))
+      receipt.pins[path] = digest(readFileSync(join(directory, path), 'utf8'));
+    const text = json(receipt);
+    put(relative, text);
+    adminAdmissionReadonlyConfiguration = { relative, sha256: digest(text) };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -1914,6 +2020,14 @@ export async function syntheticProjectVerifiedContinuation({
         : 'null') +
       ';',
   );
+  source = source.replace(
+    /const adminAdmissionReadonlyRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+    'const adminAdmissionReadonlyRecovery = ' +
+      (adminAdmissionReadonlyConfiguration
+        ? 'Object.freeze(' + JSON.stringify(adminAdmissionReadonlyConfiguration) + ')'
+        : 'null') +
+      ';',
+  );
   if (closedFixture)
     source = source.replace(
       /export const foundationProjectVerifiedActiveRuntime = Object\.freeze\(\{[\s\S]*?\n\}\);/,
@@ -1939,17 +2053,19 @@ export async function syntheticProjectVerifiedContinuation({
     }) + '\n',
   );
   let time = Date.parse(
-    catalogReadonly
-      ? '2026-10-24T02:40:00.000Z'
-      : preprivateAdmin
-        ? '2026-10-24T02:00:00.000Z'
-        : closedFixture
-          ? '2026-10-24T00:46:00.000Z'
-          : closedWindow
-            ? '2026-10-23T18:00:00.000Z'
-            : effectful
-              ? '2026-10-23T15:00:00.000Z'
-              : '2026-10-22T18:00:00.000Z',
+    adminAdmissionReadonly
+      ? '2026-10-24T10:00:00.000Z'
+      : catalogReadonly
+        ? '2026-10-24T02:40:00.000Z'
+        : preprivateAdmin
+          ? '2026-10-24T02:00:00.000Z'
+          : closedFixture
+            ? '2026-10-24T00:46:00.000Z'
+            : closedWindow
+              ? '2026-10-23T18:00:00.000Z'
+              : effectful
+                ? '2026-10-23T15:00:00.000Z'
+                : '2026-10-22T18:00:00.000Z',
   );
   const now = () => time,
     io = { processAlive: () => false };

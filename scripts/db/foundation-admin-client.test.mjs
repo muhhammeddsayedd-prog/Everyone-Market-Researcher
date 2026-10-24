@@ -254,33 +254,95 @@ test('approved576 genuine Admin constructor carries3 controls from382 mixed rows
   }
 });
 
-for (const preprivateAdmin of [false, true])
-  test(`approved640 genuine Admin constructor retains${preprivateAdmin ? '263/537' : '237/486'} and selects only its fresh claimed binding`, async () => {
-    const f = await syntheticProjectVerifiedContinuation({ closedFixture: true, preprivateAdmin });
+for (const profile of [
+  { maximum: 640, management: 237, control: 486, options: { closedFixture: true, preprivateAdmin: false } },
+  { maximum: 640, management: 263, control: 537, options: { closedFixture: true, preprivateAdmin: true } },
+  {
+    maximum: 704,
+    management: 288,
+    control: 588,
+    options: { catalogReadonly: true, catalogManagementAllocation: true },
+  },
+  {
+    maximum: 704,
+    management: 313,
+    control: 639,
+    options: { adminAdmissionReadonly: true },
+  },
+])
+  test(`approved${profile.maximum} genuine Admin constructor retains${profile.management}/${profile.control} and selects only its fresh claimed binding`, async () => {
+    const f = await syntheticProjectVerifiedContinuation(profile.options);
     try {
       const proof = f.claim(f.admit());
       const checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
-      assert.equal(checkpoint.managementMaximum, 640);
-      assert.equal(checkpoint.aggregateManagementAttempts, preprivateAdmin ? 263 : 237);
-      assert.equal(checkpoint.aggregateControlAttempts, preprivateAdmin ? 537 : 486);
-      assert.equal(checkpoint.mainControlAttempts, preprivateAdmin ? 534 : 483);
+      assert.equal(checkpoint.managementMaximum, profile.maximum);
+      assert.equal(checkpoint.aggregateManagementAttempts, profile.management);
+      assert.equal(checkpoint.aggregateControlAttempts, profile.control);
+      assert.equal(checkpoint.mainControlAttempts, profile.control - 3);
+      if (profile.management === 313) assert.equal(checkpoint.technicalAttemptOrdinal, 12);
+      assert.equal(proof.sourceCommitSha, 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803');
       assert.equal(proof.windowId, 'eda4fae1-1e19-47db-81b8-beac1a4ed883');
       const module = await f.copy('foundation-admin-client.mjs');
       const wire = fixture({ projectProof: proof, forwardWindow: true });
-      const client = await module.startFoundationAdminClient(
-        {
-          repositoryRoot: f.directory,
-          now: f.now,
-          projectVerifiedContinuationProof: proof,
-          forwardWindow: true,
-        },
-        wire.deps,
-      );
+      let spawns = 0,
+        startupError,
+        client;
+      try {
+        client = await module.startFoundationAdminClient(
+          {
+            repositoryRoot: f.directory,
+            now: f.now,
+            projectVerifiedContinuationProof: proof,
+            forwardWindow: true,
+          },
+          {
+            ...wire.deps,
+            spawn(...args) {
+              spawns++;
+              return wire.deps.spawn(...args);
+            },
+          },
+        );
+      } catch (error) {
+        startupError = error;
+      }
+      assert.equal(spawns, 1, 'the genuine approved profile must reach exactly one synthetic Admin child');
+      assert.equal(startupError, undefined);
       assert.equal(client.ready.projectVerifiedContinuation, true);
       assert.equal(wire.calls.length, 0);
       const done = await client.end();
       assert.equal(done.nativeExit, 0);
       assert.equal(done.childClosed, true);
+      for (const options of [
+        { projectVerifiedContinuationProof: { ...proof }, forwardWindow: true },
+        { projectVerifiedContinuationProof: proof, forwardWindow: false },
+        {
+          projectVerifiedContinuationProof: {
+            ...proof,
+            sourceCommitSha: 'a5e746736893d5040e93032ae740a0878f748837',
+          },
+          forwardWindow: true,
+        },
+        {
+          projectVerifiedContinuationProof: { ...proof, windowId: '38b3708d-61b0-41d2-8170-5ed91c66b4dc' },
+          forwardWindow: true,
+        },
+      ]) {
+        let rejectedSpawns = 0;
+        await assert.rejects(
+          module.startFoundationAdminClient(
+            { repositoryRoot: f.directory, now: f.now, ...options },
+            {
+              spawn() {
+                rejectedSpawns++;
+                throw Error('SYNTHETIC_MUST_NOT_SPAWN');
+              },
+            },
+          ),
+          /FOUNDATION_ADMIN_BLOCKED/,
+        );
+        assert.equal(rejectedSpawns, 0);
+      }
     } finally {
       f.cleanup();
     }

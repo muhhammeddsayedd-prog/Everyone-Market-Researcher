@@ -792,14 +792,14 @@ describe(
           exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_PRIOR_EDIT_OR_ATTEMPT_PRESENT' then raise exception 'GAP_DENIAL_NOT_EXACT';end if;end;end;$deny$;rollback;`);
         assert.deepEqual(JSON.parse(psql(snapshot)), before);
       }
-      // Only the known closed3..10 gap is covered. A missing successful
-      // technical11 lifecycle is still a denial at a later ordinal.
-      psql(`begin;${settings}set local emr.smoke_technical_ordinal='12';do $deny$begin begin execute $under_test$${body()}$under_test$;
+      // Only the known closed3..11 gap is covered. A missing successful
+      // technical12 lifecycle is still a denial at a later ordinal.
+      psql(`begin;${settings}set local emr.smoke_technical_ordinal='13';do $deny$begin begin execute $under_test$${body()}$under_test$;
         raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED' then raise exception 'UNKNOWN_LATER_GAP_ACCEPTED';end if;end;end;$deny$;rollback;`);
       assert.deepEqual(JSON.parse(psql(snapshot)), before);
     });
 
-    test('ordinals10and11 skip only proven no-reactivation gaps, preserve prior audits and require technical11 before12', () => {
+    test('ordinals10to12 skip only proven no-reactivation gaps, preserve prior audits and require technical12 before13', () => {
       const wrapper =
         '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n\\set emr_smoke_reactivation_segment ' + segment + '\n';
       const technical2 = Number(
@@ -814,7 +814,7 @@ describe(
       }
       const before = JSON.parse(psql(snapshot));
       assert.equal(before.audit, 4);
-      for (const ordinal of [10, 11]) {
+      for (const ordinal of [10, 11, 12]) {
         const outcome = JSON.parse(
           psql(`begin;${settings}set local emr.smoke_technical_ordinal='${ordinal}';
         create temporary table retained_audits as select to_jsonb(l) as value from ops.audit_log l;
@@ -853,7 +853,7 @@ describe(
         do $deny$begin begin execute $under_test$${body()}$under_test$;
           raise exception using errcode='P9999',message='UNEXPECTED_NINTH_AUDIT_ACCEPTED';
         exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_PRIOR_EDIT_OR_ATTEMPT_PRESENT' then raise exception 'NINTH_AUDIT_DENIAL_NOT_EXACT';end if;end;end;$deny$;rollback;`);
-        psql(`begin;${settings}set local emr.smoke_technical_ordinal='12';
+        psql(`begin;${settings}set local emr.smoke_technical_ordinal='13';
         do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';
         exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED' then raise exception 'UNPROVEN_TENTH_LIFECYCLE_ACCEPTED';end if;end;end;$deny$;rollback;`);
         assert.deepEqual(JSON.parse(psql(snapshot)), before);

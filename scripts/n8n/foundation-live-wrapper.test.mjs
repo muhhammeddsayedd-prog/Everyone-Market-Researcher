@@ -106,6 +106,12 @@ $latest=[ordered]@{};foreach($name in $fresh.Keys){$latest[$name]=$fresh[$name]}
 if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$latest) $true 'CheckOnly') -ne 640){throw 'PREPRIVATE_263_CHARGES_NOT_PROJECTED'}
 $catalog=[ordered]@{};foreach($name in $fresh.Keys){$catalog[$name]=$fresh[$name]};$catalog.managementMaximum=704;$catalog.managementAttempts=288;$catalog.controlAttempts=588;$catalog.combinedAttempts=876
 if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$catalog) $true 'CheckOnly') -ne 704){throw 'APPROVED_704_CHARGES_NOT_PROJECTED'}
+$admission=[ordered]@{};foreach($name in $catalog.Keys){$admission[$name]=$catalog[$name]};$admission.managementAttempts=313;$admission.controlAttempts=639;$admission.combinedAttempts=952
+if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$admission) $true 'CheckOnly') -ne 704){throw 'NO_ADMIN_313_CHARGES_NOT_PROJECTED'}
+foreach($mutation in @(@{key='managementAttempts';value=288},@{key='controlAttempts';value=588},@{key='combinedAttempts';value=876})){
+ $mixed=[ordered]@{};foreach($name in $admission.Keys){$mixed[$name]=$admission[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'NO_ADMIN_CHARGES_RESET'}
+}
 foreach($mutation in @(@{key='managementMaximum';value=640},@{key='managementMaximum';value=705},@{key='managementAttempts';value=263},@{key='controlAttempts';value=537},@{key='combinedAttempts';value=800},@{key='sourceCommitSha';value=$valid.sourceCommitSha},@{key='windowId';value=$valid.windowId})){
  $mixed=[ordered]@{};foreach($name in $catalog.Keys){$mixed[$name]=$catalog[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
  try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED_704_PROFILE_ACCEPTED'}

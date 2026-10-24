@@ -160,13 +160,13 @@ export async function startFoundationAdminClient(
     if (
       verified.segmentId !== '20275b22-b7fe-4737-a9a4-c50c2feadb74' ||
       verified.sourceCommitSha !==
-        (forwardWindow && verifiedCheckpoint.managementMaximum === 640
+        (forwardWindow && [640, 704].includes(verifiedCheckpoint.managementMaximum)
           ? foundationProjectVerifiedActiveRuntime.sourceCommitSha
           : forwardWindow
             ? 'a5e746736893d5040e93032ae740a0878f748837'
             : 'f42930f90c2de43c84f61ad6d966d0ee6074d70e') ||
       verified.windowId !==
-        (forwardWindow && verifiedCheckpoint.managementMaximum === 640
+        (forwardWindow && [640, 704].includes(verifiedCheckpoint.managementMaximum)
           ? foundationProjectVerifiedActiveRuntime.windowId
           : forwardWindow
             ? '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
