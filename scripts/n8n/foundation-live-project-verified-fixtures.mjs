@@ -1,5 +1,13 @@
 // Complete isolated synthetic authority fixture. Never imports or reads actual journals.
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync, realpathSync } from 'node:fs';
+import {
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+  realpathSync,
+  existsSync,
+} from 'node:fs';
 import { join, dirname, relative, isAbsolute } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -15,6 +23,7 @@ export async function syntheticProjectVerifiedContinuation({
   historicalSetupEvents,
   technical16Settled = false,
   technical16CleanupRequests = 85,
+  technical16CleanupRetry = null,
   technical16Fault,
   unadmittedWf00Reconciled = technical16Settled,
   unadmittedWf00Fault,
@@ -2977,13 +2986,58 @@ export async function syntheticProjectVerifiedContinuation({
       r.rawWrapperClose,
     ]);
     put(e + 'technical16-wf00-dispatch-ui-20261024.png', Buffer.from('synthetic public PNG bytes'));
+    const db16Stem =
+        'scripts/db/out/m03-foundation-project-verified-continuation-' +
+        snapshot.proposedSegmentId +
+        '-technical-16',
+      db16Paths = new Set([
+        db16Stem + '-latest.json',
+        db16Stem + '-owner-provision-attempt.json',
+        db16Stem + '-reactivation-attempt.json',
+      ]),
+      db16RunId = '3412e032-4833-43c9-9342-19ea25d50275';
+    put(
+      db16Stem + '-latest.json',
+      json({
+        runId: db16RunId,
+        status: 'continuation_history_verified',
+        historyBefore: 'complete',
+        historyAfter: 'complete',
+        pushAttempted: false,
+        phaseAClosed: true,
+        reactivationState: 'acknowledged_and_verified',
+      }),
+    );
+    put(
+      db16Stem + '-owner-provision-attempt.json',
+      json({
+        runId: db16RunId,
+        windowId: r.attempt.windowId,
+        packet: {
+          audience: 'https://everyone-market-researcher-13wnnoywv-muhammed-abdelrahman.vercel.app',
+          commitSha: r.source.applicationSource,
+          deploymentId: 'dpl_Hqcn7hxpuEUz6Bbq9tTtmQs5MdYd',
+        },
+      }),
+    );
+    put(
+      db16Stem + '-reactivation-attempt.json',
+      json({
+        kind: 'synthetic_owned_reactivation_receipt',
+        windowId: r.attempt.windowId,
+        state: 'acknowledged_and_verified',
+      }),
+    );
     for (const path of Object.keys(r.pins)) r.pins[path] = digest(readFileSync(join(directory, path)));
     if (technical16Fault === 'raw-closure') r.rawRestore.remoteWorkSettled = true;
     if (technical16Fault === 'native-reset') r.usage.nativeExecutionsReserved = 0;
     const rText = json(r);
     put(relative, rText);
+    z.attemptReceiptSha256 = digest(rText);
+    custody.originalAttemptSha256 = digest(rText);
+    custody.localCleanupSha256 = digest(json(z));
     for (const path of Object.keys(custody.pins)) {
-      if (path === l + 'runtime.technical-16.jsonl') continue;
+      if (path === l + 'runtime.technical-16.jsonl' || db16Paths.has(path)) continue;
       put(path, path.endsWith('.ts') ? 'synthetic retained types\n' : json({ syntheticPublicRecord: path }));
     }
     for (const path of Object.keys(custody.pins))
@@ -3055,7 +3109,21 @@ export async function syntheticProjectVerifiedContinuation({
       oldJournal = 'scripts/n8n/out/foundation/technical16-native-cleanup.jsonl',
       oldSeal = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.provision-seal.json',
       oldLock = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.runtime-lock';
-    put(oldOnce, json({ kind: 'm03_technical16_cleanup_once', resolutionSha256: digest(resolutionText) }));
+    put(
+      oldOnce,
+      json({
+        kind: 'm03_technical16_cleanup_once',
+        version: 1,
+        resolutionSha256: digest(resolutionText),
+        executionIds: ['31131', '31130'],
+        maximumRequests: 158,
+        maximumControlRequests: 158,
+        processId: failed.cleanup.childProcessId,
+        parentProcessId: failed.cleanup.parentProcessId,
+        usage: { management: 829, control: 960, combined: 1789, vercel: 184 },
+        at: '2026-10-24T21:00:00.000Z',
+      }),
+    );
     put(
       oldJournal,
       json({
@@ -3075,14 +3143,211 @@ export async function syntheticProjectVerifiedContinuation({
     failed.pins['scripts/n8n/out/foundation/live/runtime.operation.lock'] = digest(load(oldLock));
     const failedText = json(failed);
     put(failedRelative, failedText);
-    const cleanupBase = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2',
-      continuation = {
-        cleanupAttempt: 2,
-        priorFailedAttemptSha256: digest(failedText),
-        priorOnceSha256: digest(load(oldOnce)),
-        priorJournalSha256: digest(load(oldJournal)),
+    const priorPinPaths = [failedRelative, oldOnce, oldJournal, oldSeal, oldLock],
+      spent = [failed];
+    let previousFailedPath = failedRelative,
+      previousOncePath = oldOnce,
+      previousJournalPath = oldJournal;
+    for (let attempt = 2; attempt <= 6; attempt++) {
+      const path = e + `technical16-native-cleanup-attempt${attempt}-20261024.json`,
+        value = readTracked(path),
+        stem = `scripts/n8n/out/foundation/technical16-native-cleanup-attempt${attempt}`,
+        oncePath = stem + '.json',
+        journalPath = stem + '.jsonl',
+        resultPath = stem + '-result.json',
+        sealPath = stem + '.provision-seal.json',
+        lockPath = stem + '.runtime-lock',
+        baseUsage = [
+          [829, 960, 1789],
+          [833, 964, 1797],
+          [837, 968, 1805],
+          [863, 994, 1857],
+          [874, 1005, 1879],
+        ][attempt - 2],
+        count = [4, 4, 25, 11, 2][attempt - 2],
+        nextOnce = {
+          kind: 'm03_technical16_cleanup_once',
+          version: 1,
+          cleanupAttempt: attempt,
+          priorFailedAttemptSha256: digest(load(previousFailedPath)),
+          priorOnceSha256: digest(load(previousOncePath)),
+          priorJournalSha256: digest(load(previousJournalPath)),
+          resolutionSha256: digest(resolutionText),
+          executionIds: ['31131', '31130'],
+          processId: 91080 + attempt,
+          parentProcessId: 92080 + attempt,
+          usage: {
+            ...resolution.usage,
+            management: baseUsage[0],
+            control: baseUsage[1],
+            combined: baseUsage[2],
+          },
+          maximumRequests: [158, 4, 150, 124, 113][attempt - 2],
+          maximumControlRequests: [158, 4, 150, 124, 113][attempt - 2],
+          ...(attempt === 3 ? { qualificationOnly: true } : {}),
+          at: '2026-10-24T21:00:00.000Z',
+        },
+        nextRows = [
+          {
+            event: 'technical16_cleanup_header',
+            version: 1,
+            resolutionSha256: digest(resolutionText),
+            originalAttemptSha256: digest(rText),
+            cleanupAttempt: attempt,
+            priorFailedAttemptSha256: nextOnce.priorFailedAttemptSha256,
+            priorOnceSha256: nextOnce.priorOnceSha256,
+            priorJournalSha256: nextOnce.priorJournalSha256,
+          },
+        ];
+      for (let index = 0; index < count; index++) {
+        const retry = attempt === 6 && index === 1,
+          prefix = index < 4,
+          root = index < 2;
+        nextRows.push({
+          event: 'technical16_http_intent',
+          ordinal: index + 1,
+          ...(retry ? { retryOf: 1 } : {}),
+          kind: attempt === 6 ? 'metadata' : prefix ? (index % 2 === 0 ? 'metadata' : 'full') : 'discovery',
+          workflowId:
+            attempt === 6
+              ? bindings.workflowRefs['WF-00'].id
+              : prefix
+                ? bindings.workflowRefs[root ? 'WF-00' : 'WF-10'].id
+                : baseline[Math.floor((index - 4) / 2)].id,
+          ...(prefix || attempt === 6 ? { executionId: attempt === 6 || root ? '31130' : '31131' } : {}),
+          managementAttempts: baseUsage[0] + index + 1,
+          controlAttempts: baseUsage[1] + index + 1,
+          at: '2026-10-24T21:00:01.000Z',
+        });
+      }
+      value.originalAttemptSha256 = digest(rText);
+      value.resolutionSha256 = digest(resolutionText);
+      value.priorFailedAttemptSha256 = nextOnce.priorFailedAttemptSha256;
+      value.cleanup.childProcessId = nextOnce.processId;
+      value.cleanup.parentProcessId = nextOnce.parentProcessId;
+      put(oncePath, json(nextOnce));
+      writeRows(journalPath, nextRows);
+      const inner = Object.fromEntries(
+        Object.entries(value.rawResult).filter(
+          ([key]) =>
+            ![
+              'nativeExit',
+              'childClosed',
+              'credentialChildrenClosed',
+              'parentLockDeleted',
+              'privateRead',
+              'persistentManagementRetained',
+            ].includes(key),
+        ),
+      );
+      put(resultPath, json(inner));
+      put(sealPath, json({ version: 2, syntheticRetainedUsedSeal: attempt }));
+      put(lockPath, 'emr-m03-foundation-live-runtime-v1\n');
+      for (const pin of Object.keys(value.pins))
+        if (existsSync(join(directory, pin))) value.pins[pin] = digest(readFileSync(join(directory, pin)));
+      value.pins[oncePath] = digest(load(oncePath));
+      value.pins[journalPath] = digest(load(journalPath));
+      value.pins[resultPath] = digest(load(resultPath));
+      value.pins[sealPath] = digest(load(sealPath));
+      if (technical16Fault === 'spent-closure' && attempt === 6) value.rawResult.remoteWorkSettled = true;
+      if (technical16Fault === 'spent-counter' && attempt === 5) value.usage.management = 1;
+      if (technical16Fault === 'prior-chain' && attempt === 6)
+        nextOnce.priorFailedAttemptSha256 = 'f'.repeat(64);
+      if (technical16Fault === 'prior-chain' && attempt === 6) {
+        put(oncePath, json(nextOnce));
+        value.pins[oncePath] = digest(load(oncePath));
+      }
+      put(path, json(value));
+      priorPinPaths.push(path, oncePath, journalPath, resultPath, sealPath, lockPath);
+      spent.push(value);
+      previousFailedPath = path;
+      previousOncePath = oncePath;
+      previousJournalPath = journalPath;
+    }
+    const wf32Path = e + 'technical16-wf32-discovery-readback-20261024.json',
+      wf32 = readTracked(wf32Path),
+      wf32Journal = 'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.jsonl';
+    wf32.priorFailedAttemptSha256 = digest(load(e + 'technical16-native-cleanup-attempt4-20261024.json'));
+    writeRows(wf32Journal, [
+      {
+        kind: 'm03_wf32_discovery_diagnostic_budget',
+        version: 1,
+        failedAttemptSha256: wf32.priorFailedAttemptSha256,
+        managementAttempts: 862,
+        controlAttempts: 993,
+        combinedAttempts: 1855,
+        maximumRequests: 1,
       },
-      usage = { management: 829, control: 960, combined: 1789, vercel: 184 };
+      { event: 'management_attempt', ordinal: 863 },
+      { event: 'native_read_control_reservation', ordinal: 994, additionalHttpRequest: false },
+    ]);
+    for (const path of Object.keys(wf32.pins)) {
+      if (path !== wf32Journal) put(path, json({ syntheticRetainedPublicSeal: path }));
+      wf32.pins[path] = digest(load(path));
+      priorPinPaths.push(path);
+    }
+    put(wf32Path, json(wf32));
+    priorPinPaths.push(wf32Path);
+    const publicPath = e + 'technical16-public-transport-diagnostics-20261024.json',
+      publicValue = readTracked(publicPath),
+      publicPrefix = 'scripts/n8n/out/foundation/technical16-';
+    publicValue.priorFailedAttemptSha256 = digest(load(previousFailedPath));
+    for (const [path, native, m, c] of [
+      [publicPrefix + 'public-transport-diagnostic-20261024.jsonl', false, 876, 1007],
+      [publicPrefix + 'native-public-transport-diagnostic-20261024.jsonl', true, 877, 1008],
+    ]) {
+      writeRows(path, [
+        {
+          kind: native
+            ? 'm03_technical16_native_public_transport_diagnostic_budget'
+            : 'm03_technical16_public_transport_diagnostic_budget',
+          version: 1,
+          checkpointSha256: publicValue.priorFailedAttemptSha256,
+          sourceCommitSha: publicValue.sourceCommitSha,
+          managementAttempts: m,
+          controlAttempts: c,
+          maximumRequests: 1,
+          method: 'GET',
+          route: native ? '/api/v1/executions/31130?includeData=false' : '/api/v1/discover',
+          credentialSupplied: false,
+          ...(native ? { publicConstantHeader: true } : {}),
+          at: '2026-10-24T21:00:00.000Z',
+        },
+        { event: 'management_attempt', ordinal: m + 1, at: '2026-10-24T21:00:00.000Z' },
+        {
+          event: 'native_read_control_reservation',
+          ordinal: c + 1,
+          conservative: true,
+          at: '2026-10-24T21:00:00.000Z',
+        },
+      ]);
+      publicValue.pins[path] = digest(load(path));
+      priorPinPaths.push(path);
+    }
+    for (const [path, value] of [
+      [
+        publicPrefix + 'native-public-transport-diagnostic-20261024-result.json',
+        publicValue.nativePublicHttp,
+      ],
+      [publicPrefix + 'public-tls-timing-20261024.json', publicValue.tlsTiming],
+    ]) {
+      put(path, json(value));
+      publicValue.pins[path] = digest(load(path));
+      priorPinPaths.push(path);
+    }
+    put(publicPath, json(publicValue));
+    priorPinPaths.push(publicPath);
+    const settlementPriorPins = Object.fromEntries(
+      priorPinPaths.map((path) => [path, digest(readFileSync(join(directory, path)))]),
+    );
+    const cleanupBase = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt7',
+      continuation = {
+        cleanupAttempt: 7,
+        priorFailedAttemptSha256: digest(load(previousFailedPath)),
+        priorOnceSha256: digest(load(previousOncePath)),
+        priorJournalSha256: digest(load(previousJournalPath)),
+      },
+      usage = { management: 878, control: 1009, combined: 1887, vercel: 184 };
     put(
       cleanupBase + '.json',
       json({
@@ -3093,8 +3358,8 @@ export async function syntheticProjectVerifiedContinuation({
         processId: 91080,
         parentProcessId: 91081,
         usage,
-        maximumRequests: 158,
-        maximumControlRequests: 158,
+        maximumRequests: 109,
+        maximumControlRequests: 109,
         at: '2026-10-24T21:00:00.000Z',
         ...continuation,
       }),
@@ -3111,7 +3376,12 @@ export async function syntheticProjectVerifiedContinuation({
       routes = [];
     for (const record of baseline)
       for (let i = 0; i < 2; i++) routes.push({ kind: 'discovery', workflowId: record.id });
-    for (let i = 0; i < n - 85; i++) routes.push({ kind: 'discovery', workflowId: baseline[i % 25].id });
+    for (
+      let i = 0;
+      i < n - 85 - (technical16CleanupRetry === null ? 0 : technical16Fault === 'retry-chain' ? 2 : 1);
+      i++
+    )
+      routes.push({ kind: 'discovery', workflowId: baseline[i % 25].id });
     for (const record of baseline) routes.push({ kind: 'workflow', workflowId: record.id });
     for (const id of ['31130', '31131'])
       for (const kind of ['metadata', 'full', 'metadata'])
@@ -3126,11 +3396,19 @@ export async function syntheticProjectVerifiedContinuation({
         event: 'technical16_http_intent',
         ordinal: ++httpOrdinal,
         ...route,
-        managementAttempts: 829 + httpOrdinal,
-        controlAttempts: 960 + httpOrdinal,
+        managementAttempts: 878 + httpOrdinal,
+        controlAttempts: 1009 + httpOrdinal,
         at: '2026-10-24T21:00:01.000Z',
       });
-    routes.forEach(addHttp);
+    let retryAdded = false;
+    for (const route of routes) {
+      addHttp(route);
+      if (!retryAdded && route.kind === technical16CleanupRetry) {
+        addHttp({ ...route, retryOf: httpOrdinal });
+        if (technical16Fault === 'retry-chain') addHttp({ ...route, retryOf: httpOrdinal });
+        retryAdded = true;
+      }
+    }
     for (const [id, index] of [
       ['31131', 1],
       ['31130', 2],
@@ -3161,6 +3439,47 @@ export async function syntheticProjectVerifiedContinuation({
     }
     if (technical16Fault === 'ack') cleanupRows.at(-1).deleteAcknowledged = false;
     if (technical16Fault === 'counter') cleanupRows[1].managementAttempts = 1;
+    if (technical16Fault?.startsWith('retry-')) {
+      const retry = cleanupRows.find((row) => Object.hasOwn(row, 'retryOf')),
+        http = cleanupRows.filter((row) => row.event === 'technical16_http_intent');
+      if (!retry) throw Error('SYNTHETIC_RETRY_REQUIRED');
+      switch (technical16Fault) {
+        case 'retry-string':
+          retry.retryOf = String(retry.retryOf);
+          break;
+        case 'retry-zero':
+          retry.retryOf = 0;
+          break;
+        case 'retry-future':
+          retry.retryOf = retry.ordinal;
+          break;
+        case 'retry-skip':
+          retry.retryOf = retry.ordinal - 2;
+          break;
+        case 'retry-kind':
+          retry.kind = 'full';
+          break;
+        case 'retry-workflow':
+          retry.workflowId = baseline.find((row) => row.id !== retry.workflowId).id;
+          break;
+        case 'retry-execution':
+          retry.executionId = '31131';
+          break;
+        case 'retry-delete':
+          http.find((row) => row.kind === 'delete').retryOf = 1;
+          break;
+        case 'retry-absence':
+          http.find((row) => row.kind === 'absence').retryOf = 1;
+          break;
+        case 'retry-non-http':
+          cleanupRows.find((row) => row.event === 'native_cleanup_evidence').retryOf = 1;
+          break;
+        case 'retry-chain':
+          break;
+        default:
+          throw Error('SYNTHETIC_RETRY_FAULT_UNKNOWN');
+      }
+    }
     writeRows(cleanupBase + '.jsonl', cleanupRows);
     const inner = {
       kind: 'm03_technical16_native_cleanup',
@@ -3172,9 +3491,9 @@ export async function syntheticProjectVerifiedContinuation({
       status: 'native_cleanup_verified',
       requestCount: n,
       controlRequestCount: n,
-      managementAttempts: 829 + n,
-      controlAttempts: 960 + n,
-      combinedAttempts: 1789 + 2 * n,
+      managementAttempts: 878 + n,
+      controlAttempts: 1009 + n,
+      combinedAttempts: 1887 + 2 * n,
       canonicalWorkflowsVerified: 25,
       qualifiedSideEffects: true,
       recordsDeleted: 2,
@@ -3225,9 +3544,9 @@ export async function syntheticProjectVerifiedContinuation({
       },
       pins: {},
       usage: {
-        management: 829 + n,
-        control: 960 + n,
-        combined: 1789 + 2 * n,
+        management: 878 + n,
+        control: 1009 + n,
+        combined: 1887 + 2 * n,
         vercel: 184,
         nativeExecutionsReserved: 3,
         actorStarts: 0,
@@ -3237,17 +3556,14 @@ export async function syntheticProjectVerifiedContinuation({
     for (const path of [
       relative,
       resolutionRelative,
-      failedRelative,
-      oldOnce,
-      oldJournal,
-      oldSeal,
-      oldLock,
+      ...priorPinPaths,
       cleanupBase + '.json',
       cleanupBase + '.jsonl',
       cleanupBase + '-result.json',
     ])
       settlement.pins[path] = digest(readFileSync(join(directory, path)));
     if (technical16Fault === 'acceptance') settlement.rawResult.nativeAcceptanceProven = true;
+    if (technical16Fault === 'typed-closure') settlement.rawResult.childClosed = 'true';
     const settlementText = json(settlement);
     put(settlementRelative, settlementText);
     const rawArchive = readTracked(e + 'technical16-postclose-db-readback-20261024.json').rawResult;
@@ -3312,6 +3628,7 @@ export async function syntheticProjectVerifiedContinuation({
       resolutionSha256: digest(resolutionText),
       failedCleanupRelative: failedRelative,
       failedCleanupSha256: digest(failedText),
+      settlementPriorPins,
       settlementRelative,
       settlementSha256: digest(settlementText),
       archiveRelative,

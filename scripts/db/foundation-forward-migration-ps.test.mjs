@@ -28,7 +28,7 @@ foreach($name in @(${[...new Set([...(file.endsWith('Foundation-AdminControl.ps1
  $functions=@($ast.FindAll({param($item) $item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true))
  if($functions.Count -ne 1){throw 'EXPECTED_FUNCTION_MISSING'};Invoke-Expression $functions[0].Extent.Text
 }`;
-function run(code) {
+function run(code, timeout = 15000) {
   const directory = mkdtempSync(join(tmpdir(), 'emr-forward-ps-'));
   try {
     const file = join(directory, 'synthetic.ps1');
@@ -41,7 +41,7 @@ function run(code) {
       ),
       windowsHide: true,
       encoding: 'utf8',
-      timeout: 15000,
+      timeout,
     });
     assert.equal(result.status, 0, result.stdout + result.stderr);
     assert.equal(result.stderr, '');
@@ -59,8 +59,8 @@ test(
   'technical16 archive requires a separately pinned typed native settlement and exact durable deletion accounting',
   native,
   () => {
-    // Synthetic validator contract only. The real consumer's settlement pin stays
-    // null, and no live qualification, receipt, credential or database is created.
+    // Synthetic validator contract only. The real settlement pin cannot authorize
+    // this fixture; no live qualification, credential or database is created.
     const directory = mkdtempSync(join(tmpdir(), 'emr-technical16-settlement-'));
     const digest = (bytes) => createHash('sha256').update(bytes).digest('hex');
     const put = (path, value) => {
@@ -74,15 +74,122 @@ test(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-reconciliation-20261024.json';
     const resolution =
       'milestones/M03-n8n-foundation/evidence/technical16-executed-parameters-resolution-20261024.json';
-    const attempt = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt.json';
-    const journal = 'scripts/n8n/out/foundation/technical16-native-cleanup.jsonl';
-    const result = 'scripts/n8n/out/foundation/technical16-native-cleanup-result.json';
+    const attempt = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt7.json';
+    const journal = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt7.jsonl';
+    const result = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt7-result.json';
+    const failed = 'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt1-20261024.json';
+    const oldOnce = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt.json';
+    const oldJournal = 'scripts/n8n/out/foundation/technical16-native-cleanup.jsonl';
+    const oldSeal = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.provision-seal.json';
+    const oldLock = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.runtime-lock';
+    const priorFailed = [
+      ...[2, 3, 4, 5, 6].flatMap((ordinal) => [
+        `milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt${ordinal}-20261024.json`,
+        ...['.json', '.jsonl', '-result.json', '.provision-seal.json', '.runtime-lock'].map(
+          (suffix) => `scripts/n8n/out/foundation/technical16-native-cleanup-attempt${ordinal}${suffix}`,
+        ),
+      ]),
+    ];
+    const probePins = {
+      'milestones/M03-n8n-foundation/evidence/technical16-wf32-discovery-readback-20261024.json':
+        '9a6463326e06719dc0a4123145df96f49ebcf9f4125be81f727f496f5f635c39',
+      'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.jsonl':
+        '54f2981b2d0faaa4b71793de2d5eaa59d22161657a449c4244ad3ceddbdb10f2',
+      'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.inventory-seal.json':
+        '985fb551e12a66e106c267a2fd43e4fb8a15194d76f50fd35d828c2474809cc4',
+      'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.foundation-seal.json':
+        '12575579756a116397b7e0249e7ed37d99398fe7fd211056ac2007b885b8387e',
+      'milestones/M03-n8n-foundation/evidence/technical16-public-transport-diagnostics-20261024.json':
+        '6185e8af680ebd245a63b33e5fbd8390bd6804e71a994d9fe30db190016789bc',
+      'scripts/n8n/out/foundation/technical16-public-transport-diagnostic-20261024.jsonl':
+        'db7a307dff3cf2b357bdacdba093614f75a7d371f064ae630ca40f384693b797',
+      'scripts/n8n/out/foundation/technical16-native-public-transport-diagnostic-20261024.jsonl':
+        '693802c29a5ce12e3ca290e4c80ea3d0d0790394e24eb93e1629c3e9d7100767',
+      'scripts/n8n/out/foundation/technical16-native-public-transport-diagnostic-20261024-result.json':
+        '822d47f80da7e71ca512463d69fbf6f358f5d45a21a245cb2f8d00d0fcffd287',
+      'scripts/n8n/out/foundation/technical16-public-tls-timing-20261024.json':
+        'd33f411b5cf69f3b95bb96b0178b721946672530f05c3ec10a632b8b0b01dd2b',
+    };
+    const actualPrior = {
+      [failed]: '4f0697080d9bd1ff728b48d9c159f4cbe6f61ebaa04d19ec295da14c3e297960',
+      [oldOnce]: '1e165ea75442200af05e57206c32cd0edc07c248571a1405ae8025e31588e66e',
+      [oldJournal]: '4fccea19e19a162ca2d7b912c200a0cb1fc857b9ea54d4bdf5b6f97f76dd71d7',
+      [oldSeal]: '9aade5d3ae4c4a0a3aace8da74c38e3b0c9f1da672d7187c7ff1b14aeee9ca1b',
+      [oldLock]: 'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+      ...Object.fromEntries(
+        priorFailed.map((path, index) => [
+          path,
+          [
+            '5b2f8e590876f37d89aad2a35151e07489c4601111af09c27b01268f43df0c57',
+            '86e74f0c574384e33c28721b345899476d198d49e91501c3f37d8a27f9361639',
+            'bac9e865ea04c6f083dc836e2e71e0cd37a58dc542a5f03af7ed06767b66ee17',
+            'efa7b2812baf34f520eac9bea4337b5197bfc680244acaaabe6fcead8a55c137',
+            '45a924660d94d87a5fc9eab45307c550a74288b6556873633c39b571c37b62be',
+            'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+            '886da0004471f526d0767c3e60a5c1474bb38f439f022ab3edd162efdeb412ae',
+            '6319abe719e5fb40d0e77e83376ef39a625c341e9195f055255b435029016a61',
+            '0e6c97a10ee2aca0c1171f09a63dcc4b536a8df58e3061cb804d7fac98ab6f27',
+            '5609476a03848f524398f3e72ca614d1a5e6390cc8b9e287ac1bc9ff95c972c5',
+            '0e7051051f4e605b42da8da40261237f9682f492860d1c05ace19a5b79b90af5',
+            'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+            '68fecd32ceda855b5f522bf9448f5fa94c1411dc4bd4950ea6d7a3979602bc72',
+            '9c5a07ff9c23ebf14cabf96c245ec8fe4d0eeca4a2b13c2c50e918a90a84b7de',
+            '76d3b6b1fa4367e9a2ecfa79eab0fd4f2dbfd26402f8bd224a0945541aa7f62d',
+            '7c4f4923a985842d4286c603810449c08ec305a7a0c721a689b9e040cd739ebf',
+            '41a6afc82524105adb2f522c78abc63a9e6dddcec4898969d11facefe193cab7',
+            'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+            '7aa4ab07f9be3f837a49cbc69dbedc2c19720493740e05157ff852b9161ced55',
+            'ab3ad645c29b1d21db2a1df3b9f5b968b8c0c6774a2f79a0eabeabf70ffa36bb',
+            '8c3e54a720e0d9488a7e8026c88c95103430d790d9cb5caecd71cbf018a2b970',
+            '199e4499e30e362a5a72048846e782dd08a25afb444bd43aaf9467ffeb38d02a',
+            '968943a6f5de2322a48ab6cbfe514d6a80e750ea0356978448d82b843e50dfc3',
+            'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+            '1bf2243210b417b8ea7d2ed360adc3c026796a57271c7488f664acc145673a7d',
+            '2a814ff7c93f2734322796b1214c806cdd8580420933de52f44862024fb54927',
+            '59a30c4ec18a34c2c49773a61534e4e2149d4bdc73bf8fd45976b06eb7d801e4',
+            '85982e616aaac3b37654e70e4c562410e44449ed65944a6d93aacae4c369cc19',
+            '162ae09e991e6a18b8c6969663e0c9f71d1b7d7661ba7dc10ec1d41f9f8e7d22',
+            'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+          ][index],
+        ]),
+      ),
+      ...probePins,
+    };
     const settlement = 'milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json';
+    const settlementPinDeclaration = readFileSync(consumer, 'utf8').match(
+      /\$settlementSha256=(?:\$null|'[a-f0-9]{64}')/,
+    )?.[0];
+    assert.ok(settlementPinDeclaration);
     const source = '5087d4d93d2f6ffdca0bc0096b365723005446fc';
     const windowId = '4c602549-2c42-4ec3-9328-714d7cb66a77';
     try {
       const originalSha = put(original, '{}\n'),
         resolutionSha = put(resolution, '{"synthetic":true}\n');
+      const prior = {
+        [failed]: put(failed, { synthetic: 'failed-entry' }),
+        [oldOnce]: put(oldOnce, { synthetic: 'once1' }),
+        [oldJournal]: put(oldJournal, { event: 'technical16_cleanup_header', version: 1 }),
+        [oldSeal]: put(oldSeal, { synthetic: 'seal1' }),
+        [oldLock]: put(oldLock, 'emr-m03-foundation-live-runtime-v1\n'),
+      };
+      for (const path of priorFailed)
+        prior[path] = put(
+          path,
+          path.endsWith('.runtime-lock') ? 'emr-m03-foundation-live-runtime-v1\n' : { synthetic: path },
+        );
+      for (const path of Object.keys(probePins)) prior[path] = put(path, { synthetic: path });
+      const sixthFailed = priorFailed[24],
+        sixthOnce = priorFailed[25],
+        sixthJournal = priorFailed[26];
+      const continuation = {
+        cleanupAttempt: 7,
+        priorFailedAttemptSha256: prior[sixthFailed],
+        priorOnceSha256: prior[sixthOnce],
+        priorJournalSha256: prior[sixthJournal],
+      };
+      const substitutePriorPins = Object.entries(actualPrior)
+        .map(([path, hash]) => `.Replace('${hash}','${prior[path]}')`)
+        .join('');
       const bindings = readFileSync('n8n/foundation/bindings.dev.json');
       put('n8n/foundation/bindings.dev.json', bindings.toString());
       const ids = Object.values(JSON.parse(bindings).workflowRefs).map((row) => row.id);
@@ -94,8 +201,8 @@ test(
           kind,
           workflowId,
           ...(executionId ? { executionId } : {}),
-          managementAttempts: 830 + requests.length,
-          controlAttempts: 961 + requests.length,
+          managementAttempts: 879 + requests.length,
+          controlAttempts: 1010 + requests.length,
           at: '2026-10-24T18:00:00.000Z',
         });
       for (const [id, wf] of [
@@ -118,6 +225,7 @@ test(
           version: 1,
           resolutionSha256: resolutionSha,
           originalAttemptSha256: originalSha,
+          ...continuation,
         },
         ...requests,
       ];
@@ -173,9 +281,9 @@ test(
         status: 'native_cleanup_verified',
         requestCount: n,
         controlRequestCount: n,
-        managementAttempts: 829 + n,
-        controlAttempts: 960 + n,
-        combinedAttempts: 1789 + 2 * n,
+        managementAttempts: 878 + n,
+        controlAttempts: 1009 + n,
+        combinedAttempts: 1887 + 2 * n,
         canonicalWorkflowsVerified: 25,
         qualifiedSideEffects: true,
         recordsDeleted: 2,
@@ -195,32 +303,35 @@ test(
         diagnosticCode: 'none',
       };
       const usage = {
-        management: 829 + n,
-        control: 960 + n,
-        combined: 1789 + 2 * n,
+        management: 878 + n,
+        control: 1009 + n,
+        combined: 1887 + 2 * n,
         vercel: 184,
         nativeExecutionsReserved: 3,
         actorStarts: 0,
         providerReads: 0,
       };
       const pins = {
+        ...prior,
         [original]: originalSha,
         [resolution]: resolutionSha,
         [attempt]: put(attempt, {
           kind: 'm03_technical16_cleanup_once',
           version: 1,
+          ...continuation,
           resolutionSha256: resolutionSha,
           executionIds: ['31131', '31130'],
           processId: 111,
           parentProcessId: 222,
-          usage: { management: 829, control: 960, combined: 1789 },
-          maximumRequests: 158,
-          maximumControlRequests: 158,
+          usage: { management: 878, control: 1009, combined: 1887 },
+          maximumRequests: 109,
+          maximumControlRequests: 109,
           at: '2026-10-24T18:00:00.000Z',
         }),
         [journal]: put(journal, rows.map((row) => JSON.stringify(row) + '\n').join('')),
         [result]: put(result, inner),
       };
+      assert.equal(Object.keys(pins).length, 49);
       put(settlement, {
         kind: 'm03_technical16_native_settlement',
         version: 1,
@@ -254,37 +365,109 @@ test(
         usage,
       });
       assert.equal(
-        run(`
+        run(
+          `
 ${definitions(['Assert-Keys', 'Assert-Path', 'File-Hash', 'Read-Json', 'Assert-FoundationTechnical16Settled'])}
 $repo=${quote(directory)};$projectRef='zmotjsbzhzjvpelxvxlf';$script:liveParent=$false
 function Get-CimInstance{if($script:liveParent){return @([pscustomobject]@{ProcessId=111})};return @()}
 $expected=[pscustomobject]@{id='${windowId}';commitSha='${source}'}
-$denied=$false;try{$null=Assert-FoundationTechnical16Settled $expected}catch{$denied=$true};if(-not $denied){throw 'NULL_REAL_PIN_GRANTED'}
-$fn=(Get-Command Assert-FoundationTechnical16Settled).ScriptBlock.ToString().Replace('$settlementSha256=$null','$settlementSha256=$script:syntheticSettlementSha').Replace('d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb','${originalSha}').Replace('e0c919ab2a12aa9306be3d2b3656b7d0c43d97c21ddc6376ffa12bbfbb89d07b','${resolutionSha}')
+$denied=$false;try{$null=Assert-FoundationTechnical16Settled $expected}catch{$denied=$true};if(-not $denied){throw 'REAL_PIN_AUTHORIZED_SYNTHETIC_FIXTURE'}
+$fn=(Get-Command Assert-FoundationTechnical16Settled).ScriptBlock.ToString().Replace(${quote(settlementPinDeclaration)},'$settlementSha256=$script:syntheticSettlementSha').Replace('d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb','${originalSha}').Replace('e0c919ab2a12aa9306be3d2b3656b7d0c43d97c21ddc6376ffa12bbfbb89d07b','${resolutionSha}')${substitutePriorPins}
 Set-Item -Path Function:Assert-FoundationTechnical16Settled -Value ([scriptblock]::Create($fn))
 $file=Join-Path $repo ${quote(settlement)};$original=Read-Json $file;$journal=Join-Path $repo ${quote(journal)};$saved=[IO.File]::ReadAllText($journal)
+$oncePath=Join-Path $repo ${quote(attempt)};$savedOnce=[IO.File]::ReadAllText($oncePath)
+$resultPath=Join-Path $repo ${quote(result)};$savedInner=[IO.File]::ReadAllText($resultPath)
 function Persist($v){[IO.File]::WriteAllText($file,($v|ConvertTo-Json -Depth 30 -Compress)+[char]10,[Text.UTF8Encoding]::new($false));$script:syntheticSettlementSha=File-Hash $file}
+function Add-Retry($r,[string]$Kind,[string]$WorkflowId=''){
+ $previous=@($r|Where-Object{$_.event -ceq 'technical16_http_intent' -and $_.kind -ceq $Kind -and ($WorkflowId -ceq '' -or $_.workflowId -ceq $WorkflowId)})[0];$index=[array]::IndexOf($r,$previous)
+ $copy=$previous|ConvertTo-Json -Depth 12|ConvertFrom-Json;$copy|Add-Member NoteProperty retryOf 0
+ return @($r[0..$index])+@($copy)+@($r[($index+1)..($r.Count-1)])
+}
+function Set-CoherentJournal($v,$r,[bool]$Relink=$true){
+ $http=@($r|Where-Object{$_.event -ceq 'technical16_http_intent'})
+ for($i=0;$i -lt $http.Count;$i++){$http[$i].ordinal=$i+1;$http[$i].managementAttempts=879+$i;$http[$i].controlAttempts=1010+$i;if($Relink -and $null -ne $http[$i].PSObject.Properties['retryOf']){$http[$i].retryOf=$i}}
+ $count=$http.Count;$v.rawResult.requestCount=$count;$v.rawResult.controlRequestCount=$count;$v.rawResult.managementAttempts=878+$count;$v.rawResult.controlAttempts=1009+$count;$v.rawResult.combinedAttempts=1887+2*$count
+ $v.usage.management=$v.rawResult.managementAttempts;$v.usage.control=$v.rawResult.controlAttempts;$v.usage.combined=$v.rawResult.combinedAttempts
+ $inner=ConvertFrom-Json $savedInner;foreach($key in @('requestCount','controlRequestCount','managementAttempts','controlAttempts','combinedAttempts')){$inner.$key=$v.rawResult.$key}
+ [IO.File]::WriteAllText($resultPath,($inner|ConvertTo-Json -Depth 12 -Compress)+[char]10,[Text.UTF8Encoding]::new($false));$v.pins.${quote(result)}=File-Hash $resultPath
+ [IO.File]::WriteAllText($journal,(($r|ForEach-Object{$_|ConvertTo-Json -Depth 12 -Compress}) -join [char]10)+[char]10,[Text.UTF8Encoding]::new($false));$v.pins.${quote(journal)}=File-Hash $journal
+}
 Persist $original;$verified=Assert-FoundationTechnical16Settled $expected;if($verified.rawResult.recordsDeleted -ne 2){throw 'TYPED_FIXTURE_FAILED'}
-foreach($fault in @('kindArray','outerType','nativeExit','requestType','wrongCount','acceptance','masked','childOpen','noParentCleanup','noManagement','notSettled','missingAck','missingAbsence','recordsOne','wrongSource','wrongIds','extraPin','wrongPin','journalDrift','ordinalDrift','foreignWorkflow','duplicateDelete','incompleteCanonical','lostAck','liveParent','wrongUsage')){
+foreach($kinds in @(@('metadata'),@('full','workflow','discovery'))){
+ $v=$original|ConvertTo-Json -Depth 30|ConvertFrom-Json;$r=@($saved.TrimEnd([char]10) -split [char]10|ForEach-Object{ConvertFrom-Json $_})
+ foreach($kind in $kinds){$r=Add-Retry $r $kind}
+ Set-CoherentJournal $v $r;Persist $v;$verified=Assert-FoundationTechnical16Settled $expected
+ if($verified.rawResult.requestCount -ne 85+$kinds.Count -or $verified.usage.management -ne 963+$kinds.Count){throw 'RETRY_CHARGE_COALESCED'}
+}
+$v=$original|ConvertTo-Json -Depth 30|ConvertFrom-Json;$r=@($saved.TrimEnd([char]10) -split [char]10|ForEach-Object{ConvertFrom-Json $_})
+foreach($id in @((Read-Json (Join-Path $repo 'n8n/foundation/bindings.dev.json')).workflowRefs.PSObject.Properties|ForEach-Object{$_.Value.id}|Select-Object -First 21)){$r=Add-Retry $r 'workflow' $id}
+$r=Add-Retry $r 'metadata' 'MzimjpsuyPuK7SKe';$r=Add-Retry $r 'metadata' '4JMHLDBSdgGxhPlk';$r=Add-Retry $r 'full' 'MzimjpsuyPuK7SKe'
+Set-CoherentJournal $v $r;Persist $v;$verified=Assert-FoundationTechnical16Settled $expected;if($verified.rawResult.requestCount -ne 109 -or $verified.usage.management -ne 987 -or $verified.usage.control -ne 1118 -or $verified.usage.combined -ne 2105){throw 'MAXIMUM_RAW_RETRY_CHARGES_CHANGED'}
+$r=Add-Retry $r 'full' '4JMHLDBSdgGxhPlk';Set-CoherentJournal $v $r;Persist $v;$denied=$false;try{$null=Assert-FoundationTechnical16Settled $expected}catch{$denied=$true};if(-not $denied){throw 'RAW_REQUEST_110_ACCEPTED'}
+foreach($missing in @(${[...priorFailed.slice(24), ...Object.keys(probePins).slice(4)].map(quote).join(',')})){
+ $v=$original|ConvertTo-Json -Depth 30|ConvertFrom-Json
+ [IO.File]::WriteAllText($journal,$saved,[Text.UTF8Encoding]::new($false));[IO.File]::WriteAllText($resultPath,$savedInner,[Text.UTF8Encoding]::new($false));[IO.File]::WriteAllText($oncePath,$savedOnce,[Text.UTF8Encoding]::new($false))
+ $v.pins.PSObject.Properties.Remove($missing);Persist $v
+ $denied=$false;try{$null=Assert-FoundationTechnical16Settled $expected}catch{$denied=$true};if(-not $denied){throw 'NEW_CUSTODY_PIN_OMITTED'}
+}
+foreach($fault in @('kindArray','outerType','nativeExit','requestType','wrongCount','acceptance','masked','childOpen','noParentCleanup','noManagement','notSettled','missingAck','missingAbsence','recordsOne','wrongSource','wrongIds','extraPin','wrongPin','journalDrift','ordinalDrift','foreignWorkflow','duplicateDelete','incompleteCanonical','lostAck','liveParent','wrongUsage','attemptType','priorOnceMismatch','missingFailedPin','headerAttempt','missingSecondPin','missingThirdPin','missingThirdMarker','priorThirdMismatch','refilledMaximum','counterReset','missingFourthPin','missingFourthMarker','missingProbePin','missingProbeJournal','preProbeCounterReset','missingFifthPin','missingFifthMarker','staleFifthBase','staleSixthBase','retryString','retryNull','retryForward','retryOrphan','retryChain','retryKind','retryWorkflow','retryExecution','retryDelete','retryAbsence','retryRefund','retryHeader','retryEvidence')){
  $v=$original|ConvertTo-Json -Depth 30|ConvertFrom-Json;[IO.File]::WriteAllText($journal,$saved,[Text.UTF8Encoding]::new($false));$script:liveParent=$false
+ [IO.File]::WriteAllText($oncePath,$savedOnce,[Text.UTF8Encoding]::new($false))
+ [IO.File]::WriteAllText($resultPath,$savedInner,[Text.UTF8Encoding]::new($false))
  switch($fault){
   'kindArray'{$v.rawResult.kind=@('m03_technical16_native_cleanup')} 'outerType'{$v.outerNativeExit='0'} 'nativeExit'{$v.rawResult.nativeExit=1} 'requestType'{$v.rawResult.requestCount='85'} 'wrongCount'{$v.rawResult.requestCount=84} 'acceptance'{$v.rawResult.nativeAcceptanceProven=$true} 'masked'{$v.rawResult.originalMaskedFirstFailureRecovered=$true}
   'childOpen'{$v.rawResult.childClosed=$false} 'noParentCleanup'{$v.cleanup.parentLockAbsent=$false} 'noManagement'{$v.rawResult.persistentManagementRetained=$false} 'notSettled'{$v.rawResult.remoteWorkSettled=$false} 'missingAck'{$v.rawResult.deleteAcknowledged=$false} 'missingAbsence'{$v.rawResult.absenceVerified=$false} 'recordsOne'{$v.rawResult.recordsDeleted=1} 'wrongSource'{$v.sourceCommitSha='a'*40} 'wrongIds'{$v.windowId='00000000-0000-4000-8000-000000000001'} 'extraPin'{$v.pins|Add-Member NoteProperty unexpected ('a'*64)} 'wrongPin'{$v.pins.${quote(result)}='a'*64} 'journalDrift'{[IO.File]::AppendAllText($journal,'{}'+[char]10)} 'liveParent'{$script:liveParent=$true} 'wrongUsage'{$v.usage.nativeExecutionsReserved=0}
-  {$_ -cin @('ordinalDrift','foreignWorkflow','duplicateDelete','incompleteCanonical','lostAck')} {
+  'missingFailedPin'{$v.pins.PSObject.Properties.Remove(${quote(failed)})}
+  'missingSecondPin'{$v.pins.PSObject.Properties.Remove(${quote(priorFailed[0])})}
+  'missingThirdPin'{$v.pins.PSObject.Properties.Remove(${quote(priorFailed[6])})}
+  'missingThirdMarker'{$v.pins.PSObject.Properties.Remove(${quote(priorFailed[11])})}
+  'missingFourthPin'{$v.pins.PSObject.Properties.Remove(${quote(priorFailed[12])})}
+  'missingFourthMarker'{$v.pins.PSObject.Properties.Remove(${quote(priorFailed[17])})}
+  'missingFifthPin'{$v.pins.PSObject.Properties.Remove(${quote(priorFailed[18])})}
+  'missingFifthMarker'{$v.pins.PSObject.Properties.Remove(${quote(priorFailed[23])})}
+  'missingProbePin'{$v.pins.PSObject.Properties.Remove(${quote(Object.keys(probePins)[0])})}
+  'missingProbeJournal'{$v.pins.PSObject.Properties.Remove(${quote(Object.keys(probePins)[1])})}
+  'preProbeCounterReset'{$v.rawResult.managementAttempts--;$v.rawResult.controlAttempts--;$v.rawResult.combinedAttempts-=2;$v.usage.management--;$v.usage.control--;$v.usage.combined-=2}
+  'counterReset'{$v.rawResult.managementAttempts-=8;$v.rawResult.controlAttempts-=8;$v.rawResult.combinedAttempts-=16;$v.usage.management-=8;$v.usage.control-=8;$v.usage.combined-=16}
+  'staleFifthBase'{$v.rawResult.managementAttempts-=11;$v.rawResult.controlAttempts-=11;$v.rawResult.combinedAttempts-=22;$v.usage.management-=11;$v.usage.control-=11;$v.usage.combined-=22}
+  'staleSixthBase'{$v.rawResult.managementAttempts-=4;$v.rawResult.controlAttempts-=4;$v.rawResult.combinedAttempts-=8;$v.usage.management-=4;$v.usage.control-=4;$v.usage.combined-=8}
+  {$_ -cin @('attemptType','priorOnceMismatch','priorThirdMismatch','refilledMaximum')} {
+   $o=ConvertFrom-Json $savedOnce;if($fault -ceq 'attemptType'){$o.cleanupAttempt='7'}elseif($fault -ceq 'refilledMaximum'){$o.maximumRequests=113;$o.maximumControlRequests=113}elseif($fault -ceq 'priorThirdMismatch'){$o.priorFailedAttemptSha256=$v.pins.${quote(failed)}}else{$o.priorOnceSha256='a'*64}
+   [IO.File]::WriteAllText($oncePath,($o|ConvertTo-Json -Depth 20 -Compress)+[char]10,[Text.UTF8Encoding]::new($false));$v.pins.${quote(attempt)}=File-Hash $oncePath
+  }
+  {$_ -clike 'retry*'} {
+   $r=@($saved.TrimEnd([char]10) -split [char]10|ForEach-Object{ConvertFrom-Json $_})
+   if($fault -ceq 'retryHeader' -or $fault -ceq 'retryEvidence'){$target=if($fault -ceq 'retryHeader'){$r[0]}else{@($r|Where-Object{$_.event -ceq 'native_cleanup_evidence'})[0]};$target|Add-Member NoteProperty retryOf 1;Set-CoherentJournal $v $r}
+   elseif($fault -ceq 'retryDelete' -or $fault -ceq 'retryAbsence'){$kind=if($fault -ceq 'retryDelete'){'delete'}else{'absence'};$r=Add-Retry $r $kind;Set-CoherentJournal $v $r}
+   else{
+    $r=Add-Retry $r 'metadata';Set-CoherentJournal $v $r;$retry=@($r|Where-Object{$null -ne $_.PSObject.Properties['retryOf']})[0]
+    switch($fault){
+     'retryString'{$retry.retryOf=[string]$retry.retryOf} 'retryNull'{$retry.retryOf=$null} 'retryForward'{$retry.retryOf=$retry.ordinal+1} 'retryOrphan'{$r[1]|Add-Member NoteProperty retryOf 0}
+     'retryChain'{$index=[array]::IndexOf($r,$retry);$copy=$retry|ConvertTo-Json -Depth 12|ConvertFrom-Json;$r=@($r[0..$index])+@($copy)+@($r[($index+1)..($r.Count-1)]);Set-CoherentJournal $v $r}
+     'retryKind'{$retry.kind='full'} 'retryWorkflow'{$retry.workflowId='4JMHLDBSdgGxhPlk';$retry.executionId='31131'} 'retryExecution'{$retry.executionId='31131'}
+     'retryRefund'{$v.rawResult.requestCount--;$v.rawResult.controlRequestCount--;$v.rawResult.managementAttempts--;$v.rawResult.controlAttempts--;$v.rawResult.combinedAttempts-=2;$v.usage.management--;$v.usage.control--;$v.usage.combined-=2}
+    }
+    if($fault -cne 'retryRefund'){Set-CoherentJournal $v $r $false}
+   }
+  }
+  {$_ -cin @('ordinalDrift','foreignWorkflow','duplicateDelete','incompleteCanonical','lostAck','headerAttempt')} {
    $r=@($saved.TrimEnd([char]10) -split [char]10|ForEach-Object{ConvertFrom-Json $_})
    if($fault -ceq 'ordinalDrift'){$r[1].ordinal=2}
    if($fault -ceq 'foreignWorkflow'){$r[1].workflowId='foreign'}
    if($fault -ceq 'duplicateDelete'){$r+=($r|Where-Object{$_.event -ceq 'native_cleanup_intent'}|Select-Object -First 1)}
    if($fault -ceq 'incompleteCanonical'){$r=@($r|Where-Object{-not ($_.event -ceq 'technical16_http_intent' -and $_.kind -ceq 'workflow')})}
    if($fault -ceq 'lostAck'){($r|Where-Object{$_.event -ceq 'native_cleanup_result'}|Select-Object -First 1).deleteAcknowledged=$false}
+   if($fault -ceq 'headerAttempt'){$r[0].cleanupAttempt=1}
    [IO.File]::WriteAllText($journal,(($r|ForEach-Object{$_|ConvertTo-Json -Depth 12 -Compress}) -join [char]10)+[char]10,[Text.UTF8Encoding]::new($false));$v.pins.${quote(journal)}=File-Hash $journal
   }
  }
  Persist $v;$denied=$false;try{$null=Assert-FoundationTechnical16Settled $expected}catch{$denied=$true};if(-not $denied){throw ('SETTLEMENT_ACCEPTED_'+$fault)}
 }
-Write-Output 'TYPED_SETTLEMENT_AND26_DENIALS'
-`),
-        'TYPED_SETTLEMENT_AND26_DENIALS',
+Write-Output 'TYPED_SETTLEMENT7_49_PINS_RETRY_CONTRACT'
+`,
+          75000,
+        ),
+        'TYPED_SETTLEMENT7_49_PINS_RETRY_CONTRACT',
       );
     } finally {
       assert.ok(resolve(directory).startsWith(resolve(tmpdir()) + sep));
@@ -292,7 +475,6 @@ Write-Output 'TYPED_SETTLEMENT_AND26_DENIALS'
     }
   },
 );
-
 test(
   'technical16 mode and public-private binding are revalidated before the bounded Admin copy',
   native,
@@ -1391,6 +1573,163 @@ Write-Output 'FOUR_CLOSED_PREDECESSORS_AND_TYPED_AUDITS'
 );
 
 test(
+  'sixth registered window requires five closed predecessors and typed12/13/16 fixture audits',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys', 'Foundation-Technical13AuditPredicate'])}
+${definitions(['Foundation-Literal', 'Assert-FoundationForwardWindowState'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$out='synthetic';$continuationOutputStem='synthetic';$projectVerifiedForwardWindowId='edbc6d11-7c1f-43a7-b745-1ded06deb29f';$projectVerifiedForwardSource='effa3de9e1fee6c3f3c08fc347a5e3175db14c80';$script:ordinal=17;$script:proofValid=$true
+function Read-FoundationForwardPrior{if(-not $script:proofValid){throw 'MISSING_SETTLEMENT_ARCHIVE'};return [pscustomobject]@{window=[pscustomobject]@{closedAt='2026-10-24T16:34:00.000Z'}}}
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=$script:ordinal;outputSegment=('synthetic'+$script:ordinal)}}
+$script:forwardWindowBinding=[pscustomobject]@{audience='https://everyone-market-researcher-synthetic.vercel.app';deploymentId='dpl_Synthetic'}
+$script:value=[pscustomobject]@{identity=$true;legacyClosed=$true;intermediateClosed=$true;runtimeClosed=$true;restorationClosed=$true;acceptanceClosed=$true;fixtureAuditCount=7;technical12Exact=$true;technical13Exact=$true;technical16Exact=$true;windows=5;freshWindows=0;freshPrepared=$false;globalAdmitted=9;requests=4;activeLeases=0;launches=0;bindings=0;progress=0}
+function Invoke-FoundationQuery($Sql,$Column){
+ if($Column -ceq 'ownership'){if(-not $Sql.Contains("where w.window_id='edbc6d11-7c1f-43a7-b745-1ded06deb29f'")){throw 'WRONG_SIXTH_OWNERSHIP'};return [pscustomobject]@{owned=$true}}
+ foreach($needle in @("'acceptanceClosed'","'technical16Exact'","'fixtureAuditCount'","bound_commit_sha='effa3de9e1fee6c3f3c08fc347a5e3175db14c80'","'dpl_Hqcn7hxpuEUz6Bbq9tTtmQs5MdYd'","'2026-10-24T16:34:00.000Z'::timestamptz","jsonb_build_object('fixture_version',1")){if(-not $Sql.Contains($needle)){throw 'SIXTH_PREDECESSOR_OR_AUDIT_NOT_EXACT'}}
+ return $script:value
+}
+Assert-FoundationForwardWindowState $false
+$script:value.windows=6;$script:value.freshWindows=1;$script:value.freshPrepared=$true;Assert-FoundationForwardWindowState $true
+foreach($key in @('legacyClosed','intermediateClosed','runtimeClosed','restorationClosed','acceptanceClosed','technical12Exact','technical13Exact','technical16Exact','freshPrepared')){$script:value.$key=$false;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$true;if(-not $denied){throw 'UNQUALIFIED_SIXTH_PREDECESSOR_ACCEPTED'}}
+$script:value.acceptanceClosed=$null;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.acceptanceClosed=$true;if(-not $denied){throw 'NULL_SIXTH_CLOSURE_ACCEPTED'}
+foreach($key in @('fixtureAuditCount','windows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){$saved=$script:value.$key;$script:value.$key=$saved+1;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$saved;if(-not $denied){throw 'UNRECONCILED_SIXTH_PROGRESS_ACCEPTED'}}
+$script:value.fixtureAuditCount='7';$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'COERCED_SIXTH_AUDITS_ACCEPTED'};$script:value.fixtureAuditCount=7
+$script:ordinal=16;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'WRONG_SIXTH_ORDINAL_ACCEPTED'};$script:ordinal=17
+$script:proofValid=$false;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'MISSING_SETTLEMENT_ARCHIVE_ACCEPTED'};$script:proofValid=$true
+$projectVerifiedForwardSource='5087d4d93d2f6ffdca0bc0096b365723005446fc';$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'MIXED_SIXTH_SOURCE_ACCEPTED'}
+Write-Output 'FIVE_CLOSED_PREDECESSORS_AND_TYPED_AUDITS'
+`),
+      'FIVE_CLOSED_PREDECESSORS_AND_TYPED_AUDITS',
+    );
+  },
+);
+
+test(
+  'sixth public DTO derives exact cumulative usage from qualified settlement instead of caller counters',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys', 'Read-FoundationPostcheckContinuation'])}
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$PhaseAControl=$true;$PostcheckContinuation=$true;$ClockAmendment=$false;$OriginalDeadlineAtMs=0;$RemainingContinuation=$false;$StartupReplacement=$false;$CheckOnly=$true;$postcheckContinuationSegment='20275b22-b7fe-4737-a9a4-c50c2feadb74';$repo='synthetic';$node='never-spawned';$script:proofValid=$true
+function Assert-Path($Root,$Relative){return 'synthetic-public-module'}
+function Invoke-Bounded{return [pscustomobject]@{ok=$true;closed=$true;text=($script:dto|ConvertTo-Json -Compress)}}
+function Read-FoundationTechnical16Closed{return [pscustomobject]@{id='4c602549-2c42-4ec3-9328-714d7cb66a77'}}
+function Assert-FoundationTechnical16Settled($Expected){if(-not $script:proofValid){throw 'UNQUALIFIED_SETTLEMENT'};return [pscustomobject]@{usage=$script:usage}}
+$valid=[ordered]@{kind='project_verified_continuation_ready';segmentId=$postcheckContinuationSegment;sourceCommitSha='effa3de9e1fee6c3f3c08fc347a5e3175db14c80';windowId='edbc6d11-7c1f-43a7-b745-1ded06deb29f';privateRead=$false;networkRequests=0;managementMaximum=1408;managementAttempts=914;controlAttempts=1045;combinedAttempts=1959}
+$script:usage=[pscustomobject]@{management=914;control=1045;combined=1959};$script:dto=[pscustomobject]$valid;$null=Read-FoundationPostcheckContinuation
+if($script:projectVerifiedForwardWindowId -cne $valid.windowId -or $script:projectVerifiedForwardSource -cne $valid.sourceCommitSha){throw 'SIXTH_PROFILE_NOT_SELECTED'}
+foreach($change in @(@{key='managementMaximum';value=1024},@{key='managementMaximum';value='1408'},@{key='managementAttempts';value=913},@{key='controlAttempts';value=1044},@{key='combinedAttempts';value=1958},@{key='sourceCommitSha';value='5087d4d93d2f6ffdca0bc0096b365723005446fc'},@{key='windowId';value='4c602549-2c42-4ec3-9328-714d7cb66a77'},@{key='privateRead';value=$true})){
+ $mixed=[ordered]@{};foreach($key in $valid.Keys){$mixed[$key]=$valid[$key]};$mixed[$change.key]=$change.value;$script:dto=[pscustomobject]$mixed;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MIXED_SIXTH_COUNTER_OR_AUTHORITY_ACCEPTED'}
+}
+$valid.managementAttempts=919;$valid.controlAttempts=1050;$valid.combinedAttempts=1969;$script:dto=[pscustomobject]$valid
+$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'CALLER_REPLACED_QUALIFIED_N'}
+$script:usage=[pscustomobject]@{management=919;control=1050;combined=1969};$null=Read-FoundationPostcheckContinuation
+$script:proofValid=$false;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'UNQUALIFIED_DYNAMIC_USAGE_ACCEPTED'}
+Write-Output 'EXACT_QUALIFIED_DYNAMIC_SETTLEMENT_USAGE'
+`),
+      'EXACT_QUALIFIED_DYNAMIC_SETTLEMENT_USAGE',
+    );
+  },
+);
+
+test(
+  'sixth forward baseline requires the separately pinned actual16 settlement and exact archived fixture',
+  native,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-sixth-archive-'));
+    try {
+      const inspection = JSON.parse(
+        readFileSync(
+          'milestones/M03-n8n-foundation/evidence/technical16-postclose-db-readback-20261024.json',
+          'utf8',
+        ),
+      ).rawResult.inspection;
+      const before = structuredClone(inspection),
+        after = structuredClone(inspection);
+      Object.assign(after.fixture, {
+        competitorArchived: true,
+        competitorActive: false,
+        accountPaused: true,
+        accountActive: false,
+      });
+      const archive = {
+        kind: 'm03_technical16_fixture_archive',
+        version: 1,
+        environment: 'dev',
+        projectRef: 'zmotjsbzhzjvpelxvxlf',
+        outerNativeExit: 0,
+        settlementSha256: '',
+        rawResult: {
+          status: 'archive_verified',
+          environment: 'dev',
+          projectRef: 'zmotjsbzhzjvpelxvxlf',
+          historyBefore: 'complete',
+          historyAfter: 'complete',
+          archiveNativeExit: 0,
+          authenticationVerified: true,
+          archiveFixture: true,
+          archiveAttempted: true,
+          archiveAcknowledged: true,
+          fixtureArchived: true,
+          childrenClosed: true,
+          scratchDeleted: true,
+          persistentAdminPreserved: true,
+          inspectParentLockDeleted: true,
+          pushAttempted: false,
+          archiveBefore: before,
+          archiveAfter: after,
+        },
+        cleanup: {
+          parentAbsent: true,
+          childAbsent: true,
+          parentLockAbsent: true,
+          persistentAdminRetained: true,
+          privateContentsRead: false,
+          networkRequests: 0,
+        },
+        pins: {},
+      };
+      const file = join(directory, 'fixture.json');
+      writeFileSync(file, JSON.stringify(archive));
+      assert.equal(
+        run(`
+${definitions(['Assert-Keys', 'Assert-Path', 'Read-Json', 'File-Hash', 'Assert-FoundationArchiveInspection', 'Read-FoundationForwardPrior'])}
+$repo=${quote(directory)};$projectRef='zmotjsbzhzjvpelxvxlf';$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$TechnicalResidual13=$false;$TechnicalResidual16=$false;$script:proofValid=$true
+function Foundation-ForwardWindowId{return 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'}
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=17}}
+function Read-FoundationTechnical16Closed{return (Read-Json ${quote(file)}).rawResult.archiveAfter.window}
+function Assert-FoundationTechnical16Settled($Expected){if(-not $script:proofValid){throw 'SETTLEMENT_NOT_QUALIFIED'};return [pscustomobject]@{usage=[pscustomobject]@{management=914;control=1045;combined=1959}}}
+$archive=Read-Json ${quote(file)};$original=$archive|ConvertTo-Json -Depth 40 -Compress
+$base='scripts/db/out/m03-foundation-archive-4c602549-2c42-4ec3-9328-714d7cb66a77';$settlement='milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json';$relative='milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json'
+foreach($p in @($settlement,($base+'-attempt.json'),($base+'-latest.json'),$relative)){$absolute=Join-Path $repo $p;$null=[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($absolute));[IO.File]::WriteAllText($absolute,'{}')}
+function Persist($v){
+ [IO.File]::WriteAllText((Join-Path $repo ($base+'-latest.json')),($v.rawResult|ConvertTo-Json -Depth 40 -Compress),[Text.UTF8Encoding]::new($false))
+ $v.pins=[pscustomobject]@{};foreach($p in @($settlement,($base+'-attempt.json'),($base+'-latest.json'))){$v.pins|Add-Member -NotePropertyName $p -NotePropertyValue (File-Hash (Join-Path $repo $p))};$v.settlementSha256=$v.pins.$settlement
+ [IO.File]::WriteAllText((Join-Path $repo $relative),($v|ConvertTo-Json -Depth 40 -Compress),[Text.UTF8Encoding]::new($false));$script:archiveSha=File-Hash (Join-Path $repo $relative)
+}
+Persist $archive
+$denied=$false;try{$null=Read-FoundationForwardPrior}catch{$denied=$true};if(-not $denied){throw 'NULL_ACTUAL_ARCHIVE_PIN_GRANTED'}
+$fn=(Get-Command Read-FoundationForwardPrior).ScriptBlock.ToString().Replace('$archiveSha256=$null','$archiveSha256=$script:archiveSha');Set-Item -Path Function:Read-FoundationForwardPrior -Value ([scriptblock]::Create($fn))
+$actual=Read-FoundationForwardPrior;if($actual.fixtureAuditCount -ne 7 -or -not $actual.fixture.competitorArchived -or -not $actual.technical16Exact){throw 'ARCHIVED_SIXTH_BASELINE_NOT_SELECTED'}
+foreach($fault in @('auth','history','archiveExit','before','after','audits','prior16','admitted','requests','pending','cleanup','network','settlement')){
+ $v=ConvertFrom-Json -InputObject $original
+ switch($fault){'auth'{$v.rawResult.authenticationVerified=$false};'history'{$v.rawResult.historyBefore='pending'};'archiveExit'{$v.rawResult.archiveNativeExit='0'};'before'{$v.rawResult.archiveBefore.fixture.competitorArchived=$true};'after'{$v.rawResult.archiveAfter.fixture.competitorArchived=$false};'audits'{$v.rawResult.archiveAfter.fixtureAuditCount=6};'prior16'{$v.rawResult.archiveAfter.technical16Exact=$false};'admitted'{$v.rawResult.archiveAfter.globalAdmittedCount=8};'requests'{$v.rawResult.archiveAfter.globalRequestCount=3};'pending'{$v.rawResult.archiveAfter.reservedRequests=1};'cleanup'{$v.cleanup.persistentAdminRetained=$false};'network'{$v.cleanup.networkRequests='0'};'settlement'{$script:proofValid=$false}}
+ Persist $v;$denied=$false;try{$null=Read-FoundationForwardPrior}catch{$denied=$true};$script:proofValid=$true;if(-not $denied){throw ('UNQUALIFIED_SIXTH_ARCHIVE_'+$fault)}
+}
+Write-Output 'PINNED_SETTLEMENT_AND_ARCHIVED_SEVEN_AUDITS'
+`),
+        'PINNED_SETTLEMENT_AND_ARCHIVED_SEVEN_AUDITS',
+      );
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
   'technical14 native fixture readback requires the exact typed audit and both prior lifecycle receipts',
   native,
   () => {
@@ -1577,7 +1916,7 @@ Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
 );
 
 test(
-  'actual forward packet has all71 source-required public pins and retains every old migration field',
+  'actual forward packet has all74 source-required public pins and retains every old migration field',
   native,
   () => {
     assert.equal(
@@ -1591,12 +1930,13 @@ Invoke-Expression $source.Substring($start,$end-$start)
 $packet=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
 $old=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-dev-migration-packet.json'))}))
 Assert-Keys $packet.files $requiredFiles
-if($requiredFiles.Count -ne 71 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+if($requiredFiles.Count -ne 74 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+if(@($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json'}).Count -ne 1 -or @($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json'}).Count -ne 0){throw 'UNOBSERVED_ARCHIVE_REQUIRED'}
 $prior=@($old.baseline)+@($old.pending)
 for($i=0;$i -lt 14;$i++){foreach($field in @('version','name','file','sha256','historySha256')){if($prior[$i].$field -cne $packet.baseline[$i].$field){throw 'ORIGINAL_MIGRATION_REWRITTEN'}}}
-Write-Output 'EXACT_PUBLIC_71_AND_OLD14'
+Write-Output 'EXACT_PUBLIC_74_AND_OLD14'
 `),
-      'EXACT_PUBLIC_71_AND_OLD14',
+      'EXACT_PUBLIC_74_AND_OLD14',
     );
   },
 );
@@ -1656,6 +1996,15 @@ for (const profile of [
     combinedAttempts: 1373,
     technicalOrdinal: 16,
   },
+  {
+    name: 'settled17',
+    options: { technical16Settled: true },
+    managementMaximum: 1408,
+    managementAttempts: 963,
+    controlAttempts: 1094,
+    combinedAttempts: 2057,
+    technicalOrdinal: 17,
+  },
 ])
   test(
     `${profile.name} fresh ForwardWindow completes the full native public Run preflight before the private boundary`,
@@ -1695,7 +2044,8 @@ for (const profile of [
         if (
           profile.options.restoredBrowserDiscovery ||
           profile.options.restoredBrowserRetryDiscovery ||
-          profile.options.unadmittedWf00Reconciled
+          profile.options.unadmittedWf00Reconciled ||
+          profile.options.technical16Settled
         ) {
           // Bind the native guard to this isolated receipt's coherent synthetic
           // ancestry/prefixes. Production receipt pins and consumer stay unchanged.
@@ -1708,7 +2058,9 @@ for (const profile of [
               'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json',
               'aabddbc205c3582ba51beb16ca734c35378cf6caa79c288184aaa13c08c4406c',
             ],
-            ...(profile.options.restoredBrowserRetryDiscovery || profile.options.unadmittedWf00Reconciled
+            ...(profile.options.restoredBrowserRetryDiscovery ||
+            profile.options.unadmittedWf00Reconciled ||
+            profile.options.technical16Settled
               ? [
                   [
                     'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical15-reconciliation-20261024.json',
@@ -1726,6 +2078,54 @@ for (const profile of [
               hash(readFileSync(join(fixture.directory, relative))),
             );
         }
+        if (profile.options.technical16Settled) {
+          // Qualify the complete synthetic historical chain through the actual
+          // native validators. Only immutable public hash literals are rebound
+          // in this test copy; no process/ancestry/settlement check is removed.
+          const evidence = 'milestones/M03-n8n-foundation/evidence/';
+          const replacements = new Map([
+            [
+              hash(readFileSync(resolve('n8n/foundation/bindings.dev.json'))),
+              hash(readFileSync(join(fixture.directory, 'n8n/foundation/bindings.dev.json'))),
+            ],
+          ]);
+          for (const name of [
+            'dev-acceptance-technical16-reconciliation-20261024.json',
+            'dev-acceptance-technical16-cleanup-20261024.json',
+            'technical16-postclose-custody-20261024.json',
+            'technical16-executed-parameters-resolution-20261024.json',
+            'technical16-native-settlement-20261024.json',
+          ]) {
+            const relative = evidence + name;
+            const original = readFileSync(resolve(relative));
+            replacements.set(hash(original), hash(readFileSync(join(fixture.directory, relative))));
+            const document = JSON.parse(original);
+            if (
+              ![
+                'dev-acceptance-technical16-reconciliation-20261024.json',
+                'technical16-postclose-custody-20261024.json',
+                'technical16-native-settlement-20261024.json',
+              ].includes(name)
+            )
+              continue;
+            for (const [path, originalHash] of Object.entries(document.pins ?? {})) {
+              const syntheticPath = join(fixture.directory, path);
+              assert.ok(existsSync(syntheticPath), 'synthetic native custody input ' + path);
+              replacements.set(originalHash, hash(readFileSync(syntheticPath)));
+            }
+          }
+          for (const [originalHash, syntheticHash] of replacements)
+            helperSource = helperSource.replaceAll(originalHash, syntheticHash);
+          assert.equal((helperSource.match(/\$archiveSha256=\$null/g) ?? []).length, 1);
+          helperSource = helperSource.replace(
+            '$archiveSha256=$null',
+            "$archiveSha256='" +
+              hash(
+                readFileSync(join(fixture.directory, evidence + 'technical16-fixture-archive-20261024.json')),
+              ) +
+              "'",
+          );
+        }
         const privateBoundary = helperSource.indexOf('if($CheckOnly -and $ForwardMigration){Write-Output');
         assert.ok(privateBoundary > 0);
         // Execute the actual complete Run-only public prefix, not a detached DTO
@@ -1734,6 +2134,10 @@ for (const profile of [
           .slice(0, privateBoundary)
           .replace(
             "Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.'",
+            "Write-Output ('SYNTHETIC_PUBLIC_PREFLIGHT_LINE='+$_.InvocationInfo.ScriptLineNumber)",
+          )
+          .replace(
+            "Write-Output ('M03_FOUNDATION PREFLIGHT_BLOCKED. Stage='+$stage+'; no private file read, decryption or authentication attempted.')",
             "Write-Output ('SYNTHETIC_PUBLIC_PREFLIGHT_LINE='+$_.InvocationInfo.ScriptLineNumber)",
           );
         const adminPath = put(
@@ -1760,8 +2164,10 @@ import {spawnSync} from 'node:child_process';
 let stage='GUARD_IMPORT';
 try {
 const guard=await import(${JSON.stringify(pathToFileURL(guardPath).href)});
+stage='GUARD_READ';
+const unclaimed=guard.readFoundationProjectVerifiedContinuation();
 stage='GUARD_CLAIM';
-const proof=guard.claimFoundationProjectVerifiedContinuation(guard.readFoundationProjectVerifiedContinuation());
+const proof=guard.claimFoundationProjectVerifiedContinuation(unclaimed);
 stage='LOCK_OPEN';
 const lockPath=${JSON.stringify(join(fixture.directory, 'scripts/n8n/out/foundation/live/runtime.operation.lock'))};
 const lock=openSync(lockPath,'wx');writeFileSync(lock,'emr-m03-foundation-live-runtime-v1\\n');

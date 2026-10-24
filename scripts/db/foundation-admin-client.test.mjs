@@ -376,6 +376,80 @@ for (const profile of [
     }
   });
 
+test('approved1408 genuine claimed technical17 Admin binding reaches exactly one bounded native child', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ technical16Settled: true });
+  try {
+    const proof = f.claim(f.admit());
+    const checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(checkpoint.managementMaximum, 1408);
+    assert.equal(checkpoint.controlMaximum, 3456);
+    assert.equal(checkpoint.combinedMaximum, 4864);
+    assert.equal(checkpoint.technicalAttemptOrdinal, 17);
+    assert.equal(proof.sourceCommitSha, 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80');
+    assert.equal(proof.windowId, 'edbc6d11-7c1f-43a7-b745-1ded06deb29f');
+    const module = await f.copy('foundation-admin-client.mjs');
+    const wire = fixture({ projectProof: proof, forwardWindow: true });
+    let spawns = 0,
+      client;
+    try {
+      client = await module.startFoundationAdminClient(
+        {
+          repositoryRoot: f.directory,
+          now: f.now,
+          projectVerifiedContinuationProof: proof,
+          forwardWindow: true,
+        },
+        {
+          ...wire.deps,
+          spawn(...args) {
+            spawns++;
+            return wire.deps.spawn(...args);
+          },
+        },
+      );
+    } finally {
+      assert.equal(spawns, 1, 'genuine technical17 must pass the local selector before one synthetic child');
+    }
+    assert.equal(wire.calls.length, 0);
+    assert.equal(client.ready.projectVerifiedContinuation, true);
+    const closed = await client.end();
+    assert.equal(closed.nativeExit, 0);
+    assert.equal(closed.childClosed, true);
+    for (const options of [
+      { projectVerifiedContinuationProof: { ...proof }, forwardWindow: true },
+      { projectVerifiedContinuationProof: proof, forwardWindow: false },
+      {
+        projectVerifiedContinuationProof: {
+          ...proof,
+          sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
+        },
+        forwardWindow: true,
+      },
+      {
+        projectVerifiedContinuationProof: { ...proof, windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77' },
+        forwardWindow: true,
+      },
+    ]) {
+      let rejectedSpawns = 0;
+      await assert.rejects(
+        module.startFoundationAdminClient(
+          { repositoryRoot: f.directory, now: f.now, ...options },
+          {
+            spawn() {
+              rejectedSpawns++;
+              throw Error('SYNTHETIC_MUST_NOT_SPAWN');
+            },
+          },
+        ),
+        /FOUNDATION_ADMIN_BLOCKED/,
+      );
+      assert.equal(rejectedSpawns, 0);
+    }
+  } finally {
+    f.cleanup();
+  }
+});
+
 function syntheticClaimedAmendment() {
   const f = syntheticClockAmendment({ parentProcessId: 90210 });
   f.setTime(Date.parse('2026-10-21T14:00:00.000Z'));

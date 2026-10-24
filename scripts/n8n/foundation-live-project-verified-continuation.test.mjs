@@ -30,9 +30,9 @@ test('technical17 derives all charged cleanup usage and full25 restored versions
         ),
         {
           managementMaximum: 1408,
-          managementAttempts: 829 + n,
-          controlAttempts: 960 + n,
-          combinedAttempts: 1789 + 2 * n,
+          managementAttempts: 878 + n,
+          controlAttempts: 1009 + n,
+          combinedAttempts: 1887 + 2 * n,
         },
       );
       const proof = f.claim(f.admit()),
@@ -40,6 +40,8 @@ test('technical17 derives all charged cleanup usage and full25 restored versions
       assert.equal(resume.technicalAttemptOrdinal, 17);
       assert.equal(resume.mainManagementAttempts, 810);
       assert.equal(resume.mainControlAttempts, 949);
+      assert.equal(proof.carriedManagementAttempts, 68 + n);
+      assert.equal(proof.carriedControlAttempts, 60 + n);
       assert.equal(resume.setupAttempts, 184);
       assert.equal(resume.setupMaximum, 256);
       assert.equal(resume.legacySqlAdmitted, 9);
@@ -66,6 +68,87 @@ test('technical17 derives all charged cleanup usage and full25 restored versions
   }
 });
 
+test('technical17 retains every raw retry charge while validating the unchanged logical cleanup operations', async () => {
+  for (const kind of ['metadata', 'full', 'workflow', 'discovery']) {
+    const f = await syntheticProjectVerifiedContinuation({
+      technical16Settled: true,
+      technical16CleanupRequests: 86,
+      technical16CleanupRetry: kind,
+    });
+    try {
+      assert.equal(f.check().managementAttempts, 964);
+      const proof = f.claim(f.admit()),
+        resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+      assert.equal(proof.carriedManagementAttempts, 154);
+      assert.equal(proof.carriedControlAttempts, 146);
+      assert.equal(resume.aggregateManagementAttempts, 964);
+      assert.equal(resume.aggregateControlAttempts, 1095);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('technical17 rejects coherently repinned malformed retry links rather than discounting their raw charges', async () => {
+  for (const technical16Fault of [
+    'retry-string',
+    'retry-zero',
+    'retry-future',
+    'retry-skip',
+    'retry-kind',
+    'retry-workflow',
+    'retry-execution',
+    'retry-delete',
+    'retry-absence',
+    'retry-non-http',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      technical16Settled: true,
+      technical16CleanupRequests: 86,
+      technical16CleanupRetry: 'metadata',
+      technical16Fault,
+    });
+    try {
+      assert.throws(() => f.check(), technical16Fault);
+      assert.throws(() => f.admit(), technical16Fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('technical17 rejects a retry chain even when all logical cleanup counts and raw charges remain coherent', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    technical16Settled: true,
+    technical16CleanupRequests: 87,
+    technical16CleanupRetry: 'metadata',
+    technical16Fault: 'retry-chain',
+  });
+  try {
+    assert.throws(() => f.check());
+    assert.throws(() => f.admit());
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('technical17 accepts the remaining109 request ceiling and refuses110 without resetting the spent cleanup chain', async () => {
+  for (const n of [109, 110]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      technical16Settled: true,
+      technical16CleanupRequests: n,
+    });
+    try {
+      if (n === 109) {
+        assert.equal(f.check().managementAttempts, 987);
+        assert.equal(f.check().controlAttempts, 1118);
+      } else assert.throws(() => f.check());
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
 test('technical17 rejects rewritten failed closure, native resets, substituted versions, missing ACKs and broadened caps', async () => {
   for (const technical16Fault of [
     'raw-closure',
@@ -76,6 +159,10 @@ test('technical17 rejects rewritten failed closure, native resets, substituted v
     'acceptance',
     'archive',
     'caps',
+    'spent-closure',
+    'spent-counter',
+    'prior-chain',
+    'typed-closure',
   ]) {
     const f = await syntheticProjectVerifiedContinuation({ technical16Settled: true, technical16Fault });
     try {

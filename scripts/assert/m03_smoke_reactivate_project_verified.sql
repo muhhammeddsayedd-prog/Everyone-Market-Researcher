@@ -72,11 +72,11 @@ begin
   -- Technical14 stopped at browser discovery before any database child or
   -- fixture operation. The reviewed native consumer verifies its immutable
   -- closed/cleanup receipts before supplying this one fixed missing-audit proof.
-  if v_technical in (15,16) and current_setting('emr.smoke_technical14_no_reactivation',true)
+  if v_technical in (15,16,17) and current_setting('emr.smoke_technical14_no_reactivation',true)
      is distinct from '6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960' then
     raise exception using errcode='55000', message='M03_REACTIVATION_TECHNICAL14_PROOF_REQUIRED';
   end if;
-  if v_technical=16 and current_setting('emr.smoke_technical15_no_reactivation',true)
+  if v_technical in (16,17) and current_setting('emr.smoke_technical15_no_reactivation',true)
      is distinct from '59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd' then
     raise exception using errcode='55000', message='M03_REACTIVATION_TECHNICAL15_PROOF_REQUIRED';
   end if;
@@ -146,9 +146,9 @@ begin
   v_previous_id:=v_marker.id;v_previous_at:=v_marker.created_at;
   for v_index in 0..v_technical-1 loop
     continue when (v_technical>=9 and v_index between 3 and 11)
-      or (v_technical in (15,16) and v_index=14 and current_setting('emr.smoke_technical14_no_reactivation',true)
+      or (v_technical in (15,16,17) and v_index=14 and current_setting('emr.smoke_technical14_no_reactivation',true)
         ='6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960')
-      or (v_technical=16 and v_index=15 and current_setting('emr.smoke_technical15_no_reactivation',true)
+      or (v_technical in (16,17) and v_index=15 and current_setting('emr.smoke_technical15_no_reactivation',true)
         ='59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd');
     v_previous_segment:=case when v_index=0 then '1c69c89e-7807-46d5-b7b8-ca28285ff2b4'
       when v_index=1 then v_family_segment else v_family_segment||':technical-'||v_index end;

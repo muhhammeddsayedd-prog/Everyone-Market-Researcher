@@ -191,17 +191,26 @@ function Get-ProjectVerifiedPublicManagementMaximum($Value,[bool]$ProjectClock,[
  if($Value -isnot [PSCustomObject]){throw 'blocked'}
  $fields=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')
  $present=@($fields|Where-Object{$_ -cin $Value.PSObject.Properties.Name})
- if($present.Count -eq 0){return 512}
+ if($present.Count -eq 0){if($Mode -ceq 'CheckOnly' -and ($Value.sourceCommitSha -ceq 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' -or $Value.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f')){throw 'blocked'};return 512}
  $priorBinding=$Value.sourceCommitSha -ceq 'a5e746736893d5040e93032ae740a0878f748837' -and $Value.windowId -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
  $freshBinding=$Value.sourceCommitSha -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803' -and $Value.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
  $nextBinding=$Value.sourceCommitSha -ceq '7b1837201ac7925591577a1517d7288936ca3464' -and $Value.windowId -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e'
  $restoredBinding=$Value.sourceCommitSha -ceq '5087d4d93d2f6ffdca0bc0096b365723005446fc' -and $Value.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77'
+ $settledBinding=$Value.sourceCommitSha -is [string] -and $Value.windowId -is [string] -and $Value.sourceCommitSha -ceq 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' -and $Value.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'
  if(-not $ProjectClock -or $Mode -cne 'CheckOnly' -or $present.Count -ne 4 -or
   $Value.kind -cne 'project_verified_continuation_ready' -or $Value.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or
-  -not ($priorBinding -or $freshBinding -or $nextBinding -or $restoredBinding) -or
+  -not ($priorBinding -or $freshBinding -or $nextBinding -or $restoredBinding -or $settledBinding) -or
   $Value.privateRead -isnot [bool] -or $Value.privateRead -ne $false){throw 'blocked'}
  # The immutable allocation keeps its original charges. A separately pinned,
  # physically closed attempt adds the exact current snapshot without reset.
+ if($settledBinding){
+  foreach($name in @($fields+'networkRequests')){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long])){throw 'blocked'}}
+  # The existing sealed guard alone qualifies actual settlement/archive. This
+  # projection accepts only its exact attempt7 bounded accounting relationship.
+  $cleanupRequests=$Value.managementAttempts-878
+  if($Value.managementMaximum -ne 1408 -or $cleanupRequests -lt 85 -or $cleanupRequests -gt 109 -or $Value.controlAttempts -ne 1009+$cleanupRequests -or $Value.combinedAttempts -ne 1887+2*$cleanupRequests -or $Value.networkRequests -ne 0){throw 'blocked'}
+  return 1408
+ }
  $expected=if($restoredBinding -and $Value.managementAttempts -eq 527){@{managementMaximum=1024;managementAttempts=527;controlAttempts=846;combinedAttempts=1373;networkRequests=0}}elseif($restoredBinding -and $Value.controlAttempts -eq 843){@{managementMaximum=1024;managementAttempts=524;controlAttempts=843;combinedAttempts=1367;networkRequests=0}}elseif($restoredBinding -and $Value.controlAttempts -eq 842){@{managementMaximum=1024;managementAttempts=524;controlAttempts=842;combinedAttempts=1366;networkRequests=0}}elseif($restoredBinding){@{managementMaximum=1024;managementAttempts=524;controlAttempts=841;combinedAttempts=1365;networkRequests=0}}elseif($nextBinding){@{managementMaximum=832;managementAttempts=401;controlAttempts=740;combinedAttempts=1141;networkRequests=0}}elseif($freshBinding -and $Value.managementAttempts -eq 313){@{managementMaximum=704;managementAttempts=313;controlAttempts=639;combinedAttempts=952;networkRequests=0}}elseif($freshBinding -and $Value.managementAttempts -eq 288){@{managementMaximum=704;managementAttempts=288;controlAttempts=588;combinedAttempts=876;networkRequests=0}}elseif($freshBinding -and $Value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800;networkRequests=0}}elseif($freshBinding){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723;networkRequests=0}}elseif($Value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612;networkRequests=0}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536;networkRequests=0}}
  foreach($name in $expected.Keys){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long]) -or $Value.$name -ne $expected[$name]){throw 'blocked'}}
  return [int]$expected.managementMaximum
@@ -262,6 +271,7 @@ function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$
   $activeBinding=$activeBinding -or ($ProjectClock -and $result.sourceCommitSha -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803' -and $result.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883')
   $activeBinding=$activeBinding -or ($ProjectClock -and $result.sourceCommitSha -ceq '7b1837201ac7925591577a1517d7288936ca3464' -and $result.windowId -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e')
   $activeBinding=$activeBinding -or ($ProjectClock -and $result.sourceCommitSha -ceq '5087d4d93d2f6ffdca0bc0096b365723005446fc' -and $result.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77')
+  $activeBinding=$activeBinding -or ($ProjectClock -and $result.sourceCommitSha -is [string] -and $result.windowId -is [string] -and $result.sourceCommitSha -ceq 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' -and $result.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f')
   if($result -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($keys|Sort-Object) @($result.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $result.segmentId -cne $segmentId -or -not ($legacyBinding -or $activeBinding) -or $result.privateRead -isnot [bool] -or $result.privateRead -ne $false -or $result.networkRequests -ne 0){throw 'blocked'}
   if($Mode -ceq 'CheckOnly'){
    if($result.kind -cne $readyKind){throw 'blocked'}
@@ -472,7 +482,7 @@ function Safe-PublicLine($Value){
   elseif($v -is [string]){
    if($v -cnotmatch '^[A-Za-z0-9_.:-]{1,128}$'){throw 'blocked'}
    if($property.Name -ceq 'approvedHead' -and $v -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e'){throw 'blocked'}
-   if($property.Name -ceq 'sourceCommitSha' -and $v -cnotin @('f42930f90c2de43c84f61ad6d966d0ee6074d70e','a5e746736893d5040e93032ae740a0878f748837','aff94f2b2d8055cf93b5405e6b11d4e7d9c86803','7b1837201ac7925591577a1517d7288936ca3464','5087d4d93d2f6ffdca0bc0096b365723005446fc')){throw 'blocked'}
+   if($property.Name -ceq 'sourceCommitSha' -and $v -cnotin @('f42930f90c2de43c84f61ad6d966d0ee6074d70e','a5e746736893d5040e93032ae740a0878f748837','aff94f2b2d8055cf93b5405e6b11d4e7d9c86803','7b1837201ac7925591577a1517d7288936ca3464','5087d4d93d2f6ffdca0bc0096b365723005446fc','effa3de9e1fee6c3f3c08fc347a5e3175db14c80')){throw 'blocked'}
    if($property.Name -ceq 'code' -and $v -cnotmatch '^[A-Z][A-Z0-9_]{1,100}$'){throw 'blocked'}
    if($property.Name -ceq 'status' -and $v -cnotin @('private_child_ready','blocked','dev_runtime_prepared','native_unresolved','cleanup_unresolved','sql_acceptance_unresolved','native_settled_and_cleaned','restoration_verified','restoration_residual','prepared','not_prepared','closed','residual','domain_verified','domain_proof_unresolved','native_domain_denial_and_cleanup_verified')){throw 'blocked'}
   }
@@ -531,6 +541,7 @@ try{
  $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803' -and $publicClock.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883')
  $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq '7b1837201ac7925591577a1517d7288936ca3464' -and $publicClock.windowId -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e')
  $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq '5087d4d93d2f6ffdca0bc0096b365723005446fc' -and $publicClock.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77')
+ $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' -and $publicClock.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f')
  $adminPublicReady=Invoke-PublicDatabaseCheck $repo ([bool]$CheckOnly) $resumeDeadlineAt ([bool]$ClockAmendment) ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation) ([bool]$forwardWindowPublic)
  $bindings=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'n8n/foundation/bindings.dev.json'))))
  foreach($property in $bindings.workflowRefs.PSObject.Properties){$null=$knownWorkflowIds.Add($property.Value.id)}
@@ -541,7 +552,7 @@ try{
    [ordered]@{status='approval_required';approvalRequired=$true;privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$true;adminHandoffReady=$false;actualMcpPortVerified=$false;windowId=$seal.windowId;segmentId='e8035391-dba8-48c9-97e0-139ba980d86e';managementMaximum=512;controlMaximum=2048}|ConvertTo-Json -Compress
    exit 0
   }
-  [ordered]@{status='check_only_ready';privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$true;adminHandoffReady=$adminPublicReady;actualMcpPortVerified=$false;windowId=$seal.windowId;managementMaximum=$effectiveManagementMaximum;controlMaximum=2048}|ConvertTo-Json -Compress
+  [ordered]@{status='check_only_ready';privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$true;adminHandoffReady=$adminPublicReady;actualMcpPortVerified=$false;windowId=$seal.windowId;managementMaximum=$effectiveManagementMaximum;controlMaximum=$(if($effectiveManagementMaximum -eq 1408){3456}else{2048})}|ConvertTo-Json -Compress
   exit 0
  }
  Confirm-PublicTransport

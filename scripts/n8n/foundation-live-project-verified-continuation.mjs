@@ -178,8 +178,98 @@ const technical17Recovery = Object.freeze({
   ],
   childUiRelative: 'milestones/M03-n8n-foundation/evidence/technical16-child-ui-readback-20261024.json',
   childUiSha256: '2c9100fd58caf7715838462de11337e8d06bcd691ab13b20b380413b6c3e4ba3',
+  settlementPriorPins: Object.freeze({
+    'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt1-20261024.json':
+      '4f0697080d9bd1ff728b48d9c159f4cbe6f61ebaa04d19ec295da14c3e297960',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt.json':
+      '1e165ea75442200af05e57206c32cd0edc07c248571a1405ae8025e31588e66e',
+    'scripts/n8n/out/foundation/technical16-native-cleanup.jsonl':
+      '4fccea19e19a162ca2d7b912c200a0cb1fc857b9ea54d4bdf5b6f97f76dd71d7',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.provision-seal.json':
+      '9aade5d3ae4c4a0a3aace8da74c38e3b0c9f1da672d7187c7ff1b14aeee9ca1b',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.runtime-lock':
+      'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+    'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt2-20261024.json':
+      '5b2f8e590876f37d89aad2a35151e07489c4601111af09c27b01268f43df0c57',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2.json':
+      '86e74f0c574384e33c28721b345899476d198d49e91501c3f37d8a27f9361639',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2.jsonl':
+      'bac9e865ea04c6f083dc836e2e71e0cd37a58dc542a5f03af7ed06767b66ee17',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2-result.json':
+      'efa7b2812baf34f520eac9bea4337b5197bfc680244acaaabe6fcead8a55c137',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2.provision-seal.json':
+      '45a924660d94d87a5fc9eab45307c550a74288b6556873633c39b571c37b62be',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2.runtime-lock':
+      'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+    'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt3-20261024.json':
+      '886da0004471f526d0767c3e60a5c1474bb38f439f022ab3edd162efdeb412ae',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt3.json':
+      '6319abe719e5fb40d0e77e83376ef39a625c341e9195f055255b435029016a61',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt3.jsonl':
+      '0e6c97a10ee2aca0c1171f09a63dcc4b536a8df58e3061cb804d7fac98ab6f27',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt3-result.json':
+      '5609476a03848f524398f3e72ca614d1a5e6390cc8b9e287ac1bc9ff95c972c5',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt3.provision-seal.json':
+      '0e7051051f4e605b42da8da40261237f9682f492860d1c05ace19a5b79b90af5',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt3.runtime-lock':
+      'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+    'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt4-20261024.json':
+      '68fecd32ceda855b5f522bf9448f5fa94c1411dc4bd4950ea6d7a3979602bc72',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.json':
+      '9c5a07ff9c23ebf14cabf96c245ec8fe4d0eeca4a2b13c2c50e918a90a84b7de',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.jsonl':
+      '76d3b6b1fa4367e9a2ecfa79eab0fd4f2dbfd26402f8bd224a0945541aa7f62d',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4-result.json':
+      '7c4f4923a985842d4286c603810449c08ec305a7a0c721a689b9e040cd739ebf',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.provision-seal.json':
+      '41a6afc82524105adb2f522c78abc63a9e6dddcec4898969d11facefe193cab7',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.runtime-lock':
+      'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+    'milestones/M03-n8n-foundation/evidence/technical16-wf32-discovery-readback-20261024.json':
+      '9a6463326e06719dc0a4123145df96f49ebcf9f4125be81f727f496f5f635c39',
+    'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.jsonl':
+      '54f2981b2d0faaa4b71793de2d5eaa59d22161657a449c4244ad3ceddbdb10f2',
+    'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.inventory-seal.json':
+      '985fb551e12a66e106c267a2fd43e4fb8a15194d76f50fd35d828c2474809cc4',
+    'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.foundation-seal.json':
+      '12575579756a116397b7e0249e7ed37d99398fe7fd211056ac2007b885b8387e',
+    'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt5-20261024.json':
+      '7aa4ab07f9be3f837a49cbc69dbedc2c19720493740e05157ff852b9161ced55',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.json':
+      'ab3ad645c29b1d21db2a1df3b9f5b968b8c0c6774a2f79a0eabeabf70ffa36bb',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.jsonl':
+      '8c3e54a720e0d9488a7e8026c88c95103430d790d9cb5caecd71cbf018a2b970',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5-result.json':
+      '199e4499e30e362a5a72048846e782dd08a25afb444bd43aaf9467ffeb38d02a',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.provision-seal.json':
+      '968943a6f5de2322a48ab6cbfe514d6a80e750ea0356978448d82b843e50dfc3',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.runtime-lock':
+      'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+    'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt6-20261024.json':
+      '1bf2243210b417b8ea7d2ed360adc3c026796a57271c7488f664acc145673a7d',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.json':
+      '2a814ff7c93f2734322796b1214c806cdd8580420933de52f44862024fb54927',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.jsonl':
+      '59a30c4ec18a34c2c49773a61534e4e2149d4bdc73bf8fd45976b06eb7d801e4',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6-result.json':
+      '85982e616aaac3b37654e70e4c562410e44449ed65944a6d93aacae4c369cc19',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.provision-seal.json':
+      '162ae09e991e6a18b8c6969663e0c9f71d1b7d7661ba7dc10ec1d41f9f8e7d22',
+    'scripts/n8n/out/foundation/technical16-native-cleanup-attempt6.runtime-lock':
+      'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+    'milestones/M03-n8n-foundation/evidence/technical16-public-transport-diagnostics-20261024.json':
+      '6185e8af680ebd245a63b33e5fbd8390bd6804e71a994d9fe30db190016789bc',
+    'scripts/n8n/out/foundation/technical16-public-transport-diagnostic-20261024.jsonl':
+      'db7a307dff3cf2b357bdacdba093614f75a7d371f064ae630ca40f384693b797',
+    'scripts/n8n/out/foundation/technical16-native-public-transport-diagnostic-20261024.jsonl':
+      '693802c29a5ce12e3ca290e4c80ea3d0d0790394e24eb93e1629c3e9d7100767',
+    'scripts/n8n/out/foundation/technical16-native-public-transport-diagnostic-20261024-result.json':
+      '822d47f80da7e71ca512463d69fbf6f358f5d45a21a245cb2f8d00d0fcffd287',
+    'scripts/n8n/out/foundation/technical16-public-tls-timing-20261024.json':
+      'd33f411b5cf69f3b95bb96b0178b721946672530f05c3ec10a632b8b0b01dd2b',
+  }),
   settlementRelative: 'milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json',
-  settlementSha256: null,
+  settlementSha256: '56b05930af80343cc66d4cb95891f6e59d50c7a3bbe536450e775a9bea6c584d',
   archiveRelative: 'milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json',
   archiveSha256: null,
 });
@@ -1072,9 +1162,71 @@ function reconciledTechnical16Settlement(x) {
     outerNativeExit: 0,
   });
   const raw = settlement.rawResult,
-    n = raw?.requestCount;
-  if (!Number.isSafeInteger(n) || n < 85 || n > 158) fail();
-  same(raw, {
+    n = raw?.requestCount,
+    cleanupBase = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt7',
+    oldOnce = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt.json',
+    oldJournal = 'scripts/n8n/out/foundation/technical16-native-cleanup.jsonl',
+    priorPaths = [
+      cfg.failedCleanupRelative,
+      oldOnce,
+      oldJournal,
+      'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.provision-seal.json',
+      'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.runtime-lock',
+    ];
+  for (let attempt = 2; attempt <= 6; attempt++) {
+    const stem = `scripts/n8n/out/foundation/technical16-native-cleanup-attempt${attempt}`;
+    priorPaths.push(
+      `milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt${attempt}-20261024.json`,
+      stem + '.json',
+      stem + '.jsonl',
+      stem + '-result.json',
+      stem + '.provision-seal.json',
+      stem + '.runtime-lock',
+    );
+  }
+  const wf32Relative =
+      'milestones/M03-n8n-foundation/evidence/technical16-wf32-discovery-readback-20261024.json',
+    wf32Journal = 'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.jsonl',
+    publicRelative =
+      'milestones/M03-n8n-foundation/evidence/technical16-public-transport-diagnostics-20261024.json',
+    publicJournal = 'scripts/n8n/out/foundation/technical16-public-transport-diagnostic-20261024.jsonl',
+    nativePublicJournal =
+      'scripts/n8n/out/foundation/technical16-native-public-transport-diagnostic-20261024.jsonl',
+    nativePublicResult =
+      'scripts/n8n/out/foundation/technical16-native-public-transport-diagnostic-20261024-result.json',
+    publicTlsResult = 'scripts/n8n/out/foundation/technical16-public-tls-timing-20261024.json';
+  priorPaths.push(
+    wf32Relative,
+    wf32Journal,
+    'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.inventory-seal.json',
+    'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.foundation-seal.json',
+    publicRelative,
+    publicJournal,
+    nativePublicJournal,
+    nativePublicResult,
+    publicTlsResult,
+  );
+  if (
+    !exact(cfg.settlementPriorPins, priorPaths) ||
+    !exact(settlement.pins, [
+      cfg.actualRelative,
+      cfg.resolutionRelative,
+      cleanupBase + '.json',
+      cleanupBase + '.jsonl',
+      cleanupBase + '-result.json',
+      ...priorPaths,
+    ]) ||
+    settlement.pins[cfg.actualRelative] !== cfg.actualSha256 ||
+    settlement.pins[cfg.resolutionRelative] !== cfg.resolutionSha256
+  )
+    fail();
+  for (const [path, sha] of Object.entries(cfg.settlementPriorPins)) {
+    if (settlement.pins[path] !== sha) fail();
+    read(path, sha, false);
+  }
+  const priorRead = (path) => read(path, cfg.settlementPriorPins[path]);
+  if (!Number.isSafeInteger(n) || n < 85 || n > 109) fail();
+  const expectedRaw = {
     kind: 'm03_technical16_native_cleanup',
     version: 1,
     environment: 'dev',
@@ -1082,10 +1234,11 @@ function reconciledTechnical16Settlement(x) {
     windowId: foundationProjectVerifiedRestoredRuntime.windowId,
     sourceCommitSha: foundationProjectVerifiedRestoredRuntime.sourceCommitSha,
     status: 'native_cleanup_verified',
+    requestCount: n,
     controlRequestCount: n,
-    managementAttempts: 829 + n,
-    controlAttempts: 960 + n,
-    combinedAttempts: 1789 + 2 * n,
+    managementAttempts: 878 + n,
+    controlAttempts: 1009 + n,
+    combinedAttempts: 1887 + 2 * n,
     canonicalWorkflowsVerified: 25,
     qualifiedSideEffects: true,
     recordsDeleted: 2,
@@ -1109,7 +1262,9 @@ function reconciledTechnical16Settlement(x) {
     parentLockDeleted: true,
     privateRead: true,
     persistentManagementRetained: true,
-  });
+  };
+  if (!exact(raw, Object.keys(expectedRaw))) fail();
+  same(raw, expectedRaw);
   same(settlement.cleanup, {
     parentAbsent: true,
     childAbsent: true,
@@ -1120,34 +1275,23 @@ function reconciledTechnical16Settlement(x) {
     networkRequests: 0,
   });
   same(settlement.usage, {
-    management: 829 + n,
-    control: 960 + n,
-    combined: 1789 + 2 * n,
+    management: 878 + n,
+    control: 1009 + n,
+    combined: 1887 + 2 * n,
     vercel: 184,
     nativeExecutionsReserved: 3,
     actorStarts: 0,
     providerReads: 0,
   });
-  for (const [path, sha] of Object.entries(settlement.pins ?? {})) {
-    if (
-      !path.startsWith('scripts/n8n/out/foundation/') &&
-      !path.startsWith('milestones/M03-n8n-foundation/evidence/')
-    )
-      fail();
-    read(path, sha, false);
-  }
-  const cleanupBase = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2',
-    cleanupRows = jsonl(x.file(cleanupBase + '.jsonl'), 300).rows,
-    once = JSON.parse(x.file(cleanupBase + '.json')),
-    inner = JSON.parse(x.file(cleanupBase + '-result.json'));
   const outerOnly = [
-    'nativeExit',
-    'childClosed',
-    'credentialChildrenClosed',
-    'parentLockDeleted',
-    'privateRead',
-    'persistentManagementRetained',
-  ];
+      'nativeExit',
+      'childClosed',
+      'credentialChildrenClosed',
+      'parentLockDeleted',
+      'privateRead',
+      'persistentManagementRetained',
+    ],
+    inner = read(cleanupBase + '-result.json', settlement.pins[cleanupBase + '-result.json']);
   if (
     !exact(
       inner,
@@ -1155,35 +1299,306 @@ function reconciledTechnical16Settlement(x) {
     )
   )
     fail();
-  for (const key of Object.keys(inner)) if (JSON.stringify(inner[key]) !== JSON.stringify(raw[key])) fail();
+  same(inner, Object.fromEntries(Object.entries(raw).filter(([key]) => !outerOnly.includes(key))));
+  const bases = [
+      [829, 960, 1789],
+      [829, 960, 1789],
+      [833, 964, 1797],
+      [837, 968, 1805],
+      [863, 994, 1857],
+      [874, 1005, 1879],
+    ],
+    counts = [0, 4, 4, 25, 11, 2],
+    maxima = [158, 158, 4, 150, 124, 113],
+    diagnostics = [
+      'fixed_boundary_blocked',
+      'native_CLEANUP_QUALIFICATION',
+      'native_CLEANUP_STOPPED_ORDER',
+      'native_REJECTED',
+      'native_TRANSPORT_REQUEST',
+      'native_DEADLINE',
+    ];
+  let previousRecord, previousOnce, previousJournal;
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    const recordPath = `milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt${attempt}-20261024.json`,
+      stem = `scripts/n8n/out/foundation/technical16-native-cleanup-attempt${attempt}`,
+      oncePath = attempt === 1 ? oldOnce : stem + '.json',
+      journalPath = attempt === 1 ? oldJournal : stem + '.jsonl',
+      record = priorRead(recordPath),
+      claimed = priorRead(oncePath),
+      oldRows = jsonl(x.file(journalPath), 300).rows,
+      [m, c, s] = bases[attempt - 1],
+      count = counts[attempt - 1];
+    same(record, {
+      kind: 'm03_technical16_native_cleanup_failed_attempt',
+      version: 1,
+      environment: 'dev',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      technicalAttempt: 16,
+      cleanupAttempt: attempt,
+      outerNativeExit: attempt === 3 ? 0 : 1,
+      originalAttemptSha256: cfg.actualSha256,
+      resolutionSha256: cfg.resolutionSha256,
+    });
+    same(record.rawResult, {
+      status: 'cleanup_reconciliation_required',
+      requestCount: count,
+      controlRequestCount: count,
+      managementAttempts: m + count,
+      controlAttempts: c + count,
+      combinedAttempts: s + 2 * count,
+      canonicalWorkflowsVerified: 0,
+      qualifiedSideEffects: false,
+      recordsDeleted: 0,
+      deleteAcknowledged: false,
+      absenceVerified: false,
+      remoteWorkSettled: false,
+      networkCompletionVerified: attempt !== 1,
+      originalPublicRecordsUnchanged: attempt !== 1,
+      nativeAcceptanceProven: false,
+      originalMaskedFirstFailureRecovered: false,
+      executionCount: 0,
+      actorStarts: 0,
+      workflowWrites: 0,
+      credentialWrites: 0,
+      migrationOperations: 0,
+      diagnosticCode: diagnostics[attempt - 1],
+      nativeExit: attempt === 1 ? 13 : 1,
+      childClosed: true,
+      credentialChildrenClosed: true,
+      parentLockDeleted: true,
+    });
+    same(record.usage, {
+      management: m + count,
+      control: c + count,
+      combined: s + 2 * count,
+      vercel: 184,
+      nativeExecutionsReserved: 3,
+      actorStarts: 0,
+      providerReads: 0,
+      allowancesReplenished: false,
+    });
+    same(record.cleanup, {
+      parentAbsent: true,
+      childAbsent: true,
+      parentLockAbsent: true,
+      runtimeLockPresent: true,
+      persistentManagementRetained: true,
+      privateContentsRead: false,
+      networkRequests: 0,
+    });
+    same(record.durableState, {
+      onceClaimPreserved: true,
+      journalHeaderCount: 1,
+      httpIntentCount: count,
+      deleteIntentCount: 0,
+      nativeResultFilePresent: attempt !== 1,
+      consumedMutationClaimReusable: false,
+    });
+    same(claimed, {
+      kind: 'm03_technical16_cleanup_once',
+      version: 1,
+      resolutionSha256: cfg.resolutionSha256,
+      executionIds: ['31131', '31130'],
+      maximumRequests: maxima[attempt - 1],
+      maximumControlRequests: maxima[attempt - 1],
+    });
+    same(claimed.usage, { management: m, control: c, combined: s, vercel: 184 });
+    if (claimed.qualificationOnly !== (attempt === 3 ? true : undefined)) fail();
+    for (const pid of [claimed.processId, claimed.parentProcessId])
+      if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
+    if (
+      record.cleanup.childProcessId !== claimed.processId ||
+      record.cleanup.parentProcessId !== claimed.parentProcessId
+    )
+      fail();
+    const header = oldRows[0];
+    same(header, {
+      event: 'technical16_cleanup_header',
+      version: 1,
+      resolutionSha256: cfg.resolutionSha256,
+      originalAttemptSha256: cfg.actualSha256,
+    });
+    if (attempt > 1) {
+      const links = {
+        cleanupAttempt: attempt,
+        priorFailedAttemptSha256: cfg.settlementPriorPins[previousRecord],
+        priorOnceSha256: cfg.settlementPriorPins[previousOnce],
+        priorJournalSha256: cfg.settlementPriorPins[previousJournal],
+      };
+      same(claimed, links);
+      same(header, links);
+      if (record.priorFailedAttemptSha256 !== links.priorFailedAttemptSha256) fail();
+      const oldInner = priorRead(stem + '-result.json');
+      if (
+        !exact(
+          oldInner,
+          Object.keys(record.rawResult).filter((key) => !outerOnly.includes(key)),
+        )
+      )
+        fail();
+      same(
+        oldInner,
+        Object.fromEntries(Object.entries(record.rawResult).filter(([key]) => !outerOnly.includes(key))),
+      );
+    }
+    if (oldRows.length !== count + 1) fail();
+    for (let index = 0; index < count; index++) {
+      const row = oldRows[index + 1],
+        prefix = index < 4,
+        root = index < 2;
+      same(row, {
+        event: 'technical16_http_intent',
+        ordinal: index + 1,
+        kind: attempt === 6 ? 'metadata' : prefix ? (index % 2 === 0 ? 'metadata' : 'full') : 'discovery',
+        workflowId:
+          attempt === 6
+            ? bindings.workflowRefs['WF-00'].id
+            : prefix
+              ? bindings.workflowRefs[root ? 'WF-00' : 'WF-10'].id
+              : baseline[Math.floor((index - 4) / 2)].id,
+        managementAttempts: m + index + 1,
+        controlAttempts: c + index + 1,
+      });
+      if (prefix || attempt === 6) {
+        if (row.executionId !== (attempt === 6 || root ? '31130' : '31131')) fail();
+      } else if (Object.hasOwn(row, 'executionId')) fail();
+      if (attempt === 6 && index === 1 ? row.retryOf !== 1 : Object.hasOwn(row, 'retryOf')) fail();
+    }
+    for (const path of [oncePath, journalPath, stem + '.provision-seal.json'])
+      if (record.pins?.[path] !== cfg.settlementPriorPins[path]) fail();
+    previousRecord = recordPath;
+    previousOnce = oncePath;
+    previousJournal = journalPath;
+  }
+  const wf32 = priorRead(wf32Relative),
+    wf32Rows = jsonl(x.file(wf32Journal), 3).rows;
+  same(wf32, {
+    priorFailedAttemptSha256:
+      cfg.settlementPriorPins[
+        'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt4-20261024.json'
+      ],
+  });
+  same(wf32.usage, {
+    management: 863,
+    control: 994,
+    combined: 1857,
+    actorStarts: 0,
+    providerReads: 0,
+    allowancesReplenished: false,
+  });
   if (
-    !exact(settlement.pins, [
-      cfg.actualRelative,
-      cfg.resolutionRelative,
-      cfg.failedCleanupRelative,
-      'scripts/n8n/out/foundation/technical16-native-cleanup-attempt.json',
-      'scripts/n8n/out/foundation/technical16-native-cleanup.jsonl',
-      'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.provision-seal.json',
-      'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.runtime-lock',
-      cleanupBase + '.json',
-      cleanupBase + '.jsonl',
-      cleanupBase + '-result.json',
+    JSON.stringify(wf32Rows) !==
+    JSON.stringify([
+      {
+        kind: 'm03_wf32_discovery_diagnostic_budget',
+        version: 1,
+        failedAttemptSha256: wf32.priorFailedAttemptSha256,
+        managementAttempts: 862,
+        controlAttempts: 993,
+        combinedAttempts: 1855,
+        maximumRequests: 1,
+      },
+      { event: 'management_attempt', ordinal: 863 },
+      { event: 'native_read_control_reservation', ordinal: 994, additionalHttpRequest: false },
     ])
   )
     fail();
-  same(once, {
-    kind: 'm03_technical16_cleanup_once',
+  for (const [path, sha] of Object.entries(wf32.pins ?? {}))
+    if (cfg.settlementPriorPins[path] !== sha) fail();
+  const publicProof = priorRead(publicRelative);
+  same(publicProof, {
+    kind: 'm03_technical16_public_transport_diagnostics',
     version: 1,
-    cleanupAttempt: 2,
-    resolutionSha256: cfg.resolutionSha256,
-    executionIds: ['31131', '31130'],
-    maximumRequests: 158,
-    maximumControlRequests: 158,
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    priorFailedAttemptSha256: cfg.settlementPriorPins[previousRecord],
   });
+  same(publicProof.usage, {
+    beforeManagement: 876,
+    beforeControl: 1007,
+    additionalManagement: 2,
+    additionalControl: 2,
+    management: 878,
+    control: 1009,
+    combined: 1887,
+    vercel: 184,
+    nativeExecutionsReserved: 3,
+    actorStarts: 0,
+    providerReads: 0,
+    forensicRequestsCharged: 51,
+    forensicRequestsRemaining: 109,
+    allowancesReplenished: false,
+  });
+  same(publicProof.boundaries, {
+    realCredentialsRead: false,
+    authenticatedMetadataProven: false,
+    workflowExecutions: 0,
+    actorStarts: 0,
+    deletions: 0,
+    workflowWrites: 0,
+    originalFailureCauseRecovered: false,
+    localTransportDefectProven: false,
+    credentialChildrenStarted: false,
+    diagnosticChildrenClosed: true,
+  });
+  for (const [path, native, m, c] of [
+    [publicJournal, false, 876, 1007],
+    [nativePublicJournal, true, 877, 1008],
+  ]) {
+    const rows = jsonl(x.file(path), 3).rows;
+    if (rows.length !== 3 || publicProof.pins?.[path] !== cfg.settlementPriorPins[path]) fail();
+    const stripped = rows.map((row) =>
+      Object.fromEntries(Object.entries(row).filter(([key]) => key !== 'at')),
+    );
+    if (
+      JSON.stringify(stripped) !==
+      JSON.stringify([
+        {
+          kind: native
+            ? 'm03_technical16_native_public_transport_diagnostic_budget'
+            : 'm03_technical16_public_transport_diagnostic_budget',
+          version: 1,
+          checkpointSha256: cfg.settlementPriorPins[previousRecord],
+          sourceCommitSha: publicProof.sourceCommitSha,
+          managementAttempts: m,
+          controlAttempts: c,
+          maximumRequests: 1,
+          method: 'GET',
+          route: native ? '/api/v1/executions/31130?includeData=false' : '/api/v1/discover',
+          credentialSupplied: false,
+          ...(native ? { publicConstantHeader: true } : {}),
+        },
+        { event: 'management_attempt', ordinal: m + 1 },
+        { event: 'native_read_control_reservation', ordinal: c + 1, conservative: true },
+      ])
+    )
+      fail();
+  }
+  if (
+    JSON.stringify(priorRead(nativePublicResult)) !== JSON.stringify(publicProof.nativePublicHttp) ||
+    JSON.stringify(priorRead(publicTlsResult)) !== JSON.stringify(publicProof.tlsTiming)
+  )
+    fail();
+  const once = read(cleanupBase + '.json', settlement.pins[cleanupBase + '.json']),
+    cleanupRows = jsonl(
+      read(cleanupBase + '.jsonl', settlement.pins[cleanupBase + '.jsonl'], false),
+      300,
+    ).rows,
+    continuation = {
+      cleanupAttempt: 7,
+      priorFailedAttemptSha256: cfg.settlementPriorPins[previousRecord],
+      priorOnceSha256: cfg.settlementPriorPins[previousOnce],
+      priorJournalSha256: cfg.settlementPriorPins[previousJournal],
+    };
   if (
     !exact(once, [
       'kind',
       'version',
+      'cleanupAttempt',
+      'priorFailedAttemptSha256',
+      'priorOnceSha256',
+      'priorJournalSha256',
       'resolutionSha256',
       'executionIds',
       'processId',
@@ -1192,134 +1607,157 @@ function reconciledTechnical16Settlement(x) {
       'maximumRequests',
       'maximumControlRequests',
       'at',
+    ])
+  )
+    fail();
+  same(once, {
+    kind: 'm03_technical16_cleanup_once',
+    version: 1,
+    ...continuation,
+    resolutionSha256: cfg.resolutionSha256,
+    executionIds: ['31131', '31130'],
+    maximumRequests: 109,
+    maximumControlRequests: 109,
+  });
+  same(once.usage, { management: 878, control: 1009, combined: 1887, vercel: 184 });
+  for (const pid of [once.processId, once.parentProcessId])
+    if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
+  const header = cleanupRows[0];
+  if (
+    !exact(header, [
+      'event',
+      'version',
       'cleanupAttempt',
       'priorFailedAttemptSha256',
       'priorOnceSha256',
       'priorJournalSha256',
+      'resolutionSha256',
+      'originalAttemptSha256',
     ])
   )
     fail();
-  const failed = read(cfg.failedCleanupRelative, cfg.failedCleanupSha256),
-    oldOnce = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt.json',
-    oldJournal = 'scripts/n8n/out/foundation/technical16-native-cleanup.jsonl',
-    oldSeal = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.provision-seal.json',
-    oldLock = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.runtime-lock';
-  same(failed, {
-    kind: 'm03_technical16_native_cleanup_failed_attempt',
+  same(header, {
+    event: 'technical16_cleanup_header',
     version: 1,
-    environment: 'dev',
-    projectRef: 'zmotjsbzhzjvpelxvxlf',
-    technicalAttempt: 16,
-    cleanupAttempt: 1,
-    outerNativeExit: 1,
-    originalAttemptSha256: cfg.actualSha256,
+    ...continuation,
     resolutionSha256: cfg.resolutionSha256,
+    originalAttemptSha256: cfg.actualSha256,
   });
-  same(failed.durableState, {
-    onceClaimPreserved: true,
-    journalHeaderCount: 1,
-    httpIntentCount: 0,
-    deleteIntentCount: 0,
-    nativeResultFilePresent: false,
-    zeroRemoteCallsSourceQualified: true,
-    noAuthenticationReceipt: true,
-    consumedMutationClaimReusable: false,
-  });
-  same(failed.rawResult, {
-    requestCount: 0,
-    controlRequestCount: 0,
-    managementAttempts: 829,
-    controlAttempts: 960,
-    combinedAttempts: 1789,
-    nativeExit: 13,
-    childClosed: true,
-    credentialChildrenClosed: true,
-    parentLockDeleted: true,
-  });
-  if (
-    settlement.pins[cfg.failedCleanupRelative] !== cfg.failedCleanupSha256 ||
-    settlement.pins[oldOnce] !== failed.pins[oldOnce] ||
-    settlement.pins[oldJournal] !== failed.pins[oldJournal] ||
-    settlement.pins[oldSeal] !== failed.pins[oldSeal] ||
-    settlement.pins[oldLock] !== failed.pins['scripts/n8n/out/foundation/live/runtime.operation.lock']
-  )
-    fail();
-  const continuation = {
-    cleanupAttempt: 2,
-    priorFailedAttemptSha256: cfg.failedCleanupSha256,
-    priorOnceSha256: settlement.pins[oldOnce],
-    priorJournalSha256: settlement.pins[oldJournal],
-  };
-  same(once, continuation);
-  same(once.usage, { management: 829, control: 960, combined: 1789, vercel: 184 });
-  for (const pid of [once.processId, once.parentProcessId])
-    if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
   const http = cleanupRows.filter((row) => row.event === 'technical16_http_intent'),
-    results = cleanupRows.filter((row) => row.event === 'native_cleanup_result');
+    knownIds = new Set(baseline.map((row) => row.id));
   if (
     cleanupRows.length !== n + 9 ||
     http.length !== n ||
-    http.some(
-      (row, i) =>
-        row.ordinal !== i + 1 || row.managementAttempts !== 830 + i || row.controlAttempts !== 961 + i,
+    cleanupRows.some(
+      (row) =>
+        ![
+          'technical16_cleanup_header',
+          'technical16_http_intent',
+          'native_cleanup_evidence',
+          'native_cleanup_intent',
+          'native_cleanup_absence_intent',
+          'native_cleanup_result',
+        ].includes(row.event) ||
+        (row.event !== 'technical16_http_intent' && Object.hasOwn(row, 'retryOf')),
     ) ||
-    results.length !== 2 ||
-    results.some(
-      (row, i) =>
-        row.executionId !== ['31131', '31130'][i] ||
-        row.state !== 'native_record_deleted' ||
-        row.deleteAcknowledged !== true ||
-        row.absenceVerified !== true ||
-        row.residual !== false,
+    cleanupRows.filter((row) => row.event === 'technical16_cleanup_header').length !== 1
+  )
+    fail();
+  for (let index = 0; index < n; index++) {
+    const row = http[index],
+      hasExecution = Object.hasOwn(row, 'executionId'),
+      retry = Object.hasOwn(row, 'retryOf');
+    if (
+      !exact(row, [
+        'event',
+        'ordinal',
+        'kind',
+        'workflowId',
+        'managementAttempts',
+        'controlAttempts',
+        'at',
+        ...(hasExecution ? ['executionId'] : []),
+        ...(retry ? ['retryOf'] : []),
+      ]) ||
+      row.ordinal !== index + 1 ||
+      row.managementAttempts !== 879 + index ||
+      row.controlAttempts !== 1010 + index ||
+      !knownIds.has(row.workflowId) ||
+      !['workflow', 'metadata', 'full', 'discovery', 'delete', 'absence'].includes(row.kind) ||
+      typeof row.at !== 'string'
     )
-  )
-    fail();
-  same(cleanupRows[0], {
-    event: 'technical16_cleanup_header',
-    version: 1,
-    cleanupAttempt: 2,
-    resolutionSha256: cfg.resolutionSha256,
-    originalAttemptSha256: cfg.actualSha256,
-  });
-  same(cleanupRows[0], continuation);
-  if (
-    !exact(cleanupRows[0], [
-      'event',
-      'version',
-      'resolutionSha256',
-      'originalAttemptSha256',
-      'cleanupAttempt',
-      'priorFailedAttemptSha256',
-      'priorOnceSha256',
-      'priorJournalSha256',
-    ])
-  )
-    fail();
-  const knownIds = new Set(baseline.map((row) => row.id)),
-    canonical = http.filter((row) => row.kind === 'workflow'),
-    discovery = http.filter((row) => row.kind === 'discovery');
+      fail();
+    if (['metadata', 'full', 'delete', 'absence'].includes(row.kind)) {
+      if (
+        !hasExecution ||
+        !['31130', '31131'].includes(row.executionId) ||
+        row.workflowId !== bindings.workflowRefs[row.executionId === '31130' ? 'WF-00' : 'WF-10'].id
+      )
+        fail();
+    } else if (hasExecution) fail();
+    if (retry) {
+      const prior = http[index - 1];
+      if (
+        index === 0 ||
+        !Number.isSafeInteger(row.retryOf) ||
+        row.retryOf !== index ||
+        !['workflow', 'metadata', 'full', 'discovery'].includes(row.kind) ||
+        Object.hasOwn(prior, 'retryOf') ||
+        row.kind !== prior.kind ||
+        row.workflowId !== prior.workflowId ||
+        hasExecution !== Object.hasOwn(prior, 'executionId') ||
+        (hasExecution && row.executionId !== prior.executionId)
+      )
+        fail();
+    }
+  }
+  const logical = http.filter((row) => !Object.hasOwn(row, 'retryOf')),
+    canonical = logical.filter((row) => row.kind === 'workflow'),
+    discovery = logical.filter((row) => row.kind === 'discovery');
   if (
     canonical.length !== 25 ||
     new Set(canonical.map((row) => row.workflowId)).size !== 25 ||
     discovery.length < 50 ||
     discovery.length > 100 ||
+    http.filter((row) => row.kind === 'discovery').length > 100 ||
     new Set(discovery.map((row) => row.workflowId)).size !== 25 ||
-    http.filter((row) => row.kind === 'metadata').length !== 4 ||
-    http.filter((row) => row.kind === 'full').length !== 2 ||
-    http.some(
-      (row) =>
-        !knownIds.has(row.workflowId) ||
-        !['workflow', 'discovery', 'metadata', 'full', 'delete', 'absence'].includes(row.kind),
-    )
+    logical.filter((row) => row.kind === 'metadata').length !== 4 ||
+    logical.filter((row) => row.kind === 'full').length !== 2
   )
     fail();
+  for (const event of [
+    'native_cleanup_evidence',
+    'native_cleanup_intent',
+    'native_cleanup_absence_intent',
+    'native_cleanup_result',
+  ]) {
+    const events = cleanupRows.filter((row) => row.event === event);
+    if (events.length !== 2) fail();
+    for (let index = 0; index < 2; index++) {
+      const row = events[index];
+      same(row, {
+        executionId: ['31131', '31130'][index],
+        workflowId: bindings.workflowRefs[index === 0 ? 'WF-10' : 'WF-00'].id,
+        batchId: 'technical16-postclose-native-cleanup',
+        caseId: 'dispatch.vimeo-reconciliation',
+      });
+      if (event === 'native_cleanup_result')
+        same(row, {
+          state: 'native_record_deleted',
+          deleteAcknowledged: true,
+          absenceVerified: true,
+          residual: false,
+        });
+      else if (event !== 'native_cleanup_evidence' && row.ordinal !== index + 1) fail();
+    }
+  }
   const deletion = http.filter((row) => ['delete', 'absence'].includes(row.kind));
   if (
     deletion.length !== 4 ||
     deletion.some(
-      (row, i) =>
-        row.kind !== ['delete', 'absence', 'delete', 'absence'][i] ||
-        row.executionId !== ['31131', '31131', '31130', '31130'][i],
+      (row, index) =>
+        row.kind !== ['delete', 'absence', 'delete', 'absence'][index] ||
+        row.executionId !== ['31131', '31131', '31130', '31130'][index],
     )
   )
     fail();
@@ -1431,9 +1869,9 @@ function reconciledTechnical16Settlement(x) {
   return Object.freeze({
     ...x.recovery,
     mainManagementAttempts: 810,
-    carriedManagementAttempts: 19 + n,
+    carriedManagementAttempts: 68 + n,
     mainControlAttempts: 949,
-    carriedControlAttempts: 11 + n,
+    carriedControlAttempts: 60 + n,
     controlRows: 964,
     setupRows: 368,
     setupAttempts: 184,

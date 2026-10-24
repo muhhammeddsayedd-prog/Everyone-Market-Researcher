@@ -90,6 +90,8 @@ test(
       const start = source.indexOf('function Get-ProjectVerifiedPublicManagementMaximum(');
       const end = source.indexOf('function ConvertTo-ProjectVerifiedReadinessBlock(', start);
       assert.ok(start > 0 && end > start);
+      const publicReady = source.split(/\r?\n/).find((line) => line.includes("status='check_only_ready'"));
+      assert.ok(publicReady);
       const script = join(directory, 'management.ps1');
       writeFileSync(
         script,
@@ -176,6 +178,38 @@ foreach($missing in @('managementMaximum','managementAttempts','controlAttempts'
 }
 foreach($mode in @('Admit','Read')){$blocked=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$valid) $true $mode}catch{$blocked=$true};if(-not $blocked){throw 'WRONG_MODE_ACCEPTED'}}
 $blocked=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$valid) $false 'CheckOnly'}catch{$blocked=$true};if(-not $blocked){throw 'WRONG_PROFILE_ACCEPTED'}
+$settled=[ordered]@{};foreach($name in $valid.Keys){$settled[$name]=$valid[$name]};$settled.managementMaximum=1408;$settled.managementAttempts=963;$settled.controlAttempts=1094;$settled.combinedAttempts=2057;$settled.sourceCommitSha='effa3de9e1fee6c3f3c08fc347a5e3175db14c80';$settled.windowId='edbc6d11-7c1f-43a7-b745-1ded06deb29f'
+if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$settled) $true 'CheckOnly') -ne 1408){throw 'QUALIFIED_17_NOT_PROJECTED'}
+foreach($n in @(85,109)){
+ $edge=[ordered]@{};foreach($name in $settled.Keys){$edge[$name]=$settled[$name]};$edge.managementAttempts=878+$n;$edge.controlAttempts=1009+$n;$edge.combinedAttempts=1887+2*$n
+ if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$edge) $true 'CheckOnly') -ne 1408){throw 'QUALIFIED_17_BOUNDED_CHARGES_NOT_PROJECTED'}
+}
+foreach($n in @(84,110)){
+ $edge=[ordered]@{};foreach($name in $settled.Keys){$edge[$name]=$settled[$name]};$edge.managementAttempts=878+$n;$edge.controlAttempts=1009+$n;$edge.combinedAttempts=1887+2*$n;$denied=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$edge) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'UNQUALIFIED_17_RANGE_ACCEPTED'}
+}
+$spentFive=[ordered]@{};foreach($name in $settled.Keys){$spentFive[$name]=$settled[$name]};$spentFive.managementAttempts=948;$spentFive.controlAttempts=1079;$spentFive.combinedAttempts=2027;$denied=$false
+try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$spentFive) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'SPENT_FIFTH_BASE_ACCEPTED'}
+$spentSix=[ordered]@{};foreach($name in $settled.Keys){$spentSix[$name]=$settled[$name]};$spentSix.managementAttempts=959;$spentSix.controlAttempts=1090;$spentSix.combinedAttempts=2049;$denied=$false
+try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$spentSix) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'SPENT_SIXTH_BASE_ACCEPTED'}
+foreach($mutation in @(@{key='managementMaximum';value=1024},@{key='managementMaximum';value=1409},@{key='managementMaximum';value='1408'},@{key='managementAttempts';value='963'},@{key='managementAttempts';value=948},@{key='controlAttempts';value=1093},@{key='controlAttempts';value='1094'},@{key='combinedAttempts';value=2056},@{key='sourceCommitSha';value=$restored.sourceCommitSha},@{key='windowId';value=$restored.windowId},@{key='privateRead';value=$true},@{key='networkRequests';value=1})){
+ $mixed=[ordered]@{};foreach($name in $settled.Keys){$mixed[$name]=$settled[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED_17_PROFILE_ACCEPTED'}
+}
+foreach($missing in @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){
+ $mixed=[ordered]@{};foreach($name in $settled.Keys){if($name -cne $missing){$mixed[$name]=$settled[$name]}};$denied=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'PARTIAL_17_PROFILE_ACCEPTED'}
+}
+foreach($mode in @('Admit','Read')){$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$settled) $true $mode}catch{$denied=$true};if(-not $denied){throw 'WRONG_17_MODE_ACCEPTED'}}
+$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$settled) $false 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'WRONG_17_PROFILE_ACCEPTED'}
+$absent=[ordered]@{};foreach($name in $settled.Keys){if($name -cnotin @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){$absent[$name]=$settled[$name]}};$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$absent) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'ABSENT_17_CAPS_ACCEPTED'}
+$seal=[pscustomobject]@{windowId='synthetic-public-only'};$adminPublicReady=$false
+foreach($cap in @(1408,1024,512)){
+ $effectiveManagementMaximum=$cap
+ $reported=(${publicReady})|ConvertFrom-Json
+ $controlCap=if($cap -eq 1408){3456}else{2048}
+ if($reported.managementMaximum -ne $cap -or $reported.controlMaximum -ne $controlCap -or $reported.privateRead -ne $false -or $reported.networkRequests -ne 0){throw 'WRONG_PUBLIC_CAP_REPORT'}
+}
 Write-Output 'MANAGEMENT_PUBLIC_PROFILE_PASS'
 `,
       );
@@ -188,7 +222,71 @@ Write-Output 'MANAGEMENT_PUBLIC_PROFILE_PASS'
       assert.equal(result.status, 0, result.stderr + result.stdout);
       assert.equal(result.stderr, '');
       assert.equal(result.stdout.trim(), 'MANAGEMENT_PUBLIC_PROFILE_PASS');
-      assert.match(source, /managementMaximum=\$effectiveManagementMaximum;controlMaximum=2048/);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  'technical17 native public clock modes preserve exact source and forward profile without private input',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-technical17-clock-'));
+    try {
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+      const extract = (name) => {
+        const start = source.indexOf('function ' + name);
+        const end = source.indexOf('\nfunction ', start + 10);
+        assert.ok(start >= 0 && end > start);
+        return source.slice(start, end);
+      };
+      const io = source.slice(
+        source.indexOf('function Initialize-BoundedIo'),
+        source.indexOf('function Invoke-PublicCompositionCheck'),
+      );
+      const selectedStart = source.indexOf(' $forwardWindowPublic=$ProjectVerifiedContinuation');
+      const selectedEnd = source.indexOf(' $adminPublicReady=Invoke-PublicDatabaseCheck', selectedStart);
+      const guard = join(directory, 'scripts/n8n/foundation-live-project-verified-continuation.mjs');
+      mkdirSync(join(directory, 'scripts/n8n'), { recursive: true });
+      const guardSource = `if(process.env.EMR_SYNTHETIC_SECRET)process.exit(9);const mode=process.argv[2], now=Date.now()-100;const x={kind:mode==='CheckOnly'?'project_verified_continuation_ready':'clock_project_verified_continuation_admitted',segmentId:'20275b22-b7fe-4737-a9a4-c50c2feadb74',sourceCommitSha:'effa3de9e1fee6c3f3c08fc347a5e3175db14c80',windowId:'edbc6d11-7c1f-43a7-b745-1ded06deb29f',privateRead:false,networkRequests:0};Object.assign(x,mode==='CheckOnly'?{managementMaximum:1408,managementAttempts:963,controlAttempts:1094,combinedAttempts:2057}:{startsAt:now,deadlineAt:now+3600000,stopNewAt:now+3000000,hardDeadlineAt:now+4200000});process.stdout.write(JSON.stringify(x));`;
+      writeFileSync(guard, guardSource);
+      const script = join(directory, 'clock.ps1');
+      const quote = (value) => "'" + value.replaceAll("'", "''") + "'";
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
+${io}
+${extract('Get-ProjectVerifiedPublicManagementMaximum(')}
+${extract('ConvertTo-ProjectVerifiedReadinessBlock(')}
+${extract('Invoke-ClockAmendmentPublic(')}
+function Public-File([string]$Path){return $Path}
+Initialize-BoundedIo
+$ProjectVerifiedContinuation=$true
+foreach($mode in @('CheckOnly','Admit','Read')){
+ $publicClock=Invoke-ClockAmendmentPublic ${quote(process.execPath)} ${quote(directory)} $mode $false $false $false $true
+ if($publicClock.sourceCommitSha -cne 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' -or $publicClock.privateRead -ne $false -or $publicClock.networkRequests -ne 0){throw 'WRONG_TECHNICAL17_CLOCK'}
+ ${source.slice(selectedStart, selectedEnd)}
+ if(-not $forwardWindowPublic){throw 'WRONG_TECHNICAL17_FORWARD_PROFILE'}
+}
+foreach($old in @('effa3de9e1fee6c3f3c08fc347a5e3175db14c80','edbc6d11-7c1f-43a7-b745-1ded06deb29f')){
+ $original=[IO.File]::ReadAllText(${quote(guard)});[IO.File]::WriteAllText(${quote(guard)},$original.Replace($old,'unrecognized-fixed-public-binding'))
+ $denied=$false;try{$null=Invoke-ClockAmendmentPublic ${quote(process.execPath)} ${quote(directory)} 'CheckOnly' $false $false $false $true}catch{$denied=$true}
+ [IO.File]::WriteAllText(${quote(guard)},$original)
+ if(-not $denied){throw 'MIXED_TECHNICAL17_CLOCK_ACCEPTED'}
+}
+Write-Output 'TECHNICAL17_CLOCK_PASS'
+`,
+      );
+      const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: { ...safeEnvironment(directory), EMR_SYNTHETIC_SECRET: 'SYNTHETIC_ONLY' },
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 15000,
+      });
+      assert.equal(result.status, 0, result.stderr + result.stdout);
+      assert.equal(result.stderr, '');
+      assert.equal(result.stdout.trim(), 'TECHNICAL17_CLOCK_PASS');
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
@@ -734,6 +832,13 @@ test(
           kind: 'm03_acceptance_ready',
           status: 'private_child_ready',
           approvedHead: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+          sourceCommitSha: 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80',
+          deadlineAt: Date.now() + 3600000,
+        },
+        {
+          kind: 'm03_acceptance_ready',
+          status: 'private_child_ready',
+          approvedHead: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
           sourceCommitSha: 'c'.repeat(40),
           deadlineAt: Date.now() + 3600000,
         },
@@ -791,6 +896,7 @@ $out|ConvertTo-Json -Compress
         'rejected',
         'rejected',
         'rejected',
+        'accepted',
         'accepted',
         'accepted',
         'rejected',
