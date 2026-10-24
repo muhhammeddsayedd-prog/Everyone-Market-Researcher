@@ -80,6 +80,138 @@ Write-Output 'EXACT_FORWARD_HISTORY'
   assert.equal(output, 'EXACT_FORWARD_HISTORY');
 });
 
+test(
+  'technical13 public closure permits four ledger tails without inventing a historical runtime count',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Path', 'Read-Json', 'File-Hash', 'Read-FoundationTechnical13Closed'])}
+$repo=$PSScriptRoot;$projectRef='zmotjsbzhzjvpelxvxlf'
+function Write-PublicFixture([string]$Relative,[string]$Text){$path=Join-Path $repo $Relative;$null=[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($path));[IO.File]::WriteAllText($path,$Text);return $path}
+function Hash-PublicText([string]$Text){$digest=[Security.Cryptography.SHA256]::Create();try{return ([BitConverter]::ToString($digest.ComputeHash([Text.Encoding]::UTF8.GetBytes($Text)))).Replace('-','').ToLowerInvariant()}finally{$digest.Dispose()}}
+$pins=[ordered]@{};$prefix='{"event":"synthetic_prefix"}'+"\`n";$tail='{"event":"synthetic_tail"}'+"\`n"
+foreach($name in @('management','control','setup','preflight')){$relative='scripts/n8n/out/foundation/live/'+$name+'.jsonl';$null=Write-PublicFixture $relative ($prefix+$tail);$pins[$relative]=Hash-PublicText $prefix}
+$historical='scripts/n8n/out/foundation/live/runtime.jsonl';$null=Write-PublicFixture $historical $prefix;$pins[$historical]=Hash-PublicText $prefix
+$technical='scripts/n8n/out/foundation/live/runtime.technical-13.jsonl';$null=Write-PublicFixture $technical $prefix;$pins[$technical]=Hash-PublicText $prefix
+$actual=[ordered]@{kind='m03_technical13_runtime_setup_reconciliation';environment='dev';projectRef=$projectRef;attempt=@{technicalAttempt=13;windowId='3c46c791-e140-4eb9-890a-eecfa251f65e';actorStarts=0;nativeExecutions=0};source=@{applicationSource='7b1837201ac7925591577a1517d7288936ca3464'};journalCounts=@{management=1;control=1;setup=1;preflight=1;runtimeTechnical13=1};pins=$pins}
+$script:syntheticReceiptPath=Write-PublicFixture 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json' ($actual|ConvertTo-Json -Depth 8 -Compress)
+# Only the synthetic receipt's immutable pin is stubbed; every ledger uses its actual bytes.
+function File-Hash([string]$File){if($File -ceq $script:syntheticReceiptPath){return '226ed15257e8fb5ac2c81f454631bcf11773f67ce9fdc15d6048184389260983'};return (Get-FileHash -LiteralPath $File -Algorithm SHA256).Hash.ToLowerInvariant()}
+function Get-CimInstance($ClassName,$Filter,$Property,$ErrorAction){return @()}
+$closed=@{childClosed=$true;credentialChildrenClosed=$true;emergencyShutdown=$false;nativeExit=1;parentProcessId=910001;runtimeProcessId=910002}
+$null=Write-PublicFixture 'scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-13.closed.json' ($closed|ConvertTo-Json -Compress)
+$restored=@{kind='m03_technical13_runtime_restoration';version=1;environment='dev';projectRef=$projectRef;windowId=$actual.attempt.windowId;sourceCommitSha=$actual.source.applicationSource;status='restoration_verified';nativeExit=0;executionCount=0;actorStarts=0;childClosed=$true;credentialChildrenClosed=$true;baselineRestored=$true;machineRestored=$true;remoteWorkSettled=$true;originalAckUnknown=$true;mutationReplayAllowed=$false}
+$null=Write-PublicFixture 'milestones/M03-n8n-foundation/evidence/runtime-restoration-20261024.json' ($restored|ConvertTo-Json -Compress)
+$provision=@{windowId=$actual.attempt.windowId;packet=@{audience='https://everyone-market-researcher-7fcbxykan-muhammed-abdelrahman.vercel.app';commitSha=$actual.source.applicationSource;deploymentId='dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25'}}
+$null=Write-PublicFixture 'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-13-owner-provision-attempt.json' ($provision|ConvertTo-Json -Depth 4 -Compress)
+if($actual.journalCounts.ContainsKey('runtime')){throw 'SYNTHETIC_SHAPE_HAS_INVENTED_COUNT'}
+$functionSource=(Get-Item Function:Read-FoundationTechnical13Closed).ScriptBlock.ToString()
+$oldSource=$functionSource.Replace('(management|control|setup|preflight)\\.jsonl$','(management|control|setup|preflight|runtime)\\.jsonl$')
+if($oldSource -ceq $functionSource){throw 'EXPECTED_FIXED_PREFIX_NOT_FOUND'}
+Set-Item Function:Read-FoundationTechnical13ClosedOld ([scriptblock]::Create($oldSource))
+$oldFailed=$false;try{$null=Read-FoundationTechnical13ClosedOld}catch{$oldFailed=$_.FullyQualifiedErrorId -ceq 'PropertyNotFoundStrict'}
+if(-not $oldFailed){throw 'OLD_RUNTIME_COUNT_DEFECT_NOT_REPRODUCED'}
+$binding=Read-FoundationTechnical13Closed;if($binding.id -cne $actual.attempt.windowId){throw 'FIXED_PUBLIC_BINDING_REJECTED'}
+$null=Write-PublicFixture $historical ($prefix+$tail)
+$denied=$false;try{$null=Read-FoundationTechnical13Closed}catch{$denied=$true};if(-not $denied){throw 'HISTORICAL_RUNTIME_TAIL_ACCEPTED'}
+$null=Write-PublicFixture $historical $prefix
+foreach($name in @('management','control','setup','preflight')){
+ $relative='scripts/n8n/out/foundation/live/'+$name+'.jsonl';$null=Write-PublicFixture $relative ('{"event":"changed_prefix"}'+"\`n"+$tail)
+ $denied=$false;try{$null=Read-FoundationTechnical13Closed}catch{$denied=$true};if(-not $denied){throw 'CHANGED_LEDGER_PREFIX_ACCEPTED'}
+ $null=Write-PublicFixture $relative ($prefix+$tail)
+}
+$null=Read-FoundationTechnical13Closed
+Write-Output 'FOUR_APPENDABLE_PREFIXES_AND_EXACT_HISTORICAL_RUNTIME'
+`),
+      'FOUR_APPENDABLE_PREFIXES_AND_EXACT_HISTORICAL_RUNTIME',
+    );
+  },
+);
+
+test(
+  'technical13 archive inspection validates exact native JSON types and closed binding without accepting status claims',
+  native,
+  () => {
+    const window = {
+      id: '3c46c791-e140-4eb9-890a-eecfa251f65e',
+      audience: 'https://everyone-market-researcher-7fcbxykan-muhammed-abdelrahman.vercel.app',
+      commitSha: '7b1837201ac7925591577a1517d7288936ca3464',
+      deploymentId: 'dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25',
+      startsAt: '2026-10-24T08:00:00Z',
+      expiresAt: '2026-10-24T09:00:00Z',
+      closedAt: '2026-10-24T10:00:00Z',
+      admittedCount: 2,
+      closeCount: 1,
+    };
+    const value = {
+      kind: 'm03_foundation_inspection',
+      windowId: window.id,
+      identity: true,
+      window,
+      requestCount: 1,
+      reservedRequests: 0,
+      incompleteRequests: 0,
+      activeLeaseCount: 0,
+      approval: {
+        closed: true,
+        expiresAt: '2026-10-24T09:00:00Z',
+        actorBuild: '0.3.99',
+        maxChargeUsd: 1,
+        batchMaxUsd: 2,
+      },
+      launchCount: 0,
+      actorRunCount: 0,
+      scrapeRunCount: 0,
+      costEntryCount: 0,
+      costUsd: 0,
+      collectedItemCount: 0,
+      fixture: {
+        competitorId: 'd51a39f6-fe87-4d17-aee9-3070c45693aa',
+        accountId: 'bd23314c-591f-4fb7-92fd-b7450634eeb6',
+        competitorArchived: false,
+        competitorActive: true,
+        accountPaused: false,
+        accountActive: true,
+        itemsCount: 0,
+        locked: false,
+        progressPresent: false,
+      },
+      audits: {
+        creationCount: 1,
+        startupCount: 1,
+        originalCount: 1,
+        technical2Count: 1,
+        technical2Exact: true,
+      },
+      familyClosed: true,
+      fixtureAuditCount: 6,
+      technical12Exact: true,
+      technical13Exact: true,
+    };
+    const result = run(`
+${definitions(['Assert-Keys', 'Read-FoundationInspection', 'Assert-FoundationArchiveInspection'])}
+$TechnicalResidual13=$true;$original=ConvertFrom-Json ${quote(JSON.stringify(value))};$expected=$original.window
+function Check($Value,[bool]$Archived=$false){$result=[pscustomobject]@{ok=$true;closed=$true;text=('[{"inspection":'+($Value|ConvertTo-Json -Compress -Depth 12)+'}]')};$checked=Read-FoundationInspection $result;Assert-FoundationArchiveInspection $checked $expected $Archived}
+Check $original
+foreach($fault in @('flagString','countString','requestString','false12','false13','extra','wrongWindow','progress','open','wrongDate','costString')){
+ $value=$original|ConvertTo-Json -Depth 12|ConvertFrom-Json
+ switch($fault){
+  'flagString'{$value.familyClosed='true'} 'countString'{$value.fixtureAuditCount='6'} 'requestString'{$value.requestCount='1'}
+  'false12'{$value.technical12Exact=$false} 'false13'{$value.technical13Exact=$false} 'extra'{$value|Add-Member NoteProperty unexpected $true}
+  'wrongWindow'{$value.window.id='eda4fae1-1e19-47db-81b8-beac1a4ed883'} 'progress'{$value.fixture.progressPresent=$true}
+  'open'{$value.window.closedAt=$null} 'wrongDate'{$value.window.closedAt='2026-10-24T07:00:00Z'} 'costString'{$value.costUsd='0'}
+ }
+ $blocked=$false;try{Check $value}catch{$blocked=$true};if(-not $blocked){throw ('ARCHIVE_DTO_ACCEPTED_'+$fault)}
+}
+$after=$original|ConvertTo-Json -Depth 12|ConvertFrom-Json;$after.fixture.competitorArchived=$true;$after.fixture.competitorActive=$false;$after.fixture.accountPaused=$true;$after.fixture.accountActive=$false
+Check $after $true
+Write-Output 'TECHNICAL13_ARCHIVE_TYPED_JSON'
+`);
+    assert.equal(result, 'TECHNICAL13_ARCHIVE_TYPED_JSON');
+  },
+);
+
 test('one pending migration and seeds/roles exclusion use actual native structured contract', native, () => {
   assert.equal(
     run(`
@@ -431,7 +563,7 @@ test(
     };
     const output = run(`
 ${definitions(['Assert-Keys', 'Read-FoundationInspection', 'Assert-FoundationArchiveInspection', 'Assert-FoundationForwardBaseline'])}
-$ForwardMigration=$true;$receipt=[ordered]@{};$inspectQueryFile='inspect.sql';$forwardFamilyFile='family.sql';$queryTimeoutMs=1000
+$ForwardMigration=$true;$TechnicalResidual13=$false;$receipt=[ordered]@{};$inspectQueryFile='inspect.sql';$forwardFamilyFile='family.sql';$queryTimeoutMs=1000
 $script:inspection=ConvertFrom-Json ${quote(JSON.stringify(archived))};$forwardPrior=ConvertFrom-Json ${quote(JSON.stringify(archived))}
 $script:family=[pscustomobject]@{identity=$true;soleClosedFamily=$true;globalAdmitted=2;launches=0;reservedUsd=0}
 function Invoke-Cli($Arguments,$Timeout){$value=if($Arguments[3] -ceq 'inspect.sql'){@([pscustomobject]@{inspection=$script:inspection})}else{@([pscustomobject]@{forward_baseline=$script:family})};return [pscustomobject]@{ok=$true;closed=$true;text=ConvertTo-Json -InputObject @($value) -Depth 12 -Compress}}
@@ -636,7 +768,7 @@ Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
 );
 
 test(
-  'actual forward packet has all59 source-required public pins and retains every old migration field',
+  'actual forward packet has all61 source-required public pins and retains every old migration field',
   native,
   () => {
     assert.equal(
@@ -650,12 +782,12 @@ Invoke-Expression $source.Substring($start,$end-$start)
 $packet=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
 $old=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-dev-migration-packet.json'))}))
 Assert-Keys $packet.files $requiredFiles
-if($requiredFiles.Count -ne 59 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+if($requiredFiles.Count -ne 61 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
 $prior=@($old.baseline)+@($old.pending)
 for($i=0;$i -lt 14;$i++){foreach($field in @('version','name','file','sha256','historySha256')){if($prior[$i].$field -cne $packet.baseline[$i].$field){throw 'ORIGINAL_MIGRATION_REWRITTEN'}}}
-Write-Output 'EXACT_PUBLIC_59_AND_OLD14'
+Write-Output 'EXACT_PUBLIC_61_AND_OLD14'
 `),
-      'EXACT_PUBLIC_59_AND_OLD14',
+      'EXACT_PUBLIC_61_AND_OLD14',
     );
   },
 );

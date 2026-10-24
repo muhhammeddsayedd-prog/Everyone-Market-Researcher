@@ -18,6 +18,261 @@ import { createHash } from 'node:crypto';
 const host = 'muhhammedsayed.app.n8n.cloud';
 const projectId = 'pHvQjDmjxVZ3KQLT';
 const maxBytes = 4 * 1024 * 1024;
+const runtimeReconciliationCheckpoint = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json',
+  sha256: '226ed15257e8fb5ac2c81f454631bcf11773f67ce9fdc15d6048184389260983',
+  management: 483,
+  mainManagement: 472,
+  control: 791,
+  mainControl: 788,
+  windowId: '3c46c791-e140-4eb9-890a-eecfa251f65e',
+  sourceCommitSha: '7b1837201ac7925591577a1517d7288936ca3464',
+});
+const runtimeReconciliationPaths = Object.freeze({
+  management: 'scripts/n8n/out/foundation/live/management.jsonl',
+  control: 'scripts/n8n/out/foundation/live/control.jsonl',
+  runtime: 'scripts/n8n/out/foundation/live/runtime.technical-13.jsonl',
+  provision:
+    'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-13-owner-provision-attempt.json',
+  claim: 'scripts/n8n/out/foundation/runtime-reconciliation-diagnostic-technical13-20261024.jsonl',
+});
+const publicDigest = (v) => createHash('sha256').update(v).digest('hex');
+function readRuntimePublicFile(root, relative) {
+  if (
+    typeof relative !== 'string' ||
+    /[:\x00]|(?:^|[/\\])\.\.(?:[/\\]|$)/.test(relative) ||
+    resolve(root, relative) !== join(root, relative)
+  )
+    throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  const path = join(root, relative);
+  for (let cursor = path; ; cursor = dirname(cursor)) {
+    if (lstatSync(cursor).isSymbolicLink()) throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+    if (dirname(cursor) === cursor) break;
+  }
+  const fd = openSync(path, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
+  try {
+    const stat = fstatSync(fd);
+    if (!stat.isFile() || stat.nlink !== 1 || stat.size > 2097152)
+      throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+    return readFileSync(fd, 'utf8');
+  } finally {
+    closeSync(fd);
+  }
+}
+export async function readRuntimeReconciliationContext(
+  repositoryRoot = fileURLToPath(new URL('../../', import.meta.url)),
+) {
+  const root = resolve(repositoryRoot),
+    cfg = runtimeReconciliationCheckpoint,
+    text = readRuntimePublicFile(root, cfg.relative);
+  if (publicDigest(text) !== cfg.sha256) throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  const receipt = JSON.parse(text),
+    paths = runtimeReconciliationPaths,
+    pinned = {};
+  if (!record(receipt.pins) || Object.keys(receipt.pins).length !== 15)
+    throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  for (const [path, pin] of Object.entries(receipt.pins)) {
+    if (
+      !/^(?:scripts\/n8n\/out\/foundation\/live\/|scripts\/db\/out\/m03-foundation-project-verified-continuation-)/.test(
+        path,
+      ) ||
+      typeof pin !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(pin)
+    )
+      throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+    const value = readRuntimePublicFile(root, path),
+      base = path === paths.management ? value.trimEnd().split('\n').slice(0, 473).join('\n') + '\n' : value;
+    if (publicDigest(base) !== pin) throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  }
+  for (const name of ['management', 'control', 'runtime', 'provision']) {
+    const path = paths[name],
+      value = readRuntimePublicFile(root, path),
+      pin = receipt.pins?.[path];
+    if (typeof pin !== 'string' || !/^[a-f0-9]{64}$/.test(pin)) throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+    if (name === 'management') {
+      const lines = value.trimEnd().split('\n');
+      if (
+        lines.length < 473 ||
+        lines.length > 476 ||
+        publicDigest(lines.slice(0, 473).join('\n') + '\n') !== pin
+      )
+        throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+      for (let i = 473; i < lines.length; i++)
+        if (
+          JSON.stringify(JSON.parse(lines[i])) !== JSON.stringify({ event: 'management_attempt', ordinal: i })
+        )
+          throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+    } else if (publicDigest(value) !== pin) throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+    pinned[name] = value;
+  }
+  const m = pinned.management.trimEnd().split('\n').map(JSON.parse),
+    c = pinned.control.trimEnd().split('\n').map(JSON.parse),
+    rows = pinned.runtime.trimEnd().split('\n').map(JSON.parse),
+    provision = JSON.parse(pinned.provision);
+  if (
+    m.slice(0, 473).filter((v) => v.event === 'management_attempt').length !== 472 ||
+    c.filter((v) => v.event === 'control_request_intent').length !== 788 ||
+    c.length !== 796 ||
+    rows.length !== 38 ||
+    receipt.usage.management !== 483 ||
+    receipt.usage.control !== 791 ||
+    receipt.usage.combined !== 1274 ||
+    provision.windowId !== cfg.windowId ||
+    provision.packet.commitSha !== cfg.sourceCommitSha ||
+    provision.packet.audience !==
+      'https://everyone-market-researcher-7fcbxykan-muhammed-abdelrahman.vercel.app' ||
+    provision.packet.deploymentId !== 'dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25'
+  )
+    throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  const { createFoundationRuntimePlan } = await import('./foundation-runtime-plan.mjs');
+  const { createFoundationRuntimeJournal, foundationRuntimeState, runtimeGraphHash } =
+    await import('./foundation-runtime-control.mjs');
+  const bindings = JSON.parse(readRuntimePublicFile(root, 'n8n/foundation/bindings.dev.json')),
+    transport = JSON.parse(readRuntimePublicFile(root, 'n8n/foundation/transport.dev.json'));
+  const records = Object.keys(bindings.workflowRefs).map((k) =>
+    JSON.parse(readRuntimePublicFile(root, 'n8n/workflows/' + k + '.json')),
+  );
+  const plan = createFoundationRuntimePlan({
+    bindings,
+    transport,
+    records,
+    activeWindowId: cfg.windowId,
+    setup: {
+      version: 1,
+      projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
+      branch: 'm03-n8n-foundation',
+      sourceCommitSha: cfg.sourceCommitSha,
+      deploymentId: provision.packet.deploymentId,
+      audience: provision.packet.audience,
+      environment: 'preview',
+      readyState: 'READY',
+      protection: 'all_except_custom_domains',
+      protectionVerified: true,
+      protectionTransportVerified: true,
+      sqlAudienceBindingVerified: true,
+    },
+  });
+  const journal = createFoundationRuntimeJournal(plan, rows.slice(1), () => {
+      throw Error('RUNTIME_RECONCILIATION_READ_ONLY');
+    }),
+    state = foundationRuntimeState(plan, journal);
+  if (
+    state.requestCount !== 22 ||
+    state.pending?.sequence !== 7 ||
+    state.pending.action !== 'save' ||
+    state.pending.key !== 'SUB-NOTIFY' ||
+    state.restoreComplete ||
+    state.setupComplete ||
+    !state.machineRebound
+  )
+    throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  const expected = {};
+  for (const key of ['SUB-NOTIFY', 'WF-90']) {
+    const baseline = plan.baseline.find((b) => b.key === key),
+      before = key === 'SUB-NOTIFY' ? state.pending.before : state.workflows[key];
+    expected[key] = {
+      id: baseline.id,
+      tags: baseline.tags,
+      baseline: {
+        versionId: baseline.versionId,
+        activeVersionId: null,
+        graphHash: runtimeGraphHash(baseline.body),
+        publishedHash: null,
+      },
+      before,
+      target: key === 'SUB-NOTIFY' ? { ...state.pending.target, versionId: before.versionId } : before,
+    };
+  }
+  return Object.freeze({
+    root,
+    receipt,
+    plan,
+    journal,
+    state,
+    expected,
+    pinned,
+    paths,
+    managementAttempts: 483 + m.length - 473,
+    controlAttempts: 791,
+    combinedAttempts: 1274 + m.length - 473,
+    receiptSha256: cfg.sha256,
+  });
+}
+export async function openRuntimeReconciliationDiagnosticBudget(repositoryRoot) {
+  const context = await readRuntimeReconciliationContext(repositoryRoot);
+  if (context.managementAttempts !== 483 || 483 + 3 > 832 || 1274 + 3 > 2560)
+    throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  let marker,
+    management,
+    closed = false,
+    requests = 0;
+  try {
+    marker = openSync(
+      join(context.root, context.paths.claim),
+      constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY,
+      0o600,
+    );
+    const header =
+      JSON.stringify({
+        kind: 'm03_runtime_reconciliation_diagnostic',
+        version: 1,
+        technicalAttempt: 13,
+        receiptSha256: context.receiptSha256,
+        managementAttempts: 483,
+        controlAttempts: 791,
+        maximumRequests: 3,
+        processId: process.pid,
+        parentProcessId: process.ppid,
+      }) + '\n';
+    if (writeSync(marker, header, null, 'utf8') !== Buffer.byteLength(header)) throw Error();
+    fsyncSync(marker);
+    management = openSync(
+      join(context.root, context.paths.management),
+      constants.O_RDWR | constants.O_APPEND | (constants.O_NOFOLLOW ?? 0),
+    );
+    if (readRuntimePublicFile(context.root, context.paths.management) !== context.pinned.management)
+      throw Error();
+  } catch {
+    if (marker !== undefined) closeSync(marker);
+    if (management !== undefined) closeSync(management);
+    throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  }
+  return Object.freeze({
+    context,
+    admit() {
+      if (closed || requests >= 3) throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+      const expected =
+        context.pinned.management +
+        Array.from(
+          { length: requests },
+          (_, i) => JSON.stringify({ event: 'management_attempt', ordinal: 473 + i }) + '\n',
+        ).join('');
+      const current = lstatSync(join(context.root, context.paths.management)),
+        opened = fstatSync(management);
+      if (
+        current.isSymbolicLink() ||
+        current.ino !== opened.ino ||
+        current.dev !== opened.dev ||
+        current.nlink !== 1 ||
+        opened.nlink !== 1 ||
+        readRuntimePublicFile(context.root, context.paths.management) !== expected
+      )
+        throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+      const line = JSON.stringify({ event: 'management_attempt', ordinal: 473 + requests }) + '\n';
+      requests++;
+      if (writeSync(management, line, null, 'utf8') !== Buffer.byteLength(line))
+        throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+      fsyncSync(management);
+    },
+    close() {
+      if (!closed) {
+        closed = true;
+        closeSync(management);
+        closeSync(marker);
+      }
+    },
+  });
+}
 const machineMetadataCheckpoint = Object.freeze({
   managementSha256: '96f1b856d23f4cd384014e715420b305dbf2f108c8ad2b446f9f8b036fc2b994',
   controlSha256: 'badae95523d4c57dd4370be827cfaf6c1da6c067913b703384a772646b5a18d1',
@@ -972,6 +1227,426 @@ export async function runInventory(key, dependencies = {}) {
   return result;
 }
 
+export async function projectRuntimeReconciliationWorkflow(dto, expected) {
+  const { foundationRuntimeGraphHash, foundationRuntimePublishedHash } =
+    await import('./foundation-runtime-checkpoint.mjs');
+  const shape = record(dto),
+    sortedTags = (v) =>
+      Array.isArray(v)
+        ? v.map((t) => ({ id: t.id, name: t.name })).sort((a, b) => String(a.id).localeCompare(String(b.id)))
+        : null;
+  let observedHash = null;
+  try {
+    if (shape) observedHash = foundationRuntimeGraphHash(dto);
+  } catch {
+    /* Only fixed comparisons leave this reader. */
+  }
+  const publicationMatches = (state) => {
+    if (
+      !shape ||
+      dto.active !== (state.activeVersionId !== null) ||
+      dto.activeVersionId !== state.activeVersionId
+    )
+      return false;
+    if (state.activeVersionId === null) return true;
+    try {
+      return (
+        record(dto.activeVersion) &&
+        dto.activeVersion.workflowId === expected.id &&
+        dto.activeVersion.versionId === state.activeVersionId &&
+        foundationRuntimePublishedHash(dto.activeVersion) === state.publishedHash
+      );
+    } catch {
+      return false;
+    }
+  };
+  return {
+    objectShape: shape,
+    idMatches: shape && dto.id === expected.id,
+    archiveStateMatches: shape && dto.isArchived === false,
+    ownerProjectMatches:
+      shape &&
+      Array.isArray(dto.shared) &&
+      dto.shared.some((s) => s.projectId === projectId && s.role === 'workflow:owner'),
+    tagsMatchBaseline:
+      shape && JSON.stringify(sortedTags(dto.tags)) === JSON.stringify(sortedTags(expected.tags)),
+    pinnedDataAbsent:
+      shape &&
+      (dto.pinData === undefined ||
+        dto.pinData === null ||
+        (record(dto.pinData) && Object.keys(dto.pinData).length === 0)),
+    baselineGraphEqual: observedHash !== null && observedHash === expected.baseline.graphHash,
+    beforeGraphEqual: observedHash !== null && observedHash === expected.before.graphHash,
+    targetGraphEqual: observedHash !== null && observedHash === expected.target.graphHash,
+    versionMatchesBaseline: shape && dto.versionId === expected.baseline.versionId,
+    versionMatchesBefore: shape && dto.versionId === expected.before.versionId,
+    versionMatchesTarget: shape && dto.versionId === expected.target.versionId,
+    publicationMatchesBaseline: publicationMatches(expected.baseline),
+    publicationMatchesBefore: publicationMatches(expected.before),
+    publicationMatchesTarget: publicationMatches(expected.target),
+  };
+}
+export async function checkRuntimeReconciliationDiagnostic(repositoryRoot) {
+  const context = await readRuntimeReconciliationContext(repositoryRoot);
+  if (context.managementAttempts !== 483) throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  try {
+    lstatSync(join(context.root, context.paths.claim));
+    throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  }
+  return Object.freeze({
+    kind: 'm03_runtime_reconciliation_check',
+    status: 'ready',
+    technicalAttempt: 13,
+    sourceCommitSha: runtimeReconciliationCheckpoint.sourceCommitSha,
+    windowId: runtimeReconciliationCheckpoint.windowId,
+    managementAttempts: 483,
+    controlAttempts: 791,
+    combinedAttempts: 1274,
+    maximumRequests: 3,
+    privateRead: false,
+    networkRequests: 0,
+  });
+}
+export async function runRuntimeReconciliationDiagnostic(key, dependencies = {}) {
+  const result = {
+    version: 1,
+    environment: 'dev',
+    host,
+    projectId,
+    technicalAttempt: 13,
+    sourceCommitSha: runtimeReconciliationCheckpoint.sourceCommitSha,
+    windowId: runtimeReconciliationCheckpoint.windowId,
+    status: 'not_attempted',
+    requestCount: 0,
+    authenticationVerified: false,
+    networkCompletionVerified: false,
+    metadata: null,
+    workflows: { 'SUB-NOTIFY': null, 'WF-90': null },
+    diagnostics: { version: 1, dns: 'not_attempted', requests: [] },
+  };
+  if (!key) {
+    result.status = 'missing_key';
+    return result;
+  }
+  if (typeof key !== 'string' || key.length > 4096 || !/^[\x21-\x7e]+$/.test(key)) {
+    result.status = 'invalid_key';
+    return result;
+  }
+  const timeoutMs = dependencies.timeoutMs ?? 60000,
+    closeTimeoutMs = dependencies.closeTimeoutMs ?? 5000;
+  if (
+    !Number.isInteger(timeoutMs) ||
+    timeoutMs < 1 ||
+    timeoutMs > 60000 ||
+    !Number.isInteger(closeTimeoutMs) ||
+    closeTimeoutMs < 1 ||
+    closeTimeoutMs > 5000
+  ) {
+    result.status = 'invalid_options';
+    return result;
+  }
+  let budget;
+  try {
+    budget = await (dependencies.openBudget ?? openRuntimeReconciliationDiagnosticBudget)();
+  } catch {
+    result.status = 'budget_blocked';
+    return result;
+  }
+  const controller = new AbortController(),
+    sockets = [];
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+  const timeout = new Promise((_, fail) =>
+    controller.signal.addEventListener('abort', () => fail(new InventoryError('timeout')), { once: true }),
+  );
+  const operation = async () => {
+    result.diagnostics.dns = 'resolving';
+    const addresses = validatedAddresses(await (dependencies.lookup ?? resolveInstance)(controller.signal));
+    if (controller.signal.aborted) reject('timeout');
+    result.diagnostics.dns = 'complete';
+    const routes = [
+      ['Machine', 'credentials', '/api/v1/credentials/EmrM03Machine19', 1, 65536],
+      ['SUB-NOTIFY', 'workflows', '/api/v1/workflows/tiEhU3dXrMifOnTL?excludePinnedData=true', 1, 524288],
+      ['WF-90', 'workflows', '/api/v1/workflows/S9NHRkKFUIiXX2wv?excludePinnedData=true', 2, 524288],
+    ];
+    for (const [name, resource, path, page, limit] of routes) {
+      if (controller.signal.aborted) reject('timeout');
+      try {
+        const value = budget.admit();
+        if (value !== undefined) {
+          if (value?.then) Promise.resolve(value).catch(() => {});
+          throw Error();
+        }
+      } catch {
+        reject('budget_blocked');
+      }
+      const diagnostic = requestDiagnostic(resource, page);
+      result.diagnostics.requests.push(diagnostic);
+      result.requestCount++;
+      let resolveClosed;
+      const closed = new Promise((done) => {
+        resolveClosed = done;
+      });
+      sockets.push({ closed, diagnostic });
+      const transport = dependencies.request
+        ? (input) => nativeRequest(input, dependencies.request)
+        : (dependencies.transport ?? nativeRequest);
+      const response = await transport({
+        url: new URL('https://' + host + path),
+        method: 'GET',
+        headers: {
+          'x-n8n-api-key': key,
+          accept: 'application/json',
+          'user-agent': 'everyone-market-radar-m03-runtime-reconciliation/1',
+        },
+        address: addresses[0],
+        signal: controller.signal,
+        maxBytes: limit,
+        rejectUnauthorized: true,
+        servername: host,
+        diagnostic,
+        onSocketClosed() {
+          diagnostic.socketClosed = true;
+          resolveClosed();
+        },
+      });
+      if (controller.signal.aborted) reject('timeout');
+      if (
+        !record(response) ||
+        !Number.isInteger(response.status) ||
+        response.status < 100 ||
+        response.status > 599
+      )
+        reject();
+      diagnostic.httpStatus = response.status;
+      if (response.status !== 200) {
+        const code =
+          response.status === 401
+            ? 'unauthorized'
+            : response.status >= 300 && response.status < 400
+              ? 'redirect_refused'
+              : 'http_failed';
+        diagnosticFailure(diagnostic, 'status', code);
+        reject(code);
+      }
+      if (!(response.body instanceof Uint8Array) || response.body.byteLength > limit) {
+        diagnosticFailure(diagnostic, 'body_read', 'body_too_large');
+        reject('body_too_large');
+      }
+      diagnostic.bodyRead = 'complete';
+      let dto;
+      try {
+        dto = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(response.body));
+        diagnostic.jsonParsed = true;
+      } catch {
+        diagnosticFailure(diagnostic, 'parse', 'invalid_json');
+        reject();
+      }
+      if (name === 'Machine') {
+        const shape = record(dto),
+          expected = budget.context.plan.machine;
+        // Presence is checked without reading, traversing or stringifying data.
+        result.metadata = {
+          objectShape: shape,
+          dataPresent: shape && Object.hasOwn(dto, 'data'),
+          idMatches: shape && dto.id === 'EmrM03Machine19',
+          nameMatches: shape && dto.name === expected.name,
+          typeMatches: shape && dto.type === 'httpCustomAuth',
+          createdAtMatches: shape && dto.createdAt === expected.createdAt,
+          updatedAtMatchesJournal:
+            shape &&
+            typeof dto.updatedAt === 'string' &&
+            dto.updatedAt === budget.context.state.machineUpdatedAt,
+          flagsCompatible:
+            shape &&
+            ['isManaged', 'isGlobal', 'isResolvable'].every((k) => dto[k] === undefined || dto[k] === false),
+          resolverCompatible: shape && (dto.resolverId === undefined || dto.resolverId === null),
+        };
+      } else
+        result.workflows[name] = await projectRuntimeReconciliationWorkflow(
+          dto,
+          budget.context.expected[name],
+        );
+      dto = null;
+      diagnostic.schemaValidated = true;
+      if (!diagnostic.socketClosed) {
+        let closing;
+        await Promise.race([
+          closed,
+          new Promise((done) => {
+            closing = setTimeout(done, closeTimeoutMs);
+          }),
+        ]);
+        clearTimeout(closing);
+        if (!diagnostic.socketClosed) reject('network_failed');
+      }
+    }
+    result.authenticationVerified = result.diagnostics.requests.every(
+      (v) => v.httpStatus === 200 && v.tlsVerified === true,
+    );
+    result.status = 'readback_observed';
+  };
+  try {
+    await Promise.race([operation(), timeout]);
+  } catch (error) {
+    if (result.diagnostics.dns === 'resolving') result.diagnostics.dns = timedOut ? 'timeout' : 'failed';
+    const last = result.diagnostics.requests.at(-1);
+    if (last?.failureStage === 'none')
+      diagnosticFailure(
+        last,
+        last.jsonParsed ? 'schema' : 'unknown',
+        timedOut ? 'timeout' : last.jsonParsed ? 'invalid_schema' : 'network_failed',
+      );
+    result.status = timedOut
+      ? 'timeout'
+      : [
+            'budget_blocked',
+            'unsafe_dns',
+            'unauthorized',
+            'redirect_refused',
+            'response_rejected',
+            'network_failed',
+            'http_failed',
+            'body_too_large',
+          ].includes(error?.code)
+        ? error.code
+        : 'response_rejected';
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
+    key = null;
+    let closing;
+    await Promise.race([
+      Promise.all(sockets.map((v) => v.closed)),
+      new Promise((done) => {
+        closing = setTimeout(done, closeTimeoutMs);
+      }),
+    ]);
+    clearTimeout(closing);
+    result.networkCompletionVerified = sockets.every((v) => v.diagnostic.socketClosed);
+    if (!result.networkCompletionVerified) result.status = 'network_failed';
+    budget.close();
+  }
+  return result;
+}
+// Schema/profile validation is not mutation authority. A restoration consumer
+// must separately pin the actual owner-recorded readback and current ledgers.
+export function assertRuntimeReconciliationReadback(value) {
+  const exact = (v, keys) =>
+    record(v) && Object.keys(v).length === keys.length && keys.every((k) => Object.hasOwn(v, k));
+  const bools = (v, keys) => exact(v, keys) && keys.every((k) => typeof v[k] === 'boolean');
+  const metadataKeys = [
+    'objectShape',
+    'dataPresent',
+    'idMatches',
+    'nameMatches',
+    'typeMatches',
+    'createdAtMatches',
+    'updatedAtMatchesJournal',
+    'flagsCompatible',
+    'resolverCompatible',
+  ];
+  const workflowKeys = [
+    'objectShape',
+    'idMatches',
+    'archiveStateMatches',
+    'ownerProjectMatches',
+    'tagsMatchBaseline',
+    'pinnedDataAbsent',
+    'baselineGraphEqual',
+    'beforeGraphEqual',
+    'targetGraphEqual',
+    'versionMatchesBaseline',
+    'versionMatchesBefore',
+    'versionMatchesTarget',
+    'publicationMatchesBaseline',
+    'publicationMatchesBefore',
+    'publicationMatchesTarget',
+  ];
+  if (
+    !exact(value, [
+      'version',
+      'environment',
+      'host',
+      'projectId',
+      'technicalAttempt',
+      'sourceCommitSha',
+      'windowId',
+      'status',
+      'requestCount',
+      'authenticationVerified',
+      'networkCompletionVerified',
+      'metadata',
+      'workflows',
+      'diagnostics',
+    ]) ||
+    value.version !== 1 ||
+    value.environment !== 'dev' ||
+    value.host !== host ||
+    value.projectId !== projectId ||
+    value.technicalAttempt !== 13 ||
+    value.sourceCommitSha !== runtimeReconciliationCheckpoint.sourceCommitSha ||
+    value.windowId !== runtimeReconciliationCheckpoint.windowId ||
+    value.status !== 'readback_observed' ||
+    value.requestCount !== 3 ||
+    value.authenticationVerified !== true ||
+    value.networkCompletionVerified !== true ||
+    !bools(value.metadata, metadataKeys) ||
+    value.metadata.dataPresent ||
+    metadataKeys.filter((k) => k !== 'dataPresent').some((k) => value.metadata[k] !== true) ||
+    !exact(value.workflows, ['SUB-NOTIFY', 'WF-90'])
+  )
+    throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  for (const key of ['SUB-NOTIFY', 'WF-90']) {
+    const w = value.workflows[key];
+    if (
+      !bools(w, workflowKeys) ||
+      [
+        'objectShape',
+        'idMatches',
+        'archiveStateMatches',
+        'ownerProjectMatches',
+        'tagsMatchBaseline',
+        'pinnedDataAbsent',
+        'targetGraphEqual',
+        'versionMatchesTarget',
+        'publicationMatchesTarget',
+      ].some((k) => w[k] !== true)
+    )
+      throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  }
+  if (
+    !exact(value.diagnostics, ['version', 'dns', 'requests']) ||
+    value.diagnostics.version !== 1 ||
+    value.diagnostics.dns !== 'complete' ||
+    !Array.isArray(value.diagnostics.requests) ||
+    value.diagnostics.requests.length !== 3
+  )
+    throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  for (const [i, d] of value.diagnostics.requests.entries()) {
+    const expected = {
+      resource: i === 0 ? 'credentials' : 'workflows',
+      page: i === 2 ? 2 : 1,
+      tcpConnected: true,
+      tlsVerified: true,
+      httpStatus: 200,
+      bodyRead: 'complete',
+      jsonParsed: true,
+      schemaValidated: true,
+      socketClosed: true,
+      failureStage: 'none',
+      failureCode: 'none',
+    };
+    if (!exact(d, Object.keys(expected)) || Object.entries(expected).some(([k, v]) => d[k] !== v))
+      throw Error('RUNTIME_RECONCILIATION_BLOCKED');
+  }
+}
+
 // Exactly one owned workflow GET. This diagnostic neither creates a runtime
 // plan nor admits a window, reads credentials/variables, saves or adopts a graph.
 export async function runMachineMetadataDiagnostic(key, dependencies = {}) {
@@ -1614,7 +2289,8 @@ export async function runWf70DiscoveryDiagnostic(key, dependencies = {}) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const key = process.env.M03_N8N_API_KEY;
+  const key =
+    process.argv[2] === '--runtime-reconciliation-check-only' ? undefined : process.env.M03_N8N_API_KEY;
   delete process.env.M03_N8N_API_KEY;
   if (!(
     process.argv.length === 2 ||
@@ -1623,10 +2299,41 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         '--workflow-baseline-diagnostic',
         '--wf70-discovery-diagnostic',
         '--machine-metadata-diagnostic',
+        '--runtime-reconciliation-check-only',
+        '--runtime-reconciliation-diagnostic',
       ].includes(process.argv[2]))
   )) {
     process.stdout.write(JSON.stringify({ version: 1, status: 'argument_rejected' }) + '\n');
     process.exitCode = 1;
+  } else if (
+    ['--runtime-reconciliation-check-only', '--runtime-reconciliation-diagnostic'].includes(process.argv[2])
+  ) {
+    setImmediate(() => {
+      const check = process.argv[2] === '--runtime-reconciliation-check-only';
+      (check ? checkRuntimeReconciliationDiagnostic() : runRuntimeReconciliationDiagnostic(key)).then(
+        (result) => {
+          process.stdout.write(JSON.stringify(result) + '\n');
+          process.exitCode = (check ? result.status === 'ready' : result.status === 'readback_observed')
+            ? 0
+            : 1;
+        },
+        () => {
+          process.stdout.write(
+            JSON.stringify(
+              check
+                ? {
+                    kind: 'm03_runtime_reconciliation_check',
+                    status: 'blocked',
+                    privateRead: false,
+                    networkRequests: 0,
+                  }
+                : { version: 1, status: 'diagnostic_failed' },
+            ) + '\n',
+          );
+          process.exitCode = 1;
+        },
+      );
+    });
   } else if (process.argv[2] === '--machine-metadata-diagnostic') {
     const result = await runMachineMetadataDiagnostic(key);
     process.stdout.write(JSON.stringify(result) + '\n');

@@ -41,6 +41,7 @@ const savedCaseBodies = new WeakMap();
 const nativeGraphObservations = new WeakMap();
 const checkedBindings = new WeakMap();
 const restorationAudits = new WeakMap();
+const restorationOnlyJournals = new WeakSet();
 export function assertFoundationRuntimeRestorationAudit(receipt, { plan }) {
   const meta = receipt && restorationAudits.get(receipt);
   if (!meta || !Object.isFrozen(receipt) || meta.plan !== plan) fail();
@@ -379,6 +380,9 @@ function controller(plan, ports) {
       plan,
       receipt: freezeRuntimeValue(receipt),
       requestNumber: state().requestCount,
+      // Keep only this validated GET's structure in memory. Native versioning
+      // compares raw nodes/connections; settings are intentionally unversioned.
+      structure: freezeRuntimeValue(structuredClone({ nodes: dto.nodes, connections: dto.connections })),
     });
     return receipt;
   };
@@ -388,6 +392,14 @@ function controller(plan, ports) {
     const before = s.workflows[key],
       b = plan.baseline.find((v) => v.key === key);
     await read(key);
+    const observed = nativeGraphObservations.get(ports.journal)?.get(key);
+    if (
+      !observed ||
+      observed.plan !== plan ||
+      observed.requestNumber !== state().requestCount ||
+      !isDeepStrictEqual(observed.receipt, before)
+    )
+      fail();
     if (
       action === 'publish' &&
       (!plan.publishKeys.includes(key) || before.activeVersionId !== null || body !== null)
@@ -401,9 +413,17 @@ function controller(plan, ports) {
           body !== b.body))
     )
       fail();
+    const structureChanged =
+      action === 'save' &&
+      (!isDeepStrictEqual(observed.structure.nodes, body.nodes) ||
+        !isDeepStrictEqual(observed.structure.connections, body.connections));
     const target =
       action === 'save'
-        ? { ...before, versionId: null, graphHash: runtimeGraphHash(body) }
+        ? {
+            ...before,
+            versionId: structureChanged ? null : before.versionId,
+            graphHash: runtimeGraphHash(body),
+          }
         : action === 'publish'
           ? {
               ...before,
@@ -424,7 +444,7 @@ function controller(plan, ports) {
         !object(response) ||
         response.id !== b.id ||
         !id(response.versionId) ||
-        response.versionId === before.versionId
+        (structureChanged ? response.versionId === before.versionId : response.versionId !== before.versionId)
       )
         fail();
       target.versionId = response.versionId;
@@ -514,6 +534,7 @@ const result = (c, status) => ({
 });
 export async function runFoundationRuntimeSetup(plan, ports) {
   const c = controller(plan, ports);
+  if (restorationOnlyJournals.has(ports.journal)) return result(c, 'blocked');
   if (!enter(ports.journal)) return result(c, 'operation_in_progress');
   try {
     if (c.state().requestCount || c.state().setupComplete || c.state().pending)
@@ -569,6 +590,7 @@ export async function runFoundationRuntimeSetup(plan, ports) {
 }
 export async function saveFoundationRuntimeCase(plan, draft, ports) {
   const c = controller(plan, ports);
+  if (restorationOnlyJournals.has(ports.journal)) return result(c, 'blocked');
   if (!enter(ports.journal)) return result(c, 'operation_in_progress');
   try {
     assertFoundationRuntimeCaseDraft(draft);
@@ -616,7 +638,8 @@ export function assertFoundationRuntimeCaseReceipt(receipt) {
 
 function currentBindingState(plan, key, journal, body) {
   assertFoundationRuntimePlan(plan);
-  if (!checkedJournals.has(journal) || activeJournals.has(journal)) fail();
+  if (!checkedJournals.has(journal) || activeJournals.has(journal) || restorationOnlyJournals.has(journal))
+    fail();
   const state = reduce(plan, journal.rows);
   const current = state.workflows[key];
   const observed = nativeGraphObservations.get(journal)?.get(key);
@@ -712,6 +735,75 @@ export async function restoreFoundationRuntime(plan, ports) {
     return receipt;
   } catch {
     return result(c, c.state().pending ? 'reconciliation_required' : 'blocked');
+  } finally {
+    activeJournals.delete(ports.journal);
+  }
+}
+// The outer restore-only consumer must first validate technical13's immutable
+// physical closure and copy its exact journal prefix into a fresh recovery file.
+// This accepts only its one known settings target after our own qualified GET;
+// the original PUT acknowledgement remains unknown and is never replayed.
+export async function adoptFoundationRuntimeSettingsSaveForRestoration(plan, ports) {
+  const c = controller(plan, ports);
+  const outcome = (status) => ({
+    status,
+    requestCount: c.state().requestCount,
+    restoreOnly: true,
+    originalAcknowledgementVerified: false,
+    mutationReplayAllowed: false,
+  });
+  if (!enter(ports.journal)) return outcome('settings_save_readback_blocked');
+  try {
+    const s = c.state(),
+      pending = s.pending,
+      bootstrap = plan.setupSteps.find((step) => step.kind === 'save' && step.key === 'SUB-NOTIFY')?.body,
+      targetBody = plan.runtime.find((row) => row.key === 'SUB-NOTIFY')?.body,
+      handler = plan.runtime.find((row) => row.key === 'WF-90'),
+      last = ports.journal.rows.at(-1);
+    if (
+      plan.windowId !== '3c46c791-e140-4eb9-890a-eecfa251f65e' ||
+      s.requestCount !== 22 ||
+      s.setupComplete ||
+      s.restoreComplete ||
+      !s.machineRebound ||
+      !pending ||
+      pending.sequence !== 7 ||
+      pending.action !== 'save' ||
+      pending.key !== 'SUB-NOTIFY' ||
+      !bootstrap ||
+      !targetBody ||
+      pending.target.versionId !== null ||
+      !id(pending.before.versionId) ||
+      pending.before.activeVersionId !== null ||
+      pending.target.activeVersionId !== null ||
+      pending.before.publishedHash !== null ||
+      pending.target.publishedHash !== null ||
+      pending.before.graphHash !== runtimeGraphHash(bootstrap) ||
+      pending.target.graphHash !== runtimeGraphHash(targetBody) ||
+      !isDeepStrictEqual(bootstrap.nodes, targetBody.nodes) ||
+      !isDeepStrictEqual(bootstrap.connections, targetBody.connections) ||
+      targetBody.settings.errorWorkflow !== handler?.id ||
+      !isDeepStrictEqual(s.publishedHistory, ['SUB-NOTIFY', 'WF-90']) ||
+      s.workflows['WF-90'].activeVersionId !== s.workflows['WF-90'].versionId ||
+      s.workflows['WF-90'].graphHash !== runtimeGraphHash(handler.body) ||
+      !exact(last, ['event', 'number', 'method', 'path']) ||
+      last.event !== 'request' ||
+      last.number !== 22 ||
+      last.method !== 'PUT' ||
+      last.path !== '/api/v1/workflows/tiEhU3dXrMifOnTL?publishIfActive=false'
+    )
+      fail();
+    const beforeSettings = structuredClone(bootstrap.settings),
+      afterSettings = structuredClone(targetBody.settings);
+    delete beforeSettings.errorWorkflow;
+    delete afterSettings.errorWorkflow;
+    if (!isDeepStrictEqual(beforeSettings, afterSettings)) fail();
+    restorationOnlyJournals.add(ports.journal);
+    const after = await c.read('SUB-NOTIFY', { ...pending.target, versionId: pending.before.versionId });
+    ports.journal.append({ event: 'verified', sequence: 7, after });
+    return outcome('settings_save_readback_verified_original_ack_unknown');
+  } catch {
+    return outcome('settings_save_readback_blocked');
   } finally {
     activeJournals.delete(ports.journal);
   }

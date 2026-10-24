@@ -1,0 +1,554 @@
+{
+  "kind": "m03_technical13_runtime_setup_reconciliation",
+  "version": 1,
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "recordedAt": "2026-10-24T11:02:59.660Z",
+  "source": {
+    "helperHead": "570fd560a1c44f6fc6d86e30bfd3cbb082f7c3d8",
+    "applicationSource": "7b1837201ac7925591577a1517d7288936ca3464",
+    "ciRun": 40087410078,
+    "ciAttempt": 1,
+    "allFiveJobsPassed": true,
+    "vercelPassed": true,
+    "pr": 8,
+    "prDraft": true
+  },
+  "attempt": {
+    "technicalAttempt": 13,
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "windowId": "3c46c791-e140-4eb9-890a-eecfa251f65e",
+    "parentProcessId": 50680,
+    "runtimeProcessId": 30264,
+    "startsAt": 1792839229036,
+    "closedAt": 1792839482363,
+    "nativeExit": 1,
+    "prepareId": "m03_live_027",
+    "prepareStatus": "blocked",
+    "prepareCode": "FOUNDATION_RUNTIME_SETUP_BLOCKED",
+    "restoreId": "m03_live_028",
+    "restoreStatus": "restoration_residual",
+    "closeId": "m03_live_029",
+    "closeIdSource": "coordinator-issued command; public source-close frame omits the command id",
+    "sourceCloseStatus": "closed",
+    "baselineDefinitionGets": 25,
+    "executionDiscoveryGets": 50,
+    "browserDiscoveryCalls": 1,
+    "newGatewayPreflightAttempts": 2,
+    "newProviderDirectAttempts": 0,
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "previewSetupAttempted": true,
+    "sqlProvisionAttempted": true,
+    "fixtureReactivationAttempted": true,
+    "migrationOperationAttempted": false
+  },
+  "failure": {
+    "lastRuntimeRequest": {
+      "event": "request",
+      "number": 22,
+      "method": "PUT",
+      "path": "/api/v1/workflows/tiEhU3dXrMifOnTL?publishIfActive=false"
+    },
+    "pendingIntent": {
+      "event": "intent",
+      "sequence": 7,
+      "action": "save",
+      "key": "SUB-NOTIFY",
+      "before": {
+        "versionId": "6b60762f-e55e-4861-9d93-1f368bfacce7",
+        "activeVersionId": null,
+        "graphHash": "e3650d9e7757a63579d2b8bb47c3f5c9abe938d83c33516ddf4d470e15900f1b",
+        "publishedHash": null
+      },
+      "target": {
+        "versionId": null,
+        "activeVersionId": null,
+        "graphHash": "5fff3b108c478f75b31b9abc774551f33715e5e517ce23e25ee381e6049e96c2",
+        "publishedHash": null
+      }
+    },
+    "httpStatus": null,
+    "httpAcknowledgementRetained": false,
+    "actualWriteAppliedEstablished": false,
+    "actualHostedFailureCauseEstablished": false,
+    "metadataOnlyReadbackRequired": true,
+    "mutationReplayAllowed": false,
+    "localDefect": {
+      "status": "locally_reproduced_native_contract_mismatch",
+      "finding": "The controller required a new versionId for every PUT; the native settings-only update contract can preserve versionId when nodes, connections and nodeGroups are unchanged.",
+      "affectedWrite": "second SUB-NOTIFY settings.errorWorkflow save",
+      "localReproductionEstablishesActualHttpResponse": false,
+      "localReproductionEstablishesActualMutationApplied": false
+    },
+    "verifiedMutationSequences": [
+      {
+        "sequence": 1,
+        "action": "machine_rebind",
+        "key": "Machine",
+        "verified": true
+      },
+      {
+        "sequence": 2,
+        "action": "save",
+        "key": "SUB-NOTIFY",
+        "verified": true
+      },
+      {
+        "sequence": 3,
+        "action": "publish",
+        "key": "SUB-NOTIFY",
+        "verified": true
+      },
+      {
+        "sequence": 4,
+        "action": "save",
+        "key": "WF-90",
+        "verified": true
+      },
+      {
+        "sequence": 5,
+        "action": "publish",
+        "key": "WF-90",
+        "verified": true
+      },
+      {
+        "sequence": 6,
+        "action": "unpublish",
+        "key": "SUB-NOTIFY",
+        "verified": true
+      },
+      {
+        "sequence": 7,
+        "action": "save",
+        "key": "SUB-NOTIFY",
+        "verified": false
+      }
+    ]
+  },
+  "rawPrepare": {
+    "kind": "m03_acceptance_result",
+    "id": "m03_live_027",
+    "command": "prepare",
+    "status": "blocked",
+    "managementAttempts": 465,
+    "controlAttempts": 791,
+    "nativeExecutions": 0,
+    "gatewayPreflightAttempts": 6,
+    "providerDirectAttempts": 0,
+    "phaseBReady": false,
+    "domainProofReady": false,
+    "businessAcceptanceProven": false,
+    "code": "FOUNDATION_RUNTIME_SETUP_BLOCKED",
+    "residual": true
+  },
+  "rawRestore": {
+    "kind": "m03_acceptance_result",
+    "id": "m03_live_028",
+    "command": "restore",
+    "status": "restoration_residual",
+    "managementAttempts": 483,
+    "controlAttempts": 791,
+    "nativeExecutions": 0,
+    "gatewayPreflightAttempts": 6,
+    "providerDirectAttempts": 0,
+    "phaseBReady": false,
+    "domainProofReady": false,
+    "businessAcceptanceProven": false,
+    "code": "FOUNDATION_RUNTIME_SETUP_BLOCKED",
+    "baselineRestored": false,
+    "environmentCleanupVerified": true,
+    "windowClosed": true,
+    "fixtureArchived": false,
+    "remoteWorkSettled": false,
+    "residual": true
+  },
+  "rawSourceClose": {
+    "kind": "m03_acceptance_closed",
+    "status": "closed",
+    "managementAttempts": 483,
+    "controlAttempts": 791,
+    "nativeExecutions": 0,
+    "gatewayPreflightAttempts": 6,
+    "providerDirectAttempts": 0,
+    "phaseBReady": false,
+    "domainProofReady": false,
+    "businessAcceptanceProven": false,
+    "code": "FOUNDATION_RUNTIME_SETUP_BLOCKED",
+    "childTransportsClosed": true,
+    "adminChildClosed": true,
+    "windowClosed": true,
+    "fixtureArchived": false,
+    "baselineRestored": false,
+    "environmentCleanupVerified": true,
+    "remoteWorkSettled": false,
+    "residual": true
+  },
+  "rawWrapperClose": {
+    "kind": "m03_acceptance_wrapper_closed",
+    "childClosed": true,
+    "credentialChildrenClosed": true,
+    "emergencyShutdown": false,
+    "nativeExit": 1,
+    "handoffsDeleted": true,
+    "bypassHandoffDeleted": false,
+    "pendingMachinePreserved": true,
+    "privateRead": true,
+    "code": "M03_ACCEPTANCE_BLOCKED"
+  },
+  "rawTechnicalClose": {
+    "kind": "m03_project_verified_technical_closed",
+    "version": 1,
+    "admissionSha256": "00bef7f93dfba695e0fe9f6b32afe97531fa72f03c98b94cbe418719dab08bf9",
+    "parentProcessId": 50680,
+    "runtimeProcessId": 30264,
+    "closedAt": 1792839482363,
+    "childClosed": true,
+    "credentialChildrenClosed": true,
+    "emergencyShutdown": false,
+    "pendingMachinePreserved": true,
+    "nativeExit": 1,
+    "bypassHandoffDeleted": false,
+    "closureVerified": false
+  },
+  "rawPublicPipeClose": {
+    "kind": "m03_public_raw_pipe_closed",
+    "nativeExit": 1,
+    "parentClosed": true,
+    "stderrPresent": false,
+    "protocolBlocked": false,
+    "overflow": false
+  },
+  "rawAdmission": {
+    "kind": "m03_project_verified_continuation_admission",
+    "version": 1,
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "sourceCommitSha": "7b1837201ac7925591577a1517d7288936ca3464",
+    "windowId": "3c46c791-e140-4eb9-890a-eecfa251f65e",
+    "approvalSha256": "5eb38cbe8740ed9a9f72d2356de3fa2e9ce77c8de3710020a7d3de7a6ebdd610",
+    "startsAt": 1792839229036,
+    "deadlineAt": 1792842829036,
+    "stopNewAt": 1792842229036,
+    "hardDeadlineAt": 1792843429036,
+    "parentProcessId": 50680
+  },
+  "rawRuntimeClaim": {
+    "kind": "m03_project_verified_continuation_runtime_claim",
+    "version": 1,
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "admissionSha256": "00bef7f93dfba695e0fe9f6b32afe97531fa72f03c98b94cbe418719dab08bf9",
+    "processId": 30264,
+    "parentProcessId": 50680,
+    "claimedAt": 1792839231686
+  },
+  "rawDatabaseLatest": {
+    "version": 1,
+    "runId": "c9bc8da4-3bef-4d63-973a-506b47497e3b",
+    "environment": "dev",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "host": "aws-1-eu-central-1.pooler.supabase.com",
+    "port": 5432,
+    "status": "continuation_history_verified",
+    "authenticationAttempted": true,
+    "authenticationVerified": true,
+    "historyBefore": "complete",
+    "historyAfter": "complete",
+    "dryRunMatched": false,
+    "dryRunCheck": "not_attempted",
+    "dryRunNativeExit": null,
+    "pushAttempted": false,
+    "pushNativeExit": null,
+    "childrenClosed": true,
+    "handoffDeleted": true,
+    "leaseDeleted": true,
+    "scratchDeleted": true,
+    "pendingVersions": [],
+    "phaseAControl": true,
+    "phaseACommands": 6,
+    "phaseAClosed": true,
+    "observedAt": "2026-10-24T10:58:02.0692277Z",
+    "postcheckContinuation": true,
+    "projectVerifiedContinuation": true,
+    "forwardWindow": true,
+    "activeWindowId": "3c46c791-e140-4eb9-890a-eecfa251f65e",
+    "clockSegmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "technicalAttemptOrdinal": 13,
+    "unprovisionedFixtureArchived": false,
+    "postcheckStage": "complete",
+    "catalogChecks": {
+      "identity": true,
+      "tables_rls": true,
+      "no_machine_table_grants": true,
+      "rpc_shape": true,
+      "owner_control_restricted": true,
+      "all_project_tables_rls": true,
+      "all_views_invoker": true,
+      "gw01_closed": true,
+      "domain_auto_join_off": true,
+      "baseline_counts": true,
+      "forward_primary_key": true,
+      "forward_signatures": true,
+      "forward_namespace": true,
+      "no_new_window": true
+    },
+    "postcheckCandidate": "scripts/db/out/m03-foundation-continuation-c9bc8da4-3bef-4d63-973a-506b47497e3b-db.types.ts",
+    "reactivationState": "acknowledged_and_verified"
+  },
+  "database": {
+    "runId": "c9bc8da4-3bef-4d63-973a-506b47497e3b",
+    "authenticationAttempted": true,
+    "authenticationVerified": true,
+    "historyBefore": "complete",
+    "historyAfter": "complete",
+    "pendingVersions": [],
+    "pushAttempted": false,
+    "dryRunCheck": "not_attempted",
+    "postcheckStage": "complete",
+    "catalogChecks": {
+      "identity": true,
+      "tables_rls": true,
+      "no_machine_table_grants": true,
+      "rpc_shape": true,
+      "owner_control_restricted": true,
+      "all_project_tables_rls": true,
+      "all_views_invoker": true,
+      "gw01_closed": true,
+      "domain_auto_join_off": true,
+      "baseline_counts": true,
+      "forward_primary_key": true,
+      "forward_signatures": true,
+      "forward_namespace": true,
+      "no_new_window": true
+    },
+    "phaseACommands": 6,
+    "phaseAClosed": true,
+    "reactivationState": "acknowledged_and_verified",
+    "unprovisionedFixtureArchived": false,
+    "childrenClosed": true,
+    "handoffDeleted": true,
+    "leaseDeleted": true,
+    "scratchDeleted": true,
+    "nativeExitCodeInLatestReceipt": null,
+    "nativeZeroCompletionReportedByCoordinator": true,
+    "nativeZeroQualification": "The coordinator reported native0 for the separate Admin child. The raw DB latest receipt has no nativeExit field; it records successful continuation history/postchecks and phaseA closure, separately from the overall failed acceptance native1."
+  },
+  "gateway": {
+    "identityVerified": true,
+    "unauthorizedVerified": true,
+    "writerCloseIdentityVerified": true,
+    "writerCloseBindingVerified": true,
+    "writerCloseAcknowledged": true,
+    "writerConnectionClosed": true,
+    "audience": "https://everyone-market-researcher-7fcbxykan-muhammed-abdelrahman.vercel.app",
+    "deploymentId": "dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25",
+    "windowClosed": true
+  },
+  "provisionAttempt": {
+    "version": 1,
+    "runId": "c9bc8da4-3bef-4d63-973a-506b47497e3b",
+    "windowId": "3c46c791-e140-4eb9-890a-eecfa251f65e",
+    "packet": {
+      "audience": "https://everyone-market-researcher-7fcbxykan-muhammed-abdelrahman.vercel.app",
+      "commitSha": "7b1837201ac7925591577a1517d7288936ca3464",
+      "deploymentId": "dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25",
+      "actorBuild": "0.3.99",
+      "approvalReference": "M03-A-D-f42930f-20261021",
+      "maxTotalChargeUsd": 1,
+      "batchMaxUsd": 2
+    },
+    "createdAt": "2026-10-24T10:56:20.2996129Z"
+  },
+  "reactivationAttempt": {
+    "version": 1,
+    "runId": "c9bc8da4-3bef-4d63-973a-506b47497e3b",
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "competitorId": "d51a39f6-fe87-4d17-aee9-3070c45693aa",
+    "accountId": "bd23314c-591f-4fb7-92fd-b7450634eeb6",
+    "createdAt": "2026-10-24T10:56:36.6782188Z"
+  },
+  "physicalClosureObservation": {
+    "observedAt": "2026-10-24T11:01:57.8399507Z",
+    "knownProcessIds": [
+      50680,
+      30264
+    ],
+    "knownPresentProcessIds": [],
+    "currentDescendantProcessIds": [],
+    "temporaryLeaves": [
+      {
+        "name": "emr-m03-foundation-dev-migration-password.dpapi",
+        "present": false
+      },
+      {
+        "name": "emr-m03-foundation-dev-migration-password.lease.json",
+        "present": false
+      },
+      {
+        "name": "emr-m03-acceptance-management.dpapi",
+        "present": false
+      },
+      {
+        "name": "emr-m03-acceptance-management.lease.json",
+        "present": false
+      },
+      {
+        "name": "emr-m03-acceptance-writer.dpapi",
+        "present": false
+      },
+      {
+        "name": "emr-m03-acceptance-writer.lease.json",
+        "present": false
+      },
+      {
+        "name": "emr-m03-acceptance-apifyread.dpapi",
+        "present": false
+      },
+      {
+        "name": "emr-m03-acceptance-apifyread.lease.json",
+        "present": false
+      },
+      {
+        "name": "emr-m03-acceptance-parent.operation.lock",
+        "present": false
+      },
+      {
+        "name": "emr-m03-acceptance-protection-bypass.dpapi",
+        "present": true
+      }
+    ],
+    "runtimeLockPath": "scripts/n8n/out/foundation/live/runtime.operation.lock",
+    "runtimeLockPresent": false,
+    "machinePresent": true,
+    "persistentEntries": [
+      {
+        "kind": "admin\\database.dpapi",
+        "present": true
+      },
+      {
+        "kind": "runtime\\management.dpapi",
+        "present": true
+      },
+      {
+        "kind": "runtime\\writer.dpapi",
+        "present": true
+      },
+      {
+        "kind": "runtime\\apifyread.dpapi",
+        "present": true
+      }
+    ],
+    "privateContentsRead": false,
+    "credentialsDecrypted": false,
+    "cleanupPerformed": false
+  },
+  "cleanup": {
+    "knownParentAndRuntimeAbsent": true,
+    "currentKnownDescendantsAbsent": true,
+    "allEightDisposablePairFilesAbsent": true,
+    "parentOperationLockAbsent": true,
+    "runtimeLockAbsent": true,
+    "bypassEncryptedHandoffRetained": true,
+    "persistentEncryptedOriginalsRetained": true,
+    "pendingMachineRetained": true,
+    "credentialContentsReadForCleanup": false,
+    "cleanupPerformedByThisReceipt": false,
+    "rawNativeFailurePreserved": true,
+    "fullRemoteRestorationVerified": false,
+    "baselineRestored": false,
+    "fixtureArchived": false,
+    "remoteWorkSettled": false,
+    "environmentCleanupVerified": true,
+    "qualification": "Presence checks show current local process/file state only. They do not establish historical drain, baseline restoration or fixture archival; the retained encrypted bypass remains for bounded residual follow-up."
+  },
+  "usage": {
+    "mainManagement": 472,
+    "carriedManagement": 11,
+    "management": 483,
+    "mainControl": 788,
+    "carriedControl": 3,
+    "control": 791,
+    "combined": 1274,
+    "vercel": 149,
+    "managementMaximum": 832,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "vercelMaximum": 176,
+    "actorStarts": 0,
+    "actorMaximum": 2,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "journalCounts": {
+    "management": 473,
+    "control": 796,
+    "setup": 297,
+    "preflight": 16,
+    "runtimeTechnical13": 38
+  },
+  "journalPrefixes": {
+    "scripts/n8n/out/foundation/live/management.jsonl": {
+      "rows": 473,
+      "sha256": "55e31393c69a807aedfb8e76e1c14408b9ab2b6de2f47f93d646d4f66dd353cf",
+      "prefix": true
+    },
+    "scripts/n8n/out/foundation/live/control.jsonl": {
+      "rows": 796,
+      "sha256": "3270abae0f9c5088569f21d5890730296eb5ce44dde94e08bbc912ec20c1933b",
+      "prefix": true
+    },
+    "scripts/n8n/out/foundation/live/setup.jsonl": {
+      "rows": 297,
+      "sha256": "3a4d4e99bf282d54d0936017a54a5f6fbedb3ea8316ab69b16e61aaa6dfc15a6",
+      "prefix": true
+    },
+    "scripts/n8n/out/foundation/live/preflight.jsonl": {
+      "rows": 16,
+      "sha256": "18462d8220c4e400da5c6f823bc6565686f80bc0b8b8a6553e79bd5209fbb377",
+      "prefix": true
+    },
+    "scripts/n8n/out/foundation/live/runtime.jsonl": {
+      "rows": 50,
+      "sha256": "3f1c85ad7d185481da33c8989b34b82cbbef26aa3ec01209bc13561bd3481378",
+      "prefix": true
+    },
+    "scripts/n8n/out/foundation/live/runtime.technical-12.jsonl": {
+      "rows": 30,
+      "sha256": "5ff88be8511d2dcef5da00a627036b0ff120ae1550bb1ec1e03701f2fd971b04",
+      "prefix": true
+    },
+    "scripts/n8n/out/foundation/live/runtime.technical-13.jsonl": {
+      "rows": 38,
+      "sha256": "5f323f1a3328689edcd05ab61eb74cb334f4b63c3e8bc81b0beeb9bf42d1f6ac",
+      "prefix": true
+    }
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-13.json": "00bef7f93dfba695e0fe9f6b32afe97531fa72f03c98b94cbe418719dab08bf9",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-13.runtime-claim.json": "79879f5ad9e0d5e47146bfbe0f586bf3540b7bd925fe211757f87d9770d2e74c",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-13.closed.json": "762272357606db7da98ee3dd984a3f10ac96c370dd6db8ca9d6d4b74117fbbb4",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-13.public-frames.jsonl": "8bee312302ac2e506d6dcd86ab4310069ced476ca815922cc02c50e4bda45c54",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-13-attempt.json": "3da6cd72f679304f03e157e38ca894deda3497b41d7aac46bdb9d8272b668508",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-13-latest.json": "704271de7725ff9bf47ba7f92fe77e4ab9b0e34d763e246d77c8ce8d2d31c33b",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-13-owner-provision-attempt.json": "9443064d009006c2bd232cad92c991d5f2338aa31e5f62492ff03fc3184f0bdc",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-13-reactivation-attempt.json": "a09fd27c53d2f6df23947d04d1dbf6072cebfa78d5477a9d6958e7620d563d06",
+    "scripts/n8n/out/foundation/live/management.jsonl": "55e31393c69a807aedfb8e76e1c14408b9ab2b6de2f47f93d646d4f66dd353cf",
+    "scripts/n8n/out/foundation/live/control.jsonl": "3270abae0f9c5088569f21d5890730296eb5ce44dde94e08bbc912ec20c1933b",
+    "scripts/n8n/out/foundation/live/setup.jsonl": "3a4d4e99bf282d54d0936017a54a5f6fbedb3ea8316ab69b16e61aaa6dfc15a6",
+    "scripts/n8n/out/foundation/live/preflight.jsonl": "18462d8220c4e400da5c6f823bc6565686f80bc0b8b8a6553e79bd5209fbb377",
+    "scripts/n8n/out/foundation/live/runtime.jsonl": "3f1c85ad7d185481da33c8989b34b82cbbef26aa3ec01209bc13561bd3481378",
+    "scripts/n8n/out/foundation/live/runtime.technical-12.jsonl": "5ff88be8511d2dcef5da00a627036b0ff120ae1550bb1ec1e03701f2fd971b04",
+    "scripts/n8n/out/foundation/live/runtime.technical-13.jsonl": "5f323f1a3328689edcd05ab61eb74cb334f4b63c3e8bc81b0beeb9bf42d1f6ac"
+  },
+  "acceptance": {
+    "actualM03DevAcceptanceVerified": false,
+    "localCredentialChildrenClosed": true,
+    "fullRemoteRestorationVerified": false,
+    "phaseBReady": false,
+    "domainProofReady": false,
+    "businessAcceptanceProven": false,
+    "unresolvedPendingMutation": true,
+    "productionTouched": false,
+    "mergeApproved": false,
+    "m04Started": false
+  }
+}

@@ -22,6 +22,10 @@ function fixture(run) {
   const helper = join(repo, 'scripts/n8n/windows/Get-M03FoundationPendingMachine.ps1');
   mkdirSync(dirname(helper), { recursive: true });
   writeFileSync(helper, readFileSync(resolve('scripts/n8n/windows/Get-M03FoundationPendingMachine.ps1')));
+  writeFileSync(
+    join(dirname(helper), 'Dev-CredentialStore.ps1'),
+    readFileSync(resolve('scripts/n8n/windows/Dev-CredentialStore.ps1')),
+  );
   const directory = join(local, 'Everyone-Market-Radar-Private/foundation', windowId);
   const journal = join(repo, 'scripts/n8n/out/foundation/binding-intents.jsonl');
   mkdirSync(directory, { recursive: true });
@@ -51,7 +55,7 @@ function fixture(run) {
     });
   };
   const create = ps(
-    `$s=ConvertTo-SecureString -String 'PUBLIC_SYNTHETIC_MACHINE_ONLY' -AsPlainText -Force; try { [IO.File]::WriteAllText(${literal(file)},(ConvertFrom-SecureString $s),[Text.Encoding]::ASCII) } finally {$s.Dispose()}`,
+    `. ${literal(join(dirname(helper), 'Dev-CredentialStore.ps1'))};Set-M03DevPrivateAcl ${literal(directory)} $true;$s=ConvertTo-SecureString -String 'PUBLIC_SYNTHETIC_MACHINE_ONLY' -AsPlainText -Force; try { [IO.File]::WriteAllText(${literal(file)},(ConvertFrom-SecureString $s),[Text.Encoding]::ASCII);Set-M03DevPrivateAcl ${literal(file)} $false } finally {$s.Dispose()}`,
   );
   assert.equal(create.status, 0);
   writeFileSync(metadata, JSON.stringify(meta));
@@ -60,7 +64,7 @@ function fixture(run) {
       `. ${literal(helper)}; $s=$null; try {$s=Get-M03FoundationPendingMachine -Audience ${literal(meta.audience)} -SourceCommitSha ${literal(meta.sourceCommitSha)} -BindingJournalPath ${literal(journalPath)}; if($s -isnot [Security.SecureString]){throw 'blocked'}; Write-Output 'SYNTHETIC_PENDING_REUSED'; exit 0} catch {Write-Output 'FOUNDATION_MACHINE_PRIVATE_STORE_BLOCKED'; exit 1} finally {if($null -ne $s){$s.Dispose()}}`,
     );
   try {
-    return run({ root, repo, directory, journal, header, file, metadata, transition, meta, consume });
+    return run({ root, repo, directory, journal, header, file, metadata, transition, meta, consume, ps });
   } finally {
     assert.equal(dirname(root), tmpdir());
     assert.ok(basename(root).startsWith('emr-pending-machine-test-'));
@@ -181,6 +185,28 @@ test('new store uses the valid fixed ID and preserves generated ciphertext on re
   }),
 );
 
+test(
+  'real new Machine producer creates strict CurrentUser/SYSTEM storage and native DPAPI framing',
+  onlyWindows,
+  () =>
+    fixture(({ file, metadata, directory, repo, consume, ps }) => {
+      rmSync(file);
+      rmSync(metadata);
+      assert.equal(consume().status, 0);
+      const checked = ps(
+        `. ${literal(join(repo, 'scripts/n8n/windows/Dev-CredentialStore.ps1'))};$out=[ordered]@{directoryAcl=$false;machineAcl=$false;metadataAcl=$false;nativeFraming=$false};try{Assert-M03DevPrivateAcl ${literal(directory)} $true;$out.directoryAcl=$true}catch{};try{Assert-M03DevPrivateAcl ${literal(file)} $false;$out.machineAcl=$true}catch{};try{Assert-M03DevPrivateAcl ${literal(metadata)} $false;$out.metadataAcl=$true}catch{};$bytes=[IO.File]::ReadAllBytes(${literal(file)});try{Assert-M03DevCipherFraming $bytes;$out.nativeFraming=$true}finally{[Array]::Clear($bytes,0,$bytes.Length)};$out|ConvertTo-Json -Compress`,
+      );
+      assert.equal(checked.status, 0);
+      assert.equal(checked.stderr, '');
+      assert.deepEqual(JSON.parse(checked.stdout), {
+        directoryAcl: true,
+        machineAcl: true,
+        metadataAcl: true,
+        nativeFraming: true,
+      });
+    }),
+);
+
 test('foreign no-machine journal cannot authorize the old identity transition', onlyWindows, () =>
   fixture(({ root, file, metadata, journal, consume }) => {
     const foreign = join(root, 'foreign-journal.jsonl');
@@ -191,6 +217,50 @@ test('foreign no-machine journal cannot authorize the old identity transition', 
     assert.equal(Buffer.compare(readFileSync(file), cipherBefore), 0);
     assert.equal(Buffer.compare(readFileSync(metadata), metaBefore), 0);
   }),
+);
+
+test(
+  'existing Machine store rejects inherited ACL before identity mutation and preserves ciphertext',
+  onlyWindows,
+  () =>
+    fixture(({ file, metadata, consume, ps }) => {
+      const cipherBefore = readFileSync(file),
+        metadataBefore = readFileSync(metadata);
+      const legacy = ps(
+        `$a=[Security.AccessControl.FileSecurity]::new();$a.SetAccessRuleProtection($false,$false);[IO.File]::SetAccessControl(${literal(file)},$a);Write-Output 'SYNTHETIC_LEGACY_ACL_READY'`,
+      );
+      assert.equal(legacy.status, 0);
+      assert.equal(legacy.stderr, '');
+      const result = consume();
+      assert.equal(result.status, 1);
+      assert.equal(result.stderr, '');
+      assert.equal(result.stdout.trim(), 'FOUNDATION_MACHINE_PRIVATE_STORE_BLOCKED');
+      assert.equal(Buffer.compare(readFileSync(file), cipherBefore), 0);
+      assert.equal(Buffer.compare(readFileSync(metadata), metadataBefore), 0);
+    }),
+);
+
+test(
+  'new Machine store never tightens or replaces a directory with an unrelated existing child',
+  onlyWindows,
+  () =>
+    fixture(({ file, metadata, directory, consume, ps }) => {
+      rmSync(file);
+      rmSync(metadata);
+      const other = join(directory, 'unrelated-owner-record.txt');
+      writeFileSync(other, 'PUBLIC_SYNTHETIC_OWNER_RECORD');
+      const before = ps(
+        `$a=Get-Acl -LiteralPath ${literal(directory)};$protected=$a.AreAccessRulesProtected;$sddl=$a.Sddl;[ordered]@{protected=$protected;sddl=$sddl}|ConvertTo-Json -Compress`,
+      ).stdout;
+      assert.equal(consume().status, 1);
+      assert.equal(existsSync(file), false);
+      assert.equal(existsSync(metadata), false);
+      assert.equal(readFileSync(other, 'utf8'), 'PUBLIC_SYNTHETIC_OWNER_RECORD');
+      const after = ps(
+        `$a=Get-Acl -LiteralPath ${literal(directory)};$protected=$a.AreAccessRulesProtected;$sddl=$a.Sddl;[ordered]@{protected=$protected;sddl=$sddl}|ConvertTo-Json -Compress`,
+      ).stdout;
+      assert.equal(after, before);
+    }),
 );
 
 test('missing encrypted token with existing metadata never generates a replacement', onlyWindows, () =>

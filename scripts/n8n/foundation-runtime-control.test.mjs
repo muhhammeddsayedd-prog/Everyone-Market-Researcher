@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { isDeepStrictEqual } from 'node:util';
 import { readFileSync } from 'node:fs';
 import { createFoundationRuntimePlan, materializeFoundationRuntimeCase } from './foundation-runtime-plan.mjs';
 import { prepareFoundationRuntimeMachinePatch } from './foundation-runtime-machine.mjs';
@@ -283,7 +284,7 @@ test('ordinary WF00 guards require the actual native pin while keeping every oth
   );
 });
 
-function fixture({ durableAppend, fault, sharedLimit = 512, machineUpdatedAt } = {}) {
+function fixture({ durableAppend, fault, sharedLimit = 512, machineUpdatedAt, activeWindowId } = {}) {
   const bindings = JSON.parse(
     readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
   );
@@ -307,7 +308,7 @@ function fixture({ durableAppend, fault, sharedLimit = 512, machineUpdatedAt } =
     protectionTransportVerified: true,
     sqlAudienceBindingVerified: true,
   };
-  const plan = createFoundationRuntimePlan({ bindings, transport, records, setup });
+  const plan = createFoundationRuntimePlan({ bindings, transport, records, setup, activeWindowId });
   let serial = 0,
     attempts = 0;
   const calls = [],
@@ -366,6 +367,11 @@ function fixture({ durableAppend, fault, sharedLimit = 512, machineUpdatedAt } =
     if (method === 'GET') return { status: 200, body: structuredClone(w) };
     if (method === 'PUT') {
       assert.equal(m[2], '?publishIfActive=false');
+      // n8n2.43.5 WorkflowService.update creates a version for structure only;
+      // name/settings writes preserve the current native version.
+      const structureChanged =
+        !isDeepStrictEqual(w.nodes, body.nodes) || !isDeepStrictEqual(w.connections, body.connections);
+      const previousVersion = w.versionId;
       if (body.settings.errorWorkflow && body.settings.errorWorkflow !== 'DEFAULT') {
         const target = workflows.get(body.settings.errorWorkflow);
         assert.equal(Boolean(target?.activeVersionId), true, 'native write requires published error target');
@@ -378,7 +384,10 @@ function fixture({ durableAppend, fault, sharedLimit = 512, machineUpdatedAt } =
       }
       const settings = { ...w.settings, ...structuredClone(body.settings) };
       if (settings.errorWorkflow === 'DEFAULT') delete settings.errorWorkflow;
-      Object.assign(w, structuredClone(body), { settings, versionId: 'synthetic-version-' + ++serial });
+      Object.assign(w, structuredClone(body), {
+        settings,
+        versionId: structureChanged ? 'synthetic-version-' + ++serial : previousVersion,
+      });
     } else if (method === 'POST' && m[2] === '/publish') {
       assert.equal(body.versionId, w.versionId);
       assert.equal(
@@ -436,6 +445,240 @@ function fixture({ durableAppend, fault, sharedLimit = 512, machineUpdatedAt } =
     },
   };
 }
+
+test('native settings-only save retains its version and structural saves rotate before exact readback', async () => {
+  const f = fixture();
+  const result = await runFoundationRuntimeSetup(f.plan, f.ports);
+  assert.equal(result.status, 'runtime_setup_verified');
+  const intents = f.journal.rows.filter(
+    (r) => r.event === 'intent' && r.action === 'save' && r.key === 'SUB-NOTIFY',
+  );
+  assert.equal(intents.length, 2);
+  const receipt = (intent) =>
+    f.journal.rows.find((r) => r.event === 'verified' && r.sequence === intent.sequence);
+  assert.notEqual(receipt(intents[0]).after.versionId, intents[0].before.versionId);
+  assert.equal(receipt(intents[1]).after.versionId, intents[1].before.versionId);
+  assert.equal(receipt(intents[1]).after.graphHash, intents[1].target.graphHash);
+  assert.equal(
+    (await restoreFoundationRuntime(f.plan, f.ports)).status,
+    'exact_staging_restored_unpublished',
+  );
+});
+
+test('native version assertions reject unchanged structural versions and unexpected settings-only versions', async () => {
+  for (const mode of ['structure_keeps_version', 'settings_rotates_version']) {
+    const f = fixture(),
+      send = f.ports.send;
+    let altered = false;
+    f.ports.send = async (method, path, body) => {
+      const id = /^\/api\/v1\/workflows\/([^/?]+)/.exec(path)?.[1],
+        before = f.workflows.get(id);
+      const previous = before ? structuredClone(before) : null;
+      const response = await send(method, path, body);
+      if (!altered && method === 'PUT' && id === 'tiEhU3dXrMifOnTL') {
+        const structural =
+          !isDeepStrictEqual(previous.nodes, body.nodes) ||
+          !isDeepStrictEqual(previous.connections, body.connections);
+        if (
+          (mode === 'structure_keeps_version' && structural) ||
+          (mode === 'settings_rotates_version' && !structural)
+        ) {
+          altered = true;
+          response.body.versionId = structural ? previous.versionId : 'synthetic-unexpected-version';
+        }
+      }
+      return response;
+    };
+    const result = await runFoundationRuntimeSetup(f.plan, f.ports);
+    assert.equal(altered, true, mode);
+    assert.equal(result.status, 'reconciliation_required', mode);
+    assert.equal(result.pendingMutation, true, mode);
+    assert.equal(f.calls.at(-1).method, 'PUT', mode);
+    const writes = f.calls.filter((v) => v.method === 'PUT').length;
+    assert.equal((await runFoundationRuntimeSetup(f.plan, f.ports)).status, 'reconciliation_required');
+    assert.equal(
+      f.calls.filter((v) => v.method === 'PUT').length,
+      writes,
+      'an uncertain write is not replayed',
+    );
+  }
+});
+
+test('native settings-only same-version acceptance still requires exact fresh settings readback', async () => {
+  const f = fixture(),
+    send = f.ports.send;
+  let awaitingReadback = false;
+  f.ports.send = async (method, path, body) => {
+    const response = await send(method, path, body);
+    if (
+      method === 'PUT' &&
+      path.includes('/tiEhU3dXrMifOnTL?') &&
+      body.settings.errorWorkflow === 'S9NHRkKFUIiXX2wv'
+    )
+      awaitingReadback = true;
+    else if (awaitingReadback && method === 'GET' && path.includes('/tiEhU3dXrMifOnTL?')) {
+      response.body.settings.executionTimeout = 1;
+      awaitingReadback = false;
+    }
+    return response;
+  };
+  const result = await runFoundationRuntimeSetup(f.plan, f.ports);
+  assert.equal(result.status, 'reconciliation_required');
+  assert.equal(result.pendingMutation, true);
+  assert.equal(f.calls.at(-1).method, 'GET');
+  const pending = foundationRuntimeState(f.plan, f.journal).pending;
+  assert.equal(pending.action, 'save');
+  assert.equal(pending.key, 'SUB-NOTIFY');
+  assert.equal(pending.target.versionId, pending.before.versionId);
+});
+
+async function pendingSettingsRestorationFixture() {
+  const f = fixture({ activeWindowId: '3c46c791-e140-4eb9-890a-eecfa251f65e' }),
+    send = f.ports.send;
+  let lost = false;
+  f.ports.send = async (method, path, body) => {
+    const r = await send(method, path, body);
+    if (
+      !lost &&
+      method === 'PUT' &&
+      path.includes('/tiEhU3dXrMifOnTL?') &&
+      body.settings.errorWorkflow === 'S9NHRkKFUIiXX2wv'
+    ) {
+      lost = true;
+      throw Error('SYNTHETIC_UNKNOWN_SAVE_ACK');
+    }
+    return r;
+  };
+  assert.equal((await runFoundationRuntimeSetup(f.plan, f.ports)).status, 'reconciliation_required');
+  // Model the original helper's reused25-read proof and null target version.
+  // This is an isolated journal reconstruction, never an actual prefix rewrite.
+  const rows = f.journal.rows
+    .filter((r) => r.event !== 'request' || r.number > 25)
+    .map((r) => {
+      const row = structuredClone(r);
+      if (row.event === 'request') row.number -= 25;
+      if (row.event === 'intent' && row.sequence === 7) row.target.versionId = null;
+      return row;
+    });
+  const journal = createFoundationRuntimeJournal(f.plan, rows, () => {});
+  return {
+    ...f,
+    originalRows: structuredClone(rows),
+    recoveryJournal: journal,
+    recoveryPorts: { ...f.ports, journal },
+  };
+}
+
+test('restore-only settings adoption performs its own exact GET without replay or original acknowledgement claims', async () => {
+  const f = await pendingSettingsRestorationFixture(),
+    before = JSON.stringify(f.originalRows),
+    count = f.calls.length;
+  const result = await runtimeControl.adoptFoundationRuntimeSettingsSaveForRestoration(
+    f.plan,
+    f.recoveryPorts,
+  );
+  assert.equal(result.status, 'settings_save_readback_verified_original_ack_unknown');
+  assert.equal(result.restoreOnly, true);
+  assert.equal(result.originalAcknowledgementVerified, false);
+  assert.equal(result.mutationReplayAllowed, false);
+  assert.equal(f.calls.length, count + 1);
+  assert.equal(f.calls.at(-1).method, 'GET');
+  assert.equal(f.calls.at(-1).path, '/api/v1/workflows/tiEhU3dXrMifOnTL?excludePinnedData=true');
+  assert.equal(foundationRuntimeState(f.plan, f.recoveryJournal).pending, null);
+  assert.equal(JSON.stringify(f.originalRows), before);
+  const after = f.calls.length;
+  assert.equal((await runFoundationRuntimeSetup(f.plan, f.recoveryPorts)).status, 'blocked');
+  assert.equal(
+    (
+      await saveFoundationRuntimeCase(
+        f.plan,
+        materializeFoundationRuntimeCase(f.plan, 'dispatch.vimeo'),
+        f.recoveryPorts,
+      )
+    ).status,
+    'blocked',
+  );
+  assert.throws(() => runtimeControl.createFoundationRuntimeBinding(f.plan, 'SUB-NOTIFY', f.recoveryPorts));
+  assert.equal(f.calls.length, after);
+  assert.equal(
+    (await restoreFoundationRuntime(f.plan, f.recoveryPorts)).status,
+    'exact_staging_restored_unpublished',
+  );
+  assert.equal(foundationRuntimeState(f.plan, f.recoveryJournal).machineRebound, false);
+  assert.equal(JSON.stringify(f.originalRows), before);
+  assert.deepEqual(f.recoveryJournal.rows.slice(0, f.originalRows.length), f.originalRows);
+});
+
+test('restore-only settings adoption refuses changed target identity, graph, version, publication and custody before confirmation', async () => {
+  for (const field of ['version', 'settings', 'published', 'project', 'tags', 'pinData']) {
+    const f = await pendingSettingsRestorationFixture(),
+      send = f.recoveryPorts.send;
+    f.recoveryPorts.send = async (...args) => {
+      const r = await send(...args);
+      if (field === 'version') r.body.versionId = 'synthetic-foreign-version';
+      if (field === 'settings') r.body.settings.executionTimeout = 1;
+      if (field === 'published') {
+        r.body.active = true;
+        r.body.activeVersionId = r.body.versionId;
+      }
+      if (field === 'project')
+        r.body.shared = [{ projectId: 'synthetic-other-project', role: 'workflow:owner' }];
+      if (field === 'tags') r.body.tags = [];
+      if (field === 'pinData') r.body.pinData = { synthetic: true };
+      return r;
+    };
+    const before = f.recoveryJournal.rows.length,
+      count = f.calls.length;
+    const result = await runtimeControl.adoptFoundationRuntimeSettingsSaveForRestoration(
+      f.plan,
+      f.recoveryPorts,
+    );
+    assert.equal(result.status, 'settings_save_readback_blocked', field);
+    assert.equal(f.calls.length, count + 1, field);
+    assert.equal(f.recoveryJournal.rows.length, before + 1, 'only own GET intent is added');
+    assert.equal(foundationRuntimeState(f.plan, f.recoveryJournal).pending.sequence, 7);
+    assert.equal(result.mutationReplayAllowed, false);
+  }
+});
+
+test('restore-only settings adoption accepts only the exact old pending save and respects durable admission vetoes', async () => {
+  for (const fault of ['target', 'version', 'last-request', 'extra-request', 'admission', 'confirmation']) {
+    const f = await pendingSettingsRestorationFixture(),
+      rows = structuredClone(f.originalRows),
+      count = f.calls.length;
+    if (fault === 'target')
+      rows.find((r) => r.event === 'intent' && r.sequence === 7).target.graphHash = 'a'.repeat(64);
+    if (fault === 'version') {
+      const pending = rows.find((r) => r.event === 'intent' && r.sequence === 7);
+      pending.target.versionId = pending.before.versionId;
+    }
+    if (fault === 'last-request')
+      Object.assign(rows.at(-1), {
+        method: 'GET',
+        path: '/api/v1/workflows/tiEhU3dXrMifOnTL?excludePinnedData=true',
+      });
+    if (fault === 'extra-request')
+      rows.push({
+        event: 'request',
+        number: 23,
+        method: 'GET',
+        path: '/api/v1/workflows/tiEhU3dXrMifOnTL?excludePinnedData=true',
+      });
+    const journal = createFoundationRuntimeJournal(f.plan, rows, (row) => {
+      if (fault === 'confirmation' && row.event === 'verified') throw Error('SYNTHETIC_PRIVATE_DURABLE_VETO');
+    });
+    const ports = { ...f.recoveryPorts, journal };
+    if (fault === 'admission')
+      ports.admitManagementAttempt = () => {
+        throw Error('SYNTHETIC_PRIVATE_ADMISSION_VETO');
+      };
+    const result = await runtimeControl.adoptFoundationRuntimeSettingsSaveForRestoration(f.plan, ports);
+    assert.equal(result.status, 'settings_save_readback_blocked', fault);
+    assert.equal(f.calls.length, count + (fault === 'confirmation' ? 1 : 0), fault);
+    assert.equal(foundationRuntimeState(f.plan, journal).pending.sequence, 7, fault);
+    assert.doesNotMatch(JSON.stringify(result), /SYNTHETIC_PRIVATE|VETO/);
+  }
+});
 
 test('finite setup uses exact recorded identities, native error validation and same-token partial domain PATCH', async () => {
   const f = fixture(),
@@ -1015,7 +1258,7 @@ test('case binding requires the same-plan saved receipt and becomes stale after 
   );
   await saveFoundationRuntimeCase(
     f.plan,
-    materializeFoundationRuntimeCase(f.plan, 'dispatch.vimeo'),
+    materializeFoundationRuntimeCase(f.plan, 'dispatch.unknown'),
     f.ports,
   );
   assert.throws(() => runtimeControl.assertFoundationRuntimeBinding(binding));

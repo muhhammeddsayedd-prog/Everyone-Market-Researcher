@@ -91,8 +91,10 @@ function Get-M03FoundationPendingMachine {
   while($null -ne $cursor){if(Test-Path -LiteralPath $cursor){$e=Get-Item -LiteralPath $cursor -Force;if(-not $e.PSIsContainer -or ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'blocked'}};$parent=[IO.Directory]::GetParent($cursor);$cursor=if($null -eq $parent){$null}else{$parent.FullName}}
   $null=[IO.Directory]::CreateDirectory($directory)
   $file=Join-Path $directory 'machine.dpapi';$meta=Join-Path $directory 'pending-runtime.json';$transition=Join-Path $directory 'pending-runtime.credential-id-transition.jsonl'
+  . (Get-M03PendingFile (Join-Path $sourceDirectory 'Dev-CredentialStore.ps1'))
   foreach($temporary in @('pending-runtime.credential-id-next.json','pending-runtime.credential-id-transition.lock')){if(Test-Path -LiteralPath (Join-Path $directory $temporary)){throw 'blocked'}}
   if((Test-Path -LiteralPath $file) -or (Test-Path -LiteralPath $meta)){
+   Assert-M03DevPrivateAcl $directory $true;Assert-M03DevPrivateAcl $file $false
    $null=Get-M03PendingFile $file 16384;$null=Get-M03PendingFile $meta 16384
    $m=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($meta));Assert-M03PendingMetadata $m $Audience $SourceCommitSha
    if($m.credentialId -ceq 'EmrFoundationMachine19'){
@@ -107,12 +109,17 @@ function Get-M03FoundationPendingMachine {
   }else{
    if(Test-Path -LiteralPath $transition){throw 'blocked'}
    Assert-M03PendingPreMachineJournal $journal
+   if(@(Get-ChildItem -LiteralPath $directory -Force).Count -ne 0){throw 'blocked'}
+   # Only a newly created store is hardened here. Existing retained stores are
+   # read without silently changing their ACL; a separate exact-path repair is
+   # required if their historical inherited ACL does not meet this contract.
+   Set-M03DevPrivateAcl $directory $true;Assert-M03DevPrivateAcl $directory $true
    $bytes=New-Object byte[] 32;$rng=[Security.Cryptography.RandomNumberGenerator]::Create();$rng.GetBytes($bytes)
    $plain=[Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+','-').Replace('/','_');$secret=ConvertTo-SecureString -String $plain -AsPlainText -Force;$plain=$null
    $cipher=ConvertFrom-SecureString -SecureString $secret
-   $stream=[IO.File]::Open($file,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);$created=$true;$payload=[Text.Encoding]::ASCII.GetBytes($cipher);$stream.Write($payload,0,$payload.Length);$stream.Flush($true)
+   $stream=[IO.File]::Open($file,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);$created=$true;Set-M03DevPrivateAcl $file $false;Assert-M03DevPrivateAcl $file $false;$payload=[Text.Encoding]::ASCII.GetBytes($cipher);$stream.Write($payload,0,$payload.Length);$stream.Flush($true)
    $metadata=[ordered]@{version=1;windowId='df4f29ec-e2dc-4d82-a276-62a4e695e6f9';purpose='pending_inactive_m03_runtime_delivery';audience=$Audience;sourceCommitSha=$SourceCommitSha;credentialId='EmrM03Machine19';createdAt=[DateTimeOffset]::UtcNow.ToString('o')}
-   $metaStream=[IO.File]::Open($meta,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);$metaCreated=$true;$payload=[Text.Encoding]::UTF8.GetBytes(($metadata|ConvertTo-Json -Compress));$metaStream.Write($payload,0,$payload.Length);$metaStream.Flush($true)
+   $metaStream=[IO.File]::Open($meta,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);$metaCreated=$true;Set-M03DevPrivateAcl $meta $false;Assert-M03DevPrivateAcl $meta $false;$payload=[Text.Encoding]::UTF8.GetBytes(($metadata|ConvertTo-Json -Compress));$metaStream.Write($payload,0,$payload.Length);$metaStream.Flush($true)
   }
   $success=$true
  }catch{

@@ -20,7 +20,8 @@ function fixture(mode = 'success') {
   const baselineMode = mode.startsWith('baseline');
   const discoveryMode = mode.startsWith('wf70');
   const machineMode = mode.startsWith('machine');
-  const persistentMode = baselineMode || discoveryMode || machineMode;
+  const runtimeMode = mode.startsWith('runtime');
+  const persistentMode = baselineMode || discoveryMode || machineMode || runtimeMode;
   const root = mkdtempSync(join(tmpdir(), 'emr-m03-n8n-fixture-'));
   roots.push(root);
   const put = (path, value) => {
@@ -48,6 +49,11 @@ function fixture(mode = 'success') {
     consumerSource = consumerSource.replace(
       'if($Wf70DiscoveryDiagnostic){$node=Assert-Wf70DiscoveryPublic}',
       'if($Wf70DiscoveryDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
+    );
+  if (runtimeMode)
+    consumerSource = consumerSource.replace(
+      'if($RuntimeReconciliationDiagnostic){$node=Assert-RuntimeReconciliationPublic}',
+      'if($RuntimeReconciliationDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
     );
   if (mode === 'baselineUnknownClose')
     consumerSource = consumerSource.replace('$closed = $child.WaitForExit(5000)', '$closed = $false');
@@ -356,14 +362,86 @@ function fixture(mode = 'success') {
     if (mode === 'machineUnsafe') result.metadata.data = 'synthetic-private-value';
     if (mode === 'machineBadBool') result.metadata.idMatches = 'synthetic-private-value';
   }
+  if (runtimeMode) {
+    const metadata = Object.fromEntries(
+      [
+        'objectShape',
+        'dataPresent',
+        'idMatches',
+        'nameMatches',
+        'typeMatches',
+        'createdAtMatches',
+        'updatedAtMatchesJournal',
+        'flagsCompatible',
+        'resolverCompatible',
+      ].map((k) => [k, k !== 'dataPresent']),
+    );
+    const workflow = Object.fromEntries(
+      [
+        'objectShape',
+        'idMatches',
+        'archiveStateMatches',
+        'ownerProjectMatches',
+        'tagsMatchBaseline',
+        'pinnedDataAbsent',
+        'baselineGraphEqual',
+        'beforeGraphEqual',
+        'targetGraphEqual',
+        'versionMatchesBaseline',
+        'versionMatchesBefore',
+        'versionMatchesTarget',
+        'publicationMatchesBaseline',
+        'publicationMatchesBefore',
+        'publicationMatchesTarget',
+      ].map((k) => [k, true]),
+    );
+    for (const k of Object.keys(result)) delete result[k];
+    Object.assign(result, {
+      version: 1,
+      environment: 'dev',
+      host: 'muhhammedsayed.app.n8n.cloud',
+      projectId: 'pHvQjDmjxVZ3KQLT',
+      technicalAttempt: 13,
+      sourceCommitSha: '7b1837201ac7925591577a1517d7288936ca3464',
+      windowId: '3c46c791-e140-4eb9-890a-eecfa251f65e',
+      status: mode === 'runtimeHttp' ? 'http_failed' : 'readback_observed',
+      requestCount: mode === 'runtimeHttp' ? 2 : 3,
+      authenticationVerified: mode !== 'runtimeHttp',
+      networkCompletionVerified: true,
+      metadata,
+      workflows: {
+        'SUB-NOTIFY': mode === 'runtimeHttp' ? null : { ...workflow },
+        'WF-90': mode === 'runtimeHttp' ? null : { ...workflow },
+      },
+      diagnostics: {
+        version: 1,
+        dns: 'complete',
+        requests: Array.from({ length: mode === 'runtimeHttp' ? 2 : 3 }, (_, i) => ({
+          resource: i === 0 ? 'credentials' : 'workflows',
+          page: i === 2 ? 2 : 1,
+          tcpConnected: true,
+          tlsVerified: true,
+          httpStatus: mode === 'runtimeHttp' && i === 1 ? 403 : 200,
+          bodyRead: mode === 'runtimeHttp' && i === 1 ? 'not_observed' : 'complete',
+          jsonParsed: !(mode === 'runtimeHttp' && i === 1),
+          schemaValidated: !(mode === 'runtimeHttp' && i === 1),
+          socketClosed: true,
+          failureStage: mode === 'runtimeHttp' && i === 1 ? 'status' : 'none',
+          failureCode: mode === 'runtimeHttp' && i === 1 ? 'http_failed' : 'none',
+        })),
+      },
+    });
+    if (mode === 'runtimeUnsafe') result.workflows['SUB-NOTIFY'].privateValue = 'synthetic-private-value';
+    if (mode === 'runtimeBadBool') result.metadata.updatedAtMatchesJournal = 'synthetic-private-value';
+  }
   const code = `import {writeFileSync} from 'node:fs';
- const good=process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : machineMode ? "&&process.argv.length===3&&process.argv[2]==='--machine-metadata-diagnostic'" : ''};
+ const good=process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : machineMode ? "&&process.argv.length===3&&process.argv[2]==='--machine-metadata-diagnostic'" : runtimeMode ? "&&process.argv.length===3&&process.argv[2]==='--runtime-reconciliation-diagnostic'" : ''};
  writeFileSync(new URL('./called.txt',import.meta.url),good?'only-n8n-key':'wrong-env');
  delete process.env.M03_N8N_API_KEY;
  console.error('synthetic-private-stderr-must-stay-hidden');
- ${['timeout', 'baselineTimeout', 'baselineUnknownClose', 'machineTimeout'].includes(mode) ? 'await new Promise(r=>setTimeout(r,10000));' : ''}
+ ${['timeout', 'baselineTimeout', 'baselineUnknownClose', 'machineTimeout', 'runtimeTimeout'].includes(mode) ? 'await new Promise(r=>setTimeout(r,10000));' : ''}
  console.log(${mode === 'badJson' ? "'synthetic-private-stdout-must-stay-hidden'" : mode === 'unsafeSchema' ? JSON.stringify(JSON.stringify({ ...result, privateSecret: 'synthetic-private-value' })) : JSON.stringify(JSON.stringify(result))});
- ${mode === 'failure' ? 'process.exitCode=7;' : ['workflowBodyFailure', 'wf70Http', 'machineHttp'].includes(mode) ? 'process.exitCode=1;' : ''}`;
+ ${mode === 'failure' ? 'process.exitCode=7;' : ['workflowBodyFailure', 'wf70Http', 'machineHttp', 'runtimeHttp'].includes(mode) ? 'process.exitCode=1;' : ''}`;
   put('scripts/n8n/inventory.mjs', code);
   const paths = [
     'scripts/n8n/windows/New-M03N8nApiHandoff.ps1',
@@ -398,6 +476,16 @@ function fixture(mode = 'success') {
           .digest('hex'),
       ]),
     );
+  }
+  if (runtimeMode) {
+    const p =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json';
+    put(p, readFileSync(resolve(p)));
+    seal.runtimeFiles = {
+      [p]: createHash('sha256')
+        .update(readFileSync(join(root, p)))
+        .digest('hex'),
+    };
   }
   put('scripts/n8n/m03-inventory-seal.json', JSON.stringify(seal));
   mkdirSync(join(root, 'private/Temp'), { recursive: true });
@@ -442,6 +530,7 @@ $s=[IO.File]::Open($store,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.Fi
         ...(check ? ['-CheckOnly'] : []),
         ...(baselineMode ? ['-WorkflowBaselineDiagnostic'] : []),
         ...(machineMode ? ['-MachineMetadataDiagnostic'] : []),
+        ...(runtimeMode ? ['-RuntimeReconciliationDiagnostic'] : []),
         ...(discoveryMode ? ['-Wf70DiscoveryDiagnostic'] : []),
       ]),
   };
@@ -453,6 +542,76 @@ describe(
   'M03 n8n bounded private inventory consumer, isolated synthetic Windows DPAPI only',
   { skip: process.platform !== 'win32' },
   () => {
+    it('Runtime reconciliation actual native public gate bounds its child and denies changed counters or private output before any credential path', () => {
+      const root = mkdtempSync(join(tmpdir(), 'emr-runtime-public-'));
+      roots.push(root);
+      const put = (p, text) => {
+        const path = join(root, p);
+        mkdirSync(resolve(path, '..'), { recursive: true });
+        writeFileSync(path, text);
+        return path;
+      };
+      const quote = (s) => "'" + s.replaceAll("'", "''") + "'";
+      const node = process.execPath;
+      const module = put(
+        'scripts/n8n/windows/Acceptance-PublicRuntime.ps1',
+        `function Assert-M03AcceptancePublicSeal($Root,$Seal){return ${quote(node)}}`,
+      );
+      const hash = createHash('sha256').update(readFileSync(module)).digest('hex');
+      put(
+        'scripts/n8n/foundation-acceptance-seal.json',
+        JSON.stringify({ files: { 'scripts/n8n/windows/Acceptance-PublicRuntime.ps1': hash } }),
+      );
+      const result = {
+        kind: 'm03_runtime_reconciliation_check',
+        status: 'ready',
+        technicalAttempt: 13,
+        sourceCommitSha: '7b1837201ac7925591577a1517d7288936ca3464',
+        windowId: '3c46c791-e140-4eb9-890a-eecfa251f65e',
+        managementAttempts: 483,
+        controlAttempts: 791,
+        combinedAttempts: 1274,
+        maximumRequests: 3,
+        privateRead: false,
+        networkRequests: 0,
+      };
+      for (const mode of ['ready', 'stale', 'stringCounter', 'private', 'extra', 'overflow', 'stderr']) {
+        const dto = structuredClone(result);
+        if (mode === 'stale') dto.managementAttempts = 482;
+        if (mode === 'stringCounter') dto.controlAttempts = '791';
+        if (mode === 'private') dto.privateRead = true;
+        if (mode === 'extra') dto.raw = 'SYNTHETIC_PRIVATE_VALUE';
+        put(
+          'scripts/n8n/inventory.mjs',
+          `if(process.argv[2]!=='--runtime-reconciliation-check-only'||process.env.M03_N8N_API_KEY||process.env.PGPASSWORD||process.env.SUPABASE_ACCESS_TOKEN||process.env.NODE_OPTIONS)process.exit(7);${mode === 'stderr' ? "console.error('SYNTHETIC_PRIVATE_STDERR');" : ''}console.log(${JSON.stringify(mode === 'overflow' ? 'X'.repeat(5000) : JSON.stringify(dto))});`,
+        );
+        const script = put(
+          'public.ps1',
+          `$ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+$repo=${quote(root)};$source=${quote(resolve('scripts/n8n/windows/Invoke-M03N8nInventory.ps1'))}
+$tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($source,[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'PARSE_FAILED'}
+foreach($name in @('Assert-Keys','Assert-RuntimeReconciliationPublic')){$found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'MISSING_FUNCTION'};Invoke-Expression $found[0].Extent.Text}
+function Confined-File($Root,$Relative){return Join-Path $Root $Relative}
+try{$value=Assert-RuntimeReconciliationPublic;if($value -cne ${quote(node)}){throw 'WRONG_NODE'};Write-Output 'PUBLIC_READY'}catch{Write-Output 'PUBLIC_BLOCKED'}
+`,
+        );
+        const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', script], {
+          env: {
+            ...osEnv(),
+            M03_N8N_API_KEY: 'SYNTHETIC_PRIVATE_KEY',
+            PGPASSWORD: 'SYNTHETIC_PRIVATE_DATABASE',
+            SUPABASE_ACCESS_TOKEN: 'SYNTHETIC_PRIVATE_TOKEN',
+            NODE_OPTIONS: '--no-warnings',
+          },
+          encoding: 'utf8',
+          windowsHide: true,
+          timeout: 10000,
+        });
+        assert.equal(r.status, 0, r.stderr);
+        assert.equal(r.stdout.trim(), mode === 'ready' ? 'PUBLIC_READY' : 'PUBLIC_BLOCKED');
+        assert.doesNotMatch(r.stdout + r.stderr, /SYNTHETIC_PRIVATE/);
+      }
+    });
     it('WF70 native public gate binds cumulative snapshots before any credential path and refuses a reused fence', () => {
       const root = mkdtempSync(join(tmpdir(), 'emr-wf70-public-'));
       roots.push(root);
@@ -701,6 +860,38 @@ $out=@();foreach($value in $cases){try{Validate-Wf70Discovery $value;$out+=$true
       assert.equal(existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')), false);
       assert.equal(existsSync(join(f.root, 'scripts/n8n/called.txt')), false);
     });
+    it('Runtime reconciliation CheckOnly stops before credential initialization or a private child', () => {
+      const f = fixture('runtimeSuccess'),
+        r = f.run(true);
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, /RUNTIME_RECONCILIATION_CHECK_ONLY_READY/);
+      assert.equal(existsSync(f.handoff), false);
+      assert.equal(existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')), false);
+      assert.equal(existsSync(join(f.root, 'scripts/n8n/called.txt')), false);
+    });
+    for (const mode of ['runtimeSuccess', 'runtimeHttp', 'runtimeUnsafe', 'runtimeBadBool', 'runtimeTimeout'])
+      it(`Runtime reconciliation native consumer ${mode} preserves persistent Management and closes scoped children`, () => {
+        const f = fixture(mode),
+          persistent = join(
+            f.root,
+            'private/Everyone-Market-Radar-Private/secrets/dev/runtime/management.dpapi',
+          ),
+          before = readFileSync(persistent),
+          r = f.run();
+        assert.equal(r.status, mode === 'runtimeSuccess' ? 0 : 1, r.stdout + r.stderr);
+        const receipt = JSON.parse(r.stdout);
+        assert.equal(receipt.childClosed, true);
+        assert.equal(receipt.handoffDeleted, true);
+        assert.deepEqual(readFileSync(persistent), before);
+        assert.equal(existsSync(f.handoff), false);
+        assert.equal(
+          existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')),
+          false,
+        );
+        assert.doesNotMatch(r.stdout + r.stderr, /synthetic-private|unrelated-|synthetic-n8n-key/);
+        if (['runtimeUnsafe', 'runtimeBadBool', 'runtimeTimeout'].includes(mode))
+          assert.equal(receipt.inventory, null);
+      });
     for (const mode of ['machineSuccess', 'machineHttp', 'machineUnsafe', 'machineBadBool', 'machineTimeout'])
       it(`Machine metadata consumer ${mode} retains persistent Management and suppresses all unreviewed output`, () => {
         const f = fixture(mode),

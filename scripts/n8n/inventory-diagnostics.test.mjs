@@ -10,6 +10,222 @@ import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const key = 'synthetic-diagnostic-key-only';
+test('runtime residual workflow projection compares only known graph/version/publication profiles', async () => {
+  const graph = { name: 'Synthetic owned workflow', nodes: [], connections: {}, settings: {} };
+  const { foundationRuntimeGraphHash } = await import('./foundation-runtime-checkpoint.mjs');
+  const state = {
+    versionId: 'KnownVersion13',
+    activeVersionId: null,
+    graphHash: foundationRuntimeGraphHash(graph),
+    publishedHash: null,
+  };
+  const expected = {
+    id: 'tiEhU3dXrMifOnTL',
+    tags: [],
+    before: state,
+    target: state,
+    baseline: { ...state, versionId: 'KnownBaseline' },
+  };
+  const dto = {
+    ...graph,
+    id: expected.id,
+    versionId: state.versionId,
+    active: false,
+    activeVersionId: null,
+    isArchived: false,
+    tags: [],
+    shared: [{ projectId: 'pHvQjDmjxVZ3KQLT', role: 'workflow:owner' }],
+    pinData: {},
+    privateUnknown: 'SYNTHETIC_PRIVATE_VALUE',
+  };
+  const result = await inventory.projectRuntimeReconciliationWorkflow(dto, expected);
+  assert.equal(result.beforeGraphEqual, true);
+  assert.equal(result.targetGraphEqual, true);
+  assert.equal(result.versionMatchesBefore, true);
+  assert.equal(result.versionMatchesTarget, true);
+  assert.equal(result.versionMatchesBaseline, false);
+  assert.equal(result.publicationMatchesTarget, true);
+  assert.ok(Object.values(result).every((v) => typeof v === 'boolean'));
+  assert.doesNotMatch(JSON.stringify(result), /SYNTHETIC|KnownVersion|tiEh|privateUnknown/);
+  const changed = await inventory.projectRuntimeReconciliationWorkflow(
+    { ...dto, versionId: 'UnknownPrivateVersion', settings: { unknown: true } },
+    expected,
+  );
+  assert.equal(changed.targetGraphEqual, false);
+  assert.equal(changed.versionMatchesTarget, false);
+});
+function runtimeResidualFixture({ status = 200, failAt = 0, unclosedAt = 0, data = false } = {}) {
+  const graph = { name: 'Synthetic owned workflow', nodes: [], connections: {}, settings: {} };
+  return import('./foundation-runtime-checkpoint.mjs').then(({ foundationRuntimeGraphHash }) => {
+    const base = {
+      versionId: 'KnownBefore',
+      activeVersionId: null,
+      graphHash: foundationRuntimeGraphHash(graph),
+      publishedHash: null,
+    };
+    const expected = Object.fromEntries(
+      [
+        ['SUB-NOTIFY', 'tiEhU3dXrMifOnTL'],
+        ['WF-90', 'S9NHRkKFUIiXX2wv'],
+      ].map(([key, id]) => [key, { id, tags: [], baseline: base, before: base, target: base }]),
+    );
+    const machine = {
+      id: 'EmrM03Machine19',
+      name: 'M03 foundation machine [dev]',
+      createdAt: '2026-10-19T00:25:21.669Z',
+      type: 'httpCustomAuth',
+      updatedAt: '2026-10-24T00:00:00.000Z',
+      ...(data ? { data: { secret: 'SYNTHETIC_PRIVATE_RESPONSE' } } : {}),
+    };
+    const calls = [],
+      charges = [];
+    let closed = false;
+    return {
+      calls,
+      charges,
+      closed: () => closed,
+      dependencies: {
+        timeoutMs: 1000,
+        closeTimeoutMs: 1,
+        lookup: async () => [{ address: '1.1.1.1', family: 4 }],
+        openBudget: async () => ({
+          context: { plan: { machine }, state: { machineUpdatedAt: machine.updatedAt }, expected },
+          admit() {
+            charges.push(charges.length + 484);
+          },
+          close() {
+            closed = true;
+          },
+        }),
+        transport: async (input) => {
+          calls.push(input);
+          assert.equal(charges.length, calls.length);
+          assert.equal(input.method, 'GET');
+          assert.equal(input.url.hostname, 'muhhammedsayed.app.n8n.cloud');
+          assert.equal(input.rejectUnauthorized, true);
+          const d = input.diagnostic;
+          d.tcpConnected = true;
+          d.tlsVerified = true;
+          if (calls.length !== unclosedAt) input.onSocketClosed();
+          const which = input.url.pathname.split('/').at(-1);
+          const dto =
+            which === 'EmrM03Machine19'
+              ? machine
+              : {
+                  ...graph,
+                  id: which,
+                  versionId: 'KnownBefore',
+                  active: false,
+                  activeVersionId: null,
+                  isArchived: false,
+                  tags: [],
+                  shared: [{ projectId: 'pHvQjDmjxVZ3KQLT', role: 'workflow:owner' }],
+                  pinData: {},
+                  privateValue: 'SYNTHETIC_PRIVATE_RESPONSE',
+                };
+          return { status: calls.length === failAt ? status : 200, body: Buffer.from(JSON.stringify(dto)) };
+        },
+      },
+    };
+  });
+}
+test('runtime residual diagnostic issues only3 charged fixed GETs and exposes boolean comparisons', async () => {
+  const f = await runtimeResidualFixture(),
+    r = await inventory.runRuntimeReconciliationDiagnostic(key, f.dependencies);
+  assert.equal(r.status, 'readback_observed');
+  assert.equal(r.requestCount, 3);
+  assert.equal(r.networkCompletionVerified, true);
+  assert.equal(f.closed(), true);
+  assert.deepEqual(f.charges, [484, 485, 486]);
+  assert.deepEqual(
+    f.calls.map((v) => v.url.pathname + v.url.search),
+    [
+      '/api/v1/credentials/EmrM03Machine19',
+      '/api/v1/workflows/tiEhU3dXrMifOnTL?excludePinnedData=true',
+      '/api/v1/workflows/S9NHRkKFUIiXX2wv?excludePinnedData=true',
+    ],
+  );
+  assert.doesNotMatch(
+    JSON.stringify(r),
+    /SYNTHETIC_PRIVATE|KnownBefore|2026-10-24T|"data"|"nodes"|"settings"|versionId|sha256/,
+  );
+  assert.doesNotThrow(() => inventory.assertRuntimeReconciliationReadback(r));
+  for (const mutate of [
+    (v) => (v.metadata.updatedAtMatchesJournal = false),
+    (v) => (v.metadata.dataPresent = true),
+    (v) => (v.workflows['SUB-NOTIFY'].targetGraphEqual = false),
+    (v) => (v.workflows['WF-90'].publicationMatchesTarget = false),
+    (v) => (v.diagnostics.requests[2].tlsVerified = false),
+    (v) => (v.privateSecret = 'SYNTHETIC_PRIVATE_VALUE'),
+  ]) {
+    const copy = structuredClone(r);
+    mutate(copy);
+    assert.throws(
+      () => inventory.assertRuntimeReconciliationReadback(copy),
+      /RUNTIME_RECONCILIATION_BLOCKED/,
+    );
+  }
+});
+test('runtime residual failures stop without retry and preserve exact charged requests and closure flags', async () => {
+  for (const options of [{ failAt: 2, status: 429 }, { unclosedAt: 2 }]) {
+    const f = await runtimeResidualFixture(options),
+      r = await inventory.runRuntimeReconciliationDiagnostic(key, f.dependencies);
+    assert.equal(f.calls.length, 2);
+    assert.deepEqual(f.charges, [484, 485]);
+    assert.equal(r.status, options.failAt ? 'http_failed' : 'network_failed');
+    assert.equal(r.networkCompletionVerified, Boolean(options.failAt));
+    assert.equal(f.closed(), true);
+    assert.throws(() => inventory.assertRuntimeReconciliationReadback(r));
+    assert.doesNotMatch(JSON.stringify(r), /SYNTHETIC_PRIVATE|KnownBefore/);
+  }
+  const f = await runtimeResidualFixture({ data: true }),
+    r = await inventory.runRuntimeReconciliationDiagnostic(key, f.dependencies);
+  assert.equal(r.metadata.dataPresent, true);
+  assert.throws(() => inventory.assertRuntimeReconciliationReadback(r));
+  assert.doesNotMatch(JSON.stringify(r), /SYNTHETIC_PRIVATE_RESPONSE/);
+});
+test('runtime residual budget writes483to486 once, keeps the old prefix and refuses repeated admission', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'emr-residual-budget-'));
+  try {
+    const relative = 'management.jsonl',
+      path = join(root, relative),
+      original = JSON.stringify({ event: 'header' }) + '\n';
+    writeFileSync(path, original);
+    const context = {
+      root,
+      receiptSha256: 'a'.repeat(64),
+      managementAttempts: 483,
+      paths: { management: relative, claim: 'claim.jsonl' },
+      pinned: { management: original },
+    };
+    // Only the independently tested public-context proof is substituted here;
+    // the real exclusive marker, synchronous debit, fsync and one-use guard run.
+    const text = readFileSync(new URL('./inventory.mjs', import.meta.url), 'utf8').replace(
+      /const context\s*=\s*await readRuntimeReconciliationContext\(repositoryRoot\);/,
+      `const context=${JSON.stringify(context)};`,
+    );
+    const entry = join(root, 'inventory.mjs');
+    writeFileSync(entry, text);
+    const module = await import(pathToFileURL(entry).href);
+    const budget = await module.openRuntimeReconciliationDiagnosticBudget(root);
+    for (let i = 0; i < 3; i++) budget.admit();
+    assert.throws(() => budget.admit(), /RUNTIME_RECONCILIATION_BLOCKED/);
+    budget.close();
+    assert.equal(
+      readFileSync(path, 'utf8'),
+      original +
+        [473, 474, 475]
+          .map((ordinal) => JSON.stringify({ event: 'management_attempt', ordinal }) + '\n')
+          .join(''),
+    );
+    await assert.rejects(
+      module.openRuntimeReconciliationDiagnosticBudget(root),
+      /RUNTIME_RECONCILIATION_BLOCKED/,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 function wf70Fixture(options = {}) {
   const calls = [],
     charges = [];
