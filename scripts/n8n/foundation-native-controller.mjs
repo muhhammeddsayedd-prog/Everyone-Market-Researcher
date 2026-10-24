@@ -22,7 +22,11 @@ import {
 } from './foundation-native-settlement.mjs';
 import { assertFoundationNativeCleanupReceipt } from './foundation-native-cleanup.mjs';
 import { assertFoundationCallbackCases, assertFoundationCallbackCase } from './foundation-callback-cases.mjs';
-import { foundationProjectVerifiedContinuationUnadmittedUsage } from './foundation-live-project-verified-continuation.mjs';
+import {
+  foundationProjectVerifiedContinuationUnadmittedUsage,
+  foundationProjectVerifiedContinuationResumeCheckpoint,
+  assertFoundationProjectVerifiedContinuationControlResume,
+} from './foundation-live-project-verified-continuation.mjs';
 
 // The existing execution-controller entry selects this private native branch.
 // No default transport, credential loader, live admission or approval exists.
@@ -115,12 +119,28 @@ export function createFoundationNativeController({
   callbackCases,
   projectVerifiedContinuationProof,
 }) {
-  let carriedNativeExecutions = 0;
+  let carriedNativeExecutions = 0,
+    settledNativeControlRows = 0;
   try {
     if (projectVerifiedContinuationProof !== undefined) {
       const usage = foundationProjectVerifiedContinuationUnadmittedUsage(projectVerifiedContinuationProof);
       if (projectVerifiedContinuationProof.windowId !== activeWindowId) fail();
       carriedNativeExecutions = usage.nativeExecutions;
+      const resume = foundationProjectVerifiedContinuationResumeCheckpoint(projectVerifiedContinuationProof);
+      if (resume.settledNativeControlRows !== undefined) {
+        if (
+          usage.nativeExecutions !== 3 ||
+          resume.managementMaximum !== 1408 ||
+          resume.settledNativeControlRows !== 964 ||
+          journal.rows.length < 964
+        )
+          fail();
+        assertFoundationProjectVerifiedContinuationControlResume(projectVerifiedContinuationProof, {
+          deadlineAt: projectVerifiedContinuationProof.deadlineAt,
+          previousEvents: journal.rows.slice(0, 964),
+        });
+        settledNativeControlRows = resume.settledNativeControlRows;
+      }
     }
     bindings = parseN8nBindings(bindings);
     assertFoundationNativeReader(nativeReader);
@@ -134,6 +154,7 @@ export function createFoundationNativeController({
         'eda4fae1-1e19-47db-81b8-beac1a4ed883',
         '3c46c791-e140-4eb9-890a-eecfa251f65e',
         '4c602549-2c42-4ec3-9328-714d7cb66a77',
+        'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
       ].includes(activeWindowId) ||
       typeof bindingFor !== 'function' ||
       typeof port?.details !== 'function' ||
@@ -192,7 +213,9 @@ export function createFoundationNativeController({
     admissionClosed = false,
     errorGroup = false,
     errorOrdinal = 0;
-  for (const row of journal.rows) {
+  // Only a separately settled, immutable historical prefix may be excluded
+  // from active case state. Its requests remain charged in controlBudget.
+  for (const row of journal.rows.slice(settledNativeControlRows)) {
     if (row.event === 'native_case_intent' || row.event === 'native_error_group_intent') {
       if (!Number.isSafeInteger(row.nativeExecutions) || row.nativeExecutions < 1) fail();
       reserved += row.nativeExecutions;

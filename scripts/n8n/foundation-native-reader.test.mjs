@@ -410,7 +410,7 @@ test('technical16 cleanup cannot qualify caller-built booleans or an ordinary li
   ]) {
     await assert.rejects(
       f.reader.qualifyTechnical16Cleanup({ context }),
-      /FOUNDATION_NATIVE_CLEANUP_QUALIFICATION/,
+      /FOUNDATION_NATIVE_CLEANUP_CONTEXT/,
     );
   }
   assert.equal(f.calls.length, 0);

@@ -15,6 +15,148 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('technical17 derives all charged cleanup usage and full25 restored versions only from separately settled16', async () => {
+  for (const n of [85, 90]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      technical16Settled: true,
+      technical16CleanupRequests: n,
+    });
+    try {
+      assert.deepEqual(
+        Object.fromEntries(
+          Object.entries(f.check()).filter(([key]) =>
+            ['managementMaximum', 'managementAttempts', 'controlAttempts', 'combinedAttempts'].includes(key),
+          ),
+        ),
+        {
+          managementMaximum: 1408,
+          managementAttempts: 829 + n,
+          controlAttempts: 960 + n,
+          combinedAttempts: 1789 + 2 * n,
+        },
+      );
+      const proof = f.claim(f.admit()),
+        resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+      assert.equal(resume.technicalAttemptOrdinal, 17);
+      assert.equal(resume.mainManagementAttempts, 810);
+      assert.equal(resume.mainControlAttempts, 949);
+      assert.equal(resume.setupAttempts, 184);
+      assert.equal(resume.setupMaximum, 256);
+      assert.equal(resume.legacySqlAdmitted, 9);
+      assert.equal(resume.historicalWindowIds.length, 5);
+      assert.equal(resume.settledNativeControlRows, 964);
+      assert.deepEqual(
+        f.scoped(() => f.module.foundationProjectVerifiedContinuationRequestCaps(proof)),
+        { management: 1408, control: 3456, combined: 4864 },
+      );
+      assert.deepEqual(
+        f.scoped(() => f.module.foundationProjectVerifiedContinuationUnadmittedUsage(proof)),
+        { nativeExecutions: 3, gatewayHttpAttempts: 2 },
+      );
+      assert.equal(
+        Object.keys(
+          f.scoped(() => f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof)),
+        ).length,
+        25,
+      );
+      assert.throws(() => f.module.foundationProjectVerifiedContinuationRequestCaps({ ...proof }));
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('technical17 rejects rewritten failed closure, native resets, substituted versions, missing ACKs and broadened caps', async () => {
+  for (const technical16Fault of [
+    'raw-closure',
+    'native-reset',
+    'version',
+    'ack',
+    'counter',
+    'acceptance',
+    'archive',
+    'caps',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ technical16Settled: true, technical16Fault });
+    try {
+      assert.throws(() => f.check(), technical16Fault);
+      assert.throws(() => f.admit(), technical16Fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('technical17 requires the actual final source graph and unpublished state as well as custody version equality', async () => {
+  for (const technical16Fault of ['final-graph', 'final-published']) {
+    const f = await syntheticProjectVerifiedContinuation({ technical16Settled: true, technical16Fault });
+    try {
+      assert.throws(() => f.check(), technical16Fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('technical17 preserves every charged forensic claim instead of deriving a reset from the latest receipt alone', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ technical16Settled: true });
+  try {
+    const path = join(
+      f.directory,
+      'scripts/n8n/out/foundation/execution-31130-metadata-diagnostic-20261024.jsonl',
+    );
+    unlinkSync(path);
+    assert.throws(() => f.check(), 'the spent825 claim remains required after829 and cleanup');
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('technical17 ReadClaimed preserves the immutable16 prefix while retaining sequential25M51C preflight charges', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ technical16Settled: true });
+  try {
+    const proof = f.claim(f.admit()),
+      previousManagement = readFileSync(f.paths.management, 'utf8'),
+      previousControl = readFileSync(f.paths.control, 'utf8');
+    f.io.processAlive = (pid) => pid === process.pid || pid === process.ppid;
+    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+    appendFileSync(
+      f.paths.management,
+      Array.from(
+        { length: 25 },
+        (_, i) => JSON.stringify({ event: 'management_attempt', ordinal: 811 + i }) + '\n',
+      ).join(''),
+    );
+    appendFileSync(
+      f.paths.control,
+      Array.from(
+        { length: 51 },
+        (_, i) =>
+          JSON.stringify({
+            event: 'control_request_intent',
+            ordinal: 950 + i,
+            kind: 'discovery',
+            workflowId: 'MzimjpsuyPuK7SKe',
+            at: new Date(proof.startsAt + 1000).toISOString(),
+          }) + '\n',
+      ).join(''),
+    );
+    assert.equal(f.readClaimed().windowId, 'edbc6d11-7c1f-43a7-b745-1ded06deb29f');
+    assert.doesNotThrow(() =>
+      f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof)),
+    );
+    writeFileSync(
+      f.paths.control,
+      previousControl.replace('"ordinal":949', '"ordinal":948') +
+        readFileSync(f.paths.control, 'utf8').slice(previousControl.length),
+    );
+    assert.throws(() => f.readClaimed());
+    writeFileSync(f.paths.management, previousManagement);
+  } finally {
+    f.cleanup();
+  }
+});
+
 test('technical17 allocation stays unavailable until actual16 settlement and archive are independently pinned', async () => {
   const f = await syntheticProjectVerifiedContinuation({ unadmittedWf00Reconciled: true });
   try {

@@ -349,6 +349,7 @@ function firstOriginal(value, fixture, windowId = 'df4f29ec-e2dc-4d82-a276-62a4e
       'eda4fae1-1e19-47db-81b8-beac1a4ed883',
       '3c46c791-e140-4eb9-890a-eecfa251f65e',
       '4c602549-2c42-4ec3-9328-714d7cb66a77',
+      'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
     ].includes(windowId) ||
     !exact(value, ['source', 'readRequestId', 'launch', 'registered', 'atomicInput', 'costEntry']) ||
     value.source !== 'bounded-original-dataset-read' ||

@@ -147,6 +147,24 @@ test('fifth known window compiles only the bounded dev gateway transport', () =>
   );
 });
 
+test('sixth known window compiles only the bounded dev gateway transport', () => {
+  const windowId = 'edbc6d11-7c1f-43a7-b745-1ded06deb29f';
+  const graphs = buildFoundationGatewayWorkflows(syntheticFoundationBindings(), {
+    ...syntheticFoundationTransport(),
+    windowId,
+  });
+  assert.equal(graphs.length, 25);
+  assert.equal(JSON.stringify(graphs).includes(windowId), true);
+  assert.throws(
+    () =>
+      buildFoundationGatewayWorkflows(syntheticFoundationBindings(), {
+        ...syntheticFoundationTransport(),
+        windowId: '11111111-1111-4111-8111-111111111111',
+      }),
+    /FOUNDATION_TRANSPORT_INVALID/,
+  );
+});
+
 test('closed GW01 window and removed credentials cannot be substituted for the new foundation profile', () => {
   for (const change of [
     { windowId: '76c2ad42-c094-4ba4-9a0b-566e19b97780' },

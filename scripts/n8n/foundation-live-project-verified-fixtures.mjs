@@ -13,7 +13,10 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  unadmittedWf00Reconciled = false,
+  technical16Settled = false,
+  technical16CleanupRequests = 85,
+  technical16Fault,
+  unadmittedWf00Reconciled = technical16Settled,
   unadmittedWf00Fault,
   restoredBrowserRetryDiscovery = unadmittedWf00Reconciled,
   restoredBrowserRetryDiscoveryFault,
@@ -2734,7 +2737,7 @@ export async function syntheticProjectVerifiedContinuation({
     if (ordinal === 14) restoredBrowserDiscoveryConfiguration = configuration;
     else restoredBrowserDiscoveryConfiguration.next = configuration;
   }
-  let unadmittedWf00Configuration;
+  let unadmittedWf00Configuration, technical17Configuration;
   if (unadmittedWf00Reconciled) {
     const root = 'milestones/M03-n8n-foundation/evidence/',
       relative = root + 'wf00-unadmitted-manual-checkpoint-20261024.json',
@@ -2806,6 +2809,518 @@ export async function syntheticProjectVerifiedContinuation({
       cleanupSha256: digest(cleanupText),
     };
   }
+  if (technical16Settled) {
+    // Portable synthetic recovery. The only repository reads below are tracked
+    // public records and canonical sources; no workstation ignored output is used.
+    const e = 'milestones/M03-n8n-foundation/evidence/',
+      l = 'scripts/n8n/out/foundation/live/',
+      json = (v) => JSON.stringify(v) + '\n',
+      load = (p) => readFileSync(join(directory, p), 'utf8'),
+      readTracked = (p) => JSON.parse(readFileSync(join(sourceRoot, p), 'utf8')),
+      readRows = (p) => load(p).trimEnd().split('\n').map(JSON.parse),
+      writeRows = (p, v) => put(p, v.map(json).join('')),
+      relative = e + 'dev-acceptance-technical16-reconciliation-20261024.json',
+      cleanupRelative = e + 'dev-acceptance-technical16-cleanup-20261024.json',
+      custodyRelative = e + 'technical16-postclose-custody-20261024.json',
+      resolutionRelative = e + 'technical16-executed-parameters-resolution-20261024.json',
+      failedRelative = e + 'technical16-native-cleanup-attempt1-20261024.json',
+      settlementRelative = e + 'technical16-native-settlement-20261024.json',
+      archiveRelative = e + 'technical16-fixture-archive-20261024.json',
+      approvalRelative = e + 'remaining-allocation-after-snapshot-diagnosis-approval-20261024.json',
+      packetRelative = e + 'remaining-allocation-after-snapshot-diagnosis-20261024.md',
+      r = readTracked(relative),
+      custody = readTracked(custodyRelative),
+      z = readTracked(cleanupRelative),
+      resolution = readTracked(resolutionRelative),
+      failed = readTracked(failedRelative),
+      owner = readTracked(approvalRelative),
+      base = l + `project-verified-continuation-${snapshot.proposedSegmentId}.technical-16`,
+      n = technical16CleanupRequests;
+    const { createFoundationRuntimeBaseline } = await import('./foundation-runtime-plan.mjs'),
+      { runtimeGraphHash } = await import('./foundation-runtime-control.mjs'),
+      bindings = JSON.parse(load('n8n/foundation/bindings.dev.json')),
+      records = Object.keys(bindings.workflowRefs).map((key) =>
+        JSON.parse(load('n8n/workflows/' + key + '.json')),
+      ),
+      baseline = createFoundationRuntimeBaseline({ bindings, records });
+    writeRows(l + 'management.jsonl', [
+      ...readRows(l + 'management.jsonl'),
+      ...Array.from({ length: 297 }, (_, i) => ({ event: 'management_attempt', ordinal: 514 + i })),
+    ]);
+    writeRows(l + 'control.jsonl', [
+      ...readRows(l + 'control.jsonl'),
+      ...Array.from({ length: 109 }, (_, i) => ({
+        event: 'control_request_intent',
+        ordinal: 841 + i,
+        kind: 'discovery',
+        workflowId: baseline[i % 25].id,
+        at: '2026-10-24T16:32:00.000Z',
+      })),
+      { event: 'native_case_intent', caseId: 'dispatch.vimeo', nativeExecutions: 2 },
+      {
+        event: 'native_start_intent',
+        caseId: 'dispatch.vimeo',
+        workflowKey: 'WF-00',
+        workflowId: bindings.workflowRefs['WF-00'].id,
+        versionId: 'synthetic-executed16',
+        kind: 'browser_ui',
+        intentAt: '2026-10-24T16:33:00.000Z',
+      },
+      {
+        event: 'native_start_ack',
+        caseId: 'dispatch.vimeo',
+        workflowKey: 'WF-00',
+        workflowId: bindings.workflowRefs['WF-00'].id,
+        versionId: 'synthetic-executed16',
+        executionId: '31130',
+        kind: 'browser_ui',
+        intentAt: '2026-10-24T16:33:00.000Z',
+      },
+      ...Array.from({ length: 4 }, () => ({
+        event: 'browser_port_preflight_verified',
+        kind: 'browser_ui',
+        workflowId: bindings.workflowRefs['WF-00'].id,
+        at: '2026-10-24T16:32:00.000Z',
+      })),
+    ]);
+    const setups = readRows(l + 'setup.jsonl'),
+      cloned = setups
+        .slice(-71)
+        .map((row) =>
+          JSON.parse(
+            JSON.stringify(row)
+              .replaceAll('3c46c791-e140-4eb9-890a-eecfa251f65e', r.attempt.windowId)
+              .replaceAll('synthetic3c13', 'synthetic4c16'),
+          ),
+        );
+    let setupOrdinal = 149;
+    for (const row of cloned) {
+      if (row.event === 'setup_attempt') row.ordinal = ++setupOrdinal;
+      if (typeof row.at === 'number') row.at = r.rawAdmission.startsAt + 5000;
+    }
+    writeRows(l + 'setup.jsonl', [...setups, ...cloned]);
+    const preflight = readRows(l + 'preflight.jsonl'),
+      extra = preflight
+        .slice(-5)
+        .map((row) =>
+          JSON.parse(
+            JSON.stringify(row)
+              .replaceAll('3c46c791-e140-4eb9-890a-eecfa251f65e', r.attempt.windowId)
+              .replaceAll('7b1837201ac7925591577a1517d7288936ca3464', r.source.applicationSource),
+          ),
+        );
+    extra[0].ordinal = 7;
+    extra[1].ordinal = 8;
+    writeRows(l + 'preflight.jsonl', [...preflight, ...extra]);
+    const runtimeRows = [
+      { event: 'file_header', version: 1, planHash: 'a'.repeat(64), deadlineAt: r.rawAdmission.deadlineAt },
+      { event: 'header', version: 1, planHash: 'a'.repeat(64) },
+    ];
+    for (let i = 1; i <= 70; i++) {
+      const machine = i === 1 || i === 70,
+        record = baseline[(i - 2 + 25) % 25],
+        after = machine
+          ? { updatedAt: '2026-10-24T16:35:00.000Z' }
+          : {
+              versionId: custody.restoration.restoredVersions[record.key],
+              activeVersionId: null,
+              graphHash: runtimeGraphHash(record.body),
+              publishedHash: null,
+            };
+      runtimeRows.push(
+        {
+          event: 'intent',
+          sequence: i,
+          action: machine ? (i === 1 ? 'machine_rebind' : 'machine_restore') : 'save',
+          key: machine ? 'Machine' : record.key,
+          before: machine ? '2026-10-24T16:00:00.000Z' : after,
+          target: machine ? (i === 1 ? 'runtime' : 'baseline') : after,
+        },
+        { event: 'verified', sequence: i, after },
+      );
+    }
+    runtimeRows.push(
+      { event: 'machine_observed', metadata: { createdAt: 1, updatedAt: 1 } },
+      { event: 'setup_complete' },
+    );
+    for (let i = 1; i <= 237; i++)
+      runtimeRows.push({
+        event: 'request',
+        number: i,
+        method: 'GET',
+        path: '/api/v1/workflows/' + baseline[(i - 213 + 250) % 25].id + '?excludePinnedData=true',
+      });
+    runtimeRows.push({ event: 'restore_complete' });
+    if (['final-graph', 'final-published'].includes(technical16Fault)) {
+      const intent = runtimeRows.filter((row) => row.event === 'intent' && row.key === 'WF-00').at(-1),
+        after = runtimeRows.find((row) => row.event === 'verified' && row.sequence === intent.sequence).after;
+      if (technical16Fault === 'final-graph') after.graphHash = 'f'.repeat(64);
+      else after.activeVersionId = after.versionId;
+    }
+    writeRows(l + 'runtime.technical-16.jsonl', runtimeRows);
+    r.rawAdmission.approvalSha256 = digest(approvalText);
+    const admissionText = json(r.rawAdmission);
+    r.rawRuntimeClaim.admissionSha256 = digest(admissionText);
+    r.rawTechnicalClose.admissionSha256 = digest(admissionText);
+    for (const [suffix, value] of [
+      ['.json', r.rawAdmission],
+      ['.runtime-claim.json', r.rawRuntimeClaim],
+      ['.closed.json', r.rawTechnicalClose],
+    ])
+      put(base + suffix, json(value));
+    writeRows(base + '.public-frames.jsonl', [
+      ...Array.from({ length: 8 }, () => ({ kind: 'synthetic_public_frame' })),
+      r.rawPrepare,
+      r.rawCase,
+      r.rawRestore,
+      r.rawSourceClose,
+      r.rawWrapperClose,
+    ]);
+    put(e + 'technical16-wf00-dispatch-ui-20261024.png', Buffer.from('synthetic public PNG bytes'));
+    for (const path of Object.keys(r.pins)) r.pins[path] = digest(readFileSync(join(directory, path)));
+    if (technical16Fault === 'raw-closure') r.rawRestore.remoteWorkSettled = true;
+    if (technical16Fault === 'native-reset') r.usage.nativeExecutionsReserved = 0;
+    const rText = json(r);
+    put(relative, rText);
+    for (const path of Object.keys(custody.pins)) {
+      if (path === l + 'runtime.technical-16.jsonl') continue;
+      put(path, path.endsWith('.ts') ? 'synthetic retained types\n' : json({ syntheticPublicRecord: path }));
+    }
+    for (const path of Object.keys(custody.pins))
+      custody.pins[path] = digest(readFileSync(join(directory, path)));
+    if (technical16Fault === 'version')
+      custody.restoration.restoredVersions['WF-00'] = 'foreign-restored-version';
+    put(custodyRelative, json(custody));
+    put(cleanupRelative, json(z));
+    resolution.originalAttemptSha256 = digest(rText);
+    const diagnosticReceipts = [];
+    for (const [index, stem] of [
+      'metadata',
+      'native-metadata',
+      'snapshot',
+      'category',
+      'parameter-defaults',
+    ].entries()) {
+      const ordinal = 825 + index,
+        file = [
+          'technical16-execution31130-metadata-readback-20261024.json',
+          'technical16-execution31130-native-metadata-readback-20261024.json',
+          'technical16-execution31130-native-snapshot-readback-20261024.json',
+          'technical16-execution31130-parameter-category-readback-20261024.json',
+          'technical16-executed-parameters-resolution-20261024.json',
+        ][index],
+        path = e + file,
+        value = index === 4 ? resolution : readTracked(path),
+        claimRelative = 'scripts/n8n/out/foundation/execution-31130-' + stem + '-diagnostic-20261024.jsonl',
+        beforeControl = [955, 955, 957, 958, 959][index],
+        header = {
+          kind: 'm03_execution_31130_' + stem.replaceAll('-', '_') + '_diagnostic_budget',
+          version: 1,
+          checkpointSha256: digest(rText),
+          cleanupSha256: digest(json(z)),
+          managementAttempts: ordinal - 1,
+          controlAttempts: beforeControl,
+          maximumRequests: 1,
+          processId: 92000 + index,
+          parentProcessId: 92100 + index,
+        },
+        claimRows = [header, { event: 'management_attempt', ordinal }];
+      if (index > 0) {
+        header.metadataReceiptSha256 = diagnosticReceipts[0].sha256;
+        header.conservativeControlReservation = true;
+        header.additionalHttpRequests = 0;
+        claimRows.push({
+          event: 'native_read_control_reservation',
+          ordinal: [0, 956, 958, 959, 960][index],
+          additionalHttpRequest: false,
+        });
+      }
+      if (index === 3) header.snapshotReceiptSha256 = diagnosticReceipts[2].sha256;
+      if (index === 4) header.categoryReceiptSha256 = diagnosticReceipts[3].sha256;
+      writeRows(claimRelative, claimRows);
+      value.pins[claimRelative] = digest(load(claimRelative));
+      if (index < 4) {
+        put(path, json(value));
+        diagnosticReceipts.push({ relative: path, sha256: digest(load(path)), claimRelative });
+      } else diagnosticReceipts.push({ relative: path, sha256: null, claimRelative });
+    }
+    const resolutionText = json(resolution);
+    put(resolutionRelative, resolutionText);
+    diagnosticReceipts[4].sha256 = digest(resolutionText);
+    const childUiRelative = e + 'technical16-child-ui-readback-20261024.json';
+    const childUi = readTracked(childUiRelative);
+    childUi.nativeMetadataReadbackSha256 = diagnosticReceipts[1].sha256;
+    put(childUiRelative, json(childUi));
+    const oldOnce = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt.json',
+      oldJournal = 'scripts/n8n/out/foundation/technical16-native-cleanup.jsonl',
+      oldSeal = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.provision-seal.json',
+      oldLock = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.runtime-lock';
+    put(oldOnce, json({ kind: 'm03_technical16_cleanup_once', resolutionSha256: digest(resolutionText) }));
+    put(
+      oldJournal,
+      json({
+        event: 'technical16_cleanup_header',
+        version: 1,
+        resolutionSha256: digest(resolutionText),
+        originalAttemptSha256: digest(rText),
+      }),
+    );
+    put(oldSeal, json({ syntheticPublicSeal: true }));
+    put(oldLock, 'emr-m03-foundation-live-runtime-v1\n');
+    failed.originalAttemptSha256 = digest(rText);
+    failed.resolutionSha256 = digest(resolutionText);
+    failed.pins[oldOnce] = digest(load(oldOnce));
+    failed.pins[oldJournal] = digest(load(oldJournal));
+    failed.pins[oldSeal] = digest(load(oldSeal));
+    failed.pins['scripts/n8n/out/foundation/live/runtime.operation.lock'] = digest(load(oldLock));
+    const failedText = json(failed);
+    put(failedRelative, failedText);
+    const cleanupBase = 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2',
+      continuation = {
+        cleanupAttempt: 2,
+        priorFailedAttemptSha256: digest(failedText),
+        priorOnceSha256: digest(load(oldOnce)),
+        priorJournalSha256: digest(load(oldJournal)),
+      },
+      usage = { management: 829, control: 960, combined: 1789, vercel: 184 };
+    put(
+      cleanupBase + '.json',
+      json({
+        kind: 'm03_technical16_cleanup_once',
+        version: 1,
+        resolutionSha256: digest(resolutionText),
+        executionIds: ['31131', '31130'],
+        processId: 91080,
+        parentProcessId: 91081,
+        usage,
+        maximumRequests: 158,
+        maximumControlRequests: 158,
+        at: '2026-10-24T21:00:00.000Z',
+        ...continuation,
+      }),
+    );
+    const cleanupRows = [
+        {
+          event: 'technical16_cleanup_header',
+          version: 1,
+          resolutionSha256: digest(resolutionText),
+          originalAttemptSha256: digest(rText),
+          ...continuation,
+        },
+      ],
+      routes = [];
+    for (const record of baseline)
+      for (let i = 0; i < 2; i++) routes.push({ kind: 'discovery', workflowId: record.id });
+    for (let i = 0; i < n - 85; i++) routes.push({ kind: 'discovery', workflowId: baseline[i % 25].id });
+    for (const record of baseline) routes.push({ kind: 'workflow', workflowId: record.id });
+    for (const id of ['31130', '31131'])
+      for (const kind of ['metadata', 'full', 'metadata'])
+        routes.push({
+          kind,
+          workflowId: bindings.workflowRefs[id === '31130' ? 'WF-00' : 'WF-10'].id,
+          executionId: id,
+        });
+    let httpOrdinal = 0;
+    const addHttp = (route) =>
+      cleanupRows.push({
+        event: 'technical16_http_intent',
+        ordinal: ++httpOrdinal,
+        ...route,
+        managementAttempts: 829 + httpOrdinal,
+        controlAttempts: 960 + httpOrdinal,
+        at: '2026-10-24T21:00:01.000Z',
+      });
+    routes.forEach(addHttp);
+    for (const [id, index] of [
+      ['31131', 1],
+      ['31130', 2],
+    ]) {
+      const workflowId = bindings.workflowRefs[id === '31130' ? 'WF-00' : 'WF-10'].id,
+        common = {
+          batchId: 'technical16-postclose-native-cleanup',
+          caseId: 'dispatch.vimeo-reconciliation',
+          executionId: id,
+          workflowId,
+          at: '2026-10-24T21:00:02.000Z',
+        };
+      cleanupRows.push(
+        { event: 'native_cleanup_evidence', ...common },
+        { event: 'native_cleanup_intent', ...common, ordinal: index },
+      );
+      addHttp({ kind: 'delete', workflowId, executionId: id });
+      cleanupRows.push({ event: 'native_cleanup_absence_intent', ...common, ordinal: index });
+      addHttp({ kind: 'absence', workflowId, executionId: id });
+      cleanupRows.push({
+        event: 'native_cleanup_result',
+        ...common,
+        state: 'native_record_deleted',
+        deleteAcknowledged: true,
+        absenceVerified: true,
+        residual: false,
+      });
+    }
+    if (technical16Fault === 'ack') cleanupRows.at(-1).deleteAcknowledged = false;
+    if (technical16Fault === 'counter') cleanupRows[1].managementAttempts = 1;
+    writeRows(cleanupBase + '.jsonl', cleanupRows);
+    const inner = {
+      kind: 'm03_technical16_native_cleanup',
+      version: 1,
+      environment: 'dev',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      windowId: r.attempt.windowId,
+      sourceCommitSha: r.source.applicationSource,
+      status: 'native_cleanup_verified',
+      requestCount: n,
+      controlRequestCount: n,
+      managementAttempts: 829 + n,
+      controlAttempts: 960 + n,
+      combinedAttempts: 1789 + 2 * n,
+      canonicalWorkflowsVerified: 25,
+      qualifiedSideEffects: true,
+      recordsDeleted: 2,
+      deleteAcknowledged: true,
+      absenceVerified: true,
+      remoteWorkSettled: true,
+      networkCompletionVerified: true,
+      originalPublicRecordsUnchanged: true,
+      nativeAcceptanceProven: false,
+      originalMaskedFirstFailureRecovered: false,
+      executionCount: 0,
+      actorStarts: 0,
+      workflowWrites: 0,
+      credentialWrites: 0,
+      migrationOperations: 0,
+      diagnosticStage: 'complete',
+      diagnosticCode: 'none',
+    };
+    put(cleanupBase + '-result.json', json(inner));
+    const settlement = {
+      kind: 'm03_technical16_native_settlement',
+      version: 1,
+      environment: 'dev',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      technicalAttempt: 16,
+      windowId: r.attempt.windowId,
+      sourceCommitSha: r.source.applicationSource,
+      originalAttemptSha256: digest(rText),
+      resolutionSha256: digest(resolutionText),
+      outerNativeExit: 0,
+      rawResult: {
+        ...inner,
+        nativeExit: 0,
+        childClosed: true,
+        credentialChildrenClosed: true,
+        parentLockDeleted: true,
+        privateRead: true,
+        persistentManagementRetained: true,
+      },
+      cleanup: {
+        parentAbsent: true,
+        childAbsent: true,
+        parentLockAbsent: true,
+        runtimeLockAbsent: true,
+        persistentManagementRetained: true,
+        privateContentsRead: false,
+        networkRequests: 0,
+      },
+      pins: {},
+      usage: {
+        management: 829 + n,
+        control: 960 + n,
+        combined: 1789 + 2 * n,
+        vercel: 184,
+        nativeExecutionsReserved: 3,
+        actorStarts: 0,
+        providerReads: 0,
+      },
+    };
+    for (const path of [
+      relative,
+      resolutionRelative,
+      failedRelative,
+      oldOnce,
+      oldJournal,
+      oldSeal,
+      oldLock,
+      cleanupBase + '.json',
+      cleanupBase + '.jsonl',
+      cleanupBase + '-result.json',
+    ])
+      settlement.pins[path] = digest(readFileSync(join(directory, path)));
+    if (technical16Fault === 'acceptance') settlement.rawResult.nativeAcceptanceProven = true;
+    const settlementText = json(settlement);
+    put(settlementRelative, settlementText);
+    const rawArchive = readTracked(e + 'technical16-postclose-db-readback-20261024.json').rawResult;
+    rawArchive.status = 'archive_verified';
+    rawArchive.archiveFixture = true;
+    rawArchive.archiveAttempted = true;
+    rawArchive.archiveAcknowledged = true;
+    rawArchive.archiveNativeExit = 0;
+    rawArchive.fixtureArchived = true;
+    rawArchive.persistentAdminPreserved = true;
+    rawArchive.archiveBefore = structuredClone(rawArchive.inspection);
+    rawArchive.archiveAfter = structuredClone(rawArchive.inspection);
+    Object.assign(rawArchive.archiveAfter.fixture, {
+      competitorArchived: true,
+      competitorActive: false,
+      accountPaused: true,
+      accountActive: false,
+    });
+    delete rawArchive.inspection;
+    const archiveBase = 'scripts/db/out/m03-foundation-archive-' + r.attempt.windowId;
+    put(archiveBase + '-attempt.json', json({ kind: 'synthetic_owned_archive_attempt' }));
+    put(archiveBase + '-latest.json', json(rawArchive));
+    const archive = {
+      kind: 'm03_technical16_fixture_archive',
+      version: 1,
+      environment: 'dev',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      outerNativeExit: 0,
+      settlementSha256: digest(settlementText),
+      rawResult: rawArchive,
+      cleanup: {
+        parentAbsent: true,
+        childAbsent: true,
+        parentLockAbsent: true,
+        persistentAdminRetained: true,
+        privateContentsRead: false,
+        networkRequests: 0,
+      },
+      pins: {},
+    };
+    for (const path of [settlementRelative, archiveBase + '-attempt.json', archiveBase + '-latest.json'])
+      archive.pins[path] = digest(load(path));
+    if (technical16Fault === 'archive') archive.rawResult.archiveAfter.fixture.accountPaused = false;
+    put(archiveRelative, json(archive));
+    const packet = readFileSync(join(sourceRoot, packetRelative), 'utf8');
+    put(packetRelative, packet);
+    owner.approvedPacketSha256 = digest(packet);
+    if (technical16Fault === 'caps') owner.approvedCaps.control = 5000;
+    put(approvalRelative, json(owner));
+    technical17Configuration = {
+      actualRelative: relative,
+      actualSha256: digest(rText),
+      custodyRelative,
+      custodySha256: digest(load(custodyRelative)),
+      approvalRelative,
+      approvalSha256: digest(load(approvalRelative)),
+      packetRelative,
+      packetSha256: digest(packet),
+      cleanupRelative,
+      cleanupSha256: digest(load(cleanupRelative)),
+      resolutionRelative,
+      resolutionSha256: digest(resolutionText),
+      failedCleanupRelative: failedRelative,
+      failedCleanupSha256: digest(failedText),
+      settlementRelative,
+      settlementSha256: digest(settlementText),
+      archiveRelative,
+      archiveSha256: digest(load(archiveRelative)),
+      diagnosticReceipts,
+      childUiRelative,
+      childUiSha256: digest(load(childUiRelative)),
+    };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -2815,6 +3330,11 @@ export async function syntheticProjectVerifiedContinuation({
     join(sourceRoot, 'scripts/n8n/foundation-live-project-verified-continuation.mjs'),
     'utf8',
   );
+  if (technical17Configuration)
+    source = source.replace(
+      /const technical17Recovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      'const technical17Recovery = Object.freeze(' + JSON.stringify(technical17Configuration) + ');',
+    );
   source = source
     .replace(
       /approvalSha256: (?:null|'[a-f0-9]{64}')/,
@@ -2992,29 +3512,31 @@ export async function syntheticProjectVerifiedContinuation({
     }) + '\n',
   );
   let time = Date.parse(
-    unadmittedWf00Reconciled
-      ? '2026-10-24T16:10:00.000Z'
-      : restoredBrowserRetryDiscovery
-        ? '2026-10-24T15:40:00.000Z'
-        : restoredBrowserDiscovery
-          ? '2026-10-24T15:10:00.000Z'
-          : runtimeRestorationClosed
-            ? '2026-10-24T15:00:00.000Z'
-            : runtimePreparationClosed
-              ? '2026-10-24T11:00:00.000Z'
-              : adminAdmissionReadonly
-                ? '2026-10-24T10:00:00.000Z'
-                : catalogReadonly
-                  ? '2026-10-24T02:40:00.000Z'
-                  : preprivateAdmin
-                    ? '2026-10-24T02:00:00.000Z'
-                    : closedFixture
-                      ? '2026-10-24T00:46:00.000Z'
-                      : closedWindow
-                        ? '2026-10-23T18:00:00.000Z'
-                        : effectful
-                          ? '2026-10-23T15:00:00.000Z'
-                          : '2026-10-22T18:00:00.000Z',
+    technical16Settled
+      ? '2026-10-24T23:00:00.000Z'
+      : unadmittedWf00Reconciled
+        ? '2026-10-24T16:10:00.000Z'
+        : restoredBrowserRetryDiscovery
+          ? '2026-10-24T15:40:00.000Z'
+          : restoredBrowserDiscovery
+            ? '2026-10-24T15:10:00.000Z'
+            : runtimeRestorationClosed
+              ? '2026-10-24T15:00:00.000Z'
+              : runtimePreparationClosed
+                ? '2026-10-24T11:00:00.000Z'
+                : adminAdmissionReadonly
+                  ? '2026-10-24T10:00:00.000Z'
+                  : catalogReadonly
+                    ? '2026-10-24T02:40:00.000Z'
+                    : preprivateAdmin
+                      ? '2026-10-24T02:00:00.000Z'
+                      : closedFixture
+                        ? '2026-10-24T00:46:00.000Z'
+                        : closedWindow
+                          ? '2026-10-23T18:00:00.000Z'
+                          : effectful
+                            ? '2026-10-23T15:00:00.000Z'
+                            : '2026-10-22T18:00:00.000Z',
   );
   const now = () => time,
     io = { processAlive: () => false };

@@ -83,6 +83,7 @@ export function createFoundationSettlementReader({
       'eda4fae1-1e19-47db-81b8-beac1a4ed883',
       '3c46c791-e140-4eb9-890a-eecfa251f65e',
       '4c602549-2c42-4ec3-9328-714d7cb66a77',
+      'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
     ].includes(windowId) ||
     [readGateway, readProvider, transportSnapshot, now, pause].some((fn) => typeof fn !== 'function') ||
     !Number.isSafeInteger(deadlineAt)

@@ -119,6 +119,25 @@ export const foundationNativeFailureCodes = Object.freeze([
   'DISCOVERY_INCOMPLETE',
   'CLEANUP_ARGS',
   'CLEANUP_QUALIFICATION',
+  'CLEANUP_CONTEXT',
+  'CLEANUP_TERMINAL',
+  'CLEANUP_ROOT_PARENT',
+  'CLEANUP_ROOT_CHILD_COUNT',
+  'CLEANUP_ROOT_CHILD_IDENTITY',
+  'CLEANUP_ROOT_MISSING',
+  'CLEANUP_CHILD_PARENT',
+  'CLEANUP_CHILD_CHILDREN',
+  'CLEANUP_CHILD_MISSING',
+  'CLEANUP_CREATED_ORDER',
+  'CLEANUP_STARTED_ORDER',
+  'CLEANUP_STOPPED_ORDER',
+  'CLEANUP_ROOT_ERROR',
+  'CLEANUP_CHILD_ERROR',
+  'CLEANUP_ROOT_CALLBACK',
+  'CLEANUP_CHILD_CALLBACK',
+  'CLEANUP_KNOWN_CHILD_PROVENANCE_DUPLICATE',
+  'CLEANUP_UNKNOWN_CHILD_TREE',
+  'CLEANUP_PREFIX_CHECKED',
   'CLEANUP_HTTP',
   'DELETE_ACK',
   'WEBHOOK_ARGS',
@@ -1164,20 +1183,24 @@ export function createFoundationNativeReader({
   const reader = {
     qualifyTechnical16Cleanup(args) {
       return exclusive(async () => {
-        if (!exact(args, ['context'])) fail('CLEANUP_ARGS');
+        if (
+          !exact(args, ['context'], ['qualificationOnly']) ||
+          (Object.hasOwn(args, 'qualificationOnly') && args.qualificationOnly !== true)
+        )
+          fail('CLEANUP_ARGS');
         let context;
         try {
           const { assertTechnical16CleanupContext } = await import('./foundation-provision-cli.mjs');
           context = assertTechnical16CleanupContext(args.context);
         } catch {
-          fail('CLEANUP_QUALIFICATION');
+          fail('CLEANUP_CONTEXT');
         }
         if (context.bindings.projectId !== bindings.projectId || context.baseline.length !== 25)
-          fail('CLEANUP_QUALIFICATION');
+          fail('CLEANUP_CONTEXT');
         const readOwned = async (key, id, binding, expectedMode) => {
           const args = { workflowKey: key, executionId: id, expectedMode, intentAt: context.intentAt };
           const metadata = await obtainMetadata(args, binding);
-          if (metadata.status !== 'success' || metadata.waitTill !== null) fail('CLEANUP_QUALIFICATION');
+          if (metadata.status !== 'success' || metadata.waitTill !== null) fail('CLEANUP_TERMINAL');
           const output = await exchange(
             '/api/v1/executions/' + id + '?includeData=true',
             (dto, status) => fullProjection(dto, status, args, binding, metadata),
@@ -1193,26 +1216,57 @@ export function createFoundationNativeReader({
         };
         const root = await readOwned('WF-00', '31130', context.rootBinding, 'manual');
         const child = await readOwned('WF-10', '31131', context.childBinding, 'integrated');
+        currentContext = {
+          workflowKey: 'WF-00',
+          operation: 'cleanup_qualification',
+          stage: 'qualification',
+          httpStatus: null,
+        };
+        // Keep every original predicate. Fixed codes expose only which known
+        // invariant failed, never native payloads, names, dates or URLs.
+        if (root.nativeParent !== null) fail('CLEANUP_ROOT_PARENT');
+        if (root.missingNativeChildCalls.length !== 0) fail('CLEANUP_ROOT_MISSING');
         if (
-          root.nativeParent !== null ||
-          root.nativeChildren.length !== 1 ||
-          root.nativeChildren[0].executionId !== '31131' ||
-          root.nativeChildren[0].key !== 'WF-10' ||
-          root.missingNativeChildCalls.length !== 0 ||
           child.nativeParent?.executionId !== '31130' ||
           child.nativeParent.workflowId !== root.workflowId ||
-          child.nativeChildren.length !== 0 ||
-          child.missingNativeChildCalls.length !== 0 ||
-          child.nativeParent.key !== 'WF-00' ||
-          Date.parse(child.createdAt) < Date.parse(root.createdAt) ||
-          Date.parse(child.startedAt) < Date.parse(root.startedAt) ||
-          Date.parse(child.stoppedAt) > Date.parse(root.stoppedAt) ||
-          root.errorDispatchExpected ||
-          child.errorDispatchExpected ||
-          root.nativeProviderCallback !== null ||
-          child.nativeProviderCallback !== null
+          child.nativeParent.key !== 'WF-00'
         )
-          fail('CLEANUP_QUALIFICATION');
+          fail('CLEANUP_CHILD_PARENT');
+        if (child.nativeChildren.length !== 0) fail('CLEANUP_CHILD_CHILDREN');
+        if (child.missingNativeChildCalls.length !== 0) fail('CLEANUP_CHILD_MISSING');
+        if (Date.parse(child.createdAt) < Date.parse(root.createdAt)) fail('CLEANUP_CREATED_ORDER');
+        if (Date.parse(child.startedAt) < Date.parse(root.startedAt)) fail('CLEANUP_STARTED_ORDER');
+        if (Date.parse(child.stoppedAt) > Date.parse(root.stoppedAt)) fail('CLEANUP_STOPPED_ORDER');
+        if (root.errorDispatchExpected) fail('CLEANUP_ROOT_ERROR');
+        if (child.errorDispatchExpected) fail('CLEANUP_CHILD_ERROR');
+        if (root.nativeProviderCallback !== null) fail('CLEANUP_ROOT_CALLBACK');
+        if (child.nativeProviderCallback !== null) fail('CLEANUP_CHILD_CALLBACK');
+        const knownChild = (link) =>
+          link.executionId === '31131' && link.key === 'WF-10' && link.workflowId === child.workflowId;
+        if (root.nativeChildren.length > 1) {
+          // This diagnostic proves all other predicates above before naming
+          // equivalent provenance. It does not accept duplicates or mint a
+          // cleanup qualification; unknown/conflicting links remain distinct.
+          const first = root.nativeChildren[0],
+            locations = new Set(root.nativeChildren.map((link) => link.sourceLocation));
+          if (
+            root.nativeChildren.every(
+              (link) =>
+                knownChild(link) &&
+                link.sourceNode === first.sourceNode &&
+                link.sourceRun === first.sourceRun &&
+                ['task_metadata', 'output_metadata', 'waiting_metadata'].includes(link.sourceLocation),
+            ) &&
+            locations.size === root.nativeChildren.length
+          )
+            fail('CLEANUP_KNOWN_CHILD_PROVENANCE_DUPLICATE');
+          fail('CLEANUP_UNKNOWN_CHILD_TREE');
+        }
+        if (root.nativeChildren.length !== 1) fail('CLEANUP_ROOT_CHILD_COUNT');
+        if (!knownChild(root.nativeChildren[0])) fail('CLEANUP_ROOT_CHILD_IDENTITY');
+        // A read-only diagnostic stops before discovery, canonical reads,
+        // qualification branding or any mutation port can become available.
+        if (args.qualificationOnly === true) fail('CLEANUP_PREFIX_CHECKED');
         const owned = new Map([
           [root.executionId, root],
           [child.executionId, child],

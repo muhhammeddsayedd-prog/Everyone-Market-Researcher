@@ -474,10 +474,10 @@ export const foundationTechnical16CleanupScope = Object.freeze({
   windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
   sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
   executionIds: Object.freeze(['31131', '31130']),
-  maximumRequests: 158,
-  maximumControlRequests: 158,
+  maximumRequests: 154,
+  maximumControlRequests: 154,
   forensicAllocationMaximum: 160,
-  forensicRequestsAlreadyCharged: 2,
+  forensicRequestsAlreadyCharged: 6,
   canonicalWorkflowCount: 25,
   maximumDrainRequests: 100,
 });
@@ -490,6 +490,26 @@ const technical16Cleanup = Object.freeze({
   attemptFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt.json',
   journalFile: 'scripts/n8n/out/foundation/technical16-native-cleanup.jsonl',
   resultFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-result.json',
+  failedEntryFile: 'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt1-20261024.json',
+  failedEntrySha256: '4f0697080d9bd1ff728b48d9c159f4cbe6f61ebaa04d19ec295da14c3e297960',
+  failedOnceSha256: '1e165ea75442200af05e57206c32cd0edc07c248571a1405ae8025e31588e66e',
+  failedJournalSha256: '4fccea19e19a162ca2d7b912c200a0cb1fc857b9ea54d4bdf5b6f97f76dd71d7',
+  failedSealFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.provision-seal.json',
+  failedSealSha256: '9aade5d3ae4c4a0a3aace8da74c38e3b0c9f1da672d7187c7ff1b14aeee9ca1b',
+  failedLockSha256: 'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f',
+  failedLockArchiveFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt1.runtime-lock',
+  failedSecondFile:
+    'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt2-20261024.json',
+  failedSecondSha256: '5b2f8e590876f37d89aad2a35151e07489c4601111af09c27b01268f43df0c57',
+  failedSecondOnceFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2.json',
+  failedSecondOnceSha256: '86e74f0c574384e33c28721b345899476d198d49e91501c3f37d8a27f9361639',
+  failedSecondJournalFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2.jsonl',
+  failedSecondJournalSha256: 'bac9e865ea04c6f083dc836e2e71e0cd37a58dc542a5f03af7ed06767b66ee17',
+  failedSecondResultFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2-result.json',
+  failedSecondResultSha256: 'efa7b2812baf34f520eac9bea4337b5197bfc680244acaaabe6fcead8a55c137',
+  failedSecondSealFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2.provision-seal.json',
+  failedSecondSealSha256: '45a924660d94d87a5fc9eab45307c550a74288b6556873633c39b571c37b62be',
+  failedSecondLockArchiveFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt2.runtime-lock',
 });
 const technical16CleanupContexts = new WeakMap();
 export function assertTechnical16CleanupContext(context) {
@@ -718,9 +738,251 @@ export async function checkTechnical16Cleanup() {
   const rootBinding = historicalBinding('WF-00', rootBody, 37),
     childBinding = historicalBinding('WF-10', childBody);
   if (rootBinding.versionId !== ack[0].versionId) fail();
+  let cleanupAttempt = 1,
+    paths = technical16Cleanup;
+  const lockPath = noLinks(join(repo, 'scripts/n8n/out/foundation/live/runtime.operation.lock'));
+  if (
+    typeof technical16Cleanup.failedEntrySha256 === 'string' &&
+    /^[a-f0-9]{64}$/.test(technical16Cleanup.failedEntrySha256)
+  ) {
+    const failed = JSON.parse(read(technical16Cleanup.failedEntryFile, technical16Cleanup.failedEntrySha256));
+    const once = JSON.parse(read(technical16Cleanup.attemptFile, technical16Cleanup.failedOnceSha256)),
+      header = read(technical16Cleanup.journalFile, technical16Cleanup.failedJournalSha256),
+      seal = JSON.parse(read(technical16Cleanup.failedSealFile, technical16Cleanup.failedSealSha256));
+    const expectedHeader =
+      JSON.stringify({
+        event: 'technical16_cleanup_header',
+        version: 1,
+        resolutionSha256: technical16Cleanup.executedBodyResolutionSha256,
+        originalAttemptSha256: 'd6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb',
+      }) + '\n';
+    const dead = (pid) => {
+      if (!Number.isSafeInteger(pid) || pid <= 0 || pid === process.pid || pid === process.ppid) fail();
+      try {
+        process.kill(pid, 0);
+      } catch (error) {
+        if (error?.code === 'ESRCH') return;
+      }
+      fail();
+    };
+    if (
+      failed.kind !== 'm03_technical16_native_cleanup_failed_attempt' ||
+      failed.version !== 1 ||
+      failed.environment !== 'dev' ||
+      failed.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+      failed.technicalAttempt !== 16 ||
+      failed.cleanupAttempt !== 1 ||
+      failed.originalAttemptSha256 !== 'd6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb' ||
+      failed.resolutionSha256 !== technical16Cleanup.executedBodyResolutionSha256 ||
+      failed.rootExecutionId !== '31130' ||
+      failed.childExecutionId !== '31131' ||
+      failed.windowId !== foundationTechnical16CleanupScope.windowId ||
+      failed.outerNativeExit !== 1 ||
+      failed.rawResult?.nativeExit !== 13 ||
+      failed.rawResult.requestCount !== 0 ||
+      failed.rawResult.controlRequestCount !== 0 ||
+      failed.rawResult.recordsDeleted !== 0 ||
+      failed.rawResult.qualifiedSideEffects !== false ||
+      failed.rawResult.remoteWorkSettled !== false ||
+      failed.rawResult.childClosed !== true ||
+      failed.rawResult.credentialChildrenClosed !== true ||
+      failed.rawResult.diagnosticStage !== 'result_contract' ||
+      failed.cleanup?.parentAbsent !== true ||
+      failed.cleanup.childAbsent !== true ||
+      failed.cleanup.parentLockAbsent !== true ||
+      failed.cleanup.runtimeLockPresent !== true ||
+      failed.durableState?.journalHeaderCount !== 1 ||
+      failed.durableState.httpIntentCount !== 0 ||
+      failed.durableState.deleteIntentCount !== 0 ||
+      failed.durableState.nativeResultFilePresent !== false ||
+      failed.durableState.zeroRemoteCallsSourceQualified !== true ||
+      failed.durableState.consumedMutationClaimReusable !== false ||
+      failed.cause?.classification !== 'native_entry_top_level_await_cycle' ||
+      failed.usage?.management !== 829 ||
+      failed.usage.control !== 960 ||
+      failed.usage.combined !== 1789 ||
+      failed.usage.vercel !== 184 ||
+      failed.usage.actorStarts !== 0 ||
+      failed.pins?.[technical16Cleanup.attemptFile] !== technical16Cleanup.failedOnceSha256 ||
+      failed.pins[technical16Cleanup.journalFile] !== technical16Cleanup.failedJournalSha256 ||
+      failed.pins[technical16Cleanup.failedSealFile] !== technical16Cleanup.failedSealSha256 ||
+      failed.pins['scripts/n8n/out/foundation/live/runtime.operation.lock'] !==
+        technical16Cleanup.failedLockSha256 ||
+      once.kind !== 'm03_technical16_cleanup_once' ||
+      once.version !== 1 ||
+      once.processId !== failed.cleanup.childProcessId ||
+      once.parentProcessId !== failed.cleanup.parentProcessId ||
+      once.resolutionSha256 !== technical16Cleanup.executedBodyResolutionSha256 ||
+      JSON.stringify(once.executionIds) !== JSON.stringify(['31131', '31130']) ||
+      once.maximumRequests !== 158 ||
+      once.maximumControlRequests !== 158 ||
+      once.usage?.management !== 829 ||
+      once.usage.control !== 960 ||
+      once.usage.combined !== 1789 ||
+      header !== expectedHeader ||
+      seal.version !== 2 ||
+      !seal.files ||
+      Object.keys(seal.files).length !== 91 ||
+      seal.files['scripts/n8n/foundation-provision-cli.mjs'] !==
+        '70ccd4efafe4cbc2d25a723c527ec5fc883993eee21b67c65bee455f6c41905f' ||
+      seal.files['scripts/n8n/foundation-native-reader.mjs'] !==
+        'fc7279cbf4568e1e0268328ca5641ab9be65742187aaaccad9a4cbfd2543abfc' ||
+      seal.files['scripts/n8n/windows/Invoke-M03FoundationProvision.ps1'] !==
+        '8ce86d0a26041f9ea446afce21bf9e64ef7399aa59515c924d6337a8759716c7'
+    )
+      fail();
+    dead(once.processId);
+    dead(once.parentProcessId);
+    if (existsSync(noLinks(join(repo, technical16Cleanup.resultFile)))) fail();
+    read(technical16Cleanup.failedLockArchiveFile, technical16Cleanup.failedLockSha256);
+    const second = JSON.parse(
+        read(technical16Cleanup.failedSecondFile, technical16Cleanup.failedSecondSha256),
+      ),
+      secondOnce = JSON.parse(
+        read(technical16Cleanup.failedSecondOnceFile, technical16Cleanup.failedSecondOnceSha256),
+      ),
+      secondJournal = read(
+        technical16Cleanup.failedSecondJournalFile,
+        technical16Cleanup.failedSecondJournalSha256,
+      ),
+      secondResult = JSON.parse(
+        read(technical16Cleanup.failedSecondResultFile, technical16Cleanup.failedSecondResultSha256),
+      ),
+      secondSeal = JSON.parse(
+        read(technical16Cleanup.failedSecondSealFile, technical16Cleanup.failedSecondSealSha256),
+      );
+    if (
+      second.kind !== failed.kind ||
+      second.version !== 1 ||
+      second.environment !== 'dev' ||
+      second.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+      second.technicalAttempt !== 16 ||
+      second.cleanupAttempt !== 2 ||
+      second.outerNativeExit !== 1 ||
+      second.windowId !== foundationTechnical16CleanupScope.windowId ||
+      second.rootExecutionId !== '31130' ||
+      second.childExecutionId !== '31131' ||
+      second.originalAttemptSha256 !== failed.originalAttemptSha256 ||
+      second.resolutionSha256 !== technical16Cleanup.executedBodyResolutionSha256 ||
+      second.priorFailedAttemptSha256 !== technical16Cleanup.failedEntrySha256 ||
+      second.rawResult?.status !== 'cleanup_reconciliation_required' ||
+      second.rawResult.nativeExit !== 1 ||
+      second.rawResult.requestCount !== 4 ||
+      second.rawResult.controlRequestCount !== 4 ||
+      second.rawResult.managementAttempts !== 833 ||
+      second.rawResult.controlAttempts !== 964 ||
+      second.rawResult.combinedAttempts !== 1797 ||
+      second.rawResult.recordsDeleted !== 0 ||
+      second.rawResult.qualifiedSideEffects !== false ||
+      second.rawResult.remoteWorkSettled !== false ||
+      second.rawResult.networkCompletionVerified !== true ||
+      second.rawResult.originalPublicRecordsUnchanged !== true ||
+      second.rawResult.childClosed !== true ||
+      second.rawResult.credentialChildrenClosed !== true ||
+      second.rawResult.parentLockDeleted !== true ||
+      second.rawResult.diagnosticStage !== 'qualification' ||
+      second.rawResult.diagnosticCode !== 'native_CLEANUP_QUALIFICATION' ||
+      second.cleanup?.parentAbsent !== true ||
+      second.cleanup.childAbsent !== true ||
+      second.cleanup.parentLockAbsent !== true ||
+      second.cleanup.runtimeLockPresent !== true ||
+      second.durableState?.httpIntentCount !== 4 ||
+      second.durableState.deleteIntentCount !== 0 ||
+      second.durableState.nativeResultFilePresent !== true ||
+      second.durableState.consumedMutationClaimReusable !== false ||
+      second.usage?.management !== 833 ||
+      second.usage.control !== 964 ||
+      second.usage.combined !== 1797 ||
+      second.usage.vercel !== 184 ||
+      second.usage.nativeExecutionsReserved !== 3 ||
+      second.usage.actorStarts !== 0 ||
+      second.pins?.[technical16Cleanup.failedSecondOnceFile] !== technical16Cleanup.failedSecondOnceSha256 ||
+      second.pins[technical16Cleanup.failedSecondJournalFile] !==
+        technical16Cleanup.failedSecondJournalSha256 ||
+      second.pins[technical16Cleanup.failedSecondResultFile] !==
+        technical16Cleanup.failedSecondResultSha256 ||
+      second.pins[technical16Cleanup.failedSecondSealFile] !== technical16Cleanup.failedSecondSealSha256 ||
+      second.pins[technical16Cleanup.failedLockArchiveFile] !== technical16Cleanup.failedLockSha256 ||
+      secondOnce.kind !== once.kind ||
+      secondOnce.version !== 1 ||
+      secondOnce.cleanupAttempt !== 2 ||
+      secondOnce.resolutionSha256 !== once.resolutionSha256 ||
+      secondOnce.priorFailedAttemptSha256 !== technical16Cleanup.failedEntrySha256 ||
+      secondOnce.priorOnceSha256 !== technical16Cleanup.failedOnceSha256 ||
+      secondOnce.priorJournalSha256 !== technical16Cleanup.failedJournalSha256 ||
+      JSON.stringify(secondOnce.executionIds) !== JSON.stringify(['31131', '31130']) ||
+      secondOnce.maximumRequests !== 158 ||
+      secondOnce.maximumControlRequests !== 158 ||
+      JSON.stringify(secondOnce.usage) !== JSON.stringify(once.usage) ||
+      secondOnce.processId !== second.cleanup.childProcessId ||
+      secondOnce.parentProcessId !== second.cleanup.parentProcessId ||
+      secondSeal.version !== 2 ||
+      !secondSeal.files ||
+      Object.keys(secondSeal.files).length !== 92 ||
+      secondSeal.files['scripts/n8n/foundation-provision-cli.mjs'] !==
+        '5d6a8b8fa1fe4ab6ce2ae41c5958dc7813eb01a297281205101eb749b2e6580b' ||
+      secondSeal.files['scripts/n8n/windows/Invoke-M03FoundationProvision.ps1'] !==
+        '4a18acaa05614b9dc30c260166c9ddf424dee5012578218478ec54361f45c8bd'
+    )
+      fail();
+    for (const [key, value] of Object.entries(secondResult))
+      if (JSON.stringify(second.rawResult[key]) !== JSON.stringify(value)) fail();
+    const secondRows = secondJournal.trimEnd().split('\n').map(JSON.parse),
+      secondHeader = secondRows[0];
+    if (
+      !secondJournal.endsWith('\n') ||
+      secondRows.length !== 5 ||
+      secondHeader.event !== 'technical16_cleanup_header' ||
+      secondHeader.version !== 1 ||
+      secondHeader.cleanupAttempt !== 2 ||
+      secondHeader.resolutionSha256 !== once.resolutionSha256 ||
+      secondHeader.originalAttemptSha256 !== failed.originalAttemptSha256 ||
+      secondHeader.priorFailedAttemptSha256 !== technical16Cleanup.failedEntrySha256 ||
+      secondHeader.priorOnceSha256 !== technical16Cleanup.failedOnceSha256 ||
+      secondHeader.priorJournalSha256 !== technical16Cleanup.failedJournalSha256
+    )
+      fail();
+    for (let index = 0; index < 4; index++) {
+      const row = secondRows[index + 1],
+        root = index < 2;
+      if (
+        row.event !== 'technical16_http_intent' ||
+        row.ordinal !== index + 1 ||
+        row.kind !== (index % 2 === 0 ? 'metadata' : 'full') ||
+        row.workflowId !== bindings.workflowRefs[root ? 'WF-00' : 'WF-10'].id ||
+        row.executionId !== (root ? '31130' : '31131') ||
+        row.managementAttempts !== 830 + index ||
+        row.controlAttempts !== 961 + index
+      )
+        fail();
+    }
+    dead(secondOnce.processId);
+    dead(secondOnce.parentProcessId);
+    const lockArchive = noLinks(join(repo, technical16Cleanup.failedSecondLockArchiveFile)),
+      stalePresent = existsSync(lockPath),
+      archived = existsSync(lockArchive);
+    if (stalePresent === archived) fail();
+    // Preserve both spent claims. Only the exact stale marker is archived by
+    // the locked PowerShell parent; public CheckOnly never moves it.
+    const markerPath = archived ? lockArchive : lockPath,
+      stat = lstatSync(markerPath);
+    if (
+      !stat.isFile() ||
+      stat.nlink !== 1 ||
+      stat.size !== 35 ||
+      publicHash(readFileSync(markerPath)) !== technical16Cleanup.failedLockSha256
+    )
+      fail();
+    if (archived) read(technical16Cleanup.failedSecondLockArchiveFile, technical16Cleanup.failedLockSha256);
+    cleanupAttempt = 3;
+    paths = {
+      attemptFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt3.json',
+      journalFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt3.jsonl',
+      resultFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt3-result.json',
+    };
+  } else fail();
   for (const name of ['attemptFile', 'journalFile', 'resultFile'])
-    if (existsSync(noLinks(join(repo, technical16Cleanup[name])))) fail();
-  if (existsSync(noLinks(join(repo, 'scripts/n8n/out/foundation/live/runtime.operation.lock')))) fail();
+    if (existsSync(noLinks(join(repo, paths[name])))) fail();
   const value = freezeRuntimeValue({
     bindings,
     baseline,
@@ -728,7 +990,14 @@ export async function checkTechnical16Cleanup() {
     childBinding,
     intentAt: Date.parse(ack[0].intentAt),
     resolutionSha256: technical16Cleanup.executedBodyResolutionSha256,
-    usage: resolution.usage,
+    usage: { ...resolution.usage, management: 833, control: 964, combined: 1797 },
+    cleanupAttempt,
+    paths,
+    priorAttempt: {
+      receiptSha256: technical16Cleanup.failedSecondSha256,
+      onceSha256: technical16Cleanup.failedSecondOnceSha256,
+      journalSha256: technical16Cleanup.failedSecondJournalSha256,
+    },
     assertCurrent() {
       for (const [path, hash] of pins) {
         const absolute = noLinks(join(repo, path)),
@@ -819,8 +1088,9 @@ export function createTechnical16CleanupBudget({ context, deadlineAt, now = Date
     },
   });
 }
-async function runTechnical16Cleanup(context, privateInput) {
-  const value = assertTechnical16CleanupContext(context);
+async function runTechnical16Cleanup(context, privateInput, qualificationOnly = false) {
+  const value = assertTechnical16CleanupContext(context),
+    paths = value.paths;
   const [
     { createFoundationNativeReader, assertFoundationTechnical16CleanupQualification },
     { createFoundationNativeTransport },
@@ -876,7 +1146,7 @@ async function runTechnical16Cleanup(context, privateInput) {
     if (
       uncertainAppend ||
       journalFd === undefined ||
-      readFileSync(join(repo, technical16Cleanup.journalFile), 'utf8') !== journalExpected
+      readFileSync(join(repo, paths.journalFile), 'utf8') !== journalExpected
     )
       fail();
     const text = JSON.stringify(row) + '\n';
@@ -890,21 +1160,37 @@ async function runTechnical16Cleanup(context, privateInput) {
     }
   };
   const budget = createTechnical16CleanupBudget({ context, deadlineAt: privateInput.deadlineMs, append });
+  const admit = (args) => {
+    if (qualificationOnly && (budget.state().requestCount >= 4 || !['metadata', 'full'].includes(args.kind)))
+      fail();
+    budget.admit(args);
+  };
   try {
-    const claim = openSync(noLinks(join(repo, technical16Cleanup.attemptFile)), 'wx');
+    const claim = openSync(noLinks(join(repo, paths.attemptFile)), 'wx');
     try {
       writeCompleteSync(
         claim,
         JSON.stringify({
           kind: 'm03_technical16_cleanup_once',
           version: 1,
+          ...(value.cleanupAttempt >= 2
+            ? {
+                cleanupAttempt: value.cleanupAttempt,
+                priorFailedAttemptSha256: value.priorAttempt.receiptSha256,
+                priorOnceSha256: value.priorAttempt.onceSha256,
+                priorJournalSha256: value.priorAttempt.journalSha256,
+              }
+            : {}),
           resolutionSha256: value.resolutionSha256,
           executionIds: ['31131', '31130'],
           processId: process.pid,
           parentProcessId: process.ppid,
           usage: value.usage,
-          maximumRequests: 158,
-          maximumControlRequests: 158,
+          maximumRequests: qualificationOnly ? 4 : foundationTechnical16CleanupScope.maximumRequests,
+          maximumControlRequests: qualificationOnly
+            ? 4
+            : foundationTechnical16CleanupScope.maximumControlRequests,
+          ...(qualificationOnly ? { qualificationOnly: true } : {}),
           at: new Date().toISOString(),
         }) + '\n',
       );
@@ -915,24 +1201,33 @@ async function runTechnical16Cleanup(context, privateInput) {
     lock = openSync(lockPath, 'wx');
     writeCompleteSync(lock, 'emr-m03-foundation-live-runtime-v1\n');
     fsyncSync(lock);
-    journalFd = openSync(noLinks(join(repo, technical16Cleanup.journalFile)), 'wx');
+    journalFd = openSync(noLinks(join(repo, paths.journalFile)), 'wx');
     append({
       event: 'technical16_cleanup_header',
       version: 1,
       resolutionSha256: value.resolutionSha256,
       originalAttemptSha256: 'd6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb',
+      ...(value.cleanupAttempt >= 2
+        ? {
+            cleanupAttempt: value.cleanupAttempt,
+            priorFailedAttemptSha256: value.priorAttempt.receiptSha256,
+            priorOnceSha256: value.priorAttempt.onceSha256,
+            priorJournalSha256: value.priorAttempt.journalSha256,
+          }
+        : {}),
     });
     const journal = createFoundationControlJournal({ durableAppend: append });
     transport = createFoundationNativeTransport({
       apiKey: privateInput.key,
       bindings: value.bindings,
       authorizeExecution: ({ method, executionId }) =>
-        ['31130', '31131'].includes(executionId) && (method === 'GET' || (qualified && method === 'DELETE')),
+        ['31130', '31131'].includes(executionId) &&
+        (method === 'GET' || (!qualificationOnly && qualified && method === 'DELETE')),
     });
     reader = createFoundationNativeReader({
       bindings: value.bindings,
       transport,
-      admitControlAttempt: budget.admit,
+      admitControlAttempt: admit,
       now: Date.now,
       deadlineAt: privateInput.deadlineMs,
       sensitiveValues: [privateInput.key],
@@ -940,13 +1235,17 @@ async function runTechnical16Cleanup(context, privateInput) {
     const cleanup = createFoundationNativeCleanup({
       reader,
       transport,
-      admitControlAttempt: budget.admit,
+      admitControlAttempt: admit,
       journal,
       now: Date.now,
       deadlineAt: privateInput.deadlineMs,
     });
     result.diagnosticStage = 'qualification';
-    const qualification = await reader.qualifyTechnical16Cleanup({ context });
+    const qualification = await reader.qualifyTechnical16Cleanup({
+      context,
+      ...(qualificationOnly ? { qualificationOnly: true } : {}),
+    });
+    if (qualificationOnly) fail();
     assertFoundationTechnical16CleanupQualification(qualification, { reader });
     qualified = true;
     result.qualifiedSideEffects = true;
@@ -982,8 +1281,7 @@ async function runTechnical16Cleanup(context, privateInput) {
       value.assertCurrent();
       if (
         uncertainAppend ||
-        (journalFd !== undefined &&
-          readFileSync(join(repo, technical16Cleanup.journalFile), 'utf8') !== journalExpected)
+        (journalFd !== undefined && readFileSync(join(repo, paths.journalFile), 'utf8') !== journalExpected)
       )
         fail();
       result.originalPublicRecordsUnchanged = true;
@@ -999,7 +1297,7 @@ async function runTechnical16Cleanup(context, privateInput) {
     if (result.status === 'native_cleanup_verified') result.diagnosticStage = 'complete';
     privateInput.key = null;
   }
-  writeFileSync(noLinks(join(repo, technical16Cleanup.resultFile)), JSON.stringify(result, null, 2) + '\n', {
+  writeFileSync(noLinks(join(repo, paths.resultFile)), JSON.stringify(result, null, 2) + '\n', {
     flag: 'wx',
   });
   return result;
@@ -1343,277 +1641,291 @@ let key = null,
   machine = null,
   privateReadAttempted = false;
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try {
-    const mode = process.argv[2];
-    if (
-      process.argv.length !== 3 ||
-      ![
-        'CheckOnly',
-        'Shells',
-        'Reconcile',
-        'All',
-        'RestoreWF00',
-        'RestoreTechnical13CheckOnly',
-        'RestoreTechnical13',
-        'CleanupTechnical16CheckOnly',
-        'CleanupTechnical16',
-      ].includes(mode)
-    )
-      fail();
-    if (mode === 'CleanupTechnical16CheckOnly' || mode === 'CleanupTechnical16') {
-      let context = null;
-      try {
-        context = await checkTechnical16Cleanup();
-      } catch {
-        /* Fixed public refusal below. */
-      }
-      if (mode === 'CleanupTechnical16CheckOnly' || !context) {
-        report({
-          kind: 'm03_technical16_cleanup_public',
-          version: 1,
-          status: context ? 'technical16_cleanup_public_ready' : 'technical16_cleanup_public_blocked',
-          windowId: foundationTechnical16CleanupScope.windowId,
-          privateRead: false,
-          networkRequests: 0,
-          maximumRequests: foundationTechnical16CleanupScope.maximumRequests,
-          maximumControlRequests: foundationTechnical16CleanupScope.maximumControlRequests,
-          canonicalWorkflowCount: foundationTechnical16CleanupScope.canonicalWorkflowCount,
-          maximumDrainRequests: foundationTechnical16CleanupScope.maximumDrainRequests,
-          maximumNativeRecords: foundationTechnical16CleanupScope.executionIds.length,
-          executionCount: 0,
-          actorStarts: 0,
-          qualifiedSideEffects: false,
-          cleanupQualificationReady: context !== null,
-        });
-        process.exitCode = context ? 0 : 1;
-      } else {
-        const parentPath = noLinks(
-          join(process.env.LOCALAPPDATA, 'Temp/emr-m03-acceptance-parent.operation.lock'),
-        );
-        const parent = JSON.parse(readFileSync(parentPath, 'utf8'));
-        if (
-          parent.kind !== 'm03_technical16_cleanup_parent' ||
-          parent.version !== 1 ||
-          parent.processId !== process.ppid
-        )
-          fail();
-        let held = false,
-          probe;
+  // Finish module evaluation before the private reader re-imports this module
+  // to verify the genuine cleanup context. Awaiting main at top level would
+  // otherwise leave that import waiting on its own unsettled evaluation.
+  setImmediate(async () => {
+    try {
+      const mode = process.argv[2];
+      if (
+        process.argv.length !== 3 ||
+        ![
+          'CheckOnly',
+          'Shells',
+          'Reconcile',
+          'All',
+          'RestoreWF00',
+          'RestoreTechnical13CheckOnly',
+          'RestoreTechnical13',
+          'CleanupTechnical16CheckOnly',
+          'CleanupTechnical16',
+          'CleanupTechnical16Diagnose',
+        ].includes(mode)
+      )
+        fail();
+      if (
+        ['CleanupTechnical16CheckOnly', 'CleanupTechnical16', 'CleanupTechnical16Diagnose'].includes(mode)
+      ) {
+        let context = null;
         try {
-          probe = openSync(parentPath, 'r+');
+          context = await checkTechnical16Cleanup();
         } catch {
-          held = true;
-        } finally {
-          if (probe !== undefined) closeSync(probe);
+          /* Fixed public refusal below. */
         }
-        if (!held) fail();
-        privateReadAttempted = true;
-        const privateInput = await input(false, true, false, true);
-        const result = await runTechnical16Cleanup(context, privateInput);
-        report(result);
-        process.exitCode = result.status === 'native_cleanup_verified' ? 0 : 1;
-      }
-    } else if (mode === 'RestoreTechnical13CheckOnly' || mode === 'RestoreTechnical13') {
-      let context = null;
-      try {
-        context = await checkTechnical13Restoration();
-      } catch {
-        /* Fixed public refusal below. */
-      }
-      if (mode === 'RestoreTechnical13CheckOnly' || !context) {
-        report({
-          kind: 'm03_technical13_restoration_public',
-          version: 1,
-          status: context ? 'technical13_restore_public_ready' : 'technical13_restore_public_blocked',
-          windowId: technical13.windowId,
-          privateRead: false,
-          networkRequests: 0,
-          maximumRequests: 40,
-          maximumControlRequests: 50,
-          executionCount: 0,
-          actorStarts: 0,
-        });
-        process.exitCode = context ? 0 : 1;
-      } else {
-        const parentPath = noLinks(
-          join(process.env.LOCALAPPDATA, 'Temp/emr-m03-acceptance-parent.operation.lock'),
-        );
-        const parent = JSON.parse(readFileSync(parentPath, 'utf8'));
-        if (
-          parent.kind !== 'm03_technical13_restore_parent' ||
-          parent.version !== 1 ||
-          parent.processId !== process.ppid
-        )
-          fail();
-        let held = false,
-          probe;
+        if (mode === 'CleanupTechnical16CheckOnly' || !context) {
+          report({
+            kind: 'm03_technical16_cleanup_public',
+            version: 1,
+            status: context ? 'technical16_cleanup_public_ready' : 'technical16_cleanup_public_blocked',
+            windowId: foundationTechnical16CleanupScope.windowId,
+            privateRead: false,
+            networkRequests: 0,
+            maximumRequests: foundationTechnical16CleanupScope.maximumRequests,
+            maximumControlRequests: foundationTechnical16CleanupScope.maximumControlRequests,
+            canonicalWorkflowCount: foundationTechnical16CleanupScope.canonicalWorkflowCount,
+            maximumDrainRequests: foundationTechnical16CleanupScope.maximumDrainRequests,
+            maximumNativeRecords: foundationTechnical16CleanupScope.executionIds.length,
+            executionCount: 0,
+            actorStarts: 0,
+            qualifiedSideEffects: false,
+            cleanupQualificationReady: context !== null,
+          });
+          process.exitCode = context ? 0 : 1;
+        } else {
+          const parentPath = noLinks(
+            join(process.env.LOCALAPPDATA, 'Temp/emr-m03-acceptance-parent.operation.lock'),
+          );
+          const parent = JSON.parse(readFileSync(parentPath, 'utf8'));
+          if (
+            parent.kind !== 'm03_technical16_cleanup_parent' ||
+            parent.version !== 1 ||
+            parent.processId !== process.ppid
+          )
+            fail();
+          let held = false,
+            probe;
+          try {
+            probe = openSync(parentPath, 'r+');
+          } catch {
+            held = true;
+          } finally {
+            if (probe !== undefined) closeSync(probe);
+          }
+          if (!held) fail();
+          privateReadAttempted = true;
+          const privateInput = await input(false, true, false, true);
+          const result = await runTechnical16Cleanup(
+            context,
+            privateInput,
+            mode === 'CleanupTechnical16Diagnose',
+          );
+          report(result);
+          process.exitCode = result.status === 'native_cleanup_verified' ? 0 : 1;
+        }
+      } else if (mode === 'RestoreTechnical13CheckOnly' || mode === 'RestoreTechnical13') {
+        let context = null;
         try {
-          probe = openSync(parentPath, 'r+');
+          context = await checkTechnical13Restoration();
         } catch {
-          held = true;
-        } finally {
-          if (probe !== undefined) closeSync(probe);
+          /* Fixed public refusal below. */
         }
-        if (!held) fail();
+        if (mode === 'RestoreTechnical13CheckOnly' || !context) {
+          report({
+            kind: 'm03_technical13_restoration_public',
+            version: 1,
+            status: context ? 'technical13_restore_public_ready' : 'technical13_restore_public_blocked',
+            windowId: technical13.windowId,
+            privateRead: false,
+            networkRequests: 0,
+            maximumRequests: 40,
+            maximumControlRequests: 50,
+            executionCount: 0,
+            actorStarts: 0,
+          });
+          process.exitCode = context ? 0 : 1;
+        } else {
+          const parentPath = noLinks(
+            join(process.env.LOCALAPPDATA, 'Temp/emr-m03-acceptance-parent.operation.lock'),
+          );
+          const parent = JSON.parse(readFileSync(parentPath, 'utf8'));
+          if (
+            parent.kind !== 'm03_technical13_restore_parent' ||
+            parent.version !== 1 ||
+            parent.processId !== process.ppid
+          )
+            fail();
+          let held = false,
+            probe;
+          try {
+            probe = openSync(parentPath, 'r+');
+          } catch {
+            held = true;
+          } finally {
+            if (probe !== undefined) closeSync(probe);
+          }
+          if (!held) fail();
+          privateReadAttempted = true;
+          const privateInput = await input(true, true, true);
+          const result = await runTechnical13Restoration(context, privateInput);
+          report(result);
+          process.exitCode = result.status === 'restoration_verified' ? 0 : 1;
+        }
+      } else if (mode === 'RestoreWF00') {
+        const target = restoreTarget(),
+          j = restoreJournal();
         privateReadAttempted = true;
-        const privateInput = await input(true, true, true);
-        const result = await runTechnical13Restoration(context, privateInput);
-        report(result);
-        process.exitCode = result.status === 'restoration_verified' ? 0 : 1;
-      }
-    } else if (mode === 'RestoreWF00') {
-      const target = restoreTarget(),
-        j = restoreJournal();
-      privateReadAttempted = true;
-      const privateInput = await input(false, true);
-      key = privateInput.key;
-      privateInput.key = null;
-      const body = (await import('./foundation-bind.mjs')).graphBody({
-        key: 'WF-00',
-        workflow: { ...target.workflow, active: false },
-      });
-      const send = foundationManagementTransport({
-        ownsWorkflow: (id) => id === wf00RestoreScope.workflowId,
-        binding: { workflowBodies: new Map([[wf00RestoreScope.workflowId, body]]) },
-        deadlineMs: privateInput.deadlineMs,
-      });
-      const result = await restoreOwnedWf00(key, target, {
-        send,
-        protectBackup: protectRestoreBackup,
-        journal: j,
-        readOnlyAttemptVerified: j.readOnlyAttemptVerified,
-      });
-      if (JSON.stringify(result).includes(key)) fail();
-      key = null;
-      report(result);
-      process.exitCode = ['wf00_restore_verified', 'wf00_restore_reconciled'].includes(result.status) ? 0 : 1;
-    } else {
-      readJournal();
-      const publicPacket = packet();
-      if (mode === 'All' && !publicPacket) fail();
-      if (mode === 'CheckOnly')
-        report({
-          status: 'foundation_shell_check_only_ready',
-          version: 1,
-          windowId: foundationScope.windowId,
-          privateRead: false,
-          networkRequests: 0,
-          maximumRequests: 53,
-          maximumCreates: 25,
-          finalBindingReady: publicPacket !== null,
-          fullProvisionMaximumRequests: 185,
-          fullProvisionSourcePrepared: true,
-        });
-      else {
-        const owned = journal();
-        privateReadAttempted = true;
-        const privateInput = await input(mode === 'All');
+        const privateInput = await input(false, true);
         key = privateInput.key;
-        machine = privateInput.machine;
         privateInput.key = null;
-        privateInput.machine = null;
-        const context =
-          mode === 'All'
-            ? {
-                machineBody: machineBody(publicPacket, machine),
-                knownTagIds: new Set(),
-                workflowBodies: new Map(),
-                workflowTagBodies: new Map(),
-              }
-            : null;
+        const body = (await import('./foundation-bind.mjs')).graphBody({
+          key: 'WF-00',
+          workflow: { ...target.workflow, active: false },
+        });
         const send = foundationManagementTransport({
-          ownsWorkflow: (id) => [...parseLedger(owned.rows).values()].some((s) => s.id === id),
-          binding: context,
+          ownsWorkflow: (id) => id === wf00RestoreScope.workflowId,
+          binding: { workflowBodies: new Map([[wf00RestoreScope.workflowId, body]]) },
           deadlineMs: privateInput.deadlineMs,
         });
-        const result =
-          mode === 'All'
-            ? await runAllProvision(
-                { management: key, machine },
-                publicPacket,
-                JSON.parse(readFileSync(noLinks(join(repo, 'n8n/foundation/bindings.dev.json')), 'utf8')),
-                {
-                  shellJournal: owned,
-                  bindingJournal: bindingJournal(),
-                  send,
-                  context,
-                  tagNames: foundationTagNames,
-                  onVerified: createOwnedStagingExportWriter(repo, [key, machine]),
-                },
-              )
-            : await runShellProvision(key, owned, send, { reconcileOnly: mode === 'Reconcile' });
-        if (JSON.stringify(result).includes(key) || (machine && JSON.stringify(result).includes(machine)))
-          fail();
-        key = null;
-        machine = null;
-        noLinks(out);
-        writeFileSync(
-          join(out, mode === 'All' ? 'inactive-foundation-receipt.json' : 'shell-provision-receipt.json'),
-          JSON.stringify(result, null, 2) + '\n',
-        );
-        if (result.status === 'shells_verified') {
-          const directory = noLinks(join(repo, 'n8n/workflows/foundation-shells'));
-          mkdirSync(directory, { recursive: true });
-          noLinks(directory);
-          for (const shell of result.shells) {
-            const target = noLinks(join(directory, shell.key + '.json'));
-            writeFileSync(
-              target,
-              JSON.stringify({ kind: 'actual_saved_inactive_shell', ...shell }, null, 2) + '\n',
-            );
-          }
-        }
-        if (result.status === 'inactive_foundation_staged') {
-          writeFileSync(
-            noLinks(join(repo, 'n8n/foundation/bindings.dev.json')),
-            JSON.stringify(result.bindings, null, 2) + '\n',
-          );
-          writeFileSync(
-            noLinks(join(repo, 'n8n/foundation/transport.dev.json')),
-            JSON.stringify(
-              {
-                kind: 'actual_saved_inactive_staging_transport_binding',
-                ...result.transport,
-                activationAuthorized: false,
-              },
-              null,
-              2,
-            ) + '\n',
-          );
-        }
-        report({
-          version: 1,
-          windowId: foundationScope.windowId,
-          host: foundationScope.host,
-          projectId: foundationScope.projectId,
-          status: result.status,
-          phase: result.phase ?? 'shells',
-          requestCount: result.requestCount,
-          verifiedWorkflows: (result.workflows ?? result.shells).length,
-          executionCount: 0,
-          credentialsCreated: result.credentialsCreated,
-          gatewayWindowStarted: false,
-          finalGraphsBound: result.finalGraphsBound,
-          inactiveDefinitionsSaved: result.inactiveDefinitionsSaved ?? false,
-          deferredErrorWorkflowCount: result.deferredErrorWorkflowCount ?? 0,
-          errorRoutingAccepted: false,
-          persistedExports: result.persistedExports ?? 0,
-          networkCompletionVerified: result.networkCompletionVerified,
-          diagnostics: result.diagnostics ?? null,
+        const result = await restoreOwnedWf00(key, target, {
+          send,
+          protectBackup: protectRestoreBackup,
+          journal: j,
+          readOnlyAttemptVerified: j.readOnlyAttemptVerified,
         });
-        process.exitCode = [
-          'shells_verified',
-          'reconciliation_complete',
-          'inactive_foundation_staged',
-        ].includes(result.status)
+        if (JSON.stringify(result).includes(key)) fail();
+        key = null;
+        report(result);
+        process.exitCode = ['wf00_restore_verified', 'wf00_restore_reconciled'].includes(result.status)
           ? 0
           : 1;
+      } else {
+        readJournal();
+        const publicPacket = packet();
+        if (mode === 'All' && !publicPacket) fail();
+        if (mode === 'CheckOnly')
+          report({
+            status: 'foundation_shell_check_only_ready',
+            version: 1,
+            windowId: foundationScope.windowId,
+            privateRead: false,
+            networkRequests: 0,
+            maximumRequests: 53,
+            maximumCreates: 25,
+            finalBindingReady: publicPacket !== null,
+            fullProvisionMaximumRequests: 185,
+            fullProvisionSourcePrepared: true,
+          });
+        else {
+          const owned = journal();
+          privateReadAttempted = true;
+          const privateInput = await input(mode === 'All');
+          key = privateInput.key;
+          machine = privateInput.machine;
+          privateInput.key = null;
+          privateInput.machine = null;
+          const context =
+            mode === 'All'
+              ? {
+                  machineBody: machineBody(publicPacket, machine),
+                  knownTagIds: new Set(),
+                  workflowBodies: new Map(),
+                  workflowTagBodies: new Map(),
+                }
+              : null;
+          const send = foundationManagementTransport({
+            ownsWorkflow: (id) => [...parseLedger(owned.rows).values()].some((s) => s.id === id),
+            binding: context,
+            deadlineMs: privateInput.deadlineMs,
+          });
+          const result =
+            mode === 'All'
+              ? await runAllProvision(
+                  { management: key, machine },
+                  publicPacket,
+                  JSON.parse(readFileSync(noLinks(join(repo, 'n8n/foundation/bindings.dev.json')), 'utf8')),
+                  {
+                    shellJournal: owned,
+                    bindingJournal: bindingJournal(),
+                    send,
+                    context,
+                    tagNames: foundationTagNames,
+                    onVerified: createOwnedStagingExportWriter(repo, [key, machine]),
+                  },
+                )
+              : await runShellProvision(key, owned, send, { reconcileOnly: mode === 'Reconcile' });
+          if (JSON.stringify(result).includes(key) || (machine && JSON.stringify(result).includes(machine)))
+            fail();
+          key = null;
+          machine = null;
+          noLinks(out);
+          writeFileSync(
+            join(out, mode === 'All' ? 'inactive-foundation-receipt.json' : 'shell-provision-receipt.json'),
+            JSON.stringify(result, null, 2) + '\n',
+          );
+          if (result.status === 'shells_verified') {
+            const directory = noLinks(join(repo, 'n8n/workflows/foundation-shells'));
+            mkdirSync(directory, { recursive: true });
+            noLinks(directory);
+            for (const shell of result.shells) {
+              const target = noLinks(join(directory, shell.key + '.json'));
+              writeFileSync(
+                target,
+                JSON.stringify({ kind: 'actual_saved_inactive_shell', ...shell }, null, 2) + '\n',
+              );
+            }
+          }
+          if (result.status === 'inactive_foundation_staged') {
+            writeFileSync(
+              noLinks(join(repo, 'n8n/foundation/bindings.dev.json')),
+              JSON.stringify(result.bindings, null, 2) + '\n',
+            );
+            writeFileSync(
+              noLinks(join(repo, 'n8n/foundation/transport.dev.json')),
+              JSON.stringify(
+                {
+                  kind: 'actual_saved_inactive_staging_transport_binding',
+                  ...result.transport,
+                  activationAuthorized: false,
+                },
+                null,
+                2,
+              ) + '\n',
+            );
+          }
+          report({
+            version: 1,
+            windowId: foundationScope.windowId,
+            host: foundationScope.host,
+            projectId: foundationScope.projectId,
+            status: result.status,
+            phase: result.phase ?? 'shells',
+            requestCount: result.requestCount,
+            verifiedWorkflows: (result.workflows ?? result.shells).length,
+            executionCount: 0,
+            credentialsCreated: result.credentialsCreated,
+            gatewayWindowStarted: false,
+            finalGraphsBound: result.finalGraphsBound,
+            inactiveDefinitionsSaved: result.inactiveDefinitionsSaved ?? false,
+            deferredErrorWorkflowCount: result.deferredErrorWorkflowCount ?? 0,
+            errorRoutingAccepted: false,
+            persistedExports: result.persistedExports ?? 0,
+            networkCompletionVerified: result.networkCompletionVerified,
+            diagnostics: result.diagnostics ?? null,
+          });
+          process.exitCode = [
+            'shells_verified',
+            'reconciliation_complete',
+            'inactive_foundation_staged',
+          ].includes(result.status)
+            ? 0
+            : 1;
+        }
       }
+    } catch {
+      key = null;
+      machine = null;
+      report({ status: 'foundation_child_blocked', completionVerified: false, privateReadAttempted });
+      process.exitCode = 1;
     }
-  } catch {
-    key = null;
-    machine = null;
-    report({ status: 'foundation_child_blocked', completionVerified: false, privateReadAttempted });
-    process.exitCode = 1;
-  }
+  });
 }
