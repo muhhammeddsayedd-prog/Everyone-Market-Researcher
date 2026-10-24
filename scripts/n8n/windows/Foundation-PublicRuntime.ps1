@@ -88,6 +88,7 @@ function Get-M03FoundationPublicSourceFiles {
   'milestones/M03-n8n-foundation/evidence/technical16-executed-parameters-resolution-20261024.json',
   'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt1-20261024.json',
   'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt2-20261024.json',
+  'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt3-20261024.json',
   'milestones/M03-n8n-foundation/evidence/local-native-parameter-defaults-20261024.json',
   'package.json',
   'scripts/package.json',

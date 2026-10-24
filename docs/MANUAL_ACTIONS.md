@@ -9,7 +9,11 @@ How this works:
 3. The owner does it, ticks it in the milestone `PROGRESS.md`, and adds any non-secret value (project ref, URL) there.
 4. Secrets go only into approved native stores or the current-user-encrypted dev store below, never into the repo or chat.
 
-## Current M03 checkpoint — linked-tree qualification, 24 October 2026
+## Current M03 checkpoint — asynchronous child order, 24 October 2026
+
+No owner input is missing. [Actual diagnostic3](../milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt3-20261024.json) completed exactly four GETs and identified `CLEANUP_STOPPED_ORDER`, with zero DELETE/qualification/workflow execution. The child stopped after the parent; the reviewed orchestrator explicitly dispatches without waiting. The coordinator is correcting that source contract while retaining independent child-terminal, ownership, drain and child-first cleanup checks. Duplicate provenance remains unestablished. Current charges are **837 Management / 968 Control / 1,805 combined / 184 Vercel / native3 / actors0**, with150 forensic requests remaining. Parent60016/child39200 and the parent lock are absent; encrypted originals and all failed claims/journals/seals are retained. C999 remains unarchived and A–D incomplete. Draft PR #8 head `b224cb94942d269b616a897da22cb8fad0d05ecf` passed all five CI40123557909 jobs and Vercel. Production, recurring activity, notifications, R2, merge and M04 remain excluded.
+
+### Historical two-failure checkpoint
 
 No owner input is missing. The latest approved limits are Management1,408 / Control3,456 / Combined4,864 / Vercel256, retaining all charges. [Actual cleanup attempt2](../milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt2-20261024.json) authenticated, read both known executions through metadata/full requests, then stopped at linked-tree qualification before any DELETE. The exact failing predicate is unresolved; current usage is833/964/1797/V184/native3/actors0, with154 forensic requests remaining. Both credential-bearing processes and parent lock are absent, originals remain retained, and the spent claim/result/journal/source seal remain preserved. C999 is not archived and A–D is incomplete. The coordinator is isolating the assertion through fixed non-secret diagnostics and existing bounded consumers; no new credential, time or capacity action is needed. Production, recurring activity, notifications, R2, merge and M04 remain excluded.
 

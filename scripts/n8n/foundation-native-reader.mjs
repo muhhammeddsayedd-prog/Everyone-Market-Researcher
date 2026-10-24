@@ -131,6 +131,8 @@ export const foundationNativeFailureCodes = Object.freeze([
   'CLEANUP_CREATED_ORDER',
   'CLEANUP_STARTED_ORDER',
   'CLEANUP_STOPPED_ORDER',
+  'CLEANUP_CALL_CONTRACT',
+  'CLEANUP_PARENT_WAIT',
   'CLEANUP_ROOT_ERROR',
   'CLEANUP_CHILD_ERROR',
   'CLEANUP_ROOT_CALLBACK',
@@ -1236,7 +1238,28 @@ export function createFoundationNativeReader({
         if (child.missingNativeChildCalls.length !== 0) fail('CLEANUP_CHILD_MISSING');
         if (Date.parse(child.createdAt) < Date.parse(root.createdAt)) fail('CLEANUP_CREATED_ORDER');
         if (Date.parse(child.startedAt) < Date.parse(root.startedAt)) fail('CLEANUP_STARTED_ORDER');
-        if (Date.parse(child.stoppedAt) > Date.parse(root.stoppedAt)) fail('CLEANUP_STOPPED_ORDER');
+        const calls = context.rootBinding.body.nodes.filter(
+          (node) =>
+            node.type === 'n8n-nodes-base.executeWorkflow' &&
+            (node.parameters?.workflowId?.value ?? node.parameters?.workflowId) === child.workflowId,
+        );
+        const call = calls[0],
+          wait = call?.parameters?.options?.waitForSubWorkflow;
+        if (
+          calls.length !== 1 ||
+          call.disabled === true ||
+          call.parameters.source !== 'database' ||
+          call.parameters.mode !== 'once' ||
+          typeof wait !== 'boolean'
+        )
+          fail('CLEANUP_CALL_CONTRACT');
+        if (child.nativeParent.shouldResume !== wait) fail('CLEANUP_PARENT_WAIT');
+        if (root.nativeChildren.some((link) => link.sourceNode !== call.name || link.sourceRun !== 0))
+          fail('CLEANUP_UNKNOWN_CHILD_TREE');
+        // Pinned ExecuteWorkflow.once passes doNotWaitToFinish:!wait and
+        // shouldResume:wait. An explicitly asynchronous child may finish later;
+        // both records must still be terminal, reciprocal and fully drained.
+        if (wait && Date.parse(child.stoppedAt) > Date.parse(root.stoppedAt)) fail('CLEANUP_STOPPED_ORDER');
         if (root.errorDispatchExpected) fail('CLEANUP_ROOT_ERROR');
         if (child.errorDispatchExpected) fail('CLEANUP_CHILD_ERROR');
         if (root.nativeProviderCallback !== null) fail('CLEANUP_ROOT_CALLBACK');
