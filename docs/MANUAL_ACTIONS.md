@@ -11,6 +11,27 @@ How this works:
 
 ## Current M03 checkpoint — dev acceptance pending, 25 October 2026
 
+### MA-02 — native Vercel renewal verified; no owner input
+
+The owner replied **Vercel native session renewed**. The [new actual public checkpoint](../milestones/M03-n8n-foundation/evidence/dev-acceptance-native-renewal-20261025.json) verifies valid saved metadata covering75 minutes, with zero network/authentication/refresh/config writes for that check. PR8 remains draft at00b4bc2 and all five CI40141830179 jobs plus Vercel pass. A separate public guard refusal identified another reused historical PID, technical12 parent59876, created after its pinned close. No credentials or admission were opened. The existing identity check is being applied consistently to verified historical references and the corresponding native prerequisites, with active ancestry, receipts, all15 migrations/data and963/1094/2057/V184/native3/actors0 unchanged. No credential, consent, time or allowance input is currently missing. Current correction evidence and changed-head verification precede live continuation.
+
+The consistent historical correction now passes its focused Node/native regressions and independent review, including a genuine sibling18 case with all70 old PIDs reused and a full native18 public Run to the hard private boundary. Actual public seals verify99/248 project files and840 runtime files. Active ancestry and the unproven completed archive group gate remain unchanged; no migrations, credentials or hosted setup are replayed. The original sealed CheckOnly and normal changed-head CI gate the actual remaining live acceptance; these local/public results do not close A–D.
+
+### Historical MA-02 — fulfilled native sign-in request
+
+Head00b4bc2d3bd0e6374650ce7c48299e5a55692c69 passes all five [CI40141830179 jobs](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40141830179) and Vercel. Actual public Verify and the ORIGINAL sealed CheckOnly pass. The [actual delivery checkpoint](../milestones/M03-n8n-foundation/evidence/dev-acceptance-identity-delivery-20261025.json) records the sole current owner input: saved Vercel metadata is valid/unexpired but insufficient for75 minutes. The ordinary native login reached its private device-consent flow, then was closed without completion; its child/children are absent and private output discarded. Normal OAuth traffic is separate from project-resource accounting; no project/acceptance request, new admission, database/n8n decryption or actor occurred. Project charges remain963/1094/2057/V184/native3/actors0. All11 disposable leaves are absent and all four encrypted originals remain. No credential handoff, reset, new cap or time approval is needed.
+
+In Windows PowerShell under this same Windows account, run:
+
+```powershell
+& "$env:APPDATA\npm\vercel.cmd" login
+$LASTEXITCODE
+```
+
+Complete the private existing-account browser/device sign-in. Expected: successful sign-in and final `0`. Close PowerShell and reply **Vercel native session renewed**; send no code, token or auth-file contents. Verify actual saved-session75-minute coverage and fixed project access before the existing continuation; do not replay migrations, archive or completed native cleanup. PR8 remains draft and A–D remains incomplete. Production, recurring activity, R2, merge and M04 remain excluded.
+
+### Earlier public-only refusal and correction
+
 Latest25 October public-only continuation: head7b02880 passed all five CI40140215927 jobs and Vercel. Its [pre18 refusal](../milestones/M03-n8n-foundation/evidence/dev-acceptance-pre18-public-refusal-20261025.json) occurred at the public clock before credential decryption/admission or hosted requests; parent/children and all11 disposable leaves are absent, encrypted originals retained. Windows reused an old technical10 PID for a process born after its verified close; that unrelated process is preserved. The existing historical guard receives a narrow creation-time correction and affected/public checks before continuation. Active ancestry, historical receipts and963/1094/2057/V184/native3/actors0 usage remain unchanged. No owner input is missing; actual A–D remains incomplete.
 
 The reviewed correction also handles one reused PID in the pinned completed cleanup history. Five focused tests and independent review pass, including unknown/raced/equal/older/future identities and coherently pinned missing/invalid closure-observation time denials. Actual public Verify and the ORIGINAL sealed wrapper CheckOnly pass native0; public seals verify99/248 project files and840 runtime files, with zero private reads/network. The first public-seal coordinator timeout and verified scratch cleanup remain recorded separately. Normal changed-head CI precedes live continuation; no new credential, time or allowance approval is needed. See the linked current evidence for exact test and physical results.

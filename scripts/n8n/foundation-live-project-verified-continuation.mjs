@@ -493,6 +493,17 @@ const exact = (v, keys) =>
   keys.every((k) => Object.hasOwn(v, k));
 const hash = (text) => createHash('sha256').update(text).digest('hex');
 const positive = (v) => Number.isSafeInteger(v) && v > 0;
+const historicalTimestamp = (v) => {
+  if (
+    typeof v !== 'string' ||
+    !/^\d{4}-\d\d-\d\d(?:T\d\d:\d\d:\d\d(?:\.\d{1,7})?(?:Z|\+00:00)| \d\d:\d\d:\d\d UTC)$/.test(v)
+  )
+    return NaN;
+  const time = Date.parse(v);
+  return Number.isSafeInteger(time) && new Date(time).toISOString().slice(0, 10) === v.slice(0, 10)
+    ? time
+    : NaN;
+};
 const caps = Object.freeze({
   durationMinutes: 60,
   stopNewWorkMinute: 50,
@@ -553,7 +564,7 @@ function context(options = {}, dependencies = {}) {
       " $p=@(CimCmdlets\\Get-CimInstance -ClassName Win32_Process -Filter 'ProcessId = " +
         pid +
         "' -Property ProcessId,ParentProcessId,CreationDate -ErrorAction Stop)",
-      " if($p.Count -ne 1 -or $p[0].CreationDate -isnot [DateTime]){throw 'blocked'}",
+      " if($p.Count -ne 1 -or $p[0].CreationDate -isnot [DateTime] -or $p[0].CreationDate.Kind -eq [DateTimeKind]::Unspecified){throw 'blocked'}",
       ' [pscustomobject]@{',
       '  processId=[long]$p[0].ProcessId',
       '  parentProcessId=[long]$p[0].ParentProcessId',
@@ -611,7 +622,11 @@ function context(options = {}, dependencies = {}) {
     return t;
   };
   // This context-local evidence qualifies only independently verified closed
-  // historical references. Current admission/claim ownership keeps its live PID checks.
+  // historical references. The pinned bound is a verified closure/absence time,
+  // or a producer-linked time by which the old identity necessarily existed.
+  // A later kernel birth proves a distinct identity; it does not prove closure.
+  // Each caller retains its separate historical closure and custody assertions.
+  // Current admission/claim ownership keeps its live PID checks.
   const historicalIdentities = new Map();
   const historicalProcessClosed = (pid, closedAt) => {
     if (!positive(pid) || !Number.isSafeInteger(closedAt) || closedAt < 0 || closedAt > clock()) fail();
@@ -993,7 +1008,7 @@ function reconciledTechnical16Settlement(x) {
     runtimeLockAbsent: true,
   });
   for (const pid of [r.attempt.parentProcessId, r.attempt.runtimeProcessId])
-    if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
+    if (!x.historicalProcessClosed(pid, historicalTimestamp(z.observedAt))) fail();
   const prefixCounts = {
     'management.jsonl': 811,
     'control.jsonl': 964,
@@ -1187,8 +1202,14 @@ function reconciledTechnical16Settlement(x) {
       maximumRequests: 1,
     });
     same(claim[1], { event: 'management_attempt', ordinal: 825 + i });
+    same(receipt.cleanup, {
+      parentProcessId: claim[0].parentProcessId,
+      childProcessId: claim[0].processId,
+      parentAbsent: true,
+      childAbsent: true,
+    });
     for (const pid of [claim[0].processId, claim[0].parentProcessId])
-      if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
+      if (!x.historicalProcessClosed(pid, historicalTimestamp(receipt.observedAt))) fail();
     if (i > 0) {
       same(claim[0], {
         metadataReceiptSha256: cfg.diagnosticReceipts[0].sha256,
@@ -1718,8 +1739,10 @@ function reconciledTechnical16Settlement(x) {
     maximumControlRequests: 109,
   });
   same(once.usage, { management: 878, control: 1009, combined: 1887, vercel: 184 });
+  // The native producer wrote these exact process IDs together with once.at.
+  // Settlement's independent closure/absence assertions remain required below.
   for (const pid of [once.processId, once.parentProcessId])
-    if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
+    if (!x.historicalProcessClosed(pid, historicalTimestamp(once.at))) fail();
   const header = cleanupRows[0];
   if (
     !exact(header, [
@@ -2281,8 +2304,8 @@ function reconciledClosedWindow(x) {
     archive.archiveAfter.fixture.accountPaused !== true ||
     archive.archiveAfter.fixture.competitorActive !== false ||
     archive.archiveAfter.fixture.accountActive !== false ||
-    x.io.processAlive(attempt.clock.parentProcessId) !== false ||
-    x.io.processAlive(attempt.clock.runtimeProcessId) !== false
+    !x.historicalProcessClosed(attempt.clock.parentProcessId, attempt.clock.closedAt) ||
+    !x.historicalProcessClosed(attempt.clock.runtimeProcessId, attempt.clock.closedAt)
   )
     fail();
   return Object.freeze({
@@ -3050,9 +3073,7 @@ function reconciledWf70Diagnostic(x) {
     claim.event !== 'diagnostic_child_claim' ||
     !positive(claim.processId) ||
     claim.processId !== custody.childProcessId ||
-    claim.processId === header.parentProcessId ||
-    x.io.processAlive(header.parentProcessId) !== false ||
-    x.io.processAlive(claim.processId) !== false
+    claim.processId === header.parentProcessId
   )
     fail();
   const closed = JSON.parse(
@@ -3060,8 +3081,10 @@ function reconciledWf70Diagnostic(x) {
       `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-6.closed.json`,
     ),
   );
-  const recordedAt = Date.parse(r.recordedAt);
+  const recordedAt = historicalTimestamp(r.recordedAt);
   if (!Number.isFinite(recordedAt) || recordedAt > x.clock()) fail();
+  for (const pid of [header.parentProcessId, claim.processId])
+    if (!x.historicalProcessClosed(pid, recordedAt)) fail();
   for (const [i, row] of intents.entries()) {
     const at = Date.parse(row.at);
     if (
@@ -3381,8 +3404,8 @@ function reconciledClosedPreparation(x) {
     cleanup.parentProcessId !== raw.admission.parentProcessId ||
     cleanup.runtimeProcessId !== raw.runtimeClaim.processId ||
     raw.closed.runtimeProcessId !== cleanup.runtimeProcessId ||
-    x.io.processAlive(cleanup.parentProcessId) !== false ||
-    x.io.processAlive(cleanup.runtimeProcessId) !== false
+    !x.historicalProcessClosed(cleanup.parentProcessId, raw.closed.closedAt) ||
+    !x.historicalProcessClosed(cleanup.runtimeProcessId, raw.closed.closedAt)
   )
     fail();
   if (
@@ -3743,8 +3766,8 @@ function reconciledClosedFixture(x) {
     records.runtimeProcessId !== raw.runtimeClaim.processId ||
     raw.closed.parentProcessId !== records.parentProcessId ||
     raw.closed.runtimeProcessId !== records.runtimeProcessId ||
-    x.io.processAlive(records.parentProcessId) !== false ||
-    x.io.processAlive(records.runtimeProcessId) !== false
+    !x.historicalProcessClosed(records.parentProcessId, raw.closed.closedAt) ||
+    !x.historicalProcessClosed(records.runtimeProcessId, raw.closed.closedAt)
   )
     fail();
   const a = r.administrativeResult.admin;
@@ -5184,12 +5207,12 @@ function reconciledRuntimePreparation(x) {
     ) ||
     !positive(a.parentProcessId) ||
     !positive(a.runtimeProcessId) ||
-    x.io.processAlive(a.parentProcessId) !== false ||
-    x.io.processAlive(a.runtimeProcessId) !== false ||
     !Number.isSafeInteger(a.startsAt) ||
     !Number.isSafeInteger(a.closedAt) ||
     a.closedAt < a.startsAt ||
-    a.closedAt > x.clock()
+    a.closedAt > x.clock() ||
+    !x.historicalProcessClosed(a.parentProcessId, a.closedAt) ||
+    !x.historicalProcessClosed(a.runtimeProcessId, a.closedAt)
   )
     fail();
   const root = `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-12`,
@@ -5812,7 +5835,7 @@ function reconciledRuntimeRestoration(x) {
     runtimeTechnical13: 38,
   });
   for (const pid of [r.attempt.parentProcessId, r.attempt.runtimeProcessId])
-    if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
+    if (!x.historicalProcessClosed(pid, r.attempt.closedAt)) fail();
   const root = `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-13`,
     db = `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-technical-13`;
   const immutable = [
@@ -5999,7 +6022,10 @@ function reconciledRuntimeRestoration(x) {
     maximumRequests: 3,
   });
   for (const pid of [diagnostic.processId, diagnostic.parentProcessId])
-    if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
+    // This pinned readback was recorded after the producer-linked header.
+    // Later births establish distinct identity, not historical drain; the
+    // separately pinned restoration and cleanup assertions are still required.
+    if (!x.historicalProcessClosed(pid, historicalTimestamp(d.observedAt))) fail();
   match(s, {
     kind: 'm03_technical13_runtime_restoration',
     version: 1,
@@ -6664,7 +6690,7 @@ function reconciledRestoredBrowserDiscovery(x, cfg = restoredBrowserDiscoveryRec
     closureVerified: false,
   });
   for (const pid of [admission.parentProcessId, claim.processId])
-    if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
+    if (!x.historicalProcessClosed(pid, closed.closedAt)) fail();
   const common = {
     managementAttempts: 524,
     controlAttempts: currentControl + 3,
@@ -7201,7 +7227,7 @@ function reconciledUnadmittedWf00(x) {
   });
   if (
     JSON.stringify(z.apiProcessIds) !== JSON.stringify([header.parentProcessId, header.processId]) ||
-    z.apiProcessIds.some((pid) => x.io.processAlive(pid) !== false)
+    z.apiProcessIds.some((pid) => !x.historicalProcessClosed(pid, historicalTimestamp(z.recordedAt)))
   )
     fail();
   const times = [r.recordedAt, d.recordedAt, a.recordedAt, z.recordedAt].map(Date.parse);
@@ -7646,8 +7672,33 @@ function initial(x, beforePrivate = true, admitted = false) {
   const prior = JSON.parse(
     x.file('milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-attempt-20261021.json'),
   );
-  for (const pid of [prior.clock.parentProcessId, prior.clock.runtimeProcessId, 5468, 35920, 44408, 60040])
-    if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
+  const remaining = JSON.parse(
+      x.file('milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-attempt-20261022.json'),
+    ),
+    startup = JSON.parse(
+      x.file(
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-attempt-20261022.json',
+      ),
+    );
+  // These receipts are already byte-pinned by checkpoint(). Preserve their
+  // original limits and absence/orphan qualifications; qualify only identity.
+  if (
+    JSON.stringify(remaining.independentOsReconciliation?.rootPids) !== '[5468,35920]' ||
+    remaining.independentOsReconciliation.matchingRootsOrReachableDescendants !== 0 ||
+    startup.clock.parentProcessId !== 44408 ||
+    startup.clock.runtimeProcessId !== 60040 ||
+    startup.outerClose.wrapperReceipt.childClosed !== true ||
+    startup.outerClose.wrapperReceipt.credentialChildrenClosed !== true ||
+    prior.wrapperClose.childClosed !== true ||
+    prior.wrapperClose.credentialChildrenClosed !== true
+  )
+    fail();
+  for (const [pids, bound] of [
+    [[prior.clock.parentProcessId, prior.clock.runtimeProcessId], prior.postClosurePresence.observedAtUtc],
+    [[5468, 35920], remaining.independentOsReconciliation.observedAtUtc],
+    [[44408, 60040], startup.outerClose.observedAt],
+  ])
+    for (const pid of pids) if (!x.historicalProcessClosed(pid, historicalTimestamp(bound))) fail();
   if (beforePrivate) {
     if (
       typeof process.env.LOCALAPPDATA !== 'string' ||
@@ -7772,8 +7823,6 @@ function reconciledTechnical17PreReady(x) {
     !data.claim ||
     r.parentProcessId !== data.r.parentProcessId ||
     r.runtimeProcessId !== data.claim.processId ||
-    x.io.processAlive(r.parentProcessId) !== false ||
-    x.io.processAlive(r.runtimeProcessId) !== false ||
     JSON.stringify(r.rawAdmission) !== JSON.stringify(data.r) ||
     JSON.stringify(r.rawRuntimeClaim) !== JSON.stringify(data.claim)
   )
@@ -7798,7 +7847,9 @@ function reconciledTechnical17PreReady(x) {
   if (
     !Number.isSafeInteger(close.closedAt) ||
     close.closedAt < data.claim.claimedAt ||
-    close.closedAt > x.clock()
+    close.closedAt > x.clock() ||
+    !x.historicalProcessClosed(r.parentProcessId, close.closedAt) ||
+    !x.historicalProcessClosed(r.runtimeProcessId, close.closedAt)
   )
     fail();
   const frames = r.rawFrames;
@@ -8087,9 +8138,7 @@ function closedTechnicalAttempt(x, paths) {
     (paths.ordinal === 11 && x.recovery?.adminAdmissionReadonlyTechnicalAttempt === 11) ||
     (paths.ordinal === 17 && x.recovery?.technical17PreReadyReconciled === true);
   const processClosed = (pid) =>
-    [9, 10, 11].includes(paths.ordinal) && reconciled
-      ? x.historicalProcessClosed(pid, close.closedAt)
-      : x.io.processAlive(pid) === false;
+    reconciled ? x.historicalProcessClosed(pid, close.closedAt) : x.io.processAlive(pid) === false;
   if (
     !exact(close, [
       'kind',

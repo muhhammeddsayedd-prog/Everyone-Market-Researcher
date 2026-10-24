@@ -16,6 +16,95 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('genuine sibling18 qualifies every verified historical PID by stable later identity while retaining active ownership', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ technical17PreReady: true });
+  try {
+    const oldPids = new Set(),
+      births = new Set();
+    f.io.processAlive = (pid) => {
+      oldPids.add(pid);
+      return false;
+    };
+    const before = f.check();
+    assert.ok(oldPids.size >= 60, 'the complete verified historical chain is exercised');
+    f.io.processAlive = (pid) => oldPids.has(pid);
+    f.io.historicalProcessSnapshots = (pid) => {
+      assert.ok(oldPids.has(pid));
+      births.add(pid);
+      const identity = { processId: pid, parentProcessId: 0, createdAt: f.now() - 1 };
+      return [{ ...identity }, { ...identity }];
+    };
+    assert.deepEqual(f.check(), before);
+    assert.equal(births.size, oldPids.size);
+    const proof = f.claim(f.admit()),
+      resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(resume.technicalAttemptOrdinal, 18);
+    assert.equal(resume.aggregateManagementAttempts, 963);
+    assert.equal(resume.aggregateControlAttempts, 1094);
+    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+    f.io.processAlive = (pid) => oldPids.has(pid) || [process.pid, process.ppid].includes(pid);
+    assert.equal(f.readClaimed().windowId, proof.windowId);
+    f.io.processAlive = (pid) => ![process.pid, process.ppid].includes(pid) && oldPids.has(pid);
+    assert.throws(() => f.readClaimed(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('later historical identities require strict closure or producer-linked time bounds for12,13 diagnostics and cleanup7', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ technical17PreReady: true });
+  try {
+    const load = (relative) => JSON.parse(readFileSync(join(f.directory, relative), 'utf8')),
+      preparation = load(
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical12-reconciliation-20261024.json',
+      ),
+      diagnostic = load(
+        'scripts/n8n/out/foundation/runtime-reconciliation-diagnostic-technical13-20261024.jsonl',
+      ),
+      readback = load('milestones/M03-n8n-foundation/evidence/runtime-reconciliation-readback-20261024.json'),
+      once = load('scripts/n8n/out/foundation/technical16-native-cleanup-attempt7.json');
+    for (const [oldPid, bound] of [
+      [preparation.attempt.parentProcessId, preparation.attempt.closedAt],
+      [diagnostic.processId, Date.parse(readback.observedAt)],
+      [once.processId, Date.parse(once.at)],
+    ]) {
+      assert.ok(Number.isSafeInteger(bound));
+      f.io.processAlive = (pid) => pid === oldPid;
+      for (const createdAt of [bound - 1, bound]) {
+        f.io.historicalProcessSnapshots = (pid) => {
+          const identity = { processId: pid, parentProcessId: 0, createdAt };
+          return [{ ...identity }, { ...identity }];
+        };
+        assert.throws(() => f.check(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/);
+      }
+    }
+  } finally {
+    f.cleanup();
+  }
+  for (const technical16Fault of [
+    'legacy-identity-time',
+    'forensic-identity-link',
+    'forensic-identity-time',
+    'forensic-identity-time-short',
+    'forensic-identity-time-calendar',
+    'settlement-identity-time',
+  ]) {
+    const invalid = await syntheticProjectVerifiedContinuation({
+      technical17PreReady: true,
+      technical16Fault,
+    });
+    try {
+      assert.throws(
+        () => invalid.check(),
+        /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/,
+        technical16Fault,
+      );
+    } finally {
+      invalid.cleanup();
+    }
+  }
+});
+
 test('genuine sibling18 preserves cleanup6 custody when its historical PID was stably reused after verified absence', async () => {
   const f = await syntheticProjectVerifiedContinuation({ technical17PreReady: true });
   try {
@@ -242,6 +331,7 @@ test(
     const [, argv, options] = calls[0];
     assert.deepEqual(argv.slice(0, 3), ['-NoProfile', '-NonInteractive', '-Command']);
     assert.match(argv[3], /-Property ProcessId,ParentProcessId,CreationDate/);
+    assert.match(argv[3], /CreationDate\.Kind -eq \[DateTimeKind\]::Unspecified/);
     assert.doesNotMatch(argv[3], /CommandLine|ExecutablePath|Environment|ComputerName/);
     assert.deepEqual(
       Object.keys(options.env).sort(),

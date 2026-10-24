@@ -1,0 +1,87 @@
+{
+  "kind": "m03_historical_identity_delivery_checkpoint",
+  "version": 1,
+  "observedAt": "2026-10-24T23:19:33.148Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "head": "00b4bc2d3bd0e6374650ce7c48299e5a55692c69",
+  "ci": {
+    "runId": "40141830179",
+    "allFiveJobs": "success",
+    "vercel": "success"
+  },
+  "local": {
+    "directPublicVerify": "ready",
+    "wrapperCheckOnly": {
+      "nativeExit": 0,
+      "privateRead": false,
+      "networkRequests": 0,
+      "publicCompositionLoaded": true,
+      "adminPublicInputsVerified": true
+    },
+    "foundationProjectFiles": 99,
+    "acceptanceProjectFiles": 248,
+    "runtimeFiles": 840,
+    "committedSourcePinsVerified": 198,
+    "sourcePinMismatches": 0
+  },
+  "nativeSession": {
+    "kind": "m03_vercel_saved_auth_metadata",
+    "status": "saved_auth_insufficient_coverage",
+    "metadataValid": true,
+    "unexpired": true,
+    "covers75Minutes": false,
+    "effectiveBackendEstablished": false,
+    "networkRequests": 0,
+    "authenticationAttempted": false,
+    "refreshAttempted": false,
+    "configWritten": false,
+    "childClosed": true
+  },
+  "nativeConsentAttempt": {
+    "existingNativeCli": "56.5.0",
+    "completed": false,
+    "childClosed": true,
+    "childAndChildrenAbsent": true,
+    "privateOutputDiscarded": true,
+    "deviceCodePrinted": false,
+    "authFileContentsPrinted": false,
+    "normalOAuthTraffic": true,
+    "oauthRequestCountCaptured": false,
+    "projectResourceCalls": 0,
+    "credentialsReset": false
+  },
+  "acceptance": {
+    "newAdmission": false,
+    "privateRuntimeStarted": false,
+    "databaseOrN8nDecryption": false,
+    "allElevenDisposableLeavesAbsent": true,
+    "allFourEncryptedOriginalsRetained": true,
+    "usage": {
+      "management": 963,
+      "control": 1094,
+      "combined": 2057,
+      "vercel": 184,
+      "nativeExecutions": 3,
+      "actors": 0,
+      "costUsd": 0,
+      "newItems": 0
+    },
+    "businessAcceptance": false,
+    "fullD": false
+  },
+  "nextOwnerAction": {
+    "id": "MA-02",
+    "action": "Complete existing Vercel native browser/device sign-in",
+    "expected": "successful native sign-in, exit0 and subsequent saved metadata covering75 minutes",
+    "reply": "Vercel native session renewed"
+  },
+  "excluded": [
+    "production",
+    "recurring activation",
+    "external notifications",
+    "R2",
+    "merge",
+    "M04"
+  ]
+}

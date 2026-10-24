@@ -24,7 +24,7 @@ const quote = (value) => `'${value.replaceAll("'", "''")}'`;
 const definitions = (names, file = consumer) => `
 $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile(${quote(file)},[ref]$tokens,[ref]$errors)
 if($errors.Count -ne 0){throw 'PUBLIC_SOURCE_PARSE_FAILED'}
-foreach($name in @(${[...new Set([...(file.endsWith('Foundation-AdminControl.ps1') ? ['Foundation-ForwardWindowId'] : []), ...names])].map(quote).join(',')})){
+foreach($name in @(${[...new Set([...(file.endsWith('Foundation-AdminControl.ps1') ? ['Foundation-ForwardWindowId'] : ['Assert-FoundationHistoricalIdentityAbsent']), ...names])].map(quote).join(',')})){
  $functions=@($ast.FindAll({param($item) $item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true))
  if($functions.Count -ne 1){throw 'EXPECTED_FUNCTION_MISSING'};Invoke-Expression $functions[0].Extent.Text
 }`;
@@ -54,6 +54,52 @@ function run(code, timeout = 15000) {
   }
 }
 const native = { skip: process.platform !== 'win32' };
+
+test(
+  'historical native identities distinguish reused PIDs without treating observation as closure',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-FoundationHistoricalIdentityAbsent'])}
+$script:rows=@();$script:second=$null;$script:reads=0;$script:query=''
+function Get-CimInstance($ClassName,$Filter,$Property,$ErrorAction){
+ if($ClassName -cne 'Win32_Process' -or ($Property -join ',') -cne 'ProcessId,ParentProcessId,CreationDate' -or $ErrorAction -cne 'Stop'){throw 'NON_PUBLIC_PROCESS_PROJECTION'}
+ $script:query=$Filter;$script:reads++;if($script:reads -eq 2 -and $null -ne $script:second){return $script:second};return $script:rows
+}
+$now=[DateTimeOffset]::UtcNow;$bound=$now.AddMinutes(-5).ToUnixTimeMilliseconds();$new=$now.AddMinutes(-1).UtcDateTime
+function Probe($Rows,$Second=$null,$Anchor=$bound){$script:rows=$Rows;$script:second=$Second;$script:reads=0;$null=Assert-FoundationHistoricalIdentityAbsent 59876 $Anchor;if($script:reads -ne 2){throw 'IDENTITY_NOT_READ_TWICE'}}
+Probe @()
+$parent=[pscustomobject]@{ProcessId=59876;ParentProcessId=1;CreationDate=$new}
+Probe @($parent)
+Probe @($parent) -Anchor $now.AddMinutes(-5).UtcDateTime.ToString('o')
+if($script:query -cne 'ProcessId = 59876'){throw 'HISTORICAL_ID_FILTER_CHANGED'}
+foreach($fault in @('older','equal','sameMillisecond','futureBirth','unknownBirth','unknownKind','wrongPid','duplicate','unknownAnchor','futureAnchor','changingBirth','changingParent','appeared','disappeared')){
+ $rows=@([pscustomobject]@{ProcessId=59876;ParentProcessId=1;CreationDate=$new});$second=$null;$anchor=$bound
+ switch($fault){
+  'older'{$rows[0].CreationDate=[DateTimeOffset]::FromUnixTimeMilliseconds($bound-1).UtcDateTime}
+  'equal'{$rows[0].CreationDate=[DateTimeOffset]::FromUnixTimeMilliseconds($bound).UtcDateTime}
+  'sameMillisecond'{$rows[0].CreationDate=[DateTimeOffset]::FromUnixTimeMilliseconds($bound).UtcDateTime.AddTicks(1)}
+  'futureBirth'{$rows[0].CreationDate=$now.AddHours(1).UtcDateTime}
+  'unknownBirth'{$rows[0].CreationDate='unknown'}
+  'unknownKind'{$rows[0].CreationDate=[DateTime]::SpecifyKind($new,[DateTimeKind]::Unspecified)}
+  'wrongPid'{$rows[0].ProcessId=123}
+  'duplicate'{$rows+=($rows[0])}
+  'unknownAnchor'{$anchor='unknown'}
+  'futureAnchor'{$anchor=$now.AddHours(1).ToUnixTimeMilliseconds()}
+  'changingBirth'{$second=@([pscustomobject]@{ProcessId=59876;ParentProcessId=1;CreationDate=$new.AddSeconds(1)})}
+  'changingParent'{$second=@([pscustomobject]@{ProcessId=59876;ParentProcessId=2;CreationDate=$new})}
+  'appeared'{$second=$rows;$rows=@()}
+  'disappeared'{$second=@()}
+ }
+ $denied=$false;try{Probe $rows $second -Anchor $anchor}catch{$denied=$true};if(-not $denied){throw ('UNKNOWN_HISTORICAL_IDENTITY_ACCEPTED_'+$fault)}
+}
+Write-Output 'HISTORICAL_IDENTITY_ONLY_NOT_CLOSURE_OR_CURRENT_ANCESTRY'
+`),
+      'HISTORICAL_IDENTITY_ONLY_NOT_CLOSURE_OR_CURRENT_ANCESTRY',
+    );
+  },
+);
 
 test(
   'technical16 archive requires a separately pinned typed native settlement and exact durable deletion accounting',
@@ -1715,6 +1761,7 @@ for (const ordinal of [14, 15])
       assert.equal(
         run(`
 ${definitions(['Assert-Path', 'Read-Json', 'File-Hash', 'Read-FoundationTechnical14NoAdmin'])}
+${definitions(['Foundation-FixtureSql'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
 $originalRepo=${quote(resolve('.'))};$repo=$PSScriptRoot
 $ordinal=${ordinal}
 foreach($priorOrdinal in 14..$ordinal){
@@ -1724,9 +1771,21 @@ foreach($priorOrdinal in 14..$ordinal){
   $source=Assert-Path $originalRepo $relative;$target=Join-Path $repo $relative;$null=[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($target));[IO.File]::Copy($source,$target,$true)
  }
 }
-function Get-CimInstance($ClassName,$Filter,$Property,$ErrorAction){return @()}
+$script:historicalMode='absent';$script:historicalBirth=[DateTime]::UtcNow.AddMinutes(-1)
+function Get-CimInstance($ClassName,$Filter,$Property,$ErrorAction){if($script:historicalMode -ceq 'absent'){return @()};return [pscustomobject]@{ProcessId=[int]($Filter -replace '^ProcessId = ','');ParentProcessId=1;CreationDate=$(if($script:historicalMode -ceq 'reused'){$script:historicalBirth}else{[DateTime]::SpecifyKind([DateTime]::MinValue,[DateTimeKind]::Utc)})}}
 $expected=$(if($ordinal -eq 15){'59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd'}else{'6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960'})
 if((Read-FoundationTechnical14NoAdmin -Ordinal $ordinal) -cne $expected){throw 'ACTUAL_STYLE_NO_ADMIN_PROOF_REJECTED'}
+$script:historicalMode='reused';if((Read-FoundationTechnical14NoAdmin -Ordinal $ordinal) -cne $expected){throw 'REUSED_HISTORICAL_PID_REJECTED'}
+if($ordinal -eq 15){
+ $fixtureSource='scripts/assert/m03_smoke_reactivate_project_verified.sql';$target=Join-Path $repo $fixtureSource;$null=[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($target));[IO.File]::Copy((Join-Path $originalRepo $fixtureSource),$target,$true)
+ $ProjectVerifiedContinuation=$true;$ForwardWindow=$true;$PostcheckContinuation=$true;$RemainingContinuation=$false;$StartupReplacement=$false;$projectVerifiedForwardWindowId='edbc6d11-7c1f-43a7-b745-1ded06deb29f';$projectVerifiedForwardSource='effa3de9e1fee6c3f3c08fc347a5e3175db14c80'
+ function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=18}}
+ function Read-FoundationForwardPrior{return $null}
+ $body=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'
+ foreach($marker in @('emr.smoke_technical14_no_reactivation','emr.smoke_technical15_no_reactivation','emr.smoke_technical17_no_reactivation')){if(-not $body.Contains($marker)){throw 'LATENT_NO_ADMIN_FIXTURE_MARKER_MISSING'}}
+ $script:historicalMode='old';$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'LATENT_FIXTURE_WITH_OLD_IDENTITY_ACCEPTED'};$script:historicalMode='reused'
+}
+$script:historicalMode='old';$denied=$false;try{$null=Read-FoundationTechnical14NoAdmin -Ordinal $ordinal}catch{$denied=$true};if(-not $denied){throw 'OLD_OR_UNKNOWN_HISTORICAL_IDENTITY_ACCEPTED'};$script:historicalMode='absent'
 foreach($name in @('management','control','setup','preflight')){[IO.File]::AppendAllText((Join-Path $repo ('scripts/n8n/out/foundation/live/'+$name+'.jsonl')),'{"event":"synthetic_tail"}'+"\`n")}
 if((Read-FoundationTechnical14NoAdmin -Ordinal $ordinal) -cne $expected){throw 'CHARGED_TAIL_REJECTED'}
 foreach($relative in $actual.absentOutputs){

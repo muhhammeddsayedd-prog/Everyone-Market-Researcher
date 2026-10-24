@@ -119,7 +119,21 @@ export async function syntheticProjectVerifiedContinuation({
       }
     }
     if (path.endsWith('dev-acceptance-postcheck-attempt-20261021.json'))
-      record = { clock: { parentProcessId: 123456, runtimeProcessId: 123457 } };
+      record = {
+        clock: { parentProcessId: 123456, runtimeProcessId: 123457 },
+        wrapperClose: { childClosed: true, credentialChildrenClosed: true },
+        postClosurePresence: {
+          observedAtUtc: technical16Fault === 'legacy-identity-time' ? 123 : '2026-10-21T18:43:59.676Z',
+        },
+      };
+    if (path.endsWith('dev-acceptance-remaining-attempt-20261022.json'))
+      record = {
+        independentOsReconciliation: {
+          rootPids: [5468, 35920],
+          matchingRootsOrReachableDescendants: 0,
+          observedAtUtc: '2026-10-21T23:18:34.312Z',
+        },
+      };
     if (path.endsWith('remaining-closed-cleanup-e8035391-dba8-48c9-97e0-139ba980d86e.intent.json'))
       record = {
         kind: 'm03_remaining_exact_temporary_cleanup_intent',
@@ -3089,6 +3103,13 @@ export async function syntheticProjectVerifiedContinuation({
           parentProcessId: 92100 + index,
         },
         claimRows = [header, { event: 'management_attempt', ordinal }];
+      value.cleanup.parentProcessId = header.parentProcessId;
+      value.cleanup.childProcessId = header.processId;
+      if (technical16Fault === 'forensic-identity-link' && index === 0) value.cleanup.childProcessId++;
+      if (technical16Fault === 'forensic-identity-time' && index === 0) value.observedAt = 123;
+      if (technical16Fault === 'forensic-identity-time-short' && index === 0) value.observedAt = '0';
+      if (technical16Fault === 'forensic-identity-time-calendar' && index === 0)
+        value.observedAt = '2026-02-30T18:00:00.000Z';
       if (index > 0) {
         header.metadataReceiptSha256 = diagnosticReceipts[0].sha256;
         header.conservativeControlReservation = true;
@@ -3372,7 +3393,7 @@ export async function syntheticProjectVerifiedContinuation({
         usage,
         maximumRequests: 109,
         maximumControlRequests: 109,
-        at: '2026-10-24T21:00:00.000Z',
+        at: technical16Fault === 'settlement-identity-time' ? 123 : '2026-10-24T21:00:00.000Z',
         ...continuation,
       }),
     );

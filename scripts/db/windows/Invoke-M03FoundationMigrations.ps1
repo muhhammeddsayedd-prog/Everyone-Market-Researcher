@@ -147,6 +147,43 @@ function Write-NewJson([string]$File, $Value) {
     $stream.Write($bytes,0,$bytes.Length); $stream.Flush($true)
   } finally { if ($null -ne $stream) { $stream.Dispose() } }
 }
+function Assert-FoundationHistoricalIdentityAbsent($ProcessId,$TrustedObservedBound) {
+  # Call only after the caller has validated its immutable PID links, history
+  # and closure/cleanup evidence. This proves absence of that OLD identity;
+  # it never proves remote settlement or authorizes a current active process.
+  # closedAt is a closure bound. A pinned once.at instead
+  # bounds when the old identity already existed, NOT when it was closed.
+  if(($ProcessId -isnot [int] -and $ProcessId -isnot [long]) -or $ProcessId -le 0 -or $ProcessId -gt [int]::MaxValue){throw 'blocked'}
+  $now=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds();$bound=0L
+  if($TrustedObservedBound -is [int] -or $TrustedObservedBound -is [long]){$bound=[long]$TrustedObservedBound}
+  elseif($TrustedObservedBound -is [string] -and $TrustedObservedBound -cmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,7})?Z$'){
+    [DateTimeOffset]$parsed=[DateTimeOffset]::MinValue
+    if(-not [DateTimeOffset]::TryParse($TrustedObservedBound,[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::None,[ref]$parsed)){throw 'blocked'}
+    $bound=$parsed.ToUnixTimeMilliseconds()
+  }else{throw 'blocked'}
+  if($bound -le 0 -or $bound -gt $now){throw 'blocked'}
+  $filter='ProcessId = '+$ProcessId
+  $prior=$null
+  foreach($read in 1..2){
+    # Deliberately exclude command lines, executable paths and environments.
+    $rows=@(Get-CimInstance -ClassName Win32_Process -Filter $filter -Property ProcessId,ParentProcessId,CreationDate -ErrorAction Stop)
+    if($rows.Count -gt 1){throw 'blocked'}
+    $snapshot=@{}
+    foreach($row in $rows){
+      foreach($key in @('ProcessId','ParentProcessId')){if(($row.$key -isnot [int] -and $row.$key -isnot [long] -and $row.$key -isnot [uint32]) -or $row.$key -lt 0 -or $row.$key -gt [int]::MaxValue){throw 'blocked'}}
+      if($row.ProcessId -ne $ProcessId -or $row.CreationDate -isnot [DateTime] -or $row.CreationDate.Kind -eq [DateTimeKind]::Unspecified){throw 'blocked'}
+      $born=([DateTimeOffset]$row.CreationDate.ToUniversalTime()).ToUnixTimeMilliseconds()
+      if($born -le $bound -or $born -gt [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -or $snapshot.ContainsKey([string]$row.ProcessId)){throw 'blocked'}
+      $snapshot[[string]$row.ProcessId]=[pscustomobject]@{parent=[long]$row.ParentProcessId;ticks=$row.CreationDate.ToUniversalTime().Ticks}
+    }
+    if($null -ne $prior){
+      if($prior.Count -ne $snapshot.Count){throw 'blocked'}
+      foreach($key in $prior.Keys){if(-not $snapshot.ContainsKey($key) -or $prior[$key].parent -ne $snapshot[$key].parent -or $prior[$key].ticks -ne $snapshot[$key].ticks){throw 'blocked'}}
+    }
+    $prior=$snapshot
+  }
+  return $true
+}
 function Assert-FoundationInspectClosed {
   if([bool](Get-Variable -Name TechnicalResidual16 -ValueOnly -ErrorAction SilentlyContinue)){return Read-FoundationTechnical16Closed}
   if($TechnicalResidual13){return Read-FoundationTechnical13Closed}
@@ -172,10 +209,6 @@ function Assert-FoundationInspectClosed {
   if($admission.approvalSha256 -cne '5eb38cbe8740ed9a9f72d2356de3fa2e9ce77c8de3710020a7d3de7a6ebdd610' -or
      $admission.deadlineAt-$admission.startsAt -ne 3600000 -or $admission.stopNewAt-$admission.startsAt -ne 3000000 -or $admission.hardDeadlineAt-$admission.startsAt -ne 4200000 -or
      $claim.claimedAt -isnot [long] -or $closed.closedAt -isnot [long] -or $claim.claimedAt -lt $admission.startsAt -or $closed.closedAt -lt $claim.claimedAt -or $closed.closedAt -gt [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()+1000){throw 'blocked'}
-  foreach($processId in @($admission.parentProcessId,$claim.processId)){
-    $live=@(Get-CimInstance -ClassName Win32_Process -Filter ('ProcessId = '+$processId) -Property ProcessId -ErrorAction Stop)
-    if($live.Count -ne 0){throw 'blocked'}
-  }
   foreach($name in @('.technical-3.json','.technical-3.runtime-claim.json','.technical-3.closed.json')){
     if(Test-Path -LiteralPath (Join-Path $repo ($stem.Replace('.technical-2','')+$name))){throw 'blocked'}
   }
@@ -191,6 +224,7 @@ function Assert-FoundationInspectClosed {
      $provision.version -ne 1 -or $provision.windowId -cne $admission.windowId -or $provision.packet.commitSha -cne $admission.sourceCommitSha -or
      $provision.packet.audience -cnotmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$' -or $provision.packet.deploymentId -cnotmatch '^dpl_[A-Za-z0-9_-]{1,100}$' -or
      $provision.packet.actorBuild -cne '0.3.99' -or $provision.packet.approvalReference -cne 'M03-A-D-f42930f-20261021' -or $provision.packet.maxTotalChargeUsd -ne 1 -or $provision.packet.batchMaxUsd -ne 2){throw 'blocked'}
+  foreach($processId in @($admission.parentProcessId,$claim.processId)){$null=Assert-FoundationHistoricalIdentityAbsent $processId $closed.closedAt}
   return $provision.packet
 }
 function Read-FoundationInspection($Result) {
@@ -315,9 +349,6 @@ function Read-FoundationTechnical13Closed {
   if($actual.kind -cne 'm03_technical13_runtime_setup_reconciliation' -or $actual.environment -cne 'dev' -or $actual.projectRef -cne $projectRef -or $actual.attempt.technicalAttempt -ne 13 -or $actual.attempt.windowId -cne '3c46c791-e140-4eb9-890a-eecfa251f65e' -or $actual.attempt.actorStarts -ne 0 -or $actual.attempt.nativeExecutions -ne 0 -or $actual.source.applicationSource -cne '7b1837201ac7925591577a1517d7288936ca3464'){throw 'blocked'}
   $closed=Read-Json (Assert-Path $repo 'scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-13.closed.json')
   if(-not $closed.childClosed -or -not $closed.credentialChildrenClosed -or $closed.emergencyShutdown -or $closed.nativeExit -ne 1){throw 'blocked'}
-  foreach($processId in @($closed.parentProcessId,$closed.runtimeProcessId)){
-    if($processId -isnot [int] -or $processId -le 0 -or @(Get-CimInstance -ClassName Win32_Process -Filter ('ProcessId = '+$processId) -Property ProcessId -ErrorAction Stop).Count -ne 0){throw 'blocked'}
-  }
   # This separate, public-packet-pinned result must exist before Admin access.
   # The failed attempt's false flags are never rewritten by later restoration.
   $restored=Read-Json (Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/runtime-restoration-20261024.json')
@@ -326,6 +357,7 @@ function Read-FoundationTechnical13Closed {
   if($restored.mutationReplayAllowed -isnot [bool] -or $restored.mutationReplayAllowed){throw 'blocked'}
   $provision=Read-Json (Assert-Path $repo 'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-13-owner-provision-attempt.json')
   if($provision.windowId -cne $actual.attempt.windowId -or $provision.packet.audience -cne 'https://everyone-market-researcher-7fcbxykan-muhammed-abdelrahman.vercel.app' -or $provision.packet.commitSha -cne $actual.source.applicationSource -or $provision.packet.deploymentId -cne 'dpl_4hzfdXHd2F9B2Q89RiK2wVftzg25'){throw 'blocked'}
+  foreach($processId in @($closed.parentProcessId,$closed.runtimeProcessId)){$null=Assert-FoundationHistoricalIdentityAbsent $processId $closed.closedAt}
   return [pscustomobject]@{id=$provision.windowId;audience=$provision.packet.audience;commitSha=$provision.packet.commitSha;deploymentId=$provision.packet.deploymentId}
 }
 function Read-FoundationTechnical16Closed {
@@ -350,9 +382,6 @@ function Read-FoundationTechnical16Closed {
   $closed=$actual.rawTechnicalClose
   foreach($key in @('childClosed','credentialChildrenClosed')){if($closed.$key -isnot [bool] -or -not $closed.$key){throw 'blocked'}}
   if($closed.nativeExit -ne 1 -or $closed.emergencyShutdown -ne $false -or $actual.rawRestore.baselineRestored -ne $true -or $actual.rawRestore.environmentCleanupVerified -ne $true -or $actual.rawRestore.windowClosed -ne $true -or $actual.rawRestore.fixtureArchived -ne $false -or $actual.rawRestore.remoteWorkSettled -ne $false){throw 'blocked'}
-  foreach($processId in @($actual.attempt.parentProcessId,$actual.attempt.runtimeProcessId)){
-    if($processId -isnot [int] -or $processId -le 0 -or @(Get-CimInstance -ClassName Win32_Process -Filter ('ProcessId = '+$processId) -Property ProcessId -ErrorAction Stop).Count -ne 0){throw 'blocked'}
-  }
   $cleanupPath=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-cleanup-20261024.json'
   if((File-Hash $cleanupPath) -cne '49192237b29231f20f67595fdc7522b49926f10c8e278bea3871cf75a9788b57'){throw 'blocked'}
   $cleanup=Read-Json $cleanupPath
@@ -363,6 +392,7 @@ function Read-FoundationTechnical16Closed {
   if((File-Hash $dbPath) -cne '518e18fb98f7694ebb8d833a3f116bfcf4c476a45e763797c56bd7426a6c00c1' -or (File-Hash $provisionPath) -cne '6c535f66cb3a7e2ff10493ddec1455c0235d16320b830cdaf990a07fca9ff70f' -or (File-Hash $reactivationPath) -cne '37ced3c64a06da14fa0fb4a52fa5f62a8efcf0e1ebf9d9dce6c1094b40a1bf10'){throw 'blocked'}
   $db=Read-Json $dbPath;$provision=Read-Json $provisionPath
   if($db.runId -cne '3412e032-4833-43c9-9342-19ea25d50275' -or $db.status -cne 'continuation_history_verified' -or $db.historyBefore -cne 'complete' -or $db.historyAfter -cne 'complete' -or $db.pushAttempted -ne $false -or $db.phaseAClosed -ne $true -or $db.reactivationState -cne 'acknowledged_and_verified' -or $provision.runId -cne $db.runId -or $provision.windowId -cne $actual.attempt.windowId -or $provision.packet.audience -cne 'https://everyone-market-researcher-13wnnoywv-muhammed-abdelrahman.vercel.app' -or $provision.packet.commitSha -cne $actual.source.applicationSource -or $provision.packet.deploymentId -cne 'dpl_Hqcn7hxpuEUz6Bbq9tTtmQs5MdYd'){throw 'blocked'}
+  foreach($processId in @($actual.attempt.parentProcessId,$actual.attempt.runtimeProcessId)){$null=Assert-FoundationHistoricalIdentityAbsent $processId $closed.closedAt}
   return [pscustomobject]@{id=$provision.windowId;audience=$provision.packet.audience;commitSha=$provision.packet.commitSha;deploymentId=$provision.packet.deploymentId}
 }
 function Assert-FoundationTechnical16Settled($Expected) {
@@ -463,7 +493,7 @@ function Assert-FoundationTechnical16Settled($Expected) {
   foreach($key in @('kind','resolutionSha256','at')){if($once.$key -isnot [string]){throw 'blocked'}}
   if($once.executionIds -isnot [Array] -or @($once.executionIds|Where-Object{$_ -isnot [string]}).Count -ne 0){throw 'blocked'}
   if($once.kind -cne 'm03_technical16_cleanup_once' -or $once.version -isnot [int] -or $once.version -ne 1 -or $once.resolutionSha256 -cne $value.resolutionSha256 -or $once.executionIds -isnot [Array] -or ($once.executionIds -join ',') -cne '31131,31130' -or $once.maximumRequests -isnot [int] -or $once.maximumRequests -ne 109 -or $once.maximumControlRequests -isnot [int] -or $once.maximumControlRequests -ne 109){throw 'blocked'}
-  foreach($key in @('processId','parentProcessId')){if($once.$key -isnot [int] -or $once.$key -le 0 -or @(Get-CimInstance -ClassName Win32_Process -Filter ('ProcessId = '+$once.$key) -Property ProcessId -ErrorAction Stop).Count -ne 0){throw 'blocked'}}
+  foreach($key in @('processId','parentProcessId')){if($once.$key -isnot [int] -or $once.$key -le 0){throw 'blocked'}}
   if($once.usage.management -isnot [int] -or $once.usage.management -ne 878 -or $once.usage.control -isnot [int] -or $once.usage.control -ne 1009 -or $once.usage.combined -isnot [int] -or $once.usage.combined -ne 1887){throw 'blocked'}
   $text=[IO.File]::ReadAllText((Assert-Path $repo $journal))
   if(-not $text.EndsWith("`n") -or $text.Length -gt 1048576){throw 'blocked'}
@@ -515,6 +545,9 @@ function Assert-FoundationTechnical16Settled($Expected) {
   $writes=@($http|Where-Object{$_.kind -cin @('delete','absence')})
   if($writes.Count -ne 4){throw 'blocked'}
   for($i=0;$i -lt 4;$i++){if($writes[$i].kind -cne @('delete','absence','delete','absence')[$i] -or $writes[$i].executionId -cne @('31131','31131','31130','31130')[$i] -or $writes[$i].workflowId -cne @('4JMHLDBSdgGxhPlk','4JMHLDBSdgGxhPlk','MzimjpsuyPuK7SKe','MzimjpsuyPuK7SKe')[$i]){throw 'blocked'}}
+  # The native producer wrote process.pid / process.ppid before once.at.
+  # That pinned observation identifies the old processes; it is not a close.
+  foreach($key in @('processId','parentProcessId')){$null=Assert-FoundationHistoricalIdentityAbsent $once.$key $once.at}
   return $value
 }
 function Foundation-Technical16FamilyPredicate {
@@ -676,7 +709,6 @@ function Read-FoundationTechnical14NoAdmin([int]$Ordinal=14) {
   }
   $closed=Read-Json (Assert-Path $repo ('scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-'+$Ordinal+'.closed.json'))
   if($closed.nativeExit -ne 1 -or $closed.childClosed -ne $true -or $closed.credentialChildrenClosed -ne $true -or $closed.emergencyShutdown -ne $false -or $closed.closureVerified -ne $false -or $closed.parentProcessId -ne $value.attempt.parentProcessId -or $closed.runtimeProcessId -ne $value.attempt.runtimeProcessId){throw 'blocked'}
-  foreach($processId in @($closed.parentProcessId,$closed.runtimeProcessId)){if($processId -isnot [int] -or $processId -le 0 -or @(Get-CimInstance -ClassName Win32_Process -Filter ('ProcessId = '+$processId) -Property ProcessId -ErrorAction Stop).Count -ne 0){throw 'blocked'}}
   $stem='scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-'+$Ordinal
   $absent=@(($stem+'-attempt.json'),($stem+'-latest.json'),($stem+'-owner-provision-attempt.json'),($stem+'-reactivation-attempt.json'),('scripts/n8n/out/foundation/live/runtime.technical-'+$Ordinal+'.jsonl'))
   if($value.absentOutputs -isnot [Array] -or $value.absentOutputs.Count -ne $absent.Count){throw 'blocked'}
@@ -686,6 +718,7 @@ function Read-FoundationTechnical14NoAdmin([int]$Ordinal=14) {
   $cleanup=Read-Json $cleanupPath
   if($cleanup.kind -cne ('m03_technical'+$Ordinal+'_local_cleanup') -or $cleanup.version -ne 1 -or $cleanup.environment -cne 'dev' -or $cleanup.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $cleanup.technicalAttempt -ne $Ordinal -or $cleanup.nativeExit -ne 0 -or $cleanup.attemptReceiptSha256 -cne $expected -or $cleanup.privateContentsRead -ne $false -or $cleanup.networkRequests -ne 0 -or $cleanup.managementAttempts -ne 524 -or $cleanup.controlAttempts -ne $control -or $cleanup.combinedAttempts -ne $combined -or $cleanup.vercelAttempts -ne 149 -or $cleanup.actorStarts -ne 0){throw 'blocked'}
   foreach($key in @('allTenDisposableLeavesAbsent','parentProcessAbsent','runtimeProcessAbsent','parentLockAbsent','runtimeLockAbsent','persistentOriginalsRetained','machineRetained','originalFailedAttemptPreserved')){if($cleanup.$key -isnot [bool] -or -not $cleanup.$key){throw 'blocked'}}
+  foreach($processId in @($closed.parentProcessId,$closed.runtimeProcessId)){$null=Assert-FoundationHistoricalIdentityAbsent $processId $closed.closedAt}
   return $expected
 }
 function Foundation-ArchiveFixtureSql($Expected) {
