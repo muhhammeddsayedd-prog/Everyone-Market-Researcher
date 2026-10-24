@@ -1,0 +1,33 @@
+{
+  "kind": "m03_project_verified_continuation_approval",
+  "version": 1,
+  "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+  "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "originalWindowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+  "ownerReply": "Approve exact project-verified packet",
+  "recordedAtUtc": "2026-10-22T18:06:43.052Z",
+  "reviewedPacketRelative": "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md",
+  "reviewedPacketSha256": "13d19460cdb889378dec5ae4d93af4708baf85290c164e07961add18e7243650",
+  "checkpointRelative": "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json",
+  "checkpointSha256": "e21e515ae446dcde7983dba87d09221ce1bf3cd2ad06d08329368a8241e6ba10",
+  "singleSegmentNoAutomaticRenewal": true,
+  "preserveHistoricalHeadersAndCounters": true,
+  "noMigrationReplay": true,
+  "caps": {
+    "durationMinutes": 60,
+    "stopNewWorkMinute": 50,
+    "physicalCloseMinute": 70,
+    "leaseCoverageMinute": 75,
+    "runtimeManagement": 512,
+    "control": 2048,
+    "combined": 2560,
+    "nativeExecutions": 120,
+    "gatewayAttempts": 256,
+    "providerGetAttempts": 32,
+    "actorStarts": 2,
+    "requestedUsdEachActor": 1,
+    "actorReserveUsd": 2,
+    "uniquePublishedDependencies": 7,
+    "publicationActions": 8
+  }
+}

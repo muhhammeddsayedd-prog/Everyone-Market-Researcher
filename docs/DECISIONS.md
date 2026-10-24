@@ -57,6 +57,66 @@ Owner: Mohamed Abdelrahman (mohamed.abdelrahman@everyone.film) — product owner
 
 ## Changes
 
+### M03 callback persistence correction — 18 October 2026
+
+Within the owner's M03 development authorization, callback verification uses
+option (b): registered-run context plus authenticated Apify run readback; the
+callback body supplies only an ID hint. The original early `processed_at` step
+could discard failed ingestion, and separate retryable RPC nodes could lose
+insertion counts or duplicate costs. M03 therefore adds one atomic, bounded
+`ops.process_apify_run` transaction and a saved receipt for the one-account,
+one-page, development-only website smoke path. Existing M01 interfaces and
+seven applied migration files stay intact. Processed replays return durable
+counts; mismatches fail closed. Standalone completion must not bypass a durable
+receipt. Unsupported platforms/multiple actor registrations remain closed
+until later collector milestones implement durable chunk/dispatch barriers.
+
+The collector must reconcile the original returned actor-run ID after
+registration even when a webhook arrived early or work failed after HTTP200;
+it must not blindly launch another actor. A database first-transition flag is
+not an exactly-once external-delivery guarantee. M03 notifications default to
+audit logging, and WF-00 stays inactive. This is a safety/idempotency correction,
+not production, paid-run, merge or later-milestone approval. The local migration,
+advisors, generated types, hosted deployment and end-to-end acceptance have
+separate evidence gates in M03 progress.
+
+M03 reuses the owner's existing credentials by actual ID and compatible type,
+without requiring canonical display names or changing shared credentials.
+HTTP Request uses Predefined Credential Type for native `apifyApi` and
+`openAiApi`; it must not extract tokens or duplicate them as Header Auth.
+Vimeo and YouTube reuse Header Auth, with `Authorization` and
+`X-Goog-Api-Key` respectively. Market Radar requests constrain fixed HTTPS
+origins and reject redirects; shared domain settings are preserved.
+YouTube's header replaces the older Query Auth example and keeps keys out of
+URLs. The Apify metadata test uses the authenticated limits endpoint because
+`users/me` includes a proxy password. No actor/model call is a credential test.
+App/internal secrets remain deferred; M03 uses callback verification (b) and
+log-only Notify. The saved dev Postgres port is5432; an observed strict TLS
+chain failure must not be bypassed by Ignore SSL Issues or another login.
+
+The WF-70 and WF-80 stubs keep the standard four dispatch inputs and explicitly
+add optional `tags` and `kind`, respectively, for their documented callers.
+SUB Finish accepts an optional verified atomic `completion` receipt. Only a
+matching first-transition receipt permits downstream stub dispatch; without
+one it returns the stored finish summary without dispatch. This avoids treating
+a repeated M01 `finish_run` total as a new transition. It does not establish
+exactly-once external delivery; later live consumers require a durable delivery
+design. WF-90 uses trusted workflow ID mapping and fixed classified messages;
+it does not invent a parent run ID from an unverified Error Trigger payload.
+
+The native WF-00 adapter uses separate Sunday 07:00 news and 07:30 awards
+clocks. This preserves the requested timings without assuming that a 30-minute
+Wait is compatible with the reviewed 15-minute workflow timeout. Manual slot
+tests use `news` for WF-22 and `awards` for WF-23; the existing shared logical
+planner keeps its delayed awards representation. PM/backfill trigger nodes and
+Config flags remain disabled. Start run and notification claims have no blind
+automatic retry; ambiguous responses need reconciliation. SUB Log cost accepts
+only keyed metadata, while the atomic processor/accrual own their safe metadata.
+Known-source trigger errors without an originating execution ID correlate with
+the actual error-handler execution, explicitly prefixed `handler-`, without
+inventing a parent run. Automatic Error Trigger acceptance requires an actual
+automatic dev failure; manual mock execution is not that proof.
+
 M02 closed after the owner separately approved **Approve merging PR #6**
 (`call_e5871c933ab04e8fad11f15a51a82b4c`). The exact reviewed head
 `8ecb87cb75bc895491c815c575816cb8bab26649` passed all five CI39093312511 jobs
@@ -101,3 +161,177 @@ and [actual acceptance review](../milestones/M02-seed-data/evidence/prod-accepta
 | 2026-10-17 | M01 implementation record: generated `handle_norm` account key; `finish_run` JSON summary; cadence-minus-four-hours success scheduling; preserved normalized credits/media; clean invoker hybrid search. `DATA_SCHEMA.md` RPC milestone labels and `TECHNICAL.md` draft scheduling now match the specific M01 handoff. No binding product, tool, access or production gate changed.                                                                                                                                     | Specified by M01 T4–T7; implementation details recorded for review                                                                                                                |
 | 2026-10-17 | Pilot backfills (M04–M06) and the M07 AI backlog run once in **prod** after the owner approves each estimate (MA-14, MA-15, MA-17), to avoid paying twice; prod schedules stay off until M08. Media v1 (WF-31) moves to M06 because story/Instagram CDN URLs expire. Stories bake-off runs 7 days.                                                                                                                                                                                                                      | Proposed in the handoff pack; owner confirms at MA-14                                                                                                                             |
 | 2026-10-17 | Initial decision set from the brainstorm and the architecture doc (rev 95). Ad libraries and LinkedIn jobs moved out of scope; news/awards via SerpAPI; stories only without login.                                                                                                                                                                                                                                                                                                                                     | Owner                                                                                                                                                                             |
+
+## GW-01 dev transport exception - approved18 October2026
+
+Owner approved the exact strict-TLS packet at100290a291530d30d0387269c1a0805ad4f86fcc plus bounded-trial clarifications. [Authorization](../milestones/M03-n8n-foundation/evidence/gw01-authorization-20261018.json). The existing Next.js/Vercel Node backend may serve a fixed, machine-authenticated worker-RPC route on the m03 branch protected Preview only, connecting as actual dev n8n_writer with the pinned CA and normal hostname validation. This does not make the failing native Postgres node PASS.
+
+Includes one additive admission/idempotency dev migration, branch-specific Preview credentials, new owned trial-only custom authentication/bypass entries and cleanup, inactive owned M03 adapters, and one persisted100-total-attempt/two-concurrent/30-minute connection trial with USD1 planning reserve (not an enforced invoice cap). Invalid requests, retries, status and shutdown checks count. Clock starts only after local/preview/delivery readiness; counters/window are never replaced/reset across deployments. Bind the reviewed exact deployment URL/SHA/ID once before admission; use immutable Vercel metadata, not caller headers or a mutable alias.
+
+Existing nine migrations, seeded data, exclusions, logos and provider credentials remain intact. No arbitrary SQL/host/role/RPC, administrator/service credential in runtime, raw-ingestion bypass or new Data API exposure. Gateway-only identity/read/retained acknowledgement acceptance is separate from live callback/actor acceptance. Production, incident remediation, actor/model calls, collection, recurring activation, notification, PR8 merge/M03 closure and M04 remain unapproved.
+
+## M03 full-foundation source continuation — 19 October 2026
+
+The owner's attached continuation authorizes local M03 source/adapters/tests,
+necessary **forward-migration source**, and safe owned **inactive dev** workflow
+provisioning through supported access. It preserves the completed GW-01 trial
+as a closed historical exception. This is not approval for a new hosted window,
+migration push, actor start, multi-workflow batch, production operation or merge.
+
+The current source uses a separate fixed-alias HTTPS foundation route and actual
+restricted `n8n_writer` authentication with strict CA/hostname checks. It does not
+silently return to the failing native Postgres node or expose SQL/RPC/host/role
+selection. Its new window is never derived from GW-01 or its remaining allowance.
+No source migration creates an active approval. The exact four forward versions
+and proposed lifecycle are listed in the existing
+[live-acceptance packet](../milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md).
+
+Pinned n8n 2.43.5 HTTP/Apify node schemas cannot enforce a streaming response-byte
+limit. The smallest M03 transport addition is therefore a server reader for the
+registered original run, original INPUT and one exact Everyone page, with fixed
+origins, hard streaming bounds and allowlisted output. A genuinely new dev
+read-scoped provider token is a later approval/credential gate; the existing
+shared native Apify token is never extracted or duplicated. Existing native
+Apify credentials remain the disabled asynchronous launch binding. Two starts
+maximum, separate actual cost per run, first-response-only durable admission,
+original-ID reconciliation and permanent closeout are required.
+
+All 25 generated definitions are inactive, retain no execution data and keep
+launch controls disabled. Saved native IDs/exports and future live results must
+be recorded separately from source/local/CI evidence. No whole-editor/context
+snapshot, Variables enumeration, browser storage read or raw sensitive export
+is an acceptable verification path. Unknown fees, the USD 25 alert default and
+the 24 October tooling follow-up remain unchanged. Private incident preparation
+and production decisions stay outside this source authorization.
+
+## M03-C01 temporary dev retention design — approved19 October2026
+
+The owner explicitly approved the scoped inventory at
+`eee9a277c6a7d63fffe967811c92a7fd50c15b14`,
+[exact inventory](../milestones/M03-n8n-foundation/evidence/m03-c01-retention-proposal-20261019.json),
+as the basis for local implementation, tests, independent review and the final
+[A–D acceptance packet](../milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md).
+This approves no Cloud change or live batch by itself.
+
+For the same25 pinned owned dev workflows: enable manual storage only on
+WF-00/WF-91/WF-99/SUB-INGEST/SUB-COST; set success/error storage to `all` on the
+21 other integrated/error-capable graphs (all except WF-00/WF-99/SUB-INGEST/
+SUB-COST). WF-91 overlaps; union25. Keep progress storage false and every other
+setting unchanged. Preserve exact baselines for restoration. No instance,
+unrelated workflow, credential or production retention change is included.
+
+This stores full intermediate data, snapshots, headers/bodies and errors,
+including unsolicited webhook input before validation. Native settings cannot
+select batch IDs or safe stored fields; final-node/read-time redaction cannot
+sanitize earlier storage. Private reducers must refuse sensitive reflection,
+incomplete native evidence or responses above the8MiB streaming ceiling and
+emit only allowlisted technical metadata/fixed diagnostic codes. Cleanup is
+limited to causally owned, terminal **and independently settled** native records,
+after durable projected evidence, matching DELETE acknowledgement and absence
+read. Restoring settings is not erasure; lost acknowledgement plus404 is
+ambiguous. Unresolved records remain inventoried with owner follow-up.
+
+The separate live decision must cover setup, zero-actor success/failure/privacy
+and cleanup proof before two conditional actor starts, then shutdown. Proposed
+2048 execution-control attempts replace416; plus512 runtime attempts gives2560,
+with unchanged120 native/256 gateway/32 provider-GET/two-actor/USD2 reserve/
+60minute limits. No credentials, hosted migration, publication, execution,
+gateway activation, production, merge or M04 are authorized here. Private R2
+remains separate. The owner-reported local synthetic-state deletion was verified
+by exact-path absence only; its historical blocked deletion was not retried.
+
+## Persistent dev access and standing milestone authority — approved 23 October 2026
+
+The owner explicitly replaced the earlier project-level disposable-secret and
+time-only approval rules. Development credentials use the existing Windows
+CurrentUser DPAPI implementation at
+`%LOCALAPPDATA%\Everyone-Market-Radar-Private\secrets\dev\`, outside Git and
+shared/cloud-synced directories, with ACL access limited to the intended user
+and SYSTEM. Encrypted originals persist until actual expiry, revocation or owner
+deletion; no artificial two-hour expiry applies. Existing consumers may receive
+automatically generated disposable copies, which are cleaned with scratch after
+their bounded children close. Initialization/update prompts once for genuinely
+missing approved entries, reuses suitable purpose-approved dev handoffs and
+native GitHub/Vercel/MCP/n8n stores, and exposes no print-secret interface.
+Administrator credentials remain separate from application/runtime credentials;
+production and unrelated incident credentials are excluded from the dev profile.
+
+M03 development and approved A–D acceptance remain authorized until completion
+or revocation, including ordinary fixes, scoped commits/PR updates, protected dev
+previews and owned dev configuration. Technical timeouts and safe closure remain;
+expiry or a tested source change alone does not require a new human approval.
+One hosted-write coordinator must reconcile side effects and cumulative counters
+before a continuation. Never reopen closed windows, reuse spent mutation claims,
+overlap uncertain work or blindly repeat an ambiguous paid start. Preserve every
+historical attempt/receipt and the 14 applied dev migrations, seeded data, owned
+workflows, retention/privacy conditions and zero-actor gates. Starting usage is
+6 management / 201 control / 207 combined; existing ceilings remain 512 / 2048 /
+2560, native executions 120, gateway 256, provider GETs 32, actors 0 of 2 total
+sequential starts, USD1 each / USD2 reserve and at most one new distinct item.
+This decision replenishes none of those limits.
+
+Ask only at a genuine missing/revoked credential, MFA/consent, enforced permission,
+exhausted allowance, consequential unresolved decision, unsafe ambiguous effect,
+production/destructive action, shared rotation, external-message or unapproved
+recurrence boundary. Enforced platform/organization policies and actual provider
+expiry still govern. Production, private R2 execution, PR #8 merge and M04 remain
+separate. Historical approvals and closed records below/linked from milestone
+evidence are unchanged; their superseded time-only and disposable-input wording
+does not govern current development continuations. Implementation/tests/live
+acceptance are recorded separately in the existing progress records.
+
+## M03 cumulative management allocation — approved 24 October 2026
+
+The owner approved the exact packet at PR #8 head `0bb8598`: **Approve cumulative
+management 576; retain 152 charged**. [The immutable decision](../milestones/M03-n8n-foundation/evidence/remaining-management-allocation-approval-20261024.json)
+raises only management from 512 to 576. Keep 152 management / 384 control / 536
+combined charged, all historical attempts, side-effect IDs and closed windows.
+Control stays 2,048 and combined stays 2,560; enforce the combined ceiling against
+both actual counters before each request. Vercel stays 88 with 44 used. Two
+sequential actor starts, USD 1 each / USD 2 total reserve, remain entirely unused.
+No spending increase, migration replay, production, recurring activity, external
+messaging, shared rotation, PR merge or M04 is approved. Standing M03 authority
+and persistent dev access continue; no time-only renewal or credential handoff
+is required by this allowance amendment.
+
+## M03 cumulative Management 704 — approved 24 October 2026
+
+The owner replied **Approve Management704; retain all charges and other limits**
+to the reviewed [Management-only packet](../milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md)
+at PR #8 head `4b31c5f8447d79418b8572a872a86afd5722244d`.
+[The immutable approval](../milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-approval-20261024.json)
+raises only cumulative Management from 640 to **704**, retaining all **288 Management,
+588 Control, 876 combined and 79 Vercel** charges. The conservative remaining
+Management plan is 376 further requests, 664 cumulative, with 40 reserved.
+
+Control **2048**, combined **2560**, Vercel **132** (included in Management),
+native executions 120, SQL gateway attempts 256, direct provider reads 32 and
+the original two sequential actor starts / USD 1 each / USD 2 total reserve /
+at most one new distinct item stay unchanged. All attempts, closed windows,
+durable intents and side-effect IDs remain preserved; no counter is reset.
+Reconcile before continuation, retain cleanup capacity and run affected tests,
+independent review, public source/seal checks and normal PR CI before admission.
+
+Persistent development entries and native sessions are reused. This allowance
+adds no credential delivery, time renewal, migration replay, production,
+recurring activity, external message, shared rotation, R2 action, merge or M04
+authority. It is not acceptance evidence.
+
+## M03 temporary sole/default Preview bypass — approved 23 October 2026
+
+The owner replied **“I approve”** to the exact [security-scope packet at9e7a8be](../milestones/M03-n8n-foundation/evidence/sole-bypass-scope-decision-20261023.md).
+[The approval record](../milestones/M03-n8n-foundation/evidence/sole-bypass-scope-approval-20261023.json)
+records authority; it is not a hosted verification receipt. The proposed packet
+remains unchanged as historical review evidence.
+
+For remaining M03 dev acceptance only, permit at most one owned temporary
+automation bypass on the named existing Vercel project/team/branch. Require an
+empty initial map, verify the sole owned default and report
+`soleOwnedDefaultVerified:true`, `nonDefaultVerified:false`; revoke it and verify
+absence on cleanup. Do not adopt, edit or revoke another entry. This knowingly
+permits the project-wide default variable to populate future builds, including a
+Production build started by another actor while present; it does not authorize
+our production operations. All prior attempts/counters, standing M03 authority,
+technical timeout/closure guards and aggregate limits remain unchanged. No
+migration replay, recurring activation, external notification, private R2
+execution, PR8 merge or M04 is authorized by this exception.

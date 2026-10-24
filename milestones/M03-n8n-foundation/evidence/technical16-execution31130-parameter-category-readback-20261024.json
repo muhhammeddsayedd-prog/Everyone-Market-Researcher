@@ -1,0 +1,271 @@
+{
+  "kind": "m03_technical16_native_parameter_category_readback",
+  "version": 1,
+  "observedAt": "2026-10-24 17:36:33 UTC",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "technicalAttempt": 16,
+  "originalAttemptSha256": "d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb",
+  "snapshotReadbackSha256": "6db76fb75d2956c2835c6a9adb5c2bd7700f53b39b377968e8ec4d1139c842e7",
+  "sourceCommitBeforeLocalChange": "effa3de9e1fee6c3f3c08fc347a5e3175db14c80",
+  "toolResults": {
+    "publicSeal": "ad5240",
+    "checkOnly": "48b591",
+    "actual": "e2e340",
+    "cleanup": "9a244c"
+  },
+  "nativeOutputFileEmitted": false,
+  "rawResultSource": "Projected wrapper stdout in tool e2e340, transcribed; no raw native response was exposed or persisted.",
+  "rawResult": {
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "complete",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": {
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "technicalAttempt": 16,
+      "status": "native_snapshot_classified",
+      "requestCount": 1,
+      "maximumRequests": 1,
+      "httpStatus": 200,
+      "tlsVerified": true,
+      "readerMetadataVerified": false,
+      "networkCompletionVerified": true,
+      "controlReservationConservative": true,
+      "acceptanceProven": false,
+      "metadata": {
+        "executionId": "31130",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "mode": "manual",
+        "status": "success",
+        "versionMatchesIntent": true
+      },
+      "readerFailure": null,
+      "transportFailureCode": null,
+      "readerState": null,
+      "transportState": {
+        "pendingRequests": 0,
+        "unclosedResponses": 0
+      },
+      "forensics": {
+        "fields": {
+          "objectShape": true,
+          "dataObject": true,
+          "resultDataObject": true,
+          "idMatches": true,
+          "workflowMatches": true,
+          "versionMatchesIntent": true,
+          "snapshotObject": true,
+          "snapshotIdMatches": true,
+          "snapshotVersionMatches": false,
+          "graphComputable": true,
+          "executedGraphMatches": false,
+          "nodesShape": true,
+          "runDataShape": true,
+          "runDataNamesKnown": true,
+          "pinsPresent": true,
+          "pinsNull": false,
+          "pinsObject": true,
+          "pinsEmpty": true,
+          "pinsSingleEmptyManual": false,
+          "pinsPassExistingReader": true,
+          "redactionPresent": false,
+          "redactionPassesExistingReader": true,
+          "rootParentAbsent": true,
+          "manualOutputEmptyJson": true,
+          "executeRunsShape": true,
+          "childLinksShape": true,
+          "observedChildLink": true,
+          "unexpectedChildLink": false
+        },
+        "childExecutionIds": [],
+        "nativeTreeSettlementProven": false,
+        "categories": {
+          "components": {
+            "nameEqual": true,
+            "nodesEqual": false,
+            "connectionsEqual": true,
+            "settingsEqual": true
+          },
+          "nodes": {
+            "indexExact": false,
+            "idSetEqual": true,
+            "idOrderEqual": true,
+            "idAlignedExact": false
+          },
+          "nodeFields": {
+            "id": true,
+            "name": true,
+            "type": true,
+            "typeVersion": true,
+            "parameters": false,
+            "position": true,
+            "disabled": true,
+            "credentials": true,
+            "extendsCredential": true,
+            "retryOnFail": true,
+            "maxTries": true,
+            "waitBetweenTries": true,
+            "onError": true,
+            "continueOnFail": true,
+            "alwaysOutputData": true,
+            "executeOnce": true,
+            "notes": true,
+            "notesInFlow": true,
+            "webhookId": true
+          },
+          "settings": {
+            "executionOrder": {
+              "equal": true,
+              "expectedPresent": true,
+              "observedPresent": true
+            },
+            "timezone": {
+              "equal": true,
+              "expectedPresent": true,
+              "observedPresent": true
+            },
+            "executionTimeout": {
+              "equal": true,
+              "expectedPresent": true,
+              "observedPresent": true
+            },
+            "callerPolicy": {
+              "equal": true,
+              "expectedPresent": true,
+              "observedPresent": true
+            },
+            "callerIds": {
+              "equal": true,
+              "expectedPresent": false,
+              "observedPresent": false
+            },
+            "availableInMCP": {
+              "equal": true,
+              "expectedPresent": true,
+              "observedPresent": true
+            },
+            "saveDataErrorExecution": {
+              "equal": true,
+              "expectedPresent": true,
+              "observedPresent": true
+            },
+            "saveDataSuccessExecution": {
+              "equal": true,
+              "expectedPresent": true,
+              "observedPresent": true
+            },
+            "saveManualExecutions": {
+              "equal": true,
+              "expectedPresent": true,
+              "observedPresent": true
+            },
+            "saveExecutionProgress": {
+              "equal": true,
+              "expectedPresent": true,
+              "observedPresent": true
+            },
+            "errorWorkflow": {
+              "equal": true,
+              "expectedPresent": true,
+              "observedPresent": true
+            },
+            "timeSavedPerExecution": {
+              "equal": true,
+              "expectedPresent": false,
+              "observedPresent": false
+            },
+            "executionConcurrency": {
+              "equal": true,
+              "expectedPresent": false,
+              "observedPresent": false
+            },
+            "binaryMode": {
+              "equal": false,
+              "expectedPresent": false,
+              "observedPresent": true
+            }
+          },
+          "settingsUnknownKeyPresent": false,
+          "nodeUnknownKeyPresent": false,
+          "nodeCategories": {
+            "identityEqual": true,
+            "parametersEqual": false,
+            "credentialsEqual": true,
+            "behaviorEqual": true,
+            "layoutEqual": true,
+            "annotationsEqual": true
+          },
+          "settingsCategories": {
+            "retentionEqual": true,
+            "mcpVisibilityEqual": true,
+            "errorRoutingEqual": true,
+            "otherEqual": true
+          },
+          "normalizationCandidates": {
+            "nodesEqualAfterKnownFalseDefaults": false,
+            "graphEqualAfterNodeOrderAlignment": false,
+            "graphEqualAfterLayoutOmitted": false,
+            "graphEqualAfterNativeBinaryModeOmitted": false,
+            "settingsEqualAfterDefaultErrorWorkflowOmitted": true,
+            "graphEqualAfterDefaultErrorWorkflowOmitted": false
+          }
+        }
+      },
+      "snapshotStage": "complete"
+    }
+  },
+  "nativeProcessExit": 0,
+  "pins": {
+    "scripts/n8n/inventory.mjs": "de286227cd38d82854bb98d43ee3e14b14c5ea04bf675679b10b3383564215d7",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "048bd75f39e5032f72fb4326b72797d324502473ae4d4393ef47b713db0ee8c1",
+    "scripts/n8n/m03-inventory-seal.json": "a78491cf88332feb9c9b2c19a57729efefb8fbc760f618820ef07a471707aec4",
+    "scripts/n8n/foundation-acceptance-seal.json": "89ef0c3c737f7c6837d4df210ed47512f451b56a5165007c8f446d10d11963dd",
+    "scripts/n8n/out/foundation/execution-31130-category-diagnostic-20261024.jsonl": "e19c27c045e23fc98c7855b4c4ace1afbc2f973aa69f8b3c587905c589cce87f"
+  },
+  "cleanup": {
+    "parentProcessId": 31632,
+    "childProcessId": 43480,
+    "parentAbsent": true,
+    "childAbsent": true,
+    "managementCopyAbsent": true,
+    "parentLockAbsent": true,
+    "persistentManagementRetained": true,
+    "privateContentsRead": false,
+    "networkRequests": 0
+  },
+  "usage": {
+    "management": 828,
+    "control": 959,
+    "combined": 1787,
+    "vercel": 184,
+    "nativeExecutionsReserved": 3,
+    "actorStarts": 0,
+    "additionalHttpRequests": 1,
+    "additionalNativeReadControlReservation": 1,
+    "allowancesReplenished": false
+  },
+  "findings": {
+    "exactPastBodyReconstructionVerifiedBeforePrivateAccess": true,
+    "onlyNodeParametersDiffer": true,
+    "identityAndConnectionsAndEditableSettingsMatch": true,
+    "allOtherEnumeratedNodeFieldsMatch": true,
+    "defaultNormalizationCauseEstablished": false,
+    "originalMaskedFirstFaultRecovered": false,
+    "nativeTreeSettlementEstablished": false,
+    "fixtureArchived": false,
+    "fullAcceptance": false
+  },
+  "limitations": [
+    "The native constructor's documented parameter-default expansion is a source-supported candidate, not yet an exact match to this retained response.",
+    "No parameter values, response-defined names, versions, timestamps, hashes from the response, payload or raw errors leave the private child.",
+    "The normal native reader and its acceptance assertions are unchanged.",
+    "The 828 purpose claim is spent and immutable; no reset or blind retry is permitted."
+  ]
+}

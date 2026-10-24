@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-18T23:44:19Z",
+  "environment": "local-source-and-loopback-tests",
+  "status": "local_complete_saved_native_and_live_acceptance_pending",
+  "graphs": {
+    "count": 25,
+    "sharedSubWorkflows": 5,
+    "mainWorkflows": ["WF-00", "WF-19", "WF-90", "WF-91", "WF-99"],
+    "collectorAndLaterMilestoneStubs": 15,
+    "active": false,
+    "defaultLaunchEnabled": false,
+    "nativePostgresFallback": false,
+    "retention": "success/error/manual/progress off",
+    "actualCloudIdsAndExports": "pending reviewed inactive provisioning"
+  },
+  "tests": {
+    "allFoundationNodeSuites": { "nativeExit": 0, "tests": 68, "skipped": 0, "toolReceipt": "0038e8" },
+    "newGraphRegressions": { "tests": 14, "nativeExit": 0 },
+    "streamingReader": { "tests": 10, "nativeExit": 0, "scope": "actual loopback HTTP sockets and injected provider/DNS fixtures" },
+    "affectedServerAndContractSuites": { "files": 5, "tests": 28, "nativeExit": 0, "toolReceipt": "cf3f50/1d6d82" },
+    "actualLocalSqlAppAfterFinalMigration": { "tests": 1, "nativeExit": 0, "toolReceipt": "639a45", "rollbackOnly": true, "restrictedHostedLoginProof": false },
+    "typecheck": { "web": "passed", "shared": "passed" }
+  },
+  "review": {
+    "independentScope": "root fixed contracts, handler, database profile and four latest forward SQL sources; workflow author independently reviewed root code; root reviewed generated graphs and reader",
+    "remainingP1OrP2InThatScope": 0,
+    "fixedBeforeCredentialUse": [
+      "WF99 platform website_work_page",
+      "canonical JSON comparison instead of key-order comparison",
+      "status admission denials retain 403/429 classification",
+      "equal actual cost replay accepts nullable optional attribution and measured overspend",
+      "normalizer-compatible empty title projection",
+      "pinned safe platform INPUT defaults",
+      "six-minute actor start margin",
+      "durable server terminal/dataset receipt binding before atomic processing"
+    ],
+    "provisioningHelper": "separate source/security review still in progress at this checkpoint"
+  },
+  "actorMetadata": {
+    "actorId": "aYG0l9s7dbB7j3gbS",
+    "buildId": "BdKJRCYsnmlzPfH3n",
+    "buildNumber": "0.3.99",
+    "status": "SUCCEEDED",
+    "observedAt": "2026-10-18T23:24:21.499Z",
+    "request": "public GET default build, strict TLS, 1 MiB streaming ceiling",
+    "inputSchemaObservedAt": "2026-10-18T23:32:44.826Z",
+    "inputDefaults": 47,
+    "actorStarted": false
+  },
+  "boundaries": {
+    "hostedMigrationsApplied": false,
+    "gatewayWindowOpened": false,
+    "nativeWorkflowsExecuted": false,
+    "providerAuthenticationRetested": false,
+    "actorOrModelCalls": 0,
+    "credentialsConsumed": false,
+    "gw01Reopened": false,
+    "productionChanged": false,
+    "m04Started": false,
+    "newNativePostgresReceipt": false,
+    "immutableSnapshotCleanupProof": false
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "key": "WF-50",
+  "id": "2U6nPs3uJkmjij82",
+  "versionId": "6054e8f3-771b-4325-b7df-5bde7c2211d8",
+  "active": false,
+  "activeVersionId": null,
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflow": {
+    "name": "WF-50 · Weekly briefs [dev]",
+    "nodes": [
+      {
+        "id": "cb35b31d-df33-40b5-a774-e482b1900b61",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "mode",
+                "type": "string"
+              },
+              {
+                "name": "limit",
+                "type": "number"
+              },
+              {
+                "name": "result_type",
+                "type": "string"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "aef22e39-7f15-47a7-a740-e69714ce7242",
+        "name": "Manual test",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "parameters": {},
+        "position": [
+          0,
+          200
+        ]
+      },
+      {
+        "id": "421fc098-55c4-4925-aa83-5f23c978d3e0",
+        "name": "Validate dev input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const items = $input.all();\nconst invalid = () => { throw new Error('EMR_N8N_INPUT_INVALID'); };\nif (items.length !== 1) invalid();\nconst j = items[0].json;\nif (!j || typeof j !== 'object' || Array.isArray(j) ||\n  Object.keys(j).some(k => ![\"mode\",\"limit\",\"result_type\",\"env\"].includes(k))) invalid();\nif (j.env !== undefined && j.env !== null && j.env !== 'dev') invalid();\nconst mode = j.mode ?? 'manual';\nif (!['daily','backfill','weekly','manual','removal_check'].includes(mode)) invalid();\nconst limit = j.limit ?? null;\nif (limit !== null && (!Number.isInteger(limit) || limit < 1 || limit > 1000)) invalid();\nconst result_type = j.result_type ?? null;\nif (result_type !== null && (typeof result_type !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(result_type))) invalid();\n\n\nreturn [{json:{mode,limit,result_type,env:'dev'}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "beea3937-8906-4510-ada4-45fd9776b77c",
+        "name": "Return stub",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "parameters": {
+          "mode": "manual",
+          "includeOtherFields": false,
+          "assignments": {
+            "assignments": [
+              {
+                "id": "b758d94d-b6a6-4ad3-abd8-56a46d1f50bd",
+                "name": "stub",
+                "type": "boolean",
+                "value": true
+              },
+              {
+                "id": "c4dd99bb-d79c-4c26-a7fa-0dcf74404363",
+                "name": "workflow",
+                "type": "string",
+                "value": "WF-50"
+              },
+              {
+                "id": "919c3260-00e8-4596-ae17-314e5dfb58ed",
+                "name": "received",
+                "type": "object",
+                "value": "={{ $json }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          480,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual test": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate dev input": {
+        "main": [
+          [
+            {
+              "node": "Return stub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "xypXIZGL9udCiwND",
+        "name": "layer:ai"
+      }
+    ],
+    "pinData": {}
+  },
+  "definitionProfile": "inactive_native_staging",
+  "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+  "intendedSourceHash": "307f7547f39b402f3fd97e7fcdc0b2adb13792476fbc10d86bc53169b1967afc",
+  "stagedSourceHash": "52c3de31fd0fcab0f3f9c158d52d4e50d16c2dd6a7a0a31faa85520459fc3c8b",
+  "canonicalParity": false,
+  "kind": "actual_saved_inactive_foundation_staging",
+  "version": 1,
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+}

@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T09:19:40Z",
+  "observedAt": null,
+  "scope": "Actual restricted dev Writer direct login, identity, rollback-only authorization denials and prepared-window readback",
+  "source": "Root's observed actual tool receipt fd8497; exact execution timestamp was not supplied in the handoff",
+  "toolReceiptRef": "fd8497",
+  "target": {
+    "environment": "dev",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "poolerMode": "session",
+    "port": 5432,
+    "strictTlsVerified": true,
+    "actualRestrictedLogin": true,
+    "administratorOrServiceCredentialSubstituted": false,
+    "setRoleUsedAsAuthenticationProof": false
+  },
+  "consumerReceipt": {
+    "version": 1,
+    "mode": "Verify",
+    "status": "complete",
+    "privateRead": true,
+    "rootChildClosed": true,
+    "handoffRetained": true,
+    "nativeExit": 0,
+    "result": {
+      "version": 1,
+      "status": "complete",
+      "mode": "Verify",
+      "code": null,
+      "identity": {
+        "currentUser": "n8n_writer",
+        "sessionUser": "n8n_writer",
+        "database": "postgres",
+        "projectRef": "zmotjsbzhzjvpelxvxlf"
+      },
+      "authorizationDenials": 4,
+      "window": {
+        "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+        "startsAt": null,
+        "expiresAt": null,
+        "closed": false,
+        "totalAdmitted": 0,
+        "boundAudience": null,
+        "boundCommitSha": null,
+        "boundDeploymentId": null
+      },
+      "connectionClosed": true
+    }
+  },
+  "authorizationChecks": {
+    "denialsVerified": 4,
+    "requiredSqlState": "42501",
+    "rollbackOnly": true,
+    "genericOrReadOnlyFailureAccepted": false
+  },
+  "handoffState": {
+    "writerAndMachineReadyReported": true,
+    "writerVerifiedThroughActualRestrictedLogin": true,
+    "encryptedWriterRetainedForApprovedLaterPhases": true,
+    "machineConsumed": false,
+    "machineAuthenticationOrRuntimeDeliveryVerified": false
+  },
+  "preservedState": {
+    "gatewayAttempts": 2,
+    "gatewayRequestsAddedByThisCheck": 0,
+    "clockStarted": false,
+    "serverWindowBound": false,
+    "serverAdmissions": 0,
+    "migrationsOrHistoryChanged": false
+  },
+  "remaining": "Runtime-phase/public-configuration helpers are under local implementation and independent review before Environment delivery. Gateway HTTP identity, deployment binding and the bounded trial remain pending. Original Management lease expires09:22:05.538867UTC, without renewal; request another key only if actually expired and needed.",
+  "boundary": "This proves the direct restricted dev login and four exact42501 rollback denials. It does not establish gateway HTTP identity, native n8n Cloud Postgres TLS success, Machine use, runtime delivery, actor/model calls, production, merge or M04. Owned child/connection closure does not clear a separate parent process."
+}

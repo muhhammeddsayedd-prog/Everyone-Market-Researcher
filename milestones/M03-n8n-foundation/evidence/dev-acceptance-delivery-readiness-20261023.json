@@ -1,0 +1,165 @@
+{
+  "kind": "m03_development_delivery_public_readiness",
+  "recordedAt": "2026-10-23T18:37:17.467Z",
+  "environment": "dev",
+  "scope": "Credential-free public readiness and targeted local checks; actual remaining A-D is not admitted or accepted by this record.",
+  "publicPacketRefresh": {
+    "toolReceipt": "634c25",
+    "legacyFilePins": 45,
+    "forwardFilePins": 47,
+    "migrationMetadataChanged": false
+  },
+  "publicSeal": {
+    "nativeProcessSession": 77419,
+    "nativeExit": 0,
+    "projectSourceFiles": 228,
+    "runtimeFiles": 840,
+    "privateRead": false,
+    "networkRequests": 0,
+    "chunkReferenceOmitted": true
+  },
+  "priorLocalPreflight": {
+    "toolReceipt": "0fa0d0",
+    "nativeExit": 1,
+    "status": "blocked",
+    "sealStillRunning": true,
+    "privateRead": false,
+    "childClosed": true,
+    "classification": "Concurrent public-seal preflight refusal; not an authentication or authority failure.",
+    "preservedSeparately": true
+  },
+  "finalPublicPreflight": {
+    "toolReceipt": "251305",
+    "nativeExit": 0,
+    "status": "check_only_ready",
+    "publicCompositionLoaded": true,
+    "adminPublicInputsVerified": true,
+    "adminHandoffReady": false,
+    "actualMcpPortVerified": false,
+    "privateRead": false,
+    "networkRequests": 0,
+    "originalFamilyWindowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+    "expectedDisposableAdminAbsence": true,
+    "persistentInputMissing": false
+  },
+  "nativeSavedSessionMetadata": {
+    "toolReceipt": "c3fd4a",
+    "nativeExit": 0,
+    "status": "metadata_covers_75_minutes",
+    "valid": true,
+    "unexpired": true,
+    "covers75Minutes": true,
+    "effectiveBackendEstablished": false,
+    "networkRequests": 0,
+    "authenticationAttempts": 0,
+    "authRefreshes": 0,
+    "configurationWrites": 0,
+    "childClosed": true,
+    "limitation": "Saved-session metadata is not fresh remote authentication or project-access proof."
+  },
+  "localChecks": {
+    "cumulativeGuardAndAdmin": {
+      "toolReceipt": "5b2e06",
+      "passed": 38,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "independentCapCases": {
+      "toolReceipt": "11a6bc",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "publicWrapperPaths": {
+      "toolReceipt": "cf6642",
+      "passed": 3,
+      "failed": 0,
+      "nativeExit": 0
+    },
+    "ordinaryNativeGuards": {
+      "toolReceipt": "400699",
+      "passed": 163,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "coupledMcpAndNative": {
+      "toolReceipt": "05ebcd",
+      "passed": 74,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "capTargetedFormatting": {
+      "toolReceipt": "96213c",
+      "nativeExit": 0
+    },
+    "resultsNotSummed": true,
+    "limitation": "These are distinct targeted local/synthetic checks, not a fresh complete suite, current delivery CI, actual MCP-port verification or A-D acceptance."
+  },
+  "persistentInputs": {
+    "originalCount": 4,
+    "originalsRetained": true,
+    "initializeAgain": false,
+    "ownerInputRequired": false,
+    "adminCredentialsSeparateFromRuntime": true,
+    "disposableAdminPairNotMaterializedByPublicCheck": true,
+    "endpointAuthenticationEstablishedByPublicCheck": false
+  },
+  "currentAuthorityAndUsage": {
+    "allocationApprovalPath": "milestones/M03-n8n-foundation/evidence/remaining-control-allocation-approval-20261023.json",
+    "allocationApprovalSha256": "313dd1de36e1c2d24e426cb2d09d1a027d192305a97a3a45b5a1783f61bf3f43",
+    "cumulativeSetupMaximum": 88,
+    "setupRequestsAlreadyCharged": 44,
+    "management": 102,
+    "control": 301,
+    "combined": 403,
+    "carriedManagement": 10,
+    "managementMaximum": 512,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "actorStarts": 0,
+    "actorStartsMaximum": 2,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "nativeExecutionsMaximum": 120,
+    "gatewayMaximum": 256,
+    "directProviderReadsMaximum": 32,
+    "actorsSequential": true,
+    "newDistinctItemsMaximum": 1,
+    "allowancesReplenished": false
+  },
+  "plannedRuntime": {
+    "activeWindowId": "38b3708d-61b0-41d2-8170-5ed91c66b4dc",
+    "sourceCommitSha": "a5e746736893d5040e93032ae740a0878f748837",
+    "admitted": false,
+    "actualMcpPortVerified": false,
+    "closedLegacyWindowReopened": false
+  },
+  "preserved": {
+    "historical5703d9Readiness": true,
+    "historical225SourceSeal": true,
+    "historical50SetupRefusal": true,
+    "original14MigrationFingerprints": true,
+    "appliedDevMigrationCount": 15,
+    "closedDf4": true,
+    "archivedC999": true,
+    "seededDataAndLogos": true,
+    "wf00VerifiedRestore": true,
+    "other24WorkflowPins": true,
+    "retentionAndZeroActorChecks": true
+  },
+  "acceptance": {
+    "publicReadinessComplete": true,
+    "currentDeliveryCiVerifiedByThisRecord": false,
+    "remainingDevAdmitted": false,
+    "m03DevAcceptanceVerified": false,
+    "pr8Draft": true,
+    "pr8Merged": false,
+    "productionChangedByThisRecord": false,
+    "recurringActivityStarted": false,
+    "m04Started": false
+  }
+}

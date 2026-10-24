@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-18T07:44:29.246Z",
+  "scope": "owned_local_targeted_schema_count_correction",
+  "reportedCiFailure": {
+    "runId": "39108227413",
+    "head": "4d4d13ebf241f12df64de772b0024bf6d5a067e0",
+    "boundary": "root-reported prior CI; not a new CI rerun"
+  },
+  "localRed": {
+    "nativeExit": 1,
+    "files": 11,
+    "assertions": 379,
+    "failedFile": "supabase/tests/00_schema.test.sql",
+    "failureClass": "stale_exact_ops_table_count",
+    "actualOpsTables": 13,
+    "expectedOpsTables": 10,
+    "otherTenFilesPassed": true,
+    "sqlError": false,
+    "planError": false,
+    "childClosed": true
+  },
+  "change": {
+    "file": "supabase/tests/00_schema.test.sql",
+    "beforeCount": 10,
+    "afterCount": 13,
+    "label": "13 ops tables",
+    "reason": "The additive GW-01 migration intentionally adds exactly three ops control tables.",
+    "testFileSha256": "008483e4eb441c2e83b12e44d3c9175e9467f167b8b3b77418c9eb1575ae70e7",
+    "migrationsEdited": false,
+    "runnerEdited": false,
+    "assertionsRemoved": false
+  },
+  "localGreen": {
+    "nativeExit": 0,
+    "childClosed": true,
+    "files": 1,
+    "assertions": 21,
+    "verdict": "PASS"
+  },
+  "boundaries": {
+    "noDatabaseReset": true,
+    "noMigrationReplay": true,
+    "noHostedCalls": true,
+    "noPrivateCredentialReads": true,
+    "noUnchangedFullSuiteRepeat": true,
+    "ciGreenAfterCorrection": false
+  },
+  "rawOutput": "Private diagnostic capture only; no raw native output or database values included here."
+}

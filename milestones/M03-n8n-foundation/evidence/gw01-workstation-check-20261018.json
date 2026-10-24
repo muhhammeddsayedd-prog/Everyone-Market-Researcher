@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T08:58:34Z",
+  "observedAt": null,
+  "environment": "Actual Windows workstation public preflight only",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "windowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+  "source": "Root's observed normal-tool receipts; exact execution timestamp was not supplied in the handoff",
+  "helper": {
+    "file": "scripts/n8n/windows/New-M03GW01GatewayPublicSeal.ps1",
+    "sha256": "387d71473c7098a9d6c7ff1a9a900643983c5b2ca4a026ede58174b2bdc9e8a5",
+    "unchangedReviewedHelper": true,
+    "invocation": "Existing reviewed public helper, following the owner's later explicit request; normal tool accepted the action",
+    "publicSealToolReceiptRef": "6bd081",
+    "publicSealResult": "PUBLIC_SEAL_READY",
+    "checkOnlyToolReceiptRef": "1c9c4a",
+    "outerNativeExit": 0
+  },
+  "checkOnlyReceipt": {
+    "version": 1,
+    "mode": "Probe",
+    "status": "check_only_ready",
+    "privateRead": false,
+    "rootChildClosed": true,
+    "nativeExit": null,
+    "handoffsRetained": true,
+    "result": null
+  },
+  "verified": {
+    "actualPublicSealCreated": true,
+    "actualConsumerPublicGuardPassed": true,
+    "actualDependencyInventoryValidated": true,
+    "actualHandoffPresenceValidated": true,
+    "privateRead": false,
+    "secretDecrypted": false,
+    "gatewayRequests": 0,
+    "platformLogRequests": 0,
+    "trialClockStarted": false
+  },
+  "preservedHistory": {
+    "earlierPolicyRejection": "The earlier standalone dependency-link diagnostic was rejected before execution with blocked by policy; that historical result is unchanged",
+    "earlierLocalOnlyReceipt": "milestones/M03-n8n-foundation/evidence/local-gw01-public-seal-20261018.json",
+    "localOnlyFalseFieldsRewritten": false,
+    "ownerReportedErrorReproduced": false,
+    "ownerReportedErrorCause": "unknown"
+  },
+  "boundary": "Actual public sealing, guards and handoff presence only. This check does not establish private authentication, a gateway response, CloudB log privacy or restricted database identity. Workstation runtime seal stays local."
+}

@@ -1,0 +1,181 @@
+{
+  "kind": "m03_runtime_reconciliation_readback",
+  "version": 1,
+  "observedAt": "2026-10-24T11:16:35.445Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "toolReceipt": "8de1ea",
+  "outerNativeExit": 0,
+  "actualNativeResult": {
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "complete",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": {
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "technicalAttempt": 13,
+      "sourceCommitSha": "7b1837201ac7925591577a1517d7288936ca3464",
+      "windowId": "3c46c791-e140-4eb9-890a-eecfa251f65e",
+      "status": "readback_observed",
+      "requestCount": 3,
+      "authenticationVerified": true,
+      "networkCompletionVerified": true,
+      "metadata": {
+        "objectShape": true,
+        "dataPresent": false,
+        "idMatches": true,
+        "nameMatches": true,
+        "typeMatches": true,
+        "createdAtMatches": true,
+        "updatedAtMatchesJournal": true,
+        "flagsCompatible": true,
+        "resolverCompatible": true
+      },
+      "workflows": {
+        "SUB-NOTIFY": {
+          "objectShape": true,
+          "idMatches": true,
+          "archiveStateMatches": true,
+          "ownerProjectMatches": true,
+          "tagsMatchBaseline": true,
+          "pinnedDataAbsent": true,
+          "baselineGraphEqual": false,
+          "beforeGraphEqual": false,
+          "targetGraphEqual": true,
+          "versionMatchesBaseline": false,
+          "versionMatchesBefore": true,
+          "versionMatchesTarget": true,
+          "publicationMatchesBaseline": true,
+          "publicationMatchesBefore": true,
+          "publicationMatchesTarget": true
+        },
+        "WF-90": {
+          "objectShape": true,
+          "idMatches": true,
+          "archiveStateMatches": true,
+          "ownerProjectMatches": true,
+          "tagsMatchBaseline": true,
+          "pinnedDataAbsent": true,
+          "baselineGraphEqual": false,
+          "beforeGraphEqual": true,
+          "targetGraphEqual": true,
+          "versionMatchesBaseline": false,
+          "versionMatchesBefore": true,
+          "versionMatchesTarget": true,
+          "publicationMatchesBaseline": false,
+          "publicationMatchesBefore": true,
+          "publicationMatchesTarget": true
+        }
+      },
+      "diagnostics": {
+        "version": 1,
+        "dns": "complete",
+        "requests": [
+          {
+            "resource": "credentials",
+            "page": 1,
+            "tcpConnected": true,
+            "tlsVerified": true,
+            "httpStatus": 200,
+            "bodyRead": "complete",
+            "jsonParsed": true,
+            "schemaValidated": true,
+            "socketClosed": true,
+            "failureStage": "none",
+            "failureCode": "none"
+          },
+          {
+            "resource": "workflows",
+            "page": 1,
+            "tcpConnected": true,
+            "tlsVerified": true,
+            "httpStatus": 200,
+            "bodyRead": "complete",
+            "jsonParsed": true,
+            "schemaValidated": true,
+            "socketClosed": true,
+            "failureStage": "none",
+            "failureCode": "none"
+          },
+          {
+            "resource": "workflows",
+            "page": 2,
+            "tcpConnected": true,
+            "tlsVerified": true,
+            "httpStatus": 200,
+            "bodyRead": "complete",
+            "jsonParsed": true,
+            "schemaValidated": true,
+            "socketClosed": true,
+            "failureStage": "none",
+            "failureCode": "none"
+          }
+        ]
+      }
+    }
+  },
+  "originalAttemptReceipt": "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json",
+  "originalAttemptReceiptSha256": "226ed15257e8fb5ac2c81f454631bcf11773f67ce9fdc15d6048184389260983",
+  "originalAttemptUnmodified": true,
+  "delivery": {
+    "branch": "m03-n8n-foundation",
+    "head": "570fd560a1c44f6fc6d86e30bfd3cbb082f7c3d8",
+    "lastReviewedCi": 40087410078,
+    "readerSource": "reviewed_working_tree_public_pins",
+    "readerLocalTests": 113,
+    "independentReviewsPassed": true,
+    "newReaderSourceCiClaimed": false
+  },
+  "qualification": {
+    "savedNotifyTargetVerified": true,
+    "sameVersionVerified": true,
+    "originalHttpAcknowledgementRetained": false,
+    "originalHttpStatus": null,
+    "workflowMutationByDiagnostic": false,
+    "credentialMutationByDiagnostic": false,
+    "executionStarted": false,
+    "actorStarted": false,
+    "windowAdmitted": false,
+    "rawDtoOrSecretOutput": false
+  },
+  "usage": {
+    "mainManagement": 475,
+    "carriedManagement": 11,
+    "management": 486,
+    "mainControl": 788,
+    "carriedControl": 3,
+    "control": 791,
+    "combined": 1277,
+    "vercel": 149,
+    "managementMaximum": 832,
+    "vercelMaximum": 176,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "actorStarts": 0,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "cleanup": {
+    "managementCopyAbsent": true,
+    "coordinatorLockAbsent": true,
+    "persistentManagementPresent": true,
+    "residualBypassRetained": true
+  },
+  "pins": {
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json": "226ed15257e8fb5ac2c81f454631bcf11773f67ce9fdc15d6048184389260983",
+    "scripts/n8n/out/foundation/live/management.jsonl": "0293d24d7724edfa93c16520f544da719d9e37bb485b3ea5e6150f4013a42c6d",
+    "scripts/n8n/out/foundation/live/control.jsonl": "3270abae0f9c5088569f21d5890730296eb5ce44dde94e08bbc912ec20c1933b",
+    "scripts/n8n/out/foundation/live/runtime.technical-13.jsonl": "5f323f1a3328689edcd05ab61eb74cb334f4b63c3e8bc81b0beeb9bf42d1f6ac",
+    "scripts/n8n/out/foundation/runtime-reconciliation-diagnostic-technical13-20261024.jsonl": "011567c11342b95c534f8027c8bbb069f2aa44fba8286e448888557604d01ff3",
+    "scripts/n8n/inventory.mjs": "2b39909a985cab63db2022b31b04fb07fb66de07c1c164bb043799cd9f9c0c68",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "97aecfead3e76aad7a869998dd4e5bace5a970ae2026f6bc0bbca898e0aa1a6b",
+    "scripts/n8n/m03-inventory-seal.json": "5946417178a285163d147693c3b3f4caaac8b8ef6ed6948c3c5dc0fea18e5384",
+    "scripts/n8n/foundation-acceptance-seal.json": "fa038d916f407284f3d650a159ebc542e30465df4fcfc9091adbde9408d542cd"
+  }
+}

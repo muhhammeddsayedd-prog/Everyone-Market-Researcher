@@ -1,0 +1,1605 @@
+{
+  "key": "WF-91",
+  "id": "sowAIvuN7adg0JBq",
+  "versionId": "f2440fc9-b206-4632-b9b2-17e165beac40",
+  "active": false,
+  "activeVersionId": null,
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflow": {
+    "name": "WF-91 · Health & cost [dev]",
+    "nodes": [
+      {
+        "id": "e5a2bcc0-96b2-44ef-aa72-af870e65f9b3",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "mode",
+                "type": "string"
+              },
+              {
+                "name": "limit",
+                "type": "number"
+              },
+              {
+                "name": "result_type",
+                "type": "string"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "f9d2cc73-4e07-4378-a55d-dddf979e4e78",
+        "name": "Manual test",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "parameters": {},
+        "position": [
+          0,
+          200
+        ]
+      },
+      {
+        "id": "ffe9cd08-66b2-4c5f-afbb-7d96ee91b795",
+        "name": "Validate dev input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const invalid = () => { throw new Error('EMR_N8N_INPUT_INVALID'); };\nconst items = $input.all();\nif (items.length !== 1) invalid();\nconst j = items[0].json;\nconst object = x => x !== null && typeof x === 'object' && !Array.isArray(x);\nconst exact = (x,allowed,required=[]) => object(x) && Object.keys(x).every(k=>allowed.includes(k)) && required.every(k=>Object.hasOwn(x,k));\nconst uuid = x => typeof x==='string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x);\nconst identifier = x => typeof x==='string' && /^[A-Za-z0-9_-]{1,200}$/.test(x);\nif (!object(j) || (j.env !== undefined && j.env !== null && j.env !== 'dev')) invalid();\n\nif(!exact(j,['mode','limit','result_type','env'])) invalid();\nconst mode=j.mode??'manual',limit=j.limit??null,result_type=j.result_type??null;\nif(!['daily','manual'].includes(mode) || (limit!==null && (!Number.isInteger(limit)||limit<1||limit>1000)) ||\n  (result_type!==null && (typeof result_type!=='string'||!/^[A-Za-z0-9_-]{1,64}$/.test(result_type)))) invalid();\nreturn [{json:{mode,limit,result_type,env:'dev'}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "0db5d619-3c46-46cb-aea2-4fe48750397e",
+        "name": "Prepare gateway · Read health guard",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:WF-91:Read health guard:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=[];if(!Array.isArray(p))fail();\nlet args;try{args=({});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"health.guard\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          480,
+          0
+        ]
+      },
+      {
+        "id": "03a67ab6-50a0-454b-a03c-bfbbe846f307",
+        "name": "Invoke gateway · Read health guard",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          600,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "08c057d5-4362-4d06-a63b-4eaeafd84a6f",
+        "name": "Observe gateway · Read health guard",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Read health guard\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"stats_daily_enabled\",\"cairo_yesterday\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          720,
+          0
+        ]
+      },
+      {
+        "id": "c8b4db00-aaa3-4692-a527-18f23fd4b747",
+        "name": "Read durable gateway · Read health guard",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          840,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "5a9053b3-37af-42c2-a612-3564c4dfed55",
+        "name": "Read health guard",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Read health guard\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"stats_daily_enabled\",\"cairo_yesterday\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          960,
+          0
+        ]
+      },
+      {
+        "id": "b9f8dbb2-fcf2-4875-a862-286fde991a11",
+        "name": "Validate health guard",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const bad=()=>{throw new Error('EMR_N8N_HEALTH_INVALID');};\nconst rows=$input.all();\nif(rows.length!==1) bad();\nconst j=rows[0].json;\nif(typeof j.stats_daily_enabled!=='boolean' || typeof j.cairo_yesterday!=='string' ||\n  !/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(j.cairo_yesterday)) bad();\nconst execution_id=String($execution.id??'');\nif(!/^[A-Za-z0-9_-]{1,128}$/.test(execution_id)) bad();\nreturn [{json:{stats_daily_enabled:j.stats_daily_enabled,cairo_yesterday:j.cairo_yesterday,execution_id}}];"
+        },
+        "position": [
+          720,
+          0
+        ]
+      },
+      {
+        "id": "caecad1c-d0a6-4473-a21b-91ccf73a58b8",
+        "name": "Stats refresh enabled?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "fd03edfd-e723-4ec1-a334-cfda54eafd9d",
+                "leftValue": "={{ $json.stats_daily_enabled }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          960,
+          0
+        ]
+      },
+      {
+        "id": "9be18776-12dc-4a1e-a328-30ddb182de42",
+        "name": "Stats refresh unavailable",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw new Error('EMR_N8N_STATS_REFRESH_UNAVAILABLE');"
+        },
+        "position": [
+          1200,
+          -200
+        ]
+      },
+      {
+        "id": "015d5e0e-be4e-40ea-abb3-99a043ee1213",
+        "name": "Prepare gateway · Accrue yesterday",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:WF-91:Accrue yesterday:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=[$('Validate health guard').first().json.cairo_yesterday];if(!Array.isArray(p))fail();\nlet args;try{args=({day:p[0]});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"fees.accrue\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          1200,
+          0
+        ]
+      },
+      {
+        "id": "5d5c0b7b-8823-496c-a525-246f150caf3c",
+        "name": "Invoke gateway · Accrue yesterday",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1320,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "0d7aaefc-13d2-4e2b-ab0e-d19412c954f7",
+        "name": "Observe gateway · Accrue yesterday",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Accrue yesterday\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"accrued\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          1440,
+          0
+        ]
+      },
+      {
+        "id": "235d8846-0c90-48a5-ab18-3b38204ee164",
+        "name": "Read durable gateway · Accrue yesterday",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1560,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "e52c093f-1c37-42e4-a5ec-ca4a66ab3393",
+        "name": "Accrue yesterday",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Accrue yesterday\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"accrued\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          1680,
+          0
+        ]
+      },
+      {
+        "id": "b0bdfce8-f1c7-47ad-a8a8-9edf626a8f31",
+        "name": "Prepare gateway · Read daily health",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:WF-91:Read daily health:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=[];if(!Array.isArray(p))fail();\nlet args;try{args=({});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"health.read\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          1440,
+          0
+        ]
+      },
+      {
+        "id": "6042d1b8-eb29-4f7f-a1a3-727ab19aabcf",
+        "name": "Invoke gateway · Read daily health",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1560,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "340081fb-e0a3-46d8-a5ab-5e0b8c131014",
+        "name": "Observe gateway · Read daily health",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Read daily health\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"h\",\"cairo_yesterday\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          1680,
+          0
+        ]
+      },
+      {
+        "id": "10b1df5f-eb7a-4e79-a6e9-ac92b27a9a2f",
+        "name": "Read durable gateway · Read daily health",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1800,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "63d61389-ca7a-4d38-aef9-e3fad01063b5",
+        "name": "Read daily health",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Read daily health\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"h\",\"cairo_yesterday\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          1920,
+          0
+        ]
+      },
+      {
+        "id": "d1048cd3-f514-4f24-a73d-4a73f1c4f423",
+        "name": "Validate daily health",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const bad=()=>{throw new Error('EMR_N8N_HEALTH_INVALID');};\nconst rows=$input.all(),guard=$('Validate health guard').first().json;\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst count=x=>Number.isSafeInteger(x)&&x>=0;\nconst money=x=>Number.isFinite(x)&&x>=0;\nconst uuid=x=>typeof x==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x);\nconst nullableString=x=>x===null||typeof x==='string';\nconst platforms=['vimeo','instagram','instagram_stories','website','website_work_page','linkedin','linkedin_employees','youtube','news'];\nconst providers=['apify','openai','serpapi','firecrawl','vimeo','youtube','n8n','supabase','vercel','email','other'];\nif(rows.length!==1 || rows[0].json.cairo_yesterday!==guard.cairo_yesterday) bad();\nconst h=rows[0].json.h;\nif(!exact(h,['failing_accounts','stale_accounts','queues','items_new_yesterday','cost_yesterday','budget',\n  'month_to_date_usd','forecast_month_usd','workflow_errors_24h']) ||\n  !Array.isArray(h.failing_accounts) || !Array.isArray(h.stale_accounts) ||\n  !exact(h.queues,['ai_extract','embed','media']) || !Object.values(h.queues).every(count) ||\n  !object(h.items_new_yesterday) || !Object.entries(h.items_new_yesterday).every(([p,n])=>platforms.includes(p)&&count(n)) ||\n  !exact(h.cost_yesterday,['total','by_provider']) || !money(h.cost_yesterday.total) || !object(h.cost_yesterday.by_provider) ||\n  !Object.entries(h.cost_yesterday.by_provider).every(([p,n])=>providers.includes(p)&&money(n)) ||\n  !exact(h.budget,['daily_budget_usd','over_budget']) || !money(h.budget.daily_budget_usd) || typeof h.budget.over_budget!=='boolean' ||\n  !money(h.month_to_date_usd) || !money(h.forecast_month_usd) || !object(h.workflow_errors_24h) ||\n  !Object.entries(h.workflow_errors_24h).every(([w,n])=>/^[A-Za-z0-9_-]{1,200}$/.test(w)&&count(n))) bad();\nfor(const a of h.failing_accounts) if(!exact(a,['account_id','competitor','platform','handle','last_error','consecutive_failures']) ||\n  !uuid(a.account_id) || typeof a.competitor!=='string' || !platforms.includes(a.platform) ||\n  !nullableString(a.handle) || !nullableString(a.last_error) || !count(a.consecutive_failures)) bad();\nfor(const a of h.stale_accounts) if(!exact(a,['account_id','competitor','platform','handle','last_success_at']) ||\n  !uuid(a.account_id) || typeof a.competitor!=='string' || !platforms.includes(a.platform) ||\n  !nullableString(a.handle) || !nullableString(a.last_success_at)) bad();\nconst accrued=$('Accrue yesterday').first().json.accrued;\nif(!count(accrued)) bad();\nreturn [{json:{health:h,accrued,cairo_yesterday:guard.cairo_yesterday,execution_id:guard.execution_id,\n  over_budget:h.budget.over_budget,has_failing_sources:h.failing_accounts.length>0}}];"
+        },
+        "position": [
+          1680,
+          0
+        ]
+      },
+      {
+        "id": "1afd48ba-3915-442f-abe2-e043511856a3",
+        "name": "Over budget?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "4467a4e1-e062-4e01-a1dd-7a4db4988f26",
+                "leftValue": "={{ $('Validate daily health').first().json.over_budget }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          1920,
+          0
+        ]
+      },
+      {
+        "id": "e828e994-d660-4b37-a0e1-0afdc31c2731",
+        "name": "Call budget alert stub",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "gBDmjIIEoM6XC7Wi"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "daily",
+              "limit": null,
+              "result_type": null,
+              "env": "dev",
+              "kind": "budget"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          2160,
+          -100
+        ]
+      },
+      {
+        "id": "cb94e33b-bf0f-4f7b-ad88-a37365b11b63",
+        "name": "Call budget log",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tiEhU3dXrMifOnTL"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "to": [
+                "mohamed.abdelrahman@everyone.film"
+              ],
+              "subject": "Market Radar daily health",
+              "html": "",
+              "text": "",
+              "workflow": "WF-91",
+              "execution_id": "={{ $('Validate daily health').first().json.execution_id + '-budget' }}",
+              "env": "dev"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "to",
+                "displayName": "to",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "array",
+                "removed": false
+              },
+              {
+                "id": "subject",
+                "displayName": "subject",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "html",
+                "displayName": "html",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "text",
+                "displayName": "text",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "workflow",
+                "displayName": "workflow",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "execution_id",
+                "displayName": "execution_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          2400,
+          -100
+        ]
+      },
+      {
+        "id": "499e5acc-3b8b-47b3-a94c-beccc5d21008",
+        "name": "Failing sources?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "43824eed-5e6e-42e3-a2f3-36875061f9f7",
+                "leftValue": "={{ $('Validate daily health').first().json.has_failing_sources }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          2640,
+          0
+        ]
+      },
+      {
+        "id": "ff51e43c-7e34-4ae1-a38a-b828635069ad",
+        "name": "Call failing sources stub",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "gBDmjIIEoM6XC7Wi"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "daily",
+              "limit": null,
+              "result_type": null,
+              "env": "dev",
+              "kind": "failing_sources"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "kind",
+                "displayName": "kind",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          2880,
+          -100
+        ]
+      },
+      {
+        "id": "413604cc-eb87-436e-ae69-75f779f03df3",
+        "name": "Call failing sources log",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tiEhU3dXrMifOnTL"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "to": [
+                "mohamed.abdelrahman@everyone.film"
+              ],
+              "subject": "Market Radar daily health",
+              "html": "",
+              "text": "",
+              "workflow": "WF-91",
+              "execution_id": "={{ $('Validate daily health').first().json.execution_id + '-failing' }}",
+              "env": "dev"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "to",
+                "displayName": "to",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "array",
+                "removed": false
+              },
+              {
+                "id": "subject",
+                "displayName": "subject",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "html",
+                "displayName": "html",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "text",
+                "displayName": "text",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "workflow",
+                "displayName": "workflow",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "execution_id",
+                "displayName": "execution_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          3120,
+          -100
+        ]
+      },
+      {
+        "id": "fb3085a2-25d5-459c-a5d4-54a886910c1a",
+        "name": "Call daily health log",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tiEhU3dXrMifOnTL"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "to": [
+                "mohamed.abdelrahman@everyone.film"
+              ],
+              "subject": "Market Radar daily health",
+              "html": "",
+              "text": "",
+              "workflow": "WF-91",
+              "execution_id": "={{ $('Validate daily health').first().json.execution_id + '-health' }}",
+              "env": "dev"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "to",
+                "displayName": "to",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "array",
+                "removed": false
+              },
+              {
+                "id": "subject",
+                "displayName": "subject",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "html",
+                "displayName": "html",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "text",
+                "displayName": "text",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "workflow",
+                "displayName": "workflow",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "execution_id",
+                "displayName": "execution_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          3360,
+          0
+        ]
+      },
+      {
+        "id": "4142caec-7d23-4374-a322-c51bcd9f11eb",
+        "name": "Call stats publish stub",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "S6KDFsx5IjQRf6tm"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "daily",
+              "limit": null,
+              "result_type": null,
+              "env": "dev",
+              "tags": [
+                "stats"
+              ]
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "tags",
+                "displayName": "tags",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "array",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          3600,
+          0
+        ]
+      },
+      {
+        "id": "b77b60cf-3558-436e-ab28-ae4f26f55f7a",
+        "name": "Return health",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const r=$('Validate daily health').first().json;\nreturn [{json:{health:r.health,accrued:r.accrued,cairo_yesterday:r.cairo_yesterday,notification_mode:'log',sent:false}}];"
+        },
+        "position": [
+          3840,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate dev input": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Read health guard",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read health guard": {
+        "main": [
+          [
+            {
+              "node": "Validate health guard",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate health guard": {
+        "main": [
+          [
+            {
+              "node": "Stats refresh enabled?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual test": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Stats refresh enabled?": {
+        "main": [
+          [
+            {
+              "node": "Stats refresh unavailable",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prepare gateway · Accrue yesterday",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Accrue yesterday": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Read daily health",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read daily health": {
+        "main": [
+          [
+            {
+              "node": "Validate daily health",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate daily health": {
+        "main": [
+          [
+            {
+              "node": "Over budget?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Over budget?": {
+        "main": [
+          [
+            {
+              "node": "Call budget alert stub",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Failing sources?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call budget alert stub": {
+        "main": [
+          [
+            {
+              "node": "Call budget log",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call budget log": {
+        "main": [
+          [
+            {
+              "node": "Failing sources?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Failing sources?": {
+        "main": [
+          [
+            {
+              "node": "Call failing sources stub",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Call daily health log",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call failing sources stub": {
+        "main": [
+          [
+            {
+              "node": "Call failing sources log",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call failing sources log": {
+        "main": [
+          [
+            {
+              "node": "Call daily health log",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call daily health log": {
+        "main": [
+          [
+            {
+              "node": "Call stats publish stub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call stats publish stub": {
+        "main": [
+          [
+            {
+              "node": "Return health",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Read health guard": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Read health guard",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Read health guard": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Read health guard",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Read health guard": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Read health guard",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Read health guard": {
+        "main": [
+          [
+            {
+              "node": "Read health guard",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Accrue yesterday": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Accrue yesterday",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Accrue yesterday": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Accrue yesterday",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Accrue yesterday": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Accrue yesterday",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Accrue yesterday": {
+        "main": [
+          [
+            {
+              "node": "Accrue yesterday",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Read daily health": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Read daily health",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Read daily health": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Read daily health",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Read daily health": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Read daily health",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Read daily health": {
+        "main": [
+          [
+            {
+              "node": "Read daily health",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "OxnbDrBVAtziiuTk",
+        "name": "layer:ops"
+      }
+    ],
+    "pinData": {}
+  },
+  "definitionProfile": "inactive_native_staging",
+  "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+  "intendedSourceHash": "e9620c02606f466ce504651c49597404010ed98e3b8cf44ee4ea0fc372904127",
+  "stagedSourceHash": "ad847803e4c6d1734331efc68641f0638fdc5c87abbf57150a902777a3aca28e",
+  "canonicalParity": false,
+  "kind": "actual_saved_inactive_foundation_staging",
+  "version": 1,
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+}

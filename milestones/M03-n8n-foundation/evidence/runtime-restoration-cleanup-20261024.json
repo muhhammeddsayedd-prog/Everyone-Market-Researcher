@@ -1,0 +1,43 @@
+{
+  "kind": "actual_m03_technical13_cleanup_completion",
+  "version": 1,
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "toolReceipt": "53a1cd",
+  "nativeExit": 0,
+  "actualNativeResult": {
+    "kind": "m03_technical13_final_local_cleanup",
+    "status": "local_cleanup_verified",
+    "privateContentsRead": false,
+    "networkRequests": 0,
+    "bypassDeleted": true,
+    "allDisposableLeavesAbsent": true,
+    "parentLockAbsent": true,
+    "runtimeLockAbsent": true,
+    "persistentOriginalsRetained": true,
+    "machineRetained": true
+  },
+  "runtimeRestorationReceiptSha256": "365c8bb069e6f7246c89261fb543b8fa9dbd8f38587500da64d5f4d38e065946",
+  "fixtureArchiveReceiptSha256": "37c3f0dc518799700cde6c56f18569634c33b919ba26b4bbac1e6d2d09baa656",
+  "originalFailedAttemptPreserved": true,
+  "usage": {
+    "managementAttempts": 524,
+    "controlAttempts": 841,
+    "combinedAttempts": 1365,
+    "vercelAttempts": 149,
+    "actorStarts": 0,
+    "actorMaximum": 2,
+    "actorReserveUsd": 2
+  },
+  "qualification": {
+    "persistentEncryptedOriginalsRetained": true,
+    "onlyDisposableBypassDeleted": true,
+    "noCiphertextReadForCleanup": true,
+    "notACredentialRevocationOrRotation": true,
+    "localChildrenAndRemoteWorkClosed": true,
+    "devAcceptanceComplete": false,
+    "productionTouched": false,
+    "prMerged": false,
+    "m04Started": false
+  }
+}

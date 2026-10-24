@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-18T08:21:39.420Z",
+  "scope": "Local synthetic privacy-reader diagnostics and temporary-handoff cleanup; no live calls by the author",
+  "privateSourceFilesRead": false,
+  "hostedCallsMade": false,
+  "workflowExecuted": false,
+  "actualExecutionPrivacyAccepted": false,
+  "sourceSha256": {
+    "scripts/n8n/gw01-privacy-read.mjs": "a8ead692dd3dd9b80c9877e36275eeb420e30ca858793f59de3af853e979c5ec",
+    "scripts/n8n/gw01-delivery.mjs": "f6c79a3685c6ab1e8c75f25299b7991169f57916fbcf57be58e288a3411b604f",
+    "scripts/n8n/windows/Invoke-M03GW01Delivery.ps1": "32f30b243dde49dd4d416b6970b64d92c1fab991eaf677f87465e4b3c1e25c2b",
+    "scripts/n8n/gw01-privacy-read.test.mjs": "1c2f1c2290110a40374b9c36b38d75757d7eb7d77a334b4235ce5295d2c02450",
+    "scripts/n8n/gw01-delivery.test.mjs": "70f7106f8346c779bd356d80d021f7f4f4c9cfc1034fcac6bc9687a9097f632f",
+    "scripts/n8n/gw01-private-delivery.test.mjs": "d7736c0c27b3a28ef392ad8e4311b04b13eaaaf2930fd2e1395747b80aa3db96"
+  },
+  "changes": [
+    "Closed failure-stage enum; no raw response, headers, parameters, values, error text or unknown keys are projected",
+    "Snapshot mismatch labels preserve exact workflow identity, HTTP-node identity count, own-field presence and canonical binding equality",
+    "Parameter mismatch reports all differing fixed known paths and parameters_other for unknown differences",
+    "JSON-body text mismatch and parsed equivalence are boolean/null diagnostics only; exact mismatch still rejects",
+    "Only closed-child, unexpired, finite non-reflection privacy-contract failures retain encrypted Management and its original lease for GET-only reconciliation",
+    "Reflection, unknown/unsafe output, expiry or unclosed-child paths do not permit Management reuse",
+    "Cleanup names are always an array; each nonretained temporary path must be absent after deletion",
+    "Unverified deletion produces stopped_reconcile and GW01_CHILD_CLEANUP_UNVERIFIED, never a complete cleanup claim"
+  ],
+  "tdd": [
+    {
+      "case": "Actual temporary-file assertions exposed PowerShell singleton-string concatenation in cleanupNames",
+      "red": "Five unsafe-stage Windows cases left files despite handoffsRetained:false",
+      "green": "Explicit array construction; nine affected Windows cases passed after post-delete absence check"
+    },
+    {
+      "case": "Native Remove-Item no-op",
+      "red": "Receipt incorrectly reported handoffsRetained:false",
+      "green": "Post-delete Test-Path makes retained/unverified result explicit"
+    },
+    {
+      "case": "Successful remote Cleanup with native no-op local deletion",
+      "red": "Outer receipt said complete despite native exit1 and surviving files",
+      "green": "Fixed stopped_reconcile and cleanup-unverified code; both no-op tests passed"
+    },
+    {
+      "case": "Snapshot field labels",
+      "red": "Nine tests received only executed_snapshot",
+      "green": "Nine fixed labels passed; no comparison was relaxed"
+    },
+    {
+      "case": "Bounded parameter diagnostics",
+      "red": "New test module rejected missing safePrivacyParameterDiagnostic export before implementation",
+      "green": "Every known path, unknown residuals, parse-invalid bodies, object/string bodies, unsafe shapes and no-value output covered"
+    },
+    {
+      "case": "All three source-schema diagnostic rows",
+      "red": "New targeted test failed on missing privacyNativeSchema export before implementation",
+      "green": "Combined native-node comparison passes; all exact graph assertions still reject mismatch"
+    }
+  ],
+  "checks": {
+    "currentAffectedPure": {
+      "command": "node --test scripts/n8n/gw01-privacy-read.test.mjs scripts/n8n/gw01-delivery.test.mjs",
+      "passed": 86,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "currentParameterProjection": {
+      "command": "node --test --test-name-pattern=\"parameter diagnostic|parameter paths|JSON body diagnostic|known differing leaf|same finite privacy\" scripts/n8n/gw01-privacy-read.test.mjs scripts/n8n/gw01-private-delivery.test.mjs",
+      "purePassed": 7,
+      "windowsFixturePassed": 3,
+      "failed": 0,
+      "nativeExit": 0
+    },
+    "historicalAffectedWindows": {
+      "retentionReflectionAndAbsence": 9,
+      "finalCleanupStatusNoopCases": 2,
+      "nativeExit": 0,
+      "note": "Separate overlapping targeted runs at preceding revisions; not summed or represented as a full current Windows suite"
+    },
+    "eslintNativeExit": 0,
+    "prettierNativeExit": 0,
+    "powershellParserErrors": 0,
+    "diffCheckNativeExit": 0,
+    "actualCurrentExportLocalRead": "Current export assertions pass against saved GW01-acceptance-dev.json; synthetic execution404 remains unverified, not live acceptance",
+    "currentNativeSchemaProjection": {
+      "pureCombinedNativeCasePassed": 1,
+      "windowsFixedRowAndUnsafeShapeCasesPassed": 5,
+      "nativeExit": 0,
+      "powershellStdoutBoundBytes": 32768,
+      "unchangedAssertions": true
+    },
+    "currentRepresentation": {
+      "focusedPassed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "redBeforeImplementation": "The exact observed-default pair rejected at executed_snapshot_parameters",
+      "scope": "Ten observed missing root defaults and one source-defined conditional nested output field; no live acceptance claim"
+    }
+  },
+  "independentReview": {
+    "priorFiniteDiagnostics": {
+      "privacySha256": "6cac84c5293ea01bb973c714eacd4634766f3bf5bca309b66b357a320b0129f4",
+      "deliverySha256": "72646e853b9692c59387dfa62fc027dbdaa197c179d9f9c76ce99af06d2df3e9",
+      "powershellSha256": "f7418a2d40d66c37fe442860f0facc7146a64fb40334c734db2427f55214ea82",
+      "changedPurePassed": 25,
+      "staticResult": "Clear; no private/live calls by reviewer"
+    },
+    "priorSnapshotLabels": {
+      "privacySha256": "a9f78f8630366353b4fd43726657db2d8f8cfe27ff349cd7849f802f25540baf",
+      "powershellSha256": "ec805ca9a7af9d7acfec820cc6a37270f15591f9d5964c967285a42d3b538045",
+      "changedPurePassed": 10,
+      "nativeExit": 0,
+      "staticResult": "Clear; strict binding/full-graph comparisons preserved"
+    },
+    "previousParameterProjection": {
+      "sourceSha256": "Matches exact current sourceSha256 entries above",
+      "changedPurePassed": 7,
+      "nativeExit": 0,
+      "staticResult": "Clear; fixed paths/unknown fallback and boolean/null semantics are stage-bound, and semantic equality never permits exact mismatch",
+      "privateOrLiveCallsByReviewer": false
+    },
+    "previousCombinedNativeSchemaProjection": {
+      "sourceSha256": "Matches exact current sourceSha256 entries above",
+      "changedPurePassed": 3,
+      "nativeExit": 0,
+      "staticResult": "Clear; ordered JS/PowerShell fixed rows, path sets, boolean/null guards and 32KiB bound agree; exact graph mismatch still rejects",
+      "privateOrLiveCallsByReviewer": false
+    },
+    "currentRepresentation": {
+      "privacySha256": "a8ead692dd3dd9b80c9877e36275eeb420e30ca858793f59de3af853e979c5ec",
+      "deliverySha256": "f6c79a3685c6ab1e8c75f25299b7991169f57916fbcf57be58e288a3411b604f",
+      "powershellSha256": "32f30b243dde49dd4d416b6970b64d92c1fab991eaf677f87465e4b3c1e25c2b",
+      "changedPurePassed": 20,
+      "nativeExit": 0,
+      "staticResult": "Clear; missing-only version/object guards, nonmutating equal correction to both graphs, and all other comparisons preserved",
+      "privateOrLiveCallsByReviewer": false
+    }
+  },
+  "historicalLiveBoundaryReportedByParent": {
+    "workflowId": "p8GikCM8C9Tq3lo4",
+    "executionId": "12674",
+    "initialReaderResult": "native1 GW01_DELIVERY_RESPONSE_REJECTED; no finite stage at that revision",
+    "initialCleanupReceiptReportedHandoffsRetained": false,
+    "actualPresenceReadbackAt": "2026-10-18T08:01:25Z",
+    "actualManagementAndLeasePresent": true,
+    "correction": "The prior cleanup receipt did not prove deletion; the parent's presence-only readback disproved its deletion implication. No private contents were read for that check.",
+    "laterReadbackResults": [
+      "native1 executed_snapshot; child closed; encrypted Management retained",
+      "native1 executed_snapshot_parameters; child closed; encrypted Management retained",
+      "Combined diagnostic: source-default additions on Manual/HTTP/Set; nested HTTP response container differed; previous known response leaves and body text matched. Still rejected; actual runtime mutation layer remains unestablished."
+    ],
+    "newWorkflowExecution": false,
+    "gatewayAttemptAddedByTheseReads": false,
+    "trialClockStarted": false,
+    "note": "Actual receipts/progress are parent-owned; this local artifact does not independently establish hosted acceptance"
+  },
+  "combinedNativeSchema": {
+    "diagnosticOnly": true,
+    "defaultsAreNotRuntimeAdditionAllowlist": true,
+    "labels": [
+      "manual",
+      "http",
+      "receipt"
+    ],
+    "pathCounts": {
+      "manual": 1,
+      "http": 48,
+      "receipt": 16
+    },
+    "projection": [
+      "fixed path",
+      "current/executed present booleans",
+      "current/executed declared-default equality boolean or null",
+      "identity match boolean",
+      "unclassified difference boolean"
+    ],
+    "httpAstProof": {
+      "sourceTag": "n8n@2.43.5",
+      "httpSchemaPathCount": 48,
+      "exhaustiveRootAndDirectOptionsMatch": true,
+      "importedOptimizePropertiesIncluded": true,
+      "files": [
+        {
+          "name": "description",
+          "sha256": "02d9faaffee4b0b3c14cee9f66a0bdaefa3b0aa596601fc70a50456c2d34d117"
+        },
+        {
+          "name": "optimizeResponse",
+          "sha256": "03d532455329a43092a6014453a5400fa8b33a8483f384a41a7ccabe2057ea38"
+        }
+      ]
+    },
+    "sources": [
+      "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/HttpRequest/V3/Description.ts",
+      "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/HttpRequest/shared/optimizeResponse.ts",
+      "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/ManualTrigger/ManualTrigger.node.ts#L26-L34",
+      "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/Set/v2/SetV2.node.ts#L29-L293",
+      "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/Set/v2/manual.mode.ts#L21-L184",
+      "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/nodes-base/nodes/Set/v2/raw.mode.ts#L12-L32"
+    ],
+    "manualAndSetProvenance": "Separate agent verified pinned primary-source declared maps; hidden fields included for diagnostic comparison only",
+    "unknownValuesRetained": false
+  },
+  "representationCorrection": {
+    "diagnosticsRemainSeparate": true,
+    "observedRootDefaultCount": 10,
+    "versionGates": {
+      "manual": 1,
+      "http": 4.5,
+      "receipt": 3.4
+    },
+    "missingOnly": true,
+    "existingValuesPreserved": true,
+    "parentsSynthesized": false,
+    "unknownFieldsIgnored": false,
+    "bodySemanticEqualityAccepted": false,
+    "completeGraphsCompared": true,
+    "contentTypeRequiresExistingSendBodyTrue": true,
+    "setExtraDefaultsRestrictedToMissingOrManualMode": true,
+    "nestedOutputField": {
+      "path": "options.response.response.outputPropertyName",
+      "value": "data",
+      "requiresExistingContainers": true,
+      "requiresExistingFormat": [
+        "text",
+        "file"
+      ],
+      "actualNestedFieldValueNotYetProven": true
+    },
+    "actualRuntimeMutationLayerEstablished": false
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "date": "2026-10-18 Cairo",
+  "environment": "Existing isolated local Supabase PostgreSQL17 fixture only",
+  "startingHead": "100290a291530d30d0387269c1a0805ad4f86fcc",
+  "migration": {
+    "generatedCommand": "pnpm.cmd exec supabase migration new n8n_worker_gateway_admission",
+    "version": "20261018070042",
+    "file": "supabase/migrations/20261018070042_n8n_worker_gateway_admission.sql",
+    "finalSourceSha256": "98ebdfad9fffa819773fdbee5e3b9b8374be8a6f58497593084aed4077e9b856",
+    "expectedFinalHistorySha256": "53ceb5deb54eef53750aa70064820343797474d8b1b28696a559d71f4db40373",
+    "offlineHistoryDerivation": {
+      "reviewer": "agent_probe_review",
+      "method": "Pinned CLI2.121.0 unmodified splitAndTrim source, transpiled with existing TypeScript; SHA256 UTF8 of statements joined by newline",
+      "parserSource": "https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/command-internal/sql-split.ts",
+      "parserSha256": "005c59d49c164c72e60bbc9ab96b18bc7b811173b1702ded2e6bedabd2c688c0",
+      "knownPriorHistoryFingerprintsMatched": 9,
+      "finalStatementCount": 18,
+      "localLedgerChanged": false,
+      "boundary": "Derived offline before dev deployment; not a hosted application or fabricated migration-history receipt"
+    },
+    "initialLocalApply": "Supported migration up --local applied only this one pending version, native0; no reset or seed",
+    "localIteration": "The initially applied draft was aa7733d406e6921f1ee45419cdd35f9a235424f84ed57f96ca017d21afd62018. Binding, correlation and close/expiry guards were then applied only to the new gateway objects using a fixed-local transaction. The ten-version local ledger was not rewritten. Its tenth draft statement fingerprint is not the expected final-source fingerprint.",
+    "iterationFailure": "CLI db query --file returned native1. Independent immediate readback established binding columns0, unchanged old function guard, requests0 and prepared state; no partial delta. Its precise CLI file/protocol cause was not established. The exact public new-object delta subsequently passed a rollback-only fixed-local driver syntax check, then one committed fixed-local application.",
+    "cleanFinalMigrationReplay": "Normal CI fresh database replay remains separate and pending at this receipt",
+    "originalNineMigrationsReplayedOrEdited": false,
+    "hostedApplied": false
+  },
+  "sqlContract": {
+    "entryPoints": [
+      "ops.worker_gateway_admit(uuid,uuid,text,jsonb,text)",
+      "ops.worker_gateway_execute(uuid,uuid,text,jsonb)",
+      "ops.worker_gateway_status(uuid,uuid)"
+    ],
+    "privateTables": 3,
+    "rlsEnabled": true,
+    "writerDirectTableDml": false,
+    "writerOnlyWrappersEmptySearchPath": true,
+    "fixedWindowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+    "namespace": "gw01-dev",
+    "binding": "One prepared-only immutable audience/commit/deployment binding; inspect is read-only; no clock until ordinary admission",
+    "trialOnly": "Actor/run/cost/fixed-fee aliases remain explicitly blocked. Only safe reads and the designated fixed log acknowledgment are enabled.",
+    "identity": "SQL guards session_user and role setting. Definer current_user is deliberately not reported as n8n_writer. Actual connection current_user/session_user must be asserted outside SECURITY DEFINER; local session authorization is not a real restricted-login/TLS receipt.",
+    "durability": "Caller must commit admission separately before execution. Operation and saved result share the execution transaction. Status uses a separately admitted fresh correlation ID and cannot execute the target. Close obtains the parent window lock after prior execution commits. Expiry is refreshed after that lock and checked before operation/receipt writes."
+  },
+  "pgTap": {
+    "red": "Eight original metadata/role tests failed because all new objects were absent; native1",
+    "harnessBoundary": "Default local postgres passed15 initial assertions but cannot SET SESSION AUTHORIZATION. The guard was retained; the focused suite uses the existing local supabase_admin fixture and explicitly labels session-authorization simulation.",
+    "bindingAndCorrelationRed": "Missing binding columns, rejected inspect and accepted reused status ID were observed against the previous local draft before the correction",
+    "greenCommand": "supabase test db --db-url postgresql://supabase_admin@127.0.0.1:60322/postgres supabase/tests/11_worker_gateway.test.sql --agent no",
+    "green": { "files": 1, "passed": 102, "failed": 0, "nativeExit": 0 },
+    "permissionEvidence": "Direct table reads/DML and private-helper access fail with SQLSTATE42501 under simulated writer session authorization; no read-only or generic error substitutes for permission proof",
+    "testSha256": "3e100c06c49ad912888f96951e6ef873e277caa9e0c7a073b872f8dcc2783ca0",
+    "allFixturesRolledBack": true
+  },
+  "concurrency": {
+    "command": "node scripts/db/check-gw01-concurrency.mjs --local",
+    "finalNativeExit": 0,
+    "finalChecksPassed": 19,
+    "checks": [
+      "inspect read-only without clock",
+      "100 cap across OS processes using seeded98 boundary",
+      "30/minute cap across OS processes using seeded28 boundary",
+      "two reservations across processes",
+      "same-key admission race",
+      "changed-args conflict race",
+      "two held execution transactions",
+      "third admission observed waiting for parent execution lock",
+      "atomic audit and result commit",
+      "concurrent duplicate execution blocked",
+      "after-commit discarded response reconciled without replay",
+      "before-commit process interruption rolled back",
+      "expired unknown reservation requires reconciliation",
+      "close observed waiting for prior execution commit",
+      "expiry refreshed after observed parent-lock wait with no audit effect",
+      "original history and data digest preserved",
+      "owned worker children closed",
+      "only new gateway fixture tables restored to prepared/unbound",
+      "both database clients closed"
+    ],
+    "history": "An initial14-check local draft run passed. Two later failed local runs reused its retained audit execution IDs; fixed safe-stage diagnostics isolated the logger's correct deduplication. Fresh per-run UUIDs, stable within-run, fixed the test expectation. The later18-check and final19-check runs passed. Failed runs added no audit rows; no original data or successful operation was replayed blindly.",
+    "auditRetention": "Three successful local fixture runs retained2 designated acknowledgments each, total6; none were deleted",
+    "unitTdd": "Missing-module, nonpristine-binding and missing fresh-ID/always-close exports observed RED before implementation",
+    "unitGreen": { "passed": 8, "failed": 0, "skipped": 0, "nativeExit": 0 },
+    "cleanupRegression": "Synthetic fixture-cleanup failure still closes both clients; one native close rejection cannot skip the other or expose its raw error",
+    "checkerSha256": "9187adf69c5535e69047c516c07ef2614ca0f557d3de67790c1a98fd86297a82",
+    "unitSha256": "4cad4aadfab9ce4e60bc04fa1eb9b5d065dd73774f0925d59dca207d2bdc00d1",
+    "boundary": "Local supabase_admin/session-authorization simulation, not real restricted authentication or100 actual HTTP requests; no hosted trial journal was reset"
+  },
+  "finalLocalReadback": {
+    "versions": 10,
+    "competitors": 1,
+    "accounts": 3,
+    "items": 10,
+    "runs": 0,
+    "costs": 0,
+    "audit": 6,
+    "gatewayRequests": 0,
+    "gatewayLeaseHolders": 0,
+    "gatewayPreparedUnbound": true,
+    "ownedWorkerBackends": 0,
+    "originalHistoryAndDataDigestMatched": true
+  },
+  "advisors": {
+    "security": "db advisors --local --type security --level warn --fail-on warn: native0, No issues found",
+    "performance": "db advisors --local --type performance --level warn --fail-on error: native0, No issues found"
+  },
+  "types": {
+    "command": "supabase gen types --local --lang typescript --schema app,api,ops,ingest",
+    "file": "packages/shared/src/db.types.ts",
+    "sha256": "be35ca469e4cee9951c467f563d6f73ef7188f572ce5f5e0b3c4c24cf0f66242",
+    "sharedTypecheckNativeExit": 0,
+    "formatNativeExit": 0,
+    "checkerEslintNativeExit": 0,
+    "diffCheckNativeExit": 0
+  },
+  "primarySources": [
+    "https://supabase.com/docs/guides/database/functions",
+    "https://www.postgresql.org/docs/17/explicit-locking.html",
+    "https://www.postgresql.org/docs/17/functions-info.html",
+    "https://supabase.com/docs/guides/observability"
+  ],
+  "sourceAccessLimits": "Supabase Markdown changelog/functions reader rejected content-type; functions HTML succeeded and changelog HTML timed out. No successful changelog read is claimed for this local slice.",
+  "hostedOrCredentialUse": false,
+  "productionChanges": false,
+  "actorOrModelCalls": false,
+  "M03ClosedOrMerged": false
+}

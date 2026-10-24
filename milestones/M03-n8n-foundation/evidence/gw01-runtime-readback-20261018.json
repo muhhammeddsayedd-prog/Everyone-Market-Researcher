@@ -1,0 +1,186 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T10:14:29Z",
+  "scope": "Actual selected-source dev branch Preview metadata readback; no gateway request, deployment binding or trial",
+  "evidenceBoundary": "Only fixed safe metadata output files were read for this record. No handoff, credential value, raw CLI error, environment value, dependency or browser storage was read by the documentation reviewer.",
+  "executionSource": {
+    "helper": "scripts/n8n/gw01-preview-read.mjs",
+    "helperSha256": "c59ca710a16b630b4db72e3626598e1272a0061aac2f23b7412e645132d4d320",
+    "testSha256": "e27ce478fe6339374a3b8285974b9fcf5eb1d0d542687a2f0a57a697267b1f2f",
+    "noRetryPreloadSha256": "8492a298cf967176c85f111dffe58a6908f181af39f10934f6ed6dfd336607f1",
+    "boundary": "This is the corrected source used for the final read. Earlier failures remain historical rather than being replaced by the corrected result."
+  },
+  "priorFailedReads": [
+    {
+      "toolReceiptRef": "180602",
+      "nativeExit": 1,
+      "sourceFile": "scripts/n8n/out/gw01-preview-first-read.json",
+      "fileSha256": "f771ad642ce61a697588fe769c24882407b76d9aa50bfcc4bcfb7c78a90e07fd",
+      "receipt": { "version": 1, "status": "unverified", "code": "GW01_PREVIEW_SELECTION" },
+      "boundary": "The first safe receipt does not establish a more precise cause."
+    },
+    {
+      "toolReceiptRef": "648171",
+      "nativeExit": 1,
+      "sourceFile": "scripts/n8n/out/gw01-preview-selection-diagnostic.json",
+      "fileSha256": "910f32cee076ccdd2242df3431c013e24b0c5bb729273edc72c9de209e94c574",
+      "receipt": {
+        "version": 1,
+        "status": "unverified",
+        "code": "GW01_PREVIEW_SELECTION",
+        "selectionDiagnostic": {
+          "selectionCount": 0,
+          "selectionCountExact": true,
+          "paginationComplete": true,
+          "rows": []
+        }
+      },
+      "boundary": "No READY result was present in this bounded complete list. Why automatic source delivery had no matching deployment was not established."
+    },
+    {
+      "toolReceiptRef": "a9e18c",
+      "nativeExit": 1,
+      "sourceFile": "scripts/n8n/out/gw01-preview-ready-read.json",
+      "fileSha256": "54ce33f5db5b60fa3ba453b063955999c2193b92f546d0788d6cfed1d423b676",
+      "receipt": {
+        "version": 1,
+        "status": "unverified",
+        "code": "GW01_PREVIEW_SELECTION",
+        "selectionDiagnostic": {
+          "selectionCount": 1,
+          "selectionCountExact": true,
+          "paginationComplete": true,
+          "rows": [
+            {
+              "rowObject": true,
+              "idPresent": true,
+              "idValid": true,
+              "urlPresent": true,
+              "urlValid": true,
+              "projectPresent": true,
+              "projectMatches": true,
+              "readyStatePresent": true,
+              "readyStateMatches": true,
+              "targetPresent": true,
+              "previewTarget": true,
+              "customEnvironmentAbsent": true,
+              "createdAtPresent": true,
+              "createdAtValid": true,
+              "shaPresent": true,
+              "shaMatches": true,
+              "branchPresent": true,
+              "branchMatches": true,
+              "frameworkPresent": false,
+              "frameworkMatches": false,
+              "rootDirectoryPresent": false,
+              "rootDirectoryMatches": false
+            }
+          ]
+        }
+      },
+      "boundary": "One matching READY row existed but optional list projectSettings were absent. The old local reader required them; acceptance stayed closed until a source-grounded correction and independent review."
+    }
+  ],
+  "singlePreviewCreate": {
+    "intentToolReceiptRef": "e84bed",
+    "intentSourceFile": "scripts/n8n/out/gw01-preview-create-intent.json",
+    "intentFileSha256": "64c0b98050aa3a92aad48bc18d5564288ab00937b210b6a6088b681c195fb7be",
+    "intentCreatedAt": "2026-10-18T10:06:00.225Z",
+    "maximumCreateActions": 1,
+    "preflight": {
+      "readyRows": 0,
+      "readyPaginationComplete": true,
+      "apiDiagnosticToolRef": "648171",
+      "browserExactShaAllStates": "No Results; No deployments match the current filters."
+    },
+    "observationSourceFile": "scripts/n8n/out/gw01-preview-create-observed.json",
+    "observationFileSha256": "aa4a07ac41ab5a6e654a6315bdeb367da65ebea53ea24b1dd83f003b791ec6aa",
+    "observationRecordedAt": "2026-10-18T10:06:23.317Z",
+    "createActions": 1,
+    "observedState": "INITIALIZING",
+    "automaticMutationRetry": false,
+    "boundary": "One approved browser Create Preview action followed the durable intent. The intent and initial observation did not themselves establish READY; the later native read below does. No second Create or deployment mutation was performed by this review."
+  },
+  "actualRead": {
+    "toolReceiptRef": "e33f91",
+    "sourceFile": "scripts/n8n/out/gw01-preview-runtime-read.json",
+    "fileSha256": "ff15100b6a40e9cb38543cfab1fb3c7d71f7b41d941ca92901d8ec219c910323",
+    "receipt": {
+      "version": 1,
+      "status": "verified",
+      "kind": "vercel_preview_metadata",
+      "nativeExit": 0,
+      "nativeGetCommands": 3,
+      "privateFieldsProjected": false,
+      "ownedChildrenClosed": true,
+      "teamId": "team_gboXPxTevpCOZuaA8eY9PmR1",
+      "environment": "preview",
+      "readyState": "READY",
+      "target": {
+        "audience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+        "commitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+        "deploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA",
+        "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+        "branch": "m03-n8n-foundation"
+      },
+      "createdAt": "2026-10-18T10:06:12.079Z",
+      "observedAt": "2026-10-18T10:14:06.622Z",
+      "framework": "nextjs",
+      "frameworkProof": "fresh_project_and_deployment_resource",
+      "rootDirectory": "apps/web",
+      "rootDirectoryProof": "fresh_project_setting",
+      "listProjectSettingsPresent": true,
+      "gitSourceRefMode": "branch",
+      "protection": "all_except_custom_domains",
+      "autoExposeSystemEnvs": true,
+      "systemEnvironmentProof": "fresh_project_setting"
+    }
+  },
+  "localCorrectionAndReview": {
+    "officialSchema": "https://vercel.com/openapi.json",
+    "gitReferenceDocumentation": "https://vercel.com/docs/git#creating-a-deployment-from-a-git-reference",
+    "correction": "The v7 list projectSettings are optional and no includeProjectSettings query exists. Fresh project root/framework checks remain required, v13 resource framework remains required, and any present contradictory list/resource setting rejects. Full exact SHA or branch Git references are accepted only with unchanged exact branch metadata and independent SHA assertions.",
+    "authorReportedRed": { "failed": 7, "boundary": "Seven new positive/reference/diagnostic cases failed on the old implementation before the narrow correction." },
+    "authorReportedGreen": { "newCasesPassed": 11, "fullAffectedPassed": 36, "nativeExit": 0, "eslintExit": 0 },
+    "independentReview": {
+      "status": "clear",
+      "command": "node --test --test-name-pattern 'optional list settings|full exact SHA|explicit contradictory|resource diagnostic' scripts/n8n/gw01-preview-read.test.mjs",
+      "toolReceiptRef": "5a193d",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "actualApiOrPrivateRead": false
+    },
+    "rootIndependentReview": { "toolReceiptRef": "e55e2c", "selectedPassed": 12, "nativeExit": 0 },
+    "earlierSelectionDiagnosticsReview": { "toolReceiptRef": "07aab8", "passed": 3, "nativeExit": 0, "boundary": "Earlier local finite diagnostics did not waive selection assertions." }
+  },
+  "proofLimits": {
+    "selectedSourceReadyPreviewMetadataVerified": true,
+    "frameworkBasis": "Fresh project and deployment resource",
+    "rootDirectoryBasis": "Fresh project setting, not immutable deployment root provenance",
+    "systemEnvExposureBasis": "Fresh project setting, not actual deployed values",
+    "actualDeployedSensitiveValuesVerified": false,
+    "gatewayHttpIdentityVerified": false,
+    "nativeN8nCloudPostgresTlsVerified": false,
+    "runtimePhaseCompleted": false,
+    "targetRegistered": false,
+    "serverWindowBound": false,
+    "trialStarted": false
+  },
+  "rootReportedPreservedStateAtRead": {
+    "gatewayAttempts": 2,
+    "gatewayAttemptBudget": 100,
+    "gatewayRequestsAddedByPreviewRead": 0,
+    "clockStarted": false,
+    "serverAdmissions": 0,
+    "refreshedManagementConsumed": false,
+    "productionOrMergeOrM04Started": false
+  },
+  "remaining": [
+    "Complete and seal the truthful runtime-phase proof and register the exact observed target without replacing the journal or replenishing counters.",
+    "Bind the same prepared database window to the reviewed deployment before counted gateway HTTP identity and the bounded trial.",
+    "Preserve the separately reviewed Close timestamp correction and successful Environment receipts; do not replay Apply, Environment, Verify or Create.",
+    "Complete the approved ordered closeout and verify every known deployment separately; metadata alone is not trial, runtime-secret or immutable-environment-erasure proof."
+  ]
+}

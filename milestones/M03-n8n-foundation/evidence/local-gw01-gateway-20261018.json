@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-18T07:29:51.868648+00:00",
+  "environment": "local_only",
+  "reviewedBase": "100290a291530d30d0387269c1a0805ad4f86fcc",
+  "gatewayTests": {
+    "command": "pnpm --filter web exec vitest run server/n8n-worker",
+    "files": 3,
+    "passed": 24,
+    "failed": 0,
+    "skipped": 0,
+    "nativeExit": 0,
+    "tls": "Five real isolated loopback TLS cases with ephemeral local certs; not hosted TLS."
+  },
+  "migrationConsumerTests": {
+    "command": "node --test scripts/db/gw01-dev-migrations.test.mjs",
+    "passed": 17,
+    "failed": 0,
+    "skipped": 0,
+    "nativeExit": 0,
+    "scope": "isolated DPAPI/native CLI fixtures only; no actual handoff consumed"
+  },
+  "build": {
+    "nativeExit": 0,
+    "publicCaTraced": true,
+    "warning": "Initial build warned preferredRegion deprecated; replaced with source apps/web/vercel.json regions:[fra1] per official docs. Effective Preview placement still requires readback."
+  },
+  "lintAndWebTypes": {
+    "nativeExit": 0
+  },
+  "review": {
+    "app": "independent static and affected-regression clear",
+    "migrationConsumer": "independent source+9baseline/1pending packet seal clear"
+  },
+  "priorFailures": [
+    "First TLS expired fixture construction failed locally, fixed before private use",
+    "Foreign binding regression expected wrong finite error unavailable; actual deployment_denied was correct, fixture corrected",
+    "Copied migration fixture expected rejected for exact unchanged9 baseline after ambiguous push; corrected to baseline while retaining reconciliation_required/no auto retry",
+    "Admin filename and pendingVersions receipt were corrected before any actual credential use",
+    "Index scanner flagged a nonstandard fake Postgres error URI; replaced only synthetic fixture with reserved .invalid/synthetic-password convention. No actual credential involved."
+  ],
+  "sourceSha256": {
+    "apps/web/server/n8n-worker/auth.ts": "6f55d1038d11806fedb20695585c88bb4d660c1f8398b17b0b897f47f706ea7a",
+    "apps/web/server/n8n-worker/database.ts": "0d926944955526bc46d737b988e395ce4f3a621ec5f45c51240fc1172eda7e91",
+    "apps/web/server/n8n-worker/dispatcher.ts": "62af6dcc8d191d8a5625a67f11e44eb5e3383082be5c23e92af7b576276c6194",
+    "apps/web/server/n8n-worker/gateway.test.ts": "f156f12df96f9f7baaa5fffd42c98bda5d112ec46f0b6ce65ab1fc0b3be88cdb",
+    "apps/web/server/n8n-worker/database.test.ts": "3db27a561f86c764a1eb2f5caf4f5df7eaa1fa335a3a32b4791acb41b02e2af6",
+    "apps/web/server/n8n-worker/tls.test.ts": "c18b4a439eae7557c7149f6963c05157d2fed4d4fbee51c1cb0ef16cefba8610",
+    "packages/shared/src/n8n-worker-contracts.ts": "1195db341df1dafc1bbddbd9939ab779780aecd181903dcd4e402c46d382e21b",
+    "scripts/db/windows/Invoke-M03GW01Migrations.ps1": "4c57b99461160af7d4822d4693ef9916a1f1eaf2358d5cd041baa4b222e8a0e8",
+    "scripts/db/gw01-dev-migration-packet.json": "7d99121bd2a9ca6d0261b63a72ad92b4341ef5edb79293e73bee143636898756"
+  },
+  "boundaries": {
+    "hostedMigrationApplied": false,
+    "managementHandoffPresentOnly": true,
+    "administratorOrWriterUsed": false,
+    "gatewayNetworkAttempts": 0,
+    "clockStarted": false,
+    "nativeN8nPostgresPassed": false,
+    "productionChanged": false
+  },
+  "sources": [
+    "https://node-postgres.com/features/ssl",
+    "https://node-postgres.com/apis/pool",
+    "https://vercel.com/docs/functions/functions-api-reference/vercel-functions-package",
+    "https://nextjs.org/docs/messages/preferred-region-deprecated"
+  ]
+}

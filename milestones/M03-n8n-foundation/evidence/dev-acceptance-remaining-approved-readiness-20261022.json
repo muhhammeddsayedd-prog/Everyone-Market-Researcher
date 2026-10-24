@@ -1,0 +1,113 @@
+{
+  "kind": "m03_remaining_approved_source_readiness",
+  "version": 1,
+  "recordedAtUtc": "2026-10-21T22:59:41.524Z",
+  "reviewedPacketHead": "a04d7c4b8835c0ae3f8136e9095d0e3e775b9151",
+  "ownerReply": "Approve exact remaining packet",
+  "approvalRelative": "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-approval-20261022.json",
+  "approvalSha256": "cbc097a5ab606cf176a384084c66692b37b16b689676424211da19fc387f0b23",
+  "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "segmentId": "e8035391-dba8-48c9-97e0-139ba980d86e",
+  "immutableInputs": {
+    "packetSha256": "7c4b9f3c3bb473a2ff4a473e23de79ce3b2c9a783cab5587d9caf9356d804205",
+    "checkpointSha256": "2954a33504376de123c2ca1638b11f3356d94fd274d35a7f62591642da463404"
+  },
+  "change": "Only the existing remaining-module approvalSha256 null was replaced by the actual15-field receipt hash; only its existing35-file database closure member was repinned. No scope/cap/clock/SQL/contract relaxation; transitive receipt pin is verified before any authority/private access.",
+  "moduleSha256": "42f528d828b0e4059b5f0de8d592bfd16aa86497dda619be6fe8884dc469524b",
+  "databasePacketSha256": "e49438474363a7de3bc02240334a12c528912e9426f589da7b01cf42fdd8dd5a",
+  "reviewAndTests": {
+    "independentReview": "No P1/P2; literal owner reply15-field schema/15caps, exact packet/checkpoint/source/window binding verified. All35DBpins/14preserved records/raw original journal prefixes match. Static/synthetic review only.",
+    "affectedTests": "Independent continuation11+CLI3+branded-admin2 =16/16 PASS, zero skipped, on actual pinned production source copied into physically isolated synthetic fixtures. No new full unchanged local suite.",
+    "rootChecks": "785e81 Prettier native0; eebe43 affected ESLint/diff native0; c2ad36 verifies35pins/all14preserved hashes and unchanged baseline/pending full history objects. Historical implementation/local SQL/advisor/type evidence is reused unchanged."
+  },
+  "actualPublic": {
+    "clockCheckOnly": {
+      "receipt": "133942",
+      "nativeExit": 0,
+      "status": "remaining_continuation_ready",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "seal": {
+      "receipt": "67be61",
+      "nativeExit": 0,
+      "status": "acceptance_public_seal_ready",
+      "projectFiles": 123,
+      "zodFiles": 840,
+      "vercelFiles": 3462,
+      "sha256": "2094e6ad9be88b95286369a8459188d8b9c919bd0d22e8c97927dd255951fce6",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "fullCheckOnly": {
+      "receipt": "9d78d6",
+      "nativeExit": 0,
+      "status": "check_only_ready",
+      "publicCompositionLoaded": true,
+      "adminPublicInputsVerified": true,
+      "adminHandoffReady": false,
+      "actualMcpPortVerified": false,
+      "privateRead": false,
+      "networkRequests": 0
+    }
+  },
+  "temporaryInputMetadata": {
+    "receipt": "eebe43",
+    "observedAtUtc": "2026-10-21T22:57:21.003Z",
+    "pathsChecked": 10,
+    "allAbsent": true,
+    "admissionAndClaimAbsent": true,
+    "privateContentsRead": false,
+    "authenticationAttempted": false
+  },
+  "preservedCounters": {
+    "management": 4,
+    "control": 101,
+    "combined": 105,
+    "mainManagement": 1,
+    "mainControl": 100,
+    "managementCarry": 3,
+    "controlCarry": 1,
+    "actors": 0,
+    "gatewayAttempts": 0,
+    "nativeExecutions": 0,
+    "directProviderGets": 0
+  },
+  "normalCi": {
+    "reviewedHeadRun": 39687951618,
+    "reviewedHeadResult": "Freshd7b66c verifiesallfive/Vercel SUCCESS at a04d7c4; reviewed context, not new delivery.",
+    "newDelivery": "This approval/pin/command delivery receives normal PR8 quality/unit/build/e2e/db-tests and Vercel. Read current PR checks separately; no extra docs-only commit solely to announce them."
+  },
+  "handoff": {
+    "file": "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-handoff-20261022.md",
+    "files": {
+      "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "f834477c84b173e77368eaa4d837b4e39e7bc78514d61ea4c2505eb68c4e2037",
+      "scripts/n8n/windows/New-M03AcceptanceHandoff.ps1": "92abf956a5b2e72812ba07700efa8110acd001583e530f3905a4ca98d03aa124"
+    },
+    "ownerAction": "After normal new-head CI, run the exact existing helpers with -RemainingContinuation and -Kind All. Deliver only the same saved dev postgres, n8nManagement, dev n8n_writer and same-owner ApifyREAD values. No reset/newkey/rotation/Machine/production. Two-hour deliveries must actually cover75minutes before admission."
+  },
+  "liveState": {
+    "admissionStarted": false,
+    "claimCreated": false,
+    "credentialContentsRead": false,
+    "databaseConnected": false,
+    "fixtureReactivated": false,
+    "previewControlsCreated": false,
+    "workflowTransitions": 0,
+    "nativeExecutions": 0,
+    "actorsStarted": 0,
+    "businessAcceptanceProven": false,
+    "credentialBearingAdministratorChildStarted": false
+  },
+  "excluded": [
+    "migration replay/dry-run/push/reset/history repair",
+    "production",
+    "recurring schedules",
+    "external notifications",
+    "shared credentials changes",
+    "private incident execution",
+    "PR8 merge",
+    "M03 closure",
+    "M04"
+  ]
+}

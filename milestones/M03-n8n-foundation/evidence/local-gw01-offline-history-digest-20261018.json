@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-18T07:27:05.673Z",
+  "scope": "offline_public_source_validation_only",
+  "cliVersion": "2.121.0",
+  "sources": {
+    "splitter": {
+      "url": "https://raw.githubusercontent.com/supabase/cli/v2.121.0/apps/cli/src/command-internal/sql-split.ts",
+      "sha256": "005c59d49c164c72e60bbc9ab96b18bc7b811173b1702ded2e6bedabd2c688c0",
+      "localPublicCopy": "%LOCALAPPDATA%/Temp/emr-gw01-sql-split-2.121.0.ts"
+    },
+    "parser": {
+      "url": "https://github.com/supabase/cli/blob/v2.121.0/apps/cli/src/command-internal/migration-file.ts",
+      "contract": "Ordinary transactional files pass content unchanged to splitAndTrim."
+    },
+    "apply": {
+      "url": "https://github.com/supabase/cli/blob/v2.121.0/apps/cli/src/command-internal/migration-apply.ts",
+      "contract": "History insert receives exact parseMigrationContent statements, without injected execution role restores."
+    }
+  },
+  "method": {
+    "runtime": "v24.18.0",
+    "typescriptVersion": "6.0.3",
+    "sourceTransformation": "Existing pinned TypeScript transpileModule only; no edited/reimplemented splitter.",
+    "compilerOptions": {
+      "target": "ES2022",
+      "module": "ES2022"
+    },
+    "call": "splitAndTrim(readFileSync(file, \"utf8\"))",
+    "digest": "SHA256 of UTF-8 statements joined by exactly one U+000A newline; equivalent to PostgreSQL array_to_string(statements, chr(10)) for this non-null array.",
+    "statementTransform": "Pinned splitter trims terminating semicolons and surrounding whitespace; preserves internal comments/newlines/dollar-quoted function bodies.",
+    "reproduction": [
+      "Download the immutable public splitter URL as UTF-8 without a BOM and assert source SHA256.",
+      "Transpile the unchanged source using repository TypeScript transpileModule with target ES2022/module ES2022.",
+      "Import the generated JavaScript as an in-memory data URL; call its exported splitAndTrim on each actual UTF-8 migration file.",
+      "Use node:crypto createHash(\"sha256\").update(statements.join(String.fromCharCode(10)),\"utf8\").digest(\"hex\").",
+      "Assert all nine baseline/pending entries from scripts/db/m03-dev-migration-packet.json match their historySha256 before trusting the final derivation."
+    ],
+    "reproductionCode": "import { readFileSync } from 'node:fs';\nimport { createRequire } from 'node:module';\nimport { createHash } from 'node:crypto';\nimport { join } from 'node:path';\nconst require = createRequire(join(process.cwd(), 'package.json'));\nconst ts = require('typescript');\nconst source = readFileSync(join(process.env.LOCALAPPDATA, 'Temp/emr-gw01-sql-split-2.121.0.ts'), 'utf8');\nconst sha = value => createHash('sha256').update(value, 'utf8').digest('hex');\nif (sha(source) !== '005c59d49c164c72e60bbc9ab96b18bc7b811173b1702ded2e6bedabd2c688c0') throw Error('PUBLIC_SOURCE_SEAL');\nconst compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 }, reportDiagnostics: true });\nif (compiled.diagnostics?.some(d => d.category === ts.DiagnosticCategory.Error)) throw Error('TRANSPILE');\nconst { splitAndTrim } = await import('data:text/javascript;base64,' + Buffer.from(compiled.outputText).toString('base64'));\nconst packet = JSON.parse(readFileSync('scripts/db/m03-dev-migration-packet.json', 'utf8'));\nconst known = [...packet.baseline, ...packet.pending];\nif (known.length !== 9 || !known.every(m => sha(splitAndTrim(readFileSync(m.file, 'utf8')).join(String.fromCharCode(10))) === m.historySha256)) throw Error('HISTORICAL_PARITY');\nconst file = 'supabase/migrations/20261018070042_n8n_worker_gateway_admission.sql';\nconst content = readFileSync(file, 'utf8');\nif (sha(content) !== '98ebdfad9fffa819773fdbee5e3b9b8374be8a6f58497593084aed4077e9b856') throw Error('FINAL_SOURCE_SEAL');\nconst statements = splitAndTrim(content);\nconsole.log(JSON.stringify({ historicalMatches: known.length, statementCount: statements.length, historySha256: sha(statements.join(String.fromCharCode(10))) }));"
+  },
+  "historicalComparison": [
+    {
+      "version": "20261017172928",
+      "file": "supabase/migrations/20261017172928_extensions_schemas_roles.sql",
+      "statementCount": 40,
+      "expectedHistorySha256": "d5c1a3c8b821bb14919c32d722042e15aa8775c966b3eade572531f066db093b",
+      "derivedHistorySha256": "d5c1a3c8b821bb14919c32d722042e15aa8775c966b3eade572531f066db093b",
+      "matched": true
+    },
+    {
+      "version": "20261017172931",
+      "file": "supabase/migrations/20261017172931_core_tables.sql",
+      "statementCount": 120,
+      "expectedHistorySha256": "0d7587a24dc96c35e639729369dd1650952381c356e5ed1ba867934669e1abcc",
+      "derivedHistorySha256": "0d7587a24dc96c35e639729369dd1650952381c356e5ed1ba867934669e1abcc",
+      "matched": true
+    },
+    {
+      "version": "20261017172934",
+      "file": "supabase/migrations/20261017172934_auth_rls_views.sql",
+      "statementCount": 55,
+      "expectedHistorySha256": "bb7713ce9dd0bfb4de0cc0bc98ae5f558d39807375b86f46b1bdbd002d7f0aad",
+      "derivedHistorySha256": "bb7713ce9dd0bfb4de0cc0bc98ae5f558d39807375b86f46b1bdbd002d7f0aad",
+      "matched": true
+    },
+    {
+      "version": "20261017172937",
+      "file": "supabase/migrations/20261017172937_rpc_pipeline_core.sql",
+      "statementCount": 12,
+      "expectedHistorySha256": "ed23d0424c7c16cf325feceaa141baecf26f4f281725e28be1286fd6e76b196d",
+      "derivedHistorySha256": "ed23d0424c7c16cf325feceaa141baecf26f4f281725e28be1286fd6e76b196d",
+      "matched": true
+    },
+    {
+      "version": "20261017172940",
+      "file": "supabase/migrations/20261017172940_rpc_app_search.sql",
+      "statementCount": 10,
+      "expectedHistorySha256": "2b36ed94ddfdc674e1097b4dee4141faf6e0912120c22e83c9b91b3353ec20b2",
+      "derivedHistorySha256": "2b36ed94ddfdc674e1097b4dee4141faf6e0912120c22e83c9b91b3353ec20b2",
+      "matched": true
+    },
+    {
+      "version": "20261017172943",
+      "file": "supabase/migrations/20261017172943_storage_cron.sql",
+      "statementCount": 3,
+      "expectedHistorySha256": "50b6a9aacfbf530783ba2defc23183293b1acfd6ce8a8612e871f5bb104c33ee",
+      "derivedHistorySha256": "50b6a9aacfbf530783ba2defc23183293b1acfd6ce8a8612e871f5bb104c33ee",
+      "matched": true
+    },
+    {
+      "version": "20261017172945",
+      "file": "supabase/migrations/20261017172945_seed_taxonomies.sql",
+      "statementCount": 4,
+      "expectedHistorySha256": "3cb258773590c0225732727ea2701ad2dfc3ede8d9b62cc1d522bab3e4e9b61b",
+      "derivedHistorySha256": "3cb258773590c0225732727ea2701ad2dfc3ede8d9b62cc1d522bab3e4e9b61b",
+      "matched": true
+    },
+    {
+      "version": "20261018034220",
+      "file": "supabase/migrations/20261018034220_rpc_n8n_foundation.sql",
+      "statementCount": 17,
+      "expectedHistorySha256": "dedf2cae9d1cfb7d7c5cb996d4c871a55c2628af868ee57fcb6df4598582a6d6",
+      "derivedHistorySha256": "dedf2cae9d1cfb7d7c5cb996d4c871a55c2628af868ee57fcb6df4598582a6d6",
+      "matched": true
+    },
+    {
+      "version": "20261018035417",
+      "file": "supabase/migrations/20261018035417_price_book_plan.sql",
+      "statementCount": 3,
+      "expectedHistorySha256": "3086cac77d3e68ecd0695b00a62c883e0cf706605432ff153b25b0c27e43a6d2",
+      "derivedHistorySha256": "3086cac77d3e68ecd0695b00a62c883e0cf706605432ff153b25b0c27e43a6d2",
+      "matched": true
+    }
+  ],
+  "allNineMatched": true,
+  "finalMigration": {
+    "file": "supabase/migrations/20261018070042_n8n_worker_gateway_admission.sql",
+    "fileSha256": "98ebdfad9fffa819773fdbee5e3b9b8374be8a6f58497593084aed4077e9b856",
+    "statementCount": 18,
+    "expectedHistorySha256": "53ceb5deb54eef53750aa70064820343797474d8b1b28696a559d71f4db40373"
+  },
+  "boundaries": {
+    "databaseQueries": false,
+    "databaseWrites": false,
+    "migrationReplay": false,
+    "localLedgerRewrite": false,
+    "hostedCalls": false,
+    "credentialReads": false,
+    "installs": false,
+    "downloadedExecutables": false,
+    "actualFinalMigrationHistoryVerified": false
+  },
+  "note": "This predicts exact pinned CLI history encoding from frozen source. It does not claim that the final migration was applied, or that its hosted history already matches."
+}

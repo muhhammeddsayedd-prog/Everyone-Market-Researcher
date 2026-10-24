@@ -1,0 +1,186 @@
+{
+  "version": 1,
+  "target": "zmotjsbzhzjvpelxvxlf",
+  "approved": true,
+  "authorizationReference": "Owner approved M03 A-D dev acceptance at f42930f90c2de43c84f61ad6d966d0ee6074d70e on 2026-10-21",
+  "cliVersion": "2.121.0",
+  "baseline": [
+    {
+      "version": "20261017172928",
+      "name": "extensions_schemas_roles",
+      "file": "supabase/migrations/20261017172928_extensions_schemas_roles.sql",
+      "sha256": "478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d",
+      "historySha256": "d5c1a3c8b821bb14919c32d722042e15aa8775c966b3eade572531f066db093b"
+    },
+    {
+      "version": "20261017172931",
+      "name": "core_tables",
+      "file": "supabase/migrations/20261017172931_core_tables.sql",
+      "sha256": "4f1be3f6191885add916b164975ba10a8697069a0373a05df4e03fa53ea7cba3",
+      "historySha256": "0d7587a24dc96c35e639729369dd1650952381c356e5ed1ba867934669e1abcc"
+    },
+    {
+      "version": "20261017172934",
+      "name": "auth_rls_views",
+      "file": "supabase/migrations/20261017172934_auth_rls_views.sql",
+      "sha256": "8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9",
+      "historySha256": "bb7713ce9dd0bfb4de0cc0bc98ae5f558d39807375b86f46b1bdbd002d7f0aad"
+    },
+    {
+      "version": "20261017172937",
+      "name": "rpc_pipeline_core",
+      "file": "supabase/migrations/20261017172937_rpc_pipeline_core.sql",
+      "sha256": "978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803",
+      "historySha256": "ed23d0424c7c16cf325feceaa141baecf26f4f281725e28be1286fd6e76b196d"
+    },
+    {
+      "version": "20261017172940",
+      "name": "rpc_app_search",
+      "file": "supabase/migrations/20261017172940_rpc_app_search.sql",
+      "sha256": "6111c5291e9c305e3e713180c0441ff5ffbf52b3b88f589d5d16fee55769171c",
+      "historySha256": "2b36ed94ddfdc674e1097b4dee4141faf6e0912120c22e83c9b91b3353ec20b2"
+    },
+    {
+      "version": "20261017172943",
+      "name": "storage_cron",
+      "file": "supabase/migrations/20261017172943_storage_cron.sql",
+      "sha256": "859466fadfd940445ffe4b457e7250a179c93731e1f34736a629fe20df6e9c68",
+      "historySha256": "50b6a9aacfbf530783ba2defc23183293b1acfd6ce8a8612e871f5bb104c33ee"
+    },
+    {
+      "version": "20261017172945",
+      "name": "seed_taxonomies",
+      "file": "supabase/migrations/20261017172945_seed_taxonomies.sql",
+      "sha256": "af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234",
+      "historySha256": "3cb258773590c0225732727ea2701ad2dfc3ede8d9b62cc1d522bab3e4e9b61b"
+    },
+    {
+      "version": "20261018034220",
+      "name": "rpc_n8n_foundation",
+      "file": "supabase/migrations/20261018034220_rpc_n8n_foundation.sql",
+      "sha256": "457ad4351b08c47b996ae67062ed701efb7d5ef63ea7658d20931f2d5dc5d3fd",
+      "historySha256": "dedf2cae9d1cfb7d7c5cb996d4c871a55c2628af868ee57fcb6df4598582a6d6"
+    },
+    {
+      "version": "20261018035417",
+      "name": "price_book_plan",
+      "file": "supabase/migrations/20261018035417_price_book_plan.sql",
+      "sha256": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd",
+      "historySha256": "3086cac77d3e68ecd0695b00a62c883e0cf706605432ff153b25b0c27e43a6d2"
+    },
+    {
+      "version": "20261018070042",
+      "name": "n8n_worker_gateway_admission",
+      "file": "supabase/migrations/20261018070042_n8n_worker_gateway_admission.sql",
+      "sha256": "98ebdfad9fffa819773fdbee5e3b9b8374be8a6f58497593084aed4077e9b856",
+      "historySha256": "53ceb5deb54eef53750aa70064820343797474d8b1b28696a559d71f4db40373"
+    }
+  ],
+  "pending": [
+    {
+      "version": "20261018231756",
+      "name": "m03_actor_launch_admission",
+      "file": "supabase/migrations/20261018231756_m03_actor_launch_admission.sql",
+      "sha256": "fc6955938bba3d08b6a1140258a1db2d0569a5f441c8cc5c934847eb84116600",
+      "historySha256": "7487eb33d708fa70b8a43e7695fb730bb383b15382342e587e83e0de321a0d71"
+    },
+    {
+      "version": "20261018232014",
+      "name": "m03_foundation_gateway",
+      "file": "supabase/migrations/20261018232014_m03_foundation_gateway.sql",
+      "sha256": "ea1385b734e243bed4dea0030f4975a81d38d41338cb8d94d6086dd83916d334",
+      "historySha256": "4f6b99a52756fcedca93fdb78fdbbe43f2b03d46b3eeea80a943657cb0bb61f2"
+    },
+    {
+      "version": "20261018232922",
+      "name": "m03_foundation_safety_receipts",
+      "file": "supabase/migrations/20261018232922_m03_foundation_safety_receipts.sql",
+      "sha256": "dffa2c23d0102bb7382106c9800e05b5806a1eee89580794aa87bdd63a7f05a5",
+      "historySha256": "bfe2f0be429f93c9fe850ab3c4c457dfab8c0731edbed980cfad04c05da6479b"
+    },
+    {
+      "version": "20261018233338",
+      "name": "m03_foundation_boundary_hardening",
+      "file": "supabase/migrations/20261018233338_m03_foundation_boundary_hardening.sql",
+      "sha256": "bf930602b402ef0b4649e9399ed2dcb9d6f2bf576a08d9313f352ccfab4d6c90",
+      "historySha256": "39273bad21ca92b485c759d65a670056d2d6264010b90e899f6d0b0401e721be"
+    }
+  ],
+  "files": {
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "c57b68e15d8b8fb8a5c4055ce590ec3e69f079d3bb597e89e9232e7ffd349532",
+    "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "b95e60dd2b3d2abf972f53000db83676e4f96947e6fc1a5dfc086a2c646393a3",
+    "scripts/db/windows/Foundation-AdminControl.ps1": "ec90a12ed8c5b86ccc44a1b41702e3ed5ec6d40de7e0e24b48fa9d0ba95639bd",
+    "scripts/db/foundation-settlement.sql": "94ce66c3c12a305bba196bef441a51c9879cc0764403bef2241d3660baaa91e9",
+    "scripts/db/foundation-postcheck.sql": "f5ee87926275b368c476258a4b826f4a63c7b2775c4fbfabb24af774e6fc5f52",
+    "scripts/db/foundation-replay-snapshot.sql": "f32c8251a11b14b34680025b8e05ee2ca90e87af45ce12a0b90bca31aec7af70",
+    "scripts/db/check-foundation-types.mjs": "ed62eb514aeb5adddb6b72c78a50960849ef9810c2ea89576d5784c95fede1c4",
+    "packages/shared/src/db.types.ts": "8ba948793a71ff6a7f94010f156633433da0f8077ddf0015013951d391c62161",
+    "node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/typescript.js": "569177652966bd528c319171c7dd22860dbf72bde116cbc4f644f1d02bb12e39",
+    "scripts/assert/m03_smoke_setup.sql": "328b209facd51e6e9620390652bc10cbc042c370ea1498706644dec1aee8cb39",
+    "scripts/assert/m03_smoke_teardown.sql": "7410f5957e4fb1ceec20db90e01135c4417eeff2d7f60ec1f89d13d0a18f11f9",
+    "scripts/assert/m03_smoke_assert.sql": "9ab852e73ca6088ec49e9bea61037b683870c48b25176fb58e99e24b216391d0",
+    "scripts/seed/check-tls.mjs": "497d8ad658f936c1b5f87b5316bbafbcf145f8ae8e01a6184fb80db5ff5e9d07",
+    "scripts/seed/certs/supabase-root-2021.json": "86f7da7dbd65b7a97986e7cf859848835b162fb6aec17f09fb8b011d4accf16b",
+    "scripts/n8n/foundation-live-clock-amendment.mjs": "de2d33be3e30bb58a7bdf7abfbb846610fbe0826e730edac4a4fcc9f56aa5ce6",
+    "scripts/n8n/foundation-live-zero-setup.mjs": "24f930de21fe509c0da2d4f21688ebd2498e0f6358a4d78d95a9a9e889095591",
+    "scripts/n8n/foundation-control-state.mjs": "9aebdcb76580a138d820b99dc6f9349600c6cef891d2df9496880fea1acaf5ee",
+    "scripts/n8n/foundation-runtime-checkpoint.mjs": "e4e3fcf4b7f3b5d1555e69fef123bcea8515ea954b34db8167303e9636f06039",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-approval-20261021.json": "3d2346715e08edfc9eef4fab04c9c1b7be55d450660c862235b92195976bed31",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-zero-setup-20261021.json": "6af79fc35a6e71fb323ca262092cfe015fd26a3422f5ce43b140f92caba1a28d",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-clock-amendment-20261021.md": "f0fc4877034acfb5ed66e0c332d6260bbef8c169868a79d8aa550c5c47964fdb",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-late-delivery-20261021.json": "0304b30f23ed3aed30f72bcf590a79bfe1f37df073f69c2f7eacb8192cf134fc",
+    "scripts/n8n/foundation-live-postcheck-continuation.mjs": "9a1b10a38d2fe952954df4baa331afb88dd8297e060a2ad32313903cbf43dfe5",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-approval-20261021.json": "ab24cf3488a0990988550ec361a7bbe4f147d0bce5a62a5aa5d2eb9cdf17e19a",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-checkpoint-20261021.json": "99d8cc0befc307fae2ccb23042d8ebcdc2319f4bfe01838c91cfa1b42a5f0d77",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-continuation-20261021.md": "ceb239bef756ee9a169ddde0e8e94eb1a4d35dcff2f282c2ead95950b7250447",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-amended-attempt-20261021.json": "4a5e85d57ba8d64ba20c7337c66e70d01af59ac118915710c567faec4ec9c778",
+    "scripts/seed/certs/supabase-root-2021.crt": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+    "node_modules/.pnpm/@supabase+cli-windows-x64@2.121.0/node_modules/@supabase/cli-windows-x64/bin/supabase.exe": "aed2aedd9e367549307d038b770e505b288225958e2e81bfe5db53fa6a01c148",
+    "scripts/n8n/foundation-live-remaining-continuation.mjs": "42f528d828b0e4059b5f0de8d592bfd16aa86497dda619be6fe8884dc469524b",
+    "scripts/assert/m03_smoke_reactivate.sql": "d13a08a9164d4cea277458613e2b6b49789b6796d219a1365c28cb7aef3141a1",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-checkpoint-20261022.json": "2954a33504376de123c2ca1638b11f3356d94fd274d35a7f62591642da463404",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-packet-20261022.md": "7c4b9f3c3bb473a2ff4a473e23de79ce3b2c9a783cab5587d9caf9356d804205",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-attempt-20261021.json": "b984ec79c857468822e9299dd59fc2b26d71a26bb6b324dd90ecbaa7f39d1fcd",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-vercel-postlogin-actual-20261022.json": "04fd4681894f93e46a3674a73fd13447badeb257ab0a8fc307f1e63918d9c43e",
+    "scripts/n8n/foundation-live-startup-replacement.mjs": "36f6729c3e81bc02be962cedf373fefc0ee8a2e98c539a729aa53ce3994f2c78",
+    "scripts/assert/m03_smoke_reactivate_startup.sql": "cc2654e4d499cbd5fc1a6c75c30d991ea8f46bef3fa37f66bd415ad8b192e202",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json": "e144d73dfbcab1e5a286ab9ba11df28bcbd10c8a9ad39eecb7852fee3d61d758",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0",
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "33765eae3116176029d393adf7b48de0c89030ceb23a610d565e11723619dc7e",
+    "scripts/assert/m03_smoke_reactivate_project_verified.sql": "a9f9febc0e309fd703d703310248b941352d1957d20f2b80e72fcd1137a52e74",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json": "e21e515ae446dcde7983dba87d09221ce1bf3cd2ad06d08329368a8241e6ba10",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md": "13d19460cdb889378dec5ae4d93af4708baf85290c164e07961add18e7243650",
+    "scripts/db/foundation-inspect.sql": "51ca08cd0e9be3ed4abf14c526933c57419d03bd5c277d6a4337d5bf3adce434",
+    "scripts/n8n/windows/Dev-CredentialStore.ps1": "49c16b64f9b57c4e27cf6ad92dc16cd05c6cf29a7ada7f9c7fa6e8f64ca5fc13",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json": "e0435f69edc0223195b167e59c94cf87e9f41aa147941a35fb8486f51382c94c",
+    "milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md": "dddc18288e44fcb0fde06ee6de6fc86bbc21f65353cd089988b10f5dd0714fa2",
+    "milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json": "72ffb37faa1854ac86893f8bf166949daa4034be19ec2af5c217bde8383f65e2",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical9-reconciliation-20261024.json": "ffd01a34c5e542c66035fde8995a46ce5975912705e57b8f249ce5f30cc5614e",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical10-reconciliation-20261024.json": "6e4e1af66c0f94ea87bddabe4b326b512a87e3c8ee678f037a7bed68f60702be",
+    "milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md": "967b0250f7b61b2108d31ca59bc20e12c0367e7fcb8dc8ca877665a9af4071d6",
+    "milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-approval-20261024.json": "9cb054ca3421e9bd32c7bfd92ad7982b32c5c6d4b4aacb5c77e50f58a9cb1b1f",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical11-reconciliation-20261024.json": "92b1628477730b3f32ea93e9724a29028be8019ba73e18e57f8f76d4fa953628",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical12-reconciliation-20261024.json": "3fb0aa6249d720d7be2568caf83100b10ff0e691adcb909db21517750e9e98af",
+    "milestones/M03-n8n-foundation/evidence/machine-metadata-readback-20261024.json": "a4b868f03ce3ec76e239da69b374c97d03cf6565e0e98691e50030982dae5b2d",
+    "milestones/M03-n8n-foundation/evidence/remaining-allocation-after-runtime-metadata-20261024.md": "2b14b3bdb69a96b3d32c5eeab23b7d057c23a14f9093e4569cdb045c439b0faa",
+    "milestones/M03-n8n-foundation/evidence/remaining-allocation-after-runtime-metadata-approval-20261024.json": "d5e89e3656f23e3665b2182ef6778f1c3cdd035d8adcc95b0b058f33c203bd83",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json": "226ed15257e8fb5ac2c81f454631bcf11773f67ce9fdc15d6048184389260983",
+    "milestones/M03-n8n-foundation/evidence/runtime-restoration-20261024.json": "365c8bb069e6f7246c89261fb543b8fa9dbd8f38587500da64d5f4d38e065946",
+    "milestones/M03-n8n-foundation/evidence/runtime-restoration-fixture-archive-20261024.json": "37c3f0dc518799700cde6c56f18569634c33b919ba26b4bbac1e6d2d09baa656",
+    "milestones/M03-n8n-foundation/evidence/runtime-restoration-cleanup-20261024.json": "50b274b1f6e26d6ba34b602c2cae45136aea19353073d185a1b25ba4b9cc016a",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-reconciliation-20261024.json": "6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json": "aabddbc205c3582ba51beb16ca734c35378cf6caa79c288184aaa13c08c4406c",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical15-reconciliation-20261024.json": "59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical15-cleanup-20261024.json": "21d4d3c897b67189999ae502906dac4cfeb33e187011a8958913bb6fba705b29",
+    "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-checkpoint-20261024.json": "9c49750496d602781903de09459d729c6a3061b433a78cfea6aabdb4d796e99f",
+    "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-db-readback-20261024.json": "3e7ad86a3417716b052cb150866b2f1baa5faf61288fffc10e6c55526d49bcf0",
+    "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-api-readback-20261024.json": "8eea80405984958d46623f9c20be7421e629cde85dfd515ac89ee27320dac0c2",
+    "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-cleanup-20261024.json": "7a79792ee2143f99680346bbd704d3cb274a141a57eade33be117205b1e198c9",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-reconciliation-20261024.json": "d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical16-cleanup-20261024.json": "49192237b29231f20f67595fdc7522b49926f10c8e278bea3871cf75a9788b57"
+  },
+  "node": {
+    "path": "C:\\Program Files\\nodejs\\node.exe",
+    "sha256": "9a4eb5f1c29c6a2e93852ead46b999e284a6a5ca8bab4d4e241d587d025a52de"
+  }
+}

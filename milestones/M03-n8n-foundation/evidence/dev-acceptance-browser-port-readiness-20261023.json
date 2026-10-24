@@ -1,0 +1,99 @@
+{
+  "kind": "m03_existing_browser_port_implementation_readiness",
+  "version": 1,
+  "environment": "dev",
+  "recordedOn": "2026-10-23",
+  "previousDelivery": {
+    "head": "fa064d9dbcce414ba807da76fd796e7fd9d7eff3",
+    "ciRun": "40010364121",
+    "attempt1": "Four jobs passed; e2e installation was cancelled after a guarded 12.54-minute stall. Cause unknown.",
+    "attempt2": "The one targeted e2e retry passed. All five required jobs and Vercel were verified green on this exact head before technical4 admission.",
+    "verification": "Root actual gh PR status readback and peer f73a88; historical pending CI recovery receipt is preserved."
+  },
+  "actualTechnical4": {
+    "receipt": "dev-acceptance-technical4-reconciliation-20261023.json",
+    "receiptSha256": "b4e9beab46bf5c375529f082e9815979d87e9c6a3526edf38705c418bc78f0ef",
+    "failure": "Early MCP discovery returned tool_error; no successful metadata response is inferred.",
+    "newControlRequests": 1,
+    "newManagementRequests": 0,
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "databaseOperations": 0,
+    "previewSetupRequests": 0,
+    "workflowWrites": 0,
+    "rawFalseClosureFlagsPreserved": true,
+    "separateGuardedLocalCleanup": "503d5d native0: both credential-bearing children dead, parent lock absent and unused temporary bypass deleted without reading contents. Persistent originals untouched."
+  },
+  "implementation": {
+    "existingConsumersExtended": true,
+    "newCredentialPlatform": false,
+    "newWindowScriptFamily": false,
+    "selectedNativeSource": "browser_ui",
+    "mcpContractsRemainStrict": true,
+    "browserReadinessIsNotMcpPermissionOrVersionEvidence": true,
+    "actualSavedBindingCheckedBeforeAndAfterBrowserReadiness": true,
+    "start": "One durable intent, one whole-workflow UI click, exact owned native execution URL and positive ID; ambiguous completion is fenced without another click.",
+    "urlCorrelation": "Fresh unfiltered empty native execution history, no active execution, one click, exactly one new card, then its actual rendered link and resulting URL. Never select a latest row among multiple entries.",
+    "nativeExecutionBodyTreeBusinessPrivacyAndDeletionChecksRetained": true,
+    "browserPortTimeoutMs": 60000,
+    "ordinaryApiAndMcpTimeoutMs": 15000,
+    "hardDeadlineAndCumulativeCountersRetained": true
+  },
+  "localValidation": {
+    "technical4GuardAndAdminClient": "47/47 native0, no skips; independent focused review and public pin checks clear.",
+    "browserBridgeControllerCliAndNativeWrapper": "61/61 native0 before the additional immediate-binding check; independent five JavaScript browser cases and one actual PowerShell projection case passed.",
+    "immediateBindingRegression": "RED9079d3 then GREENb5935a; final controller14/14 native0, no skips. Independent2/2 native0 9df7aa. Details-time saved-definition drift produces zero start intents and clicks.",
+    "lintFormattingAndReview": "Affected ESLint/format/diff checks passed; focused independent review has no P1/P2.",
+    "limitations": "These local checks do not prove live A-D acceptance."
+  },
+  "actualPublicReadiness": {
+    "earlierWrapperFailure": "666659 stopped before private access/admission because both existing database packets retained an old guard source hash.",
+    "packetRepair": "e1dd37 updated only the45-packet guard pin and the47-packet guard plus45-packet pin. All92 pins are current; keysets and all non-files authority/history/migration fields are unchanged.",
+    "baseSeal": "2c7f10 native0:39 project/840 runtime files; no private read or network.",
+    "finalAcceptanceSeal": "edb03f native0:230 project/840 runtime files; no private read or network.",
+    "wrapperCheckOnly": "67f06b native0:check_only_ready, privateRead:false, networkRequests:0, publicCompositionLoaded:true, adminPublicInputsVerified:true, adminHandoffReady:false, actualMcpPortVerified:false.",
+    "adminHandoffInterpretation": "The disposable Admin copy is absent until the persistent loader prepares it; this is not a missing persistent credential or an authentication result."
+  },
+  "actualBrowserReadback": {
+    "account": "Authenticated Chrome Person1, intended n8n instance and Personal project pHvQjDmjxVZ3KQLT.",
+    "ownedWorkflow": "MzimjpsuyPuK7SKe / WF-00 · Orchestrator [dev]",
+    "observed": "Exact editor URL/name/project link and enabled bottom whole-workflow Execute control; execution-list-empty1/cards0/load-more0/No active executions1; Any Status/Any version/Any rating and blank date/text/tag filters.",
+    "selectorContract": "Use the observed data-test-id attributes; the browser default getByTestId selector is different. Check fresh rendered state after navigation. A combined reload/wait helper timed out before any click; subsequent fresh observation verified the ready editor.",
+    "executionsStarted": 0,
+    "secretsRead": false
+  },
+  "usage": {
+    "management": 127,
+    "control": 352,
+    "combined": 479,
+    "vercelUsed": 44,
+    "vercelCumulativeMaximum": 88,
+    "managementMaximum": 512,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "remainingReviewedManagementPlanMaximum": 503,
+    "browserAdditionalControlBindingReadsMaximum": 24,
+    "actorsUsed": 0,
+    "actorsMaximum": 2,
+    "actorUsdEachMaximum": 1,
+    "actorUsdTotalReserve": 2,
+    "allowancesReplenished": false
+  },
+  "documentationBoundary": {
+    "automaticApprovalReview": "Blocked the combined final CI receipt/root PROGRESS/M03 PROGRESS mutation before execution with generic blocked by policy. No retry through another editor or command was performed.",
+    "preserved": "Earlier pending-state edits to those progress files and the historical pending recovery receipt remain untouched. This new implementation receipt and n8n README were outside the rejected action."
+  },
+  "next": "Deliver the meaningful code/documentation change through normal PR CI, verify that exact head, then continue the existing remaining M03 A-D consumer under standing authority. No new credential or time-only approval.",
+  "acceptance": {
+    "liveDevADVerified": false,
+    "productionChanged": false,
+    "pr8Merged": false,
+    "m04Started": false
+  },
+  "officialSources": [
+    "https://github.com/n8n-io/n8n-docs/blob/main/docs/build/understand-workflows/understand-executions/types-of-executions.md",
+    "https://raw.githubusercontent.com/n8n-io/n8n/n8n@2.43.5/packages/frontend/editor-ui/src/app/composables/useRunWorkflow.ts",
+    "https://raw.githubusercontent.com/n8n-io/n8n/n8n@2.43.5/packages/frontend/editor-ui/src/features/execution/executions/components/workflow/WorkflowExecutionsSidebar.vue",
+    "https://raw.githubusercontent.com/n8n-io/n8n/n8n@2.43.5/packages/frontend/editor-ui/src/features/execution/executions/components/workflow/WorkflowExecutionsCard.vue"
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "scope": "Owner-only public seal and Probe CheckOnly helper; isolated synthetic local verification only",
+  "files": {
+    "scripts/n8n/windows/New-M03GW01GatewayPublicSeal.ps1": "387d71473c7098a9d6c7ff1a9a900643983c5b2ca4a026ede58174b2bdc9e8a5",
+    "scripts/n8n/gw01-public-seal.test.mjs": "ad0728ba121858cc9a895646e24dcc2b4bddf0f669f180e65a575beceff34a2f"
+  },
+  "consumerPin": "943e2441ba5fcb935a48a41a8001f237acdf3e1385ca1940a7f3ebcf706e773a",
+  "testDrivenDevelopment": {
+    "red": {
+      "command": "node --test scripts/n8n/gw01-public-seal.test.mjs",
+      "result": "Missing new helper ENOENT; test module failed before implementation",
+      "nativeExit": 1
+    },
+    "positivePathCorrection": "First synthetic positive case exposed a relative-path regex that incorrectly rejected root pnpm-lock.yaml. Corrected locally; no actual credential or dependency was consumed.",
+    "green": {
+      "command": "node --test scripts/n8n/gw01-public-seal.test.mjs",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "durationMs": 32878.3113
+    }
+  },
+  "verifiedInSyntheticFixtures": [
+    "Actual reviewed consumer copied unchanged, with a harmless public-only Node runner and fixture-pinned public source files",
+    "Exact fixed required inventory derived by AST from hash-pinned consumer, plus physical dependency runtime inventory",
+    "Positive public CheckOnly returns privateRead false and preserves an unreadable non-DPAPI placeholder handoff and the fixture journal",
+    "Same seal is reused without a rewrite; a differing seal is preserved and blocks",
+    "Consumer, transport and lockfile drift block before seal creation",
+    "Wrong project/window/ref or incomplete CloudA proof blocks without fabricating a flag",
+    "Wrong dependency junction and nested reparse runtime directory block",
+    "New post-seal runtime JavaScript causes drift rather than resealing",
+    "Missing handoff returns a blocked CheckOnly after public sealing, without claiming readiness",
+    "Synthetic poisoned environment is absent from the public child"
+  ],
+  "staticChecks": {
+    "powerShell5Parser": "passed",
+    "eslint": "passed",
+    "prettier": "passed",
+    "diffWhitespace": "passed"
+  },
+  "independentReview": {
+    "status": "peer and root source review clear",
+    "reviewers": [
+      "/root",
+      "/root/agent_probe_review"
+    ],
+    "peerResult": "Complete source and fixture review clear at the recorded hashes; independent PowerShell5 parser exit0. No new P0/P1/P2 in reviewed scope. Author14 test results were not rerun by reviewer.",
+    "boundary": "Source review only; actual helper, CheckOnly and runtime inventory were not invoked by reviewer",
+    "rootResult": "Root read the full387d7147 helper source; fixed pinned inventory, one junction guard, atomic no-different-overwrite and bounded public CheckOnly flow clear. Actual helper/junction read remains unperformed by root."
+  },
+  "historicalPolicyBoundary": {
+    "tool": "exec_command",
+    "result": "blocked by policy",
+    "executed": false,
+    "operation": "Non-secret actual shared-Zod junction target diagnostic",
+    "exactPriorCommandRecord": "milestones/M03-n8n-foundation/evidence/local-gw01-gateway-consumer-20261018.json",
+    "interpretation": "Not a database or credential authentication failure; no alternate tool or wrapper retry was performed"
+  },
+  "actualEnvironment": {
+    "actualHelperInvoked": false,
+    "actualCheckOnlyInvoked": false,
+    "actualDependencyJunctionInspected": false,
+    "actualPublicSealCreated": false,
+    "actualHandoffRead": false,
+    "actualSecretDecrypted": false,
+    "gatewayRequests": 0,
+    "platformLogReads": 0,
+    "trialJournalMutations": 0,
+    "hostedWrites": 0
+  },
+  "ownerProcedure": {
+    "filename": "scripts/n8n/windows/GW01-PUBLIC-SEAL.md",
+    "prerequisites": "Coordinator-recorded CloudA privacy plus new dedicated ProtectionBypass handoff, current reviewed Preview and existing trial journal",
+    "application": "Windows PowerShell under the same Windows account",
+    "command": "& 'D:\\Everyone\\everyone Market Research\\everyone-market-radar\\scripts\\n8n\\windows\\New-M03GW01GatewayPublicSeal.ps1'",
+    "exitCommand": "$LASTEXITCODE",
+    "expected": [
+      "PUBLIC_SEAL_READY",
+      "check_only_ready / privateRead:false / rootChildClosed:true / handoffsRetained:true / result:null",
+      "exit0"
+    ],
+    "readinessReply": "GW-01 public seal and CheckOnly ready; privateRead false; exit0",
+    "onFailure": "Stop with the fixed PUBLIC_SEAL_BLOCKED or PUBLIC_CHECK_ONLY_BLOCKED and exit code; retain journal/handoffs/existing seal for reconciliation"
+  },
+  "remaining": "Root and peer source reviews are clear. Actual owner-run public seal/positive guard remains pending. CloudA proof and Protection handoff presence were separately observed by root; this receipt remains local-only and makes no authentication or private-read claim. This helper grants no private request, runtime credential delivery, binding, production, paid call, workflow activation or milestone completion."
+}

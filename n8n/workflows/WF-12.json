@@ -1,0 +1,177 @@
+{
+  "key": "WF-12",
+  "id": "8pz1lF0xPDQCs3ab",
+  "versionId": "8a23fbff-e07d-4180-8bbc-2ef1db8512c3",
+  "active": false,
+  "activeVersionId": null,
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflow": {
+    "name": "WF-12 · Instagram stories collector [dev]",
+    "nodes": [
+      {
+        "id": "7333112d-bfa2-46e0-a7ff-563bc2ef6973",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "mode",
+                "type": "string"
+              },
+              {
+                "name": "limit",
+                "type": "number"
+              },
+              {
+                "name": "result_type",
+                "type": "string"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "2b60775e-d787-4261-a579-3d31e7ae3721",
+        "name": "Manual test",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "parameters": {},
+        "position": [
+          0,
+          200
+        ]
+      },
+      {
+        "id": "1395a49d-d8d4-4d3b-a120-09bd217912ad",
+        "name": "Validate dev input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const items = $input.all();\nconst invalid = () => { throw new Error('EMR_N8N_INPUT_INVALID'); };\nif (items.length !== 1) invalid();\nconst j = items[0].json;\nif (!j || typeof j !== 'object' || Array.isArray(j) ||\n  Object.keys(j).some(k => ![\"mode\",\"limit\",\"result_type\",\"env\"].includes(k))) invalid();\nif (j.env !== undefined && j.env !== null && j.env !== 'dev') invalid();\nconst mode = j.mode ?? 'manual';\nif (!['daily','backfill','weekly','manual','removal_check'].includes(mode)) invalid();\nconst limit = j.limit ?? null;\nif (limit !== null && (!Number.isInteger(limit) || limit < 1 || limit > 1000)) invalid();\nconst result_type = j.result_type ?? null;\nif (result_type !== null && (typeof result_type !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(result_type))) invalid();\n\n\nreturn [{json:{mode,limit,result_type,env:'dev'}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "aea2f3a8-fc67-4371-a66a-52c006072b4b",
+        "name": "Return stub",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "parameters": {
+          "mode": "manual",
+          "includeOtherFields": false,
+          "assignments": {
+            "assignments": [
+              {
+                "id": "3550887d-14a2-492e-a8bc-c3dbffc3a9c0",
+                "name": "stub",
+                "type": "boolean",
+                "value": true
+              },
+              {
+                "id": "7c59615c-3a3b-474f-a38d-78c44218df76",
+                "name": "workflow",
+                "type": "string",
+                "value": "WF-12"
+              },
+              {
+                "id": "e065af0a-4a29-4f2d-aa06-befd5b803f3e",
+                "name": "received",
+                "type": "object",
+                "value": "={{ $json }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          480,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual test": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate dev input": {
+        "main": [
+          [
+            {
+              "node": "Return stub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "9VKnf3HlzT1qNNfW",
+        "name": "layer:collector"
+      },
+      {
+        "id": "9N3BQMVj0uqaD0p1",
+        "name": "platform:ig_stories"
+      }
+    ],
+    "pinData": {}
+  },
+  "definitionProfile": "inactive_native_staging",
+  "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+  "intendedSourceHash": "10428d446817ea8fbe9d6a052b5fab22cd581cf46f7c144c42b678147e7baff4",
+  "stagedSourceHash": "de084846bcc388ca2cd8c0fc7bcf6e504990610f6b3651d8ffb09f77fb82eff6",
+  "canonicalParity": false,
+  "kind": "actual_saved_inactive_foundation_staging",
+  "version": 1,
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+}

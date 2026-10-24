@@ -1,0 +1,45 @@
+{
+  "kind": "m03_expired_window_delivery_readback",
+  "version": 1,
+  "observedAtUtc": "2026-10-21T11:52:36.1763596Z",
+  "branch": "m03-n8n-foundation",
+  "deliveryHead": "b8d04657e1caa5c76cd6f7472ae3df00b2cf88aa",
+  "deliveryCi": 39591865256,
+  "allFiveCiJobsPassed": true,
+  "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "originalWindowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+  "originalStopAtMs": 1792583423481,
+  "originalDeadlineAtMs": 1792584023481,
+  "ownerReportedRuntimeReplenishedAndUnusedBypassDeleted": true,
+  "unusedBypassPresent": false,
+  "runtimeHandoffs": {
+    "management": { "cipherPresent": true, "leasePresent": true, "metadataMatchesAndUnexpired": true, "createdAfterOriginalStop": true },
+    "writer": { "cipherPresent": true, "leasePresent": true, "metadataMatchesAndUnexpired": true, "createdAfterOriginalStop": true },
+    "apifyRead": { "cipherPresent": true, "leasePresent": true, "metadataMatchesAndUnexpired": true, "createdAfterOriginalStop": true }
+  },
+  "administrator": {
+    "originalCipherPresent": true,
+    "cipherNeverOpenedOrDecrypted": true,
+    "publicLeaseExpiresAtUtc": "2026-10-21T12:52:25.6231844Z",
+    "coversFreshSeventyFiveMinutesAtObservation": false,
+    "leaseChanged": false
+  },
+  "publicGuard": { "receipt": "dd4652", "status": "zero_setup_blocked", "nativeExit": 1, "privateRead": false, "networkRequests": 0 },
+  "actualCheckpoint": {
+    "receipt": "319fdc",
+    "originalManagementHeaderOnly": true,
+    "managementAttempts": 0,
+    "controlPreflightSetupRuntimeJournalsAbsentOrEmpty": true,
+    "databasePushProvisionLatestAndTypeArtifactsAbsent": true,
+    "runtimeAndParentLocksAbsent": true,
+    "ownedAcceptanceChildren": 0
+  },
+  "newCiphertextOpened": false,
+  "decryption": false,
+  "authenticationAttempted": false,
+  "networkRequests": 0,
+  "deadlineOrCountersReset": false,
+  "newWindowApproved": false,
+  "handoffsConsumedOrDeleted": false,
+  "outcome": "Blocked on explicit clock-only amendment; all new handoffs retained encrypted and untouched"
+}

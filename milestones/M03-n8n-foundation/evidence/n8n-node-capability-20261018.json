@@ -1,0 +1,242 @@
+{
+  "milestone": "M03-n8n-foundation",
+  "recordedAt": "2026-10-18T04:13:10Z",
+  "status": "BOUNDED_LIVE_UI_CAPABILITY_PROBE_COMPLETED_NO_EXECUTIONS",
+  "purpose": "T1/T2 live node defaults, credential-form field labels, Variables availability and recoverable cleanup. This is not foundation workflow or provider execution acceptance.",
+  "provenance": {
+    "method": "Existing signed-in Chrome browser 1, CUA tab 1091382955; owner-confirmed intended instance.",
+    "instanceUrl": "https://muhhammedsayed.app.n8n.cloud",
+    "projectName": "Personal",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "timestampBoundary": "recordedAt is the local evidence recording time following the observations. The editor supplied no server observation timestamp.",
+    "parentRuntimeEvidence": "milestones/M03-n8n-foundation/evidence/n8n-runtime-access-20261018.json",
+    "privateCredentialValuesReadEnteredOrExported": false,
+    "unrelatedWorkflowOrCredentialOpenedChanged": false,
+    "workflowExecutions": 0,
+    "providerCalls": 0,
+    "nodeInstallOrUpdate": false
+  },
+  "runtimeBoundary": {
+    "parentVerifiedRuntimeVersion": "2.43.5",
+    "parentVerifiedTimezone": "Africa/Cairo",
+    "parentVerifiedPlanBeforeOwnerUpgrade": "Pro (Monthly), 10000 allowance / 10000 shown used",
+    "parentVerifiedPlanAfterOwnerUpgrade": "Online, running 2.43.5, 50000 allowance / 11001 shown used",
+    "planProvenance": "Parent agent /root read Cloud admin directly and reported the post-upgrade saved state. This worker did not read billing or change/restart the instance.",
+    "sharedUsageBoundary": "The usage difference is not attributed to M03; this probe executed no workflow.",
+    "timeout": {
+      "actualWorkflowSettingVisible": true,
+      "timezoneShown": "Default - Africa/Cairo",
+      "probeTimeoutEnabledAndSaved": true,
+      "probeTimeoutSeconds": 900,
+      "saveConfirmation": "Workflow settings saved",
+      "durationInputsHtmlMinMax": null,
+      "maximumPlanTimeoutVerifiedHere": false,
+      "note": "The owned unused probe saved 15 minutes. Its form did not expose a maximum; the public plan-duration documentation is not an actual maximum-limit test."
+    },
+    "subworkflowQuotaTreatmentVerifiedByExecution": false
+  },
+  "ownedProbe": {
+    "name": "M03 · Node capability probe [dev]",
+    "workflowId": "MDZ5d8I8ed9Y6t7t",
+    "url": "https://muhhammedsayed.app.n8n.cloud/workflow/MDZ5d8I8ed9Y6t7t",
+    "createdWorkflowCount": 1,
+    "published": false,
+    "exportActive": false,
+    "exportAvailableInMCP": false,
+    "nodeCount": 12,
+    "credentialReferenceCount": 0,
+    "pinnedDataKeyCount": 0,
+    "queriesAndHttpUrlsEntered": false,
+    "testWebhookListeningStarted": false,
+    "executionLogReadback": "Nothing to display yet. Execute the workflow to see execution logs.",
+    "cleanup": {
+      "archived": true,
+      "freshDetailReadback": "Archived",
+      "freshMoreActionsReadback": "Unarchive",
+      "recoverable": true,
+      "unarchiveOrDeleteClicked": false,
+      "unrelatedWorkflowsChanged": false,
+      "inventoryBoundary": "The initial Overview count of 47 and the later Personal count of 27 have different scopes. No deletion or unchanged-global-inventory claim is derived from those counts."
+    }
+  },
+  "actualExportedNodeTypeVersions": [
+    {
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7
+    },
+    {
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5
+    },
+    {
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4
+    },
+    {
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2
+    },
+    {
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5
+    },
+    {
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4
+    },
+    {
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1
+    },
+    {
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3
+    },
+    {
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4
+    },
+    {
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3
+    }
+  ],
+  "actualVisibleNodeParameters": {
+    "postgres": {
+      "operation": "Execute Query",
+      "credentialControl": "Connect to Postgres; no credential selected",
+      "query": "Blank",
+      "optionsQueryParameters": true,
+      "exportedParameterPath": "options.queryReplacement",
+      "help": "Comma-separated list of values: reference them in your query as $1, $2, $3…",
+      "otherOptionsVisible": [
+        "Connection Timeout",
+        "Delay Closing Idle Connection",
+        "Query Batching",
+        "Output Large-Format Numbers As",
+        "Replace Empty Strings with NULL"
+      ]
+    },
+    "executeWorkflow": ["Source", "Workflow", "Mode", "Options"],
+    "executeWorkflowTrigger": {
+      "inputDataMode": "Define using fields below",
+      "workflowInputSchemaVisible": true
+    },
+    "webhook": {
+      "fields": ["HTTP Method", "Path", "Authentication", "Respond"],
+      "respondDefault": "Immediately",
+      "defaultRandomPathKept": true
+    },
+    "set": {
+      "modeDefault": "Manual Mapping",
+      "fields": ["Fields to Set", "Include Other Input Fields"]
+    },
+    "code": "Default JavaScript boilerplate only; no execution",
+    "otherNodes": "If Conditions, Switch Rules, Schedule Trigger rules and Error Trigger were available. No test execution or complete conditional schema enumeration was performed."
+  },
+  "apifyRegistry": {
+    "observedInLiveNodePicker": true,
+    "installedBadge": true,
+    "verifiedBadge": true,
+    "packageVersionShown": "0.6.10 (Legacy)",
+    "newVersionAvailableNotice": true,
+    "updateOrInstallClicked": false,
+    "nodeAdded": false,
+    "credentialSelected": false,
+    "actualApifyNodeTypeVersionExported": false,
+    "npmPackageNameLiteralExposedByUi": false,
+    "actionsCountShown": 11,
+    "triggersCountShown": 1,
+    "actions": [
+      "Run an Actor",
+      "Run an Actor and get dataset",
+      "Scrape single URL",
+      "Get last run",
+      "Run task",
+      "Run task and get dataset",
+      "Get user runs list",
+      "Get run",
+      "Get runs",
+      "Get dataset items",
+      "Get key-value store record"
+    ]
+  },
+  "emptyCredentialDrafts": {
+    "postgres": {
+      "newUnsavedDraftOnly": true,
+      "existingCredentialOpened": false,
+      "fieldsAndDefaults": {
+        "Host": "localhost",
+        "Database": "postgres",
+        "User": "postgres",
+        "Password": "Blank; not revealed or extracted",
+        "Maximum Number of Connections": 100,
+        "Ignore SSL Issues (Insecure)": false,
+        "SSL": "Disable",
+        "Port": 5432,
+        "SSH Tunnel": false
+      },
+      "sslOptions": ["Allow", "Disable", "Require"],
+      "requireSelectedInUnsavedDraftForInspection": true,
+      "caCertificateOrUploadFieldVisibleAfterRequire": false,
+      "strictSupabaseCertificateTrustVerified": false,
+      "ignoreSslBypassUsed": false,
+      "saveTestOrCreateClicked": false,
+      "closedVia": "Close dialog",
+      "afterClose": "Probe node still showed Connect to Postgres; no credential selected"
+    },
+    "headerAuth": {
+      "newUnsavedDraftOnly": true,
+      "existingCredentialOpened": false,
+      "fields": ["Name", "Value", "Allowed HTTP Request Domains"],
+      "allowedHttpRequestDomainsOptions": ["All", "Specific Domains", "None"],
+      "specificDomainsReveals": "Allowed Domains",
+      "allowedDomainsPlaceholder": "example.com, *.subdomain.com",
+      "publicUseImplication": "A Header Auth credential can restrict HTTP-node destinations. Actual header values and allowed domains remain owner configuration, not verified credentials.",
+      "valuesEnteredOrExtracted": false,
+      "saveTestOrCreateClicked": false,
+      "closedVia": "Close dialog",
+      "afterClose": "Create credential list action visible; no credential draft dialog remained"
+    }
+  },
+  "variables": {
+    "url": "https://muhhammedsayed.app.n8n.cloud/projects/pHvQjDmjxVZ3KQLT/variables",
+    "observationScope": "Headings and button text only; no full page snapshot, variable names, inputs or values read",
+    "heading": "Personal",
+    "createVariableButtonVisible": true,
+    "editDeleteButtonsVisible": true,
+    "availabilityVerified": true,
+    "variableCreatedChangedDeleted": false
+  },
+  "export": {
+    "originalDownload": "C:/Users/iway/Downloads/M03 · Node capability probe [dev].json",
+    "downloadObserverTimedOut": true,
+    "reconciliation": "The first Export JSON action produced the actual file despite the observer timeout. Its id/name/active state and 12 nodes were parsed. Export was not retried.",
+    "artifact": "milestones/M03-n8n-foundation/evidence/sanitizedprobe.json",
+    "retainedTopLevelFields": ["id", "name", "active", "nodes", "connections", "settings", "pinData"],
+    "accountInstanceAndSharingMetadataRemoved": true,
+    "normalization": "UTF-8 without BOM, two-space JSON and LF. The first PowerShell serialization had a BOM and verbose whitespace; local JSON.parse detected it and the artifact was corrected without changing retained semantic values.",
+    "bytes": 6120,
+    "sha256": "4153e462168a4979528336d0f607c49e9ffe931ef4317a29d5df12532675a01a",
+    "artifactIsFoundationWorkflow": false
+  },
+  "historicalInterruptions": [
+    "The owner's plan upgrade temporarily made the editor appear offline. No workflow write/export retry was attempted while offline. Parent later verified Online state and this worker reloaded/read back the same owned workflow.",
+    "A stale node/menu element after archive detached; a fresh navigation to the same owned id established Archived and Unarchive.",
+    "Credential picker search debounce initially left Gumroad OAuth2 API selected. No credential form was submitted for it; a fresh exact Header Auth selection was verified before opening the one empty Header Auth draft."
+  ],
+  "acceptanceLimits": [
+    "Live UI creation, readback, settings save, JSON export and recoverable archival of this one unused probe are established. SDK/API create/update/run/export access is a separate gate; previously reported connector internal errors are not resolved by this receipt.",
+    "The probe was neither executed nor activated. No Postgres login, strict TLS trust, provider credential validity, actor call, webhook exchange or real workflow smoke is established.",
+    "Core defaults and exported typeVersions do not enumerate every conditional node parameter. The installed Apify version is legacy and its node typeVersion/schema was not exported.",
+    "Actual maximum timeout and sub-workflow quota behavior were not experimentally established. No pending n8n skill was promoted."
+  ]
+}

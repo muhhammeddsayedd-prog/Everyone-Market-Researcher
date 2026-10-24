@@ -1,0 +1,17 @@
+{
+  "observedAt": "2026-10-23T17:39:33.961Z",
+  "scope": "one-owned-inactive-dev-workflow-definition",
+  "ownerReply": "Restore reviewed WF-00 (Recommended)",
+  "workflowId": "MzimjpsuyPuK7SKe",
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "sourceCommitSha": "025c2a2c0127566df71cef77797db277f1565568",
+  "sourceFile": "n8n/workflows/WF-00.json",
+  "privateEncryptedRollbackRequired": true,
+  "freshDriftRecheckRequired": true,
+  "savedGraphReadbackRequired": true,
+  "otherWorkflowMutationAllowed": false,
+  "executionAllowed": false,
+  "productionAllowed": false,
+  "budgetReplenished": false,
+  "completed": false
+}

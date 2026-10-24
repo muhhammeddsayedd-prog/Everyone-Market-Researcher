@@ -1,0 +1,104 @@
+{
+  "kind": "m03_unadmitted_wf00_manual_execution_checkpoint",
+  "version": 1,
+  "recordedAt": "2026-10-24T15:46:14.023Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "helperHead": "17f83cfaf82118e3baf641d447b0ac49e480ac30",
+  "pr": 8,
+  "prDraft": true,
+  "event": {
+    "workflowId": "MzimjpsuyPuK7SKe",
+    "workflowName": "WF-00 ? Orchestrator [dev]",
+    "browserId": "2",
+    "tabId": "1091385249",
+    "startedAt": "2026-10-24T15:41:07.249Z",
+    "lastObservedNodeStartedAt": "2026-10-24T15:41:09.595Z",
+    "lastObservedNodeDurationMs": 33,
+    "action": "clicked From Manual slot test menu item expecting selection",
+    "actualBehavior": "menu item immediately started whole workflow",
+    "acceptanceAdmitted": false,
+    "executionId": null,
+    "executionIdVerified": false,
+    "nativeStartsObserved": 1,
+    "observedRoute": [
+      "Manual slot test",
+      "Config",
+      "Which slot?",
+      "Route child",
+      "Prepare gateway ? Audit unknown slot",
+      "Invoke gateway ? Audit unknown slot",
+      "Observe gateway ? Audit unknown slot",
+      "Read durable gateway ? Audit unknown slot",
+      "Audit unknown slot"
+    ],
+    "gatewayHttpRequestsObserved": 2,
+    "finalNodeStatus": "error",
+    "fixedErrorCode": "EMR_FOUNDATION_RESPONSE_UNCONFIRMED",
+    "browserOverallRunningTimerStaleOrUnresolved": true,
+    "executionListObservedEmpty": true,
+    "executionListObservedNoActive": true,
+    "retainedMetadataNotYetRead": true,
+    "rawExecutionPayloadRead": false,
+    "furtherExecutionStopped": true,
+    "claimedAcceptancePass": false
+  },
+  "priorUsage": {
+    "management": 524,
+    "control": 843,
+    "combined": 1367,
+    "vercel": 149,
+    "nativeExecutions": 0,
+    "actorStarts": 0
+  },
+  "conservativeAdditionalReservation": {
+    "management": 0,
+    "control": 3,
+    "combined": 3,
+    "nativeExecutions": 1,
+    "gatewayHttpRequests": 2,
+    "basis": "one observed manual start and two observed gateway HTTP sends, charged conservatively outside the unchanged consumer journals"
+  },
+  "reservedCumulativeUsage": {
+    "management": 524,
+    "control": 846,
+    "combined": 1370,
+    "vercel": 149,
+    "nativeExecutions": 1
+  },
+  "limits": {
+    "management": 1024,
+    "control": 2048,
+    "combined": 2560,
+    "vercel": 224,
+    "nativeExecutions": 120,
+    "gatewayHttpRequests": 256,
+    "actorStarts": 2,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/live/management.jsonl": "286512d99d0cae06a2552a3b711e9001ce4f83bcde5a853fc519719240e923d0",
+    "scripts/n8n/out/foundation/live/control.jsonl": "a9a2ef11d6eceb827e122736e365ef41c6e463a4acf258ef2eda04da9be13744",
+    "scripts/n8n/out/foundation/live/setup.jsonl": "3a4d4e99bf282d54d0936017a54a5f6fbedb3ea8316ab69b16e61aaa6dfc15a6",
+    "scripts/n8n/out/foundation/live/preflight.jsonl": "18462d8220c4e400da5c6f823bc6565686f80bc0b8b8a6553e79bd5209fbb377",
+    "scripts/n8n/out/foundation/live/runtime.jsonl": "3f1c85ad7d185481da33c8989b34b82cbbef26aa3ec01209bc13561bd3481378",
+    "scripts/n8n/out/foundation/live/runtime.technical-13.jsonl": "5f323f1a3328689edcd05ab61eb74cb334f4b63c3e8bc81b0beeb9bf42d1f6ac"
+  },
+  "reconciliation": {
+    "databaseReadbackPending": true,
+    "executionMetadataPending": true,
+    "savedWorkflowReadbackPending": true,
+    "newAcceptanceBlocked": true,
+    "actorAndDurableSideEffectsNotYetIndependentlyVerified": true
+  },
+  "boundaries": {
+    "productionTouched": false,
+    "recurringActivation": false,
+    "notificationsRequested": false,
+    "sharedCredentialChanges": false,
+    "r2Touched": false,
+    "merged": false,
+    "m04Started": false
+  }
+}

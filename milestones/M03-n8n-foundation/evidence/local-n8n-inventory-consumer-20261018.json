@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "observedDate": "2026-10-18",
+  "environment": "local Node24 / Windows PowerShell5 synthetic fixtures only",
+  "target": {
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "projectLabel": "Personal",
+    "reviewedSourceVersion": "n8n@2.43.5",
+    "boundary": "Target/runtime identity comes from the separately recorded browser observation, not an API request in these tests"
+  },
+  "sourceCheckpoint": {
+    "scripts/n8n/inventory.mjs": "a964466ab6c33328c42b4e574384b9c7eb50840b24913514f999658a44c855af",
+    "scripts/n8n/windows/New-M03N8nApiHandoff.ps1": "c8c9d34855ef55c5391f5b14c80a7768b51761a149982f4917b910c391c788e2",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "06e28e11db31c8adc53af27c28c98fcfb4634a5b39d6a57237889e80258bac59"
+  },
+  "actualLocalChecks": {
+    "command": "node --test scripts/n8n/inventory.test.mjs scripts/n8n/private-inventory.test.mjs",
+    "nodeCases": 18,
+    "windowsCases": 11,
+    "passed": 29,
+    "failed": 0,
+    "skipped": 0,
+    "nativeExit": 0,
+    "durationMs": 20809.1086,
+    "eslintCommand": "pnpm.cmd exec eslint scripts/n8n/inventory.mjs scripts/n8n/inventory.test.mjs scripts/n8n/private-inventory.test.mjs",
+    "eslintNativeExit": 0,
+    "prettierCommand": "pnpm.cmd exec prettier --check scripts/n8n/inventory.mjs scripts/n8n/inventory.test.mjs scripts/n8n/private-inventory.test.mjs",
+    "prettierNativeExit": 0,
+    "windowsPowerShell5ParserErrorsEach": 0
+  },
+  "redEvidence": [
+    "Node contract test failed with ERR_MODULE_NOT_FOUND before inventory.mjs existed; first implementation passed13 synthetic cases.",
+    "Eight isolated Windows fixtures failed before the DPAPI creator/consumer existed, then all8 passed.",
+    "A Windows fixture with real canonical Unicode names failed before ASCII char0x00b7 construction corrected PowerShell5 UTF8-without-BOM interpretation.",
+    "Actual-source credential shared.id fixture plus four key-reflection regressions failed5/5 before ownership/reflection corrections.",
+    "Final cross-contract and Windows tests cover all25 canonical workflow names, process-start failure, timeout, raw stderr, malformed JSON, unknown schema keys and private-key reflection."
+  ],
+  "reviewedContracts": {
+    "authentication": {
+      "source": "https://docs.n8n.io/connect/n8n-api/authentication.md",
+      "header": "X-N8N-API-KEY",
+      "nonEnterpriseKeyBoundary": "The vendor states non-Enterprise keys have broad account access. The consumer enforces GET-only operation bounds; it does not claim a scoped key."
+    },
+    "discovery": {
+      "source": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/public-api/v1/controllers/discover.public.controller.ts",
+      "serviceSource": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/public-api/v1/handlers/discover/discover.service.ts",
+      "shape": "data.resources contains operations and endpoint method/path metadata; only fixed capability booleans are projected. Scope listings, unknown endpoint strings and schemas are omitted."
+    },
+    "pagination": {
+      "source": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/public-api/v1/shared/services/pagination.service.ts",
+      "shape": "The final nextCursor is explicitly null. Non-final cursors are base64 strings, accepted only as bounded query parameter values, never as URLs."
+    },
+    "projects": {
+      "source": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/public-api/v1/controllers/projects.public.controller.ts",
+      "typeSource": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/%40n8n/db/src/entities/project.ts",
+      "shape": "GET projects has a PROJECT_ROLE_ADMIN license gate. Personal binding uses the fixed ID with type personal; other project names remain private. A403 is recorded separately and does not imply authentication failure."
+    },
+    "credentials": {
+      "source": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/public-api/v1/controllers/credentials.public.controller.ts",
+      "sharingSource": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/public-api/v1/handlers/credentials/credentials.utils.ts",
+      "shape": "The metadata list sharing entry uses id for project ID, with name/role/timestamps. Credential data is excluded by the vendor route. Only five exact M03 names, safe IDs and expected types are projected.",
+      "testRouteExistsButNotCalled": "POST /api/v1/credentials/{credentialId}/test uses stored data; it is excluded from this GET-only consumer."
+    },
+    "workflows": {
+      "source": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/public-api/v1/controllers/workflows.public.controller.ts",
+      "shape": "Sharing entries use projectId. The request fixes projectId and excludePinnedData=true. Response nodes, parameters, connections, staticData, meta, active-version contents and pinData are never emitted.",
+      "names": "All25 canonical M03 names are cross-checked against packages/shared/src/n8n-bindings.ts only in credential-free local tests.",
+      "manualExecution": "No manual execute/run route exists in the reviewed public controller. UI execution remains a separate live acceptance gate."
+    }
+  },
+  "bounds": {
+    "endpointFamilies": ["GET /api/v1/discover", "GET /api/v1/projects", "GET /api/v1/workflows", "GET /api/v1/credentials"],
+    "maximumRequests": 7,
+    "maximumPagesPerList": 2,
+    "maximumResponseBytesEach": 4194304,
+    "wholeOperationDeadlineMs": 60000,
+    "consumerChildDeadlineMs": 75000,
+    "killConfirmationMs": 5000,
+    "drainDeadlineMs": 5000,
+    "redirects": false,
+    "tls": "Default public CA trust, rejectUnauthorized true, exact fixed hostname and port443; public DNS results are checked and the selected address pinned",
+    "credentialHandoff": "%LOCALAPPDATA%\\Temp\\emr-m03-n8n-api-key.dpapi",
+    "childEnvironment": "Fresh OS-only allowlist plus M03_N8N_API_KEY; no database/provider/install credential inherited",
+    "cleanup": "Consumed synthetic handoff deleted, BSTR/SecureString disposed, process environment cleared and owned child closure confirmed in tests; separately saved owner key is untouched",
+    "reflectionGuard": "Any response value containing the request key fails closed before projection/cursor reuse and clears all projected resources. The consumer independently checks parsed output before accepting it."
+  },
+  "remainingGates": [
+    "Final independent/root source review and public source seal before any real API-key request",
+    "Fresh new M03 n8n-only encrypted handoff, presence check and bounded live GET receipt",
+    "Actual provider credential tests, workflow construction/export and UI smoke execution remain separate M03 gates"
+  ],
+  "notPerformed": {
+    "realApiKeyRead": true,
+    "realDpapiDecryption": true,
+    "liveN8nRequest": true,
+    "credentialTest": true,
+    "workflowMutationOrExecution": true,
+    "productionChange": true,
+    "mcpSetupOrLogin": true,
+    "paidProviderCall": true
+  }
+}

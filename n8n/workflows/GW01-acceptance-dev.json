@@ -1,0 +1,129 @@
+{
+  "name": "M03 gateway acceptance [dev]",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d285d37d-4ba4-4da2-b9cf-130b24d7a886",
+      "name": "Manual trial invocation",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app/api/internal/n8n/rpc",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"version\":1,\"requestId\":\"3a564cef-0e96-4a09-a412-cd948002a4d0\",\"operation\":\"identity.read\",\"args\":{}}",
+        "options": {
+          "allowUnauthorizedCerts": false,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 25000,
+          "sendCredentialsOnCrossOriginRedirect": false
+        }
+      },
+      "id": "9b4e1ba2-61fa-481b-b10c-deb9603b17c9",
+      "name": "Call fixed dev worker",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        208,
+        -64
+      ],
+      "retryOnFail": false,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "EmrGw01Machine18",
+          "name": "M03 GW-01 machine [dev]"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0b55293e-9c57-40da-a264-3956a48accf2",
+              "name": "connectionOnly",
+              "type": "boolean",
+              "value": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3994ccfd-99f8-4309-8e63-0e68af088aea",
+      "name": "Synthetic privacy receipt",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        -64
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual trial invocation": {
+      "main": [
+        [
+          {
+            "node": "Call fixed dev worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call fixed dev worker": {
+      "main": [
+        [
+          {
+            "node": "Synthetic privacy receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 30,
+    "availableInMCP": false
+  },
+  "versionId": "54817414-05dd-426b-995e-559104681b3b",
+  "meta": {
+    "instanceId": "fe5facdb5abbccc9433fc2854c55f8eda5bd15bbdaa2eb5873e386d9cc9b2495"
+  },
+  "nodeGroups": [],
+  "id": "p8GikCM8C9Tq3lo4",
+  "tags": []
+}

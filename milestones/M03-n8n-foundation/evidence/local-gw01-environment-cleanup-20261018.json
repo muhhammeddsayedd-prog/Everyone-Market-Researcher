@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "scope": "Local fixed-DELETE confirmation and one-time resume correction; actual completion is separately recorded in gw01-trial-closeout-20261018.json",
+  "sources": {
+    "helper": "scripts/n8n/gw01-public-config.mjs",
+    "helperSha256": "24f6c442013268e7b0240b9ea7b2d6da8bc660165766d6cd2b5106a384ff7265",
+    "testSha256": "064cd33269309a932cc636857b34161274a20f3bdd5d40489362e3ca2ba3cac4"
+  },
+  "nativeCliCause": {
+    "pinnedVercelCliVersion": "56.5.0",
+    "authorReproductionToolReceiptRef": "dd47ff",
+    "realFetches": 0,
+    "diagnosis": "The DELETE confirmation branch exits before fetch when stdin is piped; --yes is not consumed by this API command branch. This is not a hosted authentication failure."
+  },
+  "correction": {
+    "confirmationSkipFlag": "--dangerously-skip-permissions",
+    "scope": "Only the fixed owned DELETE child after actual closed-window, provenance and fresh ID/time/scope/type checks; never GET/POST/PATCH/global configuration",
+    "explicitMode": "ResumeCleanup",
+    "oneTimeResume": "Exactly one pending original DELETE with own metadata still present permits one durable delete_resumed_after_readback marker. A second invocation fails closed. GET-only ReconcileCleanup never mints permission.",
+    "acknowledgement": "Documented DELETE 200 payload is opaque; no row value is read or emitted, and mandatory fresh GET absence precedes each deleted marker."
+  },
+  "verification": {
+    "authorAffectedPassed": 86,
+    "authorNativeExit": 0,
+    "independentPeer": {
+      "toolReceiptRef": "5f4248",
+      "selectedPassed": 21,
+      "nativeExit": 0,
+      "status": "clear"
+    },
+    "rootActualPublicLedgerMock": {
+      "toolReceiptRef": "d1d8ee",
+      "mockedDeletes": 2,
+      "mockedResumeMarkers": 1,
+      "realNetworkCalls": 0,
+      "actualOperationalLedgerWrites": 0
+    },
+    "rootPublicResealAndCheckOnly": {
+      "nativeExit": 0,
+      "privateRead": false
+    },
+    "boundary": "Synthetic/source checks only in this local record; no actual network/private operation by this reviewer. Successful historical Apply/Verify execution sources are not retroactively replaced.",
+    "rootAffectedRun": {
+      "toolReceiptRef": "a655b9",
+      "selectedPassed": 21,
+      "nativeExit": 0
+    },
+    "sourceChecks": {
+      "prettierToolReceiptRef": "f252c8",
+      "eslintToolReceiptRef": "152069",
+      "nativeExit": 0
+    },
+    "countBoundary": "Author 86, peer 21 and root 21 are distinct executions of overlapping cases; they are not 128 unique tests. Root Preview reader 36-case result is recorded separately in the trial evidence."
+  }
+}

@@ -1,0 +1,608 @@
+{
+  "key": "WF-90",
+  "id": "S9NHRkKFUIiXX2wv",
+  "versionId": "2659fdda-1926-4a17-9450-a81098c8e091",
+  "active": false,
+  "activeVersionId": null,
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflow": {
+    "name": "WF-90 · Error handler [dev]",
+    "nodes": [
+      {
+        "id": "b075d8b1-875c-4a23-a877-48748f211158",
+        "name": "On workflow error",
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "parameters": {},
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "def17fd0-f407-4a0b-ac61-fe6e14456779",
+        "name": "Classify error",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const invalid = () => { throw new Error('EMR_N8N_INPUT_INVALID'); };\nconst items = $input.all();\nif (items.length !== 1) invalid();\nconst j = items[0].json;\nconst object = x => x !== null && typeof x === 'object' && !Array.isArray(x);\nconst exact = (x,allowed,required=[]) => object(x) && Object.keys(x).every(k=>allowed.includes(k)) && required.every(k=>Object.hasOwn(x,k));\nconst uuid = x => typeof x==='string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x);\nconst identifier = x => typeof x==='string' && /^[A-Za-z0-9_-]{1,200}$/.test(x);\nif (!object(j) || (j.env !== undefined && j.env !== null && j.env !== 'dev')) invalid();\nconst mapping={\"4JMHLDBSdgGxhPlk\":\"WF-10\",\"Oq19AMI9C3B1wbo9\":\"WF-11\",\"8pz1lF0xPDQCs3ab\":\"WF-12\",\"F7S8Llr0ZSaSuw4T\":\"WF-13\",\"VbJn4mLYm0sGy1X2\":\"WF-18\",\"h6lUXSGN5sV2jxuQ\":\"WF-18b\",\"02yefa9uEPYwmM3N\":\"WF-21\",\"83LybyawRpHXbjx6\":\"WF-22\",\"qzgT9giRQJ7eMDmV\":\"WF-23\",\"mySfLZbU7I1850uP\":\"WF-30\",\"kkAGgnbD8NjWHMKC\":\"WF-32\",\"ze8T1o0Cx0OGi3Wd\":\"WF-40\",\"2U6nPs3uJkmjij82\":\"WF-50\",\"S6KDFsx5IjQRf6tm\":\"WF-70\",\"gBDmjIIEoM6XC7Wi\":\"WF-80\",\"MzimjpsuyPuK7SKe\":\"WF-00\",\"TsqSMa5MlO3QBLkt\":\"WF-19\",\"sowAIvuN7adg0JBq\":\"WF-91\",\"qTjioYmBUVMIERVz\":\"WF-99\",\"lkVDS0oO4WULipeV\":\"SUB-START\",\"RUTwaXMRh3PgLhJq\":\"SUB-FINISH\",\"nDijMP0IurUw58Kg\":\"SUB-INGEST\",\"v4yeqqNm6xHjZ5ue\":\"SUB-COST\",\"tiEhU3dXrMifOnTL\":\"SUB-NOTIFY\"};\nconst source=j.workflow?.id;\nif(typeof source!=='string' || !Object.hasOwn(mapping,source)) throw new Error('EMR_N8N_ERROR_SOURCE_UNKNOWN');\nconst workflow=mapping[source];\nlet execution=String(j.execution?.id ?? ''),errorNode='Workflow',message=workflow==='WF-19'?'callback_retryable':'workflow_failed';\nif(!execution) {\n  // Native activation/trigger failures have no originating execution ID.\n  // Correlate with this actual error-handler execution instead, explicitly\n  // marked in the stored ID/node; never infer an originating run or execution.\n  const handler=String($execution.id ?? '');\n  if(!object(j.trigger) || !/^[A-Za-z0-9_-]{1,128}$/.test(handler))\n    throw new Error('EMR_N8N_ERROR_CORRELATION_UNAVAILABLE');\n  execution='handler-'+handler;\n  errorNode='Trigger activation';message='workflow_failed';\n}\nif(!identifier(execution)) invalid();\n// No unverified run_id/customData inference; callback execution errors remain retryable.\nconst audit={kind:'error',workflow,execution_id:execution,node:errorNode,message};\nreturn [{json:{workflow,execution_id:execution,params:[JSON.stringify(audit)]}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "2ed69f38-38fe-41bf-a96a-81a405d6d339",
+        "name": "Prepare gateway · Log classified error",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:WF-90:Log classified error:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=$json.params;if(!Array.isArray(p))fail();\nlet args;try{args=({entry:JSON.parse(p[0])});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"error.log\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          480,
+          0
+        ]
+      },
+      {
+        "id": "1529f32e-3577-4be5-a791-149130e49651",
+        "name": "Invoke gateway · Log classified error",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          600,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "7be84f55-5ece-4e15-a746-8ea925dbeea0",
+        "name": "Observe gateway · Log classified error",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Log classified error\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"logged\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          720,
+          0
+        ]
+      },
+      {
+        "id": "cd542f92-14a9-49e8-a554-21f8b6f5eef5",
+        "name": "Read durable gateway · Log classified error",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          840,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "394b8acb-b0a0-41a7-af37-bcd577204633",
+        "name": "Log classified error",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Log classified error\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"logged\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          960,
+          0
+        ]
+      },
+      {
+        "id": "edd52555-677a-4ac9-ae3e-7336447c906d",
+        "name": "Prepare gateway · Claim notification",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:WF-90:Claim notification:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=[$('Classify error').first().json.workflow, true];if(!Array.isArray(p))fail();\nlet args;try{args=({workflow:p[0],claimNotify:p[1]});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"error.count\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          720,
+          0
+        ]
+      },
+      {
+        "id": "b9ff1a3e-86ef-45d1-a4c9-cbef70c504f6",
+        "name": "Invoke gateway · Claim notification",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          840,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "a184e9e8-0f86-4eee-ae27-f94fdb320272",
+        "name": "Observe gateway · Claim notification",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Claim notification\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"error_count\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          960,
+          0
+        ]
+      },
+      {
+        "id": "d91acc73-4e48-4046-a615-ad703a7e97f7",
+        "name": "Read durable gateway · Claim notification",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1080,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "dfdd9fc6-03f4-4e1c-a880-be5dd9577bcd",
+        "name": "Claim notification",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Claim notification\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"error_count\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          1200,
+          0
+        ]
+      },
+      {
+        "id": "51d54f09-324d-443f-a123-d1367ad3b074",
+        "name": "Prepare threshold notification",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const items=$input.all();\nif(items.length!==1 || !Number.isInteger(items[0].json.error_count) || items[0].json.error_count<0) throw new Error('EMR_N8N_INPUT_INVALID');\nif(items[0].json.error_count<3) return [];\nconst origin=$('Classify error').first().json;\nreturn [{json:{to:['mohamed.abdelrahman@everyone.film'],subject:'Market Radar workflow failure',html:'',text:'',\n  workflow:origin.workflow,execution_id:origin.execution_id,env:'dev'}}];"
+        },
+        "position": [
+          960,
+          0
+        ]
+      },
+      {
+        "id": "c3943a44-7152-4b8c-a604-e67a913f43b0",
+        "name": "Call log-only Notify",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "tiEhU3dXrMifOnTL"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "to": "={{ $json.to }}",
+              "subject": "={{ $json.subject }}",
+              "html": "={{ $json.html }}",
+              "text": "={{ $json.text }}",
+              "workflow": "={{ $json.workflow }}",
+              "execution_id": "={{ $json.execution_id }}",
+              "env": "={{ $json.env }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "to",
+                "displayName": "to",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "array",
+                "removed": false
+              },
+              {
+                "id": "subject",
+                "displayName": "subject",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "html",
+                "displayName": "html",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "text",
+                "displayName": "text",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "workflow",
+                "displayName": "workflow",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "execution_id",
+                "displayName": "execution_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [
+          1200,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "On workflow error": {
+        "main": [
+          [
+            {
+              "node": "Classify error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Classify error": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Log classified error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Log classified error": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Claim notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claim notification": {
+        "main": [
+          [
+            {
+              "node": "Prepare threshold notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare threshold notification": {
+        "main": [
+          [
+            {
+              "node": "Call log-only Notify",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Log classified error": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Log classified error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Log classified error": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Log classified error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Log classified error": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Log classified error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Log classified error": {
+        "main": [
+          [
+            {
+              "node": "Log classified error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Claim notification": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Claim notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Claim notification": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Claim notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Claim notification": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Claim notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Claim notification": {
+        "main": [
+          [
+            {
+              "node": "Claim notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "OxnbDrBVAtziiuTk",
+        "name": "layer:ops"
+      }
+    ],
+    "pinData": {}
+  },
+  "definitionProfile": "inactive_native_staging",
+  "deferredErrorWorkflowId": null,
+  "intendedSourceHash": "3a5494463416b04fdb86dc409c359d2d8bfa631ac4d2bd90fe6be7d75443b1cc",
+  "stagedSourceHash": "3a5494463416b04fdb86dc409c359d2d8bfa631ac4d2bd90fe6be7d75443b1cc",
+  "canonicalParity": true,
+  "kind": "actual_saved_inactive_foundation_staging",
+  "version": 1,
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+}

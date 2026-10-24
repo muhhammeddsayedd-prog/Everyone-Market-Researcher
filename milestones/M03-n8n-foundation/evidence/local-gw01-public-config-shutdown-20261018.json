@@ -1,0 +1,195 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T09:52:20Z",
+  "scope": "Local-only public Preview configuration, scoped Vercel CLI no-retry correction and public post-close rejection consumer",
+  "sourceFiles": {
+    "scripts/n8n/gw01-public-config.mjs": "3f2b5042b14d7dbc3f3d07689e0575160c35704ac55b21f32f3a92b7bbc81e6e",
+    "scripts/n8n/gw01-public-config.test.mjs": "52754fd5c29eb49a227af6487b0a61df11ae989af398a023c7c38356cf41a5ff",
+    "scripts/n8n/gw01-vercel-no-retry.mjs": "8492a298cf967176c85f111dffe58a6908f181af39f10934f6ed6dfd336607f1",
+    "scripts/n8n/gw01-vercel-no-retry.test.mjs": "07edb1d41f7b1422ee1a822052807cfa974dbe16bc14feb4cb52f06a3f2c654b",
+    "scripts/n8n/gw01-shutdown-read.mjs": "40d7ac751a04610e0028128600f84f201afe845648b61bba461aee7f28861071",
+    "scripts/n8n/gw01-shutdown-read.test.mjs": "a80513666b28c7d36593045f1e61a13fd776f04d403bd429176c9b2b5a9ede9c",
+    "scripts/n8n/gw01-delivery.mjs": "aa45512dd72c48ad49b0596a358f20c4a3656af264ccc7593621e189463d0e08",
+    "scripts/n8n/windows/Invoke-M03GW01Delivery.ps1": "28996d72b642370a7fd64f7613736bb1abc80996653ecab4b68a4176f74cb7f2",
+    "scripts/n8n/windows/Invoke-M03GW01Bypass.ps1": "6e0529f2c40fc552fe50c7cd6eb3faff9020c0c5aeda394db7b5a55c088fd405",
+    "scripts/n8n/gw01-private-delivery.test.mjs": "5627577f70977198bdd001cdff31e57c08d28aa5faf5c3c12108ca8143a85c20",
+    "scripts/n8n/gw01-bypass.test.mjs": "d67e9030de6d499ceb512e6d8601324767fe0488da961fcc46e34f7294f117d0"
+  },
+  "publicConfiguration": {
+    "contract": "Exactly four plain public values on Preview/m03-n8n-foundation; both sensitive entry metadata absent before Plan/Apply/Environment. No upsert or collision adoption. Metadata-only Verify after successful Environment evidence; fresh deployed-runtime readback remains separate.",
+    "closeout": "Actual Writer Close required. Disable patches only the owned enabled entry to false; Cleanup deletes only two entries with exact owned creation metadata. Ambiguous mutations permit only GET-only reconciliation, never replay.",
+    "seal": "Five initial fixed public files including the no-retry preload; Verify and closeout add the fixed public proof as a sixth file.",
+    "authorReported": {
+      "helperTests": 55,
+      "noRetryTests": 5,
+      "total": 60,
+      "failed": 0,
+      "nativeExit": 0
+    },
+    "priorLifecyclePeerReview": {
+      "selectedTests": 21,
+      "nativeExit": 0,
+      "boundary": "Earlier lifecycle checkpoint before the no-retry preload integration; not relabelled as a separate final-preload run."
+    },
+    "independentFinalDelta": {
+      "reviewer": "/root/m02_handles",
+      "verdict": "clear; no remaining P0/P1/P2 in no-retry/affected integration scope",
+      "command": "node --test --test-name-pattern \"native fixed GET|native .* emits|native POST|lost PATCH|lost DELETE|prepared closed-window abort|documented v9\" scripts/n8n/gw01-public-config.test.mjs",
+      "chunkId": "66a462",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "coverage": [
+        "Sparse native child and actual close acknowledgment",
+        "Fixed failure classification without retries",
+        "No wrong public POST value",
+        "GET-only PATCH/DELETE lost-ack reconciliation",
+        "Prepared closed-window abort without invented Environment provenance",
+        "Fixed v9 individual-entry methods"
+      ]
+    },
+    "authorRedHistory": {
+      "initial": "RED because the helper module was absent; no count supplied by author, so none is invented.",
+      "closeoutCheckpoint": "35 tests: 34 passed, one stale drift-fixture expectation failed. The fixture was corrected to exercise another public row; the now-forbidden pre-existing enabled flag was not adopted. Final contract assertions remain strict.",
+      "routeCorrection": "Individual environment entry route v10 to documented v9 was caught by source review before actual use; no separate RED run is claimed."
+    },
+    "additionalPeerReportedByAuthor": {
+      "reviewer": "/root/m02_prod_packet",
+      "preloadTestsPassed": 5,
+      "argumentCasesPassed": 2,
+      "nativeExit": 0,
+      "boundary": "Separate peer local checks, not added to this reviewer's five-plus-ten counts."
+    }
+  },
+  "noRetry": {
+    "reason": "Pinned Vercel 56.5.0 Client.fetch delegates to a retry helper defaulting to three retries. This was discovered from source before these new mutations; it does not establish that historical real calls retried.",
+    "correction": "Fixed --import file URL before the exact installed CLI entry; pinned package/chunk/index bytes and physical ancestry; exported Client.fetch is wrapped with last-write retry.retries=0 and bailOn429=true, then made non-writable/non-configurable. No installed edits, authentication override, alternate runtime or policy input.",
+    "primarySource": "https://raw.githubusercontent.com/vercel/vercel/vercel@56.5.0/packages/cli/src/util/client.ts",
+    "sourceBoundary": "Author's already-observed pinned Client/API/env call-chain contract plus independent public preload source review. This reviewer did not inspect installed dependencies.",
+    "authorRedGreen": {
+      "initialRed": { "failed": 5, "reason": "Preload module absent" },
+      "windowsBootstrapRed": { "passed": 2, "failed": 3, "reason": "Raw absolute Windows --import path was interpreted as an unsupported c: scheme" },
+      "green": { "passed": 5, "failed": 0, "nativeExit": 0, "correction": "Use an exact file URL for the preload" },
+      "source": "Author-reported actual isolated local runs; no installed CLI/API invocation"
+    },
+    "independentSyntheticChecks": {
+      "command": "node --test scripts/n8n/gw01-vercel-no-retry.test.mjs",
+      "chunkId": "aca399",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "comparison": "Synthetic CLI without preload made eight attempts under its explicit seven-retry fixture; the preloaded fixture made exactly one for network/503/429. Changed synthetic chunk rejected before main CLI. These are local synthetic results."
+    }
+  },
+  "shutdown": {
+    "contract": "Sealed actual restricted Writer Close and recovered-sole final empty-map revocation receipts, existing local coordinator closed, exact all-known deployment identities. One compiled original target only for a null-clock/unbound prepared abort; normal runtime requires original plus registered current target and matching authoritative binding/clock.",
+    "transport": "Public POST at fixed path with no auth/cookie/bypass/machine header, every attempt reserved before all-address public DNS screening and strict pinned TLS. Bounded body bytes discarded; no redirects. Requires native complete=true and canonical bounded advertised Content-Length/count parity. Only fully observed 401/403/410 proves this public rejection.",
+    "accounting": "Same window, max100 attempts and two global leases, retained15 closure/status reserve and existing deadline. No prepare/start/clock reset/target invention. Unknown results stop; known successful rejection targets are not replayed. Unacknowledged journal finish cannot pass.",
+    "tdd": {
+      "initialRed": "New module absent: native1/ERR_MODULE_NOT_FOUND.",
+      "firstGreenAttempt": "35 passed, one synthetic plain-Node CheckOnly bootstrap test failed. Windows/libuv mandatory OS base variables exceeded the initial environment-name guard; fixed known-base-only admission without forwarding credentials or relaxing TLS.",
+      "priorCheckpoint": "39 local tests passed before the subsequent completeness review; this was not a complete-response proof.",
+      "completenessRed": {
+        "command": "node --test --test-name-pattern \"complete response proof\" scripts/n8n/gw01-shutdown-read.test.mjs",
+        "chunkId": "443c8a",
+        "passed": 1,
+        "failed": 8,
+        "nativeExit": 1,
+        "reason": "Incomplete/malformed-length synthetic401 responses incorrectly verified despite end/close events."
+      },
+      "completenessGreen": {
+        "sameSelection": true,
+        "chunkId": "c2efbb",
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0,
+        "nativeExit": 0
+      },
+      "finalFormattedRun": {
+        "command": "node --test scripts/n8n/gw01-shutdown-read.test.mjs",
+        "chunkId": "e4fe4d",
+        "passed": 48,
+        "failed": 0,
+        "skipped": 0,
+        "nativeExit": 0,
+        "durationMs": 7700.7832
+      },
+      "lintSyntaxDiff": {
+        "chunkId": "91ccc0",
+        "nativeExit": 0,
+        "passed": true
+      }
+    },
+    "independentFinalReview": {
+      "reviewer": "/root/m02_prod_packet",
+      "sourceVerdict": "clear; no remaining P0/P1/P2 in reviewed public-only shutdown scope",
+      "passed": 10,
+      "failed": 0,
+      "nativeExit": 0,
+      "selection": "Nine new completion cases plus one normal closed/provenance case",
+      "actualOperations": false
+    },
+    "boundary": "Public deployment rejection is separate from the direct database Close proof. Future environment entry deletion does not prove erasure of values in immutable old deployments."
+  },
+  "ci": {
+    "registered": true,
+    "workflow": ".github/workflows/ci.yml",
+    "job": "unit",
+    "runtime": "Linux CI",
+    "newTestFiles": [
+      "scripts/n8n/gw01-public-config.test.mjs",
+      "scripts/n8n/gw01-vercel-no-retry.test.mjs",
+      "scripts/n8n/gw01-shutdown-read.test.mjs"
+    ],
+    "actualCurrentHeadRunClaimed": false
+  },
+  "relatedRootChecks": {
+    "historicalCombined": {
+      "passed": 72,
+      "chunkId": "20a13c",
+      "boundary": "Earlier wrapper snapshot; not claimed as final Environment/Bypass integration acceptance."
+    },
+    "pureArgumentBuilder": {
+      "redChunkId": "0a27b1",
+      "greenChunkId": "02ad6c",
+      "boundary": "Root-reported non-installed synthetic builder correction only; no final wrapper count inferred."
+    },
+    "finalPortableCombined": {
+      "command": "node --test scripts/n8n/gw01-public-config.test.mjs scripts/n8n/gw01-vercel-no-retry.test.mjs scripts/n8n/gw01-shutdown-read.test.mjs scripts/n8n/gw01-delivery.test.mjs",
+      "chunkId": "dc3eba",
+      "passed": 121,
+      "failed": 0,
+      "nativeExit": 0,
+      "source": "Root-reported actual final portable local run; not a CI or hosted receipt."
+    },
+    "fullRuntimeGuard": {
+      "status": "Local source and focused fixtures clear; actual preflight remains unperformed by this review",
+      "scope": "Source-pinned gateway seal contains the exact full physical Vercel runtime map; bounded inventory, strict digest types and all hashes are checked before decryption or bypass generation. No installed file edit.",
+      "requiredInventories": { "Environment": 12, "Bypass": "Five base files plus the existing known-create file" },
+      "authorRedGreen": { "newCasesRed": 6, "newCasesGreen": 6, "positiveCases": 2, "finalSelectedPassed": 8, "nativeExit": 0, "source": "Author-reported actual isolated Windows runs" },
+      "independent": {
+        "reviewer": "/root/m02_handles",
+        "sourceVerdict": "clear; no remaining concrete P0/P1/P2 in reviewed guard delta",
+        "command": "node --test --test-name-pattern \"full parent runtime refuses\" scripts/n8n/gw01-private-delivery.test.mjs scripts/n8n/gw01-bypass.test.mjs",
+        "initialChunkId": "512cbe", "completionChunkId": "2c6971",
+        "passed": 6, "failed": 0, "skipped": 0, "nativeExit": 0, "durationMs": 11183.4687
+      },
+      "additionalAuthorChecks": { "passed": 4, "nativeExit": 0, "chunkId": "84a827", "scope": "Selected existing multi-phase revoke, ambiguous revocation and RuntimeCredential preservation cases; no whole unchanged suite rerun" }
+    }
+  },
+  "actualBoundary": {
+    "realHandoffOrCredentialReads": false,
+    "actualHelperExecutionOrInstalledDependencyInspection": false,
+    "actualGatewayJournalOrIgnoredProofConsumed": false,
+    "hostedApiOrGatewayRequests": 0,
+    "productionChanges": 0,
+    "fixtureJournalsOnly": true,
+    "liveShutdownVerified": false,
+    "environmentDeliveryPerformed": false,
+    "clockOrCounterReset": false,
+    "actorsOrModelsOrWorkflowActivation": false
+  },
+  "remaining": "Root-reviewed public packets/seals and actual preflights/delivery; fresh READY/source/protection readback, registration/binding, bounded trial and actual ordered closeout. Source is ready for sealed public preflight, not actual Environment acceptance. No live gate is closed by this local evidence."
+}

@@ -1,0 +1,207 @@
+{
+  "kind": "m03_technical3_closed_readonly_reconciliation",
+  "version": 1,
+  "recordedAt": "2026-10-23T18:53:24.062Z",
+  "environment": "dev",
+  "frozenAttempt": {
+    "path": "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical3-attempt-20261023.json",
+    "bytes": 6495,
+    "sha256": "bdb2c97c4a4a64be2b24dbd4422edec2ebf9da1aa3c021bad9d3b1aea9382642"
+  },
+  "immutableTechnicalRecords": {
+    "admission": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-3.json",
+      "bytes": 446,
+      "sha256": "5b668844b625608e5434aac60f2d5a2fd6f96adcf81be100d8f799296a86790e"
+    },
+    "runtimeClaim": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-3.runtime-claim.json",
+      "bytes": 275,
+      "sha256": "6af507439aabcfe3dcc37556b3a584434077265d619f42e5a1dc24f83cd94bf6"
+    },
+    "closed": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-3.closed.json",
+      "bytes": 396,
+      "sha256": "95622cb4b4b82381758b4889be770588522b62b0469204f328fb9212a38c7783"
+    },
+    "closedReceiptNotRewritten": true,
+    "closureVerifiedRemainsFalse": true
+  },
+  "confirmedLocalCause": {
+    "status": "confirmed_by_public_synthetic_reproduction",
+    "function": "reconciledClosedWindow",
+    "defect": "Whole-file hashes were applied to mutable global management/control JSONL records. Legitimate prefix-preserving appends from the25 baseline GETs and50 discovery GETs caused the later Admin ReadClaimed public guard to reject before DPAPI/authentication.",
+    "actualDiagnostic": "FOUNDATION_ADMIN_PREFLIGHT_BLOCKED",
+    "administrativePrivateRead": false,
+    "administrativeAuthenticationAttempted": false,
+    "syntheticReproduction": {
+      "toolReceipt": "fe4627",
+      "nativeExit": 0,
+      "readClaimedBeforeAppends": true,
+      "appendedManagement": 25,
+      "appendedControl": 50,
+      "readClaimedAfterAppends": false,
+      "managementPrefixPreserved": true,
+      "controlPrefixPreserved": true
+    },
+    "additionalIndependentReproductionReported": true,
+    "additionalReceiptReferenceOmitted": true,
+    "publicProjectionCheck": {
+      "toolReceipt": "b386c6",
+      "nativeExit": 0,
+      "forwardPublicSourcePins": 47
+    },
+    "publicSealCheck": {
+      "toolReceipt": "f68042",
+      "nativeExit": 0,
+      "projectSourceFiles": 228,
+      "foundationSourceFiles": 39
+    },
+    "limitation": "The reproductions and projections are local public checks, separate from the actual closed attempt and any future hosted acceptance."
+  },
+  "actualPublicJournals": {
+    "management": {
+      "path": "scripts/n8n/out/foundation/live/management.jsonl",
+      "bytes": 5287,
+      "sha256": "79d556144e111625be9b90d9743dae118b90c6e64eac4ab43b7f13f337506a97",
+      "rowCount": 118,
+      "attemptRows": 117,
+      "priorTechnical2Prefix": {
+        "rows": 93,
+        "bytes": 4169,
+        "sha256": "f103e2f9e04f0e1802271c0d42db2023e4acd8cd9ae13ff873ca253a2c8366e4",
+        "matches": true
+      },
+      "legitimateAppends": 25
+    },
+    "control": {
+      "path": "scripts/n8n/out/foundation/live/control.jsonl",
+      "bytes": 46092,
+      "sha256": "2977c9a399e170f3b437e63190526b0e915cc94f786ac0b40870653e0bf2c3ff",
+      "rowCount": 350,
+      "priorTechnical2Prefix": {
+        "rows": 300,
+        "bytes": 39492,
+        "sha256": "0ddb25eb3355b86d3fc507b3f8b322285a89439ad0829ec00a94f3a4a4536080",
+        "matches": true
+      },
+      "legitimateAppends": 50
+    },
+    "setup": {
+      "path": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "bytes": 9102,
+      "sha256": "0cad48fd9550da762c0b629ee63364e4668f4829c3a89bd6f75ec2843d32f624",
+      "rowCount": 84,
+      "unchangedFromTechnical2": true
+    },
+    "runtime": {
+      "path": "scripts/n8n/out/foundation/live/runtime.jsonl",
+      "bytes": 5713,
+      "sha256": "3f1c85ad7d185481da33c8989b34b82cbbef26aa3ec01209bc13561bd3481378",
+      "rowCount": 50,
+      "unchangedFromTechnical2": true
+    },
+    "preflight": {
+      "path": "scripts/n8n/out/foundation/live/preflight.jsonl",
+      "bytes": 938,
+      "sha256": "ae07f30519e51f81d60bfa5cabe5ef80b5694fe13bac3da181c2b8fe38d08598",
+      "rowCount": 4,
+      "unchangedFromTechnical2": true
+    }
+  },
+  "actualCleanup": {
+    "toolReceipt": "de7d5b",
+    "nativeExit": 0,
+    "closedReceiptSha256": "95622cb4b4b82381758b4889be770588522b62b0469204f328fb9212a38c7783",
+    "deadProcessIds": [
+      10936,
+      43044
+    ],
+    "acceptanceParentLockAbsent": true,
+    "removedOnlyUnusedTemporaryFile": "%LOCALAPPDATA%\\Temp\\emr-m03-acceptance-protection-bypass.dpapi",
+    "bypassFilePresent": false,
+    "persistentOriginalsUntouched": true,
+    "privateContentsRead": false,
+    "networkRequests": 0,
+    "presenceRecheck": {
+      "toolReceipt": "6ae73f",
+      "bypassFilePresent": false,
+      "acceptanceParentLockPresent": false,
+      "privateContentsRead": false,
+      "networkRequests": 0
+    },
+    "immutableClosedRecordBypassFalseNotRewritten": true
+  },
+  "publicDatabaseOutputInspection": {
+    "toolReceipt": "b7706a",
+    "directory": "scripts/db/out",
+    "fileMetadataOnly": true,
+    "technical3NamedFiles": [],
+    "technical3GeneratedDatabaseReceipts": [],
+    "newSqlOrNativeDatabaseOutputsReached": false,
+    "filesModifiedSinceAdmission": [
+      {
+        "name": "Inspect-M03AdminPublicPrefix.ps1",
+        "bytes": 75666,
+        "mtime": "2026-10-23T18:49:41.440Z",
+        "classification": "Local public diagnostic source; not a hosted SQL execution receipt."
+      }
+    ],
+    "limitation": "Metadata/output absence is combined with the actual pre-DPAPI guard boundary and unchanged setup/runtime/preflight journals; no fresh hosted SQL query is claimed."
+  },
+  "actualSideEffects": {
+    "baselineGets": 25,
+    "executionDiscoveryGets": 50,
+    "newPreviewSetupRequests": 0,
+    "newDatabaseOrFixtureWrites": 0,
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "contentProviderCalls": 0,
+    "newHostedWritesReached": false
+  },
+  "usage": {
+    "mainManagement": 117,
+    "carriedManagement": 10,
+    "management": 127,
+    "mainControl": 350,
+    "carriedControl": 1,
+    "control": 351,
+    "combined": 478,
+    "vercelSetupUsed": 44,
+    "vercelSetupMaximum": 88,
+    "managementMaximum": 512,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "actorStarts": 0,
+    "actorMaximum": 2,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "continuation": {
+    "safeForLocalGuardRepairAndReconciledContinuation": true,
+    "requiresTargetedTestsAndPublicReadiness": true,
+    "closedAdmissionReopened": false,
+    "newOwnerInputRequired": false,
+    "credentialHandoffRequired": false,
+    "timeOnlyApprovalRequired": false,
+    "uncertainPaidStartReplayed": false
+  },
+  "acceptance": {
+    "defectEstablished": true,
+    "implementationCompleteByThisRecord": false,
+    "actualM03DevAcceptanceVerified": false,
+    "productionChanged": false,
+    "pr8Merged": false,
+    "m04Started": false
+  },
+  "preservation": {
+    "historicalAttemptAndClosedRecords": true,
+    "dev15AndOriginal14Fingerprints": true,
+    "closedDf4ArchivedC999": true,
+    "seededDataExclusionsLogos": true,
+    "wf00RestoreOther24Pins": true,
+    "retentionAndZeroActorChecks": true
+  },
+  "nextStep": "Repair the existing immutable-prefix reconciliation, validate malformed/tampered journal denials and cumulative budget checks, then continue only the incomplete M03 dev step under standing authority. Preserve all prior attempts, IDs and counters; do not fabricate full-D or replay setup."
+}

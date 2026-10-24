@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "files": {
+    "scripts/n8n/gw01-delivery.mjs": "aa45512dd72c48ad49b0596a358f20c4a3656af264ccc7593621e189463d0e08",
+    "scripts/n8n/gw01-delivery-transport.mjs": "de933ecbd6b057de7efbdcc9d18e2bd8c9c367ad7bc6f51e9933cb9140da2b15",
+    "scripts/n8n/gw01-credential-ownership.mjs": "951f134d9113e58d570fbf58bbc4d52a043891ae7c7931b7a879ecd563ccbd1a",
+    "scripts/n8n/gw01-privacy-read.mjs": "a8ead692dd3dd9b80c9877e36275eeb420e30ca858793f59de3af853e979c5ec",
+    "scripts/n8n/inventory.mjs": "fdeff60d163550325eac8cc9ac34de06cc35ce3c40d74a40b3b1bc5a20bff751",
+    "scripts/n8n/windows/New-M03GW01Handoff.ps1": "e7e46ba59016a5ee5fc0ff8ee9cf5d886f9e244824b00a97179b204d87ea6ab4",
+    "scripts/n8n/windows/Invoke-M03GW01Delivery.ps1": "28996d72b642370a7fd64f7613736bb1abc80996653ecab4b68a4176f74cb7f2",
+    "scripts/n8n/gw01-delivery-packet.json": "a8e2998cfe3e15b6d97bd065161b3e47dab9b6ea6468fb132ccc45c9fa8a7f8a",
+    "scripts/n8n/gw01-local-privacy.json": "39e49afd4ca883f3d05a8ea9006ebc0cd2682115b7c6e6140b9cc9198f27661f"
+  },
+  "vercelCliSha256": "59b3fc5480456b92d33bdb463a9c8c847669bb53627364e58f7f82236dbcd804",
+  "vercelPackageSha256": "a879c88b917b50a1bf2e46c8b6e0d0fdc12c2454db4764af1e86428280081a18"
+}

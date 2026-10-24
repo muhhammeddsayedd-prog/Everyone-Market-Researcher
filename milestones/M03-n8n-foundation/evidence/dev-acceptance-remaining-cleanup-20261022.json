@@ -1,0 +1,73 @@
+{
+  "kind": "m03_remaining_continuation_independent_cleanup",
+  "version": 1,
+  "segmentId": "e8035391-dba8-48c9-97e0-139ba980d86e",
+  "attemptEvidence": "dev-acceptance-remaining-attempt-20261022.json",
+  "attemptEvidenceSha256": "60b1bc756fb57cfba27e44cac6444dd7882327dc3ec3d4f6c1e0b2f803229fe3",
+  "reviewedConsumer": "scripts/n8n/windows/Remove-M03RemainingTemporaryState.ps1",
+  "consumerSha256": "378d8b2d8367842d13e6205beb0e2d5f06897f2e1db360143f37ef44478cf2f3",
+  "localChecks": {
+    "focusedSyntheticTests": "6/6 pass; separate extra native-handle disposal probe 1/1; overlapping checks are not summed",
+    "initialCheckOnly": "b07382 native1 fixed BLOCKED; no intent or deletion",
+    "diagnosticCheckOnly": "239d64 native1 process_ancestry; no intent or deletion",
+    "publicDiagnostic": "Full three-property CIM projection found a historical PID-reuse cycle in unrelated processes. Current parent PID 996 was created after child PID 1116; it cannot be that child's historical parent. No command lines, environment or process contents were queried.",
+    "correction": "Follow only temporally valid current-parent edges. Absent/currently newer unrelated parents terminate traversal. Present owned roots, direct descendants, valid descendant chains and same-time malformed cycles still refuse cleanup.",
+    "readyCheckOnly": "3f61c0 native0 M03_REMAINING_TEMPORARY_CLEANUP_READY, targets9/deleted0/privateContentsReadfalse/network0/childProcessesStarted0"
+  },
+  "actualApply": {
+    "receipt": "fd3fa5",
+    "nativeExit": 0,
+    "status": "M03_REMAINING_TEMPORARY_CLEANUP_VERIFIED",
+    "targets": 9,
+    "deleted": 9,
+    "observedAtUtc": "2026-10-21T23:26:05.4456193Z",
+    "privateContentsRead": false,
+    "networkRequests": 0,
+    "childProcessesStarted": 0,
+    "adminPairPreserved": true,
+    "unknownOrphanClosureProven": false,
+    "fullD": false
+  },
+  "durableIgnoredLocalRecords": {
+    "intent": "scripts/n8n/out/foundation/live/remaining-closed-cleanup-e8035391-dba8-48c9-97e0-139ba980d86e.intent.json",
+    "intentSha256": "640a8c8fdd7e83bbfc73d29e92fcda822a55fc0b5c97497a2f0ec6ca2810c7bc",
+    "result": "scripts/n8n/out/foundation/live/remaining-closed-cleanup-e8035391-dba8-48c9-97e0-139ba980d86e.result.json",
+    "resultSha256": "4ebb08780fb17632a8970a80927a5ffdd691ccfe5c98391cdaf200904bd3e0da",
+    "exclusiveIntentBlocksReplay": true,
+    "resultWrittenWithoutReplacingAnyHistoricalReceipt": true
+  },
+  "removed": [
+    "emr-m03-acceptance-management.dpapi",
+    "emr-m03-acceptance-management.lease.json",
+    "emr-m03-acceptance-writer.dpapi",
+    "emr-m03-acceptance-writer.lease.json",
+    "emr-m03-acceptance-apifyread.dpapi",
+    "emr-m03-acceptance-apifyread.lease.json",
+    "emr-m03-acceptance-protection-bypass.dpapi",
+    "emr-m03-acceptance-parent.operation.lock",
+    "runtime.operation.lock"
+  ],
+  "postCleanupPresence": {
+    "receipt": "a3c6aa",
+    "observedAtUtc": "2026-10-21T23:26:17.6672433Z",
+    "allNineTargetsAbsent": true,
+    "unusedAdministratorDpapiAndLeasePresent": true,
+    "privateContentsRead": false
+  },
+  "preserved": [
+    "unused administrator DPAPI and lease, unopened by this cleanup",
+    "owner's saved originals and retained dedicated Machine token",
+    "all historical admissions, claims, journals and database evidence",
+    "current consumed e803 admission/claim and failed attempt receipt",
+    "unchanged main-management1/control150/setup1 and outside carries3/1",
+    "all fourteen checkpoint artifacts and all fourteen migration/history records"
+  ],
+  "limits": [
+    "The lost wrapper receipt remains lost; this is independently reconciled exact local cleanup.",
+    "The safe process snapshot cannot identify an unknown orphan whose departed intermediate parent was never captured.",
+    "No whole-workstation or parent VS Code environment-clearance claim is made.",
+    "The consumed runtime wrapper and Node processes are absent. Runtime secrets were not supplied through a parent environment variable by these helpers.",
+    "No remote restoration, database authentication, C999 reactivation, workflow, actor or full-D acceptance is inferred.",
+    "The preserved unused administrator pair cannot authorize another child or renew this closed one-use window."
+  ]
+}

@@ -1,0 +1,327 @@
+{
+  "key": "SUB-INGEST",
+  "id": "nDijMP0IurUw58Kg",
+  "versionId": "983f4040-ea34-4e45-9a95-d19c4ca3e36b",
+  "active": false,
+  "activeVersionId": null,
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflow": {
+    "name": "SUB · Ingest items [dev]",
+    "nodes": [
+      {
+        "id": "a2392593-cf83-4a48-ac2d-932445000b98",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "apify_run_id",
+                "type": "string"
+              },
+              {
+                "name": "status",
+                "type": "string"
+              },
+              {
+                "name": "dataset_id",
+                "type": "any"
+              },
+              {
+                "name": "usage_usd",
+                "type": "number"
+              },
+              {
+                "name": "groups",
+                "type": "array"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "3b4ae1a2-4114-4b19-a638-699faf2a89eb",
+        "name": "Prepare atomic callback",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const invalid = () => { throw new Error('EMR_N8N_INPUT_INVALID'); };\nconst items = $input.all();\nif (items.length !== 1) invalid();\nconst j = items[0].json;\nconst object = x => x !== null && typeof x === 'object' && !Array.isArray(x);\nconst exact = (x,allowed,required=[]) => object(x) && Object.keys(x).every(k=>allowed.includes(k)) && required.every(k=>Object.hasOwn(x,k));\nconst uuid = x => typeof x==='string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x);\nconst identifier = x => typeof x==='string' && /^[A-Za-z0-9_-]{1,200}$/.test(x);\nif (!object(j) || (j.env !== undefined && j.env !== null && j.env !== 'dev')) invalid();\nif(!exact(j,['apify_run_id','status','dataset_id','usage_usd','groups','env'],\n  ['apify_run_id','status','dataset_id','usage_usd','groups']) || typeof j.apify_run_id!=='string' ||\n  !/^[A-Za-z0-9_-]{1,128}$/.test(j.apify_run_id) || !['SUCCEEDED','FAILED','TIMED_OUT','ABORTED'].includes(j.status) ||\n  !Number.isFinite(j.usage_usd) || j.usage_usd<0 || j.usage_usd>999999.999999 ||\n  (j.dataset_id!==null && (typeof j.dataset_id!=='string' || j.dataset_id.length>200)) ||\n  (j.status==='SUCCEEDED' && (typeof j.dataset_id!=='string' || !j.dataset_id.trim())) ||\n  !Array.isArray(j.groups) || j.groups.length!==1) invalid();\nconst g=j.groups[0];\nif(!exact(g,['account_id','items','normalizer_version'],['account_id','items','normalizer_version']) ||\n  !uuid(g.account_id) || g.normalizer_version!=='smoke_website_stub.v1' || !Array.isArray(g.items) || g.items.length>1 ||\n  (j.status!=='SUCCEEDED' && g.items.length!==0)) invalid();\nlet serialized;\ntry {serialized=JSON.stringify(j.groups);} catch {invalid();}\nlet bytes=0;\nfor(const c of serialized) {const p=c.codePointAt(0);bytes+=p<=127?1:p<=2047?2:p<=65535?3:4;if(bytes>1048576)invalid();}\n// The caller must obtain final metadata through authenticated Apify readback.\n// The restricted SQL RPC binds the account/source and owns atomic persistence.\nreturn [{json:{params:[j.apify_run_id,j.status,j.dataset_id,j.usage_usd,serialized]}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "a2373436-761d-425f-ab35-21575b4fea35",
+        "name": "Prepare gateway · Persist atomic callback",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:SUB-INGEST:Persist atomic callback:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=$json.params;if(!Array.isArray(p))fail();\nlet args;try{args=({apifyRunId:p[0],status:p[1],datasetId:p[2],usageUsd:p[3],groups:JSON.parse(p[4])});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"apify.process\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          480,
+          0
+        ]
+      },
+      {
+        "id": "f6a4aea1-270b-40c7-a70b-c5da806f29a4",
+        "name": "Invoke gateway · Persist atomic callback",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          600,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "f83b9c82-bd84-4d20-a811-769a126fd1af",
+        "name": "Observe gateway · Persist atomic callback",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Persist atomic callback\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"r\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          720,
+          0
+        ]
+      },
+      {
+        "id": "eeec846c-f670-482a-af7e-79c44d83d89f",
+        "name": "Read durable gateway · Persist atomic callback",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          840,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "70339bd9-1fd4-42b4-aff7-ef7ee87e8de4",
+        "name": "Persist atomic callback",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Persist atomic callback\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"r\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          960,
+          0
+        ]
+      },
+      {
+        "id": "368b462d-5281-4dae-aa13-37aa26033011",
+        "name": "Return durable callback",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();\nif(rows.length!==1 || !rows[0].json.r || typeof rows[0].json.r!=='object' || Array.isArray(rows[0].json.r) ||\n  typeof rows[0].json.r.updated!=='boolean' || typeof rows[0].json.r.finished_now!=='boolean' ||\n  rows[0].json.r.normalizer_version!=='smoke_website_stub.v1') throw new Error('EMR_N8N_COMPLETION_INVALID');\nreturn [{json:rows[0].json.r}];"
+        },
+        "position": [
+          720,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Prepare atomic callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare atomic callback": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Persist atomic callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Persist atomic callback": {
+        "main": [
+          [
+            {
+              "node": "Return durable callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Persist atomic callback": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Persist atomic callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Persist atomic callback": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Persist atomic callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Persist atomic callback": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Persist atomic callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Persist atomic callback": {
+        "main": [
+          [
+            {
+              "node": "Persist atomic callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "gKQ40iTbrD5MKnK8",
+        "name": "layer:sub"
+      }
+    ],
+    "pinData": {}
+  },
+  "definitionProfile": "inactive_native_staging",
+  "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+  "intendedSourceHash": "5410489d2e5cdf453e37a81b3abd0ceab2c26cdb7cc21c325da104b685f1c9b2",
+  "stagedSourceHash": "6b39ecdabf07affd22ca01e433e38bb629aa3db1a0d7341b337a4e1854d89616",
+  "canonicalParity": false,
+  "kind": "actual_saved_inactive_foundation_staging",
+  "version": 1,
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+}

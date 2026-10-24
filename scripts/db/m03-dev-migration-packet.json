@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "target": "zmotjsbzhzjvpelxvxlf",
+  "approved": true,
+  "authorizationReference": "Owner Proceed with next milestone 2026-10-18 M03 development; nonprod additive foundation",
+  "cliVersion": "2.121.0",
+  "baseline": [
+    {
+      "version": "20261017172928",
+      "name": "extensions_schemas_roles",
+      "file": "supabase/migrations/20261017172928_extensions_schemas_roles.sql",
+      "sha256": "478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d",
+      "historySha256": "d5c1a3c8b821bb14919c32d722042e15aa8775c966b3eade572531f066db093b"
+    },
+    {
+      "version": "20261017172931",
+      "name": "core_tables",
+      "file": "supabase/migrations/20261017172931_core_tables.sql",
+      "sha256": "4f1be3f6191885add916b164975ba10a8697069a0373a05df4e03fa53ea7cba3",
+      "historySha256": "0d7587a24dc96c35e639729369dd1650952381c356e5ed1ba867934669e1abcc"
+    },
+    {
+      "version": "20261017172934",
+      "name": "auth_rls_views",
+      "file": "supabase/migrations/20261017172934_auth_rls_views.sql",
+      "sha256": "8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9",
+      "historySha256": "bb7713ce9dd0bfb4de0cc0bc98ae5f558d39807375b86f46b1bdbd002d7f0aad"
+    },
+    {
+      "version": "20261017172937",
+      "name": "rpc_pipeline_core",
+      "file": "supabase/migrations/20261017172937_rpc_pipeline_core.sql",
+      "sha256": "978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803",
+      "historySha256": "ed23d0424c7c16cf325feceaa141baecf26f4f281725e28be1286fd6e76b196d"
+    },
+    {
+      "version": "20261017172940",
+      "name": "rpc_app_search",
+      "file": "supabase/migrations/20261017172940_rpc_app_search.sql",
+      "sha256": "6111c5291e9c305e3e713180c0441ff5ffbf52b3b88f589d5d16fee55769171c",
+      "historySha256": "2b36ed94ddfdc674e1097b4dee4141faf6e0912120c22e83c9b91b3353ec20b2"
+    },
+    {
+      "version": "20261017172943",
+      "name": "storage_cron",
+      "file": "supabase/migrations/20261017172943_storage_cron.sql",
+      "sha256": "859466fadfd940445ffe4b457e7250a179c93731e1f34736a629fe20df6e9c68",
+      "historySha256": "50b6a9aacfbf530783ba2defc23183293b1acfd6ce8a8612e871f5bb104c33ee"
+    },
+    {
+      "version": "20261017172945",
+      "name": "seed_taxonomies",
+      "file": "supabase/migrations/20261017172945_seed_taxonomies.sql",
+      "sha256": "af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234",
+      "historySha256": "3cb258773590c0225732727ea2701ad2dfc3ede8d9b62cc1d522bab3e4e9b61b"
+    }
+  ],
+  "pending": [
+    {
+      "version": "20261018034220",
+      "name": "rpc_n8n_foundation",
+      "file": "supabase/migrations/20261018034220_rpc_n8n_foundation.sql",
+      "sha256": "457ad4351b08c47b996ae67062ed701efb7d5ef63ea7658d20931f2d5dc5d3fd",
+      "historySha256": "dedf2cae9d1cfb7d7c5cb996d4c871a55c2628af868ee57fcb6df4598582a6d6"
+    },
+    {
+      "version": "20261018035417",
+      "name": "price_book_plan",
+      "file": "supabase/migrations/20261018035417_price_book_plan.sql",
+      "sha256": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd",
+      "historySha256": "3086cac77d3e68ecd0695b00a62c883e0cf706605432ff153b25b0c27e43a6d2"
+    }
+  ],
+  "files": {
+    "scripts/db/windows/Invoke-M03DevMigrations.ps1": "530b7a7395b980b13d77c0254206c6bf9ae65ba653bf7a359f71fd6c3438db35",
+    "scripts/db/windows/New-M03DevMigrationHandoff.ps1": "4d304ce88ecc39138a62b5ca0a07c023d79bc383fed565bbecdfd6f7f536ce48",
+    "scripts/seed/check-tls.mjs": "497d8ad658f936c1b5f87b5316bbafbcf145f8ae8e01a6184fb80db5ff5e9d07",
+    "scripts/seed/certs/supabase-root-2021.json": "86f7da7dbd65b7a97986e7cf859848835b162fb6aec17f09fb8b011d4accf16b",
+    "scripts/seed/certs/supabase-root-2021.crt": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+    "node_modules/.pnpm/@supabase+cli-windows-x64@2.121.0/node_modules/@supabase/cli-windows-x64/bin/supabase.exe": "aed2aedd9e367549307d038b770e505b288225958e2e81bfe5db53fa6a01c148"
+  }
+}

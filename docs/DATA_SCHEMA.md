@@ -82,6 +82,9 @@ erDiagram
 | `ops.api_keys`, `ops.api_calls` | Agent keys (hashed, scoped) and call log |
 | `ops.audit_log` | Human, API and system changes (before/after) |
 | `ops.settings` | Tunables: `auto_publish_threshold` 0.80, `campaign_window_days` 45, `campaign_similarity_min` 0.82, `alias_trgm_min` 0.6, `alias_embedding_min` 0.85, `daily_budget_usd` (150 during backfill, ~25 steady), `metrics_refresh_days` 30, `removal_window_days` 90, `stories_twice_daily`, `ai_batch_size` |
+| `ops.worker_gateway_rate_windows` | GW-01 private dev singleton: immutable reviewed deployment binding, prepared/open/closed window,30-minute expiry and persisted admission counters |
+| `ops.worker_gateway_requests` | GW-01 request ID, operation, database-computed JSONB digest, reservation and bounded terminal result/error; no raw args or credentials |
+| `ops.worker_gateway_leases` | GW-01 two business-operation slots, linked only to the private request ledger |
 | pgmq queues | `ai_extract`, `embed`, `media` |
 
 ## 5. RPC catalog
@@ -95,8 +98,12 @@ erDiagram
 | `ops.report_account_result(run_id, account_id, status, seen, new, error, backfill_done, cursor)` | M01 (p_secondary added in M04) | Per-account result, cadence-minus-four-hours schedule, six-hour failure retry |
 | `ingest.upsert_raw_items(run_id, account_id, items jsonb) → jsonb` | M01 | Single writer path (§5.3 TECHNICAL) |
 | `ops.register_apify_run / ops.complete_apify_run` | M03 | Async Apify tracking |
+| `ops.process_apify_run(apify_run_id, status, dataset_id, usage_usd, groups) → jsonb` | M03 | Atomic development-only one-page website callback; persisted `ops.apify_runs.processing_result` receipt, replay-safe ingest/report/cost/complete/finish. Existing M01 signatures unchanged; other branches remain gated. |
 | `ops.log_cost(entries jsonb)` | M03 | Cost ledger rows |
 | `ops.daily_health() → jsonb`, `ops.accrue_fixed_costs(day)` | M03 | WF-91 |
+| `ops.worker_gateway_admit(window_id uuid, request_id uuid, operation text, args jsonb, mode text default 'admit') → jsonb` | M03 GW-01 | Restricted dev admission; durable100-call/30-minute,30/minute,500/day counters, request digest/replay checks and two leases. Private control modes bind/inspect/close are not HTTP aliases. |
+| `ops.worker_gateway_execute(window_id uuid, request_id uuid, operation text, args jsonb) → jsonb` | M03 GW-01 | Closed connection-trial CASE; operation and result commit atomically. Parent→request→lease locks coordinate closure, duplicates and expiry. |
+| `ops.worker_gateway_status(window_id uuid, target_request_id uuid) → jsonb` | M03 GW-01 | Read-only original-request reconciliation, after separately counted fresh status correlation; never reserves or executes the target. |
 | `ops.claim_queue_batch(queue, n, vt) / ops.ack_queue(queue, ids)` | M01 | Allowlisted pgmq wrappers |
 | `ops.diff_website_urls(account_id, urls[]) → uncrawled urls[]` | M01 | Discover URLs and retain retries until crawled; preserve ignored/removed pages |
 | `ops.mark_website_page(...)` | M05 | Website crawl result writer |
@@ -117,6 +124,70 @@ erDiagram
 | `ops.query_embeddings(...)` | M11 | Search query embedding cache |
 
 Additional small helper RPCs used by n8n (settings, price book, error log, taxonomy snapshot, media/embedding targets, news queries, brief inputs, alert payloads, onboarding) are listed per milestone in `docs/N8N_WORKFLOWS.md` §8; they follow the same rules.
+
+M03 callback correction: never set `processed_at` in an earlier workflow node.
+The one-page website processor locks the parent and registry row, validates the
+registered account/actor/environment, persists all effects and a stable result
+in one transaction, then completes/finishes. Replays return the saved counts
+without another queue send or cost; conflicting inputs fail closed. The SQL
+caller is the restricted trusted writer, and actual authenticated Apify HTTP
+verification remains a separate workflow responsibility. Current implementation
+and local/hosted/type/advisor acceptance are recorded in M03 progress; this
+contract alone is not deployment proof.
+
+### GW-01 private dev admission boundary
+
+The owner approved one additive migration,
+`20261018070042_n8n_worker_gateway_admission.sql`, for the dev-only strict-TLS
+gateway. The nine existing migrations remain unchanged. At this local
+checkpoint,102 rollback-only SQL assertions,19 process/transaction checks,
+8 safety regressions, both advisors and regenerated `app,api,ops,ingest` types
+pass. The session-authorization fixture is not an actual restricted-login or
+hosted-trial receipt. See
+[local DB evidence](../milestones/M03-n8n-foundation/evidence/local-gw01-db-20261018.json)
+and the [approved packet](../milestones/M03-n8n-foundation/evidence/strict-tls-connection-proposal-20261018.md).
+
+All three tables enforce RLS with no writer/browser/agent direct privileges.
+Only `n8n_writer` can execute the three new hardened wrappers; implementation
+helpers are owner-only. The wrapper checks the session principal and role
+setting. Actual `current_user`/`session_user` are verified on the restricted
+connection before entering a definer, whose own `current_user` is its owner.
+No new internal schema is exposed to the Data API.
+
+One immutable namespace `gw01-dev` and window
+`76c2ad42-c094-4ba4-9a0b-566e19b97780` bind exactly one reviewed Preview origin,
+commit SHA and deployment ID. `bind` is prepared-only/idempotent for the same
+values; it cannot overwrite or reopen. `inspect` is read-only and starts no
+clock. First ordinary admission starts30 minutes once. Closing obtains the
+parent lock after prior execution commits and remains possible at the100-call
+limit without incrementing101. There is no reset/replenishment/TTL deletion.
+
+Responses have `{state,code,result,window}`. Window metadata includes its ID,
+timestamps, closed flag, total admitted and the nullable bound audience/commit/
+deployment. Timestamps may include an explicit UTC offset. Admission counts
+duplicates, conflicts, denied trial operations and separately correlated
+status reads; authentication/input denials before SQL are counted by the
+bounded coordinator's100-total-network-attempt limit. The SQL counter is not
+an anonymous-request billing ceiling or a global database connection cap.
+
+Only `identity.read`, `request.status`, `settings.read`, `prices.read`,
+`health.read`, fixed `error.log` acknowledgment and nonclaiming `error.count`
+are enabled for this trial. The safe audit workflow identifier is
+`M03-GATEWAY-ACCEPTANCE-DEV`. The other known actor/run/cost/fixed-fee aliases
+fail closed; arbitrary SQL/RPC/schema/host and raw-ingest bypasses do not exist.
+No actor/content/C999/fake-cost operation is authorized by the gateway trial.
+
+Admission must commit separately before execution. A changed operation/args
+under the same business ID conflicts with the database-computed digest. The
+execution transaction holds parent-window SHARE, request and lease locks,
+refreshes the clock after waiting, then checks expiry before the operation and
+receipt writes. A canceled/lost response remains unknown until durable status
+is read; expired reservations cannot silently execute again. The original
+atomic `process_apify_run` contract remains authoritative when a later,
+separately approved actor batch is implemented. This connection layer does not
+establish callback, actor, exactly-once external delivery or native Postgres
+acceptance. Hosted gateway migration/binding/login/trial evidence remains
+separate and pending at this checkpoint.
 
 ### App users (EXECUTE: `authenticated`; role checked inside)
 `app.me`, `app.touch_last_seen`, `app.search`, `app.similar`, `app.compare_competitors` (M10), `app.market_dashboard` (M10), `app.pipeline_summary` (M09), `app.review_reopen`, `app.merge_campaigns`, `app.edit_*`, `app.get_settings`, `app.price_book`, `app.admin_update_price`, `app.admin_list_api_keys`, `app.admin_api_calls`, `app.pipeline_run_detail`, `app.alert_subscribe` / `app.alert_self_subscribe`, `app.admin_activate_wave` (M15), `app.review_resolve`, `app.correct_item`, `app.merge_organizations`, `app.merge_people`, `app.split_campaign`, `app.admin_upsert_competitor`, `app.admin_set_account_status`, `app.admin_request_rescrape`, `app.admin_invite_member`, `app.admin_set_member`, `app.admin_store_api_key`, `app.admin_revoke_api_key`, `app.admin_upsert_taxonomy_term`, `app.admin_upsert_alert_rule`, `app.admin_set_setting`, `app.costs_summary`, `app.pipeline_summary`.

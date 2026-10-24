@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "kind": "local-native-compatibility-and-durability-verification",
+  "recordedAt": "2026-10-19T00:22:57.059Z",
+  "environment": "local Windows; synthetic or localhost only",
+  "baseCommit": "bfe19f111d3f2a0423beb351a729c8a700139f09",
+  "hostedEvidence": "inactive-foundation-partial-20261019.json remains separate; no new hosted calls in these tests",
+  "changes": [
+    "logical-to-native tag aliases within pinned24 limit",
+    "pending Machine metadata ID transition within pinned16 limit without token regeneration",
+    "deterministic Webhook/Wait routing IDs",
+    "draft-only graph PUT",
+    "24 explicitly deferred native error links",
+    "actual verified exports persisted per record",
+    "full-write journal/export loops, flush and atomic export readback",
+    "finite source-only manual-case materializer"
+  ],
+  "tests": [
+    {
+      "scope": "affected graph, tag, staging, transport, Windows protocol, lease and pending-machine tests",
+      "passed": 131,
+      "receipt": "df06cc",
+      "qualification": "before the final export durability delta; not a new full suite"
+    },
+    {
+      "scope": "shared bindings Vitest",
+      "passed": 17,
+      "receipt": "35d5b3"
+    },
+    {
+      "scope": "shared typecheck",
+      "nativeExit": 0,
+      "receipt": "b93ed0"
+    },
+    {
+      "scope": "final export/journal fault tests and partial-result checks",
+      "passed": 12,
+      "receipt": "04dafd"
+    },
+    {
+      "scope": "independent final durability review tests",
+      "passed": 9,
+      "skipped": 0,
+      "nativeExit": 0,
+      "receipt": "d35877"
+    },
+    {
+      "scope": "original short-write fault reproduction after correction",
+      "completeJson": true,
+      "loopObserved": true,
+      "receipt": "567be0"
+    },
+    {
+      "scope": "isolated Windows33-source consumer protocol",
+      "passed": 1,
+      "receipt": "efc239"
+    },
+    {
+      "scope": "PowerShell exact staged-success invariants plus33-source closure",
+      "validAccepted": 1,
+      "incompleteOrCanonicalClaimsRejected": 6,
+      "receipt": "521c3f"
+    },
+    {
+      "scope": "manual case source independent review",
+      "passed": 8,
+      "nativeExit": 0,
+      "receipt": "52202e"
+    },
+    {
+      "scope": "changed/new-file Prettier and affected ESLint",
+      "nativeExit": 0,
+      "receipts": [
+        "e27bc0",
+        "83c001"
+      ]
+    }
+  ],
+  "independentReview": {
+    "remainingP1": 0,
+    "remainingP2": 0,
+    "scope": "native contracts, pending metadata transition, per-record secret reflection, partial persistence, short writes, durable intents, stage invariants and manual-case source; no hosted acceptance"
+  },
+  "actualPublicSeal": {
+    "receipts": [
+      "f54a68",
+      "ee76d2"
+    ],
+    "nativeExit": 0,
+    "projectInputs": 33,
+    "physicalDependencyFiles": 840,
+    "privateRead": false,
+    "networkRequests": 0,
+    "nodeExecutedDuringSeal": false,
+    "checkOnly": true
+  },
+  "actualControlRead": {
+    "workflowId": "qTjioYmBUVMIERVz",
+    "status": "connector_metadata_unavailable",
+    "executionAttempted": false,
+    "rawResponseSuppressed": true,
+    "qualification": "one projected metadata read only; no usable workflow access receipt, no login/discovery retry"
+  },
+  "sourceFiles": [
+    {
+      "path": "packages/shared/src/n8n-bindings.ts",
+      "sha256": "1706c54e25a21ff55b94163e21a2a982eb88fad5725fb1b76a4676f7839f00b8"
+    },
+    {
+      "path": "n8n/foundation/build-foundation-gateway.mjs",
+      "sha256": "1326edba7033e636bb1aac1fca436dfb58d3330a3c85c43abad3bdbd9a86636a"
+    },
+    {
+      "path": "scripts/n8n/foundation-bind.mjs",
+      "sha256": "2ee49c738e5ab3289503d5bd81d64455b9ffd92815e5ca280b03c474da022780"
+    },
+    {
+      "path": "scripts/n8n/foundation-all.mjs",
+      "sha256": "21c1305514d49b6eac432a8ccd352960ef0e62e4abf7a01a02f919834ab171d1"
+    },
+    {
+      "path": "scripts/n8n/foundation-export.mjs",
+      "sha256": "31a861402f015faa4fe1883e6d3e3451a289e0c9e3d06f9749ff6dbed504f3cc"
+    },
+    {
+      "path": "scripts/n8n/foundation-provision-cli.mjs",
+      "sha256": "2130c8dd21bcede20ab8279e4ce2b9692e3be7678f704e343ad5940f180598a5"
+    },
+    {
+      "path": "scripts/n8n/windows/Get-M03FoundationPendingMachine.ps1",
+      "sha256": "d417c8af7c3671482b8d3232654b7e08d1312d08908736b78bdcc15f02fe0e07"
+    },
+    {
+      "path": "scripts/n8n/windows/Invoke-M03FoundationProvision.ps1",
+      "sha256": "14448194e4c76c185271b68aa1fad040c5bac0971821a5f9222ad9622e6788c1"
+    },
+    {
+      "path": "scripts/n8n/windows/Foundation-PublicRuntime.ps1",
+      "sha256": "2e19c2a97bd2003ef6e594b84d8d2bb8c2bf851fb236a74986bbb04a9fe500d0"
+    },
+    {
+      "path": "n8n/foundation/materialize-acceptance-case.mjs",
+      "sha256": "40aa70adf9c55a002083245720ba3de49cf9116f729064f05bec7b546fff18ac"
+    }
+  ],
+  "acceptance": {
+    "inactiveDefinitionsSaved": false,
+    "finalGraphsBound": false,
+    "errorRoutingAccepted": false,
+    "hostedForwardMigrationsApplied": 0,
+    "actorStarts": 0,
+    "workflowExecutions": 0,
+    "productionChanges": false,
+    "gw01Closed": true
+  }
+}

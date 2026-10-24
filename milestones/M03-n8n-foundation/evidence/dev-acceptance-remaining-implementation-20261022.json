@@ -1,0 +1,163 @@
+{
+  "kind": "m03_remaining_continuation_local_delivery_checkpoint",
+  "version": 1,
+  "recordedAtUtc": "2026-10-21T22:35:05.775Z",
+  "segmentId": "e8035391-dba8-48c9-97e0-139ba980d86e",
+  "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "authority": {
+    "approved": false,
+    "approvalSha256": null,
+    "admissionCreated": false,
+    "runtimeClaimCreated": false,
+    "exactFutureDecision": "Approve one M03 remaining A-D dev window and exact retained-C999 reactivation at the reviewed PR #8 head, preserving all prior attempts and aggregate caps; no migration replay."
+  },
+  "immutableInputs": {
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-packet-20261022.md": "7c4b9f3c3bb473a2ff4a473e23de79ce3b2c9a783cab5587d9caf9356d804205",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-checkpoint-20261022.json": "2954a33504376de123c2ca1638b11f3356d94fd274d35a7f62591642da463404",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-vercel-postlogin-actual-20261022.json": "04fd4681894f93e46a3674a73fd13447badeb257ab0a8fc307f1e63918d9c43e"
+  },
+  "productionSourceSha256": {
+    "scripts/n8n/foundation-live-remaining-continuation.mjs": "d96c28863964b3edad687ad47b9ce82dfefab586b055d0a5b9eb6a8842334e94",
+    "scripts/n8n/foundation-live-runtime.mjs": "f02ec7cca95c8f5d36a6de43ebac123d131031ac89ca246a12e678ae47414e91",
+    "scripts/n8n/foundation-control-state.mjs": "94f8f8ffb8dcb9169b40810a58e314f358541bd024bc30d83fa6d96c38f9ff8d",
+    "scripts/n8n/foundation-live-setup.mjs": "280ddfff682f7cb8927d65fd2e327139bb5b39d7fde298ef2b1fb4ad4ebffa39",
+    "scripts/n8n/foundation-live-runtime-cli.mjs": "56630d47d74ea340599b6b0ff429d2fd8b21dd27b1e67d4268df4e65492b0bd3",
+    "scripts/db/foundation-admin-client.mjs": "7839f0eed6e6d2e62c628a0fd4c3607d9d348b0607074a0c8c3902663a019040",
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "8d49c2b46728e364edda12e5eca93264eba55acbe13169402b2fd74ac0860570",
+    "scripts/db/windows/Foundation-AdminControl.ps1": "f2674206aaeee788796acfc53406ab29c4fb1cdfa23d2b4d527584aecbfbd0d4",
+    "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "f834477c84b173e77368eaa4d837b4e39e7bc78514d61ea4c2505eb68c4e2037",
+    "scripts/n8n/windows/Invoke-M03Acceptance.ps1": "925cef8ff966f7aacfd570718f90cfe3db256f35235bb0abfefd066ec64e6fb0",
+    "scripts/n8n/windows/Acceptance-PublicRuntime.ps1": "c8a21a21c40d0a6ff43c2114f0db6ca36c60e26b8ba1955f0a5c5c317d0efcd8",
+    "scripts/assert/m03_smoke_reactivate.sql": "d13a08a9164d4cea277458613e2b6b49789b6796d219a1365c28cb7aef3141a1",
+    "scripts/db/m03-foundation-dev-migration-packet.json": "ff4bc92c07315d78c9768ab20cbad939ad97f5d3098f4424fd7673fe4bd6737e"
+  },
+  "actualAccess": {
+    "receipt": "f3102d",
+    "nativeExit": 0,
+    "httpStatus": 200,
+    "status": "project_contract_ready",
+    "fixedPredicates": 12,
+    "allTrue": true,
+    "childTransportsClosed": true,
+    "mutations": 0,
+    "newAcceptanceWindow": false,
+    "oldExpiredReadPreserved": true
+  },
+  "localEvidence": {
+    "continuation": "11/11 synthetic source checks85b657; final6/8 field projection two affected checks02c297. Independent final continuation+CLI14/14, including the same11, pass. Counts overlap, not an additive unique total.",
+    "runtimeCli": "New3/3 integration7beaaa, independently3/3. Existing affected26/26 compatibilitybe4272. New child/control baseline reaches4management/151control after50GETs, physical main control150; no private/native/provider/gateway live work.",
+    "databaseCustody": "Final22/22fb5ca2 includes legacy client10, new branded client2 and native/control10. Copied actual PowerShell consumer preapproval/mixed-mode2/2c9abb6. Earlier broad50 had49pass/1error-label mismatch; restored fixed label then affected2pass, not relabeled50/50.",
+    "sql": "Author-reported32/32a66e7a:2source+30owned isolated PostgreSQL17 cases including26negative/replay/locks. Network:none/tmpfs/noports/no real credentials. Owned-container cleanup9502b6 reports none remaining. Distinct from hosted SQL acceptance.",
+    "rootPortableCiSelection": "54d6ac:4/4portable admin/SQLsource checks pass. Real PostgreSQL group intentionally opt-in and not executed in this selection; its actual local32 evidence is separate.",
+    "review": "Independent fresh-context review closed both P2s: exact raw journal prefixes must be rechecked after claim; ReadClaimed requires live runtime/parent lock plus actual Admin-to-runtime-to-wrapper native ancestry, immutable claimedAt and native integer-ms creation bounds. Final14/14 and ancestry-only1/1 pass. No remaining P1/P2 in assigned source/SQL/counter/CLI/custody scope.",
+    "integrity": "491d7b and independent static review verify35public DB pins, exact unchanged baseline10+applied4 version/name/file/hash/history arrays and all14SQL hashes. No migration dry-run/push/reset/history write on remaining path. Original setup/teardown/assert SQL unchanged.",
+    "quality": "58aaa0 affected ESLint/diff pass; c0157a matched-text Prettier pass; author PS AST/format/lint e218e9 pass. No unchanged full local suite solely for resumption. Final root formatting7545a6 native0; staged-index secret scand92b37 reports1259files/zero violations and cached diff check passes."
+  },
+  "mechanism": {
+    "rawJournalPrefixesPreserved": true,
+    "managementCarry": 3,
+    "controlCarry": 1,
+    "managementMainPhysicalRows": 1,
+    "controlMainPhysicalRows": 100,
+    "managementAggregateUsed": 4,
+    "controlAggregateUsed": 101,
+    "combinedUsed": 105,
+    "caps": {
+      "management": 512,
+      "control": 2048,
+      "combined": 2560,
+      "nativeExecutions": 120,
+      "gatewayAttempts": 256,
+      "providerGets": 32,
+      "actorStartsSequential": 2,
+      "requestedUsdPerActor": 1,
+      "actorReserveUsd": 2
+    },
+    "clockMinutesStopActionPhysicalLeaseFloor": [
+      50,
+      60,
+      70,
+      75
+    ],
+    "noMigrationReplay": true,
+    "fresh14HistoryCatalogAndGlobalSixTableVacancy": true,
+    "reusePinnedCompletedAdvisorTypes": true,
+    "exactRetainedC999StatusOnlyReactivation": true,
+    "durableCreateNewIntentAndSeparateAudit": true,
+    "unknownAcknowledgementReconciledWithoutReplay": true,
+    "priorProvisionsAndAllOldFencesPreserved": true
+  },
+  "actualPublicEvidence": {
+    "clockCheckOnly": {
+      "receipt": "94919f",
+      "nativeExit": 0,
+      "status": "approval_required",
+      "approvalRequired": true,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "seal": {
+      "receipt": "4ed097",
+      "nativeExit": 0,
+      "status": "acceptance_public_seal_ready",
+      "projectFiles": 123,
+      "zodFiles": 840,
+      "vercelFiles": 3462,
+      "sha256": "129eabc97dc103c446701e624207aec279ee2d7aa2d185fb9c7847170512523f",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "coordinatorCheckOnly": {
+      "receipt": "3ae74a",
+      "nativeExit": 0,
+      "status": "approval_required",
+      "approvalRequired": true,
+      "privateRead": false,
+      "networkRequests": 0,
+      "publicCompositionLoaded": true,
+      "adminPublicInputsVerified": true,
+      "adminHandoffReady": false,
+      "actualMcpPortVerified": false
+    },
+    "noNewAuthority": true
+  },
+  "actualTemporaryMetadata": {
+    "receipt": "1a8833",
+    "observedAtUtc": "2026-10-21T22:33:11.287Z",
+    "pathsChecked": 10,
+    "allAbsent": true,
+    "approvalAdmissionClaimAndRuntimeLockAbsent": true,
+    "privateContentsRead": false,
+    "networkRequests": 0,
+    "savedOriginalsAndMachinePreserved": true
+  },
+  "normalCi": {
+    "verifiedPriorHead": "d45e3e59cf4acf7e930eca74a0feeac9d1762b14",
+    "verifiedPriorRun": 39661494543,
+    "verifiedPriorReceipt": "2742b3 allfivejobs/Vercel SUCCESS",
+    "newDelivery": "This commit receives normal PR8 quality/unit/build/e2e/db-tests and Vercel. Read current PR checks; no extra docs-only commit solely to announce their result.",
+    "coverage": "Existing n8n wildcard covers newclock/CLI tests. Existing DB safety step adds portable admin/SQLsource checks. Windows custody and actual local PostgreSQL evidence remain separate from Ubuntu CI."
+  },
+  "actualHostedAcceptanceAddedByLocalEngineering": {
+    "databaseConnections": 0,
+    "migrationsApplied": 0,
+    "fixtureReactivation": 0,
+    "workflowTransitions": 0,
+    "nativeExecutions": 0,
+    "gatewayAttempts": 0,
+    "providerGets": 0,
+    "actorStarts": 0,
+    "businessAcceptanceProven": false
+  },
+  "next": "Deliver source/current CI, then ask only the exact separate one-use time/retained-C999 decision. No handoffs now. After actual approval is pinned/reviewed/sealed, deliver only truly absent saved values and verify transport/lease/provenance before admission. No automatic renewal.",
+  "excluded": [
+    "production",
+    "recurring schedules",
+    "external notifications",
+    "shared credential changes",
+    "private incident execution",
+    "PR8 merge",
+    "M03 closure",
+    "M04"
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "kind": "m03_project_verified_continuation_checkpoint",
+  "version": 1,
+  "proposedSegmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+  "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+  "originalDeadlineAt": 1792584023481,
+  "authority": "Proposed checkpoint only; no owner approval, admission, credential or hosted-operation authority.",
+  "preserved": {
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-amended-attempt-20261021.json": "4a5e85d57ba8d64ba20c7337c66e70d01af59ac118915710c567faec4ec9c778",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-attempt-20261021.json": "b984ec79c857468822e9299dd59fc2b26d71a26bb6b324dd90ecbaa7f39d1fcd",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-postcheck-unused-bypass-cleanup-20261021.json": "aa14e59e0016b4ecc355742d348a8461d0bdefcc2ffe38199b365d113de6e8ab",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-vercel-postclose-actual-20261021.json": "a4a2ec0be139df4583391d164a0c08df69e407483f0bb827dd92e3b276b2656c",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-vercel-postlogin-actual-20261022.json": "04fd4681894f93e46a3674a73fd13447badeb257ab0a8fc307f1e63918d9c43e",
+    "scripts/n8n/out/foundation/live/clock-amendment-30e75d0d-7e4c-46c6-9a07-556f90b63859.json": "a899b7e439d2e53ca149749ae18126e00647a3f055aaaf104da1ae624d741ac3",
+    "scripts/n8n/out/foundation/live/clock-amendment-30e75d0d-7e4c-46c6-9a07-556f90b63859.runtime-claim.json": "c2dd2868e0e9294c6437cdec1de502dc8e5c009101dcf6823f6a3bd8a0af9bd4",
+    "scripts/n8n/out/foundation/live/postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27.json": "e9b04ba5db824fbb72cbb4f74bcd00885a56ace3e270b1ff73ba79097daaa9cc",
+    "scripts/n8n/out/foundation/live/postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27.runtime-claim.json": "f3e5f4560b05c3b62d148006b1f3793df6a984727cdd45a028c11a96ddc24f03",
+    "scripts/n8n/out/foundation/live/postclose-project-read-20261021.jsonl": "64312647faa121f13304c45fc0eca1a6b2382e7cdfd8b016136c7663e19142f5",
+    "scripts/n8n/out/foundation/live/postlogin-project-read-20261021.jsonl": "94a4f841b63537dabb47828e768a6f4cbf581452c9a928d5600fd1c0c20c4b7b",
+    "scripts/n8n/out/foundation/live/postclose-native-details-20261021.jsonl": "2f47805442ca701f15ea0008f30f1ad260f39adaeef2f73e40392873a61cd076",
+    "scripts/db/out/m03-foundation-postcheck-continuation-a570212a-634c-444f-90a2-578ae47e8d27-latest.json": "4bb72ca4728010273ab2e8332c87f707ada4d1a82e744db8412760a21a45b865",
+    "scripts/db/out/m03-foundation-continuation-3860e4ad-eac9-4b19-a08f-6dce4c79a372-db.types.ts": "baa632751cc0f74543be52ae0405934f7fe8254b55ddf5e171ea6e1b3a3f1ed8",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-checkpoint-20261022.json": "2954a33504376de123c2ca1638b11f3356d94fd274d35a7f62591642da463404",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-packet-20261022.md": "7c4b9f3c3bb473a2ff4a473e23de79ce3b2c9a783cab5587d9caf9356d804205",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-approval-20261022.json": "cbc097a5ab606cf176a384084c66692b37b16b689676424211da19fc387f0b23",
+    "scripts/n8n/out/foundation/live/remaining-continuation-e8035391-dba8-48c9-97e0-139ba980d86e.json": "c9745b21c0b9cfb6e648e23a40cd8dbb93c03d7d5bce4c245a362acee12ff4e7",
+    "scripts/n8n/out/foundation/live/remaining-continuation-e8035391-dba8-48c9-97e0-139ba980d86e.runtime-claim.json": "81d12836e721c3bb98853ff0a238c49e556f933b0094b0d11a032c7f4dcf15a6",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-attempt-20261022.json": "60b1bc756fb57cfba27e44cac6444dd7882327dc3ec3d4f6c1e0b2f803229fe3",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-remaining-cleanup-20261022.json": "ba70c6f0b19f24aa05145099b0151e12138ba7e9a85ddd44557494d04c6cf9a1",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-repair-20261022.md": "aa2cb85bd56e99eb27edc97fb3bcdd92e42780562ce96aecdc5f89b784499958",
+    "scripts/n8n/out/foundation/live/remaining-closed-cleanup-e8035391-dba8-48c9-97e0-139ba980d86e.intent.json": "640a8c8fdd7e83bbfc73d29e92fcda822a55fc0b5c97497a2f0ec6ca2810c7bc",
+    "scripts/n8n/out/foundation/live/remaining-closed-cleanup-e8035391-dba8-48c9-97e0-139ba980d86e.result.json": "4ebb08780fb17632a8970a80927a5ffdd691ccfe5c98391cdaf200904bd3e0da",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json": "e144d73dfbcab1e5a286ab9ba11df28bcbd10c8a9ad39eecb7852fee3d61d758",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-approval-20261022.json": "b58581a7622206ba52a35a3c60bc46d7482192640540e3025546f71c31fdc3c3",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-attempt-20261022.json": "61ea60bedf0268e6145154e6804767d7c76a9db35fda23556864c615f035ea31",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-followup-20261022.json": "aaddc9ff8f86e8010a29421dbe1a941ff9be1bc2022d977d4943c2126508f96f",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-vercel-restored-metadata-20261022.json": "071f2c18ab643ee722faf0c3c29008effd9789218c97485a79835b486c45c3e1",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-preflight-readiness-20261022.json": "8c136acfb3b123328f3717e60f8559524b91681aa072f18c8f92f036fc1c894c",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-preflight-actual-20261022.json": "33bc37b6a9245a7f4f4876edeff20014eedca481a44e9613be188ca2eb19e7b6",
+    "scripts/n8n/out/foundation/live/project-preflight-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.jsonl": "4dbacde533b1be0a68f184b25d9bbde71895901b813978e6f701fb94be973e3e",
+    "scripts/n8n/out/foundation/live/startup-replacement-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.json": "f8c6b4d4082318c643c363b22fe7918a6fa6bced9d6cda5a0f49044caae3a5a1",
+    "scripts/n8n/out/foundation/live/startup-replacement-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.runtime-claim.json": "57d3a8a95e57dabca26e9aa5987ccf6bbe85bc0ff8fc4276b413ad4a25ad1634",
+    "scripts/n8n/out/foundation/live/startup-supervisor-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.jsonl": "5cd091876c5426fa1f6880a24bd66cb790de3e20479950f01b702017701f66dd",
+    "scripts/db/out/m03-foundation-startup-replacement-1c69c89e-7807-46d5-b7b8-ca28285ff2b4-latest.json": "a546df7aa9ff5c123940fa4faecfa3633afd583ab15d0ea1da2884f5e96b9221",
+    "scripts/n8n/windows/Remove-M03StartupUnusedBypass.ps1": "0d4441481b591aba8be3290e1ac24d2f3fc457bad60ced927be0a05ba1af91b3",
+    "scripts/n8n/out/foundation/project-verified-prior-acceptance-seal-20261022.json": "f627ad24e87097db493974fa463e68b5d0bfac3a0bf60213ab5a2023b30c42da"
+  },
+  "journals": {
+    "management": {
+      "path": "scripts/n8n/out/foundation/live/management.jsonl",
+      "sha256": "dcb0d2d596dd61a114d3074d84e401e2ee68e02e582fa5c4052b048ec51f3ce1"
+    },
+    "control": {
+      "path": "scripts/n8n/out/foundation/live/control.jsonl",
+      "sha256": "fa8d7745b1b7e783314b09e23fccbc8a0c4cdb753a07939c46324345eded0a8c"
+    },
+    "setup": {
+      "path": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "sha256": "e4e039e57925811bdc4b4246031f7de095e5e6a021814679638a720a88dbb917"
+    }
+  },
+  "accounting": {
+    "mainManagement": 2,
+    "separateManagement": 4,
+    "aggregateManagement": 6,
+    "managementMaximum": 512,
+    "mainControl": 200,
+    "separateControl": 1,
+    "aggregateControl": 201,
+    "controlMaximum": 2048,
+    "aggregateCombined": 207,
+    "combinedMaximum": 2560
+  },
+  "fixture": {
+    "competitorId": "d51a39f6-fe87-4d17-aee9-3070c45693aa",
+    "accountId": "bd23314c-591f-4fb7-92fd-b7450634eeb6",
+    "competitorStatus": "archived",
+    "accountStatus": "paused",
+    "createdByPriorOwnedAttempt": true,
+    "reactivationProposedOnly": true,
+    "knownPriorReactivationSegmentId": "1c69c89e-7807-46d5-b7b8-ca28285ff2b4",
+    "knownPriorReactivationArchived": true
+  },
+  "database": {
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "migrationVersions": 14,
+    "noMigrationOperationPending": true,
+    "completedPostcheckEvidencePreserved": true,
+    "criticalCatalogHistoryVacancyAndFixtureMustBeFreshlyVerified": true
+  },
+  "priorAttempt": {
+    "segmentId": "1c69c89e-7807-46d5-b7b8-ca28285ff2b4",
+    "parentProcessId": 44408,
+    "runtimeProcessId": 60040,
+    "prepareControlGets": 50,
+    "adminStartupReady": true,
+    "authenticationReceipt": true,
+    "finalWrapperReceiptPreserved": true,
+    "spentAdmissionCannotReopen": true
+  },
+  "sourceRepair": {
+    "head": "f4775b2fd1c88e0110555fa006027a3d39cdcd89",
+    "ci": 39818174853,
+    "ciAllFiveJobsPassed": true,
+    "vercelSuccess": true,
+    "scope": "Independent once-only fixed-project preflight succeeded; not live A-D acceptance"
+  },
+  "actualEffects": {
+    "runtimeCredentialRootsAbsent": true,
+    "consumedRuntimeHandoffsDeleted": true,
+    "unusedBypassDeleted": true,
+    "adminPairPreserved": false,
+    "unknownOrphanClosureProven": false,
+    "finalWrapperReceiptPreserved": true,
+    "sqlFoundationWindowProvisioned": false,
+    "vercelResourceWrites": 0,
+    "workflowTransitions": 0,
+    "nativeExecutions": 0,
+    "actors": 0,
+    "gatewayAttempts": 0,
+    "providerGets": 0,
+    "fullD": false,
+    "currentCredentialChildrenClosed": true
+  },
+  "nextWindow": {
+    "newUuidRequired": true,
+    "oneUseNoAutomaticRenewal": true,
+    "stopNewMinute": 50,
+    "actionMinute": 60,
+    "physicalCloseMinute": 70,
+    "leaseFloorMinute": 75,
+    "carryManagement": 4,
+    "carryControl": 1,
+    "remainingManagement": 506,
+    "remainingControl": 1847,
+    "remainingCombined": 2353
+  },
+  "positiveProjectRead": {
+    "path": "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-preflight-actual-20261022.json",
+    "sha256": "33bc37b6a9245a7f4f4876edeff20014eedca481a44e9613be188ca2eb19e7b6",
+    "ledgerPath": "scripts/n8n/out/foundation/live/project-preflight-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.jsonl",
+    "ledgerSha256": "4dbacde533b1be0a68f184b25d9bbde71895901b813978e6f701fb94be973e3e"
+  }
+}

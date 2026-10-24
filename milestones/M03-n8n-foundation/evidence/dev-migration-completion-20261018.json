@@ -1,0 +1,232 @@
+{
+  "version": 1,
+  "environment": "hosted emr-dev only",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "projectUrl": "https://zmotjsbzhzjvpelxvxlf.supabase.co",
+  "recordedAt": "2026-10-18T05:37:19Z",
+  "sourceHead": "ab9c3c620e0367c258ad1560e3c3063db7164557",
+  "consumerSha256": "530b7a7395b980b13d77c0254206c6bf9ae65ba653bf7a359f71fd6c3438db35",
+  "authorization": "Owner Proceed with next milestone 2026-10-18 M03 development; nonprod additive foundation",
+  "command": "powershell.exe -NoProfile -NonInteractive -File scripts/db/windows/Invoke-M03DevMigrations.ps1",
+  "nativeExit": 0,
+  "invocationsThisContinuation": 1,
+  "preflight": "Fresh actual CheckOnly READY/native0; exact dev URL and original seven version/name/history fingerprints verified by MCP before the private consumer; prior no-push admissions reconciled and preserved.",
+  "actualReceipt": {
+    "version": 1,
+    "runId": "03a85d53-9ad2-4d42-abb0-08945872e707",
+    "environment": "dev",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "host": "aws-1-eu-central-1.pooler.supabase.com",
+    "port": 5432,
+    "status": "complete",
+    "authenticationAttempted": true,
+    "authenticationVerified": true,
+    "historyBefore": "baseline",
+    "historyAfter": "complete",
+    "dryRunMatched": true,
+    "dryRunCheck": "matched",
+    "dryRunNativeExit": 0,
+    "pushAttempted": true,
+    "pushNativeExit": 0,
+    "childrenClosed": true,
+    "handoffDeleted": true,
+    "scratchDeleted": true,
+    "pendingVersions": [
+      "20261018034220",
+      "20261018035417"
+    ],
+    "observedAt": "2026-10-18T05:33:54.6852913Z"
+  },
+  "migrations": {
+    "baseline": [
+      {
+        "version": "20261017172928",
+        "name": "extensions_schemas_roles",
+        "file": "supabase/migrations/20261017172928_extensions_schemas_roles.sql",
+        "sha256": "478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d",
+        "historySha256": "d5c1a3c8b821bb14919c32d722042e15aa8775c966b3eade572531f066db093b"
+      },
+      {
+        "version": "20261017172931",
+        "name": "core_tables",
+        "file": "supabase/migrations/20261017172931_core_tables.sql",
+        "sha256": "4f1be3f6191885add916b164975ba10a8697069a0373a05df4e03fa53ea7cba3",
+        "historySha256": "0d7587a24dc96c35e639729369dd1650952381c356e5ed1ba867934669e1abcc"
+      },
+      {
+        "version": "20261017172934",
+        "name": "auth_rls_views",
+        "file": "supabase/migrations/20261017172934_auth_rls_views.sql",
+        "sha256": "8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9",
+        "historySha256": "bb7713ce9dd0bfb4de0cc0bc98ae5f558d39807375b86f46b1bdbd002d7f0aad"
+      },
+      {
+        "version": "20261017172937",
+        "name": "rpc_pipeline_core",
+        "file": "supabase/migrations/20261017172937_rpc_pipeline_core.sql",
+        "sha256": "978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803",
+        "historySha256": "ed23d0424c7c16cf325feceaa141baecf26f4f281725e28be1286fd6e76b196d"
+      },
+      {
+        "version": "20261017172940",
+        "name": "rpc_app_search",
+        "file": "supabase/migrations/20261017172940_rpc_app_search.sql",
+        "sha256": "6111c5291e9c305e3e713180c0441ff5ffbf52b3b88f589d5d16fee55769171c",
+        "historySha256": "2b36ed94ddfdc674e1097b4dee4141faf6e0912120c22e83c9b91b3353ec20b2"
+      },
+      {
+        "version": "20261017172943",
+        "name": "storage_cron",
+        "file": "supabase/migrations/20261017172943_storage_cron.sql",
+        "sha256": "859466fadfd940445ffe4b457e7250a179c93731e1f34736a629fe20df6e9c68",
+        "historySha256": "50b6a9aacfbf530783ba2defc23183293b1acfd6ce8a8612e871f5bb104c33ee"
+      },
+      {
+        "version": "20261017172945",
+        "name": "seed_taxonomies",
+        "file": "supabase/migrations/20261017172945_seed_taxonomies.sql",
+        "sha256": "af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234",
+        "historySha256": "3cb258773590c0225732727ea2701ad2dfc3ede8d9b62cc1d522bab3e4e9b61b"
+      }
+    ],
+    "pendingApplied": [
+      {
+        "version": "20261018034220",
+        "name": "rpc_n8n_foundation",
+        "file": "supabase/migrations/20261018034220_rpc_n8n_foundation.sql",
+        "sha256": "457ad4351b08c47b996ae67062ed701efb7d5ef63ea7658d20931f2d5dc5d3fd",
+        "historySha256": "dedf2cae9d1cfb7d7c5cb996d4c871a55c2628af868ee57fcb6df4598582a6d6"
+      },
+      {
+        "version": "20261018035417",
+        "name": "price_book_plan",
+        "file": "supabase/migrations/20261018035417_price_book_plan.sql",
+        "sha256": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd",
+        "historySha256": "3086cac77d3e68ecd0695b00a62c883e0cf706605432ff153b25b0c27e43a6d2"
+      }
+    ],
+    "actualHostedCount": 9,
+    "allNineVersionNameAndHistoryHashesMatch": true,
+    "originalSevenPreserved": true,
+    "postExecutionSourceHashes": [
+      {
+        "version": "20261017172928",
+        "file": "supabase/migrations/20261017172928_extensions_schemas_roles.sql",
+        "sha256": "478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d",
+        "matches": true
+      },
+      {
+        "version": "20261017172931",
+        "file": "supabase/migrations/20261017172931_core_tables.sql",
+        "sha256": "4f1be3f6191885add916b164975ba10a8697069a0373a05df4e03fa53ea7cba3",
+        "matches": true
+      },
+      {
+        "version": "20261017172934",
+        "file": "supabase/migrations/20261017172934_auth_rls_views.sql",
+        "sha256": "8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9",
+        "matches": true
+      },
+      {
+        "version": "20261017172937",
+        "file": "supabase/migrations/20261017172937_rpc_pipeline_core.sql",
+        "sha256": "978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803",
+        "matches": true
+      },
+      {
+        "version": "20261017172940",
+        "file": "supabase/migrations/20261017172940_rpc_app_search.sql",
+        "sha256": "6111c5291e9c305e3e713180c0441ff5ffbf52b3b88f589d5d16fee55769171c",
+        "matches": true
+      },
+      {
+        "version": "20261017172943",
+        "file": "supabase/migrations/20261017172943_storage_cron.sql",
+        "sha256": "859466fadfd940445ffe4b457e7250a179c93731e1f34736a629fe20df6e9c68",
+        "matches": true
+      },
+      {
+        "version": "20261017172945",
+        "file": "supabase/migrations/20261017172945_seed_taxonomies.sql",
+        "sha256": "af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234",
+        "matches": true
+      },
+      {
+        "version": "20261018034220",
+        "file": "supabase/migrations/20261018034220_rpc_n8n_foundation.sql",
+        "sha256": "457ad4351b08c47b996ae67062ed701efb7d5ef63ea7658d20931f2d5dc5d3fd",
+        "matches": true
+      },
+      {
+        "version": "20261018035417",
+        "file": "supabase/migrations/20261018035417_price_book_plan.sql",
+        "sha256": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd",
+        "matches": true
+      }
+    ],
+    "allNineSourceFileHashesUnchanged": true
+  },
+  "postReadback": {
+    "competitors": 285,
+    "competitorAccounts": 1754,
+    "items": 0,
+    "scrapeRuns": 0,
+    "apifyRuns": 0,
+    "costLedgerRows": 0,
+    "auditLogRows": 0,
+    "logoAssets": 257,
+    "competitorsWithLogoPath": 257,
+    "publicLogoObjects": 257,
+    "logoBoundary": "Counts preserved; this readback does not claim a new byte-hash verification of every logo.",
+    "excludedFixtureCompetitors": 0,
+    "excludedFixtureSelectors": [
+      "company_code C999",
+      "slug test-house",
+      "slug emr-smoke-test"
+    ],
+    "allSevenOwnerExcludedYouTubeSourcesPreserved": true,
+    "dailyBudgetUsd": 25,
+    "reviewedDatedApifyPriceRows": 17,
+    "verifiedActorCount": 9,
+    "apifyPlan": "Scale",
+    "planProvenance": "owner_reported",
+    "fixedFeeCoverageComplete": false,
+    "unverifiedPricesOrFees": [
+      "goat255/vimeo-scraper:video",
+      "openai",
+      "serpapi",
+      "firecrawl",
+      "fixed_monthly_fees"
+    ]
+  },
+  "evidence": {
+    "schemaAndTypeCoverage": "dev-post-migration-schema-20261018.json",
+    "freshHostedAdvisors": "dev-post-migration-advisors-20261018.json",
+    "earlierNoPushAttempts": "dev-migration-attempt-20261018.json",
+    "cliProtocolCauseAndReview": "cli-output-protocol-20261018.json"
+  },
+  "acceptanceBasis": {
+    "AC3": "Source-unchanged local137 new M03/379 total SQL tests and local advisors/types are preserved, not rerun. Actual hosted exact nine-version history, twelve hardened worker RPCs/ACLs, schema/index presence, no direct writer DML, all table RLS/API view invoker checks and fresh zero-WARN/ERROR advisors establish dev implementation readback. No hosted functional suite or actual native n8n_writer login is claimed.",
+    "AC4": "Actual dev seventeen reviewed Apify SKU rows and daily_budget_usd25 verified. Unknown fixed monthly fees and other provider/model prices remain explicit unknowns; no provider call or spend followed."
+  },
+  "cleanup": {
+    "handoffAbsentIndependentlyVerified": true,
+    "ownedChildrenClosed": true,
+    "publicScratchDeleted": true,
+    "durableAdmissionFile": "scripts/db/out/m03-dev-migration-attempt.json",
+    "durableAdmissionRunMatches": true,
+    "durableAdmissionPreserved": true,
+    "instruction": "Never delete the durable push admission or replay the consumer. No new database handoff is needed for these completed migrations. Owner-saved passwords and parent VS Code environment were not modified."
+  },
+  "scope": {
+    "seedSqlExecuted": false,
+    "C999FixtureInserted": false,
+    "providerCalls": false,
+    "collectorRun": false,
+    "paidBackfill": false,
+    "n8nWorkflowExecution": false,
+    "productionChanged": false,
+    "M04Started": false
+  },
+  "remainingGates": "Native n8n restricted writer TLS/identity, management API/workflow bindings and actual M03 smoke/callback/error/orchestration/health acceptance remain separate root-owned gates. No further database write, private handoff request or migration replay is required by this completion."
+}

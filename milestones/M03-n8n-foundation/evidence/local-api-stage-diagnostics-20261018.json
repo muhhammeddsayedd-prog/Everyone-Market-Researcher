@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "environment": "Local synthetic transport and isolated Windows DPAPI fixtures only",
+  "sourceHead": "e529576ac50f08e22ca8773dae9617e315da034e",
+  "scope": "Credential-free management inventory diagnostics; no live inventory request, key/handoff read, browser, API write or database operation",
+  "historicalActualReceiptPreserved": {
+    "file": "n8n-api-attempt-20261018.json",
+    "verified": "API authentication/discovery succeeded; Personal project resource returned200 and its safe projection was retained.",
+    "incomplete": "The later workflow-list request failed generically at requestCount3. Its completed TLS/status/body-read/parse stages and exact exception were not retained; the precise historical failure cause remains unknown.",
+    "boundary": "New synthetic cases demonstrate diagnostic behavior for possible failures. They do not prove which of those failures occurred in the prior real attempt. No new key request or rediscovery was performed."
+  },
+  "implementation": {
+    "scripts/n8n/inventory.mjs": "fdeff60d163550325eac8cc9ac34de06cc35ce3c40d74a40b3b1bc5a20bff751",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "c8f00c40655cc9568fc8355a71a246c418cd4d6cb6a45c1e6c5824e2f0f8aeb7",
+    "scripts/n8n/inventory-diagnostics.test.mjs": "2d38ba64b714ed14c8e95a428ee64b10f4d265989dd912be8f9e84a9ee3c73bc",
+    "scripts/n8n/private-inventory.test.mjs": "7aca03c8c9595a4573b330e43ab1a08185a5a4e17c092e6e555607e5225899d2",
+    "changes": [
+      "Add fixed DNS status and at most7 allowlisted request records: resource/page, observed TCP/TLS/status/body-read/JSON/schema/socket-close flags and finite failure-stage/code enums.",
+      "Record strict native TLS lifecycle observations without exposing certificate details, addresses, headers, body content, raw errors, cursor strings or secret fragments/hashes/lengths.",
+      "Reject declared-length or parser-incomplete bodies; classify connection, TLS trust/expiry/hostname, status reset, body abort/truncation/timeout, JSON and schema failures separately.",
+      "Explicit abort handling closes the owned request; settlement guards prevent late errors/TLS events from inventing successful stages. Existing fixed host, all-address validation/pinning, strict TLS, no redirects, GET-only routes, body/page/request limits and overall timeout remain.",
+      "Windows validates every diagnostic key/type/enum and cross-field JSON/schema constraints before emitting it. Unexpected diagnostic text is suppressed and consumed fixture credentials still cleaned up."
+    ],
+    "observationSemantics": "Null TCP/TLS means not observed. A false socketClosed means no close event observed at serialization time; it does not prove a leaked socket. The bounded consumer's independently observed childClosed receipt remains the final process-cleanup boundary. Injected transport cannot establish native TLS proof."
+  },
+  "tdd": {
+    "nodeRed": "node --test scripts/n8n/inventory-diagnostics.test.mjs: native1, missing inventoryDiagnosticVersion export before implementation; no test/network code executed.",
+    "fixtureCorrection": "Initial native-adapter fixtures omitted the required project name and produced10 local failures; corrected the synthetic project shape from the current reviewed response contract before any private use.",
+    "nodeGreen": {
+      "command": "node --test scripts/n8n/inventory-diagnostics.test.mjs scripts/n8n/inventory.test.mjs",
+      "passed": 44,
+      "failed": 0,
+      "newDiagnosticCases": 14,
+      "retainedCases": 30,
+      "nativeExit": 0,
+      "durationMs": 537.7848
+    },
+    "windowsRed": "Two affected new Windows fixture cases:1 passed/1 failed native1 before diagnostic protocol support; valid body-failure receipt was suppressed by the old exact-key validator.",
+    "windowsAffectedGreen": "The same2 new cases passed native0 after validation support; duration4338.781ms.",
+    "windowsCompleteAffectedProtocol": {
+      "command": "node --test scripts/n8n/private-inventory.test.mjs",
+      "passed": 17,
+      "failed": 0,
+      "nativeExit": 0,
+      "durationMs": 33376.7807,
+      "boundary": "Full affected protocol-fixture file because the strict receipt schema changed; isolated same-user DPAPI synthetic values only, not a hosted or real-key run."
+    },
+    "eslintNativeExit": 0,
+    "formatNativeExit": 0,
+    "windowsPowerShell5ParserErrors": 0,
+    "diffCheckNativeExit": 0
+  },
+  "review": {
+    "reviewer": "Root independent narrow source/protocol review",
+    "status": "Passed; no P0/P1/P2 finding at this local diagnostic protocol boundary",
+    "reviewedSourceHashes": {
+      "scripts/n8n/inventory.mjs": "fdeff60d163550325eac8cc9ac34de06cc35ce3c40d74a40b3b1bc5a20bff751",
+      "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "c8f00c40655cc9568fc8355a71a246c418cd4d6cb6a45c1e6c5824e2f0f8aeb7"
+    },
+    "independentDiagnosticTestsPassed": 14,
+    "scope": "Safe-stage enums, native event order, partial unknown receipts, native response shape, Windows strict projection and unchanged GET-only bounds",
+    "seal": "scripts/n8n/m03-inventory-seal.json refreshed only after current source bytes matched the independently reviewed hashes; creator hash unchanged",
+    "boundary": "No live command, CheckOnly, credential handoff read or management API request was performed for resealing. Historical workflow-list failure cause remains unknown."
+  },
+  "primarySources": [
+    "https://nodejs.org/download/release/v24.18.0/docs/api/http.html#messagecomplete",
+    "https://nodejs.org/download/release/v24.18.0/docs/api/tls.html#tlssocketauthorized"
+  ],
+  "executionBoundary": {
+    "realCredentialRead": false,
+    "realInventoryOrDiscoveryRequest": false,
+    "realDnsOrTransportProbe": false,
+    "apiWrite": false,
+    "migrationReplay": false,
+    "browserAction": false,
+    "sourceSealRefreshed": true,
+    "credentialOrSecuritySettingsChanged": false
+  }
+}
