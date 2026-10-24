@@ -22,16 +22,18 @@ import { assertFoundationRuntimeRestorationAudit } from './foundation-runtime-co
 import { syntheticZeroSetup } from './foundation-live-runtime-resume-fixtures.mjs';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 
-for (const profile of [640, 704])
+for (const profile of [640, 704, 832])
   test(`genuine${profile} allocation retains every charged request and the shared2560 ceiling without replacing historical headers`, async () => {
     for (const [controlAttempts, expectedLimit] of [
-      [profile === 704 ? 588 : 486, profile],
+      [profile === 832 ? 740 : profile === 704 ? 588 : 486, profile],
       [2048, 512],
     ]) {
       const f = await syntheticProjectVerifiedContinuation(
-        profile === 704
-          ? { catalogReadonly: true, catalogManagementAllocation: true }
-          : { closedFixture: true },
+        profile === 832
+          ? { runtimePreparationClosed: true, runtimeMetadataAllocation: true }
+          : profile === 704
+            ? { catalogReadonly: true, catalogManagementAllocation: true }
+            : { closedFixture: true },
       );
       let budget;
       try {
@@ -47,8 +49,8 @@ for (const profile of [640, 704])
             controlAttempts: () => controlAttempts,
           },
         );
-        assert.equal(budget.snapshot().attempts, profile === 704 ? 288 : 237);
-        assert.equal(budget.snapshot().carriedAttempts, profile === 704 ? 11 : 10);
+        assert.equal(budget.snapshot().attempts, profile === 832 ? 401 : profile === 704 ? 288 : 237);
+        assert.equal(budget.snapshot().carriedAttempts, profile >= 704 ? 11 : 10);
         assert.equal(budget.snapshot().maximum, profile);
         while (budget.snapshot().attempts < expectedLimit) budget.admit();
         const atLimit = readFileSync(f.paths.management, 'utf8');
@@ -64,15 +66,17 @@ for (const profile of [640, 704])
     }
   });
 
-for (const profile of [640, 704])
+for (const profile of [640, 704, 832])
   test(`genuine${profile} requires current Control custody and conservatively retains an uncertain append charge`, async () => {
     const f = await syntheticProjectVerifiedContinuation(
-      profile === 704
-        ? { catalogReadonly: true, catalogManagementAllocation: true }
-        : { closedFixture: true },
+      profile === 832
+        ? { runtimePreparationClosed: true, runtimeMetadataAllocation: true }
+        : profile === 704
+          ? { catalogReadonly: true, catalogManagementAllocation: true }
+          : { closedFixture: true },
     );
-    const initialControl = profile === 704 ? 588 : 486;
-    const initialManagement = profile === 704 ? 288 : 237;
+    const initialControl = profile === 832 ? 740 : profile === 704 ? 588 : 486;
+    const initialManagement = profile === 832 ? 401 : profile === 704 ? 288 : 237;
     let budget,
       moved = false,
       directoryCreated = false;
@@ -119,7 +123,7 @@ for (const profile of [640, 704])
     }
   });
 
-for (const profile of [640, 704])
+for (const profile of [640, 704, 832])
   test(`a plain requested${profile} profile cannot raise the historical512 budget or require a new callback`, () => {
     const f = fixture();
     let budget;

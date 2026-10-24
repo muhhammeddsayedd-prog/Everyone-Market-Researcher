@@ -42,6 +42,10 @@ $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technic
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical9-reconciliation-20261024.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical10-reconciliation-20261024.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical11-reconciliation-20261024.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical12-reconciliation-20261024.json',
+  'milestones/M03-n8n-foundation/evidence/machine-metadata-readback-20261024.json',
+  'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-runtime-metadata-20261024.md',
+  'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-runtime-metadata-approval-20261024.json',
   'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md',
   'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json',
   'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md',
@@ -374,7 +378,9 @@ function Read-FoundationPostcheckContinuation {
     $value=ConvertFrom-Json -InputObject $answer.text -ErrorAction Stop
     $approvalKind=if($projectMode){'project_verified_continuation_approval_required'}elseif($startupMode){'startup_replacement_approval_required'}else{'remaining_continuation_approval_required'}
     $freshMode=$forwardMode -and $projectMode -and $value.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
+    $nextMode=$forwardMode -and $projectMode -and $value.windowId -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e'
     if($freshMode){$expectedSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';$expectedWindow='eda4fae1-1e19-47db-81b8-beac1a4ed883'}
+    if($nextMode){$expectedSource='7b1837201ac7925591577a1517d7288936ca3464';$expectedWindow='3c46c791-e140-4eb9-890a-eecfa251f65e'}
     if($CheckOnly -and ($remainingMode -or $startupMode -or $projectMode) -and $value.kind -ceq $approvalKind){
       Assert-Keys $value @('kind','status','approvalRequired','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
       if($value.status -cne 'approval_required' -or $value.approvalRequired -isnot [bool] -or $value.approvalRequired -ne $true -or $value.privateRead -isnot [bool] -or $value.privateRead -ne $false -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0 -or $value.segmentId -cne $postcheckContinuationSegment -or $value.sourceCommitSha -cne $expectedSource -or $value.windowId -cne $expectedWindow){throw 'blocked'}
@@ -383,11 +389,11 @@ function Read-FoundationPostcheckContinuation {
     $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
     $managementFields=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')
     $managementPresent=@($managementFields|Where-Object{$_ -cin $value.PSObject.Properties.Name})
-    if($CheckOnly -and $freshMode -and $managementPresent.Count -ne 4){throw 'blocked'}
+    if($CheckOnly -and ($freshMode -or $nextMode) -and $managementPresent.Count -ne 4){throw 'blocked'}
     if($managementPresent.Count -gt 0){
       if(-not $CheckOnly -or -not $projectMode -or -not $forwardMode -or $managementPresent.Count -ne 4){throw 'blocked'}
       # Exact known read-only reconciliation, never a replenished allowance.
-      $managementExpected=if($freshMode -and $value.managementAttempts -eq 313){@{managementMaximum=704;managementAttempts=313;controlAttempts=639;combinedAttempts=952}}elseif($freshMode -and $value.managementAttempts -eq 288){@{managementMaximum=704;managementAttempts=288;controlAttempts=588;combinedAttempts=876}}elseif($freshMode -and $value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800}}elseif($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
+      $managementExpected=if($nextMode){@{managementMaximum=832;managementAttempts=401;controlAttempts=740;combinedAttempts=1141}}elseif($freshMode -and $value.managementAttempts -eq 313){@{managementMaximum=704;managementAttempts=313;controlAttempts=639;combinedAttempts=952}}elseif($freshMode -and $value.managementAttempts -eq 288){@{managementMaximum=704;managementAttempts=288;controlAttempts=588;combinedAttempts=876}}elseif($freshMode -and $value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800}}elseif($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
       $keys+=$managementFields
     }
@@ -708,13 +714,16 @@ function Invoke-FoundationForwardPostcheck {
       $window=Foundation-ForwardWindowId
       Assert-FoundationForwardWindowState $false
       $sql=[IO.File]::ReadAllText($forwardCheckFile)
-      if($window -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'){
+      if($window -cin @('eda4fae1-1e19-47db-81b8-beac1a4ed883','3c46c791-e140-4eb9-890a-eecfa251f65e')){
         # The migration-time catalog deliberately required the sole legacy
         # window. Acceptance now has two immutable closed predecessors and
         # must still prove the current window absent before provisioning.
         $needle="'no_new_window',(select count(*)=1 and bool_and(window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and closed_at is not null and close_count=1 and admitted_count=2) from ops.foundation_gateway_rate_windows)"
         if($sql.IndexOf($needle) -lt 0 -or $sql.IndexOf($needle) -ne $sql.LastIndexOf($needle)){throw 'blocked'}
         $replacement="'no_new_window',(select count(*)=2 and bool_and(closed_at is not null and close_count=1 and ((window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and admitted_count=2 and bound_commit_sha='f42930f90c2de43c84f61ad6d966d0ee6074d70e') or (window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc' and admitted_count=1 and starts_at is null and bound_commit_sha='a5e746736893d5040e93032ae740a0878f748837'))) from ops.foundation_gateway_rate_windows) and not exists(select 1 from ops.foundation_gateway_rate_windows where window_id='eda4fae1-1e19-47db-81b8-beac1a4ed883')"
+        if($window -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e'){
+          $replacement="'no_new_window',(select count(*)=3 and bool_and(closed_at is not null and close_count=1 and ((window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and admitted_count=2 and bound_commit_sha='f42930f90c2de43c84f61ad6d966d0ee6074d70e') or (window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc' and admitted_count=1 and starts_at is null and bound_commit_sha='a5e746736893d5040e93032ae740a0878f748837') or (window_id='eda4fae1-1e19-47db-81b8-beac1a4ed883' and admitted_count=2 and starts_at is not null and bound_commit_sha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'))) from ops.foundation_gateway_rate_windows) and not exists(select 1 from ops.foundation_gateway_rate_windows where window_id='3c46c791-e140-4eb9-890a-eecfa251f65e')"
+        }
         $sql=$sql.Replace($needle,$replacement)
       }
       $proof=Invoke-FoundationQuery $sql 'postcheck'

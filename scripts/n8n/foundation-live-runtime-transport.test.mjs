@@ -504,6 +504,19 @@ test('Writer Close binds the exact third owned window without reusing either clo
   assert.throws(() => writerCloseFixture({ windowId: '11111111-1111-4111-8111-111111111111' }));
 });
 
+test('Writer Close binds the fourth owned window and keeps all three predecessor intents closed', async () => {
+  const windowId = '3c46c791-e140-4eb9-890a-eecfa251f65e';
+  const f = writerCloseFixture({ windowId });
+  assert.equal((await f.t.closeWindow()).closeVerified, true);
+  assert.equal(f.rows[0].windowId, windowId);
+  assert.equal(f.queries.filter((q) => q.values?.[2] === 'close').length, 1);
+  assert.equal(
+    f.queries.filter((q) => q.values).every((q) => q.values[0] === windowId),
+    true,
+  );
+  assert.equal(f.ends(), 1);
+});
+
 test('Writer Close refuses wrong actual login or binding before durable mutation intent', async () => {
   for (const wrong of ['identity', 'binding']) {
     const f = writerCloseFixture({

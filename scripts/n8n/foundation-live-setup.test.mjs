@@ -112,12 +112,14 @@ const cleanedLegacySetupJsonl = `{"event":"setup_attempt","ordinal":1,"kind":"GE
 const cleanedLegacySetupRows = cleanedLegacySetupJsonl.trimEnd().split('\n').map(JSON.parse);
 const cleanedLegacySetupSha256 = '0cad48fd9550da762c0b629ee63364e4668f4829c3a89bd6f75ec2843d32f624';
 
-for (const profile of [640, 704])
-  test(`genuine${profile} and132 profile replays both closed windows and retains79 setup requests before the fresh owned window`, async () => {
+for (const profile of [640, 704, 832])
+  test(`genuine${profile} profile replays every closed window and retains all setup requests before the fresh owned window`, async () => {
     const f = await syntheticProjectVerifiedContinuation({
-      ...(profile === 704
-        ? { catalogReadonly: true, catalogManagementAllocation: true }
-        : { closedFixture: true }),
+      ...(profile === 832
+        ? { runtimePreparationClosed: true, runtimeMetadataAllocation: true }
+        : profile === 704
+          ? { catalogReadonly: true, catalogManagementAllocation: true }
+          : { closedFixture: true }),
       historicalSetupEvents: cleanedLegacySetupRows,
     });
     let budget, current;
@@ -128,12 +130,19 @@ for (const profile of [640, 704])
         setupModule = await f.copy('foundation-live-setup.mjs'),
         previousText = readFileSync(f.paths.setup, 'utf8'),
         previousEvents = previousText.trimEnd().split('\n').map(JSON.parse);
+      const setupMaximum = profile === 832 ? 176 : 132;
+      const priorAttempts = profile === 832 ? 114 : 79;
+      const historical = [
+        scope.windowId,
+        '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+        ...(profile === 832 ? ['eda4fae1-1e19-47db-81b8-beac1a4ed883'] : []),
+      ];
       assert.equal(resume.managementMaximum, profile);
-      assert.equal(resume.setupMaximum, 132);
-      assert.deepEqual(resume.historicalWindowIds, [scope.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc']);
+      assert.equal(resume.setupMaximum, setupMaximum);
+      assert.deepEqual(resume.historicalWindowIds, historical);
       assert.equal(Object.isFrozen(resume.historicalWindowIds), true);
-      assert.equal(previousEvents.length, 155);
-      assert.equal(previousEvents.filter((v) => v.event === 'setup_attempt').length, 79);
+      assert.equal(previousEvents.length, profile === 832 ? 226 : 155);
+      assert.equal(previousEvents.filter((v) => v.event === 'setup_attempt').length, priorAttempts);
       assert.deepEqual(
         [
           ...new Set(
@@ -160,12 +169,12 @@ for (const profile of [640, 704])
         projectVerifiedContinuationProof: proof,
         previousEvents,
         activeWindowId: proof.windowId,
-        maximumRequests: 132,
+        maximumRequests: setupMaximum,
         expectedMigrationCount: 15,
         managementBudget: budget,
       });
       assert.equal(budget.snapshot().attempts, resume.aggregateManagementAttempts);
-      assert.equal(current.setup.snapshot().requestCount, 79);
+      assert.equal(current.setup.snapshot().requestCount, priorAttempts);
       assert.equal(current.setup.snapshot().sharedMaximum, profile);
       await current.setup.prepare();
       const created = current.calls.filter((c) => c.method === 'POST' && c.path.includes('/env?'));
@@ -184,11 +193,11 @@ for (const profile of [640, 704])
         deleted.some((c) => [...oldIds].some((id) => c.path.includes('/env/' + id + '?'))),
         false,
       );
-      assert.equal(current.setup.snapshot().requestCount, 79 + current.calls.length);
-      assert.ok(current.setup.snapshot().requestCount <= 132);
+      assert.equal(current.setup.snapshot().requestCount, priorAttempts + current.calls.length);
+      assert.ok(current.setup.snapshot().requestCount <= setupMaximum);
       assert.equal(budget.snapshot().attempts, resume.aggregateManagementAttempts + current.calls.length);
       assert.equal(readFileSync(f.paths.setup, 'utf8'), previousText);
-      assert.throws(() => fixture({ maximumRequests: 132, activeWindowId: proof.windowId }));
+      assert.throws(() => fixture({ maximumRequests: setupMaximum, activeWindowId: proof.windowId }));
     } finally {
       current?.setup.close();
       budget?.close();

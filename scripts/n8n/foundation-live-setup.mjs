@@ -38,7 +38,7 @@ const freeze = (v) => {
 };
 export function foundationLiveSetupRequestPlan(previousAttempts, maximumRequests = maximum) {
   if (
-    ![50, 88, 132].includes(maximumRequests) ||
+    ![50, 88, 132, 176].includes(maximumRequests) ||
     !Number.isInteger(previousAttempts) ||
     previousAttempts < 0 ||
     previousAttempts > maximumRequests
@@ -108,7 +108,7 @@ export function createFoundationLiveSetupJournal({
   maximumRequests = maximum,
 }) {
   if (
-    ![50, 88, 132].includes(maximumRequests) ||
+    ![50, 88, 132, 176].includes(maximumRequests) ||
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
     typeof durableAppend !== 'function' ||
     !Array.isArray(previousEvents) ||
@@ -187,6 +187,7 @@ export function createFoundationLiveSetupJournal({
           'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
           '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
           'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+          '3c46c791-e140-4eb9-890a-eecfa251f65e',
         ].some((id) => row.comment === 'M03 foundation temporary dev ' + id) ||
         !Number.isFinite(row.createdAt) ||
         !Number.isFinite(row.updatedAt))
@@ -230,9 +231,12 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
   const { sourceCommitSha, transport, journal, managementBudget, verifyDevReady } = input;
   const activeWindowId = input.activeWindowId ?? S.windowId;
   if (
-    ![S.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc', 'eda4fae1-1e19-47db-81b8-beac1a4ed883'].includes(
-      activeWindowId,
-    )
+    ![
+      S.windowId,
+      '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+      'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+      '3c46c791-e140-4eb9-890a-eecfa251f65e',
+    ].includes(activeWindowId)
   )
     fail();
   const now = input.now ?? Date.now,
@@ -325,9 +329,11 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
     ? (resumeCheckpoint.historicalWindowIds ?? Object.freeze([S.windowId]))
     : Object.freeze([]);
   const expectedHistoricalWindowIds =
-    activeWindowId === 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
-      ? [S.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc']
-      : [S.windowId];
+    activeWindowId === '3c46c791-e140-4eb9-890a-eecfa251f65e'
+      ? [S.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc', 'eda4fae1-1e19-47db-81b8-beac1a4ed883']
+      : activeWindowId === 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
+        ? [S.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc']
+        : [S.windowId];
   if (
     journal.maximumRequests !== requestMaximum ||
     (activeWindowId !== S.windowId && !resumeCheckpoint?.closedWindow) ||
@@ -335,6 +341,10 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
     (requestMaximum === 132 &&
       (![640, 704].includes(resumeCheckpoint?.managementMaximum) ||
         activeWindowId !== 'eda4fae1-1e19-47db-81b8-beac1a4ed883')) ||
+    (requestMaximum === 176 &&
+      (resumeCheckpoint?.managementMaximum !== 832 ||
+        activeWindowId !== '3c46c791-e140-4eb9-890a-eecfa251f65e')) ||
+    (resumeCheckpoint?.managementMaximum === 832 && requestMaximum !== 176) ||
     (legacyMetadataReplay &&
       (!Array.isArray(historicalWindowIds) ||
         !Object.isFrozen(historicalWindowIds) ||
@@ -574,7 +584,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
           sharedAttempts = sharedBudget.attempts,
           sharedMaximum = sharedBudget.maximum ?? 512;
         if (
-          ![512, 576, 640, 704].includes(sharedMaximum) ||
+          ![512, 576, 640, 704, 832].includes(sharedMaximum) ||
           (sharedMaximum !== 512 && resumeCheckpoint?.managementMaximum !== sharedMaximum) ||
           !Number.isInteger(sharedAttempts) ||
           sharedAttempts < 0 ||

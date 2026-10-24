@@ -228,6 +228,25 @@ Write-Output ([ordered]@{vacancy=$script:vacancy;sql=$script:captured}|ConvertTo
     assert.equal(current.vacancy, 1, 'ACCEPTANCE_RECHECKS_EXACT_VACANCY');
     assert.match(current.sql, /eda4fae1-1e19-47db-81b8-beac1a4ed883/);
     assert.match(current.sql, /38b3708d-61b0-41d2-8170-5ed91c66b4dc/);
+    const fourth = JSON.parse(
+      run(
+        code
+          .replaceAll('eda4fae1-1e19-47db-81b8-beac1a4ed883', '3c46c791-e140-4eb9-890a-eecfa251f65e')
+          .replaceAll('aff94f2b2d8055cf93b5405e6b11d4e7d9c86803', '7b1837201ac7925591577a1517d7288936ca3464'),
+      ),
+    );
+    assert.equal(fourth.vacancy, 1);
+    assert.match(fourth.sql, /'no_new_window',\(select count\(\*\)=3/);
+    for (const [window, admitted] of [
+      ['df4f29ec-e2dc-4d82-a276-62a4e695e6f9', 2],
+      ['38b3708d-61b0-41d2-8170-5ed91c66b4dc', 1],
+      ['eda4fae1-1e19-47db-81b8-beac1a4ed883', 2],
+    ])
+      assert.ok(fourth.sql.includes(`window_id='${window}' and admitted_count=${admitted}`));
+    assert.match(
+      fourth.sql,
+      /not exists\(select 1 from ops.foundation_gateway_rate_windows where window_id='3c46c791-e140-4eb9-890a-eecfa251f65e'\)/,
+    );
     const historical = JSON.parse(
       run(
         code.replace(
@@ -503,6 +522,37 @@ test('ForwardWindow requires only the compatible current ProjectVerified PhaseA 
   }
 });
 
+test(
+  'fourth registered window requires three exact closed predecessors and all retained cumulative counts before mutation',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys'])}
+${definitions(['Foundation-Literal', 'Assert-FoundationForwardWindowState'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$out='synthetic';$continuationOutputStem='synthetic';$projectVerifiedForwardWindowId='3c46c791-e140-4eb9-890a-eecfa251f65e';$projectVerifiedForwardSource='7b1837201ac7925591577a1517d7288936ca3464'
+function Read-FoundationForwardPrior{return [pscustomobject]@{}}
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=13;outputSegment='synthetic13'}}
+$script:forwardWindowBinding=[pscustomobject]@{audience='https://everyone-market-researcher-synthetic.vercel.app';deploymentId='dpl_Synthetic'}
+$script:value=[pscustomobject]@{identity=$true;legacyClosed=$true;intermediateClosed=$true;runtimeClosed=$true;windows=3;freshWindows=0;freshPrepared=$false;globalAdmitted=5;requests=2;activeLeases=0;launches=0;bindings=0;progress=0}
+function Invoke-FoundationQuery($Sql,$Column){
+ if($Column -ceq 'ownership'){return [pscustomobject]@{owned=$true}}
+ foreach($needle in @("'intermediateClosed'","'runtimeClosed'","w.admitted_count=2","'dpl_ABN1zsMeta6kHd4eRTqT9FbLqkEY'","bound_commit_sha='7b1837201ac7925591577a1517d7288936ca3464'")){if(-not $Sql.Contains($needle)){throw 'THIRD_PREDECESSOR_OR_FRESH_BINDING_NOT_EXACT'}}
+ return $script:value
+}
+Assert-FoundationForwardWindowState $false
+$script:value.windows=4;$script:value.freshWindows=1;$script:value.freshPrepared=$true;Assert-FoundationForwardWindowState $true
+foreach($key in @('legacyClosed','intermediateClosed','runtimeClosed','freshPrepared')){$script:value.$key=$false;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$true;if(-not $denied){throw 'UNCLOSED_PREDECESSOR_ACCEPTED'}}
+foreach($key in @('windows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){$saved=$script:value.$key;$script:value.$key=$saved+1;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$saved;if(-not $denied){throw 'UNRECONCILED_PROGRESS_ACCEPTED'}}
+$script:value.globalAdmitted='5';$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'COERCED_COUNTER_ACCEPTED'};$script:value.globalAdmitted=5
+$projectVerifiedForwardSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'MIXED_FOURTH_WINDOW_SOURCE_ACCEPTED'}
+Write-Output 'THREE_CLOSED_PREDECESSORS_AND_FRESH_FOURTH'
+`),
+      'THREE_CLOSED_PREDECESSORS_AND_FRESH_FOURTH',
+    );
+  },
+);
+
 test('ForwardWindow public adapter accepts the selected a5 source and fresh UUID only', native, () => {
   assert.equal(
     run(`
@@ -566,6 +616,12 @@ foreach($mutation in @(@{key='managementMaximum';value=640},@{key='managementMax
  $mixed=[ordered]@{};foreach($name in $adminBinding.Keys){$mixed[$name]=$adminBinding[$name]};$mixed[$mutation.key]=$mutation.value;$script:dto=[pscustomobject]$mixed;$denied=$false
  try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MIXED_704_ADMIN_BINDING_PROFILE_ACCEPTED'}
 }
+$next=[ordered]@{};foreach($name in $adminBinding.Keys){$next[$name]=$adminBinding[$name]};$next.managementMaximum=832;$next.managementAttempts=401;$next.controlAttempts=740;$next.combinedAttempts=1141;$next.sourceCommitSha='7b1837201ac7925591577a1517d7288936ca3464';$next.windowId='3c46c791-e140-4eb9-890a-eecfa251f65e';$script:dto=[pscustomobject]$next
+$null=Read-FoundationPostcheckContinuation
+foreach($mutation in @(@{key='managementMaximum';value=704},@{key='managementMaximum';value=833},@{key='managementMaximum';value='832'},@{key='managementAttempts';value=400},@{key='controlAttempts';value=739},@{key='combinedAttempts';value=1140},@{key='sourceCommitSha';value=$fresh.sourceCommitSha},@{key='windowId';value=$fresh.windowId})){
+ $mixed=[ordered]@{};foreach($name in $next.Keys){$mixed[$name]=$next[$name]};$mixed[$mutation.key]=$mutation.value;$script:dto=[pscustomobject]$mixed;$denied=$false
+ try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MIXED_832_NEXT_PROFILE_ACCEPTED'}
+}
 foreach($missing in @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){
  $copy=[ordered]@{};foreach($name in $valid.Keys){if($name -cne $missing){$copy[$name]=$valid[$name]}};$script:dto=[pscustomobject]$copy;$denied=$false
  try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'PARTIAL_MANAGEMENT_PROFILE_ACCEPTED'}
@@ -580,7 +636,7 @@ Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
 );
 
 test(
-  'actual forward packet has all55 source-required public pins and retains every old migration field',
+  'actual forward packet has all59 source-required public pins and retains every old migration field',
   native,
   () => {
     assert.equal(
@@ -594,80 +650,100 @@ Invoke-Expression $source.Substring($start,$end-$start)
 $packet=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
 $old=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-dev-migration-packet.json'))}))
 Assert-Keys $packet.files $requiredFiles
-if($requiredFiles.Count -ne 55 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+if($requiredFiles.Count -ne 59 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
 $prior=@($old.baseline)+@($old.pending)
 for($i=0;$i -lt 14;$i++){foreach($field in @('version','name','file','sha256','historySha256')){if($prior[$i].$field -cne $packet.baseline[$i].$field){throw 'ORIGINAL_MIGRATION_REWRITTEN'}}}
-Write-Output 'EXACT_PUBLIC_55_AND_OLD14'
+Write-Output 'EXACT_PUBLIC_59_AND_OLD14'
 `),
-      'EXACT_PUBLIC_55_AND_OLD14',
+      'EXACT_PUBLIC_59_AND_OLD14',
     );
   },
 );
 
-test(
-  'post11 fresh ForwardWindow completes the full native public Run preflight before the private boundary',
-  native,
-  async () => {
-    const fixture = await syntheticProjectVerifiedContinuation({ adminAdmissionReadonly: true });
-    let primaryFailure;
-    try {
-      const readiness = fixture.check();
-      assert.equal(readiness.kind, 'project_verified_continuation_ready', 'synthetic pre-copy authority');
-      assert.equal(readiness.managementMaximum, 704);
-      assert.equal(readiness.managementAttempts, 313);
-      assert.equal(readiness.controlAttempts, 639);
-      assert.equal(readiness.combinedAttempts, 952);
-      const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
-      const put = (relative, bytes) => fixture.put(relative, bytes);
-      const packet = JSON.parse(
-        readFileSync(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'), 'utf8'),
-      );
-      packet.files[
-        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical11-reconciliation-20261024.json'
-      ] = 'synthetic-public-pin-recomputed-below';
-      // Keep all isolated historical authority bytes supplied by the existing
-      // fixture. Copy only the public source/CLI/migration inputs it lacks.
-      for (const relative of [
-        ...Object.keys(packet.files),
-        ...packet.baseline.map((m) => m.file),
-        ...packet.pending.map((m) => m.file),
-      ]) {
-        const target = join(fixture.directory, relative);
-        if (!existsSync(target)) {
-          mkdirSync(dirname(target), { recursive: true });
-          copyFileSync(resolve(relative), target);
-        }
-      }
-      const helperSource = readFileSync(consumer, 'utf8');
-      const privateBoundary = helperSource.indexOf('if($CheckOnly -and $ForwardMigration){Write-Output');
-      assert.ok(privateBoundary > 0);
-      // Execute the actual complete Run-only public prefix, not a detached DTO
-      // validator. This test copy physically cannot reach a DPAPI/private block.
-      const publicPrefix = helperSource
-        .slice(0, privateBoundary)
-        .replace(
-          "Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.'",
-          "Write-Output ('SYNTHETIC_PUBLIC_PREFLIGHT_LINE='+$_.InvocationInfo.ScriptLineNumber)",
+for (const profile of [
+  {
+    name: 'post11',
+    options: { adminAdmissionReadonly: true },
+    managementMaximum: 704,
+    managementAttempts: 313,
+    controlAttempts: 639,
+    combinedAttempts: 952,
+    technicalOrdinal: 12,
+  },
+  {
+    name: 'post12',
+    options: { runtimePreparationClosed: true, runtimeMetadataAllocation: true },
+    managementMaximum: 832,
+    managementAttempts: 401,
+    controlAttempts: 740,
+    combinedAttempts: 1141,
+    technicalOrdinal: 13,
+  },
+])
+  test(
+    `${profile.name} fresh ForwardWindow completes the full native public Run preflight before the private boundary`,
+    native,
+    async () => {
+      const fixture = await syntheticProjectVerifiedContinuation(profile.options);
+      let primaryFailure;
+      try {
+        const readiness = fixture.check();
+        assert.equal(readiness.kind, 'project_verified_continuation_ready', 'synthetic pre-copy authority');
+        assert.equal(readiness.managementMaximum, profile.managementMaximum);
+        assert.equal(readiness.managementAttempts, profile.managementAttempts);
+        assert.equal(readiness.controlAttempts, profile.controlAttempts);
+        assert.equal(readiness.combinedAttempts, profile.combinedAttempts);
+        const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
+        const put = (relative, bytes) => fixture.put(relative, bytes);
+        const packet = JSON.parse(
+          readFileSync(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'), 'utf8'),
         );
-      const adminPath = put(
-        'scripts/db/windows/Invoke-M03FoundationMigrations.ps1',
-        publicPrefix + "\nWrite-Output 'SYNTHETIC_FULL_PUBLIC_RUN_READY';exit 0\n",
-      );
-      for (const relative of Object.keys(packet.files))
-        packet.files[relative] = hash(readFileSync(join(fixture.directory, relative)));
-      put('scripts/db/m03-foundation-forward-dev-migration-packet.json', JSON.stringify(packet) + '\n');
-      assert.equal(
-        fixture.check().kind,
-        'project_verified_continuation_ready',
-        'synthetic post-copy authority',
-      );
-      const guardPath = join(
-        fixture.directory,
-        'scripts/n8n/foundation-live-project-verified-continuation.mjs',
-      );
-      const runtimePath = put(
-        'synthetic-native-public-runtime.mjs',
-        `
+        packet.files[
+          'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical11-reconciliation-20261024.json'
+        ] = 'synthetic-public-pin-recomputed-below';
+        // Keep all isolated historical authority bytes supplied by the existing
+        // fixture. Copy only the public source/CLI/migration inputs it lacks.
+        for (const relative of [
+          ...Object.keys(packet.files),
+          ...packet.baseline.map((m) => m.file),
+          ...packet.pending.map((m) => m.file),
+        ]) {
+          const target = join(fixture.directory, relative);
+          if (!existsSync(target)) {
+            mkdirSync(dirname(target), { recursive: true });
+            copyFileSync(resolve(relative), target);
+          }
+        }
+        const helperSource = readFileSync(consumer, 'utf8');
+        const privateBoundary = helperSource.indexOf('if($CheckOnly -and $ForwardMigration){Write-Output');
+        assert.ok(privateBoundary > 0);
+        // Execute the actual complete Run-only public prefix, not a detached DTO
+        // validator. This test copy physically cannot reach a DPAPI/private block.
+        const publicPrefix = helperSource
+          .slice(0, privateBoundary)
+          .replace(
+            "Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.'",
+            "Write-Output ('SYNTHETIC_PUBLIC_PREFLIGHT_LINE='+$_.InvocationInfo.ScriptLineNumber)",
+          );
+        const adminPath = put(
+          'scripts/db/windows/Invoke-M03FoundationMigrations.ps1',
+          publicPrefix + "\nWrite-Output 'SYNTHETIC_FULL_PUBLIC_RUN_READY';exit 0\n",
+        );
+        for (const relative of Object.keys(packet.files))
+          packet.files[relative] = hash(readFileSync(join(fixture.directory, relative)));
+        put('scripts/db/m03-foundation-forward-dev-migration-packet.json', JSON.stringify(packet) + '\n');
+        assert.equal(
+          fixture.check().kind,
+          'project_verified_continuation_ready',
+          'synthetic post-copy authority',
+        );
+        const guardPath = join(
+          fixture.directory,
+          'scripts/n8n/foundation-live-project-verified-continuation.mjs',
+        );
+        const runtimePath = put(
+          'synthetic-native-public-runtime.mjs',
+          `
 import {readFileSync,appendFileSync,openSync,writeFileSync,closeSync,unlinkSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 const guard=await import(${JSON.stringify(pathToFileURL(guardPath).href)});
@@ -686,10 +762,10 @@ try {
  process.exitCode=r.status===0&&line==='SYNTHETIC_FULL_PUBLIC_RUN_READY'?0:1;
 } finally {closeSync(lock);unlinkSync(lockPath);}
 `,
-      );
-      const wrapperPath = put(
-        'synthetic-native-public-wrapper.ps1',
-        `
+        );
+        const wrapperPath = put(
+          'synthetic-native-public-wrapper.ps1',
+          `
 $ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
 $env:LOCALAPPDATA=${quote(fixture.localAppData)}
 $parentPath=Join-Path $env:LOCALAPPDATA 'Temp/emr-m03-acceptance-parent.operation.lock'
@@ -711,44 +787,44 @@ try {
  Write-Output $runtime.text;exit $runtime.code
 } finally {$handle.Dispose()}
 `,
-      );
-      const result = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', wrapperPath], {
-        cwd: fixture.directory,
-        env: Object.fromEntries(
-          ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP', 'LOCALAPPDATA', 'APPDATA', 'USERPROFILE'].flatMap(
-            (name) => (process.env[name] === undefined ? [] : [[name, process.env[name]]]),
+        );
+        const result = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', wrapperPath], {
+          cwd: fixture.directory,
+          env: Object.fromEntries(
+            ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP', 'LOCALAPPDATA', 'APPDATA', 'USERPROFILE'].flatMap(
+              (name) => (process.env[name] === undefined ? [] : [[name, process.env[name]]]),
+            ),
           ),
-        ),
-        windowsHide: true,
-        encoding: 'utf8',
-        timeout: 60000,
-      });
-      assert.equal(Boolean(result.stderr), false, 'Synthetic native stderr withheld');
-      const projection = JSON.parse(result.stdout.trim());
-      assert.equal(result.status, 0, JSON.stringify(projection));
-      assert.equal(projection.publicReady, true, JSON.stringify(projection));
-      assert.equal(projection.stderrObserved, false);
-      assert.equal(projection.privateRead, false);
-      assert.equal(
-        existsSync(
-          join(
-            fixture.directory,
-            'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-12-attempt.json',
+          windowsHide: true,
+          encoding: 'utf8',
+          timeout: 60000,
+        });
+        assert.equal(Boolean(result.stderr), false, 'Synthetic native stderr withheld');
+        const projection = JSON.parse(result.stdout.trim());
+        assert.equal(result.status, 0, JSON.stringify(projection));
+        assert.equal(projection.publicReady, true, JSON.stringify(projection));
+        assert.equal(projection.stderrObserved, false);
+        assert.equal(projection.privateRead, false);
+        assert.equal(
+          existsSync(
+            join(
+              fixture.directory,
+              `scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-${profile.technicalOrdinal}-attempt.json`,
+            ),
           ),
-        ),
-        false,
-      );
-    } catch (error) {
-      primaryFailure = error;
-      throw error;
-    } finally {
-      try {
-        fixture.cleanup();
+          false,
+        );
       } catch (error) {
-        if (primaryFailure)
-          throw new AggregateError([primaryFailure, error], 'SYNTHETIC_PUBLIC_RUN_AND_CLEANUP_FAILED');
+        primaryFailure = error;
         throw error;
+      } finally {
+        try {
+          fixture.cleanup();
+        } catch (error) {
+          if (primaryFailure)
+            throw new AggregateError([primaryFailure, error], 'SYNTHETIC_PUBLIC_RUN_AND_CLEANUP_FAILED');
+          throw error;
+        }
       }
-    }
-  },
-);
+    },
+  );

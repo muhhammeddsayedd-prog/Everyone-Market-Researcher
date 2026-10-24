@@ -98,6 +98,7 @@ export function createFoundationLiveWriterCloser(
     'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
     '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
     'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+    '3c46c791-e140-4eb9-890a-eecfa251f65e',
   ];
   const requestId = '00000000-0000-4000-8000-000000000021';
   const now = dependencies.now ?? Date.now;

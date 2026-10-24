@@ -399,7 +399,11 @@ test('browser whole-workflow control uses fresh actual binding and native URL re
   assert.equal(f.calls[0].path, '/api/v1/workflows/' + f.savedCase.workflowId + '?excludePinnedData=true');
 });
 
-for (const activeWindowId of ['38b3708d-61b0-41d2-8170-5ed91c66b4dc', 'eda4fae1-1e19-47db-81b8-beac1a4ed883'])
+for (const activeWindowId of [
+  '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+  'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+  '3c46c791-e140-4eb9-890a-eecfa251f65e',
+])
   test(`fresh ${activeWindowId} browser dispatch and four errors accept only their real branded settlement while retaining legacy batch identity`, async () => {
     const f = fixture({ browserUi: true, activeWindowId });
     assert.equal((await f.controller.runCase(f.input)).state, 'native_settled');
@@ -427,31 +431,31 @@ test('unknown active SQL window is refused before browser control or any native 
     fixed,
   );
 });
-test('fresh eda4 smoke original and final settlement retain the active SQL window through real proof brands', async () => {
-  const activeWindowId = 'eda4fae1-1e19-47db-81b8-beac1a4ed883';
-  const f = providerFixture({
-    configureSettlement(ports) {
-      ports.windowId = activeWindowId;
-      const read = ports.readGateway;
-      ports.readGateway = async (args) => {
-        const value = await read(args);
-        value.window_id = activeWindowId;
-        for (const provider of value.providers) provider.launch.window_id = activeWindowId;
-        return value;
-      };
-    },
-    beforeCreate({ ports }) {
-      ports.activeWindowId = activeWindowId;
-    },
+for (const activeWindowId of ['eda4fae1-1e19-47db-81b8-beac1a4ed883', '3c46c791-e140-4eb9-890a-eecfa251f65e'])
+  test(`fresh ${activeWindowId} smoke original and final settlement retain the active SQL window through real proof brands`, async () => {
+    const f = providerFixture({
+      configureSettlement(ports) {
+        ports.windowId = activeWindowId;
+        const read = ports.readGateway;
+        ports.readGateway = async (args) => {
+          const value = await read(args);
+          value.window_id = activeWindowId;
+          for (const provider of value.providers) provider.launch.window_id = activeWindowId;
+          return value;
+        };
+      },
+      beforeCreate({ ports }) {
+        ports.activeWindowId = activeWindowId;
+      },
+    });
+    await verifyAndCleanPhaseB(f);
+    const result = await f.controller.runCase(f.smoke);
+    assert.equal(result.state, 'native_settled');
+    assert.equal(f.controller.caseSettlement('smoke.first').windowId, activeWindowId);
+    assert.equal(result.closure.batchId, foundationRuntimeCheckpoint.windowId);
+    assert.equal(f.actorStarts(), 1); // Scripted in-memory route; no provider is called.
+    assert.equal(f.providerReads(), 2);
   });
-  await verifyAndCleanPhaseB(f);
-  const result = await f.controller.runCase(f.smoke);
-  assert.equal(result.state, 'native_settled');
-  assert.equal(f.controller.caseSettlement('smoke.first').windowId, activeWindowId);
-  assert.equal(result.closure.batchId, foundationRuntimeCheckpoint.windowId);
-  assert.equal(f.actorStarts(), 1); // Scripted in-memory route; no provider is called.
-  assert.equal(f.providerReads(), 2);
-});
 
 test('browser foreign readiness, mixed sources, changed actual workflow or mismatched URL cannot prove a native start', async () => {
   for (const options of [

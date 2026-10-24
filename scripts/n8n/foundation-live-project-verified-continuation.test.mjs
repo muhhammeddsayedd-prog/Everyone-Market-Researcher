@@ -15,6 +15,140 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('closed technical12 and the separate one-GET diagnostic retain every charge before new allocation', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ runtimePreparationClosed: true });
+  try {
+    const before = [f.paths.management, f.paths.control, f.paths.setup].map((p) => readFileSync(p, 'utf8'));
+    const r = f.check();
+    assert.deepEqual(
+      [
+        r.status,
+        r.managementAttempts,
+        r.controlAttempts,
+        r.combinedAttempts,
+        r.setupAttempts,
+        r.setupMaximum,
+        r.proposedSetupMaximum,
+      ],
+      ['setup_cap_insufficient', 401, 740, 1141, 114, 132, 176],
+    );
+    assert.equal(r.windowId, '3c46c791-e140-4eb9-890a-eecfa251f65e');
+    assert.equal(r.gatewayPreflightAttempts, 4);
+    assert.throws(() => f.admit());
+    assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-13.json')), false);
+    assert.deepEqual(
+      [f.paths.management, f.paths.control, f.paths.setup].map((p) => readFileSync(p, 'utf8')),
+      before,
+    );
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('approved832/176 continuation claims only next13 with a fresh fourth window and complete history', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    runtimePreparationClosed: true,
+    runtimeMetadataAllocation: true,
+  });
+  try {
+    const ready = f.check();
+    assert.equal(ready.kind, 'project_verified_continuation_ready');
+    assert.deepEqual(
+      [ready.managementMaximum, ready.managementAttempts, ready.controlAttempts, ready.combinedAttempts],
+      [832, 401, 740, 1141],
+    );
+    const historical = f.paths.admission.replace(/\.json$/, '.technical-12.json'),
+      before = readFileSync(historical, 'utf8');
+    const p = f.claim(f.admit()),
+      c = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(p);
+    assert.equal(p.sourceCommitSha, '7b1837201ac7925591577a1517d7288936ca3464');
+    assert.equal(p.windowId, '3c46c791-e140-4eb9-890a-eecfa251f65e');
+    assert.deepEqual(
+      [
+        c.technicalAttemptOrdinal,
+        c.mainManagementAttempts,
+        c.aggregateManagementAttempts,
+        c.managementMaximum,
+        c.mainControlAttempts,
+        c.aggregateControlAttempts,
+        c.setupRows,
+        c.setupAttempts,
+        c.setupMaximum,
+        c.preflightRows,
+        c.gatewayPreflightAttempts,
+      ],
+      [13, 390, 401, 832, 737, 740, 226, 114, 176, 11, 4],
+    );
+    assert.deepEqual(c.historicalWindowIds, [
+      'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+      '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+      'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+    ]);
+    assert.equal(readFileSync(historical, 'utf8'), before);
+    f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(p);
+    appendFileSync(
+      join(
+        f.directory,
+        'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-runtime-metadata-approval-20261024.json',
+      ),
+      ' ',
+    );
+    assert.throws(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(p));
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('technical12 closure, no-replay, runtime read-only, real fixture audit and diagnostic charges are required', async () => {
+  for (const fault of [
+    'closure',
+    'actor',
+    'replay',
+    'runtime-write',
+    'audit',
+    'diagnostic-charge',
+    'diagnostic-tls',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      runtimePreparationClosed: true,
+      runtimeMetadataAllocation: true,
+      runtimePreparationFault: fault,
+    });
+    try {
+      assert.throws(() => f.check(), undefined, fault);
+      assert.throws(() => f.admit(), undefined, fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('832 allocation preserves all other limits and requires verified immutable application delivery', async () => {
+  for (const fault of ['maximum', 'vercel', 'usage', 'actor', 'boundary', 'window']) {
+    const f = await syntheticProjectVerifiedContinuation({
+      runtimePreparationClosed: true,
+      runtimeMetadataAllocation: true,
+      runtimeMetadataAllocationFault: fault,
+    });
+    try {
+      assert.throws(() => f.check(), undefined, fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+  const f = await syntheticProjectVerifiedContinuation({
+    runtimePreparationClosed: true,
+    runtimeMetadataAllocation: true,
+    runtimeSourceUnverified: true,
+  });
+  try {
+    assert.equal(f.check().status, 'application_source_unselected');
+    assert.throws(() => f.admit());
+  } finally {
+    f.cleanup();
+  }
+});
+
 test('current readiness reserves the second Machine read without changing historical allocation claims', async () => {
   const source = readFileSync(
     new URL('./foundation-live-project-verified-continuation.mjs', import.meta.url),

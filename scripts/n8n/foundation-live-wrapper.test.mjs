@@ -108,6 +108,12 @@ $catalog=[ordered]@{};foreach($name in $fresh.Keys){$catalog[$name]=$fresh[$name
 if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$catalog) $true 'CheckOnly') -ne 704){throw 'APPROVED_704_CHARGES_NOT_PROJECTED'}
 $admission=[ordered]@{};foreach($name in $catalog.Keys){$admission[$name]=$catalog[$name]};$admission.managementAttempts=313;$admission.controlAttempts=639;$admission.combinedAttempts=952
 if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$admission) $true 'CheckOnly') -ne 704){throw 'NO_ADMIN_313_CHARGES_NOT_PROJECTED'}
+$next=[ordered]@{};foreach($name in $admission.Keys){$next[$name]=$admission[$name]};$next.managementMaximum=832;$next.managementAttempts=401;$next.controlAttempts=740;$next.combinedAttempts=1141;$next.sourceCommitSha='7b1837201ac7925591577a1517d7288936ca3464';$next.windowId='3c46c791-e140-4eb9-890a-eecfa251f65e'
+if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$next) $true 'CheckOnly') -ne 832){throw 'NEXT_832_CHARGES_NOT_PROJECTED'}
+foreach($mutation in @(@{key='managementMaximum';value=704},@{key='managementMaximum';value=833},@{key='managementMaximum';value='832'},@{key='managementAttempts';value=400},@{key='controlAttempts';value=739},@{key='combinedAttempts';value=1140},@{key='sourceCommitSha';value=$fresh.sourceCommitSha},@{key='windowId';value=$fresh.windowId})){
+ $mixed=[ordered]@{};foreach($name in $next.Keys){$mixed[$name]=$next[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED_NEXT_832_PROFILE_ACCEPTED'}
+}
 foreach($mutation in @(@{key='managementAttempts';value=288},@{key='controlAttempts';value=588},@{key='combinedAttempts';value=876})){
  $mixed=[ordered]@{};foreach($name in $admission.Keys){$mixed[$name]=$admission[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
  try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'NO_ADMIN_CHARGES_RESET'}
@@ -182,6 +188,12 @@ $management.status='management_cap_insufficient';$management.managementAttempts=
 $null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$management)
 $catalog=[ordered]@{};foreach($name in $management.Keys){$catalog[$name]=$management[$name]};$catalog.sourceCommitSha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';$catalog.windowId='eda4fae1-1e19-47db-81b8-beac1a4ed883';$catalog.managementAttempts=288;$catalog.controlAttempts=588;$catalog.combinedAttempts=876;$catalog.setupAttempts=79;$catalog.setupMaximum=132;$catalog.proposedSetupMaximum=132
 $null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$catalog)
+$next=[ordered]@{};foreach($name in $catalog.Keys){$next[$name]=$catalog[$name]};$next.status='setup_cap_insufficient';$next.sourceCommitSha='7b1837201ac7925591577a1517d7288936ca3464';$next.windowId='3c46c791-e140-4eb9-890a-eecfa251f65e';$next.managementAttempts=401;$next.controlAttempts=740;$next.combinedAttempts=1141;$next.gatewayPreflightAttempts=4;$next.setupAttempts=114;$next.setupMaximum=132;$next.proposedSetupMaximum=176
+$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$next)
+foreach($mutation in @(@{key='managementAttempts';value=400},@{key='controlAttempts';value=739},@{key='combinedAttempts';value=1140},@{key='gatewayPreflightAttempts';value=2},@{key='setupAttempts';value=113},@{key='setupMaximum';value=176},@{key='proposedSetupMaximum';value=132},@{key='status';value='management_cap_insufficient'},@{key='sourceCommitSha';value=$catalog.sourceCommitSha},@{key='windowId';value=$catalog.windowId},@{key='managementAttempts';value='401'})){
+ $copy=[ordered]@{};foreach($name in $next.Keys){$copy[$name]=$next[$name]};$copy[$mutation.key]=$mutation.value;$blocked=$false
+ try{$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$copy)}catch{$blocked=$true};if(-not $blocked){throw 'NEXT_ALLOCATION_OR_BINDING_RESET'}
+}
 foreach($mutation in @(@{key='managementAttempts';value=263},@{key='controlAttempts';value=537},@{key='combinedAttempts';value=800},@{key='status';value='setup_cap_insufficient'},@{key='sourceCommitSha';value=$management.sourceCommitSha},@{key='windowId';value=$management.windowId})){
  $copy=[ordered]@{};foreach($name in $catalog.Keys){$copy[$name]=$catalog[$name]};$copy[$mutation.key]=$mutation.value;$blocked=$false
  try{$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$copy)}catch{$blocked=$true};if(-not $blocked){throw 'CATALOG_LIMIT_OR_BINDING_RESET'}

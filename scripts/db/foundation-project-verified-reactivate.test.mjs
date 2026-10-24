@@ -897,5 +897,67 @@ describe(
         assert.deepEqual(JSON.parse(result), saved, 'ARCHIVE_ROLLBACK_PRESERVES_ALL_DATA');
       }
     });
+
+    test('technical13 requires the real technical12 reactivation and archive while preserving the absent3to11 audit gap', () => {
+      const wrapper =
+        '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n\\set emr_smoke_reactivation_segment ' + segment + '\n';
+      const teardown = readFileSync(new URL('../assert/m03_smoke_teardown.sql', import.meta.url), 'utf8');
+      if (
+        Number(
+          psql(
+            `select count(*) from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${auditSegment}';`,
+          ),
+        ) === 0
+      ) {
+        psql(wrapper + '\\set emr_smoke_technical_ordinal 2\n' + source());
+        psql('\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n' + teardown);
+      }
+      assert.equal(
+        Number(
+          psql(
+            `select count(*) from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${auditSegment}';`,
+          ),
+        ),
+        1,
+        'actual technical2 lifecycle exists',
+      );
+      const before = JSON.parse(psql(snapshot));
+      psql(`begin;${settings}set local emr.smoke_technical_ordinal='13';do $deny$begin begin execute $under_test$${body()}$under_test$;
+      raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED' then raise exception 'MISSING_TECHNICAL12_NOT_DENIED';end if;end;end;$deny$;rollback;`);
+      assert.deepEqual(JSON.parse(psql(snapshot)), before);
+      // Execute the actual12 mutation and real status-only archive in distinct
+      // transactions so their native audit/timestamp lifecycle is preserved.
+      psql(wrapper + '\\set emr_smoke_technical_ordinal 12\n' + source());
+      psql('\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n' + teardown);
+      const afterTwelve = JSON.parse(psql(snapshot));
+      assert.equal(afterTwelve.audit, before.audit + 1);
+      const twelveActor = 'm03_smoke_reactivate.v1:' + segment + ':technical-12';
+      const prior = psql('select jsonb_agg(to_jsonb(l) order by id) from ops.audit_log l;');
+      const output = JSON.parse(
+        psql(`begin;${settings}set local emr.smoke_technical_ordinal='13';${body()}
+      select jsonb_build_object('auditCount',(select count(*) from ops.audit_log),'newAudit',(select count(*)=1 from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}:technical-13'),
+       'gapAbsent',not exists(select 1 from ops.audit_log where actor_id in (${Array.from(
+         { length: 9 },
+         (_, i) => i + 3,
+       )
+         .map((n) => `'m03_smoke_reactivate.v1:${segment}:technical-${n}'`)
+         .join(',')})),
+       'prior',(select jsonb_agg(to_jsonb(l) order by id) from ops.audit_log l where actor_id<>'m03_smoke_reactivate.v1:${segment}:technical-13'));
+      rollback;`),
+      );
+      assert.equal(output.auditCount, afterTwelve.audit + 1);
+      assert.equal(output.newAudit, true);
+      assert.equal(output.gapAbsent, true);
+      assert.deepEqual(output.prior, JSON.parse(prior));
+      assert.deepEqual(JSON.parse(psql(snapshot)), afterTwelve);
+      for (const change of [
+        `delete from ops.audit_log where actor_id='${twelveActor}'`,
+        `update ops.audit_log set after=jsonb_set(after,'{segment_id}','"wrong-segment"') where actor_id='${twelveActor}'`,
+      ]) {
+        psql(`begin;${settings}${change};set local emr.smoke_technical_ordinal='13';do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';
+        exception when others then if SQLSTATE<>'55000' or SQLERRM not in ('M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED','M03_REACTIVATION_PRIOR_LIFECYCLE_CHANGED') then raise exception 'MISSING_OR_CHANGED_TECHNICAL12_ACCEPTED';end if;end;end;$deny$;rollback;`);
+        assert.deepEqual(JSON.parse(psql(snapshot)), afterTwelve);
+      }
+    });
   },
 );

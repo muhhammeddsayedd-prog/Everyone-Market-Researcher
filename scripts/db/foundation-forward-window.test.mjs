@@ -24,7 +24,10 @@ const packet = {
   batchMaxUsd: 2,
 };
 const literal = (value) => "'" + value.replaceAll("'", "''") + "'";
-function nativeRemainingStateQuery() {
+function nativeRemainingStateQuery(
+  window = 'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+  commitSha = 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803',
+) {
   const file = new URL('./windows/Foundation-AdminControl.ps1', import.meta.url).pathname;
   const nativePath = process.platform === 'win32' ? decodeURIComponent(file.slice(1)) : file;
   const code = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
@@ -33,7 +36,7 @@ if($errors.Count -ne 0){throw 'NATIVE_SOURCE_PARSE_FAILED'}
 foreach($name in @('Foundation-ForwardWindowId','Assert-FoundationForwardWindowState')){
  $found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'FUNCTION_NOT_EXACT'};Invoke-Expression $found[0].Extent.Text
 }
-$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$projectVerifiedForwardWindowId='eda4fae1-1e19-47db-81b8-beac1a4ed883';$projectVerifiedForwardSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';$script:query=$null
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$projectVerifiedForwardWindowId=${literal(window)};$projectVerifiedForwardSource=${literal(commitSha)};$script:query=$null
 function Read-FoundationForwardPrior{}
 function Invoke-FoundationQuery($Sql,$Field){if($Field -cne 'registered_preflight'){throw 'WRONG_PROJECTION'};$script:query=$Sql;throw 'QUERY_CAPTURED'}
 try{Assert-FoundationForwardWindowState $false}catch{if($_.Exception.Message -cne 'QUERY_CAPTURED'){throw}}
@@ -86,7 +89,11 @@ if($script:query -isnot [string]){throw 'QUERY_NOT_CAPTURED'};Write-Output $scri
   assert.equal(result.stderr, '');
   return result.stdout.trim();
 }
-function nativeForwardCatalogQuery(forward) {
+function nativeForwardCatalogQuery(
+  forward,
+  window = 'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+  commitSha = 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803',
+) {
   const nativePath = (name) => {
     const path = new URL('./windows/' + name, import.meta.url).pathname;
     return process.platform === 'win32' ? decodeURIComponent(path.slice(1)) : path;
@@ -98,7 +105,7 @@ foreach($entry in @(@(${literal(nativePath('Invoke-M03FoundationMigrations.ps1')
  foreach($name in $entry[1]){$found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'FUNCTION_NOT_EXACT'};Invoke-Expression $found[0].Extent.Text}
 }
 $ForwardWindow=$${forward};$ForwardMigration=$${!forward};$ProjectVerifiedContinuation=$true
-$projectVerifiedForwardWindowId='eda4fae1-1e19-47db-81b8-beac1a4ed883';$projectVerifiedForwardSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'
+$projectVerifiedForwardWindowId=${literal(window)};$projectVerifiedForwardSource=${literal(commitSha)}
 $forwardCheckFile=${literal(process.platform === 'win32' ? decodeURIComponent(catalog.slice(1)) : catalog)};$queryTimeoutMs=1000;$receipt=[ordered]@{};$script:query=$null
 function Assert-FoundationForwardWindowState($Prepared){if($Prepared){throw 'PREPARED_CATALOG_ALLOWED'}}
 function Invoke-FoundationQuery($Sql,$Field){if($Field -cne 'postcheck'){throw 'WRONG_CATALOG_FIELD'};$script:query=$Sql;throw 'CATALOG_CAPTURED'}
@@ -530,6 +537,99 @@ describe(
           `update ops.foundation_gateway_rate_windows set bound_deployment_id='dpl_other' where window_id='${freshWindow}';`,
         );
         assert.equal(read().intermediateClosed, false);
+      },
+    );
+
+    test(
+      'actual fourth-window catalog and state require three closed predecessors and fresh vacancy without replenishing counts',
+      { skip: process.platform !== 'win32' },
+      () => {
+        const priorRuntime = 'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+          next = '3c46c791-e140-4eb9-890a-eecfa251f65e',
+          nextSource = '7b1837201ac7925591577a1517d7288936ca3464';
+        const sql = nativeRemainingStateQuery(next, nextSource),
+          catalog = nativeForwardCatalogQuery(true, next, nextSource);
+        const predicate = catalog.match(/'no_new_window',([\s\S]*?),\r?\n\s*'schemas'/)?.[1];
+        assert.ok(predicate);
+        assert.equal(/\b(update|insert|delete|truncate|grant|revoke)\b/i.test(sql + predicate), false);
+        const read = () => JSON.parse(psql('begin read only;' + sql + 'rollback;'));
+        const validCatalog = () => psql('select ' + predicate + ';');
+        psql(`update ops.foundation_gateway_rate_windows set bound_commit_sha='f42930f90c2de43c84f61ad6d966d0ee6074d70e',closed_at='2026-10-23T16:25:54.94722+00:00' where window_id='${oldWindow}';
+      insert into ops.foundation_gateway_rate_windows(namespace,window_id,project_ref,environment,bound_audience,bound_commit_sha,bound_deployment_id,starts_at,expires_at,closed_at,admitted_count,close_count)
+      values('m03-foundation-dev','${freshWindow}','zmotjsbzhzjvpelxvxlf','dev','https://everyone-market-researcher-j94yqflt0-muhammed-abdelrahman.vercel.app','a5e746736893d5040e93032ae740a0878f748837','dpl_HPq8ot1nNvBZRLTyAoEnXHXuhTPF',null,null,clock_timestamp(),1,1),
+      ('m03-foundation-dev','${priorRuntime}','zmotjsbzhzjvpelxvxlf','dev','https://everyone-market-researcher-ocnyxyafr-muhammed-abdelrahman.vercel.app','aff94f2b2d8055cf93b5405e6b11d4e7d9c86803','dpl_ABN1zsMeta6kHd4eRTqT9FbLqkEY',transaction_timestamp()-interval '2 hours',transaction_timestamp()-interval '1 hour',clock_timestamp(),2,1);
+      insert into ops.apify_launch_approvals(window_id,approval_reference,project_ref,actor_build,max_total_charge_usd,batch_max_usd,not_before,expires_at,closed_at)
+      select w,approval_reference,project_ref,actor_build,max_total_charge_usd,batch_max_usd,not_before,expires_at,closed_at from ops.apify_launch_approvals cross join unnest(array['${freshWindow}'::uuid,'${priorRuntime}'::uuid]) w where window_id='${oldWindow}';
+      insert into ops.foundation_gateway_requests(window_id,request_id,operation,payload_sha256,state,lease_expires_at,completed_at,result)
+      values('${priorRuntime}','${randomUUID()}','identity.read',repeat('0',64),'completed',clock_timestamp(),clock_timestamp(),'{}');`);
+        const expected = {
+          identity: true,
+          legacyClosed: true,
+          intermediateClosed: true,
+          runtimeClosed: true,
+          windows: 3,
+          freshWindows: 0,
+          freshPrepared: false,
+          globalAdmitted: 5,
+          requests: 2,
+          activeLeases: 0,
+          launches: 0,
+          bindings: 0,
+          progress: 0,
+        };
+        assert.deepEqual(read(), expected);
+        assert.equal(validCatalog(), 't');
+        const previous = psql(
+          'select jsonb_agg(to_jsonb(w) order by window_id) from ops.foundation_gateway_rate_windows w;',
+        );
+        for (const [change, field] of [
+          [
+            `update ops.foundation_gateway_rate_windows set closed_at=null where window_id='${priorRuntime}'`,
+            'runtimeClosed',
+          ],
+          [
+            `update ops.foundation_gateway_rate_windows set admitted_count=1 where window_id='${priorRuntime}'`,
+            'runtimeClosed',
+          ],
+          [
+            `update ops.foundation_gateway_rate_windows set bound_commit_sha=repeat('b',40) where window_id='${priorRuntime}'`,
+            'runtimeClosed',
+          ],
+          [
+            `update ops.foundation_gateway_rate_windows set starts_at=null,expires_at=null where window_id='${priorRuntime}'`,
+            'runtimeClosed',
+          ],
+          [
+            `update ops.foundation_gateway_rate_windows set bound_deployment_id='dpl_other' where window_id='${priorRuntime}'`,
+            'runtimeClosed',
+          ],
+        ]) {
+          const mutated = JSON.parse(psql('begin;' + change + ';' + sql + 'rollback;'));
+          assert.equal(mutated[field], false);
+        }
+        for (const change of [
+          `update ops.foundation_gateway_rate_windows set closed_at=null where window_id='${priorRuntime}'`,
+          `update ops.foundation_gateway_rate_windows set admitted_count=1 where window_id='${priorRuntime}'`,
+          `insert into ops.foundation_gateway_rate_windows(namespace,window_id,project_ref,environment)values('m03-foundation-dev','${next}','zmotjsbzhzjvpelxvxlf','dev')`,
+        ])
+          assert.equal(psql('begin;' + change + ';select ' + predicate + ';rollback;'), 'f');
+        assert.equal(
+          psql(
+            'select jsonb_agg(to_jsonb(w) order by window_id) from ops.foundation_gateway_rate_windows w;',
+          ),
+          previous,
+        );
+        psql(
+          `select ops.foundation_gateway_provision('${next}',${literal(JSON.stringify({ ...packet, commitSha: nextSource }))}::jsonb);`,
+        );
+        assert.deepEqual(read(), { ...expected, windows: 4, freshWindows: 1, freshPrepared: true });
+        assert.equal(validCatalog(), 'f', 'already registered fourth window cannot be admitted as vacant');
+        assert.equal(
+          psql(
+            `select jsonb_agg(to_jsonb(w) order by window_id) from ops.foundation_gateway_rate_windows w where window_id<>'${next}';`,
+          ),
+          previous,
+        );
       },
     );
 

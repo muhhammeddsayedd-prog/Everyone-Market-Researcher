@@ -105,7 +105,8 @@ function Foundation-ForwardWindowId {
   if($null -eq $selected){return '38b3708d-61b0-41d2-8170-5ed91c66b4dc'}
   $source=Get-Variable -Name projectVerifiedForwardSource -ValueOnly -ErrorAction SilentlyContinue
   if(($selected -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc' -and $source -ceq 'a5e746736893d5040e93032ae740a0878f748837') -or
-     ($selected -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883' -and $source -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803')){return $selected}
+     ($selected -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883' -and $source -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803') -or
+     ($selected -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e' -and $source -ceq '7b1837201ac7925591577a1517d7288936ca3464')){return $selected}
   throw 'blocked'
 }
 function Close-FoundationOwnedWindow($Binding) {
@@ -159,7 +160,8 @@ function Assert-FoundationForwardWindowState([bool]$Prepared) {
   if(-not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -or -not $ProjectVerifiedContinuation){throw 'blocked'}
   $null=Read-FoundationForwardPrior
   $window=Foundation-ForwardWindowId
-  $fresh=$window -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
+  $next=$window -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e'
+  $fresh=$window -cin @('eda4fae1-1e19-47db-81b8-beac1a4ed883','3c46c791-e140-4eb9-890a-eecfa251f65e')
   $stateSql=@'
 select jsonb_build_object(
  'identity',current_user='postgres' and session_user='postgres' and current_database()='postgres',
@@ -175,20 +177,28 @@ select jsonb_build_object(
  'progress',(select count(*) from app.items)+(select count(*) from ops.scrape_runs)+(select count(*) from ops.apify_runs)+(select count(*) from ops.cost_ledger)) as registered_preflight;
 '@
   if($fresh){
-    $stateSql=$stateSql.Replace('38b3708d-61b0-41d2-8170-5ed91c66b4dc',$window).Replace('a5e746736893d5040e93032ae740a0878f748837','aff94f2b2d8055cf93b5405e6b11d4e7d9c86803')
+    $selectedSource=if($next){'7b1837201ac7925591577a1517d7288936ca3464'}else{'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'}
+    $stateSql=$stateSql.Replace('38b3708d-61b0-41d2-8170-5ed91c66b4dc',$window).Replace('a5e746736893d5040e93032ae740a0878f748837',$selectedSource)
     $prior="'intermediateClosed',(select count(*)=1 and bool_and(w.closed_at is not null and w.close_count=1 and w.admitted_count=1 and w.starts_at is null and w.bound_commit_sha='a5e746736893d5040e93032ae740a0878f748837' and w.bound_deployment_id='dpl_HPq8ot1nNvBZRLTyAoEnXHXuhTPF' and w.bound_audience='https://everyone-market-researcher-j94yqflt0-muhammed-abdelrahman.vercel.app' and exists(select 1 from ops.apify_launch_approvals a where a.window_id=w.window_id and a.closed_at is not null and a.actor_build='0.3.99' and a.max_total_charge_usd=1 and a.batch_max_usd=2 and a.approval_reference='M03-A-D-f42930f-20261021')) from ops.foundation_gateway_rate_windows w where w.window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc'),`n 'windows'"
     $stateSql=$stateSql.Replace("'windows'",$prior)
+  }
+  if($next){
+    # These counts are strict preconditions for a new hosted readback, not
+    # retrospective claims from the prior pre-provision catalog snapshot.
+    $runtimePrior="'runtimeClosed',(select count(*)=1 and bool_and(w.closed_at is not null and w.close_count=1 and w.admitted_count=2 and w.starts_at is not null and w.expires_at is not null and w.bound_commit_sha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803' and w.bound_deployment_id='dpl_ABN1zsMeta6kHd4eRTqT9FbLqkEY' and w.bound_audience='https://everyone-market-researcher-ocnyxyafr-muhammed-abdelrahman.vercel.app' and exists(select 1 from ops.apify_launch_approvals a where a.window_id=w.window_id and a.closed_at is not null and a.actor_build='0.3.99' and a.max_total_charge_usd=1 and a.batch_max_usd=2 and a.approval_reference='M03-A-D-f42930f-20261021')) from ops.foundation_gateway_rate_windows w where w.window_id='eda4fae1-1e19-47db-81b8-beac1a4ed883'),`n 'windows'"
+    $stateSql=$stateSql.Replace("'windows'",$runtimePrior)
   }
   $value=Invoke-FoundationQuery $stateSql 'registered_preflight'
   $keys=@('identity','legacyClosed','windows','freshWindows','freshPrepared','globalAdmitted','requests','activeLeases','launches','bindings','progress')
   $booleans=@('identity','legacyClosed','freshPrepared')
   if($fresh){$keys+='intermediateClosed';$booleans+='intermediateClosed'}
+  if($next){$keys+='runtimeClosed';$booleans+='runtimeClosed'}
   Assert-Keys $value $keys
   foreach($key in $booleans){if($value.$key -isnot [bool]){throw 'blocked'}}
   foreach($key in @('windows','freshWindows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){if(($value.$key -isnot [int] -and $value.$key -isnot [long]) -or $value.$key -lt 0){throw 'blocked'}}
-  $priorWindows=if($fresh){2}else{1};$priorAdmitted=if($fresh){3}else{2}
-  if($value.identity -ne $true -or $value.legacyClosed -ne $true -or ($fresh -and $value.intermediateClosed -ne $true) -or $value.windows -ne ($priorWindows+$(if($Prepared){1}else{0})) -or $value.freshWindows -ne $(if($Prepared){1}else{0}) -or
-     $value.globalAdmitted -ne $priorAdmitted -or $value.requests -ne 1 -or $value.activeLeases -ne 0 -or $value.launches -ne 0 -or $value.bindings -ne 0 -or $value.progress -ne 0 -or ($Prepared -and $value.freshPrepared -ne $true)){throw 'blocked'}
+  $priorWindows=if($next){3}elseif($fresh){2}else{1};$priorAdmitted=if($next){5}elseif($fresh){3}else{2};$priorRequests=if($next){2}else{1}
+  if($value.identity -ne $true -or $value.legacyClosed -ne $true -or ($fresh -and $value.intermediateClosed -ne $true) -or ($next -and $value.runtimeClosed -ne $true) -or $value.windows -ne ($priorWindows+$(if($Prepared){1}else{0})) -or $value.freshWindows -ne $(if($Prepared){1}else{0}) -or
+     $value.globalAdmitted -ne $priorAdmitted -or $value.requests -ne $priorRequests -or $value.activeLeases -ne 0 -or $value.launches -ne 0 -or $value.bindings -ne 0 -or $value.progress -ne 0 -or ($Prepared -and $value.freshPrepared -ne $true)){throw 'blocked'}
   # Later settled actor/item progress needs its own engineering reconciliation;
   # this branch never resets/removes it or blindly repeats a paid start.
   if($Prepared){

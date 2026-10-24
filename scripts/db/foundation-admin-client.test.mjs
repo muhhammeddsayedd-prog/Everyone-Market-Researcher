@@ -269,6 +269,12 @@ for (const profile of [
     control: 639,
     options: { adminAdmissionReadonly: true },
   },
+  {
+    maximum: 832,
+    management: 401,
+    control: 740,
+    options: { runtimePreparationClosed: true, runtimeMetadataAllocation: true },
+  },
 ])
   test(`approved${profile.maximum} genuine Admin constructor retains${profile.management}/${profile.control} and selects only its fresh claimed binding`, async () => {
     const f = await syntheticProjectVerifiedContinuation(profile.options);
@@ -280,8 +286,19 @@ for (const profile of [
       assert.equal(checkpoint.aggregateControlAttempts, profile.control);
       assert.equal(checkpoint.mainControlAttempts, profile.control - 3);
       if (profile.management === 313) assert.equal(checkpoint.technicalAttemptOrdinal, 12);
-      assert.equal(proof.sourceCommitSha, 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803');
-      assert.equal(proof.windowId, 'eda4fae1-1e19-47db-81b8-beac1a4ed883');
+      if (profile.management === 401) assert.equal(checkpoint.technicalAttemptOrdinal, 13);
+      assert.equal(
+        proof.sourceCommitSha,
+        profile.maximum === 832
+          ? '7b1837201ac7925591577a1517d7288936ca3464'
+          : 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803',
+      );
+      assert.equal(
+        proof.windowId,
+        profile.maximum === 832
+          ? '3c46c791-e140-4eb9-890a-eecfa251f65e'
+          : 'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+      );
       const module = await f.copy('foundation-admin-client.mjs');
       const wire = fixture({ projectProof: proof, forwardWindow: true });
       let spawns = 0,

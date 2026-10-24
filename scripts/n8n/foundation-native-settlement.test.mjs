@@ -13,7 +13,11 @@ const epoch = Date.parse('2026-10-19T12:00:00.000Z'),
   iso = (delta = 0) => new Date(epoch + delta).toISOString();
 const fixed = /^Error: FOUNDATION_SETTLEMENT_[A-Z_]+$/;
 
-for (const windowId of ['38b3708d-61b0-41d2-8170-5ed91c66b4dc', 'eda4fae1-1e19-47db-81b8-beac1a4ed883'])
+for (const windowId of [
+  '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+  'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+  '3c46c791-e140-4eb9-890a-eecfa251f65e',
+])
   test(`fresh source-known ${windowId} settlement uses only that window and refuses legacy or arbitrary window evidence`, async () => {
     const f = await fixture();
     const reader = createFoundationSettlementReader({
