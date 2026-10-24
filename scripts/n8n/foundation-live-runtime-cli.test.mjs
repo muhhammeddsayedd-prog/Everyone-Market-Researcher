@@ -525,6 +525,14 @@ for (const profile of [
     mainControl: 483,
     options: { closedFixture: true },
   },
+  {
+    maximum: 640,
+    management: 263,
+    control: 537,
+    controlRows: 538,
+    mainControl: 534,
+    options: { preprivateAdmin: true },
+  },
 ])
   test(`approved${profile.maximum} session composes genuine mixed-row budgets before any child or network`, async () => {
     const f = await syntheticProjectVerifiedContinuation(profile.options);

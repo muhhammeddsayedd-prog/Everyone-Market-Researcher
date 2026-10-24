@@ -83,6 +83,39 @@ test('fixed handoff failure codes remain distinct and establish no DPAPI/authent
     assert.equal(result.authentication, 'not_attempted');
   }
 });
+test('exact finite public preflight stages retain pre-private boundaries and reject invented or altered lines', async () => {
+  for (const stage of [
+    'PUBLIC_CONTEXT',
+    'PUBLIC_PACKET',
+    'PUBLIC_SOURCE_HASHES',
+    'NODE_PIN',
+    'MIGRATION_FILES',
+    'CA_PIN',
+    'CLI_VERSION',
+    'CLAIMED_PROCESS_GATE',
+    'CLAIMED_DTO',
+    'KERNEL_ANCESTRY',
+    'OUTPUT_PATHS',
+    'PRIOR_RECEIPT',
+  ]) {
+    const line = `M03_FOUNDATION PREFLIGHT_BLOCKED. Stage=${stage}; no private file read, decryption or authentication attempted.`;
+    const result = await capture(failedChild({ stdout: line + '\n' }));
+    assert.equal(result.diagnostic, 'preflight_' + stage.toLowerCase());
+    assert.equal(result.dpapiRead, 'not_attempted');
+    assert.equal(result.authentication, 'not_attempted');
+    assert.equal(result.physicalChildClosed, true);
+  }
+  for (const line of [
+    'M03_FOUNDATION PREFLIGHT_BLOCKED. Stage=UNKNOWN; no private file read, decryption or authentication attempted.',
+    'M03_FOUNDATION PREFLIGHT_BLOCKED. Stage=PUBLIC_CONTEXT; no private file read, decryption or authentication attempted. ' +
+      privateSentinel,
+  ]) {
+    const result = await capture(failedChild({ stdout: line + '\n' }));
+    assert.equal(result.diagnostic, 'protocol_rejected');
+    assert.equal(result.dpapiRead, 'unknown');
+    assert.equal(result.authentication, 'unknown');
+  }
+});
 
 test('malformed, prefix-only and additional private stdout cannot masquerade as a fixed pre-private receipt', async () => {
   for (const stdout of [

@@ -39,6 +39,7 @@ $requiredFiles+=@('scripts/n8n/foundation-live-project-verified-continuation.mjs
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md')
 $requiredFiles+=@('scripts/db/foundation-inspect.sql','scripts/n8n/windows/Dev-CredentialStore.ps1')
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical9-reconciliation-20261024.json',
   'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md',
   'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json')
 $forwardSchema=[bool]($ForwardMigration -or $ForwardWindow)
@@ -361,9 +362,11 @@ function Read-FoundationPostcheckContinuation {
   $expectedWindow=if($forwardMode){'38b3708d-61b0-41d2-8170-5ed91c66b4dc'}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
   $mode=if($CheckOnly){'CheckOnly'}else{'ReadClaimed'}
   $module=Assert-Path $repo $(if($projectMode){'scripts/n8n/foundation-live-project-verified-continuation.mjs'}elseif($startupMode){'scripts/n8n/foundation-live-startup-replacement.mjs'}elseif($remainingMode){'scripts/n8n/foundation-live-remaining-continuation.mjs'}else{'scripts/n8n/foundation-live-postcheck-continuation.mjs'})
+  $script:publicPreflightStage='CLAIMED_PROCESS_GATE'
   $answer=Invoke-Bounded $node @($module,$mode) $repo 10000
   try{
     if(-not $answer.ok -or -not $answer.closed){throw 'blocked'}
+    $script:publicPreflightStage='CLAIMED_DTO'
     $value=ConvertFrom-Json -InputObject $answer.text -ErrorAction Stop
     $approvalKind=if($projectMode){'project_verified_continuation_approval_required'}elseif($startupMode){'startup_replacement_approval_required'}else{'remaining_continuation_approval_required'}
     $freshMode=$forwardMode -and $projectMode -and $value.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
@@ -380,7 +383,7 @@ function Read-FoundationPostcheckContinuation {
     if($managementPresent.Count -gt 0){
       if(-not $CheckOnly -or -not $projectMode -or -not $forwardMode -or $managementPresent.Count -ne 4){throw 'blocked'}
       # Exact known read-only reconciliation, never a replenished allowance.
-      $managementExpected=if($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
+      $managementExpected=if($freshMode -and $value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800}}elseif($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
       $keys+=$managementFields
     }
@@ -767,21 +770,25 @@ function Invoke-FoundationForwardMigration {
 }
 
 # All preflight checks are public and precede any DPAPI read/decryption.
+$script:publicPreflightStage='PUBLIC_CONTEXT'
 try {
   if($PostcheckContinuation -and (-not $PhaseAControl -or $ClockAmendment -or $OriginalDeadlineAtMs -ne 0)){throw 'blocked'}
   if($ClockAmendment -and (-not $PhaseAControl -or $OriginalDeadlineAtMs -ne 0)){throw 'blocked'}
   $repoEntry = Get-Item -LiteralPath $repo -Force
   if (($repoEntry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'blocked' }
+  $script:publicPreflightStage='PUBLIC_PACKET'
   $packet = Read-Json (Assert-Path $repo $(if($forwardSchema){'scripts/db/m03-foundation-forward-dev-migration-packet.json'}else{'scripts/db/m03-foundation-dev-migration-packet.json'}))
   Assert-Keys $packet @('version','target','approved','authorizationReference','cliVersion','baseline','pending','files','node')
   if ($packet.version -ne 1 -or $packet.target -cne $projectRef -or $packet.approved -isnot [bool] -or -not $packet.approved -or
       $packet.cliVersion -cne '2.121.0' -or $packet.authorizationReference -cne $(if($forwardSchema){'M03 standing development autonomy reset on 2026-10-23; preserve prior attempts and aggregate allowances'}else{'Owner approved M03 A-D dev acceptance at f42930f90c2de43c84f61ad6d966d0ee6074d70e on 2026-10-21'}) -or
       $packet.baseline -isnot [Array] -or $packet.pending -isnot [Array] -or $packet.baseline.Count -ne $(if($forwardSchema){14}else{10}) -or $packet.pending.Count -ne $(if($forwardSchema){1}else{4})) { throw 'blocked' }
+  $script:publicPreflightStage='PUBLIC_SOURCE_HASHES'
   Assert-Keys $packet.files $requiredFiles
   foreach ($property in $packet.files.PSObject.Properties) {
     if ($property.Value -isnot [string] -or $property.Value -cnotmatch '^[a-f0-9]{64}$' -or (File-Hash (Assert-Path $repo $property.Name)) -cne $property.Value) { throw 'blocked' }
   }
   . (Assert-Path $repo 'scripts/db/windows/Foundation-AdminControl.ps1')
+  $script:publicPreflightStage='NODE_PIN'
   Assert-Keys $packet.node @('path','sha256')
   $node = (Get-Command node.exe -CommandType Application -ErrorAction Stop).Source
   if ($packet.node.path -isnot [string] -or $node -cne $packet.node.path -or $packet.node.sha256 -cnotmatch '^[a-f0-9]{64}$') { throw 'blocked' }
@@ -789,6 +796,7 @@ try {
   if ($nodeEntry.PSIsContainer -or ($nodeEntry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or (File-Hash $node) -cne $packet.node.sha256) { throw 'blocked' }
   $nodeCursor=[IO.Directory]::GetParent($node)
   while($null -ne $nodeCursor){$nodeParent=Get-Item -LiteralPath $nodeCursor.FullName -Force;if(($nodeParent.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'blocked'};$nodeCursor=$nodeCursor.Parent}
+  $script:publicPreflightStage='MIGRATION_FILES'
   $migrations = @($packet.baseline) + @($packet.pending)
   if($forwardSchema){
     $originalPacket=Read-Json (Assert-Path $repo 'scripts/db/m03-foundation-dev-migration-packet.json')
@@ -811,11 +819,13 @@ try {
   foreach ($entry in $actualMigrations) {
     if ($entry.PSIsContainer -or ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or $entry.Name -cnotin @($migrations | ForEach-Object { [IO.Path]::GetFileName($_.file) })) { throw 'blocked' }
   }
+  $script:publicPreflightStage='CA_PIN'
   $caPath = Assert-Path $repo $caRelative
   if ((File-Hash $caPath) -cne $caHash) { throw 'blocked' }
   $pin = Read-Json (Assert-Path $repo 'scripts/seed/certs/supabase-root-2021.json')
   Assert-Keys $pin @('version','projectRef','host','sourceUrl','sha256')
   if ($pin.version -ne 1 -or $pin.projectRef -cne $projectRef -or $pin.host -cne $poolerHost -or $pin.sha256 -cne $caHash -or $pin.sourceUrl -cne 'https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt') { throw 'blocked' }
+  $script:publicPreflightStage='CLI_VERSION'
   $cliPath = Assert-Path $repo $cliRelative
   $cliVersion = Invoke-Bounded $cliPath @('--version') $repo 10000
   if (-not $cliVersion.ok -or -not $cliVersion.closed -or $cliVersion.text.Trim() -cne '2.121.0') { throw 'blocked' }
@@ -832,6 +842,7 @@ try {
     $clock=Read-FoundationPostcheckContinuation
     if($ForwardWindow){$receipt['activeWindowId']=$script:projectVerifiedForwardWindowId}
     if($null -ne $clock){
+      $script:publicPreflightStage='KERNEL_ANCESTRY'
       if($RemainingContinuation){$null=Assert-FoundationRemainingProcessAncestry $clock}
       if($StartupReplacement){$null=Assert-FoundationStartupReplacementProcessAncestry $clock}
       if($ProjectVerifiedContinuation){$null=Assert-FoundationProjectVerifiedContinuationProcessAncestry $clock}
@@ -848,6 +859,7 @@ try {
       }
     }
   }
+  $script:publicPreflightStage='OUTPUT_PATHS'
   $out = Join-Path $repo 'scripts/db/out'
   if (-not (Test-Path -LiteralPath $out)) { $null = New-Item -ItemType Directory -Path $out }
   $out = Assert-Path $repo 'scripts/db/out' -Directory
@@ -885,6 +897,7 @@ try {
       Write-Output 'M03_FOUNDATION CONTINUATION_ALREADY_RECORDED. No decryption, migration operation or automatic replay. Preserve and reconcile the separate continuation receipts.';exit 1
     }
   }
+  $script:publicPreflightStage='PRIOR_RECEIPT'
   if (-not $ForwardMigration -and (Test-Path -LiteralPath $attemptFile)) {
     if ($CheckOnly) {
       $admission = Read-Json (Assert-Path $repo 'scripts/db/out/m03-foundation-dev-migration-attempt.json')
@@ -906,7 +919,8 @@ try {
     exit 1
   }
 } catch {
-  Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.'
+  $stage=if($script:publicPreflightStage -cin @('PUBLIC_CONTEXT','PUBLIC_PACKET','PUBLIC_SOURCE_HASHES','NODE_PIN','MIGRATION_FILES','CA_PIN','CLI_VERSION','CLAIMED_PROCESS_GATE','CLAIMED_DTO','KERNEL_ANCESTRY','OUTPUT_PATHS','PRIOR_RECEIPT')){$script:publicPreflightStage}else{'PUBLIC_CONTEXT'}
+  Write-Output ('M03_FOUNDATION PREFLIGHT_BLOCKED. Stage='+$stage+'; no private file read, decryption or authentication attempted.')
   exit 1
 }
 if($CheckOnly -and $ForwardMigration){Write-Output 'M03_FOUNDATION PUBLIC_INPUTS_READY. Exact fifteenth dev migration, prior closed/archive proof and public seals checked; no credential metadata, private contents or authentication read.';exit 4}

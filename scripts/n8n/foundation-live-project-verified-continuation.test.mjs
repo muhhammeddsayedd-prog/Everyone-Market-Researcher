@@ -1125,6 +1125,69 @@ test('closed technical8 preserves237/486/723 and both closed SQL rows before the
     f.cleanup();
   }
 });
+test('technical9 pre-private closure carries263/537/800 without rewriting residual flags before technical10', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedFixture: true, preprivateAdmin: true });
+  try {
+    const closedPath = f.paths.admission.replace(/\.json$/, '.technical-9.closed.json');
+    const previous = readFileSync(closedPath, 'utf8');
+    const ready = f.check();
+    assert.equal(ready.managementAttempts, 263);
+    assert.equal(ready.controlAttempts, 537);
+    assert.equal(ready.combinedAttempts, 800);
+    const proof = f.claim(f.admit());
+    const resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(resume.technicalAttemptOrdinal, 10);
+    assert.equal(resume.mainManagementAttempts, 252);
+    assert.equal(resume.mainControlAttempts, 534);
+    assert.equal(proof.carriedManagementAttempts, 11);
+    assert.equal(proof.carriedControlAttempts, 3);
+    assert.equal(proof.windowId, 'eda4fae1-1e19-47db-81b8-beac1a4ed883');
+    assert.equal(resume.aggregateManagementAttempts + 376, 639);
+    assert.equal(resume.setupRows, 155);
+    assert.equal(resume.setupAttempts, 79);
+    assert.equal(readFileSync(closedPath, 'utf8'), previous);
+    assert.equal(JSON.parse(previous).closureVerified, false);
+  } finally {
+    f.cleanup();
+  }
+});
+test('technical9 pre-private recovery refuses writes, authentication ambiguity, missing cleanup and omitted diagnostic charges', async () => {
+  for (const preprivateAdminFault of [
+    'start',
+    'auth',
+    'cleanup',
+    'diagnostic',
+    'usage',
+    'raw',
+    'child',
+    'setup',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ preprivateAdmin: true, preprivateAdminFault });
+    try {
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/, preprivateAdminFault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+test('technical9 immutable raw outputs remain pinned after claim and no live predecessor is accepted', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ preprivateAdmin: true });
+  try {
+    const proof = f.claim(f.admit());
+    f.io.processAlive = (pid) => pid === 91015;
+    assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+    f.io.processAlive = () => false;
+    const path =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical9-reconciliation-20261024.json';
+    f.put(path, readFileSync(join(f.directory, path), 'utf8') + ' ');
+    assert.throws(
+      () => f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof)),
+      /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
+    );
+  } finally {
+    f.cleanup();
+  }
+});
 test('technical8 recovery refuses unknown effects, resets, incomplete close and missing actual state', async () => {
   for (const closedFixtureFault of [
     'unknown-completion',

@@ -123,15 +123,16 @@ begin
   end if;
   -- The immutable native admission selects the ordinal. Require the exact
   -- known committed lifecycle: startup, original20275 and technical2.
-  -- The coordinator pins closed attempts3..8 with no committed fixture
-  -- reactivation. Beyond8, skip only that fixed gap; never fabricate its audits.
+  -- The coordinator pins closed attempts3..8 and the pre-private failure9
+  -- with no committed fixture reactivation. Skip only that fixed gap after
+  -- the validated reconciliation; never fabricate its audits.
   -- Unknown edits/audits below remain denied, and later ordinals stay contiguous.
   -- Archives have no SQL audit: the coordinator separately pins their actual
   -- receipts. SQL proves current archived state/order, not archive-process identity.
   v_known_audit_ids:=array[v_marker.id];
   v_previous_id:=v_marker.id;v_previous_at:=v_marker.created_at;
   for v_index in 0..v_technical-1 loop
-    continue when v_technical>=9 and v_index between 3 and 8;
+    continue when v_technical>=9 and v_index between 3 and 9;
     v_previous_segment:=case when v_index=0 then '1c69c89e-7807-46d5-b7b8-ca28285ff2b4'
       when v_index=1 then v_family_segment else v_family_segment||':technical-'||v_index end;
     if (select count(*) from ops.audit_log l

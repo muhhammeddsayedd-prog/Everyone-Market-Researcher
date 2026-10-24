@@ -16,6 +16,23 @@ import { fileURLToPath } from 'node:url';
 const fixed = () => Error('FOUNDATION_ADMIN_BLOCKED');
 const startupFailures = new WeakMap();
 const prePrivateDiagnostics = new Map([
+  ...[
+    'PUBLIC_CONTEXT',
+    'PUBLIC_PACKET',
+    'PUBLIC_SOURCE_HASHES',
+    'NODE_PIN',
+    'MIGRATION_FILES',
+    'CA_PIN',
+    'CLI_VERSION',
+    'CLAIMED_PROCESS_GATE',
+    'CLAIMED_DTO',
+    'KERNEL_ANCESTRY',
+    'OUTPUT_PATHS',
+    'PRIOR_RECEIPT',
+  ].map((stage) => [
+    `M03_FOUNDATION PREFLIGHT_BLOCKED. Stage=${stage}; no private file read, decryption or authentication attempted.`,
+    'preflight_' + stage.toLowerCase(),
+  ]),
   [
     'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.',
     'preflight_blocked',
@@ -154,7 +171,10 @@ export async function startFoundationAdminClient(
           : forwardWindow
             ? '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
             : 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9') ||
-      verified.carriedManagementAttempts !== (forwardWindow ? 10 : 4) ||
+      verified.carriedManagementAttempts !==
+        (forwardWindow
+          ? verifiedCheckpoint.aggregateManagementAttempts - verifiedCheckpoint.mainManagementAttempts
+          : 4) ||
       verified.carriedControlAttempts !== verifiedControlCarry ||
       now() < verified.startsAt ||
       now() >= verified.stopNewAt

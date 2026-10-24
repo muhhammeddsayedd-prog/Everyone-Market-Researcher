@@ -13,7 +13,9 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  closedFixture = false,
+  preprivateAdmin = false,
+  preprivateAdminFault,
+  closedFixture = preprivateAdmin,
   closedFixtureFault,
   controlManagementAllocation = closedFixture,
   controlManagementAllocationFault,
@@ -384,6 +386,7 @@ export async function syntheticProjectVerifiedContinuation({
     managementAllocationConfiguration,
     closedPreparationConfiguration,
     closedFixtureConfiguration,
+    preprivateAdminConfiguration,
     controlManagementAllocationConfiguration;
   if (closedWindow) {
     const base =
@@ -1380,6 +1383,228 @@ export async function syntheticProjectVerifiedContinuation({
       packetSha256: digest(packet),
     };
   }
+  if (preprivateAdmin) {
+    const relative =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical9-reconciliation-20261024.json';
+    const receipt = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8'));
+    const base = `scripts/n8n/out/foundation/live/project-verified-continuation-${snapshot.proposedSegmentId}.technical-9`;
+    const json = (v) => JSON.stringify(v) + '\n';
+    const start = Date.parse('2026-10-24T01:48:30.264Z');
+    const admission = {
+      kind: 'm03_project_verified_continuation_admission',
+      version: 1,
+      segmentId: snapshot.proposedSegmentId,
+      sourceCommitSha: receipt.source.applicationSource,
+      windowId: receipt.attempt.windowId,
+      approvalSha256: digest(approvalText),
+      startsAt: start,
+      deadlineAt: start + 3600000,
+      stopNewAt: start + 3000000,
+      hardDeadlineAt: start + 4200000,
+      parentProcessId: 91015,
+    };
+    const claim = {
+      kind: 'm03_project_verified_continuation_runtime_claim',
+      version: 1,
+      segmentId: snapshot.proposedSegmentId,
+      admissionSha256: digest(json(admission)),
+      processId: 91016,
+      parentProcessId: 91015,
+      claimedAt: start + 2000,
+    };
+    const closed = {
+      kind: 'm03_project_verified_technical_closed',
+      version: 1,
+      admissionSha256: digest(json(admission)),
+      parentProcessId: 91015,
+      runtimeProcessId: 91016,
+      closedAt: start + 149883,
+      childClosed: true,
+      credentialChildrenClosed: true,
+      emergencyShutdown: false,
+      pendingMachinePreserved: true,
+      nativeExit: 1,
+      bypassHandoffDeleted: false,
+      closureVerified: false,
+    };
+    Object.assign(receipt.attempt, {
+      parentProcessId: 91015,
+      runtimeProcessId: 91016,
+      startsAt: start,
+      closedAt: closed.closedAt,
+    });
+    const outcome = {
+      managementAttempts: 262,
+      controlAttempts: 537,
+      nativeExecutions: 0,
+      gatewayPreflightAttempts: 2,
+      providerDirectAttempts: 0,
+      phaseBReady: false,
+      domainProofReady: false,
+      businessAcceptanceProven: false,
+      code: 'FOUNDATION_ADMIN_PREFLIGHT_BLOCKED',
+    };
+    const residual = {
+      windowClosed: false,
+      fixtureArchived: false,
+      baselineRestored: false,
+      environmentCleanupVerified: false,
+      remoteWorkSettled: false,
+      residual: true,
+    };
+    const frames = [
+      {
+        kind: 'm03_public_raw_pipe_receipt',
+        version: 1,
+        helperHead: receipt.source.head,
+        applicationSource: receipt.source.applicationSource,
+        windowId: receipt.attempt.windowId,
+        technicalAttempt: 9,
+        parentProcessId: 91015,
+        adapterReadsCredentialValues: false,
+      },
+      {
+        kind: 'm03_acceptance_transport_ready',
+        nonce: 'a'.repeat(32),
+        privateRead: false,
+        networkRequests: 0,
+      },
+      {
+        kind: 'm03_acceptance_vercel_metadata',
+        status: 'metadata_covers_75_minutes',
+        metadataValid: true,
+        unexpired: true,
+        covers75Minutes: true,
+        effectiveBackendEstablished: false,
+        networkRequests: 0,
+        authenticationAttempted: false,
+        refreshAttempted: false,
+        configWritten: false,
+        childClosed: true,
+      },
+      {
+        kind: 'm03_acceptance_ready',
+        status: 'private_child_ready',
+        deadlineAt: admission.deadlineAt,
+        approvedHead: admission.approvalSha256 && 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+        sourceCommitSha: admission.sourceCommitSha,
+      },
+      {
+        kind: 'mcp_port_request',
+        nonce: 'b'.repeat(32),
+        action: 'browser_discover',
+        workflowId: 'MzimjpsuyPuK7SKe',
+      },
+      {
+        kind: 'm03_acceptance_result',
+        id: 'm03_live_015',
+        command: 'prepare',
+        status: 'blocked',
+        ...outcome,
+        residual: true,
+      },
+      {
+        kind: 'm03_acceptance_result',
+        id: 'm03_live_016',
+        command: 'restore',
+        status: 'restoration_residual',
+        ...outcome,
+        ...residual,
+      },
+      {
+        kind: 'm03_acceptance_closed',
+        status: 'closed',
+        ...outcome,
+        childTransportsClosed: true,
+        adminChildClosed: true,
+        ...residual,
+      },
+      {
+        kind: 'm03_acceptance_wrapper_closed',
+        childClosed: true,
+        credentialChildrenClosed: true,
+        emergencyShutdown: false,
+        nativeExit: 1,
+        handoffsDeleted: true,
+        bypassHandoffDeleted: false,
+        pendingMachinePreserved: true,
+        privateRead: true,
+        code: 'M03_ACCEPTANCE_BLOCKED',
+      },
+      {
+        kind: 'm03_public_raw_pipe_closed',
+        nativeExit: 1,
+        parentClosed: true,
+        stderrPresent: false,
+        protocolBlocked: false,
+        overflow: false,
+      },
+    ];
+    const managementPath = snapshot.journals.management.path;
+    put(
+      managementPath,
+      readFileSync(join(directory, managementPath), 'utf8') +
+        Array.from({ length: 25 }, (_, i) => json({ event: 'management_attempt', ordinal: 228 + i })).join(
+          '',
+        ),
+    );
+    const refs = JSON.parse(
+      readFileSync(join(sourceRoot, 'n8n/foundation/bindings.dev.json'), 'utf8'),
+    ).workflowRefs;
+    const control = [
+      {
+        event: 'control_request_intent',
+        ordinal: 484,
+        kind: 'discovery',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        at: new Date(start + 3000).toISOString(),
+      },
+      {
+        event: 'browser_port_preflight_verified',
+        kind: 'browser_ui',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        at: new Date(start + 3500).toISOString(),
+      },
+      ...Object.values(refs).flatMap((ref, i) =>
+        [0, 1].map((j) => ({
+          event: 'control_request_intent',
+          ordinal: 485 + i * 2 + j,
+          kind: 'discovery',
+          workflowId: ref.id,
+          at: new Date(start + 4000 + (i * 2 + j) * 100).toISOString(),
+        })),
+      ),
+    ];
+    if (preprivateAdminFault === 'start') control[2].kind = 'start';
+    put(
+      snapshot.journals.control.path,
+      readFileSync(join(directory, snapshot.journals.control.path), 'utf8') + control.map(json).join(''),
+    );
+    if (preprivateAdminFault === 'auth') receipt.attempt.adminAuthentication = 'unknown';
+    if (preprivateAdminFault === 'cleanup') receipt.cleanup.allThreeAbsent = false;
+    if (preprivateAdminFault === 'diagnostic') receipt.additionalDiagnostic.credentialSupplied = true;
+    if (preprivateAdminFault === 'usage') receipt.usage.carriedManagement = 10;
+    if (preprivateAdminFault === 'raw') frames[7].windowClosed = true;
+    if (preprivateAdminFault === 'child') closed.credentialChildrenClosed = false;
+    if (preprivateAdminFault === 'setup')
+      put(
+        'scripts/n8n/out/foundation/live/setup.jsonl',
+        readFileSync(join(directory, 'scripts/n8n/out/foundation/live/setup.jsonl'), 'utf8') +
+          json({ event: 'setup_attempt', ordinal: 80, kind: 'GET', at: start }),
+      );
+    for (const [path, value] of [
+      [base + '.json', admission],
+      [base + '.runtime-claim.json', claim],
+      [base + '.closed.json', closed],
+      [base + '.public-frames.jsonl', frames.map(json).join('')],
+    ])
+      put(path, typeof value === 'string' ? value : json(value));
+    for (const path of Object.keys(receipt.pins))
+      receipt.pins[path] = digest(readFileSync(join(directory, path), 'utf8'));
+    const text = json(receipt);
+    put(relative, text);
+    preprivateAdminConfiguration = { relative, sha256: digest(text) };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -1478,6 +1703,14 @@ export async function syntheticProjectVerifiedContinuation({
         : 'null') +
       ';',
   );
+  source = source.replace(
+    /const preprivateAdminRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+    'const preprivateAdminRecovery = ' +
+      (preprivateAdminConfiguration
+        ? 'Object.freeze(' + JSON.stringify(preprivateAdminConfiguration) + ')'
+        : 'null') +
+      ';',
+  );
   if (closedFixture)
     source = source.replace(
       /export const foundationProjectVerifiedActiveRuntime = Object\.freeze\(\{[\s\S]*?\n\}\);/,
@@ -1503,13 +1736,15 @@ export async function syntheticProjectVerifiedContinuation({
     }) + '\n',
   );
   let time = Date.parse(
-    closedFixture
-      ? '2026-10-24T00:46:00.000Z'
-      : closedWindow
-        ? '2026-10-23T18:00:00.000Z'
-        : effectful
-          ? '2026-10-23T15:00:00.000Z'
-          : '2026-10-22T18:00:00.000Z',
+    preprivateAdmin
+      ? '2026-10-24T02:00:00.000Z'
+      : closedFixture
+        ? '2026-10-24T00:46:00.000Z'
+        : closedWindow
+          ? '2026-10-23T18:00:00.000Z'
+          : effectful
+            ? '2026-10-23T15:00:00.000Z'
+            : '2026-10-22T18:00:00.000Z',
   );
   const now = () => time,
     io = { processAlive: () => false };

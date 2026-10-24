@@ -726,7 +726,7 @@ test(
           // reaches its public-file guard and exits before CLI/private metadata.
           assert.equal(
             result.stdout.trim(),
-            'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.',
+            'M03_FOUNDATION PREFLIGHT_BLOCKED. Stage=PUBLIC_PACKET; no private file read, decryption or authentication attempted.',
           );
         } else {
           assert.equal(

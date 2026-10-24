@@ -200,7 +200,7 @@ function Get-ProjectVerifiedPublicManagementMaximum($Value,[bool]$ProjectClock,[
   $Value.privateRead -isnot [bool] -or $Value.privateRead -ne $false){throw 'blocked'}
  # The immutable allocation keeps its original charges. A separately pinned,
  # physically closed attempt adds the exact current snapshot without reset.
- $expected=if($freshBinding){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723;networkRequests=0}}elseif($Value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612;networkRequests=0}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536;networkRequests=0}}
+ $expected=if($freshBinding -and $Value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800;networkRequests=0}}elseif($freshBinding){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723;networkRequests=0}}elseif($Value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612;networkRequests=0}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536;networkRequests=0}}
  foreach($name in $expected.Keys){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long]) -or $Value.$name -ne $expected[$name]){throw 'blocked'}}
  return [int]$expected.managementMaximum
 }

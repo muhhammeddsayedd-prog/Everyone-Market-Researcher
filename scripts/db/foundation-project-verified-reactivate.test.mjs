@@ -792,10 +792,64 @@ describe(
           exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_PRIOR_EDIT_OR_ATTEMPT_PRESENT' then raise exception 'GAP_DENIAL_NOT_EXACT';end if;end;end;$deny$;rollback;`);
         assert.deepEqual(JSON.parse(psql(snapshot)), before);
       }
-      // Only the known closed3..8 gap is covered. Later missing successful
-      // reactivation history still requires explicit reconciliation.
-      psql(`begin;${settings}set local emr.smoke_technical_ordinal='10';do $deny$begin begin execute $under_test$${body()}$under_test$;
+      // Only the known closed3..9 gap is covered. A missing successful
+      // technical10 lifecycle is still a denial at a later ordinal.
+      psql(`begin;${settings}set local emr.smoke_technical_ordinal='11';do $deny$begin begin execute $under_test$${body()}$under_test$;
         raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED' then raise exception 'UNKNOWN_LATER_GAP_ACCEPTED';end if;end;end;$deny$;rollback;`);
+      assert.deepEqual(JSON.parse(psql(snapshot)), before);
+    });
+
+    test('ordinal10 skips only the proven pre-private9 gap, preserves every prior audit and requires technical10 before11', () => {
+      const wrapper =
+        '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n\\set emr_smoke_reactivation_segment ' + segment + '\n';
+      const technical2 = Number(
+        psql(`select count(*) from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${auditSegment}';`),
+      );
+      if (technical2 === 0) {
+        psql(wrapper + '\\set emr_smoke_technical_ordinal 2\n' + source());
+        psql(
+          '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n' +
+            readFileSync(new URL('../assert/m03_smoke_teardown.sql', import.meta.url), 'utf8'),
+        );
+      }
+      const before = JSON.parse(psql(snapshot));
+      assert.equal(before.audit, 4);
+      const outcome = JSON.parse(
+        psql(`begin;${settings}set local emr.smoke_technical_ordinal='10';
+        create temporary table retained_audits as select to_jsonb(l) as value from ops.audit_log l;
+        create temporary table reactivation_outcome(state text,message text);
+        do $case$begin begin execute $under_test$${body()}$under_test$;
+          insert into reactivation_outcome values('00000',null);
+        exception when others then insert into reactivation_outcome values(SQLSTATE,SQLERRM);end;end;$case$;
+        select jsonb_build_object('state',o.state,'message',o.message,
+          'competitor_active',(select status='active' from app.competitors where id='${competitor}'),
+          'account_active',(select status='active' from app.competitor_accounts where id='${account}'),
+          'audit_count',(select count(*) from ops.audit_log),
+          'prior_audits_preserved',(select jsonb_agg(value order by value->>'id') from retained_audits) is not distinct from
+            (select jsonb_agg(to_jsonb(l) order by to_jsonb(l)->>'id') from ops.audit_log l where actor_id<>'m03_smoke_reactivate.v1:${segment}:technical-10'),
+          'gap_audits_absent',not exists(select 1 from ops.audit_log where actor_id in (${[3, 4, 5, 6, 7, 8, 9].map((n) => `'m03_smoke_reactivate.v1:${segment}:technical-${n}'`).join(',')})))
+          from reactivation_outcome o;rollback;`),
+      );
+      assert.deepEqual(outcome, {
+        state: '00000',
+        message: null,
+        competitor_active: true,
+        account_active: true,
+        audit_count: 5,
+        prior_audits_preserved: true,
+        gap_audits_absent: true,
+      });
+      assert.deepEqual(JSON.parse(psql(snapshot)), before);
+      psql(`begin;${settings}set local emr.smoke_technical_ordinal='10';
+        insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id,before,after)
+          select actor_type,'m03_smoke_reactivate.v1:${segment}:technical-9',action,entity_type,entity_id,before,jsonb_set(after,'{segment_id}',to_jsonb('${segment}:technical-9'::text))
+          from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${auditSegment}';
+        do $deny$begin begin execute $under_test$${body()}$under_test$;
+          raise exception using errcode='P9999',message='UNEXPECTED_NINTH_AUDIT_ACCEPTED';
+        exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_PRIOR_EDIT_OR_ATTEMPT_PRESENT' then raise exception 'NINTH_AUDIT_DENIAL_NOT_EXACT';end if;end;end;$deny$;rollback;`);
+      psql(`begin;${settings}set local emr.smoke_technical_ordinal='11';
+        do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';
+        exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED' then raise exception 'UNPROVEN_TENTH_LIFECYCLE_ACCEPTED';end if;end;end;$deny$;rollback;`);
       assert.deepEqual(JSON.parse(psql(snapshot)), before);
     });
 

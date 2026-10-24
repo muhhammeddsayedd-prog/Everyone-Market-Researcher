@@ -1,9 +1,21 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, mkdtempSync, writeFileSync, rmSync, realpathSync } from 'node:fs';
+import {
+  readFileSync,
+  mkdtempSync,
+  writeFileSync,
+  rmSync,
+  realpathSync,
+  copyFileSync,
+  mkdirSync,
+  existsSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { resolve, join, sep } from 'node:path';
+import { resolve, join, sep, dirname } from 'node:path';
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
+import { syntheticProjectVerifiedContinuation } from '../n8n/foundation-live-project-verified-fixtures.mjs';
 
 const consumer = resolve('scripts/db/windows/Invoke-M03FoundationMigrations.ps1');
 const powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
@@ -424,6 +436,12 @@ foreach($mutation in @(@{key='managementMaximum';value=576},@{key='managementAtt
  $mixed=[ordered]@{};foreach($name in $fresh.Keys){$mixed[$name]=$fresh[$name]};$mixed[$mutation.key]=$mutation.value;$script:dto=[pscustomobject]$mixed;$denied=$false
  try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MIXED_640_PROFILE_ACCEPTED'}
 }
+$continued=[ordered]@{};foreach($name in $fresh.Keys){$continued[$name]=$fresh[$name]};$continued.managementAttempts=263;$continued.controlAttempts=537;$continued.combinedAttempts=800;$script:dto=[pscustomobject]$continued
+$null=Read-FoundationPostcheckContinuation
+foreach($key in @('managementAttempts','controlAttempts','combinedAttempts')){
+ $mixed=[ordered]@{};foreach($name in $continued.Keys){$mixed[$name]=$continued[$name]};$mixed[$key]=$fresh[$key];$script:dto=[pscustomobject]$mixed;$denied=$false
+ try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MIXED_POST_ADMIN_PROFILE_ACCEPTED'}
+}
 foreach($missing in @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){
  $copy=[ordered]@{};foreach($name in $valid.Keys){if($name -cne $missing){$copy[$name]=$valid[$name]}};$script:dto=[pscustomobject]$copy;$denied=$false
  try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'PARTIAL_MANAGEMENT_PROFILE_ACCEPTED'}
@@ -438,7 +456,7 @@ Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
 );
 
 test(
-  'actual forward packet has all50 source-required public pins and retains every old migration field',
+  'actual forward packet has all51 source-required public pins and retains every old migration field',
   native,
   () => {
     assert.equal(
@@ -452,12 +470,150 @@ Invoke-Expression $source.Substring($start,$end-$start)
 $packet=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
 $old=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-dev-migration-packet.json'))}))
 Assert-Keys $packet.files $requiredFiles
-if($requiredFiles.Count -ne 50 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+if($requiredFiles.Count -ne 51 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
 $prior=@($old.baseline)+@($old.pending)
 for($i=0;$i -lt 14;$i++){foreach($field in @('version','name','file','sha256','historySha256')){if($prior[$i].$field -cne $packet.baseline[$i].$field){throw 'ORIGINAL_MIGRATION_REWRITTEN'}}}
-Write-Output 'EXACT_PUBLIC_50_AND_OLD14'
+Write-Output 'EXACT_PUBLIC_51_AND_OLD14'
 `),
-      'EXACT_PUBLIC_50_AND_OLD14',
+      'EXACT_PUBLIC_51_AND_OLD14',
     );
+  },
+);
+
+test(
+  'fresh ForwardWindow completes the full native public Run preflight before the private boundary',
+  native,
+  async () => {
+    const fixture = await syntheticProjectVerifiedContinuation({ preprivateAdmin: true });
+    let primaryFailure;
+    try {
+      const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
+      const put = (relative, bytes) => fixture.put(relative, bytes);
+      const packet = JSON.parse(
+        readFileSync(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'), 'utf8'),
+      );
+      packet.files[
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical9-reconciliation-20261024.json'
+      ] = 'synthetic-public-pin-recomputed-below';
+      // Keep all isolated historical authority bytes supplied by the existing
+      // fixture. Copy only the public source/CLI/migration inputs it lacks.
+      for (const relative of [
+        ...Object.keys(packet.files),
+        ...packet.baseline.map((m) => m.file),
+        ...packet.pending.map((m) => m.file),
+      ]) {
+        const target = join(fixture.directory, relative);
+        if (!existsSync(target)) {
+          mkdirSync(dirname(target), { recursive: true });
+          copyFileSync(resolve(relative), target);
+        }
+      }
+      const helperSource = readFileSync(consumer, 'utf8');
+      const privateBoundary = helperSource.indexOf('if($CheckOnly -and $ForwardMigration){Write-Output');
+      assert.ok(privateBoundary > 0);
+      // Execute the actual complete Run-only public prefix, not a detached DTO
+      // validator. This test copy physically cannot reach a DPAPI/private block.
+      const publicPrefix = helperSource
+        .slice(0, privateBoundary)
+        .replace(
+          "Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Public packet/seal/target/CLI verification failed; no decryption or authentication attempted.'",
+          "Write-Output ('SYNTHETIC_PUBLIC_PREFLIGHT_LINE='+$_.InvocationInfo.ScriptLineNumber)",
+        );
+      const adminPath = put(
+        'scripts/db/windows/Invoke-M03FoundationMigrations.ps1',
+        publicPrefix + "\nWrite-Output 'SYNTHETIC_FULL_PUBLIC_RUN_READY';exit 0\n",
+      );
+      for (const relative of Object.keys(packet.files))
+        packet.files[relative] = hash(readFileSync(join(fixture.directory, relative)));
+      put('scripts/db/m03-foundation-forward-dev-migration-packet.json', JSON.stringify(packet) + '\n');
+      const guardPath = join(
+        fixture.directory,
+        'scripts/n8n/foundation-live-project-verified-continuation.mjs',
+      );
+      const runtimePath = put(
+        'synthetic-native-public-runtime.mjs',
+        `
+import {readFileSync,appendFileSync,openSync,writeFileSync,closeSync,unlinkSync} from 'node:fs';
+import {spawnSync} from 'node:child_process';
+const guard=await import(${JSON.stringify(pathToFileURL(guardPath).href)});
+const proof=guard.claimFoundationProjectVerifiedContinuation(guard.readFoundationProjectVerifiedContinuation());
+const lockPath=${JSON.stringify(join(fixture.directory, 'scripts/n8n/out/foundation/live/runtime.operation.lock'))};
+const lock=openSync(lockPath,'wx');writeFileSync(lock,'emr-m03-foundation-live-runtime-v1\\n');
+try {
+ const managementPath=${JSON.stringify(fixture.paths.management)},controlPath=${JSON.stringify(fixture.paths.control)};
+ const management=readFileSync(managementPath,'utf8').trimEnd().split('\\n').map(JSON.parse);
+ const control=readFileSync(controlPath,'utf8').trimEnd().split('\\n').map(JSON.parse).filter(r=>r.event==='control_request_intent');
+ for(let i=1;i<=25;i++)appendFileSync(managementPath,JSON.stringify({event:'management_attempt',ordinal:management.length-1+i})+'\\n');
+ for(let i=1;i<=51;i++)appendFileSync(controlPath,JSON.stringify({event:'control_request_intent',ordinal:control.length+i,kind:'discovery',workflowId:'MzimjpsuyPuK7SKe',at:new Date().toISOString()})+'\\n');
+ const r=spawnSync(${JSON.stringify(powershell)},['-NoProfile','-NonInteractive','-File',${JSON.stringify(adminPath)},'-PhaseAControl','-ProjectVerifiedContinuation','-ForwardWindow'],{cwd:${JSON.stringify(fixture.directory)},env:Object.fromEntries(['SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA','APPDATA','USERPROFILE'].flatMap(k=>process.env[k]===undefined?[]:[[k,process.env[k]]])),windowsHide:true,encoding:'utf8',timeout:40000});
+ const line=(r.stdout??'').trim();
+ console.log(JSON.stringify({kind:'synthetic_public_run_result',nativeExit:r.status,publicReady:line==='SYNTHETIC_FULL_PUBLIC_RUN_READY',fixedDiagnostic:/^(?:SYNTHETIC_PUBLIC_PREFLIGHT_LINE=\\d+|M03_FOUNDATION PREFLIGHT_BLOCKED\\. Stage=[A-Z_]+; no private file read, decryption or authentication attempted\\.)$/.test(line)?line:null,stderrObserved:Boolean(r.stderr),privateRead:false,networkRequests:0}));
+ process.exitCode=r.status===0&&line==='SYNTHETIC_FULL_PUBLIC_RUN_READY'?0:1;
+} finally {closeSync(lock);unlinkSync(lockPath);}
+`,
+      );
+      const wrapperPath = put(
+        'synthetic-native-public-wrapper.ps1',
+        `
+$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
+$env:LOCALAPPDATA=${quote(fixture.localAppData)}
+$parentPath=Join-Path $env:LOCALAPPDATA 'Temp/emr-m03-acceptance-parent.operation.lock'
+$parent=[ordered]@{kind='m03_clock_admission_parent';version=1;segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';processId=$PID}
+$handle=[IO.File]::Open($parentPath,[IO.FileMode]::Create,[IO.FileAccess]::Write,[IO.FileShare]::Read)
+function Invoke-SyntheticNode([string]$Script,[string]$Extra,[int]$Timeout){
+ $info=[Diagnostics.ProcessStartInfo]::new();$info.FileName=${quote(packet.node.path)};$info.Arguments='"'+$Script+'"'+$Extra;$info.WorkingDirectory=${quote(fixture.directory)};$info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.EnvironmentVariables.Clear()
+ foreach($name in @('SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA','APPDATA','USERPROFILE')){if(Test-Path ('Env:'+$name)){$info.EnvironmentVariables[$name]=[Environment]::GetEnvironmentVariable($name)}}
+ $child=[Diagnostics.Process]::new();$child.StartInfo=$info;$null=$child.Start();$out=$child.StandardOutput.ReadToEndAsync();$err=$child.StandardError.ReadToEndAsync();$closed=$child.WaitForExit($Timeout)
+ if(-not $closed){$child.Kill();$null=$child.WaitForExit(5000);throw 'SYNTHETIC_NODE_TIMEOUT'}
+ $result=[pscustomobject]@{code=$child.ExitCode;text=$out.Result;stderrObserved=($err.Result.Length -gt 0)};$child.Dispose();return $result
+}
+try {
+ $bytes=[Text.Encoding]::UTF8.GetBytes(($parent|ConvertTo-Json -Compress));$handle.Write($bytes,0,$bytes.Length);$handle.Flush($true)
+ $admission=Invoke-SyntheticNode ${quote(guardPath)} ' Admit' 10000
+ if($admission.code -ne 0 -or $admission.stderrObserved){Write-Output '{"kind":"synthetic_public_run_result","publicReady":false,"fixedDiagnostic":"SYNTHETIC_ADMISSION_BLOCKED"}';exit 1}
+ $runtime=Invoke-SyntheticNode ${quote(runtimePath)} '' 45000
+ if($runtime.stderrObserved){Write-Output '{"kind":"synthetic_public_run_result","publicReady":false,"fixedDiagnostic":"SYNTHETIC_RUNTIME_STDERR"}';exit 1}
+ Write-Output $runtime.text;exit $runtime.code
+} finally {$handle.Dispose()}
+`,
+      );
+      const result = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', wrapperPath], {
+        cwd: fixture.directory,
+        env: Object.fromEntries(
+          ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP', 'LOCALAPPDATA', 'APPDATA', 'USERPROFILE'].flatMap(
+            (name) => (process.env[name] === undefined ? [] : [[name, process.env[name]]]),
+          ),
+        ),
+        windowsHide: true,
+        encoding: 'utf8',
+        timeout: 60000,
+      });
+      assert.equal(Boolean(result.stderr), false, 'Synthetic native stderr withheld');
+      const projection = JSON.parse(result.stdout.trim());
+      assert.equal(result.status, 0, JSON.stringify(projection));
+      assert.equal(projection.publicReady, true, JSON.stringify(projection));
+      assert.equal(projection.stderrObserved, false);
+      assert.equal(projection.privateRead, false);
+      assert.equal(
+        existsSync(
+          join(
+            fixture.directory,
+            'scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-10-attempt.json',
+          ),
+        ),
+        false,
+      );
+    } catch (error) {
+      primaryFailure = error;
+      throw error;
+    } finally {
+      try {
+        fixture.cleanup();
+      } catch (error) {
+        if (primaryFailure)
+          throw new AggregateError([primaryFailure, error], 'SYNTHETIC_PUBLIC_RUN_AND_CLEANUP_FAILED');
+        throw error;
+      }
+    }
   },
 );
