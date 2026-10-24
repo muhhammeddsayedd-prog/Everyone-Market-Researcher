@@ -3261,6 +3261,8 @@ export async function syntheticProjectVerifiedContinuation({
       value.pins[sealPath] = digest(load(sealPath));
       if (technical16Fault === 'spent-closure' && attempt === 6) value.rawResult.remoteWorkSettled = true;
       if (technical16Fault === 'spent-counter' && attempt === 5) value.usage.management = 1;
+      if (technical16Fault === 'spent-time' && attempt === 6) value.observedAt = 'not-a-time';
+      if (technical16Fault === 'spent-time-missing' && attempt === 6) delete value.observedAt;
       if (technical16Fault === 'prior-chain' && attempt === 6)
         nextOnce.priorFailedAttemptSha256 = 'f'.repeat(64);
       if (technical16Fault === 'prior-chain' && attempt === 6) {

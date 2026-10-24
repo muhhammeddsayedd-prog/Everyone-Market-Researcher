@@ -9,7 +9,11 @@ How this works:
 3. The owner does it, ticks it in the milestone `PROGRESS.md`, and adds any non-secret value (project ref, URL) there.
 4. Secrets go only into approved native stores or the current-user-encrypted dev store below, never into the repo or chat.
 
-## Current M03 checkpoint — dev fixture archived, 24 October 2026
+## Current M03 checkpoint — dev acceptance pending, 25 October 2026
+
+Latest25 October public-only continuation: head7b02880 passed all five CI40140215927 jobs and Vercel. Its [pre18 refusal](../milestones/M03-n8n-foundation/evidence/dev-acceptance-pre18-public-refusal-20261025.json) occurred at the public clock before credential decryption/admission or hosted requests; parent/children and all11 disposable leaves are absent, encrypted originals retained. Windows reused an old technical10 PID for a process born after its verified close; that unrelated process is preserved. The existing historical guard receives a narrow creation-time correction and affected/public checks before continuation. Active ancestry, historical receipts and963/1094/2057/V184/native3/actors0 usage remain unchanged. No owner input is missing; actual A–D remains incomplete.
+
+The reviewed correction also handles one reused PID in the pinned completed cleanup history. Five focused tests and independent review pass, including unknown/raced/equal/older/future identities and coherently pinned missing/invalid closure-observation time denials. Actual public Verify and the ORIGINAL sealed wrapper CheckOnly pass native0; public seals verify99/248 project files and840 runtime files, with zero private reads/network. The first public-seal coordinator timeout and verified scratch cleanup remain recorded separately. Normal changed-head CI precedes live continuation; no new credential, time or allowance approval is needed. See the linked current evidence for exact test and physical results.
 
 No owner input is missing. Native cleanup7 remains verified and preserved. The [actual dev archive](../milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json) completed native0 after head e8521bb passed all five CI40134188813 jobs and Vercel. C999 is archived, its account paused, all five prior windows closed, seven fixture audits unchanged and all item/actor/cost work zero. Parent59232, children, scratch and parent lock are absent; the encrypted Admin original remains. The first pre-auth failure and its fixed pipeline defect remain recorded.
 

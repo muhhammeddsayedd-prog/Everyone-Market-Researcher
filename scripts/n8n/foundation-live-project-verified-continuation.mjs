@@ -1,5 +1,6 @@
 import { readFileSync, lstatSync, openSync, writeSync, fsyncSync, closeSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createFoundationRuntimePlan, createFoundationRuntimeBaseline } from './foundation-runtime-plan.mjs';
@@ -517,6 +518,7 @@ const ioNames = [
   'fsyncSync',
   'closeSync',
   'processAlive',
+  'historicalProcessSnapshots',
   'processId',
   'parentProcessId',
 ];
@@ -537,6 +539,57 @@ function context(options = {}, dependencies = {}) {
       return e?.code !== 'ESRCH';
     }
   };
+  const historicalProcessSnapshots = (pid) => {
+    if (
+      process.platform !== 'win32' ||
+      !positive(pid) ||
+      pid > 2147483647 ||
+      typeof process.env.SystemRoot !== 'string'
+    )
+      fail();
+    const source = [
+      "$ErrorActionPreference='Stop'",
+      'function Read-Identity {',
+      " $p=@(CimCmdlets\\Get-CimInstance -ClassName Win32_Process -Filter 'ProcessId = " +
+        pid +
+        "' -Property ProcessId,ParentProcessId,CreationDate -ErrorAction Stop)",
+      " if($p.Count -ne 1 -or $p[0].CreationDate -isnot [DateTime]){throw 'blocked'}",
+      ' [pscustomobject]@{',
+      '  processId=[long]$p[0].ProcessId',
+      '  parentProcessId=[long]$p[0].ParentProcessId',
+      '  createdAt=([DateTimeOffset]::new($p[0].CreationDate.ToUniversalTime())).ToUnixTimeMilliseconds()',
+      ' }',
+      '}',
+      '$a=Read-Identity',
+      '$b=Read-Identity',
+      'ConvertTo-Json -InputObject @($a,$b) -Compress',
+    ].join('\n');
+    const result = spawnSync(
+      join(process.env.SystemRoot, 'System32/WindowsPowerShell/v1.0/powershell.exe'),
+      ['-NoProfile', '-NonInteractive', '-Command', source],
+      {
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 5000,
+        maxBuffer: 4096,
+        env: Object.fromEntries(
+          ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP'].flatMap((name) =>
+            process.env[name] === undefined ? [] : [[name, process.env[name]]],
+          ),
+        ),
+      },
+    );
+    if (
+      result.error ||
+      result.status !== 0 ||
+      result.signal !== null ||
+      result.stderr !== '' ||
+      typeof result.stdout !== 'string' ||
+      Buffer.byteLength(result.stdout) > 4096
+    )
+      fail();
+    return JSON.parse(result.stdout);
+  };
   const io = {
     readFileSync,
     lstatSync,
@@ -545,9 +598,10 @@ function context(options = {}, dependencies = {}) {
     fsyncSync,
     closeSync,
     processAlive,
+    historicalProcessSnapshots,
     ...dependencies,
   };
-  if (typeof now !== 'function' || ioNames.slice(0, 7).some((k) => typeof io[k] !== 'function')) fail();
+  if (typeof now !== 'function' || ioNames.slice(0, 8).some((k) => typeof io[k] !== 'function')) fail();
   const pid = io.processId ?? process.pid,
     ppid = io.parentProcessId ?? process.ppid;
   if (!positive(pid) || !positive(ppid)) fail();
@@ -555,6 +609,43 @@ function context(options = {}, dependencies = {}) {
     const t = now();
     if (!Number.isSafeInteger(t) || t < 0) fail();
     return t;
+  };
+  // This context-local evidence qualifies only independently verified closed
+  // historical references. Current admission/claim ownership keeps its live PID checks.
+  const historicalIdentities = new Map();
+  const historicalProcessClosed = (pid, closedAt) => {
+    if (!positive(pid) || !Number.isSafeInteger(closedAt) || closedAt < 0 || closedAt > clock()) fail();
+    if (!historicalIdentities.has(pid)) {
+      const alive = io.processAlive(pid);
+      if (alive === false) historicalIdentities.set(pid, null);
+      else {
+        if (alive !== true || typeof io.historicalProcessSnapshots !== 'function') fail();
+        const snapshots = io.historicalProcessSnapshots(pid);
+        if (!Array.isArray(snapshots) || snapshots.length !== 2) fail();
+        for (const snapshot of snapshots)
+          if (
+            !exact(snapshot, ['processId', 'parentProcessId', 'createdAt']) ||
+            snapshot.processId !== pid ||
+            !Number.isSafeInteger(snapshot.parentProcessId) ||
+            snapshot.parentProcessId < 0 ||
+            snapshot.parentProcessId > 4294967295 ||
+            !Number.isSafeInteger(snapshot.createdAt) ||
+            snapshot.createdAt < 0 ||
+            snapshot.createdAt > clock()
+          )
+            fail();
+        const [first, second] = snapshots;
+        if (
+          first.processId !== second.processId ||
+          first.parentProcessId !== second.parentProcessId ||
+          first.createdAt !== second.createdAt
+        )
+          fail();
+        historicalIdentities.set(pid, Object.freeze({ ...first }));
+      }
+    }
+    const identity = historicalIdentities.get(pid);
+    return identity === null || identity.createdAt > closedAt;
   };
   const physical = (path, optional = false) => {
     let leaf;
@@ -628,7 +719,7 @@ function context(options = {}, dependencies = {}) {
     if (file(relative) !== text) fail();
     return text;
   };
-  return { io, clock, physical, file, parent, create, pid, ppid };
+  return { io, clock, physical, file, parent, create, pid, ppid, historicalProcessClosed };
 }
 function checkpoint(x) {
   assertTechnical17Prerequisites(x);
@@ -1411,13 +1502,14 @@ function reconciledTechnical16Settlement(x) {
     });
     same(claimed.usage, { management: m, control: c, combined: s, vercel: 184 });
     if (claimed.qualificationOnly !== (attempt === 3 ? true : undefined)) fail();
-    for (const pid of [claimed.processId, claimed.parentProcessId])
-      if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
     if (
       record.cleanup.childProcessId !== claimed.processId ||
       record.cleanup.parentProcessId !== claimed.parentProcessId
     )
       fail();
+    if (typeof record.observedAt !== 'string') fail();
+    for (const pid of [claimed.processId, claimed.parentProcessId])
+      if (!x.historicalProcessClosed(pid, Date.parse(record.observedAt))) fail();
     const header = oldRows[0];
     same(header, {
       event: 'technical16_cleanup_header',
@@ -4020,11 +4112,11 @@ function reconcileReadonlyDiscoveryRecords(x, r, journalCounts, additionalPaths 
   if (
     !positive(a.parentProcessId) ||
     !positive(a.runtimeProcessId) ||
-    x.io.processAlive(a.parentProcessId) !== false ||
-    x.io.processAlive(a.runtimeProcessId) !== false ||
     !Number.isSafeInteger(a.closedAt) ||
     a.closedAt < a.startsAt ||
-    a.closedAt > x.clock()
+    a.closedAt > x.clock() ||
+    !x.historicalProcessClosed(a.parentProcessId, a.closedAt) ||
+    !x.historicalProcessClosed(a.runtimeProcessId, a.closedAt)
   )
     fail();
   const frames = jsonl(x.file(base + '.public-frames.jsonl'), 10).rows;
@@ -7994,6 +8086,10 @@ function closedTechnicalAttempt(x, paths) {
   const noAdminSpawnReconciled =
     (paths.ordinal === 11 && x.recovery?.adminAdmissionReadonlyTechnicalAttempt === 11) ||
     (paths.ordinal === 17 && x.recovery?.technical17PreReadyReconciled === true);
+  const processClosed = (pid) =>
+    [9, 10, 11].includes(paths.ordinal) && reconciled
+      ? x.historicalProcessClosed(pid, close.closedAt)
+      : x.io.processAlive(pid) === false;
   if (
     !exact(close, [
       'kind',
@@ -8029,8 +8125,8 @@ function closedTechnicalAttempt(x, paths) {
     ) ||
     (!reconciled && (close.bypassHandoffDeleted !== true || close.closureVerified !== true)) ||
     text !== JSON.stringify(close) + '\n' ||
-    x.io.processAlive(close.parentProcessId) !== false ||
-    (close.runtimeProcessId !== null && x.io.processAlive(close.runtimeProcessId) !== false)
+    !processClosed(close.parentProcessId) ||
+    (close.runtimeProcessId !== null && !processClosed(close.runtimeProcessId))
   )
     fail();
   return close;
