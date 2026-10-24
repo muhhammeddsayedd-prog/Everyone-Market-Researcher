@@ -149,6 +149,8 @@ function Get-M03AcceptancePublicFiles([string]$Root) {
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical10-reconciliation-20261024.json',
   'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md',
   'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json',
+  'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md',
+  'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-approval-20261024.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical3-attempt-20261023.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical3-reconciliation-20261023.json',

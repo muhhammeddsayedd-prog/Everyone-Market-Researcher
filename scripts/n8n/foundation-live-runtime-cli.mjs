@@ -570,7 +570,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       ...(remaining ? { remainingContinuationProof: remaining } : {}),
       ...(startup ? { startupReplacementProof: startup } : {}),
       ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
-      ...([576, 640].includes(verifiedCheckpoint?.managementMaximum)
+      ...([576, 640, 704].includes(verifiedCheckpoint?.managementMaximum)
         ? {
             controlAttempts: () =>
               controlBudget?.snapshot().attempts ?? verifiedCheckpoint.aggregateControlAttempts,
@@ -630,7 +630,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     ...(remaining ? { remainingContinuationProof: remaining } : {}),
     ...(startup ? { startupReplacementProof: startup } : {}),
     ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
-    ...([576, 640].includes(verifiedCheckpoint?.managementMaximum)
+    ...([576, 640, 704].includes(verifiedCheckpoint?.managementMaximum)
       ? { managementAttempts: () => budget.snapshot().attempts }
       : {}),
   });

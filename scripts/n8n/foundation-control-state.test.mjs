@@ -275,11 +275,15 @@ test('new576 control pool refuses missing, throwing, invalid or backwards author
   }
 });
 
-for (const profile of [576, 640])
+for (const profile of [576, 640, 704])
   test(`genuine linked${profile} Management andControl snapshots enforce2560 in both directions with no counter or intent reset`, async () => {
     for (const direction of ['management', 'control']) {
       const f = await syntheticProjectVerifiedContinuation(
-        profile === 640 ? { closedFixture: true } : { managementAllocation: true },
+        profile === 704
+          ? { catalogReadonly: true, catalogManagementAllocation: true }
+          : profile === 640
+            ? { closedFixture: true }
+            : { managementAllocation: true },
       );
       let management;
       try {
@@ -330,7 +334,7 @@ for (const profile of [576, 640])
         }
         assert.equal(readFileSync(f.paths.management, 'utf8'), prior);
         assert.equal(writes.length, count);
-        assert.equal(management.snapshot().carriedAttempts, 10);
+        assert.equal(management.snapshot().carriedAttempts, profile === 704 ? 11 : 10);
         assert.equal(control.snapshot().carriedAttempts, 3);
       } finally {
         management?.close();

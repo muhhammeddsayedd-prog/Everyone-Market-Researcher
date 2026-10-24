@@ -158,7 +158,7 @@ export function createFoundationLiveManagementBudget({ sourceCommitSha, deadline
     ? foundationProjectVerifiedContinuationResumeCheckpoint(verified)
     : null;
   const managementMaximum = verifiedCheckpoint?.managementMaximum ?? 512;
-  if (![512, 576, 640].includes(managementMaximum)) fail();
+  if (![512, 576, 640, 704].includes(managementMaximum)) fail();
   const sharedMaximum = managementMaximum !== 512;
   let observedControlAttempts = verifiedCheckpoint?.aggregateControlAttempts;
   const readControlAttempts = () => {

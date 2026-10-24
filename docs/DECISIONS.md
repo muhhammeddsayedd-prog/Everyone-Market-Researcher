@@ -294,6 +294,29 @@ messaging, shared rotation, PR merge or M04 is approved. Standing M03 authority
 and persistent dev access continue; no time-only renewal or credential handoff
 is required by this allowance amendment.
 
+## M03 cumulative Management 704 — approved 24 October 2026
+
+The owner replied **Approve Management704; retain all charges and other limits**
+to the reviewed [Management-only packet](../milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md)
+at PR #8 head `4b31c5f8447d79418b8572a872a86afd5722244d`.
+[The immutable approval](../milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-approval-20261024.json)
+raises only cumulative Management from 640 to **704**, retaining all **288 Management,
+588 Control, 876 combined and 79 Vercel** charges. The conservative remaining
+Management plan is 376 further requests, 664 cumulative, with 40 reserved.
+
+Control **2048**, combined **2560**, Vercel **132** (included in Management),
+native executions 120, SQL gateway attempts 256, direct provider reads 32 and
+the original two sequential actor starts / USD 1 each / USD 2 total reserve /
+at most one new distinct item stay unchanged. All attempts, closed windows,
+durable intents and side-effect IDs remain preserved; no counter is reset.
+Reconcile before continuation, retain cleanup capacity and run affected tests,
+independent review, public source/seal checks and normal PR CI before admission.
+
+Persistent development entries and native sessions are reused. This allowance
+adds no credential delivery, time renewal, migration replay, production,
+recurring activity, external message, shared rotation, R2 action, merge or M04
+authority. It is not acceptance evidence.
+
 ## M03 temporary sole/default Preview bypass — approved 23 October 2026
 
 The owner replied **“I approve”** to the exact [security-scope packet at9e7a8be](../milestones/M03-n8n-foundation/evidence/sole-bypass-scope-decision-20261023.md).

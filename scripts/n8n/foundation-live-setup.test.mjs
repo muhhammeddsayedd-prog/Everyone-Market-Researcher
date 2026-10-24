@@ -112,86 +112,89 @@ const cleanedLegacySetupJsonl = `{"event":"setup_attempt","ordinal":1,"kind":"GE
 const cleanedLegacySetupRows = cleanedLegacySetupJsonl.trimEnd().split('\n').map(JSON.parse);
 const cleanedLegacySetupSha256 = '0cad48fd9550da762c0b629ee63364e4668f4829c3a89bd6f75ec2843d32f624';
 
-test('genuine640 and132 profile replays both closed windows and retains79 setup requests before the fresh owned window', async () => {
-  const f = await syntheticProjectVerifiedContinuation({
-    closedFixture: true,
-    historicalSetupEvents: cleanedLegacySetupRows,
-  });
-  let budget, current;
-  try {
-    const proof = f.claim(f.admit()),
-      resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof),
-      module = await f.copy('foundation-live-runtime.mjs'),
-      setupModule = await f.copy('foundation-live-setup.mjs'),
-      previousText = readFileSync(f.paths.setup, 'utf8'),
-      previousEvents = previousText.trimEnd().split('\n').map(JSON.parse);
-    assert.equal(resume.managementMaximum, 640);
-    assert.equal(resume.setupMaximum, 132);
-    assert.deepEqual(resume.historicalWindowIds, [scope.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc']);
-    assert.equal(Object.isFrozen(resume.historicalWindowIds), true);
-    assert.equal(previousEvents.length, 155);
-    assert.equal(previousEvents.filter((v) => v.event === 'setup_attempt').length, 79);
-    assert.deepEqual(
-      [
-        ...new Set(
-          previousEvents
-            .filter((v) => v.event === 'setup_ack' && v.kind === 'environment')
-            .map((v) => v.comment),
-        ),
-      ].sort(),
-      resume.historicalWindowIds.map((id) => 'M03 foundation temporary dev ' + id).sort(),
-    );
-    budget = module.createFoundationLiveManagementBudget(
-      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
-      {
-        directory: dirname(f.paths.management),
-        now: f.now,
-        projectVerifiedContinuationProof: proof,
-        controlAttempts: () => 486,
-      },
-    );
-    current = fixture({
-      setupModule,
-      sourceSha: proof.sourceCommitSha,
-      startsAt: proof.startsAt,
-      projectVerifiedContinuationProof: proof,
-      previousEvents,
-      activeWindowId: proof.windowId,
-      maximumRequests: 132,
-      expectedMigrationCount: 15,
-      managementBudget: budget,
+for (const profile of [640, 704])
+  test(`genuine${profile} and132 profile replays both closed windows and retains79 setup requests before the fresh owned window`, async () => {
+    const f = await syntheticProjectVerifiedContinuation({
+      ...(profile === 704
+        ? { catalogReadonly: true, catalogManagementAllocation: true }
+        : { closedFixture: true }),
+      historicalSetupEvents: cleanedLegacySetupRows,
     });
-    assert.equal(budget.snapshot().attempts, 237);
-    assert.equal(current.setup.snapshot().requestCount, 79);
-    assert.equal(current.setup.snapshot().sharedMaximum, 640);
-    await current.setup.prepare();
-    const created = current.calls.filter((c) => c.method === 'POST' && c.path.includes('/env?'));
-    assert.equal(created.length, 7);
-    assert.equal(
-      created.every((c) => c.body.comment.endsWith(proof.windowId)),
-      true,
-    );
-    const oldIds = new Set(
-      previousEvents.filter((v) => v.event === 'setup_ack' && v.kind === 'environment').map((v) => v.id),
-    );
-    assert.equal((await current.setup.cleanup()).state, 'setup_resources_removed');
-    const deleted = current.calls.filter((c) => c.method === 'DELETE');
-    assert.equal(deleted.length, 7);
-    assert.equal(
-      deleted.some((c) => [...oldIds].some((id) => c.path.includes('/env/' + id + '?'))),
-      false,
-    );
-    assert.equal(current.setup.snapshot().requestCount, 79 + current.calls.length);
-    assert.ok(current.setup.snapshot().requestCount <= 132);
-    assert.equal(budget.snapshot().attempts, 237 + current.calls.length);
-    assert.equal(readFileSync(f.paths.setup, 'utf8'), previousText);
-    assert.throws(() => fixture({ maximumRequests: 132, activeWindowId: proof.windowId }));
-  } finally {
-    current?.setup.close();
-    budget?.close();
-    f.cleanup();
-  }
-});
+    let budget, current;
+    try {
+      const proof = f.claim(f.admit()),
+        resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof),
+        module = await f.copy('foundation-live-runtime.mjs'),
+        setupModule = await f.copy('foundation-live-setup.mjs'),
+        previousText = readFileSync(f.paths.setup, 'utf8'),
+        previousEvents = previousText.trimEnd().split('\n').map(JSON.parse);
+      assert.equal(resume.managementMaximum, profile);
+      assert.equal(resume.setupMaximum, 132);
+      assert.deepEqual(resume.historicalWindowIds, [scope.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc']);
+      assert.equal(Object.isFrozen(resume.historicalWindowIds), true);
+      assert.equal(previousEvents.length, 155);
+      assert.equal(previousEvents.filter((v) => v.event === 'setup_attempt').length, 79);
+      assert.deepEqual(
+        [
+          ...new Set(
+            previousEvents
+              .filter((v) => v.event === 'setup_ack' && v.kind === 'environment')
+              .map((v) => v.comment),
+          ),
+        ].sort(),
+        resume.historicalWindowIds.map((id) => 'M03 foundation temporary dev ' + id).sort(),
+      );
+      budget = module.createFoundationLiveManagementBudget(
+        { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+        {
+          directory: dirname(f.paths.management),
+          now: f.now,
+          projectVerifiedContinuationProof: proof,
+          controlAttempts: () => resume.aggregateControlAttempts,
+        },
+      );
+      current = fixture({
+        setupModule,
+        sourceSha: proof.sourceCommitSha,
+        startsAt: proof.startsAt,
+        projectVerifiedContinuationProof: proof,
+        previousEvents,
+        activeWindowId: proof.windowId,
+        maximumRequests: 132,
+        expectedMigrationCount: 15,
+        managementBudget: budget,
+      });
+      assert.equal(budget.snapshot().attempts, resume.aggregateManagementAttempts);
+      assert.equal(current.setup.snapshot().requestCount, 79);
+      assert.equal(current.setup.snapshot().sharedMaximum, profile);
+      await current.setup.prepare();
+      const created = current.calls.filter((c) => c.method === 'POST' && c.path.includes('/env?'));
+      assert.equal(created.length, 7);
+      assert.equal(
+        created.every((c) => c.body.comment.endsWith(proof.windowId)),
+        true,
+      );
+      const oldIds = new Set(
+        previousEvents.filter((v) => v.event === 'setup_ack' && v.kind === 'environment').map((v) => v.id),
+      );
+      assert.equal((await current.setup.cleanup()).state, 'setup_resources_removed');
+      const deleted = current.calls.filter((c) => c.method === 'DELETE');
+      assert.equal(deleted.length, 7);
+      assert.equal(
+        deleted.some((c) => [...oldIds].some((id) => c.path.includes('/env/' + id + '?'))),
+        false,
+      );
+      assert.equal(current.setup.snapshot().requestCount, 79 + current.calls.length);
+      assert.ok(current.setup.snapshot().requestCount <= 132);
+      assert.equal(budget.snapshot().attempts, resume.aggregateManagementAttempts + current.calls.length);
+      assert.equal(readFileSync(f.paths.setup, 'utf8'), previousText);
+      assert.throws(() => fixture({ maximumRequests: 132, activeWindowId: proof.windowId }));
+    } finally {
+      current?.setup.close();
+      budget?.close();
+      f.cleanup();
+    }
+  });
 
 test('new132 profile still rejects a current response using a closed38b scope comment', async () => {
   const f = await syntheticProjectVerifiedContinuation({

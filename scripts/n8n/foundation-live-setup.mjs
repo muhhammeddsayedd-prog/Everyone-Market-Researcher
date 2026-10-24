@@ -333,7 +333,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
     (activeWindowId !== S.windowId && !resumeCheckpoint?.closedWindow) ||
     (resumeCheckpoint?.closedWindow && resumeCheckpoint.activeWindowId !== activeWindowId) ||
     (requestMaximum === 132 &&
-      (resumeCheckpoint?.managementMaximum !== 640 ||
+      (![640, 704].includes(resumeCheckpoint?.managementMaximum) ||
         activeWindowId !== 'eda4fae1-1e19-47db-81b8-beac1a4ed883')) ||
     (legacyMetadataReplay &&
       (!Array.isArray(historicalWindowIds) ||
@@ -574,7 +574,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
           sharedAttempts = sharedBudget.attempts,
           sharedMaximum = sharedBudget.maximum ?? 512;
         if (
-          ![512, 576, 640].includes(sharedMaximum) ||
+          ![512, 576, 640, 704].includes(sharedMaximum) ||
           (sharedMaximum !== 512 && resumeCheckpoint?.managementMaximum !== sharedMaximum) ||
           !Number.isInteger(sharedAttempts) ||
           sharedAttempts < 0 ||

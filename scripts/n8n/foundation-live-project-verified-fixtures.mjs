@@ -15,6 +15,8 @@ export async function syntheticProjectVerifiedContinuation({
   historicalSetupEvents,
   catalogReadonly = false,
   catalogReadonlyFault,
+  catalogManagementAllocation = false,
+  catalogManagementAllocationFault,
   preprivateAdmin = catalogReadonly,
   preprivateAdminFault,
   closedFixture = preprivateAdmin,
@@ -390,6 +392,7 @@ export async function syntheticProjectVerifiedContinuation({
     closedFixtureConfiguration,
     preprivateAdminConfiguration,
     catalogReadonlyConfiguration,
+    catalogManagementAllocationConfiguration,
     controlManagementAllocationConfiguration;
   if (closedWindow) {
     const base =
@@ -1758,6 +1761,37 @@ export async function syntheticProjectVerifiedContinuation({
     put(relative, text);
     catalogReadonlyConfiguration = { relative, sha256: digest(text) };
   }
+  if (catalogManagementAllocation) {
+    const relative =
+      'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-approval-20261024.json';
+    const packetRelative =
+      'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md';
+    const receipt = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8'));
+    const packet = readFileSync(join(sourceRoot, packetRelative), 'utf8');
+    put(packetRelative, packet);
+    receipt.referencePacket.sha256 = digest(packet);
+    receipt.actualPriorUsage.reconciliationSha256 = catalogReadonlyConfiguration?.sha256 ?? '0'.repeat(64);
+    receipt.recordedAt = '2026-10-24T02:39:00.000Z';
+    if (catalogManagementAllocationFault === 'reply') receipt.ownerReply = 'Unapproved allowance';
+    if (catalogManagementAllocationFault === 'source')
+      receipt.referencePacket.sourceCommitSha = '0'.repeat(40);
+    if (catalogManagementAllocationFault === 'usage') receipt.actualPriorUsage.management = 0;
+    if (catalogManagementAllocationFault === 'maximum') receipt.allocation.managementMaximum = 705;
+    if (catalogManagementAllocationFault === 'vercel') receipt.allocation.vercelMaximum = 133;
+    if (catalogManagementAllocationFault === 'combined') receipt.unchangedCaps.combined = 2624;
+    if (catalogManagementAllocationFault === 'reset') receipt.allocation.countersReset = true;
+    if (catalogManagementAllocationFault === 'actor') receipt.unchangedCaps.actorStarts = 3;
+    if (catalogManagementAllocationFault === 'boundary') receipt.boundaries.productionApproved = true;
+    if (catalogManagementAllocationFault === 'extra') receipt.allocation.extraAllowance = true;
+    const text = JSON.stringify(receipt) + '\n';
+    put(relative, text);
+    catalogManagementAllocationConfiguration = {
+      relative,
+      sha256: digest(text),
+      packetRelative,
+      packetSha256: digest(packet),
+    };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -1869,6 +1903,14 @@ export async function syntheticProjectVerifiedContinuation({
     'const catalogReadonlyRecovery = ' +
       (catalogReadonlyConfiguration
         ? 'Object.freeze(' + JSON.stringify(catalogReadonlyConfiguration) + ')'
+        : 'null') +
+      ';',
+  );
+  source = source.replace(
+    /const catalogManagementAllocationApproval = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+    'const catalogManagementAllocationApproval = ' +
+      (catalogManagementAllocationConfiguration
+        ? 'Object.freeze(' + JSON.stringify(catalogManagementAllocationConfiguration) + ')'
         : 'null') +
       ';',
   );

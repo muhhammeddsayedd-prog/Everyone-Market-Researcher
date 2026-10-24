@@ -1171,6 +1171,81 @@ test('closed technical10 retains288/588/876 and reports664 over640 without anoth
     f.cleanup();
   }
 });
+test('approved704 allocation preserves technical10 and all charged usage while admitting only the next technical sibling', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    catalogReadonly: true,
+    catalogManagementAllocation: true,
+  });
+  try {
+    const closedPath = f.paths.admission.replace(/\.json$/, '.technical-10.closed.json');
+    const closedBefore = readFileSync(closedPath, 'utf8');
+    const ready = f.check();
+    assert.equal(ready.kind, 'project_verified_continuation_ready');
+    assert.equal(ready.managementMaximum, 704);
+    assert.equal(ready.managementAttempts, 288);
+    assert.equal(ready.controlAttempts, 588);
+    assert.equal(ready.combinedAttempts, 876);
+    const proof = f.claim(f.admit());
+    const resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(resume.managementMaximum, 704);
+    assert.equal(resume.technicalAttemptOrdinal, 11);
+    assert.equal(resume.aggregateManagementAttempts, 288);
+    assert.equal(resume.aggregateControlAttempts, 588);
+    assert.equal(resume.setupAttempts, 79);
+    assert.equal(resume.setupMaximum, 132);
+    assert.equal(readFileSync(closedPath, 'utf8'), closedBefore);
+    f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof));
+    for (const relative of [
+      'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-approval-20261024.json',
+      'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md',
+    ]) {
+      const original = readFileSync(join(f.directory, relative), 'utf8');
+      f.put(relative, original + ' ');
+      assert.throws(
+        () => f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof)),
+        /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
+      );
+      f.put(relative, original);
+    }
+  } finally {
+    f.cleanup();
+  }
+});
+test('704 approval rejects altered scope, charge resets, extra authority and allocation before technical10 reconciliation', async () => {
+  for (const catalogManagementAllocationFault of [
+    'reply',
+    'source',
+    'usage',
+    'maximum',
+    'vercel',
+    'combined',
+    'reset',
+    'actor',
+    'boundary',
+    'extra',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      catalogReadonly: true,
+      catalogManagementAllocation: true,
+      catalogManagementAllocationFault,
+    });
+    try {
+      assert.throws(
+        () => f.check(),
+        /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/,
+        catalogManagementAllocationFault,
+      );
+    } finally {
+      f.cleanup();
+    }
+  }
+  const f = await syntheticProjectVerifiedContinuation({ catalogManagementAllocation: true });
+  try {
+    assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+  } finally {
+    f.cleanup();
+  }
+});
 test('technical10 readonly recovery refuses writes, incomplete closure, catalog success rewrites and counter resets', async () => {
   for (const catalogReadonlyFault of [
     'start',

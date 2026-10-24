@@ -42,7 +42,9 @@ $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technic
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical9-reconciliation-20261024.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical10-reconciliation-20261024.json',
   'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md',
-  'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json')
+  'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json',
+  'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md',
+  'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-approval-20261024.json')
 $forwardSchema=[bool]($ForwardMigration -or $ForwardWindow)
 if($forwardSchema){$requiredFiles+=@('scripts/db/foundation-forward-postcheck.sql','scripts/db/m03-foundation-dev-migration-packet.json')}
 $versions = @('20261017172928','20261017172931','20261017172934','20261017172937','20261017172940','20261017172943','20261017172945','20261018034220','20261018035417','20261018070042','20261018231756','20261018232014','20261018232922','20261018233338')
@@ -384,7 +386,7 @@ function Read-FoundationPostcheckContinuation {
     if($managementPresent.Count -gt 0){
       if(-not $CheckOnly -or -not $projectMode -or -not $forwardMode -or $managementPresent.Count -ne 4){throw 'blocked'}
       # Exact known read-only reconciliation, never a replenished allowance.
-      $managementExpected=if($freshMode -and $value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800}}elseif($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
+      $managementExpected=if($freshMode -and $value.managementAttempts -eq 288){@{managementMaximum=704;managementAttempts=288;controlAttempts=588;combinedAttempts=876}}elseif($freshMode -and $value.managementAttempts -eq 263){@{managementMaximum=640;managementAttempts=263;controlAttempts=537;combinedAttempts=800}}elseif($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
       $keys+=$managementFields
     }

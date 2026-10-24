@@ -210,6 +210,13 @@ const catalogReadonlyRecovery = Object.freeze({
   relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical10-reconciliation-20261024.json',
   sha256: '6e4e1af66c0f94ea87bddabe4b326b512a87e3c8ee678f037a7bed68f60702be',
 });
+const catalogManagementAllocationApproval = Object.freeze({
+  relative:
+    'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-approval-20261024.json',
+  sha256: '9cb054ca3421e9bd32c7bfd92ad7982b32c5c6d4b4aacb5c77e50f58a9cb1b1f',
+  packetRelative: 'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md',
+  packetSha256: '967b0250f7b61b2108d31ca59bc20e12c0367e7fcb8dc8ca877665a9af4071d6',
+});
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
 };
@@ -451,6 +458,7 @@ function checkpoint(x) {
   x.recovery = approvedControlManagementAllocation(x) ?? x.recovery;
   x.recovery = reconciledPreprivateAdmin(x) ?? x.recovery;
   x.recovery = reconciledCatalogReadonly(x) ?? x.recovery;
+  x.recovery = approvedCatalogManagementAllocation(x) ?? x.recovery;
   if (x.recovery?.closedWindow) assertSetupAllocationApproval(x);
   recoveryPreflight(x);
   return p;
@@ -3172,6 +3180,155 @@ function reconciledCatalogReadonly(x) {
     pins: Object.freeze(pins),
   });
 }
+function approvedCatalogManagementAllocation(x) {
+  if (!catalogManagementAllocationApproval) return null;
+  if (
+    x.recovery?.catalogReadonlyTechnicalAttempt !== 10 ||
+    x.recovery.managementMaximum !== 640 ||
+    x.recovery.mainManagementAttempts !== 277 ||
+    x.recovery.carriedManagementAttempts !== 11 ||
+    x.recovery.mainControlAttempts !== 585 ||
+    x.recovery.carriedControlAttempts !== 3 ||
+    x.recovery.setupAttempts !== 79
+  )
+    fail();
+  const text = x.file(catalogManagementAllocationApproval.relative);
+  if (
+    hash(text) !== catalogManagementAllocationApproval.sha256 ||
+    hash(x.file(catalogManagementAllocationApproval.packetRelative)) !==
+      catalogManagementAllocationApproval.packetSha256
+  )
+    fail();
+  const a = JSON.parse(text);
+  const match = (value, expected) => {
+    if (!exact(value, Object.keys(expected)) || Object.entries(expected).some(([key, v]) => value[key] !== v))
+      fail();
+  };
+  if (
+    !exact(a, [
+      'kind',
+      'recordedAt',
+      'clientDate',
+      'ownerReply',
+      'decision',
+      'environment',
+      'milestone',
+      'referencePacket',
+      'reviewedDelivery',
+      'allocation',
+      'actualPriorUsage',
+      'unchangedCaps',
+      'limitsPreserved',
+      'boundaries',
+      'acceptance',
+    ]) ||
+    a.kind !== 'm03_cumulative_management_after_catalog_approval' ||
+    a.ownerReply !== 'Approve Management704; retain all charges and other limits' ||
+    a.decision !== 'approved' ||
+    a.environment !== 'dev' ||
+    a.milestone !== 'M03' ||
+    a.clientDate !== '2026-10-24' ||
+    !Number.isFinite(Date.parse(a.recordedAt)) ||
+    Date.parse(a.recordedAt) > x.clock()
+  )
+    fail();
+  const reviewedHead = '4b31c5f8447d79418b8572a872a86afd5722244d';
+  match(a.referencePacket, {
+    path: catalogManagementAllocationApproval.packetRelative,
+    sha256: catalogManagementAllocationApproval.packetSha256,
+    sourceCommitSha: reviewedHead,
+    url:
+      'https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/blob/' +
+      reviewedHead +
+      '/' +
+      catalogManagementAllocationApproval.packetRelative,
+  });
+  match(a.reviewedDelivery, {
+    ciRunId: 40055207916,
+    ciAttempt: 1,
+    headSha: reviewedHead,
+    quality: 'success',
+    unit: 'success',
+    build: 'success',
+    e2e: 'success',
+    dbTests: 'success',
+    vercel: 'success',
+    pullRequest: 8,
+    pullRequestOpen: true,
+    pullRequestDraft: true,
+  });
+  match(a.allocation, {
+    previousManagementMaximum: 640,
+    managementMaximum: 704,
+    usedManagementRequests: 288,
+    remainingManagementRequestsMaximum: 416,
+    remainingPlanMaximum: 376,
+    planCumulativeMaximum: 664,
+    reserveAbovePlan: 40,
+    vercelMaximum: 132,
+    usedVercelRequests: 79,
+    remainingVercelPlanMaximum: 44,
+    vercelPlanCumulativeMaximum: 123,
+    vercelIncludedInManagement: true,
+    countersReset: false,
+  });
+  match(a.actualPriorUsage, {
+    management: 288,
+    control: 588,
+    combined: 876,
+    vercel: 79,
+    actorStarts: 0,
+    actorSpendUsd: 0,
+    reconciliationPath: catalogReadonlyRecovery.relative,
+    reconciliationSha256: catalogReadonlyRecovery.sha256,
+  });
+  match(a.unchangedCaps, {
+    control: caps.control,
+    combined: caps.combined,
+    nativeExecutions: caps.nativeExecutions,
+    gatewayAttempts: caps.gatewayAttempts,
+    directProviderReads: caps.providerGetAttempts,
+    actorStarts: 2,
+    maxActorUsd: 1,
+    actorReserveUsd: 2,
+    actorsSequential: true,
+    newDistinctCollectedItems: 1,
+  });
+  match(a.limitsPreserved, {
+    historicalAttempts: true,
+    closedWindows: true,
+    priorRequestIntentsAndSideEffectIds: true,
+    dev15AndOriginal14Fingerprints: true,
+    seededDataExclusionsAndLogos: true,
+    restoredWf00: true,
+    closedDf4: true,
+    closed38b: true,
+    archivedC999: true,
+    perRequestDurableAccounting: true,
+    cleanupReserveBeforeNewWork: true,
+    noBlindReplayOrOverlappingUncertainWork: true,
+  });
+  match(a.boundaries, {
+    spendingIncrease: false,
+    actorAllowanceReplenished: false,
+    productionApproved: false,
+    migrationReplayApproved: false,
+    recurringActivityApproved: false,
+    externalMessagingApproved: false,
+    sharedCredentialRotationApproved: false,
+    mergeApproved: false,
+    m04Approved: false,
+    credentialDelivery: false,
+    timeWindowRenewal: false,
+  });
+  match(a.acceptance, {
+    allocationDecisionComplete: true,
+    executionStartedByThisRecord: false,
+    consumerIntegrationVerified: false,
+    m03DevAcceptanceVerified: false,
+  });
+  return Object.freeze({ ...x.recovery, managementMaximum: 704 });
+}
 function currentReadiness(x) {
   if (!x.recovery?.closedWindow) return null;
   assertSetupAllocationApproval(x);
@@ -3926,17 +4083,24 @@ export function assertFoundationProjectVerifiedContinuationJournalPrefixes(p, op
     ])
       if (hash(x.file(path)) !== expected) fail();
   }
-  if ([576, 640].includes(x.recovery?.managementMaximum)) {
+  if ([576, 640, 704].includes(x.recovery?.managementMaximum)) {
     for (const [path, expected] of [
       [managementAllocationApproval.relative, managementAllocationApproval.sha256],
       [managementAllocationApproval.packetRelative, managementAllocationApproval.packetSha256],
     ])
       if (hash(x.file(path)) !== expected) fail();
   }
-  if (x.recovery?.managementMaximum === 640) {
+  if ([640, 704].includes(x.recovery?.managementMaximum)) {
     for (const [path, expected] of [
       [controlManagementAllocationApproval.relative, controlManagementAllocationApproval.sha256],
       [controlManagementAllocationApproval.packetRelative, controlManagementAllocationApproval.packetSha256],
+    ])
+      if (hash(x.file(path)) !== expected) fail();
+  }
+  if (x.recovery?.managementMaximum === 704) {
+    for (const [path, expected] of [
+      [catalogManagementAllocationApproval.relative, catalogManagementAllocationApproval.sha256],
+      [catalogManagementAllocationApproval.packetRelative, catalogManagementAllocationApproval.packetSha256],
     ])
       if (hash(x.file(path)) !== expected) fail();
   }
@@ -3982,7 +4146,7 @@ export function verifyFoundationProjectVerifiedContinuation(options = {}, depend
       windowId: x.recovery?.closedWindow ? activeRuntime(x.recovery).windowId : c.windowId,
       privateRead: false,
       networkRequests: 0,
-      ...([576, 640].includes(x.recovery?.managementMaximum)
+      ...([576, 640, 704].includes(x.recovery?.managementMaximum)
         ? {
             managementMaximum: x.recovery.managementMaximum,
             managementAttempts: x.recovery.mainManagementAttempts + x.recovery.carriedManagementAttempts,
