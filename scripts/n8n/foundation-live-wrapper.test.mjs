@@ -168,6 +168,12 @@ $null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$valid)
 $management=[ordered]@{};foreach($name in $valid.Keys){$management[$name]=$valid[$name]}
 $management.status='management_cap_insufficient';$management.managementAttempts=152;$management.controlAttempts=382;$management.combinedAttempts=534;$management.setupMaximum=88
 $null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$management)
+$catalog=[ordered]@{};foreach($name in $management.Keys){$catalog[$name]=$management[$name]};$catalog.sourceCommitSha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';$catalog.windowId='eda4fae1-1e19-47db-81b8-beac1a4ed883';$catalog.managementAttempts=288;$catalog.controlAttempts=588;$catalog.combinedAttempts=876;$catalog.setupAttempts=79;$catalog.setupMaximum=132;$catalog.proposedSetupMaximum=132
+$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$catalog)
+foreach($mutation in @(@{key='managementAttempts';value=263},@{key='controlAttempts';value=537},@{key='combinedAttempts';value=800},@{key='status';value='setup_cap_insufficient'},@{key='sourceCommitSha';value=$management.sourceCommitSha},@{key='windowId';value=$management.windowId})){
+ $copy=[ordered]@{};foreach($name in $catalog.Keys){$copy[$name]=$catalog[$name]};$copy[$mutation.key]=$mutation.value;$blocked=$false
+ try{$null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$copy)}catch{$blocked=$true};if(-not $blocked){throw 'CATALOG_LIMIT_OR_BINDING_RESET'}
+}
 foreach($diagnosticAttempts in 1..4){
  $copy=[ordered]@{};foreach($name in $management.Keys){$copy[$name]=$management[$name]};$copy.controlAttempts=382+$diagnosticAttempts;$copy.combinedAttempts=534+$diagnosticAttempts
  $null=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]$copy)
@@ -201,6 +207,60 @@ Write-Output 'FIXED_BUDGET_PROJECTION_PASS'
       );
       assert.ok(branch > 0 && branch < source.indexOf(' $adminPublicReady=Invoke-PublicDatabaseCheck'));
       assert.ok(branch < source.indexOf(' Confirm-ProjectVerifiedVercelMetadata $node $repo'));
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  'native CheckOnly cap branch returns288/588/876 before any Admin, transport or credential input',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-catalog-cap-'));
+    try {
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+      const helper = source.slice(
+        source.indexOf('function ConvertTo-ProjectVerifiedReadinessBlock('),
+        source.indexOf('function Invoke-ClockAmendmentPublic('),
+      );
+      const start = source.indexOf(
+        " if($ProjectVerifiedContinuation -and $publicClock.kind -ceq 'project_verified_continuation_blocked'){",
+      );
+      const end = source.indexOf(
+        " if($ProjectVerifiedContinuation -and $publicClock.kind -ceq 'project_verified_continuation_approval_required'){",
+        start,
+      );
+      assert.ok(start > 0 && end > start);
+      const script = join(directory, 'check.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+${helper}
+function Invoke-PublicDatabaseCheck {throw 'UNEXPECTED_ADMIN'}
+function Confirm-PublicTransport {throw 'UNEXPECTED_TRANSPORT'}
+$ProjectVerifiedContinuation=$true;$CheckOnly=$true
+$publicClock=ConvertTo-ProjectVerifiedReadinessBlock ([pscustomobject]@{kind='project_verified_continuation_blocked';status='management_cap_insufficient';segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';sourceCommitSha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';windowId='eda4fae1-1e19-47db-81b8-beac1a4ed883';managementAttempts=288;controlAttempts=588;combinedAttempts=876;gatewayPreflightAttempts=2;setupAttempts=79;setupMaximum=132;minimumNewSetupRequests=32;proposedSetupMaximum=132;privateRead=$false;networkRequests=0})
+${source.slice(start, end)}
+throw 'CAP_BRANCH_FELL_THROUGH'
+`,
+      );
+      const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: safeEnvironment(directory),
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 10000,
+      });
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(result.stderr, '');
+      const value = JSON.parse(result.stdout);
+      assert.equal(value.status, 'management_cap_insufficient');
+      assert.equal(value.managementAttempts, 288);
+      assert.equal(value.controlAttempts, 588);
+      assert.equal(value.combinedAttempts, 876);
+      assert.equal(value.privateRead, false);
+      assert.equal(value.networkRequests, 0);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
@@ -245,7 +305,7 @@ test(
 . '${resolve('scripts/n8n/windows/Acceptance-PublicRuntime.ps1').replaceAll("'", "''")}'
 $paths=@(Get-M03AcceptancePublicFiles '${resolve('.').replaceAll("'", "''")}')
 if($paths -cnotcontains 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical9-reconciliation-20261024.json'){throw 'TECHNICAL9_SOURCE_NOT_SEALED'}
-foreach($required in @('scripts/db/m03-foundation-forward-dev-migration-packet.json','scripts/db/foundation-forward-postcheck.sql','supabase/migrations/20261023163755_m03_foundation_window_continuation.sql','milestones/M03-n8n-foundation/evidence/remaining-management-allocation-20261024.md','milestones/M03-n8n-foundation/evidence/remaining-management-allocation-approval-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical6-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md','milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json')){if($paths -cnotcontains $required){throw 'FORWARD_SOURCE_NOT_SEALED'}}
+foreach($required in @('scripts/db/m03-foundation-forward-dev-migration-packet.json','scripts/db/foundation-forward-postcheck.sql','supabase/migrations/20261023163755_m03_foundation_window_continuation.sql','milestones/M03-n8n-foundation/evidence/remaining-management-allocation-20261024.md','milestones/M03-n8n-foundation/evidence/remaining-management-allocation-approval-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical6-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical10-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md','milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json')){if($paths -cnotcontains $required){throw 'FORWARD_SOURCE_NOT_SEALED'}}
 Write-Output 'FORWARD_CLOSURE_PASS'
 `,
       );

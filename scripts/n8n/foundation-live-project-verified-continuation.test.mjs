@@ -1151,6 +1151,60 @@ test('technical9 pre-private closure carries263/537/800 without rewriting residu
     f.cleanup();
   }
 });
+test('closed technical10 retains288/588/876 and reports664 over640 without another admission', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ preprivateAdmin: true, catalogReadonly: true });
+  try {
+    const ready = f.check();
+    assert.equal(ready.status, 'management_cap_insufficient');
+    assert.equal(ready.managementAttempts, 288);
+    assert.equal(ready.controlAttempts, 588);
+    assert.equal(ready.combinedAttempts, 876);
+    assert.equal(ready.setupAttempts, 79);
+    assert.equal(ready.managementAttempts + 376, 664);
+    assert.throws(() => f.admit(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+    assert.equal(existsSync(f.paths.admission.replace(/\.json$/, '.technical-11.json')), false);
+    const closed = JSON.parse(
+      readFileSync(f.paths.admission.replace(/\.json$/, '.technical-10.closed.json'), 'utf8'),
+    );
+    assert.equal(closed.closureVerified, false);
+  } finally {
+    f.cleanup();
+  }
+});
+test('technical10 readonly recovery refuses writes, incomplete closure, catalog success rewrites and counter resets', async () => {
+  for (const catalogReadonlyFault of [
+    'start',
+    'auth',
+    'push',
+    'cleanup',
+    'vacancy',
+    'window',
+    'catalog',
+    'usage',
+    'raw',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ catalogReadonly: true, catalogReadonlyFault });
+    try {
+      assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/, catalogReadonlyFault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+test('technical10 public/Admin evidence stays immutable and a retained provisioning intent refuses reconciliation', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ catalogReadonly: true });
+  try {
+    const path = `scripts/db/out/m03-foundation-project-verified-continuation-${f.checkpoint.segmentId}-technical-10-latest.json`;
+    const original = readFileSync(join(f.directory, path), 'utf8');
+    f.put(path, original + ' ');
+    assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+    f.put(path, original);
+    f.put(path.replace('-latest.json', '-owner-provision-attempt.json'), '{}\n');
+    assert.throws(() => f.check(), /M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED/);
+  } finally {
+    f.cleanup();
+  }
+});
 test('technical9 pre-private recovery refuses writes, authentication ambiguity, missing cleanup and omitted diagnostic charges', async () => {
   for (const preprivateAdminFault of [
     'start',

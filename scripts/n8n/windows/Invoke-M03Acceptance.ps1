@@ -207,12 +207,15 @@ function Get-ProjectVerifiedPublicManagementMaximum($Value,[bool]$ProjectClock,[
 function ConvertTo-ProjectVerifiedReadinessBlock($Value){
  $keys=@('kind','status','segmentId','sourceCommitSha','windowId','managementAttempts','controlAttempts','combinedAttempts','gatewayPreflightAttempts','setupAttempts','setupMaximum','minimumNewSetupRequests','proposedSetupMaximum','privateRead','networkRequests')
  foreach($name in @('kind','status','segmentId','sourceCommitSha','windowId')){if($Value.$name -isnot [string]){throw 'blocked'}}
+ $priorBinding=$Value.sourceCommitSha -ceq 'a5e746736893d5040e93032ae740a0878f748837' -and $Value.windowId -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
+ $freshBinding=$Value.sourceCommitSha -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803' -and $Value.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
  if($Value -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($keys|Sort-Object) @($Value.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or
    $Value.kind -cne 'project_verified_continuation_blocked' -or $Value.status -cnotin @('setup_cap_insufficient','management_cap_insufficient') -or
-   $Value.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or $Value.sourceCommitSha -cne 'a5e746736893d5040e93032ae740a0878f748837' -or $Value.windowId -cne '38b3708d-61b0-41d2-8170-5ed91c66b4dc' -or
+   $Value.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or -not ($priorBinding -or $freshBinding) -or
    $Value.privateRead -isnot [bool] -or $Value.privateRead -ne $false){throw 'blocked'}
- if($Value.status -ceq 'management_cap_insufficient' -and (($Value.controlAttempts -isnot [int] -and $Value.controlAttempts -isnot [long]) -or $Value.controlAttempts -lt 382 -or $Value.controlAttempts -gt 386)){throw 'blocked'}
- $expected=if($Value.status -ceq 'management_cap_insufficient'){@{managementAttempts=152;controlAttempts=$Value.controlAttempts;combinedAttempts=(152+$Value.controlAttempts);gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=88;minimumNewSetupRequests=32;proposedSetupMaximum=88;networkRequests=0}}else{@{managementAttempts=102;controlAttempts=301;combinedAttempts=403;gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=50;minimumNewSetupRequests=32;proposedSetupMaximum=88;networkRequests=0}}
+ if($freshBinding -and $Value.status -cne 'management_cap_insufficient'){throw 'blocked'}
+ if($priorBinding -and $Value.status -ceq 'management_cap_insufficient' -and (($Value.controlAttempts -isnot [int] -and $Value.controlAttempts -isnot [long]) -or $Value.controlAttempts -lt 382 -or $Value.controlAttempts -gt 386)){throw 'blocked'}
+ $expected=if($freshBinding){@{managementAttempts=288;controlAttempts=588;combinedAttempts=876;gatewayPreflightAttempts=2;setupAttempts=79;setupMaximum=132;minimumNewSetupRequests=32;proposedSetupMaximum=132;networkRequests=0}}elseif($Value.status -ceq 'management_cap_insufficient'){@{managementAttempts=152;controlAttempts=$Value.controlAttempts;combinedAttempts=(152+$Value.controlAttempts);gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=88;minimumNewSetupRequests=32;proposedSetupMaximum=88;networkRequests=0}}else{@{managementAttempts=102;controlAttempts=301;combinedAttempts=403;gatewayPreflightAttempts=2;setupAttempts=44;setupMaximum=50;minimumNewSetupRequests=32;proposedSetupMaximum=88;networkRequests=0}}
  foreach($name in $expected.Keys){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long]) -or $Value.$name -ne $expected[$name]){throw 'blocked'}}
  return $Value
 }

@@ -13,7 +13,9 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  preprivateAdmin = false,
+  catalogReadonly = false,
+  catalogReadonlyFault,
+  preprivateAdmin = catalogReadonly,
   preprivateAdminFault,
   closedFixture = preprivateAdmin,
   closedFixtureFault,
@@ -387,6 +389,7 @@ export async function syntheticProjectVerifiedContinuation({
     closedPreparationConfiguration,
     closedFixtureConfiguration,
     preprivateAdminConfiguration,
+    catalogReadonlyConfiguration,
     controlManagementAllocationConfiguration;
   if (closedWindow) {
     const base =
@@ -1605,6 +1608,156 @@ export async function syntheticProjectVerifiedContinuation({
     put(relative, text);
     preprivateAdminConfiguration = { relative, sha256: digest(text) };
   }
+  if (catalogReadonly) {
+    const relative =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical10-reconciliation-20261024.json';
+    const receipt = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8'));
+    const root = `scripts/n8n/out/foundation/live/project-verified-continuation-${snapshot.proposedSegmentId}`;
+    const base = root + '.technical-10',
+      db = `scripts/db/out/m03-foundation-project-verified-continuation-${snapshot.proposedSegmentId}-technical-10`;
+    const json = (v) => JSON.stringify(v) + '\n',
+      start = receipt.attempt.startsAt;
+    const admission = {
+      ...JSON.parse(readFileSync(join(directory, root + '.technical-9.json'), 'utf8')),
+      startsAt: start,
+      deadlineAt: start + 3600000,
+      stopNewAt: start + 3000000,
+      hardDeadlineAt: start + 4200000,
+      parentProcessId: 91017,
+    };
+    const claim = {
+      ...JSON.parse(readFileSync(join(directory, root + '.technical-9.runtime-claim.json'), 'utf8')),
+      admissionSha256: digest(json(admission)),
+      processId: 91018,
+      parentProcessId: 91017,
+      claimedAt: start + 2000,
+    };
+    const close = {
+      ...JSON.parse(readFileSync(join(directory, root + '.technical-9.closed.json'), 'utf8')),
+      admissionSha256: digest(json(admission)),
+      parentProcessId: 91017,
+      runtimeProcessId: 91018,
+      closedAt: receipt.attempt.closedAt,
+    };
+    Object.assign(receipt.attempt, { parentProcessId: 91017, runtimeProcessId: 91018 });
+    receipt.adapterRecovery.sameParentProcessId = 91017;
+    const frames = readFileSync(join(directory, root + '.technical-9.public-frames.jsonl'), 'utf8')
+      .trimEnd()
+      .split('\n')
+      .map(JSON.parse);
+    Object.assign(frames[0], {
+      helperHead: receipt.source.head,
+      technicalAttempt: 10,
+      parentProcessId: 91017,
+    });
+    frames[1].nonce = 'c'.repeat(32);
+    frames[4].nonce = 'd'.repeat(32);
+    frames[3].deadlineAt = admission.deadlineAt;
+    for (const frame of frames.slice(5, 8)) {
+      frame.managementAttempts = 288;
+      frame.controlAttempts = 588;
+      delete frame.code;
+    }
+    frames[5].id = receipt.attempt.prepareCommand;
+    frames[6].id = receipt.attempt.restoreCommand;
+    frames[7] = structuredClone(receipt.raw);
+    frames[8] = structuredClone(receipt.wrapper);
+    const adminAttempt = {
+      version: 1,
+      runId: receipt.attempt.adminRunId,
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      segmentId: snapshot.proposedSegmentId,
+      purpose: 'postcheck-only-continuation',
+      createdAt: new Date(start + 100000).toISOString(),
+    };
+    const latest = {
+      version: 1,
+      runId: receipt.attempt.adminRunId,
+      environment: 'dev',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      host: 'aws-1-eu-central-1.pooler.supabase.com',
+      port: 5432,
+      status: 'phase_a_control_failed',
+      authenticationAttempted: true,
+      authenticationVerified: true,
+      historyBefore: 'complete',
+      historyAfter: 'complete',
+      dryRunMatched: false,
+      dryRunCheck: 'not_attempted',
+      dryRunNativeExit: null,
+      pushAttempted: false,
+      pushNativeExit: null,
+      childrenClosed: true,
+      handoffDeleted: true,
+      leaseDeleted: true,
+      scratchDeleted: true,
+      pendingVersions: [],
+      phaseAControl: true,
+      phaseACommands: 1,
+      phaseAClosed: false,
+      observedAt: new Date(start + 150000).toISOString(),
+      postcheckContinuation: true,
+      projectVerifiedContinuation: true,
+      forwardWindow: true,
+      activeWindowId: receipt.attempt.windowId,
+      clockSegmentId: snapshot.proposedSegmentId,
+      technicalAttemptOrdinal: 10,
+      unprovisionedFixtureArchived: false,
+      postcheckStage: 'catalog',
+    };
+    const managementPath = snapshot.journals.management.path;
+    put(
+      managementPath,
+      readFileSync(join(directory, managementPath), 'utf8') +
+        Array.from({ length: 25 }, (_, i) => json({ event: 'management_attempt', ordinal: 253 + i })).join(
+          '',
+        ),
+    );
+    const controlPath = snapshot.journals.control.path,
+      prior = readFileSync(join(directory, controlPath), 'utf8').trimEnd().split('\n').map(JSON.parse);
+    const added = [
+      {
+        event: 'control_request_intent',
+        ordinal: 535,
+        kind: 'discovery',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        at: new Date(start + 3000).toISOString(),
+      },
+      {
+        event: 'browser_port_preflight_verified',
+        kind: 'browser_ui',
+        workflowId: 'MzimjpsuyPuK7SKe',
+        at: new Date(start + 3500).toISOString(),
+      },
+      ...prior
+        .slice(-50)
+        .map((row, i) => ({ ...row, ordinal: 536 + i, at: new Date(start + 4000 + i * 100).toISOString() })),
+    ];
+    if (catalogReadonlyFault === 'start') added[2].kind = 'start';
+    if (catalogReadonlyFault === 'auth') latest.authenticationVerified = false;
+    if (catalogReadonlyFault === 'push') latest.pushAttempted = true;
+    if (catalogReadonlyFault === 'cleanup') receipt.cleanup.allTenLeavesAbsent = false;
+    if (catalogReadonlyFault === 'vacancy') receipt.hostedReadback.launchCount = 1;
+    if (catalogReadonlyFault === 'window') receipt.hostedReadback.freshWindowAbsent = false;
+    if (catalogReadonlyFault === 'catalog') receipt.hostedReadback.catalogNoNewWindow = true;
+    if (catalogReadonlyFault === 'usage') receipt.usage.carriedManagement = 10;
+    if (catalogReadonlyFault === 'raw') frames[7].windowClosed = true;
+    put(controlPath, readFileSync(join(directory, controlPath), 'utf8') + added.map(json).join(''));
+    for (const [path, value] of [
+      [base + '.json', admission],
+      [base + '.runtime-claim.json', claim],
+      [base + '.closed.json', close],
+      [base + '.public-frames.jsonl', frames.map(json).join('')],
+      [db + '-attempt.json', adminAttempt],
+      [db + '-latest.json', latest],
+    ])
+      put(path, typeof value === 'string' ? value : json(value));
+    for (const path of Object.keys(receipt.pins))
+      receipt.pins[path] = digest(readFileSync(join(directory, path), 'utf8'));
+    const text = json(receipt);
+    put(relative, text);
+    catalogReadonlyConfiguration = { relative, sha256: digest(text) };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -1711,6 +1864,14 @@ export async function syntheticProjectVerifiedContinuation({
         : 'null') +
       ';',
   );
+  source = source.replace(
+    /const catalogReadonlyRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+    'const catalogReadonlyRecovery = ' +
+      (catalogReadonlyConfiguration
+        ? 'Object.freeze(' + JSON.stringify(catalogReadonlyConfiguration) + ')'
+        : 'null') +
+      ';',
+  );
   if (closedFixture)
     source = source.replace(
       /export const foundationProjectVerifiedActiveRuntime = Object\.freeze\(\{[\s\S]*?\n\}\);/,
@@ -1736,15 +1897,17 @@ export async function syntheticProjectVerifiedContinuation({
     }) + '\n',
   );
   let time = Date.parse(
-    preprivateAdmin
-      ? '2026-10-24T02:00:00.000Z'
-      : closedFixture
-        ? '2026-10-24T00:46:00.000Z'
-        : closedWindow
-          ? '2026-10-23T18:00:00.000Z'
-          : effectful
-            ? '2026-10-23T15:00:00.000Z'
-            : '2026-10-22T18:00:00.000Z',
+    catalogReadonly
+      ? '2026-10-24T02:40:00.000Z'
+      : preprivateAdmin
+        ? '2026-10-24T02:00:00.000Z'
+        : closedFixture
+          ? '2026-10-24T00:46:00.000Z'
+          : closedWindow
+            ? '2026-10-23T18:00:00.000Z'
+            : effectful
+              ? '2026-10-23T15:00:00.000Z'
+              : '2026-10-22T18:00:00.000Z',
   );
   const now = () => time,
     io = { processAlive: () => false };

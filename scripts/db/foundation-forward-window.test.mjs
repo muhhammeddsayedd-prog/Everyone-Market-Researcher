@@ -86,6 +86,35 @@ if($script:query -isnot [string]){throw 'QUERY_NOT_CAPTURED'};Write-Output $scri
   assert.equal(result.stderr, '');
   return result.stdout.trim();
 }
+function nativeForwardCatalogQuery(forward) {
+  const nativePath = (name) => {
+    const path = new URL('./windows/' + name, import.meta.url).pathname;
+    return process.platform === 'win32' ? decodeURIComponent(path.slice(1)) : path;
+  };
+  const catalog = new URL('./foundation-forward-postcheck.sql', import.meta.url).pathname;
+  const code = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
+foreach($entry in @(@(${literal(nativePath('Invoke-M03FoundationMigrations.ps1'))},@('Assert-Keys','Invoke-FoundationForwardPostcheck')),@(${literal(nativePath('Foundation-AdminControl.ps1'))},@('Foundation-ForwardWindowId')))){
+ $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($entry[0],[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'PUBLIC_SOURCE_PARSE_FAILED'}
+ foreach($name in $entry[1]){$found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'FUNCTION_NOT_EXACT'};Invoke-Expression $found[0].Extent.Text}
+}
+$ForwardWindow=$${forward};$ForwardMigration=$${!forward};$ProjectVerifiedContinuation=$true
+$projectVerifiedForwardWindowId='eda4fae1-1e19-47db-81b8-beac1a4ed883';$projectVerifiedForwardSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'
+$forwardCheckFile=${literal(process.platform === 'win32' ? decodeURIComponent(catalog.slice(1)) : catalog)};$queryTimeoutMs=1000;$receipt=[ordered]@{};$script:query=$null
+function Assert-FoundationForwardWindowState($Prepared){if($Prepared){throw 'PREPARED_CATALOG_ALLOWED'}}
+function Invoke-FoundationQuery($Sql,$Field){if($Field -cne 'postcheck'){throw 'WRONG_CATALOG_FIELD'};$script:query=$Sql;throw 'CATALOG_CAPTURED'}
+function Invoke-Cli($Arguments,$Timeout){if(($Arguments -join '|') -cne ('db|query|--file|'+$forwardCheckFile)){throw 'WRONG_CATALOG_COMMAND'};$script:query=[IO.File]::ReadAllText($forwardCheckFile);throw 'CATALOG_CAPTURED'}
+try{Invoke-FoundationForwardPostcheck;throw 'CATALOG_NOT_REACHED'}catch{if($_.Exception.Message -cne 'CATALOG_CAPTURED'){throw}}
+if($script:query -isnot [string]){throw 'QUERY_NOT_CAPTURED'};Write-Output $script:query
+`;
+  const result = spawnSync(
+    'powershell.exe',
+    ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(code, 'utf16le').toString('base64')],
+    { env: env(), encoding: 'utf8', windowsHide: true, timeout: 15000 },
+  );
+  assert.equal(result.status, 0, 'NATIVE_CATALOG_SQL_GENERATION');
+  assert.equal(result.stderr, '');
+  return result.stdout.trim();
+}
 const env = () =>
   Object.fromEntries(
     [
@@ -318,6 +347,50 @@ describe(
        values('${oldWindow}',${literal(packet.approvalReference)},'zmotjsbzhzjvpelxvxlf','0.3.99',1,2,clock_timestamp()-interval '2 hours',clock_timestamp()-interval '1 hour',clock_timestamp());`);
     }
     beforeEach(reset);
+
+    test(
+      'actual mode-bound catalog preserves the migration assertion and requires exact closed predecessors with a vacant current window',
+      { skip: process.platform !== 'win32' },
+      () => {
+        const historical = nativeForwardCatalogQuery(false);
+        const acceptance = nativeForwardCatalogQuery(true);
+        assert.equal(
+          historical,
+          readFileSync(new URL('./foundation-forward-postcheck.sql', import.meta.url), 'utf8').trim(),
+          'MIGRATION_SQL_BYTES_RETAINED',
+        );
+        const predicate = (sql) => {
+          const value = sql.match(/'no_new_window',([\s\S]*?),\r?\n\s*'schemas'/)?.[1];
+          assert.ok(value, 'ACTUAL_CATALOG_WINDOW_PREDICATE');
+          assert.equal(/\b(update|insert|delete|truncate|grant|revoke)\b/i.test(value), false);
+          return value;
+        };
+        const read = (sql) => psql('select ' + predicate(sql) + ';');
+        assert.equal(read(historical), 't', 'HISTORICAL_MIGRATION_BASELINE_ACCEPTED');
+        assert.equal(read(acceptance), 'f', 'MISSING_KNOWN_PREDECESSOR_DENIED');
+        psql(`update ops.foundation_gateway_rate_windows set bound_commit_sha='f42930f90c2de43c84f61ad6d966d0ee6074d70e' where window_id='${oldWindow}';
+        insert into ops.foundation_gateway_rate_windows(namespace,window_id,project_ref,environment,bound_audience,bound_commit_sha,bound_deployment_id,closed_at,admitted_count,close_count)
+        values('m03-foundation-dev','${freshWindow}','zmotjsbzhzjvpelxvxlf','dev','https://everyone-market-researcher-j94yqflt0-muhammed-abdelrahman.vercel.app','a5e746736893d5040e93032ae740a0878f748837','dpl_HPq8ot1nNvBZRLTyAoEnXHXuhTPF',clock_timestamp(),1,1);`);
+        assert.equal(read(acceptance), 't', 'CURRENT_ACCEPTANCE_BASELINE_ACCEPTED');
+        assert.equal(read(historical), 'f', 'HISTORICAL_MIGRATION_STAYS_SOLE_FAMILY_ONLY');
+        const mutations = [
+          `insert into ops.foundation_gateway_rate_windows(namespace,window_id,project_ref,environment)values('m03-foundation-dev','${thirdWindow}','zmotjsbzhzjvpelxvxlf','dev')`,
+          `update ops.foundation_gateway_rate_windows set closed_at=null where window_id='${freshWindow}'`,
+          `update ops.foundation_gateway_rate_windows set bound_commit_sha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803' where window_id='${freshWindow}'`,
+          `update ops.foundation_gateway_rate_windows set bound_commit_sha='a5e746736893d5040e93032ae740a0878f748837' where window_id='${oldWindow}'`,
+          `insert into ops.foundation_gateway_rate_windows(namespace,window_id,project_ref,environment)values('m03-foundation-dev','eda4fae1-1e19-47db-81b8-beac1a4ed883','zmotjsbzhzjvpelxvxlf','dev')`,
+          `update ops.foundation_gateway_rate_windows set window_id='eda4fae1-1e19-47db-81b8-beac1a4ed883' where window_id='${freshWindow}'`,
+        ];
+        for (const sql of mutations) {
+          assert.equal(
+            psql(`begin;${sql};select ${predicate(acceptance)};rollback;`),
+            'f',
+            'EXTRA_OPEN_MIXED_OR_CURRENT_WINDOW_DENIED',
+          );
+        }
+        assert.equal(read(acceptance), 't', 'DENIAL_CASES_ROLLED_BACK');
+      },
+    );
 
     test(
       'actual native replay snapshots bind each validated window and detect fresh cost changes',

@@ -40,6 +40,7 @@ $requiredFiles+=@('scripts/n8n/foundation-live-project-verified-continuation.mjs
 $requiredFiles+=@('scripts/db/foundation-inspect.sql','scripts/n8n/windows/Dev-CredentialStore.ps1')
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical9-reconciliation-20261024.json',
+  'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical10-reconciliation-20261024.json',
   'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md',
   'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json')
 $forwardSchema=[bool]($ForwardMigration -or $ForwardWindow)
@@ -698,17 +699,38 @@ function Assert-FoundationForwardBaseline {
 }
 function Invoke-FoundationForwardPostcheck {
   $receipt['postcheckStage']='catalog'
-  $read=Invoke-Cli @('db','query','--file',$forwardCheckFile) $queryTimeoutMs
+  $read=$null
   try{
-    if(-not $read.ok -or -not $read.closed){throw 'blocked'}
-    $rows=ConvertFrom-Json -InputObject $read.text -ErrorAction Stop
-    if($rows -isnot [Array] -or $rows.Count -ne 1){throw 'blocked'}
-    Assert-Keys $rows[0] @('postcheck');$proof=$rows[0].postcheck
+    if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){
+      $window=Foundation-ForwardWindowId
+      Assert-FoundationForwardWindowState $false
+      $sql=[IO.File]::ReadAllText($forwardCheckFile)
+      if($window -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'){
+        # The migration-time catalog deliberately required the sole legacy
+        # window. Acceptance now has two immutable closed predecessors and
+        # must still prove the current window absent before provisioning.
+        $needle="'no_new_window',(select count(*)=1 and bool_and(window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and closed_at is not null and close_count=1 and admitted_count=2) from ops.foundation_gateway_rate_windows)"
+        if($sql.IndexOf($needle) -lt 0 -or $sql.IndexOf($needle) -ne $sql.LastIndexOf($needle)){throw 'blocked'}
+        $replacement="'no_new_window',(select count(*)=2 and bool_and(closed_at is not null and close_count=1 and ((window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9' and admitted_count=2 and bound_commit_sha='f42930f90c2de43c84f61ad6d966d0ee6074d70e') or (window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc' and admitted_count=1 and starts_at is null and bound_commit_sha='a5e746736893d5040e93032ae740a0878f748837'))) from ops.foundation_gateway_rate_windows) and not exists(select 1 from ops.foundation_gateway_rate_windows where window_id='eda4fae1-1e19-47db-81b8-beac1a4ed883')"
+        $sql=$sql.Replace($needle,$replacement)
+      }
+      $proof=Invoke-FoundationQuery $sql 'postcheck'
+    }else{
+      $read=Invoke-Cli @('db','query','--file',$forwardCheckFile) $queryTimeoutMs
+      if(-not $read.ok -or -not $read.closed){throw 'blocked'}
+      $rows=ConvertFrom-Json -InputObject $read.text -ErrorAction Stop
+      if($rows -isnot [Array] -or $rows.Count -ne 1){throw 'blocked'}
+      Assert-Keys $rows[0] @('postcheck');$proof=$rows[0].postcheck
+    }
     $checks=@('identity','tables_rls','no_machine_table_grants','rpc_shape','owner_control_restricted','all_project_tables_rls','all_views_invoker','gw01_closed','domain_auto_join_off','baseline_counts','forward_primary_key','forward_signatures','forward_namespace','no_new_window')
+    $receipt.postcheckStage='catalog_shape'
     Assert-Keys $proof ($checks+@('schemas'))
-    foreach($key in $checks){if($proof.$key -isnot [bool] -or -not $proof.$key){throw 'blocked'}}
-    if(($proof.schemas -join '|') -cne 'app|api|ops|ingest'){throw 'blocked'}
-  }finally{$read.text=$null}
+    $flags=[ordered]@{}
+    foreach($key in $checks){if($proof.$key -isnot [bool]){$receipt.postcheckStage='catalog_'+$key;throw 'blocked'};$flags[$key]=$proof.$key}
+    $receipt['catalogChecks']=$flags
+    foreach($key in $checks){if(-not $proof.$key){$receipt.postcheckStage='catalog_'+$key;throw 'blocked'}}
+    if(($proof.schemas -join '|') -cne 'app|api|ops|ingest'){$receipt.postcheckStage='catalog_schemas';throw 'blocked'}
+  }finally{if($null -ne $read){$read.text=$null}}
   $advisors=[ordered]@{}
   foreach($kind in @('security','performance')){
     $receipt.postcheckStage='advisors_'+$kind

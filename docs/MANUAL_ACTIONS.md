@@ -9,6 +9,14 @@ How this works:
 3. The owner does it, ticks it in the milestone `PROGRESS.md`, and adds any non-secret value (project ref, URL) there.
 4. Secrets go only into approved native stores or the current-user-encrypted dev store below, never into the repo or chat.
 
+## Current M03 request allowance — 24 October 2026
+
+**MA-11:** Browser restoration is verified; no further reload, sign-in or credential handoff is needed. Technical 10 authenticated to emr-dev and verified the complete 15-version history, then failed a historical catalog predicate before any Preview, provision/reactivation, workflow execution or actor start. Its [immutable receipt](../milestones/M03-n8n-foundation/evidence/dev-acceptance-technical10-reconciliation-20261024.json) preserves the failure and subsequent independent readback/cleanup. Both old windows are closed, the fresh window is absent, C999 remains archived/paused and no active work or collected items exist. All disposable credentials/locks and children are gone; persistent originals remain ready.
+
+Actual charges are **288 Management / 588 Control / 876 combined / 79 Vercel**, actors **0**. The unchanged remaining plan reaches Management **664**, exceeding the approved **640**. Codex is completing the local catalog/reconciliation repair and normal exact-head checks before presenting the [specific cumulative Management 704 packet](../milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md). That packet remains **unapproved**. Every other ceiling, charge, actor/spending reserve and delivery boundary is unchanged.
+
+The only proposed owner action is in this Codex conversation after the reviewed packet is presented: reply **Approve cumulative M03 Management 704; retain all 288 Management, 588 Control, 876 combined and 79 Vercel charges, and every other existing actor, spending, data, cleanup and delivery limit.** Expected result: a recorded allowance decision followed by tested/reviewed consumer integration and public readiness; approval itself is not A–D acceptance. No password, file edit, new time window, production or merge approval is requested.
+
 ## Completed M03 access restoration — 24 October 2026
 
 **MA-11:** Implementation head `a3e3451acbb7dff957f4a8f22bd9bc367bd4af79` passed all five CI40047557479 jobs and Vercel. Public reconciliation and the sealed Windows CheckOnly pass. The remaining gate is browser access: the old browser ID is unavailable, and the currently listed Chrome **Person 1** profile times out on tab/session operations. This does not establish that n8n is logged out. No new live window, credential consumption, SQL registration or hosted acceptance action occurred; usage stays 237 Management / 486 Control / 723 combined / 79 Vercel, actors 0.

@@ -206,6 +206,90 @@ Invoke-FoundationForwardMigration
 Write-Output ([ordered]@{status=$receipt.status;exit=$script:exitCode;commands=$script:commands;intents=$script:intents;baselines=$script:baselines;push=$receipt.pushAttempted}|ConvertTo-Json -Compress)
 `);
 
+test(
+  'forward acceptance catalog uses exact vacant-family proof while migration keeps its original catalog',
+  native,
+  () => {
+    const file = resolve('scripts/db/foundation-forward-postcheck.sql');
+    const source = readFileSync(file, 'utf8');
+    const code = `
+${definitions(['Assert-Keys', 'Invoke-FoundationForwardPostcheck'])}
+${definitions([], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$ForwardWindow=$true;$ForwardMigration=$false;$ProjectVerifiedContinuation=$true
+$projectVerifiedForwardWindowId='eda4fae1-1e19-47db-81b8-beac1a4ed883';$projectVerifiedForwardSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'
+$forwardCheckFile=${quote(file)};$queryTimeoutMs=1000;$receipt=[ordered]@{};$script:vacancy=0;$script:captured=$null
+function Assert-FoundationForwardWindowState($Prepared){if($Prepared){throw 'PREPARED_CATALOG_ALLOWED'};$script:vacancy++}
+function Invoke-FoundationQuery($Sql,$Field){if($Field -cne 'postcheck'){throw 'WRONG_CATALOG_FIELD'};$script:captured=$Sql;throw 'CATALOG_CAPTURED'}
+function Invoke-Cli($Arguments,$Timeout){if(($Arguments -join '|') -cne ('db|query|--file|'+$forwardCheckFile)){throw 'WRONG_CATALOG_COMMAND'};$script:captured=[IO.File]::ReadAllText($forwardCheckFile);throw 'CATALOG_CAPTURED'}
+try{Invoke-FoundationForwardPostcheck;throw 'CAPTURE_NOT_REACHED'}catch{if($_.Exception.Message -cne 'CATALOG_CAPTURED'){throw}}
+Write-Output ([ordered]@{vacancy=$script:vacancy;sql=$script:captured}|ConvertTo-Json -Compress)
+`;
+    const current = JSON.parse(run(code));
+    assert.equal(current.vacancy, 1, 'ACCEPTANCE_RECHECKS_EXACT_VACANCY');
+    assert.match(current.sql, /eda4fae1-1e19-47db-81b8-beac1a4ed883/);
+    assert.match(current.sql, /38b3708d-61b0-41d2-8170-5ed91c66b4dc/);
+    const historical = JSON.parse(
+      run(
+        code.replace(
+          '$ForwardWindow=$true;$ForwardMigration=$false;',
+          '$ForwardWindow=$false;$ForwardMigration=$true;',
+        ),
+      ),
+    );
+    assert.equal(historical.vacancy, 0);
+    assert.equal(historical.sql, source, 'HISTORICAL_CATALOG_BYTES_UNCHANGED');
+    assert.doesNotThrow(() =>
+      run(
+        code
+          .replace(
+            "$projectVerifiedForwardSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'",
+            "$projectVerifiedForwardSource='a5e746736893d5040e93032ae740a0878f748837'",
+          )
+          .replace(
+            "if($_.Exception.Message -cne 'CATALOG_CAPTURED'){throw}",
+            "if($_.Exception.Message -cne 'blocked'){throw};if($null -ne $script:captured){throw 'MIXED_PAIR_QUERIED'}",
+          ),
+      ),
+    );
+  },
+);
+
+test('forward catalog failures expose only the fixed failed-flag stage', native, () => {
+  const checks = [
+    'identity',
+    'tables_rls',
+    'no_machine_table_grants',
+    'rpc_shape',
+    'owner_control_restricted',
+    'all_project_tables_rls',
+    'all_views_invoker',
+    'gw01_closed',
+    'domain_auto_join_off',
+    'baseline_counts',
+    'forward_primary_key',
+    'forward_signatures',
+    'forward_namespace',
+    'no_new_window',
+  ];
+  const output = run(`
+${definitions(['Assert-Keys', 'Invoke-FoundationForwardPostcheck'])}
+$ForwardWindow=$false;$ForwardMigration=$true;$forwardCheckFile='synthetic-catalog.sql';$queryTimeoutMs=1000
+$checks=@(${checks.map(quote).join(',')});$script:proof=$null;$script:cliCalls=0
+function Invoke-Cli($Arguments,$Timeout){$script:cliCalls++;if($Arguments[1] -cne 'query'){throw 'CATALOG_PASSED'};return [pscustomobject]@{ok=$true;closed=$true;text=ConvertTo-Json -InputObject @([pscustomobject]@{postcheck=$script:proof}) -Depth 8 -Compress}}
+foreach($key in @($checks+@('schemas','shape','valid'))){foreach($badValue in @($false,'synthetic-private-canary')){
+ $receipt=[ordered]@{};$script:cliCalls=0;$value=[ordered]@{};foreach($name in $checks){$value[$name]=$true};$value.schemas=@('app','api','ops','ingest')
+ if($key -ceq 'shape'){$value['unexpected']='synthetic-private-canary'}elseif($key -ceq 'schemas'){$value.schemas=@('app','api','ops')}elseif($key -cne 'valid'){$value[$key]=$badValue}
+ $script:proof=[pscustomobject]$value
+ try{Invoke-FoundationForwardPostcheck;throw 'INVALID_CATALOG_ACCEPTED'}catch{if($key -ceq 'valid'){if($_.Exception.Message -cne 'CATALOG_PASSED' -or $script:cliCalls -ne 2 -or $receipt.postcheckStage -cne 'advisors_security'){throw 'VALID_CATALOG_BLOCKED'}}else{if($_.Exception.Message -cne 'blocked' -or $script:cliCalls -ne 1 -or $receipt.postcheckStage -cne ('catalog_'+$key)){throw 'FIXED_FLAG_DIAGNOSTIC_FAILED'}}}
+ $expectFlags=$key -cin @('valid','schemas') -or ($key -cin $checks -and $badValue -is [bool])
+ if($receipt.Contains('catalogChecks') -ne $expectFlags){throw 'CATALOG_FLAGS_NOT_TYPE_GATED'}
+ if($expectFlags){if($receipt.catalogChecks.Count -ne $checks.Count){throw 'CATALOG_FLAGS_NOT_WHITELISTED'};foreach($name in $checks){if($receipt.catalogChecks[$name] -isnot [bool] -or $receipt.catalogChecks[$name] -ne $script:proof.$name){throw 'CATALOG_FLAGS_NOT_ACTUAL_BOOLEANS'}}}
+}}
+Write-Output 'FIXED_CATALOG_DIAGNOSTICS'
+`);
+  assert.equal(output, 'FIXED_CATALOG_DIAGNOSTICS');
+});
+
 test('fresh forward push is once-only after exact dry-run and two baseline checks', native, () => {
   const value = JSON.parse(flow('baseline', false));
   assert.equal(value.status, 'forward_complete');
@@ -484,7 +568,7 @@ Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
 );
 
 test(
-  'actual forward packet has all51 source-required public pins and retains every old migration field',
+  'actual forward packet has all52 source-required public pins and retains every old migration field',
   native,
   () => {
     assert.equal(
@@ -498,12 +582,12 @@ Invoke-Expression $source.Substring($start,$end-$start)
 $packet=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
 $old=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-dev-migration-packet.json'))}))
 Assert-Keys $packet.files $requiredFiles
-if($requiredFiles.Count -ne 51 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+if($requiredFiles.Count -ne 52 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
 $prior=@($old.baseline)+@($old.pending)
 for($i=0;$i -lt 14;$i++){foreach($field in @('version','name','file','sha256','historySha256')){if($prior[$i].$field -cne $packet.baseline[$i].$field){throw 'ORIGINAL_MIGRATION_REWRITTEN'}}}
-Write-Output 'EXACT_PUBLIC_51_AND_OLD14'
+Write-Output 'EXACT_PUBLIC_52_AND_OLD14'
 `),
-      'EXACT_PUBLIC_51_AND_OLD14',
+      'EXACT_PUBLIC_52_AND_OLD14',
     );
   },
 );
