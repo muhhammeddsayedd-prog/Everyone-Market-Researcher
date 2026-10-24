@@ -5,6 +5,8 @@ import { createHash } from 'node:crypto';
 import { runtimeGraphHash } from './foundation-runtime-control.mjs';
 import { foundationRuntimeExecutionParameterCandidates } from './foundation-runtime-checkpoint.mjs';
 import { gatewayOperationNodes } from '../../n8n/foundation/build-foundation-gateway.mjs';
+import { createFoundationNativeTransport } from './foundation-native-transport.mjs';
+import * as nativeReader from './foundation-native-reader.mjs';
 import {
   createFoundationNativeReader,
   assertFoundationNativeReader,
@@ -135,6 +137,99 @@ export function nativeReaderFixture(options = {}) {
 }
 const fixed = /^Error: FOUNDATION_NATIVE_[A-Z_]+$/;
 
+test('native reader error-code getter projects only genuine private errors without inspecting hostile values', async () => {
+  const f = nativeReaderFixture(),
+    key = 'WF-32',
+    id = f.bindings.workflowRefs[key].id,
+    path = '/api/v1/executions?workflowId=' + id + '&includeData=false&limit=120';
+  f.answers.set(path, () =>
+    f.wire(
+      {},
+      {
+        body: (async function* () {
+          yield Buffer.from('{');
+        })(),
+      },
+    ),
+  );
+  const error = await f.reader.discover({ workflowKey: key, baselineIds: [] }).catch((e) => e);
+  assert.equal(typeof nativeReader.foundationNativeReaderErrorCode, 'function');
+  assert.equal(nativeReader.foundationNativeReaderErrorCode(error), 'JSON');
+  let privateReads = 0;
+  const hostile = new Proxy(
+    {},
+    {
+      getPrototypeOf() {
+        privateReads++;
+        throw Error('SYNTHETIC_PRIVATE_PROTOTYPE');
+      },
+      get() {
+        privateReads++;
+        throw Error('SYNTHETIC_PRIVATE_GETTER');
+      },
+    },
+  );
+  const revoked = Proxy.revocable({}, {});
+  revoked.revoke();
+  const getters = Object.create(null);
+  Object.defineProperty(getters, 'message', {
+    get() {
+      privateReads++;
+      throw Error('SYNTHETIC_PRIVATE_GETTER');
+    },
+  });
+  for (const value of [
+    hostile,
+    revoked.proxy,
+    getters,
+    Object.create(error),
+    new Error('FOUNDATION_NATIVE_JSON'),
+    null,
+    1,
+    'JSON',
+  ])
+    assert.equal(nativeReader.foundationNativeReaderErrorCode(value), null);
+  assert.equal(privateReads, 0);
+});
+
+test('native reader preserves genuine private transport DNS classification without exposing resolver errors', async () => {
+  const bindings = JSON.parse(
+    readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
+  );
+  let sends = 0;
+  const transport = createFoundationNativeTransport(
+    { apiKey: secret, bindings, authorizeExecution: () => false },
+    {
+      resolveInstance: async () => {
+        throw Error('SYNTHETIC_PRIVATE_DNS_' + secret);
+      },
+      request: () => {
+        sends++;
+        throw Error('NO_SEND');
+      },
+    },
+  );
+  const f = nativeReaderFixture({ transport });
+  await assert.rejects(
+    f.reader.discover({ workflowKey: 'WF-32', baselineIds: [] }),
+    /^Error: FOUNDATION_NATIVE_TRANSPORT_DNS$/,
+  );
+  assert.deepEqual(f.reader.lastFailure(), {
+    version: 1,
+    workflowKey: 'WF-32',
+    operation: 'discovery',
+    stage: 'request',
+    classification: 'unknown',
+    code: 'TRANSPORT_DNS',
+    httpStatus: null,
+  });
+  assert.doesNotMatch(JSON.stringify(f.reader.lastFailure()), /SYNTHETIC|PRIVATE|123456|message|body|https/);
+  assert.equal(sends, 0);
+  assert.equal(f.admissions(), 1);
+  assert.deepEqual(transport.state(), { pendingRequests: 0, unclosedResponses: 0 });
+  transport.close();
+});
+
 test('native discovery keeps a fixed safe last failure with actual HTTP status and owned workflow only', async () => {
   const f = nativeReaderFixture(),
     key = 'WF-70',
@@ -215,6 +310,56 @@ test('native reader diagnostics distinguish obtained HTTP rejection from unknown
     httpStatus: null,
   });
   assert.equal(privateReads, 0);
+});
+
+test('native reader error branding never traverses hostile or revoked Proxy prototypes or error getters', async () => {
+  const f = nativeReaderFixture(),
+    key = 'WF-32',
+    id = f.bindings.workflowRefs[key].id,
+    path = '/api/v1/executions?workflowId=' + id + '&includeData=false&limit=120';
+  let privateReads = 0;
+  const hostile = new Proxy(
+    {},
+    {
+      getPrototypeOf() {
+        privateReads++;
+        throw Error('SYNTHETIC_PRIVATE_PROTOTYPE');
+      },
+      get() {
+        privateReads++;
+        throw Error('SYNTHETIC_PRIVATE_GETTER');
+      },
+    },
+  );
+  const revoked = Proxy.revocable({}, {});
+  revoked.revoke();
+  const getters = Object.create(null);
+  for (const field of ['message', 'code', 'body'])
+    Object.defineProperty(getters, field, {
+      get() {
+        privateReads++;
+        throw Error('SYNTHETIC_PRIVATE_GETTER');
+      },
+    });
+  for (const value of [hostile, revoked.proxy, getters]) {
+    f.answers.set(path, () => {
+      throw value;
+    });
+    await assert.rejects(
+      f.reader.discover({ workflowKey: key, baselineIds: [] }),
+      /^Error: FOUNDATION_NATIVE_REJECTED$/,
+    );
+    assert.deepEqual(f.reader.lastFailure(), {
+      version: 1,
+      workflowKey: key,
+      operation: 'discovery',
+      stage: 'request',
+      classification: 'unknown',
+      code: 'REJECTED',
+      httpStatus: null,
+    });
+    assert.equal(privateReads, 0);
+  }
 });
 
 for (const failure of ['JSON', 'METADATA'])

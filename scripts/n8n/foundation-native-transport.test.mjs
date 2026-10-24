@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import { createFoundationNativeTransport } from './foundation-native-transport.mjs';
+import * as nativeTransport from './foundation-native-transport.mjs';
 import { createFoundationCallbackCases } from './foundation-callback-cases.mjs';
 
 const bindings = JSON.parse(readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)));
@@ -98,6 +99,67 @@ async function consume(response) {
   await response.closed;
   return Buffer.concat(chunks).toString('utf8');
 }
+
+test('native transport error projection accepts only its private branded fixed codes without property reads', async () => {
+  const f = fixture();
+  const error = await f.transport.request({ method: 'GET', path: '/api/v1/variables' }).catch((e) => e);
+  assert.equal(typeof nativeTransport.foundationNativeTransportErrorCode, 'function');
+  assert.equal(nativeTransport.foundationNativeTransportErrorCode(error), 'REQUEST');
+  let reads = 0;
+  const raw = Object.create(null);
+  for (const name of ['message', 'code', 'body'])
+    Object.defineProperty(raw, name, {
+      get() {
+        reads++;
+        throw Error('SYNTHETIC_PRIVATE_ERROR');
+      },
+    });
+  const proxy = new Proxy(
+    {},
+    {
+      get() {
+        reads++;
+        throw Error('SYNTHETIC_PRIVATE_ERROR');
+      },
+    },
+  );
+  for (const value of [
+    raw,
+    proxy,
+    new Error('FOUNDATION_NATIVE_TRANSPORT_REQUEST'),
+    Object.create(error),
+    null,
+    1,
+    'REQUEST',
+  ])
+    assert.equal(nativeTransport.foundationNativeTransportErrorCode(value), null);
+  assert.equal(reads, 0);
+  assert.equal(f.dnsCalls(), 0);
+  f.transport.close();
+});
+
+test('native framing rejection does not inspect an arbitrary thrown error message', async () => {
+  let reads = 0;
+  const raw = Object.create(null);
+  Object.defineProperty(raw, 'message', {
+    get() {
+      reads++;
+      throw Error('SYNTHETIC_PRIVATE_ERROR');
+    },
+  });
+  const headers = {};
+  Object.defineProperty(headers, 'content-type', {
+    enumerable: true,
+    get() {
+      throw raw;
+    },
+  });
+  const f = fixture({ headers, rawHeaders: [] });
+  const error = await f.transport.request({ method: 'GET', path: workflowPath }).catch((e) => e);
+  assert.equal(nativeTransport.foundationNativeTransportErrorCode(error), 'FRAMING');
+  assert.equal(reads, 0);
+  f.transport.close();
+});
 
 test('fixed private host uses pinned public DNS, strict TLS and an isolated socket', async () => {
   const f = fixture({ headers: { 'content-length': '2', 'content-type': 'application/json' } });

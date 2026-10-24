@@ -12,6 +12,210 @@ import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 
 const key = 'synthetic-diagnostic-key-only';
+test('wf32 single-page classifier emits only fixed booleans and never payloads or candidate identities', () => {
+  const r = inventory.projectWf32DiscoveryDiagnostic({
+    data: [
+      { id: '123', workflowId: 'kkAGgnbD8NjWHMKC', status: 'running', data: { secret: 'SYNTHETIC_PRIVATE' } },
+    ],
+    nextCursor: null,
+  });
+  assert.equal(r.pendingCountZero, false);
+  assert.equal(r.payloadAbsent, false);
+  assert.equal(r.unknownStatusCountZero, true);
+  assert.equal(r.listShapeVerified, false);
+  assert.equal(
+    Object.values(r).every((v) => typeof v === 'boolean'),
+    true,
+  );
+  assert.doesNotMatch(JSON.stringify(r), /123|SYNTHETIC_PRIVATE|secret/);
+});
+test('wf32 native single GET preserves fixed transport parse and confidentiality failures and closes every child response', async () => {
+  for (const mode of ['success', 'dns', 'json', 'privacy', 'shape', 'http']) {
+    const f = native31130Fixture(
+      mode === 'privacy'
+        ? { data: [], nextCursor: null, private: key }
+        : mode === 'shape'
+          ? { data: null, nextCursor: null }
+          : { data: [], nextCursor: null },
+      { rawBody: mode === 'json' ? '{' : null, status: mode === 'http' ? 503 : 200 },
+    );
+    if (mode === 'dns')
+      f.options.nativeTransport.resolveInstance = async () => {
+        throw Error('SYNTHETIC_PRIVATE');
+      };
+    let charged = 0,
+      closed = 0;
+    const r = await inventory.runWf32DiscoveryDiagnostic(key, {
+      ...f.options,
+      openBudget: () => ({
+        admit() {
+          charged++;
+        },
+        close() {
+          closed++;
+        },
+      }),
+    });
+    assert.equal(charged, 1);
+    assert.equal(closed, 1);
+    assert.equal(r.requestCount, 1);
+    assert.equal(r.networkCompletionVerified, true);
+    assert.equal(r.acceptanceProven, false);
+    assert.equal(r.drainProven, false);
+    assert.equal(f.calls.length, mode === 'dns' ? 0 : 1);
+    if (f.calls.length)
+      assert.equal(
+        f.calls[0].path,
+        '/api/v1/executions?workflowId=kkAGgnbD8NjWHMKC&includeData=false&limit=120',
+      );
+    if (mode === 'dns') assert.equal(r.nativeTransportCode, 'DNS');
+    if (mode === 'json') assert.equal(r.readerCode, 'JSON');
+    if (mode === 'privacy') assert.equal(r.readerCode, 'SENSITIVE_REFLECTION');
+    if (mode === 'shape') assert.equal(r.fields.listShapeVerified, false);
+    if (mode === 'http') assert.equal(r.httpStatus, 503);
+    assert.doesNotMatch(
+      JSON.stringify(r),
+      /synthetic-diagnostic-key|SYNTHETIC_PRIVATE|"nextCursor":|\/api\/|stack|headers/,
+    );
+  }
+});
+test('wf32 actual CLI ENTRY defers the genuine native import cycle and performs one synthetic streaming GET only', () => {
+  for (const mode of ['success', 'dns', 'json', 'privacy']) {
+    const root = mkdtempSync(join(tmpdir(), 'emr-wf32-entry-'));
+    try {
+      const put = (p, t) => {
+        const f = join(root, p);
+        mkdirSync(resolve(f, '..'), { recursive: true });
+        writeFileSync(f, t);
+        return f;
+      };
+      const claim = put('scripts/n8n/out/foundation/claim.jsonl', '');
+      let source = readFileSync('scripts/n8n/inventory.mjs', 'utf8').replace(
+        'export async function openWf32DiscoveryDiagnosticBudget(root)',
+        'async function originalOpenWf32DiscoveryDiagnosticBudget(root)',
+      );
+      source += `\nexport async function openWf32DiscoveryDiagnosticBudget(){let done=false;return {admit(){if(done)throw Error('TEST_DOUBLE_ADMISSION');done=true;const fd=openSync(${JSON.stringify(claim)},'a');try{for(const r of [{kind:'synthetic_independent_public_proof'},{event:'management_attempt',ordinal:863},{event:'native_read_control_reservation',ordinal:994,additionalHttpRequest:false}])writeSync(fd,JSON.stringify(r)+'\\n');fsyncSync(fd);}finally{closeSync(fd);}},close(){}};}\n`;
+      const entry = put('scripts/n8n/inventory.mjs', source);
+      put('n8n/foundation/bindings.dev.json', readFileSync('n8n/foundation/bindings.dev.json'));
+      const dns = put(
+        'dns.mjs',
+        `export function lookup(_h,_o,cb){${mode === 'dns' ? "cb(Error('SYNTHETIC_PRIVATE'))" : "cb(null,[{address:'1.1.1.1',family:4}])"};}`,
+      );
+      const body =
+        mode === 'json'
+          ? '{'
+          : JSON.stringify(
+              mode === 'privacy' ? { data: [], nextCursor: null, note: key } : { data: [], nextCursor: null },
+            );
+      const http = put(
+        'https.mjs',
+        `import {EventEmitter} from 'node:events';import {PassThrough} from 'node:stream';export function request(o,cb){if(o.method!=='GET'||o.path!=='/api/v1/executions?workflowId=kkAGgnbD8NjWHMKC&includeData=false&limit=120')throw Error('TEST_ROUTE');const req=new EventEmitter(),socket=new EventEmitter();socket.encrypted=true;socket.authorized=true;socket.remoteAddress='1.1.1.1';let res,closed=false;const close=()=>{if(closed)return;closed=true;res?.destroy();req.emit('close');socket.emit('close');};req.destroy=close;socket.destroy=close;req.end=()=>queueMicrotask(()=>{req.emit('socket',socket);socket.emit('secureConnect');res=new PassThrough();res.complete=true;res.statusCode=200;res.headers={'content-type':'application/json'};cb(res);res.once('end',close);if(!res.destroyed)res.end(Buffer.from(${JSON.stringify(body)}));});return req;}`,
+      );
+      const copy = pathToFileURL(entry).href,
+        transport = pathToFileURL(resolve('scripts/n8n/foundation-native-transport.mjs')).href,
+        reader = pathToFileURL(resolve('scripts/n8n/foundation-native-reader.mjs')).href;
+      const preload = put(
+        'preload.mjs',
+        `import {registerHooks} from 'node:module';registerHooks({resolve(s,c,next){if(c.parentURL===${JSON.stringify(copy)}&&s==='./foundation-native-transport.mjs')return {url:${JSON.stringify(transport)},shortCircuit:true};if(c.parentURL===${JSON.stringify(copy)}&&s==='./foundation-native-reader.mjs')return {url:${JSON.stringify(reader)},shortCircuit:true};if(s==='./inventory.mjs'&&c.parentURL?.includes('/scripts/n8n/'))return {url:${JSON.stringify(copy)},shortCircuit:true};if(c.parentURL===${JSON.stringify(copy)}&&s==='node:dns')return {url:${JSON.stringify(pathToFileURL(dns).href)},shortCircuit:true};if(c.parentURL===${JSON.stringify(transport)}&&s==='node:https')return {url:${JSON.stringify(pathToFileURL(http).href)},shortCircuit:true};return next(s,c);}});`,
+      );
+      const env = Object.fromEntries(
+        ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP'].flatMap((k) =>
+          process.env[k] === undefined ? [] : [[k, process.env[k]]],
+        ),
+      );
+      const r = spawnSync(
+        process.execPath,
+        ['--import', pathToFileURL(preload).href, entry, '--wf32-discovery-diagnostic'],
+        { env: { ...env, M03_N8N_API_KEY: key }, encoding: 'utf8', timeout: 10000, windowsHide: true },
+      );
+      assert.equal(r.status, mode === 'success' ? 0 : 1);
+      assert.equal(r.stderr, '');
+      const dto = JSON.parse(r.stdout);
+      assert.equal(dto.requestCount, 1);
+      assert.equal(dto.networkCompletionVerified, true);
+      assert.equal(dto.acceptanceProven, false);
+      assert.equal(dto.drainProven, false);
+      if (mode === 'success') assert.equal(dto.fields.firstPageEmpty, true);
+      if (mode === 'dns') assert.equal(dto.nativeTransportCode, 'DNS');
+      if (mode === 'json') assert.equal(dto.readerCode, 'JSON');
+      if (mode === 'privacy') assert.equal(dto.readerCode, 'SENSITIVE_REFLECTION');
+      assert.equal(readFileSync(claim, 'utf8').trim().split('\n').length, 3);
+      assert.doesNotMatch(r.stdout, /synthetic-diagnostic-key|SYNTHETIC_PRIVATE|stack|headers/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
+});
+test('wf32 portable public custody and one-use863/994 debit refuse historical drift and preserve all originals', async () => {
+  const f = await syntheticExecution31130PublicChain({ throughCategory: true }),
+    root = f.root;
+  try {
+    const digest = (b) => createHash('sha256').update(b).digest('hex');
+    const put = (p, v) => {
+      const b = typeof v === 'string' ? v : JSON.stringify(v);
+      mkdirSync(resolve(join(root, p), '..'), { recursive: true });
+      writeFileSync(join(root, p), b);
+      return digest(b);
+    };
+    const claim = 'scripts/n8n/out/foundation/execution-31130-parameter-defaults-diagnostic-20261024.jsonl';
+    const resolution = JSON.parse(
+      readFileSync(
+        'milestones/M03-n8n-foundation/evidence/technical16-executed-parameters-resolution-20261024.json',
+        'utf8',
+      ),
+    );
+    resolution.pins[claim] = put(claim, JSON.stringify({ kind: 'synthetic_spent829' }) + '\n');
+    let source = readFileSync(join(root, 'scripts/n8n/inventory.mjs'), 'utf8').replaceAll(
+      'e0c919ab2a12aa9306be3d2b3656b7d0c43d97c21ddc6376ffa12bbfbb89d07b',
+      put(
+        'milestones/M03-n8n-foundation/evidence/technical16-executed-parameters-resolution-20261024.json',
+        resolution,
+      ),
+    );
+    for (let i = 1; i <= 4; i++) {
+      const p =
+          'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt' + i + '-20261024.json',
+        r = JSON.parse(readFileSync(p, 'utf8'));
+      const old = digest(readFileSync(p));
+      r.pins = {};
+      for (const suffix of ['.json', '.jsonl', '.provision-seal.json', '.runtime-lock']) {
+        const path = 'scripts/n8n/out/foundation/synthetic-spent' + i + suffix;
+        r.pins[path] = put(path, 'synthetic-public-spent' + i + suffix + '\n');
+      }
+      r.cleanup.parentProcessId = 2147483647;
+      r.cleanup.childProcessId = 2147483646;
+      source = source.replaceAll(old, put(p, r));
+    }
+    const entry = join(root, 'scripts/n8n/inventory-wf32.mjs');
+    writeFileSync(entry, source);
+    const m = await import(pathToFileURL(entry).href);
+    assert.equal((await m.checkWf32DiscoveryDiagnostic(root)).managementAttempts, 862);
+    const oldPath = 'scripts/n8n/out/foundation/synthetic-spent3.jsonl',
+      before = readFileSync(join(root, oldPath));
+    const budget = await m.openWf32DiscoveryDiagnosticBudget(root);
+    writeFileSync(join(root, oldPath), Buffer.concat([before, Buffer.from(' ')]));
+    assert.throws(() => budget.admit());
+    writeFileSync(join(root, oldPath), before);
+    budget.admit();
+    assert.throws(() => budget.admit());
+    budget.close();
+    await assert.rejects(m.openWf32DiscoveryDiagnosticBudget(root));
+    const rows = readFileSync(
+      join(root, 'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.jsonl'),
+      'utf8',
+    )
+      .trim()
+      .split('\n')
+      .map(JSON.parse);
+    assert.deepEqual(rows.slice(1), [
+      { event: 'management_attempt', ordinal: 863 },
+      { event: 'native_read_control_reservation', ordinal: 994, additionalHttpRequest: false },
+    ]);
+    for (const [p, b] of f.originals) assert.deepEqual(readFileSync(join(root, p)), b);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 async function category31130Fixture() {
   const f = await snapshot31130Fixture();
   f.dto.workflowData.nodes.forEach((n, i) => {
@@ -238,7 +442,7 @@ test('snapshot31130 pin classification mirrors the existing sole-enabled-trigger
     false,
   );
 });
-function native31130Fixture(dto, { unclosed = false, framing = false } = {}) {
+function native31130Fixture(dto, { unclosed = false, framing = false, status = 200, rawBody = null } = {}) {
   const calls = [];
   return {
     calls,
@@ -276,14 +480,14 @@ function native31130Fixture(dto, { unclosed = false, framing = false } = {}) {
               req.emit('socket', socket);
               socket.emit('secureConnect');
               res = new PassThrough();
-              res.statusCode = 200;
+              res.statusCode = status;
               res.headers = {
                 'content-type': 'application/json',
                 ...(framing ? { 'content-encoding': 'SYNTHETIC_PRIVATE' } : {}),
               };
               res.complete = true;
               callback(res);
-              if (!res.destroyed) res.end(Buffer.from(JSON.stringify(dto)));
+              if (!res.destroyed) res.end(Buffer.from(rawBody ?? JSON.stringify(dto)));
               res.once('end', close);
             });
           return req;

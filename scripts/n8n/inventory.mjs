@@ -5,6 +5,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   readFileSync,
+  existsSync,
   openSync,
   fstatSync,
   lstatSync,
@@ -882,6 +883,376 @@ async function readParameterDefaultsExecution31130Context(root) {
   context.categoryPins[cfg.categoryReceipt] = publicDigest(text);
   context.categoryPins[cfg.categoryClaim] = publicDigest(claim);
   return context;
+}
+const wf32DiscoveryScope = Object.freeze({
+  claim: 'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.jsonl',
+  path: '/api/v1/executions?workflowId=kkAGgnbD8NjWHMKC&includeData=false&limit=120',
+  failures: Object.freeze([
+    '4f0697080d9bd1ff728b48d9c159f4cbe6f61ebaa04d19ec295da14c3e297960',
+    '5b2f8e590876f37d89aad2a35151e07489c4601111af09c27b01268f43df0c57',
+    '886da0004471f526d0767c3e60a5c1474bb38f439f022ab3edd162efdeb412ae',
+    '68fecd32ceda855b5f522bf9448f5fa94c1411dc4bd4950ea6d7a3979602bc72',
+  ]),
+});
+async function readWf32DiscoveryContext(root) {
+  const context = await readParameterDefaultsExecution31130Context(root),
+    pins = { ...context.pins, ...context.categoryPins };
+  const read = (path, hash) => {
+    const b = readRuntimePublicFile(context.root, path, null);
+    if (publicDigest(b) !== hash) throw Error('WF32_DIAGNOSTIC_BLOCKED');
+    pins[path] = hash;
+    return b;
+  };
+  for (const path of [
+    execution31130Checkpoint.relative,
+    execution31130Checkpoint.cleanup,
+    execution31130Checkpoint.metadataReceipt,
+    execution31130Checkpoint.claim,
+    execution31130Checkpoint.nativeReceipt,
+    execution31130Checkpoint.nativeClaim,
+    execution31130Checkpoint.childUiReceipt,
+  ])
+    pins[path] = publicDigest(readRuntimePublicFile(context.root, path, null));
+  const ui = JSON.parse(readRuntimePublicFile(context.root, execution31130Checkpoint.childUiReceipt));
+  read(ui.screenshot.path, ui.screenshot.sha256);
+  const resolutionPath =
+    'milestones/M03-n8n-foundation/evidence/technical16-executed-parameters-resolution-20261024.json';
+  const resolution = JSON.parse(
+    read(resolutionPath, 'e0c919ab2a12aa9306be3d2b3656b7d0c43d97c21ddc6376ffa12bbfbb89d07b'),
+  );
+  read(
+    execution31130Checkpoint.parameterDefaultsClaim,
+    resolution.pins[execution31130Checkpoint.parameterDefaultsClaim],
+  );
+  for (let i = 1; i <= 4; i++) {
+    const path =
+      'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt' + i + '-20261024.json';
+    const r = JSON.parse(read(path, wf32DiscoveryScope.failures[i - 1]));
+    if (
+      r.cleanupAttempt !== i ||
+      r.technicalAttempt !== 16 ||
+      r.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+      r.windowId !== '4c602549-2c42-4ec3-9328-714d7cb66a77' ||
+      r.rawResult.recordsDeleted !== 0 ||
+      r.rawResult.qualifiedSideEffects !== false ||
+      r.cleanup.parentAbsent !== true ||
+      r.cleanup.childAbsent !== true ||
+      r.cleanup.parentLockAbsent !== true
+    )
+      throw Error('WF32_DIAGNOSTIC_BLOCKED');
+    for (const [path, hash] of Object.entries(r.pins))
+      if (path.startsWith('scripts/n8n/out/foundation/')) read(path, hash);
+    if (i === 4) {
+      if (
+        r.usage.management !== 862 ||
+        r.usage.control !== 993 ||
+        r.usage.combined !== 1855 ||
+        r.usage.vercel !== 184 ||
+        r.rawResult.requestCount !== 25 ||
+        r.rawResult.networkCompletionVerified !== true ||
+        r.rawResult.originalPublicRecordsUnchanged !== true ||
+        r.rawResult.diagnosticCode !== 'native_REJECTED'
+      )
+        throw Error('WF32_DIAGNOSTIC_BLOCKED');
+      for (const pid of [r.cleanup.parentProcessId, r.cleanup.childProcessId]) {
+        if (!Number.isSafeInteger(pid) || pid <= 0 || pid === process.pid || pid === process.ppid)
+          throw Error('WF32_DIAGNOSTIC_BLOCKED');
+        let dead = false;
+        try {
+          process.kill(pid, 0);
+        } catch (e) {
+          dead = e?.code === 'ESRCH';
+        }
+        if (!dead) throw Error('WF32_DIAGNOSTIC_BLOCKED');
+      }
+    }
+  }
+  return { root: context.root, pins };
+}
+export async function checkWf32DiscoveryDiagnostic(root) {
+  const c = await readWf32DiscoveryContext(root);
+  const path = resolve(c.root, wf32DiscoveryScope.claim);
+  if (existsSync(path)) throw Error('WF32_DIAGNOSTIC_BLOCKED');
+  return {
+    kind: 'm03_wf32_discovery_check',
+    status: 'ready',
+    technicalAttempt: 16,
+    sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
+    windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+    managementAttempts: 862,
+    controlAttempts: 993,
+    combinedAttempts: 1855,
+    maximumRequests: 1,
+    privateRead: false,
+    networkRequests: 0,
+  };
+}
+export async function openWf32DiscoveryDiagnosticBudget(root) {
+  await checkWf32DiscoveryDiagnostic(root);
+  const c = await readWf32DiscoveryContext(root);
+  const fd = openSync(resolve(c.root, wf32DiscoveryScope.claim), 'wx');
+  let charged = false,
+    uncertain = false;
+  const append = (row) => {
+    const b = Buffer.from(JSON.stringify(row) + '\n');
+    let n = 0;
+    while (n < b.length) {
+      const w = writeSync(fd, b, n, b.length - n);
+      if (w <= 0) throw Error('WF32_DIAGNOSTIC_BLOCKED');
+      n += w;
+    }
+    fsyncSync(fd);
+  };
+  try {
+    append({
+      kind: 'm03_wf32_discovery_diagnostic_budget',
+      version: 1,
+      failedAttemptSha256: wf32DiscoveryScope.failures[3],
+      managementAttempts: 862,
+      controlAttempts: 993,
+      combinedAttempts: 1855,
+      maximumRequests: 1,
+    });
+  } catch {
+    closeSync(fd);
+    throw Error('WF32_DIAGNOSTIC_BLOCKED');
+  }
+  return {
+    admit() {
+      if (charged || uncertain) throw Error('WF32_DIAGNOSTIC_BLOCKED');
+      for (const [path, hash] of Object.entries(c.pins))
+        if (publicDigest(readRuntimePublicFile(c.root, path, null)) !== hash)
+          throw Error('WF32_DIAGNOSTIC_BLOCKED');
+      charged = true;
+      try {
+        append({ event: 'management_attempt', ordinal: 863 });
+        append({ event: 'native_read_control_reservation', ordinal: 994, additionalHttpRequest: false });
+      } catch {
+        uncertain = true;
+        throw Error('WF32_DIAGNOSTIC_BLOCKED');
+      }
+    },
+    close() {
+      closeSync(fd);
+    },
+  };
+}
+export function projectWf32DiscoveryDiagnostic(dto) {
+  const objectShape = record(dto),
+    dataArray = objectShape && Array.isArray(dto.data),
+    rows = dataArray ? dto.data : [];
+  const known = ['new', 'running', 'waiting', 'unknown', 'success', 'error', 'canceled', 'crashed'];
+  const r = {
+    objectShape,
+    dataArray,
+    listWithinLimit: dataArray && rows.length <= 120,
+    nextCursorPresent: objectShape && Object.hasOwn(dto, 'nextCursor'),
+    nextCursorShape:
+      objectShape &&
+      (dto.nextCursor === null ||
+        (typeof dto.nextCursor === 'string' && /^[\x21-\x7e]{1,400}$/.test(dto.nextCursor))),
+    firstPageEmpty: dataArray && rows.length === 0,
+    pendingCountZero:
+      dataArray && !rows.some((v) => ['new', 'running', 'waiting', 'unknown'].includes(v?.status)),
+    unknownStatusCountZero: dataArray && !rows.some((v) => !known.includes(v?.status)),
+    workflowIdsMatch: dataArray && rows.every((v) => v?.workflowId === 'kkAGgnbD8NjWHMKC'),
+    idsShape: dataArray && rows.every((v) => typeof v?.id === 'string' && /^[1-9]\d{0,31}$/.test(v.id)),
+    payloadAbsent:
+      dataArray &&
+      rows.every((v) => record(v) && !Object.hasOwn(v, 'data') && !Object.hasOwn(v, 'workflowData')),
+  };
+  return Object.freeze({
+    ...r,
+    listShapeVerified:
+      r.dataArray &&
+      r.listWithinLimit &&
+      r.nextCursorPresent &&
+      r.nextCursorShape &&
+      r.unknownStatusCountZero &&
+      r.workflowIdsMatch &&
+      r.idsShape &&
+      r.payloadAbsent,
+  });
+}
+export async function runWf32DiscoveryDiagnostic(key, dependencies = {}) {
+  const result = {
+    version: 1,
+    environment: 'dev',
+    host,
+    projectId,
+    workflowKey: 'WF-32',
+    technicalAttempt: 16,
+    status: 'not_attempted',
+    requestCount: 0,
+    maximumRequests: 1,
+    httpStatus: null,
+    stage: 'not_attempted',
+    nativeTransportCode: null,
+    readerCode: null,
+    tlsVerified: false,
+    networkCompletionVerified: false,
+    controlReservationConservative: true,
+    acceptanceProven: false,
+    drainProven: false,
+    firstPageSchemaValidated: false,
+    nextReadRefusedLocally: false,
+    fields: null,
+    transportState: null,
+  };
+  if (typeof key !== 'string' || key.length < 8 || key.length > 4096 || !/^[\x21-\x7e]+$/.test(key)) {
+    result.status = 'invalid_key';
+    return result;
+  }
+  let budget,
+    native,
+    response,
+    job,
+    timer,
+    closed = false,
+    getCode = () => null,
+    getReaderCode = () => null;
+  const controller = new AbortController();
+  try {
+    result.stage = 'budget';
+    budget = await (dependencies.openBudget ?? openWf32DiscoveryDiagnosticBudget)();
+    const [
+      { createFoundationNativeTransport, foundationNativeTransportErrorCode },
+      { createFoundationNativeReader, foundationNativeReaderErrorCode },
+    ] = await Promise.all([
+      import('./foundation-native-transport.mjs'),
+      import('./foundation-native-reader.mjs'),
+    ]);
+    getCode = foundationNativeTransportErrorCode;
+    getReaderCode = foundationNativeReaderErrorCode;
+    const bindings = JSON.parse(
+      readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url), 'utf8'),
+    );
+    native = createFoundationNativeTransport(
+      { apiKey: key, bindings, authorizeExecution: () => false },
+      dependencies.nativeTransport ?? {},
+    );
+    let secondBoundary = false,
+      body = [];
+    const wrappedRequest = async (input) => {
+      if (input.method !== 'GET' || input.path !== wf32DiscoveryScope.path || response)
+        throw Error('WF32_ROUTE_BLOCKED');
+      try {
+        response = await native.request(input);
+      } catch (error) {
+        result.nativeTransportCode = getCode(error);
+        throw error;
+      }
+      result.httpStatus = response.status;
+      result.tlsVerified = true;
+      response.closed.then(
+        () => {
+          closed = true;
+        },
+        (e) => {
+          closed = true;
+          result.nativeTransportCode = getCode(e);
+        },
+      );
+      result.stage = 'response';
+      return {
+        ...response,
+        body: {
+          async *[Symbol.asyncIterator]() {
+            try {
+              for await (const chunk of response.body) {
+                body.push(Buffer.from(chunk));
+                yield chunk;
+              }
+            } catch (e) {
+              result.nativeTransportCode = getCode(e);
+              throw e;
+            }
+          },
+        },
+      };
+    };
+    const reader = createFoundationNativeReader({
+      bindings,
+      transport: { request: wrappedRequest },
+      admitControlAttempt: (args) => {
+        if (result.requestCount !== 0) {
+          secondBoundary = true;
+          throw Error('WF32_SECOND_READ_FORBIDDEN');
+        }
+        if (args.kind !== 'discovery' || args.workflowId !== 'kkAGgnbD8NjWHMKC')
+          throw Error('WF32_ROUTE_BLOCKED');
+        budget.admit();
+        result.requestCount = 1;
+        result.stage = 'request';
+      },
+      sensitiveValues: [key],
+      now: Date.now,
+      deadlineAt: Date.now() + 20000,
+    });
+    job = reader.discover({ workflowKey: 'WF-32', baselineIds: [] });
+    try {
+      await Promise.race([
+        job,
+        new Promise((_, reject) => {
+          timer = setTimeout(() => {
+            controller.abort();
+            native.close();
+            reject(Error('WF32_TIMEOUT'));
+          }, 20000);
+        }),
+      ]);
+    } catch (error) {
+      const failure = reader.lastFailure();
+      result.readerCode = getReaderCode(error);
+      if (secondBoundary && failure?.stage === 'admission') {
+        result.readerCode = null;
+        result.firstPageSchemaValidated = true;
+        result.nextReadRefusedLocally = true;
+      } else if (failure)
+        result.stage =
+          failure.stage === 'projection'
+            ? 'projection'
+            : failure.stage === 'request'
+              ? 'request'
+              : 'response';
+      if (!secondBoundary && failure?.stage !== 'projection') throw error;
+    }
+    result.fields = projectWf32DiscoveryDiagnostic(JSON.parse(Buffer.concat(body).toString('utf8')));
+    body = [];
+    if (!secondBoundary && result.readerCode !== null) {
+      result.status = 'discovery_page_failed';
+    } else {
+      result.stage = 'complete';
+      result.status = 'discovery_page_classified';
+    }
+  } catch (e) {
+    result.nativeTransportCode = result.nativeTransportCode ?? getCode(e);
+    result.readerCode = getReaderCode(e);
+    result.status = 'discovery_page_failed';
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
+    native?.close();
+    key = null;
+    const until = Date.now() + 5000;
+    while (
+      native &&
+      (native.state().pendingRequests || native.state().unclosedResponses) &&
+      Date.now() < until
+    )
+      await new Promise((r) => setTimeout(r, 10));
+    job?.catch(() => {});
+    result.transportState = native?.state() ?? null;
+    result.networkCompletionVerified =
+      !!native &&
+      (!response || closed) &&
+      result.transportState.pendingRequests === 0 &&
+      result.transportState.unclosedResponses === 0;
+    if (!result.networkCompletionVerified && result.status === 'discovery_page_classified')
+      result.status = 'discovery_page_failed';
+    budget?.close();
+  }
+  return result;
 }
 export function checkExecution31130MetadataDiagnostic(root, native = false) {
   if (![false, true, 'snapshot', 'categories', 'parameter_defaults'].includes(native))
@@ -4446,6 +4817,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     (process.argv.length === 3 &&
       [
         '--workflow-baseline-diagnostic',
+        '--wf32-discovery-check-only',
+        '--wf32-discovery-diagnostic',
         '--wf70-discovery-diagnostic',
         '--machine-metadata-diagnostic',
         '--runtime-reconciliation-check-only',
@@ -4466,6 +4839,33 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   )) {
     process.stdout.write(JSON.stringify({ version: 1, status: 'argument_rejected' }) + '\n');
     process.exitCode = 1;
+  } else if (['--wf32-discovery-check-only', '--wf32-discovery-diagnostic'].includes(process.argv[2])) {
+    const check = process.argv[2].endsWith('-check-only');
+    setImmediate(() =>
+      Promise.resolve()
+        .then(() => (check ? checkWf32DiscoveryDiagnostic() : runWf32DiscoveryDiagnostic(key)))
+        .then(
+          (value) => {
+            process.stdout.write(JSON.stringify(value) + '\n');
+            process.exitCode = value.status === (check ? 'ready' : 'discovery_page_classified') ? 0 : 1;
+          },
+          () => {
+            process.stdout.write(
+              JSON.stringify(
+                check
+                  ? {
+                      kind: 'm03_wf32_discovery_check',
+                      status: 'blocked',
+                      privateRead: false,
+                      networkRequests: 0,
+                    }
+                  : { version: 1, status: 'diagnostic_failed' },
+              ) + '\n',
+            );
+            process.exitCode = 1;
+          },
+        ),
+    );
   } else if (
     [
       '--execution-31130-native-metadata-check-only',

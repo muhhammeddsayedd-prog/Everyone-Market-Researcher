@@ -5,7 +5,11 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { after, describe, it } from 'node:test';
-import { inventoryWorkflowNames, inventoryCredentialCandidates } from './inventory.mjs';
+import {
+  inventoryWorkflowNames,
+  inventoryCredentialCandidates,
+  projectWf32DiscoveryDiagnostic,
+} from './inventory.mjs';
 import { diagnoseFoundationRuntimeBaselineVariants } from './foundation-runtime-checkpoint.mjs';
 
 const powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
@@ -17,6 +21,7 @@ const osEnv = () =>
     ),
   );
 function fixture(mode = 'success') {
+  const wf32Mode = mode.startsWith('wf32');
   const baselineMode = mode.startsWith('baseline');
   const discoveryMode = mode.startsWith('wf70');
   const machineMode = mode.startsWith('machine');
@@ -28,6 +33,7 @@ function fixture(mode = 'success') {
   const category31130Mode = mode.startsWith('category31130');
   const snapshot31130Mode = mode.startsWith('snapshot31130') || category31130Mode || defaults31130Mode;
   const persistentMode =
+    wf32Mode ||
     baselineMode ||
     discoveryMode ||
     machineMode ||
@@ -59,6 +65,16 @@ function fixture(mode = 'success') {
   // independent public source/budget proof. It does not claim real public
   // reconciliation/closure evidence; the native reader/CLI tests cover those
   // own strict contracts separately, with synthetic DNS/HTTPS and no network.
+  if (wf32Mode) {
+    consumerSource = consumerSource.replace(
+      'if($Wf32DiscoveryDiagnostic){$node=Assert-RuntimeReconciliationPublic $false $false $false $false $false $false $true}',
+      "if($Wf32DiscoveryDiagnostic){[IO.File]::WriteAllText((Join-Path $repo 'public-gate.txt'),'reached');throw 'SYNTHETIC_PRIVATE_PUBLIC_ERROR'}",
+    );
+    consumerSource = consumerSource.replace(
+      '  $privateRoot = [IO.Path]::GetFullPath($env:LOCALAPPDATA)',
+      "  [IO.File]::WriteAllText((Join-Path $repo 'private-sentinel.txt'),'reached');throw 'SYNTHETIC_PRIVATE_SENTINEL'",
+    );
+  }
   if (discoveryMode)
     consumerSource = consumerSource.replace(
       'if($Wf70DiscoveryDiagnostic){$node=Assert-Wf70DiscoveryPublic}',
@@ -983,6 +999,7 @@ $s=[IO.File]::Open($store,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.Fi
     run: (check = false) =>
       runFile(consumer, [
         ...(check ? ['-CheckOnly'] : []),
+        ...(wf32Mode ? ['-Wf32DiscoveryDiagnostic'] : []),
         ...(baselineMode ? ['-WorkflowBaselineDiagnostic'] : []),
         ...(machineMode ? ['-MachineMetadataDiagnostic'] : []),
         ...(runtimeMode ? ['-RuntimeReconciliationDiagnostic'] : []),
@@ -1007,6 +1024,63 @@ describe(
   'M03 n8n bounded private inventory consumer, isolated synthetic Windows DPAPI only',
   { skip: process.platform !== 'win32' },
   () => {
+    it('wf32 public refusal precedes persistent Management access and every private child', () => {
+      const f = fixture('wf32PublicBlocked');
+      for (const check of [false, true]) {
+        const r = f.run(check);
+        assert.equal(r.status, 1);
+        assert.match(r.stdout, /N8N_PREFLIGHT_BLOCKED/);
+        assert.equal(readFileSync(join(f.root, 'public-gate.txt'), 'utf8'), 'reached');
+        for (const p of [
+          'private-sentinel.txt',
+          'scripts/n8n/called.txt',
+          'private/Temp/emr-m03-acceptance-parent.operation.lock',
+        ])
+          assert.equal(existsSync(join(f.root, p)), false);
+        assert.equal(existsSync(f.handoff), false);
+        assert.doesNotMatch(r.stdout + r.stderr, /SYNTHETIC_PRIVATE/);
+      }
+    });
+    it('wf32 native fixed DTO rejects coercion unsafe codes and false physical closure', () => {
+      const root = mkdtempSync(join(tmpdir(), 'emr-wf32-dto-'));
+      roots.push(root);
+      const dto = {
+        version: 1,
+        environment: 'dev',
+        host: 'muhhammedsayed.app.n8n.cloud',
+        projectId: 'pHvQjDmjxVZ3KQLT',
+        workflowKey: 'WF-32',
+        technicalAttempt: 16,
+        status: 'discovery_page_classified',
+        requestCount: 1,
+        maximumRequests: 1,
+        httpStatus: 200,
+        stage: 'complete',
+        nativeTransportCode: null,
+        readerCode: null,
+        tlsVerified: true,
+        networkCompletionVerified: true,
+        controlReservationConservative: true,
+        acceptanceProven: false,
+        drainProven: false,
+        firstPageSchemaValidated: true,
+        nextReadRefusedLocally: true,
+        fields: projectWf32DiscoveryDiagnostic({ data: [], nextCursor: null }),
+        transportState: { pendingRequests: 0, unclosedResponses: 0 },
+      };
+      const path = join(root, 'dto.json');
+      writeFileSync(path, JSON.stringify(dto));
+      const quote = (s) => "'" + s.replaceAll("'", "''") + "'";
+      const code = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest;$e=$null;$t=$null;$a=[Management.Automation.Language.Parser]::ParseFile(${quote(resolve('scripts/n8n/windows/Invoke-M03N8nInventory.ps1'))},[ref]$t,[ref]$e);if($e.Count -ne 0){throw 'SYNTAX'};foreach($n in @('Assert-Keys','Validate-Wf32DiscoveryDiagnostic')){$f=@($a.FindAll({param($x)$x -is [Management.Automation.Language.FunctionDefinitionAst] -and $x.Name -ceq $n},$true));if($f.Count -ne 1){throw 'FUNCTION'};Invoke-Expression $f[0].Extent.Text};$fixedHost='muhhammedsayed.app.n8n.cloud';$projectId='pHvQjDmjxVZ3KQLT';$text=[IO.File]::ReadAllText(${quote(path)});Validate-Wf32DiscoveryDiagnostic (ConvertFrom-Json $text);foreach($fault in @('counter','bool','code','reader','http','closure','extra')){$v=ConvertFrom-Json $text;switch($fault){'counter'{$v.requestCount='1'}'bool'{$v.fields.firstPageEmpty='true'}'code'{$v.nativeTransportCode='SYNTHETIC_PRIVATE'}'reader'{$v.readerCode='SYNTHETIC_PRIVATE'}'http'{$v.httpStatus=503}'closure'{$v.transportState.pendingRequests=1}'extra'{$v|Add-Member note 'SYNTHETIC_PRIVATE'}};$denied=$false;try{Validate-Wf32DiscoveryDiagnostic $v}catch{$denied=$true};if(-not $denied){throw 'UNSAFE_DTO'}};Write-Output 'WF32_NATIVE_DTO_VERIFIED'`;
+      const r = spawnSync(
+        powershell,
+        ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(code, 'utf16le').toString('base64')],
+        { env: osEnv(), encoding: 'utf8', windowsHide: true, timeout: 15000 },
+      );
+      assert.equal(r.status, 0);
+      assert.equal(r.stderr, '');
+      assert.equal(r.stdout.trim(), 'WF32_NATIVE_DTO_VERIFIED');
+    });
     it('defaults31130 native Management child rejects unsafe predicates and unexecuted Set claims with exact cleanup', () => {
       for (const mode of [
         'defaults31130Success',

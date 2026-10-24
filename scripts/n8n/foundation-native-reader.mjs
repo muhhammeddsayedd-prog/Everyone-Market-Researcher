@@ -10,6 +10,7 @@ import {
 } from './foundation-runtime-checkpoint.mjs';
 import { freezeRuntimeValue } from './foundation-runtime-plan.mjs';
 import * as runtimeControl from './foundation-runtime-control.mjs';
+import { foundationNativeTransportErrorCode } from './foundation-native-transport.mjs';
 import {
   isFoundationNativeDomainProbeBody,
   projectFoundationNativeDomainDenial,
@@ -62,6 +63,22 @@ const gatewayOperations = new Set([
   'launch.reconcile',
 ]);
 export const foundationNativeFailureCodes = Object.freeze([
+  'TRANSPORT_CONFIG',
+  'TRANSPORT_BRAND',
+  'TRANSPORT_REQUEST',
+  'TRANSPORT_DEADLINE',
+  'TRANSPORT_DNS',
+  'TRANSPORT_FRAMING',
+  'TRANSPORT_RESPONSE_LIMIT',
+  'TRANSPORT_CLOSE',
+  'TRANSPORT_TRUNCATED',
+  'TRANSPORT_ABORTED',
+  'TRANSPORT_RESPONSE',
+  'TRANSPORT_SOCKET',
+  'TRANSPORT_TLS',
+  'TRANSPORT_STREAM',
+  'TRANSPORT_CLOSED',
+  'TRANSPORT_STATUS',
   'ADMISSION',
   'READER_BRAND',
   'METADATA_BRAND',
@@ -150,6 +167,9 @@ export const foundationNativeFailureCodes = Object.freeze([
 ]);
 const safeFailureCodes = new Set(foundationNativeFailureCodes),
   errorCodes = new WeakMap();
+export function foundationNativeReaderErrorCode(error) {
+  return errorCodes.get(error) ?? null;
+}
 class NativeReaderError extends Error {
   constructor(code) {
     const safeCode = safeFailureCodes.has(code) ? code : 'REJECTED';
@@ -178,7 +198,9 @@ function date(v) {
   );
 }
 function fixedError(e) {
-  return e instanceof NativeReaderError ? e : new NativeReaderError('REJECTED');
+  if (errorCodes.has(e)) return e;
+  const transportCode = foundationNativeTransportErrorCode(e);
+  return new NativeReaderError(transportCode === null ? 'REJECTED' : 'TRANSPORT_' + transportCode);
 }
 function raceAbort(promise, signal) {
   if (signal.aborted) {
@@ -293,18 +315,30 @@ export function createFoundationNativeReader({
     let classification =
       code === 'REJECTED'
         ? 'unknown'
-        : code === 'DEADLINE'
+        : code === 'DEADLINE' || code === 'TRANSPORT_DEADLINE'
           ? 'timeout'
-          : code === 'CLOSE'
+          : code === 'CLOSE' || code === 'TRANSPORT_CLOSE'
             ? 'closure'
             : code === 'SENSITIVE_REFLECTION'
               ? 'confidentiality'
               : code === 'JSON'
                 ? 'parse'
-                : ['FRAMING', 'RESPONSE_LIMIT', 'STREAM', 'TRUNCATED', 'NATIVE_SIZE_LIMIT'].includes(code)
+                : [
+                      'FRAMING',
+                      'RESPONSE_LIMIT',
+                      'STREAM',
+                      'TRUNCATED',
+                      'NATIVE_SIZE_LIMIT',
+                      'TRANSPORT_FRAMING',
+                      'TRANSPORT_RESPONSE_LIMIT',
+                      'TRANSPORT_STREAM',
+                      'TRANSPORT_TRUNCATED',
+                    ].includes(code)
                   ? 'framing'
-                  : 'contract';
-    if (code === 'CLOSE') stage = 'close';
+                  : code.startsWith('TRANSPORT_')
+                    ? 'unknown'
+                    : 'contract';
+    if (code === 'CLOSE' || code === 'TRANSPORT_CLOSE') stage = 'close';
     if (
       context?.httpStatus !== null &&
       context?.httpStatus !== undefined &&

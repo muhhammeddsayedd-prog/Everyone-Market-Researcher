@@ -13,9 +13,37 @@ import { consumeFoundationCallbackCase } from './foundation-callback-cases.mjs';
 const host = 'muhhammedsayed.app.n8n.cloud';
 const responseBytes = 8 * 1024 * 1024;
 const transports = new WeakSet();
+const transportErrors = new WeakMap();
+export const foundationNativeTransportFailureCodes = Object.freeze([
+  'CONFIG',
+  'BRAND',
+  'REQUEST',
+  'DEADLINE',
+  'DNS',
+  'FRAMING',
+  'RESPONSE_LIMIT',
+  'CLOSE',
+  'TRUNCATED',
+  'ABORTED',
+  'RESPONSE',
+  'SOCKET',
+  'TLS',
+  'STREAM',
+  'CLOSED',
+  'STATUS',
+]);
+const transportFailureCodes = new Set(foundationNativeTransportFailureCodes);
 const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const executionId = (v) => /^[1-9]\d{0,31}$/.test(v);
-const fixed = (code) => Error('FOUNDATION_NATIVE_TRANSPORT_' + code);
+const fixed = (code) => {
+  const safeCode = transportFailureCodes.has(code) ? code : 'REQUEST';
+  const error = Error('FOUNDATION_NATIVE_TRANSPORT_' + safeCode);
+  transportErrors.set(error, safeCode);
+  return error;
+};
+export function foundationNativeTransportErrorCode(error) {
+  return transportErrors.get(error) ?? null;
+}
 const fail = (code) => {
   throw fixed(code);
 };
@@ -347,7 +375,7 @@ export function createFoundationNativeTransport({ apiKey, bindings, authorizeExe
             headers = safeHeaders(res);
           } catch (error) {
             abort(
-              error.message === 'FOUNDATION_NATIVE_TRANSPORT_RESPONSE_LIMIT' ? 'RESPONSE_LIMIT' : 'FRAMING',
+              foundationNativeTransportErrorCode(error) === 'RESPONSE_LIMIT' ? 'RESPONSE_LIMIT' : 'FRAMING',
             );
             return;
           }
