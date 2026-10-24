@@ -219,7 +219,8 @@ export function createFoundationControlBudget({
     ? foundationProjectVerifiedContinuationResumeCheckpoint(verified)
     : null;
   const verifiedInitialControl = verifiedCheckpoint?.mainControlAttempts ?? 0;
-  const expandedManagement = verifiedCheckpoint?.managementMaximum === 576;
+  const managementMaximum = verifiedCheckpoint?.managementMaximum ?? 512;
+  const expandedManagement = [576, 640].includes(managementMaximum);
   let lastManagementAttempts = verifiedCheckpoint?.aggregateManagementAttempts ?? 0;
   const authoritativeManagementAttempts = () => {
     if (!expandedManagement) return 0;
@@ -229,7 +230,7 @@ export function createFoundationControlBudget({
     } catch {
       fail();
     }
-    if (!Number.isSafeInteger(value) || value < lastManagementAttempts || value > 576) fail();
+    if (!Number.isSafeInteger(value) || value < lastManagementAttempts || value > managementMaximum) fail();
     lastManagementAttempts = value;
     return value;
   };

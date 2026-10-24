@@ -63,7 +63,7 @@ function powershell(code, expectedStatus = 0) {
 const definitions = (names, file = consumer) => `
 $errors=$null;$tokens=$null;$ast=[Management.Automation.Language.Parser]::ParseFile(${quote(resolve(file))},[ref]$tokens,[ref]$errors)
 if($errors.Count -ne 0){throw 'SOURCE_PARSE_FAILED'}
-foreach($name in @(${[...new Set([...(file === control ? ['Foundation-ProjectVerifiedTechnicalIdentity'] : []), ...names])].map(quote).join(',')})){
+foreach($name in @(${[...new Set([...(file === control ? ['Foundation-ProjectVerifiedTechnicalIdentity', 'Foundation-ForwardWindowId'] : []), ...names])].map(quote).join(',')})){
  $found=@($ast.FindAll({param($item) $item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true))
  if($found.Count -ne 1){throw 'EXPECTED_FUNCTION_MISSING'};Invoke-Expression $found[0].Extent.Text
 }`;

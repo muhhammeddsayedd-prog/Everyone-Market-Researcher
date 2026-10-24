@@ -85,7 +85,11 @@ export function parseFoundationTransport(c) {
   if (
     typeof c.audience !== 'string' ||
     !/^https:\/\/everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(c.audience) ||
-    !['df4f29ec-e2dc-4d82-a276-62a4e695e6f9', '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].includes(c.windowId)
+    ![
+      'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+      '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+      'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+    ].includes(c.windowId)
   )
     bad();
   const a = c.credential;

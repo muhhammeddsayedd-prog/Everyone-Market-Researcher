@@ -69,7 +69,7 @@ const effectfulRecovery = Object.freeze({
 });
 // Root verified immutable a5e with CI39990446858 (all five) and Vercel success.
 // Original f429 remains the authorization reference and historical header.
-export const foundationProjectVerifiedActiveRuntime = Object.freeze({
+const priorActiveRuntime = Object.freeze({
   windowId: '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
   sourceCommitSha: 'a5e746736893d5040e93032ae740a0878f748837',
   sourceCi: 39990446858,
@@ -78,6 +78,19 @@ export const foundationProjectVerifiedActiveRuntime = Object.freeze({
   setupMaximum: 88,
   proposedSetupMaximum: 88,
 });
+// Both earlier SQL rows are permanently closed. Root verified this immutable
+// third-window app source against all five CI40046523317 jobs and Vercel.
+export const foundationProjectVerifiedActiveRuntime = Object.freeze({
+  windowId: 'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+  sourceCommitSha: 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803',
+  sourceCi: 40046523317,
+  allFiveCiJobsPassed: true,
+  vercelPassed: true,
+  setupMaximum: 132,
+  proposedSetupMaximum: 132,
+});
+const activeRuntime = (recovery) =>
+  recovery?.closedFixtureTechnicalAttempt === 8 ? foundationProjectVerifiedActiveRuntime : priorActiveRuntime;
 const setupAllocationApproval = Object.freeze({
   relative: 'milestones/M03-n8n-foundation/evidence/remaining-control-allocation-approval-20261023.json',
   sha256: '313dd1de36e1c2d24e426cb2d09d1a027d192305a97a3a45b5a1783f61bf3f43',
@@ -173,9 +186,21 @@ const managementAllocationApproval = Object.freeze({
   packetRelative: 'milestones/M03-n8n-foundation/evidence/remaining-management-allocation-20261024.md',
   packetSha256: '54bf439c37109db9cb184fd70fc8896684ff605d7f243fce0196684d54ddfa74',
 });
+const controlManagementAllocationApproval = Object.freeze({
+  relative:
+    'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json',
+  sha256: '72ffb37faa1854ac86893f8bf166949daa4034be19ec2af5c217bde8383f65e2',
+  packetRelative:
+    'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md',
+  packetSha256: 'dddc18288e44fcb0fde06ee6de6fc86bbc21f65353cd089988b10f5dd0714fa2',
+});
 const closedPreparationRecovery = Object.freeze({
   relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical7-reconciliation-20261024.json',
   sha256: '467b2f08fca6d7ea9f224cd0ea02dcdcd9e0519b263abb5ad188bdae0bc2191a',
+});
+const closedFixtureRecovery = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json',
+  sha256: 'e0435f69edc0223195b167e59c94cf87e9f41aa147941a35fb8486f51382c94c',
 });
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
@@ -414,6 +439,8 @@ function checkpoint(x) {
   x.recovery = reconciledWf70Diagnostic(x) ?? x.recovery;
   x.recovery = approvedManagementAllocation(x) ?? x.recovery;
   x.recovery = reconciledClosedPreparation(x) ?? x.recovery;
+  x.recovery = reconciledClosedFixture(x) ?? x.recovery;
+  x.recovery = approvedControlManagementAllocation(x) ?? x.recovery;
   if (x.recovery?.closedWindow) assertSetupAllocationApproval(x);
   recoveryPreflight(x);
   return p;
@@ -1115,7 +1142,7 @@ function reconciledNativeDiscoveryStep(x, recovery, text, checkpoint, ordinal) {
   });
 }
 function assertSetupAllocationApproval(x) {
-  const maximum = foundationProjectVerifiedActiveRuntime.setupMaximum;
+  const maximum = priorActiveRuntime.setupMaximum;
   if (maximum === 50) return;
   if (maximum !== 88) fail();
   const text = x.file(setupAllocationApproval.relative);
@@ -1131,7 +1158,10 @@ function assertSetupAllocationApproval(x) {
     a.allocation.previousSetupMaximum !== 50 ||
     a.allocation.setupMaximum !== maximum ||
     a.allocation.usedSetupRequests !== 44 ||
-    a.allocation.usedSetupRequests !== x.recovery.setupAttempts ||
+    // This historical decision stays at44. The separately pinned technical8
+    // reconciliation and newer allocation prove its later79 charged requests.
+    (x.recovery.closedFixtureTechnicalAttempt !== 8 &&
+      a.allocation.usedSetupRequests !== x.recovery.setupAttempts) ||
     a.allocation.additionalSetupRequestsMaximum !== 44 ||
     a.allocation.countersReset !== false ||
     a.unchangedGlobalCaps.management !== caps.runtimeManagement ||
@@ -1506,6 +1536,91 @@ function reconciledWf70Diagnostic(x) {
   }
   return Object.freeze({ ...x.recovery, carriedControlAttempts: 3, wf70DiagnosticControlAttempts: 2 });
 }
+function approvedControlManagementAllocation(x) {
+  if (x.recovery?.closedFixtureTechnicalAttempt !== 8) return null;
+  if (!controlManagementAllocationApproval) fail();
+  const text = x.file(controlManagementAllocationApproval.relative);
+  if (
+    hash(text) !== controlManagementAllocationApproval.sha256 ||
+    hash(x.file(controlManagementAllocationApproval.packetRelative)) !==
+      controlManagementAllocationApproval.packetSha256
+  )
+    fail();
+  const a = JSON.parse(text),
+    allocation = a.allocation;
+  if (
+    a.kind !== 'm03_cumulative_control_management_allocation_approval' ||
+    a.questionCallId !== 'call_66a364df504149ee99f2b0cb28876975' ||
+    a.ownerReply !==
+      'Approve cumulative Management 640 and Vercel 132; retain all charges and other limits' ||
+    a.decision !== 'approved' ||
+    a.environment !== 'dev' ||
+    a.milestone !== 'M03' ||
+    !Number.isFinite(Date.parse(a.recordedAt)) ||
+    Date.parse(a.recordedAt) > x.clock() ||
+    a.referencePacket.path !== controlManagementAllocationApproval.packetRelative ||
+    a.referencePacket.sha256 !== controlManagementAllocationApproval.packetSha256 ||
+    a.referencePacket.sourceCommitSha !== '8ee16f6d05041ee8b8927b95452431f3ccb5643a' ||
+    a.reviewedDelivery.headSha !== a.referencePacket.sourceCommitSha ||
+    a.reviewedDelivery.ciRunId !== 40043938844 ||
+    ['quality', 'unit', 'build', 'e2e', 'dbTests', 'vercel'].some(
+      (k) => a.reviewedDelivery[k] !== 'success',
+    ) ||
+    allocation.previousManagementMaximum !== 576 ||
+    allocation.managementMaximum !== 640 ||
+    allocation.usedManagementRequests !== 237 ||
+    allocation.remainingManagementRequestsMaximum !== 403 ||
+    allocation.remainingPlanMaximum !== 376 ||
+    allocation.planCumulativeMaximum !== 613 ||
+    allocation.reserveAbovePlan !== 27 ||
+    allocation.previousVercelMaximum !== 88 ||
+    allocation.vercelMaximum !== 132 ||
+    allocation.usedVercelRequests !== 79 ||
+    allocation.remainingVercelRequestsMaximum !== 53 ||
+    allocation.remainingVercelPlanMaximum !== 44 ||
+    allocation.vercelPlanCumulativeMaximum !== 123 ||
+    allocation.vercelReserveAbovePlan !== 9 ||
+    allocation.vercelIncludedInManagement !== true ||
+    allocation.countersReset !== false ||
+    a.actualPriorUsage.management !== 237 ||
+    a.actualPriorUsage.control !== 486 ||
+    a.actualPriorUsage.combined !== 723 ||
+    a.actualPriorUsage.vercel !== 79 ||
+    a.actualPriorUsage.sqlFamilyAdmitted !== 3 ||
+    a.actualPriorUsage.actorStarts !== 0 ||
+    a.actualPriorUsage.actorSpendUsd !== 0 ||
+    a.actualPriorUsage.reconciliationPath !== closedFixtureRecovery.relative ||
+    a.actualPriorUsage.reconciliationSha256 !== closedFixtureRecovery.sha256 ||
+    a.approvedFreshWindow.id !== foundationProjectVerifiedActiveRuntime.windowId ||
+    a.approvedFreshWindow.registered !== false ||
+    a.approvedFreshWindow.usesExistingOwnerRegistration !== true ||
+    a.approvedFreshWindow.changesExistingClosedRows !== false ||
+    a.approvedFreshWindow.replenishesFamilyAllowances !== false ||
+    a.unchangedCaps.control !== caps.control ||
+    a.unchangedCaps.combined !== caps.combined ||
+    a.unchangedCaps.nativeExecutions !== caps.nativeExecutions ||
+    a.unchangedCaps.gatewayAttempts !== caps.gatewayAttempts ||
+    a.unchangedCaps.directProviderReads !== caps.providerGetAttempts ||
+    a.unchangedCaps.actorStarts !== 2 ||
+    a.unchangedCaps.maxActorUsd !== 1 ||
+    a.unchangedCaps.actorReserveUsd !== 2 ||
+    a.unchangedCaps.actorsSequential !== true ||
+    a.unchangedCaps.newDistinctCollectedItems !== 1 ||
+    Object.values(a.limitsPreserved).some((v) => v !== true) ||
+    Object.values(a.boundaries).some((v) => v !== false) ||
+    a.acceptance.allocationDecisionComplete !== true ||
+    a.acceptance.executionStartedByThisRecord !== false ||
+    a.acceptance.consumerIntegrationVerified !== false ||
+    a.acceptance.m03DevAcceptanceVerified !== false ||
+    x.recovery.mainManagementAttempts !== 227 ||
+    x.recovery.carriedManagementAttempts !== 10 ||
+    x.recovery.mainControlAttempts !== 483 ||
+    x.recovery.carriedControlAttempts !== 3 ||
+    x.recovery.setupAttempts !== 79
+  )
+    fail();
+  return Object.freeze({ ...x.recovery, managementMaximum: 640 });
+}
 function approvedManagementAllocation(x) {
   const text = x.file(managementAllocationApproval.relative, { optional: true });
   if (text === null) return null;
@@ -1599,7 +1714,7 @@ function reconciledClosedPreparation(x) {
     !Number.isFinite(recordedAt) ||
     recordedAt > x.clock() ||
     r.source.head !== '16d30fd13581516c8310ae9803cfb13e23204228' ||
-    r.source.applicationSource !== foundationProjectVerifiedActiveRuntime.sourceCommitSha ||
+    r.source.applicationSource !== priorActiveRuntime.sourceCommitSha ||
     r.source.ciRun !== 40039419304 ||
     r.source.allFiveCiJobsPassed !== true ||
     r.source.vercelPassed !== true
@@ -1749,7 +1864,7 @@ function reconciledClosedPreparation(x) {
     admin.projectRef !== r.projectRef ||
     admin.host !== 'aws-1-eu-central-1.pooler.supabase.com' ||
     admin.port !== 5432 ||
-    admin.activeWindowId !== foundationProjectVerifiedActiveRuntime.windowId ||
+    admin.activeWindowId !== priorActiveRuntime.windowId ||
     admin.clockSegmentId !== c.segmentId ||
     admin.technicalAttemptOrdinal !== 7 ||
     admin.postcheckCandidate !== a.generatedTypePath ||
@@ -1930,17 +2045,488 @@ function reconciledClosedPreparation(x) {
     pins: Object.freeze(pins),
   });
 }
+function reconciledClosedFixture(x) {
+  if (!closedFixtureRecovery || x.recovery?.managementMaximum !== 576) return null;
+  if (
+    x.recovery.closedPreparationTechnicalAttempt !== 7 ||
+    x.recovery.mainManagementAttempts !== 167 ||
+    x.recovery.mainControlAttempts !== 432 ||
+    x.recovery.controlRows !== 434 ||
+    x.recovery.carriedManagementAttempts !== 10 ||
+    x.recovery.carriedControlAttempts !== 3
+  )
+    fail();
+  const text = x.file(closedFixtureRecovery.relative);
+  if (hash(text) !== closedFixtureRecovery.sha256) fail();
+  const r = JSON.parse(text),
+    recordedAt = Date.parse(r.recordedAt),
+    cleanup = r.actualCleanup,
+    readback = r.subsequentReadback,
+    base = `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-8`,
+    db = `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-technical-8`;
+  if (
+    r.kind !== 'm03_technical8_closed_fixture_preflight_reconciliation' ||
+    r.version !== 1 ||
+    r.environment !== 'dev' ||
+    r.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+    !Number.isFinite(recordedAt) ||
+    recordedAt > x.clock() ||
+    r.source.head !== 'f9e999a46427392ef9b9cb3f45090fda639fc551' ||
+    r.source.applicationSource !== priorActiveRuntime.sourceCommitSha ||
+    r.source.ciRun !== 40042065141 ||
+    r.source.allFiveJobsPassed !== true ||
+    r.source.vercelPassed !== true
+  )
+    fail();
+  const match = (object, expected) => {
+    if (!object || Object.entries(expected).some(([key, value]) => object[key] !== value)) fail();
+  };
+  match(r.usage, {
+    mainManagement: 227,
+    carriedManagement: 10,
+    management: 237,
+    mainControl: 483,
+    carriedControl: 3,
+    control: 486,
+    combined: 723,
+    vercel: 79,
+    managementMaximum: 576,
+    controlMaximum: 2048,
+    combinedMaximum: 2560,
+    vercelMaximum: 88,
+    actorStarts: 0,
+    maxActorUsd: 1,
+    actorReserveUsd: 2,
+    sqlFamilyAdmitted: 3,
+    allowancesReplenished: false,
+  });
+  match(r.actualAttempt, {
+    baselineSourceGets: 25,
+    executionDiscoveryGets: 50,
+    browserDiscoveryAttempts: 1,
+    previewPrepared: true,
+    ownerProvisionIntentPresent: true,
+    reactivationIntentPresent: true,
+    fixtureReactivationCommitted: false,
+    failedStage: 'owned_fixture_reactivation_preflight',
+    originalSqlErrorRetained: false,
+    nativeWorkflowExecutions: 0,
+    actorStarts: 0,
+  });
+  match(cleanup, {
+    nativeExit: 0,
+    bothKnownProcessesDead: true,
+    allEightInputFilesAbsent: true,
+    parentLockAbsent: true,
+    bypassCopyAbsent: true,
+    ciphertextRead: false,
+    decrypted: false,
+    networkRequests: 0,
+    persistentOriginalsUntouched: true,
+    retainedMachinePreserved: true,
+  });
+  match(r.acceptance, {
+    actualM03DevAcceptanceVerified: false,
+    fullDVerified: false,
+    subsequentEnvironmentCleanupVerified: true,
+    subsequentSqlFamilyClosedVerified: true,
+    subsequentFixtureArchivedVerified: true,
+    zeroActorsAndOutstandingWorkVerified: true,
+    productionChanged: false,
+    pr8Merged: false,
+    m04Started: false,
+  });
+  match(r.protocolClose, {
+    status: 'closed',
+    childTransportsClosed: true,
+    adminChildClosed: true,
+    windowClosed: false,
+    fixtureArchived: false,
+    baselineRestored: false,
+    environmentCleanupVerified: true,
+    remoteWorkSettled: false,
+    residual: true,
+  });
+  match(r.wrapperClose, {
+    kind: 'm03_acceptance_wrapper_closed',
+    childClosed: true,
+    credentialChildrenClosed: true,
+    emergencyShutdown: false,
+    nativeExit: 1,
+    handoffsDeleted: true,
+    bypassHandoffDeleted: false,
+    pendingMachinePreserved: true,
+    privateRead: true,
+    code: 'M03_ACCEPTANCE_BLOCKED',
+  });
+  const absent = [
+    db + '-unprovisioned-archive-attempt.json',
+    'scripts/n8n/out/foundation/live/runtime.technical-8.jsonl',
+  ];
+  if (absent.some((path) => x.physical(join(repo, path), true))) fail();
+  const pins = { ...x.recovery.pins },
+    immutable = [];
+  const pin = (p, path) => {
+    const value = x.file(path);
+    if (
+      p.path !== path ||
+      !/^[a-f0-9]{64}$/.test(p.sha256) ||
+      hash(value) !== p.sha256 ||
+      Buffer.byteLength(value) !== p.bytes
+    )
+      fail();
+    pins[path] = p.sha256;
+    immutable.push(path);
+    return value;
+  };
+  const raw = {};
+  for (const [key, suffix] of [
+    ['admission', '.json'],
+    ['runtimeClaim', '.runtime-claim.json'],
+    ['closed', '.closed.json'],
+  ])
+    raw[key] = JSON.parse(pin(r.immutableTechnicalRecords[key], base + suffix));
+  const records = r.immutableTechnicalRecords;
+  if (
+    records.rawClosureVerifiedRemainsFalse !== true ||
+    records.rawBypassHandoffDeletedRemainsFalse !== true ||
+    raw.closed.closureVerified !== false ||
+    raw.closed.bypassHandoffDeleted !== false ||
+    raw.closed.childClosed !== true ||
+    raw.closed.credentialChildrenClosed !== true ||
+    raw.closed.emergencyShutdown !== false ||
+    raw.closed.nativeExit !== 1 ||
+    records.parentProcessId !== raw.admission.parentProcessId ||
+    records.runtimeProcessId !== raw.runtimeClaim.processId ||
+    raw.closed.parentProcessId !== records.parentProcessId ||
+    raw.closed.runtimeProcessId !== records.runtimeProcessId ||
+    x.io.processAlive(records.parentProcessId) !== false ||
+    x.io.processAlive(records.runtimeProcessId) !== false
+  )
+    fail();
+  const a = r.administrativeResult.admin;
+  if (
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(a.runId) ||
+    !Array.isArray(r.administrativeResult.pins) ||
+    r.administrativeResult.pins.length !== 5
+  )
+    fail();
+  const typePath = `scripts/db/out/m03-foundation-continuation-${a.runId}-db.types.ts`;
+  const adminPaths = [
+    db + '-attempt.json',
+    db + '-latest.json',
+    db + '-owner-provision-attempt.json',
+    db + '-reactivation-attempt.json',
+    typePath,
+  ];
+  const values = r.administrativeResult.pins.map((p, i) => pin(p, adminPaths[i]));
+  const [attempt, admin, provision, reactivation] = values.slice(0, 4).map(JSON.parse);
+  match(attempt, {
+    version: 1,
+    runId: a.runId,
+    projectRef: r.projectRef,
+    segmentId: c.segmentId,
+    purpose: 'postcheck-only-continuation',
+  });
+  match(admin, {
+    version: 1,
+    runId: a.runId,
+    environment: 'dev',
+    projectRef: r.projectRef,
+    host: 'aws-1-eu-central-1.pooler.supabase.com',
+    port: 5432,
+    activeWindowId: priorActiveRuntime.windowId,
+    clockSegmentId: c.segmentId,
+    technicalAttemptOrdinal: 8,
+    phaseAControl: true,
+    postcheckContinuation: true,
+    projectVerifiedContinuation: true,
+    postcheckCandidate: typePath,
+  });
+  match(a, {
+    status: 'phase_a_control_failed',
+    authenticationAttempted: true,
+    authenticationVerified: true,
+    historyBefore: 'complete',
+    historyAfter: 'complete',
+    pushAttempted: false,
+    childrenClosed: true,
+    handoffDeleted: true,
+    leaseDeleted: true,
+    scratchDeleted: true,
+    phaseACommands: 4,
+    phaseAClosed: false,
+    postcheckStage: 'complete',
+    forwardWindow: true,
+    unprovisionedFixtureArchived: false,
+    postcheckCandidate: typePath,
+  });
+  for (const key of Object.keys(a)) if (admin[key] !== a[key]) fail();
+  if (
+    !Array.isArray(admin.pendingVersions) ||
+    admin.pendingVersions.length ||
+    admin.reactivationState !== 'unknown'
+  )
+    fail();
+  match(provision, { version: 1, runId: a.runId, windowId: priorActiveRuntime.windowId });
+  match(provision.packet, {
+    audience: r.actualAttempt.previewAudience,
+    commitSha: priorActiveRuntime.sourceCommitSha,
+    deploymentId: r.actualAttempt.previewDeployment,
+    actorBuild: '0.3.99',
+    approvalReference: 'M03-A-D-f42930f-20261021',
+    maxTotalChargeUsd: 1,
+    batchMaxUsd: 2,
+  });
+  match(reactivation, {
+    version: 1,
+    runId: a.runId,
+    segmentId: c.segmentId,
+    competitorId: 'd51a39f6-fe87-4d17-aee9-3070c45693aa',
+    accountId: 'bd23314c-591f-4fb7-92fd-b7450634eeb6',
+  });
+  if (JSON.stringify(reactivation) !== JSON.stringify(r.administrativeResult.reactivation)) fail();
+  match(readback, {
+    projectRef: r.projectRef,
+    migrationCount: 15,
+    mutations: 0,
+    readQueries: 2,
+    eachAuditCount: 1,
+  });
+  match(readback.fixture, {
+    competitorId: 'd51a39f6-fe87-4d17-aee9-3070c45693aa',
+    accountId: 'bd23314c-591f-4fb7-92fd-b7450634eeb6',
+    competitorStatus: 'archived',
+    accountStatus: 'paused',
+    itemsCount: 0,
+  });
+  const audits = [
+    'm03_smoke_setup.v1',
+    'm03_smoke_reactivate.v1:1c69c89e-7807-46d5-b7b8-ca28285ff2b4',
+    `m03_smoke_reactivate.v1:${c.segmentId}`,
+    `m03_smoke_reactivate.v1:${c.segmentId}:technical-2`,
+  ];
+  if (
+    JSON.stringify(readback.audits) !== JSON.stringify(audits) ||
+    !Array.isArray(readback.windowFamily) ||
+    readback.windowFamily.length !== 2 ||
+    !exact(readback.vacancy, [
+      'items',
+      'runs',
+      'apifyRuns',
+      'launches',
+      'costEntries',
+      'runningRuns',
+      'activeLeases',
+      'incompleteRequests',
+    ]) ||
+    Object.values(readback.vacancy).some((value) => value !== 0)
+  )
+    fail();
+  match(readback.windowFamily[0], {
+    id: priorActiveRuntime.windowId,
+    closed: true,
+    started: false,
+    closeCount: 1,
+    admitted: 1,
+    commit: priorActiveRuntime.sourceCommitSha,
+    deployment: r.actualAttempt.previewDeployment,
+    audience: r.actualAttempt.previewAudience,
+  });
+  match(readback.windowFamily[1], {
+    id: c.windowId,
+    closed: true,
+    started: true,
+    closeCount: 1,
+    admitted: 2,
+  });
+  match(r.restrictedWriterClose, {
+    windowId: priorActiveRuntime.windowId,
+    verified: true,
+    administratorSubstituted: false,
+  });
+  match(r.setup, {
+    newRequests: 35,
+    environmentCreated: 7,
+    environmentAbsenceVerified: 7,
+    bypassAbsenceVerified: 1,
+    coordinatorCleanupVerified: true,
+  });
+  if (JSON.stringify(r.setup.methodCounts) !== JSON.stringify({ GET: 18, PATCH: 2, POST: 8, DELETE: 7 }))
+    fail();
+  const counts = { management: 228, control: 486, setup: 155, preflight: 6, runtime: 50 };
+  const expectedIds = [
+    '4JMHLDBSdgGxhPlk',
+    'Oq19AMI9C3B1wbo9',
+    '8pz1lF0xPDQCs3ab',
+    'F7S8Llr0ZSaSuw4T',
+    'VbJn4mLYm0sGy1X2',
+    'h6lUXSGN5sV2jxuQ',
+    '02yefa9uEPYwmM3N',
+    '83LybyawRpHXbjx6',
+    'qzgT9giRQJ7eMDmV',
+    'mySfLZbU7I1850uP',
+    'kkAGgnbD8NjWHMKC',
+    'ze8T1o0Cx0OGi3Wd',
+    '2U6nPs3uJkmjij82',
+    'S6KDFsx5IjQRf6tm',
+    'gBDmjIIEoM6XC7Wi',
+    'MzimjpsuyPuK7SKe',
+    'TsqSMa5MlO3QBLkt',
+    'S9NHRkKFUIiXX2wv',
+    'sowAIvuN7adg0JBq',
+    'qTjioYmBUVMIERVz',
+    'lkVDS0oO4WULipeV',
+    'RUTwaXMRh3PgLhJq',
+    'nDijMP0IurUw58Kg',
+    'v4yeqqNm6xHjZ5ue',
+    'tiEhU3dXrMifOnTL',
+  ];
+  for (const [name, count] of Object.entries(counts)) {
+    const path = `scripts/n8n/out/foundation/live/${name}.jsonl`,
+      p = r.actualPublicJournals[name];
+    const current = x.file(path),
+      parsed = jsonl(current, 8000),
+      prefix = parsed.lines.slice(0, count).join('\n') + '\n';
+    if (
+      p.path !== path ||
+      p.rows !== count ||
+      parsed.rows.length < count ||
+      hash(prefix) !== p.sha256 ||
+      Buffer.byteLength(prefix) !== p.bytes ||
+      (name === 'runtime' && current !== prefix)
+    )
+      fail();
+    const beforeCount = { management: 168, control: 434, setup: 84, preflight: 4, runtime: 50 }[name];
+    const before = parsed.lines.slice(0, beforeCount).join('\n') + '\n';
+    if (hash(before) !== x.recovery.pins[path]) fail();
+    const added = parsed.rows.slice(beforeCount, count);
+    if (name === 'management') {
+      if (
+        added.some(
+          (row, i) =>
+            !exact(row, ['event', 'ordinal']) ||
+            row.event !== 'management_attempt' ||
+            row.ordinal !== 168 + i,
+        )
+      )
+        fail();
+    } else if (name === 'control') {
+      for (const [i, row] of added.entries()) {
+        const at = Date.parse(row.at);
+        if (!Number.isFinite(at) || at < raw.admission.startsAt || at > raw.closed.closedAt) fail();
+        if (i === 1) {
+          if (
+            !exact(row, ['event', 'kind', 'workflowId', 'at']) ||
+            row.event !== 'browser_port_preflight_verified' ||
+            row.kind !== 'browser_ui' ||
+            row.workflowId !== 'MzimjpsuyPuK7SKe'
+          )
+            fail();
+        } else if (
+          !exact(row, ['event', 'ordinal', 'kind', 'workflowId', 'at']) ||
+          row.event !== 'control_request_intent' ||
+          row.kind !== 'discovery' ||
+          row.ordinal !== (i === 0 ? 433 : 432 + i) ||
+          row.workflowId !== (i === 0 ? 'MzimjpsuyPuK7SKe' : expectedIds[Math.floor((i - 2) / 2)])
+        )
+          fail();
+      }
+    } else if (name === 'setup') {
+      const attempts = added.filter((row) => row.event === 'setup_attempt');
+      const methods = Object.fromEntries(
+        ['GET', 'PATCH', 'POST', 'DELETE'].map((kind) => [
+          kind,
+          attempts.filter((row) => row.kind === kind).length,
+        ]),
+      );
+      if (
+        JSON.stringify(methods) !== JSON.stringify(r.setup.methodCounts) ||
+        attempts.length !== 35 ||
+        attempts.some((row, i) => row.ordinal !== 45 + i) ||
+        added.some((row) => {
+          const inAttempt = (value) =>
+            Number.isSafeInteger(value) && value >= raw.admission.startsAt && value <= raw.closed.closedAt;
+          if (row.event === 'setup_ack' && row.kind === 'environment')
+            return (
+              !exact(row, [
+                'event',
+                'kind',
+                'id',
+                'key',
+                'type',
+                'target',
+                'gitBranch',
+                'comment',
+                'createdAt',
+                'updatedAt',
+              ]) ||
+              !inAttempt(row.createdAt) ||
+              !inAttempt(row.updatedAt) ||
+              row.updatedAt < row.createdAt ||
+              row.type !== 'sensitive' ||
+              row.gitBranch !== 'm03-n8n-foundation' ||
+              JSON.stringify(row.target) !== JSON.stringify(['preview']) ||
+              row.comment !== 'M03 foundation temporary dev ' + priorActiveRuntime.windowId
+            );
+          return !inAttempt(row.at);
+        }) ||
+        added.filter((row) => row.event === 'setup_ack' && row.kind === 'environment').length !== 7 ||
+        added.filter((row) => row.event === 'setup_cleanup_absent' && row.kind === 'environment').length !==
+          7 ||
+        added.filter((row) => row.event === 'setup_cleanup_absent' && row.kind === 'bypass').length !== 1
+      )
+        fail();
+    } else if (name === 'preflight') {
+      const [intent, verified] = added;
+      match(intent, {
+        event: 'foundation_writer_close_intent',
+        windowId: priorActiveRuntime.windowId,
+        requestId: '00000000-0000-4000-8000-000000000021',
+        audience: r.actualAttempt.previewAudience,
+        sourceCommitSha: priorActiveRuntime.sourceCommitSha,
+        deploymentId: r.actualAttempt.previewDeployment,
+        at: r.restrictedWriterClose.intentAt,
+      });
+      match(verified, {
+        event: 'foundation_writer_close_verified',
+        windowId: priorActiveRuntime.windowId,
+        identityVerified: true,
+        bindingVerified: true,
+        closeAcknowledged: true,
+        connectionClosed: true,
+        at: r.restrictedWriterClose.verifiedAt,
+      });
+    }
+    pins[path] = p.sha256;
+  }
+  pins[closedFixtureRecovery.relative] = closedFixtureRecovery.sha256;
+  return Object.freeze({
+    ...x.recovery,
+    mainManagementAttempts: 227,
+    mainControlAttempts: 483,
+    controlRows: 486,
+    setupRows: 155,
+    setupAttempts: 79,
+    preflightRows: 6,
+    legacySqlAdmitted: 3,
+    closedFixtureTechnicalAttempt: 8,
+    historicalWindowIds: Object.freeze([c.windowId, priorActiveRuntime.windowId]),
+    closedFixturePins: Object.freeze([closedFixtureRecovery.relative, ...immutable]),
+    pins: Object.freeze(pins),
+  });
+}
 function currentReadiness(x) {
   if (!x.recovery?.closedWindow) return null;
   assertSetupAllocationApproval(x);
-  if (foundationProjectVerifiedActiveRuntime.setupMaximum - x.recovery.setupAttempts < 14 + 18)
+  if (activeRuntime(x.recovery).setupMaximum - x.recovery.setupAttempts < 14 + 18)
     return 'setup_cap_insufficient';
   if (
     x.recovery.mainManagementAttempts + x.recovery.carriedManagementAttempts + 25 + 44 + 307 >
     (x.recovery.managementMaximum ?? caps.runtimeManagement)
   )
     return 'management_cap_insufficient';
-  const active = foundationProjectVerifiedActiveRuntime;
+  const active = activeRuntime(x.recovery);
   if (
     typeof active.sourceCommitSha !== 'string' ||
     !/^[a-f0-9]{40}$/.test(active.sourceCommitSha) ||
@@ -1957,8 +2543,8 @@ function blockedReadiness(x, status) {
     kind: 'project_verified_continuation_blocked',
     status,
     segmentId: c.segmentId,
-    sourceCommitSha: foundationProjectVerifiedActiveRuntime.sourceCommitSha,
-    windowId: foundationProjectVerifiedActiveRuntime.windowId,
+    sourceCommitSha: activeRuntime(x.recovery).sourceCommitSha,
+    windowId: activeRuntime(x.recovery).windowId,
     managementAttempts: x.recovery.mainManagementAttempts + x.recovery.carriedManagementAttempts,
     controlAttempts: x.recovery.mainControlAttempts + x.recovery.carriedControlAttempts,
     combinedAttempts:
@@ -1968,9 +2554,9 @@ function blockedReadiness(x, status) {
       x.recovery.carriedControlAttempts,
     gatewayPreflightAttempts: x.recovery.gatewayPreflightAttempts,
     setupAttempts: x.recovery.setupAttempts,
-    setupMaximum: foundationProjectVerifiedActiveRuntime.setupMaximum,
+    setupMaximum: activeRuntime(x.recovery).setupMaximum,
     minimumNewSetupRequests: 32,
-    proposedSetupMaximum: foundationProjectVerifiedActiveRuntime.proposedSetupMaximum,
+    proposedSetupMaximum: activeRuntime(x.recovery).proposedSetupMaximum,
     privateRead: false,
     networkRequests: 0,
   });
@@ -2458,7 +3044,8 @@ function closedTechnicalAttempt(x, paths) {
     (paths.ordinal === 4 && [4, 5].includes(x.recovery?.nativeDiscoveryTechnicalAttempt)) ||
     (paths.ordinal === 5 && x.recovery?.nativeDiscoveryTechnicalAttempt === 5) ||
     (paths.ordinal === 6 && x.recovery?.baselineDiscoveryTechnicalAttempt === 6) ||
-    (paths.ordinal === 7 && x.recovery?.closedPreparationTechnicalAttempt === 7);
+    (paths.ordinal === 7 && x.recovery?.closedPreparationTechnicalAttempt === 7) ||
+    (paths.ordinal === 8 && x.recovery?.closedFixtureTechnicalAttempt === 8);
   if (
     !exact(close, [
       'kind',
@@ -2503,7 +3090,12 @@ function closedTechnicalAttempt(x, paths) {
 function record(x, { paths = technicalPaths(x), allowExpired = false, checkParent = true } = {}) {
   const text = x.file(paths.admissionRelative),
     r = JSON.parse(text);
-  const active = x.recovery?.closedWindow && paths.ordinal >= 3 ? foundationProjectVerifiedActiveRuntime : c;
+  const active =
+    x.recovery?.closedWindow && paths.ordinal >= 3
+      ? paths.ordinal >= 9
+        ? activeRuntime(x.recovery)
+        : priorActiveRuntime
+      : c;
   if (
     !exact(r, [
       'kind',
@@ -2604,7 +3196,10 @@ function proof(data, claimed = false) {
             legacySqlAdmitted: data.recovery.legacySqlAdmitted,
             headerSourceCommitSha: c.sourceCommitSha,
             activeWindowId: data.r.windowId,
-            setupMaximum: foundationProjectVerifiedActiveRuntime.setupMaximum,
+            setupMaximum: activeRuntime(data.recovery).setupMaximum,
+            ...(data.recovery.closedFixtureTechnicalAttempt === 8
+              ? { historicalWindowIds: Object.freeze([c.windowId, priorActiveRuntime.windowId]) }
+              : {}),
             runtimeFilename: `runtime.technical-${data.paths.ordinal}.jsonl`,
           }
         : {}),
@@ -2673,13 +3268,22 @@ export function assertFoundationProjectVerifiedContinuationJournalPrefixes(p, op
     ])
       if (hash(x.file(path)) !== expected) fail();
   }
-  if (x.recovery?.managementMaximum === 576) {
+  if ([576, 640].includes(x.recovery?.managementMaximum)) {
     for (const [path, expected] of [
       [managementAllocationApproval.relative, managementAllocationApproval.sha256],
       [managementAllocationApproval.packetRelative, managementAllocationApproval.packetSha256],
     ])
       if (hash(x.file(path)) !== expected) fail();
   }
+  if (x.recovery?.managementMaximum === 640) {
+    for (const [path, expected] of [
+      [controlManagementAllocationApproval.relative, controlManagementAllocationApproval.sha256],
+      [controlManagementAllocationApproval.packetRelative, controlManagementAllocationApproval.packetSha256],
+    ])
+      if (hash(x.file(path)) !== expected) fail();
+  }
+  if (x.recovery?.closedFixtureTechnicalAttempt === 8)
+    for (const path of x.recovery.closedFixturePins) if (hash(x.file(path)) !== x.recovery.pins[path]) fail();
   if (x.recovery?.closedPreparationTechnicalAttempt === 7)
     for (const path of x.recovery.closedPreparationPins)
       if (hash(x.file(path)) !== x.recovery.pins[path]) fail();
@@ -2709,14 +3313,14 @@ export function verifyFoundationProjectVerifiedContinuation(options = {}, depend
       ...(approved ? {} : { status: 'approval_required', approvalRequired: true }),
       segmentId: c.segmentId,
       sourceCommitSha: x.recovery?.closedWindow
-        ? foundationProjectVerifiedActiveRuntime.sourceCommitSha
+        ? activeRuntime(x.recovery).sourceCommitSha
         : c.sourceCommitSha,
-      windowId: x.recovery?.closedWindow ? foundationProjectVerifiedActiveRuntime.windowId : c.windowId,
+      windowId: x.recovery?.closedWindow ? activeRuntime(x.recovery).windowId : c.windowId,
       privateRead: false,
       networkRequests: 0,
-      ...(x.recovery?.managementMaximum === 576
+      ...([576, 640].includes(x.recovery?.managementMaximum)
         ? {
-            managementMaximum: 576,
+            managementMaximum: x.recovery.managementMaximum,
             managementAttempts: x.recovery.mainManagementAttempts + x.recovery.carriedManagementAttempts,
             controlAttempts: x.recovery.mainControlAttempts + x.recovery.carriedControlAttempts,
             combinedAttempts:
@@ -2759,7 +3363,7 @@ export function admitFoundationProjectVerifiedContinuation(options = {}, depende
       startsAt = x.clock();
     const previous = technicalPaths(x),
       paths = previous.exists ? attemptPaths(previous.ordinal + 1) : previous;
-    const active = x.recovery?.closedWindow ? foundationProjectVerifiedActiveRuntime : c;
+    const active = x.recovery?.closedWindow ? activeRuntime(x.recovery) : c;
     x.create(paths.admissionRelative, {
       kind: 'm03_project_verified_continuation_admission',
       version: 1,

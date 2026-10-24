@@ -100,6 +100,12 @@ $valid=[ordered]@{kind='project_verified_continuation_ready';segmentId='20275b22
 if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$valid) $true 'CheckOnly') -ne 576){throw 'APPROVED_CAP_NOT_PROJECTED'}
 $reconciled=[ordered]@{};foreach($name in $valid.Keys){$reconciled[$name]=$valid[$name]};$reconciled.managementAttempts=177;$reconciled.controlAttempts=435;$reconciled.combinedAttempts=612
 if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$reconciled) $true 'CheckOnly') -ne 576){throw 'RECONCILED_CHARGES_NOT_PROJECTED'}
+$fresh=[ordered]@{};foreach($name in $valid.Keys){$fresh[$name]=$valid[$name]};$fresh.managementMaximum=640;$fresh.managementAttempts=237;$fresh.controlAttempts=486;$fresh.combinedAttempts=723;$fresh.sourceCommitSha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';$fresh.windowId='eda4fae1-1e19-47db-81b8-beac1a4ed883'
+if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$fresh) $true 'CheckOnly') -ne 640){throw 'APPROVED_640_CHARGES_NOT_PROJECTED'}
+foreach($mutation in @(@{key='managementMaximum';value=576},@{key='managementAttempts';value=177},@{key='controlAttempts';value=435},@{key='combinedAttempts';value=612},@{key='sourceCommitSha';value=$valid.sourceCommitSha},@{key='windowId';value=$valid.windowId})){
+ $mixed=[ordered]@{};foreach($name in $fresh.Keys){$mixed[$name]=$fresh[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED_640_PROFILE_ACCEPTED'}
+}
 foreach($key in @('managementAttempts','controlAttempts','combinedAttempts')){
  $mixed=[ordered]@{};foreach($name in $reconciled.Keys){$mixed[$name]=$reconciled[$name]};$mixed[$key]=$valid[$key];$denied=$false
  try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED_CHARGES_ACCEPTED'}
@@ -232,7 +238,7 @@ test(
         `$ErrorActionPreference='Stop'
 . '${resolve('scripts/n8n/windows/Acceptance-PublicRuntime.ps1').replaceAll("'", "''")}'
 $paths=@(Get-M03AcceptancePublicFiles '${resolve('.').replaceAll("'", "''")}')
-foreach($required in @('scripts/db/m03-foundation-forward-dev-migration-packet.json','scripts/db/foundation-forward-postcheck.sql','supabase/migrations/20261023163755_m03_foundation_window_continuation.sql','milestones/M03-n8n-foundation/evidence/remaining-management-allocation-20261024.md','milestones/M03-n8n-foundation/evidence/remaining-management-allocation-approval-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical6-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json')){if($paths -cnotcontains $required){throw 'FORWARD_SOURCE_NOT_SEALED'}}
+foreach($required in @('scripts/db/m03-foundation-forward-dev-migration-packet.json','scripts/db/foundation-forward-postcheck.sql','supabase/migrations/20261023163755_m03_foundation_window_continuation.sql','milestones/M03-n8n-foundation/evidence/remaining-management-allocation-20261024.md','milestones/M03-n8n-foundation/evidence/remaining-management-allocation-approval-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical6-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-wf70-readback-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md','milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json')){if($paths -cnotcontains $required){throw 'FORWARD_SOURCE_NOT_SEALED'}}
 Write-Output 'FORWARD_CLOSURE_PASS'
 `,
       );

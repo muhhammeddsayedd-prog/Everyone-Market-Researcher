@@ -315,29 +315,30 @@ test('four exact SUB cases reuse only the first original normalized input and me
   }
 });
 
-test('fresh-window SUB replay requires the same first-original window as its active transport', () => {
-  const fresh = { ...transport, windowId: '38b3708d-61b0-41d2-8170-5ed91c66b4dc' };
-  const evidence = structuredClone(firstRunEvidence);
-  evidence.launch.window_id = fresh.windowId;
-  const spec = foundationAcceptancePlan().cases.find((c) => c.id.startsWith('sub.'));
-  const g = materializeFoundationAcceptanceCase(bindings, fresh, spec.id, {
-    fixtureReceipt: fixture,
-    firstRunEvidence: evidence,
-  });
-  assert.equal(JSON.stringify(g.workflow.nodes).includes(fresh.windowId), true);
-  assert.throws(() =>
-    materializeFoundationAcceptanceCase(bindings, fresh, spec.id, {
-      fixtureReceipt: fixture,
-      firstRunEvidence,
-    }),
-  );
-  assert.throws(() =>
-    materializeFoundationAcceptanceCase(bindings, transport, spec.id, {
+for (const windowId of ['38b3708d-61b0-41d2-8170-5ed91c66b4dc', 'eda4fae1-1e19-47db-81b8-beac1a4ed883'])
+  test(`fresh-window ${windowId} SUB replay requires the same first-original window as its active transport`, () => {
+    const fresh = { ...transport, windowId };
+    const evidence = structuredClone(firstRunEvidence);
+    evidence.launch.window_id = fresh.windowId;
+    const spec = foundationAcceptancePlan().cases.find((c) => c.id.startsWith('sub.'));
+    const g = materializeFoundationAcceptanceCase(bindings, fresh, spec.id, {
       fixtureReceipt: fixture,
       firstRunEvidence: evidence,
-    }),
-  );
-});
+    });
+    assert.equal(JSON.stringify(g.workflow.nodes).includes(fresh.windowId), true);
+    assert.throws(() =>
+      materializeFoundationAcceptanceCase(bindings, fresh, spec.id, {
+        fixtureReceipt: fixture,
+        firstRunEvidence,
+      }),
+    );
+    assert.throws(() =>
+      materializeFoundationAcceptanceCase(bindings, transport, spec.id, {
+        fixtureReceipt: fixture,
+        firstRunEvidence: evidence,
+      }),
+    );
+  });
 test('SUB replay checks require exact output and unchanged authoritative state without claiming native completion from SQL', () => {
   for (const id of ['sub.ingest.replay_a', 'sub.ingest.replay_b', 'sub.cost.replay_a', 'sub.cost.replay_b']) {
     const g = materializeFoundationAcceptanceCase(bindings, transport, id, {

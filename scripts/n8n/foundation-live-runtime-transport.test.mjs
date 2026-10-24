@@ -495,6 +495,15 @@ test('restricted Writer Close verifies identity/binding, durably admits once and
   assert.deepEqual(f.t.state(), { pendingRequests: 0, unclosedResponses: 0 });
 });
 
+test('Writer Close binds the exact third owned window without reusing either closed-window intent', async () => {
+  const f = writerCloseFixture({ windowId: 'eda4fae1-1e19-47db-81b8-beac1a4ed883' });
+  const result = await f.t.closeWindow();
+  assert.equal(result.closeVerified, true);
+  assert.equal(f.rows[0].windowId, 'eda4fae1-1e19-47db-81b8-beac1a4ed883');
+  assert.equal(f.queries.filter((q) => q.values?.[2] === 'close').length, 1);
+  assert.throws(() => writerCloseFixture({ windowId: '11111111-1111-4111-8111-111111111111' }));
+});
+
 test('Writer Close refuses wrong actual login or binding before durable mutation intent', async () => {
   for (const wrong of ['identity', 'binding']) {
     const f = writerCloseFixture({
@@ -608,7 +617,7 @@ test('Writer Close refuses duplicate or foreign durable intents before construct
     assert.throws(() => writerCloseFixture({ prior }), /FOUNDATION_LIVE_MANAGEMENT_BLOCKED/);
 });
 
-test('Writer Close permits exactly the two reviewed window identities without reusing historical Close intent', async () => {
+test('Writer Close preserves both earlier reviewed identities without reusing historical Close intent', async () => {
   const old = writerCloseFixture();
   await old.t.closeWindow();
   const fresh = writerCloseFixture({

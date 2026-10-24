@@ -38,7 +38,7 @@ const freeze = (v) => {
 };
 export function foundationLiveSetupRequestPlan(previousAttempts, maximumRequests = maximum) {
   if (
-    ![50, 88].includes(maximumRequests) ||
+    ![50, 88, 132].includes(maximumRequests) ||
     !Number.isInteger(previousAttempts) ||
     previousAttempts < 0 ||
     previousAttempts > maximumRequests
@@ -108,7 +108,7 @@ export function createFoundationLiveSetupJournal({
   maximumRequests = maximum,
 }) {
   if (
-    ![50, 88].includes(maximumRequests) ||
+    ![50, 88, 132].includes(maximumRequests) ||
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
     typeof durableAppend !== 'function' ||
     !Array.isArray(previousEvents) ||
@@ -183,9 +183,11 @@ export function createFoundationLiveSetupJournal({
       (row.type !== 'sensitive' ||
         row.gitBranch !== S.branch ||
         !isDeepStrictEqual(row.target, ['preview']) ||
-        !['df4f29ec-e2dc-4d82-a276-62a4e695e6f9', '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].some(
-          (id) => row.comment === 'M03 foundation temporary dev ' + id,
-        ) ||
+        ![
+          'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+          '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+          'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+        ].some((id) => row.comment === 'M03 foundation temporary dev ' + id) ||
         !Number.isFinite(row.createdAt) ||
         !Number.isFinite(row.updatedAt))
     )
@@ -227,7 +229,12 @@ export function assertFoundationLiveDeployment(value) {
 export function createFoundationLiveSetup(input, dependencies = {}) {
   const { sourceCommitSha, transport, journal, managementBudget, verifyDevReady } = input;
   const activeWindowId = input.activeWindowId ?? S.windowId;
-  if (![S.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].includes(activeWindowId)) fail();
+  if (
+    ![S.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc', 'eda4fae1-1e19-47db-81b8-beac1a4ed883'].includes(
+      activeWindowId,
+    )
+  )
+    fail();
   const now = input.now ?? Date.now,
     pause = input.pause;
   if (
@@ -314,10 +321,24 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
   const requestMaximum = resumeCheckpoint?.setupMaximum ?? maximum;
   const legacyMetadataReplay =
     resumed && resumeCheckpoint?.closedWindow === true && activeWindowId !== S.windowId;
+  const historicalWindowIds = legacyMetadataReplay
+    ? (resumeCheckpoint.historicalWindowIds ?? Object.freeze([S.windowId]))
+    : Object.freeze([]);
+  const expectedHistoricalWindowIds =
+    activeWindowId === 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
+      ? [S.windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc']
+      : [S.windowId];
   if (
     journal.maximumRequests !== requestMaximum ||
-    (activeWindowId !== S.windowId &&
-      (!resumeCheckpoint?.closedWindow || resumeCheckpoint.activeWindowId !== activeWindowId))
+    (activeWindowId !== S.windowId && !resumeCheckpoint?.closedWindow) ||
+    (resumeCheckpoint?.closedWindow && resumeCheckpoint.activeWindowId !== activeWindowId) ||
+    (requestMaximum === 132 &&
+      (resumeCheckpoint?.managementMaximum !== 640 ||
+        activeWindowId !== 'eda4fae1-1e19-47db-81b8-beac1a4ed883')) ||
+    (legacyMetadataReplay &&
+      (!Array.isArray(historicalWindowIds) ||
+        !Object.isFrozen(historicalWindowIds) ||
+        !isDeepStrictEqual(historicalWindowIds, expectedHistoricalWindowIds)))
   )
     fail();
   let started = journal.rows.length > 0 && !resumed,
@@ -410,7 +431,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
         !(
           historical &&
           legacyMetadataReplay &&
-          row.comment === 'M03 foundation temporary dev ' + S.windowId
+          historicalWindowIds.some((id) => row.comment === 'M03 foundation temporary dev ' + id)
         )) ||
       !Number.isFinite(row.createdAt) ||
       !Number.isFinite(row.updatedAt) ||
@@ -553,8 +574,8 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
           sharedAttempts = sharedBudget.attempts,
           sharedMaximum = sharedBudget.maximum ?? 512;
         if (
-          ![512, 576].includes(sharedMaximum) ||
-          (sharedMaximum === 576 && resumeCheckpoint?.managementMaximum !== 576) ||
+          ![512, 576, 640].includes(sharedMaximum) ||
+          (sharedMaximum !== 512 && resumeCheckpoint?.managementMaximum !== sharedMaximum) ||
           !Number.isInteger(sharedAttempts) ||
           sharedAttempts < 0 ||
           sharedAttempts + 45 + 134 + 142 > sharedMaximum
@@ -828,7 +849,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
       return freeze({
         requestCount: attempts,
         maximumRequests: requestMaximum,
-        sharedMaximum: 512,
+        sharedMaximum: managementBudget.snapshot().maximum ?? 512,
         deploymentReady: proof !== null,
         unresolved: [...unresolved],
         busy,

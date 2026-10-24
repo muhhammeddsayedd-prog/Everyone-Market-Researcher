@@ -420,7 +420,9 @@ export async function verifyFoundationLiveSmokeSql({
 }) {
   const proof = assertFoundationSettlementReceipt(settlement);
   if (
-    ![windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].includes(activeWindowId) ||
+    ![windowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc', 'eda4fae1-1e19-47db-81b8-beac1a4ed883'].includes(
+      activeWindowId,
+    ) ||
     proof.windowId !== activeWindowId ||
     !['smoke.first', 'smoke.second'].includes(caseId) ||
     proof.caseId !== caseId ||
@@ -568,7 +570,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
       ...(remaining ? { remainingContinuationProof: remaining } : {}),
       ...(startup ? { startupReplacementProof: startup } : {}),
       ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
-      ...(verifiedCheckpoint?.managementMaximum === 576
+      ...([576, 640].includes(verifiedCheckpoint?.managementMaximum)
         ? {
             controlAttempts: () =>
               controlBudget?.snapshot().attempts ?? verifiedCheckpoint.aggregateControlAttempts,
@@ -628,7 +630,7 @@ export function createFoundationLiveAcceptanceSession(input, emit, dependencies 
     ...(remaining ? { remainingContinuationProof: remaining } : {}),
     ...(startup ? { startupReplacementProof: startup } : {}),
     ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
-    ...(verifiedCheckpoint?.managementMaximum === 576
+    ...([576, 640].includes(verifiedCheckpoint?.managementMaximum)
       ? { managementAttempts: () => budget.snapshot().attempts }
       : {}),
   });

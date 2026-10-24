@@ -11,7 +11,7 @@ const quote = (value) => `'${value.replaceAll("'", "''")}'`;
 const definitions = (names, file = consumer) => `
 $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile(${quote(file)},[ref]$tokens,[ref]$errors)
 if($errors.Count -ne 0){throw 'PUBLIC_SOURCE_PARSE_FAILED'}
-foreach($name in @(${names.map(quote).join(',')})){
+foreach($name in @(${[...new Set([...(file.endsWith('Foundation-AdminControl.ps1') ? ['Foundation-ForwardWindowId'] : []), ...names])].map(quote).join(',')})){
  $functions=@($ast.FindAll({param($item) $item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true))
  if($functions.Count -ne 1){throw 'EXPECTED_FUNCTION_MISSING'};Invoke-Expression $functions[0].Extent.Text
 }`;
@@ -326,6 +326,37 @@ Write-Output 'EXACT_REGISTERED_STATE'
   );
 });
 
+test(
+  'approved remaining native window requires both closed predecessors, exact cumulative counters and the selected source',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys'])}
+${definitions(['Foundation-Literal', 'Assert-FoundationForwardWindowState'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$out='synthetic';$continuationOutputStem='synthetic';$projectVerifiedForwardWindowId='eda4fae1-1e19-47db-81b8-beac1a4ed883';$projectVerifiedForwardSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'
+$script:forwardWindowBinding=[pscustomobject]@{audience='https://everyone-market-researcher-synthetic.vercel.app';deploymentId='dpl_Synthetic'}
+function Read-FoundationForwardPrior{}
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{outputSegment='technical-9'}}
+function Test-Path($LiteralPath){return $false}
+$script:value=[pscustomobject]@{identity=$true;legacyClosed=$true;intermediateClosed=$true;windows=2;freshWindows=0;freshPrepared=$false;globalAdmitted=3;requests=1;activeLeases=0;launches=0;bindings=0;progress=0}
+function Invoke-FoundationQuery($Sql,$Field){
+ if($Sql -match 'foundation_gateway_admit|update |insert |delete '){throw 'PREFLIGHT_MUTATED'}
+ if($Field -ceq 'ownership'){if(-not $Sql.Contains("where w.window_id='eda4fae1-1e19-47db-81b8-beac1a4ed883'")){throw 'WRONG_ACTIVE_OWNERSHIP'};return [pscustomobject]@{owned=$true}}
+ if(-not $Sql.Contains("'intermediateClosed'") -or -not $Sql.Contains("'dpl_HPq8ot1nNvBZRLTyAoEnXHXuhTPF'") -or -not $Sql.Contains("bound_commit_sha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803'")){throw 'PRIOR_BINDING_NOT_EXACT'};return $script:value
+}
+Assert-FoundationForwardWindowState $false
+$script:value.windows=3;$script:value.freshWindows=1;$script:value.freshPrepared=$true;Assert-FoundationForwardWindowState $true
+foreach($key in @('legacyClosed','intermediateClosed','freshPrepared')){$script:value.$key=$false;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$true;if(-not $denied){throw 'UNCLOSED_PREDECESSOR_ACCEPTED'}}
+foreach($key in @('windows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){$saved=$script:value.$key;$script:value.$key=$saved+1;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$saved;if(-not $denied){throw 'UNRECONCILED_PROGRESS_ACCEPTED'}}
+$projectVerifiedForwardSource='a5e746736893d5040e93032ae740a0878f748837';$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'MIXED_WINDOW_SOURCE_ACCEPTED'}
+Write-Output 'EXACT_REMAINING_NATIVE_WINDOW'
+`),
+      'EXACT_REMAINING_NATIVE_WINDOW',
+    );
+  },
+);
+
 test('ForwardWindow requires only the compatible current ProjectVerified PhaseA profile', native, () => {
   for (const flags of [
     ['-ForwardWindow'],
@@ -387,6 +418,12 @@ foreach($key in @('managementAttempts','controlAttempts','combinedAttempts')){
  $mixed=[ordered]@{};foreach($name in $reconciled.Keys){$mixed[$name]=$reconciled[$name]};$mixed[$key]=$valid[$key];$script:dto=[pscustomobject]$mixed;$denied=$false
  try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MIXED_CHARGES_ACCEPTED'}
 }
+$fresh=[ordered]@{};foreach($name in $valid.Keys){$fresh[$name]=$valid[$name]};$fresh.managementMaximum=640;$fresh.managementAttempts=237;$fresh.controlAttempts=486;$fresh.combinedAttempts=723;$fresh.sourceCommitSha='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';$fresh.windowId='eda4fae1-1e19-47db-81b8-beac1a4ed883';$script:dto=[pscustomobject]$fresh
+$null=Read-FoundationPostcheckContinuation
+foreach($mutation in @(@{key='managementMaximum';value=576},@{key='managementAttempts';value=177},@{key='controlAttempts';value=435},@{key='combinedAttempts';value=612},@{key='sourceCommitSha';value=$valid.sourceCommitSha},@{key='windowId';value=$valid.windowId})){
+ $mixed=[ordered]@{};foreach($name in $fresh.Keys){$mixed[$name]=$fresh[$name]};$mixed[$mutation.key]=$mutation.value;$script:dto=[pscustomobject]$mixed;$denied=$false
+ try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'MIXED_640_PROFILE_ACCEPTED'}
+}
 foreach($missing in @('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')){
  $copy=[ordered]@{};foreach($name in $valid.Keys){if($name -cne $missing){$copy[$name]=$valid[$name]}};$script:dto=[pscustomobject]$copy;$denied=$false
  try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'PARTIAL_MANAGEMENT_PROFILE_ACCEPTED'}
@@ -401,7 +438,7 @@ Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
 );
 
 test(
-  'actual forward packet has all47 source-required public pins and retains every old migration field',
+  'actual forward packet has all50 source-required public pins and retains every old migration field',
   native,
   () => {
     assert.equal(
@@ -415,12 +452,12 @@ Invoke-Expression $source.Substring($start,$end-$start)
 $packet=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
 $old=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-dev-migration-packet.json'))}))
 Assert-Keys $packet.files $requiredFiles
-if($requiredFiles.Count -ne 47 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+if($requiredFiles.Count -ne 50 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
 $prior=@($old.baseline)+@($old.pending)
 for($i=0;$i -lt 14;$i++){foreach($field in @('version','name','file','sha256','historySha256')){if($prior[$i].$field -cne $packet.baseline[$i].$field){throw 'ORIGINAL_MIGRATION_REWRITTEN'}}}
-Write-Output 'EXACT_PUBLIC_47_AND_OLD14'
+Write-Output 'EXACT_PUBLIC_50_AND_OLD14'
 `),
-      'EXACT_PUBLIC_47_AND_OLD14',
+      'EXACT_PUBLIC_50_AND_OLD14',
     );
   },
 );

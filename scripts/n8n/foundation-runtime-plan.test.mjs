@@ -46,6 +46,11 @@ test('fresh active window compiles exact new response guards while preserving re
   assert.deepEqual(createFoundationRuntimeBaseline(f), old.baseline);
   assert.equal(f.transport.windowId, 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9');
   assert.equal(JSON.stringify(fresh.runtime).includes('38b3708d-61b0-41d2-8170-5ed91c66b4dc'), true);
+  const next = createFoundationRuntimePlan({ ...f, activeWindowId: 'eda4fae1-1e19-47db-81b8-beac1a4ed883' });
+  assert.equal(next.windowId, 'eda4fae1-1e19-47db-81b8-beac1a4ed883');
+  assert.deepEqual(next.baseline, old.baseline);
+  assert.equal(JSON.stringify(next.runtime).includes(next.windowId), true);
+  assert.equal(JSON.stringify(next.runtime).includes(fresh.windowId), false);
   assert.throws(() =>
     createFoundationRuntimePlan({ ...f, activeWindowId: '11111111-1111-4111-8111-111111111111' }),
   );

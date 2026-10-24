@@ -77,7 +77,11 @@ export function createFoundationSettlementReader({
   windowId = legacyWindowId,
 } = {}) {
   if (
-    ![legacyWindowId, '38b3708d-61b0-41d2-8170-5ed91c66b4dc'].includes(windowId) ||
+    ![
+      legacyWindowId,
+      '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+      'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+    ].includes(windowId) ||
     [readGateway, readProvider, transportSnapshot, now, pause].some((fn) => typeof fn !== 'function') ||
     !Number.isSafeInteger(deadlineAt)
   )

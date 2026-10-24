@@ -38,6 +38,9 @@ $requiredFiles+=@('scripts/n8n/foundation-live-project-verified-continuation.mjs
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md')
 $requiredFiles+=@('scripts/db/foundation-inspect.sql','scripts/n8n/windows/Dev-CredentialStore.ps1')
+$requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technical8-reconciliation-20261024.json',
+  'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md',
+  'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json')
 $forwardSchema=[bool]($ForwardMigration -or $ForwardWindow)
 if($forwardSchema){$requiredFiles+=@('scripts/db/foundation-forward-postcheck.sql','scripts/db/m03-foundation-dev-migration-packet.json')}
 $versions = @('20261017172928','20261017172931','20261017172934','20261017172937','20261017172940','20261017172943','20261017172945','20261018034220','20261018035417','20261018070042','20261018231756','20261018232014','20261018232922','20261018233338')
@@ -363,6 +366,8 @@ function Read-FoundationPostcheckContinuation {
     if(-not $answer.ok -or -not $answer.closed){throw 'blocked'}
     $value=ConvertFrom-Json -InputObject $answer.text -ErrorAction Stop
     $approvalKind=if($projectMode){'project_verified_continuation_approval_required'}elseif($startupMode){'startup_replacement_approval_required'}else{'remaining_continuation_approval_required'}
+    $freshMode=$forwardMode -and $projectMode -and $value.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
+    if($freshMode){$expectedSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';$expectedWindow='eda4fae1-1e19-47db-81b8-beac1a4ed883'}
     if($CheckOnly -and ($remainingMode -or $startupMode -or $projectMode) -and $value.kind -ceq $approvalKind){
       Assert-Keys $value @('kind','status','approvalRequired','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
       if($value.status -cne 'approval_required' -or $value.approvalRequired -isnot [bool] -or $value.approvalRequired -ne $true -or $value.privateRead -isnot [bool] -or $value.privateRead -ne $false -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0 -or $value.segmentId -cne $postcheckContinuationSegment -or $value.sourceCommitSha -cne $expectedSource -or $value.windowId -cne $expectedWindow){throw 'blocked'}
@@ -371,10 +376,11 @@ function Read-FoundationPostcheckContinuation {
     $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
     $managementFields=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')
     $managementPresent=@($managementFields|Where-Object{$_ -cin $value.PSObject.Properties.Name})
+    if($CheckOnly -and $freshMode -and $managementPresent.Count -ne 4){throw 'blocked'}
     if($managementPresent.Count -gt 0){
       if(-not $CheckOnly -or -not $projectMode -or -not $forwardMode -or $managementPresent.Count -ne 4){throw 'blocked'}
       # Exact known read-only reconciliation, never a replenished allowance.
-      $managementExpected=if($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
+      $managementExpected=if($freshMode){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723}}elseif($value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536}}
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
       $keys+=$managementFields
     }
@@ -384,6 +390,7 @@ function Read-FoundationPostcheckContinuation {
     if($value.kind -cne $expected -or $value.segmentId -cne $postcheckContinuationSegment -or
        $value.sourceCommitSha -cne $expectedSource -or $value.windowId -cne $expectedWindow -or
        $value.privateRead -isnot [bool] -or $value.privateRead -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0){throw 'blocked'}
+    if($forwardMode){$script:projectVerifiedForwardWindowId=$expectedWindow;$script:projectVerifiedForwardSource=$expectedSource}
     if($CheckOnly){return $null}
     foreach($field in @('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')){if($value.$field -isnot [long]){throw 'blocked'}}
     $nowMs=[DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
@@ -496,7 +503,7 @@ function Assert-FoundationProjectVerifiedContinuationProcessAncestry($Clock) {
      $claim.admissionSha256 -cne (File-Hash $admissionPath) -or $claim.processId -le 0 -or $claim.parentProcessId -le 0 -or
      $claim.claimedAt -isnot [long] -or $claim.claimedAt -lt $Clock.startsAt -or $claim.claimedAt -gt [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() -or
      $admission.kind -cne 'm03_project_verified_continuation_admission' -or $admission.segmentId -cne $Clock.segmentId -or $admission.startsAt -ne $Clock.startsAt -or $admission.parentProcessId -ne $claim.parentProcessId -or
-     ([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and ($admission.sourceCommitSha -cne 'a5e746736893d5040e93032ae740a0878f748837' -or $admission.windowId -cne '38b3708d-61b0-41d2-8170-5ed91c66b4dc'))){throw 'blocked'}
+     ([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and ($admission.sourceCommitSha -cne $Clock.sourceCommitSha -or $admission.windowId -cne $Clock.windowId))){throw 'blocked'}
   $parentPath=Assert-Path ([IO.Path]::GetFullPath($env:LOCALAPPDATA)) 'Temp/emr-m03-acceptance-parent.operation.lock'
   $parent=Read-FoundationParentLock $parentPath
   Assert-Keys $parent @('kind','version','segmentId','processId')
@@ -823,6 +830,7 @@ try {
   }
   if($PostcheckContinuation){
     $clock=Read-FoundationPostcheckContinuation
+    if($ForwardWindow){$receipt['activeWindowId']=$script:projectVerifiedForwardWindowId}
     if($null -ne $clock){
       if($RemainingContinuation){$null=Assert-FoundationRemainingProcessAncestry $clock}
       if($StartupReplacement){$null=Assert-FoundationStartupReplacementProcessAncestry $clock}

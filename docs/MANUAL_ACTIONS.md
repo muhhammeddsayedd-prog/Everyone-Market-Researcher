@@ -9,11 +9,11 @@ How this works:
 3. The owner does it, ticks it in the milestone `PROGRESS.md`, and adds any non-secret value (project ref, URL) there.
 4. Secrets go only into approved native stores or the current-user-encrypted dev store below, never into the repo or chat.
 
-## Current M03 decision — request allowances, 24 October 2026
+## Current M03 decision — request allowances approved, 24 October 2026
 
-**MA-11:** Review the [exact remaining request-allocation packet](../milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md) after its fixture repair, independent review and normal PR checks pass. Actual use is 237/576 Management, 486/2048 Control, 723/2560 combined and 79/88 Vercel requests. Another full run would reach 613 Management and 123 Vercel, exceeding both existing ceilings. The proposal raises only those two ceilings to 640 and 132 and retains every charged request and the unchanged two-start/USD2 actor reserve.
+**MA-11:** The owner approved the [exact remaining request-allocation packet](../milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-20261024.md) at reviewed head `8ee16f6d05041ee8b8927b95452431f3ccb5643a`, after all five CI40043938844 jobs and Vercel passed. The [immutable approval](../milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json) raises only cumulative Management 576 to 640 and the included Vercel sub-pool 88 to 132. All 237 Management / 486 Control / 723 combined / 79 Vercel requests remain charged; the original two-start/USD2 actor reserve is unchanged.
 
-The exact reply is **Approve cumulative Management 640 and Vercel 132; retain 237 Management and 79 Vercel requests charged, all 486 Control requests, and every other existing aggregate, actor, spending, data and cleanup limit.** No command, secret, new credential handoff or time-only decision is needed. The current limits remain enforced until this separate allowance decision is recorded. No production, recurring activity, merge or M04 is included.
+The exact reply was **Approve cumulative Management 640 and Vercel 132; retain all charges and other limits**. No owner reply, command, secret, new credential handoff or time-only decision remains for this gate. Codex must finish the scoped consumer/fresh-window integration, affected checks, independent review, public preflight and normal PR CI before admission. The selected fresh UUID `eda4fae1-1e19-47db-81b8-beac1a4ed883` is approved but not registered; both prior closed rows stay unchanged. Approval is not actual A–D acceptance and includes no production, recurring activity, merge or M04.
 
 All four persistent encrypted dev entries and retained Machine custody are available. The initialization instructions below are historical setup instructions; do not repeat them unless a current Status check identifies a genuinely missing/revoked input.
 

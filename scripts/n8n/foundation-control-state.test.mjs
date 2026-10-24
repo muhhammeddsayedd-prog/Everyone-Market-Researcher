@@ -275,66 +275,69 @@ test('new576 control pool refuses missing, throwing, invalid or backwards author
   }
 });
 
-test('genuine linked Management andControl snapshots enforce2560 in both directions with no counter or intent reset', async () => {
-  for (const direction of ['management', 'control']) {
-    const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
-    let management;
-    try {
-      const proof = f.claim(f.admit()),
-        checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof),
-        runtime = await f.copy('foundation-live-runtime.mjs'),
-        core = await f.copy('foundation-control-state.mjs');
-      let control;
-      management = runtime.createFoundationLiveManagementBudget(
-        { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
-        {
-          directory: dirname(f.paths.management),
-          now: f.now,
-          projectVerifiedContinuationProof: proof,
-          controlAttempts: () => control?.snapshot().attempts ?? checkpoint.aggregateControlAttempts,
-        },
+for (const profile of [576, 640])
+  test(`genuine linked${profile} Management andControl snapshots enforce2560 in both directions with no counter or intent reset`, async () => {
+    for (const direction of ['management', 'control']) {
+      const f = await syntheticProjectVerifiedContinuation(
+        profile === 640 ? { closedFixture: true } : { managementAllocation: true },
       );
-      const writes = [],
-        journal = core.createFoundationControlJournal({
-          previousEvents: readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
-          durableAppend: (row) => {
-            writes.push(row);
+      let management;
+      try {
+        const proof = f.claim(f.admit()),
+          checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof),
+          runtime = await f.copy('foundation-live-runtime.mjs'),
+          core = await f.copy('foundation-control-state.mjs');
+        let control;
+        management = runtime.createFoundationLiveManagementBudget(
+          { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+          {
+            directory: dirname(f.paths.management),
+            now: f.now,
+            projectVerifiedContinuationProof: proof,
+            controlAttempts: () => control?.snapshot().attempts ?? checkpoint.aggregateControlAttempts,
           },
-        });
-      control = core.createFoundationControlBudget({
-        journal,
-        now: f.now,
-        deadlineAt: proof.deadlineAt,
-        projectVerifiedContinuationProof: proof,
-        managementAttempts: () => management.snapshot().attempts,
-      });
-      const managementTarget = direction === 'management' ? 512 : 576;
-      while (management.snapshot().attempts < managementTarget) management.admit();
-      while (control.snapshot().attempts < 2560 - managementTarget)
-        control.admit({ kind: 'discovery', workflowId });
-      const prior = readFileSync(f.paths.management, 'utf8'),
-        count = writes.length;
-      assert.equal(management.snapshot().attempts + control.snapshot().attempts, 2560);
-      if (direction === 'management') {
-        assert.equal(management.snapshot().attempts < management.snapshot().maximum, true);
-        assert.throws(() => management.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
-      } else {
-        assert.equal(control.snapshot().attempts < control.snapshot().maximum, true);
-        assert.throws(
-          () => control.admit({ kind: 'discovery', workflowId }),
-          /FOUNDATION_CONTROL_STATE_BLOCKED/,
         );
+        const writes = [],
+          journal = core.createFoundationControlJournal({
+            previousEvents: readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+            durableAppend: (row) => {
+              writes.push(row);
+            },
+          });
+        control = core.createFoundationControlBudget({
+          journal,
+          now: f.now,
+          deadlineAt: proof.deadlineAt,
+          projectVerifiedContinuationProof: proof,
+          managementAttempts: () => management.snapshot().attempts,
+        });
+        const managementTarget = direction === 'management' ? 512 : profile;
+        while (management.snapshot().attempts < managementTarget) management.admit();
+        while (control.snapshot().attempts < 2560 - managementTarget)
+          control.admit({ kind: 'discovery', workflowId });
+        const prior = readFileSync(f.paths.management, 'utf8'),
+          count = writes.length;
+        assert.equal(management.snapshot().attempts + control.snapshot().attempts, 2560);
+        if (direction === 'management') {
+          assert.equal(management.snapshot().attempts < management.snapshot().maximum, true);
+          assert.throws(() => management.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+        } else {
+          assert.equal(control.snapshot().attempts < control.snapshot().maximum, true);
+          assert.throws(
+            () => control.admit({ kind: 'discovery', workflowId }),
+            /FOUNDATION_CONTROL_STATE_BLOCKED/,
+          );
+        }
+        assert.equal(readFileSync(f.paths.management, 'utf8'), prior);
+        assert.equal(writes.length, count);
+        assert.equal(management.snapshot().carriedAttempts, 10);
+        assert.equal(control.snapshot().carriedAttempts, 3);
+      } finally {
+        management?.close();
+        f.cleanup();
       }
-      assert.equal(readFileSync(f.paths.management, 'utf8'), prior);
-      assert.equal(writes.length, count);
-      assert.equal(management.snapshot().carriedAttempts, 10);
-      assert.equal(control.snapshot().carriedAttempts, 3);
-    } finally {
-      management?.close();
-      f.cleanup();
     }
-  }
-});
+  });
 
 test('budget validates replay sequence and metadata context before creating authority', () => {
   const row = {

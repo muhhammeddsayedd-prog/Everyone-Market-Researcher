@@ -22,6 +22,114 @@ import { assertFoundationRuntimeRestorationAudit } from './foundation-runtime-co
 import { syntheticZeroSetup } from './foundation-live-runtime-resume-fixtures.mjs';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 
+test('genuine640 allocation retains237 charged requests and the shared2560 ceiling without replacing historical headers', async () => {
+  for (const [controlAttempts, expectedLimit] of [
+    [486, 640],
+    [2048, 512],
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ closedFixture: true });
+    let budget;
+    try {
+      const before = readFileSync(f.paths.management, 'utf8'),
+        proof = f.claim(f.admit()),
+        module = await f.copy('foundation-live-runtime.mjs');
+      budget = module.createFoundationLiveManagementBudget(
+        { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+        {
+          directory: dirname(f.paths.management),
+          now: f.now,
+          projectVerifiedContinuationProof: proof,
+          controlAttempts: () => controlAttempts,
+        },
+      );
+      assert.equal(budget.snapshot().attempts, 237);
+      assert.equal(budget.snapshot().carriedAttempts, 10);
+      assert.equal(budget.snapshot().maximum, 640);
+      while (budget.snapshot().attempts < expectedLimit) budget.admit();
+      const atLimit = readFileSync(f.paths.management, 'utf8');
+      assert.equal(atLimit.startsWith(before), true);
+      assert.equal(budget.snapshot().attempts, expectedLimit);
+      assert.throws(() => budget.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+      assert.equal(readFileSync(f.paths.management, 'utf8'), atLimit);
+      if (controlAttempts === 2048) assert.equal(budget.snapshot().attempts + controlAttempts, 2560);
+    } finally {
+      budget?.close();
+      f.cleanup();
+    }
+  }
+});
+
+test('genuine640 requires current486 Control custody and conservatively retains an uncertain append charge', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedFixture: true });
+  let budget,
+    moved = false,
+    directoryCreated = false;
+  const saved = f.paths.management + '.synthetic-owned-backup';
+  try {
+    const proof = f.claim(f.admit()),
+      module = await f.copy('foundation-live-runtime.mjs'),
+      args = { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      dependencies = {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+      };
+    assert.throws(
+      () => module.createFoundationLiveManagementBudget(args, dependencies),
+      /FOUNDATION_LIVE_RUNTIME_BLOCKED/,
+    );
+    assert.throws(
+      () =>
+        module.createFoundationLiveManagementBudget(args, { ...dependencies, controlAttempts: () => 485 }),
+      /FOUNDATION_LIVE_RUNTIME_BLOCKED/,
+    );
+    budget = module.createFoundationLiveManagementBudget(args, {
+      ...dependencies,
+      controlAttempts: () => 486,
+    });
+    renameSync(f.paths.management, saved);
+    moved = true;
+    mkdirSync(f.paths.management);
+    directoryCreated = true;
+    assert.throws(() => budget.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+    assert.equal(budget.snapshot().attempts, 238);
+    assert.equal(budget.snapshot().stopped, true);
+    assert.throws(() => budget.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+    assert.equal(budget.snapshot().attempts, 238);
+  } finally {
+    budget?.close();
+    if (directoryCreated) rmdirSync(f.paths.management);
+    if (moved) renameSync(saved, f.paths.management);
+    f.cleanup();
+  }
+});
+
+test('a plain requested640 profile cannot raise the historical512 budget or require a new callback', () => {
+  const f = fixture();
+  let budget;
+  try {
+    budget = createFoundationLiveManagementBudget(
+      {
+        sourceCommitSha: f.input.setup.sourceCommitSha,
+        deadlineAt: f.input.deadlineAt,
+        managementMaximum: 640,
+      },
+      {
+        directory: f.directory,
+        managementMaximum: 640,
+        controlAttempts: () => {
+          throw Error('UNTRUSTED_CALLBACK_NOT_USED');
+        },
+      },
+    );
+    assert.equal(budget.snapshot().maximum, 512);
+    assert.equal(budget.snapshot().attempts, 0);
+  } finally {
+    budget?.close();
+    f.cleanup();
+  }
+});
+
 test('only the approved genuine Management allocation carries152 charged attempts into the cumulative576 pool', async () => {
   const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
   let budget;

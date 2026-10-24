@@ -254,6 +254,37 @@ test('approved576 genuine Admin constructor carries3 controls from382 mixed rows
   }
 });
 
+test('approved640 genuine Admin constructor retains237/486 and selects only its fresh claimed binding', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ closedFixture: true });
+  try {
+    const proof = f.claim(f.admit());
+    const checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(checkpoint.managementMaximum, 640);
+    assert.equal(checkpoint.aggregateManagementAttempts, 237);
+    assert.equal(checkpoint.aggregateControlAttempts, 486);
+    assert.equal(checkpoint.mainControlAttempts, 483);
+    assert.equal(proof.windowId, 'eda4fae1-1e19-47db-81b8-beac1a4ed883');
+    const module = await f.copy('foundation-admin-client.mjs');
+    const wire = fixture({ projectProof: proof, forwardWindow: true });
+    const client = await module.startFoundationAdminClient(
+      {
+        repositoryRoot: f.directory,
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        forwardWindow: true,
+      },
+      wire.deps,
+    );
+    assert.equal(client.ready.projectVerifiedContinuation, true);
+    assert.equal(wire.calls.length, 0);
+    const done = await client.end();
+    assert.equal(done.nativeExit, 0);
+    assert.equal(done.childClosed, true);
+  } finally {
+    f.cleanup();
+  }
+});
+
 function syntheticClaimedAmendment() {
   const f = syntheticClockAmendment({ parentProcessId: 90210 });
   f.setTime(Date.parse('2026-10-21T14:00:00.000Z'));

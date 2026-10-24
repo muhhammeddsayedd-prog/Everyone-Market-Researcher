@@ -192,15 +192,17 @@ function Get-ProjectVerifiedPublicManagementMaximum($Value,[bool]$ProjectClock,[
  $fields=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')
  $present=@($fields|Where-Object{$_ -cin $Value.PSObject.Properties.Name})
  if($present.Count -eq 0){return 512}
+ $priorBinding=$Value.sourceCommitSha -ceq 'a5e746736893d5040e93032ae740a0878f748837' -and $Value.windowId -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
+ $freshBinding=$Value.sourceCommitSha -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803' -and $Value.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
  if(-not $ProjectClock -or $Mode -cne 'CheckOnly' -or $present.Count -ne 4 -or
   $Value.kind -cne 'project_verified_continuation_ready' -or $Value.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or
-  $Value.sourceCommitSha -cne 'a5e746736893d5040e93032ae740a0878f748837' -or $Value.windowId -cne '38b3708d-61b0-41d2-8170-5ed91c66b4dc' -or
+  -not ($priorBinding -or $freshBinding) -or
   $Value.privateRead -isnot [bool] -or $Value.privateRead -ne $false){throw 'blocked'}
  # The immutable allocation keeps its original charges. A separately pinned,
  # physically closed attempt adds the exact current snapshot without reset.
- $expected=if($Value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612;networkRequests=0}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536;networkRequests=0}}
+ $expected=if($freshBinding){@{managementMaximum=640;managementAttempts=237;controlAttempts=486;combinedAttempts=723;networkRequests=0}}elseif($Value.managementAttempts -eq 177){@{managementMaximum=576;managementAttempts=177;controlAttempts=435;combinedAttempts=612;networkRequests=0}}else{@{managementMaximum=576;managementAttempts=152;controlAttempts=384;combinedAttempts=536;networkRequests=0}}
  foreach($name in $expected.Keys){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long]) -or $Value.$name -ne $expected[$name]){throw 'blocked'}}
- return 576
+ return [int]$expected.managementMaximum
 }
 function ConvertTo-ProjectVerifiedReadinessBlock($Value){
  $keys=@('kind','status','segmentId','sourceCommitSha','windowId','managementAttempts','controlAttempts','combinedAttempts','gatewayPreflightAttempts','setupAttempts','setupMaximum','minimumNewSetupRequests','proposedSetupMaximum','privateRead','networkRequests')
@@ -244,10 +246,11 @@ function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$
   }
   $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
   $effectiveManagementMaximum=Get-ProjectVerifiedPublicManagementMaximum $result $ProjectClock $Mode
-  if($effectiveManagementMaximum -eq 576){$keys+=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')}
+  if($effectiveManagementMaximum -gt 512){$keys+=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')}
   if($Mode -cne 'CheckOnly'){$keys+=@('startsAt','deadlineAt','stopNewAt','hardDeadlineAt')}
   $legacyBinding=$result.sourceCommitSha -ceq 'f42930f90c2de43c84f61ad6d966d0ee6074d70e' -and $result.windowId -ceq 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'
   $activeBinding=$ProjectClock -and $result.sourceCommitSha -ceq 'a5e746736893d5040e93032ae740a0878f748837' -and $result.windowId -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
+  $activeBinding=$activeBinding -or ($ProjectClock -and $result.sourceCommitSha -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803' -and $result.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883')
   if($result -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($keys|Sort-Object) @($result.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $result.segmentId -cne $segmentId -or -not ($legacyBinding -or $activeBinding) -or $result.privateRead -isnot [bool] -or $result.privateRead -ne $false -or $result.networkRequests -ne 0){throw 'blocked'}
   if($Mode -ceq 'CheckOnly'){
    if($result.kind -cne $readyKind){throw 'blocked'}
@@ -514,6 +517,7 @@ try{
   exit 0
  }
  $forwardWindowPublic=$ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq 'a5e746736893d5040e93032ae740a0878f748837' -and $publicClock.windowId -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
+ $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803' -and $publicClock.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883')
  $adminPublicReady=Invoke-PublicDatabaseCheck $repo ([bool]$CheckOnly) $resumeDeadlineAt ([bool]$ClockAmendment) ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation) ([bool]$forwardWindowPublic)
  $bindings=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'n8n/foundation/bindings.dev.json'))))
  foreach($property in $bindings.workflowRefs.PSObject.Properties){$null=$knownWorkflowIds.Add($property.Value.id)}

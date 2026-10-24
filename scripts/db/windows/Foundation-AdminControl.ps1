@@ -98,8 +98,18 @@ function Foundation-SmokeAssertSql($Packet) {
   $settings="begin`n  perform pg_catalog.set_config('emr.smoke_project_ref','zmotjsbzhzjvpelxvxlf',true);`n  perform pg_catalog.set_config('emr.smoke_run_id',$(Foundation-Literal $Packet.runId),true);`n  perform pg_catalog.set_config('emr.smoke_apify_run_id',$(Foundation-Literal $Packet.apifyRunId),true);`n  perform pg_catalog.set_config('emr.smoke_expected_items_new',$(Foundation-Literal ([string]$Packet.expectedItemsNew)),true);`n  perform pg_catalog.set_config('statement_timeout','30s',true);`n"
   return $body.Replace($needle,$settings)
 }
+function Foundation-ForwardWindowId {
+  # Only Read-FoundationPostcheckContinuation sets these after its sealed,
+  # exact source/window and public-counter checks. Absent state is legacy only.
+  $selected=Get-Variable -Name projectVerifiedForwardWindowId -ValueOnly -ErrorAction SilentlyContinue
+  if($null -eq $selected){return '38b3708d-61b0-41d2-8170-5ed91c66b4dc'}
+  $source=Get-Variable -Name projectVerifiedForwardSource -ValueOnly -ErrorAction SilentlyContinue
+  if(($selected -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc' -and $source -ceq 'a5e746736893d5040e93032ae740a0878f748837') -or
+     ($selected -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883' -and $source -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803')){return $selected}
+  throw 'blocked'
+}
 function Close-FoundationOwnedWindow($Binding) {
-  $window=if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){'38b3708d-61b0-41d2-8170-5ed91c66b4dc'}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
+  $window=if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){Foundation-ForwardWindowId}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
   $audience=Foundation-Literal $Binding.audience;$sha=Foundation-Literal $Binding.commitSha;$deployment=Foundation-Literal $Binding.deploymentId
   $owned=Invoke-FoundationQuery "select jsonb_build_object('owned',bound_audience=$audience and bound_commit_sha=$sha and bound_deployment_id=$deployment) as ownership from ops.foundation_gateway_rate_windows where window_id='$window';" 'ownership'
   if($owned.owned -ne $true){throw 'blocked'}
@@ -148,7 +158,9 @@ select jsonb_build_object('windowId','df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
 function Assert-FoundationForwardWindowState([bool]$Prepared) {
   if(-not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -or -not $ProjectVerifiedContinuation){throw 'blocked'}
   $null=Read-FoundationForwardPrior
-  $value=Invoke-FoundationQuery @'
+  $window=Foundation-ForwardWindowId
+  $fresh=$window -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
+  $stateSql=@'
 select jsonb_build_object(
  'identity',current_user='postgres' and session_user='postgres' and current_database()='postgres',
  'legacyClosed',(select count(*)=1 and bool_and(closed_at='2026-10-23T16:25:54.94722+00:00'::timestamptz and close_count=1 and admitted_count=2 and bound_commit_sha='f42930f90c2de43c84f61ad6d966d0ee6074d70e') from ops.foundation_gateway_rate_windows where window_id='df4f29ec-e2dc-4d82-a276-62a4e695e6f9'),
@@ -161,19 +173,29 @@ select jsonb_build_object(
  'launches',(select count(*) from ops.apify_launch_admissions),
  'bindings',(select count(*) from ops.foundation_gateway_run_bindings),
  'progress',(select count(*) from app.items)+(select count(*) from ops.scrape_runs)+(select count(*) from ops.apify_runs)+(select count(*) from ops.cost_ledger)) as registered_preflight;
-'@ 'registered_preflight'
-  Assert-Keys $value @('identity','legacyClosed','windows','freshWindows','freshPrepared','globalAdmitted','requests','activeLeases','launches','bindings','progress')
-  foreach($key in @('identity','legacyClosed','freshPrepared')){if($value.$key -isnot [bool]){throw 'blocked'}}
+'@
+  if($fresh){
+    $stateSql=$stateSql.Replace('38b3708d-61b0-41d2-8170-5ed91c66b4dc',$window).Replace('a5e746736893d5040e93032ae740a0878f748837','aff94f2b2d8055cf93b5405e6b11d4e7d9c86803')
+    $prior="'intermediateClosed',(select count(*)=1 and bool_and(w.closed_at is not null and w.close_count=1 and w.admitted_count=1 and w.starts_at is null and w.bound_commit_sha='a5e746736893d5040e93032ae740a0878f748837' and w.bound_deployment_id='dpl_HPq8ot1nNvBZRLTyAoEnXHXuhTPF' and w.bound_audience='https://everyone-market-researcher-j94yqflt0-muhammed-abdelrahman.vercel.app' and exists(select 1 from ops.apify_launch_approvals a where a.window_id=w.window_id and a.closed_at is not null and a.actor_build='0.3.99' and a.max_total_charge_usd=1 and a.batch_max_usd=2 and a.approval_reference='M03-A-D-f42930f-20261021')) from ops.foundation_gateway_rate_windows w where w.window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc'),`n 'windows'"
+    $stateSql=$stateSql.Replace("'windows'",$prior)
+  }
+  $value=Invoke-FoundationQuery $stateSql 'registered_preflight'
+  $keys=@('identity','legacyClosed','windows','freshWindows','freshPrepared','globalAdmitted','requests','activeLeases','launches','bindings','progress')
+  $booleans=@('identity','legacyClosed','freshPrepared')
+  if($fresh){$keys+='intermediateClosed';$booleans+='intermediateClosed'}
+  Assert-Keys $value $keys
+  foreach($key in $booleans){if($value.$key -isnot [bool]){throw 'blocked'}}
   foreach($key in @('windows','freshWindows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){if(($value.$key -isnot [int] -and $value.$key -isnot [long]) -or $value.$key -lt 0){throw 'blocked'}}
-  if($value.identity -ne $true -or $value.legacyClosed -ne $true -or $value.windows -ne $(if($Prepared){2}else{1}) -or $value.freshWindows -ne $(if($Prepared){1}else{0}) -or
-     $value.globalAdmitted -ne 2 -or $value.requests -ne 1 -or $value.activeLeases -ne 0 -or $value.launches -ne 0 -or $value.bindings -ne 0 -or $value.progress -ne 0 -or ($Prepared -and $value.freshPrepared -ne $true)){throw 'blocked'}
+  $priorWindows=if($fresh){2}else{1};$priorAdmitted=if($fresh){3}else{2}
+  if($value.identity -ne $true -or $value.legacyClosed -ne $true -or ($fresh -and $value.intermediateClosed -ne $true) -or $value.windows -ne ($priorWindows+$(if($Prepared){1}else{0})) -or $value.freshWindows -ne $(if($Prepared){1}else{0}) -or
+     $value.globalAdmitted -ne $priorAdmitted -or $value.requests -ne 1 -or $value.activeLeases -ne 0 -or $value.launches -ne 0 -or $value.bindings -ne 0 -or $value.progress -ne 0 -or ($Prepared -and $value.freshPrepared -ne $true)){throw 'blocked'}
   # Later settled actor/item progress needs its own engineering reconciliation;
   # this branch never resets/removes it or blindly repeats a paid start.
   if($Prepared){
     $binding=Get-Variable -Name forwardWindowBinding -ValueOnly -ErrorAction SilentlyContinue
     if($null -eq $binding){throw 'blocked'}
     $audience=Foundation-Literal $binding.audience;$deployment=Foundation-Literal $binding.deploymentId
-    $owned=Invoke-FoundationQuery "select jsonb_build_object('owned',w.bound_audience=$audience and w.bound_deployment_id=$deployment and (select count(*)=1 from ops.apify_launch_approvals a where a.window_id=w.window_id and a.closed_at is null and a.actor_build='0.3.99' and a.max_total_charge_usd=1 and a.batch_max_usd=2 and a.approval_reference='M03-A-D-f42930f-20261021' and a.expires_at>clock_timestamp()) and (select count(*)=2 and bool_and(l.request_id is null) from ops.foundation_gateway_leases l where l.window_id=w.window_id)) as ownership from ops.foundation_gateway_rate_windows w where w.window_id='38b3708d-61b0-41d2-8170-5ed91c66b4dc';" 'ownership'
+    $owned=Invoke-FoundationQuery "select jsonb_build_object('owned',w.bound_audience=$audience and w.bound_deployment_id=$deployment and (select count(*)=1 from ops.apify_launch_approvals a where a.window_id=w.window_id and a.closed_at is null and a.actor_build='0.3.99' and a.max_total_charge_usd=1 and a.batch_max_usd=2 and a.approval_reference='M03-A-D-f42930f-20261021' and a.expires_at>clock_timestamp()) and (select count(*)=2 and bool_and(l.request_id is null) from ops.foundation_gateway_leases l where l.window_id=w.window_id)) as ownership from ops.foundation_gateway_rate_windows w where w.window_id='$window';" 'ownership'
     Assert-Keys $owned @('owned');if($owned.owned -ne $true){throw 'blocked'}
   }
   $identity=Foundation-ProjectVerifiedTechnicalIdentity
@@ -450,7 +472,7 @@ function Invoke-FoundationAdminControl {
   $postchecked=$false;$fixtureReady=$false;$provisionAttempted=$false;$provisioned=$false;$closed=$false;$queryCount=0;$provisionPacket=$null;$createdFixture=$null;$unprovisionedArchiveAttempted=$false
   $script:remainingOwnedFixture=$null
   $script:phaseAControlHardDeadline=$hardDeadline
-  $window=if($forwardMode){'38b3708d-61b0-41d2-8170-5ed91c66b4dc'}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
+  $window=if($forwardMode){Foundation-ForwardWindowId}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
   if($PostcheckContinuation){$receipt['unprovisionedFixtureArchived']=$false}
   $readyEnvelope=[ordered]@{type='foundation_admin_ready';runId=$runId;historyAfter='complete';projectRef=$projectRef;hardDeadline=$hardDeadline.ToString('o');actionDeadline=$actionDeadline.ToString('o');stopNewAt=$stopNewAt.ToString('o');postchecksVerified=$false}
   if($ClockAmendment){$readyEnvelope['clockSegmentId']=$clockAmendmentSegment}
