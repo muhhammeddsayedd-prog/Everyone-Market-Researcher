@@ -476,6 +476,188 @@ Write-Output 'TYPED_SETTLEMENT7_49_PINS_RETRY_CONTRACT'
   },
 );
 test(
+  'technical16 archive prior returns only its closed binding before actual SQL construction',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Path', 'Read-FoundationArchivePrior', 'Foundation-ArchiveFixtureSql', 'Foundation-Technical13ArchiveSql', 'Foundation-Technical13FamilyPredicate', 'Foundation-Technical16FamilyPredicate', 'Foundation-Technical13AuditPredicate'])}
+${definitions(['Foundation-Literal', 'Foundation-FixtureSql'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$repo=${quote(resolve('.'))};$TechnicalResidual16=$true;$TechnicalResidual13=$false;$PostcheckContinuation=$false;$RemainingContinuation=$false;$StartupReplacement=$false;$ProjectVerifiedContinuation=$false
+$script:closedReads=0;$script:settlementChecks=0;$script:closedValid=$true;$script:settled=$true
+$script:closedBinding=[pscustomobject]@{id='4c602549-2c42-4ec3-9328-714d7cb66a77';audience='https://everyone-market-researcher-synthetic.vercel.app';commitSha='5087d4d93d2f6ffdca0bc0096b365723005446fc';deploymentId='dpl_synthetic';closedAt='2026-10-24T16:00:00Z'}
+function Read-FoundationTechnical16Closed{if(-not $script:closedValid){throw 'CLOSED_PROOF_REJECTED'};$script:closedReads++;return $script:closedBinding}
+function Assert-FoundationTechnical16Settled($Expected){if(-not $script:settled -or -not [object]::ReferenceEquals($Expected,$script:closedBinding)){throw 'SETTLEMENT_REJECTED'};$script:settlementChecks++;return [pscustomobject]@{kind='m03_technical16_native_settlement';usage=[pscustomobject]@{management=963;control=1094;combined=2057}}}
+$binding=Read-FoundationArchivePrior
+$body=Foundation-ArchiveFixtureSql $binding
+if(@($binding).Count -ne 1 -or -not [object]::ReferenceEquals($binding,$script:closedBinding) -or $script:closedReads -ne 1 -or $script:settlementChecks -ne 1){throw 'ARCHIVE_BINDING_PIPELINE_POLLUTED'}
+foreach($needle in @("window_id='4c602549-2c42-4ec3-9328-714d7cb66a77' and bound_audience=","bound_commit_sha='5087d4d93d2f6ffdca0bc0096b365723005446fc'","M03_ARCHIVE_OWNERSHIP_OR_QUIESCENCE_CHANGED","technical-16")){if(-not $body.Contains($needle)){throw 'ARCHIVE_SQL_OWNER_OR_HISTORY_LOST'}}
+$script:settled=$false;$denied=$false;try{$null=Read-FoundationArchivePrior}catch{$denied=$true};if(-not $denied){throw 'UNSETTLED_BINDING_EMITTED'}
+$script:settled=$true;$script:closedValid=$false;$denied=$false;try{$null=Read-FoundationArchivePrior}catch{$denied=$true};if(-not $denied){throw 'UNCLOSED_BINDING_EMITTED'}
+Write-Output 'SINGLE_CLOSED_ARCHIVE_BINDING_AND_SQL'
+`),
+      'SINGLE_CLOSED_ARCHIVE_BINDING_AND_SQL',
+    );
+  },
+);
+
+test(
+  'technical16 zero-auth archive failure permits only its fixed untouched-prefix successor under owned locks',
+  native,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-archive-preflight-successor-'));
+    const failed =
+      'milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-preflight-failure-20261024.json';
+    const oldBase = 'scripts/db/out/m03-foundation-archive-4c602549-2c42-4ec3-9328-714d7cb66a77';
+    const nextBase = oldBase + '-after-preflight-698498b3';
+    const sourceRelative = 'scripts/db/windows/Invoke-M03FoundationMigrations.ps1';
+    const bytes = readFileSync(failed);
+    const digest = (value) => createHash('sha256').update(value).digest('hex');
+    assert.equal(digest(bytes), '635736c1bff404046d3805e356a6640bf8e5e2148434404a29bc85bc0095901d');
+    try {
+      for (const [path, data] of [
+        [failed, bytes],
+        [oldBase + '-latest.json', bytes],
+        [sourceRelative, readFileSync(consumer)],
+      ]) {
+        mkdirSync(dirname(join(directory, path)), { recursive: true });
+        writeFileSync(join(directory, path), data);
+      }
+      const local = join(directory, 'local');
+      const temp = join(directory, 'temp');
+      mkdirSync(join(local, 'Temp'), { recursive: true });
+      mkdirSync(temp);
+      const scriptHash = digest(readFileSync(join(directory, sourceRelative)));
+      assert.equal(
+        run(`
+${definitions(['Assert-Path', 'Assert-Keys', 'File-Hash', 'Read-Json', 'Assert-FoundationArchivePreflightContinuation'])}
+$repo=${quote(directory)};$env:LOCALAPPDATA=${quote(local)};$env:TEMP=${quote(temp)};$env:TMP=${quote(temp)};$ArchiveFixture=$true;$TechnicalResidual16=$true
+$packet=[pscustomobject]@{files=[pscustomobject]@{${quote(sourceRelative)}='${scriptHash}'}};$sessionLock=$null;$inspectParentLock=$null;$script:oldProcessLive=$false
+function Get-CimInstance{if($script:oldProcessLive){return @([pscustomobject]@{ProcessId=22664;ParentProcessId=0})};return @()}
+$failed=Join-Path $repo ${quote(failed)};$old=Join-Path $repo ${quote(oldBase + '-latest.json')};$oldAttempt=Join-Path $repo ${quote(oldBase + '-attempt.json')}
+$nextAttempt=Join-Path $repo ${quote(nextBase + '-attempt.json')};$nextLatest=Join-Path $repo ${quote(nextBase + '-latest.json')};$saved=[IO.File]::ReadAllBytes($old)
+$sourcePath=Join-Path $repo ${quote(sourceRelative)};$savedSource=[IO.File]::ReadAllBytes($sourcePath)
+$scratch=Join-Path ([IO.Path]::GetTempPath()) 'emr-m03-foundation-dev-migrations-698498b3-bdbe-448a-b991-3a9eaee17197'
+$public=Assert-FoundationArchivePreflightContinuation
+if($public.attemptFile -cne $nextAttempt -or $public.latestFile -cne $nextLatest -or (File-Hash $old) -cne '635736c1bff404046d3805e356a6640bf8e5e2148434404a29bc85bc0095901d'){throw 'FIXED_SUCCESSOR_OR_OLD_BYTES_CHANGED'}
+foreach($fault in @('missingCopy','changedCopy','missingLatest','changedLatest','oldAttempt','nextAttempt','nextLatest','scratchPresent','oldProcessLive','wrongMode')){
+ try{
+  switch($fault){
+   'missingCopy'{[IO.File]::Delete($failed)} 'changedCopy'{[IO.File]::AppendAllText($failed,' ')} 'missingLatest'{[IO.File]::Delete($old)} 'changedLatest'{[IO.File]::AppendAllText($old,' ')}
+   'oldAttempt'{[IO.File]::WriteAllText($oldAttempt,'{}')} 'nextAttempt'{[IO.File]::WriteAllText($nextAttempt,'{}')} 'nextLatest'{[IO.File]::WriteAllText($nextLatest,'{}')}
+   'scratchPresent'{$null=[IO.Directory]::CreateDirectory($scratch)} 'oldProcessLive'{$script:oldProcessLive=$true} 'wrongMode'{$TechnicalResidual16=$false}
+  }
+  $denied=$false;try{$null=Assert-FoundationArchivePreflightContinuation}catch{$denied=$true};if(-not $denied){throw ('UNSAFE_PREFIX_ACCEPTED_'+$fault)}
+ }finally{
+  [IO.File]::WriteAllBytes($failed,$saved);[IO.File]::WriteAllBytes($old,$saved);foreach($path in @($oldAttempt,$nextAttempt,$nextLatest)){if(Test-Path -LiteralPath $path){[IO.File]::Delete($path)}}
+  if(Test-Path -LiteralPath $scratch){[IO.Directory]::Delete($scratch)};$script:oldProcessLive=$false;$TechnicalResidual16=$true
+ }
+}
+$denied=$false;try{$null=Assert-FoundationArchivePreflightContinuation $true}catch{$denied=$true};if(-not $denied){throw 'UNOWNED_LOCKS_ACCEPTED'}
+$sessionPath=Join-Path $repo 'scripts/db/out/m03-foundation-dev-migration-session.lock';$parentPath=Join-Path $env:LOCALAPPDATA 'Temp/emr-m03-acceptance-parent.operation.lock'
+try{
+ $sessionLock=[IO.File]::Open($sessionPath,[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
+ $inspectParentLock=[IO.File]::Open($parentPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::ReadWrite,[IO.FileShare]::Read)
+ $owner=[Text.UTF8Encoding]::new($false).GetBytes((([ordered]@{kind='m03_archive_parent';version=1;processId=$PID})|ConvertTo-Json -Compress));$inspectParentLock.Write($owner,0,$owner.Length);$inspectParentLock.Flush($true)
+ $locked=Assert-FoundationArchivePreflightContinuation $true;if($locked.attemptFile -cne $nextAttempt){throw 'LOCKED_SUCCESSOR_CHANGED'}
+ [IO.File]::AppendAllText($sourcePath,' ');$denied=$false;try{$null=Assert-FoundationArchivePreflightContinuation $true}catch{$denied=$true};if(-not $denied){throw 'CHANGED_EXECUTABLE_ACCEPTED'};[IO.File]::WriteAllBytes($sourcePath,$savedSource)
+ if((File-Hash $old) -cne (File-Hash $failed) -or (Test-Path -LiteralPath $nextAttempt) -or (Test-Path -LiteralPath $nextLatest)){throw 'PUBLIC_CHECK_MUTATED_ARCHIVE_STATE'}
+}finally{if($null -ne $inspectParentLock){$inspectParentLock.Dispose()};if($null -ne $sessionLock){$sessionLock.Dispose()}}
+Write-Output 'FIXED_ZERO_AUTH_PREFIX_AND_OWNED_SUCCESSOR'
+`),
+        'FIXED_ZERO_AUTH_PREFIX_AND_OWNED_SUCCESSOR',
+      );
+    } finally {
+      assert.ok(resolve(directory).startsWith(resolve(tmpdir()) + sep));
+      rmSync(directory, { recursive: true });
+    }
+  },
+);
+
+test(
+  'technical16 archive preparation reports only fixed stages before consuming any private value',
+  native,
+  () => {
+    const source = readFileSync(consumer, 'utf8').replaceAll('\r\n', '\n');
+    const start = source.indexOf(
+      "try {\n  if($ArchiveFixture){$receipt['preparationStage']='SESSION_LOCK'}\n  $lockPath",
+    );
+    const end = source.indexOf('  $consumed = $true', start);
+    const publicStart = source.indexOf(
+      '  if($ArchiveFixture){\n    $archivePrior=Read-FoundationArchivePrior',
+    );
+    const publicEnd = source.indexOf('  if($PostcheckContinuation){', publicStart);
+    assert.ok(start >= 0 && end > start && publicStart >= 0 && publicEnd > publicStart);
+    assert.deepEqual(
+      [...new Set([...source.matchAll(/\$receipt\['preparationStage'\]='([^']+)'/g)].map((m) => m[1]))],
+      [
+        'SESSION_LOCK',
+        'NODE_PIN',
+        'TLS_PROBE',
+        'TLS_RECEIPT',
+        'SCRATCH_SETUP',
+        'READBACK_SQL',
+        'ARCHIVE_SQL',
+        'PRIVATE_METADATA',
+        'complete',
+      ],
+    );
+    const directory = mkdtempSync(join(tmpdir(), 'emr-archive-preparation-stages-'));
+    try {
+      for (const relative of ['scripts/db/out', 'scripts/seed', 'scripts/db', 'temp'])
+        mkdirSync(join(directory, relative), { recursive: true });
+      for (const [relative, text] of [
+        ['scripts/seed/check-tls.mjs', 'PUBLIC_SYNTHETIC_ONLY'],
+        ['scripts/db/foundation-inspect.sql', 'select 1;'],
+        ['scripts/db/foundation-forward-postcheck.sql', 'select 2;'],
+        ['node.exe', 'PUBLIC_SYNTHETIC_NODE'],
+        ['ca.crt', 'PUBLIC_SYNTHETIC_CA'],
+      ])
+        writeFileSync(join(directory, relative), text);
+      assert.equal(
+        run(`
+${definitions(['Assert-Path', 'Assert-Keys'])}
+$repo=${quote(directory)};$out=Join-Path $repo 'scripts/db/out';$env:TEMP=Join-Path $repo 'temp';$env:TMP=$env:TEMP
+$ArchiveFixture=$true;$TechnicalResidual16=$true;$TechnicalResidual13=$false;$ForwardMigration=$false;$PostcheckContinuation=$false;$InspectOnly=$false;$WriterClose=$false;$RemainingContinuation=$false;$StartupReplacement=$false;$ProjectVerifiedContinuation=$false;$forwardSchema=$true
+$originalPhaseAStart=$null;$clockAmendmentStart=$null;$postcheckContinuationStart=$null;$node=Join-Path $repo 'node.exe';$caPath=Join-Path $repo 'ca.crt';$caHash='PUBLIC_HASH';$poolerHost='aws-1-eu-central-1.pooler.supabase.com';$projectRef='zmotjsbzhzjvpelxvxlf';$runId='00000000-0000-4000-8000-000000000111';$handoff='SYNTHETIC_PRIVATE_PATH_NEVER_OPENED';$archivePrior=[pscustomobject]@{audience='PUBLIC'};$attemptFile=Join-Path $out 'successor-attempt.json'
+$script:metadataReads=0;$script:fault='';$script:prefixChecks=0
+function File-Hash($Path){if($script:fault -ceq 'NODE_PIN' -and $Path -ceq $node){return 'CHANGED'};return 'PUBLIC_HASH'}
+function Assert-FoundationArchivePreflightContinuation([bool]$RequireLocks=$false){$script:prefixChecks++;if($script:fault -ceq 'SESSION_LOCK'){throw 'FIXED_SESSION_GATE'};return [pscustomobject]@{attemptFile=$attemptFile;latestFile=(Join-Path $out 'successor-latest.json')}}
+function Invoke-Bounded{if($script:fault -ceq 'TLS_PROBE'){return [pscustomobject]@{ok=$false;closed=$true;text=''}};$status=if($script:fault -ceq 'TLS_RECEIPT'){'failed'}else{'verified'};return [pscustomobject]@{ok=$true;closed=$true;text=(([ordered]@{status=$status;phase='tls_handshake';code='TLS_VERIFIED';environment='dev';projectRef=$projectRef;host=$poolerHost;port=5432;rejectUnauthorized=$true;exactServerName=$true;scopedCaVerified=$true;startupMessageSent=$false;authenticationAttempted=$false;socketsClosed=$true})|ConvertTo-Json -Compress)}}
+function Foundation-Technical13InspectionSql{return 'select 1;'}
+function Foundation-ArchiveFixtureSql{if($script:fault -ceq 'ARCHIVE_SQL'){throw 'FIXED_SQL_CONSTRUCTOR'};return 'select 1;'}
+function Assert-M03DevPrivateAcl{$script:metadataReads++;throw 'PRIVATE_METADATA_SENTINEL'}
+function Write-NewJson($Path,$Value){[IO.File]::WriteAllText($Path,($Value|ConvertTo-Json -Compress))}
+foreach($stage in @('SESSION_LOCK','NODE_PIN','TLS_PROBE','TLS_RECEIPT','SCRATCH_SETUP','READBACK_SQL','ARCHIVE_SQL','PRIVATE_METADATA')){
+ $script:fault=$stage;$receipt=[ordered]@{childrenClosed=$true;scratchDeleted=$true};$consumed=$false;$scratch=$null;$sessionLock=$null;$script:metadataReads=0
+ $packet=[pscustomobject]@{node=[pscustomobject]@{sha256='PUBLIC_HASH'};files=[pscustomobject]@{'scripts/db/foundation-inspect.sql'=$(if($stage -ceq 'READBACK_SQL'){'CHANGED'}else{'PUBLIC_HASH'});'scripts/db/foundation-forward-postcheck.sql'='PUBLIC_HASH'}}
+ $knownScratch=Join-Path $env:TEMP ('emr-m03-foundation-dev-migrations-'+$runId);if($stage -ceq 'SCRATCH_SETUP'){$null=[IO.Directory]::CreateDirectory($knownScratch)}
+ try{
+  $denied=$false;try{. {${source.slice(start + 'try {\n'.length, end)}}}catch{$denied=$true}
+  if(-not $denied -or $consumed -or $receipt.preparationStage -cne $stage -or $script:metadataReads -ne $(if($stage -ceq 'PRIVATE_METADATA'){1}else{0})){throw ('PREPARATION_STAGE_OR_PRIVATE_BOUNDARY_'+$stage)}
+ }finally{
+  if($null -ne $sessionLock){$sessionLock.Dispose()}
+  if(Test-Path -LiteralPath $knownScratch){$absolute=[IO.Path]::GetFullPath($knownScratch);if(-not $absolute.StartsWith([IO.Path]::GetFullPath($env:TEMP)+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){throw 'SYNTHETIC_SCRATCH_OUTSIDE_TEST'};Remove-Item -LiteralPath $absolute -Recurse -Force}
+ }
+}
+$script:publicPrefixReads=0;$script:publicBinding=$null
+function Read-FoundationArchivePrior{return $script:publicBinding}
+function Assert-FoundationArchivePreflightContinuation{$script:publicPrefixReads++;return [pscustomobject]@{attemptFile=$attemptFile;latestFile=(Join-Path $out 'successor-latest.json')}}
+$binding=[pscustomobject]@{id='4c602549-2c42-4ec3-9328-714d7cb66a77';audience='PUBLIC';commitSha=('a'*40);deploymentId='dpl_public'}
+foreach($invalid in @(@([pscustomobject]@{kind='settlement'},$binding),[pscustomobject]@{id=$binding.id;audience='PUBLIC';commitSha=('a'*40);deploymentId='dpl_public';extra=$true})){
+ $script:publicBinding=$invalid;$denied=$false;try{&{${source.slice(publicStart, publicEnd)}}}catch{$denied=$true};if(-not $denied -or $script:publicPrefixReads -ne 0){throw 'PUBLIC_BINDING_ARRAY_OR_EXTRA_REACHED_PRIVATE_PREFIX'}
+}
+Write-Output 'FIXED_PREPARATION_STAGES_AND_EARLY_SINGLE_BINDING'
+`),
+        'FIXED_PREPARATION_STAGES_AND_EARLY_SINGLE_BINDING',
+      );
+    } finally {
+      assert.ok(resolve(directory).startsWith(resolve(tmpdir()) + sep));
+      rmSync(directory, { recursive: true });
+    }
+  },
+);
+test(
   'technical16 mode and public-private binding are revalidated before the bounded Admin copy',
   native,
   () => {
@@ -1703,7 +1885,7 @@ function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{or
 function Read-FoundationTechnical16Closed{return (Read-Json ${quote(file)}).rawResult.archiveAfter.window}
 function Assert-FoundationTechnical16Settled($Expected){if(-not $script:proofValid){throw 'SETTLEMENT_NOT_QUALIFIED'};return [pscustomobject]@{usage=[pscustomobject]@{management=914;control=1045;combined=1959}}}
 $archive=Read-Json ${quote(file)};$original=$archive|ConvertTo-Json -Depth 40 -Compress
-$base='scripts/db/out/m03-foundation-archive-4c602549-2c42-4ec3-9328-714d7cb66a77';$settlement='milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json';$relative='milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json'
+$base='scripts/db/out/m03-foundation-archive-4c602549-2c42-4ec3-9328-714d7cb66a77-after-preflight-698498b3';$settlement='milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json';$relative='milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json'
 foreach($p in @($settlement,($base+'-attempt.json'),($base+'-latest.json'),$relative)){$absolute=Join-Path $repo $p;$null=[IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($absolute));[IO.File]::WriteAllText($absolute,'{}')}
 function Persist($v){
  [IO.File]::WriteAllText((Join-Path $repo ($base+'-latest.json')),($v.rawResult|ConvertTo-Json -Depth 40 -Compress),[Text.UTF8Encoding]::new($false))
@@ -1916,7 +2098,30 @@ Write-Output 'EXACT_MANAGEMENT_PUBLIC_PROFILE'
 );
 
 test(
-  'actual forward packet has all74 source-required public pins and retains every old migration field',
+  'technical16 source closure requires only observed settlement and failed preflight assets',
+  native,
+  () => {
+    assert.equal(
+      run(`
+$source=[IO.File]::ReadAllText(${quote(consumer)})
+$start=$source.IndexOf('$requiredFiles = @(');$end=$source.IndexOf('$versions = @(',$start)
+if($start -lt 0 -or $end -le $start){throw 'PUBLIC_DECLARATIONS_NOT_FOUND'}
+$ForwardWindow=$false;$TechnicalResidual13=$false;$TechnicalResidual16=$false;$caRelative='scripts/seed/certs/supabase-root-2021.crt';$cliRelative='node_modules/.pnpm/@supabase+cli-windows-x64@2.121.0/node_modules/@supabase/cli-windows-x64/bin/supabase.exe'
+foreach($forward in @($false,$true)){
+ $ForwardMigration=$forward;Invoke-Expression $source.Substring($start,$end-$start)
+ if($requiredFiles.Count -ne $(if($forward){75}else{73}) -or @($requiredFiles|Select-Object -Unique).Count -ne $requiredFiles.Count){throw 'EXACT_PUBLIC_SOURCE_COUNT_CHANGED'}
+ foreach($relative in @('milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json','milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-preflight-failure-20261024.json')){if(@($requiredFiles|Where-Object{$_ -ceq $relative}).Count -ne 1){throw 'OBSERVED_SOURCE_NOT_PINNED_ONCE'}}
+ if(@($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json'}).Count -ne 0){throw 'UNOBSERVED_ARCHIVE_REQUIRED'}
+}
+Write-Output 'PUBLIC_REGULAR73_FORWARD75_OBSERVED_ONLY'
+`),
+      'PUBLIC_REGULAR73_FORWARD75_OBSERVED_ONLY',
+    );
+  },
+);
+
+test(
+  'actual forward packet has all75 source-required public pins and retains every old migration field',
   native,
   () => {
     assert.equal(
@@ -1930,17 +2135,16 @@ Invoke-Expression $source.Substring($start,$end-$start)
 $packet=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
 $old=ConvertFrom-Json ([IO.File]::ReadAllText(${quote(resolve('scripts/db/m03-foundation-dev-migration-packet.json'))}))
 Assert-Keys $packet.files $requiredFiles
-if($requiredFiles.Count -ne 74 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
-if(@($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json'}).Count -ne 1 -or @($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json'}).Count -ne 0){throw 'UNOBSERVED_ARCHIVE_REQUIRED'}
+if($requiredFiles.Count -ne 75 -or $packet.baseline.Count -ne 14 -or $packet.pending.Count -ne 1 -or $packet.pending[0].historySha256 -cne '12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18'){throw 'FORWARD_PUBLIC_CONTRACT_CHANGED'}
+if(@($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-native-settlement-20261024.json'}).Count -ne 1 -or @($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-preflight-failure-20261024.json'}).Count -ne 1 -or @($requiredFiles|Where-Object{$_ -ceq 'milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json'}).Count -ne 0){throw 'UNOBSERVED_ARCHIVE_REQUIRED'}
 $prior=@($old.baseline)+@($old.pending)
 for($i=0;$i -lt 14;$i++){foreach($field in @('version','name','file','sha256','historySha256')){if($prior[$i].$field -cne $packet.baseline[$i].$field){throw 'ORIGINAL_MIGRATION_REWRITTEN'}}}
-Write-Output 'EXACT_PUBLIC_74_AND_OLD14'
+Write-Output 'EXACT_PUBLIC_75_AND_OLD14'
 `),
-      'EXACT_PUBLIC_74_AND_OLD14',
+      'EXACT_PUBLIC_75_AND_OLD14',
     );
   },
 );
-
 for (const profile of [
   {
     name: 'post11',

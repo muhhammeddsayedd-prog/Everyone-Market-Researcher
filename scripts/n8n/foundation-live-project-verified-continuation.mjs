@@ -1854,7 +1854,7 @@ function reconciledTechnical16Settlement(x) {
     privateContentsRead: false,
     networkRequests: 0,
   });
-  const archiveBase = `scripts/db/out/m03-foundation-archive-${foundationProjectVerifiedRestoredRuntime.windowId}`;
+  const archiveBase = `scripts/db/out/m03-foundation-archive-${foundationProjectVerifiedRestoredRuntime.windowId}-after-preflight-698498b3`;
   if (
     !exact(archive.pins, [
       cfg.settlementRelative,

@@ -75,7 +75,7 @@
                   "scripts/n8n/foundation-execution-control.mjs":  "00670221067eb3c066b61ffed90cdd601d648cdeb5626b2b27fdd6328a902f6c",
                   "scripts/n8n/foundation-export.mjs":  "31a861402f015faa4fe1883e6d3e3451a289e0c9e3d06f9749ff6dbed504f3cc",
                   "scripts/n8n/foundation-live-domain-probe.mjs":  "7784fc4ca16f9180e466bfc900476f159d5146bb5f21e8825c6de56ed293eeba",
-                  "scripts/n8n/foundation-live-project-verified-continuation.mjs":  "5e61a1478e65c5da3979bc802e3485027ff6a2f1b7e55a4b8a629aafc22ddae2",
+                  "scripts/n8n/foundation-live-project-verified-continuation.mjs":  "41ce848725cd134788f73d3eee60b36a0ada23b979ed8d42f13bfd33500e83a3",
                   "scripts/n8n/foundation-live-remaining-continuation.mjs":  "42f528d828b0e4059b5f0de8d592bfd16aa86497dda619be6fe8884dc469524b",
                   "scripts/n8n/foundation-live-runtime-transport.mjs":  "295ba2e5f2e5e91749d087eaac029dae25bc9157cd38c883545606614cd37dcd",
                   "scripts/n8n/foundation-live-startup-replacement.mjs":  "36f6729c3e81bc02be962cedf373fefc0ee8a2e98c539a729aa53ce3994f2c78",

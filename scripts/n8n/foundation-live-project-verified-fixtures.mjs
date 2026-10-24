@@ -3583,7 +3583,8 @@ export async function syntheticProjectVerifiedContinuation({
       accountActive: false,
     });
     delete rawArchive.inspection;
-    const archiveBase = 'scripts/db/out/m03-foundation-archive-' + r.attempt.windowId;
+    const archiveBase =
+      'scripts/db/out/m03-foundation-archive-' + r.attempt.windowId + '-after-preflight-698498b3';
     put(archiveBase + '-attempt.json', json({ kind: 'synthetic_owned_archive_attempt' }));
     put(archiveBase + '-latest.json', json(rawArchive));
     const archive = {
