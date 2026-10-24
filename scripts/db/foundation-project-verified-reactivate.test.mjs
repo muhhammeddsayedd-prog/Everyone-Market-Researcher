@@ -923,7 +923,7 @@ describe(
       }
     });
 
-    test('technical13 and14 require real typed prior lifecycle audits and qualified15 skips only absent14', () => {
+    test('technical13 and14 require real typed prior lifecycle audits and qualified15/16 skip only proven absent audits', () => {
       const wrapper =
         '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n\\set emr_smoke_reactivation_segment ' + segment + '\n';
       const teardown = readFileSync(new URL('../assert/m03_smoke_teardown.sql', import.meta.url), 'utf8');
@@ -991,7 +991,10 @@ describe(
       assert.equal(afterThirteen.audit, 6);
       const missing14Proof =
           "set local emr.smoke_technical14_no_reactivation='6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960';",
-        readback15 = nativeTechnical14ReadbackQuery(15);
+        missing15Proof =
+          "set local emr.smoke_technical15_no_reactivation='59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd';",
+        readback15 = nativeTechnical14ReadbackQuery(15),
+        readback16 = nativeTechnical14ReadbackQuery(16);
       for (const proofSetting of ['', "set local emr.smoke_technical14_no_reactivation='unverified';"]) {
         psql(
           `begin;${settings}set local emr.smoke_technical_ordinal='15';${proofSetting}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_TECHNICAL14_PROOF_REQUIRED' then raise exception 'MISSING14_PROOF_NOT_REQUIRED';end if;end;end;$deny$;rollback;`,
@@ -1005,9 +1008,39 @@ describe(
       );
       assert.equal(fifteen.result, 'M03_SMOKE_FIXTURE_READY');
       assert.equal(fifteen.competitor_id, competitor);
+      for (const [proofSettings, message] of [
+        ['', 'M03_REACTIVATION_TECHNICAL14_PROOF_REQUIRED'],
+        [missing15Proof, 'M03_REACTIVATION_TECHNICAL14_PROOF_REQUIRED'],
+        [missing14Proof, 'M03_REACTIVATION_TECHNICAL15_PROOF_REQUIRED'],
+        [
+          missing14Proof + "set local emr.smoke_technical15_no_reactivation='unverified';",
+          'M03_REACTIVATION_TECHNICAL15_PROOF_REQUIRED',
+        ],
+        [
+          "set local emr.smoke_technical14_no_reactivation='unverified';" + missing15Proof,
+          'M03_REACTIVATION_TECHNICAL14_PROOF_REQUIRED',
+        ],
+      ]) {
+        psql(
+          `begin;${settings}set local emr.smoke_technical_ordinal='16';${proofSettings}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'${message}' then raise exception 'BOTH_GAP_PROOFS_NOT_REQUIRED';end if;end;end;$deny$;rollback;`,
+        );
+        assert.deepEqual(JSON.parse(psql(snapshot)), afterThirteen);
+      }
+      const sixteen = JSON.parse(
+        psql(
+          `begin;${settings}set local emr.smoke_technical_ordinal='16';${missing14Proof}${missing15Proof}${body()}${readback16}rollback;`,
+        ),
+      );
+      assert.equal(sixteen.result, 'M03_SMOKE_FIXTURE_READY');
+      assert.equal(sixteen.competitor_id, competitor);
+      assert.equal(sixteen.account_id, account);
       for (const ordinal of [12, 13]) {
         psql(
           `begin;${settings}delete from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}:technical-${ordinal}';set local emr.smoke_technical_ordinal='15';${missing14Proof}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' then raise exception 'TECHNICAL15_PRIOR_NOT_REQUIRED';end if;end;end;$deny$;rollback;`,
+        );
+        assert.deepEqual(JSON.parse(psql(snapshot)), afterThirteen);
+        psql(
+          `begin;${settings}delete from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}:technical-${ordinal}';set local emr.smoke_technical_ordinal='16';${missing14Proof}${missing15Proof}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED' then raise exception 'TECHNICAL16_PRIOR_NOT_REQUIRED';end if;end;end;$deny$;rollback;`,
         );
         assert.deepEqual(JSON.parse(psql(snapshot)), afterThirteen);
       }
@@ -1015,6 +1048,12 @@ describe(
 update app.competitors set status='archived' where id='${competitor}';update app.competitor_accounts set status='paused' where id='${account}';
 set local emr.smoke_technical_ordinal='15';${missing14Proof}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_PRIOR_EDIT_OR_ATTEMPT_PRESENT' then raise exception 'UNEXPECTED14_AUDIT_IGNORED';end if;end;end;$deny$;rollback;`);
       assert.deepEqual(JSON.parse(psql(snapshot)), afterThirteen);
+      for (const unexpectedOrdinal of [14, 15]) {
+        psql(`begin;${settings}set local emr.smoke_technical_ordinal='${unexpectedOrdinal}';${unexpectedOrdinal === 15 ? missing14Proof : ''}${body()}
+update app.competitors set status='archived' where id='${competitor}';update app.competitor_accounts set status='paused' where id='${account}';
+set local emr.smoke_technical_ordinal='16';${missing14Proof}${missing15Proof}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_PRIOR_EDIT_OR_ATTEMPT_PRESENT' then raise exception 'UNEXPECTED_GAP_AUDIT_IGNORED';end if;end;end;$deny$;rollback;`);
+        assert.deepEqual(JSON.parse(psql(snapshot)), afterThirteen);
+      }
       const fourteen = JSON.parse(
         psql(`begin;${settings}set local emr.smoke_technical_ordinal='14';${body()}${readback}rollback;`),
       );
@@ -1037,6 +1076,12 @@ set local emr.smoke_technical_ordinal='15';${missing14Proof}do $deny$begin begin
 update ops.audit_log set after=jsonb_set(after,'{original_creation_audit_id}',to_jsonb(after->>'original_creation_audit_id')) where actor_id='m03_smoke_reactivate.v1:${segment}:technical-14';${readback}rollback;`),
         '',
         'native14 readback rejects a string substituted for the numeric creation audit ID',
+      );
+      assert.equal(
+        psql(`begin;${settings}set local emr.smoke_technical_ordinal='16';${missing14Proof}${missing15Proof}${body()}
+update ops.audit_log set after=jsonb_set(after,'{original_creation_audit_id}',to_jsonb(after->>'original_creation_audit_id')) where actor_id='m03_smoke_reactivate.v1:${segment}:technical-16';${readback16}rollback;`),
+        '',
+        'native16 readback rejects a string substituted for the numeric creation audit ID',
       );
       assert.equal(psql('select jsonb_agg(to_jsonb(l) order by id) from ops.audit_log l;'), priorThirteen);
       assert.deepEqual(JSON.parse(psql(snapshot)), afterThirteen);

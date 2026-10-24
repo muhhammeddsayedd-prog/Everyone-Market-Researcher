@@ -118,6 +118,12 @@ foreach($mutation in @(@{key='controlAttempts';value=841},@{key='controlAttempts
  $mixed=[ordered]@{};foreach($name in $browserClosed.Keys){$mixed[$name]=$browserClosed[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
  try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'BROWSER_CLOSED_CHARGE_OR_BINDING_RESET'}
 }
+$browserLate=[ordered]@{};foreach($name in $browserClosed.Keys){$browserLate[$name]=$browserClosed[$name]};$browserLate.controlAttempts=843;$browserLate.combinedAttempts=1367
+if((Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$browserLate) $true 'CheckOnly') -ne 1024){throw 'LATE_DISCOVERY_CHARGE_NOT_PROJECTED'}
+foreach($mutation in @(@{key='controlAttempts';value=842},@{key='controlAttempts';value=844},@{key='controlAttempts';value='843'},@{key='combinedAttempts';value=1366},@{key='managementAttempts';value=523},@{key='managementMaximum';value=1025},@{key='sourceCommitSha';value=$next.sourceCommitSha},@{key='windowId';value=$next.windowId})){
+ $mixed=[ordered]@{};foreach($name in $browserLate.Keys){$mixed[$name]=$browserLate[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'LATE_DISCOVERY_CHARGE_OR_BINDING_RESET'}
+}
 foreach($mutation in @(@{key='managementMaximum';value=832},@{key='managementMaximum';value=1025},@{key='managementMaximum';value='1024'},@{key='managementAttempts';value=523},@{key='controlAttempts';value=840},@{key='combinedAttempts';value=1364},@{key='sourceCommitSha';value=$next.sourceCommitSha},@{key='windowId';value=$next.windowId},@{key='privateRead';value=$true},@{key='networkRequests';value=1})){
  $mixed=[ordered]@{};foreach($name in $restored.Keys){$mixed[$name]=$restored[$name]};$mixed[$mutation.key]=$mutation.value;$denied=$false
  try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$mixed) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED_RESTORED_1024_PROFILE_ACCEPTED'}

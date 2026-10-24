@@ -290,10 +290,20 @@ const runtimeRestorationAllocationApproval = Object.freeze({
   packetSha256: '9ac6eee07e781b44c76049d32e1fa86d4803b159c292ba9299a005a5d6b6079d',
 });
 const restoredBrowserDiscoveryRecovery = Object.freeze({
+  technicalAttempt: 14,
   relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-reconciliation-20261024.json',
   sha256: '6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960',
   cleanupRelative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json',
   cleanupSha256: 'aabddbc205c3582ba51beb16ca734c35378cf6caa79c288184aaa13c08c4406c',
+  next: Object.freeze({
+    technicalAttempt: 15,
+    relative:
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical15-reconciliation-20261024.json',
+    sha256: '59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd',
+    cleanupRelative:
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical15-cleanup-20261024.json',
+    cleanupSha256: '21d4d3c897b67189999ae502906dac4cfeb33e187011a8958913bb6fba705b29',
+  }),
 });
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
@@ -4995,13 +5005,28 @@ function blockedReadiness(x, status) {
     networkRequests: 0,
   });
 }
-function reconciledRestoredBrowserDiscovery(x) {
-  if (!restoredBrowserDiscoveryRecovery) return null;
-  const cfg = restoredBrowserDiscoveryRecovery,
+function reconciledRestoredBrowserDiscovery(x, cfg = restoredBrowserDiscoveryRecovery) {
+  if (!cfg) return null;
+  const ordinal = cfg.technicalAttempt,
+    previousControl = ordinal === 14 ? 838 : 839,
+    currentControl = previousControl + 1,
+    controlRows = ordinal === 14 ? 847 : 848,
+    launchOffset = ordinal === 14 ? 1 : 0,
+    frameCount = 8 + launchOffset,
     text = x.file(cfg.relative, { optional: true }),
     cleanupText = x.file(cfg.cleanupRelative, { optional: true });
-  if (text === null && cleanupText === null) return null;
+  if (text === null && cleanupText === null) {
+    if (
+      cfg.next &&
+      (x.file(cfg.next.relative, { optional: true }) !== null ||
+        x.file(cfg.next.cleanupRelative, { optional: true }) !== null)
+    )
+      fail();
+    return null;
+  }
   if (
+    ![14, 15].includes(ordinal) ||
+    (ordinal === 15 && x.recovery?.restoredBrowserDiscoveryTechnicalAttempt !== 14) ||
     text === null ||
     cleanupText === null ||
     hash(text) !== cfg.sha256 ||
@@ -5011,7 +5036,7 @@ function reconciledRestoredBrowserDiscovery(x) {
     x.recovery.managementMaximum !== 1024 ||
     x.recovery.setupMaximum !== 224 ||
     x.recovery.mainManagementAttempts !== 513 ||
-    x.recovery.mainControlAttempts !== 838
+    x.recovery.mainControlAttempts !== previousControl
   )
     fail();
   const r = JSON.parse(text),
@@ -5024,14 +5049,17 @@ function reconciledRestoredBrowserDiscovery(x) {
         fail();
     };
   match(r, {
-    kind: 'm03_technical14_browser_discovery_reconciliation',
+    kind: `m03_technical${ordinal}_browser_discovery_reconciliation`,
     version: 1,
     environment: 'dev',
     projectRef: 'zmotjsbzhzjvpelxvxlf',
   });
   match(r.source, {
-    helperHead: '31691f71bde0e7c4e8fbe4a516c4308495829acb',
-    ciRunId: 40104537281,
+    helperHead:
+      ordinal === 14
+        ? '31691f71bde0e7c4e8fbe4a516c4308495829acb'
+        : '17fdc347401f71311eaf12782a3038aaaa7af812',
+    ciRunId: ordinal === 14 ? 40104537281 : 40106094580,
     allFiveJobsPassed: true,
     vercelPassed: true,
     applicationSource: foundationProjectVerifiedRestoredRuntime.sourceCommitSha,
@@ -5039,7 +5067,7 @@ function reconciledRestoredBrowserDiscovery(x) {
     prDraft: true,
   });
   match(r.attempt, {
-    technicalAttempt: 14,
+    technicalAttempt: ordinal,
     segmentId: c.segmentId,
     windowId: foundationProjectVerifiedRestoredRuntime.windowId,
     nativeExit: 1,
@@ -5066,10 +5094,10 @@ function reconciledRestoredBrowserDiscovery(x) {
     mainManagement: 513,
     carriedManagement: 11,
     management: 524,
-    mainControl: 839,
+    mainControl: currentControl,
     carriedControl: 3,
-    control: 842,
-    combined: 1366,
+    control: currentControl + 3,
+    combined: 524 + currentControl + 3,
     vercel: 149,
     managementMaximum: 1024,
     controlMaximum: 2048,
@@ -5082,30 +5110,47 @@ function reconciledRestoredBrowserDiscovery(x) {
   });
   match(r.journalCounts, {
     management: 514,
-    control: 847,
+    control: controlRows,
     setup: 297,
     preflight: 16,
     runtime: 50,
     runtimeTechnical13: 38,
-    publicFrames: 9,
+    publicFrames: frameCount,
   });
-  match(r.browser, {
-    failure: 'browser_not_available',
-    profile: 'Person 1',
-    oldTabDebuggerAttached: false,
-    newOwnedTabWorkflowId: 'MzimjpsuyPuK7SKe',
-    recovered: true,
-    signOutInferred: false,
-    executionStarted: false,
-  });
-  match(r.coordinatorLocalLaunchRefusal, {
-    kind: 'm03_coordinator_local_launch_refusal',
-    code: 'PROCESS_BINDING_UNAVAILABLE',
-    childStarted: false,
-    privateRead: false,
-    networkRequests: 0,
-    admissionStarted: false,
-  });
+  match(
+    r.browser,
+    ordinal === 14
+      ? {
+          failure: 'browser_not_available',
+          profile: 'Person 1',
+          oldTabDebuggerAttached: false,
+          newOwnedTabWorkflowId: 'MzimjpsuyPuK7SKe',
+          recovered: true,
+          signOutInferred: false,
+          executionStarted: false,
+        }
+      : {
+          browserId: '2',
+          profile: 'Person 1',
+          tabId: '1091385249',
+          workflowId: 'MzimjpsuyPuK7SKe',
+          uiReadSucceeded: true,
+          executeControlObserved: true,
+          executionStarted: false,
+          responseArrivedAfterDiscoveryDeadline: true,
+          timeoutCause: 'coordinator_context_compaction_latency',
+          signOutInferred: false,
+        },
+  );
+  if (ordinal === 14)
+    match(r.coordinatorLocalLaunchRefusal, {
+      kind: 'm03_coordinator_local_launch_refusal',
+      code: 'PROCESS_BINDING_UNAVAILABLE',
+      childStarted: false,
+      privateRead: false,
+      networkRequests: 0,
+      admissionStarted: false,
+    });
   match(r.cleanup, {
     pending: true,
     requiresTemporaryPresenceOnlyCleanup: true,
@@ -5121,15 +5166,15 @@ function reconciledRestoredBrowserDiscovery(x) {
     m04Unstarted: true,
     businessAcceptanceVerified: false,
   });
-  const base = `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-14`,
-    db = `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-technical-14`,
+  const base = `scripts/n8n/out/foundation/live/project-verified-continuation-${c.segmentId}.technical-${ordinal}`,
+    db = `scripts/db/out/m03-foundation-project-verified-continuation-${c.segmentId}-technical-${ordinal}`,
     absent = ['attempt', 'latest', 'owner-provision-attempt', 'reactivation-attempt']
       .map((suffix) => `${db}-${suffix}.json`)
-      .concat('scripts/n8n/out/foundation/live/runtime.technical-14.jsonl'),
+      .concat(`scripts/n8n/out/foundation/live/runtime.technical-${ordinal}.jsonl`),
     immutable = ['.json', '.runtime-claim.json', '.closed.json', '.public-frames.jsonl'].map(
       (suffix) => base + suffix,
     ),
-    counts = { management: 514, control: 847, setup: 297, preflight: 16, runtime: 50 },
+    counts = { management: 514, control: controlRows, setup: 297, preflight: 16, runtime: 50 },
     journalPaths = Object.keys(counts).map((name) => `scripts/n8n/out/foundation/live/${name}.jsonl`),
     oldRuntime = 'scripts/n8n/out/foundation/live/runtime.technical-13.jsonl',
     pins = { ...x.recovery.pins, [cfg.relative]: cfg.sha256, [cfg.cleanupRelative]: cfg.cleanupSha256 };
@@ -5149,7 +5194,7 @@ function reconciledRestoredBrowserDiscovery(x) {
   const admission = JSON.parse(x.file(base + '.json')),
     claim = JSON.parse(x.file(base + '.runtime-claim.json')),
     closed = JSON.parse(x.file(base + '.closed.json')),
-    frames = jsonl(x.file(base + '.public-frames.jsonl'), 9).rows;
+    frames = jsonl(x.file(base + '.public-frames.jsonl'), frameCount).rows;
   for (const [raw, value] of [
     [r.rawAdmission, admission],
     [r.rawRuntimeClaim, claim],
@@ -5191,7 +5236,7 @@ function reconciledRestoredBrowserDiscovery(x) {
     if (!positive(pid) || x.io.processAlive(pid) !== false) fail();
   const common = {
     managementAttempts: 524,
-    controlAttempts: 842,
+    controlAttempts: currentControl + 3,
     nativeExecutions: 0,
     gatewayPreflightAttempts: 6,
     providerDirectAttempts: 0,
@@ -5203,7 +5248,7 @@ function reconciledRestoredBrowserDiscovery(x) {
   match(r.rawPrepare, {
     ...common,
     kind: 'm03_acceptance_result',
-    id: 'm03_live_030',
+    id: ordinal === 14 ? 'm03_live_030' : 'm03_live_031',
     command: 'prepare',
     status: 'blocked',
     residual: true,
@@ -5233,10 +5278,10 @@ function reconciledRestoredBrowserDiscovery(x) {
     privateRead: true,
     code: 'M03_ACCEPTANCE_BLOCKED',
   });
-  if (frames.length !== 9) fail();
+  if (frames.length !== frameCount) fail();
   match(frames[0], {
     kind: 'm03_live_coordinator_checkpoint',
-    technicalAttempt: 14,
+    technicalAttempt: ordinal,
     helperHead: r.source.helperHead,
     ciRunId: r.source.ciRunId,
     allFiveJobsPassed: true,
@@ -5245,15 +5290,19 @@ function reconciledRestoredBrowserDiscovery(x) {
     sourceCiRunId: 40103108266,
     windowId: admission.windowId,
     managementAttempts: 524,
-    controlAttempts: 841,
-    combinedAttempts: 1365,
+    controlAttempts: previousControl + 3,
+    combinedAttempts: 524 + previousControl + 3,
     vercelAttempts: 149,
     actorStarts: 0,
     parentProcessId: admission.parentProcessId,
   });
-  if (JSON.stringify(frames[1]) !== JSON.stringify(r.coordinatorLocalLaunchRefusal)) fail();
-  match(frames[2], { kind: 'm03_acceptance_transport_ready', privateRead: false, networkRequests: 0 });
-  match(frames[3], {
+  if (ordinal === 14 && JSON.stringify(frames[1]) !== JSON.stringify(r.coordinatorLocalLaunchRefusal)) fail();
+  match(frames[1 + launchOffset], {
+    kind: 'm03_acceptance_transport_ready',
+    privateRead: false,
+    networkRequests: 0,
+  });
+  match(frames[2 + launchOffset], {
     kind: 'm03_acceptance_vercel_metadata',
     status: 'metadata_covers_75_minutes',
     metadataValid: true,
@@ -5266,18 +5315,22 @@ function reconciledRestoredBrowserDiscovery(x) {
     configWritten: false,
     childClosed: true,
   });
-  match(frames[4], {
+  match(frames[3 + launchOffset], {
     kind: 'm03_acceptance_ready',
     status: 'private_child_ready',
     deadlineAt: admission.deadlineAt,
     approvedHead: c.sourceCommitSha,
     sourceCommitSha: admission.sourceCommitSha,
   });
-  match(frames[5], { kind: 'mcp_port_request', action: 'browser_discover', workflowId: 'MzimjpsuyPuK7SKe' });
+  match(frames[4 + launchOffset], {
+    kind: 'mcp_port_request',
+    action: 'browser_discover',
+    workflowId: 'MzimjpsuyPuK7SKe',
+  });
   for (const [index, value] of [
-    [6, r.rawPrepare],
-    [7, r.rawSourceClose],
-    [8, r.rawWrapperClose],
+    [5 + launchOffset, r.rawPrepare],
+    [6 + launchOffset, r.rawSourceClose],
+    [7 + launchOffset, r.rawWrapperClose],
   ])
     if (JSON.stringify(frames[index]) !== JSON.stringify(value)) fail();
   for (const [name, retainedRows] of Object.entries(counts)) {
@@ -5286,14 +5339,14 @@ function reconciledRestoredBrowserDiscovery(x) {
       prefix = parsed.lines.slice(0, retainedRows).join('\n') + '\n';
     if (parsed.rows.length < retainedRows || hash(prefix) !== r.pins[path]) fail();
     if (name === 'control') {
-      const before = parsed.lines.slice(0, 846).join('\n') + '\n',
-        last = parsed.rows[846],
+      const before = parsed.lines.slice(0, controlRows - 1).join('\n') + '\n',
+        last = parsed.rows[controlRows - 1],
         at = Date.parse(last.at);
       if (
         hash(before) !== x.recovery.pins[path] ||
         !exact(last, ['event', 'ordinal', 'kind', 'workflowId', 'at']) ||
         last.event !== 'control_request_intent' ||
-        last.ordinal !== 839 ||
+        last.ordinal !== currentControl ||
         last.kind !== 'discovery' ||
         last.workflowId !== 'MzimjpsuyPuK7SKe' ||
         !Number.isFinite(at) ||
@@ -5305,11 +5358,11 @@ function reconciledRestoredBrowserDiscovery(x) {
     pins[path] = r.pins[path];
   }
   match(z, {
-    kind: 'm03_technical14_local_cleanup',
+    kind: `m03_technical${ordinal}_local_cleanup`,
     version: 1,
     environment: 'dev',
     projectRef: 'zmotjsbzhzjvpelxvxlf',
-    technicalAttempt: 14,
+    technicalAttempt: ordinal,
     nativeExit: 0,
     attemptReceiptSha256: cfg.sha256,
     privateContentsRead: false,
@@ -5328,20 +5381,28 @@ function reconciledRestoredBrowserDiscovery(x) {
     machineRetained: true,
     originalFailedAttemptPreserved: true,
     managementAttempts: 524,
-    controlAttempts: 842,
-    combinedAttempts: 1366,
+    controlAttempts: currentControl + 3,
+    combinedAttempts: 524 + currentControl + 3,
     vercelAttempts: 149,
     actorStarts: 0,
   });
   if (!Number.isFinite(Date.parse(z.observedAt)) || Date.parse(z.observedAt) < closed.closedAt) fail();
-  return Object.freeze({
+  const recovered = Object.freeze({
     ...x.recovery,
-    mainControlAttempts: 839,
-    controlRows: 847,
-    restoredBrowserDiscoveryTechnicalAttempt: 14,
-    restoredBrowserDiscoveryPins: Object.freeze([cfg.relative, cfg.cleanupRelative, ...immutable]),
+    mainControlAttempts: currentControl,
+    controlRows,
+    restoredBrowserDiscoveryTechnicalAttempt: ordinal,
+    restoredBrowserDiscoveryPins: Object.freeze([
+      ...(x.recovery.restoredBrowserDiscoveryPins ?? []),
+      cfg.relative,
+      cfg.cleanupRelative,
+      ...immutable,
+    ]),
     pins: Object.freeze(pins),
   });
+  return cfg.next
+    ? (reconciledRestoredBrowserDiscovery({ ...x, recovery: recovered }, cfg.next) ?? recovered)
+    : recovered;
 }
 function recoveryPreflight(x, initial = false) {
   if (!x.recovery) return;
@@ -5833,7 +5894,9 @@ function closedTechnicalAttempt(x, paths) {
     (paths.ordinal === 11 && x.recovery?.adminAdmissionReadonlyTechnicalAttempt === 11) ||
     (paths.ordinal === 12 && x.recovery?.runtimePreparationTechnicalAttempt === 12) ||
     (paths.ordinal === 13 && x.recovery?.runtimeRestorationTechnicalAttempt === 13) ||
-    (paths.ordinal === 14 && x.recovery?.restoredBrowserDiscoveryTechnicalAttempt === 14);
+    ([14, 15].includes(paths.ordinal) &&
+      [14, 15].includes(x.recovery?.restoredBrowserDiscoveryTechnicalAttempt) &&
+      paths.ordinal <= x.recovery.restoredBrowserDiscoveryTechnicalAttempt);
   const noAdminSpawnReconciled =
     paths.ordinal === 11 && x.recovery?.adminAdmissionReadonlyTechnicalAttempt === 11;
   if (
@@ -6122,7 +6185,7 @@ export function assertFoundationProjectVerifiedContinuationJournalPrefixes(p, op
   if (x.recovery?.runtimeRestorationTechnicalAttempt === 13)
     for (const path of x.recovery.runtimeRestorationPins)
       if (hash(x.file(path)) !== x.recovery.pins[path]) fail();
-  if (x.recovery?.restoredBrowserDiscoveryTechnicalAttempt === 14)
+  if ([14, 15].includes(x.recovery?.restoredBrowserDiscoveryTechnicalAttempt))
     for (const path of x.recovery.restoredBrowserDiscoveryPins)
       if (hash(x.file(path)) !== x.recovery.pins[path]) fail();
   if (x.recovery?.runtimeRestorationAllocationApproved === true)

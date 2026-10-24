@@ -15,6 +15,115 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('closed technical15 browser timeout preserves both failed discoveries and524/843 charges before sibling16', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ restoredBrowserRetryDiscovery: true });
+  try {
+    const immutable = [14, 15].map((ordinal) => {
+      const path = `scripts/n8n/out/foundation/live/project-verified-continuation-${f.snapshot.proposedSegmentId}.technical-${ordinal}.closed.json`;
+      return [path, readFileSync(join(f.directory, path), 'utf8')];
+    });
+    const ready = f.check();
+    assert.deepEqual(
+      [ready.managementMaximum, ready.managementAttempts, ready.controlAttempts, ready.combinedAttempts],
+      [1024, 524, 843, 1367],
+    );
+    const proof = f.claim(f.admit()),
+      resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(resume.technicalAttemptOrdinal, 16);
+    assert.equal(resume.runtimeFilename, 'runtime.technical-16.jsonl');
+    assert.equal(resume.mainControlAttempts, 840);
+    assert.equal(resume.historicalWindowIds.length, 4);
+    assert.equal(resume.historicalWindowIds.includes(proof.windowId), false);
+    assert.equal(resume.legacySqlAdmitted, 7);
+    assert.equal(proof.windowId, '4c602549-2c42-4ec3-9328-714d7cb66a77');
+    assert.equal(proof.sourceCommitSha, '5087d4d93d2f6ffdca0bc0096b365723005446fc');
+    assert.deepEqual(
+      Object.keys(f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof)).sort(),
+      ['SUB-NOTIFY', 'WF-90'],
+    );
+    for (const [path, before] of immutable) {
+      assert.equal(JSON.parse(before).closureVerified, false);
+      assert.equal(readFileSync(join(f.directory, path), 'utf8'), before);
+    }
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('technical15 timeout recovery rejects repinned effects, source changes, altered discovery and incomplete cleanup', async () => {
+  for (const restoredBrowserRetryDiscoveryFault of [
+    'execution',
+    'write',
+    'admin',
+    'usage',
+    'raw-closure',
+    'window',
+    'control-kind',
+    'control-workflow',
+    'frame',
+    'cleanup',
+    'late-response',
+    'source',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      restoredBrowserRetryDiscovery: true,
+      restoredBrowserRetryDiscoveryFault,
+    });
+    try {
+      assert.throws(() => f.check(), undefined, restoredBrowserRetryDiscoveryFault);
+      assert.throws(() => f.admit(), undefined, restoredBrowserRetryDiscoveryFault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('technical15 timeout recovery requires both closed predecessors, absent outputs and immutable closure proofs', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ restoredBrowserRetryDiscovery: true });
+  try {
+    const receiptPaths = [14, 15].flatMap((ordinal) => [
+        `milestones/M03-n8n-foundation/evidence/dev-acceptance-technical${ordinal}-reconciliation-20261024.json`,
+        `milestones/M03-n8n-foundation/evidence/dev-acceptance-technical${ordinal}-cleanup-20261024.json`,
+      ]),
+      receipt = JSON.parse(readFileSync(join(f.directory, receiptPaths[2]), 'utf8'));
+    for (const path of receiptPaths) {
+      const before = readFileSync(join(f.directory, path), 'utf8');
+      unlinkSync(join(f.directory, path));
+      assert.throws(() => f.check());
+      f.put(path, before);
+    }
+    for (const path of [
+      ...receipt.absentOutputs,
+      receipt.absentOutputs[0].replace('-attempt.json', '-unprovisioned-archive-attempt.json'),
+    ]) {
+      const absolute = f.put(path, '{}\n');
+      assert.throws(() => f.check());
+      unlinkSync(absolute);
+    }
+    for (const pid of [receipt.attempt.parentProcessId, receipt.attempt.runtimeProcessId]) {
+      f.io.processAlive = (candidate) => candidate === pid;
+      assert.throws(() => f.check());
+    }
+    f.io.processAlive = () => false;
+    const proof = f.claim(f.admit());
+    for (const path of [
+      ...receiptPaths,
+      ...Object.keys(receipt.pins).filter((path) => path.includes('technical-15')),
+    ]) {
+      const before = readFileSync(join(f.directory, path), 'utf8');
+      writeFileSync(join(f.directory, path), before + '\n');
+      assert.throws(() => f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof));
+      writeFileSync(join(f.directory, path), before);
+    }
+    assert.deepEqual(
+      Object.keys(f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof)).sort(),
+      ['SUB-NOTIFY', 'WF-90'],
+    );
+  } finally {
+    f.cleanup();
+  }
+});
+
 test('closed technical14 browser-only failure preserves524/842 charges, unused fifth SQL window and restored versions before sibling15', async () => {
   const f = await syntheticProjectVerifiedContinuation({ restoredBrowserDiscovery: true });
   try {
@@ -138,53 +247,60 @@ test('technical14 recovery requires both immutable receipts, dead owners and no 
   }
 });
 
-test('technical15 ReadClaimed permits only sequential new25Management51Control charges above the pinned technical14 prefix', async () => {
-  const f = await syntheticProjectVerifiedContinuation({ restoredBrowserDiscovery: true });
-  try {
-    const proof = f.claim(f.admit()),
-      beforeManagement = readFileSync(f.paths.management, 'utf8'),
-      beforeControl = readFileSync(f.paths.control, 'utf8');
-    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
-    f.io.processAlive = (pid) => [process.pid, process.ppid].includes(pid);
-    for (let i = 0; i < 25; i++)
-      appendFileSync(
-        f.paths.management,
-        JSON.stringify({ event: 'management_attempt', ordinal: 514 + i }) + '\n',
-      );
-    for (let i = 0; i < 51; i++)
-      appendFileSync(
-        f.paths.control,
-        JSON.stringify({
-          event: 'control_request_intent',
-          ordinal: 840 + i,
-          kind: 'discovery',
-          workflowId: 'MzimjpsuyPuK7SKe',
-          at: new Date(f.now()).toISOString(),
-        }) + '\n',
-      );
-    const current = f.readClaimed();
-    assert.equal(current.windowId, proof.windowId);
-    assert.equal(current.sourceCommitSha, proof.sourceCommitSha);
-    assert.equal(readFileSync(f.paths.management, 'utf8').startsWith(beforeManagement), true);
-    assert.equal(readFileSync(f.paths.control, 'utf8').startsWith(beforeControl), true);
-    assert.throws(() => f.check(), 'a fresh admission must not reuse the current sibling tail');
-    for (const path of [f.paths.management, f.paths.control]) {
-      const before = readFileSync(path, 'utf8'),
-        rows = before.trimEnd().split('\n').map(JSON.parse);
-      rows.at(-1).ordinal--;
-      writeFileSync(path, rows.map(JSON.stringify).join('\n') + '\n');
-      assert.throws(() => f.readClaimed());
-      writeFileSync(path, before);
+test('technical15 and16 ReadClaimed permit only sequential new25Management51Control charges above both pinned discovery prefixes', async () => {
+  for (const restoredBrowserRetryDiscovery of [false, true]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      restoredBrowserDiscovery: true,
+      restoredBrowserRetryDiscovery,
+    });
+    try {
+      const proof = f.claim(f.admit()),
+        beforeManagement = readFileSync(f.paths.management, 'utf8'),
+        beforeControl = readFileSync(f.paths.control, 'utf8');
+      f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+      f.io.processAlive = (pid) => [process.pid, process.ppid].includes(pid);
+      for (let i = 0; i < 25; i++)
+        appendFileSync(
+          f.paths.management,
+          JSON.stringify({ event: 'management_attempt', ordinal: 514 + i }) + '\n',
+        );
+      for (let i = 0; i < 51; i++)
+        appendFileSync(
+          f.paths.control,
+          JSON.stringify({
+            event: 'control_request_intent',
+            ordinal: (restoredBrowserRetryDiscovery ? 841 : 840) + i,
+            kind: 'discovery',
+            workflowId: 'MzimjpsuyPuK7SKe',
+            at: new Date(f.now()).toISOString(),
+          }) + '\n',
+        );
+      const current = f.readClaimed();
+      assert.equal(current.windowId, proof.windowId);
+      assert.equal(current.sourceCommitSha, proof.sourceCommitSha);
+      assert.equal(readFileSync(f.paths.management, 'utf8').startsWith(beforeManagement), true);
+      assert.equal(readFileSync(f.paths.control, 'utf8').startsWith(beforeControl), true);
+      assert.throws(() => f.check(), 'a fresh admission must not reuse the current sibling tail');
+      for (const path of [f.paths.management, f.paths.control]) {
+        const before = readFileSync(path, 'utf8'),
+          rows = before.trimEnd().split('\n').map(JSON.parse);
+        rows.at(-1).ordinal--;
+        writeFileSync(path, rows.map(JSON.stringify).join('\n') + '\n');
+        assert.throws(() => f.readClaimed());
+        writeFileSync(path, before);
+      }
+      const control = readFileSync(f.paths.control, 'utf8');
+      for (const index of restoredBrowserRetryDiscovery ? [846, 847] : [846]) {
+        const rows = control.trimEnd().split('\n').map(JSON.parse);
+        rows[index].workflowId = 'SYNTHETIC_FOREIGN';
+        writeFileSync(f.paths.control, rows.map(JSON.stringify).join('\n') + '\n');
+        assert.throws(() => f.readClaimed(), 'neither pinned failed discovery can be reattributed');
+        writeFileSync(f.paths.control, control);
+      }
+      assert.equal(f.readClaimed().windowId, proof.windowId);
+    } finally {
+      f.cleanup();
     }
-    const control = readFileSync(f.paths.control, 'utf8'),
-      rows = control.trimEnd().split('\n').map(JSON.parse);
-    rows[846].workflowId = 'SYNTHETIC_FOREIGN';
-    writeFileSync(f.paths.control, rows.map(JSON.stringify).join('\n') + '\n');
-    assert.throws(() => f.readClaimed(), 'the pinned failed discovery cannot be reattributed');
-    writeFileSync(f.paths.control, control);
-    assert.equal(f.readClaimed().windowId, proof.windowId);
-  } finally {
-    f.cleanup();
   }
 });
 

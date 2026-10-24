@@ -1,0 +1,30 @@
+{
+    "kind":  "m03_technical15_local_cleanup",
+    "version":  1,
+    "observedAt":  "2026-10-24T15:30:26.9822494+00:00",
+    "environment":  "dev",
+    "projectRef":  "zmotjsbzhzjvpelxvxlf",
+    "technicalAttempt":  15,
+    "nativeExit":  0,
+    "attemptReceiptSha256":  "59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd",
+    "privateContentsRead":  false,
+    "networkRequests":  0,
+    "deletedLeaves":  [
+                          "emr-m03-foundation-dev-migration-password.dpapi",
+                          "emr-m03-foundation-dev-migration-password.lease.json",
+                          "emr-m03-acceptance-protection-bypass.dpapi"
+                      ],
+    "allTenDisposableLeavesAbsent":  true,
+    "parentProcessAbsent":  true,
+    "runtimeProcessAbsent":  true,
+    "parentLockAbsent":  true,
+    "runtimeLockAbsent":  true,
+    "persistentOriginalsRetained":  true,
+    "machineRetained":  true,
+    "originalFailedAttemptPreserved":  true,
+    "managementAttempts":  524,
+    "controlAttempts":  843,
+    "combinedAttempts":  1367,
+    "vercelAttempts":  149,
+    "actorStarts":  0
+}
