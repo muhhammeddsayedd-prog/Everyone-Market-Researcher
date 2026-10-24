@@ -12,6 +12,55 @@ import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 
 const key = 'synthetic-diagnostic-key-only';
+async function category31130Fixture() {
+  const f = await snapshot31130Fixture();
+  f.dto.workflowData.nodes.forEach((n, i) => {
+    n.id = 'SyntheticNode' + i;
+  });
+  f.context.expectedBody = structuredClone(f.dto.workflowData);
+  delete f.context.expectedBody.settings.binaryMode;
+  const { foundationRuntimeGraphHash } = await import('./foundation-runtime-checkpoint.mjs');
+  f.context.bodyHash = foundationRuntimeGraphHash(f.context.expectedBody);
+  return f;
+}
+test('category31130 projector privately distinguishes fixed fields and node order without exposing response-defined keys', async () => {
+  const f = await category31130Fixture();
+  f.dto.workflowData.nodes.reverse();
+  f.dto.workflowData.settings.errorWorkflow = 'DEFAULT';
+  const r = await inventory.projectExecution31130Categories(f.dto, f.context);
+  assert.equal(r.nodes.idSetEqual, true);
+  assert.equal(r.nodes.idOrderEqual, false);
+  assert.equal(r.nodes.idAlignedExact, true);
+  assert.equal(r.components.nodesEqual, false);
+  assert.equal(r.nodeFields.parameters, true);
+  assert.equal(r.settings.errorWorkflow.expectedPresent, false);
+  assert.equal(r.settings.errorWorkflow.observedPresent, true);
+  assert.equal(r.normalizationCandidates.settingsEqualAfterDefaultErrorWorkflowOmitted, true);
+  f.dto.workflowData.nodes[0].parameters = { secret: 'SYNTHETIC_PRIVATE_VALUE' };
+  f.dto.workflowData.settings.SYNTHETIC_PRIVATE_SETTING = 'SYNTHETIC_PRIVATE_VALUE';
+  const changed = await inventory.projectExecution31130Categories(f.dto, f.context);
+  assert.equal(changed.nodeFields.parameters, false);
+  assert.equal(changed.settingsUnknownKeyPresent, true);
+  assert.equal(changed.normalizationCandidates.graphEqualAfterNodeOrderAlignment, false);
+  assert.doesNotMatch(
+    JSON.stringify(changed),
+    /SYNTHETIC_PRIVATE|SyntheticNode|Call Vimeo|Synthetic owned graph/,
+  );
+});
+test('category31130 projector rejects an unverified reconstructed body and reports only false predicates for malformed snapshots', async () => {
+  const f = await category31130Fixture();
+  await assert.rejects(
+    inventory.projectExecution31130Categories(f.dto, { ...f.context, bodyHash: 'a'.repeat(64) }),
+  );
+  const r = await inventory.projectExecution31130Categories({ workflowData: [] }, f.context);
+  assert.equal(r.components.nodesEqual, false);
+  assert.equal(r.nodes.idAlignedExact, false);
+  assert.equal(
+    Object.values(r.nodeFields).every((v) => v === false),
+    true,
+  );
+  assert.doesNotMatch(JSON.stringify(r), /SYNTHETIC_PRIVATE|SyntheticNode/);
+});
 async function snapshot31130Fixture() {
   const snapshot = {
     id: 'MzimjpsuyPuK7SKe',
@@ -255,6 +304,136 @@ test('snapshot31130 diagnostic streams exactly one full snapshot through the ori
     JSON.stringify(r),
     /SYNTHETIC_PRIVATE|Synthetic31130Version|Synthetic owned graph|Call Vimeo|bodyHash|settings|workflowData|"resultData"/,
   );
+});
+test('category31130 diagnostic reuses the actual native one-GET stream and preserves privacy and closure failures', async () => {
+  for (const mode of ['success', 'framing', 'unclosed']) {
+    const snapshot = await category31130Fixture(),
+      f = native31130Fixture(snapshot.dto, { framing: mode === 'framing', unclosed: mode === 'unclosed' });
+    let charges = 0,
+      closed = false;
+    const r = await inventory.runExecution31130CategoryDiagnostic(key, {
+      ...f.options,
+      readContext: () => snapshot.context,
+      openBudget: () => ({
+        admit() {
+          charges++;
+        },
+        close() {
+          closed = true;
+        },
+      }),
+    });
+    assert.equal(charges, 1, mode);
+    assert.equal(closed, true, mode);
+    assert.equal(f.calls.length, 1, mode);
+    assert.equal(f.calls[0].path, '/api/v1/executions/31130?includeData=true');
+    assert.equal(
+      r.status,
+      mode === 'success' ? 'native_snapshot_classified' : 'native_snapshot_failed',
+      mode,
+    );
+    if (mode === 'success') {
+      assert.equal(r.forensics.categories.nodes.idAlignedExact, true);
+      assert.equal(r.forensics.categories.nodeFields.parameters, true);
+      assert.equal(r.networkCompletionVerified, true);
+    }
+    assert.equal(r.readerMetadataVerified, false);
+    assert.equal(r.acceptanceProven, false);
+    assert.doesNotMatch(
+      JSON.stringify(r),
+      /SYNTHETIC_PRIVATE|Synthetic31130Version|SyntheticNode|Synthetic owned graph|Call Vimeo|bodyHash|workflowData|"resultData"/,
+    );
+  }
+});
+test('category31130 public reconstruction and one-use828 debit preserve827 and every original journal', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'emr-category31130-budget-')),
+    cfg = 'milestones/M03-n8n-foundation/evidence/',
+    main = JSON.parse(
+      readFileSync(resolve(cfg + 'dev-acceptance-technical16-reconciliation-20261024.json'), 'utf8'),
+    ),
+    extra = [
+      cfg + 'dev-acceptance-technical16-reconciliation-20261024.json',
+      cfg + 'dev-acceptance-technical16-cleanup-20261024.json',
+      cfg + 'technical16-execution31130-metadata-readback-20261024.json',
+      cfg + 'technical16-execution31130-native-metadata-readback-20261024.json',
+      cfg + 'technical16-child-ui-readback-20261024.json',
+      cfg + 'technical16-execution31130-native-snapshot-readback-20261024.json',
+      'scripts/n8n/out/foundation/execution-31130-metadata-diagnostic-20261024.jsonl',
+      'scripts/n8n/out/foundation/execution-31130-native-metadata-diagnostic-20261024.jsonl',
+      'scripts/n8n/out/foundation/execution-31130-snapshot-diagnostic-20261024.jsonl',
+      'n8n/foundation/bindings.dev.json',
+      'n8n/foundation/transport.dev.json',
+    ],
+    originals = new Map();
+  try {
+    const bindings = JSON.parse(readFileSync(resolve('n8n/foundation/bindings.dev.json'), 'utf8'));
+    extra.push(
+      JSON.parse(readFileSync(resolve(cfg + 'technical16-child-ui-readback-20261024.json'), 'utf8'))
+        .screenshot.path,
+    );
+    extra.push(...Object.keys(bindings.workflowRefs).map((k) => 'n8n/workflows/' + k + '.json'));
+    for (const p of new Set([...Object.keys(main.pins), ...extra])) {
+      const value = readFileSync(resolve(p)),
+        path = join(root, p);
+      mkdirSync(resolve(path, '..'), { recursive: true });
+      writeFileSync(path, value);
+      originals.set(p, value);
+    }
+    let source = readFileSync(resolve('scripts/n8n/inventory.mjs'), 'utf8');
+    for (const p of [
+      '../../n8n/foundation/materialize-acceptance-case.mjs',
+      './foundation-bind.mjs',
+      './foundation-retention-proposal.mjs',
+      './foundation-runtime-checkpoint.mjs',
+    ])
+      source = source.replaceAll(
+        "import('" + p + "')",
+        "import('" + pathToFileURL(resolve('scripts/n8n', p)).href + "')",
+      );
+    const entry = join(root, 'scripts/n8n/inventory.mjs');
+    writeFileSync(entry, source);
+    const module = await import(pathToFileURL(entry).href),
+      ready = await module.checkExecution31130MetadataDiagnostic(root, 'categories');
+    assert.deepEqual(
+      [
+        ready.managementAttempts,
+        ready.controlAttempts,
+        ready.combinedAttempts,
+        ready.privateRead,
+        ready.networkRequests,
+      ],
+      [827, 958, 1785, false, 0],
+    );
+    const recordPath = join(root, 'n8n/workflows/WF-00.json'),
+      recordText = readFileSync(recordPath, 'utf8');
+    writeFileSync(recordPath, recordText.replace('Africa/Cairo', 'SYNTHETIC_PRIVATE_TIMEZONE'));
+    await assert.rejects(module.checkExecution31130MetadataDiagnostic(root, 'categories'));
+    writeFileSync(recordPath, recordText);
+    const budget = await module.openExecution31130MetadataDiagnosticBudget(root, 'categories');
+    await assert.rejects(module.openExecution31130MetadataDiagnosticBudget(root, 'categories'));
+    const oldClaim = 'scripts/n8n/out/foundation/execution-31130-snapshot-diagnostic-20261024.jsonl';
+    writeFileSync(join(root, oldClaim), Buffer.concat([originals.get(oldClaim), Buffer.from(' ')]));
+    assert.throws(() => budget.admit());
+    writeFileSync(join(root, oldClaim), originals.get(oldClaim));
+    budget.admit();
+    assert.throws(() => budget.admit());
+    budget.close();
+    const claim = readFileSync(
+      join(root, 'scripts/n8n/out/foundation/execution-31130-category-diagnostic-20261024.jsonl'),
+      'utf8',
+    )
+      .trimEnd()
+      .split('\n')
+      .map(JSON.parse);
+    assert.deepEqual(claim.slice(1), [
+      { event: 'management_attempt', ordinal: 828 },
+      { event: 'native_read_control_reservation', ordinal: 959, additionalHttpRequest: false },
+    ]);
+    await assert.rejects(module.checkExecution31130MetadataDiagnostic(root, 'categories'));
+    for (const [p, bytes] of originals) assert.deepEqual(readFileSync(join(root, p)), bytes, p);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 test('native31130 diagnostic retains fixed native projection or transport failure and never requests full data', async () => {
   for (const mode of ['nullableVersion', 'differentVersion', 'framing', 'unclosed']) {
@@ -1193,8 +1372,9 @@ test('WF70 budget journal is one-use, preserves baseline counters and durably de
 test('actual native31130 CLI completes the native transport inventory import cycle and charges one streamed metadata GET', async () => {
   const root = mkdtempSync(join(tmpdir(), 'emr-native31130-cli-'));
   try {
-    const full = await snapshot31130Fixture();
-    for (const snapshotMode of [false, true]) {
+    const full = await category31130Fixture();
+    for (const snapshotMode of [false, true, 'categories']) {
+      const label = snapshotMode === 'categories' ? 'category' : snapshotMode ? 'snapshot' : 'native';
       const put = (relative, text) => {
           const path = join(root, relative);
           mkdirSync(resolve(path, '..'), { recursive: true });
@@ -1217,7 +1397,7 @@ test('actual native31130 CLI completes the native transport inventory import cyc
       // native reader, streaming native transport and circular import topology.
       const source =
           original.slice(0, start) +
-          `function readNativeExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {root,versionId:'Synthetic31130Version',intentAt:${instant}};}function readSnapshotExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {...readNativeExecution31130Context(root),bodyHash:${JSON.stringify(full.context.bodyHash)}};}\n` +
+          `function readNativeExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {root,versionId:'Synthetic31130Version',intentAt:${instant}};}function readSnapshotExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {...readNativeExecution31130Context(root),bodyHash:${JSON.stringify(full.context.bodyHash)}};}async function readCategoryExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {...readSnapshotExecution31130Context(root),expectedBody:${JSON.stringify(full.context.expectedBody)},categoryPins:{}};}\n` +
           original.slice(end),
         entry = put('scripts/n8n/inventory.mjs', source),
         entryUrl = pathToFileURL(entry).href,
@@ -1235,11 +1415,11 @@ test('actual native31130 CLI completes the native transport inventory import cyc
         https = put(
           'https.mjs',
           `import {EventEmitter} from 'node:events';import {PassThrough} from 'node:stream';import {appendFileSync} from 'node:fs';
-export function request(options,callback){if(options.method!=='GET'||options.hostname!=='muhhammedsayed.app.n8n.cloud'||options.path!==${JSON.stringify('/api/v1/executions/31130?includeData=' + String(snapshotMode))}||options.rejectUnauthorized!==true||options.agent!==false||options.headers['accept-encoding']!=='identity')throw Error('SYNTHETIC_ROUTE_BLOCKED');appendFileSync(new URL('./calls${snapshotMode ? 'snapshot' : 'native'}.txt',import.meta.url),'fixed-get\\n');const req=new EventEmitter(),socket=new EventEmitter();socket.encrypted=true;socket.authorized=true;socket.remoteAddress='1.1.1.1';let res,closed=false;const close=()=>{if(closed)return;closed=true;res?.destroy();req.emit('close');socket.emit('close');};req.destroy=close;socket.destroy=close;req.end=()=>queueMicrotask(()=>{req.emit('socket',socket);socket.emit('secureConnect');res=new PassThrough();res.statusCode=200;res.headers={'content-type':'application/json'};res.complete=true;callback(res);if(!res.destroyed)res.end(Buffer.from(${JSON.stringify(JSON.stringify(snapshotMode ? full.dto : dto))}));res.once('end',close);});return req;}`,
+export function request(options,callback){if(options.method!=='GET'||options.hostname!=='muhhammedsayed.app.n8n.cloud'||options.path!==${JSON.stringify('/api/v1/executions/31130?includeData=' + String(!!snapshotMode))}||options.rejectUnauthorized!==true||options.agent!==false||options.headers['accept-encoding']!=='identity')throw Error('SYNTHETIC_ROUTE_BLOCKED');appendFileSync(new URL('./calls${label}.txt',import.meta.url),'fixed-get\\n');const req=new EventEmitter(),socket=new EventEmitter();socket.encrypted=true;socket.authorized=true;socket.remoteAddress='1.1.1.1';let res,closed=false;const close=()=>{if(closed)return;closed=true;res?.destroy();req.emit('close');socket.emit('close');};req.destroy=close;socket.destroy=close;req.end=()=>queueMicrotask(()=>{req.emit('socket',socket);socket.emit('secureConnect');res=new PassThrough();res.statusCode=200;res.headers={'content-type':'application/json'};res.complete=true;callback(res);if(!res.destroyed)res.end(Buffer.from(${JSON.stringify(JSON.stringify(snapshotMode ? full.dto : dto))}));res.once('end',close);});return req;}`,
         ),
         preload = put(
           'preload.mjs',
-          `import {registerHooks} from 'node:module';registerHooks({resolve(specifier,context,next){if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-native-reader.mjs')return {url:${JSON.stringify(actualReader)},shortCircuit:true};if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-native-transport.mjs')return {url:${JSON.stringify(actualTransport)},shortCircuit:true};if(specifier==='./inventory.mjs'&&context.parentURL?.includes('/scripts/n8n/'))return {url:${JSON.stringify(entryUrl)},shortCircuit:true};if(specifier==='node:dns')return {url:${JSON.stringify(pathToFileURL(dns).href)},shortCircuit:true};if(specifier==='node:https')return {url:${JSON.stringify(pathToFileURL(https).href)},shortCircuit:true};return next(specifier,context);}});`,
+          `import {registerHooks} from 'node:module';registerHooks({resolve(specifier,context,next){if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-native-reader.mjs')return {url:${JSON.stringify(actualReader)},shortCircuit:true};if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-native-transport.mjs')return {url:${JSON.stringify(actualTransport)},shortCircuit:true};if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-runtime-checkpoint.mjs')return {url:${JSON.stringify(pathToFileURL(resolve('scripts/n8n/foundation-runtime-checkpoint.mjs')).href)},shortCircuit:true};if(specifier==='./inventory.mjs'&&context.parentURL?.includes('/scripts/n8n/'))return {url:${JSON.stringify(entryUrl)},shortCircuit:true};if(specifier==='node:dns')return {url:${JSON.stringify(pathToFileURL(dns).href)},shortCircuit:true};if(specifier==='node:https')return {url:${JSON.stringify(pathToFileURL(https).href)},shortCircuit:true};return next(specifier,context);}});`,
         ),
         env = Object.fromEntries(
           ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP']
@@ -1252,9 +1432,11 @@ export function request(options,callback){if(options.method!=='GET'||options.hos
             '--import',
             pathToFileURL(preload).href,
             entry,
-            snapshotMode
-              ? '--execution-31130-snapshot-diagnostic'
-              : '--execution-31130-native-metadata-diagnostic',
+            snapshotMode === 'categories'
+              ? '--execution-31130-category-diagnostic'
+              : snapshotMode
+                ? '--execution-31130-snapshot-diagnostic'
+                : '--execution-31130-native-metadata-diagnostic',
           ],
           { env: { ...env, M03_N8N_API_KEY: key }, encoding: 'utf8', windowsHide: true, timeout: 10000 },
         );
@@ -1264,16 +1446,15 @@ export function request(options,callback){if(options.method!=='GET'||options.hos
       assert.equal(result.status, snapshotMode ? 'native_snapshot_classified' : 'native_metadata_verified');
       assert.equal(result.networkCompletionVerified, true);
       assert.equal(result.metadata.versionMatchesIntent, true);
-      assert.equal(
-        readFileSync(join(root, snapshotMode ? 'callssnapshot.txt' : 'callsnative.txt'), 'utf8'),
-        'fixed-get\n',
-      );
+      assert.equal(readFileSync(join(root, 'calls' + label + '.txt'), 'utf8'), 'fixed-get\n');
       const rows = readFileSync(
         join(
           root,
-          snapshotMode
-            ? 'scripts/n8n/out/foundation/execution-31130-snapshot-diagnostic-20261024.jsonl'
-            : 'scripts/n8n/out/foundation/execution-31130-native-metadata-diagnostic-20261024.jsonl',
+          snapshotMode === 'categories'
+            ? 'scripts/n8n/out/foundation/execution-31130-category-diagnostic-20261024.jsonl'
+            : snapshotMode
+              ? 'scripts/n8n/out/foundation/execution-31130-snapshot-diagnostic-20261024.jsonl'
+              : 'scripts/n8n/out/foundation/execution-31130-native-metadata-diagnostic-20261024.jsonl',
         ),
         'utf8',
       )
@@ -1281,10 +1462,13 @@ export function request(options,callback){if(options.method!=='GET'||options.hos
         .split('\n')
         .map(JSON.parse);
       assert.deepEqual(rows.slice(1), [
-        { event: 'management_attempt', ordinal: snapshotMode ? 827 : 826 },
+        {
+          event: 'management_attempt',
+          ordinal: snapshotMode === 'categories' ? 828 : snapshotMode ? 827 : 826,
+        },
         {
           event: 'native_read_control_reservation',
-          ordinal: snapshotMode ? 958 : 956,
+          ordinal: snapshotMode === 'categories' ? 959 : snapshotMode ? 958 : 956,
           additionalHttpRequest: false,
         },
       ]);

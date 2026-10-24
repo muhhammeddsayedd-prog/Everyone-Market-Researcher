@@ -24,7 +24,8 @@ function fixture(mode = 'success') {
   const wf00Mode = mode.startsWith('wf00');
   const execution31130Mode = mode.startsWith('execution31130');
   const native31130Mode = mode.startsWith('native31130');
-  const snapshot31130Mode = mode.startsWith('snapshot31130');
+  const category31130Mode = mode.startsWith('category31130');
+  const snapshot31130Mode = mode.startsWith('snapshot31130') || category31130Mode;
   const persistentMode =
     baselineMode ||
     discoveryMode ||
@@ -96,14 +97,21 @@ function fixture(mode = 'success') {
       '  $privateRoot = [IO.Path]::GetFullPath($env:LOCALAPPDATA)',
       "  [IO.File]::WriteAllText((Join-Path $repo 'private-sentinel.txt'),'reached');throw 'SYNTHETIC_PRIVATE_SENTINEL'",
     );
-  if (snapshot31130Mode)
+  if (category31130Mode)
+    consumerSource = consumerSource.replace(
+      'if($Execution31130CategoryDiagnostic){$node=Assert-RuntimeReconciliationPublic $false $false $false $false $true}',
+      mode === 'category31130PublicBlocked'
+        ? "if($Execution31130CategoryDiagnostic){[IO.File]::WriteAllText((Join-Path $repo 'public-gate.txt'),'reached');throw 'SYNTHETIC_PRIVATE_PUBLIC_ERROR'}"
+        : 'if($Execution31130CategoryDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
+    );
+  else if (snapshot31130Mode)
     consumerSource = consumerSource.replace(
       'if($Execution31130SnapshotDiagnostic){$node=Assert-RuntimeReconciliationPublic $false $false $false $true}',
       mode === 'snapshot31130PublicBlocked'
         ? "if($Execution31130SnapshotDiagnostic){[IO.File]::WriteAllText((Join-Path $repo 'public-gate.txt'),'reached');throw 'SYNTHETIC_PRIVATE_PUBLIC_ERROR'}"
         : 'if($Execution31130SnapshotDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
     );
-  if (mode === 'snapshot31130PublicBlocked')
+  if (mode === 'snapshot31130PublicBlocked' || mode === 'category31130PublicBlocked')
     consumerSource = consumerSource.replace(
       '  $privateRoot = [IO.Path]::GetFullPath($env:LOCALAPPDATA)',
       "  [IO.File]::WriteAllText((Join-Path $repo 'private-sentinel.txt'),'reached');throw 'SYNTHETIC_PRIVATE_SENTINEL'",
@@ -730,6 +738,86 @@ function fixture(mode = 'success') {
       childExecutionIds: ['31131'],
       nativeTreeSettlementProven: false,
     };
+    if (category31130Mode) {
+      const bools = (keys) => Object.fromEntries(keys.map((k) => [k, true]));
+      result.forensics.categories = {
+        components: bools(['nameEqual', 'nodesEqual', 'connectionsEqual', 'settingsEqual']),
+        nodes: bools(['indexExact', 'idSetEqual', 'idOrderEqual', 'idAlignedExact']),
+        nodeFields: bools([
+          'id',
+          'name',
+          'type',
+          'typeVersion',
+          'parameters',
+          'position',
+          'disabled',
+          'credentials',
+          'extendsCredential',
+          'retryOnFail',
+          'maxTries',
+          'waitBetweenTries',
+          'onError',
+          'continueOnFail',
+          'alwaysOutputData',
+          'executeOnce',
+          'notes',
+          'notesInFlow',
+          'webhookId',
+        ]),
+        settings: Object.fromEntries(
+          [
+            'executionOrder',
+            'timezone',
+            'executionTimeout',
+            'callerPolicy',
+            'callerIds',
+            'availableInMCP',
+            'saveDataErrorExecution',
+            'saveDataSuccessExecution',
+            'saveManualExecutions',
+            'saveExecutionProgress',
+            'errorWorkflow',
+            'timeSavedPerExecution',
+            'executionConcurrency',
+            'binaryMode',
+          ].map((k) => [k, bools(['equal', 'expectedPresent', 'observedPresent'])]),
+        ),
+        settingsUnknownKeyPresent: false,
+        nodeUnknownKeyPresent: false,
+        nodeCategories: bools([
+          'identityEqual',
+          'parametersEqual',
+          'credentialsEqual',
+          'behaviorEqual',
+          'layoutEqual',
+          'annotationsEqual',
+        ]),
+        settingsCategories: bools([
+          'retentionEqual',
+          'mcpVisibilityEqual',
+          'errorRoutingEqual',
+          'otherEqual',
+        ]),
+        normalizationCandidates: bools([
+          'nodesEqualAfterKnownFalseDefaults',
+          'graphEqualAfterNodeOrderAlignment',
+          'graphEqualAfterLayoutOmitted',
+          'graphEqualAfterNativeBinaryModeOmitted',
+          'settingsEqualAfterDefaultErrorWorkflowOmitted',
+          'graphEqualAfterDefaultErrorWorkflowOmitted',
+        ]),
+      };
+      if (mode === 'category31130Unsafe')
+        result.forensics.categories.nodeFields.SYNTHETIC_PRIVATE = 'SYNTHETIC_PRIVATE';
+      if (mode === 'category31130BadBool')
+        result.forensics.categories.settings.binaryMode.observedPresent = 'SYNTHETIC_PRIVATE';
+      if (mode === 'category31130Failure') {
+        result.status = 'native_snapshot_failed';
+        result.snapshotStage = 'parse';
+        result.forensics = null;
+        result.metadata = null;
+      }
+    }
     if (mode === 'snapshot31130Unsafe') result.forensics.raw = 'SYNTHETIC_PRIVATE';
     if (mode === 'snapshot31130BadBool') result.forensics.fields.executedGraphMatches = 'SYNTHETIC_PRIVATE';
     if (mode === 'snapshot31130ForeignChild') result.forensics.childExecutionIds = ['99111'];
@@ -741,13 +829,13 @@ function fixture(mode = 'success') {
     }
   }
   const code = `import {writeFileSync} from 'node:fs';
- const good=${snapshot31130Mode ? "process.argv[2]==='--execution-31130-snapshot-diagnostic'&&" : ''}${native31130Mode ? "process.argv[2]==='--execution-31130-native-metadata-diagnostic'&&" : ''}${execution31130Mode ? "process.argv[2]==='--execution-31130-metadata-diagnostic'&&" : ''}${wf00Mode ? "process.argv[2]==='--wf00-execution-diagnostic'&&" : ''}process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : machineMode ? "&&process.argv.length===3&&process.argv[2]==='--machine-metadata-diagnostic'" : runtimeMode ? "&&process.argv.length===3&&process.argv[2]==='--runtime-reconciliation-diagnostic'" : ''};
+ const good=${category31130Mode ? "process.argv[2]==='--execution-31130-category-diagnostic'&&" : snapshot31130Mode ? "process.argv[2]==='--execution-31130-snapshot-diagnostic'&&" : ''}${native31130Mode ? "process.argv[2]==='--execution-31130-native-metadata-diagnostic'&&" : ''}${execution31130Mode ? "process.argv[2]==='--execution-31130-metadata-diagnostic'&&" : ''}${wf00Mode ? "process.argv[2]==='--wf00-execution-diagnostic'&&" : ''}process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : machineMode ? "&&process.argv.length===3&&process.argv[2]==='--machine-metadata-diagnostic'" : runtimeMode ? "&&process.argv.length===3&&process.argv[2]==='--runtime-reconciliation-diagnostic'" : ''};
  writeFileSync(new URL('./called.txt',import.meta.url),good?'only-n8n-key':'wrong-env');
  delete process.env.M03_N8N_API_KEY;
  console.error('synthetic-private-stderr-must-stay-hidden');
  ${['timeout', 'baselineTimeout', 'baselineUnknownClose', 'machineTimeout', 'runtimeTimeout'].includes(mode) ? 'await new Promise(r=>setTimeout(r,10000));' : ''}
  console.log(${mode === 'badJson' ? "'synthetic-private-stdout-must-stay-hidden'" : mode === 'unsafeSchema' ? JSON.stringify(JSON.stringify({ ...result, privateSecret: 'synthetic-private-value' })) : JSON.stringify(JSON.stringify(result))});
- ${mode === 'failure' ? 'process.exitCode=7;' : ['workflowBodyFailure', 'wf70Http', 'machineHttp', 'runtimeHttp', 'native31130Failure', 'snapshot31130Failure'].includes(mode) ? 'process.exitCode=1;' : ''}`;
+ ${mode === 'failure' ? 'process.exitCode=7;' : ['workflowBodyFailure', 'wf70Http', 'machineHttp', 'runtimeHttp', 'native31130Failure', 'snapshot31130Failure', 'category31130Failure'].includes(mode) ? 'process.exitCode=1;' : ''}`;
   put('scripts/n8n/inventory.mjs', code);
   const paths = [
     'scripts/n8n/windows/New-M03N8nApiHandoff.ps1',
@@ -841,7 +929,11 @@ $s=[IO.File]::Open($store,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.Fi
         ...(wf00Mode ? ['-Wf00ExecutionDiagnostic'] : []),
         ...(execution31130Mode ? ['-Execution31130MetadataDiagnostic'] : []),
         ...(native31130Mode ? ['-Execution31130NativeMetadataDiagnostic'] : []),
-        ...(snapshot31130Mode ? ['-Execution31130SnapshotDiagnostic'] : []),
+        ...(category31130Mode
+          ? ['-Execution31130CategoryDiagnostic']
+          : snapshot31130Mode
+            ? ['-Execution31130SnapshotDiagnostic']
+            : []),
       ]),
   };
 }
@@ -852,6 +944,44 @@ describe(
   'M03 n8n bounded private inventory consumer, isolated synthetic Windows DPAPI only',
   { skip: process.platform !== 'win32' },
   () => {
+    it('category31130 native Management child validates fixed comparisons and preserves its encrypted original', () => {
+      for (const mode of [
+        'category31130Success',
+        'category31130Unsafe',
+        'category31130BadBool',
+        'category31130Failure',
+      ]) {
+        const f = fixture(mode),
+          check = f.run(true);
+        assert.equal(check.status, 0, check.stdout + check.stderr);
+        assert.match(check.stdout, /EXECUTION_31130_CATEGORY_CHECK_ONLY_READY/);
+        const original = join(
+            f.root,
+            'private/Everyone-Market-Radar-Private/secrets/dev/runtime/management.dpapi',
+          ),
+          before = readFileSync(original),
+          r = f.run();
+        assert.equal(r.status, mode === 'category31130Success' ? 0 : 1, r.stderr);
+        assert.doesNotMatch(
+          r.stdout + r.stderr,
+          /SYNTHETIC_PRIVATE|synthetic-private|synthetic-n8n-key|unrelated-/,
+        );
+        const receipt = JSON.parse(r.stdout);
+        assert.equal(receipt.childClosed, true);
+        assert.equal(receipt.handoffDeleted, true);
+        assert.deepEqual(readFileSync(original), before);
+        assert.equal(existsSync(f.handoff), false);
+        assert.equal(
+          existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')),
+          false,
+        );
+        assert.equal(readFileSync(join(f.root, 'scripts/n8n/called.txt'), 'utf8'), 'only-n8n-key');
+        if (mode === 'category31130Success')
+          assert.equal(receipt.inventory.forensics.categories.nodeFields.parameters, true);
+        else if (mode === 'category31130Failure') assert.equal(receipt.inventory.snapshotStage, 'parse');
+        else assert.equal(receipt.inventory, null);
+      }
+    });
     it('Runtime andWF00 reconciliation actual native public gate bounds its child and denies changed counters or private output before any credential path', () => {
       const root = mkdtempSync(join(tmpdir(), 'emr-runtime-public-'));
       roots.push(root);
@@ -885,11 +1015,19 @@ describe(
         privateRead: false,
         networkRequests: 0,
       };
-      for (const publicMode of ['runtime', 'wf00', 'execution31130', 'native31130', 'snapshot31130']) {
+      for (const publicMode of [
+        'runtime',
+        'wf00',
+        'execution31130',
+        'native31130',
+        'snapshot31130',
+        'category31130',
+      ]) {
         const wf00Mode = publicMode === 'wf00',
           execution31130Mode = publicMode === 'execution31130',
           native31130Mode = publicMode === 'native31130',
-          snapshot31130Mode = publicMode === 'snapshot31130';
+          snapshot31130Mode = publicMode === 'snapshot31130',
+          category31130Mode = publicMode === 'category31130';
         for (const mode of ['ready', 'stale', 'stringCounter', 'private', 'extra', 'overflow', 'stderr']) {
           const dto = structuredClone(result);
           if (wf00Mode)
@@ -935,13 +1073,24 @@ describe(
               combinedAttempts: 1783,
               maximumRequests: 1,
             });
+          if (category31130Mode)
+            Object.assign(dto, {
+              kind: 'm03_execution_31130_category_check',
+              technicalAttempt: 16,
+              sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
+              windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
+              managementAttempts: 827,
+              controlAttempts: 958,
+              combinedAttempts: 1785,
+              maximumRequests: 1,
+            });
           if (mode === 'stale') dto.managementAttempts--;
           if (mode === 'stringCounter') dto.controlAttempts = String(dto.controlAttempts);
           if (mode === 'private') dto.privateRead = true;
           if (mode === 'extra') dto.raw = 'SYNTHETIC_PRIVATE_VALUE';
           put(
             'scripts/n8n/inventory.mjs',
-            `if(process.argv[2]!==${JSON.stringify(snapshot31130Mode ? '--execution-31130-snapshot-check-only' : native31130Mode ? '--execution-31130-native-metadata-check-only' : execution31130Mode ? '--execution-31130-metadata-check-only' : wf00Mode ? '--wf00-execution-check-only' : '--runtime-reconciliation-check-only')}||process.env.M03_N8N_API_KEY||process.env.PGPASSWORD||process.env.SUPABASE_ACCESS_TOKEN||process.env.NODE_OPTIONS)process.exit(7);${mode === 'stderr' ? "console.error('SYNTHETIC_PRIVATE_STDERR');" : ''}console.log(${JSON.stringify(mode === 'overflow' ? 'X'.repeat(5000) : JSON.stringify(dto))});`,
+            `if(process.argv[2]!==${JSON.stringify(category31130Mode ? '--execution-31130-category-check-only' : snapshot31130Mode ? '--execution-31130-snapshot-check-only' : native31130Mode ? '--execution-31130-native-metadata-check-only' : execution31130Mode ? '--execution-31130-metadata-check-only' : wf00Mode ? '--wf00-execution-check-only' : '--runtime-reconciliation-check-only')}||process.env.M03_N8N_API_KEY||process.env.PGPASSWORD||process.env.SUPABASE_ACCESS_TOKEN||process.env.NODE_OPTIONS)process.exit(7);${mode === 'stderr' ? "console.error('SYNTHETIC_PRIVATE_STDERR');" : ''}console.log(${JSON.stringify(mode === 'overflow' ? 'X'.repeat(5000) : JSON.stringify(dto))});`,
           );
           const script = put(
             'public.ps1',
@@ -950,7 +1099,7 @@ $repo=${quote(root)};$source=${quote(resolve('scripts/n8n/windows/Invoke-M03N8nI
 $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($source,[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'PARSE_FAILED'}
 foreach($name in @('Assert-Keys','Assert-RuntimeReconciliationPublic')){$found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'MISSING_FUNCTION'};Invoke-Expression $found[0].Extent.Text}
 function Confined-File($Root,$Relative){return Join-Path $Root $Relative}
-try{$value=Assert-RuntimeReconciliationPublic ${wf00Mode ? '$true' : '$false'} ${execution31130Mode ? '$true' : '$false'} ${native31130Mode ? '$true' : '$false'} ${snapshot31130Mode ? '$true' : '$false'};if($value -cne ${quote(node)}){throw 'WRONG_NODE'};Write-Output 'PUBLIC_READY'}catch{Write-Output 'PUBLIC_BLOCKED'}
+try{$value=Assert-RuntimeReconciliationPublic ${wf00Mode ? '$true' : '$false'} ${execution31130Mode ? '$true' : '$false'} ${native31130Mode ? '$true' : '$false'} ${snapshot31130Mode ? '$true' : '$false'} ${category31130Mode ? '$true' : '$false'};if($value -cne ${quote(node)}){throw 'WRONG_NODE'};Write-Output 'PUBLIC_READY'}catch{Write-Output 'PUBLIC_BLOCKED'}
 `,
           );
           const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', script], {
@@ -1046,6 +1195,7 @@ try{$value=Assert-RuntimeReconciliationPublic ${wf00Mode ? '$true' : '$false'} $
         'execution31130PublicBlocked',
         'native31130PublicBlocked',
         'snapshot31130PublicBlocked',
+        'category31130PublicBlocked',
       ]) {
         const f = fixture(mode);
         for (const check of [true, false]) {
