@@ -474,10 +474,10 @@ export const foundationTechnical16CleanupScope = Object.freeze({
   windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
   sourceCommitSha: '5087d4d93d2f6ffdca0bc0096b365723005446fc',
   executionIds: Object.freeze(['31131', '31130']),
-  maximumRequests: 150,
-  maximumControlRequests: 150,
+  maximumRequests: 124,
+  maximumControlRequests: 124,
   forensicAllocationMaximum: 160,
-  forensicRequestsAlreadyCharged: 10,
+  forensicRequestsAlreadyCharged: 36,
   canonicalWorkflowCount: 25,
   maximumDrainRequests: 100,
 });
@@ -521,6 +521,20 @@ const technical16Cleanup = Object.freeze({
   failedThirdSealFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt3.provision-seal.json',
   failedThirdSealSha256: '0e7051051f4e605b42da8da40261237f9682f492860d1c05ace19a5b79b90af5',
   failedThirdLockArchiveFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt3.runtime-lock',
+  failedFourthFile:
+    'milestones/M03-n8n-foundation/evidence/technical16-native-cleanup-attempt4-20261024.json',
+  failedFourthSha256: '68fecd32ceda855b5f522bf9448f5fa94c1411dc4bd4950ea6d7a3979602bc72',
+  failedFourthOnceFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.json',
+  failedFourthOnceSha256: '9c5a07ff9c23ebf14cabf96c245ec8fe4d0eeca4a2b13c2c50e918a90a84b7de',
+  failedFourthJournalFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.jsonl',
+  failedFourthJournalSha256: '76d3b6b1fa4367e9a2ecfa79eab0fd4f2dbfd26402f8bd224a0945541aa7f62d',
+  failedFourthResultFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4-result.json',
+  failedFourthResultSha256: '7c4f4923a985842d4286c603810449c08ec305a7a0c721a689b9e040cd739ebf',
+  failedFourthSealFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.provision-seal.json',
+  failedFourthSealSha256: '41a6afc82524105adb2f522c78abc63a9e6dddcec4898969d11facefe193cab7',
+  failedFourthLockArchiveFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.runtime-lock',
+  discoveryFile: 'milestones/M03-n8n-foundation/evidence/technical16-wf32-discovery-readback-20261024.json',
+  discoverySha256: '9a6463326e06719dc0a4123145df96f49ebcf9f4125be81f727f496f5f635c39',
 });
 const technical16CleanupContexts = new WeakMap();
 export function assertTechnical16CleanupContext(context) {
@@ -1117,11 +1131,255 @@ export async function checkTechnical16Cleanup() {
     }
     dead(thirdOnce.processId);
     dead(thirdOnce.parentProcessId);
-    const lockArchive = noLinks(join(repo, technical16Cleanup.failedThirdLockArchiveFile)),
+    read(technical16Cleanup.failedThirdLockArchiveFile, technical16Cleanup.failedLockSha256);
+    const fourth = JSON.parse(
+        read(technical16Cleanup.failedFourthFile, technical16Cleanup.failedFourthSha256),
+      ),
+      fourthOnce = JSON.parse(
+        read(technical16Cleanup.failedFourthOnceFile, technical16Cleanup.failedFourthOnceSha256),
+      ),
+      fourthJournal = read(
+        technical16Cleanup.failedFourthJournalFile,
+        technical16Cleanup.failedFourthJournalSha256,
+      ),
+      fourthResult = JSON.parse(
+        read(technical16Cleanup.failedFourthResultFile, technical16Cleanup.failedFourthResultSha256),
+      ),
+      fourthSeal = JSON.parse(
+        read(technical16Cleanup.failedFourthSealFile, technical16Cleanup.failedFourthSealSha256),
+      );
+    for (const [key, expected] of Object.entries({
+      kind: failed.kind,
+      version: 1,
+      environment: 'dev',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      technicalAttempt: 16,
+      cleanupAttempt: 4,
+      purpose: 'full_native_cleanup',
+      outerNativeExit: 1,
+      windowId: foundationTechnical16CleanupScope.windowId,
+      rootExecutionId: '31130',
+      childExecutionId: '31131',
+      originalAttemptSha256: failed.originalAttemptSha256,
+      resolutionSha256: once.resolutionSha256,
+      priorFailedAttemptSha256: technical16Cleanup.failedThirdSha256,
+    }))
+      if (JSON.stringify(fourth[key]) !== JSON.stringify(expected)) fail();
+    for (const [key, expected] of Object.entries({
+      status: 'cleanup_reconciliation_required',
+      nativeExit: 1,
+      requestCount: 25,
+      controlRequestCount: 25,
+      managementAttempts: 862,
+      controlAttempts: 993,
+      combinedAttempts: 1855,
+      canonicalWorkflowsVerified: 0,
+      recordsDeleted: 0,
+      qualifiedSideEffects: false,
+      deleteAcknowledged: false,
+      absenceVerified: false,
+      remoteWorkSettled: false,
+      networkCompletionVerified: true,
+      originalPublicRecordsUnchanged: true,
+      childClosed: true,
+      credentialChildrenClosed: true,
+      parentLockDeleted: true,
+      nativeAcceptanceProven: false,
+      originalMaskedFirstFailureRecovered: false,
+      executionCount: 0,
+      actorStarts: 0,
+      workflowWrites: 0,
+      credentialWrites: 0,
+      migrationOperations: 0,
+      diagnosticStage: 'qualification',
+      diagnosticCode: 'native_REJECTED',
+    }))
+      if (JSON.stringify(fourth.rawResult?.[key]) !== JSON.stringify(expected)) fail();
+    if (
+      fourth.cleanup?.parentAbsent !== true ||
+      fourth.cleanup.childAbsent !== true ||
+      fourth.cleanup.parentLockAbsent !== true ||
+      fourth.cleanup.runtimeLockPresent !== true ||
+      fourth.cleanup.priorRuntimeMarkerArchived !== true ||
+      fourth.cleanup.persistentManagementRetained !== true ||
+      fourth.durableState?.httpIntentCount !== 25 ||
+      fourth.durableState.deleteIntentCount !== 0 ||
+      fourth.durableState.nativeResultFilePresent !== true ||
+      fourth.durableState.consumedMutationClaimReusable !== false ||
+      fourth.usage?.management !== 862 ||
+      fourth.usage.control !== 993 ||
+      fourth.usage.combined !== 1855 ||
+      fourth.usage.vercel !== 184 ||
+      fourth.usage.nativeExecutionsReserved !== 3 ||
+      fourth.usage.actorStarts !== 0 ||
+      fourthOnce.kind !== once.kind ||
+      fourthOnce.version !== 1 ||
+      fourthOnce.cleanupAttempt !== 4 ||
+      fourthOnce.resolutionSha256 !== once.resolutionSha256 ||
+      fourthOnce.priorFailedAttemptSha256 !== technical16Cleanup.failedThirdSha256 ||
+      fourthOnce.priorOnceSha256 !== technical16Cleanup.failedThirdOnceSha256 ||
+      fourthOnce.priorJournalSha256 !== technical16Cleanup.failedThirdJournalSha256 ||
+      fourthOnce.maximumRequests !== 150 ||
+      fourthOnce.maximumControlRequests !== 150 ||
+      fourthOnce.qualificationOnly !== undefined ||
+      JSON.stringify(fourthOnce.executionIds) !== JSON.stringify(['31131', '31130']) ||
+      JSON.stringify(fourthOnce.usage) !==
+        JSON.stringify({ ...once.usage, management: 837, control: 968, combined: 1805 }) ||
+      fourthOnce.processId !== fourth.cleanup.childProcessId ||
+      fourthOnce.parentProcessId !== fourth.cleanup.parentProcessId ||
+      fourthSeal.version !== 2 ||
+      !fourthSeal.files ||
+      Object.keys(fourthSeal.files).length !== 94 ||
+      fourthSeal.files['scripts/n8n/foundation-provision-cli.mjs'] !==
+        'ccf2a4d0dd707e340961859e61c3f6f88a23d7b2564416cad03544a3de244756' ||
+      fourthSeal.files['scripts/n8n/foundation-native-reader.mjs'] !==
+        '0ed7314ec7735a5004afab4bcce86073137a5bdcf9ad47ba91133e56f340492c' ||
+      fourthSeal.files['scripts/n8n/windows/Invoke-M03FoundationProvision.ps1'] !==
+        '10f5519584717883bfaf3494174b48d7c33a24fb98373e997618bc7514a92545'
+    )
+      fail();
+    for (const [path, hash] of [
+      [technical16Cleanup.failedFourthOnceFile, technical16Cleanup.failedFourthOnceSha256],
+      [technical16Cleanup.failedFourthJournalFile, technical16Cleanup.failedFourthJournalSha256],
+      [technical16Cleanup.failedFourthResultFile, technical16Cleanup.failedFourthResultSha256],
+      [technical16Cleanup.failedFourthSealFile, technical16Cleanup.failedFourthSealSha256],
+      [technical16Cleanup.failedThirdLockArchiveFile, technical16Cleanup.failedLockSha256],
+    ])
+      if (fourth.pins?.[path] !== hash) fail();
+    for (const [key, value] of Object.entries(fourthResult))
+      if (JSON.stringify(fourth.rawResult[key]) !== JSON.stringify(value)) fail();
+    const fourthRows = fourthJournal.trimEnd().split('\n').map(JSON.parse),
+      fourthHeader = fourthRows[0];
+    if (
+      !fourthJournal.endsWith('\n') ||
+      fourthRows.length !== 26 ||
+      fourthHeader.event !== 'technical16_cleanup_header' ||
+      fourthHeader.version !== 1 ||
+      fourthHeader.cleanupAttempt !== 4 ||
+      fourthHeader.resolutionSha256 !== once.resolutionSha256 ||
+      fourthHeader.originalAttemptSha256 !== failed.originalAttemptSha256 ||
+      fourthHeader.priorFailedAttemptSha256 !== technical16Cleanup.failedThirdSha256 ||
+      fourthHeader.priorOnceSha256 !== technical16Cleanup.failedThirdOnceSha256 ||
+      fourthHeader.priorJournalSha256 !== technical16Cleanup.failedThirdJournalSha256
+    )
+      fail();
+    for (let index = 0; index < 25; index++) {
+      const row = fourthRows[index + 1],
+        prefix = index < 4,
+        root = index < 2;
+      if (
+        row.event !== 'technical16_http_intent' ||
+        row.ordinal !== index + 1 ||
+        row.kind !== (prefix ? (index % 2 === 0 ? 'metadata' : 'full') : 'discovery') ||
+        row.workflowId !==
+          (prefix
+            ? bindings.workflowRefs[root ? 'WF-00' : 'WF-10'].id
+            : baseline[Math.floor((index - 4) / 2)].id) ||
+        (prefix ? row.executionId !== (root ? '31130' : '31131') : row.executionId !== undefined) ||
+        row.managementAttempts !== 838 + index ||
+        row.controlAttempts !== 969 + index
+      )
+        fail();
+    }
+    dead(fourthOnce.processId);
+    dead(fourthOnce.parentProcessId);
+    const discovery = JSON.parse(read(technical16Cleanup.discoveryFile, technical16Cleanup.discoverySha256));
+    if (
+      discovery.kind !== 'm03_technical16_wf32_discovery_readback' ||
+      discovery.version !== 1 ||
+      discovery.environment !== 'dev' ||
+      discovery.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+      discovery.technicalAttempt !== 16 ||
+      discovery.windowId !== foundationTechnical16CleanupScope.windowId ||
+      discovery.priorFailedAttemptSha256 !== technical16Cleanup.failedFourthSha256 ||
+      discovery.outerNativeExit !== 0 ||
+      discovery.rawResult?.status !== 'complete' ||
+      discovery.rawResult.nativeExit !== 0 ||
+      discovery.rawResult.childClosed !== true ||
+      discovery.rawResult.handoffDeleted !== true ||
+      discovery.cleanup?.parentLockAbsent !== true ||
+      discovery.cleanup.runtimeManagementHandoffAbsent !== true ||
+      discovery.cleanup.persistentManagementRetained !== true ||
+      discovery.cleanup.credentialChildClosed !== true ||
+      discovery.usage?.management !== 863 ||
+      discovery.usage.control !== 994 ||
+      discovery.usage.combined !== 1857 ||
+      discovery.usage.vercel !== 184 ||
+      discovery.usage.nativeExecutionsReserved !== 3 ||
+      discovery.usage.actorStarts !== 0 ||
+      discovery.continuation?.remainingForensicRequests !== 124 ||
+      discovery.acceptance?.fullPaginationProven !== false ||
+      discovery.acceptance.drainProven !== false ||
+      discovery.acceptance.recordsDeleted !== 0 ||
+      discovery.acceptance.fullAcceptance !== false
+    )
+      fail();
+    const observed = discovery.rawResult.inventory;
+    for (const [key, expected] of Object.entries({
+      version: 1,
+      environment: 'dev',
+      host: 'muhhammedsayed.app.n8n.cloud',
+      projectId: 'pHvQjDmjxVZ3KQLT',
+      workflowKey: 'WF-32',
+      technicalAttempt: 16,
+      status: 'discovery_page_classified',
+      requestCount: 1,
+      maximumRequests: 1,
+      httpStatus: 200,
+      stage: 'complete',
+      nativeTransportCode: null,
+      readerCode: null,
+      tlsVerified: true,
+      networkCompletionVerified: true,
+      controlReservationConservative: true,
+      acceptanceProven: false,
+      drainProven: false,
+      firstPageSchemaValidated: true,
+      nextReadRefusedLocally: true,
+    }))
+      if (JSON.stringify(observed?.[key]) !== JSON.stringify(expected)) fail();
+    if (
+      JSON.stringify(observed.transportState) !==
+        JSON.stringify({ pendingRequests: 0, unclosedResponses: 0 }) ||
+      Object.values(observed.fields ?? {}).length !== 12 ||
+      Object.values(observed.fields).some((v) => v !== true)
+    )
+      fail();
+    const probeJournal = 'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.jsonl';
+    const probePins = {
+      [probeJournal]: '54f2981b2d0faaa4b71793de2d5eaa59d22161657a449c4244ad3ceddbdb10f2',
+      'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.inventory-seal.json':
+        '985fb551e12a66e106c267a2fd43e4fb8a15194d76f50fd35d828c2474809cc4',
+      'scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.foundation-seal.json':
+        '12575579756a116397b7e0249e7ed37d99398fe7fd211056ac2007b885b8387e',
+    };
+    for (const [path, hash] of Object.entries(probePins)) {
+      if (discovery.pins?.[path] !== hash) fail();
+      read(path, hash);
+    }
+    const probeRows = JSON.parse('[' + read(probeJournal).trimEnd().split('\n').join(',') + ']');
+    if (
+      JSON.stringify(probeRows) !==
+      JSON.stringify([
+        {
+          kind: 'm03_wf32_discovery_diagnostic_budget',
+          version: 1,
+          failedAttemptSha256: technical16Cleanup.failedFourthSha256,
+          managementAttempts: 862,
+          controlAttempts: 993,
+          combinedAttempts: 1855,
+          maximumRequests: 1,
+        },
+        { event: 'management_attempt', ordinal: 863 },
+        { event: 'native_read_control_reservation', ordinal: 994, additionalHttpRequest: false },
+      ])
+    )
+      fail();
+    const lockArchive = noLinks(join(repo, technical16Cleanup.failedFourthLockArchiveFile)),
       stalePresent = existsSync(lockPath),
       archived = existsSync(lockArchive);
     if (stalePresent === archived) fail();
-    // Preserve all three spent claims. Only the exact stale marker is archived by
+    // Preserve all four spent claims and the diagnostic. Only the exact stale marker is archived by
     // the locked PowerShell parent; public CheckOnly never moves it.
     const markerPath = archived ? lockArchive : lockPath,
       stat = lstatSync(markerPath);
@@ -1132,12 +1390,12 @@ export async function checkTechnical16Cleanup() {
       publicHash(readFileSync(markerPath)) !== technical16Cleanup.failedLockSha256
     )
       fail();
-    if (archived) read(technical16Cleanup.failedThirdLockArchiveFile, technical16Cleanup.failedLockSha256);
-    cleanupAttempt = 4;
+    if (archived) read(technical16Cleanup.failedFourthLockArchiveFile, technical16Cleanup.failedLockSha256);
+    cleanupAttempt = 5;
     paths = {
-      attemptFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.json',
-      journalFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4.jsonl',
-      resultFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt4-result.json',
+      attemptFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.json',
+      journalFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5.jsonl',
+      resultFile: 'scripts/n8n/out/foundation/technical16-native-cleanup-attempt5-result.json',
     };
   } else fail();
   for (const name of ['attemptFile', 'journalFile', 'resultFile'])
@@ -1149,13 +1407,13 @@ export async function checkTechnical16Cleanup() {
     childBinding,
     intentAt: Date.parse(ack[0].intentAt),
     resolutionSha256: technical16Cleanup.executedBodyResolutionSha256,
-    usage: { ...resolution.usage, management: 837, control: 968, combined: 1805 },
+    usage: { ...resolution.usage, management: 863, control: 994, combined: 1857 },
     cleanupAttempt,
     paths,
     priorAttempt: {
-      receiptSha256: technical16Cleanup.failedThirdSha256,
-      onceSha256: technical16Cleanup.failedThirdOnceSha256,
-      journalSha256: technical16Cleanup.failedThirdJournalSha256,
+      receiptSha256: technical16Cleanup.failedFourthSha256,
+      onceSha256: technical16Cleanup.failedFourthOnceSha256,
+      journalSha256: technical16Cleanup.failedFourthJournalSha256,
     },
     assertCurrent() {
       for (const [path, hash] of pins) {
@@ -1406,6 +1664,10 @@ async function runTechnical16Cleanup(context, privateInput, qualificationOnly = 
     });
     if (qualificationOnly) fail();
     assertFoundationTechnical16CleanupQualification(qualification, { reader });
+    // Keep child DELETE/absence and root DELETE/absence available as a unit.
+    // Long read-only pagination can exhaust the forensic allocation; it must
+    // never enable the first mutation with fewer than all four requests left.
+    if (foundationTechnical16CleanupScope.maximumRequests - budget.state().requestCount < 4) fail();
     qualified = true;
     result.qualifiedSideEffects = true;
     result.canonicalWorkflowsVerified = 25;
