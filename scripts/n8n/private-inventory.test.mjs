@@ -10,7 +10,108 @@ import {
   inventoryCredentialCandidates,
   projectWf32DiscoveryDiagnostic,
 } from './inventory.mjs';
-import { diagnoseFoundationRuntimeBaselineVariants } from './foundation-runtime-checkpoint.mjs';
+import {
+  diagnoseFoundationRuntimeBaselineVariants,
+  foundationRuntimeExecutionParameterCandidates,
+} from './foundation-runtime-checkpoint.mjs';
+import * as inventoryDiagnostics from './inventory.mjs';
+
+it('finite baseline node differences reveal only canonical identities and known parameter key names', () => {
+  assert.equal(typeof inventoryDiagnostics.projectBaselineNodeDifferences, 'function');
+  const source = JSON.parse(readFileSync(resolve('n8n/workflows/WF-00.json'), 'utf8')).workflow,
+    baseline = { key: 'WF-00', body: source },
+    dto = structuredClone(source),
+    config = dto.nodes.find((n) => n.name === 'Config'),
+    code = dto.nodes.find((n) => Object.hasOwn(n.parameters, 'jsCode'));
+  config.parameters.assignments = { secret: 'SYNTHETIC_PRIVATE_ASSIGNMENT' };
+  delete config.parameters.includeOtherFields;
+  config.parameters.SYNTHETIC_PRIVATE_EXTRA_KEY = 'SYNTHETIC_PRIVATE_VALUE';
+  config.position[0] += 50;
+  code.parameters.jsCode = 'SYNTHETIC_PRIVATE_CODE';
+  const rows = inventoryDiagnostics.projectBaselineNodeDifferences(dto, baseline),
+    c = rows.find((n) => n.nodeName === 'Config');
+  assert.deepEqual(c, {
+    nodeId: config.id,
+    nodeName: 'Config',
+    changedParameterKeys: ['assignments'],
+    missingParameterKeys: ['includeOtherFields'],
+    extraParameterKeyCount: 1,
+    layoutChanged: true,
+    canonicalOrNativeDefaultsMatch: false,
+  });
+  assert.deepEqual(rows.find((n) => n.nodeId === code.id).changedParameterKeys, ['jsCode']);
+  assert.doesNotMatch(JSON.stringify(rows), /SYNTHETIC_PRIVATE/);
+  assert.deepEqual(inventoryDiagnostics.projectBaselineNodeDifferences(source, baseline), []);
+  const defaults = foundationRuntimeExecutionParameterCandidates(source),
+    expanded = structuredClone(source);
+  expanded.nodes.find((n) => n.name === 'Config').parameters.duplicateItem = false;
+  assert.equal(
+    inventoryDiagnostics.projectBaselineNodeDifferences(expanded, baseline, defaults)[0]
+      .canonicalOrNativeDefaultsMatch,
+    true,
+  );
+  for (const bad of [
+    { nodes: null },
+    { nodes: [...dto.nodes, dto.nodes[0]] },
+    { nodes: dto.nodes.map((n, i) => (i === 0 ? { ...n, parameters: [] } : n)) },
+  ])
+    assert.equal(inventoryDiagnostics.projectBaselineNodeDifferences(bad, baseline), null);
+});
+
+it('baseline one-GET reader projects finite differences without accepting changed code or defaults', async () => {
+  const record = JSON.parse(readFileSync(resolve('n8n/workflows/WF-00.json'), 'utf8'));
+  const dto = {
+    ...structuredClone(record.workflow),
+    id: record.id,
+    versionId: record.versionId,
+    isArchived: false,
+    active: false,
+    activeVersionId: null,
+    shared: [{ projectId: record.projectId, role: 'workflow:owner' }],
+  };
+  Object.assign(dto.settings, record.nativeReadonlySettings);
+  dto.nodes.find((node) => node.name === 'Config').parameters.assignments = {
+    private: 'SYNTHETIC_PRIVATE_ASSIGNMENT',
+  };
+  const code = dto.nodes.find((node) => Object.hasOwn(node.parameters, 'jsCode'));
+  code.parameters.jsCode = 'SYNTHETIC_PRIVATE_CODE';
+  code.parameters.SYNTHETIC_PRIVATE_KEY = 'SYNTHETIC_PRIVATE_VALUE';
+  code.position[0] += 10;
+  const run = () =>
+    inventoryDiagnostics.runWorkflowBaselineDiagnostic('synthetic-reader-key-not-in-dto', {
+      lookup: async () => [{ address: '93.184.216.34', family: 4 }],
+      transport: async (input) => {
+        assert.equal(input.method, 'GET');
+        assert.equal(input.rejectUnauthorized, true);
+        Object.assign(input.diagnostic, { tcpConnected: true, tlsVerified: true, socketClosed: true });
+        input.onSocketClosed();
+        return { status: 200, body: Buffer.from(JSON.stringify(dto)) };
+      },
+    });
+  const result = await run();
+  assert.equal(result.requestCount, 1);
+  assert.equal(result.status, 'baseline_mismatch');
+  assert.equal(result.observedVersionId, record.versionId);
+  assert.ok(result.baseline.failedChecks.includes('graph_nodes'));
+  assert.equal(result.baseline.components.settingsEqual, true);
+  assert.deepEqual(
+    result.forensics.nodeDifferences.find((row) => row.nodeId === code.id),
+    {
+      nodeId: code.id,
+      nodeName: code.name,
+      changedParameterKeys: ['jsCode'],
+      missingParameterKeys: [],
+      extraParameterKeyCount: 1,
+      layoutChanged: true,
+      canonicalOrNativeDefaultsMatch: false,
+    },
+  );
+  assert.doesNotMatch(JSON.stringify(result), /SYNTHETIC_PRIVATE/);
+  dto.versionId = 'SYNTHETIC_PRIVATE_INVALID_VERSION';
+  const malformedVersion = await run();
+  assert.equal(malformedVersion.observedVersionId, null);
+  assert.doesNotMatch(JSON.stringify(malformedVersion), /SYNTHETIC_PRIVATE/);
+});
 
 const powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
 const roots = [];
@@ -297,6 +398,7 @@ function fixture(mode = 'success') {
       authenticationVerified: true,
       projectVerified: true,
       workflowKey: 'WF-00',
+      observedVersionId: 'f5f755b7-9683-4fb6-a26d-87b001127244',
       baseline: {
         version: 1,
         workflowKey: 'WF-00',
@@ -325,7 +427,50 @@ function fixture(mode = 'success') {
     });
     const record = JSON.parse(readFileSync(resolve('n8n/workflows/WF-00.json'), 'utf8'));
     const baseline = { key: 'WF-00', body: record.workflow };
-    result.forensics = structuredClone(diagnoseFoundationRuntimeBaselineVariants(record.workflow, baseline));
+    result.forensics = {
+      ...structuredClone(diagnoseFoundationRuntimeBaselineVariants(record.workflow, baseline)),
+      nodeDifferences: [],
+    };
+    if (mode.startsWith('baselineDifference')) {
+      const node = record.workflow.nodes.find((value) => value.name === 'Config');
+      result.status = 'baseline_mismatch';
+      result.baseline.failedChecks = ['graph_nodes'];
+      result.baseline.components.nodesEqual = false;
+      result.forensics.nodeDifferences = [
+        {
+          nodeId: node.id,
+          nodeName: node.name,
+          changedParameterKeys: ['assignments'],
+          missingParameterKeys: [],
+          extraParameterKeyCount: 1,
+          layoutChanged: true,
+          canonicalOrNativeDefaultsMatch: false,
+        },
+      ];
+      const difference = result.forensics.nodeDifferences[0];
+      if (mode === 'baselineDifferences') {
+        const unicodeNode = record.workflow.nodes.find(
+          (value) => value.name === 'Prepare gateway · Audit unknown slot',
+        );
+        result.forensics.nodeDifferences.push({
+          nodeId: unicodeNode.id,
+          nodeName: unicodeNode.name,
+          changedParameterKeys: ['jsCode'],
+          missingParameterKeys: [],
+          extraParameterKeyCount: 0,
+          layoutChanged: false,
+          canonicalOrNativeDefaultsMatch: false,
+        });
+      }
+      if (mode === 'baselineDifferenceUnknownNode') difference.nodeName = 'synthetic-private-node';
+      if (mode === 'baselineDifferenceUnknownKey')
+        difference.changedParameterKeys = ['synthetic-private-key'];
+      if (mode === 'baselineDifferenceBadCount') difference.extraParameterKeyCount = 257;
+      if (mode === 'baselineDifferenceBadBool') difference.layoutChanged = 'synthetic-private-bool';
+      if (mode === 'baselineDifferenceDuplicate')
+        result.forensics.nodeDifferences.push(structuredClone(difference));
+    }
+    if (mode === 'baselineUnsafeVersion') result.observedVersionId = 'synthetic-private-version';
     if (mode === 'baselineUnsafe') result.baseline.private = 'synthetic-private-value';
     if (mode === 'baselineUnsafeForensics')
       result.forensics.nodeCategories.parametersEqual = 'synthetic-private-value';
@@ -1783,6 +1928,13 @@ $out=@();foreach($value in $cases){try{Validate-Wf70Discovery $value;$out+=$true
       'baselineUnsafe',
       'baselineTimeout',
       'baselineUnsafeForensics',
+      'baselineDifferences',
+      'baselineDifferenceUnknownNode',
+      'baselineDifferenceUnknownKey',
+      'baselineDifferenceBadCount',
+      'baselineDifferenceBadBool',
+      'baselineDifferenceDuplicate',
+      'baselineUnsafeVersion',
     ])
       it(`baseline one-GET consumer ${mode} uses only persistent Management and removes disposable state`, () => {
         const f = fixture(mode),
@@ -1794,7 +1946,7 @@ $out=@();foreach($value in $cases){try{Validate-Wf70Discovery $value;$out+=$true
           r = f.run();
         assert.equal(
           r.status,
-          ['baselineSuccess', 'baselineMismatch'].includes(mode) ? 0 : 1,
+          ['baselineSuccess', 'baselineMismatch', 'baselineDifferences'].includes(mode) ? 0 : 1,
           r.stdout + r.stderr,
         );
         const receipt = JSON.parse(r.stdout);
@@ -1809,8 +1961,14 @@ $out=@();foreach($value in $cases){try{Validate-Wf70Discovery $value;$out+=$true
         assert.doesNotMatch(r.stdout + r.stderr, /synthetic-private|unrelated-|synthetic-n8n-key/);
         if (mode === 'baselineMismatch')
           assert.deepEqual(receipt.inventory.baseline.failedChecks, ['version_mismatch']);
-        if (mode === 'baselineUnsafe' || mode === 'baselineTimeout' || mode === 'baselineUnsafeForensics')
+        if (!['baselineSuccess', 'baselineMismatch', 'baselineDifferences'].includes(mode))
           assert.equal(receipt.inventory, null);
+        if (mode === 'baselineDifferences') {
+          assert.equal(receipt.inventory.observedVersionId, 'f5f755b7-9683-4fb6-a26d-87b001127244');
+          assert.deepEqual(receipt.inventory.forensics.nodeDifferences[0].changedParameterKeys, [
+            'assignments',
+          ]);
+        }
       });
     it('baseline diagnostic refuses an existing acceptance mutex before materialization or a native child', () => {
       const f = fixture('baselineSuccess');

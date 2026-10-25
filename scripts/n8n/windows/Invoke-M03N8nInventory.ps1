@@ -137,7 +137,8 @@ function Validate-Inventory($Value) {
   }
 }
 function Validate-BaselineDiagnostic($Value) {
-  Assert-Keys $Value @('version','environment','host','projectId','status','requestCount','authenticationVerified','projectVerified','workflowKey','baseline','forensics','diagnostics')
+  Assert-Keys $Value @('version','environment','host','projectId','status','requestCount','authenticationVerified','projectVerified','workflowKey','observedVersionId','baseline','forensics','diagnostics')
+  if($null -ne $Value.observedVersionId -and ($Value.observedVersionId -isnot [string] -or $Value.observedVersionId -cnotmatch '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$')){throw 'blocked'}
   if($Value.version -ne 1 -or $Value.environment -cne 'dev' -or $Value.host -cne $fixedHost -or $Value.projectId -cne $projectId -or $Value.workflowKey -cne 'WF-00' -or $Value.status -cnotin @('matching_baseline','baseline_mismatch','missing_key','invalid_key','invalid_options','unsafe_dns','timeout','unauthorized','redirect_refused','response_rejected','network_failed','http_failed','body_too_large','confidentiality_rejected') -or $Value.requestCount -isnot [int] -or $Value.requestCount -lt 0 -or $Value.requestCount -gt 1 -or $Value.authenticationVerified -isnot [bool] -or $Value.projectVerified -isnot [bool]){throw 'blocked'}
   Validate-Diagnostics $Value.diagnostics $Value.requestCount
   foreach($row in $Value.diagnostics.requests){if($row.resource -cne 'workflows' -or $row.page -ne 1){throw 'blocked'}}
@@ -152,11 +153,31 @@ function Validate-BaselineDiagnostic($Value) {
     if(($Value.status -ceq 'matching_baseline') -ne ($Value.baseline.failedChecks.Count -eq 0)){throw 'blocked'}
     if($Value.status -ceq 'matching_baseline' -and (-not $Value.projectVerified -or @($Value.baseline.components.PSObject.Properties.Value | Where-Object {$_ -ne $true}).Count -gt 0)){throw 'blocked'}
     if($null -ne $Value.forensics){
-      Assert-Keys $Value.forensics @('nodeCategories','settingsCategories','knownVariants')
+      Assert-Keys $Value.forensics @('nodeCategories','settingsCategories','knownVariants','nodeDifferences')
       Assert-Keys $Value.forensics.nodeCategories @('identityEqual','parametersEqual','credentialsEqual','behaviorEqual','layoutEqual','annotationsEqual')
       Assert-Keys $Value.forensics.settingsCategories @('retentionEqual','mcpVisibilityEqual','errorRoutingEqual','otherEqual')
       Assert-Keys $Value.forensics.knownVariants @('c01RetentionSettingsEqual','c01RuntimeSettingsEqual','c01ManualSettingsEqual','stagingMcpSettingsEqual','stagingManualSettingsEqual','schedulesDisabledNodesEqual','c01RetentionGraphEqual','stagedManualGraphEqual','stagedC01ManualGraphEqual')
-      foreach($group in $Value.forensics.PSObject.Properties.Value){foreach($property in $group.PSObject.Properties){if($property.Value -isnot [bool]){throw 'blocked'}}}
+      foreach($name in @('nodeCategories','settingsCategories','knownVariants')){foreach($property in $Value.forensics.$name.PSObject.Properties){if($property.Value -isnot [bool]){throw 'blocked'}}}
+      if($null -ne $Value.forensics.nodeDifferences){
+        $canonical = [IO.File]::ReadAllText((Confined-File $repo 'n8n/workflows/WF-00.json')) | ConvertFrom-Json
+        $nodes=@($canonical.workflow.nodes)
+        if($Value.forensics.nodeDifferences -isnot [Array] -or $Value.forensics.nodeDifferences.Count -gt $nodes.Count -or ($Value.status -ceq 'matching_baseline' -and $Value.forensics.nodeDifferences.Count -ne 0)){throw 'blocked'}
+        $seenNodes=@{}
+        foreach($difference in $Value.forensics.nodeDifferences){
+          Assert-Keys $difference @('nodeId','nodeName','changedParameterKeys','missingParameterKeys','extraParameterKeyCount','layoutChanged','canonicalOrNativeDefaultsMatch')
+          if($difference.nodeId -isnot [string] -or $difference.nodeName -isnot [string]){throw 'blocked'}
+          $node=@($nodes | Where-Object {$_.id -ceq $difference.nodeId -and $_.name -ceq $difference.nodeName})
+          if($node.Count -ne 1 -or $seenNodes.ContainsKey($difference.nodeId)){throw 'blocked'}
+          $seenNodes[$difference.nodeId]=$true
+          $keys=@($node[0].parameters.PSObject.Properties.Name);$seenKeys=@{}
+          foreach($name in @('changedParameterKeys','missingParameterKeys')){
+            if($difference.$name -isnot [Array] -or $difference.$name.Count -gt $keys.Count){throw 'blocked'}
+            foreach($key in $difference.$name){if($key -isnot [string] -or $key -cnotin $keys -or $seenKeys.ContainsKey($key)){throw 'blocked'};$seenKeys[$key]=$true}
+          }
+          if($difference.extraParameterKeyCount -isnot [int] -or $difference.extraParameterKeyCount -lt 0 -or $difference.extraParameterKeyCount -gt 256 -or $difference.layoutChanged -isnot [bool] -or $difference.canonicalOrNativeDefaultsMatch -isnot [bool]){throw 'blocked'}
+          if($seenKeys.Count -eq 0 -and $difference.extraParameterKeyCount -eq 0 -and -not $difference.layoutChanged){throw 'blocked'}
+        }
+      }elseif($Value.status -ceq 'matching_baseline'){throw 'blocked'}
     }elseif($Value.status -ceq 'matching_baseline'){throw 'blocked'}
   }elseif($null -ne $Value.baseline -or $null -ne $Value.forensics){throw 'blocked'}
 }

@@ -1,0 +1,604 @@
+{
+  "kind": "m03_technical21_baseline_refusal_reconciliation",
+  "version": 1,
+  "observedAt": "2026-10-25T12:16:18.949Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "source": {
+    "helperHead": "d4abdfa2393caa1966cc9b55bb6052184debe471",
+    "helperCi": 40191584754,
+    "allFiveCiJobsPassed": true,
+    "vercelPassed": true,
+    "applicationSource": "5f256ce915f930481b0d31ac38b919c0a7692cd1",
+    "rawReadyApprovedHead": "f42930f90c2de43c84f61ad6d966d0ee6074d70e"
+  },
+  "attempt": {
+    "ordinal": 21,
+    "windowId": "e2be1a67-f6db-4c90-bfd2-671c5db9b90a",
+    "parentProcessId": 24864,
+    "runtimeProcessId": 13844,
+    "parentNativeExit": 1,
+    "runtimeNativeExit": 1,
+    "prepareCommandSent": true,
+    "preparationPassed": false,
+    "nativeWorkflowStartRequested": false,
+    "actorStarted": false,
+    "administratorOutputProduced": false,
+    "phaseBReady": false,
+    "domainProofReady": false,
+    "businessAcceptanceProven": false
+  },
+  "rawAdmission": {
+    "kind": "m03_project_verified_continuation_admission",
+    "version": 1,
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "sourceCommitSha": "5f256ce915f930481b0d31ac38b919c0a7692cd1",
+    "windowId": "e2be1a67-f6db-4c90-bfd2-671c5db9b90a",
+    "approvalSha256": "5eb38cbe8740ed9a9f72d2356de3fa2e9ce77c8de3710020a7d3de7a6ebdd610",
+    "startsAt": 1792930229492,
+    "deadlineAt": 1792933829492,
+    "stopNewAt": 1792933229492,
+    "hardDeadlineAt": 1792934429492,
+    "parentProcessId": 24864
+  },
+  "rawClaim": {
+    "kind": "m03_project_verified_continuation_runtime_claim",
+    "version": 1,
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "admissionSha256": "cba9189dd682bacf6fb5a936220579c3a6f0f407dc84f6b49bb39ec0e2939201",
+    "processId": 13844,
+    "parentProcessId": 24864,
+    "claimedAt": 1792930239236
+  },
+  "rawClose": {
+    "kind": "m03_project_verified_technical_closed",
+    "version": 1,
+    "admissionSha256": "cba9189dd682bacf6fb5a936220579c3a6f0f407dc84f6b49bb39ec0e2939201",
+    "parentProcessId": 24864,
+    "runtimeProcessId": 13844,
+    "closedAt": 1792930297941,
+    "childClosed": true,
+    "credentialChildrenClosed": true,
+    "emergencyShutdown": false,
+    "pendingMachinePreserved": true,
+    "nativeExit": 1,
+    "bypassHandoffDeleted": false,
+    "closureVerified": false
+  },
+  "rawFrames": [
+    {
+      "kind": "m03_acceptance_transport_ready",
+      "nonce": "b4d7b33ccacdf7f49c2b1e0f0154fc97",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    {
+      "kind": "m03_acceptance_vercel_metadata",
+      "status": "metadata_covers_75_minutes",
+      "metadataValid": true,
+      "unexpired": true,
+      "covers75Minutes": true,
+      "effectiveBackendEstablished": false,
+      "networkRequests": 0,
+      "authenticationAttempted": false,
+      "refreshAttempted": false,
+      "configWritten": false,
+      "childClosed": true
+    },
+    {
+      "kind": "m03_acceptance_ready",
+      "status": "private_child_ready",
+      "deadlineAt": 1792933829492,
+      "approvedHead": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+      "sourceCommitSha": "5f256ce915f930481b0d31ac38b919c0a7692cd1"
+    },
+    {
+      "kind": "mcp_port_request",
+      "nonce": "e6b991f0c928e8664f05d6a9869095bc",
+      "action": "browser_discover",
+      "workflowId": "MzimjpsuyPuK7SKe"
+    },
+    {
+      "kind": "m03_acceptance_result",
+      "id": "m03_live_18011",
+      "command": "prepare",
+      "status": "blocked",
+      "managementAttempts": 1333,
+      "controlAttempts": 1250,
+      "nativeExecutions": 4,
+      "gatewayPreflightAttempts": 10,
+      "providerDirectAttempts": 0,
+      "phaseBReady": false,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "baselineWorkflowKey": "WF-00",
+      "baselineFailureCodes": [
+        "version_mismatch",
+        "graph_nodes"
+      ],
+      "baselineNameEqual": true,
+      "baselineNodesEqual": false,
+      "baselineConnectionsEqual": true,
+      "baselineSettingsEqual": true,
+      "residual": true
+    },
+    {
+      "kind": "m03_acceptance_result",
+      "id": "m03_live_18012",
+      "command": "state",
+      "status": "not_prepared",
+      "managementAttempts": 1333,
+      "controlAttempts": 1250,
+      "nativeExecutions": 4,
+      "gatewayPreflightAttempts": 10,
+      "providerDirectAttempts": 0,
+      "phaseBReady": false,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "baselineWorkflowKey": "WF-00",
+      "baselineFailureCodes": [
+        "version_mismatch",
+        "graph_nodes"
+      ],
+      "baselineNameEqual": true,
+      "baselineNodesEqual": false,
+      "baselineConnectionsEqual": true,
+      "baselineSettingsEqual": true
+    },
+    {
+      "kind": "m03_acceptance_result",
+      "id": "m03_live_18013",
+      "command": "restore",
+      "status": "restoration_residual",
+      "managementAttempts": 1333,
+      "controlAttempts": 1250,
+      "nativeExecutions": 4,
+      "gatewayPreflightAttempts": 10,
+      "providerDirectAttempts": 0,
+      "phaseBReady": false,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "baselineWorkflowKey": "WF-00",
+      "baselineFailureCodes": [
+        "version_mismatch",
+        "graph_nodes"
+      ],
+      "baselineNameEqual": true,
+      "baselineNodesEqual": false,
+      "baselineConnectionsEqual": true,
+      "baselineSettingsEqual": true,
+      "baselineRestored": false,
+      "environmentCleanupVerified": false,
+      "windowClosed": false,
+      "fixtureArchived": false,
+      "remoteWorkSettled": false,
+      "residual": true
+    },
+    {
+      "kind": "m03_acceptance_closed",
+      "status": "closed",
+      "managementAttempts": 1333,
+      "controlAttempts": 1250,
+      "nativeExecutions": 4,
+      "gatewayPreflightAttempts": 10,
+      "providerDirectAttempts": 0,
+      "phaseBReady": false,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "baselineWorkflowKey": "WF-00",
+      "baselineFailureCodes": [
+        "version_mismatch",
+        "graph_nodes"
+      ],
+      "baselineNameEqual": true,
+      "baselineNodesEqual": false,
+      "baselineConnectionsEqual": true,
+      "baselineSettingsEqual": true,
+      "childTransportsClosed": true,
+      "adminChildClosed": true,
+      "windowClosed": false,
+      "fixtureArchived": false,
+      "baselineRestored": false,
+      "environmentCleanupVerified": false,
+      "remoteWorkSettled": false,
+      "residual": false
+    },
+    {
+      "kind": "m03_acceptance_wrapper_closed",
+      "childClosed": true,
+      "credentialChildrenClosed": true,
+      "emergencyShutdown": false,
+      "nativeExit": 1,
+      "handoffsDeleted": true,
+      "bypassHandoffDeleted": false,
+      "pendingMachinePreserved": true,
+      "privateRead": true,
+      "code": "M03_ACCEPTANCE_BLOCKED"
+    }
+  ],
+  "baselineRefusal": {
+    "workflowKey": "WF-00",
+    "workflowId": "MzimjpsuyPuK7SKe",
+    "failureCodes": [
+      "version_mismatch",
+      "graph_nodes"
+    ],
+    "nameEqual": true,
+    "nodesEqual": false,
+    "connectionsEqual": true,
+    "settingsEqual": true,
+    "exactChangedPathsEstablished": false,
+    "causeEstablished": false,
+    "reviewedBaselineRestored": false
+  },
+  "journalCounts": {
+    "management": 1181,
+    "control": 1120,
+    "setup": 510,
+    "preflight": 26
+  },
+  "journalAttempts": {
+    "management": 1180,
+    "control": 1102,
+    "setup": 254
+  },
+  "usageBeforeAttempt": {
+    "management": 1317,
+    "control": 1249,
+    "combined": 2566,
+    "vercel": 254,
+    "nativeExecutions": 4
+  },
+  "attemptDelta": {
+    "management": 16,
+    "control": 1,
+    "combined": 17,
+    "vercel": 0,
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "providerDirectRequests": 0
+  },
+  "usageAfterAttempt": {
+    "management": 1333,
+    "control": 1250,
+    "combined": 2583,
+    "vercel": 254,
+    "nativeExecutions": 4,
+    "actorStarts": 0,
+    "costUsd": 0,
+    "newItems": 0
+  },
+  "readonlyDiagnostic": {
+    "intent": {
+      "kind": "m03_owned_wf00_readonly_reconciliation",
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "workflowId": "MzimjpsuyPuK7SKe",
+      "method": "GET",
+      "maximumRequests": 1,
+      "prior": {
+        "management": 1333,
+        "control": 1250,
+        "combined": 2583,
+        "vercel": 254,
+        "native": 4
+      },
+      "reserved": {
+        "management": 1334,
+        "control": 1250,
+        "combined": 2584,
+        "vercel": 254,
+        "native": 4
+      },
+      "actual21Closed": true,
+      "mutationAllowed": false,
+      "executionAllowed": false
+    },
+    "result": {
+      "nativeExit": 0,
+      "version": 1,
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "status": "complete",
+      "childClosed": true,
+      "handoffDeleted": true,
+      "inventory": {
+        "version": 1,
+        "environment": "dev",
+        "host": "muhhammedsayed.app.n8n.cloud",
+        "projectId": "pHvQjDmjxVZ3KQLT",
+        "status": "baseline_mismatch",
+        "requestCount": 1,
+        "authenticationVerified": true,
+        "projectVerified": true,
+        "workflowKey": "WF-00",
+        "baseline": {
+          "version": 1,
+          "workflowKey": "WF-00",
+          "failedChecks": [
+            "version_mismatch",
+            "graph_nodes"
+          ],
+          "components": {
+            "nameEqual": true,
+            "nodesEqual": false,
+            "connectionsEqual": true,
+            "settingsEqual": true
+          }
+        },
+        "forensics": {
+          "nodeCategories": {
+            "identityEqual": true,
+            "parametersEqual": false,
+            "credentialsEqual": true,
+            "behaviorEqual": true,
+            "layoutEqual": false,
+            "annotationsEqual": true
+          },
+          "settingsCategories": {
+            "retentionEqual": true,
+            "mcpVisibilityEqual": true,
+            "errorRoutingEqual": true,
+            "otherEqual": false
+          },
+          "knownVariants": {
+            "c01RetentionSettingsEqual": false,
+            "c01RuntimeSettingsEqual": false,
+            "c01ManualSettingsEqual": false,
+            "stagingMcpSettingsEqual": false,
+            "stagingManualSettingsEqual": false,
+            "schedulesDisabledNodesEqual": false,
+            "c01RetentionGraphEqual": false,
+            "stagedManualGraphEqual": false,
+            "stagedC01ManualGraphEqual": false
+          }
+        },
+        "diagnostics": {
+          "version": 1,
+          "dns": "complete",
+          "requests": [
+            {
+              "resource": "workflows",
+              "page": 1,
+              "tcpConnected": true,
+              "tlsVerified": true,
+              "httpStatus": 200,
+              "bodyRead": "complete",
+              "jsonParsed": true,
+              "schemaValidated": true,
+              "socketClosed": true,
+              "failureStage": "none",
+              "failureCode": "none"
+            }
+          ]
+        }
+      }
+    },
+    "delta": {
+      "management": 1,
+      "control": 0,
+      "combined": 1,
+      "vercel": 0,
+      "nativeExecutions": 0
+    },
+    "exactChangedPathsEstablished": false,
+    "causeEstablished": false,
+    "workflowMutation": false,
+    "workflowExecution": false,
+    "consumerSourceSeal": {
+      "relative": "scripts/n8n/out/foundation/live/technical21-inventory-seal-used.json",
+      "sha256": "f5f724f026b2c2b958c33fae976ac5dc141f3396c9080160b34f36d8d3fc3711",
+      "files": {
+        "scripts/n8n/windows/New-M03N8nApiHandoff.ps1": "c8c9d34855ef55c5391f5b14c80a7768b51761a149982f4917b910c391c788e2",
+        "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "0fb1787eb8623cb78764cb3c38e89d017ce2eb90b01489aa7484141469333a0a",
+        "scripts/n8n/inventory.mjs": "586a5ab93b64a2e6854a5858a5d913f5b44a6e9f02bd2f06288956b6409249c0"
+      },
+      "baselineFiles": {
+        "scripts/n8n/foundation-runtime-checkpoint.mjs": "e4e3fcf4b7f3b5d1555e69fef123bcea8515ea954b34db8167303e9636f06039",
+        "n8n/workflows/WF-00.json": "db764d55ae2b8b7ed2b6ac2c2fa605e4bc1e968acab2b5183092eb90db9209f0",
+        "scripts/n8n/windows/Dev-CredentialStore.ps1": "49c16b64f9b57c4e27cf6ad92dc16cd05c6cf29a7ada7f9c7fa6e8f64ca5fc13"
+      },
+      "validationBasis": "The coordinator verified these sealed files and baseline files immediately before the actual one-GET read. These pins come from the unchanged copied seal, not later working-tree bytes."
+    }
+  },
+  "usage": {
+    "management": 1334,
+    "control": 1250,
+    "combined": 2584,
+    "vercel": 254,
+    "nativeExecutions": 4,
+    "actorStarts": 0,
+    "costUsd": 0,
+    "newItems": 0
+  },
+  "limits": {
+    "management": 1728,
+    "control": 3584,
+    "combined": 5312,
+    "vercel": 304,
+    "nativeExecutions": 120,
+    "actors": 2,
+    "actorReserveUsd": 2,
+    "newDistinctItems": 1
+  },
+  "outputsNotProduced": {
+    "relativePaths": [
+      "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-21-attempt.json",
+      "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-21-latest.json",
+      "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-21-owner-provision-attempt.json",
+      "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-21-reactivation-attempt.json",
+      "scripts/n8n/out/foundation/live/runtime.technical-21.jsonl"
+    ],
+    "allAbsent": true,
+    "basis": "Local public path presence checks after the closed attempt; no SQL or runtime journal output was produced for21."
+  },
+  "database": {
+    "freshPost21SqlReadbackPerformed": false,
+    "migrationCount": 15,
+    "localMigrationVersionsAndHashes": [
+      {
+        "version": "20261017172928",
+        "relative": "supabase/migrations/20261017172928_extensions_schemas_roles.sql",
+        "sha256": "478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d"
+      },
+      {
+        "version": "20261017172931",
+        "relative": "supabase/migrations/20261017172931_core_tables.sql",
+        "sha256": "4f1be3f6191885add916b164975ba10a8697069a0373a05df4e03fa53ea7cba3"
+      },
+      {
+        "version": "20261017172934",
+        "relative": "supabase/migrations/20261017172934_auth_rls_views.sql",
+        "sha256": "8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9"
+      },
+      {
+        "version": "20261017172937",
+        "relative": "supabase/migrations/20261017172937_rpc_pipeline_core.sql",
+        "sha256": "978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803"
+      },
+      {
+        "version": "20261017172940",
+        "relative": "supabase/migrations/20261017172940_rpc_app_search.sql",
+        "sha256": "6111c5291e9c305e3e713180c0441ff5ffbf52b3b88f589d5d16fee55769171c"
+      },
+      {
+        "version": "20261017172943",
+        "relative": "supabase/migrations/20261017172943_storage_cron.sql",
+        "sha256": "859466fadfd940445ffe4b457e7250a179c93731e1f34736a629fe20df6e9c68"
+      },
+      {
+        "version": "20261017172945",
+        "relative": "supabase/migrations/20261017172945_seed_taxonomies.sql",
+        "sha256": "af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234"
+      },
+      {
+        "version": "20261018034220",
+        "relative": "supabase/migrations/20261018034220_rpc_n8n_foundation.sql",
+        "sha256": "457ad4351b08c47b996ae67062ed701efb7d5ef63ea7658d20931f2d5dc5d3fd"
+      },
+      {
+        "version": "20261018035417",
+        "relative": "supabase/migrations/20261018035417_price_book_plan.sql",
+        "sha256": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd"
+      },
+      {
+        "version": "20261018070042",
+        "relative": "supabase/migrations/20261018070042_n8n_worker_gateway_admission.sql",
+        "sha256": "98ebdfad9fffa819773fdbee5e3b9b8374be8a6f58497593084aed4077e9b856"
+      },
+      {
+        "version": "20261018231756",
+        "relative": "supabase/migrations/20261018231756_m03_actor_launch_admission.sql",
+        "sha256": "fc6955938bba3d08b6a1140258a1db2d0569a5f441c8cc5c934847eb84116600"
+      },
+      {
+        "version": "20261018232014",
+        "relative": "supabase/migrations/20261018232014_m03_foundation_gateway.sql",
+        "sha256": "ea1385b734e243bed4dea0030f4975a81d38d41338cb8d94d6086dd83916d334"
+      },
+      {
+        "version": "20261018232922",
+        "relative": "supabase/migrations/20261018232922_m03_foundation_safety_receipts.sql",
+        "sha256": "dffa2c23d0102bb7382106c9800e05b5806a1eee89580794aa87bdd63a7f05a5"
+      },
+      {
+        "version": "20261018233338",
+        "relative": "supabase/migrations/20261018233338_m03_foundation_boundary_hardening.sql",
+        "sha256": "bf930602b402ef0b4649e9399ed2dcb9d6f2bf576a08d9313f352ccfab4d6c90"
+      },
+      {
+        "version": "20261023163755",
+        "relative": "supabase/migrations/20261023163755_m03_foundation_window_continuation.sql",
+        "sha256": "08400005da4b595d7d1222ff77c31ba745968c3ab3d9dc1d7353f5531c7c8fde"
+      }
+    ],
+    "noMigrationReplay": true,
+    "newSqlAdmissionProvenThisAttempt": false,
+    "priorClosedStateReference": "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-start-20261025.json",
+    "interpretation": "The pinned pre21 readback established six closed windows,11 SQL admissions,five requests,eight audits and archived/paused C999 with zero items/actors/progress. This attempt produced no administrator outputs; no fresh post21 SQL acceptance is claimed."
+  },
+  "separateDisposableCleanup": {
+    "result": {
+      "kind": "m03_technical21_disposable_cleanup",
+      "version": 1,
+      "status": "three_unused_leaves_removed",
+      "parentAbsent": true,
+      "runtimeAbsent": true,
+      "directChildrenAbsent": true,
+      "removed": [
+        "emr-m03-foundation-dev-migration-password.dpapi",
+        "emr-m03-foundation-dev-migration-password.lease.json",
+        "emr-m03-acceptance-protection-bypass.dpapi"
+      ],
+      "allDisposableCredentialsAbsent": true,
+      "persistentOriginalsRetained": true,
+      "machineRetained": true,
+      "plaintextRead": false,
+      "credentialDecryptionAttempted": false,
+      "networkRequests": 0,
+      "businessAcceptance": false,
+      "fullD": false,
+      "observedAt": "2026-10-25T12:14:59.0033939+00:00",
+      "bothLocksAbsent": true
+    },
+    "originalWrapperFalseClosurePreserved": true,
+    "originalWrapperBypassDeletedFalsePreserved": true,
+    "persistentOriginalsRetained": true,
+    "machineRetained": true,
+    "checkedDisposableCredentials": 9,
+    "checkedLocks": 2,
+    "fullD": false,
+    "businessAcceptance": false,
+    "remoteBypassAbsenceIndependentlyVerified": false,
+    "interpretation": "The separately reviewed local metadata-only cleanup removed the unused Admin pair and bypass handoff after physical closure. It does not change the raw failed restoration/closure flags or establish remote/business acceptance."
+  },
+  "interpretation": {
+    "preparationPassed": false,
+    "fullD": false,
+    "actualM03DevAcceptanceVerified": false,
+    "rawRestorationReportedFalse": true,
+    "physicalCleanupSeparatelyVerified": true,
+    "originalNativeExit": 1,
+    "baselineMismatchReproducedByReadonlyGet": true,
+    "exactChangedPathsEstablished": false,
+    "failureCauseEstablished": false,
+    "paidActorStarted": false
+  },
+  "boundaries": {
+    "productionUntouched": true,
+    "recurringActivationUntouched": true,
+    "externalNotificationsSent": 0,
+    "r2Untouched": true,
+    "mergeUntouched": true,
+    "m04Unstarted": true
+  },
+  "sourcePins": {
+    "scripts/n8n/windows/Invoke-M03Acceptance.ps1": "5f2baa5059d75d9b4480dc4be04bddde759a7a6c278868076288aaae0a0d7407",
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "034e10b4b32f4015e6a71879902c5752c682c86d332a3f9dee3b3ee5733b5ea4",
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "ff0684d18391d4a9719980bb50345ee6bc5bdd8bf90ab7b4cfb0881c76c06631",
+    "scripts/n8n/foundation-live-runtime-cli.mjs": "ec6a743bdc439cb7845d6be7fb451ada0e04620f85d5a41f67b686eaa58935e2",
+    "scripts/n8n/inventory.mjs": "586a5ab93b64a2e6854a5858a5d913f5b44a6e9f02bd2f06288956b6409249c0",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "0fb1787eb8623cb78764cb3c38e89d017ce2eb90b01489aa7484141469333a0a"
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-21.json": "cba9189dd682bacf6fb5a936220579c3a6f0f407dc84f6b49bb39ec0e2939201",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-21.runtime-claim.json": "3486498aedafe6c7544b90d9b567e0add2198127ed1defffd983ca0eb80ff0df",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-21.closed.json": "1064223cb2ee00c41a3dabca01d7c62a1ad56b826326895d6f009a1f295d1577",
+    "scripts/n8n/out/foundation/live/technical21-coordinator-20261025-startup1.jsonl": "166501a09f12f46074416489fb5b9a422ce5e63774859dcce95c66166fad022b",
+    "scripts/n8n/out/foundation/live/management.jsonl": "46c45581b0f0dc3304f0f127774ee83fda5daa1a9abfc853bccecd039d59ab18",
+    "scripts/n8n/out/foundation/live/control.jsonl": "4df3975f1e3138ff3216ee35660943976246d3271583a308e2a402323c136afc",
+    "scripts/n8n/out/foundation/live/setup.jsonl": "03ec5619e004011cc3b69368fec23eeed5f6c02949e534853877a09d01835961",
+    "scripts/n8n/out/foundation/live/preflight.jsonl": "c255da13d1041be1a4516f6415cac764228c5377cb6bb1615a4733eee8ca7a1d",
+    "scripts/n8n/out/foundation/live/technical21-wf00-baseline-read-intent.json": "63206618559d2226a53c76fc9c9097c1c2174334356b638e13bcb5460f32aad9",
+    "scripts/n8n/out/foundation/live/technical21-wf00-baseline-read-result.json": "15a7233c8eed75bd6a37afb403e5536631625bebe24e8a9797bcd324a660730d",
+    "scripts/n8n/out/foundation/live/technical21-disposable-cleanup.ps1": "4b668cdcaecd957695ae910d72b03e347cd68332b1837195994cca450935011b",
+    "scripts/n8n/out/foundation/live/technical21-disposable-cleanup-result.json": "99626a36d7162f61b393732b69a21234b9a6d70cea9c3fbeff2897e472ef759a",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json": "567de4bcc54962c57afb88846fd4c8a75dbfa465623aad3578aab51c4eab41dc",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-database-readback-20261025.json": "a44ccc8aaf5366cd3cbe5bb6d76b69c0dd327d74935c40c4a7e28f4b2cf232fd",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical20-pre-ready-reconciliation-20261025.json": "d5f4353439ff6a3254f71609048ff43aa1d453308b5708bd968182ce959bf983",
+    "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-start-20261025.json": "c5e4e506d788b399fd95354cc2bc59849076daec48e0a41901e717a4a22c157e",
+    "milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-approval-20261025.json": "a80ea5491487b22df91c07deb4ab94b3854fe037a1f7458f25fd3afcf2a4619a",
+    "scripts/n8n/out/foundation/live/technical21-inventory-seal-used.json": "f5f724f026b2c2b958c33fae976ac5dc141f3396c9080160b34f36d8d3fc3711"
+  }
+}

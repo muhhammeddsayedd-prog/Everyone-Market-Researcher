@@ -3010,6 +3010,77 @@ export async function runMachineMetadataDiagnostic(key, dependencies = {}) {
   return result;
 }
 
+// Inputs are the received JSON DTO and the reader's source-pinned baseline.
+// Only expected identifiers/key names leave this projection; received values,
+// unknown key names and credential fields never do. This grants no graph parity.
+export function projectBaselineNodeDifferences(dto, baseline, parameterCandidates = null) {
+  try {
+    const expected = baseline?.body?.nodes;
+    if (
+      baseline?.key !== 'WF-00' ||
+      !Array.isArray(expected) ||
+      expected.length > 64 ||
+      !Array.isArray(dto?.nodes) ||
+      dto.nodes.length !== expected.length
+    )
+      return null;
+    const received = new Map();
+    for (const node of dto.nodes) {
+      if (
+        !record(node) ||
+        typeof node.id !== 'string' ||
+        typeof node.name !== 'string' ||
+        !record(node.parameters) ||
+        Object.keys(node.parameters).length > 256 ||
+        received.has(node.id) ||
+        !Array.isArray(node.position) ||
+        node.position.length !== 2 ||
+        node.position.some((v) => !Number.isFinite(v))
+      )
+        return null;
+      received.set(node.id, node);
+    }
+    const differences = [];
+    for (const node of expected) {
+      const actual = received.get(node.id);
+      if (!actual || !record(node.parameters)) return null;
+      const keys = Object.keys(node.parameters),
+        keySet = new Set(keys),
+        missingParameterKeys = keys.filter((key) => !Object.hasOwn(actual.parameters, key)).sort(),
+        changedParameterKeys = keys
+          .filter(
+            (key) =>
+              Object.hasOwn(actual.parameters, key) &&
+              !isDeepStrictEqual(actual.parameters[key], node.parameters[key]),
+          )
+          .sort(),
+        extraParameterKeyCount = Object.keys(actual.parameters).filter((key) => !keySet.has(key)).length,
+        layoutChanged = !isDeepStrictEqual(actual.position, node.position),
+        native = parameterCandidates?.nativeDefaults?.nodes?.find((value) => value.id === node.id);
+      if (
+        missingParameterKeys.length ||
+        changedParameterKeys.length ||
+        extraParameterKeyCount ||
+        layoutChanged
+      )
+        differences.push({
+          nodeId: node.id,
+          nodeName: node.name,
+          changedParameterKeys,
+          missingParameterKeys,
+          extraParameterKeyCount,
+          layoutChanged,
+          canonicalOrNativeDefaultsMatch:
+            isDeepStrictEqual(actual.parameters, node.parameters) ||
+            (native !== undefined && isDeepStrictEqual(actual.parameters, native.parameters)),
+        });
+    }
+    return differences;
+  } catch {
+    return null;
+  }
+}
+
 export async function runWorkflowBaselineDiagnostic(key, dependencies = {}) {
   const result = {
     version: 1,
@@ -3021,6 +3092,7 @@ export async function runWorkflowBaselineDiagnostic(key, dependencies = {}) {
     authenticationVerified: false,
     projectVerified: false,
     workflowKey: 'WF-00',
+    observedVersionId: null,
     baseline: null,
     forensics: null,
     diagnostics: { version: 1, dns: 'not_attempted', requests: [] },
@@ -3033,7 +3105,10 @@ export async function runWorkflowBaselineDiagnostic(key, dependencies = {}) {
     result.status = 'invalid_key';
     return result;
   }
-  let baseline, diagnoseFoundationRuntimeBaseline, diagnoseFoundationRuntimeBaselineVariants;
+  let baseline,
+    parameterCandidates,
+    diagnoseFoundationRuntimeBaseline,
+    diagnoseFoundationRuntimeBaselineVariants;
   try {
     const checkpoint = await import('./foundation-runtime-checkpoint.mjs');
     const { foundationRuntimeCheckpoint } = checkpoint;
@@ -3068,6 +3143,7 @@ export async function runWorkflowBaselineDiagnostic(key, dependencies = {}) {
     };
     if (diagnoseFoundationRuntimeBaseline(null, baseline, projectId).failedChecks.includes('expected_shape'))
       reject();
+    parameterCandidates = checkpoint.foundationRuntimeExecutionParameterCandidates(baseline.body);
   } catch {
     result.status = 'response_rejected';
     return result;
@@ -3164,8 +3240,20 @@ export async function runWorkflowBaselineDiagnostic(key, dependencies = {}) {
       else if (record(value)) pending.push(...Object.values(value));
     }
     result.authenticationVerified = true;
+    result.observedVersionId =
+      typeof dto?.versionId === 'string' &&
+      /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(dto.versionId)
+        ? dto.versionId
+        : null;
     result.baseline = diagnoseFoundationRuntimeBaseline(dto, baseline, projectId);
-    result.forensics = diagnoseFoundationRuntimeBaselineVariants(dto, baseline);
+    const forensics = diagnoseFoundationRuntimeBaselineVariants(dto, baseline);
+    result.forensics =
+      forensics === null
+        ? null
+        : {
+            ...forensics,
+            nodeDifferences: projectBaselineNodeDifferences(dto, baseline, parameterCandidates),
+          };
     result.projectVerified =
       !result.baseline.failedChecks.includes('owner_project') &&
       !result.baseline.failedChecks.includes('dto_shape');
