@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
 
 const names = [
   'New-M03AcceptanceHandoff.ps1',
@@ -287,6 +288,96 @@ Write-Output 'TECHNICAL17_CLOCK_PASS'
       assert.equal(result.status, 0, result.stderr + result.stdout);
       assert.equal(result.stderr, '');
       assert.equal(result.stdout.trim(), 'TECHNICAL17_CLOCK_PASS');
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  'technical19 wrapper projects only exact retained1023 charges with the immutable18 public receipt',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-technical19-wrapper-'));
+    try {
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+      const extract = (name) => {
+        const start = source.indexOf('function ' + name);
+        const end = source.indexOf('\nfunction ', start + 10);
+        assert.ok(start >= 0 && end > start);
+        return source.slice(start, end);
+      };
+      const relative =
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical18-preparation-reconciliation-20261025.json';
+      const receipt = readFileSync(resolve(relative));
+      const receiptHash = '92a5976dbce66210abbdd76655afaf71a98c9c48f29c8c15422831a85f3737d9';
+      assert.equal(createHash('sha256').update(receipt).digest('hex'), receiptHash);
+      const receiptPath = join(directory, relative);
+      mkdirSync(join(directory, 'milestones/M03-n8n-foundation/evidence'), { recursive: true });
+      writeFileSync(receiptPath, receipt);
+      const ready = {
+        kind: 'project_verified_continuation_ready',
+        segmentId: '20275b22-b7fe-4737-a9a4-c50c2feadb74',
+        sourceCommitSha: 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80',
+        windowId: 'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
+        privateRead: false,
+        networkRequests: 0,
+        managementMaximum: 1408,
+        managementAttempts: 1023,
+        controlAttempts: 1145,
+        combinedAttempts: 2168,
+      };
+      const guard = join(directory, 'scripts/n8n/foundation-live-project-verified-continuation.mjs');
+      mkdirSync(join(directory, 'scripts/n8n'), { recursive: true });
+      writeFileSync(
+        guard,
+        `if(process.env.EMR_SYNTHETIC_SECRET||process.argv[2]!=='CheckOnly')process.exit(9);process.stdout.write(${JSON.stringify(JSON.stringify(ready))});`,
+      );
+      const quote = (value) => "'" + value.replaceAll("'", "''") + "'";
+      const io = source.slice(
+        source.indexOf('function Initialize-BoundedIo'),
+        source.indexOf('function Invoke-PublicCompositionCheck'),
+      );
+      const script = join(directory, 'technical19.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest
+$repo=${quote(directory)}
+${io}
+${extract('Public-File(')}
+${extract('Get-ProjectVerifiedPublicManagementMaximum(')}
+${extract('ConvertTo-ProjectVerifiedReadinessBlock(')}
+${extract('Invoke-ClockAmendmentPublic(')}
+Initialize-BoundedIo
+$current=ConvertFrom-Json -InputObject ${quote(JSON.stringify(ready))}
+if((Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly') -ne 1408){throw 'EXACT19_NOT_PROJECTED'}
+$actual=Invoke-ClockAmendmentPublic ${quote(process.execPath)} $repo 'CheckOnly' $false $false $false $true
+if($actual.managementAttempts -ne 1023 -or $actual.controlAttempts -ne 1145 -or $actual.combinedAttempts -ne 2168 -or $actual.privateRead -ne $false -or $actual.networkRequests -ne 0){throw 'WRAPPER_DTO_CHANGED'}
+foreach($mutation in @(@{key='managementMaximum';value=1409},@{key='managementMaximum';value='1408'},@{key='managementAttempts';value=1022},@{key='managementAttempts';value='1023'},@{key='controlAttempts';value=1144},@{key='controlAttempts';value='1145'},@{key='combinedAttempts';value=2167},@{key='combinedAttempts';value='2168'},@{key='sourceCommitSha';value='unrecognized'},@{key='windowId';value='unrecognized'},@{key='privateRead';value=$true},@{key='privateRead';value='false'},@{key='networkRequests';value=1},@{key='networkRequests';value='0'},@{key='kind';value='clock_project_verified_continuation_admitted'},@{key='segmentId';value='unrecognized'})){
+ $copy=$current|ConvertTo-Json|ConvertFrom-Json;$copy.($mutation.key)=$mutation.value;$denied=$false
+ try{$null=Get-ProjectVerifiedPublicManagementMaximum $copy $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED19_PROFILE_ACCEPTED'}
+}
+foreach($mode in @('Admit','Read')){$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true $mode}catch{$denied=$true};if(-not $denied){throw 'WRONG19_MODE_ACCEPTED'}}
+$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $false 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'WRONG19_PROFILE_ACCEPTED'}
+$receiptPath=Join-Path $repo ${quote(relative)};$original=[IO.File]::ReadAllBytes($receiptPath)
+try{
+ [IO.File]::WriteAllText($receiptPath,'{"kind":"m03_technical18_preparation_reconciliation","usage":{"management":1023,"control":1145,"combined":2168}}')
+ $denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'UNPINNED18_RECEIPT_ACCEPTED'}
+}finally{[IO.File]::WriteAllBytes($receiptPath,$original)}
+$helper=([scriptblock]::Create(${quote(extract('Get-ProjectVerifiedPublicManagementMaximum(').replaceAll(receiptHash, '0'.repeat(64)))}));. $helper
+$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'WRONG18_PIN_ACCEPTED'}
+Write-Output 'TECHNICAL19_WRAPPER_PASS'
+`,
+      );
+      const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: { ...safeEnvironment(directory), EMR_SYNTHETIC_SECRET: 'SYNTHETIC_ONLY' },
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 15000,
+      });
+      assert.equal(result.status, 0, result.stderr + result.stdout);
+      assert.equal(result.stderr, '');
+      assert.equal(result.stdout.trim(), 'TECHNICAL19_WRAPPER_PASS');
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

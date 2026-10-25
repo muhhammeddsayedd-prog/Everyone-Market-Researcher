@@ -206,6 +206,14 @@ function Get-ProjectVerifiedPublicManagementMaximum($Value,[bool]$ProjectClock,[
  # physically closed attempt adds the exact current snapshot without reset.
  if($settledBinding){
   foreach($name in @($fields+'networkRequests')){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long])){throw 'blocked'}}
+  # Technical18 closed without provision/reactivation. Keep its exact retained
+  # counters separate from the older attempt7 cleanup relationship below.
+  # The sealed Node guard validates the typed receipt before this projection.
+  if($Value.managementMaximum -eq 1408 -and $Value.managementAttempts -eq 1023 -and $Value.controlAttempts -eq 1145 -and $Value.combinedAttempts -eq 2168 -and $Value.networkRequests -eq 0){
+   $technical18PublicReceipt=Public-File (Join-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical18-preparation-reconciliation-20261025.json')
+   if((Get-FileHash -LiteralPath $technical18PublicReceipt -Algorithm SHA256).Hash.ToLowerInvariant() -cne '92a5976dbce66210abbdd76655afaf71a98c9c48f29c8c15422831a85f3737d9'){throw 'blocked'}
+   return 1408
+  }
   # The existing sealed guard alone qualifies actual settlement/archive. This
   # projection accepts only its exact attempt7 bounded accounting relationship.
   $cleanupRequests=$Value.managementAttempts-878
