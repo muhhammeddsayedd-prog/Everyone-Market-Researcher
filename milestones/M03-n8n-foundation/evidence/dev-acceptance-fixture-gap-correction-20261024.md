@@ -2,6 +2,26 @@
 
 ## Current functional acceptance checkpoint — 26 October 2026 Cairo
 
+**M03 closure approved.** The owner replied **I Approve merging PR #8 and closing
+M03** on26 October2026 Cairo. Acceptance head
+`c29f18e363b4f79159728489a4464341359a70bb` passed all five
+[CI40234431917 jobs](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40234431917)
+and Vercel; all six functional checks are complete under the binding mapping.
+Only the closure-documentation commit's normal protected checks and the approved
+merge remain. Successful [PR8 merge](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8)
+is the transition to M03 **Done**; its GitHub record supplies the actual merge
+time/SHA without fabricating them in this pre-merge note. No additional owner
+approval, credential setup or live acceptance batch is needed. The frozen actual
+proof JSON retains its original observation time, draft state and CI boundary.
+
+**Hand-off after merge:** preserve all retained data, execution31145, archived
+C999, inactive workflows, strict-TLS restricted access, persistent dev originals,
+all15 migrations and cumulative charges. M04 waits for the owner's next
+instruction. Production launch/migrations, recurring activity, external
+notifications and private R2 are separate. The earlier write restrictions remain
+in force; root/milestone PROGRESS, the existing helper, old CI artifact and PR body
+are not rewritten. This permitted current record and MILESTONE§14 carry closure.
+
 The [real collection proof](functional-collection-proof-20261025.json) now passes
 functional checks1–4. One public-page actor
 `SzGgfAkPmgzPFQbbO` completed asynchronously through WF19/native31150 into
@@ -42,9 +62,10 @@ secret ACLs and originals were unchanged. No hosted request or admission was mad
 by that failed launch. The corrected single native sequence then passed.
 
 Functional checks1–5, exports, focused tests and independent review now pass.
-Normal delivery-head CI is still required before presenting the separate PR8
-merge decision; no further actor or live acceptance batch is needed. Required
-checks and draft status remain unchanged. The root/milestone PROGRESS files,
+Acceptance-head CI also passed, completing check6. The owner's separate merge
+approval is recorded above; normal final-head checks still precede the approved
+ready/merge transition. No further actor or live acceptance batch is needed.
+Required checks remain unchanged. The root/milestone PROGRESS files,
 previously restricted helper and old CI artifact remain untouched under their
 existing write/preservation restriction; this permitted current record carries
 the completed checkpoint.
@@ -57,9 +78,9 @@ with USD2 total reserve unchanged. Existing-plan infrastructure charges remain
 unknown and separate. The44-request native restoration is included in these
 charges. Persistent encrypted originals are retained, children/locks are closed,
 and disposable credentials/private content scratch are absent. No credential,
-allowance or time approval is missing. The exact remaining owner decision after
-normal CI is **Approve merging PR #8 and closing M03.**
-Production, schedules, external notifications, R2, merge and M04 remain untouched.
+allowance or time approval is missing. PR8 merge and M03 closure are now
+explicitly approved; M04 and all production/recurring/notification/R2 work remain
+unstarted. Merge completion is verified separately through the GitHub record.
 
 ### Historical first smaller-sequence attempt
 

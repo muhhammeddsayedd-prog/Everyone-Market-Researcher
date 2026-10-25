@@ -396,6 +396,15 @@ sequence bound rather than an individually measured HTTP total. The only
 remaining delivery gate is normal final-head CI/review and the separate merge
 decision; no new live batch is needed.
 
+On26 October2026 Cairo, the owner replied **I Approve merging PR #8 and closing
+M03**. All five CI40234431917 jobs and Vercel passed at acceptance head
+`c29f18e363b4f79159728489a4464341359a70bb`. This authorizes making PR8 ready and
+merging after normal protected checks on the final closure-documentation head.
+PR8's successful merge is the M03 closing transition; GitHub's merge record is
+authoritative for its time and SHA. No further live acceptance run is needed.
+M04 waits for a new owner instruction. Production data/migrations, recurring
+activation, paid backfills, notifications and private R2 remain separate.
+
 The b51 recovery entry remains disabled. At the decision checkpoint,
 execution31145 was retained and C999 archive was pending; the subsequent
 [native containment record](../milestones/M03-n8n-foundation/evidence/functional-acceptance-20261025.json)

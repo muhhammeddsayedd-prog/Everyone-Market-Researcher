@@ -428,7 +428,7 @@ closure where earlier name-specific or exhaustive-verifier wording conflicts.
 | AC8 — automatic error routing | 4 | **Retain; actual22 passed.** All four automatic error/cooldown groups31136–31144 settled and were cleaned. Preserve log-only Notify; external email remains deferred to its milestone/approval. |
 | AC9 — every hosted stub slot | 2, 6 | **Replace exhaustive native stub execution as an M03 closure gate.** Representative Vimeo parent/child31134/31135 passed. Keep the full local slot/unknown-slot contracts, inactive WF-00 and disabled schedules; collector-specific live matrices belong to their collector milestones. The original every-slot hosted requirement is replaced, not passed. |
 | AC10 — native health/fixed accrual | 3, 5 | **Replace standalone WF91 execution with existing health contracts and final operational readback; defer positive hosted fixed-fee accrual while fees are unknown.** Keep local health/accrual/idempotency tests; do not claim a positive fee accrual from an empty/no-row result. |
-| AC11 — clean exports | 6 | **Retain; native parity passed.** Canonical sanitized exports remain intact. All25 owned definitions match their reviewed inactive baselines after approved WF99/remaining SUB/Machine restoration. Preview cleanup and independent review pass. Normal delivery-head CI remains required before the separate merge decision. |
+| AC11 — clean exports | 6 | **Retain; passed.** Canonical sanitized exports remain intact. All25 owned definitions match their reviewed inactive baselines after approved WF99/remaining SUB/Machine restoration. Preview cleanup, independent review and acceptance-head CI pass. Owner merge approval is recorded; normal checks on the final closure head still precede merge. |
 | AC12 — daily estimate | 6 | **Retain; complete.** Existing conservative160/day pilot and181/day full estimates remain below200/day; cumulative test allowances are separate and unchanged. |
 
 Current results are in the [existing recovery/evidence record](evidence/dev-acceptance-fixture-gap-correction-20261024.md)
@@ -437,8 +437,12 @@ Checks1–5 pass under functional acceptance. At21:06:53UTC25 October (26 Octobe
 Cairo), the separately reviewed native sequence completed approved WF99, three
 SUB definitions and dedicated Machine restoration, then verified all25 inactive
 baselines. The encrypted rollback and fresh drift checks are preserved. Exports,
-focused tests and independent review pass; normal final-head CI is the remaining
-delivery gate. Keep PR8 draft and M03 open for the separate merge decision.
+focused tests and independent review pass. All five CI40234431917 jobs and Vercel
+passed atc29f18e, completing check6. On26 October2026 Cairo, the owner explicitly
+approved merging PR8 and closing M03. Normal protected checks on the final
+closure-documentation head still precede making the draft ready and merging.
+Successful PR8 merge changes M03 to **Done**; the GitHub merge record gives the
+actual closing time and SHA. No further live acceptance batch is needed.
 
 Final charged usage is2078/2000/4078/V358 against2176/3584/5312/V400; one
 actor and one new item were used. Control includes the conservative approved512
@@ -446,8 +450,9 @@ sequence bound, not a precise HTTP measurement. Exactly44 additional Management
 requests were used for the completed residual restoration. No new actor, batch,
 credential, allowance or time approval is needed. Preserve all prior attempts,
 execution31145, fullD:false, exact15-version history, seeds, local-only fixture
-directory and disabled CleanupTechnical22. No production, recurring collection,
-notification, R2, merge or M04 action is authorized by this continuation.
+directory and disabled CleanupTechnical22. The owner's separate approval permits
+PR8 merge and M03 closure only; production, recurring collection, notification,
+R2 and M04 remain outside this continuation.
 
 ## 10. Tests to write
 
@@ -492,8 +497,10 @@ notification, R2, merge or M04 action is authorized by this continuation.
 
 ## 14. Definition of done & hand-off
 
-- The six current checks are verified with explicit retained/deferred dispositions from §9. Present actual evidence and the separate PR #8 merge decision; keep M03 open and the PR draft while critical checks remain incomplete. Approval of development, credentials or this checklist does not approve merge or begin M04.
-- One isolated frontend/app-shell or read-only directory slice may proceed in parallel using stable contracts and labeled fixtures, with no hosted writes. It does not start M04, M09 or M10 and does not prove live ingestion.
+- All six functional checks are verified with the retained/deferred dispositions from §9. The owner approved PR8 merge and M03 closure on26 October2026 Cairo. Complete the protected merge after final-head checks; M03 is Done when PR8 is merged. This closes development delivery, not production launch or the start of M04.
+- **Hand-off:** preserve all15 dev migrations, the285 seeded competitors/1754 seeded accounts plus retained C999/account, the one retained public-page item/raw/cost, two inert test queue messages, archived/paused C999, retained execution31145, persistent encrypted originals and all historical failures/charges. All25 workflows are at reviewed inactive baselines, Machine is restored, temporary Preview access is revoked and the restricted strict-TLS gateway path is verified. The native Postgres-node TLS failure remains a documented limitation. Unknown fixed fees remain unknown; USD25/day remains the alert default.
+- **Next step after merge:** wait for the owner's instruction to start M04. Do not run another actor, apply production changes, activate schedules, send notifications or continue private R2. The local fixture directory stays local-only with its production404 guard. Previously restricted PROGRESS/helper/CI-artifact and PR-body writes remain untouched; this permitted milestone record carries the current closure and handoff.
+- The authorized isolated fixture directory slice is complete and stays local-only with no hosted writes. Closing M03 does not authorize another frontend task or start M04, M09 or M10; fixtures do not prove live ingestion.
 - **M04 expects:**
   - the SUB workflows, WF-19 and WF-90 working in dev;
   - stubs WF-10 and WF-11 to replace;

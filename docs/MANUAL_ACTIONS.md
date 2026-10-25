@@ -47,11 +47,14 @@ the earlier wrapper native1/formal-closurefalse remain historical. No credential
 delivery, time approval or further live batch is needed. Four persistent
 originals remain ready; disposable copies and private scratch are absent.
 
-**Next owner decision: PR8 merge only.** After normal final-head quality, unit,
-build, e2e, db-tests and Vercel checks pass, review
-https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8 and reply
-**Approve merging PR #8 and closing M03.** This permits making the draft ready
-and merging; it does not approve production launch, schedules or M04.
+**PR8 merge and M03 closure approved:** on26 October2026 Cairo, the owner replied
+**I Approve merging PR #8 and closing M03**. Acceptance headc29f18e passed all five
+CI40234431917 jobs and Vercel. No further M03 owner action is required. Codex
+will verify normal quality/unit/build/e2e/db-tests and Vercel checks on the final
+closure-documentation head, make PR8 ready and merge through main's existing
+protection without bypassing it. Successful merge closes M03; GitHub PR8 is the
+authoritative merge receipt. Keep the local branch and unrelated uncommitted
+work. M04, production launch and schedules are not authorized by this approval.
 
 **MA-11 allowance complete:** the owner approved the
 [complete269M/512C/64V remaining bound](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#remaining-request-boundary-after-the-safely-closed-functional-attempt).
