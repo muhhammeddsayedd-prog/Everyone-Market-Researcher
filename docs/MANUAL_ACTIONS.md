@@ -29,19 +29,19 @@ work, and C999 archived/account paused with every row retained. Historical
 `fullD:false` stays unchanged; retained execution31145 was not deleted.
 
 Actual charges are1861 Management/1488 Control/3349 combined/Vercel323, leaving
-187 Management/29 Vercel under approved2048/3584/5312/V352 caps. Actors remain0,
+315 Management/77 Vercel under approved2176/3584/5312/V400 caps. Actors remain0,
 USD0. The first smaller-sequence attempt passed dev/restricted security checks,
 then stopped at the missing guarded WF99 staging save. Actual restricted Close,
 workflow/Machine restoration, Preview/bypass cleanup and C999 archive all pass.
 No collection proof is claimed. Persistent originals remain ready; no credential
 delivery or time approval is missing.
 
-**MA-11 remaining allowance decision:** review the
+**MA-11 allowance complete:** the owner approved the
 [complete269M/512C/64V remaining bound](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#remaining-request-boundary-after-the-safely-closed-functional-attempt).
-If approved, reply **Approve Management2176 and Vercel400; retain all charges
-and other limits.** This is not yet approved. It preserves Control3584,
+Exact reply: **Approve Management2176 and Vercel400; retain all charges
+and other limits.** Do not request this decision again. It preserves Control3584,
 Combined5312, all1861/1488/3349/V323 charges, two actors/USD2 and one new item.
-Expected non-secret result: the decision is recorded, then the reviewed existing
+Next action: integrate the decision, then the reviewed existing
 consumer proceeds only after checkpoint qualification and required CI. No new
 helper family, secret prompt or general development approval is requested.
 

@@ -86,7 +86,7 @@ export function assertFoundationFunctionalScope(
     scope.windowId !== windowId ||
     !/^[a-f0-9]{40}$/.test(scope.sourceCommitSha) ||
     scope.sourceCommitSha !== sourceCommitSha ||
-    !isDeepStrictEqual(scope.caps, { management: 2048, control: 3584, combined: 5312, vercel: 352 }) ||
+    !isDeepStrictEqual(scope.caps, { management: 2176, control: 3584, combined: 5312, vercel: 400 }) ||
     !exact(scope.carried, Object.keys(carryFloor)) ||
     Object.entries(carryFloor).some(
       ([key, floor]) =>

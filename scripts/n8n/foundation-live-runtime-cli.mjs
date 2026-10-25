@@ -2120,7 +2120,7 @@ export async function runFoundationFunctionalCli({
   const stamp = (value) =>
     typeof value === 'string' && /^\d{4}-\d\d-\d\dT/.test(value) && Number.isFinite(Date.parse(value));
   const sha = (value) => createHash('sha256').update(value).digest('hex');
-  const caps = { management: 2048, control: 3584, combined: 5312, vercel: 352 };
+  const caps = { management: 2176, control: 3584, combined: 5312, vercel: 400 };
   const checkpoint = { management: 1661, control: 1464, combined: 3125, vercel: 288 };
   const historyAggregate = 'ded9037b363fe2cbf6d7dc2e19731c1fe25963100db92b160967c84ec7b7c6d9';
   if (checkOnly) {

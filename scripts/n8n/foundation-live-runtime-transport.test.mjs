@@ -549,7 +549,7 @@ test('functional Writer Close uses exact fresh scope, restricted identity and on
     projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
     windowId: '11111111-1111-4111-8111-111111111111',
     sourceCommitSha: 'a'.repeat(40),
-    caps: { management: 2048, control: 3584, combined: 5312, vercel: 352 },
+    caps: { management: 2176, control: 3584, combined: 5312, vercel: 400 },
     carried: { management: 1661, control: 1464, combined: 3125, vercel: 288 },
     restoredBaselineVersions: foundationFunctionalBaselineVersions(),
   };

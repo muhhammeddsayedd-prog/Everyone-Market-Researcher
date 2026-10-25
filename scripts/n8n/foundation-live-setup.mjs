@@ -43,7 +43,7 @@ const freeze = (v) => {
 };
 export function foundationLiveSetupRequestPlan(previousAttempts, maximumRequests = maximum) {
   if (
-    ![50, 88, 132, 176, 224, 256, 304, 352].includes(maximumRequests) ||
+    ![50, 88, 132, 176, 224, 256, 304, 352, 400].includes(maximumRequests) ||
     !Number.isInteger(previousAttempts) ||
     previousAttempts < 0 ||
     previousAttempts > maximumRequests

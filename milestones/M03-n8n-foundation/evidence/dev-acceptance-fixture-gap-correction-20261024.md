@@ -24,8 +24,9 @@ the runtime. Execution31145 and the disabled cleanup path remain untouched.
 Current cumulative charges are **1861 Management/1488 Control/3349 combined/
 Vercel323**, with actors0/USD0 and native16 retained. These include the20/20
 conservative native reservation even though its alternative was never imported
-or executed. Do not refund it. Approved caps remain **2048/3584/5312/V352**;
-only187 Management and29 Vercel remain. Infrastructure charges under existing
+or executed. Do not refund it. The owner subsequently raised only Management
+and Vercel to **2176/3584/5312/V400**, as recorded below;315 Management and77
+Vercel remain. At closure, the earlier2048/V352 caps left187/29. Infrastructure charges under existing
 plans are unknown and separate from the untouched USD2 actor reserve.
 
 The one-line staging correction and causal regression reproduce the78-request
@@ -46,7 +47,7 @@ tests pass62/62 with lint/format/diff checks; no new helper or attempt profile.
 
 ### Remaining request boundary after the safely closed functional attempt
 
-The existing complete path cannot fit the remaining29 Vercel requests: its
+Before the following approval, the complete path could not fit the29 remaining Vercel requests: its
 minimum preparation/shutdown alone needs33. A full bound still includes build
 polls, actual callback/content checks and recovery. Correcting the original
 estimate adds the separate3-request launch-enabled smoke-case save; the later
@@ -65,15 +66,19 @@ Management, never added again to Combined.
 | **Complete additional bound** | **269** | **512** | **781** | **64** |
 | **Retained cumulative charges** | **1861** | **1488** | **3349** | **323** |
 | **Projected cumulative bound** | **2130** | **2000** | **4130** | **387** |
-| **Proposed ceilings — not approved** | **2176** | **3584 unchanged** | **5312 unchanged** | **400** |
+| **Approved ceilings — 25 October2026,19:26 UTC** | **2176** | **3584 unchanged** | **5312 unchanged** | **400** |
 
-This is one cumulative-limit decision, not another time, credential or general
-development approval. Proposed exact reply: **Approve Management2176 and
-Vercel400; retain all charges and other limits.** No hosted continuation is
-admissible under the old ceilings. Target one actor, at most USD1; preserve the
+The owner subsequently replied exactly: **Approve Management2176 and Vercel400;
+retain all charges and other limits.** This raises only those two ceilings,
+retaining all1861/1488/3349/V323 charges. It is a cumulative-limit decision, not
+another time, credential or general development approval. Target one actor,
+at most USD1; preserve the
 two-start/USD2 maximum, one new distinct item and all other boundaries. Source
 repair, checkpoint qualification, required changed-head CI and review remain
-mandatory before use. Production, recurring activity, notifications, R2, merge
+mandatory before use. Repair delivery a5858de passed all five normal
+CI40225731770 jobs. Its result remains separate from the new allowance
+integration, whose21 affected tests pass locally; required changed-head CI must
+also pass before use. Production, recurring activity, notifications, R2, merge
 and M04 stay excluded. The following paragraphs retain their historical dates
 and counters; this latest checkpoint supersedes their next-step wording only.
 

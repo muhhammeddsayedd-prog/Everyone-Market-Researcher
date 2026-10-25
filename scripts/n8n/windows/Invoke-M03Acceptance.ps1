@@ -548,7 +548,7 @@ function Safe-M03FunctionalLine($Value){
  foreach($p in $Value.PSObject.Properties){
   $v=$p.Value
   if($p.Name -cin @('management','control','combined','vercel')){
-   $maximum=switch($p.Name){'management'{2048};'control'{3584};'combined'{5312};'vercel'{352}}
+   $maximum=switch($p.Name){'management'{2176};'control'{3584};'combined'{5312};'vercel'{400}}
    if(($v -isnot [int] -and $v -isnot [long]) -or $v -lt 0 -or $v -gt $maximum){throw 'blocked'}
   }elseif($p.Name -ceq 'costUsd'){
    if(($v -isnot [int] -and $v -isnot [long] -and $v -isnot [double] -and $v -isnot [decimal]) -or [double]::IsNaN([double]$v) -or [double]::IsInfinity([double]$v) -or $v -lt 0 -or $v -gt 2){throw 'blocked'}

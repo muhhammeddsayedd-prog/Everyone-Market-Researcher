@@ -193,17 +193,28 @@ test('functional stdin retains commands buffered with its private first line and
 });
 
 test('functional usage retains checkpoint charges and precharges manual native operations without network calls', async () => {
-  const r = await functionalLocalCase([
-    { id: 'native_management', command: 'charge_management', count: 3 },
-    { id: 'native_control', command: 'charge_control', count: 2 },
-    { id: 'close', command: 'close' },
-  ]);
+  const actual = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../milestones/M03-n8n-foundation/evidence/functional-collection-attempt-20261025.json',
+        import.meta.url,
+      ),
+    ),
+  );
+  const r = await functionalLocalCase(
+    [
+      { id: 'native_management', command: 'charge_management', count: 3 },
+      { id: 'native_control', command: 'charge_control', count: 2 },
+      { id: 'close', command: 'close' },
+    ],
+    { rows: actual.publicJournal.rows },
+  );
   assert.equal(r.exit, 0);
   assert.deepEqual(r.journal.filter((row) => row.kind === 'functional_usage').at(-1).usage, {
-    management: 1664,
-    control: 1466,
-    combined: 3130,
-    vercel: 288,
+    management: 1864,
+    control: 1490,
+    combined: 3354,
+    vercel: 323,
   });
 });
 

@@ -361,13 +361,19 @@ side-effect IDs and every charged request. Actors remain0 of2 sequential starts,
 USD1 each/USD2 total and at most one new distinct item. Current cumulative
 ceilings at the reset were1728 Management/3584 Control/5312 combined/Vercel304;
 the reset itself added no allowance. The owner's subsequent25 October exact
-smaller-sequence approval raises only Management to2048 and Vercel to352,
+smaller-sequence approval raised only Management to2048 and Vercel to352,
 retaining1661/1464/3125/V288 charged and Control3584/Combined5312 unchanged.
 The [complete factored estimate and approval](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#complete-smaller-functional-allowance--approved-25-october-2026)
 includes recovery/shutdown; target one actor, retaining the original two/USD2
 maximum. Admit no new live batch unless its remaining operations and
 shutdown fit. The real collection/callback/item/cost, replay and invalid-callback
-checks remain pending.
+checks remain pending. After the safely closed no-actor attempt, the owner
+approved exactly **Approve Management2176 and Vercel400; retain all charges
+and other limits** on25 October2026. These are the current two ceilings; retain
+all1861 Management/1488 Control/3349 combined/Vercel323 charged,
+Control3584/Combined5312, two sequential actors/USD2 total and one new distinct
+item. The [complete269M/512C bound, including64V and recovery/shutdown](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#remaining-request-boundary-after-the-safely-closed-functional-attempt)
+is approved without resetting any attempt, counter or spending allowance.
 
 The b51 recovery entry remains disabled. At the decision checkpoint,
 execution31145 was retained and C999 archive was pending; the subsequent

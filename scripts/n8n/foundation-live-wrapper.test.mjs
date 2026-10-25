@@ -55,13 +55,13 @@ test(
 $needles=[Collections.Generic.List[string]]::new();$needles.Add('syntheticPrivateCanary12345')
 $knownWorkflowIds=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal);$null=$knownWorkflowIds.Add('OwnedSynthetic99')
 ${source.slice(start, end)}
-$valid=[pscustomobject]@{kind='m03_functional_result';status='ready';management=1661;control=1464;combined=3125;vercel=288;costUsd=0.5;workflowId='OwnedSynthetic99';code='M03_FUNCTIONAL_READY'}
+$valid=[pscustomobject]@{kind='m03_functional_result';status='ready';management=2176;control=1488;combined=3664;vercel=400;costUsd=0.5;workflowId='OwnedSynthetic99';code='M03_FUNCTIONAL_READY'}
 $null=Safe-M03FunctionalLine $valid
 if(Test-M03FunctionalResourceRestoration ([pscustomobject]@{kind='m03_functional_result';status='restored';code='M03_FUNCTIONAL_WINDOW_CLOSED'})){throw 'WINDOW_ONLY_CANNOT_ERASE_BYPASS'}
 if(Test-M03FunctionalResourceRestoration ([pscustomobject]@{kind='m03_functional_result';status='closed'})){throw 'UNQUALIFIED_CLOSE_CANNOT_ERASE_BYPASS'}
 if(-not(Test-M03FunctionalResourceRestoration ([pscustomobject]@{kind='m03_functional_result';status='restored';code='M03_FUNCTIONAL_RESOURCES_RESTORED'}))){throw 'EXACT_RESTORATION_REQUIRED'}
 if(-not(Test-M03FunctionalResourceRestoration ([pscustomobject]@{kind='m03_functional_result';status='closed';code='M03_FUNCTIONAL_CLOSED'}))){throw 'EXACT_CLOSED_REQUIRED'}
-foreach($change in @(@{key='management';value='1661'},@{key='management';value=2049},@{key='combined';value=5313},@{key='vercel';value=353},@{key='costUsd';value=[double]::NaN},@{key='status';value='unreviewed'},@{key='workflowId';value='ForeignWorkflow'},@{key='raw';value='secret'},@{key='apifyRunId';value='syntheticPrivateCanary12345'},@{key='apifyRunId';value=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes('syntheticPrivateCanary12345'))})){
+foreach($change in @(@{key='management';value='2176'},@{key='management';value=2177},@{key='combined';value=5313},@{key='vercel';value=401},@{key='costUsd';value=[double]::NaN},@{key='status';value='unreviewed'},@{key='workflowId';value='ForeignWorkflow'},@{key='raw';value='secret'},@{key='apifyRunId';value='syntheticPrivateCanary12345'},@{key='apifyRunId';value=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes('syntheticPrivateCanary12345'))})){
  $copy=$valid|ConvertTo-Json|ConvertFrom-Json;$copy|Add-Member -NotePropertyName $change.key -NotePropertyValue $change.value -Force
  $denied=$false;try{$null=Safe-M03FunctionalLine $copy}catch{$denied=$true};if(-not $denied){throw 'UNSAFE_FUNCTIONAL_OUTPUT'}
 }

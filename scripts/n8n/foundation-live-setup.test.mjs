@@ -19,59 +19,59 @@ function functionalScope() {
     projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
     windowId: '11111111-1111-4111-8111-111111111111',
     sourceCommitSha: sha,
-    caps: { management: 2048, control: 3584, combined: 5312, vercel: 352 },
-    carried: { management: 1661, control: 1464, combined: 3125, vercel: 288 },
+    caps: { management: 2176, control: 3584, combined: 5312, vercel: 400 },
+    carried: { management: 1861, control: 1488, combined: 3349, vercel: 323 },
     restoredBaselineVersions: foundationFunctionalBaselineVersions(),
   };
 }
-test('functional protected Preview retains288 charged requests,12 polls and18 shutdown requests', async () => {
+test('functional protected Preview retains323 charged requests,12 polls and18 shutdown requests', async () => {
   const scope = functionalScope();
-  let attempts = 1661;
+  let attempts = 1861;
   const managementBudget = {
     admit() {
       attempts++;
     },
     snapshot() {
-      return { attempts, maximum: 2048 };
+      return { attempts, maximum: 2176 };
     },
     attachTransport() {},
   };
   const f = fixture({
     functionalScope: scope,
     activeWindowId: scope.windowId,
-    maximumRequests: 352,
+    maximumRequests: 400,
     expectedMigrationCount: 15,
     managementBudget,
     fault: 'last_poll',
   });
   try {
-    assert.equal(f.setup.snapshot().requestCount, 288);
+    assert.equal(f.setup.snapshot().requestCount, 323);
     await f.setup.prepare();
     assert.equal(f.setup.snapshot().buildPollLimit, 12);
     const close = await f.setup.cleanup();
     assert.equal(close.state, 'setup_resources_removed');
     assert.equal(f.calls.length, 44);
-    assert.equal(close.requestCount, 332);
-    assert.equal(attempts, 1705);
-    assert.equal(f.rows.filter((r) => r.event === 'setup_attempt')[0].ordinal, 289);
-    assert.equal(f.rows.filter((r) => r.event === 'setup_attempt').at(-1).ordinal, 332);
+    assert.equal(close.requestCount, 367);
+    assert.equal(attempts, 1905);
+    assert.equal(f.rows.filter((r) => r.event === 'setup_attempt')[0].ordinal, 324);
+    assert.equal(f.rows.filter((r) => r.event === 'setup_attempt').at(-1).ordinal, 367);
     assert.equal(f.envs.length, 0);
     assert.deepEqual(f.bypass, {});
   } finally {
     f.setup.close();
   }
 });
-test('functional setup refuses scope drift, old windows and an unscoped352 journal before requests', () => {
+test('functional setup refuses scope drift, old windows and an unscoped400 journal before requests', () => {
   const scope = functionalScope();
   assert.throws(() =>
-    createFoundationLiveSetupJournal({ sourceCommitSha: sha, maximumRequests: 352, durableAppend() {} }),
+    createFoundationLiveSetupJournal({ sourceCommitSha: sha, maximumRequests: 400, durableAppend() {} }),
   );
   for (const edit of [
     (s) => {
       s.projectRef = 'hkiafqrcxaafdbcvjlzv';
     },
     (s) => {
-      s.caps.vercel = 353;
+      s.caps.vercel = 401;
     },
     (s) => {
       s.carried.vercel = 0;
@@ -89,7 +89,7 @@ test('functional setup refuses scope drift, old windows and an unscoped352 journ
       fixture({
         functionalScope: changed,
         activeWindowId: changed.windowId,
-        maximumRequests: 352,
+        maximumRequests: 400,
         expectedMigrationCount: 15,
       }),
     );
