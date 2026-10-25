@@ -2,7 +2,7 @@
 import {
   mkdtempSync,
   mkdirSync,
-  readFileSync,
+  readFileSync as nativeReadFileSync,
   writeFileSync,
   rmSync,
   realpathSync,
@@ -15,79 +15,90 @@ import { createHash } from 'node:crypto';
 
 const sourceRoot = fileURLToPath(new URL('../../', import.meta.url));
 const digest = (text) => createHash('sha256').update(text).digest('hex');
-export async function syntheticProjectVerifiedContinuation({
-  approved = true,
-  cleanupFault,
-  priorFault,
-  projectFault,
-  historicalSetupEvents,
-  technical21Closed = false,
-  technical21Fault,
-  post20UiStart = technical21Closed,
-  post20UiFault,
-  technical20PreReady = post20UiStart,
-  technical20PreReadyFault,
-  technical19Restored = technical20PreReady,
-  technical20SourceSelected = technical20PreReady,
-  technical19Fault,
-  technical18Closed = technical19Restored,
-  technical18Fault,
-  technical17PreReady = technical18Closed,
-  technical17PreReadyFault,
-  technical16Settled = technical17PreReady,
-  technical16MixedControl = technical17PreReady,
-  technical16CleanupRequests = 85,
-  technical16CleanupRetry = null,
-  technical16Fault,
-  unadmittedWf00Reconciled = technical16Settled,
-  unadmittedWf00Fault,
-  restoredBrowserRetryDiscovery = unadmittedWf00Reconciled,
-  restoredBrowserRetryDiscoveryFault,
-  restoredBrowserDiscovery = restoredBrowserRetryDiscovery,
-  restoredBrowserDiscoveryFault,
-  runtimeRestorationClosed = restoredBrowserDiscovery,
-  runtimeRestorationFault,
-  runtimeRestorationAllocation = restoredBrowserDiscovery,
-  runtimeRestorationAllocationFault,
-  runtimePreparationClosed = runtimeRestorationClosed,
-  runtimePreparationFault,
-  runtimeMetadataAllocation = runtimeRestorationClosed,
-  runtimeMetadataAllocationFault,
-  runtimeSourceUnverified = false,
-  adminAdmissionReadonly = runtimePreparationClosed,
-  adminAdmissionReadonlyFault,
-  catalogReadonly = adminAdmissionReadonly,
-  catalogReadonlyFault,
-  catalogManagementAllocation = adminAdmissionReadonly,
-  catalogManagementAllocationFault,
-  preprivateAdmin = catalogReadonly,
-  preprivateAdminFault,
-  closedFixture = preprivateAdmin,
-  closedFixtureFault,
-  controlManagementAllocation = closedFixture,
-  controlManagementAllocationFault,
-  closedPreparation = closedFixture,
-  closedPreparationFault,
-  managementAllocation = closedPreparation,
-  managementAllocationFault,
-  wf70Readback = managementAllocation,
-  wf70ReadbackFault,
-  baselineDiscovery = wf70Readback,
-  baselineDiscoveryFault,
-  nativeBrowserDiscovery = baselineDiscovery,
-  nativeBrowserDiscoveryFault,
-  nativeDiscovery = nativeBrowserDiscovery,
-  nativeDiscoveryFault,
-  readonlyPrepare = nativeDiscovery,
-  readonlyPrepareFault,
-  closedWindow = readonlyPrepare,
-  closedFault,
-  restoreFault,
-  allocationFault,
-  proposedBudgetApproved = readonlyPrepare,
-  effectful = closedWindow,
-  effectFault,
-} = {}) {
+export async function syntheticProjectVerifiedContinuation(
+  {
+    approved = true,
+    cleanupFault,
+    priorFault,
+    projectFault,
+    historicalSetupEvents,
+    technical21Closed = false,
+    technical21Fault,
+    post20UiStart = technical21Closed,
+    post20UiFault,
+    technical20PreReady = post20UiStart,
+    technical20PreReadyFault,
+    technical19Restored = technical20PreReady,
+    technical20SourceSelected = technical20PreReady,
+    technical19Fault,
+    technical18Closed = technical19Restored,
+    technical18Fault,
+    technical17PreReady = technical18Closed,
+    technical17PreReadyFault,
+    technical16Settled = technical17PreReady,
+    technical16MixedControl = technical17PreReady,
+    technical16CleanupRequests = 85,
+    technical16CleanupRetry = null,
+    technical16Fault,
+    unadmittedWf00Reconciled = technical16Settled,
+    unadmittedWf00Fault,
+    restoredBrowserRetryDiscovery = unadmittedWf00Reconciled,
+    restoredBrowserRetryDiscoveryFault,
+    restoredBrowserDiscovery = restoredBrowserRetryDiscovery,
+    restoredBrowserDiscoveryFault,
+    runtimeRestorationClosed = restoredBrowserDiscovery,
+    runtimeRestorationFault,
+    runtimeRestorationAllocation = restoredBrowserDiscovery,
+    runtimeRestorationAllocationFault,
+    runtimePreparationClosed = runtimeRestorationClosed,
+    runtimePreparationFault,
+    runtimeMetadataAllocation = runtimeRestorationClosed,
+    runtimeMetadataAllocationFault,
+    runtimeSourceUnverified = false,
+    adminAdmissionReadonly = runtimePreparationClosed,
+    adminAdmissionReadonlyFault,
+    catalogReadonly = adminAdmissionReadonly,
+    catalogReadonlyFault,
+    catalogManagementAllocation = adminAdmissionReadonly,
+    catalogManagementAllocationFault,
+    preprivateAdmin = catalogReadonly,
+    preprivateAdminFault,
+    closedFixture = preprivateAdmin,
+    closedFixtureFault,
+    controlManagementAllocation = closedFixture,
+    controlManagementAllocationFault,
+    closedPreparation = closedFixture,
+    closedPreparationFault,
+    managementAllocation = closedPreparation,
+    managementAllocationFault,
+    wf70Readback = managementAllocation,
+    wf70ReadbackFault,
+    baselineDiscovery = wf70Readback,
+    baselineDiscoveryFault,
+    nativeBrowserDiscovery = baselineDiscovery,
+    nativeBrowserDiscoveryFault,
+    nativeDiscovery = nativeBrowserDiscovery,
+    nativeDiscoveryFault,
+    readonlyPrepare = nativeDiscovery,
+    readonlyPrepareFault,
+    closedWindow = readonlyPrepare,
+    closedFault,
+    restoreFault,
+    allocationFault,
+    proposedBudgetApproved = readonlyPrepare,
+    effectful = closedWindow,
+    effectFault,
+  } = {},
+  { readSourceFileSync = nativeReadFileSync } = {},
+) {
+  const readFileSync = (path, ...options) => {
+    const child = relative(sourceRoot, path);
+    if (/^scripts\/(?:n8n|db)\/out\//.test(child.replaceAll('\\', '/')))
+      throw Error('SYNTHETIC_ACTUAL_OUTPUT_READ_BLOCKED');
+    return child !== '' && !child.startsWith('..') && !isAbsolute(child)
+      ? readSourceFileSync(path, ...options)
+      : nativeReadFileSync(path, ...options);
+  };
   const directory = mkdtempSync(join(tmpdir(), 'emr-project-verified-synthetic-'));
   const ownedDirectory = realpathSync(directory);
   const ownedTempRoot = realpathSync(tmpdir());
@@ -4390,13 +4401,27 @@ export async function syntheticProjectVerifiedContinuation({
       seed = (p) => JSON.parse(readFileSync(join(sourceRoot, p), 'utf8')),
       pinDocument = (r) => {
         for (const p of Object.keys(r.pins)) {
-          if (!existsSync(join(directory, p))) put(p, readFileSync(join(sourceRoot, p)));
+          if (!existsSync(join(directory, p))) {
+            if (syntheticPublicInputs.has(p)) put(p, syntheticPublicInputs.get(p));
+            else {
+              if (/^scripts\/(?:n8n|db)\/out\//.test(p)) throw Error('SYNTHETIC22_UNKNOWN_PUBLIC_INPUT');
+              put(p, readFileSync(join(sourceRoot, p)));
+            }
+          }
           r.pins[p] = digest(readFileSync(join(directory, p)));
         }
       },
       r = seed(relative),
       failed = seed(failedReadRelative),
       current = seed(currentReadRelative),
+      actualRestore = seed(restoreRelative),
+      syntheticPublicInputs = new Map([
+        [live + 'technical21-wf00-baseline-read-intent.json', json(r.readonlyDiagnostic.intent)],
+        [live + 'technical21-wf00-baseline-read-result.json', json(r.readonlyDiagnostic.result)],
+        [live + 'technical21-finite-difference-read-result.json', json(failed.actualResult)],
+        [live + 'technical21-finite-difference-retry-intent.json', json(current.rawIntent)],
+        [live + 'technical21-finite-difference-retry-result.json', json(current.rawResult)],
+      ]),
       stem = live + 'project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-21',
       start = Date.parse('2026-10-25T11:50:00.000Z'),
       admission = {
@@ -4417,6 +4442,44 @@ export async function syntheticProjectVerifiedContinuation({
         parentProcessId: 91230,
         claimedAt: start + 1000,
       };
+    // Only tracked public projections seed this synthetic profile. Unembedded
+    // historical files are finite synthetic attestations, never workstation output.
+    for (const [leaf, projection] of [
+      ['technical21-inventory-seal-used.json', r.readonlyDiagnostic.consumerSourceSeal],
+      ['technical21-finite-difference-retry-inventory-seal-used.json', current.consumerSourceSeal],
+      [
+        'technical21-current-wf00-restore-reconciliation-inventory-seal-used.json',
+        current.consumerSourceSeal,
+      ],
+    ])
+      syntheticPublicInputs.set(
+        live + leaf,
+        json({
+          version: 1,
+          syntheticPublicSeal: true,
+          files: projection.files,
+          baselineFiles: projection.baselineFiles,
+        }),
+      );
+    for (const leaf of [
+      'technical21-disposable-cleanup.ps1',
+      'technical21-finite-difference-read-intent.json',
+      'technical21-finite-difference-inventory-seal-used.json',
+      'technical21-ui-guard-local-followup.json',
+      'technical21-current-wf00-restore-intent.json',
+      'technical21-current-wf00-restore-public-seal-used.json',
+      'technical21-current-wf00-restore-public-check.json',
+      'technical21-current-wf00-restore-physical-observation.json',
+    ])
+      syntheticPublicInputs.set(
+        live + leaf,
+        json({
+          kind: 'synthetic_preserved_public_artifact',
+          relative: live + leaf,
+          sourceReceipts: [relative, failedReadRelative, currentReadRelative, restoreRelative],
+          hostedEvidence: false,
+        }),
+      );
     const managementPath = live + 'management.jsonl',
       controlPath = live + 'control.jsonl';
     put(
@@ -4565,7 +4628,7 @@ export async function syntheticProjectVerifiedContinuation({
         },
       ],
       restored = {
-        ...seed(ev + 'wf00-current-restore-result-20261025.json'),
+        ...actualRestore,
         kind: 'm03_wf00_current_restore_result',
         version: 1,
         observedAt: '2026-10-25T11:58:00.000Z',
@@ -4580,7 +4643,7 @@ export async function syntheticProjectVerifiedContinuation({
         restoredVersionId,
         usageAfter: { management: 1340, control: 1250, combined: 2590, vercel: 254, nativeExecutions: 4 },
         pins: {
-          ...seed(ev + 'wf00-current-restore-result-20261025.json').pins,
+          ...actualRestore.pins,
           [relative]: digest(json(r)),
           [failedReadRelative]: digest(json(failed)),
           [currentReadRelative]: digest(json(current)),
@@ -4589,14 +4652,38 @@ export async function syntheticProjectVerifiedContinuation({
           'milestones/M03-n8n-foundation/evidence/wf00-restore-approval-20261023.json': 'pending',
         },
       };
-    const actual = seed(ev + 'wf00-current-restore-result-20261025.json');
+    const actual = actualRestore;
     restored.coordinatorFailure = structuredClone(actual.coordinatorFailure);
     restored.coordinatorFailure.observerResult.processId = 91240;
     restored.independentReadback = structuredClone(actual.independentReadback);
     restored.independentReadback.rawResult.publicResult.inventory.observedVersionId = restoredVersionId;
     restored.closureEvidence = structuredClone(actual.closureEvidence);
     restored.closureEvidence.observedAt = '2026-10-25T11:57:00.000Z';
-    const intent = seed(restored.independentReadback.intentRelative);
+    const intent = {
+      kind: 'm03_wf00_post_restore_read_intent',
+      version: 1,
+      environment: 'dev',
+      workflowId,
+      maximumRequests: 1,
+      method: 'GET',
+      mutationsAllowed: false,
+      priorUsage: {
+        management: 1339,
+        control: 1250,
+        combined: 2589,
+        vercel: 254,
+        nativeExecutions: 4,
+        actorStarts: 0,
+      },
+      reservedUsage: {
+        management: 1340,
+        control: 1250,
+        combined: 2590,
+        vercel: 254,
+        nativeExecutions: 4,
+        actorStarts: 0,
+      },
+    };
     intent.expectedVersion = restoredVersionId;
     intent.observedAt = '2026-10-25T11:56:00.000Z';
     if (technical21Fault === 'lost-read-counter') intent.reservedUsage.management--;

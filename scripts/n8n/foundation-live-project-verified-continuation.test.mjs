@@ -4061,6 +4061,34 @@ test('effectful raw journal and preflight prefixes cannot be edited, normalized 
     }
 });
 
+test('sibling22 fixture is portable when actual n8n and database ignored output reads are denied', async () => {
+  const sourceReads = [];
+  const f = await syntheticProjectVerifiedContinuation(
+    { technical21Closed: true },
+    {
+      readSourceFileSync(path, ...options) {
+        const normalized = String(path).replaceAll('\\', '/');
+        assert.ok(
+          !/\/scripts\/(?:n8n|db)\/out\//.test(normalized),
+          'actual ignored output read: ' + normalized,
+        );
+        sourceReads.push(normalized);
+        return readFileSync(path, ...options);
+      },
+    },
+  );
+  try {
+    const p = f.claim(f.admit());
+    assert.equal(
+      f.module.foundationProjectVerifiedContinuationResumeCheckpoint(p).technicalAttemptOrdinal,
+      22,
+    );
+    assert.ok(sourceReads.some((path) => path.endsWith('/wf00-current-restore-result-20261025.json')));
+  } finally {
+    f.cleanup();
+  }
+});
+
 test('typed21 baseline refusal and exact owned restoration permit only sibling22', async () => {
   const f = await syntheticProjectVerifiedContinuation({ technical21Closed: true });
   try {
