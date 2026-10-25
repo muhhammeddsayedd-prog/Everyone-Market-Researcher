@@ -1,5 +1,13 @@
 # M03 retained fixture audit correction — 24 October 2026
 
+## Approved allocation and fresh-window preparation — 25 October 2026 Cairo
+
+The owner replied **Approve Management1728, Control3584, Combined5312 and Vercel304; retain all charges and other limits** to the exactd44fbf9 packet. The [separate immutable approval](remaining-allocation-after-native-prefix-fix-approval-20261025.json), SHAa80ea5491487b22df91c07deb4ab94b3854fe037a1f7458f25fd3afcf2a4619a, retains1317/1246/2563/V254/native3/actors0 and every original actor/spending/provider/data/retention limit. The original proposed packet and actual19 failure/cleanup evidence remain unchanged.
+
+All five CI40147772331 jobs and Vercel passed atd44fbf918430e5a1d7d2a452e23acbab8ef82ca6. The closed19 journal tails require qualification in the existing guard; no20 readiness or admission is claimed. The sixth SQL windowedbc is permanently closed. The fresh, locally selected seventh UUID is e2be1a67-f6db-4c90-bfd2-671c5db9b90a, using the existing forward-window mechanism and15 unchanged applied migrations. Six-window closure and actual19 fixture-audit/readback proofs must precede its owner-only registration. A real compatible committed application source and successful required CI will be selected after local implementation; no future head is fabricated.
+
+Application/protocol compatibility is implemented locally as one exact UUID addition to existing finite enums, retaining cross-window, unknown-window and production denials. Native contract RED4→GREEN5 covers gateway compilation, SUB replay binding, nonconnecting Writer Close construction, settlement window isolation and copied/missing runtime-proof denial. The two affected application suites RED2→GREEN19/19 pass. Formatting/lint pass. These are local results; the fresh window is unadmitted and A–D remains incomplete. The existing administrative reader, native prerequisites and cap adapters are being reviewed/tested before any credential use. No migration, workflow execution, actor or provider spend has occurred in this continuation. No owner input is currently missing.
+
 ## Actual preparation19, verified restoration and local prefix fix — 25 October 2026 Cairo
 
 At9e22632115e7fbe6fd509b96a6fc88fe217688fe, all five CI40146725378 jobs and Vercel passed. The renewed native session covers75 minutes and the original sealed wrapper CheckOnly passed before private admission. Actual19 saved protected Preview dpl_8Qy4Ywx8aEZ6j3ueVm3TaAP7LB3Y, preserved15 dev migrations, provisioned the owned logical window, reactivated retained C999 and completed runtime setup. Preparation then stopped before a workflow or actor execution. Its raw blocked result/native1 remains unchanged and does not prove business acceptance.
