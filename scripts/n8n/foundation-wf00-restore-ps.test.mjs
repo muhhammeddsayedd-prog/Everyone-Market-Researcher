@@ -83,6 +83,21 @@ function currentFixtureInputs(readSource = readFileSync) {
   const bytes = readSource(wf00CurrentRestoreScope.receiptFile),
     receipt = JSON.parse(bytes),
     inputs = new Map([[wf00CurrentRestoreScope.receiptFile, bytes]]),
+    runtimeReceiptFile =
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json',
+    // Reconstruct the immutable seal used by the historical read. The current
+    // inventory seal changes whenever its consumer changes and is not evidence
+    // of the old executable fingerprints. The receipt pins the exact old bytes.
+    historicalSeal = {
+      version: receipt.version,
+      host: receipt.host,
+      projectId: receipt.projectId,
+      files: receipt.consumerSourceSeal.files,
+      baselineFiles: receipt.consumerSourceSeal.baselineFiles,
+      runtimeFiles: {
+        [runtimeReceiptFile]: createHash('sha256').update(readSource(runtimeReceiptFile)).digest('hex'),
+      },
+    },
     reconstructed = new Map([
       [
         'scripts/n8n/out/foundation/live/technical21-finite-difference-retry-intent.json',
@@ -94,7 +109,7 @@ function currentFixtureInputs(readSource = readFileSync) {
       ],
       [
         'scripts/n8n/out/foundation/live/technical21-finite-difference-retry-inventory-seal-used.json',
-        readSource('scripts/n8n/m03-inventory-seal.json'),
+        Buffer.from(JSON.stringify(historicalSeal, null, 2) + '\n'),
       ],
     ]);
   for (const [relative, expected] of Object.entries(receipt.pins)) {
@@ -111,6 +126,8 @@ test('current WF00 fixture reconstructs exact pins in a clean checkout without i
     inputs = currentFixtureInputs((path, ...options) => {
       const relative = String(path).replaceAll('\\', '/');
       if (/(?:^|\/)scripts\/(?:n8n|db)\/out\//.test(relative)) throw Error('REAL_IGNORED_OUTPUT_READ_DENIED');
+      if (relative === 'scripts/n8n/m03-inventory-seal.json')
+        throw Error('MUTABLE_CURRENT_INVENTORY_SEAL_READ_DENIED');
       reads.push(relative);
       return readFileSync(path, ...options);
     });
@@ -122,7 +139,29 @@ test('current WF00 fixture reconstructs exact pins in a clean checkout without i
   );
   for (const [relative, hash] of Object.entries(record.pins))
     assert.equal(createHash('sha256').update(inputs.get(relative)).digest('hex'), hash, relative);
-  assert.ok(reads.includes('scripts/n8n/m03-inventory-seal.json'));
+  assert.equal(reads.includes('scripts/n8n/m03-inventory-seal.json'), false);
+  assert.ok(
+    reads.includes(
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json',
+    ),
+  );
+});
+
+test('current WF00 historical fixture refuses changed source fingerprints and runtime evidence', () => {
+  for (const changed of ['source', 'runtime'])
+    assert.throws(() =>
+      currentFixtureInputs((path, ...options) => {
+        const bytes = readFileSync(path, ...options);
+        if (changed === 'source' && path === wf00CurrentRestoreScope.receiptFile) {
+          const record = JSON.parse(bytes);
+          record.consumerSourceSeal.files['scripts/n8n/inventory.mjs'] = '0'.repeat(64);
+          return Buffer.from(JSON.stringify(record, null, 2) + '\n');
+        }
+        if (changed === 'runtime' && String(path).endsWith('technical13-reconciliation-20261024.json'))
+          return Buffer.from('{}\n');
+        return bytes;
+      }),
+    );
 });
 
 function fixture(body) {
