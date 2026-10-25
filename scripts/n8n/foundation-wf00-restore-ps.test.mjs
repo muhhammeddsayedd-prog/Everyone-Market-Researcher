@@ -79,6 +79,52 @@ const environment = () =>
     ),
   );
 
+function currentFixtureInputs(readSource = readFileSync) {
+  const bytes = readSource(wf00CurrentRestoreScope.receiptFile),
+    receipt = JSON.parse(bytes),
+    inputs = new Map([[wf00CurrentRestoreScope.receiptFile, bytes]]),
+    reconstructed = new Map([
+      [
+        'scripts/n8n/out/foundation/live/technical21-finite-difference-retry-intent.json',
+        Buffer.from(JSON.stringify(receipt.rawIntent, null, 2) + '\n'),
+      ],
+      [
+        'scripts/n8n/out/foundation/live/technical21-finite-difference-retry-result.json',
+        Buffer.from(JSON.stringify(receipt.rawResult, null, 2) + '\n'),
+      ],
+      [
+        'scripts/n8n/out/foundation/live/technical21-finite-difference-retry-inventory-seal-used.json',
+        readSource('scripts/n8n/m03-inventory-seal.json'),
+      ],
+    ]);
+  for (const [relative, expected] of Object.entries(receipt.pins)) {
+    if (!reconstructed.has(relative)) assert.doesNotMatch(relative, /(?:^|\/)scripts\/(?:n8n|db)\/out\//);
+    const value = reconstructed.get(relative) ?? readSource(relative);
+    assert.equal(createHash('sha256').update(value).digest('hex'), expected, relative);
+    inputs.set(relative, value);
+  }
+  return inputs;
+}
+
+test('current WF00 fixture reconstructs exact pins in a clean checkout without ignored output reads', () => {
+  const reads = [],
+    inputs = currentFixtureInputs((path, ...options) => {
+      const relative = String(path).replaceAll('\\', '/');
+      if (/(?:^|\/)scripts\/(?:n8n|db)\/out\//.test(relative)) throw Error('REAL_IGNORED_OUTPUT_READ_DENIED');
+      reads.push(relative);
+      return readFileSync(path, ...options);
+    });
+  const record = JSON.parse(inputs.get(wf00CurrentRestoreScope.receiptFile));
+  assert.equal(inputs.size, 9);
+  assert.equal(
+    createHash('sha256').update(inputs.get(wf00CurrentRestoreScope.receiptFile)).digest('hex'),
+    wf00CurrentRestoreScope.receiptSha256,
+  );
+  for (const [relative, hash] of Object.entries(record.pins))
+    assert.equal(createHash('sha256').update(inputs.get(relative)).digest('hex'), hash, relative);
+  assert.ok(reads.includes('scripts/n8n/m03-inventory-seal.json'));
+});
+
 function fixture(body) {
   const root = mkdtempSync(join(tmpdir(), 'emr-wf00-private-protocol-')),
     repo = join(root, 'repo');
@@ -89,11 +135,10 @@ function fixture(body) {
     writeFileSync(target, readFileSync(relative));
   }
   const priorJournal = join(repo, 'scripts/n8n/out/foundation/wf00-restore-20261023.jsonl');
-  const currentReceipt = JSON.parse(readFileSync(wf00CurrentRestoreScope.receiptFile, 'utf8'));
-  for (const relative of [wf00CurrentRestoreScope.receiptFile, ...Object.keys(currentReceipt.pins)]) {
+  for (const [relative, bytes] of currentFixtureInputs()) {
     const target = join(repo, relative);
     mkdirSync(dirname(target), { recursive: true });
-    writeFileSync(target, readFileSync(relative));
+    writeFileSync(target, bytes);
   }
   mkdirSync(dirname(priorJournal), { recursive: true });
   writeFileSync(
