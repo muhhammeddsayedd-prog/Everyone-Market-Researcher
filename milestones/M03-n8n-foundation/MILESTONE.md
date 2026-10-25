@@ -436,7 +436,15 @@ The next functional outcome is the one-page asynchronous smoke, actual callback
 completion, replay and invalid-callback proof, using existing helpers/native
 evidence. Count the remaining operations and shutdown before admission; the old
 whole-batch plan is superseded by the approved smaller-sequence allocation:
-Management2048/Vercel352, retaining1661/1464/3125/V288 and all other caps.
+Management2048/Vercel352. The first smaller-sequence attempt closed safely at
+1861/1488/3349/V323, actors0, after a guarded WF99 staging omission; actual
+restricted Close, all25 baseline definitions/Machine, Preview cleanup and C999
+archive pass. The local one-line fix and61 causal plan/control tests do not
+establish collection acceptance. Preserve the legitimate restored-version
+checkpoint and qualify it before another baseline check. The
+[current complete remaining bound and proposed allowance](evidence/dev-acceptance-fixture-gap-correction-20261024.md#remaining-request-boundary-after-the-safely-closed-functional-attempt)
+needs269M/512C, including64V. Management2176/Vercel400 is proposed only, not
+approved; Control3584/Combined5312 and every prior charge remain unchanged.
 The [factored estimate](evidence/dev-acceptance-fixture-gap-correction-20261024.md#complete-smaller-functional-allowance--approved-25-october-2026)
 includes recovery and shutdown; accepted groups and retained31145 are not rerun.
 Do not reopen the closed seventh SQL window or reset prior counters. Freeze

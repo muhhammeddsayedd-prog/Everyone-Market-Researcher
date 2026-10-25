@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { isDeepStrictEqual } from 'node:util';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
-import { createFoundationRuntimePlan, materializeFoundationRuntimeCase } from './foundation-runtime-plan.mjs';
+import {
+  createFoundationRuntimePlan,
+  materializeFoundationRuntimeCase,
+  foundationFunctionalBaselineVersions,
+} from './foundation-runtime-plan.mjs';
 import { prepareFoundationRuntimeMachinePatch } from './foundation-runtime-machine.mjs';
 import {
   createFoundationRuntimeJournal,
@@ -420,7 +424,14 @@ test('ordinary WF00 guards require the actual native pin while keeping every oth
   );
 });
 
-function fixture({ durableAppend, fault, sharedLimit = 512, machineUpdatedAt, activeWindowId } = {}) {
+function fixture({
+  durableAppend,
+  fault,
+  sharedLimit = 512,
+  machineUpdatedAt,
+  activeWindowId,
+  functionalScope,
+} = {}) {
   const bindings = JSON.parse(
     readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
   );
@@ -444,7 +455,14 @@ function fixture({ durableAppend, fault, sharedLimit = 512, machineUpdatedAt, ac
     protectionTransportVerified: true,
     sqlAudienceBindingVerified: true,
   };
-  const plan = createFoundationRuntimePlan({ bindings, transport, records, setup, activeWindowId });
+  const plan = createFoundationRuntimePlan({
+    bindings,
+    transport,
+    records,
+    setup,
+    activeWindowId,
+    ...(functionalScope ? { functionalScope } : {}),
+  });
   let serial = 0,
     attempts = 0;
   const calls = [],
@@ -581,6 +599,53 @@ function fixture({ durableAppend, fault, sharedLimit = 512, machineUpdatedAt, ac
     },
   };
 }
+
+test('functional setup stages guarded WF-99 before completion and restores the exact inactive baseline', async () => {
+  const functionalScope = {
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
+    windowId: '11111111-1111-4111-8111-111111111111',
+    sourceCommitSha: 'a'.repeat(40),
+    caps: { management: 2048, control: 3584, combined: 5312, vercel: 352 },
+    carried: { management: 1661, control: 1464, combined: 3125, vercel: 288 },
+    restoredBaselineVersions: foundationFunctionalBaselineVersions(),
+  };
+  const f = fixture({ functionalScope, activeWindowId: functionalScope.windowId });
+  const result = await runFoundationRuntimeSetup(f.plan, f.ports);
+  assert.equal(result.status, 'runtime_setup_verified');
+  assert.equal(result.requestCount, 81);
+  assert.equal(foundationRuntimeState(f.plan, f.journal).setupComplete, true);
+  assert.equal(f.journal.rows.at(-1).event, 'setup_complete');
+  const smoke = f.plan.runtime.find((r) => r.key === 'WF-99');
+  assert.equal(runtimeGraphHash(f.workflows.get(smoke.id)), runtimeGraphHash(smoke.body));
+  assert.equal(f.workflows.get(smoke.id).active, false);
+  assert.equal(
+    f.workflows.get(smoke.id).nodes.find((n) => n.name === 'Start exact actor once (disabled)').disabled,
+    true,
+  );
+  assert.equal(
+    f.calls.filter(
+      (c) => c.method === 'PUT' && c.path === '/api/v1/workflows/' + smoke.id + '?publishIfActive=false',
+    ).length,
+    1,
+  );
+  assert.equal(
+    (await restoreFoundationRuntime(f.plan, f.ports)).status,
+    'exact_staging_restored_unpublished',
+  );
+  const final = foundationRuntimeState(f.plan, f.journal);
+  assert.equal(final.restoreComplete, true);
+  assert.equal(final.machineRebound, false);
+  assert.equal(
+    Object.values(final.workflows).every((w) => w.activeVersionId === null),
+    true,
+  );
+  for (const baseline of f.plan.baseline)
+    assert.equal(
+      checkpointDiagnostics.foundationRuntimeObservedGraphHash(f.workflows.get(baseline.id), baseline),
+      runtimeGraphHash(baseline.body),
+    );
+});
 
 test('native settings-only save retains its version and structural saves rotate before exact readback', async () => {
   const f = fixture();

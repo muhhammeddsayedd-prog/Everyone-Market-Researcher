@@ -1,0 +1,231 @@
+{
+  "kind": "m03_functional_public_restoration_projection",
+  "version": 1,
+  "observedAt": "2026-10-25T19:11:48.1242101+00:00",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "purpose": "Current closed development baseline only; does not authorize hosted operations or complete collection acceptance.",
+  "actualReceipt": {
+    "path": "milestones/M03-n8n-foundation/evidence/functional-collection-attempt-20261025.json",
+    "sha256": "5067c7893fb50d2bb135ae0c5f521c54af2881033c66d86c9f5d230e3bc1b5f0"
+  },
+  "priorBaselineProjection": {
+    "path": "milestones/M03-n8n-foundation/evidence/technical22-restored-workflows-projection-20261025.json",
+    "sha256": "9d96a335d6b47ce709ebbde71de0d0e679979298cb144dc021381e59a2c4cd8d"
+  },
+  "derivation": {
+    "windowId": "4000f48f-7426-4606-a01e-a6e49aa207d2",
+    "sourceCommitSha": "73f11f05df3d293e93b27f4dc8649134b09648d2",
+    "runtimePlanHash": "a888f4f7477bfc0e41fbd5796cba8d8d766d30afdffadbaa468df53429d84c2e",
+    "runtimeRequests": 145,
+    "finalReadbackCount": 25,
+    "setupComplete": false,
+    "restoreComplete": true,
+    "pendingMutation": null,
+    "machineRebound": false,
+    "unchangedCanonicalGraphHashes": true,
+    "existingReducerAudit": "Original committed73f11 plan source and existing foundationRuntimeState independently verified the complete actual runtime journal without mutation or network."
+  },
+  "restored": [
+    {
+      "key": "WF-10",
+      "workflowId": "4JMHLDBSdgGxhPlk",
+      "restoredVersionId": "d3191e0b-80a7-48c0-953b-f31fc78899de",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "ac078c63dd7c2df53a64a45bf2a69d524cf2cc1ac3e23de03731706799264088"
+    },
+    {
+      "key": "WF-11",
+      "workflowId": "Oq19AMI9C3B1wbo9",
+      "restoredVersionId": "9ffb2a4e-1747-477f-b1d2-69a14a803155",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "5f0e2bfc36a4a7ce4eec5a033df865c97a294954d79bcaaefb139b2ab7635240"
+    },
+    {
+      "key": "WF-12",
+      "workflowId": "8pz1lF0xPDQCs3ab",
+      "restoredVersionId": "8a23fbff-e07d-4180-8bbc-2ef1db8512c3",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "23b99602901d7a55a90b95976240ec5bc1fa7f8219045b6f9f4f179f43d354a7"
+    },
+    {
+      "key": "WF-13",
+      "workflowId": "F7S8Llr0ZSaSuw4T",
+      "restoredVersionId": "f8f7d305-abb6-4836-a9e8-7def4371fa78",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "a7c22270f87ef11f6c41ea385be6e4dba0c828b1d00546a4236a90627af8248f"
+    },
+    {
+      "key": "WF-18",
+      "workflowId": "VbJn4mLYm0sGy1X2",
+      "restoredVersionId": "13560120-52e8-4045-adf7-ed28ad0bc884",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "6e32459186e9ab6036a21ac0ba8f28cb67439269c3f8a041fc9005268c331fdd"
+    },
+    {
+      "key": "WF-18b",
+      "workflowId": "h6lUXSGN5sV2jxuQ",
+      "restoredVersionId": "1d0a7886-106b-4be9-bb83-1cbad52ae29f",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "acc5861e3d69d7b7ad25fc782fe51916e2eccedf6e725b42d7ea6e9a05598551"
+    },
+    {
+      "key": "WF-21",
+      "workflowId": "02yefa9uEPYwmM3N",
+      "restoredVersionId": "70200b45-5c84-4117-a1be-94ec9fa7354a",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "092c5b4c29f23fe8dd0bec079a4489cd9470f491fb0022907aa94a5de47c5417"
+    },
+    {
+      "key": "WF-22",
+      "workflowId": "83LybyawRpHXbjx6",
+      "restoredVersionId": "4650fcfe-3b9b-47ae-ad9d-85eb8656b1df",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "ed3f164ab0a9edce8940c832a2ac18a4d884eeb3d019c44ab1595f184b0766e0"
+    },
+    {
+      "key": "WF-23",
+      "workflowId": "qzgT9giRQJ7eMDmV",
+      "restoredVersionId": "03b0709e-ba83-4314-ad4b-98135143a6b7",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "d707c8fe3d30465bddd36ffe8a88a91baebde525fe2f51c8aadda6dddfee73d5"
+    },
+    {
+      "key": "WF-30",
+      "workflowId": "mySfLZbU7I1850uP",
+      "restoredVersionId": "5248f711-8983-42fc-978d-2014b8446887",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "cb8b5a86648e745f60878d178c303c700f588ce1c5b9d8278be41d3f4625ee2b"
+    },
+    {
+      "key": "WF-32",
+      "workflowId": "kkAGgnbD8NjWHMKC",
+      "restoredVersionId": "8ad0d3d7-d1a3-40eb-a852-98a19c3f51c6",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "5298c93224035dee9d31856577bd1215090b33ef722a6f5dff96385b54f102f8"
+    },
+    {
+      "key": "WF-40",
+      "workflowId": "ze8T1o0Cx0OGi3Wd",
+      "restoredVersionId": "47cccb7a-c30a-4ed0-87d5-9af372374364",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "2dbc89f65ad2c8b4b145e04efebf6c922d3770021e5d6d7f2dbdb8c115be2f6e"
+    },
+    {
+      "key": "WF-50",
+      "workflowId": "2U6nPs3uJkmjij82",
+      "restoredVersionId": "6054e8f3-771b-4325-b7df-5bde7c2211d8",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "ab26fea358d5e7596d9406de269355e1e17fd5faecba76f841aec6a514ae6570"
+    },
+    {
+      "key": "WF-70",
+      "workflowId": "S6KDFsx5IjQRf6tm",
+      "restoredVersionId": "d8f518bb-c74b-4158-bbca-8809a652539d",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "66e33344760b72ff2b09885e68a0161bc080d5ac71650cff393f7e96d9792920"
+    },
+    {
+      "key": "WF-80",
+      "workflowId": "gBDmjIIEoM6XC7Wi",
+      "restoredVersionId": "b250a5be-abb0-4135-9552-a97e1ee065c7",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "0328c415c3f47c7e5dade7c008e86e4a9351d8adb987d6681c658561d345a651"
+    },
+    {
+      "key": "WF-00",
+      "workflowId": "MzimjpsuyPuK7SKe",
+      "restoredVersionId": "4f6e943b-5a31-43df-b379-5ea9b8fac87d",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "ecd7a73f59581c85ad740fb488147a5807b0c764acd9f97fb09ba9c728b0c808"
+    },
+    {
+      "key": "WF-19",
+      "workflowId": "TsqSMa5MlO3QBLkt",
+      "restoredVersionId": "7cd9dde6-cbcd-4562-b6ad-1c5b538219b8",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "9ab5ce2fe33ed2c0406e98e0e6f02a3a74e6649702c0f164a90cbd84500e7d38"
+    },
+    {
+      "key": "WF-90",
+      "workflowId": "S9NHRkKFUIiXX2wv",
+      "restoredVersionId": "18cde72e-c150-4f0a-b72d-c40c751526fd",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "899f9940523a7b2cb51872293e6ab51db61758f3c8d95316b1e0af9ecedb5d09"
+    },
+    {
+      "key": "WF-91",
+      "workflowId": "sowAIvuN7adg0JBq",
+      "restoredVersionId": "91bfd74d-bd16-4627-a89c-3743954d9f59",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "6b1f9753258dbab20ecb7e2667f7c0fef69d938b12f9c32255bccf1b06ae0d0f"
+    },
+    {
+      "key": "WF-99",
+      "workflowId": "qTjioYmBUVMIERVz",
+      "restoredVersionId": "48ce69d6-f24f-4c7d-9b1d-5aeb73fc0399",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "058f20c61b9f185851cca0cc59136e21d1c525a4e176d71808c733e273669255"
+    },
+    {
+      "key": "SUB-START",
+      "workflowId": "lkVDS0oO4WULipeV",
+      "restoredVersionId": "37847d45-cdc6-420c-a19d-0b5c9b21ab4b",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "e6d7ac92e5d352770318d6dc1fbb287f87bdd336900e0ba630c139698867bcc4"
+    },
+    {
+      "key": "SUB-FINISH",
+      "workflowId": "RUTwaXMRh3PgLhJq",
+      "restoredVersionId": "4e36412b-309a-46e1-bc90-5412373ce1ed",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "273cb85ec041aa7e20642f48d74992d294a54105d37a9debd9de347314c9b706"
+    },
+    {
+      "key": "SUB-INGEST",
+      "workflowId": "nDijMP0IurUw58Kg",
+      "restoredVersionId": "1214a914-880b-4c7e-8ce0-4b8c1f5a1ba4",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "9dd77ed5243e21af6993ca801a5ee4e25a529d5a8609daa4ad71d234e5101c0e"
+    },
+    {
+      "key": "SUB-COST",
+      "workflowId": "v4yeqqNm6xHjZ5ue",
+      "restoredVersionId": "19140134-5521-4c59-911e-86fdbfa7439a",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "004daca0c7e6bb0672ed3ca3f8d3d65408aa70e220f5d43a53dbf8c1833970d3"
+    },
+    {
+      "key": "SUB-NOTIFY",
+      "workflowId": "tiEhU3dXrMifOnTL",
+      "restoredVersionId": "af317b02-fe00-40de-8654-3b9123f3e50d",
+      "activeVersionId": null,
+      "publishedHash": null,
+      "targetGraphHash": "50e4b1df86d1a3aac50d60ec193234b77e5de02a2fd193bd3c1641f7c846a645"
+    }
+  ]
+}

@@ -58,6 +58,7 @@ const historicalWindows = [
   '4c602549-2c42-4ec3-9328-714d7cb66a77',
   'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
   'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+  '4000f48f-7426-4606-a01e-a6e49aa207d2',
 ];
 // One functional scope replaces attempt profiles. This public validation is not
 // authentication: the fresh SQL provision and all live ownership checks remain.
@@ -111,32 +112,66 @@ function functionalRestoration() {
     return JSON.parse(bytes);
   };
   const actual = pinned(
-    'dev-acceptance-technical22-domain-refusal-20261025.json',
-    '1f5d99253deb88df1df2dd9cf6f057fe878f5c1263c5711e70062e2e2fe35ff3',
+    'functional-collection-attempt-20261025.json',
+    '5067c7893fb50d2bb135ae0c5f521c54af2881033c66d86c9f5d230e3bc1b5f0',
   );
   const restored = pinned(
-    'technical22-restored-workflows-projection-20261025.json',
-    '9d96a335d6b47ce709ebbde71de0d0e679979298cb144dc021381e59a2c4cd8d',
+    'functional-restored-workflows-projection-20261025.json',
+    '2cb4c60ce75920a487633612663e32e1b83a5cab8baac0453d07cfc383a251bb',
   );
   const wf00 = pinned(
     'wf00-restore-verified-20261023.json',
     '32184be54a4b36f250fa026ece00f295c94c6149b2af5fb682bfb769f683f9ec',
   );
+  const closedWindow = '4000f48f-7426-4606-a01e-a6e49aa207d2';
+  const runtime = actual.publicJournal.rows
+    .filter((row) => row.kind === 'functional_runtime' && row.windowId === closedWindow)
+    .map((row) => row.row);
+  const finalReadbacks = runtime.slice(-26, -1);
   if (
-    actual.restoration.baselineRestored !== true ||
+    actual.scope.windowId !== closedWindow ||
+    actual.outcome.all25BaselineDefinitionsRestoredInactive !== true ||
+    actual.outcome.windowClosed !== true ||
+    actual.outcome.machineBindingRestored !== true ||
+    actual.outcome.credentialBearingChildClosed !== true ||
+    actual.outcome.wrapperNativeExit !== 0 ||
+    restored.derivation.windowId !== closedWindow ||
+    restored.derivation.sourceCommitSha !== actual.sourceCommitSha ||
+    restored.derivation.runtimePlanHash !== runtime[0]?.planHash ||
+    restored.derivation.restoreComplete !== true ||
+    restored.derivation.runtimeRequests !== 145 ||
+    restored.derivation.finalReadbackCount !== 25 ||
+    runtime.at(-1)?.event !== 'restore_complete' ||
+    !actual.publicJournal.rows.some(
+      (row) => row.kind === 'functional_closed' && row.windowId === closedWindow,
+    ) ||
+    !actual.publicJournal.rows.some(
+      (row) =>
+        row.kind === 'functional_resource_restoration' &&
+        row.windowId === closedWindow &&
+        row.windowClosed === true &&
+        row.runtimeRestored === true &&
+        row.previewCleaned === true,
+    ) ||
+    finalReadbacks.length !== 25 ||
     restored.restored.length !== 25 ||
     wf00.currentExport.recordHash !== foundationRuntimeCheckpoint.workflows['WF-00'].recordHash ||
     wf00.currentExport.workflowDefinitionUnchanged !== true
   )
     blocked();
   const versions = Object.fromEntries(
-    restored.restored.map((row) => {
+    restored.restored.map((row, index) => {
+      const readback = finalReadbacks[index];
       if (
         !keys.includes(row.key) ||
         row.workflowId !== foundationRuntimeCheckpoint.workflows[row.key].id ||
         !/^[a-f0-9-]{36}$/.test(row.restoredVersionId) ||
         row.activeVersionId !== null ||
-        row.publishedHash !== null
+        row.publishedHash !== null ||
+        readback.event !== 'request' ||
+        readback.number !== 121 + index ||
+        readback.method !== 'GET' ||
+        readback.path !== '/api/v1/workflows/' + row.workflowId + '?excludePinnedData=true'
       )
         blocked();
       return [row.key, row.restoredVersionId];
@@ -353,7 +388,7 @@ export function createFoundationRuntimePlan(input) {
     step('save', 'SUB-NOTIFY', runtime.find((r) => r.key === 'SUB-NOTIFY').body),
     step('publish', 'SUB-NOTIFY'),
     ...runtime
-      .filter((r) => !['SUB-NOTIFY', 'WF-90', ...(functional ? ['WF-99'] : [])].includes(r.key))
+      .filter((r) => !['SUB-NOTIFY', 'WF-90'].includes(r.key))
       .map((r) => step('save', r.key, r.body)),
     ...(functional
       ? foundationRuntimePublishOrder.filter((key) => key !== 'WF-80')

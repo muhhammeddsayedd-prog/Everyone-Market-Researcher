@@ -62,6 +62,45 @@ test('functional scope preserves exact actual25 versions and limits without reop
   assert.throws(() => assertFoundationFunctionalScope(scope, { sourceCommitSha: 'b'.repeat(40) }));
 });
 
+test('current functional baseline carries only the actual closed restoration and rejects every older or altered native version', () => {
+  const versions = foundationFunctionalBaselineVersions();
+  assert.equal(versions['WF-19'], '7cd9dde6-cbcd-4562-b6ad-1c5b538219b8');
+  assert.equal(versions['WF-90'], '18cde72e-c150-4f0a-b72d-c40c751526fd');
+  assert.equal(versions['SUB-START'], '37847d45-cdc6-420c-a19d-0b5c9b21ab4b');
+  assert.equal(versions['SUB-FINISH'], '4e36412b-309a-46e1-bc90-5412373ce1ed');
+  assert.equal(versions['SUB-NOTIFY'], 'af317b02-fe00-40de-8654-3b9123f3e50d');
+  const scope = functionalScopeFixture();
+  const baseline = createFoundationRuntimeBaseline({ ...runtimeFixture(), functionalScope: scope });
+  assert.equal(baseline.length, 25);
+  for (const row of baseline) {
+    assert.equal(row.id, foundationRuntimeCheckpoint.workflows[row.key].id);
+    assert.equal(row.versionId, versions[row.key]);
+    const changed = structuredClone(scope);
+    changed.restoredBaselineVersions[row.key] = '00000000-0000-4000-8000-000000000001';
+    assert.throws(() => assertFoundationFunctionalScope(changed));
+  }
+  const older = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../milestones/M03-n8n-foundation/evidence/technical22-restored-workflows-projection-20261025.json',
+        import.meta.url,
+      ),
+    ),
+  );
+  assert.throws(() =>
+    assertFoundationFunctionalScope({
+      ...functionalScopeFixture(),
+      restoredBaselineVersions: Object.fromEntries(older.restored.map((r) => [r.key, r.restoredVersionId])),
+    }),
+  );
+  assert.throws(() =>
+    assertFoundationFunctionalScope({
+      ...functionalScopeFixture(),
+      windowId: '4000f48f-7426-4606-a01e-a6e49aa207d2',
+    }),
+  );
+});
+
 test('functional reconciliation carries actual higher journal usage without reset, overlap or ceiling expansion', () => {
   for (const carried of [
     { management: 1662, control: 1465, combined: 3127, vercel: 289 },
@@ -94,19 +133,16 @@ test('functional setup limits writes/publication to asynchronous closure and lat
   });
   assert.equal(p.baseline.length, 25);
   assert.equal(p.runtime.length, 8);
-  assert.equal(p.setupSteps.filter((s) => s.kind === 'save').length, 8);
-  assert.equal(
-    p.setupSteps.some((s) => s.key === 'WF-99'),
-    false,
-  ); // one materialized save, not blocked then enabled
+  assert.equal(p.setupSteps.filter((s) => s.kind === 'save').length, 9);
+  assert.equal(p.setupSteps.filter((s) => s.kind === 'save' && s.key === 'WF-99').length, 1); // guarded staging must exist before the later launch-enabled manual case
   assert.deepEqual(p.publishKeys, ['SUB-NOTIFY', 'WF-90', 'WF-30', 'WF-70', 'SUB-FINISH', 'WF-19']);
-  assert.equal(p.setupSteps.length, 16);
+  assert.equal(p.setupSteps.length, 17);
   assert.deepEqual(runtimeManagementCounts(p, 2), {
-    setup: 78,
+    setup: 81,
     restore: 73,
     finalAudit: 0,
     caseDrafts: 6,
-    nominalTotal: 157,
+    nominalTotal: 160,
     maximum: 512,
   });
   assert.equal(foundationRuntimeBodyAllowed(p, p.baseline.find((b) => b.key === 'WF-80').body), false);

@@ -28,13 +28,22 @@ confirms terminal pre-network denial for31145, no unfinished linked database
 work, and C999 archived/account paused with every row retained. Historical
 `fullD:false` stays unchanged; retained execution31145 was not deleted.
 
-Actual charges are1661 Management/1464 Control/3125 combined/Vercel288, leaving
-67 Management/16 Vercel under unchanged1728/3584/5312/V304 caps. Actors remain0,
-USD0. The initial directory slice started no live batch. Existing protected
-Preview preparation plus shutdown needs at least33 Vercel requests, so it cannot
-fit16; cleanup alone reserves18. No credentials or time approval are missing.
-The smaller native sequence and exact source-backed budget boundary are recorded
-in the current evidence checkpoint. No replacement-window family is proposed.
+Actual charges are1861 Management/1488 Control/3349 combined/Vercel323, leaving
+187 Management/29 Vercel under approved2048/3584/5312/V352 caps. Actors remain0,
+USD0. The first smaller-sequence attempt passed dev/restricted security checks,
+then stopped at the missing guarded WF99 staging save. Actual restricted Close,
+workflow/Machine restoration, Preview/bypass cleanup and C999 archive all pass.
+No collection proof is claimed. Persistent originals remain ready; no credential
+delivery or time approval is missing.
+
+**MA-11 remaining allowance decision:** review the
+[complete269M/512C/64V remaining bound](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#remaining-request-boundary-after-the-safely-closed-functional-attempt).
+If approved, reply **Approve Management2176 and Vercel400; retain all charges
+and other limits.** This is not yet approved. It preserves Control3584,
+Combined5312, all1861/1488/3349/V323 charges, two actors/USD2 and one new item.
+Expected non-secret result: the decision is recorded, then the reviewed existing
+consumer proceeds only after checkpoint qualification and required CI. No new
+helper family, secret prompt or general development approval is requested.
 
 Codex must first price/count the remaining functional sequence and shutdown
 against existing limits, then use supported native evidence. After two failed
@@ -51,11 +60,10 @@ below are dated history; they do not request already-supplied inputs again.
 
 The owner approved the complete smaller-sequence allowance. The
 [single current estimate and exact approval](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#complete-smaller-functional-allowance--approved-25-october-2026)
-approves only Management2048/Vercel352, preserving1661/1464/3125/V288 charges,
-Control3584/Combined5312 and all other limits. It includes actual callback and
-same-content replay, rejection, bounded recovery and safe shutdown. Pending
-execution readiness; no live batch or new hosted discovery was started to price it.
-No credential delivery, time renewal or general M03 approval is requested.
+approved only Management2048/Vercel352, preserving its1661/1464/3125/V288
+checkpoint and all other limits. The later no-actor attempt and cleanup are
+recorded separately; its charges are retained. The current remaining request
+boundary above supersedes that historical next step, without resetting authority.
 
 ## Historical M03 recovery checkpoints — superseded next-step wording
 

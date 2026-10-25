@@ -2,6 +2,81 @@
 
 ## Current functional acceptance checkpoint — 25 October 2026 Cairo
 
+**Latest actual checkpoint:** [the first smaller-sequence attempt](functional-collection-attempt-20261025.json)
+used source73f11f0 after all five CI40221824451 jobs and Vercel passed. Dev
+identity, strict TLS, restricted Writer identity and protected-Preview denial
+passed. Runtime staging stopped after78 verified Management operations because
+it omitted guarded WF99 staging while its completion check required it. No
+actor, workflow execution, callback test or provider read started. The original
+failure is preserved, rather than represented as collection acceptance.
+
+Actual restricted Writer Close, all25 inactive baseline definitions and Machine
+restoration, seven temporary Preview-environment removals and sole/default bypass
+revocation all passed. The reviewed teardown archived C999 and paused its account;
+an independent post-commit native SQL readback confirms eight closed windows,
+global admitted33, zero unfinished work, actors, items or cost entries, unchanged
+15-version history and285/1754 seeds. No row was deleted. The wrapper exited0;
+its parent/direct children, seven disposable leaves and the lock are absent. All four
+persistent originals remain ready outside Git, without a new decryption or
+authentication claim from the presence check. No administrator credential entered
+the runtime. Execution31145 and the disabled cleanup path remain untouched.
+
+Current cumulative charges are **1861 Management/1488 Control/3349 combined/
+Vercel323**, with actors0/USD0 and native16 retained. These include the20/20
+conservative native reservation even though its alternative was never imported
+or executed. Do not refund it. Approved caps remain **2048/3584/5312/V352**;
+only187 Management and29 Vercel remain. Infrastructure charges under existing
+plans are unknown and separate from the untouched USD2 actor reserve.
+
+The one-line staging correction and causal regression reproduce the78-request
+failure, then reach actual setup completion at81 with the actor disabled and
+restore all25 baselines through existing test ports. The affected plan/control
+tests pass61/61 and independent review is clear. This is a local repair, not a
+hosted pass. No new helper family, broader privilege or supervisor feature was
+introduced. Legitimate newer restored versions must be carried from the closed
+attempt before any later baseline check; do not replay setup against old pins.
+The [current restoration projection](functional-restored-workflows-projection-20261025.json)
+uses the existing reducer against the actual closed journal:145 sequential native
+requests, no pending mutation, restore_complete and25 final exact ownership GETs.
+Five structural versions legitimately rotated; all25 baseline graph hashes and
+inactive/unpublished states match. The same existing function now pins this
+current evidence, retains every old artifact, rejects the closed window and old
+version map, and preserves all ownership checks. Final affected plan/control
+tests pass62/62 with lint/format/diff checks; no new helper or attempt profile.
+
+### Remaining request boundary after the safely closed functional attempt
+
+The existing complete path cannot fit the remaining29 Vercel requests: its
+minimum preparation/shutdown alone needs33. A full bound still includes build
+polls, actual callback/content checks and recovery. Correcting the original
+estimate adds the separate3-request launch-enabled smoke-case save; the later
+3-request content-replay save is a different operation. Vercel is included in
+Management, never added again to Combined.
+
+| Remaining stage / counter | Management | Control | Combined | Vercel, included in M |
+|---|---:|---:|---:|---:|
+| Protected setup, access/security and guarded workflow staging | 107 | 101 | 208 | 26 |
+| One launch-enabled smoke save, actor and actual completion/cost | 4 | 136 | 140 | 0 |
+| Original-content replay | 3 | 14 | 17 | 0 |
+| Same valid callback replay | 0 | 45 | 45 | 0 |
+| Unknown-run callback rejection | 0 | 45 | 45 | 0 |
+| Stop, restore, final readbacks and retained-record inventory | 91 | 126 | 217 | 18 |
+| Additional recovery reserve | 64 | 45 | 109 | 20 |
+| **Complete additional bound** | **269** | **512** | **781** | **64** |
+| **Retained cumulative charges** | **1861** | **1488** | **3349** | **323** |
+| **Projected cumulative bound** | **2130** | **2000** | **4130** | **387** |
+| **Proposed ceilings — not approved** | **2176** | **3584 unchanged** | **5312 unchanged** | **400** |
+
+This is one cumulative-limit decision, not another time, credential or general
+development approval. Proposed exact reply: **Approve Management2176 and
+Vercel400; retain all charges and other limits.** No hosted continuation is
+admissible under the old ceilings. Target one actor, at most USD1; preserve the
+two-start/USD2 maximum, one new distinct item and all other boundaries. Source
+repair, checkpoint qualification, required changed-head CI and review remain
+mandatory before use. Production, recurring activity, notifications, R2, merge
+and M04 stay excluded. The following paragraphs retain their historical dates
+and counters; this latest checkpoint supersedes their next-step wording only.
+
 The owner's [functional-acceptance decision](../../../docs/DECISIONS.md#m03-functional-acceptance-and-bounded-parallel-delivery--approved-25-october-2026)
 now governs closure through the [six checks and AC mapping](../MILESTONE.md#9-acceptance-criteria).
 It freezes custom-supervisor expansion while preserving required tests, branch
