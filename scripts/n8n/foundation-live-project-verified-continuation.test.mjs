@@ -16,6 +16,45 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('typed pre-Ready20 preserves raw false closure and permits only fresh sibling21 with unchanged charges', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    technical20PreReady: true,
+    technical20SourceSelected: true,
+  });
+  try {
+    const proof = f.claim(f.admit()),
+      checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(checkpoint.technicalAttemptOrdinal, 21);
+    assert.equal(checkpoint.runtimeFilename, 'runtime.technical-21.jsonl');
+    assert.equal(proof.windowId, 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a');
+    assert.equal(checkpoint.aggregateManagementAttempts, 1317);
+    assert.equal(checkpoint.aggregateControlAttempts, 1246);
+    assert.equal(checkpoint.setupAttempts, 254);
+    assert.equal(checkpoint.carriedNativeExecutions, 3);
+    assert.equal(checkpoint.legacySqlAdmitted, 11);
+    assert.deepEqual(f.module.foundationProjectVerifiedContinuationRequestCaps(proof), {
+      management: 1728,
+      control: 3584,
+      combined: 5312,
+    });
+    const old = JSON.parse(
+      readFileSync(
+        join(
+          f.directory,
+          'scripts/n8n/out/foundation/live/project-verified-continuation-' +
+            proof.segmentId +
+            '.technical-20.closed.json',
+        ),
+      ),
+    );
+    assert.equal(old.nativeExit, 0);
+    assert.equal(old.credentialChildrenClosed, false);
+    assert.equal(old.closureVerified, false);
+  } finally {
+    f.cleanup();
+  }
+});
+
 test('closed19 preserves all charged state and exposes fresh20 only behind exact allocation and compatible source', async () => {
   const f = await syntheticProjectVerifiedContinuation({
     technical18Closed: true,
@@ -34,78 +73,118 @@ test('closed19 preserves all charged state and exposes fresh20 only behind exact
   }
 });
 
-test('genuine sibling20 retains closed19 prefixes and all25 restored versions under the exact approved allocation', async () => {
-  const f = await syntheticProjectVerifiedContinuation({
-    technical19Restored: true,
-    technical20SourceSelected: true,
-  });
-  try {
-    const proof = f.claim(f.admit()),
-      checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
-    assert.equal(proof.windowId, 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a');
-    assert.equal(proof.sourceCommitSha, 'c'.repeat(40));
-    assert.equal(checkpoint.technicalAttemptOrdinal, 20);
-    assert.equal(checkpoint.runtimeFilename, 'runtime.technical-20.jsonl');
-    assert.equal(checkpoint.aggregateManagementAttempts, 1317);
-    assert.equal(checkpoint.aggregateControlAttempts, 1246);
-    assert.equal(checkpoint.settledNativeControlRows, 1118);
-    assert.equal(checkpoint.carriedNativeExecutions, 3);
-    assert.equal(checkpoint.legacySqlAdmitted, 11);
-    assert.equal(checkpoint.setupRows, 510);
-    assert.equal(checkpoint.setupAttempts, 254);
-    assert.equal(checkpoint.setupMaximum, 304);
-    assert.deepEqual(f.module.foundationProjectVerifiedContinuationRequestCaps(proof), {
-      management: 1728,
-      control: 3584,
-      combined: 5312,
+for (const technicalAttempt of [20, 21])
+  test(`genuine sibling${technicalAttempt} retains closed${technicalAttempt - 1} prefixes and all25 restored versions under the exact approved allocation`, async () => {
+    const f = await syntheticProjectVerifiedContinuation({
+      technical19Restored: true,
+      technical20PreReady: technicalAttempt === 21,
+      technical20SourceSelected: true,
     });
-    const versions = f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof);
-    assert.equal(Object.keys(versions).length, 25);
-    assert.equal(
-      Object.values(versions).every((v) => v.startsWith('synthetic19-')),
-      true,
-    );
-    const beforeM = readFileSync(f.paths.management, 'utf8'),
-      beforeC = readFileSync(f.paths.control, 'utf8');
-    f.io.processAlive = (pid) => [process.pid, process.ppid].includes(pid);
-    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
-    appendFileSync(
-      f.paths.management,
-      Array.from(
-        { length: 25 },
-        (_, i) => JSON.stringify({ event: 'management_attempt', ordinal: 1165 + i }) + '\n',
-      ).join(''),
-    );
-    appendFileSync(
-      f.paths.control,
-      Array.from(
-        { length: 51 },
-        (_, i) =>
-          JSON.stringify({
-            event: 'control_request_intent',
-            ordinal: 1102 + i,
-            kind: 'discovery',
-            workflowId: 'MzimjpsuyPuK7SKe',
-            at: new Date(proof.startsAt + 1000).toISOString(),
-          }) + '\n',
-      ).join(''),
-    );
-    assert.equal(f.readClaimed().windowId, proof.windowId);
-    assert.doesNotThrow(() =>
-      f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof)),
-    );
-    writeFileSync(
-      f.paths.control,
-      beforeC.replace('"ordinal":1101', '"ordinal":1100') +
-        readFileSync(f.paths.control, 'utf8').slice(beforeC.length),
-    );
-    assert.throws(() => f.readClaimed(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/);
-    writeFileSync(f.paths.control, beforeC);
-    writeFileSync(f.paths.management, beforeM);
-    f.io.processAlive = () => false;
-    assert.throws(() => f.readClaimed(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/);
-  } finally {
-    f.cleanup();
+    try {
+      const proof = f.claim(f.admit()),
+        checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+      assert.equal(proof.windowId, 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a');
+      assert.equal(proof.sourceCommitSha, 'c'.repeat(40));
+      assert.equal(checkpoint.technicalAttemptOrdinal, technicalAttempt);
+      assert.equal(checkpoint.runtimeFilename, `runtime.technical-${technicalAttempt}.jsonl`);
+      assert.equal(checkpoint.aggregateManagementAttempts, 1317);
+      assert.equal(checkpoint.aggregateControlAttempts, 1246);
+      assert.equal(checkpoint.settledNativeControlRows, 1118);
+      assert.equal(checkpoint.carriedNativeExecutions, 3);
+      assert.equal(checkpoint.legacySqlAdmitted, 11);
+      assert.equal(checkpoint.setupRows, 510);
+      assert.equal(checkpoint.setupAttempts, 254);
+      assert.equal(checkpoint.setupMaximum, 304);
+      assert.deepEqual(f.module.foundationProjectVerifiedContinuationRequestCaps(proof), {
+        management: 1728,
+        control: 3584,
+        combined: 5312,
+      });
+      const versions = f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof);
+      assert.equal(Object.keys(versions).length, 25);
+      assert.equal(
+        Object.values(versions).every((v) => v.startsWith('synthetic19-')),
+        true,
+      );
+      const beforeM = readFileSync(f.paths.management, 'utf8'),
+        beforeC = readFileSync(f.paths.control, 'utf8');
+      f.io.processAlive = (pid) => [process.pid, process.ppid].includes(pid);
+      f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+      appendFileSync(
+        f.paths.management,
+        Array.from(
+          { length: 25 },
+          (_, i) => JSON.stringify({ event: 'management_attempt', ordinal: 1165 + i }) + '\n',
+        ).join(''),
+      );
+      appendFileSync(
+        f.paths.control,
+        Array.from(
+          { length: 51 },
+          (_, i) =>
+            JSON.stringify({
+              event: 'control_request_intent',
+              ordinal: 1102 + i,
+              kind: 'discovery',
+              workflowId: 'MzimjpsuyPuK7SKe',
+              at: new Date(proof.startsAt + 1000).toISOString(),
+            }) + '\n',
+        ).join(''),
+      );
+      assert.equal(f.readClaimed().windowId, proof.windowId);
+      assert.doesNotThrow(() =>
+        f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof)),
+      );
+      writeFileSync(
+        f.paths.control,
+        beforeC.replace('"ordinal":1101', '"ordinal":1100') +
+          readFileSync(f.paths.control, 'utf8').slice(beforeC.length),
+      );
+      assert.throws(() => f.readClaimed(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/);
+      writeFileSync(f.paths.control, beforeC);
+      writeFileSync(f.paths.management, beforeM);
+      f.io.processAlive = () => false;
+      assert.throws(() => f.readClaimed(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/);
+    } finally {
+      f.cleanup();
+    }
+  });
+
+test('typed pre-Ready20 denies false cleanup, changed raw receipts, prior prefixes and every unexpected output', async () => {
+  for (const technical20PreReadyFault of [
+    'raw-close',
+    'raw-credential',
+    'native-exit',
+    'wrapper-native',
+    'command',
+    'usage',
+    'cleanup',
+    'decryption',
+    'locks',
+    'time',
+    'fullD',
+    'source',
+    'old-prefix',
+    'runtime-output',
+    'admin-output',
+    'latest-output',
+    'owner-output',
+    'reactivation-output',
+    'archive-output',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      technical20PreReady: true,
+      technical20PreReadyFault,
+    });
+    try {
+      assert.throws(
+        () => f.check(),
+        /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/,
+        technical20PreReadyFault,
+      );
+    } finally {
+      f.cleanup();
+    }
   }
 });
 

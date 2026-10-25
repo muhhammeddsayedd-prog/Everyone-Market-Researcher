@@ -44,7 +44,7 @@ foreach($entry in @(@{File=${quote(control)};Names=@('Foundation-Literal','Found
  $errors=$null;$tokens=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($entry.File,[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'READBACK_SOURCE_PARSE'}
  foreach($name in $entry.Names){$matches=@($ast.FindAll({param($item)$item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true));if($matches.Count -ne 1){throw 'READBACK_SOURCE_FUNCTION'};Invoke-Expression $matches[0].Extent.Text}
 }
-$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$projectVerifiedForwardWindowId='${ordinal === 20 ? 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a' : [17, 18, 19].includes(ordinal) ? 'edbc6d11-7c1f-43a7-b745-1ded06deb29f' : '4c602549-2c42-4ec3-9328-714d7cb66a77'}';$projectVerifiedForwardSource='${ordinal === 20 ? '5f256ce915f930481b0d31ac38b919c0a7692cd1' : [17, 18, 19].includes(ordinal) ? 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' : '5087d4d93d2f6ffdca0bc0096b365723005446fc'}';$script:captured=$null
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$projectVerifiedForwardWindowId='${[20, 21].includes(ordinal) ? 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a' : [17, 18, 19].includes(ordinal) ? 'edbc6d11-7c1f-43a7-b745-1ded06deb29f' : '4c602549-2c42-4ec3-9328-714d7cb66a77'}';$projectVerifiedForwardSource='${[20, 21].includes(ordinal) ? '5f256ce915f930481b0d31ac38b919c0a7692cd1' : [17, 18, 19].includes(ordinal) ? 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' : '5087d4d93d2f6ffdca0bc0096b365723005446fc'}';$script:captured=$null
 function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=${ordinal};auditSegment='20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-${ordinal}'}}
 function Read-FoundationTechnical14NoAdmin{return '6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960'}
 function Invoke-FoundationQuery($Sql,$Field){if($Field -cne 'fixture'){throw 'READBACK_FIELD'};$script:captured=$Sql;throw 'READBACK_CAPTURED'}
@@ -923,7 +923,7 @@ describe(
       }
     });
 
-    test('technical13 and14 require typed prior audits and qualified15to20 skip only proven absent audits', () => {
+    test('technical13 and14 require typed prior audits and qualified15to21 skip only proven absent audits', () => {
       const wrapper =
         '\\set emr_project_ref zmotjsbzhzjvpelxvxlf\n\\set emr_smoke_reactivation_segment ' + segment + '\n';
       const teardown = readFileSync(new URL('../assert/m03_smoke_teardown.sql', import.meta.url), 'utf8');
@@ -1288,6 +1288,63 @@ update ops.audit_log set after=jsonb_set(after,'{original_creation_audit_id}',to
         );
         assert.deepEqual(JSON.parse(psql(snapshot)), afterNineteen);
       }
+      // Actual20 never started an administrator or created a SQL audit. Only
+      // the immutable native proof permits21 to omit that one nonexistent row.
+      const missing20Proof =
+        "set local emr.smoke_technical20_no_reactivation='d5f4353439ff6a3254f71609048ff43aa1d453308b5708bd968182ce959bf983';";
+      const gap21Proofs = gapProofs + missing20Proof,
+        readback21 = nativeTechnical14ReadbackQuery(21);
+      const twentyOne = JSON.parse(
+        psql(
+          `begin;${settings}set local emr.smoke_technical_ordinal='21';${gap21Proofs}${body()}${readback21}rollback;`,
+        ),
+      );
+      assert.equal(twentyOne.result, 'M03_SMOKE_FIXTURE_READY');
+      assert.equal(twentyOne.competitor_id, competitor);
+      assert.equal(twentyOne.account_id, account);
+      assert.deepEqual(JSON.parse(psql(snapshot)), afterNineteen);
+      for (const proof20 of ['', "set local emr.smoke_technical20_no_reactivation='unverified';"]) {
+        psql(
+          `begin;${settings}set local emr.smoke_technical_ordinal='21';${gapProofs}${proof20}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_TECHNICAL20_PROOF_REQUIRED' then raise exception 'TECHNICAL21_EXACT20_PROOF_REQUIRED';end if;end;end;$deny$;rollback;`,
+        );
+        assert.deepEqual(JSON.parse(psql(snapshot)), afterNineteen);
+      }
+      for (const [proof, message] of [
+        [missing14Proof, 'M03_REACTIVATION_TECHNICAL14_PROOF_REQUIRED'],
+        [missing15Proof, 'M03_REACTIVATION_TECHNICAL15_PROOF_REQUIRED'],
+        [missing17Proof, 'M03_REACTIVATION_TECHNICAL17_PROOF_REQUIRED'],
+        [missing18Proof, 'M03_REACTIVATION_TECHNICAL18_PROOF_REQUIRED'],
+      ]) {
+        psql(
+          `begin;${settings}set local emr.smoke_technical_ordinal='21';${gap21Proofs.replace(proof, '')}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'${message}' then raise exception 'TECHNICAL21_PRIOR_GAP_PROOF_REQUIRED';end if;end;end;$deny$;rollback;`,
+        );
+        assert.deepEqual(JSON.parse(psql(snapshot)), afterNineteen);
+      }
+      for (const ordinal of [12, 13, 16, 19])
+        for (const change of [
+          `delete from ops.audit_log where actor_id='m03_smoke_reactivate.v1:${segment}:technical-${ordinal}'`,
+          `update ops.audit_log set after=jsonb_set(after,'{original_creation_audit_id}',to_jsonb(after->>'original_creation_audit_id')) where actor_id='m03_smoke_reactivate.v1:${segment}:technical-${ordinal}'`,
+        ]) {
+          psql(
+            `begin;${settings}${change};set local emr.smoke_technical_ordinal='21';${gap21Proofs}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM not in ('M03_REACTIVATION_UNIQUE_PRIOR_REACTIVATION_REQUIRED','M03_REACTIVATION_PRIOR_LIFECYCLE_CHANGED') then raise exception 'TECHNICAL21_REAL_PRIOR_NOT_OPTIONAL';end if;end;end;$deny$;rollback;`,
+          );
+          assert.deepEqual(JSON.parse(psql(snapshot)), afterNineteen);
+        }
+      for (const ordinal of [17, 18, 20]) {
+        psql(
+          `begin;${settings}insert into ops.audit_log(actor_type,actor_id,action,entity_type,entity_id,after)values('system','m03_smoke_reactivate.v1:${segment}:technical-${ordinal}','m03_smoke_fixture_reactivated','competitor','${competitor}',jsonb_build_object('segment_id','${segment}:technical-${ordinal}'));set local emr.smoke_technical_ordinal='21';${gap21Proofs}do $deny$begin begin execute $under_test$${body()}$under_test$;raise exception using errcode='P9999';exception when others then if SQLSTATE<>'55000' or SQLERRM<>'M03_REACTIVATION_PRIOR_EDIT_OR_ATTEMPT_PRESENT' then raise exception 'TECHNICAL21_GAP_AUDIT_NOT_OPTIONAL';end if;end;end;$deny$;rollback;`,
+        );
+        assert.deepEqual(JSON.parse(psql(snapshot)), afterNineteen);
+      }
+      for (const ordinal of [19, 21])
+        assert.equal(
+          psql(
+            `begin;${settings}set local emr.smoke_technical_ordinal='21';${gap21Proofs}${body()}update ops.audit_log set after=jsonb_set(after,'{original_creation_audit_id}',to_jsonb(after->>'original_creation_audit_id')) where actor_id='m03_smoke_reactivate.v1:${segment}:technical-${ordinal}';${readback21}rollback;`,
+          ),
+          '',
+          'native21 readback requires numeric creation IDs for real19 and current21',
+        );
+      assert.deepEqual(JSON.parse(psql(snapshot)), afterNineteen);
     });
   },
 );

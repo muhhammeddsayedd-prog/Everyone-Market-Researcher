@@ -21,8 +21,10 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  technical19Restored = false,
-  technical20SourceSelected = false,
+  technical20PreReady = false,
+  technical20PreReadyFault,
+  technical19Restored = technical20PreReady,
+  technical20SourceSelected = technical20PreReady,
   technical19Fault,
   technical18Closed = technical19Restored,
   technical18Fault,
@@ -2772,7 +2774,8 @@ export async function syntheticProjectVerifiedContinuation({
     technical17Configuration,
     technical17PreReadyConfiguration,
     technical18PreparationConfiguration,
-    technical19RestorationConfiguration;
+    technical19RestorationConfiguration,
+    technical20PreReadyConfiguration;
   if (unadmittedWf00Reconciled) {
     const root = 'milestones/M03-n8n-foundation/evidence/',
       relative = root + 'wf00-unadmitted-manual-checkpoint-20261024.json',
@@ -4167,6 +4170,124 @@ export async function syntheticProjectVerifiedContinuation({
       readbackSha256: digest(json(readback)),
     };
   }
+  if (technical20PreReady) {
+    if (!technical19Restored) throw Error('SYNTHETIC20_SCOPE');
+    const e = 'milestones/M03-n8n-foundation/evidence/',
+      l = 'scripts/n8n/out/foundation/live/',
+      relative = e + 'dev-acceptance-technical20-pre-ready-reconciliation-20261025.json',
+      r = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8')),
+      json = (v) => JSON.stringify(v) + '\n',
+      stem = l + 'project-verified-continuation-' + snapshot.proposedSegmentId + '.technical-20',
+      source = technical20SourceSelected ? 'c'.repeat(40) : null,
+      startsAt = Date.parse('2026-10-25T01:10:00.000Z'),
+      previous = JSON.parse(
+        readFileSync(join(directory, stem.replace('technical-20', 'technical-19') + '.json')),
+      ),
+      admission = {
+        ...previous,
+        sourceCommitSha: source,
+        windowId: r.attempt.windowId,
+        parentProcessId: 91210,
+        startsAt,
+        deadlineAt: startsAt + 3600000,
+        stopNewAt: startsAt + 3000000,
+        hardDeadlineAt: startsAt + 4200000,
+      },
+      text = json(admission),
+      claim = {
+        kind: 'm03_project_verified_continuation_runtime_claim',
+        version: 1,
+        segmentId: snapshot.proposedSegmentId,
+        admissionSha256: digest(text),
+        processId: 91211,
+        parentProcessId: 91210,
+        claimedAt: startsAt + 1000,
+      };
+    r.applicationSource = source;
+    r.observedAt = '2026-10-25T01:10:30.000Z';
+    Object.assign(r.attempt, { parentProcessId: 91210, runtimeProcessId: 91211 });
+    Object.assign(r.rawClose, {
+      admissionSha256: digest(text),
+      parentProcessId: 91210,
+      runtimeProcessId: 91211,
+      closedAt: startsAt + 6000,
+    });
+    r.cleanup.observedAt = '2026-10-25T01:10:20.000Z';
+    const frames = [
+        {
+          kind: 'm03_acceptance_transport_ready',
+          nonce: 'd'.repeat(32),
+          privateRead: false,
+          networkRequests: 0,
+        },
+        {
+          kind: 'm03_acceptance_vercel_metadata',
+          status: 'metadata_covers_75_minutes',
+          metadataValid: true,
+          unexpired: true,
+          covers75Minutes: true,
+          effectiveBackendEstablished: false,
+          networkRequests: 0,
+          authenticationAttempted: false,
+          refreshAttempted: false,
+          configWritten: false,
+          childClosed: true,
+        },
+        r.rawWrapper,
+      ],
+      intent = {
+        kind: 'm03_technical20_pre_ready_cleanup_intent',
+        version: 1,
+        parentProcessId: 91210,
+        runtimeProcessId: 91211,
+        targets: r.cleanup.deleted,
+        journalPins: {},
+        plaintextRead: false,
+        networkRequests: 0,
+        bothLocksHeld: true,
+        createdAt: '2026-10-25T01:10:15.000Z',
+      };
+    if (technical20PreReadyFault === 'raw-close') r.rawClose.closureVerified = true;
+    if (technical20PreReadyFault === 'raw-credential') r.rawClose.credentialChildrenClosed = true;
+    if (technical20PreReadyFault === 'native-exit') r.rawClose.nativeExit = 1;
+    if (technical20PreReadyFault === 'wrapper-native') r.rawWrapper.nativeExit = 1;
+    if (technical20PreReadyFault === 'command') r.attempt.prepareCommandSent = true;
+    if (technical20PreReadyFault === 'usage') r.usage.management--;
+    if (technical20PreReadyFault === 'cleanup') r.cleanup.directChildrenAbsent = false;
+    if (technical20PreReadyFault === 'decryption') r.cleanup.credentialDecryptionAttempted = true;
+    if (technical20PreReadyFault === 'locks') intent.bothLocksHeld = false;
+    if (technical20PreReadyFault === 'time') intent.createdAt = '0';
+    if (technical20PreReadyFault === 'fullD') r.boundaries.fullD = true;
+    if (technical20PreReadyFault === 'source') r.applicationSource = 'f'.repeat(40);
+    put(stem + '.json', text);
+    put(stem + '.runtime-claim.json', json(claim));
+    put(stem + '.closed.json', json(r.rawClose));
+    put(l + 'technical20-coordinator-20261025-startup1.jsonl', frames.map(json).join(''));
+    put(
+      l + 'technical20-acceptance-public-seal-used.json',
+      json({ version: 1, syntheticUsedPublicSeal: true }),
+    );
+    for (const name of ['management', 'control', 'setup', 'preflight']) {
+      const path = l + name + '.jsonl';
+      intent.journalPins[path] = digest(readFileSync(join(directory, path)));
+    }
+    if (technical20PreReadyFault === 'old-prefix') {
+      const path = l + 'management.jsonl';
+      put(path, readFileSync(join(directory, path), 'utf8').replace('"ordinal":1164', '"ordinal":1163'));
+      intent.journalPins[path] = digest(readFileSync(join(directory, path)));
+    }
+    put(l + 'technical20-pre-ready-cleanup-intent.json', json(intent));
+    put(l + 'technical20-pre-ready-cleanup-result.json', json(r.cleanup));
+    for (const p of Object.keys(r.pins)) r.pins[p] = digest(readFileSync(join(directory, p)));
+    if (technical20PreReadyFault === 'runtime-output') put(r.absentOutputs[0], '{}\n');
+    if (technical20PreReadyFault === 'admin-output') put(r.absentOutputs[1], '{}\n');
+    if (technical20PreReadyFault === 'latest-output') put(r.absentOutputs[2], '{}\n');
+    if (technical20PreReadyFault === 'owner-output') put(r.absentOutputs[3], '{}\n');
+    if (technical20PreReadyFault === 'reactivation-output') put(r.absentOutputs[4], '{}\n');
+    if (technical20PreReadyFault === 'archive-output') put(r.absentOutputs[5], '{}\n');
+    put(relative, json(r));
+    technical20PreReadyConfiguration = { relative, sha256: digest(json(r)) };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -4202,6 +4323,14 @@ export async function syntheticProjectVerifiedContinuation({
     'const technical19RestorationRecovery = ' +
       (technical19RestorationConfiguration
         ? 'Object.freeze(' + JSON.stringify(technical19RestorationConfiguration) + ')'
+        : 'null') +
+      ';',
+  );
+  source = source.replace(
+    /const technical20PreReadyRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+    'const technical20PreReadyRecovery = ' +
+      (technical20PreReadyConfiguration
+        ? 'Object.freeze(' + JSON.stringify(technical20PreReadyConfiguration) + ')'
         : 'null') +
       ';',
   );

@@ -1082,7 +1082,7 @@ function Assert-FoundationProjectVerifiedContinuationProcessAncestry($Clock) {
     $null=Read-FoundationForwardPrior
   }
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and $Clock.windowId -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a'){
-    if($paths.technicalOrdinal -ne 20){throw 'blocked'}
+    if($paths.technicalOrdinal -notin @(20,21)){throw 'blocked'}
     $null=Read-FoundationForwardPrior
   }
   return $true
@@ -1236,12 +1236,23 @@ function Read-FoundationTechnical18NoReactivation {
   if((File-Hash $path) -cne $technical18Sha256){throw 'blocked'}
   return $technical18Sha256
 }
+function Read-FoundationTechnical20NoReactivation {
+  # The sealed ReadClaimed gate qualifies the failed pre-Ready20 chain and its
+  # independent physical cleanup. Preserve the raw false closure flags; only21
+  # may omit the SQL audit that20 never created.
+  $technical20Sha256='d5f4353439ff6a3254f71609048ff43aa1d453308b5708bd968182ce959bf983'
+  $path=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical20-pre-ready-reconciliation-20261025.json'
+  if((File-Hash $path) -cne $technical20Sha256){throw 'blocked'}
+  return $technical20Sha256
+}
 function Read-FoundationForwardPrior {
   # ForwardWindow already passed the sealed current ReadClaimed/native ancestry
   # gate, which verifies the immutable prior closure while allowing its new sibling.
   if(-not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){$null=Assert-FoundationInspectClosed}
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a'){
-    if((Foundation-ProjectVerifiedTechnicalIdentity).ordinal -ne 20){throw 'blocked'}
+    $technical=Foundation-ProjectVerifiedTechnicalIdentity
+    if($technical.ordinal -notin @(20,21)){throw 'blocked'}
+    if($technical.ordinal -eq 21){$null=Read-FoundationTechnical20NoReactivation}
     return Read-FoundationTechnical19Database
   }
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'){

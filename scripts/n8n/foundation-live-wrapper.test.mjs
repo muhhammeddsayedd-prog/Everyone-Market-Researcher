@@ -1027,6 +1027,102 @@ test('private wrapper does not auto-build seals, reveal child stderr or set pass
 });
 
 test(
+  'reviewed5f source passes the native ready result and closed output filter without promoting incomplete closure',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-technical20-public-output-'));
+    try {
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+      const start = source.indexOf('function Safe-PublicLine'),
+        end = source.indexOf('\ntry{', start);
+      assert.ok(start > 0 && end > start);
+      const common = {
+        sourceCommitSha: '5f256ce915f930481b0d31ac38b919c0a7692cd1',
+        approvedHead: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
+      };
+      const messages = [
+        {
+          ...common,
+          kind: 'm03_acceptance_ready',
+          status: 'private_child_ready',
+          deadlineAt: Date.now() + 3600000,
+        },
+        {
+          ...common,
+          kind: 'm03_acceptance_result',
+          status: 'blocked',
+          command: 'prepare',
+          managementAttempts: 1317,
+          controlAttempts: 1246,
+          nativeExecutions: 3,
+          phaseBReady: false,
+          domainProofReady: false,
+          businessAcceptanceProven: false,
+          residual: true,
+        },
+        {
+          ...common,
+          kind: 'm03_acceptance_closed',
+          status: 'closed',
+          managementAttempts: 1317,
+          controlAttempts: 1246,
+          nativeExecutions: 3,
+          baselineRestored: false,
+          environmentCleanupVerified: false,
+          windowClosed: false,
+          fixtureArchived: false,
+          remoteWorkSettled: false,
+          residual: true,
+          childTransportsClosed: true,
+          adminChildClosed: true,
+        },
+      ];
+      const quote = (value) => "'" + value.replaceAll("'", "''") + "'";
+      const script = join(directory, 'projection.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+$needles=[Collections.Generic.List[string]]::new();$needles.Add('SYNTHETIC_PRIVATE_CANARY')
+$knownWorkflowIds=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+$script:closureVerified=$false;$script:credentialClosureVerified=$false
+${source.slice(start, end)}
+$messages=ConvertFrom-Json -InputObject ${quote(JSON.stringify(messages))}
+foreach($value in $messages){
+ $filtered=ConvertFrom-Json -InputObject (Safe-PublicLine $value)
+ if($filtered.kind -cne $value.kind -or $filtered.sourceCommitSha -cne $value.sourceCommitSha -or $filtered.approvedHead -cne $value.approvedHead){throw 'REVIEWED_SOURCE_FILTER_CHANGED'}
+ if($script:closureVerified){throw 'INCOMPLETE_CLOSURE_PROMOTED'}
+ foreach($invalid in @('cccccccccccccccccccccccccccccccccccccccc','5F256CE915F930481B0D31AC38B919C0A7692CD1','unrecognized')){
+  $copy=$value|ConvertTo-Json|ConvertFrom-Json;$copy.sourceCommitSha=$invalid;$denied=$false
+  try{$null=Safe-PublicLine $copy}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SOURCE_ACCEPTED'}
+ }
+ $copy=$value|ConvertTo-Json|ConvertFrom-Json;$copy|Add-Member -NotePropertyName rawError -NotePropertyValue 'SYNTHETIC_PRIVATE_CANARY';$denied=$false
+ try{$null=Safe-PublicLine $copy}catch{$denied=$true};if(-not $denied){throw 'PRIVATE_OR_UNKNOWN_FIELD_ACCEPTED'}
+}
+if(-not $script:credentialClosureVerified -or $script:closureVerified){throw 'CREDENTIAL_AND_FULL_CLOSURE_CONFLATED'}
+$old=$messages[0]|ConvertTo-Json|ConvertFrom-Json;$old.sourceCommitSha='effa3de9e1fee6c3f3c08fc347a5e3175db14c80';$null=Safe-PublicLine $old
+$complete=$messages[2]|ConvertTo-Json|ConvertFrom-Json;foreach($name in @('baselineRestored','environmentCleanupVerified','windowClosed','remoteWorkSettled')){$complete.$name=$true};$complete.residual=$false;$null=Safe-PublicLine $complete
+if(-not $script:closureVerified){throw 'EXISTING_COMPLETE_CLOSURE_CHANGED'}
+$null=Safe-PublicLine $messages[2]
+if($script:closureVerified){throw 'STALE_CLOSURE_RETAINED'}
+Write-Output 'REVIEWED5F_PUBLIC_OUTPUT_PASS'
+`,
+      );
+      const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: safeEnvironment(directory),
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 10000,
+      });
+      assert.equal(result.status, 0, result.stderr + result.stdout);
+      assert.equal(result.stderr, '');
+      assert.equal(result.stdout.trim(), 'REVIEWED5F_PUBLIC_OUTPUT_PASS');
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
   'private output projection refuses actual secret reflections and unknown workflow IDs',
   windowsOnly,
   () => {

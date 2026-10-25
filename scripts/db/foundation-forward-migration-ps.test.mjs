@@ -20,6 +20,7 @@ import { syntheticProjectVerifiedContinuation } from '../n8n/foundation-live-pro
 
 const consumer = resolve('scripts/db/windows/Invoke-M03FoundationMigrations.ps1');
 const technical18NoReactivationSha256 = '92a5976dbce66210abbdd76655afaf71a98c9c48f29c8c15422831a85f3737d9';
+const technical20NoReactivationSha256 = 'd5f4353439ff6a3254f71609048ff43aa1d453308b5708bd968182ce959bf983';
 const powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
 const quote = (value) => `'${value.replaceAll("'", "''")}'`;
 const definitions = (names, file = consumer) => `
@@ -2020,7 +2021,8 @@ $script:value.windows=7;$script:value.freshWindows=1;$script:value.freshPrepared
 foreach($key in @('legacyClosed','intermediateClosed','runtimeClosed','restorationClosed','acceptanceClosed','technical19Closed','technical12Exact','technical13Exact','technical16Exact','technical19Exact','freshPrepared')){$script:value.$key=$false;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$true;if(-not $denied){throw 'UNQUALIFIED_SEVENTH_PREDECESSOR_ACCEPTED'}}
 foreach($key in @('fixtureAuditCount','windows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){$saved=$script:value.$key;$script:value.$key=$saved+1;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$saved;if(-not $denied){throw 'UNRECONCILED_SEVENTH_PROGRESS_ACCEPTED'}}
 $script:value.fixtureAuditCount='8';$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'COERCED_SEVENTH_AUDITS_ACCEPTED'};$script:value.fixtureAuditCount=8
-foreach($ordinal in @(19,21)){$script:ordinal=$ordinal;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'WRONG_SEVENTH_ORDINAL_ACCEPTED'}};$script:ordinal=20
+$script:ordinal=21;Assert-FoundationForwardWindowState $true
+foreach($ordinal in @(19,22)){$script:ordinal=$ordinal;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'WRONG_SEVENTH_ORDINAL_ACCEPTED'}};$script:ordinal=20
 $script:proofValid=$false;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'MISSING19_READBACK_ACCEPTED'};$script:proofValid=$true
 $projectVerifiedForwardSource='effa3de9e1fee6c3f3c08fc347a5e3175db14c80';$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'MIXED_SEVENTH_SOURCE_ACCEPTED'}
 Write-Output 'SIX_CLOSED_PREDECESSORS_AND_TYPED19_AUDIT'
@@ -2057,6 +2059,74 @@ Write-Output 'EXACT19_PRIOR_AND_SEVENTH_DTO'
 );
 
 test(
+  'technical21 native proof pins the exact closed20 receipt without changing its failed closure flags',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Path', 'File-Hash', 'Read-FoundationTechnical20NoReactivation'])}
+$repo=${quote(process.cwd())}
+if((Read-FoundationTechnical20NoReactivation) -cne '${technical20NoReactivationSha256}'){throw 'QUALIFIED20_RECEIPT_PIN_CHANGED'}
+function File-Hash($Path){return '0'*64}
+$denied=$false;try{$null=Read-FoundationTechnical20NoReactivation}catch{$denied=$true};if(-not $denied){throw 'UNVERIFIED20_RECEIPT_ACCEPTED'}
+Write-Output 'QUALIFIED20_EXACT_NATIVE_PIN'
+`),
+      'QUALIFIED20_EXACT_NATIVE_PIN',
+    );
+  },
+);
+
+test(
+  'technical21 native prior requires both immutable20 no-Admin proof and exact19 database history',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Path', 'File-Hash', 'Read-FoundationForwardPrior', 'Read-FoundationTechnical20NoReactivation'])}
+${definitions(['Foundation-ForwardWindowId', 'Foundation-ProjectVerifiedTechnicalIdentity'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$repo=${quote(process.cwd())};$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$script:projectVerifiedTechnicalOrdinal=21;$projectVerifiedForwardWindowId='e2be1a67-f6db-4c90-bfd2-671c5db9b90a';$projectVerifiedForwardSource='5f256ce915f930481b0d31ac38b919c0a7692cd1';$script:priorCalls=0
+function Read-FoundationTechnical19Database{$script:priorCalls++;return [pscustomobject]@{familyWindowCount=6;globalAdmittedCount=11;fixtureAuditCount=8;technical19Exact=$true}}
+$value=Read-FoundationForwardPrior;if($script:priorCalls -ne 1 -or $value.fixtureAuditCount -ne 8 -or -not $value.technical19Exact){throw 'REAL19_PRIOR_NOT_REQUIRED'}
+function Read-FoundationTechnical20NoReactivation{throw 'EXACT20_NO_ADMIN_REQUIRED'}
+$denied=$false;try{$null=Read-FoundationForwardPrior}catch{$denied=$true};if(-not $denied -or $script:priorCalls -ne 1){throw 'UNPROVEN21_PRIOR_ACCEPTED'}
+$script:projectVerifiedTechnicalOrdinal=20;$null=Read-FoundationForwardPrior;if($script:priorCalls -ne 2){throw 'HISTORICAL20_PRIOR_CHANGED'}
+foreach($ordinal in @(19,22)){$script:projectVerifiedTechnicalOrdinal=$ordinal;$denied=$false;try{$null=Read-FoundationForwardPrior}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SEVENTH_PRIOR_ACCEPTED'}}
+Write-Output 'PINNED20_AND_REAL19_REQUIRED'
+`),
+      'PINNED20_AND_REAL19_REQUIRED',
+    );
+  },
+);
+
+test(
+  'technical21 fixture SQL skips only proven absent20 while retaining all real19 requirements',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Foundation-FixtureSql'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$repo=${quote(process.cwd())};$ProjectVerifiedContinuation=$true;$ForwardWindow=$true;$PostcheckContinuation=$true;$RemainingContinuation=$false;$StartupReplacement=$false;$projectVerifiedForwardWindowId='e2be1a67-f6db-4c90-bfd2-671c5db9b90a';$projectVerifiedForwardSource='5f256ce915f930481b0d31ac38b919c0a7692cd1';$script:ordinal=21;$script:proof20Valid=$true
+function Assert-Path($Root,$Relative){return Join-Path $Root $Relative}
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=$script:ordinal}}
+function Read-FoundationTechnical14NoAdmin([int]$Ordinal=14){if($Ordinal -eq 15){return '59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd'};return '6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960'}
+function Read-FoundationForwardPrior{return [pscustomobject]@{fixtureAuditCount=8;technical19Exact=$true}}
+function Read-FoundationTechnical18NoReactivation{return '${technical18NoReactivationSha256}'}
+function Read-FoundationTechnical20NoReactivation{if(-not $script:proof20Valid){throw 'EXACT20_NO_ADMIN_REQUIRED'};return '${technical20NoReactivationSha256}'}
+$body=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'
+foreach($markerOrdinal in @(14,15,17,18,20)){if(-not $body.Contains("set_config('emr.smoke_technical"+$markerOrdinal+"_no_reactivation'")){throw 'MISSING21_GAP_MARKER'}}
+if(-not $body.Contains("set_config('emr.smoke_technical20_no_reactivation','${technical20NoReactivationSha256}',true)")){throw 'EXACT20_MARKER_MISSING'}
+if($body.Contains("set_config('emr.smoke_technical19_no_reactivation'")){throw 'REAL19_AUDIT_SKIPPED'}
+$script:proof20Valid=$false;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNPROVEN21_SQL_EMITTED'};$script:proof20Valid=$true
+$script:ordinal=20;$old=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql';if($old.Contains("set_config('emr.smoke_technical20_no_reactivation'")){throw 'HISTORICAL20_CHANGED'}
+foreach($ordinal in @(19,22)){$script:ordinal=$ordinal;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SEVENTH_ORDINAL_EMITTED'}}
+Write-Output 'EXACT21_MARKERS_REAL19'
+`),
+      'EXACT21_MARKERS_REAL19',
+    );
+  },
+);
+
+test(
   'technical20 fixture SQL keeps every proven absent marker and requires the real19 lifecycle',
   native,
   () => {
@@ -2073,7 +2143,7 @@ $body=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'
 foreach($ordinal in @(14,15,17,18)){if(-not $body.Contains("set_config('emr.smoke_technical"+$ordinal+"_no_reactivation'")){throw 'MISSING20_GAP_MARKER'}}
 if($body.Contains("set_config('emr.smoke_technical19_no_reactivation'")){throw 'REAL19_AUDIT_SKIPPED'}
 $script:proofValid=$false;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNPROVEN20_SQL_EMITTED'};$script:proofValid=$true
-foreach($ordinal in @(19,21)){$script:ordinal=$ordinal;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SEVENTH_ORDINAL_EMITTED'}}
+foreach($ordinal in @(19,22)){$script:ordinal=$ordinal;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SEVENTH_ORDINAL_EMITTED'}}
 Write-Output 'EXACT20_MARKERS_REAL19'
 `),
       'EXACT20_MARKERS_REAL19',
@@ -2545,6 +2615,22 @@ for (const profile of [
     combinedAttempts: 2563,
     technicalOrdinal: 20,
   },
+  {
+    name: 'preready20-to21',
+    options: {
+      technical16Settled: true,
+      technical17PreReady: true,
+      technical18Closed: true,
+      technical19Restored: true,
+      technical20PreReady: true,
+      technical20SourceSelected: true,
+    },
+    managementMaximum: 1728,
+    managementAttempts: 1317,
+    controlAttempts: 1246,
+    combinedAttempts: 2563,
+    technicalOrdinal: 21,
+  },
 ])
   test(
     `${profile.name} fresh ForwardWindow completes the full native public Run preflight before the private boundary`,
@@ -2675,6 +2761,16 @@ for (const profile of [
           helperSource = helperSource.replace(
             pin[0],
             "$technical18Sha256='" + hash(readFileSync(join(fixture.directory, relative))) + "'",
+          );
+        }
+        if (profile.options.technical20PreReady) {
+          const relative =
+            'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical20-pre-ready-reconciliation-20261025.json';
+          const pin = helperSource.match(/\$technical20Sha256='[a-f0-9]{64}'/g);
+          assert.equal(pin?.length, 1);
+          helperSource = helperSource.replace(
+            pin[0],
+            "$technical20Sha256='" + hash(readFileSync(join(fixture.directory, relative))) + "'",
           );
         }
         if (profile.options.technical19Restored) {

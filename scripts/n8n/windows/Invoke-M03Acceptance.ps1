@@ -507,7 +507,7 @@ function Safe-PublicLine($Value){
   elseif($v -is [string]){
    if($v -cnotmatch '^[A-Za-z0-9_.:-]{1,128}$'){throw 'blocked'}
    if($property.Name -ceq 'approvedHead' -and $v -cne 'f42930f90c2de43c84f61ad6d966d0ee6074d70e'){throw 'blocked'}
-   if($property.Name -ceq 'sourceCommitSha' -and $v -cnotin @('f42930f90c2de43c84f61ad6d966d0ee6074d70e','a5e746736893d5040e93032ae740a0878f748837','aff94f2b2d8055cf93b5405e6b11d4e7d9c86803','7b1837201ac7925591577a1517d7288936ca3464','5087d4d93d2f6ffdca0bc0096b365723005446fc','effa3de9e1fee6c3f3c08fc347a5e3175db14c80')){throw 'blocked'}
+   if($property.Name -ceq 'sourceCommitSha' -and $v -cnotin @('f42930f90c2de43c84f61ad6d966d0ee6074d70e','a5e746736893d5040e93032ae740a0878f748837','aff94f2b2d8055cf93b5405e6b11d4e7d9c86803','7b1837201ac7925591577a1517d7288936ca3464','5087d4d93d2f6ffdca0bc0096b365723005446fc','effa3de9e1fee6c3f3c08fc347a5e3175db14c80','5f256ce915f930481b0d31ac38b919c0a7692cd1')){throw 'blocked'}
    if($property.Name -ceq 'code' -and $v -cnotmatch '^[A-Z][A-Z0-9_]{1,100}$'){throw 'blocked'}
    if($property.Name -ceq 'status' -and $v -cnotin @('private_child_ready','blocked','dev_runtime_prepared','native_unresolved','cleanup_unresolved','sql_acceptance_unresolved','native_settled_and_cleaned','restoration_verified','restoration_residual','prepared','not_prepared','closed','residual','domain_verified','domain_proof_unresolved','native_domain_denial_and_cleanup_verified')){throw 'blocked'}
   }
