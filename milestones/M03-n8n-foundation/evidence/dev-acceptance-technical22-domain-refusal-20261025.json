@@ -1,0 +1,597 @@
+{
+  "kind": "m03_technical22_domain_projection_refusal",
+  "version": 1,
+  "observedAt": "2026-10-25T14:02:45.292Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "source": {
+    "head": "03e76993d36e6a726f52cfcfc006b2e91bcdbaa9",
+    "ciRunId": "40198939792",
+    "allFiveCiPassed": true,
+    "vercelPassed": true,
+    "appRuntime": "5f256ce915f930481b0d31ac38b919c0a7692cd1"
+  },
+  "attempt": {
+    "ordinal": 22,
+    "parentProcessId": 50696,
+    "runtimeProcessId": 19748,
+    "closed": true,
+    "nativeExit": 1,
+    "reopened": false
+  },
+  "rawAdmission": {
+    "kind": "m03_project_verified_continuation_admission",
+    "version": 1,
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "sourceCommitSha": "5f256ce915f930481b0d31ac38b919c0a7692cd1",
+    "windowId": "e2be1a67-f6db-4c90-bfd2-671c5db9b90a",
+    "approvalSha256": "5eb38cbe8740ed9a9f72d2356de3fa2e9ce77c8de3710020a7d3de7a6ebdd610",
+    "startsAt": 1792936297610,
+    "deadlineAt": 1792939897610,
+    "stopNewAt": 1792939297610,
+    "hardDeadlineAt": 1792940497610,
+    "parentProcessId": 50696
+  },
+  "rawClaim": {
+    "kind": "m03_project_verified_continuation_runtime_claim",
+    "version": 1,
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "admissionSha256": "e390862a11f353681a68e96db9230106bc4378b6b4f835557ec46b698097bcf5",
+    "processId": 19748,
+    "parentProcessId": 50696,
+    "claimedAt": 1792936307107
+  },
+  "rawClose": {
+    "kind": "m03_project_verified_technical_closed",
+    "version": 1,
+    "admissionSha256": "e390862a11f353681a68e96db9230106bc4378b6b4f835557ec46b698097bcf5",
+    "parentProcessId": 50696,
+    "runtimeProcessId": 19748,
+    "closedAt": 1792936804796,
+    "childClosed": true,
+    "credentialChildrenClosed": true,
+    "emergencyShutdown": false,
+    "pendingMachinePreserved": true,
+    "nativeExit": 1,
+    "bypassHandoffDeleted": false,
+    "closureVerified": false
+  },
+  "rawFrames": [
+    {
+      "kind": "m03_acceptance_transport_ready",
+      "nonce": "3a9c794a2cd3b419f284ec1219fccb81",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    {
+      "kind": "m03_acceptance_vercel_metadata",
+      "status": "metadata_covers_75_minutes",
+      "metadataValid": true,
+      "unexpired": true,
+      "covers75Minutes": true,
+      "effectiveBackendEstablished": false,
+      "networkRequests": 0,
+      "authenticationAttempted": false,
+      "refreshAttempted": false,
+      "configWritten": false,
+      "childClosed": true
+    },
+    {
+      "kind": "m03_acceptance_ready",
+      "status": "private_child_ready",
+      "deadlineAt": 1792939897610,
+      "approvedHead": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+      "sourceCommitSha": "5f256ce915f930481b0d31ac38b919c0a7692cd1"
+    },
+    {
+      "kind": "m03_acceptance_result",
+      "id": "m03_live_18015",
+      "command": "prepare",
+      "status": "dev_runtime_prepared",
+      "managementAttempts": 1491,
+      "controlAttempts": 1301,
+      "nativeExecutions": 4,
+      "gatewayPreflightAttempts": 12,
+      "providerDirectAttempts": 0,
+      "phaseBReady": false,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false
+    },
+    {
+      "kind": "m03_acceptance_result",
+      "id": "m03_live_18016",
+      "command": "run_case",
+      "status": "native_settled_and_cleaned",
+      "managementAttempts": 1494,
+      "controlAttempts": 1315,
+      "nativeExecutions": 6,
+      "gatewayPreflightAttempts": 12,
+      "providerDirectAttempts": 0,
+      "phaseBReady": false,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "caseId": "dispatch.vimeo",
+      "executionIds": [
+        "31134",
+        "31135"
+      ]
+    },
+    {
+      "kind": "m03_acceptance_result",
+      "id": "m03_live_18017",
+      "command": "run_error",
+      "status": "native_settled_and_cleaned",
+      "managementAttempts": 1494,
+      "controlAttempts": 1331,
+      "nativeExecutions": 15,
+      "gatewayPreflightAttempts": 12,
+      "providerDirectAttempts": 0,
+      "phaseBReady": false,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "caseId": "automatic.error.1",
+      "executionIds": [
+        "31136",
+        "31137"
+      ],
+      "residual": false
+    },
+    {
+      "kind": "m03_acceptance_result",
+      "id": "m03_live_18018",
+      "command": "run_error",
+      "status": "native_settled_and_cleaned",
+      "managementAttempts": 1494,
+      "controlAttempts": 1347,
+      "nativeExecutions": 15,
+      "gatewayPreflightAttempts": 12,
+      "providerDirectAttempts": 0,
+      "phaseBReady": false,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "caseId": "automatic.error.2",
+      "executionIds": [
+        "31138",
+        "31139"
+      ],
+      "residual": false
+    },
+    {
+      "kind": "m03_acceptance_result",
+      "id": "m03_live_18019",
+      "command": "run_error",
+      "status": "native_settled_and_cleaned",
+      "managementAttempts": 1494,
+      "controlAttempts": 1368,
+      "nativeExecutions": 15,
+      "gatewayPreflightAttempts": 12,
+      "providerDirectAttempts": 0,
+      "phaseBReady": false,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "caseId": "automatic.error.3",
+      "executionIds": [
+        "31140",
+        "31141",
+        "31142"
+      ],
+      "residual": false
+    },
+    {
+      "kind": "m03_acceptance_result",
+      "id": "m03_live_18020",
+      "command": "run_error",
+      "status": "native_settled_and_cleaned",
+      "managementAttempts": 1494,
+      "controlAttempts": 1384,
+      "nativeExecutions": 15,
+      "gatewayPreflightAttempts": 12,
+      "providerDirectAttempts": 0,
+      "phaseBReady": true,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "caseId": "automatic.error.4",
+      "executionIds": [
+        "31143",
+        "31144"
+      ],
+      "residual": false
+    },
+    {
+      "kind": "m03_acceptance_result",
+      "id": "m03_live_18021",
+      "command": "run_domain",
+      "status": "domain_proof_unresolved",
+      "managementAttempts": 1497,
+      "controlAttempts": 1391,
+      "nativeExecutions": 16,
+      "gatewayPreflightAttempts": 12,
+      "providerDirectAttempts": 0,
+      "phaseBReady": true,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "code": "FOUNDATION_NATIVE_EXECUTED_PIN_DATA",
+      "nativeReaderWorkflowKey": "WF-99",
+      "nativeReaderStage": "projection",
+      "nativeReaderHttpStatus": 200,
+      "residual": true
+    },
+    {
+      "kind": "m03_acceptance_result",
+      "id": "m03_live_18022",
+      "command": "restore",
+      "status": "restoration_verified",
+      "managementAttempts": 1639,
+      "controlAttempts": 1442,
+      "nativeExecutions": 16,
+      "gatewayPreflightAttempts": 12,
+      "providerDirectAttempts": 0,
+      "phaseBReady": true,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "code": "FOUNDATION_NATIVE_EXECUTED_PIN_DATA",
+      "nativeReaderWorkflowKey": "WF-99",
+      "nativeReaderStage": "projection",
+      "nativeReaderHttpStatus": 200,
+      "baselineRestored": true,
+      "environmentCleanupVerified": true,
+      "windowClosed": true,
+      "fixtureArchived": false,
+      "remoteWorkSettled": false,
+      "residual": true
+    },
+    {
+      "kind": "m03_acceptance_closed",
+      "status": "closed",
+      "managementAttempts": 1639,
+      "controlAttempts": 1442,
+      "nativeExecutions": 16,
+      "gatewayPreflightAttempts": 12,
+      "providerDirectAttempts": 0,
+      "phaseBReady": true,
+      "domainProofReady": false,
+      "businessAcceptanceProven": false,
+      "code": "FOUNDATION_NATIVE_EXECUTED_PIN_DATA",
+      "nativeReaderWorkflowKey": "WF-99",
+      "nativeReaderStage": "projection",
+      "nativeReaderHttpStatus": 200,
+      "childTransportsClosed": true,
+      "adminChildClosed": true,
+      "windowClosed": true,
+      "fixtureArchived": false,
+      "baselineRestored": true,
+      "environmentCleanupVerified": true,
+      "remoteWorkSettled": false,
+      "residual": true
+    },
+    {
+      "kind": "m03_acceptance_wrapper_closed",
+      "childClosed": true,
+      "credentialChildrenClosed": true,
+      "emergencyShutdown": false,
+      "nativeExit": 1,
+      "handoffsDeleted": true,
+      "bypassHandoffDeleted": false,
+      "pendingMachinePreserved": true,
+      "privateRead": true,
+      "code": "M03_ACCEPTANCE_BLOCKED"
+    }
+  ],
+  "browserObservations": [
+    {
+      "kind": "coordinator_browser_observation",
+      "observedAt": "2026-10-25T13:52:00.631Z",
+      "action": "browser_discover",
+      "workflowId": "MzimjpsuyPuK7SKe",
+      "renderedName": "WF-00 · Orchestrator [dev]",
+      "executeControlEnabled": true
+    },
+    {
+      "kind": "coordinator_browser_observation",
+      "observedAt": "2026-10-25T13:55:40.761Z",
+      "action": "browser_details",
+      "workflowId": "MzimjpsuyPuK7SKe",
+      "renderedName": "WF-00 · Orchestrator [dev]",
+      "preparedCase": "dispatch.vimeo",
+      "executeControlEnabled": true
+    },
+    {
+      "kind": "coordinator_browser_start_attempted",
+      "observedAt": "2026-10-25T13:55:55.039Z",
+      "workflowId": "MzimjpsuyPuK7SKe",
+      "caseId": "dispatch.vimeo",
+      "nonce": "6659960001638809eb1fc2ac9807d51e",
+      "nativeReceipt": false
+    },
+    {
+      "kind": "coordinator_browser_execution_receipt",
+      "observedAt": "2026-10-25T13:56:11.423Z",
+      "workflowId": "MzimjpsuyPuK7SKe",
+      "caseId": "dispatch.vimeo",
+      "executionId": "31134",
+      "url": "https://muhhammedsayed.app.n8n.cloud/workflow/MzimjpsuyPuK7SKe/executions/31134",
+      "renderedSucceeded": true
+    },
+    {
+      "kind": "coordinator_browser_observation",
+      "observedAt": "2026-10-25T13:57:36.904Z",
+      "action": "browser_details",
+      "workflowId": "qTjioYmBUVMIERVz",
+      "renderedName": "WF-99 · Foundation smoke test [dev]",
+      "preparedCase": "native_domain",
+      "executeControlEnabled": true
+    },
+    {
+      "kind": "coordinator_browser_start_attempted",
+      "observedAt": "2026-10-25T13:57:51.202Z",
+      "workflowId": "qTjioYmBUVMIERVz",
+      "caseId": "native_domain",
+      "nonce": "ae8897c5abadd544a62ee01d1ba11974",
+      "nativeReceipt": false,
+      "observedDomainNotAllowed": true,
+      "executionIdNotYetRendered": true
+    },
+    {
+      "kind": "coordinator_browser_execution_receipt",
+      "observedAt": "2026-10-25T13:57:57.191Z",
+      "workflowId": "qTjioYmBUVMIERVz",
+      "caseId": "native_domain",
+      "executionId": "31145",
+      "url": "https://muhhammedsayed.app.n8n.cloud/workflow/qTjioYmBUVMIERVz/executions/31145",
+      "observedDomainNotAllowed": true
+    }
+  ],
+  "usageBefore": {
+    "management": 1340,
+    "control": 1250,
+    "combined": 2590,
+    "vercel": 254,
+    "native": 4,
+    "actors": 0,
+    "actorUsd": 0
+  },
+  "attemptDelta": {
+    "management": 299,
+    "control": 192,
+    "combined": 491,
+    "vercel": 34,
+    "native": 12,
+    "actors": 0,
+    "actorUsd": 0
+  },
+  "usage": {
+    "management": 1639,
+    "control": 1442,
+    "combined": 3081,
+    "vercel": 288,
+    "native": 16,
+    "actors": 0,
+    "actorUsd": 0
+  },
+  "limits": {
+    "management": 1728,
+    "control": 3584,
+    "combined": 5312,
+    "vercel": 304,
+    "native": 120,
+    "actors": 2,
+    "actorUsd": 2,
+    "newDistinctItems": 1
+  },
+  "phaseB": {
+    "passed": true,
+    "dispatch": {
+      "caseId": "dispatch.vimeo",
+      "executionIds": [
+        "31134",
+        "31135"
+      ],
+      "status": "native_settled_and_cleaned"
+    },
+    "automaticErrors": [
+      [
+        "31136",
+        "31137"
+      ],
+      [
+        "31138",
+        "31139"
+      ],
+      [
+        "31140",
+        "31141",
+        "31142"
+      ],
+      [
+        "31143",
+        "31144"
+      ]
+    ],
+    "allErrorGroupsSettledAndCleaned": true,
+    "finalPhaseBReady": true
+  },
+  "domain": {
+    "status": "unresolved",
+    "workflowKey": "WF-99",
+    "workflowId": "qTjioYmBUVMIERVz",
+    "executionId": "31145",
+    "executedVersionId": "817aa760-5cda-47df-865e-9f1d1a1865be",
+    "graphHash": "3ca4845b19ab3684cf8d014470b4a9a1cb5851bfcd58b12bd98e9b5b027ce867",
+    "journalIntentSequence": 38,
+    "journalRestoreSequence": 65,
+    "uiDomainNotAllowedObserved": true,
+    "readerHttpStatus": 200,
+    "readerStage": "projection",
+    "code": "FOUNDATION_NATIVE_EXECUTED_PIN_DATA",
+    "domainProofReady": false,
+    "acceptedPermissionProof": false,
+    "actualPinShape": "not_established",
+    "cleanupVerified": false
+  },
+  "restoration": {
+    "baselineRestored": true,
+    "environmentCleanupVerified": true,
+    "windowClosed": true,
+    "fixtureArchived": false,
+    "remoteWorkSettled": false,
+    "residual": true,
+    "fullD": false
+  },
+  "database": {
+    "version": 1,
+    "runId": "048ed4cc-e5f4-463e-9a58-c2747a69877a",
+    "environment": "dev",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "host": "aws-1-eu-central-1.pooler.supabase.com",
+    "port": 5432,
+    "status": "continuation_history_verified",
+    "authenticationAttempted": true,
+    "authenticationVerified": true,
+    "historyBefore": "complete",
+    "historyAfter": "complete",
+    "dryRunMatched": false,
+    "dryRunCheck": "not_attempted",
+    "dryRunNativeExit": null,
+    "pushAttempted": false,
+    "pushNativeExit": null,
+    "childrenClosed": true,
+    "handoffDeleted": true,
+    "leaseDeleted": true,
+    "scratchDeleted": true,
+    "pendingVersions": [],
+    "phaseAControl": true,
+    "phaseACommands": 16,
+    "phaseAClosed": true,
+    "observedAt": "2026-10-25T14:00:04.2494999Z",
+    "postcheckContinuation": true,
+    "projectVerifiedContinuation": true,
+    "forwardWindow": true,
+    "activeWindowId": "e2be1a67-f6db-4c90-bfd2-671c5db9b90a",
+    "clockSegmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "technicalAttemptOrdinal": 22,
+    "unprovisionedFixtureArchived": false,
+    "postcheckStage": "complete",
+    "catalogChecks": {
+      "identity": true,
+      "tables_rls": true,
+      "no_machine_table_grants": true,
+      "rpc_shape": true,
+      "owner_control_restricted": true,
+      "all_project_tables_rls": true,
+      "all_views_invoker": true,
+      "gw01_closed": true,
+      "domain_auto_join_off": true,
+      "baseline_counts": true,
+      "forward_primary_key": true,
+      "forward_signatures": true,
+      "forward_namespace": true,
+      "no_new_window": true
+    },
+    "postcheckCandidate": "scripts/db/out/m03-foundation-continuation-048ed4cc-e5f4-463e-9a58-c2747a69877a-db.types.ts",
+    "reactivationState": "acknowledged_and_verified",
+    "migrationReplay": false,
+    "appliedMigrationHashes": {
+      "20261017172928_extensions_schemas_roles.sql": "478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d",
+      "20261017172931_core_tables.sql": "4f1be3f6191885add916b164975ba10a8697069a0373a05df4e03fa53ea7cba3",
+      "20261017172934_auth_rls_views.sql": "8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9",
+      "20261017172937_rpc_pipeline_core.sql": "978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803",
+      "20261017172940_rpc_app_search.sql": "6111c5291e9c305e3e713180c0441ff5ffbf52b3b88f589d5d16fee55769171c",
+      "20261017172943_storage_cron.sql": "859466fadfd940445ffe4b457e7250a179c93731e1f34736a629fe20df6e9c68",
+      "20261017172945_seed_taxonomies.sql": "af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234",
+      "20261018034220_rpc_n8n_foundation.sql": "457ad4351b08c47b996ae67062ed701efb7d5ef63ea7658d20931f2d5dc5d3fd",
+      "20261018035417_price_book_plan.sql": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd",
+      "20261018070042_n8n_worker_gateway_admission.sql": "98ebdfad9fffa819773fdbee5e3b9b8374be8a6f58497593084aed4077e9b856",
+      "20261018231756_m03_actor_launch_admission.sql": "fc6955938bba3d08b6a1140258a1db2d0569a5f441c8cc5c934847eb84116600",
+      "20261018232014_m03_foundation_gateway.sql": "ea1385b734e243bed4dea0030f4975a81d38d41338cb8d94d6086dd83916d334",
+      "20261018232922_m03_foundation_safety_receipts.sql": "dffa2c23d0102bb7382106c9800e05b5806a1eee89580794aa87bdd63a7f05a5",
+      "20261018233338_m03_foundation_boundary_hardening.sql": "bf930602b402ef0b4649e9399ed2dcb9d6f2bf576a08d9313f352ccfab4d6c90",
+      "20261023163755_m03_foundation_window_continuation.sql": "08400005da4b595d7d1222ff77c31ba745968c3ab3d9dc1d7353f5531c7c8fde"
+    }
+  },
+  "physicalClosure": {
+    "nativeExit": 0,
+    "result": {
+      "kind": "m03_owned_process_presence",
+      "parentPid": 50696,
+      "runtimePid": 19748,
+      "matchingProcesses": [],
+      "allAbsent": true,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "filePresence": {
+      "kind": "m03_closed_attempt_file_presence",
+      "observedAt": "2026-10-25T14:01:57.199Z",
+      "files": {
+        "emr-m03-acceptance-management.dpapi": false,
+        "emr-m03-acceptance-management.lease.json": false,
+        "emr-m03-acceptance-writer.dpapi": false,
+        "emr-m03-acceptance-writer.lease.json": false,
+        "emr-m03-acceptance-apifyread.dpapi": false,
+        "emr-m03-acceptance-apifyread.lease.json": false,
+        "emr-m03-foundation-dev-migration-password.dpapi": false,
+        "emr-m03-foundation-dev-migration-password.lease.json": false,
+        "emr-m03-acceptance-protection-bypass.dpapi": true,
+        "emr-m03-acceptance-parent.operation.lock": false,
+        "emr-m03-foundation-dev-migration.operation.lock": false
+      },
+      "persistentOriginals": {
+        "admin/database.dpapi": true,
+        "runtime/management.dpapi": true,
+        "runtime/writer.dpapi": true,
+        "runtime/apifyread.dpapi": true
+      },
+      "machineOriginal": true,
+      "privateRead": false,
+      "networkRequests": 0
+    }
+  },
+  "remaining": {
+    "ownedNativeExecution": "31145",
+    "retainedFixtureArchive": true,
+    "localBypassCopyPresent": true,
+    "domainProof": false,
+    "remainingDispatchesAndActorCallbackSubChecks": true
+  },
+  "boundaries": {
+    "production": false,
+    "recurringActivity": false,
+    "externalNotifications": false,
+    "paidActorStarts": 0,
+    "merge": false,
+    "M04": false,
+    "fullBusinessAcceptance": false
+  },
+  "interpretation": [
+    "Phase B passed with actual parent/child executions and all four automatic error groups, with each accepted owned execution cleaned.",
+    "The UI showed native domain denial, but the reader refused its executed pin-data shape before domain proof. No cause or acceptance is inferred from the UI text.",
+    "Restoration status describes workflow/environment restoration only. The same raw result retains residual true, remoteWorkSettled false and fixtureArchived false.",
+    "The child and all credential-bearing children closed; regular disposable pairs and locks are absent. The one bypass copy remains. Persistent originals and Machine remain present.",
+    "No smoke actor, provider read or new distinct item was attempted. The closed seventh SQL window must never be reopened."
+  ],
+  "sourcePins": {
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "7df9e6486e5c310ca1d73c184c517ecbb61f109591ce6a6cd719f14c77f893bf",
+    "scripts/n8n/foundation-live-project-verified-fixtures.mjs": "62fd300b6c1fe44f43d55e114c97f30251f9da037db8703ef48406bd32e1a3a3",
+    "scripts/n8n/foundation-live-project-verified-continuation.test.mjs": "0d9b05d8eb6c3c38536a9e675e410a5d1a511e4053dc1f9d05cceae3a156b03e",
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "a0eadd34c682a6e8f4a60705bacb64bf4bd8e7f076aa176eca6987059d105fd2",
+    "scripts/db/windows/Foundation-AdminControl.ps1": "5f5762bde5227640495d75a60d721d2008ff2a51f9391ebc920e1b96c717963d",
+    "scripts/assert/m03_smoke_reactivate_project_verified.sql": "e0634ba671f6ff5cf38bbe420e5e7f797c02e5af253d8f2609a01861b716113f",
+    "scripts/n8n/windows/Invoke-M03Acceptance.ps1": "4403df22c0c5fe22038fe44ca73816b9b893091a9ce32b58e26c0ca836cf787b",
+    "scripts/db/foundation-forward-migration-ps.test.mjs": "c70ed4c4295299e755e77ccb240d77c6c7bb1af09d48844c023b174daf7d6019",
+    "scripts/db/foundation-project-verified-reactivate.test.mjs": "0cbe68481134d7d80a7016eb6dbe547886f679b526c9c00df0c4d9fe2492c7bb",
+    "scripts/n8n/foundation-live-wrapper.test.mjs": "81f96e2ce5d9fda910fa1e13d40ef99f08cbee5084b34ef1cf2efbe104540a79"
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-22.json": "e390862a11f353681a68e96db9230106bc4378b6b4f835557ec46b698097bcf5",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-22.runtime-claim.json": "05e20a4fcd04ddf439a2d6d03599107b5262855f37ae894bf1496843b71e96ed",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-22.closed.json": "a4761c232e8b4768180f90fae9353927cd992657cb4637ebe6ce33756a829fc3",
+    "scripts/n8n/out/foundation/live/runtime.technical-22.jsonl": "f7274efe87341ad6971de13261ac9704bb964ae4ab03e978ff2986f9a739c7e8",
+    "scripts/n8n/out/foundation/live/setup.jsonl": "466d8ecfcf6d0bca036565fe679585e94aa93e907938d4e500f20e2a2bb07d83",
+    "scripts/n8n/out/foundation/live/technical22-coordinator-20261025-startup1.jsonl": "c81e94211cd32f4e824f894c79466449d00500809727a61b1ca197f95a5d343b",
+    "scripts/n8n/out/foundation/live/technical22-physical-presence-20261025.json": "9b75202ad56f55b27020263459cf8e2962238e184cebfd338a4286d6945887c8",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-22-latest.json": "ded566d602e2261477a3e60f3047d758700bab0f9306650d99f10faa07054d4a",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-22-owner-provision-attempt.json": "b74adc367e1656a2589907a7f7caa3c9b1a5e25d7135be87e08bb866ee933b45",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-22-reactivation-attempt.json": "6ae22e99a765233de39f565348590e9406b811bc27c53091d2f973c33f3fb5b7",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-22-attempt.json": "df284c392f5116b7341f5b49c21cd91f51e8c894494eb741a283c3a5d6a79f89"
+  }
+}

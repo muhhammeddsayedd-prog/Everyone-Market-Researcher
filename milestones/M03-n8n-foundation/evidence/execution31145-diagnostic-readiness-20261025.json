@@ -1,0 +1,151 @@
+{
+  "kind": "m03_execution31145_public_readiness",
+  "version": 1,
+  "observedAt": "2026-10-25T14:16:11.308Z",
+  "actual22Receipt": {
+    "path": "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical22-domain-refusal-20261025.json",
+    "sha256": "1f5d99253deb88df1df2dd9cf6f057fe878f5c1263c5711e70062e2e2fe35ff3"
+  },
+  "diagnostic": {
+    "workflowKey": "WF-99",
+    "workflowId": "qTjioYmBUVMIERVz",
+    "executionId": "31145",
+    "maximumRequests": 1,
+    "methods": [
+      "GET"
+    ],
+    "acceptanceReaderChanged": false,
+    "acceptanceProven": false,
+    "actualPinShape": "not_established",
+    "claimAbsent": true
+  },
+  "localTests": {
+    "author": {
+      "affectedJs": {
+        "job": "bcc385",
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0,
+        "nativeExit": 0
+      },
+      "nativePrivateContracts": {
+        "red": "605d65",
+        "green": "6d40a2",
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0,
+        "nativeExit": 0
+      },
+      "nativeActualPublicGate": {
+        "job": "45cf1a",
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "nativeExit": 0
+      },
+      "syntaxErrors": 0,
+      "lint": true,
+      "format": true,
+      "diffCheck": true
+    },
+    "coordinator": {
+      "command": "node --test scripts/n8n/inventory-diagnostics.test.mjs",
+      "nativeExit": 0,
+      "stdout": "✔ execution31145 pin classifier distinguishes finite native shapes without releasing received keys or values (334.9597ms)\n✔ execution31145 diagnostic makes exactly one fixed native GET and remains forensic on malformed pins (32.7058ms)\n✔ execution31145 diagnostics preserve one-call failure and closure boundaries without leaking payloads (59.607ms)\n✔ wf32 single-page classifier emits only fixed booleans and never payloads or candidate identities (0.9293ms)\n✔ wf32 native single GET preserves fixed transport parse and confidentiality failures and closes every child response (19.6635ms)\n✔ wf32 actual CLI ENTRY defers the genuine native import cycle and performs one synthetic streaming GET only (2061.0078ms)\n✔ wf32 portable public custody and one-use863/994 debit refuse historical drift and preserve all originals (1257.0266ms)\n✔ parameter defaults31130 projector requires an exact expected expansion and actual known Set run before its second candidate (8.7228ms)\n✔ category31130 projector privately distinguishes fixed fields and node order without exposing response-defined keys (4.4401ms)\n✔ category31130 projector rejects an unverified reconstructed body and reports only false predicates for malformed snapshots (1.1531ms)\n✔ snapshot31130 projector checks the past graph and known child privately without emitting native receipts or payload (1.5869ms)\n✔ snapshot31130 projector distinguishes redaction, pins, graph, names and child mismatches without disclosing values (3.1907ms)\n✔ snapshot31130 pin classification mirrors the existing sole-enabled-trigger rule without widening it (0.6877ms)\n✔ native31130 diagnostic uses actual streaming native reader and transport for exactly one charged metadata GET (5.0771ms)\n✔ snapshot31130 diagnostic streams exactly one full snapshot through the original native transport and remains forensic only (2.6656ms)\n✔ category31130 diagnostic reuses the actual native one-GET stream and preserves privacy and closure failures (32.3826ms)\n✔ parameter defaults31130 diagnostic keeps one actual native GET and conservative debit under success or closure failure (30.9341ms)\n✔ category31130 public reconstruction and one-use828 debit preserve827 and every original journal (1030.2846ms)\n✔ parameter defaults31130 public proof pins828 and durably charges829 only once (735.8318ms)\n✔ category public-chain fixtures pass when every workstation ignored output read is forbidden (2519.4736ms)\n✔ native31130 diagnostic retains fixed native projection or transport failure and never requests full data (41.8572ms)\n✔ execution31130 fixed classifier makes one charged metadata GET and emits only bounded predicates (3.7351ms)\n✔ execution31130 classifier reports nullable or missing native fields without accepting or exposing them (2.7229ms)\n✔ execution31130 classifier preserves one charge and fixed failures for HTTP, framing, JSON and closure faults (8.513ms)\n✔ execution31130 public gate pins closed16 and durably charges825 once without rewriting prior journals (762.8738ms)\n✔ WF00 execution diagnostic makes only three charged fixed GETs and never adopts an unretained run (25.4235ms)\n✔ WF00 execution metadata limits, permission failures and uncertain sockets stop without retry or payload output (17.4739ms)\n✔ WF00 retained metadata is a bounded candidate and cursors never create extra requests or execution authority (17.5933ms)\n✔ WF00 diagnostic one-use journal durably charges three reads without rewriting the six prior ledgers (144.5414ms)\n✔ runtime residual workflow projection compares only known graph/version/publication profiles (1.3602ms)\n✔ runtime residual diagnostic issues only3 charged fixed GETs and exposes boolean comparisons (6.2105ms)\n✔ runtime residual failures stop without retry and preserve exact charged requests and closure flags (17.3677ms)\n✔ runtime residual budget writes483to486 once, keeps the old prefix and refuses repeated admission (47.8443ms)\n✔ fixed WF70 discovery uses the same strict reader through an explicit bounded GET adapter and charges before every call (3.5598ms)\n✔ WF70 diagnostic retains HTTP/schema failure and page cap without leaking response values or retrying (6.4897ms)\n✔ WF70 budget journal is one-use, preserves baseline counters and durably debits no more than four controls (35.9094ms)\n✔ actual native31130 and exact31145 CLI complete the native import cycle and charge one streamed GET (2920.7114ms)\n✔ actual diagnostic CLI completes its circular reader imports with synthetic DNS/HTTPS only and records exact charged GETs (528.8391ms)\n✔ workflow-list diagnostic records only observed safe stages with strict TLS and bounded closed requests (9.0066ms)\n✔ workflow-list connect retains successful auth/project stages and fixed failure classification (1.803ms)\n✔ workflow-list tls retains successful auth/project stages and fixed failure classification (1.5312ms)\n✔ workflow-list tlsExpired retains successful auth/project stages and fixed failure classification (1.2862ms)\n✔ workflow-list tlsHostname retains successful auth/project stages and fixed failure classification (1.1811ms)\n✔ workflow-list status retains successful auth/project stages and fixed failure classification (1.5005ms)\n✔ workflow-list bodyAbort retains successful auth/project stages and fixed failure classification (1.2843ms)\n✔ workflow-list truncated retains successful auth/project stages and fixed failure classification (1.3558ms)\n✔ workflow-list parse retains successful auth/project stages and fixed failure classification (1.3113ms)\n✔ workflow-list schema retains successful auth/project stages and fixed failure classification (1.0782ms)\n✔ workflow-list http403 retains successful auth/project stages and fixed failure classification (1.1343ms)\n✔ workflow-list bodyTimeout retains successful auth/project stages and fixed failure classification (32.6786ms)\n✔ unknown injected transport failure remains unknown instead of inventing TLS/status/body proof (1.0705ms)\n✔ DNS failure stops before requests and retains no invented transport proof (0.6446ms)\n✔ one owned baseline diagnostic performs exactly one strict GET and projects matching booleans only (22.0828ms)\n✔ one baseline diagnostic reports all safe mismatch codes, never supplied private values (17.3264ms)\n✔ baseline diagnostic refuses reflected key and HTTP denial without retry or DTO export (13.546ms)\n✔ one GET forensics can recognize a reviewed graph variant without claiming pinned baseline or edit provenance (16.0355ms)\nℹ tests 56\nℹ suites 0\nℹ pass 56\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 13056.3205\n",
+      "stderrObserved": false
+    }
+  },
+  "independentReview": {
+    "reviewers": [
+      "identity_review"
+    ],
+    "findingsP1P2": 0,
+    "scope": "Four frozen files, exact oneGET budget, strict projected DTO, original persistence and no acceptance relaxation"
+  },
+  "publicSeal": {
+    "command": "New-M03AcceptancePublicSeal.ps1 -ReplaceReviewedSeal",
+    "nativeExit": 0,
+    "result": {
+      "status": "acceptance_public_seal_ready",
+      "privateRead": false,
+      "networkRequests": 0,
+      "projectFiles": 255,
+      "runtimeFiles": 840
+    },
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "originalCheckOnly": {
+    "command": "Invoke-M03N8nInventory.ps1 -CheckOnly -Execution31145PinDiagnostic",
+    "nativeExit": 0,
+    "publicResult": "M03 N8N_EXECUTION_31145_PIN_CHECK_ONLY_READY. One fixed owned execution GET; actual22 and1639/1442 usage verified. No private read, debit or network.",
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "publicCoordinatorRecovery": {
+    "firstSealerNativeExit": null,
+    "additionalTestNativeExit": null,
+    "reason": "Coordinator call timeout reset the public-only session before result capture; neither is relabeled success.",
+    "publicHelpersLaterAbsent": {
+      "kind": "m03_public_helper_presence",
+      "observerExcluded": true,
+      "matches": [],
+      "allAbsent": true,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "firstOriginalCheckOnly": {
+      "nativeExit": 1,
+      "publicResult": "M03 N8N_PREFLIGHT_BLOCKED. No private file read, decryption or API request."
+    },
+    "secondSealer": {
+      "nativeExit": 1,
+      "publicResult": "M03_ACCEPTANCE_PUBLIC_SEAL_BLOCKED"
+    },
+    "stalePendingPublicFile": {
+      "copy": "scripts/n8n/out/foundation/live/execution31145-public-seal-interruption-20261025.pending.json",
+      "sha256": "8666941dba76a337baf08c43d9cad207a4d3f8cfbf5f25f98e6f10fb24b99b66",
+      "privateContents": false
+    },
+    "exactScratchCleanup": {
+      "nativeExit": 0,
+      "result": {
+        "kind": "m03_public_scratch_cleanup",
+        "exactPublicScratchRemoved": true,
+        "privateRead": false,
+        "networkRequests": 0
+      }
+    },
+    "finalSealerAndOriginalCheckOnlySeparatelyCaptured": true
+  },
+  "sourcePins": {
+    "scripts/n8n/inventory.mjs": "f736341104ba6d01cb7e0ce29d143ce83826994c1b90a9560b31a550b8ca5e3d",
+    "scripts/n8n/inventory-diagnostics.test.mjs": "da4543c160dadfcdbbcd8d5e35b7d186d55bdb0ad3e47f2018d1bd262cd1799e",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "a8ae23dd33188faed1fa59e6cf0a9f011a2bde6979533a10609d82aca54976b2",
+    "scripts/n8n/private-inventory.test.mjs": "1bf81cd111330ca8ea854f1d39378dd4dcabf8083b6c7e60e2e2e23c31f1bbfa"
+  },
+  "usage": {
+    "management": 1639,
+    "control": 1442,
+    "combined": 3081,
+    "vercel": 288,
+    "native": 16,
+    "actors": 0,
+    "actorUsd": 0
+  },
+  "plannedSingleReadReservation": {
+    "management": 1640,
+    "control": 1443,
+    "combined": 3083,
+    "vercel": 288,
+    "additionalHttpRequestForControlReservation": false
+  },
+  "boundaries": {
+    "normalChangedHeadCiRequiredBeforeRead": true,
+    "credentialUse": false,
+    "hostedRequests": 0,
+    "production": false,
+    "merge": false,
+    "M04": false
+  }
+}

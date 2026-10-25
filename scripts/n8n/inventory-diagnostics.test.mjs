@@ -12,6 +12,165 @@ import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 
 const key = 'synthetic-diagnostic-key-only';
+async function execution31145Fixture() {
+  const { buildFoundationNativeDomainProbe, foundationNativeDomainProbe } =
+    await import('./foundation-live-domain-probe.mjs');
+  const { runtimeGraphHash } = await import('./foundation-runtime-control.mjs');
+  const runtimeAudience = 'https://everyone-market-researcher-synthetic-pin-diagnostic.vercel.app';
+  const body = buildFoundationNativeDomainProbe({
+    runtimeAudience,
+    settings: {
+      availableInMCP: true,
+      saveManualExecutions: true,
+      saveDataSuccessExecution: 'none',
+      saveDataErrorExecution: 'none',
+      saveExecutionProgress: false,
+    },
+  }).workflow;
+  const message = `Domain not allowed: This credential is restricted from accessing ${new URL(foundationNativeDomainProbe.targetAudience).host}. Only the following domains are allowed: ${new URL(runtimeAudience).host}`;
+  const error = {
+    name: 'NodeApiError',
+    message,
+    httpCode: null,
+    node: structuredClone(body.nodes[1]),
+    context: { request: { method: 'POST', uri: body.nodes[1].parameters.url } },
+  };
+  const context = {
+    versionId: 'Synthetic31145Version',
+    bodyHash: runtimeGraphHash(body),
+    runtimeAudience,
+    intentAt: Date.parse('2026-10-25T13:57:37.181Z'),
+  };
+  const dto = {
+    id: '31145',
+    workflowId: 'qTjioYmBUVMIERVz',
+    workflowVersionId: context.versionId,
+    mode: 'manual',
+    status: 'error',
+    workflowData: { id: 'qTjioYmBUVMIERVz', versionId: context.versionId, ...body },
+    data: {
+      resultData: {
+        pinData: { [body.nodes[0].name]: [{ json: {} }] },
+        error,
+        runData: {
+          [body.nodes[0].name]: [{ data: { main: [[{ json: {} }]] } }],
+          [body.nodes[1].name]: [{ error: structuredClone(error) }],
+        },
+      },
+    },
+  };
+  return { dto, context, manualName: body.nodes[0].name };
+}
+test('execution31145 pin classifier distinguishes finite native shapes without releasing received keys or values', async () => {
+  const f = await execution31145Fixture();
+  const r = await inventory.projectExecution31145Pins(f.dto, f.context);
+  assert.equal(r.fields.pinsPassExistingReader, true);
+  assert.equal(r.fields.executedGraphMatches, true);
+  assert.equal(r.fields.domainDenialShapeMatches, true);
+  assert.equal(r.counts.pinNodeCount, 1);
+  assert.equal(r.counts.pinJsonKeyCount, 0);
+  for (const mode of ['null', 'array', 'paired', 'business', 'extra', 'unknown']) {
+    const x = await execution31145Fixture(),
+      p = x.dto.data.resultData;
+    if (mode === 'null') p.pinData = null;
+    if (mode === 'array') p.pinData = [];
+    if (mode === 'paired') p.pinData[x.manualName][0].pairedItem = { item: 0 };
+    if (mode === 'business')
+      p.pinData[x.manualName][0].json.SYNTHETIC_PRIVATE_KEY = 'SYNTHETIC_PRIVATE_VALUE';
+    if (mode === 'extra') p.pinData[x.manualName][0].SYNTHETIC_PRIVATE_EXTRA = 'SYNTHETIC_PRIVATE_VALUE';
+    if (mode === 'unknown')
+      p.pinData.SYNTHETIC_PRIVATE_NODE = [{ json: { private: 'SYNTHETIC_PRIVATE_VALUE' } }];
+    const got = await inventory.projectExecution31145Pins(x.dto, x.context);
+    assert.equal(got.fields.pinsPassExistingReader, false, mode);
+    assert.doesNotMatch(
+      JSON.stringify(got),
+      /SYNTHETIC_PRIVATE|Synthetic31145|Manual Machine|https:|NodeApiError|workflowData|pinData/,
+    );
+  }
+});
+test('execution31145 diagnostic makes exactly one fixed native GET and remains forensic on malformed pins', async () => {
+  const x = await execution31145Fixture();
+  x.dto.data.resultData.pinData = null;
+  const f = native31130Fixture(x.dto);
+  let charges = 0,
+    closed = 0;
+  const r = await inventory.runExecution31145PinDiagnostic(key, {
+    ...f.options,
+    readContext: () => x.context,
+    openBudget: () => ({
+      admit() {
+        charges++;
+      },
+      close() {
+        closed++;
+      },
+    }),
+  });
+  assert.equal(r.status, 'native_snapshot_classified');
+  assert.equal(r.technicalAttempt, 22);
+  assert.equal(r.acceptanceProven, false);
+  assert.equal(charges, 1);
+  assert.equal(closed, 1);
+  assert.equal(f.calls.length, 1);
+  assert.equal(f.calls[0].path, '/api/v1/executions/31145?includeData=true');
+  assert.equal(f.calls[0].method, 'GET');
+  assert.equal(r.networkCompletionVerified, true);
+  assert.equal(r.forensics.fields.pinsNull, true);
+  assert.equal(r.forensics.fields.pinsPassExistingReader, false);
+  assert.doesNotMatch(
+    JSON.stringify(r),
+    /Synthetic31145|https:|NodeApiError|workflowData|SYNTHETIC_PRIVATE|synthetic-diagnostic-key/,
+  );
+});
+test('execution31145 diagnostics preserve one-call failure and closure boundaries without leaking payloads', async () => {
+  for (const mode of ['json', 'http', 'framing', 'dns', 'unclosed']) {
+    const x = await execution31145Fixture(),
+      f = native31130Fixture(x.dto, {
+        rawBody: mode === 'json' ? '{' : null,
+        status: mode === 'http' ? 503 : 200,
+        framing: mode === 'framing',
+        unclosed: mode === 'unclosed',
+      });
+    if (mode === 'dns')
+      f.options.nativeTransport.resolveInstance = async () => {
+        throw Error('SYNTHETIC_PRIVATE');
+      };
+    let charged = 0,
+      closed = 0;
+    const r = await inventory.runExecution31145PinDiagnostic(key, {
+      ...f.options,
+      timeoutMs: 50,
+      closeTimeoutMs: 10,
+      readContext: () => x.context,
+      openBudget: () => ({
+        admit() {
+          charged++;
+        },
+        close() {
+          closed++;
+        },
+      }),
+    });
+    assert.equal(r.status, 'native_snapshot_failed', mode);
+    assert.equal(charged, 1, mode);
+    assert.equal(closed, 1, mode);
+    assert.equal(r.requestCount, 1, mode);
+    assert.equal(f.calls.length, mode === 'dns' ? 0 : 1, mode);
+    assert.equal(r.acceptanceProven, false);
+    assert.doesNotMatch(
+      JSON.stringify(r),
+      /SYNTHETIC_PRIVATE|Synthetic31145|https:|NodeApiError|workflowData|synthetic-diagnostic-key/,
+    );
+  }
+  const x = await execution31145Fixture();
+  x.dto.data.resultData.pinData = Object.fromEntries(
+    Array.from({ length: 201 }, (_, i) => ['SYNTHETIC_PRIVATE_' + i, []]),
+  );
+  const bounded = await inventory.projectExecution31145Pins(x.dto, x.context);
+  assert.equal(bounded.counts.pinNodeCount, null);
+  assert.equal(bounded.fields.pinsPassExistingReader, false);
+  assert.doesNotMatch(JSON.stringify(bounded), /SYNTHETIC_PRIVATE/);
+});
 test('wf32 single-page classifier emits only fixed booleans and never payloads or candidate identities', () => {
   const r = inventory.projectWf32DiscoveryDiagnostic({
     data: [
@@ -1874,16 +2033,19 @@ test('WF70 budget journal is one-use, preserves baseline counters and durably de
   }
 });
 
-test('actual native31130 CLI completes the native transport inventory import cycle and charges one streamed metadata GET', async () => {
+test('actual native31130 and exact31145 CLI complete the native import cycle and charge one streamed GET', async () => {
   const root = mkdtempSync(join(tmpdir(), 'emr-native31130-cli-'));
   try {
-    for (const snapshotMode of [false, true, 'categories', 'parameter_defaults']) {
-      const full =
-        snapshotMode === 'parameter_defaults'
+    for (const snapshotMode of [false, true, 'categories', 'parameter_defaults', 'domain_pins']) {
+      const domainPins = snapshotMode === 'domain_pins';
+      const full = domainPins
+        ? await execution31145Fixture()
+        : snapshotMode === 'parameter_defaults'
           ? await parameterDefaults31130Fixture()
           : await category31130Fixture();
-      const label =
-        snapshotMode === 'parameter_defaults'
+      const label = domainPins
+        ? 'domain-pins'
+        : snapshotMode === 'parameter_defaults'
           ? 'parameter-defaults'
           : snapshotMode === 'categories'
             ? 'category'
@@ -1910,11 +2072,20 @@ test('actual native31130 CLI completes the native transport inventory import cyc
       // Only the public qualification is synthetic here; separate tests exercise
       // its actual immutable receipt/prefix checks. Keep real CLI, journal,
       // native reader, streaming native transport and circular import topology.
-      const source =
-          original.slice(0, start) +
-          `function readNativeExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {root,versionId:'Synthetic31130Version',intentAt:${instant}};}function readSnapshotExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {...readNativeExecution31130Context(root),bodyHash:${JSON.stringify(full.context.bodyHash)}};}async function readCategoryExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {...readSnapshotExecution31130Context(root),expectedBody:${JSON.stringify(full.context.expectedBody)},categoryPins:{}};}async function readParameterDefaultsExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return readCategoryExecution31130Context(root); }\n` +
-          original.slice(end),
-        entry = put('scripts/n8n/inventory.mjs', source),
+      let source =
+        original.slice(0, start) +
+        `function readNativeExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {root,versionId:'Synthetic31130Version',intentAt:${instant}};}function readSnapshotExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {...readNativeExecution31130Context(root),bodyHash:${JSON.stringify(full.context.bodyHash)}};}async function readCategoryExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {...readSnapshotExecution31130Context(root),expectedBody:${JSON.stringify(full.context.expectedBody)},categoryPins:{}};}async function readParameterDefaultsExecution31130Context(root=fileURLToPath(new URL('../../',import.meta.url))){return readCategoryExecution31130Context(root); }\n` +
+        original.slice(end);
+      if (domainPins) {
+        const a = source.indexOf('function readExecution31145Context('),
+          b = source.indexOf('export function checkExecution31145PinDiagnostic(', a);
+        assert.ok(a > 0 && b > a);
+        source =
+          source.slice(0, a) +
+          `function readExecution31145Context(root=fileURLToPath(new URL('../../',import.meta.url))){return {root,pins:{},...${JSON.stringify(full.context)}};}\n` +
+          source.slice(b);
+      }
+      const entry = put('scripts/n8n/inventory.mjs', source),
         entryUrl = pathToFileURL(entry).href,
         actualTransport = pathToFileURL(resolve('scripts/n8n/foundation-native-transport.mjs')).href,
         actualReader = pathToFileURL(resolve('scripts/n8n/foundation-native-reader.mjs')).href;
@@ -1930,11 +2101,11 @@ test('actual native31130 CLI completes the native transport inventory import cyc
         https = put(
           'https.mjs',
           `import {EventEmitter} from 'node:events';import {PassThrough} from 'node:stream';import {appendFileSync} from 'node:fs';
-export function request(options,callback){if(options.method!=='GET'||options.hostname!=='muhhammedsayed.app.n8n.cloud'||options.path!==${JSON.stringify('/api/v1/executions/31130?includeData=' + String(!!snapshotMode))}||options.rejectUnauthorized!==true||options.agent!==false||options.headers['accept-encoding']!=='identity')throw Error('SYNTHETIC_ROUTE_BLOCKED');appendFileSync(new URL('./calls${label}.txt',import.meta.url),'fixed-get\\n');const req=new EventEmitter(),socket=new EventEmitter();socket.encrypted=true;socket.authorized=true;socket.remoteAddress='1.1.1.1';let res,closed=false;const close=()=>{if(closed)return;closed=true;res?.destroy();req.emit('close');socket.emit('close');};req.destroy=close;socket.destroy=close;req.end=()=>queueMicrotask(()=>{req.emit('socket',socket);socket.emit('secureConnect');res=new PassThrough();res.statusCode=200;res.headers={'content-type':'application/json'};res.complete=true;callback(res);if(!res.destroyed)res.end(Buffer.from(${JSON.stringify(JSON.stringify(snapshotMode ? full.dto : dto))}));res.once('end',close);});return req;}`,
+export function request(options,callback){if(options.method!=='GET'||options.hostname!=='muhhammedsayed.app.n8n.cloud'||options.path!==${JSON.stringify('/api/v1/executions/' + (domainPins ? '31145' : '31130') + '?includeData=' + String(!!snapshotMode))}||options.rejectUnauthorized!==true||options.agent!==false||options.headers['accept-encoding']!=='identity')throw Error('SYNTHETIC_ROUTE_BLOCKED');appendFileSync(new URL('./calls${label}.txt',import.meta.url),'fixed-get\\n');const req=new EventEmitter(),socket=new EventEmitter();socket.encrypted=true;socket.authorized=true;socket.remoteAddress='1.1.1.1';let res,closed=false;const close=()=>{if(closed)return;closed=true;res?.destroy();req.emit('close');socket.emit('close');};req.destroy=close;socket.destroy=close;req.end=()=>queueMicrotask(()=>{req.emit('socket',socket);socket.emit('secureConnect');res=new PassThrough();res.statusCode=200;res.headers={'content-type':'application/json'};res.complete=true;callback(res);if(!res.destroyed)res.end(Buffer.from(${JSON.stringify(JSON.stringify(snapshotMode ? full.dto : dto))}));res.once('end',close);});return req;}`,
         ),
         preload = put(
           'preload.mjs',
-          `import {registerHooks} from 'node:module';registerHooks({resolve(specifier,context,next){if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-native-reader.mjs')return {url:${JSON.stringify(actualReader)},shortCircuit:true};if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-native-transport.mjs')return {url:${JSON.stringify(actualTransport)},shortCircuit:true};if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-runtime-checkpoint.mjs')return {url:${JSON.stringify(pathToFileURL(resolve('scripts/n8n/foundation-runtime-checkpoint.mjs')).href)},shortCircuit:true};if(specifier==='./inventory.mjs'&&context.parentURL?.includes('/scripts/n8n/'))return {url:${JSON.stringify(entryUrl)},shortCircuit:true};if(specifier==='node:dns')return {url:${JSON.stringify(pathToFileURL(dns).href)},shortCircuit:true};if(specifier==='node:https')return {url:${JSON.stringify(pathToFileURL(https).href)},shortCircuit:true};return next(specifier,context);}});`,
+          `import {registerHooks} from 'node:module';registerHooks({resolve(specifier,context,next){if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-live-domain-probe.mjs')return {url:${JSON.stringify(pathToFileURL(resolve('scripts/n8n/foundation-live-domain-probe.mjs')).href)},shortCircuit:true};if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-native-reader.mjs')return {url:${JSON.stringify(actualReader)},shortCircuit:true};if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-native-transport.mjs')return {url:${JSON.stringify(actualTransport)},shortCircuit:true};if(context.parentURL===${JSON.stringify(entryUrl)}&&specifier==='./foundation-runtime-checkpoint.mjs')return {url:${JSON.stringify(pathToFileURL(resolve('scripts/n8n/foundation-runtime-checkpoint.mjs')).href)},shortCircuit:true};if(specifier==='./inventory.mjs'&&context.parentURL?.includes('/scripts/n8n/'))return {url:${JSON.stringify(entryUrl)},shortCircuit:true};if(specifier==='node:dns')return {url:${JSON.stringify(pathToFileURL(dns).href)},shortCircuit:true};if(specifier==='node:https')return {url:${JSON.stringify(pathToFileURL(https).href)},shortCircuit:true};return next(specifier,context);}});`,
         ),
         env = Object.fromEntries(
           ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP']
@@ -1947,13 +2118,15 @@ export function request(options,callback){if(options.method!=='GET'||options.hos
             '--import',
             pathToFileURL(preload).href,
             entry,
-            snapshotMode === 'parameter_defaults'
-              ? '--execution-31130-parameter-defaults-diagnostic'
-              : snapshotMode === 'categories'
-                ? '--execution-31130-category-diagnostic'
-                : snapshotMode
-                  ? '--execution-31130-snapshot-diagnostic'
-                  : '--execution-31130-native-metadata-diagnostic',
+            domainPins
+              ? '--execution-31145-pin-diagnostic'
+              : snapshotMode === 'parameter_defaults'
+                ? '--execution-31130-parameter-defaults-diagnostic'
+                : snapshotMode === 'categories'
+                  ? '--execution-31130-category-diagnostic'
+                  : snapshotMode
+                    ? '--execution-31130-snapshot-diagnostic'
+                    : '--execution-31130-native-metadata-diagnostic',
           ],
           { env: { ...env, M03_N8N_API_KEY: key }, encoding: 'utf8', windowsHide: true, timeout: 10000 },
         );
@@ -1967,13 +2140,15 @@ export function request(options,callback){if(options.method!=='GET'||options.hos
       const rows = readFileSync(
         join(
           root,
-          snapshotMode === 'parameter_defaults'
-            ? 'scripts/n8n/out/foundation/execution-31130-parameter-defaults-diagnostic-20261024.jsonl'
-            : snapshotMode === 'categories'
-              ? 'scripts/n8n/out/foundation/execution-31130-category-diagnostic-20261024.jsonl'
-              : snapshotMode
-                ? 'scripts/n8n/out/foundation/execution-31130-snapshot-diagnostic-20261024.jsonl'
-                : 'scripts/n8n/out/foundation/execution-31130-native-metadata-diagnostic-20261024.jsonl',
+          domainPins
+            ? 'scripts/n8n/out/foundation/execution-31145-pin-diagnostic-20261025.jsonl'
+            : snapshotMode === 'parameter_defaults'
+              ? 'scripts/n8n/out/foundation/execution-31130-parameter-defaults-diagnostic-20261024.jsonl'
+              : snapshotMode === 'categories'
+                ? 'scripts/n8n/out/foundation/execution-31130-category-diagnostic-20261024.jsonl'
+                : snapshotMode
+                  ? 'scripts/n8n/out/foundation/execution-31130-snapshot-diagnostic-20261024.jsonl'
+                  : 'scripts/n8n/out/foundation/execution-31130-native-metadata-diagnostic-20261024.jsonl',
         ),
         'utf8',
       )
@@ -1983,8 +2158,9 @@ export function request(options,callback){if(options.method!=='GET'||options.hos
       assert.deepEqual(rows.slice(1), [
         {
           event: 'management_attempt',
-          ordinal:
-            snapshotMode === 'parameter_defaults'
+          ordinal: domainPins
+            ? 1640
+            : snapshotMode === 'parameter_defaults'
               ? 829
               : snapshotMode === 'categories'
                 ? 828
@@ -1994,8 +2170,9 @@ export function request(options,callback){if(options.method!=='GET'||options.hos
         },
         {
           event: 'native_read_control_reservation',
-          ordinal:
-            snapshotMode === 'parameter_defaults'
+          ordinal: domainPins
+            ? 1443
+            : snapshotMode === 'parameter_defaults'
               ? 960
               : snapshotMode === 'categories'
                 ? 959
@@ -2007,8 +2184,19 @@ export function request(options,callback){if(options.method!=='GET'||options.hos
       ]);
       assert.doesNotMatch(
         r.stdout,
-        /SYNTHETIC_PRIVATE|Synthetic31130Version|synthetic-diagnostic-key|headers|workflowData|"resultData"/,
+        /SYNTHETIC_PRIVATE|Synthetic31130Version|Synthetic31145Version|synthetic-diagnostic-key|headers|workflowData|"resultData"/,
       );
+      if (domainPins) {
+        const repeated = spawnSync(
+          process.execPath,
+          ['--import', pathToFileURL(preload).href, entry, '--execution-31145-pin-diagnostic'],
+          { env: { ...env, M03_N8N_API_KEY: key }, encoding: 'utf8', windowsHide: true, timeout: 10000 },
+        );
+        assert.equal(repeated.status, 1);
+        assert.equal(repeated.stderr, '');
+        assert.equal(JSON.parse(repeated.stdout).status, 'budget_blocked');
+        assert.equal(readFileSync(join(root, 'calls' + label + '.txt'), 'utf8'), 'fixed-get\n');
+      }
     }
   } finally {
     rmSync(root, { recursive: true, force: true });

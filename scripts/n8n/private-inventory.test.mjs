@@ -130,6 +130,7 @@ function fixture(mode = 'success') {
   const wf00Mode = mode.startsWith('wf00');
   const execution31130Mode = mode.startsWith('execution31130');
   const native31130Mode = mode.startsWith('native31130');
+  const pin31145Mode = mode.startsWith('pin31145');
   const defaults31130Mode = mode.startsWith('defaults31130');
   const category31130Mode = mode.startsWith('category31130');
   const snapshot31130Mode = mode.startsWith('snapshot31130') || category31130Mode || defaults31130Mode;
@@ -142,6 +143,7 @@ function fixture(mode = 'success') {
     wf00Mode ||
     execution31130Mode ||
     native31130Mode ||
+    pin31145Mode ||
     snapshot31130Mode;
   const root = mkdtempSync(join(tmpdir(), 'emr-m03-n8n-fixture-'));
   roots.push(root);
@@ -209,6 +211,18 @@ function fixture(mode = 'success') {
       mode === 'native31130PublicBlocked'
         ? "if($Execution31130NativeMetadataDiagnostic){[IO.File]::WriteAllText((Join-Path $repo 'public-gate.txt'),'reached');throw 'SYNTHETIC_PRIVATE_PUBLIC_ERROR'}"
         : 'if($Execution31130NativeMetadataDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
+    );
+  if (pin31145Mode)
+    consumerSource = consumerSource.replace(
+      'if($Execution31145PinDiagnostic){$node=Assert-RuntimeReconciliationPublic $false $false $false $false $false $false $false $true}',
+      mode === 'pin31145PublicBlocked'
+        ? "if($Execution31145PinDiagnostic){[IO.File]::WriteAllText((Join-Path $repo 'public-gate.txt'),'reached');throw 'SYNTHETIC_PRIVATE_PUBLIC_ERROR'}"
+        : 'if($Execution31145PinDiagnostic){$node=(Get-Command node.exe -CommandType Application).Source}',
+    );
+  if (mode === 'pin31145PublicBlocked')
+    consumerSource = consumerSource.replace(
+      '  $privateRoot = [IO.Path]::GetFullPath($env:LOCALAPPDATA)',
+      "  [IO.File]::WriteAllText((Join-Path $repo 'private-sentinel.txt'),'reached');throw 'SYNTHETIC_PRIVATE_SENTINEL'",
     );
   if (mode === 'native31130PublicBlocked')
     consumerSource = consumerSource.replace(
@@ -838,7 +852,7 @@ function fixture(mode = 'success') {
     if (mode === 'execution31130BadBool') result.fields.idMatches = 'SYNTHETIC_PRIVATE';
     if (mode === 'execution31130WrongId') result.metadata.executionId = 'SYNTHETIC_PRIVATE';
   }
-  if (native31130Mode || snapshot31130Mode) {
+  if (native31130Mode || snapshot31130Mode || pin31145Mode) {
     for (const k of Object.keys(result)) delete result[k];
     Object.assign(result, {
       version: 1,
@@ -1075,14 +1089,94 @@ function fixture(mode = 'success') {
       result.metadata = null;
     }
   }
+  if (pin31145Mode) {
+    result.technicalAttempt = 22;
+    result.status = 'native_snapshot_classified';
+    result.readerMetadataVerified = false;
+    result.readerState = null;
+    result.snapshotStage = 'complete';
+    Object.assign(result.metadata, {
+      executionId: '31145',
+      workflowId: 'qTjioYmBUVMIERVz',
+      status: 'error',
+    });
+    const fields = [
+      'objectShape',
+      'idMatches',
+      'workflowMatches',
+      'versionMatchesIntent',
+      'modeManual',
+      'statusError',
+      'snapshotObject',
+      'snapshotIdMatches',
+      'snapshotVersionMatches',
+      'graphComputable',
+      'executedGraphMatches',
+      'fixedDomainBodyMatches',
+      'runDataShape',
+      'runDataNamesKnown',
+      'redactionPresent',
+      'redactionPassesExistingReader',
+      'pinsPresent',
+      'pinsNull',
+      'pinsArray',
+      'pinsObject',
+      'pinsEmpty',
+      'pinKeysKnown',
+      'pinKeysOnlyManual',
+      'manualPinPresent',
+      'pinItemsArray',
+      'pinSingleItem',
+      'pinItemObject',
+      'pinItemHasJson',
+      'pinItemOnlyJson',
+      'pinItemHasPairedItem',
+      'pinItemPairedItemZero',
+      'pinItemHasBinary',
+      'pinJsonObject',
+      'pinJsonEmpty',
+      'pinsPassExistingReader',
+      'manualOutputEmptyJson',
+      'mcpEnabled',
+      'domainDenialShapeMatches',
+    ];
+    result.forensics = {
+      fields: Object.fromEntries(fields.map((k) => [k, false])),
+      counts: Object.fromEntries(
+        [
+          'pinNodeCount',
+          'enabledTriggerCount',
+          'manualTriggerCount',
+          'pinItemCount',
+          'pinItemKeyCount',
+          'pinItemExtraKeyCount',
+          'pinJsonKeyCount',
+          'runNodeCount',
+        ].map((k) => [k, 0]),
+      ),
+    };
+    if (mode === 'pin31145NullableCount') result.forensics.counts.pinItemCount = null;
+    if (mode === 'pin31145Unsafe') result.forensics.raw = 'SYNTHETIC_PRIVATE';
+    if (mode === 'pin31145BadBool') result.forensics.fields.pinJsonEmpty = 'SYNTHETIC_PRIVATE';
+    if (mode === 'pin31145BadCount') result.forensics.counts.pinItemCount = 201;
+    if (mode === 'pin31145WrongIdentity') result.metadata.executionId = '31130';
+    if (mode === 'pin31145Acceptance') result.acceptanceProven = true;
+    if (mode === 'pin31145Unclosed') result.transportState.unclosedResponses = 1;
+    if (mode === 'pin31145Failure') {
+      result.status = 'native_snapshot_failed';
+      result.snapshotStage = 'parse';
+      result.forensics = null;
+      result.metadata = null;
+    }
+  }
   const code = `import {writeFileSync} from 'node:fs';
- const good=${defaults31130Mode ? "process.argv[2]==='--execution-31130-parameter-defaults-diagnostic'&&" : category31130Mode ? "process.argv[2]==='--execution-31130-category-diagnostic'&&" : snapshot31130Mode ? "process.argv[2]==='--execution-31130-snapshot-diagnostic'&&" : ''}${native31130Mode ? "process.argv[2]==='--execution-31130-native-metadata-diagnostic'&&" : ''}${execution31130Mode ? "process.argv[2]==='--execution-31130-metadata-diagnostic'&&" : ''}${wf00Mode ? "process.argv[2]==='--wf00-execution-diagnostic'&&" : ''}process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : machineMode ? "&&process.argv.length===3&&process.argv[2]==='--machine-metadata-diagnostic'" : runtimeMode ? "&&process.argv.length===3&&process.argv[2]==='--runtime-reconciliation-diagnostic'" : ''};
+ const good=${pin31145Mode ? "process.argv[2]==='--execution-31145-pin-diagnostic'&&" : ''}${defaults31130Mode ? "process.argv[2]==='--execution-31130-parameter-defaults-diagnostic'&&" : category31130Mode ? "process.argv[2]==='--execution-31130-category-diagnostic'&&" : snapshot31130Mode ? "process.argv[2]==='--execution-31130-snapshot-diagnostic'&&" : ''}${native31130Mode ? "process.argv[2]==='--execution-31130-native-metadata-diagnostic'&&" : ''}${execution31130Mode ? "process.argv[2]==='--execution-31130-metadata-diagnostic'&&" : ''}${wf00Mode ? "process.argv[2]==='--wf00-execution-diagnostic'&&" : ''}process.env.M03_N8N_API_KEY==='synthetic-n8n-key-for-test-only'&&!process.env.PGPASSWORD&&!process.env.SUPABASE_ACCESS_TOKEN&&!process.env.NODE_OPTIONS${baselineMode ? "&&process.argv.length===3&&process.argv[2]==='--workflow-baseline-diagnostic'" : discoveryMode ? "&&process.argv.length===3&&process.argv[2]==='--wf70-discovery-diagnostic'" : machineMode ? "&&process.argv.length===3&&process.argv[2]==='--machine-metadata-diagnostic'" : runtimeMode ? "&&process.argv.length===3&&process.argv[2]==='--runtime-reconciliation-diagnostic'" : ''};
  writeFileSync(new URL('./called.txt',import.meta.url),good?'only-n8n-key':'wrong-env');
  delete process.env.M03_N8N_API_KEY;
  console.error('synthetic-private-stderr-must-stay-hidden');
  ${['timeout', 'baselineTimeout', 'baselineUnknownClose', 'machineTimeout', 'runtimeTimeout'].includes(mode) ? 'await new Promise(r=>setTimeout(r,10000));' : ''}
  console.log(${mode === 'badJson' ? "'synthetic-private-stdout-must-stay-hidden'" : mode === 'unsafeSchema' ? JSON.stringify(JSON.stringify({ ...result, privateSecret: 'synthetic-private-value' })) : JSON.stringify(JSON.stringify(result))});
- ${mode === 'failure' ? 'process.exitCode=7;' : ['workflowBodyFailure', 'wf70Http', 'machineHttp', 'runtimeHttp', 'native31130Failure', 'snapshot31130Failure', 'category31130Failure', 'defaults31130Failure'].includes(mode) ? 'process.exitCode=1;' : ''}`;
+ ${mode === 'failure' ? 'process.exitCode=7;' : ['workflowBodyFailure', 'wf70Http', 'machineHttp', 'runtimeHttp', 'native31130Failure', 'snapshot31130Failure', 'category31130Failure', 'defaults31130Failure', 'pin31145Failure'].includes(mode) ? 'process.exitCode=1;' : ''}`;
   put('scripts/n8n/inventory.mjs', code);
   const paths = [
     'scripts/n8n/windows/New-M03N8nApiHandoff.ps1',
@@ -1177,6 +1271,7 @@ $s=[IO.File]::Open($store,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.Fi
         ...(wf00Mode ? ['-Wf00ExecutionDiagnostic'] : []),
         ...(execution31130Mode ? ['-Execution31130MetadataDiagnostic'] : []),
         ...(native31130Mode ? ['-Execution31130NativeMetadataDiagnostic'] : []),
+        ...(pin31145Mode ? ['-Execution31145PinDiagnostic'] : []),
         ...(defaults31130Mode
           ? ['-Execution31130ParameterDefaultsDiagnostic']
           : category31130Mode
@@ -1194,6 +1289,73 @@ describe(
   'M03 n8n bounded private inventory consumer, isolated synthetic Windows DPAPI only',
   { skip: process.platform !== 'win32' },
   () => {
+    it('pin31145 native Management child keeps fixed shape diagnostics separate from acceptance and cleans its copy', () => {
+      for (const mode of [
+        'pin31145Success',
+        'pin31145NullableCount',
+        'pin31145Unsafe',
+        'pin31145BadBool',
+        'pin31145BadCount',
+        'pin31145WrongIdentity',
+        'pin31145Acceptance',
+        'pin31145Unclosed',
+        'pin31145Failure',
+      ]) {
+        const f = fixture(mode),
+          check = f.run(true);
+        assert.equal(check.status, 0, check.stderr);
+        assert.match(check.stdout, /EXECUTION_31145_PIN_CHECK_ONLY_READY/);
+        const original = join(
+            f.root,
+            'private/Everyone-Market-Radar-Private/secrets/dev/runtime/management.dpapi',
+          ),
+          before = readFileSync(original),
+          r = f.run(),
+          valid = ['pin31145Success', 'pin31145NullableCount'].includes(mode);
+        assert.equal(r.status, valid ? 0 : 1, r.stderr);
+        assert.doesNotMatch(
+          r.stdout + r.stderr,
+          /SYNTHETIC_PRIVATE|synthetic-private|synthetic-n8n-key|unrelated-/,
+        );
+        const receipt = JSON.parse(r.stdout);
+        assert.equal(receipt.childClosed, true);
+        assert.equal(receipt.handoffDeleted, true);
+        assert.deepEqual(readFileSync(original), before);
+        assert.equal(existsSync(f.handoff), false);
+        assert.equal(
+          existsSync(join(f.root, 'private/Temp/emr-m03-acceptance-parent.operation.lock')),
+          false,
+        );
+        assert.equal(readFileSync(join(f.root, 'scripts/n8n/called.txt'), 'utf8'), 'only-n8n-key');
+        if (valid) {
+          assert.equal(receipt.inventory.technicalAttempt, 22);
+          assert.equal(receipt.inventory.metadata.executionId, '31145');
+          assert.equal(receipt.inventory.metadata.workflowId, 'qTjioYmBUVMIERVz');
+          assert.equal(receipt.inventory.readerMetadataVerified, false);
+          assert.equal(receipt.inventory.acceptanceProven, false);
+        } else if (mode === 'pin31145Failure') {
+          assert.equal(receipt.inventory.snapshotStage, 'parse');
+          assert.equal(receipt.inventory.forensics, null);
+        } else assert.equal(receipt.inventory, null);
+      }
+    });
+    it('pin31145 public refusal stops before every private-path sentinel', () => {
+      const f = fixture('pin31145PublicBlocked');
+      for (const check of [true, false]) {
+        const r = f.run(check);
+        assert.equal(r.status, 1, r.stderr);
+        assert.match(r.stdout, /N8N_PREFLIGHT_BLOCKED/);
+        assert.equal(readFileSync(join(f.root, 'public-gate.txt'), 'utf8'), 'reached');
+        for (const path of [
+          'private-sentinel.txt',
+          'scripts/n8n/called.txt',
+          'private/Temp/emr-m03-acceptance-parent.operation.lock',
+        ])
+          assert.equal(existsSync(join(f.root, path)), false);
+        assert.equal(existsSync(f.handoff), false);
+        assert.doesNotMatch(r.stdout + r.stderr, /SYNTHETIC_PRIVATE/);
+      }
+    });
     it('wf32 public refusal precedes persistent Management access and every private child', () => {
       const f = fixture('wf32PublicBlocked');
       for (const check of [false, true]) {
@@ -1368,13 +1530,15 @@ describe(
         'snapshot31130',
         'category31130',
         'defaults31130',
+        'pin31145',
       ]) {
         const wf00Mode = publicMode === 'wf00',
           execution31130Mode = publicMode === 'execution31130',
           native31130Mode = publicMode === 'native31130',
           snapshot31130Mode = publicMode === 'snapshot31130',
           category31130Mode = publicMode === 'category31130',
-          defaults31130Mode = publicMode === 'defaults31130';
+          defaults31130Mode = publicMode === 'defaults31130',
+          pin31145Mode = publicMode === 'pin31145';
         for (const mode of ['ready', 'stale', 'stringCounter', 'private', 'extra', 'overflow', 'stderr']) {
           const dto = structuredClone(result);
           if (wf00Mode)
@@ -1442,13 +1606,24 @@ describe(
               combinedAttempts: 1787,
               maximumRequests: 1,
             });
+          if (pin31145Mode)
+            Object.assign(dto, {
+              kind: 'm03_execution_31145_pin_check',
+              technicalAttempt: 22,
+              sourceCommitSha: '5f256ce915f930481b0d31ac38b919c0a7692cd1',
+              windowId: 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+              managementAttempts: 1639,
+              controlAttempts: 1442,
+              combinedAttempts: 3081,
+              maximumRequests: 1,
+            });
           if (mode === 'stale') dto.managementAttempts--;
           if (mode === 'stringCounter') dto.controlAttempts = String(dto.controlAttempts);
           if (mode === 'private') dto.privateRead = true;
           if (mode === 'extra') dto.raw = 'SYNTHETIC_PRIVATE_VALUE';
           put(
             'scripts/n8n/inventory.mjs',
-            `if(process.argv[2]!==${JSON.stringify(defaults31130Mode ? '--execution-31130-parameter-defaults-check-only' : category31130Mode ? '--execution-31130-category-check-only' : snapshot31130Mode ? '--execution-31130-snapshot-check-only' : native31130Mode ? '--execution-31130-native-metadata-check-only' : execution31130Mode ? '--execution-31130-metadata-check-only' : wf00Mode ? '--wf00-execution-check-only' : '--runtime-reconciliation-check-only')}||process.env.M03_N8N_API_KEY||process.env.PGPASSWORD||process.env.SUPABASE_ACCESS_TOKEN||process.env.NODE_OPTIONS)process.exit(7);${mode === 'stderr' ? "console.error('SYNTHETIC_PRIVATE_STDERR');" : ''}console.log(${JSON.stringify(mode === 'overflow' ? 'X'.repeat(5000) : JSON.stringify(dto))});`,
+            `if(process.argv[2]!==${JSON.stringify(pin31145Mode ? '--execution-31145-pin-check-only' : defaults31130Mode ? '--execution-31130-parameter-defaults-check-only' : category31130Mode ? '--execution-31130-category-check-only' : snapshot31130Mode ? '--execution-31130-snapshot-check-only' : native31130Mode ? '--execution-31130-native-metadata-check-only' : execution31130Mode ? '--execution-31130-metadata-check-only' : wf00Mode ? '--wf00-execution-check-only' : '--runtime-reconciliation-check-only')}||process.env.M03_N8N_API_KEY||process.env.PGPASSWORD||process.env.SUPABASE_ACCESS_TOKEN||process.env.NODE_OPTIONS)process.exit(7);${mode === 'stderr' ? "console.error('SYNTHETIC_PRIVATE_STDERR');" : ''}console.log(${JSON.stringify(mode === 'overflow' ? 'X'.repeat(5000) : JSON.stringify(dto))});`,
           );
           const script = put(
             'public.ps1',
@@ -1457,7 +1632,7 @@ $repo=${quote(root)};$source=${quote(resolve('scripts/n8n/windows/Invoke-M03N8nI
 $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile($source,[ref]$tokens,[ref]$errors);if($errors.Count -ne 0){throw 'PARSE_FAILED'}
 foreach($name in @('Assert-Keys','Assert-RuntimeReconciliationPublic')){$found=@($ast.FindAll({param($v)$v -is [Management.Automation.Language.FunctionDefinitionAst] -and $v.Name -ceq $name},$true));if($found.Count -ne 1){throw 'MISSING_FUNCTION'};Invoke-Expression $found[0].Extent.Text}
 function Confined-File($Root,$Relative){return Join-Path $Root $Relative}
-try{$value=Assert-RuntimeReconciliationPublic ${wf00Mode ? '$true' : '$false'} ${execution31130Mode ? '$true' : '$false'} ${native31130Mode ? '$true' : '$false'} ${snapshot31130Mode ? '$true' : '$false'} ${category31130Mode ? '$true' : '$false'} ${defaults31130Mode ? '$true' : '$false'};if($value -cne ${quote(node)}){throw 'WRONG_NODE'};Write-Output 'PUBLIC_READY'}catch{Write-Output 'PUBLIC_BLOCKED'}
+try{$value=Assert-RuntimeReconciliationPublic ${wf00Mode ? '$true' : '$false'} ${execution31130Mode ? '$true' : '$false'} ${native31130Mode ? '$true' : '$false'} ${snapshot31130Mode ? '$true' : '$false'} ${category31130Mode ? '$true' : '$false'} ${defaults31130Mode ? '$true' : '$false'} $false ${pin31145Mode ? '$true' : '$false'};if($value -cne ${quote(node)}){throw 'WRONG_NODE'};Write-Output 'PUBLIC_READY'}catch{Write-Output 'PUBLIC_BLOCKED'}
 `,
           );
           const r = spawnSync(powershell, ['-NoProfile', '-NonInteractive', '-File', script], {
