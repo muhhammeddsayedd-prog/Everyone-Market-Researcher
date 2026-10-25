@@ -169,7 +169,7 @@ function Validate-BaselineDiagnostic($Value) {
           $node=@($nodes | Where-Object {$_.id -ceq $difference.nodeId -and $_.name -ceq $difference.nodeName})
           if($node.Count -ne 1 -or $seenNodes.ContainsKey($difference.nodeId)){throw 'blocked'}
           $seenNodes[$difference.nodeId]=$true
-          $keys=@($node[0].parameters.PSObject.Properties.Name);$seenKeys=@{}
+          $keys=@($node[0].parameters.PSObject.Properties | ForEach-Object {$_.Name});$seenKeys=@{}
           foreach($name in @('changedParameterKeys','missingParameterKeys')){
             if($difference.$name -isnot [Array] -or $difference.$name.Count -gt $keys.Count){throw 'blocked'}
             foreach($key in $difference.$name){if($key -isnot [string] -or $key -cnotin $keys -or $seenKeys.ContainsKey($key)){throw 'blocked'};$seenKeys[$key]=$true}

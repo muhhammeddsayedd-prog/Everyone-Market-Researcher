@@ -469,6 +469,31 @@ function fixture(mode = 'success') {
       if (mode === 'baselineDifferenceBadBool') difference.layoutChanged = 'synthetic-private-bool';
       if (mode === 'baselineDifferenceDuplicate')
         result.forensics.nodeDifferences.push(structuredClone(difference));
+      if (mode === 'baselineDifferenceEmptyParameters') {
+        const manual = record.workflow.nodes.find((value) => value.name === 'Manual slot test');
+        result.forensics.nodeDifferences = [
+          {
+            nodeId: manual.id,
+            nodeName: manual.name,
+            changedParameterKeys: [],
+            missingParameterKeys: [],
+            extraParameterKeyCount: 1,
+            layoutChanged: false,
+            canonicalOrNativeDefaultsMatch: true,
+          },
+        ];
+      }
+      if (mode === 'baselineDifferenceAllDefaults') {
+        const candidates = foundationRuntimeExecutionParameterCandidates(record.workflow),
+          expanded = structuredClone(candidates.nativeDefaults);
+        for (const node of expanded.nodes) node.position[0] += 10;
+        result.forensics.nodeDifferences = inventoryDiagnostics.projectBaselineNodeDifferences(
+          expanded,
+          baseline,
+          candidates,
+        );
+        assert.equal(result.forensics.nodeDifferences.length, record.workflow.nodes.length);
+      }
     }
     if (mode === 'baselineUnsafeVersion') result.observedVersionId = 'synthetic-private-version';
     if (mode === 'baselineUnsafe') result.baseline.private = 'synthetic-private-value';
@@ -1929,6 +1954,8 @@ $out=@();foreach($value in $cases){try{Validate-Wf70Discovery $value;$out+=$true
       'baselineTimeout',
       'baselineUnsafeForensics',
       'baselineDifferences',
+      'baselineDifferenceEmptyParameters',
+      'baselineDifferenceAllDefaults',
       'baselineDifferenceUnknownNode',
       'baselineDifferenceUnknownKey',
       'baselineDifferenceBadCount',
@@ -1946,7 +1973,15 @@ $out=@();foreach($value in $cases){try{Validate-Wf70Discovery $value;$out+=$true
           r = f.run();
         assert.equal(
           r.status,
-          ['baselineSuccess', 'baselineMismatch', 'baselineDifferences'].includes(mode) ? 0 : 1,
+          [
+            'baselineSuccess',
+            'baselineMismatch',
+            'baselineDifferences',
+            'baselineDifferenceEmptyParameters',
+            'baselineDifferenceAllDefaults',
+          ].includes(mode)
+            ? 0
+            : 1,
           r.stdout + r.stderr,
         );
         const receipt = JSON.parse(r.stdout);
@@ -1961,8 +1996,29 @@ $out=@();foreach($value in $cases){try{Validate-Wf70Discovery $value;$out+=$true
         assert.doesNotMatch(r.stdout + r.stderr, /synthetic-private|unrelated-|synthetic-n8n-key/);
         if (mode === 'baselineMismatch')
           assert.deepEqual(receipt.inventory.baseline.failedChecks, ['version_mismatch']);
-        if (!['baselineSuccess', 'baselineMismatch', 'baselineDifferences'].includes(mode))
+        if (
+          ![
+            'baselineSuccess',
+            'baselineMismatch',
+            'baselineDifferences',
+            'baselineDifferenceEmptyParameters',
+            'baselineDifferenceAllDefaults',
+          ].includes(mode)
+        )
           assert.equal(receipt.inventory, null);
+        if (mode === 'baselineDifferenceEmptyParameters') {
+          assert.equal(receipt.inventory.forensics.nodeDifferences.length, 1);
+          assert.deepEqual(receipt.inventory.forensics.nodeDifferences[0].changedParameterKeys, []);
+          assert.equal(receipt.inventory.forensics.nodeDifferences[0].canonicalOrNativeDefaultsMatch, true);
+        }
+        if (mode === 'baselineDifferenceAllDefaults') {
+          assert.equal(receipt.inventory.forensics.nodeDifferences.length, 27);
+          assert.ok(
+            receipt.inventory.forensics.nodeDifferences.every(
+              (row) => row.canonicalOrNativeDefaultsMatch && row.layoutChanged,
+            ),
+          );
+        }
         if (mode === 'baselineDifferences') {
           assert.equal(receipt.inventory.observedVersionId, 'f5f755b7-9683-4fb6-a26d-87b001127244');
           assert.deepEqual(receipt.inventory.forensics.nodeDifferences[0].changedParameterKeys, [

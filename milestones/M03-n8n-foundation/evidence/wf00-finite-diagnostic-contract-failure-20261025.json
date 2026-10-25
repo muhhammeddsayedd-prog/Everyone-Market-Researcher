@@ -1,0 +1,61 @@
+{
+  "kind": "m03_finite_wf00_diagnostic_contract_failure",
+  "version": 1,
+  "observedAt": "2026-10-25T12:28:31.309Z",
+  "environment": "dev",
+  "host": "muhhammedsayed.app.n8n.cloud",
+  "workflowId": "MzimjpsuyPuK7SKe",
+  "helperHead": "e12f0d99d912b6069d7035f6369ab15bd3867ef5",
+  "ci": 40192824504,
+  "allFiveJobsAndVercelPassedBeforeRead": true,
+  "actualResult": {
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "private_process_failed",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": null
+  },
+  "parentNativeExit": 1,
+  "actualHttpStatusEstablished": false,
+  "actualValidationExceptionRetained": false,
+  "conservativeManagementCharge": 1,
+  "usage": {
+    "management": 1335,
+    "control": 1250,
+    "combined": 2585,
+    "vercel": 254,
+    "native": 4,
+    "actors": 0,
+    "newSpendUsd": 0
+  },
+  "localReproduction": {
+    "windowsPowerShellStrictModeLatest": true,
+    "emptyCanonicalPropertiesNameAccess": "rejected",
+    "nativeConsumerSingletonManualRow": "red_same_public_shape",
+    "nativeConsumerAllCanonicalDefaultsAndLayoutRows": "red_same_public_shape",
+    "actualCauseEstablished": false
+  },
+  "boundaries": {
+    "workflowMutations": 0,
+    "workflowExecutions": 0,
+    "administratorUse": false,
+    "migrationReplay": false,
+    "production": false,
+    "merge": false,
+    "m04": false
+  },
+  "credentials": {
+    "nativeChildClosed": true,
+    "consumedManagementCopyDeleted": true,
+    "persistentOriginalsPreserved": true
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/live/technical21-finite-difference-read-intent.json": "a4564e4e7d8ab9f0f93a35d1786ae4ae57cc4a60d879c5858b9a00f3cbe2b9fe",
+    "scripts/n8n/out/foundation/live/technical21-finite-difference-read-result.json": "60fb6c9ac9f1a362e06ed8f4afc07c61afaf4904b300c3b3efa17e65dc0747af",
+    "scripts/n8n/out/foundation/live/technical21-finite-difference-inventory-seal-used.json": "30e7fbe252fcca3cc595bd602808de0182b1cea16ecd71ae2668b394a7723990",
+    "scripts/n8n/out/foundation/live/technical21-ui-guard-local-followup.json": "ee1e67e2662afcba3bbee08de6faa1c55d141126bc7978a77ca9a622f831f42d"
+  }
+}
