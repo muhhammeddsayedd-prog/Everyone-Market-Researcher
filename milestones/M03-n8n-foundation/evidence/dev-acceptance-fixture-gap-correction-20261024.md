@@ -1,5 +1,135 @@
 # M03 retained fixture audit correction — 24 October 2026
 
+## Current functional acceptance checkpoint — 25 October 2026 Cairo
+
+The owner's [functional-acceptance decision](../../../docs/DECISIONS.md#m03-functional-acceptance-and-bounded-parallel-delivery--approved-25-october-2026)
+now governs closure through the [six checks and AC mapping](../MILESTONE.md#9-acceptance-criteria).
+It freezes custom-supervisor expansion while preserving required tests, branch
+protection, critical security/data-integrity gates and all historical evidence.
+After two failed repair cycles for the same testing-tool defect, use a supported
+alternative or report one precise boundary; an enforced block is not bypassed.
+
+Coordinator verification records exact head
+`b51cb7a3a65588ee63c03db8793d5726e39407e2`, normal
+[CI40205677823](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40205677823)
+all five required jobs and Vercel passing; PR #8 remains draft. This is delivery
+evidence, not real collection/callback acceptance. Actual22's representative
+Vimeo dispatch and all four automatic error groups remain accepted and need not
+be rerun. All15 applied migrations, seeded data and25 restored workflow
+definitions remain preserved.
+
+Current usage is **1661 Management/1464 Control/3125 combined/Vercel288/
+native16/actors0/USD0**, against **1728/3584/5312/V304** and the unchanged two
+sequential actors/USD1 each/USD2 total/one-distinct-item limits. Only67
+Management and16 Vercel requests remain. The earlier1640/1443/3083 checkpoint is
+retained below. One failed metadata-only MCP read adds1/1; its cause is unknown,
+and it was not retried. Native execution inspection conservatively reserves20/20,
+retained without refund. Native SQL Editor commands are recorded separately.
+No live actor batch was admitted in this slice.
+
+The [local recovery gate](technical22-local-recovery-gate-20261025.json) remains
+`local_fix_verified_cleanup_disabled`. Execution31145 is retained, the genuine
+cleanup/freshness integration cases remain unperformed after the recorded
+automatic-review block. Supported native evidence now establishes safe
+containment separately from that disabled cleanup mechanism, as recorded below.
+Do not enable that cleanup path or infer deletion from containment. Existing C01
+requires retained records to remain inventoried with their disposition. The revoked local bypass copy is
+independently absent; four persistent encrypted originals and Machine remain.
+No credential or time approval is missing.
+
+The next product result remains one real asynchronous collection through WF-19
+to the database, actual cost, duplicate/replay no-op and unknown-run rejection.
+Unknown fixed fees and the exhaustive hosted stub matrix have the explicit
+deferred/replaced dispositions in the single AC mapping. One fixture-backed
+read-only directory/app-shell slice is permitted in parallel, with no hosted
+writes or claim of live data; M04/M09/M10 do not start. Production, recurring
+activity, notifications, private R2 and merge remain separate.
+
+### Actual native containment and local directory delivery
+
+[The current functional evidence](functional-acceptance-20261025.json) separates
+native UI, database, local frontend and CI results. The authenticated n8n view
+identifies WF99 execution31145/version817aa760 as Error in110ms, with only the
+Manual trigger and HTTP domain-denial nodes. It shows the old audience refused
+before HTTP and no active WF99 execution. No retry, deletion or raw Other info
+was used. Combined with fresh global DB vacancy and zero launch/run/cost/item
+counts, this establishes safe isolation of this retained test record. It does
+not rewrite historical `fullD:false` or prove a real callback.
+
+The native Supabase SQL Editor target was independently verified as emr-dev /
+`zmotjsbzhzjvpelxvxlf`. A read-only snapshot verified exact fixture/audit/source
+ownership, all15 migration history versions/hashes, the closed seventh window,
+285 seeded competitors/1754 accounts, and no open windows, account/gateway
+leases, reserved/incomplete requests, launch approvals, actor/scrape runs,
+unprocessed Apify work, items or costs. This administrative UI verification is
+separate from the preserved restricted-runtime authentication evidence.
+
+The reviewed `scripts/assert/m03_smoke_teardown.sql` transaction was adapted only
+for native SQL Editor inputs, with additional locked exact-history/global-vacancy
+guards. Independent review caught and corrected a count-only history guard
+before execution. The final exact15-history aggregate is
+`ded9037b363fe2cbf6d7dc2e19731c1fe25963100db92b160967c84ec7b7c6d9`.
+The mutation passed once with ROLLBACK, then the same body ran once with COMMIT.
+An independent read-only postcheck confirms C999 archived/account paused,
+identities/source fields unchanged, zero items/cost/work and all15 versions plus
+285/1754 seeds preserved. Exactly two status updates; zero deletes, fixtures
+added, migration operations, grants or workflow mutations. Every row remains.
+The old wrappers and CleanupTechnical22 were neither extended nor invoked.
+
+The local `/dev/competitors` slice is implemented using12 literal catalog
+fixtures and generated competitor field types. It has name/market/tier/category
+filtering, clear-all, grid/list, baseline-first/name ordering and initials only,
+with a persistent fixture/no-live-data notice. It adds no dependency, API,
+database/auth flow or external asset request. Production mode, including Vercel
+Preview, returns404; the home page is unchanged. Eight component/provenance/
+production-mode checks, four local dev viewport flows with eight axe analyses,
+and eight production404/home browser checks pass at320/768/1024/1440. These are
+distinct local groups, not hosted acceptance. ESLint/typecheck/format pass;
+independent source and visual review reports no P1/P2. Screenshots remain in
+`apps/web/test-results/directory-dev/`. Test-owned3025/3026 listeners closed;
+unrelated3000/3001 processes were preserved.
+
+The earlier enforced write restrictions on root/M03 PROGRESS, CI-recovery JSON
+and PR body remain in force. No equivalent write was attempted. Their existing
+uncommitted changes are preserved; this permitted record, MILESTONE and
+MANUAL_ACTIONS contain the current next step. Normal changed-head PR CI is still
+required before merge; PR8 remains draft and M03 incomplete.
+
+### Smaller native sequence — prepared, not admitted
+
+Use the existing owned WF99 first-smoke path, asynchronous launch and WF19
+callback/recovery controls. Settle one approved public-page run and one item,
+then replay its valid callback/content and check unchanged item/completion/cost
+counts. Submit one unknown-run callback and require403 plus its rejection audit
+with no ingestion/cost change. Reuse accepted Vimeo/error groups rather than
+running them again. Keep AI/publish stubs, privacy controls and recurring
+triggers unchanged. Stop on an ambiguous paid start and reconcile its actual ID;
+do not spend the optional second actor merely to obtain a pass. Final readbacks,
+restore, archive/pause and safe shutdown remain part of the sequence.
+
+The existing protected Preview lifecycle has this source-backed lower bound;
+each Vercel request also charges Management:
+
+| Operation | Minimum Vercel/Management requests |
+|---|---:|
+| Project/env checks, owned bypass creation and readback | 4 |
+| Seven scoped Preview env entries and verification | 8 |
+| Deployment, at least one build poll and final project readback | 3 |
+| Environment cleanup and seven absence checks | 15 |
+| Bypass lookup, revoke and absence readback | 3 |
+| **Minimum complete lifecycle** | **33** |
+
+`foundation-live-setup.mjs:43–58,635–780,813–883` establishes14 fixed preparation
+requests, at least one poll and18 cleanup. At V288, minimum33 reaches321 against
+cap304: short17. The remaining16 cannot even cover18 cleanup. Its existing
+planner returns zero available polls and refuses before preparation writes;
+shutdown reserves must not be reduced. Native smoke/callback/replay verification
+and workflow restoration require additional Management calls; their fit within
+67 is not established. Selecting fewer command names does not make the existing
+377/44 whole-batch consumer admissible. No replacement helper, new live batch or
+allowance change was made. This is the precise remaining admission boundary;
+count the complete native plan and cleanup before any later allowance decision.
+
 ## Current local recovery gate — 25 October 2026 Cairo
 
 [The immutable current record](technical22-local-recovery-gate-20261025.json) preserves the successful actual31145 metadata read, the narrow source-backed null compatibility fix and the separate unverified recovery path. Existing reader/cleanup/domain tests pass74/74, genuine context/budget tests pass2/2, and affected native public-runtime tests pass20/20 with zero skips. These overlapping groups are not summed. The first public-runtime invocation failed at local PowerShell lookup (ENOENT), then passed after correcting only the public test launcher PATH. No database or provider authentication was attempted by those tests.

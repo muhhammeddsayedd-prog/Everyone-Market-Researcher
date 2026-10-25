@@ -1,6 +1,13 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
+test('local competitor fixtures are unavailable in a production build', async ({ page }) => {
+  const response = await page.goto('/dev/competitors');
+  expect(response?.status()).toBe(404);
+  await expect(page.getByText('Fixture preview', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('searchbox')).toHaveCount(0);
+});
+
 test('shows the internal placeholder without runtime or accessibility errors', async ({ page }, testInfo) => {
   const errors: string[] = [];
   const failedRequests: string[] = [];

@@ -335,3 +335,46 @@ our production operations. All prior attempts/counters, standing M03 authority,
 technical timeout/closure guards and aggregate limits remain unchanged. No
 migration replay, recurring activation, external notification, private R2
 execution, PR8 merge or M04 is authorized by this exception.
+
+## M03 functional acceptance and bounded parallel delivery — approved 25 October 2026
+
+The owner replaces the earlier project-level M03 closure checklist with the
+[six functional checks and one-time AC1–AC12 mapping](../milestones/M03-n8n-foundation/MILESTONE.md#9-acceptance-criteria).
+The mapping explicitly retains, replaces or defers each original criterion;
+unverified work is never marked passed. Correct dev targeting, least privilege,
+callback authenticity/run ownership, atomic persistence, replay/cost correctness,
+safe stopping and required CI/exports/review remain delivery gates. Unknown
+subscription fees and the exhaustive hosted stub matrix are not M03 blockers;
+their local contracts and historical limitations remain recorded.
+
+Freeze expansion of the custom supervisor and acceptance framework. Reuse
+existing helpers and supported native tools; accept manual native evidence with
+its identity, scope, actual result and limitations. After two failed repair
+cycles for the same testing-tool defect, choose a supported alternative or report
+one precise boundary. This changes the project acceptance policy, not an enforced
+platform decision: never recreate a rejected action through another route,
+disable required tests or infer acceptance from an unavailable verifier.
+
+Preserve the actual Vimeo dispatch and four automatic error groups, all15 dev
+migrations, seeded data, workflow restoration, prior attempts, closed windows,
+side-effect IDs and every charged request. Actors remain0 of2 sequential starts,
+USD1 each/USD2 total and at most one new distinct item. Current cumulative
+ceilings remain1728 Management/3584 Control/5312 combined/Vercel304; this reset
+adds no allowance. Admit no new live batch unless its remaining operations and
+shutdown fit. The real collection/callback/item/cost, replay and invalid-callback
+checks remain pending.
+
+The b51 recovery entry remains disabled. At the decision checkpoint,
+execution31145 was retained and C999 archive was pending; the subsequent
+[native containment record](../milestones/M03-n8n-foundation/evidence/functional-acceptance-20261025.json)
+records safe isolation and archive/pause without deletion. Existing C01 privacy/retention conditions still apply:
+inventory unresolved records, document the disposition and owner follow-up,
+and never report restored settings as deletion or unresolved work as settled.
+The blocked genuine cleanup/freshness checks remain unperformed. Encrypted dev
+originals persist; no new credential or time approval is requested.
+
+One isolated frontend/app-shell or read-only directory slice may proceed in
+parallel using stable contracts and labeled fixtures, with no hosted writes.
+This is a bounded delivery exception within the current work, not the start of
+M04, M09 or M10. Production, recurring activity, external notifications, private
+R2, PR #8 merge and advancement to M04 remain separate.

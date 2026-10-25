@@ -1,0 +1,317 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-25T16:34:12.618Z",
+  "status": "initial_functional_slice_complete_m03_incomplete",
+  "baseHead": "b51cb7a3a65588ee63c03db8793d5726e39407e2",
+  "branch": "m03-n8n-foundation",
+  "pullRequest": 8,
+  "authorizingDecision": "Owner approved functional acceptance and fixture competitor directory; no live batch in this slice.",
+  "criteriaMapping": "../MILESTONE.md#9-acceptance-criteria",
+  "framework": {
+    "expanded": false,
+    "CleanupTechnical22": "disabled",
+    "historicalFullD": false,
+    "deniedTests": "remain unperformed; no equivalent retry",
+    "convenienceExtraction": "Stopped after two local extraction failures; used visible native results and manual history comparison."
+  },
+  "usage": {
+    "management": 1661,
+    "control": 1464,
+    "combined": 3125,
+    "vercel": 288,
+    "native": 16,
+    "actors": 0,
+    "usd": 0,
+    "caps": {
+      "management": 1728,
+      "control": 3584,
+      "combined": 5312,
+      "vercel": 304
+    },
+    "remaining": {
+      "management": 67,
+      "vercel": 16
+    },
+    "newCharges": {
+      "mcpMetadataRead": {
+        "management": 1,
+        "control": 1,
+        "result": "isError; no metadata; cause unestablished; no retry"
+      },
+      "nativeExecutionInspection": {
+        "management": 20,
+        "control": 20,
+        "treatment": "conservative reservation retained without refund"
+      }
+    },
+    "actorAllowance": {
+      "maximumStarts": 2,
+      "sequential": true,
+      "maximumUsdPerStart": 1,
+      "totalUsdReserve": 2,
+      "maximumNewDistinctItems": 1
+    }
+  },
+  "nativeExecution": {
+    "method": "authenticated native n8n execution view",
+    "observedAt": "2026-10-25T16:15:00.746Z",
+    "project": "Personal",
+    "workflowId": "qTjioYmBUVMIERVz",
+    "executionId": "31145",
+    "status": "error",
+    "durationMs": 110,
+    "displayedSizeKb": 9,
+    "savedVersion": "817aa760-5cda-47df-865e-9f1d1a1865be",
+    "visibleNodes": [
+      "Manual Machine domain control",
+      "Machine old-audience domain denial"
+    ],
+    "httpNodeDurationMs": 54,
+    "error": "Domain not allowed",
+    "deniedHost": "everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app",
+    "allowedHost": "everyone-market-researcher-qapt1ldef-muhammed-abdelrahman.vercel.app",
+    "noActiveExecutionsShown": true,
+    "disposition": "Retained and inventoried. Terminal two-node pre-network denial plus fresh database vacancy establishes safe containment; no deletion or replay.",
+    "deleted": false,
+    "retried": false,
+    "rawOtherInfoOpened": false
+  },
+  "devDatabase": {
+    "method": "authenticated native Supabase SQL Editor",
+    "target": "emr-dev / zmotjsbzhzjvpelxvxlf",
+    "identity": {
+      "currentUser": "postgres",
+      "sessionUser": "postgres",
+      "database": "postgres"
+    },
+    "restrictedRuntimeAuthenticationClaim": false,
+    "commands": [
+      "read-only pre-snapshot",
+      "reviewed status-only teardown with ROLLBACK",
+      "same reviewed teardown with COMMIT, once",
+      "independent read-only post-snapshot"
+    ],
+    "nativeSubprocessExitCode": null,
+    "template": {
+      "path": "scripts/assert/m03_smoke_teardown.sql",
+      "sha256": "7410f5957e4fb1ceec20db90e01135c4417eeff2d7f60ec1f89d13d0a18f11f9"
+    },
+    "sqlArtifacts": {
+      "commitSha256": "7464b89e658d067ee8fbb49082e3298ec22eac0b40fdff7146c58c9bbfd81849",
+      "rollbackSha256": "a2a0c3ec07ed3b31fe8fb51a4728d7bd1eacc5b64f0a58adc3b1fabfc8fdb1c0"
+    },
+    "review": "Independent SQL review clear after adding exact history aggregate guard; rollback checked before commit.",
+    "transactionGuards": [
+      "dev identity and exact audit/source/fixture ownership",
+      "15 exact migration versions/names/history aggregate",
+      "fresh active/active compare and swap",
+      "closed exact seventh window and no other open worker/foundation window",
+      "no active launch/run/lease/admission/request/item/cost work",
+      "share table locks, lock_timeout5s and statement_timeout30s"
+    ],
+    "migrationHistory": [
+      {
+        "version": "20261017172928",
+        "name": "extensions_schemas_roles",
+        "historySha256": "d5c1a3c8b821bb14919c32d722042e15aa8775c966b3eade572531f066db093b"
+      },
+      {
+        "version": "20261017172931",
+        "name": "core_tables",
+        "historySha256": "0d7587a24dc96c35e639729369dd1650952381c356e5ed1ba867934669e1abcc"
+      },
+      {
+        "version": "20261017172934",
+        "name": "auth_rls_views",
+        "historySha256": "bb7713ce9dd0bfb4de0cc0bc98ae5f558d39807375b86f46b1bdbd002d7f0aad"
+      },
+      {
+        "version": "20261017172937",
+        "name": "rpc_pipeline_core",
+        "historySha256": "ed23d0424c7c16cf325feceaa141baecf26f4f281725e28be1286fd6e76b196d"
+      },
+      {
+        "version": "20261017172940",
+        "name": "rpc_app_search",
+        "historySha256": "2b36ed94ddfdc674e1097b4dee4141faf6e0912120c22e83c9b91b3353ec20b2"
+      },
+      {
+        "version": "20261017172943",
+        "name": "storage_cron",
+        "historySha256": "50b6a9aacfbf530783ba2defc23183293b1acfd6ce8a8612e871f5bb104c33ee"
+      },
+      {
+        "version": "20261017172945",
+        "name": "seed_taxonomies",
+        "historySha256": "3cb258773590c0225732727ea2701ad2dfc3ede8d9b62cc1d522bab3e4e9b61b"
+      },
+      {
+        "version": "20261018034220",
+        "name": "rpc_n8n_foundation",
+        "historySha256": "dedf2cae9d1cfb7d7c5cb996d4c871a55c2628af868ee57fcb6df4598582a6d6"
+      },
+      {
+        "version": "20261018035417",
+        "name": "price_book_plan",
+        "historySha256": "3086cac77d3e68ecd0695b00a62c883e0cf706605432ff153b25b0c27e43a6d2"
+      },
+      {
+        "version": "20261018070042",
+        "name": "n8n_worker_gateway_admission",
+        "historySha256": "53ceb5deb54eef53750aa70064820343797474d8b1b28696a559d71f4db40373"
+      },
+      {
+        "version": "20261018231756",
+        "name": "m03_actor_launch_admission",
+        "historySha256": "7487eb33d708fa70b8a43e7695fb730bb383b15382342e587e83e0de321a0d71"
+      },
+      {
+        "version": "20261018232014",
+        "name": "m03_foundation_gateway",
+        "historySha256": "4f6b99a52756fcedca93fdb78fdbbe43f2b03d46b3eeea80a943657cb0bb61f2"
+      },
+      {
+        "version": "20261018232922",
+        "name": "m03_foundation_safety_receipts",
+        "historySha256": "bfe2f0be429f93c9fe850ab3c4c457dfab8c0731edbed980cfad04c05da6479b"
+      },
+      {
+        "version": "20261018233338",
+        "name": "m03_foundation_boundary_hardening",
+        "historySha256": "39273bad21ca92b485c759d65a670056d2d6264010b90e899f6d0b0401e721be"
+      },
+      {
+        "version": "20261023163755",
+        "name": "m03_foundation_window_continuation",
+        "historySha256": "12e313d1c6337209cf7657d6d076b101f446b567033c2d2b3e65c38dbbe7ed18"
+      }
+    ],
+    "migrationHistoryAggregate": "ded9037b363fe2cbf6d7dc2e19731c1fe25963100db92b160967c84ec7b7c6d9",
+    "before": {
+      "competitorStatus": "active",
+      "accountStatus": "active"
+    },
+    "after": {
+      "competitorId": "d51a39f6-fe87-4d17-aee9-3070c45693aa",
+      "accountId": "bd23314c-591f-4fb7-92fd-b7450634eeb6",
+      "competitorStatus": "archived",
+      "accountStatus": "paused",
+      "itemsCount": 0,
+      "leaseAbsent": true,
+      "lastRunAbsent": true,
+      "lastSuccessAbsent": true,
+      "sourceIdentityMatches": true
+    },
+    "persistedArchiveVerified": true,
+    "postRead": {
+      "at": "2026-10-25T16:34:12.618Z",
+      "kind": "dev_post_containment_readback",
+      "method": "native_supabase_sql_editor",
+      "command": 4,
+      "identityVerified": true,
+      "target": "zmotjsbzhzjvpelxvxlf",
+      "fixture": {
+        "competitorId": "d51a39f6-fe87-4d17-aee9-3070c45693aa",
+        "accountId": "bd23314c-591f-4fb7-92fd-b7450634eeb6",
+        "competitorStatus": "archived",
+        "accountStatus": "paused",
+        "itemsCount": 0,
+        "leaseAbsent": true,
+        "lastRunAbsent": true,
+        "lastSuccessAbsent": true,
+        "sourceIdentityMatches": true
+      },
+      "zeroCounts": [
+        "items",
+        "costUsd",
+        "costEntries",
+        "launches",
+        "actorRuns",
+        "runningScrapes",
+        "reservedRequests",
+        "unprocessedApify",
+        "liveAccountLeases",
+        "openWorkerWindows",
+        "incompleteRequests",
+        "openLaunchApprovals",
+        "assignedGatewayLeases",
+        "openFoundationWindows"
+      ],
+      "seedCompetitors": 285,
+      "seedAccounts": 1754,
+      "fixtureCandidates": 1,
+      "fixtureAccounts": 1,
+      "creationMarkers": 1,
+      "exactWindowClosed": true,
+      "migrationCount": 15,
+      "migrationHistoryAggregate": "ded9037b363fe2cbf6d7dc2e19731c1fe25963100db92b160967c84ec7b7c6d9",
+      "historyComparison": "manual native rendered row against reviewed exact 15-version history",
+      "persistedArchiveVerified": true,
+      "deletes": 0,
+      "migrationOperations": 0
+    },
+    "rowsDeleted": 0,
+    "migrationOperations": 0,
+    "unchangedSeedCompetitors": 285,
+    "unchangedSeedAccounts": 1754,
+    "retention": "All fixture/catalog rows retained. No collected item existed. Archive/pause is containment, not erasure."
+  },
+  "frontend": {
+    "route": "/dev/competitors",
+    "mode": "local fixture-only",
+    "productionResult": 404,
+    "fixtures": 12,
+    "catalogSnapshot": "2026-10-17",
+    "liveData": false,
+    "newDependencies": 0,
+    "externalAssets": 0,
+    "apiOrDatabaseRequests": 0,
+    "homePreserved": true,
+    "localChecks": {
+      "componentAndProvenance": "8 passed",
+      "devBrowser": "4 viewport flows passed; 8 axe analyses; keyboard/filter/grid/list/empty/Arabic-long-name/no-overflow checks",
+      "productionBrowser": "8 passed: production404 and unchanged home at four viewports",
+      "viewports": [
+        320,
+        768,
+        1024,
+        1440
+      ],
+      "eslintTypecheck": "passed",
+      "independentReview": "clear, no P1/P2"
+    },
+    "screenshotsDirectory": "apps/web/test-results/directory-dev/"
+  },
+  "pendingBlockingProofs": [
+    "one real asynchronous approved public-page actor through WF19 to successful database run and one item",
+    "valid callback/content replay without duplicate item/completion/cost",
+    "provider usage and cost reconciliation",
+    "unknown-run callback rejection without ingestion/cost changes"
+  ],
+  "preservedAcceptedProofs": [
+    "Vimeo dispatch31134/31135",
+    "four automatic error/cooldown groups31136-31144",
+    "strict-TLS restricted gateway/RPC evidence; native Postgres-node Cloud CA failure remains accurately recorded"
+  ],
+  "persistentCredentials": {
+    "originals": "retained outside Git",
+    "openedOrDecryptedThisSlice": false,
+    "productionCredentialsUsed": false
+  },
+  "delivery": {
+    "priorCi": "40205677823: all five jobs and Vercel passed at base head",
+    "changedHeadCi": "normal required CI pending commit/push",
+    "prDraft": true,
+    "rootAndMilestoneProgress": "Earlier enforced write restrictions retained; existing dirty files preserved. Current evidence and manual actions are permitted records.",
+    "prBody": "No retry after earlier enforced write restriction."
+  },
+  "excluded": [
+    "live actor batch",
+    "production",
+    "recurring activation",
+    "external notifications",
+    "private R2",
+    "PR merge",
+    "M04"
+  ]
+}

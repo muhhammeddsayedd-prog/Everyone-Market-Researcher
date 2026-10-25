@@ -34,6 +34,9 @@ Owner and approver: **Mohamed Abdelrahman** (mohamed.abdelrahman@everyone.film).
   3. If nothing else can proceed, set the status to `Blocked: waiting on owner — MA-xx`.
 - Ask only for genuinely missing/revoked credentials, required MFA/consent, enforced permission changes, exhausted approved limits, consequential unresolved decisions, unsafe ambiguous side effects, production/destructive work, shared credential rotation, external messaging or unapproved recurring activity. Request genuinely missing inputs together through one hidden-prompt initialization/update interface; never request values in chat or extract unrelated saved secrets.
 - One coordinator owns hosted writes. Reuse existing helpers and targeted reviewers; locally test syntax, native contracts and error handling before real credential use. Preserve historical evidence and batch documentation with meaningful changes; do not add replacement-window script families or CI-announcement-only commits.
+- For M03, use the six functional acceptance checks and the one-time AC1–AC12 mapping in `milestones/M03-n8n-foundation/MILESTONE.md` §9. Freeze expansion of the custom supervisor, credential and acceptance frameworks. Keep required tests, branch protection, critical security/data-integrity checks and cumulative limits; do not make verifier-only conditions additional delivery gates. Manual native evidence is acceptable when its identity, scope, result and limitations are recorded honestly.
+- After two failed repair cycles for the same testing-tool defect, use a supported alternative or report one precise boundary. Do not build another verifier or retry a rejected action through another route. An enforced platform block remains binding; unperformed checks stay unperformed.
+- The owner permits one isolated frontend/app-shell or read-only directory slice in parallel with remaining M03 acceptance, using stable contracts and clearly labeled fixtures, with no hosted writes. This bounded exception does not start M04, M09 or M10, and does not turn fixture data into live acceptance. PR merge and advancement to the next milestone still need their separate owner decisions.
 - When all acceptance criteria pass:
   1. Paste the evidence.
   2. Fill in "Hand-off to next milestone".
@@ -94,7 +97,7 @@ If two documents disagree:
     - Regenerate the types after every migration.
 12. **Idempotency:** re-running any job on the same window must not duplicate rows or re-run AI.
 
-The owner's 23 October 2026 development-autonomy reset supersedes older project-level disposable-secret and repeated time-only approval requirements. It does not override enforced platform/organization controls, actual provider expiry, production boundaries or spending limits. Production credentials are excluded from the default dev profile. The unrelated private R2 incident and PR merge decisions remain separate; M04 must not start before the owner's next instruction.
+The owner's 23 October 2026 development-autonomy reset supersedes older project-level disposable-secret and repeated time-only approval requirements. The 25 October M03 functional-acceptance reset replaces the project-level closure conditions identified in the milestone's AC mapping; it does not mark unverified work complete or disable existing required checks. Neither reset overrides enforced platform/organization controls, actual provider expiry, production boundaries or spending limits. Production credentials are excluded from the default dev profile. The unrelated private R2 incident and PR merge decisions remain separate; M04 must not start before the owner's next instruction.
 
 ## 5. Tools you may use
 

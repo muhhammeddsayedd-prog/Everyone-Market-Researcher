@@ -9,7 +9,47 @@ How this works:
 3. The owner does it, ticks it in the milestone `PROGRESS.md`, and adds any non-secret value (project ref, URL) there.
 4. Secrets go only into approved native stores or the current-user-encrypted dev store below, never into the repo or chat.
 
-## Current M03 checkpoint — dev acceptance pending, 25 October 2026
+## Current M03 owner actions — functional acceptance reset, 25 October 2026
+
+No new credential handoff, name-specific credential creation, billing reply or
+time-window approval is requested. The four persistent dev originals are
+retained and the revoked local bypass copy is absent. Reuse existing native
+integrations and the approved restricted dev path. Unknown subscription fees
+remain unknown; Notify stays log-only.
+
+The [binding decision](DECISIONS.md#m03-functional-acceptance-and-bounded-parallel-delivery--approved-25-october-2026)
+and [single six-check/AC mapping](../milestones/M03-n8n-foundation/MILESTONE.md#9-acceptance-criteria)
+replace conflicting project-level closure wording below. The [current evidence
+checkpoint](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#current-functional-acceptance-checkpoint--25-october-2026-cairo)
+preserves the actual results and remaining gates. Execution31145 is retained,
+CleanupTechnical22 remains disabled. The [native containment and directory
+delivery](../milestones/M03-n8n-foundation/evidence/functional-acceptance-20261025.json)
+confirms terminal pre-network denial for31145, no unfinished linked database
+work, and C999 archived/account paused with every row retained. Historical
+`fullD:false` stays unchanged; retained execution31145 was not deleted.
+
+Actual charges are1661 Management/1464 Control/3125 combined/Vercel288, leaving
+67 Management/16 Vercel under unchanged1728/3584/5312/V304 caps. Actors remain0,
+USD0. The initial directory slice started no live batch. Existing protected
+Preview preparation plus shutdown needs at least33 Vercel requests, so it cannot
+fit16; cleanup alone reserves18. No credentials or time approval are missing.
+The smaller native sequence and exact source-backed budget boundary are recorded
+in the current evidence checkpoint. No replacement-window family is proposed.
+
+Codex must first price/count the remaining functional sequence and shutdown
+against existing limits, then use supported native evidence. After two failed
+repairs of the same testing-tool defect, select a supported alternative or report
+one precise boundary. Do not request another broad M03 approval or recreate the
+blocked test command. Request owner action only for the genuine boundaries in
+AGENTS.md, with exact application/path/command, expected non-secret result and
+readiness reply. No new allowance decision is implied by this reset.
+
+The single isolated fixture-backed directory/app-shell exception permits no
+hosted writes and does not begin M04/M09/M10. Production, external notifications,
+recurring activity, private R2 and PR merge remain separate. Earlier paragraphs
+below are dated history; they do not request already-supplied inputs again.
+
+## Historical M03 recovery checkpoints — superseded next-step wording
 
 The [current local recovery record](../milestones/M03-n8n-foundation/evidence/technical22-local-recovery-gate-20261025.json) supersedes the next-step wording below. The narrow null-pin fix passes its affected tests. The new cleanup route is deliberately disabled before credential access: automatic approval review blocked insertion/execution of its material synthetic integration tests with “blocked by policy.” No equivalent retry was made. Execution31145 and exact C999 archive remain pending; no fresh full-reader acceptance or deletion is claimed. The independent revoked local bypass copy cleanup passed native0 without reading private contents; all disposable inputs/locks are absent and persistent originals/Machine remain. Charges remain1640/1443/3083/V288, actors0/USD0. No new password, time approval or general development approval is needed; none would resolve the enforced test boundary. Production, merge and M04 remain untouched.
 
