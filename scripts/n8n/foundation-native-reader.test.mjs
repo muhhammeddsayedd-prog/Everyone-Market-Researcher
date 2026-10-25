@@ -1005,6 +1005,109 @@ test('native empty ManualTrigger bootstrap pin is the sole allowed nonempty pin 
   }
 });
 
+test('nullable browser manual pins require the sole reviewed empty ManualTrigger output', async () => {
+  function fixture() {
+    const f = nativeReaderFixture(),
+      manual = {
+        id: 'manual-null',
+        name: 'Manual nullable case',
+        type: 'n8n-nodes-base.manualTrigger',
+        typeVersion: 1,
+        position: [0, 0],
+        parameters: {},
+      };
+    for (const body of [f.binding.body, f.workflow, f.full.workflowData]) {
+      body.nodes.unshift(structuredClone(manual));
+      body.settings.availableInMCP = true;
+    }
+    f.binding.bodyHash = runtimeGraphHash(f.binding.body);
+    f.full.data.resultData.pinData = null;
+    f.full.data.resultData.runData[manual.name] = [
+      { data: { main: [[{ json: {}, pairedItem: { item: 0 } }]] } },
+    ];
+    return { f, manual };
+  }
+  const { f } = fixture();
+  assert.equal((await f.reader.read(f.args)).privacyChecked, true);
+  for (const change of [
+    (f) => {
+      f.full.mode = f.metadata.mode = 'integrated';
+    },
+    (f) => {
+      for (const b of [f.binding.body, f.workflow, f.full.workflowData]) b.settings.availableInMCP = false;
+    },
+    (f) => {
+      for (const b of [f.binding.body, f.workflow, f.full.workflowData]) b.nodes[0].disabled = true;
+    },
+    (f, m) => {
+      for (const b of [f.binding.body, f.workflow, f.full.workflowData])
+        b.nodes.push({ ...m, id: 'extra-hook', name: 'Other webhook', type: 'n8n-nodes-base.webhook' });
+    },
+    (f, m) => {
+      delete f.full.data.resultData.runData[m.name];
+    },
+    (f, m) => {
+      f.full.data.resultData.runData[m.name][0].data.main[0][0].json = { supplied: true };
+    },
+    (f, m) => {
+      f.full.data.resultData.runData[m.name][0].data.main[0][0].pairedItem = { item: 1 };
+    },
+    (f, m) => {
+      f.full.data.resultData.runData[m.name][0].data.main[0][0].binary = { supplied: true };
+    },
+    (f, m) => {
+      f.full.data.resultData.runData[m.name][0].data.main[0].push({ json: {} });
+    },
+    (f, m) => {
+      f.full.data.resultData.runData[m.name][0].data.main.push([{ json: {} }]);
+    },
+    (f, m) => {
+      f.full.data.resultData.runData[m.name][0].error = { message: 'synthetic' };
+    },
+    (f) => {
+      f.full.data.redactionInfo = { isRedacted: true };
+    },
+    (f) => {
+      f.full.workflowData.name = 'unreviewed';
+    },
+    (f) => {
+      f.full.workflowVersionId = 'unreviewed';
+    },
+  ]) {
+    const { f, manual } = fixture();
+    change(f, manual);
+    f.binding.bodyHash = runtimeGraphHash(f.binding.body);
+    await assert.rejects(f.reader.read(f.args), fixed);
+  }
+});
+
+test('technical22 cleanup qualification refuses caller-shaped context and copied receipt authority before reads', async () => {
+  const f = nativeReaderFixture();
+  for (const context of [
+    {},
+    { kind: 'm03_technical22_cleanup_context', technicalAttempt: 22, executionIds: ['31145'] },
+    Object.freeze({ kind: 'm03_technical22_cleanup_context', technicalAttempt: 22 }),
+  ]) {
+    await assert.rejects(
+      () => f.reader.qualifyTechnical22Cleanup({ context }),
+      /FOUNDATION_NATIVE_CLEANUP_CONTEXT/,
+    );
+  }
+  for (const q of [
+    {},
+    Object.freeze({
+      kind: 'foundation_technical22_cleanup_qualification',
+      executionIds: ['31145'],
+      records: [],
+    }),
+  ])
+    assert.throws(
+      () => nativeReader.assertFoundationTechnical22CleanupQualification(q),
+      /FOUNDATION_NATIVE_CLEANUP_QUALIFICATION/,
+    );
+  assert.equal(f.calls.length, 0);
+});
+
 test('read authenticates fresh current and executed body/version; missing thrown-call link is not invented', async () => {
   const f = nativeReaderFixture();
   f.full.status = f.metadata.status = 'error';

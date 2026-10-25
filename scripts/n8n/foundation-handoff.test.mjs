@@ -22,6 +22,205 @@ const env = () =>
       process.env[k] === undefined ? [] : [[k, process.env[k]]],
     ),
   );
+
+test('technical22 cleanup exposes only the fixed single owned record and rejects copied context authority', async () => {
+  const cli = await import('./foundation-provision-cli.mjs');
+  assert.equal(typeof cli.checkTechnical22Cleanup, 'function');
+  assert.deepEqual(cli.foundationTechnical22CleanupScope.executionIds, ['31145']);
+  assert.equal(cli.foundationTechnical22CleanupScope.maximumRequests, 55);
+  assert.equal(cli.foundationTechnical22CleanupScope.maximumDrainRequests, 50);
+  assert.equal(cli.foundationTechnical22CleanupScope.windowId, 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a');
+  assert.throws(() =>
+    cli.assertTechnical22CleanupContext({ technicalAttempt: 22, qualifiedSideEffects: true }),
+  );
+});
+// The constructor reads only tracked inputs. Real ignored outputs and current
+// seals are denied even when they happen to exist on the developer workstation.
+async function technical22CleanupFixture(readSource = readFileSync) {
+  const read = (path, ...options) => {
+    const relative = String(path).replaceAll('\\', '/');
+    assert.doesNotMatch(relative, /(?:^|\/)scripts\/(?:n8n|db)\/out\//);
+    assert.notEqual(relative, 'scripts/n8n/m03-inventory-seal.json');
+    return readSource(path, ...options);
+  };
+  const root = mkdtempSync(join(tmpdir(), 'emr-technical22-cleanup-')),
+    put = (path, value) => {
+      const target = join(root, path);
+      mkdirSync(dirname(target), { recursive: true });
+      const bytes = Buffer.isBuffer(value)
+        ? value
+        : Buffer.from(typeof value === 'string' ? value : JSON.stringify(value, null, 2) + '\n');
+      writeFileSync(target, bytes);
+      return createHash('sha256').update(bytes).digest('hex');
+    };
+  try {
+    for (const match of read('scripts/n8n/windows/Foundation-PublicRuntime.ps1', 'utf8').matchAll(
+      /^  '([^']+)'/gm,
+    ))
+      put(match[1], read(match[1]));
+    const pending = ['scripts/n8n/foundation-provision-cli.mjs'],
+      seen = new Set();
+    while (pending.length) {
+      const relative = pending.shift();
+      if (seen.has(relative)) continue;
+      seen.add(relative);
+      const text = read(relative, 'utf8');
+      put(relative, text);
+      for (const match of text.matchAll(/(?:from\s*|import\s*\()\s*['"]([^'"]+)['"]/g)) {
+        if (!match[1].startsWith('.')) continue;
+        let target = resolve(dirname(relative), match[1]);
+        if (!existsSync(target) && existsSync(target + '.ts')) target += '.ts';
+        pending.push(target.slice(resolve('.').length + 1).replaceAll('\\', '/'));
+      }
+    }
+    for (const relative of [
+      'package.json',
+      'scripts/package.json',
+      'packages/shared/package.json',
+      'n8n/foundation/package.json',
+      'n8n/foundation/bindings.dev.json',
+      'n8n/foundation/transport.dev.json',
+    ])
+      put(relative, read(relative));
+    const physical = join(root, 'node_modules/.pnpm/zod@4.6.7/node_modules/zod');
+    mkdirSync(dirname(physical), { recursive: true });
+    cpSync(resolve('node_modules/.pnpm/zod@4.6.7/node_modules/zod'), physical, { recursive: true });
+    const shared = join(root, 'packages/shared/node_modules');
+    mkdirSync(shared, { recursive: true });
+    symlinkSync(physical, join(shared, 'zod'), process.platform === 'win32' ? 'junction' : 'dir');
+    const evidence = 'milestones/M03-n8n-foundation/evidence/',
+      originalPath = evidence + 'dev-acceptance-technical22-domain-refusal-20261025.json',
+      diagnosticPath = evidence + 'execution31145-diagnostic-result-20261025.json',
+      projectionPath = evidence + 'technical22-restored-workflows-projection-20261025.json',
+      original = JSON.parse(read(originalPath, 'utf8')),
+      diagnostic = JSON.parse(read(diagnosticPath, 'utf8')),
+      projection = JSON.parse(read(projectionPath, 'utf8')),
+      replacements = new Map();
+    const runtime = 'scripts/n8n/out/foundation/live/runtime.technical-22.jsonl',
+      control = 'scripts/n8n/out/foundation/live/control.jsonl',
+      management = 'scripts/n8n/out/foundation/live/management.jsonl';
+    const runtimeRows = [projection.domain.saveIntent, projection.domain.saveVerified];
+    for (const row of projection.restored) {
+      runtimeRows.push(
+        {
+          event: 'intent',
+          sequence: row.sequence,
+          action: 'save',
+          key: row.key,
+          target: { graphHash: row.targetGraphHash, activeVersionId: null, publishedHash: null },
+        },
+        {
+          event: 'verified',
+          sequence: row.sequence,
+          after: {
+            versionId: row.restoredVersionId,
+            activeVersionId: null,
+            graphHash: row.targetGraphHash,
+            publishedHash: null,
+          },
+        },
+      );
+    }
+    runtimeRows.push({ event: 'restore_complete' });
+    for (const path of Object.keys(original.pins)) {
+      let value = { syntheticPublicFixture: true };
+      if (path.endsWith('.runtime-claim.json')) value = original.rawClaim;
+      else if (path.endsWith('.closed.json')) value = original.rawClose;
+      else if (path.endsWith('.technical-22.json')) value = original.rawAdmission;
+      else if (path === runtime) value = runtimeRows.map(JSON.stringify).join('\n') + '\n';
+      else if (path.endsWith('-latest.json')) value = original.database;
+      original.pins[path] = put(path, value);
+    }
+    const controlHash = put(
+        control,
+        [projection.domain.startIntent, projection.domain.startAck].map(JSON.stringify).join('\n') + '\n',
+      ),
+      managementHash = put(management, '{}\n');
+    replacements.set('92e9bcae6b8f25a0ce42e75cb9b496b466a0456aa62cc88e49027f7d28b4d85a', controlHash);
+    replacements.set('2f71f63b616d15b867656f306d83d4a8fad2dc69304d7c36fe12b61b3245f013', managementHash);
+    const originalHash = put(originalPath, original);
+    replacements.set('1f5d99253deb88df1df2dd9cf6f057fe878f5c1263c5711e70062e2e2fe35ff3', originalHash);
+    diagnostic.priorActual22.sha256 = originalHash;
+    for (const path of Object.keys(diagnostic.pins))
+      diagnostic.pins[path] = put(
+        path,
+        path.endsWith('-result.json') ? diagnostic.rawResult : { syntheticPublicFixture: true },
+      );
+    const diagnosticHash = put(diagnosticPath, diagnostic);
+    replacements.set('9f3693b227a706227d4b46bf7cb28f7d0188e43905df47d28239a9e31103da57', diagnosticHash);
+    projection.actual22Receipt.sha256 = originalHash;
+    projection.actualDiagnosticReceipt.sha256 = diagnosticHash;
+    replacements.set(
+      '9d96a335d6b47ce709ebbde71de0d0e679979298cb144dc021381e59a2c4cd8d',
+      put(projectionPath, projection),
+    );
+    const cliPath = join(root, 'scripts/n8n/foundation-provision-cli.mjs');
+    let text = readFileSync(cliPath, 'utf8');
+    for (const [before, after] of replacements) text = text.replaceAll(before, after);
+    writeFileSync(cliPath, text);
+    const cli = await import(pathToFileURL(cliPath).href),
+      context = await cli.checkTechnical22Cleanup(),
+      value = cli.assertTechnical22CleanupContext(context);
+    return {
+      root,
+      cliPath,
+      cli,
+      context,
+      value,
+      close() {
+        rmSync(root, { recursive: true, force: true });
+      },
+    };
+  } catch (error) {
+    rmSync(root, { recursive: true, force: true });
+    throw error;
+  }
+}
+
+test('technical22 genuine public issuer uses tracked projections only and retains all prior counters', async () => {
+  const reads = [],
+    f = await technical22CleanupFixture((path, ...options) => {
+      reads.push(String(path).replaceAll('\\', '/'));
+      return readFileSync(path, ...options);
+    });
+  try {
+    assert.equal(f.value.baseline25.length, 25);
+    assert.equal(f.value.domainBinding.versionId, '817aa760-5cda-47df-865e-9f1d1a1865be');
+    assert.deepEqual(f.value.usage, { management: 1640, control: 1443, combined: 3083 });
+    assert.throws(() => f.cli.assertTechnical22CleanupContext(structuredClone(f.context)));
+    assert.ok(
+      reads.every(
+        (p) => !/(?:^|\/)scripts\/(?:n8n|db)\/out\//.test(p) && p !== 'scripts/n8n/m03-inventory-seal.json',
+      ),
+    );
+    const rows = [],
+      budget = f.cli.createTechnical22CleanupBudget({
+        context: f.context,
+        deadlineAt: Date.now() + 60000,
+        append: (row) => {
+          rows.push(row);
+        },
+      });
+    for (const r of f.value.baseline25)
+      for (let i = 0; i < 2; i++) budget.admit({ kind: 'discovery', workflowId: r.id });
+    for (const kind of ['metadata', 'full', 'metadata', 'delete', 'absence'])
+      budget.admit({ kind, workflowId: 'qTjioYmBUVMIERVz', executionId: '31145' });
+    assert.deepEqual(budget.state(), {
+      requestCount: 55,
+      controlRequestCount: 55,
+      managementAttempts: 1695,
+      controlAttempts: 1498,
+      combinedAttempts: 3193,
+    });
+    assert.throws(() =>
+      budget.admit({ kind: 'delete', workflowId: 'qTjioYmBUVMIERVz', executionId: '31145' }),
+    );
+    assert.equal(rows.length, 55);
+  } finally {
+    f.close();
+  }
+});
+
 // Isolated public-record fixture: rewrite only public SHA pins in copied real
 // modules. Production WeakMaps, validators and default cleanup ports are used;
 // no context constructor or acceptance/closure validator is injected.
@@ -2220,7 +2419,7 @@ test(
   { skip: process.platform !== 'win32' },
   () => {
     const source = readFileSync('scripts/n8n/windows/Invoke-M03FoundationProvision.ps1', 'utf8');
-    const start = source.indexOf("if($Mode -ceq 'CleanupTechnical16'){"),
+    const start = source.indexOf("if($Mode -ceq 'CleanupTechnical16' -or $Mode -ceq 'CleanupTechnical22'){"),
       end = source.indexOf('\nif($CheckOnly){', start);
     assert.ok(start >= 0 && end > start);
     const branch = source.slice(start, end);
@@ -2270,7 +2469,7 @@ test(
     const modeGuard = source.split(/\r?\n/).find((line) => line.includes('if($Mode -cnotin @('));
     assert.ok(modeGuard);
     const branch = source.slice(
-      source.indexOf("if($Mode -ceq 'CleanupTechnical16'){"),
+      source.indexOf("if($Mode -ceq 'CleanupTechnical16' -or $Mode -ceq 'CleanupTechnical22'){"),
       source.indexOf('\nif($CheckOnly){'),
     );
     assert.match(branch, /WaitForExit\(310000\)/);

@@ -33,6 +33,7 @@ export const foundationNativeReaderLimits = Object.freeze({
 const nativeReceipts = new WeakSet(),
   metadataReceipts = new WeakMap(),
   technical16Qualifications = new WeakMap(),
+  technical22Qualifications = new WeakMap(),
   readers = new WeakSet();
 const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const identifier = (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(v);
@@ -262,6 +263,31 @@ export function assertFoundationTechnical16CleanupQualification(qualification, {
 export function claimFoundationTechnical16CleanupQualification(qualification, { reader } = {}) {
   assertFoundationTechnical16CleanupQualification(qualification, { reader });
   const value = technical16Qualifications.get(qualification);
+  if (value.claimed) fail('CLEANUP_QUALIFICATION');
+  value.claimed = true;
+  return qualification;
+}
+export function assertFoundationTechnical22CleanupQualification(qualification, { reader } = {}) {
+  const value = technical22Qualifications.get(qualification);
+  if (
+    !value ||
+    !Object.isFrozen(qualification) ||
+    (reader !== undefined && value.reader !== reader) ||
+    value.now() < value.observedAt ||
+    value.now() - value.observedAt > foundationNativeReaderLimits.metadataFreshMs
+  )
+    fail('CLEANUP_QUALIFICATION');
+  value.assertCurrent();
+  if (
+    value.now() < value.observedAt ||
+    value.now() - value.observedAt > foundationNativeReaderLimits.metadataFreshMs
+  )
+    fail('CLEANUP_QUALIFICATION');
+  return qualification;
+}
+export function claimFoundationTechnical22CleanupQualification(qualification, { reader } = {}) {
+  assertFoundationTechnical22CleanupQualification(qualification, { reader });
+  const value = technical22Qualifications.get(qualification);
   if (value.claimed) fail('CLEANUP_QUALIFICATION');
   value.claimed = true;
   return qualification;
@@ -509,7 +535,7 @@ export function createFoundationNativeReader({
     if (fault) throw fault;
     return result;
   }
-  async function exchange(path, project, admission) {
+  async function exchange(path, project, admission, maximumAttempts = 2) {
     const context = {
       workflowKey: byId.get(admission?.workflowId) ?? null,
       operation: ['discovery', 'metadata', 'workflow'].includes(admission?.kind) ? admission.kind : 'unknown',
@@ -521,7 +547,7 @@ export function createFoundationNativeReader({
     let timer,
       logicalDeadlineAt = deadlineAt;
     try {
-      for (let attempt = 0; attempt < 2; attempt++) {
+      for (let attempt = 0; attempt < maximumAttempts; attempt++) {
         context.stage = 'admission';
         if (controller.signal.aborted || now() >= logicalDeadlineAt) fail('DEADLINE');
         if (attempt > 0 && admission?.kind === 'metadata') {
@@ -570,7 +596,7 @@ export function createFoundationNativeReader({
           response = await raceAbort(requestPromise, controller.signal);
         } catch (e) {
           let retry = false;
-          if (attempt === 0 && !controller.signal.aborted && now() < logicalDeadlineAt) {
+          if (attempt + 1 < maximumAttempts && !controller.signal.aborted && now() < logicalDeadlineAt) {
             try {
               assertFoundationNativeTransport(transport);
               const details = foundationNativeTransportErrorDetails(e, transport);
@@ -776,7 +802,7 @@ export function createFoundationNativeReader({
     scope(args.workflowKey);
     return args.binding === undefined ? undefined : bindingFor(args.workflowKey, args.binding);
   }
-  async function obtainMetadata(args, binding) {
+  async function obtainMetadata(args, binding, maximumAttempts = 2) {
     const count = polls.get(args.executionId) ?? 0;
     if (count >= foundationNativeReaderLimits.metadataPollsPerId) fail('POLL_LIMIT');
     polls.set(args.executionId, count + 1);
@@ -787,6 +813,7 @@ export function createFoundationNativeReader({
         return metadataProjection(dto, args.workflowKey, args.executionId, { ...args, binding });
       },
       { kind: 'metadata', workflowId: scope(args.workflowKey), executionId: args.executionId },
+      maximumAttempts,
     );
     const receipt = freezeRuntimeValue({
       kind: 'foundation_native_metadata',
@@ -1070,7 +1097,50 @@ export function createFoundationNativeReader({
     )
       fail('EXECUTED_BODY');
     const executedPins = dto.data.resultData.pinData;
-    if (executedPins !== undefined) {
+    if (executedPins === null) {
+      // n8n@2.43.5 WorkflowEntity.pinData is a nullable DB column. Browser
+      // executeManually forwards it; WorkflowExecute.run and the run-data
+      // factory preserve it. Unlike MCP's seeded bootstrap map, a null map
+      // must be corroborated by the sole reviewed ManualTrigger's real empty
+      // output. No business item, other trigger or unverified graph is waived.
+      const triggers = b.body.nodes.filter(
+        (n) =>
+          n.disabled !== true &&
+          [
+            'n8n-nodes-base.manualTrigger',
+            'n8n-nodes-base.scheduleTrigger',
+            'n8n-nodes-base.webhook',
+            'n8n-nodes-base.formTrigger',
+            '@n8n/n8n-nodes-langchain.chatTrigger',
+          ].includes(n.type),
+      );
+      const trigger = triggers.length === 1 ? triggers[0] : null;
+      const tasks = trigger && dto.data.resultData.runData[trigger.name];
+      const task = Array.isArray(tasks) && tasks.length === 1 ? tasks[0] : null;
+      const main = task?.data?.main;
+      const item = main?.[0]?.[0];
+      const emptyItem =
+        object(item) &&
+        exact(item.json, []) &&
+        (exact(item, ['json']) ||
+          (exact(item, ['json', 'pairedItem']) &&
+            exact(item.pairedItem, ['item']) &&
+            item.pairedItem.item === 0));
+      if (
+        projected.mode !== 'manual' ||
+        b.body.settings.availableInMCP !== true ||
+        trigger?.type !== 'n8n-nodes-base.manualTrigger' ||
+        !object(task) ||
+        task.error !== undefined ||
+        !exact(task.data, ['main']) ||
+        !Array.isArray(main) ||
+        main.length !== 1 ||
+        !Array.isArray(main[0]) ||
+        main[0].length !== 1 ||
+        !emptyItem
+      )
+        fail('EXECUTED_PIN_DATA');
+    } else if (executedPins !== undefined) {
       if (!object(executedPins)) fail('EXECUTED_PIN_DATA');
       if (Object.keys(executedPins).length) {
         // Pinned execute-workflow.tool's no-input ManualTrigger path
@@ -1159,7 +1229,11 @@ export function createFoundationNativeReader({
       ...(traceparent ? { traceparent } : {}),
     };
   }
-  async function discoverCandidates(args) {
+  async function discoverCandidates(
+    args,
+    maximumPages = foundationNativeReaderLimits.discoveryPagesPerFilter,
+    maximumAttempts = 2,
+  ) {
     if (
       !exact(args, ['workflowKey', 'baselineIds']) ||
       !Array.isArray(args.baselineIds) ||
@@ -1174,7 +1248,7 @@ export function createFoundationNativeReader({
     for (const running of [false, true]) {
       let cursor = null;
       const cursors = new Set();
-      for (let page = 0; page < foundationNativeReaderLimits.discoveryPagesPerFilter; page++) {
+      for (let page = 0; page < maximumPages; page++) {
         const path =
           '/api/v1/executions?workflowId=' +
           workflowId +
@@ -1204,6 +1278,7 @@ export function createFoundationNativeReader({
             return dto.nextCursor;
           },
           { kind: 'discovery', workflowId },
+          maximumAttempts,
         );
         if (next === null) {
           cursor = null;
@@ -1273,6 +1348,127 @@ export function createFoundationNativeReader({
     });
   }
   const reader = {
+    qualifyTechnical22Cleanup(args) {
+      return exclusive(async () => {
+        if (!exact(args, ['context'])) fail('CLEANUP_ARGS');
+        let context;
+        try {
+          const { assertTechnical22CleanupContext } = await import('./foundation-provision-cli.mjs');
+          context = assertTechnical22CleanupContext(args.context);
+        } catch {
+          fail('CLEANUP_CONTEXT');
+        }
+        const baseline = context.baseline25,
+          binding = context.domainBinding;
+        if (
+          context.bindings.projectId !== bindings.projectId ||
+          !Array.isArray(baseline) ||
+          baseline.length !== 25 ||
+          new Set(baseline.map((v) => v.key)).size !== 25 ||
+          baseline.some((v) => scope(v.key) !== v.id) ||
+          !object(binding) ||
+          binding.workflowId !== scope('WF-99') ||
+          binding.versionId !== '817aa760-5cda-47df-865e-9f1d1a1865be' ||
+          binding.activeVersionId !== null ||
+          binding.bodyHash !== '3ca4845b19ab3684cf8d014470b4a9a1cb5851bfcd58b12bd98e9b5b027ce867' ||
+          runtimeControl.runtimeGraphHash(binding.body) !== binding.bodyHash ||
+          binding.runtimeAudience !==
+            'https://everyone-market-researcher-qapt1ldef-muhammed-abdelrahman.vercel.app' ||
+          !isFoundationNativeDomainProbeBody(binding.body, { runtimeAudience: binding.runtimeAudience })
+        )
+          fail('CLEANUP_CONTEXT');
+        const readArgs = {
+          workflowKey: 'WF-99',
+          executionId: '31145',
+          expectedMode: 'manual',
+          intentAt: context.intentAt,
+        };
+        const metadata = await obtainMetadata(readArgs, binding, 1);
+        if (metadata.status !== 'error' || metadata.waitTill !== null) fail('CLEANUP_TERMINAL');
+        const output = await exchange(
+          '/api/v1/executions/31145?includeData=true',
+          (dto, status) => fullProjection(dto, status, readArgs, binding, metadata),
+          { kind: 'full', workflowId: scope('WF-99'), executionId: '31145' },
+          1,
+        );
+        if (
+          output.nativeParent !== null ||
+          output.nativeChildren.length !== 0 ||
+          output.missingNativeChildCalls.length !== 0 ||
+          output.nativeProviderCallback !== null ||
+          output.nativeGatewayRequests.length !== 0 ||
+          output.errorDispatchExpected ||
+          output.nativeDomainDenial?.httpRequestIssued !== false ||
+          output.nativeDomainDenial.actorStarts !== 0 ||
+          output.nativeDomainDenial.restrictionCode !== 'native_credential_domain_blocked'
+        )
+          fail('CLEANUP_QUALIFICATION');
+        const receipt = freezeRuntimeValue({
+          ...output,
+          bodyHash: binding.bodyHash,
+          observedAt: new Date(now()).toISOString(),
+          privacyChecked: true,
+          transportClosed: true,
+        });
+        // Two complete first-page filters per owned workflow. Any cursor,
+        // foreign retained record or unfinished candidate stops before DELETE.
+        for (const owned of baseline) {
+          const scan = await discoverCandidates({ workflowKey: owned.key, baselineIds: [] }, 1, 1);
+          if (!scan.paginationComplete) fail('DISCOVERY_INCOMPLETE');
+          for (const candidate of scan.candidates) {
+            if (
+              candidate.executionId !== receipt.executionId ||
+              candidate.key !== receipt.key ||
+              candidate.status !== receipt.status ||
+              candidate.mode !== receipt.mode ||
+              candidate.startedAt !== receipt.startedAt ||
+              candidate.stoppedAt !== receipt.stoppedAt ||
+              candidate.waitTill !== null ||
+              (candidate.versionId !== null && candidate.versionId !== receipt.versionId)
+            )
+              fail('CLEANUP_QUALIFICATION');
+          }
+        }
+        const fresh = await obtainMetadata(readArgs, binding, 1);
+        for (const key of ['versionId', 'mode', 'status', 'createdAt', 'startedAt', 'stoppedAt', 'waitTill'])
+          if (fresh[key] !== receipt[key]) fail('OBSERVATION_CHANGED');
+        const finalObservation = metadataReceipts.get(fresh);
+        context.assertCurrent();
+        if (
+          !finalObservation ||
+          now() < finalObservation.observedAt ||
+          now() - finalObservation.observedAt > foundationNativeReaderLimits.metadataFreshMs
+        )
+          fail('CLEANUP_QUALIFICATION');
+        const qualification = freezeRuntimeValue({
+          kind: 'foundation_technical22_cleanup_qualification',
+          version: 1,
+          technicalAttempt: 22,
+          windowId: 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+          sourceCommitSha: '5f256ce915f930481b0d31ac38b919c0a7692cd1',
+          batchId: 'technical22-postclose-native-cleanup',
+          caseId: 'control.machine_domain-reconciliation',
+          owner: 'Mohamed Abdelrahman',
+          records: [receipt],
+          executionIds: ['31145'],
+          canonicalWorkflowsVerified: 0,
+          ownedWorkflowsDrained: 25,
+          inventoryComplete: true,
+          settled: true,
+          observedAt: fresh.observedAt,
+          acceptanceProven: false,
+          liveClosureMinted: false,
+        });
+        technical22Qualifications.set(qualification, {
+          reader,
+          now,
+          observedAt: finalObservation.observedAt,
+          claimed: false,
+          assertCurrent: context.assertCurrent,
+        });
+        return qualification;
+      });
+    },
     qualifyTechnical16Cleanup(args) {
       return exclusive(async () => {
         if (
@@ -1474,7 +1670,8 @@ export function createFoundationNativeReader({
       return exclusive(async () => {
         // A new DELETE requires fresh qualification. Processing the response to
         // an already issued intent cannot acquire new mutation authority.
-        const info = technical16Qualifications.get(qualification);
+        const info =
+          technical16Qualifications.get(qualification) ?? technical22Qualifications.get(qualification);
         if (
           !info ||
           info.reader !== reader ||

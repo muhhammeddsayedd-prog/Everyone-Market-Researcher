@@ -8,7 +8,7 @@ import {
 import { runtimeGraphHash } from './foundation-runtime-control.mjs';
 import { createFoundationNativeCleanup } from './foundation-native-cleanup.mjs';
 
-function domainFixture({ httpStatus = false, wrongDomain = false } = {}) {
+function domainFixture({ httpStatus = false, wrongDomain = false, nullPins = false } = {}) {
   const audience = 'https://everyone-market-researcher-synthetic-domain-proof.vercel.app';
   let receipt;
   const f = baseFixture({
@@ -50,6 +50,10 @@ function domainFixture({ httpStatus = false, wrongDomain = false } = {}) {
           },
         },
       });
+      if (nullPins) {
+        c.executions.get('801').full.data.resultData.pinData = null;
+        delete c.executions.get('801').full.workflowData.versionId;
+      }
       receipt = {
         status: 'case_draft_verified',
         caseId: 'control.machine_domain',
@@ -111,6 +115,39 @@ test('HTTP403 or a different allowed-domain producer cannot open the domain acce
     assert.equal(f.controller.caseClosure(r.caseId), null);
     assert.equal(
       f.calls.some((c) => c.method === 'DELETE'),
+      false,
+    );
+  }
+});
+
+test('native nullable-pin domain control retains exact denial, settlement and cleanup requirements', async () => {
+  const f = domainFixture({ nullPins: true });
+  const r = await f.controller.runCase(f.input);
+  assert.equal(r.state, 'native_settled');
+  const receipt = f.controller.caseReceipts(r.caseId)[0];
+  assert.equal(receipt.nativeDomainDenial.httpRequestIssued, false);
+  assert.equal(receipt.nativeDomainDenial.actorStarts, 0);
+  const cleanup = createFoundationNativeCleanup({
+    reader: f.reader,
+    transport: f.transport,
+    admitControlAttempt: (args) => f.budget.admit(args),
+    journal: f.journal,
+    now: () => Date.parse('2026-10-19T12:00:01Z'),
+    deadlineAt: Date.parse('2026-10-19T13:00:01Z'),
+  });
+  const proof = await cleanup.cleanup({ receipt, closure: r.closure });
+  assert.equal(proof.state, 'native_record_deleted');
+  assert.equal(f.controller.recordCleanup(proof).cleanupVerified, true);
+  for (const options of [
+    { nullPins: true, httpStatus: true },
+    { nullPins: true, wrongDomain: true },
+  ]) {
+    const denied = domainFixture(options),
+      result = await denied.controller.runCase(denied.input);
+    assert.equal(result.state, 'native_unresolved');
+    assert.equal(denied.controller.caseClosure(result.caseId), null);
+    assert.equal(
+      denied.calls.some((call) => call.method === 'DELETE'),
       false,
     );
   }

@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([ValidateSet('Shells','Reconcile','All','RestoreWF00','ProtectWf00Backup','RestoreTechnical13','CleanupTechnical16')][string]$Mode='All',[switch]$CheckOnly,[switch]$QualificationOnly,[switch]$CurrentWf00)
+param([ValidateSet('Shells','Reconcile','All','RestoreWF00','ProtectWf00Backup','RestoreTechnical13','CleanupTechnical16','CleanupTechnical22')][string]$Mode='All',[switch]$CheckOnly,[switch]$QualificationOnly,[switch]$CurrentWf00)
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
@@ -79,7 +79,27 @@ function Move-M03Technical16StaleLock {
  [IO.File]::Move($markerPath,$archivePath)
  if((Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant() -cne 'b5a81828a126cc10a3e2cbba03ceca56e0b9b466436b7025937e20fd115c6b1f'){throw 'blocked'}
 }
-function Invoke-M03Technical13Public([string]$Executable,[string]$Runner,[ValidateSet('RestoreTechnical13','CleanupTechnical16')][string]$RecoveryMode='RestoreTechnical13'){
+function Assert-M03Technical22PriorClosed {
+ $records=@(
+  [pscustomobject]@{Path='milestones/M03-n8n-foundation/evidence/dev-acceptance-technical22-domain-refusal-20261025.json';Hash='1f5d99253deb88df1df2dd9cf6f057fe878f5c1263c5711e70062e2e2fe35ff3';Ids=@(50696,19748);Bound=[DateTimeOffset]::FromUnixTimeMilliseconds(1792936804796).UtcDateTime},
+  [pscustomobject]@{Path='milestones/M03-n8n-foundation/evidence/execution31145-diagnostic-result-20261025.json';Hash='9f3693b227a706227d4b46bf7cb28f7d0188e43905df47d28239a9e31103da57';Ids=@(62192,23336);Bound=[DateTimeOffset]::Parse('2026-10-25T14:38:17.363Z').UtcDateTime}
+ )
+ foreach($record in $records){$path=Safe-File $repo $record.Path;if((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant() -cne $record.Hash){throw 'blocked'}}
+ $snapshots=[Collections.Generic.List[string]]::new()
+ for($index=0;$index -lt 2;$index++){
+  $projection=@(Get-CimInstance -ClassName Win32_Process -Property ProcessId,ParentProcessId,CreationDate -ErrorAction Stop | Select-Object ProcessId,ParentProcessId,CreationDate)
+  foreach($record in $records){foreach($knownPid in $record.Ids){
+   $rows=@($projection | Where-Object {$_.ProcessId -eq $knownPid})
+   if($rows.Count -gt 1){throw 'blocked'}
+   if($rows.Count -eq 1){$born=$rows[0].CreationDate;if($born -isnot [DateTime] -or $born.Kind -eq [DateTimeKind]::Unspecified -or $born.ToUniversalTime() -le $record.Bound -or $born.ToUniversalTime() -gt [DateTime]::UtcNow){throw 'blocked'}}
+   # A descendant born before a recycled parent's new identity remains unknown.
+   if(@($projection | Where-Object {$_.ParentProcessId -eq $knownPid -and ($rows.Count -ne 1 -or $_.CreationDate -isnot [DateTime] -or $_.CreationDate.Kind -eq [DateTimeKind]::Unspecified -or $_.CreationDate.ToUniversalTime() -gt [DateTime]::UtcNow -or $_.CreationDate.ToUniversalTime() -lt $rows[0].CreationDate.ToUniversalTime())}).Count -ne 0){throw 'blocked'}
+  }}
+  $signature=[string]::Join("`n",@($projection | Where-Object {$_.ProcessId -in @(50696,19748,62192,23336) -or $_.ParentProcessId -in @(50696,19748,62192,23336)} | Sort-Object ProcessId | ForEach-Object {"$($_.ProcessId)|$($_.ParentProcessId)|$($_.CreationDate.ToUniversalTime().Ticks)"}));$snapshots.Add($signature)
+ }
+ if($snapshots.Count -ne 2 -or $snapshots[0] -cne $snapshots[1]){throw 'blocked'}
+}
+function Invoke-M03Technical13Public([string]$Executable,[string]$Runner,[ValidateSet('RestoreTechnical13','CleanupTechnical16','CleanupTechnical22')][string]$RecoveryMode='RestoreTechnical13'){
  $info=$null;$process=$null;$started=$false;$closed=$true;$outMemory=$null;$errMemory=$null;$outBuffer=$null;$errBuffer=$null
  try{
   $info=[Diagnostics.ProcessStartInfo]::new();$info.FileName=$Executable;$info.Arguments='"'+$Runner+'" '+$RecoveryMode+'CheckOnly';$info.WorkingDirectory=$repo;$info.UseShellExecute=$false;$info.CreateNoWindow=$true;$info.RedirectStandardInput=$true;$info.RedirectStandardOutput=$true;$info.RedirectStandardError=$true;$info.EnvironmentVariables.Clear()
@@ -90,11 +110,14 @@ function Invoke-M03Technical13Public([string]$Executable,[string]$Runner,[Valida
   if(-not $closed -or $process.ExitCode -ne 0 -or -not [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($stdout,$stderr)).Wait(5000) -or $errMemory.Position -ne 0){throw 'blocked'}
   $result=ConvertFrom-Json -InputObject ([Text.Encoding]::UTF8.GetString($outBuffer,0,[int]$outMemory.Position)) -ErrorAction Stop
   $expectedKeys=@('kind','version','status','windowId','privateRead','networkRequests','maximumRequests','maximumControlRequests','executionCount','actorStarts')
-  if($RecoveryMode -ceq 'CleanupTechnical16'){$expectedKeys+=@('canonicalWorkflowCount','maximumDrainRequests','maximumNativeRecords','qualifiedSideEffects','cleanupQualificationReady')}
+  if($RecoveryMode -cin @('CleanupTechnical16','CleanupTechnical22')){$expectedKeys+=@('canonicalWorkflowCount','maximumDrainRequests','maximumNativeRecords','qualifiedSideEffects','cleanupQualificationReady')}
   Assert-M03FoundationObjectKeys $result $expectedKeys
   foreach($name in @('version','networkRequests','maximumRequests','maximumControlRequests','executionCount','actorStarts')){if($result.$name -isnot [int]){throw 'blocked'}}
   if($result.version -ne 1 -or $result.privateRead -isnot [bool] -or $result.privateRead -ne $false -or $result.networkRequests -ne 0 -or $result.executionCount -ne 0 -or $result.actorStarts -ne 0){throw 'blocked'}
-  if($RecoveryMode -ceq 'CleanupTechnical16'){
+  if($RecoveryMode -ceq 'CleanupTechnical22'){
+   foreach($name in @('canonicalWorkflowCount','maximumDrainRequests','maximumNativeRecords')){if($result.$name -isnot [int]){throw 'blocked'}}
+   if($result.kind -cne 'm03_technical22_cleanup_public' -or $result.status -cne 'technical22_cleanup_public_ready' -or $result.windowId -cne 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a' -or $result.maximumRequests -ne 55 -or $result.maximumControlRequests -ne 55 -or $result.canonicalWorkflowCount -ne 25 -or $result.maximumDrainRequests -ne 50 -or $result.maximumNativeRecords -ne 1 -or $result.qualifiedSideEffects -isnot [bool] -or $result.qualifiedSideEffects -ne $false -or $result.cleanupQualificationReady -isnot [bool] -or $result.cleanupQualificationReady -ne $true){throw 'blocked'}
+  }elseif($RecoveryMode -ceq 'CleanupTechnical16'){
    foreach($name in @('canonicalWorkflowCount','maximumDrainRequests','maximumNativeRecords')){if($result.$name -isnot [int]){throw 'blocked'}}
    if($result.kind -cne 'm03_technical16_cleanup_public' -or $result.status -cne 'technical16_cleanup_public_ready' -or $result.windowId -cne '4c602549-2c42-4ec3-9328-714d7cb66a77' -or $result.maximumRequests -ne 109 -or $result.maximumControlRequests -ne 109 -or $result.canonicalWorkflowCount -ne 25 -or $result.maximumDrainRequests -ne 100 -or $result.maximumNativeRecords -ne 2 -or $result.qualifiedSideEffects -isnot [bool] -or $result.qualifiedSideEffects -ne $false -or $result.cleanupQualificationReady -isnot [bool] -or $result.cleanupQualificationReady -ne $true){throw 'blocked'}
   }elseif($result.kind -cne 'm03_technical13_restoration_public' -or $result.status -cne 'technical13_restore_public_ready' -or $result.windowId -cne '3c46c791-e140-4eb9-890a-eecfa251f65e' -or $result.maximumRequests -ne 40 -or $result.maximumControlRequests -ne 50){throw 'blocked'}
@@ -104,7 +127,7 @@ function Invoke-M03Technical13Public([string]$Executable,[string]$Runner,[Valida
  }
 }
 try{
- if($Mode -cnotin @('Shells','Reconcile','All','RestoreWF00','ProtectWf00Backup','RestoreTechnical13','CleanupTechnical16') -or ($QualificationOnly -and $Mode -cne 'CleanupTechnical16') -or ($CurrentWf00 -and $Mode -cne 'RestoreWF00')){throw 'blocked'}
+ if($Mode -cnotin @('Shells','Reconcile','All','RestoreWF00','ProtectWf00Backup','RestoreTechnical13','CleanupTechnical16','CleanupTechnical22') -or ($QualificationOnly -and $Mode -cne 'CleanupTechnical16') -or ($CurrentWf00 -and $Mode -cne 'RestoreWF00')){throw 'blocked'}
  $sealFile=Safe-File $repo 'scripts/n8n/foundation-provision-seal.json'
  if((Get-Item -LiteralPath $sealFile).Length -gt 262144){throw 'blocked'}
  $seal=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($sealFile))
@@ -148,26 +171,28 @@ try{
    if(Test-Path -LiteralPath (Join-Path $repo 'scripts/n8n/out/foundation/wf00-restore-fe249a62-8276-47c1-a58a-7bb50705a280.jsonl')){throw 'blocked'}
   }
  }
- if($Mode -cin @('RestoreTechnical13','CleanupTechnical16')){
+ if($Mode -cin @('RestoreTechnical13','CleanupTechnical16','CleanupTechnical22')){
   $technical13Public=Invoke-M03Technical13Public $node $runner $Mode
  }
 }catch{Write-Output 'M03_FOUNDATION_PUBLIC_PREFLIGHT_BLOCKED. No private read/decryption/network.';exit 1}
-if($Mode -cin @('RestoreTechnical13','CleanupTechnical16') -and $CheckOnly){$technical13Public|ConvertTo-Json -Compress;exit 0}
-if($Mode -ceq 'CleanupTechnical16'){
+if($Mode -cin @('RestoreTechnical13','CleanupTechnical16','CleanupTechnical22') -and $CheckOnly){$technical13Public|ConvertTo-Json -Compress;exit 0}
+if($Mode -ceq 'CleanupTechnical16' -or $Mode -ceq 'CleanupTechnical22'){
+ $technical22=$Mode -ceq 'CleanupTechnical22';$initialManagement=if($technical22){1640}else{878};$initialControl=if($technical22){1443}else{1009};$initialCombined=$initialManagement+$initialControl;$maximumRequests=if($technical22){55}else{109};$maximumRecords=if($technical22){1}else{2}
  $key=$null;$secret=$null;$cipher=$null;$child=$null;$start=$null;$memory=$null;$buffer=$null;$text=$null;$result=$null;$packet=$null;$operationLock=$null;$parentLock=$null;$source=$null;$started=$false;$closed=$true;$forcedStop=$false;$bstr=[IntPtr]::Zero;$exitCode=1
  $receipt=[ordered]@{kind='m03_technical16_native_cleanup';version=1;environment='dev';projectRef='zmotjsbzhzjvpelxvxlf';windowId='4c602549-2c42-4ec3-9328-714d7cb66a77';sourceCommitSha='5087d4d93d2f6ffdca0bc0096b365723005446fc';status='cleanup_blocked';requestCount=0;controlRequestCount=0;managementAttempts=878;controlAttempts=1009;combinedAttempts=1887;canonicalWorkflowsVerified=0;qualifiedSideEffects=$false;recordsDeleted=0;deleteAcknowledged=$false;absenceVerified=$false;remoteWorkSettled=$false;networkCompletionVerified=$false;originalPublicRecordsUnchanged=$false;nativeAcceptanceProven=$false;originalMaskedFirstFailureRecovered=$false;executionCount=0;actorStarts=0;workflowWrites=0;credentialWrites=0;migrationOperations=0;diagnosticStage='private_helpers';diagnosticCode='not_attempted';nativeExit=$null;childClosed=$true;credentialChildrenClosed=$false;parentLockDeleted=$false;privateRead=$false;persistentManagementRetained=$false}
+ if($technical22){$receipt.kind='m03_technical22_native_cleanup';$receipt.windowId='e2be1a67-f6db-4c90-bfd2-671c5db9b90a';$receipt.sourceCommitSha='5f256ce915f930481b0d31ac38b919c0a7692cd1';$receipt.managementAttempts=$initialManagement;$receipt.controlAttempts=$initialControl;$receipt.combinedAttempts=$initialCombined;$receipt['ownedWorkflowsDrained']=0}
  try{
   . (Safe-File $repo 'scripts/n8n/windows/Dev-CredentialStore.ps1')
   $receipt.diagnosticStage='provision_lock';$operationPath=Safe-File $repo 'scripts/n8n/out/foundation/provision.lock'
   $operationLock=[IO.File]::Open($operationPath,[IO.FileMode]::Open,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
   $marker='M03_FOUNDATION_OPERATION_LOCK df4f29ec-e2dc-4d82-a276-62a4e695e6f9';$actual=New-Object byte[] ([Text.Encoding]::ASCII.GetByteCount($marker))
   if($operationLock.Length -ne $actual.Length -or $operationLock.Read($actual,0,$actual.Length) -ne $actual.Length -or [Text.Encoding]::ASCII.GetString($actual) -cne $marker){throw 'blocked'}
-  $receipt.diagnosticStage='prior_processes';foreach($knownPid in @(26268,66008)){if($null -ne (Get-Process -Id $knownPid -ErrorAction SilentlyContinue)){throw 'blocked'}}
+  $receipt.diagnosticStage='prior_processes';if($technical22){Assert-M03Technical22PriorClosed}else{foreach($knownPid in @(26268,66008)){if($null -ne (Get-Process -Id $knownPid -ErrorAction SilentlyContinue)){throw 'blocked'}}}
   $receipt.diagnosticStage='parent_lock';$parentPath=Join-Path $env:LOCALAPPDATA 'Temp/emr-m03-acceptance-parent.operation.lock'
   $null=Assert-M03DevPlainPath (Split-Path -Parent $parentPath) $true;if(Test-Path -LiteralPath $parentPath){throw 'blocked'}
   $parentLock=[IO.File]::Open($parentPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::ReadWrite,[IO.FileShare]::Read);Set-M03DevPrivateAcl $parentPath $false
-  $owner=[Text.UTF8Encoding]::new($false).GetBytes((([ordered]@{kind='m03_technical16_cleanup_parent';version=1;processId=$PID})|ConvertTo-Json -Compress));$parentLock.Write($owner,0,$owner.Length);$parentLock.Flush($true)
-  $receipt.diagnosticStage='failed_attempt_lock';Move-M03Technical16StaleLock
+  $owner=[Text.UTF8Encoding]::new($false).GetBytes((([ordered]@{kind=$(if($technical22){'m03_technical22_cleanup_parent'}else{'m03_technical16_cleanup_parent'});version=1;processId=$PID})|ConvertTo-Json -Compress));$parentLock.Write($owner,0,$owner.Length);$parentLock.Flush($true)
+  $receipt.diagnosticStage='failed_attempt_lock';if(-not $technical22){Move-M03Technical16StaleLock}
   $receipt.diagnosticStage='management_path';$source=(Get-M03DevCredentialSpec -Kind Management).Source
   $receipt.diagnosticStage='management_directory_acl';Assert-M03DevPrivateAcl ([IO.Path]::GetDirectoryName($source)) $true
   $receipt.diagnosticStage='management_file_acl';Assert-M03DevPrivateAcl $source $false
@@ -176,27 +201,29 @@ if($Mode -ceq 'CleanupTechnical16'){
   $receipt.diagnosticStage='management_decrypt';$secret=ConvertTo-SecureString -String ([Text.Encoding]::ASCII.GetString($cipher));[Array]::Clear($cipher,0,$cipher.Length);$cipher=$null
   $bstr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret);$key=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr);[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr);$bstr=[IntPtr]::Zero;$secret.Dispose();$secret=$null
   if([string]::IsNullOrEmpty($key) -or $key.Length -lt 8 -or $key.Length -gt 4096 -or $key -cmatch '[^\x21-\x7e]'){throw 'blocked'}
-  $receipt.diagnosticStage='child_configuration';$start=[Diagnostics.ProcessStartInfo]::new();$start.FileName=$node;$start.Arguments='"'+$runner+'" '+$(if($QualificationOnly){'CleanupTechnical16Diagnose'}else{'CleanupTechnical16'});$start.WorkingDirectory=$repo;$start.UseShellExecute=$false;$start.CreateNoWindow=$true;$start.RedirectStandardInput=$true;$start.RedirectStandardOutput=$true;$start.RedirectStandardError=$true;$start.EnvironmentVariables.Clear()
+  $receipt.diagnosticStage='child_configuration';$start=[Diagnostics.ProcessStartInfo]::new();$start.FileName=$node;$start.Arguments='"'+$runner+'" '+$(if($technical22){'CleanupTechnical22'}elseif($QualificationOnly){'CleanupTechnical16Diagnose'}else{'CleanupTechnical16'});$start.WorkingDirectory=$repo;$start.UseShellExecute=$false;$start.CreateNoWindow=$true;$start.RedirectStandardInput=$true;$start.RedirectStandardOutput=$true;$start.RedirectStandardError=$true;$start.EnvironmentVariables.Clear()
   foreach($name in @('SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA','APPDATA','USERPROFILE')){$value=[Environment]::GetEnvironmentVariable($name,'Process');if($null -ne $value){$start.EnvironmentVariables[$name]=$value}};$value=$null
   $receipt.diagnosticStage='child_start';$child=[Diagnostics.Process]::new();$child.StartInfo=$start;if(-not $child.Start()){throw 'blocked'};$started=$true;$closed=$false
   $buffer=New-Object byte[] 65536;$memory=[IO.MemoryStream]::new($buffer,0,$buffer.Length,$true,$true);$stdout=$child.StandardOutput.BaseStream.CopyToAsync($memory);$stderr=$child.StandardError.BaseStream.CopyToAsync([IO.Stream]::Null)
-  $receipt.diagnosticStage='child_stdin';$packet=[ordered]@{key=$key;expiresAt=[DateTimeOffset]::UtcNow.AddMinutes(5).ToString('o');purpose='m03_technical16_native_cleanup';windowId='4c602549-2c42-4ec3-9328-714d7cb66a77'}
+  $receipt.diagnosticStage='child_stdin';$packet=[ordered]@{key=$key;expiresAt=[DateTimeOffset]::UtcNow.AddMinutes(5).ToString('o');purpose=$(if($technical22){'m03_technical22_native_cleanup'}else{'m03_technical16_native_cleanup'});windowId=$receipt.windowId}
   $child.StandardInput.Write(($packet|ConvertTo-Json -Compress));$child.StandardInput.Close();$packet=$null
   $receipt.diagnosticStage='child_completion';if(-not $child.WaitForExit(310000)){$forcedStop=$true;throw 'blocked'};$closed=$true;$receipt.nativeExit=$child.ExitCode
   if(-not [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($stdout,$stderr)).Wait(5000)){throw 'blocked'}
   $receipt.diagnosticStage='child_output';$text=[Text.Encoding]::UTF8.GetString($buffer,0,[int]$memory.Position);if($text.Contains($key)){throw 'blocked'};$result=ConvertFrom-Json -InputObject $text
   $receipt.diagnosticStage='result_contract'
   $keys=@('kind','version','environment','projectRef','windowId','sourceCommitSha','status','requestCount','controlRequestCount','managementAttempts','controlAttempts','combinedAttempts','canonicalWorkflowsVerified','qualifiedSideEffects','recordsDeleted','deleteAcknowledged','absenceVerified','remoteWorkSettled','networkCompletionVerified','originalPublicRecordsUnchanged','nativeAcceptanceProven','originalMaskedFirstFailureRecovered','executionCount','actorStarts','workflowWrites','credentialWrites','migrationOperations','diagnosticStage','diagnosticCode')
+  if($technical22){$keys+='ownedWorkflowsDrained'}
   Assert-M03FoundationObjectKeys $result $keys
   foreach($name in @('kind','version','environment','projectRef','windowId','sourceCommitSha','nativeAcceptanceProven','originalMaskedFirstFailureRecovered','executionCount','actorStarts','workflowWrites','credentialWrites','migrationOperations')){if($result.$name.GetType() -ne $receipt[$name].GetType() -or $result.$name -cne $receipt[$name]){throw 'blocked'}}
   foreach($name in @('requestCount','controlRequestCount','managementAttempts','controlAttempts','combinedAttempts','canonicalWorkflowsVerified','recordsDeleted')){if($result.$name -isnot [int]){throw 'blocked'}}
-  if($result.status -cnotin @('cleanup_blocked','cleanup_reconciliation_required','native_cleanup_verified') -or $result.requestCount -lt 0 -or $result.requestCount -gt $(if($QualificationOnly){4}else{109}) -or $result.controlRequestCount -ne $result.requestCount -or $result.managementAttempts -ne 878+$result.requestCount -or $result.controlAttempts -ne 1009+$result.requestCount -or $result.combinedAttempts -ne 1887+2*$result.requestCount -or $result.canonicalWorkflowsVerified -cnotin @(0,25) -or $result.recordsDeleted -lt 0 -or $result.recordsDeleted -gt 2){throw 'blocked'}
+  if($result.status -cnotin @('cleanup_blocked','cleanup_reconciliation_required','native_cleanup_verified') -or $result.requestCount -lt 0 -or $result.requestCount -gt $(if($QualificationOnly){4}else{$maximumRequests}) -or $result.controlRequestCount -ne $result.requestCount -or $result.managementAttempts -ne $initialManagement+$result.requestCount -or $result.controlAttempts -ne $initialControl+$result.requestCount -or $result.combinedAttempts -ne $initialCombined+2*$result.requestCount -or $result.canonicalWorkflowsVerified -cnotin @(0,25) -or $result.recordsDeleted -lt 0 -or $result.recordsDeleted -gt $maximumRecords){throw 'blocked'}
+  if($technical22 -and ($result.canonicalWorkflowsVerified -ne 0 -or $result.ownedWorkflowsDrained -isnot [int] -or $result.ownedWorkflowsDrained -cnotin @(0,25))){throw 'blocked'}
   foreach($name in @('qualifiedSideEffects','deleteAcknowledged','absenceVerified','remoteWorkSettled','networkCompletionVerified','originalPublicRecordsUnchanged')){if($result.$name -isnot [bool]){throw 'blocked'}}
   if($QualificationOnly -and ($result.status -ceq 'native_cleanup_verified' -or $result.qualifiedSideEffects -or $result.recordsDeleted -ne 0 -or $result.deleteAcknowledged -or $result.absenceVerified -or $result.remoteWorkSettled -or $result.canonicalWorkflowsVerified -ne 0)){throw 'blocked'}
   if($result.diagnosticStage -cnotin @('one_use_claim','qualification','cleanup','closure','complete') -or $result.diagnosticCode -isnot [string] -or $result.diagnosticCode -cnotmatch '^(none|not_attempted|fixed_boundary_blocked|native_cleanup_residual|native_[A-Z_]{1,64})$'){throw 'blocked'}
   foreach($name in $keys){$receipt[$name]=$result.$name}
   if($result.status -ceq 'native_cleanup_verified'){
-   if($receipt.nativeExit -ne 0 -or $result.canonicalWorkflowsVerified -ne 25 -or $result.recordsDeleted -ne 2 -or $result.diagnosticStage -cne 'complete' -or $result.diagnosticCode -cne 'none'){throw 'blocked'}
+   if($receipt.nativeExit -ne 0 -or ($technical22 -and $result.ownedWorkflowsDrained -ne 25) -or (-not $technical22 -and $result.canonicalWorkflowsVerified -ne 25) -or $result.recordsDeleted -ne $maximumRecords -or $result.diagnosticStage -cne 'complete' -or $result.diagnosticCode -cne 'none'){throw 'blocked'}
    foreach($name in @('qualifiedSideEffects','deleteAcknowledged','absenceVerified','remoteWorkSettled','networkCompletionVerified','originalPublicRecordsUnchanged')){if(-not $result.$name){throw 'blocked'}};$exitCode=0
   }
  }catch{$receipt.status='cleanup_reconciliation_required';$receipt.diagnosticCode='fixed_boundary_blocked'}finally{

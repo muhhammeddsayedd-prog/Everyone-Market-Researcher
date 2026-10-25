@@ -146,7 +146,13 @@ function bindingJournal() {
     }
   });
 }
-async function input(requireMachine = false, restore = false, technical13 = false, technical16 = false) {
+async function input(
+  requireMachine = false,
+  restore = false,
+  technical13 = false,
+  technical16 = false,
+  technical22 = false,
+) {
   const chunks = [];
   let bytes = 0;
   try {
@@ -164,19 +170,23 @@ async function input(requireMachine = false, restore = false, technical13 = fals
       Object.keys(p).sort().join(',') !==
         (requireMachine ? 'expiresAt,key,machine,purpose,windowId' : 'expiresAt,key,purpose,windowId') ||
       p.purpose !==
-        (technical16
-          ? 'm03_technical16_native_cleanup'
-          : technical13
-            ? 'm03_technical13_runtime_restoration'
-            : restore
-              ? 'm03_owned_wf00_restore'
-              : 'm03_owned_inactive_provision') ||
+        (technical22
+          ? 'm03_technical22_native_cleanup'
+          : technical16
+            ? 'm03_technical16_native_cleanup'
+            : technical13
+              ? 'm03_technical13_runtime_restoration'
+              : restore
+                ? 'm03_owned_wf00_restore'
+                : 'm03_owned_inactive_provision') ||
       p.windowId !==
-        (technical16
-          ? '4c602549-2c42-4ec3-9328-714d7cb66a77'
-          : technical13
-            ? '3c46c791-e140-4eb9-890a-eecfa251f65e'
-            : foundationScope.windowId)
+        (technical22
+          ? 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a'
+          : technical16
+            ? '4c602549-2c42-4ec3-9328-714d7cb66a77'
+            : technical13
+              ? '3c46c791-e140-4eb9-890a-eecfa251f65e'
+              : foundationScope.windowId)
     )
       fail();
     const expiry = Date.parse(p.expiresAt),
@@ -582,6 +592,282 @@ const technical13 = Object.freeze({
   journalFile: 'scripts/n8n/out/foundation/runtime-technical13-restoration.jsonl',
   resultFile: 'scripts/n8n/out/foundation/runtime-technical13-restoration-result.json',
 });
+export const foundationTechnical22CleanupScope = Object.freeze({
+  technicalAttempt: 22,
+  windowId: 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+  sourceCommitSha: '5f256ce915f930481b0d31ac38b919c0a7692cd1',
+  executionIds: Object.freeze(['31145']),
+  maximumRequests: 55,
+  maximumControlRequests: 55,
+  canonicalWorkflowCount: 25,
+  maximumDrainRequests: 50,
+});
+const technical22CleanupContexts = new WeakMap();
+const technical22Cleanup = Object.freeze({
+  receiptFile:
+    'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical22-domain-refusal-20261025.json',
+  receiptSha256: '1f5d99253deb88df1df2dd9cf6f057fe878f5c1263c5711e70062e2e2fe35ff3',
+  diagnosticFile: 'milestones/M03-n8n-foundation/evidence/execution31145-diagnostic-result-20261025.json',
+  diagnosticSha256: '9f3693b227a706227d4b46bf7cb28f7d0188e43905df47d28239a9e31103da57',
+  projectionFile:
+    'milestones/M03-n8n-foundation/evidence/technical22-restored-workflows-projection-20261025.json',
+  projectionSha256: '9d96a335d6b47ce709ebbde71de0d0e679979298cb144dc021381e59a2c4cd8d',
+  controlSha256: '92e9bcae6b8f25a0ce42e75cb9b496b466a0456aa62cc88e49027f7d28b4d85a',
+  managementSha256: '2f71f63b616d15b867656f306d83d4a8fad2dc69304d7c36fe12b61b3245f013',
+  versionId: '817aa760-5cda-47df-865e-9f1d1a1865be',
+  bodyHash: '3ca4845b19ab3684cf8d014470b4a9a1cb5851bfcd58b12bd98e9b5b027ce867',
+  audience: 'https://everyone-market-researcher-qapt1ldef-muhammed-abdelrahman.vercel.app',
+  attemptFile: 'scripts/n8n/out/foundation/technical22-native-cleanup-attempt.json',
+  journalFile: 'scripts/n8n/out/foundation/technical22-native-cleanup.jsonl',
+  resultFile: 'scripts/n8n/out/foundation/technical22-native-cleanup-result.json',
+});
+export function assertTechnical22CleanupContext(context) {
+  const value = technical22CleanupContexts.get(context);
+  if (!value || !Object.isFrozen(context)) fail();
+  value.assertCurrent();
+  return value;
+}
+export async function checkTechnical22Cleanup() {
+  if (arguments.length !== 0) fail();
+  const cfg = technical22Cleanup,
+    pins = new Map();
+  const read = (relative, expected) => {
+    if (typeof relative !== 'string' || relative.includes('..') || !/^[a-zA-Z0-9_./-]+$/.test(relative))
+      fail();
+    const text = technical13PublicFile(relative),
+      hash = publicHash(text);
+    if (expected !== undefined && hash !== expected) fail();
+    pins.set(relative, hash);
+    return text;
+  };
+  const original = JSON.parse(read(cfg.receiptFile, cfg.receiptSha256)),
+    diagnostic = JSON.parse(read(cfg.diagnosticFile, cfg.diagnosticSha256)),
+    projection = JSON.parse(read(cfg.projectionFile, cfg.projectionSha256)),
+    raw = diagnostic.rawResult,
+    d = raw?.inventory;
+  if (
+    original.kind !== 'm03_technical22_domain_projection_refusal' ||
+    original.attempt?.ordinal !== 22 ||
+    original.attempt.closed !== true ||
+    original.attempt.nativeExit !== 1 ||
+    original.rawClose?.childClosed !== true ||
+    original.rawClose.credentialChildrenClosed !== true ||
+    original.rawClose.nativeExit !== 1 ||
+    original.restoration?.baselineRestored !== true ||
+    original.restoration.environmentCleanupVerified !== true ||
+    original.restoration.windowClosed !== true ||
+    original.restoration.fixtureArchived !== false ||
+    original.restoration.remoteWorkSettled !== false ||
+    original.domain?.executionId !== '31145' ||
+    original.domain.workflowId !== 'qTjioYmBUVMIERVz' ||
+    original.domain.executedVersionId !== cfg.versionId ||
+    original.domain.graphHash !== cfg.bodyHash ||
+    original.domain.acceptedPermissionProof !== false ||
+    original.usage?.management !== 1639 ||
+    original.usage.control !== 1442 ||
+    original.usage.combined !== 3081 ||
+    original.usage.vercel !== 288 ||
+    original.usage.native !== 16 ||
+    original.usage.actors !== 0 ||
+    original.database?.activeWindowId !== foundationTechnical22CleanupScope.windowId ||
+    original.database.phaseAClosed !== true ||
+    original.database.authenticationVerified !== true ||
+    original.database.historyBefore !== 'complete' ||
+    original.database.historyAfter !== 'complete' ||
+    original.database.migrationReplay !== false ||
+    diagnostic.kind !== 'm03_execution31145_actual_pin_diagnostic' ||
+    diagnostic.nativeExit !== 0 ||
+    diagnostic.priorActual22?.sha256 !== cfg.receiptSha256 ||
+    diagnostic.request?.executionId !== '31145' ||
+    diagnostic.request.workflowId !== 'qTjioYmBUVMIERVz' ||
+    diagnostic.request.count !== 1 ||
+    raw.status !== 'complete' ||
+    raw.nativeExit !== 0 ||
+    raw.childClosed !== true ||
+    raw.handoffDeleted !== true ||
+    d?.status !== 'native_snapshot_classified' ||
+    d.requestCount !== 1 ||
+    d.httpStatus !== 200 ||
+    d.tlsVerified !== true ||
+    d.networkCompletionVerified !== true ||
+    d.acceptanceProven !== false ||
+    d.readerMetadataVerified !== false ||
+    d.metadata?.executionId !== '31145' ||
+    d.metadata.workflowId !== 'qTjioYmBUVMIERVz' ||
+    d.metadata.mode !== 'manual' ||
+    d.metadata.status !== 'error' ||
+    d.metadata.versionMatchesIntent !== true ||
+    d.transportState?.pendingRequests !== 0 ||
+    d.transportState.unclosedResponses !== 0 ||
+    diagnostic.usage?.management !== 1640 ||
+    diagnostic.usage.control !== 1443 ||
+    diagnostic.usage.combined !== 3083 ||
+    diagnostic.usage.vercel !== 288 ||
+    diagnostic.usage.native !== 16 ||
+    diagnostic.usage.actors !== 0 ||
+    diagnostic.limits?.management !== 1728 ||
+    diagnostic.limits.control !== 3584 ||
+    diagnostic.limits.combined !== 5312 ||
+    diagnostic.limits.vercel !== 304 ||
+    diagnostic.physicalClosure?.result?.allAbsent !== true ||
+    diagnostic.physicalClosure.result.matchingProcesses?.length !== 0 ||
+    diagnostic.physicalClosure.presence?.managementDisposablePresent !== false ||
+    diagnostic.physicalClosure.presence.coordinatorLockPresent !== false
+  )
+    fail();
+  if (
+    projection.kind !== 'm03_technical22_public_restoration_projection' ||
+    projection.actual22Receipt?.sha256 !== cfg.receiptSha256 ||
+    projection.actualDiagnosticReceipt?.sha256 !== cfg.diagnosticSha256 ||
+    !Array.isArray(projection.restored) ||
+    projection.restored.length !== 25
+  )
+    fail();
+  for (const value of [original, diagnostic]) {
+    if (!value.pins || typeof value.pins !== 'object' || Array.isArray(value.pins)) fail();
+    for (const [path, hash] of Object.entries(value.pins)) {
+      if (!/^[a-f0-9]{64}$/.test(hash)) fail();
+      read(path, hash);
+    }
+  }
+  const rows = read(
+      'scripts/n8n/out/foundation/live/runtime.technical-22.jsonl',
+      original.pins['scripts/n8n/out/foundation/live/runtime.technical-22.jsonl'],
+    )
+      .trimEnd()
+      .split('\n')
+      .map(JSON.parse),
+    control = read('scripts/n8n/out/foundation/live/control.jsonl', cfg.controlSha256)
+      .trimEnd()
+      .split('\n')
+      .map(JSON.parse);
+  read('scripts/n8n/out/foundation/live/management.jsonl', cfg.managementSha256);
+  const ack = control.filter((r) => r.event === 'native_start_ack' && r.executionId === '31145');
+  if (
+    ack.length !== 1 ||
+    ack[0].caseId !== 'control.machine_domain' ||
+    ack[0].workflowKey !== 'WF-99' ||
+    ack[0].workflowId !== 'qTjioYmBUVMIERVz' ||
+    ack[0].versionId !== cfg.versionId ||
+    ack[0].kind !== 'browser_ui' ||
+    ack[0].intentAt !== '2026-10-25T13:57:57.195Z' ||
+    rows.at(-1)?.event !== 'restore_complete'
+  )
+    fail();
+  const [
+    { createFoundationRuntimeBaseline, freezeRuntimeValue },
+    { foundationRuntimeGraphHash },
+    retention,
+    { buildFoundationNativeDomainProbe },
+    { graphBody },
+    { buildFoundationGatewayWorkflows },
+  ] = await Promise.all([
+    import('./foundation-runtime-plan.mjs'),
+    import('./foundation-runtime-checkpoint.mjs'),
+    import('./foundation-retention-proposal.mjs'),
+    import('./foundation-live-domain-probe.mjs'),
+    import('./foundation-bind.mjs'),
+    import('../../n8n/foundation/build-foundation-gateway.mjs'),
+  ]);
+  const bindings = JSON.parse(read('n8n/foundation/bindings.dev.json')),
+    records = Object.keys(bindings.workflowRefs).map((key) =>
+      JSON.parse(read('n8n/workflows/' + key + '.json')),
+    ),
+    baseline = createFoundationRuntimeBaseline({ bindings, records }).map((record) => {
+      const intents = rows.filter(
+          (r) =>
+            r.event === 'intent' &&
+            r.action === 'save' &&
+            r.key === record.key &&
+            r.sequence >= 46 &&
+            r.sequence <= 70,
+        ),
+        intent = intents[0],
+        verified = rows.filter((r) => r.event === 'verified' && r.sequence === intent?.sequence),
+        hash = foundationRuntimeGraphHash(record.body),
+        projected = projection.restored.filter((r) => r.key === record.key);
+      if (
+        intents.length !== 1 ||
+        verified.length !== 1 ||
+        projected.length !== 1 ||
+        projected[0].workflowId !== record.id ||
+        projected[0].sequence !== intent.sequence ||
+        projected[0].targetGraphHash !== hash ||
+        projected[0].restoredVersionId !== verified[0].after?.versionId ||
+        intent.target?.graphHash !== hash ||
+        intent.target.activeVersionId !== null ||
+        intent.target.publishedHash !== null ||
+        verified[0].after?.graphHash !== hash ||
+        verified[0].after.activeVersionId !== null ||
+        verified[0].after.publishedHash !== null ||
+        !/^[a-f0-9-]{36}$/.test(verified[0].after.versionId)
+      )
+        fail();
+      return { ...record, versionId: verified[0].after.versionId };
+    });
+  const retentionPolicy = retention.createFoundationApprovedRetentionPolicy({ bindings, records }),
+    transport = JSON.parse(read('n8n/foundation/transport.dev.json')),
+    compiled = buildFoundationGatewayWorkflows(bindings, {
+      audience: cfg.audience,
+      windowId: foundationTechnical22CleanupScope.windowId,
+      credential: transport.credential,
+    }).find((g) => g.key === 'WF-99'),
+    settings = retention.applyFoundationApprovedRetentionSettings(retentionPolicy, 'WF-99', {
+      ...graphBody(compiled).settings,
+      availableInMCP: true,
+    }),
+    graph = buildFoundationNativeDomainProbe({ runtimeAudience: cfg.audience, settings }),
+    body = graphBody({ ...graph, workflow: { ...graph.workflow, active: false } });
+  body.settings = retention.applyFoundationApprovedRetentionSettings(retentionPolicy, 'WF-99', body.settings);
+  if (foundationRuntimeGraphHash(body) !== cfg.bodyHash) fail();
+  const domainSaved = rows.filter((r) => r.event === 'verified' && r.sequence === 38);
+  if (
+    domainSaved.length !== 1 ||
+    domainSaved[0].after?.versionId !== cfg.versionId ||
+    domainSaved[0].after.graphHash !== cfg.bodyHash
+  )
+    fail();
+  for (const path of [
+    cfg.attemptFile,
+    cfg.journalFile,
+    cfg.resultFile,
+    'scripts/n8n/out/foundation/live/runtime.operation.lock',
+  ])
+    if (existsSync(noLinks(join(repo, path)))) fail();
+  const assertCurrent = () => {
+    for (const [path, hash] of pins) if (publicHash(technical13PublicFile(path)) !== hash) fail();
+  };
+  const value = Object.freeze({
+    bindings,
+    baseline25: freezeRuntimeValue(baseline),
+    domainBinding: freezeRuntimeValue({
+      workflowId: 'qTjioYmBUVMIERVz',
+      versionId: cfg.versionId,
+      activeVersionId: null,
+      bodyHash: cfg.bodyHash,
+      body,
+      runtimeAudience: cfg.audience,
+    }),
+    intentAt: Date.parse(ack[0].intentAt),
+    usage: Object.freeze({ management: 1640, control: 1443, combined: 3083 }),
+    paths: cfg,
+    resolutionSha256: cfg.diagnosticSha256,
+    assertCurrent,
+  });
+  const context = Object.freeze({
+    kind: 'm03_technical22_cleanup_context',
+    version: 1,
+    technicalAttempt: 22,
+    windowId: foundationTechnical22CleanupScope.windowId,
+    sourceCommitSha: foundationTechnical22CleanupScope.sourceCommitSha,
+    qualifiedSideEffects: false,
+    executionCount: 0,
+    actorStarts: 0,
+  });
+  technical22CleanupContexts.set(context, value);
+  return context;
+}
+
 export const foundationTechnical16CleanupScope = Object.freeze({
   technicalAttempt: 16,
   windowId: '4c602549-2c42-4ec3-9328-714d7cb66a77',
@@ -2222,11 +2508,86 @@ export function createTechnical16CleanupBudget({ context, deadlineAt, now = Date
     },
   });
 }
+export function createTechnical22CleanupBudget({ context, deadlineAt, now = Date.now, append }) {
+  const value = assertTechnical22CleanupContext(context),
+    counts = new Map();
+  if (
+    !Number.isFinite(deadlineAt) ||
+    typeof now !== 'function' ||
+    now() >= deadlineAt ||
+    typeof append !== 'function'
+  )
+    fail();
+  let count = 0,
+    uncertain = false;
+  const state = () =>
+    Object.freeze({
+      requestCount: count,
+      controlRequestCount: count,
+      managementAttempts: value.usage.management + count,
+      controlAttempts: value.usage.control + count,
+      combinedAttempts: value.usage.combined + 2 * count,
+    });
+  return Object.freeze({
+    state,
+    admit(args, retryMetadata) {
+      value.assertCurrent();
+      const ids = new Set(value.baseline25.map((row) => row.id)),
+        kind = args?.kind,
+        key = kind === 'discovery' ? 'discovery:' + args.workflowId : kind,
+        limit = kind === 'metadata' ? 2 : kind === 'discovery' ? 2 : 1;
+      if (
+        uncertain ||
+        retryMetadata !== undefined ||
+        now() >= deadlineAt ||
+        count >= 55 ||
+        !['metadata', 'full', 'discovery', 'delete', 'absence'].includes(kind) ||
+        !ids.has(args.workflowId) ||
+        (kind !== 'discovery' && (args.workflowId !== 'qTjioYmBUVMIERVz' || args.executionId !== '31145')) ||
+        (kind === 'discovery' && args.executionId !== undefined) ||
+        (counts.get(key) ?? 0) >= limit ||
+        value.usage.management + count + 1 > 1728 ||
+        value.usage.control + count + 1 > 3584 ||
+        value.usage.combined + 2 * (count + 1) > 5312
+      )
+        fail();
+      count++;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+      try {
+        const returned = append(
+          Object.freeze({
+            event: 'technical22_http_intent',
+            ordinal: count,
+            kind,
+            workflowId: args.workflowId,
+            ...(args.executionId ? { executionId: args.executionId } : {}),
+            managementAttempts: value.usage.management + count,
+            controlAttempts: value.usage.control + count,
+            at: new Date(now()).toISOString(),
+          }),
+        );
+        if (returned !== undefined) {
+          if (returned?.then) Promise.resolve(returned).catch(() => {});
+          fail();
+        }
+      } catch {
+        uncertain = true;
+        fail();
+      }
+    },
+  });
+}
 async function runTechnical16Cleanup(context, privateInput, qualificationOnly = false) {
-  const value = assertTechnical16CleanupContext(context),
+  const technical22 = technical22CleanupContexts.has(context),
+    scope = technical22 ? foundationTechnical22CleanupScope : foundationTechnical16CleanupScope,
+    value = technical22 ? assertTechnical22CleanupContext(context) : assertTechnical16CleanupContext(context),
     paths = value.paths;
   const [
-    { createFoundationNativeReader, assertFoundationTechnical16CleanupQualification },
+    {
+      createFoundationNativeReader,
+      assertFoundationTechnical16CleanupQualification,
+      assertFoundationTechnical22CleanupQualification,
+    },
     { createFoundationNativeTransport },
     { createFoundationNativeCleanup },
     { createFoundationControlJournal },
@@ -2246,12 +2607,12 @@ async function runTechnical16Cleanup(context, privateInput, qualificationOnly = 
     journalExpected = '',
     uncertainAppend = false;
   const result = {
-    kind: 'm03_technical16_native_cleanup',
+    kind: technical22 ? 'm03_technical22_native_cleanup' : 'm03_technical16_native_cleanup',
     version: 1,
     environment: 'dev',
     projectRef: 'zmotjsbzhzjvpelxvxlf',
-    windowId: foundationTechnical16CleanupScope.windowId,
-    sourceCommitSha: foundationTechnical16CleanupScope.sourceCommitSha,
+    windowId: scope.windowId,
+    sourceCommitSha: scope.sourceCommitSha,
     status: 'cleanup_blocked',
     requestCount: 0,
     controlRequestCount: 0,
@@ -2259,6 +2620,7 @@ async function runTechnical16Cleanup(context, privateInput, qualificationOnly = 
     controlAttempts: value.usage.control,
     combinedAttempts: value.usage.combined,
     canonicalWorkflowsVerified: 0,
+    ...(technical22 ? { ownedWorkflowsDrained: 0 } : {}),
     qualifiedSideEffects: false,
     recordsDeleted: 0,
     deleteAcknowledged: false,
@@ -2293,7 +2655,11 @@ async function runTechnical16Cleanup(context, privateInput, qualificationOnly = 
       fail();
     }
   };
-  const budget = createTechnical16CleanupBudget({ context, deadlineAt: privateInput.deadlineMs, append });
+  const budget = (technical22 ? createTechnical22CleanupBudget : createTechnical16CleanupBudget)({
+    context,
+    deadlineAt: privateInput.deadlineMs,
+    append,
+  });
   const admit = (args, retryMetadata) => {
     if (qualificationOnly && (budget.state().requestCount >= 4 || !['metadata', 'full'].includes(args.kind)))
       fail();
@@ -2305,7 +2671,7 @@ async function runTechnical16Cleanup(context, privateInput, qualificationOnly = 
       writeCompleteSync(
         claim,
         JSON.stringify({
-          kind: 'm03_technical16_cleanup_once',
+          kind: technical22 ? 'm03_technical22_cleanup_once' : 'm03_technical16_cleanup_once',
           version: 1,
           ...(value.cleanupAttempt >= 2
             ? {
@@ -2316,14 +2682,12 @@ async function runTechnical16Cleanup(context, privateInput, qualificationOnly = 
               }
             : {}),
           resolutionSha256: value.resolutionSha256,
-          executionIds: ['31131', '31130'],
+          executionIds: scope.executionIds,
           processId: process.pid,
           parentProcessId: process.ppid,
           usage: value.usage,
-          maximumRequests: qualificationOnly ? 4 : foundationTechnical16CleanupScope.maximumRequests,
-          maximumControlRequests: qualificationOnly
-            ? 4
-            : foundationTechnical16CleanupScope.maximumControlRequests,
+          maximumRequests: qualificationOnly ? 4 : scope.maximumRequests,
+          maximumControlRequests: qualificationOnly ? 4 : scope.maximumControlRequests,
           ...(qualificationOnly ? { qualificationOnly: true } : {}),
           at: new Date().toISOString(),
         }) + '\n',
@@ -2337,10 +2701,12 @@ async function runTechnical16Cleanup(context, privateInput, qualificationOnly = 
     fsyncSync(lock);
     journalFd = openSync(noLinks(join(repo, paths.journalFile)), 'wx');
     append({
-      event: 'technical16_cleanup_header',
+      event: technical22 ? 'technical22_cleanup_header' : 'technical16_cleanup_header',
       version: 1,
       resolutionSha256: value.resolutionSha256,
-      originalAttemptSha256: 'd6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb',
+      originalAttemptSha256: technical22
+        ? technical22Cleanup.receiptSha256
+        : 'd6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb',
       ...(value.cleanupAttempt >= 2
         ? {
             cleanupAttempt: value.cleanupAttempt,
@@ -2355,7 +2721,7 @@ async function runTechnical16Cleanup(context, privateInput, qualificationOnly = 
       apiKey: privateInput.key,
       bindings: value.bindings,
       authorizeExecution: ({ method, executionId }) =>
-        ['31130', '31131'].includes(executionId) &&
+        scope.executionIds.includes(executionId) &&
         (method === 'GET' || (!qualificationOnly && qualified && method === 'DELETE')),
     });
     reader = createFoundationNativeReader({
@@ -2375,29 +2741,39 @@ async function runTechnical16Cleanup(context, privateInput, qualificationOnly = 
       deadlineAt: privateInput.deadlineMs,
     });
     result.diagnosticStage = 'qualification';
-    const qualification = await reader.qualifyTechnical16Cleanup({
+    const qualification = await reader[
+      technical22 ? 'qualifyTechnical22Cleanup' : 'qualifyTechnical16Cleanup'
+    ]({
       context,
       ...(qualificationOnly ? { qualificationOnly: true } : {}),
     });
     if (qualificationOnly) fail();
-    assertFoundationTechnical16CleanupQualification(qualification, { reader });
+    (technical22
+      ? assertFoundationTechnical22CleanupQualification
+      : assertFoundationTechnical16CleanupQualification)(qualification, { reader });
     // Keep child DELETE/absence and root DELETE/absence available as a unit.
     // Long read-only pagination can exhaust the forensic allocation; it must
     // never enable the first mutation with fewer than all four requests left.
-    if (foundationTechnical16CleanupScope.maximumRequests - budget.state().requestCount < 4) fail();
+    if (scope.maximumRequests - budget.state().requestCount < (technical22 ? 2 : 4)) fail();
     qualified = true;
     result.qualifiedSideEffects = true;
-    result.canonicalWorkflowsVerified = 25;
+    result.canonicalWorkflowsVerified = technical22 ? 0 : 25;
+    if (technical22) result.ownedWorkflowsDrained = qualification.ownedWorkflowsDrained;
     result.diagnosticStage = 'cleanup';
-    const deleted = await cleanup.cleanupTechnical16({ qualification });
+    const deleted = await cleanup[technical22 ? 'cleanupTechnical22' : 'cleanupTechnical16']({
+      qualification,
+    });
     result.recordsDeleted = deleted.results.filter(
       (row) => row.state === 'native_record_deleted' && !row.residual,
     ).length;
     result.deleteAcknowledged =
-      deleted.results.length === 2 && deleted.results.every((row) => row.deleteAcknowledged);
+      deleted.results.length === scope.executionIds.length &&
+      deleted.results.every((row) => row.deleteAcknowledged);
     result.absenceVerified =
-      deleted.results.length === 2 && deleted.results.every((row) => row.absenceVerified);
-    result.remoteWorkSettled = deleted.status === 'native_records_deleted' && result.recordsDeleted === 2;
+      deleted.results.length === scope.executionIds.length &&
+      deleted.results.every((row) => row.absenceVerified);
+    result.remoteWorkSettled =
+      deleted.status === 'native_records_deleted' && result.recordsDeleted === scope.executionIds.length;
     result.status = result.remoteWorkSettled ? 'native_cleanup_verified' : 'cleanup_reconciliation_required';
     result.diagnosticCode = result.remoteWorkSettled ? 'none' : 'native_cleanup_residual';
   } catch (error) {
@@ -2799,44 +3175,65 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
           'CleanupTechnical16CheckOnly',
           'CleanupTechnical16',
           'CleanupTechnical16Diagnose',
+          'CleanupTechnical22CheckOnly',
+          'CleanupTechnical22',
         ].includes(mode)
       )
         fail();
       if (
-        ['CleanupTechnical16CheckOnly', 'CleanupTechnical16', 'CleanupTechnical16Diagnose'].includes(mode)
+        [
+          'CleanupTechnical16CheckOnly',
+          'CleanupTechnical16',
+          'CleanupTechnical16Diagnose',
+          'CleanupTechnical22CheckOnly',
+          'CleanupTechnical22',
+        ].includes(mode)
       ) {
+        const technical22 = mode.startsWith('CleanupTechnical22'),
+          scope = technical22 ? foundationTechnical22CleanupScope : foundationTechnical16CleanupScope;
         let context = null;
         try {
-          context = await checkTechnical16Cleanup();
+          context = await (technical22 ? checkTechnical22Cleanup : checkTechnical16Cleanup)();
         } catch {
           /* Fixed public refusal below. */
         }
-        if (mode === 'CleanupTechnical16CheckOnly' || !context) {
+        // The new22 integration cases were blocked before execution. Keep both
+        // native entry modes public-only until that material test gate passes;
+        // a valid historical context alone cannot authorize credential use.
+        if (technical22 || mode === 'CleanupTechnical16CheckOnly' || !context) {
           report({
-            kind: 'm03_technical16_cleanup_public',
+            kind: technical22 ? 'm03_technical22_cleanup_public' : 'm03_technical16_cleanup_public',
             version: 1,
-            status: context ? 'technical16_cleanup_public_ready' : 'technical16_cleanup_public_blocked',
-            windowId: foundationTechnical16CleanupScope.windowId,
+            status:
+              context && !technical22
+                ? technical22
+                  ? 'technical22_cleanup_public_ready'
+                  : 'technical16_cleanup_public_ready'
+                : technical22
+                  ? 'technical22_cleanup_public_blocked'
+                  : 'technical16_cleanup_public_blocked',
+            windowId: scope.windowId,
             privateRead: false,
             networkRequests: 0,
-            maximumRequests: foundationTechnical16CleanupScope.maximumRequests,
-            maximumControlRequests: foundationTechnical16CleanupScope.maximumControlRequests,
-            canonicalWorkflowCount: foundationTechnical16CleanupScope.canonicalWorkflowCount,
-            maximumDrainRequests: foundationTechnical16CleanupScope.maximumDrainRequests,
-            maximumNativeRecords: foundationTechnical16CleanupScope.executionIds.length,
+            maximumRequests: scope.maximumRequests,
+            maximumControlRequests: scope.maximumControlRequests,
+            canonicalWorkflowCount: scope.canonicalWorkflowCount,
+            maximumDrainRequests: scope.maximumDrainRequests,
+            maximumNativeRecords: scope.executionIds.length,
             executionCount: 0,
             actorStarts: 0,
             qualifiedSideEffects: false,
-            cleanupQualificationReady: context !== null,
+            cleanupQualificationReady: context !== null && !technical22,
           });
-          process.exitCode = context ? 0 : 1;
+          process.exitCode = context && !technical22 ? 0 : 1;
         } else {
           const parentPath = noLinks(
             join(process.env.LOCALAPPDATA, 'Temp/emr-m03-acceptance-parent.operation.lock'),
           );
           const parent = JSON.parse(readFileSync(parentPath, 'utf8'));
           if (
-            parent.kind !== 'm03_technical16_cleanup_parent' ||
+            parent.kind !==
+              (technical22 ? 'm03_technical22_cleanup_parent' : 'm03_technical16_cleanup_parent') ||
             parent.version !== 1 ||
             parent.processId !== process.ppid
           )
@@ -2852,7 +3249,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
           }
           if (!held) fail();
           privateReadAttempted = true;
-          const privateInput = await input(false, true, false, true);
+          const privateInput = await input(false, true, false, !technical22, technical22);
           const result = await runTechnical16Cleanup(
             context,
             privateInput,

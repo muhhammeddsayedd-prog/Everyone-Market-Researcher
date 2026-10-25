@@ -193,6 +193,27 @@ test('technical16 cleanup ignores the ordinary test closure override and denies 
   assert.equal(f.events.length, 0);
 });
 
+test('technical22 cleanup refuses copied or ordinary qualifications before any mutation', async () => {
+  const f = await fixture();
+  for (const qualification of [
+    f.receipt,
+    f.closure,
+    Object.freeze({
+      kind: 'foundation_technical22_cleanup_qualification',
+      executionIds: ['31145'],
+      records: [f.receipt],
+      settled: true,
+    }),
+  ]) {
+    await assert.rejects(
+      () => f.cleanup.cleanupTechnical22({ qualification }),
+      /FOUNDATION_NATIVE_CLEANUP_BLOCKED/,
+    );
+  }
+  assert.equal(f.calls.length, 0);
+  assert.equal(f.events.length, 0);
+});
+
 test('safe evidence is flushed before exact DELETE; matching acknowledgement and absence are both required', async () => {
   let f;
   f = await fixture({

@@ -3,6 +3,8 @@ import {
   assertFoundationNativeReceipt,
   assertFoundationTechnical16CleanupQualification,
   claimFoundationTechnical16CleanupQualification,
+  assertFoundationTechnical22CleanupQualification,
+  claimFoundationTechnical22CleanupQualification,
 } from './foundation-native-reader.mjs';
 import {
   assertFoundationNativeClosure,
@@ -201,6 +203,10 @@ export function createFoundationNativeCleanup({
     if (value <= 0) blocked();
     return value;
   };
+  const assertPostcloseQualification = (qualification) =>
+    qualification?.kind === 'foundation_technical22_cleanup_qualification'
+      ? assertFoundationTechnical22CleanupQualification(qualification, { reader })
+      : assertFoundationTechnical16CleanupQualification(qualification, { reader });
 
   async function request(operation, receipt, qualification = null) {
     const method = operation === 'delete_ack' ? 'DELETE' : 'GET';
@@ -208,7 +214,7 @@ export function createFoundationNativeCleanup({
     remaining();
     const reserveWrite = () => {
       if (qualification !== null && operation === 'delete_ack') {
-        assertFoundationTechnical16CleanupQualification(qualification, { reader });
+        assertPostcloseQualification(qualification);
         if (remaining() < 2 * requestTimeoutMs + 5000) blocked();
       }
     };
@@ -264,11 +270,12 @@ export function createFoundationNativeCleanup({
     }
   }
 
-  async function cleanupOne({ receipt, closure, technical16 = false }) {
+  async function cleanupOne({ receipt, closure, technical16 = false, technical22 = false }) {
+    const postclose = technical16 || technical22;
     let full, closed;
     try {
-      if (technical16) {
-        closed = assertFoundationTechnical16CleanupQualification(closure, { reader });
+      if (postclose) {
+        closed = assertPostcloseQualification(closure);
         if (!closed.records.includes(receipt)) blocked();
         full = receipt;
       } else {
@@ -280,7 +287,11 @@ export function createFoundationNativeCleanup({
         !terminal.has(full.status) ||
         full.waitTill !== null ||
         closed?.kind !==
-          (technical16 ? 'foundation_technical16_cleanup_qualification' : 'foundation_native_closure') ||
+          (technical22
+            ? 'foundation_technical22_cleanup_qualification'
+            : technical16
+              ? 'foundation_technical16_cleanup_qualification'
+              : 'foundation_native_closure') ||
         closed.settled !== true ||
         typeof closed.batchId !== 'string' ||
         typeof closed.caseId !== 'string' ||
@@ -294,7 +305,7 @@ export function createFoundationNativeCleanup({
       )
         blocked();
       remaining();
-      if (technical16 && remaining() < 2 * requestTimeoutMs + 5000) blocked();
+      if (postclose && remaining() < 2 * requestTimeoutMs + 5000) blocked();
     } catch {
       blocked();
     }
@@ -327,7 +338,7 @@ export function createFoundationNativeCleanup({
       intentPersisted = true;
       state.deleteAttempts++;
       try {
-        const ack = await request('delete_ack', full, technical16 ? closed : null);
+        const ack = await request('delete_ack', full, postclose ? closed : null);
         entry.deleteAcknowledged =
           ack?.kind === 'foundation_native_delete_ack' &&
           ack.executionId === full.executionId &&
@@ -351,7 +362,7 @@ export function createFoundationNativeCleanup({
             at: at(),
           });
           state.absenceReads++;
-          const absence = await request('absence', full, technical16 ? closed : null);
+          const absence = await request('absence', full, postclose ? closed : null);
           if (
             absence?.kind === 'foundation_native_absence' &&
             absence.executionId === full.executionId &&
@@ -399,7 +410,7 @@ export function createFoundationNativeCleanup({
       expectedCleanupAt: new Date(deadlineAt).toISOString(),
       physicalErasureVerified: false,
     });
-    if (!technical16) cleanupReceipts.set(result, { receipt: full, closure: closed });
+    if (!postclose) cleanupReceipts.set(result, { receipt: full, closure: closed });
     return result;
   }
   return Object.freeze({
@@ -440,6 +451,41 @@ export function createFoundationNativeCleanup({
         version: 1,
         status:
           results.length === 2 && results.every((result) => !result.residual)
+            ? 'native_records_deleted'
+            : 'cleanup_reconciliation_required',
+        results: Object.freeze(results),
+        nativeAcceptanceProven: false,
+        liveClosureMinted: false,
+        physicalErasureVerified: false,
+      });
+    },
+    async cleanupTechnical22({ qualification } = {}) {
+      try {
+        claimFoundationTechnical22CleanupQualification(qualification, { reader });
+        if (
+          state.busy ||
+          state.entries.size !== 0 ||
+          qualification.records.length !== 1 ||
+          qualification.executionIds.join(',') !== '31145' ||
+          qualification.records[0].executionId !== '31145'
+        )
+          blocked();
+      } catch {
+        blocked();
+      }
+      const results = [];
+      try {
+        results.push(
+          await cleanupOne({ receipt: qualification.records[0], closure: qualification, technical22: true }),
+        );
+      } catch {
+        /* A spent claim never authorizes a replay. */
+      }
+      return Object.freeze({
+        kind: 'foundation_technical22_native_cleanup',
+        version: 1,
+        status:
+          results.length === 1 && !results[0].residual
             ? 'native_records_deleted'
             : 'cleanup_reconciliation_required',
         results: Object.freeze(results),
