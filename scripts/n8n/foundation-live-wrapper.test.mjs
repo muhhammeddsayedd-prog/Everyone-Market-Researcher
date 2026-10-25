@@ -385,6 +385,99 @@ Write-Output 'TECHNICAL19_WRAPPER_PASS'
 );
 
 test(
+  'technical20 wrapper retains exact1317 charges only with selected source and both immutable public pins',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-technical20-wrapper-'));
+    try {
+      const original = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+      const extract = (name, source = original) => {
+        const start = source.indexOf('function ' + name),
+          end = source.indexOf('\nfunction ', start + 10);
+        assert.ok(start >= 0 && end > start, name);
+        return source.slice(start, end);
+      };
+      const relative =
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json';
+      const approvalRelative =
+        'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-approval-20261025.json';
+      for (const path of [relative, approvalRelative]) {
+        mkdirSync(join(directory, 'milestones/M03-n8n-foundation/evidence'), { recursive: true });
+        writeFileSync(join(directory, path), readFileSync(resolve(path)));
+      }
+      const ready = {
+        kind: 'project_verified_continuation_ready',
+        segmentId: '20275b22-b7fe-4737-a9a4-c50c2feadb74',
+        sourceCommitSha: 'c'.repeat(40),
+        windowId: 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+        privateRead: false,
+        networkRequests: 0,
+        managementMaximum: 1728,
+        managementAttempts: 1317,
+        controlAttempts: 1246,
+        combinedAttempts: 2563,
+      };
+      const quote = (value) => "'" + value.replaceAll("'", "''") + "'";
+      const binding = extract('Test-Technical20PublicBinding(');
+      const realSource = '5f256ce915f930481b0d31ac38b919c0a7692cd1';
+      assert.ok(binding.includes("$source='" + realSource + "'"));
+      const io = original.slice(
+        original.indexOf('function Initialize-BoundedIo'),
+        original.indexOf('function Invoke-PublicCompositionCheck'),
+      );
+      const guard = join(directory, 'scripts/n8n/foundation-live-project-verified-continuation.mjs');
+      mkdirSync(join(directory, 'scripts/n8n'), { recursive: true });
+      writeFileSync(
+        guard,
+        `if(process.argv[2]!=='CheckOnly')process.exit(9);process.stdout.write(${JSON.stringify(JSON.stringify(ready))});`,
+      );
+      const script = join(directory, 'technical20.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+$repo=${quote(directory)}
+${io}
+${extract('Public-File(')}
+${binding}
+${extract('Get-ProjectVerifiedPublicManagementMaximum(')}
+${extract('ConvertTo-ProjectVerifiedReadinessBlock(')}
+${extract('Invoke-ClockAmendmentPublic(')}
+Initialize-BoundedIo
+$current=ConvertFrom-Json -InputObject ${quote(JSON.stringify(ready))}
+$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'UNREVIEWED20_ACCEPTED'}
+# This isolated test selects a visibly synthetic source instead of the actual reviewed pin.
+${binding.replace(realSource, 'c'.repeat(40))}
+if((Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly') -ne 1728){throw 'EXACT20_NOT_PROJECTED'}
+$actual=Invoke-ClockAmendmentPublic ${quote(process.execPath)} $repo 'CheckOnly' $false $false $false $true
+if($actual.managementMaximum -ne 1728 -or $actual.managementAttempts -ne 1317 -or $actual.controlAttempts -ne 1246 -or $actual.combinedAttempts -ne 2563 -or $actual.privateRead -ne $false -or $actual.networkRequests -ne 0){throw 'WRAPPER20_DTO_CHANGED'}
+foreach($mutation in @(@{key='managementMaximum';value=1408},@{key='managementMaximum';value='1728'},@{key='managementAttempts';value=1316},@{key='managementAttempts';value='1317'},@{key='controlAttempts';value=1245},@{key='controlAttempts';value='1246'},@{key='combinedAttempts';value=2562},@{key='combinedAttempts';value='2563'},@{key='sourceCommitSha';value='unrecognized'},@{key='windowId';value='edbc6d11-7c1f-43a7-b745-1ded06deb29f'},@{key='privateRead';value=$true},@{key='privateRead';value='false'},@{key='networkRequests';value=1},@{key='networkRequests';value='0'},@{key='kind';value='clock_project_verified_continuation_admitted'},@{key='segmentId';value='unrecognized'})){
+ $copy=$current|ConvertTo-Json|ConvertFrom-Json;$copy.($mutation.key)=$mutation.value;$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $copy $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED20_PROFILE_ACCEPTED'}
+}
+foreach($mode in @('Admit','Read')){$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true $mode}catch{$denied=$true};if(-not $denied){throw 'WRONG20_MODE_ACCEPTED'}}
+$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $false 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'WRONG20_CLOCK_ACCEPTED'}
+foreach($relative in @(${quote(relative)},${quote(approvalRelative)})){
+ $path=Join-Path $repo $relative;$bytes=[IO.File]::ReadAllBytes($path)
+ try{[IO.File]::WriteAllText($path,'{}');$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'UNPINNED20_ACCEPTED'}}finally{[IO.File]::WriteAllBytes($path,$bytes)}
+}
+Write-Output 'TECHNICAL20_WRAPPER_PASS'
+`,
+      );
+      const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: safeEnvironment(directory),
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 15000,
+      });
+      assert.equal(result.status, 0, result.stderr + result.stdout);
+      assert.equal(result.stderr, '');
+      assert.equal(result.stdout.trim(), 'TECHNICAL20_WRAPPER_PASS');
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
   'budget readiness projection rejects stale counters and untrusted fields before private initialization',
   windowsOnly,
   () => {

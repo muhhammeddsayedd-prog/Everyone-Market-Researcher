@@ -26,6 +26,8 @@ import {
   foundationProjectVerifiedContinuationUnadmittedUsage,
   foundationProjectVerifiedContinuationResumeCheckpoint,
   assertFoundationProjectVerifiedContinuationControlResume,
+  foundationProjectVerifiedTechnical20Runtime,
+  foundationProjectVerifiedContinuationRequestCaps,
 } from './foundation-live-project-verified-continuation.mjs';
 
 // The existing execution-controller entry selects this private native branch.
@@ -122,6 +124,11 @@ export function createFoundationNativeController({
   let carriedNativeExecutions = 0,
     settledNativeControlRows = 0;
   try {
+    if (
+      activeWindowId === foundationProjectVerifiedTechnical20Runtime.windowId &&
+      projectVerifiedContinuationProof === undefined
+    )
+      fail();
     if (projectVerifiedContinuationProof !== undefined) {
       const usage = foundationProjectVerifiedContinuationUnadmittedUsage(projectVerifiedContinuationProof);
       if (projectVerifiedContinuationProof.windowId !== activeWindowId) fail();
@@ -130,7 +137,17 @@ export function createFoundationNativeController({
       if (resume.settledNativeControlRows !== undefined) {
         if (
           usage.nativeExecutions !== 3 ||
-          resume.managementMaximum !== 1408 ||
+          !(
+            resume.managementMaximum === 1408 ||
+            (resume.managementMaximum === 1728 &&
+              activeWindowId === foundationProjectVerifiedTechnical20Runtime.windowId &&
+              projectVerifiedContinuationProof.sourceCommitSha ===
+                foundationProjectVerifiedTechnical20Runtime.sourceCommitSha &&
+              foundationProjectVerifiedContinuationRequestCaps(projectVerifiedContinuationProof).control ===
+                3584 &&
+              foundationProjectVerifiedContinuationRequestCaps(projectVerifiedContinuationProof).combined ===
+                5312)
+          ) ||
           !Number.isSafeInteger(resume.settledNativeControlRows) ||
           resume.settledNativeControlRows < 964 ||
           journal.rows.length < resume.settledNativeControlRows
@@ -156,6 +173,7 @@ export function createFoundationNativeController({
         '3c46c791-e140-4eb9-890a-eecfa251f65e',
         '4c602549-2c42-4ec3-9328-714d7cb66a77',
         'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
+        foundationProjectVerifiedTechnical20Runtime.windowId,
       ].includes(activeWindowId) ||
       typeof bindingFor !== 'function' ||
       typeof port?.details !== 'function' ||

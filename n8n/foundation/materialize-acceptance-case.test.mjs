@@ -321,6 +321,7 @@ for (const windowId of [
   '3c46c791-e140-4eb9-890a-eecfa251f65e',
   '4c602549-2c42-4ec3-9328-714d7cb66a77',
   'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
+  'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
 ])
   test(`fresh-window ${windowId} SUB replay requires the same first-original window as its active transport`, () => {
     const fresh = { ...transport, windowId };

@@ -49,20 +49,20 @@ test('restored baseline versions reject every unbranded continuation proof befor
   }
 });
 
-test('sixth runtime window refuses missing or copied authority rather than using the original source baseline', () => {
-  const f = runtimeFixture();
-  const activeWindowId = 'edbc6d11-7c1f-43a7-b745-1ded06deb29f';
-  assert.throws(() => createFoundationRuntimePlan({ ...f, activeWindowId }));
-  for (const projectVerifiedContinuationProof of [
-    undefined,
-    {},
-    { windowId: activeWindowId, sourceCommitSha: f.setup.sourceCommitSha },
-    Object.fromEntries(f.records.map((record) => [record.key, record.versionId])),
-  ])
-    assert.throws(() =>
-      createFoundationRuntimePlan({ ...f, activeWindowId, projectVerifiedContinuationProof }),
-    );
-});
+for (const activeWindowId of ['edbc6d11-7c1f-43a7-b745-1ded06deb29f', 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a'])
+  test(`runtime window ${activeWindowId} refuses missing or copied authority rather than using the original source baseline`, () => {
+    const f = runtimeFixture();
+    assert.throws(() => createFoundationRuntimePlan({ ...f, activeWindowId }));
+    for (const projectVerifiedContinuationProof of [
+      undefined,
+      {},
+      { windowId: activeWindowId, sourceCommitSha: f.setup.sourceCommitSha },
+      Object.fromEntries(f.records.map((record) => [record.key, record.versionId])),
+    ])
+      assert.throws(() =>
+        createFoundationRuntimePlan({ ...f, activeWindowId, projectVerifiedContinuationProof }),
+      );
+  });
 
 test('no-proof technical13 reconstruction retains the immutable actual runtime plan hash', () => {
   const original = runtimeFixture();
@@ -140,67 +140,79 @@ test('genuine restored1024 proof changes only two validated output versions and 
   }
 });
 
-test('genuine settled17 proof carries all25 restored versions only after canonical source validation', async () => {
-  const { syntheticProjectVerifiedContinuation } =
-    await import('./foundation-live-project-verified-fixtures.mjs');
-  const f = await syntheticProjectVerifiedContinuation({ technical16Settled: true });
-  try {
-    const original = runtimeFixture(),
-      canonicalBefore = JSON.stringify(original.records);
-    const historical = createFoundationRuntimePlan({
-      ...original,
-      activeWindowId: '3c46c791-e140-4eb9-890a-eecfa251f65e',
-    });
-    const proof = f.claim(f.admit()),
-      versions = f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof);
-    assert.equal(proof.windowId, 'edbc6d11-7c1f-43a7-b745-1ded06deb29f');
-    assert.equal(Object.isFrozen(versions), true);
-    assert.deepEqual(Object.keys(versions).sort(), original.records.map((record) => record.key).sort());
-    const module = await f.copy('foundation-runtime-plan.mjs');
-    const input = {
-      ...original,
-      activeWindowId: proof.windowId,
-      setup: { ...original.setup, sourceCommitSha: proof.sourceCommitSha },
-      projectVerifiedContinuationProof: proof,
-    };
-    const baseline = module.createFoundationRuntimeBaseline(input),
-      plan = module.createFoundationRuntimePlan(input);
-    assert.equal(plan.windowId, proof.windowId);
-    assert.deepEqual(plan.baseline, baseline);
-    assert.equal(baseline.length, 25);
-    for (const row of baseline) {
-      const canonical = historical.baseline.find((record) => record.key === row.key);
-      assert.equal(row.versionId, versions[row.key]);
-      assert.deepEqual({ ...row, versionId: canonical.versionId }, canonical);
-    }
-    assert.equal(JSON.stringify(original.records), canonicalBefore);
-    for (const forged of [structuredClone(proof), versions, Object.freeze({ ...proof })]) {
+for (const profile of [
+  {
+    name: 'settled17',
+    options: { technical16Settled: true },
+    window: 'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
+  },
+  {
+    name: 'restored19 successor20',
+    options: { technical19Restored: true, technical20SourceSelected: true },
+    window: 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+  },
+])
+  test(`genuine ${profile.name} proof carries all25 restored versions only after canonical source validation`, async () => {
+    const { syntheticProjectVerifiedContinuation } =
+      await import('./foundation-live-project-verified-fixtures.mjs');
+    const f = await syntheticProjectVerifiedContinuation(profile.options);
+    try {
+      const original = runtimeFixture(),
+        canonicalBefore = JSON.stringify(original.records);
+      const historical = createFoundationRuntimePlan({
+        ...original,
+        activeWindowId: '3c46c791-e140-4eb9-890a-eecfa251f65e',
+      });
+      const proof = f.claim(f.admit()),
+        versions = f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof);
+      assert.equal(proof.windowId, profile.window);
+      assert.equal(Object.isFrozen(versions), true);
+      assert.deepEqual(Object.keys(versions).sort(), original.records.map((record) => record.key).sort());
+      const module = await f.copy('foundation-runtime-plan.mjs');
+      const input = {
+        ...original,
+        activeWindowId: proof.windowId,
+        setup: { ...original.setup, sourceCommitSha: proof.sourceCommitSha },
+        projectVerifiedContinuationProof: proof,
+      };
+      const baseline = module.createFoundationRuntimeBaseline(input),
+        plan = module.createFoundationRuntimePlan(input);
+      assert.equal(plan.windowId, proof.windowId);
+      assert.deepEqual(plan.baseline, baseline);
+      assert.equal(baseline.length, 25);
+      for (const row of baseline) {
+        const canonical = historical.baseline.find((record) => record.key === row.key);
+        assert.equal(row.versionId, versions[row.key]);
+        assert.deepEqual({ ...row, versionId: canonical.versionId }, canonical);
+      }
+      assert.equal(JSON.stringify(original.records), canonicalBefore);
+      for (const forged of [structuredClone(proof), versions, Object.freeze({ ...proof })]) {
+        assert.throws(() =>
+          module.createFoundationRuntimeBaseline({ ...input, projectVerifiedContinuationProof: forged }),
+        );
+        assert.throws(() =>
+          module.createFoundationRuntimePlan({ ...input, projectVerifiedContinuationProof: forged }),
+        );
+      }
+      const changed = { ...input, records: structuredClone(input.records) };
+      changed.records.find((record) => record.key === 'WF-10').versionId = versions['WF-10'];
+      changed.records.find((record) => record.key === 'WF-10').workflow.nodes[0].position = [42, 42];
+      assert.throws(() => module.createFoundationRuntimeBaseline(changed));
+      assert.throws(() => module.createFoundationRuntimePlan({ ...input, setup: original.setup }));
       assert.throws(() =>
-        module.createFoundationRuntimeBaseline({ ...input, projectVerifiedContinuationProof: forged }),
+        module.createFoundationRuntimePlan({ ...input, activeWindowId: historical.windowId }),
       );
-      assert.throws(() =>
-        module.createFoundationRuntimePlan({ ...input, projectVerifiedContinuationProof: forged }),
+      const noProof = { ...input };
+      delete noProof.projectVerifiedContinuationProof;
+      assert.throws(() => module.createFoundationRuntimePlan(noProof));
+      assert.deepEqual(
+        createFoundationRuntimePlan({ ...original, activeWindowId: historical.windowId }),
+        historical,
       );
+    } finally {
+      f.cleanup();
     }
-    const changed = { ...input, records: structuredClone(input.records) };
-    changed.records.find((record) => record.key === 'WF-10').versionId = versions['WF-10'];
-    changed.records.find((record) => record.key === 'WF-10').workflow.nodes[0].position = [42, 42];
-    assert.throws(() => module.createFoundationRuntimeBaseline(changed));
-    assert.throws(() => module.createFoundationRuntimePlan({ ...input, setup: original.setup }));
-    assert.throws(() =>
-      module.createFoundationRuntimePlan({ ...input, activeWindowId: historical.windowId }),
-    );
-    const noProof = { ...input };
-    delete noProof.projectVerifiedContinuationProof;
-    assert.throws(() => module.createFoundationRuntimePlan(noProof));
-    assert.deepEqual(
-      createFoundationRuntimePlan({ ...original, activeWindowId: historical.windowId }),
-      historical,
-    );
-  } finally {
-    f.cleanup();
-  }
-});
+  });
 
 test('fresh active window compiles exact new response guards while preserving reviewed inactive baseline', () => {
   const f = runtimeFixture(),

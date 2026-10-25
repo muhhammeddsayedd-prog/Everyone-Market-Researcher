@@ -194,6 +194,67 @@ test('mixed rows and a lookalike project continuation cannot manufacture branded
   assert.equal(journal.rows.length, 2);
 });
 
+test('genuine20 Control requires monotonic1728 Management custody and preserves the3584/5312 ceilings', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    technical19Restored: true,
+    technical20SourceSelected: true,
+  });
+  try {
+    const proof = f.claim(f.admit()),
+      core = await f.copy('foundation-control-state.mjs');
+    const rows = readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse);
+    assert.equal(rows.length, 1118);
+    for (const mode of ['missing', 'throw', 'low', 'fraction', 'high', 'backwards', 'cap']) {
+      const writes = [],
+        journal = core.createFoundationControlJournal({
+          previousEvents: rows,
+          durableAppend(row) {
+            writes.push(row);
+          },
+        });
+      let count = mode === 'cap' ? 1728 : 1317;
+      const args = {
+        journal,
+        now: f.now,
+        deadlineAt: proof.deadlineAt,
+        projectVerifiedContinuationProof: proof,
+        ...(mode === 'missing'
+          ? {}
+          : {
+              managementAttempts: () => {
+                if (mode === 'throw') throw Error('SYNTHETIC_COUNTER_ERROR');
+                return mode === 'low' ? 1316 : mode === 'fraction' ? 1317.5 : mode === 'high' ? 1729 : count;
+              },
+            }),
+      };
+      if (mode === 'backwards') {
+        const budget = core.createFoundationControlBudget(args);
+        count = 1316;
+        assert.throws(
+          () => budget.admit({ kind: 'discovery', workflowId }),
+          /FOUNDATION_CONTROL_STATE_BLOCKED/,
+        );
+      } else if (mode === 'cap') {
+        const budget = core.createFoundationControlBudget(args);
+        assert.equal(budget.snapshot().attempts, 1246);
+        assert.equal(budget.snapshot().maximum, 3584);
+        while (budget.snapshot().attempts < 3584) budget.admit({ kind: 'discovery', workflowId });
+        assert.equal(budget.snapshot().attempts + count, 5312);
+        const before = writes.length;
+        assert.throws(
+          () => budget.admit({ kind: 'discovery', workflowId }),
+          /FOUNDATION_CONTROL_STATE_BLOCKED/,
+        );
+        assert.equal(writes.length, before);
+      } else
+        assert.throws(() => core.createFoundationControlBudget(args), /FOUNDATION_CONTROL_STATE_BLOCKED/);
+      if (mode !== 'cap') assert.equal(writes.length, 0);
+    }
+  } finally {
+    f.cleanup();
+  }
+});
+
 test('genuine576 profile accepts382 mixed rows as381 intents plus3 carried controls and enforces combined2560', async () => {
   const f = await syntheticProjectVerifiedContinuation({ managementAllocation: true });
   try {

@@ -21,7 +21,10 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  technical18Closed = false,
+  technical19Restored = false,
+  technical20SourceSelected = false,
+  technical19Fault,
+  technical18Closed = technical19Restored,
   technical18Fault,
   technical17PreReady = technical18Closed,
   technical17PreReadyFault,
@@ -2768,7 +2771,8 @@ export async function syntheticProjectVerifiedContinuation({
   let unadmittedWf00Configuration,
     technical17Configuration,
     technical17PreReadyConfiguration,
-    technical18PreparationConfiguration;
+    technical18PreparationConfiguration,
+    technical19RestorationConfiguration;
   if (unadmittedWf00Reconciled) {
     const root = 'milestones/M03-n8n-foundation/evidence/',
       relative = root + 'wf00-unadmitted-manual-checkpoint-20261024.json',
@@ -3957,6 +3961,212 @@ export async function syntheticProjectVerifiedContinuation({
     put(relative, json(r));
     technical18PreparationConfiguration = { relative, sha256: digest(json(r)) };
   }
+  if (technical19Restored) {
+    if (!technical18Closed) throw Error('SYNTHETIC19_SCOPE');
+    const e = 'milestones/M03-n8n-foundation/evidence/',
+      l = 'scripts/n8n/out/foundation/live/',
+      relative = e + 'dev-acceptance-technical19-restored-20261025.json',
+      approvalRelative = e + 'remaining-allocation-after-native-prefix-fix-approval-20261025.json',
+      packetRelative = e + 'remaining-allocation-after-native-prefix-fix-20261025.md',
+      readbackRelative = e + 'dev-acceptance-technical19-database-readback-20261025.json',
+      r = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8')),
+      json = (v) => JSON.stringify(v) + '\n',
+      load = (p) => JSON.parse(readFileSync(join(directory, p), 'utf8')),
+      rows = (p) => readFileSync(join(directory, p), 'utf8').trimEnd().split('\n').map(JSON.parse),
+      writeRows = (p, v) => put(p, v.map(json).join('')),
+      stem = l + 'project-verified-continuation-' + snapshot.proposedSegmentId + '.technical-19',
+      db =
+        'scripts/db/out/m03-foundation-project-verified-continuation-' +
+        snapshot.proposedSegmentId +
+        '-technical-19-',
+      startsAt = Date.parse('2026-10-25T01:00:00.000Z'),
+      admission = {
+        ...load(stem.replace('technical-19', 'technical-18') + '.json'),
+        parentProcessId: 91200,
+        startsAt,
+        deadlineAt: startsAt + 3600000,
+        stopNewAt: startsAt + 3000000,
+        hardDeadlineAt: startsAt + 4200000,
+      },
+      admissionText = json(admission),
+      claim = {
+        kind: 'm03_project_verified_continuation_runtime_claim',
+        version: 1,
+        segmentId: snapshot.proposedSegmentId,
+        admissionSha256: digest(admissionText),
+        processId: 91201,
+        parentProcessId: 91200,
+        claimedAt: startsAt + 1000,
+      };
+    Object.assign(r.attempt, {
+      parentProcessId: 91200,
+      runtimeProcessId: 91201,
+      rawAdmission: admission,
+      rawRuntimeClaim: claim,
+    });
+    Object.assign(r.attempt.rawTechnicalClose, {
+      admissionSha256: digest(admissionText),
+      parentProcessId: 91200,
+      runtimeProcessId: 91201,
+      closedAt: startsAt + 6000,
+    });
+    r.attempt.rawFrames[2].deadlineAt = admission.deadlineAt;
+    r.observedAt = '2026-10-25T01:00:20.000Z';
+    r.physicalCleanup.observedAt = '2026-10-25T01:00:10.000Z';
+    r.sideEffects.previewDeploymentId = 'dpl_Synthetic19';
+    r.sideEffects.previewAudience = 'https://everyone-market-researcher-synthetic-19.vercel.app';
+    r.sideEffects.environmentIds = Array.from({ length: 7 }, (_, i) => 'Synthetic19Env' + (i + 1));
+    writeRows(l + 'management.jsonl', [
+      ...rows(l + 'management.jsonl'),
+      ...Array.from({ length: 294 }, (_, i) => ({ event: 'management_attempt', ordinal: 871 + i })),
+    ]);
+    const bindings = load('n8n/foundation/bindings.dev.json'),
+      ids = Object.values(bindings.workflowRefs).map((v) => v.id),
+      control = Array.from({ length: 101 }, (_, i) => ({
+        event: 'control_request_intent',
+        ordinal: 1001 + i,
+        kind: 'discovery',
+        workflowId: ids[i % 25],
+        at: '2026-10-25T01:00:02.000Z',
+      }));
+    control.push({
+      event: 'browser_port_preflight_verified',
+      kind: 'browser_ui',
+      workflowId: bindings.workflowRefs['WF-00'].id,
+      at: '2026-10-25T01:00:02.001Z',
+    });
+    writeRows(l + 'control.jsonl', [...rows(l + 'control.jsonl'), ...control]);
+    const setup = rows(l + 'setup.jsonl'),
+      oldEnvs = setup.slice(-71).filter((v) => v.event === 'setup_ack' && v.kind === 'environment'),
+      tail = setup.slice(-71).map((v) => structuredClone(v));
+    let ordinal = 219;
+    for (const v of tail) {
+      if (v.event === 'setup_attempt') v.ordinal = ++ordinal;
+      if (typeof v.at === 'number') v.at = startsAt + 3000;
+      if (v.id) v.id = r.sideEffects.environmentIds[oldEnvs.findIndex((a) => a.id === v.id)];
+      if (v.deploymentId) v.deploymentId = r.sideEffects.previewDeploymentId;
+      if (v.audience) v.audience = r.sideEffects.previewAudience;
+    }
+    writeRows(l + 'setup.jsonl', [...setup, ...tail]);
+    const preflight = rows(l + 'preflight.jsonl'),
+      extra = preflight.slice(-5).map((v) => structuredClone(v));
+    extra[0].ordinal = 9;
+    extra[1].ordinal = 10;
+    for (const v of extra) {
+      if (v.windowId) v.windowId = r.attempt.windowId;
+      if (v.sourceCommitSha) v.sourceCommitSha = r.source.applicationSource;
+      if (v.audience) v.audience = r.sideEffects.previewAudience;
+      if (v.deploymentId) v.deploymentId = r.sideEffects.previewDeploymentId;
+    }
+    writeRows(l + 'preflight.jsonl', [...preflight, ...extra]);
+    r.database.restrictedWriterClose = extra.findLast((v) => v.event === 'foundation_writer_close_verified');
+    const runtime = rows(l + 'runtime.technical-16.jsonl'),
+      droppedSequence = runtime.find((v) => v.event === 'intent' && v.key !== 'Machine').sequence;
+    let transition = 0,
+      request = 0;
+    const newRuntime = runtime
+      .filter((v) => !(['intent', 'verified'].includes(v.event) && v.sequence === droppedSequence))
+      .filter((v) => !(v.event === 'request' && v.number <= 3));
+    for (const v of newRuntime) {
+      if (v.event === 'intent') v.sequence = ++transition;
+      if (v.event === 'verified') v.sequence = transition;
+      if (v.event === 'request') v.number = ++request;
+      if (v.event === 'file_header') v.deadlineAt = admission.deadlineAt;
+      if (v.planHash) v.planHash = 'b'.repeat(64);
+      if (v.event === 'verified' && v.after?.versionId) v.after.versionId = 'synthetic19-' + v.sequence;
+    }
+    if (technical19Fault === 'runtime-pending')
+      newRuntime.splice(
+        newRuntime.findIndex((v) => v.event === 'verified'),
+        1,
+      );
+    if (technical19Fault === 'runtime-graph')
+      newRuntime.findLast((v) => v.event === 'verified' && v.after?.graphHash).after.graphHash = 'f'.repeat(
+        64,
+      );
+    writeRows(l + 'runtime.technical-19.jsonl', newRuntime);
+    r.database.actualAdminResult.observedAt = '2026-10-25T01:00:05.000Z';
+    put(stem + '.json', admissionText);
+    put(stem + '.runtime-claim.json', json(claim));
+    if (technical19Fault === 'raw-fullD') r.attempt.rawFrames[6].businessAcceptanceProven = true;
+    if (technical19Fault === 'raw-native') r.attempt.rawTechnicalClose.nativeExit = 0;
+    if (technical19Fault === 'usage') r.usage.management--;
+    if (technical19Fault === 'cleanup') r.physicalCleanup.presentDisposableLeaves = 1;
+    if (technical19Fault === 'database') r.database.actualAdminResult.phaseACommands = 6;
+    put(stem + '.closed.json', json(r.attempt.rawTechnicalClose));
+    put(l + 'technical19-coordinator-20261025-startup1.jsonl', r.attempt.rawFrames.map(json).join(''));
+    put(
+      db + 'attempt.json',
+      json({
+        version: 1,
+        runId: r.database.actualAdminResult.runId,
+        projectRef: 'zmotjsbzhzjvpelxvxlf',
+        purpose: 'postcheck-only-continuation',
+      }),
+    );
+    put(db + 'latest.json', json(r.database.actualAdminResult));
+    put(db + 'owner-provision-attempt.json', json({ kind: 'synthetic_owned19_provision_attempt' }));
+    put(db + 'reactivation-attempt.json', json({ kind: 'synthetic_owned19_reactivation_attempt' }));
+    put(r.database.generatedTypeRelative, '// synthetic generated type coverage\n');
+    for (const v of r.database.localMigrationVersionsAndHashes)
+      put(v.relative, readFileSync(join(sourceRoot, v.relative), 'utf8'));
+    if (technical19Fault === 'old-prefix')
+      put(
+        l + 'management.jsonl',
+        readFileSync(join(directory, l + 'management.jsonl'), 'utf8').replace(
+          '"ordinal":870',
+          '"ordinal":869',
+        ),
+      );
+    for (const prefix of Object.values(r.journalPrefixes)) {
+      const bytes = readFileSync(join(directory, prefix.relative));
+      Object.assign(prefix, {
+        rows: bytes.toString('utf8').trimEnd().split('\n').length,
+        bytes: bytes.length,
+        sha256: digest(bytes),
+      });
+    }
+    for (const p of Object.keys(r.pins)) r.pins[p] = digest(readFileSync(join(directory, p)));
+    put(relative, json(r));
+    const readback = JSON.parse(readFileSync(join(sourceRoot, readbackRelative), 'utf8')),
+      native = readback.actualNativeResult;
+    readback.technical19ReceiptSha256 = digest(json(r));
+    readback.consumer.parentProcessId = 91202;
+    readback.observedAt = '2026-10-25T01:00:40.000Z';
+    native.observedAt = '2026-10-25T01:00:30.000Z';
+    native.inspection.window.closedAt = '2026-10-25T01:00:04.800Z';
+    native.inspection.window.deploymentId = r.sideEffects.previewDeploymentId;
+    native.inspection.window.audience = r.sideEffects.previewAudience;
+    if (technical19Fault === 'readback-native') readback.nativeExit = 1;
+    if (technical19Fault === 'readback-busy') native.inspection.activeLeaseCount = 1;
+    if (technical19Fault === 'readback-family') native.inspection.familyWindowCount = 5;
+    if (technical19Fault === 'readback-audit') native.inspection.technical19Exact = false;
+    if (technical19Fault === 'readback-active') native.inspection.fixture.accountPaused = false;
+    if (technical19Fault === 'readback-window')
+      native.inspection.window.id = 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a';
+    for (const p of Object.keys(readback.pins)) {
+      if (p.endsWith('-attempt.json'))
+        put(p, json({ version: 1, runId: native.runId, purpose: 'synthetic SELECT-only inspection' }));
+      if (p.endsWith('-latest.json')) put(p, json(native));
+      readback.pins[p] = digest(readFileSync(join(directory, p)));
+    }
+    put(readbackRelative, json(readback));
+    const allocation = JSON.parse(readFileSync(join(sourceRoot, approvalRelative), 'utf8'));
+    if (technical19Fault === 'allocation') allocation.approvedCaps.management++;
+    if (technical19Fault === 'allocation-actor') allocation.unchangedLimits.actorStarts++;
+    put(approvalRelative, json(allocation));
+    put(packetRelative, readFileSync(join(sourceRoot, packetRelative), 'utf8'));
+    technical19RestorationConfiguration = {
+      relative,
+      sha256: digest(json(r)),
+      approvalRelative,
+      approvalSha256: digest(json(allocation)),
+      packetRelative,
+      packetSha256: digest(readFileSync(join(directory, packetRelative))),
+      readbackRelative,
+      readbackSha256: digest(json(readback)),
+    };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -3987,6 +4197,27 @@ export async function syntheticProjectVerifiedContinuation({
         : 'null') +
       ';',
   );
+  source = source.replace(
+    /const technical19RestorationRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+    'const technical19RestorationRecovery = ' +
+      (technical19RestorationConfiguration
+        ? 'Object.freeze(' + JSON.stringify(technical19RestorationConfiguration) + ')'
+        : 'null') +
+      ';',
+  );
+  if (technical19Restored)
+    source = source.replace(
+      /export const foundationProjectVerifiedTechnical20Runtime = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+      (v) =>
+        v
+          .replace(
+            /sourceCommitSha: (?:null|'[a-f0-9]{40}')/,
+            'sourceCommitSha: ' + (technical20SourceSelected ? "'" + 'c'.repeat(40) + "'" : 'null'),
+          )
+          .replace(/sourceCi: (?:null|\d+)/, 'sourceCi: ' + (technical20SourceSelected ? '1' : 'null'))
+          .replace(/allFiveCiJobsPassed: (?:true|false)/, 'allFiveCiJobsPassed: ' + technical20SourceSelected)
+          .replace(/vercelPassed: (?:true|false)/, 'vercelPassed: ' + technical20SourceSelected),
+    );
   source = source
     .replace(
       /approvalSha256: (?:null|'[a-f0-9]{64}')/,
@@ -4164,33 +4395,35 @@ export async function syntheticProjectVerifiedContinuation({
     }) + '\n',
   );
   let time = Date.parse(
-    technical18Closed
-      ? '2026-10-25T01:00:00.000Z'
-      : technical16Settled
-        ? '2026-10-24T23:00:00.000Z'
-        : unadmittedWf00Reconciled
-          ? '2026-10-24T16:10:00.000Z'
-          : restoredBrowserRetryDiscovery
-            ? '2026-10-24T15:40:00.000Z'
-            : restoredBrowserDiscovery
-              ? '2026-10-24T15:10:00.000Z'
-              : runtimeRestorationClosed
-                ? '2026-10-24T15:00:00.000Z'
-                : runtimePreparationClosed
-                  ? '2026-10-24T11:00:00.000Z'
-                  : adminAdmissionReadonly
-                    ? '2026-10-24T10:00:00.000Z'
-                    : catalogReadonly
-                      ? '2026-10-24T02:40:00.000Z'
-                      : preprivateAdmin
-                        ? '2026-10-24T02:00:00.000Z'
-                        : closedFixture
-                          ? '2026-10-24T00:46:00.000Z'
-                          : closedWindow
-                            ? '2026-10-23T18:00:00.000Z'
-                            : effectful
-                              ? '2026-10-23T15:00:00.000Z'
-                              : '2026-10-22T18:00:00.000Z',
+    technical19Restored
+      ? '2026-10-25T12:00:00.000Z'
+      : technical18Closed
+        ? '2026-10-25T01:00:00.000Z'
+        : technical16Settled
+          ? '2026-10-24T23:00:00.000Z'
+          : unadmittedWf00Reconciled
+            ? '2026-10-24T16:10:00.000Z'
+            : restoredBrowserRetryDiscovery
+              ? '2026-10-24T15:40:00.000Z'
+              : restoredBrowserDiscovery
+                ? '2026-10-24T15:10:00.000Z'
+                : runtimeRestorationClosed
+                  ? '2026-10-24T15:00:00.000Z'
+                  : runtimePreparationClosed
+                    ? '2026-10-24T11:00:00.000Z'
+                    : adminAdmissionReadonly
+                      ? '2026-10-24T10:00:00.000Z'
+                      : catalogReadonly
+                        ? '2026-10-24T02:40:00.000Z'
+                        : preprivateAdmin
+                          ? '2026-10-24T02:00:00.000Z'
+                          : closedFixture
+                            ? '2026-10-24T00:46:00.000Z'
+                            : closedWindow
+                              ? '2026-10-23T18:00:00.000Z'
+                              : effectful
+                                ? '2026-10-23T15:00:00.000Z'
+                                : '2026-10-22T18:00:00.000Z',
   );
   const now = () => time,
     io = { processAlive: () => false };

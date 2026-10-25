@@ -65,6 +65,7 @@ import {
   assertFoundationProjectVerifiedContinuationJournalPrefixes,
   foundationProjectVerifiedContinuationResumeCheckpoint,
   foundationProjectVerifiedContinuationRequestCaps,
+  foundationProjectVerifiedSetupJournalMaximumRows,
 } from './foundation-live-project-verified-continuation.mjs';
 
 const fail = () => {
@@ -383,7 +384,10 @@ export function foundationLiveAuxiliaryStorage(budget, kind) {
   if (!['setup', 'preflight', 'control'].includes(kind)) fail();
   const path = join(managementBudgets.get(budget).directory, kind + '.jsonl');
   return Object.freeze({
-    previousEvents: readRows(path, kind === 'control' ? 8000 : 500),
+    previousEvents: readRows(
+      path,
+      kind === 'control' ? 8000 : kind === 'setup' ? foundationProjectVerifiedSetupJournalMaximumRows : 500,
+    ),
     append(row) {
       assertFoundationLiveManagementBudget(budget);
       appendFile(path, row);
@@ -423,7 +427,8 @@ export function createFoundationLiveRuntime(input, dependencies = {}) {
   const managementMaximum = budget.snapshot().maximum;
   if (scope.sourceCommitSha !== input.setup.sourceCommitSha || scope.deadlineAt !== input.deadlineAt) fail();
   if (
-    ([1024, 1408].includes(managementMaximum) || Object.hasOwn(input, 'projectVerifiedContinuationProof')) &&
+    ([1024, 1408, 1728].includes(managementMaximum) ||
+      Object.hasOwn(input, 'projectVerifiedContinuationProof')) &&
     scope.projectVerifiedContinuationProof !== input.projectVerifiedContinuationProof
   )
     fail();

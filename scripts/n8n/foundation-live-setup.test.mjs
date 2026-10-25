@@ -12,6 +12,17 @@ import {
   foundationLiveSetupRequestPlan,
 } from './foundation-live-setup.mjs';
 
+test('technical20 Vercel capacity304 retains254 charges and never grants an unbranded setup continuation', () => {
+  const p = foundationLiveSetupRequestPlan(254, 304);
+  assert.equal(p.buildPollLimit, 12);
+  assert.equal(p.cleanupReserve, 18);
+  assert.equal(254 + p.maximumNewPrepareRequests + p.cleanupReserve, 298);
+  assert.throws(() =>
+    fixture({ maximumRequests: 304, activeWindowId: 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a' }),
+  );
+  assert.throws(() => foundationLiveSetupRequestPlan(254, 305));
+});
+
 test('technical17 Vercel capacity256 is planning only and never a caller supplied setup grant', () => {
   const p = foundationLiveSetupRequestPlan(184, 256);
   assert.equal(p.buildPollLimit, 12);
@@ -23,8 +34,8 @@ test('technical17 Vercel capacity256 is planning only and never a caller supplie
   assert.throws(() => foundationLiveSetupRequestPlan(184, 257));
 });
 
-test('setup event capacity832 remains bounded independently of the approved256 request ceiling', () => {
-  const capacity = 3 * 256 + 64;
+test('setup event capacity976 remains bounded independently of the approved256 request ceiling', () => {
+  const capacity = 3 * 304 + 64;
   const events = Array.from({ length: capacity }, (_, at) => ({
     event: 'setup_verified',
     kind: 'deployment',
@@ -110,6 +121,74 @@ test('genuine19 retains all439 prior setup rows and219 requests through complete
     assert.equal(close.requestCount, 219 + current.calls.length);
     assert.equal(close.requestCount, 256);
     assert.equal(budget.snapshot().attempts, 1023 + current.calls.length);
+    assert.deepEqual(current.bypass, {});
+    assert.equal(current.envs.length, 0);
+    assert.equal(readFileSync(f.paths.setup, 'utf8'), previousText);
+  } finally {
+    current?.setup.close();
+    budget?.close();
+    f.cleanup();
+  }
+});
+
+test('genuine20 retains all510 prior setup rows and254 requests through complete owned prepare and cleanup', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    technical16Settled: true,
+    technical17PreReady: true,
+    technical18Closed: true,
+    technical19Restored: true,
+    technical20SourceSelected: true,
+  });
+  let budget, current;
+  try {
+    const proof = f.claim(f.admit()),
+      resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof),
+      runtimeModule = await f.copy('foundation-live-runtime.mjs'),
+      setupModule = await f.copy('foundation-live-setup.mjs'),
+      previousText = readFileSync(f.paths.setup, 'utf8'),
+      previousEvents = previousText.trimEnd().split('\n').map(JSON.parse);
+    assert.equal(previousEvents.length, 510);
+    assert.equal(previousEvents.filter((row) => row.event === 'setup_attempt').length, 254);
+    assert.equal(resume.setupMaximum, 304);
+    assert.equal(resume.aggregateManagementAttempts, 1317);
+    budget = runtimeModule.createFoundationLiveManagementBudget(
+      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        controlAttempts: () => resume.aggregateControlAttempts,
+      },
+    );
+    current = fixture({
+      fault: 'last_poll',
+      setupModule,
+      sourceSha: proof.sourceCommitSha,
+      startsAt: proof.startsAt,
+      projectVerifiedContinuationProof: proof,
+      previousEvents,
+      activeWindowId: proof.windowId,
+      maximumRequests: 304,
+      expectedMigrationCount: 15,
+      managementBudget: budget,
+    });
+    assert.equal(current.setup.snapshot().requestCount, 254);
+    await current.setup.prepare();
+    assert.equal(current.setup.snapshot().buildPollLimit, 12);
+    const close = await current.setup.cleanup();
+    assert.equal(close.state, 'setup_resources_removed');
+    assert.equal(
+      current.calls.filter((call) => call.method === 'POST' && call.path.includes('/env?')).length,
+      7,
+    );
+    assert.equal(current.calls.filter((call) => call.method === 'DELETE').length, 7);
+    assert.equal(current.calls.filter((call) => call.body?.generate).length, 1);
+    assert.equal(current.calls.filter((call) => call.body?.revoke).length, 1);
+    assert.ok(current.journal.rows.length > 500);
+    assert.equal(current.journal.rows.length, 590);
+    assert.equal(close.requestCount, 254 + current.calls.length);
+    assert.equal(close.requestCount, 298);
+    assert.equal(budget.snapshot().attempts, 1317 + current.calls.length);
     assert.deepEqual(current.bypass, {});
     assert.equal(current.envs.length, 0);
     assert.equal(readFileSync(f.paths.setup, 'utf8'), previousText);

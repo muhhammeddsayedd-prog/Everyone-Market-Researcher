@@ -1,8 +1,9 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$InspectOnly,[switch]$WriterClose,[switch]$ArchiveFixture,[switch]$TechnicalResidual13,[switch]$TechnicalResidual16,[switch]$ForwardMigration,[switch]$ForwardWindow,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement,[switch]$ProjectVerifiedContinuation)
+param([switch]$CheckOnly,[switch]$InspectOnly,[switch]$WriterClose,[switch]$ArchiveFixture,[switch]$TechnicalResidual13,[switch]$TechnicalResidual16,[switch]$TechnicalResidual19,[switch]$ForwardMigration,[switch]$ForwardWindow,[switch]$PhaseAControl,[long]$OriginalDeadlineAtMs=0,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement,[switch]$ProjectVerifiedContinuation)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+if($TechnicalResidual19 -and (-not $InspectOnly -or $TechnicalResidual13 -or $TechnicalResidual16 -or $ArchiveFixture -or $ForwardMigration -or $ForwardWindow -or $WriterClose -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)){Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting read-only19 mode; no private access.';exit 1}
 if($TechnicalResidual16 -and ($TechnicalResidual13 -or -not ($ArchiveFixture -xor $InspectOnly) -or $ForwardMigration -or $ForwardWindow -or $WriterClose -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)){Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting residual read/archive modes; no private access.';exit 1}
 if($TechnicalResidual13 -and (-not ($ArchiveFixture -xor $InspectOnly) -or $ForwardMigration -or $ForwardWindow -or $WriterClose -or $PhaseAControl -or $OriginalDeadlineAtMs -ne 0 -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation)){Write-Output 'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting residual read/archive modes; no private access.';exit 1}
 # Validate the caller's modes before sharing only the reviewed no-push path.
@@ -52,7 +53,7 @@ $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technic
   'milestones/M03-n8n-foundation/evidence/remaining-control-management-allocation-approval-20261024.json',
   'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-20261024.md',
   'milestones/M03-n8n-foundation/evidence/remaining-management-after-catalog-approval-20261024.json')
-$forwardSchema=[bool]($ForwardMigration -or $ForwardWindow -or $TechnicalResidual13 -or $TechnicalResidual16)
+$forwardSchema=[bool]($ForwardMigration -or $ForwardWindow -or $TechnicalResidual13 -or $TechnicalResidual16 -or $TechnicalResidual19)
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technical13-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/runtime-restoration-20261024.json')
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/runtime-restoration-fixture-archive-20261024.json','milestones/M03-n8n-foundation/evidence/runtime-restoration-cleanup-20261024.json')
 $requiredFiles+=@('milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-reconciliation-20261024.json','milestones/M03-n8n-foundation/evidence/dev-acceptance-technical14-cleanup-20261024.json')
@@ -105,6 +106,7 @@ if($WriterClose){$receipt.pendingVersions=@();$receipt['writerClose']=$true;$rec
 if($ArchiveFixture){$receipt.pendingVersions=@();$receipt['archiveFixture']=$true;$receipt['archiveAttempted']=$false;$receipt['archiveAcknowledged']=$false;$receipt['archiveNativeExit']=$null;$receipt['fixtureArchived']=$false;$receipt['persistentAdminPreserved']=$true;$receipt['preparationStage']='SESSION_LOCK'}
 if($TechnicalResidual13){$receipt['technicalResidual13']=$true;$receipt['activeWindowId']='3c46c791-e140-4eb9-890a-eecfa251f65e'}
 if($TechnicalResidual16){$receipt['technicalResidual16']=$true;$receipt['activeWindowId']='4c602549-2c42-4ec3-9328-714d7cb66a77'}
+if($TechnicalResidual19){$receipt['technicalResidual19']=$true;$receipt['activeWindowId']='edbc6d11-7c1f-43a7-b745-1ded06deb29f';$receipt['persistentAdminPreserved']=$true}
 
 if($ForwardWindow){$receipt['forwardWindow']=$true;$receipt['activeWindowId']='38b3708d-61b0-41d2-8170-5ed91c66b4dc'}
 if($ForwardMigration){$receipt.pendingVersions=@('20261023163755');$receipt['forwardMigration']=$true;$receipt['persistentAdminPreserved']=$true}
@@ -185,6 +187,7 @@ function Assert-FoundationHistoricalIdentityAbsent($ProcessId,$TrustedObservedBo
   return $true
 }
 function Assert-FoundationInspectClosed {
+  if([bool](Get-Variable -Name TechnicalResidual19 -ValueOnly -ErrorAction SilentlyContinue)){return Read-FoundationTechnical19Closed}
   if([bool](Get-Variable -Name TechnicalResidual16 -ValueOnly -ErrorAction SilentlyContinue)){return Read-FoundationTechnical16Closed}
   if($TechnicalResidual13){return Read-FoundationTechnical13Closed}
   # This mode reconciles remote residuals, so physical closure is required but
@@ -229,25 +232,31 @@ function Assert-FoundationInspectClosed {
 }
 function Read-FoundationInspection($Result) {
   $residual16=[bool](Get-Variable -Name TechnicalResidual16 -ValueOnly -ErrorAction SilentlyContinue)
+  $residual19=[bool](Get-Variable -Name TechnicalResidual19 -ValueOnly -ErrorAction SilentlyContinue)
   if(-not $Result.ok -or -not $Result.closed -or $Result.text -notmatch '^\s*\['){throw 'blocked'}
   $rows=ConvertFrom-Json -InputObject $Result.text -ErrorAction Stop
   if($rows -isnot [Array] -or $rows.Count -ne 1){throw 'blocked'}
   Assert-Keys $rows[0] @('inspection');$value=$rows[0].inspection
   $keys=@('kind','windowId','identity','window','requestCount','reservedRequests','incompleteRequests','activeLeaseCount','approval','launchCount','actorRunCount','scrapeRunCount','costEntryCount','costUsd','collectedItemCount','fixture','audits')
-  if($TechnicalResidual13 -or $residual16){$keys+=@('familyClosed','fixtureAuditCount','technical12Exact','technical13Exact')}
-  if($residual16){$keys+=@('technical16Exact','familyWindowCount','globalAdmittedCount','globalRequestCount','globalLaunchCount')}
+  if($TechnicalResidual13 -or $residual16 -or $residual19){$keys+=@('familyClosed','fixtureAuditCount','technical12Exact','technical13Exact')}
+  if($residual16 -or $residual19){$keys+=@('technical16Exact','familyWindowCount','globalAdmittedCount','globalRequestCount','globalLaunchCount')}
+  if($residual19){$keys+='technical19Exact'}
   $currentReadOnly=[bool](Get-Variable -Name InspectOnly -ValueOnly -ErrorAction SilentlyContinue) -and $TechnicalResidual13
   if($currentReadOnly){$keys+=@('globalLaunchCount')}
   Assert-Keys $value $keys
-  $expectedWindow=if($residual16){'4c602549-2c42-4ec3-9328-714d7cb66a77'}elseif($TechnicalResidual13){'3c46c791-e140-4eb9-890a-eecfa251f65e'}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
+  $expectedWindow=if($residual19){'edbc6d11-7c1f-43a7-b745-1ded06deb29f'}elseif($residual16){'4c602549-2c42-4ec3-9328-714d7cb66a77'}elseif($TechnicalResidual13){'3c46c791-e140-4eb9-890a-eecfa251f65e'}else{'df4f29ec-e2dc-4d82-a276-62a4e695e6f9'}
   if($value.kind -cne 'm03_foundation_inspection' -or $value.windowId -cne $expectedWindow -or $value.identity -isnot [bool] -or -not $value.identity){throw 'blocked'}
-  if($TechnicalResidual13 -or $residual16){
+  if($TechnicalResidual13 -or $residual16 -or $residual19){
     foreach($key in @('familyClosed','technical12Exact','technical13Exact')){if($value.$key -isnot [bool] -or -not $value.$key){throw 'blocked'}}
-    if(($value.fixtureAuditCount -isnot [int] -and $value.fixtureAuditCount -isnot [long]) -or $value.fixtureAuditCount -ne $(if($residual16){7}else{6})){throw 'blocked'}
+    if(($value.fixtureAuditCount -isnot [int] -and $value.fixtureAuditCount -isnot [long]) -or $value.fixtureAuditCount -ne $(if($residual19){8}elseif($residual16){7}else{6})){throw 'blocked'}
   }
   if($residual16){
     if($value.technical16Exact -isnot [bool] -or -not $value.technical16Exact){throw 'blocked'}
     foreach($entry in @(@('familyWindowCount',5),@('globalAdmittedCount',9),@('globalRequestCount',4),@('globalLaunchCount',0))){if(($value.($entry[0]) -isnot [int] -and $value.($entry[0]) -isnot [long]) -or $value.($entry[0]) -ne $entry[1]){throw 'blocked'}}
+  }
+  if($residual19){
+    foreach($key in @('technical16Exact','technical19Exact')){if($value.$key -isnot [bool] -or -not $value.$key){throw 'blocked'}}
+    foreach($entry in @(@('familyWindowCount',6),@('globalAdmittedCount',11),@('globalRequestCount',5),@('globalLaunchCount',0))){if(($value.($entry[0]) -isnot [int] -and $value.($entry[0]) -isnot [long]) -or $value.($entry[0]) -ne $entry[1]){throw 'blocked'}}
   }
   foreach($key in @('requestCount','reservedRequests','incompleteRequests','activeLeaseCount','launchCount','actorRunCount','scrapeRunCount','costEntryCount','collectedItemCount')){
     if(($value.$key -isnot [int] -and $value.$key -isnot [long]) -or $value.$key -lt 0){throw 'blocked'}
@@ -314,16 +323,18 @@ function Read-FoundationWriterControl($Result,$Expected,[bool]$Closed) {
 }
 function Assert-FoundationArchiveInspection($Value,$Expected,[bool]$Archived) {
   $residual16=[bool](Get-Variable -Name TechnicalResidual16 -ValueOnly -ErrorAction SilentlyContinue)
+  $residual19=[bool](Get-Variable -Name TechnicalResidual19 -ValueOnly -ErrorAction SilentlyContinue)
   foreach($key in @('reservedRequests','incompleteRequests','activeLeaseCount','launchCount','actorRunCount','scrapeRunCount','costEntryCount','costUsd','collectedItemCount')){if($Value.$key -ne 0){throw 'blocked'}}
   if($null -eq $Value.window -or $null -eq $Value.window.closedAt -or $Value.window.closeCount -ne 1 -or $Value.window.admittedCount -ne 2 -or $Value.requestCount -ne 1 -or $null -eq $Value.approval -or $Value.approval.closed -ne $true){throw 'blocked'}
-  $bindingKeys=if($TechnicalResidual13 -or $residual16){@('id','audience','commitSha','deploymentId')}else{@('id','audience','commitSha','deploymentId','startsAt','expiresAt','closedAt')}
+  $bindingKeys=if($TechnicalResidual13 -or $residual16 -or $residual19){@('id','audience','commitSha','deploymentId')}else{@('id','audience','commitSha','deploymentId','startsAt','expiresAt','closedAt')}
   foreach($key in $bindingKeys){if($Value.window.$key -cne $Expected.$key){throw 'blocked'}}
-  if($TechnicalResidual13 -or $residual16){
+  if($TechnicalResidual13 -or $residual16 -or $residual19){
     if($TechnicalResidual13 -and [bool](Get-Variable -Name InspectOnly -ValueOnly -ErrorAction SilentlyContinue) -and ($Value.globalLaunchCount -ne 0 -or -not $Archived)){throw 'blocked'}
     foreach($key in @('startsAt','expiresAt','closedAt')){if($null -eq $Value.window.$key){throw 'blocked'}}
     if([DateTimeOffset]::Parse($Value.window.expiresAt) -le [DateTimeOffset]::Parse($Value.window.startsAt) -or [DateTimeOffset]::Parse($Value.window.closedAt) -lt [DateTimeOffset]::Parse($Value.window.startsAt) -or [DateTimeOffset]::Parse($Value.window.closedAt) -gt [DateTimeOffset]::UtcNow.AddSeconds(5)){throw 'blocked'}
-    if(-not $Value.familyClosed -or -not $Value.technical12Exact -or -not $Value.technical13Exact -or $Value.fixtureAuditCount -ne $(if($residual16){7}else{6})){throw 'blocked'}
+    if(-not $Value.familyClosed -or -not $Value.technical12Exact -or -not $Value.technical13Exact -or $Value.fixtureAuditCount -ne $(if($residual19){8}elseif($residual16){7}else{6})){throw 'blocked'}
     if($residual16 -and (-not $Value.technical16Exact -or $Value.familyWindowCount -ne 5 -or $Value.globalAdmittedCount -ne 9 -or $Value.globalRequestCount -ne 4 -or $Value.globalLaunchCount -ne 0)){throw 'blocked'}
+    if($residual19 -and (-not $Archived -or -not $Value.technical16Exact -or -not $Value.technical19Exact -or $Value.familyWindowCount -ne 6 -or $Value.globalAdmittedCount -ne 11 -or $Value.globalRequestCount -ne 5 -or $Value.globalLaunchCount -ne 0)){throw 'blocked'}
   }
   if($null -eq $Value.fixture -or $Value.fixture.itemsCount -ne 0 -or $Value.fixture.locked -ne $false -or $Value.fixture.progressPresent -ne $false -or $Value.fixture.competitorArchived -ne $Archived -or $Value.fixture.accountPaused -ne $Archived -or $Value.fixture.competitorActive -eq $Archived -or $Value.fixture.accountActive -eq $Archived){throw 'blocked'}
   foreach($key in @('creationCount','startupCount','originalCount','technical2Count')){if($Value.audits.$key -ne 1){throw 'blocked'}}
@@ -550,6 +561,54 @@ function Assert-FoundationTechnical16Settled($Expected) {
   foreach($key in @('processId','parentProcessId')){$null=Assert-FoundationHistoricalIdentityAbsent $once.$key $once.at}
   return $value
 }
+function Read-FoundationTechnical19Closed {
+  $relative='milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json'
+  $path=Assert-Path $repo $relative
+  if((File-Hash $path) -cne '567de4bcc54962c57afb88846fd4c8a75dbfa465623aad3578aab51c4eab41dc'){throw 'blocked'}
+  $actual=Read-Json $path
+  if($actual.kind -cne 'm03_technical19_restored_attempt' -or $actual.version -ne 1 -or $actual.environment -cne 'dev' -or $actual.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $actual.attempt.technicalAttempt -ne 19){throw 'blocked'}
+  foreach($pin in $actual.pins.PSObject.Properties){
+    $pinned=Assert-Path $repo $pin.Name
+    if($pin.Name -cmatch '^scripts/n8n/out/foundation/live/(management|control|setup|preflight)\.jsonl$'){
+      $prefix=$actual.journalPrefixes.($Matches[1]);$bytes=[IO.File]::ReadAllBytes($pinned)
+      if($prefix.bytes -isnot [int] -or $prefix.bytes -le 0 -or $bytes.Length -lt $prefix.bytes -or $bytes.Length -gt 2097152 -or $prefix.sha256 -cne $pin.Value){throw 'blocked'}
+      $digest=[Security.Cryptography.SHA256]::Create()
+      try{$hash=([BitConverter]::ToString($digest.ComputeHash($bytes,0,$prefix.bytes))).Replace('-','').ToLowerInvariant()}finally{$digest.Dispose()}
+      if($hash -cne $pin.Value){throw 'blocked'}
+    }elseif((File-Hash $pinned) -cne $pin.Value){throw 'blocked'}
+  }
+  $closed=$actual.attempt.rawTechnicalClose;$claim=$actual.attempt.rawRuntimeClaim;$admission=$actual.attempt.rawAdmission
+  if($closed.childClosed -isnot [bool] -or -not $closed.childClosed -or $closed.credentialChildrenClosed -isnot [bool] -or -not $closed.credentialChildrenClosed -or $closed.closureVerified -isnot [bool] -or -not $closed.closureVerified -or $closed.emergencyShutdown -isnot [bool] -or $closed.emergencyShutdown -or $closed.parentProcessId -ne $admission.parentProcessId -or $closed.runtimeProcessId -ne $claim.processId -or $claim.parentProcessId -ne $admission.parentProcessId -or $actual.database.actualAdminResult.phaseAClosed -ne $true -or $actual.database.actualAdminResult.reactivationState -cne 'acknowledged_and_verified' -or $actual.database.archiveEvidence.coordinatorFixtureArchived -ne $true){throw 'blocked'}
+  foreach($processId in @($admission.parentProcessId,$claim.processId)){$null=Assert-FoundationHistoricalIdentityAbsent $processId $closed.closedAt}
+  return [pscustomobject]@{id='edbc6d11-7c1f-43a7-b745-1ded06deb29f';audience='https://everyone-market-researcher-punvhefs2-muhammed-abdelrahman.vercel.app';commitSha='effa3de9e1fee6c3f3c08fc347a5e3175db14c80';deploymentId='dpl_8Qy4Ywx8aEZ6j3ueVm3TaAP7LB3Y'}
+}
+function Read-FoundationTechnical19Database {
+  $path=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-database-readback-20261025.json'
+  if((File-Hash $path) -cne 'a44ccc8aaf5366cd3cbe5bb6d76b69c0dd327d74935c40c4a7e28f4b2cf232fd'){throw 'blocked'}
+  $record=Read-Json $path
+  if($record.kind -cne 'm03_technical19_database_readback' -or $record.version -ne 1 -or $record.environment -cne 'dev' -or $record.projectRef -cne 'zmotjsbzhzjvpelxvxlf' -or $record.nativeExit -ne 0 -or $record.technical19ReceiptSha256 -cne '567de4bcc54962c57afb88846fd4c8a75dbfa465623aad3578aab51c4eab41dc'){throw 'blocked'}
+  foreach($pin in $record.pins.PSObject.Properties){if((File-Hash (Assert-Path $repo $pin.Name)) -cne $pin.Value){throw 'blocked'}}
+  $native=$record.actualNativeResult
+  foreach($key in @('authenticationVerified','childrenClosed','handoffDeleted','leaseDeleted','scratchDeleted','inspectOnly','technicalResidual19','persistentAdminPreserved','bindingMatchesPriorProvision','inspectParentLockDeleted')){if($native.$key -isnot [bool] -or -not $native.$key){throw 'blocked'}}
+  if($native.status -cne 'inspection_verified' -or $native.historyBefore -cne 'complete' -or $native.historyAfter -cne 'complete' -or $native.pushAttempted -isnot [bool] -or $native.pushAttempted -or $native.runId -cne '8c90a6f5-63c0-4a06-b260-877fefc9a233'){throw 'blocked'}
+  $actual=Read-Json (Assert-Path $repo ('scripts/db/out/m03-foundation-inspect-'+$native.runId+'-latest.json'))
+  if((ConvertTo-Json -InputObject $actual -Depth 60 -Compress) -cne (ConvertTo-Json -InputObject $native -Depth 60 -Compress)){throw 'blocked'}
+  # The claimed Node proof validates the complete historical19 chain. This
+  # native projection additionally pins its independent SELECT-only readback.
+  $TechnicalResidual19=$true;$TechnicalResidual16=$false;$TechnicalResidual13=$false
+  $result=[pscustomobject]@{ok=$true;closed=$true;text=(ConvertTo-Json -InputObject @([pscustomobject]@{inspection=$native.inspection}) -Depth 60 -Compress)}
+  $value=Read-FoundationInspection $result
+  $expected=[pscustomobject]@{id='edbc6d11-7c1f-43a7-b745-1ded06deb29f';audience='https://everyone-market-researcher-punvhefs2-muhammed-abdelrahman.vercel.app';commitSha='effa3de9e1fee6c3f3c08fc347a5e3175db14c80';deploymentId='dpl_8Qy4Ywx8aEZ6j3ueVm3TaAP7LB3Y'}
+  Assert-FoundationArchiveInspection $value $expected $true
+  return $value
+}
+function Foundation-Technical19FamilyPredicate {
+  $prior=Foundation-Technical16FamilyPredicate
+  $needle="(window_id='4c602549-2c42-4ec3-9328-714d7cb66a77' and admitted_count=2 and bound_commit_sha='5087d4d93d2f6ffdca0bc0096b365723005446fc')"
+  if([regex]::Matches($prior,[regex]::Escape($needle)).Count -ne 1){throw 'blocked'}
+  $current="(window_id='edbc6d11-7c1f-43a7-b745-1ded06deb29f' and admitted_count=2 and starts_at is not null and expires_at is not null and bound_commit_sha='effa3de9e1fee6c3f3c08fc347a5e3175db14c80' and bound_deployment_id='dpl_8Qy4Ywx8aEZ6j3ueVm3TaAP7LB3Y' and bound_audience='https://everyone-market-researcher-punvhefs2-muhammed-abdelrahman.vercel.app')"
+  return $prior.Replace($needle,$needle+' or '+$current).Replace('count(*)=5','count(*)=6').Replace('sum(admitted_count),0)=9','sum(admitted_count),0)=11').Replace('count(*)=4','count(*)=5')
+}
 function Foundation-Technical16FamilyPredicate {
   return @'
 ((select count(*)=5 and bool_and(namespace='m03-foundation-dev' and project_ref='zmotjsbzhzjvpelxvxlf' and environment='dev' and closed_at is not null and close_count=1 and
@@ -579,7 +638,7 @@ function Foundation-Technical13FamilyPredicate {
 '@
 }
 function Foundation-Technical13AuditPredicate([int]$Ordinal) {
-  if($Ordinal -notin @(12,13,16)){throw 'blocked'}
+  if($Ordinal -notin @(12,13,16,19)){throw 'blocked'}
   $segment='20275b22-b7fe-4737-a9a4-c50c2feadb74:technical-'+$Ordinal
   return @"
 (select count(*)=1 from ops.audit_log l join ops.audit_log o on o.id::text=l.after->>'original_creation_audit_id'
@@ -589,16 +648,22 @@ function Foundation-Technical13AuditPredicate([int]$Ordinal) {
  and o.actor_type='system' and o.actor_id='m03_smoke_setup.v1' and o.action='m03_smoke_fixture_created' and o.entity_type='competitor' and o.entity_id=l.entity_id)
 "@
 }
-function Foundation-Technical13InspectionSql([bool]$ReadOnlyCurrent=$false,[bool]$Technical16=$false) {
+function Foundation-Technical13InspectionSql([bool]$ReadOnlyCurrent=$false,[bool]$Technical16=$false,[bool]$Technical19=$false) {
+  if($Technical19 -and ($Technical16 -or $ReadOnlyCurrent)){throw 'blocked'}
   $sql=[IO.File]::ReadAllText((Assert-Path $repo 'scripts/db/foundation-inspect.sql')).Replace('df4f29ec-e2dc-4d82-a276-62a4e695e6f9','3c46c791-e140-4eb9-890a-eecfa251f65e')
   $needle="'audits',jsonb_build_object("
   if([regex]::Matches($sql,[regex]::Escape($needle)).Count -ne 1){throw 'blocked'}
   $extra="'familyClosed',$(Foundation-Technical13FamilyPredicate),`n 'fixtureAuditCount',(select count(*) from ops.audit_log where entity_id in ('d51a39f6-fe87-4d17-aee9-3070c45693aa','bd23314c-591f-4fb7-92fd-b7450634eeb6')),`n 'technical12Exact',$(Foundation-Technical13AuditPredicate 12),`n 'technical13Exact',$(Foundation-Technical13AuditPredicate 13),`n "
   if($ReadOnlyCurrent){$extra="'globalLaunchCount',(select count(*) from ops.apify_launch_admissions),`n "+$extra}
-  if($Technical16){
+  if($Technical16 -or $Technical19){
     $sql=$sql.Replace('3c46c791-e140-4eb9-890a-eecfa251f65e','4c602549-2c42-4ec3-9328-714d7cb66a77')
     $extra=$extra.Replace((Foundation-Technical13FamilyPredicate),(Foundation-Technical16FamilyPredicate))
     $extra="'technical16Exact',$(Foundation-Technical13AuditPredicate 16),'familyWindowCount',(select count(*) from ops.foundation_gateway_rate_windows),'globalAdmittedCount',(select coalesce(sum(admitted_count),0) from ops.foundation_gateway_rate_windows),'globalRequestCount',(select count(*) from ops.foundation_gateway_requests),'globalLaunchCount',(select count(*) from ops.apify_launch_admissions),`n "+$extra
+  }
+  if($Technical19){
+    $sql=$sql.Replace('4c602549-2c42-4ec3-9328-714d7cb66a77','edbc6d11-7c1f-43a7-b745-1ded06deb29f')
+    $extra=$extra.Replace((Foundation-Technical16FamilyPredicate),(Foundation-Technical19FamilyPredicate))
+    $extra="'technical19Exact',$(Foundation-Technical13AuditPredicate 19),`n "+$extra
   }
   return $sql.Replace($needle,$extra+$needle)
 }
@@ -836,10 +901,12 @@ function Read-FoundationPostcheckContinuation {
     $nextMode=$forwardMode -and $projectMode -and $value.windowId -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e'
     $restoredMode=$forwardMode -and $projectMode -and $value.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77'
     $settledMode=$forwardMode -and $projectMode -and $value.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'
+    $successorMode=$forwardMode -and $projectMode -and $value.windowId -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a'
     if($freshMode){$expectedSource='aff94f2b2d8055cf93b5405e6b11d4e7d9c86803';$expectedWindow='eda4fae1-1e19-47db-81b8-beac1a4ed883'}
     if($nextMode){$expectedSource='7b1837201ac7925591577a1517d7288936ca3464';$expectedWindow='3c46c791-e140-4eb9-890a-eecfa251f65e'}
     if($restoredMode){$expectedSource='5087d4d93d2f6ffdca0bc0096b365723005446fc';$expectedWindow='4c602549-2c42-4ec3-9328-714d7cb66a77'}
     if($settledMode){$expectedSource='effa3de9e1fee6c3f3c08fc347a5e3175db14c80';$expectedWindow='edbc6d11-7c1f-43a7-b745-1ded06deb29f'}
+    if($successorMode){$expectedSource='5f256ce915f930481b0d31ac38b919c0a7692cd1';$expectedWindow='e2be1a67-f6db-4c90-bfd2-671c5db9b90a'}
     if($CheckOnly -and ($remainingMode -or $startupMode -or $projectMode) -and $value.kind -ceq $approvalKind){
       Assert-Keys $value @('kind','status','approvalRequired','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
       if($value.status -cne 'approval_required' -or $value.approvalRequired -isnot [bool] -or $value.approvalRequired -ne $true -or $value.privateRead -isnot [bool] -or $value.privateRead -ne $false -or $value.networkRequests -isnot [int] -or $value.networkRequests -ne 0 -or $value.segmentId -cne $postcheckContinuationSegment -or $value.sourceCommitSha -cne $expectedSource -or $value.windowId -cne $expectedWindow){throw 'blocked'}
@@ -848,7 +915,7 @@ function Read-FoundationPostcheckContinuation {
     $keys=@('kind','segmentId','sourceCommitSha','windowId','privateRead','networkRequests')
     $managementFields=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')
     $managementPresent=@($managementFields|Where-Object{$_ -cin $value.PSObject.Properties.Name})
-    if($CheckOnly -and ($freshMode -or $nextMode -or $restoredMode -or $settledMode) -and $managementPresent.Count -ne 4){throw 'blocked'}
+    if($CheckOnly -and ($freshMode -or $nextMode -or $restoredMode -or $settledMode -or $successorMode) -and $managementPresent.Count -ne 4){throw 'blocked'}
     if($managementPresent.Count -gt 0){
       if(-not $CheckOnly -or -not $projectMode -or -not $forwardMode -or $managementPresent.Count -ne 4){throw 'blocked'}
       # Exact known read-only reconciliation, never a replenished allowance.
@@ -862,6 +929,11 @@ function Read-FoundationPostcheckContinuation {
           $settledUsage=(Read-Json (Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical18-preparation-reconciliation-20261025.json')).usage
         }
         $managementExpected=@{managementMaximum=1408;managementAttempts=$settledUsage.management;controlAttempts=$settledUsage.control;combinedAttempts=$settledUsage.combined}
+      }
+      if($successorMode){
+        $null=Read-FoundationTechnical19Database
+        $retainedUsage=(Read-Json (Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json')).usage
+        $managementExpected=@{managementMaximum=1728;managementAttempts=$retainedUsage.management;controlAttempts=$retainedUsage.control;combinedAttempts=$retainedUsage.combined}
       }
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
       if($restoredMode -and $value.controlAttempts -eq 842){$null=Read-FoundationTechnical14NoAdmin}
@@ -1009,6 +1081,10 @@ function Assert-FoundationProjectVerifiedContinuationProcessAncestry($Clock) {
     if($paths.technicalOrdinal -notin @(17,18,19)){throw 'blocked'}
     $null=Read-FoundationForwardPrior
   }
+  if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and $Clock.windowId -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a'){
+    if($paths.technicalOrdinal -ne 20){throw 'blocked'}
+    $null=Read-FoundationForwardPrior
+  }
   return $true
 }
 
@@ -1120,12 +1196,12 @@ function History-State($Result) {
     Assert-Keys $snapshot @('current_user','session_user','database','migrations')
     if ($snapshot.current_user -cne 'postgres' -or $snapshot.session_user -cne 'postgres' -or $snapshot.database -cne 'postgres' -or $snapshot.migrations -isnot [Array]) { throw 'blocked' }
     $history = @($snapshot.migrations)
-    if ($history.Count -notin $(if([bool](Get-Variable -Name ForwardMigration -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name TechnicalResidual13 -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name TechnicalResidual16 -ValueOnly -ErrorAction SilentlyContinue)){@(14,15)}else{@(10,14)})) { throw 'blocked' }
+    if ($history.Count -notin $(if([bool](Get-Variable -Name ForwardMigration -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name TechnicalResidual13 -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name TechnicalResidual16 -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name TechnicalResidual19 -ValueOnly -ErrorAction SilentlyContinue)){@(14,15)}else{@(10,14)})) { throw 'blocked' }
     for ($i=0; $i -lt $history.Count; $i++) {
       Assert-Keys $history[$i] @('version','name','historySha256')
       if ($history[$i].version -cne $migrations[$i].version -or $history[$i].name -cne $migrations[$i].name -or $history[$i].historySha256 -cne $migrations[$i].historySha256) { throw 'blocked' }
     }
-    if ($history.Count -eq $(if([bool](Get-Variable -Name ForwardMigration -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name TechnicalResidual13 -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name TechnicalResidual16 -ValueOnly -ErrorAction SilentlyContinue)){15}else{14})) { return 'complete' }
+    if ($history.Count -eq $(if([bool](Get-Variable -Name ForwardMigration -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name TechnicalResidual13 -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name TechnicalResidual16 -ValueOnly -ErrorAction SilentlyContinue) -or [bool](Get-Variable -Name TechnicalResidual19 -ValueOnly -ErrorAction SilentlyContinue)){15}else{14})) { return 'complete' }
     return 'baseline'
   } catch { return 'rejected' }
 }
@@ -1164,6 +1240,10 @@ function Read-FoundationForwardPrior {
   # ForwardWindow already passed the sealed current ReadClaimed/native ancestry
   # gate, which verifies the immutable prior closure while allowing its new sibling.
   if(-not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){$null=Assert-FoundationInspectClosed}
+  if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a'){
+    if((Foundation-ProjectVerifiedTechnicalIdentity).ordinal -ne 20){throw 'blocked'}
+    return Read-FoundationTechnical19Database
+  }
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'){
     $technical=Foundation-ProjectVerifiedTechnicalIdentity
     if($technical.ordinal -notin @(17,18,19)){throw 'blocked'}
@@ -1259,7 +1339,7 @@ function Invoke-FoundationForwardPostcheck {
       $window=Foundation-ForwardWindowId
       Assert-FoundationForwardWindowState $false
       $sql=[IO.File]::ReadAllText($forwardCheckFile)
-      if($window -cin @('eda4fae1-1e19-47db-81b8-beac1a4ed883','3c46c791-e140-4eb9-890a-eecfa251f65e','4c602549-2c42-4ec3-9328-714d7cb66a77','edbc6d11-7c1f-43a7-b745-1ded06deb29f')){
+      if($window -cin @('eda4fae1-1e19-47db-81b8-beac1a4ed883','3c46c791-e140-4eb9-890a-eecfa251f65e','4c602549-2c42-4ec3-9328-714d7cb66a77','edbc6d11-7c1f-43a7-b745-1ded06deb29f','e2be1a67-f6db-4c90-bfd2-671c5db9b90a')){
         # The migration-time catalog deliberately required the sole legacy
         # window. Acceptance now has two immutable closed predecessors and
         # must still prove the current window absent before provisioning.
@@ -1274,6 +1354,9 @@ function Invoke-FoundationForwardPostcheck {
         }
         if($window -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'){
           $replacement="'no_new_window',$(Foundation-Technical16FamilyPredicate) and not exists(select 1 from ops.foundation_gateway_rate_windows where window_id='edbc6d11-7c1f-43a7-b745-1ded06deb29f')"
+        }
+        if($window -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a'){
+          $replacement="'no_new_window',$(Foundation-Technical19FamilyPredicate) and not exists(select 1 from ops.foundation_gateway_rate_windows where window_id='e2be1a67-f6db-4c90-bfd2-671c5db9b90a')"
         }
         $sql=$sql.Replace($needle,$replacement)
       }
@@ -1612,7 +1695,7 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
     $inspectQueryFile=Join-Path $scratch 'inspect.sql'
     [IO.File]::Copy((Assert-Path $repo 'scripts/db/foundation-inspect.sql'),$inspectQueryFile,$false)
     if((File-Hash $inspectQueryFile) -cne $packet.files.'scripts/db/foundation-inspect.sql'){throw 'blocked'}
-    if($TechnicalResidual16){[IO.File]::WriteAllText($inspectQueryFile,(Foundation-Technical13InspectionSql -Technical16 $true))}elseif($TechnicalResidual13){[IO.File]::WriteAllText($inspectQueryFile,(Foundation-Technical13InspectionSql -ReadOnlyCurrent ([bool]$InspectOnly)))}
+    if($TechnicalResidual19){[IO.File]::WriteAllText($inspectQueryFile,(Foundation-Technical13InspectionSql -Technical19 $true))}elseif($TechnicalResidual16){[IO.File]::WriteAllText($inspectQueryFile,(Foundation-Technical13InspectionSql -Technical16 $true))}elseif($TechnicalResidual13){[IO.File]::WriteAllText($inspectQueryFile,(Foundation-Technical13InspectionSql -ReadOnlyCurrent ([bool]$InspectOnly)))}
   }
   if($forwardSchema){
     $forwardCheckFile=Join-Path $scratch 'forward-postcheck.sql';$forwardFamilyFile=Join-Path $scratch 'forward-family.sql'
@@ -1692,10 +1775,10 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
   elseif($InspectOnly){
     if($receipt.historyBefore -cne 'complete'){$receipt.status='history_rejected'}
     else{
-      Write-NewJson $attemptFile ([ordered]@{version=1;runId=$runId;projectRef=$projectRef;purpose='fixed-read-only-reconciliation';priorRunId=$(if($TechnicalResidual16){'3412e032-4833-43c9-9342-19ea25d50275'}else{'52cd6a97-a23a-4061-a694-00c50c700b00'});createdAt=[DateTime]::UtcNow.ToString('o')})
+      Write-NewJson $attemptFile ([ordered]@{version=1;runId=$runId;projectRef=$projectRef;purpose='fixed-read-only-reconciliation';priorRunId=$(if($TechnicalResidual19){'fd9e28cc-25ed-4332-ae29-e1dfdf135a36'}elseif($TechnicalResidual16){'3412e032-4833-43c9-9342-19ea25d50275'}else{'52cd6a97-a23a-4061-a694-00c50c700b00'});createdAt=[DateTime]::UtcNow.ToString('o')})
       $inspection=Invoke-Cli @('db','query','--file',$inspectQueryFile) $queryTimeoutMs
       try{$receipt['inspection']=Read-FoundationInspection $inspection}finally{$inspection.text=$null}
-      if($TechnicalResidual16){Assert-FoundationArchiveInspection $receipt.inspection $inspectExpectedBinding $false}elseif($TechnicalResidual13){Assert-FoundationArchiveInspection $receipt.inspection $inspectExpectedBinding $true}
+      if($TechnicalResidual19){Assert-FoundationArchiveInspection $receipt.inspection $inspectExpectedBinding $true}elseif($TechnicalResidual16){Assert-FoundationArchiveInspection $receipt.inspection $inspectExpectedBinding $false}elseif($TechnicalResidual13){Assert-FoundationArchiveInspection $receipt.inspection $inspectExpectedBinding $true}
       $receipt['bindingMatchesPriorProvision']=$null
       if($null -ne $receipt.inspection.window){$receipt.bindingMatchesPriorProvision=$receipt.inspection.window.audience -ceq $inspectExpectedBinding.audience -and $receipt.inspection.window.commitSha -ceq $inspectExpectedBinding.commitSha -and $receipt.inspection.window.deploymentId -ceq $inspectExpectedBinding.deploymentId}
       $receipt.status='inspection_verified';$receipt.historyAfter='complete';$exitCode=0

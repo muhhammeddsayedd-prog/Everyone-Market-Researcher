@@ -866,11 +866,39 @@ for (const profile of [
     options: { technical16Settled: true, technical17PreReady: true },
     realWriter: true,
   },
+  {
+    maximum: 1728,
+    ordinal: 20,
+    management: 1317,
+    control: 1246,
+    window: 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+    options: {
+      technical16Settled: true,
+      technical17PreReady: true,
+      technical18Closed: true,
+      technical19Restored: true,
+      technical20SourceSelected: true,
+    },
+    realWriter: true,
+  },
+  {
+    maximum: 1728,
+    ordinal: 20,
+    management: 1317,
+    control: 1246,
+    window: 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+    options: { technical19Restored: true, technical20SourceSelected: true },
+    failAdmin: true,
+  },
 ])
   test(
-    profile.realWriter
-      ? 'genuine18 CLI prepare crosses the real Writer constructor after synthetic Preview without connecting or provisioning'
-      : `post-reconciliation genuine${profile.maximum} CLI prepare crosses the actual Admin client and native protocol before every Preview operation`,
+    profile.failAdmin
+      ? 'genuine20 CLI reports a finite Admin constructor refusal without spawning, provisioning or claiming closure'
+      : profile.maximum === 1728
+        ? 'genuine20 CLI prepare preserves1317 charges through the real Admin and seventh Writer constructors without provisioning'
+        : profile.realWriter
+          ? 'genuine18 CLI prepare crosses the real Writer constructor after synthetic Preview without connecting or provisioning'
+          : `post-reconciliation genuine${profile.maximum} CLI prepare crosses the actual Admin client and native protocol before every Preview operation`,
     async () => {
       const f = await syntheticProjectVerifiedContinuation(profile.options);
       let session,
@@ -883,12 +911,14 @@ for (const profile of [
         emitted = [];
       try {
         const proof = f.claim(f.admit());
+        const expectedSource =
+          profile.source ?? f.module.foundationProjectVerifiedTechnical20Runtime.sourceCommitSha;
         const checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
         assert.equal(checkpoint.technicalAttemptOrdinal, profile.ordinal);
         assert.equal(checkpoint.managementMaximum, profile.maximum);
         assert.equal(checkpoint.aggregateManagementAttempts, profile.management);
         assert.equal(checkpoint.aggregateControlAttempts, profile.control);
-        assert.equal(proof.sourceCommitSha, profile.source);
+        assert.equal(proof.sourceCommitSha, expectedSource);
         assert.equal(proof.windowId, profile.window);
         const bindings = JSON.parse(
           readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
@@ -1013,7 +1043,10 @@ for (const profile of [
             {
               now: f.now,
               projectVerifiedContinuationProof: proof,
-              startAdmin: (args) => adminModule.startFoundationAdminClient(args, { spawn }),
+              startAdmin: (args) => {
+                if (profile.failAdmin) throw Error('SYNTHETIC_LOCAL_ADMIN_CONSTRUCTOR_REFUSAL');
+                return adminModule.startFoundationAdminClient(args, { spawn });
+              },
               createBaselinePreflight: (args) => {
                 if (profile.maximum >= 1024) assert.equal(args.projectVerifiedContinuationProof, proof);
                 return syntheticBaselinePreflight(
@@ -1064,7 +1097,7 @@ for (const profile of [
                     assertDeployment: (value) => value,
                     createWriterCloser(args) {
                       assert.equal(args.windowId, profile.window);
-                      assert.equal(args.sourceCommitSha, profile.source);
+                      assert.equal(args.sourceCommitSha, expectedSource);
                       const closer = restoredTransport.createFoundationLiveWriterCloser(args, {
                         createClient() {
                           writerClients++;
@@ -1086,9 +1119,30 @@ for (const profile of [
           id: 'post11-native-chain',
           command: 'prepare',
         });
-        assert.equal(spawns, 1);
+        if (profile.failAdmin) {
+          assert.equal(result.status, 'blocked');
+          assert.equal(result.code, 'FOUNDATION_ADMIN_CLIENT_BLOCKED');
+          assert.equal(spawns, 0);
+          assert.equal(setupConstructors, 0);
+          assert.equal(writerConstructors, 0);
+          assert.deepEqual(commands, []);
+          assert.equal(nativeReads, 50);
+          assert.equal(emitted.length, 1);
+          assert.equal(result.managementAttempts, profile.management + 25);
+          assert.equal(result.controlAttempts, profile.control + 51);
+          assert.equal(result.nativeExecutions, 3);
+          const closed = await session.close();
+          assert.equal(closed.adminChildClosed, false);
+          assert.equal(closed.residual, true);
+          assert.doesNotMatch(
+            JSON.stringify(result) + JSON.stringify(closed),
+            /SYNTHETIC_LOCAL|CONSTRUCTOR_REFUSAL/,
+          );
+          return;
+        }
+        assert.equal(spawns, 1, JSON.stringify(result));
         assert.deepEqual(commands, ['postcheck', 'preflight']);
-        assert.equal(setupConstructors, 1);
+        assert.equal(setupConstructors, 1, JSON.stringify(result));
         assert.equal(nativeReads, 50);
         assert.equal(emitted.length, 1);
         assert.equal(result.status, 'blocked');

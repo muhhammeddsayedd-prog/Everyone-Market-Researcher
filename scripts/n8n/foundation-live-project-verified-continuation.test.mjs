@@ -16,6 +16,131 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('closed19 preserves all charged state and exposes fresh20 only behind exact allocation and compatible source', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    technical18Closed: true,
+    technical19Restored: true,
+  });
+  try {
+    const result = f.check();
+    assert.equal(result.managementAttempts, 1317);
+    assert.equal(result.controlAttempts, 1246);
+    assert.equal(result.setupAttempts, 254);
+    assert.equal(result.status, 'application_source_unselected');
+    assert.equal(result.windowId, 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a');
+    assert.throws(() => f.admit(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('genuine sibling20 retains closed19 prefixes and all25 restored versions under the exact approved allocation', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    technical19Restored: true,
+    technical20SourceSelected: true,
+  });
+  try {
+    const proof = f.claim(f.admit()),
+      checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(proof.windowId, 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a');
+    assert.equal(proof.sourceCommitSha, 'c'.repeat(40));
+    assert.equal(checkpoint.technicalAttemptOrdinal, 20);
+    assert.equal(checkpoint.runtimeFilename, 'runtime.technical-20.jsonl');
+    assert.equal(checkpoint.aggregateManagementAttempts, 1317);
+    assert.equal(checkpoint.aggregateControlAttempts, 1246);
+    assert.equal(checkpoint.settledNativeControlRows, 1118);
+    assert.equal(checkpoint.carriedNativeExecutions, 3);
+    assert.equal(checkpoint.legacySqlAdmitted, 11);
+    assert.equal(checkpoint.setupRows, 510);
+    assert.equal(checkpoint.setupAttempts, 254);
+    assert.equal(checkpoint.setupMaximum, 304);
+    assert.deepEqual(f.module.foundationProjectVerifiedContinuationRequestCaps(proof), {
+      management: 1728,
+      control: 3584,
+      combined: 5312,
+    });
+    const versions = f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(proof);
+    assert.equal(Object.keys(versions).length, 25);
+    assert.equal(
+      Object.values(versions).every((v) => v.startsWith('synthetic19-')),
+      true,
+    );
+    const beforeM = readFileSync(f.paths.management, 'utf8'),
+      beforeC = readFileSync(f.paths.control, 'utf8');
+    f.io.processAlive = (pid) => [process.pid, process.ppid].includes(pid);
+    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+    appendFileSync(
+      f.paths.management,
+      Array.from(
+        { length: 25 },
+        (_, i) => JSON.stringify({ event: 'management_attempt', ordinal: 1165 + i }) + '\n',
+      ).join(''),
+    );
+    appendFileSync(
+      f.paths.control,
+      Array.from(
+        { length: 51 },
+        (_, i) =>
+          JSON.stringify({
+            event: 'control_request_intent',
+            ordinal: 1102 + i,
+            kind: 'discovery',
+            workflowId: 'MzimjpsuyPuK7SKe',
+            at: new Date(proof.startsAt + 1000).toISOString(),
+          }) + '\n',
+      ).join(''),
+    );
+    assert.equal(f.readClaimed().windowId, proof.windowId);
+    assert.doesNotThrow(() =>
+      f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof)),
+    );
+    writeFileSync(
+      f.paths.control,
+      beforeC.replace('"ordinal":1101', '"ordinal":1100') +
+        readFileSync(f.paths.control, 'utf8').slice(beforeC.length),
+    );
+    assert.throws(() => f.readClaimed(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/);
+    writeFileSync(f.paths.control, beforeC);
+    writeFileSync(f.paths.management, beforeM);
+    f.io.processAlive = () => false;
+    assert.throws(() => f.readClaimed(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('typed19 denies coherently pinned false acceptance, unsettled history, active SQL state and altered allocation', async () => {
+  for (const technical19Fault of [
+    'raw-fullD',
+    'raw-native',
+    'usage',
+    'cleanup',
+    'database',
+    'old-prefix',
+    'runtime-pending',
+    'runtime-graph',
+    'allocation',
+    'allocation-actor',
+    'readback-native',
+    'readback-busy',
+    'readback-family',
+    'readback-audit',
+    'readback-active',
+    'readback-window',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({
+      technical19Restored: true,
+      technical20SourceSelected: true,
+      technical19Fault,
+    });
+    try {
+      assert.throws(() => f.check(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/, technical19Fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
 test('typed closed preparation18 permits only sibling19 and retains every prior attempt and charged request', async () => {
   const f = await syntheticProjectVerifiedContinuation({
     technical17PreReady: true,

@@ -428,6 +428,7 @@ export async function verifyFoundationLiveSmokeSql({
       '3c46c791-e140-4eb9-890a-eecfa251f65e',
       '4c602549-2c42-4ec3-9328-714d7cb66a77',
       'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
+      'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
     ].includes(activeWindowId) ||
     proof.windowId !== activeWindowId ||
     !['smoke.first', 'smoke.second'].includes(caseId) ||
@@ -543,7 +544,7 @@ function constructFoundationLiveAcceptanceSession(input, emit, dependencies, ope
   const unadmittedUsage = verified
     ? foundationProjectVerifiedContinuationUnadmittedUsage(verified)
     : { nativeExecutions: 0, gatewayHttpAttempts: 0 };
-  const restoredBaselineScope = [1024, 1408].includes(verifiedCheckpoint?.managementMaximum)
+  const restoredBaselineScope = [1024, 1408, 1728].includes(verifiedCheckpoint?.managementMaximum)
     ? { projectVerifiedContinuationProof: verified }
     : {};
   const activeWindowId = verified?.windowId ?? windowId;
@@ -600,7 +601,7 @@ function constructFoundationLiveAcceptanceSession(input, emit, dependencies, ope
       ...(remaining ? { remainingContinuationProof: remaining } : {}),
       ...(startup ? { startupReplacementProof: startup } : {}),
       ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
-      ...([576, 640, 704, 832, 1024, 1408].includes(verifiedCheckpoint?.managementMaximum)
+      ...([576, 640, 704, 832, 1024, 1408, 1728].includes(verifiedCheckpoint?.managementMaximum)
         ? {
             controlAttempts: () =>
               controlBudget?.snapshot().attempts ?? verifiedCheckpoint.aggregateControlAttempts,
@@ -661,7 +662,7 @@ function constructFoundationLiveAcceptanceSession(input, emit, dependencies, ope
     ...(remaining ? { remainingContinuationProof: remaining } : {}),
     ...(startup ? { startupReplacementProof: startup } : {}),
     ...(verified ? { projectVerifiedContinuationProof: verified } : {}),
-    ...([576, 640, 704, 832, 1024, 1408].includes(verifiedCheckpoint?.managementMaximum)
+    ...([576, 640, 704, 832, 1024, 1408, 1728].includes(verifiedCheckpoint?.managementMaximum)
       ? { managementAttempts: () => budget.snapshot().attempts }
       : {}),
   });
@@ -897,6 +898,7 @@ function constructFoundationLiveAcceptanceSession(input, emit, dependencies, ope
     }
     adminPhysicalClosed = false;
     adminLifecycleVerified = false;
+    preparationStage = 'ADMIN_CLIENT';
     try {
       admin = await (dependencies.startAdmin ?? startFoundationAdminClient)({
         repositoryRoot,
@@ -925,6 +927,7 @@ function constructFoundationLiveAcceptanceSession(input, emit, dependencies, ope
       }
       throw error;
     }
+    preparationStage = null;
     const ready = await admin.postcheck();
     if (
       ready?.ready !== true ||

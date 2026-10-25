@@ -224,7 +224,7 @@ export function createFoundationControlBudget({
     ? foundationProjectVerifiedContinuationRequestCaps(verified)
     : { management: 512, control: 2048, combined: 2560 };
   const managementMaximum = requestCaps.management;
-  const expandedManagement = [576, 640, 704, 832, 1024, 1408].includes(managementMaximum);
+  const expandedManagement = [576, 640, 704, 832, 1024, 1408, 1728].includes(managementMaximum);
   let lastManagementAttempts = verifiedCheckpoint?.aggregateManagementAttempts ?? 0;
   const authoritativeManagementAttempts = () => {
     if (!expandedManagement) return 0;

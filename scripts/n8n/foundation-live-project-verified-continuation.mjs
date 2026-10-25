@@ -14,9 +14,18 @@ import { assertRuntimeReconciliationReadback } from './inventory.mjs';
 
 const repo = fileURLToPath(new URL('../../', import.meta.url));
 const proofs = new WeakMap();
-// Bounded storage for the approved 256 requests: intent/attempt/ack plus metadata.
+// Bounded storage for the approved 304 requests: intent/attempt/ack plus metadata.
 // This is a journal row limit, never an additional request allowance.
-export const foundationProjectVerifiedSetupJournalMaximumRows = 3 * 256 + 64;
+export const foundationProjectVerifiedSetupJournalMaximumRows = 3 * 304 + 64;
+export const foundationProjectVerifiedTechnical20Runtime = Object.freeze({
+  windowId: 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+  sourceCommitSha: '5f256ce915f930481b0d31ac38b919c0a7692cd1',
+  sourceCi: 40186141405,
+  allFiveCiJobsPassed: true,
+  vercelPassed: true,
+  setupMaximum: 304,
+  proposedSetupMaximum: 304,
+});
 export const foundationProjectVerifiedContinuationCheckpoint = Object.freeze({
   segmentId: '20275b22-b7fe-4737-a9a4-c50c2feadb74',
   sourceCommitSha: 'f42930f90c2de43c84f61ad6d966d0ee6074d70e',
@@ -281,15 +290,17 @@ const technical17Recovery = Object.freeze({
 // Selection names the next dev target. Its larger capacities remain unavailable
 // until the separately pinned allocation is validated below.
 const activeRuntime = (recovery) =>
-  recovery?.technical16Settled === true
-    ? foundationProjectVerifiedTechnical17Runtime
-    : recovery?.runtimeRestorationTechnicalAttempt === 13
-      ? foundationProjectVerifiedRestoredRuntime
-      : recovery?.runtimePreparationTechnicalAttempt === 12
-        ? foundationProjectVerifiedNextRuntime
-        : recovery?.closedFixtureTechnicalAttempt === 8
-          ? foundationProjectVerifiedActiveRuntime
-          : priorActiveRuntime;
+  recovery?.technical19Restored === true
+    ? foundationProjectVerifiedTechnical20Runtime
+    : recovery?.technical16Settled === true
+      ? foundationProjectVerifiedTechnical17Runtime
+      : recovery?.runtimeRestorationTechnicalAttempt === 13
+        ? foundationProjectVerifiedRestoredRuntime
+        : recovery?.runtimePreparationTechnicalAttempt === 12
+          ? foundationProjectVerifiedNextRuntime
+          : recovery?.closedFixtureTechnicalAttempt === 8
+            ? foundationProjectVerifiedActiveRuntime
+            : priorActiveRuntime;
 const setupAllocationApproval = Object.freeze({
   relative: 'milestones/M03-n8n-foundation/evidence/remaining-control-allocation-approval-20261023.json',
   sha256: '313dd1de36e1c2d24e426cb2d09d1a027d192305a97a3a45b5a1783f61bf3f43',
@@ -490,6 +501,19 @@ const technical18PreparationRecovery = Object.freeze({
   relative:
     'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical18-preparation-reconciliation-20261025.json',
   sha256: '92a5976dbce66210abbdd76655afaf71a98c9c48f29c8c15422831a85f3737d9',
+});
+const technical19RestorationRecovery = Object.freeze({
+  relative: 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json',
+  sha256: '567de4bcc54962c57afb88846fd4c8a75dbfa465623aad3578aab51c4eab41dc',
+  approvalRelative:
+    'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-approval-20261025.json',
+  approvalSha256: 'a80ea5491487b22df91c07deb4ab94b3854fe037a1f7458f25fd3afcf2a4619a',
+  packetRelative:
+    'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-20261025.md',
+  packetSha256: 'b782c04c7dfdcd6e6e223172f24f75248651eec1a16cc3f742d0a7bc71ebe3d1',
+  readbackRelative:
+    'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-database-readback-20261025.json',
+  readbackSha256: 'a44ccc8aaf5366cd3cbe5bb6d76b69c0dd327d74935c40c4a7e28f4b2cf232fd',
 });
 const fail = () => {
   throw Error('M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED');
@@ -849,6 +873,7 @@ function checkpoint(x) {
   x.recovery = reconciledTechnical16Settlement(x) ?? x.recovery;
   x.recovery = reconciledTechnical17PreReady(x) ?? x.recovery;
   x.recovery = reconciledTechnical18Preparation(x) ?? x.recovery;
+  x.recovery = reconciledTechnical19Restoration(x) ?? x.recovery;
   if (x.recovery?.closedWindow) assertSetupAllocationApproval(x);
   recoveryPreflight(x);
   return p;
@@ -8644,6 +8669,656 @@ function reconciledTechnical18Preparation(x) {
     pins: Object.freeze(pins),
   });
 }
+function reconciledTechnical19Restoration(x) {
+  const cfg = technical19RestorationRecovery;
+  if (cfg === null) return null; // Historical isolated test profiles only.
+  if (hash(x.file(cfg.relative)) !== cfg.sha256 || x.recovery?.technical18PreparationReconciled !== true)
+    fail();
+  const prior = x.recovery.technical19PriorRecovery ?? x.recovery,
+    r = JSON.parse(x.file(cfg.relative)),
+    same = (value, expected) => {
+      if (!value || Object.entries(expected).some(([k, v]) => !isDeepStrictEqual(value[k], v))) fail();
+    },
+    paths = attemptPaths(19),
+    data = record(x, { paths, allowExpired: true, checkParent: false }),
+    live = 'scripts/n8n/out/foundation/live/',
+    db = 'scripts/db/out/m03-foundation-project-verified-continuation-' + c.segmentId + '-technical-19-',
+    framePath = live + 'technical19-coordinator-20261025-startup1.jsonl',
+    runtimePath = live + 'runtime.technical-19.jsonl',
+    generated = r.database?.generatedTypeRelative,
+    fixed = [
+      paths.admissionRelative,
+      paths.claimRelative,
+      paths.closedRelative,
+      framePath,
+      runtimePath,
+      ...['attempt', 'latest', 'owner-provision-attempt', 'reactivation-attempt'].map(
+        (v) => db + v + '.json',
+      ),
+      generated,
+      technical18PreparationRecovery.relative,
+    ],
+    pins = { ...prior.pins };
+  if (
+    !exact(r, [
+      'kind',
+      'version',
+      'environment',
+      'projectRef',
+      'observedAt',
+      'source',
+      'attempt',
+      'usage',
+      'limits',
+      'journalPrefixes',
+      'database',
+      'sideEffects',
+      'physicalCleanup',
+      'interpretation',
+      'boundaries',
+      'pins',
+    ]) ||
+    typeof generated !== 'string' ||
+    !/^scripts\/db\/out\/m03-foundation-continuation-[a-f0-9-]{36}-db\.types\.ts$/.test(generated) ||
+    !exact(r.pins, [
+      ...fixed,
+      ...['management', 'control', 'preflight', 'setup'].map((v) => live + v + '.jsonl'),
+    ])
+  )
+    fail();
+  same(r, {
+    kind: 'm03_technical19_restored_attempt',
+    version: 1,
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+  });
+  same(r.source, {
+    helperHead: '9e22632115e7fbe6fd509b96a6fc88fe217688fe',
+    applicationSource: foundationProjectVerifiedTechnical17Runtime.sourceCommitSha,
+    ci: 40146725378,
+    allFiveCiJobsPassed: true,
+    vercelPassed: true,
+    pr: 8,
+    prDraft: true,
+  });
+  same(r.usage, {
+    management: 1317,
+    control: 1246,
+    combined: 2563,
+    vercel: 254,
+    nativeExecutions: 3,
+    actorStarts: 0,
+    actorReserveUsd: 2,
+    providerDirectAttempts: 0,
+    newItemsObservedThisAttempt: 0,
+  });
+  same(r.limits, {
+    management: 1408,
+    control: 3456,
+    combined: 4864,
+    vercel: 256,
+    nativeExecutions: 120,
+    actorStarts: 2,
+    actorReserveUsd: 2,
+    allowancesReplenished: false,
+  });
+  same(r.attempt, {
+    technicalAttempt: 19,
+    parentProcessId: data.r.parentProcessId,
+    runtimeProcessId: data.claim?.processId,
+    windowId: foundationProjectVerifiedTechnical17Runtime.windowId,
+  });
+  for (const p of fixed) {
+    if (!/^[a-f0-9]{64}$/.test(r.pins[p]) || hash(x.file(p)) !== r.pins[p]) fail();
+    pins[p] = r.pins[p];
+  }
+  pins[cfg.relative] = cfg.sha256;
+  const close = JSON.parse(x.file(paths.closedRelative)),
+    frames = jsonl(x.file(framePath), 8).rows;
+  if (
+    !data.claim ||
+    !isDeepStrictEqual(data.r, r.attempt.rawAdmission) ||
+    !isDeepStrictEqual(data.claim, r.attempt.rawRuntimeClaim) ||
+    !isDeepStrictEqual(close, r.attempt.rawTechnicalClose) ||
+    !isDeepStrictEqual(frames, r.attempt.rawFrames)
+  )
+    fail();
+  same(close, {
+    kind: 'm03_project_verified_technical_closed',
+    version: 1,
+    admissionSha256: hash(data.text),
+    parentProcessId: data.r.parentProcessId,
+    runtimeProcessId: data.claim.processId,
+    childClosed: true,
+    credentialChildrenClosed: true,
+    emergencyShutdown: false,
+    pendingMachinePreserved: true,
+    nativeExit: 1,
+    bypassHandoffDeleted: true,
+    closureVerified: true,
+  });
+  if (
+    !Number.isSafeInteger(close.closedAt) ||
+    close.closedAt < data.claim.claimedAt ||
+    close.closedAt > x.clock() ||
+    !x.historicalProcessClosed(close.parentProcessId, close.closedAt) ||
+    !x.historicalProcessClosed(close.runtimeProcessId, close.closedAt)
+  )
+    fail();
+  const common = {
+      nativeExecutions: 3,
+      gatewayPreflightAttempts: 10,
+      providerDirectAttempts: 0,
+      phaseBReady: false,
+      domainProofReady: false,
+      businessAcceptanceProven: false,
+    },
+    restored = {
+      managementAttempts: 1317,
+      controlAttempts: 1246,
+      baselineRestored: true,
+      environmentCleanupVerified: true,
+      windowClosed: true,
+      fixtureArchived: true,
+      remoteWorkSettled: true,
+      residual: false,
+    };
+  same(frames[2], {
+    kind: 'm03_acceptance_ready',
+    status: 'private_child_ready',
+    deadlineAt: data.r.deadlineAt,
+    approvedHead: c.sourceCommitSha,
+    sourceCommitSha: foundationProjectVerifiedTechnical17Runtime.sourceCommitSha,
+  });
+  same(frames[3], { kind: 'mcp_port_request', action: 'browser_discover', workflowId: 'MzimjpsuyPuK7SKe' });
+  same(frames[4], {
+    ...common,
+    kind: 'm03_acceptance_result',
+    command: 'prepare',
+    status: 'blocked',
+    managementAttempts: 1175,
+    controlAttempts: 1196,
+    residual: true,
+  });
+  same(frames[5], {
+    ...common,
+    ...restored,
+    kind: 'm03_acceptance_result',
+    command: 'restore',
+    status: 'restoration_verified',
+  });
+  same(frames[6], {
+    ...common,
+    ...restored,
+    kind: 'm03_acceptance_closed',
+    status: 'closed',
+    childTransportsClosed: true,
+    adminChildClosed: true,
+  });
+  same(frames[7], {
+    kind: 'm03_acceptance_wrapper_closed',
+    nativeExit: 1,
+    childClosed: true,
+    credentialChildrenClosed: true,
+    handoffsDeleted: true,
+    bypassHandoffDeleted: true,
+    pendingMachinePreserved: true,
+    emergencyShutdown: false,
+    privateRead: true,
+    code: 'M03_ACCEPTANCE_BLOCKED',
+  });
+  if (frames.length !== 8 || frames.some((v) => v.command && !['prepare', 'restore'].includes(v.command)))
+    fail();
+  const parsed = {};
+  for (const [name, count, before] of [
+    ['management', 1165, 871],
+    ['control', 1118, 1016],
+    ['setup', 510, 439],
+    ['preflight', 26, 21],
+  ]) {
+    const p = live + name + '.jsonl',
+      value = jsonl(x.file(p), 8000),
+      proof = r.journalPrefixes[name],
+      prefix = value.lines.slice(0, count).join('\n') + '\n',
+      old = value.lines.slice(0, before).join('\n') + '\n';
+    if (
+      !exact(proof, ['relative', 'rows', 'bytes', 'sha256']) ||
+      proof.relative !== p ||
+      proof.rows !== count ||
+      proof.bytes !== Buffer.byteLength(prefix) ||
+      hash(prefix) !== proof.sha256 ||
+      proof.sha256 !== r.pins[p] ||
+      hash(old) !== prior.pins[p] ||
+      value.rows.length < count
+    )
+      fail();
+    pins[p] = proof.sha256;
+    parsed[name] = value.rows.slice(0, count);
+  }
+  if (
+    prior.mainManagementAttempts !== 870 ||
+    prior.mainControlAttempts !== 1000 ||
+    prior.carriedManagementAttempts !== 153 ||
+    prior.carriedControlAttempts !== 145 ||
+    parsed.management
+      .slice(871)
+      .some(
+        (v, i) =>
+          !exact(v, ['event', 'ordinal']) || v.event !== 'management_attempt' || v.ordinal !== 871 + i,
+      )
+  )
+    fail();
+  const controls = parsed.control.slice(1016),
+    controlIntents = controls.filter((v) => v.event === 'control_request_intent'),
+    setup = parsed.setup.slice(439);
+  if (
+    controls.length !== 102 ||
+    controlIntents.length !== 101 ||
+    controlIntents.some(
+      (v, i) => v.ordinal !== 1001 + i || v.kind !== 'discovery' || Object.hasOwn(v, 'executionId'),
+    ) ||
+    controls.filter((v) => v.event === 'browser_port_preflight_verified').length !== 1 ||
+    setup.length !== 71 ||
+    setup.filter((v) => v.event === 'setup_attempt').length !== 35 ||
+    setup.filter((v) => v.event === 'setup_attempt').some((v, i) => v.ordinal !== 220 + i) ||
+    setup.filter((v) => v.event === 'setup_cleanup_absent' && v.kind === 'environment').length !== 7 ||
+    setup.filter((v) => v.event === 'setup_cleanup_absent' && v.kind === 'bypass').length !== 1
+  )
+    fail();
+  same(r.database.actualAdminResult, {
+    status: 'continuation_history_verified',
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    authenticationVerified: true,
+    historyBefore: 'complete',
+    historyAfter: 'complete',
+    pendingVersions: [],
+    pushAttempted: false,
+    phaseACommands: 7,
+    phaseAClosed: true,
+    childrenClosed: true,
+    handoffDeleted: true,
+    leaseDeleted: true,
+    scratchDeleted: true,
+    technicalAttemptOrdinal: 19,
+    activeWindowId: foundationProjectVerifiedTechnical17Runtime.windowId,
+    reactivationState: 'acknowledged_and_verified',
+  });
+  if (
+    !isDeepStrictEqual(r.database.actualAdminResult, JSON.parse(x.file(db + 'latest.json'))) ||
+    r.database.migrationCount !== 15 ||
+    r.database.noMigrationReplay !== true ||
+    r.database.generatedTypeRelative !== generated ||
+    !Array.isArray(r.database.localMigrationVersionsAndHashes) ||
+    r.database.localMigrationVersionsAndHashes.length !== 15 ||
+    r.database.localMigrationVersionsAndHashes.some(
+      (v) =>
+        !/^supabase\/migrations\/\d{14}_[a-z0-9_]+\.sql$/.test(v.relative) ||
+        v.version !== v.relative.split('/').at(-1).slice(0, 14) ||
+        hash(x.file(v.relative)) !== v.sha256,
+    )
+  )
+    fail();
+  const writer = parsed.preflight.findLast((v) => v.event === 'foundation_writer_close_verified');
+  if (!isDeepStrictEqual(writer, r.database.restrictedWriterClose)) fail();
+  same(writer, {
+    windowId: foundationProjectVerifiedTechnical17Runtime.windowId,
+    identityVerified: true,
+    bindingVerified: true,
+    closeAcknowledged: true,
+    connectionClosed: true,
+  });
+  same(r.database.archiveEvidence, {
+    coordinatorFixtureArchived: true,
+    competitorStatus: 'archived',
+    accountStatus: 'paused',
+    newItemsObservedThisAttempt: 0,
+    actorStartsObservedThisAttempt: 0,
+    standalonePostRestoreSqlItemCount: null,
+  });
+  const rows = jsonl(x.file(runtimePath), 1800).rows,
+    intents = rows.filter((v) => v.event === 'intent'),
+    verified = rows.filter((v) => v.event === 'verified'),
+    requests = rows.filter((v) => v.event === 'request'),
+    bindings = JSON.parse(x.file('n8n/foundation/bindings.dev.json')),
+    baseline = createFoundationRuntimeBaseline({
+      bindings,
+      records: Object.keys(bindings.workflowRefs).map((k) =>
+        JSON.parse(x.file('n8n/workflows/' + k + '.json')),
+      ),
+    }),
+    versions = { ...prior.restoredBaselineVersions },
+    final = new Map();
+  if (
+    rows.length !== 377 ||
+    intents.length !== 69 ||
+    verified.length !== 69 ||
+    requests.length !== 234 ||
+    rows.at(-1).event !== 'restore_complete' ||
+    rows.filter((v) => v.event === 'restore_complete').length !== 1 ||
+    requests.some((v, i) => v.number !== i + 1) ||
+    intents.some((v, i) => v.sequence !== i + 1) ||
+    verified.some((v, i) => v.sequence !== i + 1)
+  )
+    fail();
+  for (let i = 0; i < intents.length; i++) {
+    const v = intents[i],
+      after = verified[i].after;
+    if (v.key === 'Machine') {
+      if (
+        !['machine_rebind', 'machine_restore'].includes(v.action) ||
+        !Number.isSafeInteger(historicalTimestamp(after?.updatedAt))
+      )
+        fail();
+    } else {
+      if (
+        !Object.hasOwn(versions, v.key) ||
+        !['save', 'publish', 'unpublish'].includes(v.action) ||
+        typeof after?.versionId !== 'string' ||
+        !/^[A-Za-z0-9_-]{1,128}$/.test(after.versionId)
+      )
+        fail();
+      versions[v.key] = after.versionId;
+      final.set(v.key, after);
+    }
+  }
+  if (
+    !exact(
+      versions,
+      baseline.map((v) => v.key),
+    ) ||
+    baseline.some(
+      (v) =>
+        !final.has(v.key) ||
+        final.get(v.key).graphHash !== runtimeGraphHash(v.body) ||
+        final.get(v.key).activeVersionId !== null ||
+        final.get(v.key).publishedHash !== null,
+    ) ||
+    new Set(requests.slice(-25).map((v) => v.path)).size !== 25 ||
+    requests
+      .slice(-25)
+      .some(
+        (v) =>
+          v.method !== 'GET' ||
+          !baseline.some((b) => v.path === '/api/v1/workflows/' + b.id + '?excludePinnedData=true'),
+      )
+  )
+    fail();
+  same(r.sideEffects, {
+    environmentCleanupVerified: true,
+    remoteBypassRevokedAndAbsent: true,
+    runtimeHttpRequests: 234,
+    definitionOrMachineTransitionsVerified: 69,
+    workflowExecutionsStartedThisAttempt: 0,
+    actorStartsThisAttempt: 0,
+  });
+  const environmentAcks = setup.filter((v) => v.event === 'setup_ack' && v.kind === 'environment'),
+    deployment = setup.find((v) => v.event === 'setup_ack' && v.kind === 'deployment');
+  if (
+    !Array.isArray(r.sideEffects.environmentIds) ||
+    r.sideEffects.environmentIds.length !== 7 ||
+    new Set(r.sideEffects.environmentIds).size !== 7 ||
+    environmentAcks.length !== 7 ||
+    !isDeepStrictEqual(
+      environmentAcks.map((v) => v.id),
+      r.sideEffects.environmentIds,
+    ) ||
+    deployment?.deploymentId !== r.sideEffects.previewDeploymentId ||
+    deployment?.audience !== r.sideEffects.previewAudience ||
+    Object.values(r.database.actualAdminResult.catalogChecks ?? {}).length !== 14 ||
+    Object.values(r.database.actualAdminResult.catalogChecks).some((v) => v !== true)
+  )
+    fail();
+  same(r.physicalCleanup, {
+    parentAbsent: true,
+    runtimeAbsent: true,
+    directChildrenAbsent: true,
+    checkedDisposableLeaves: 11,
+    presentDisposableLeaves: 0,
+    persistentOriginalsRetained: 4,
+    machineRetained: true,
+    privateContentsRead: false,
+    networkRequests: 0,
+  });
+  if (
+    !Number.isSafeInteger(historicalTimestamp(r.physicalCleanup.observedAt)) ||
+    historicalTimestamp(r.physicalCleanup.observedAt) < close.closedAt ||
+    historicalTimestamp(r.physicalCleanup.observedAt) > x.clock()
+  )
+    fail();
+  same(r.interpretation, {
+    preparationPassed: false,
+    phaseBReady: false,
+    domainProofReady: false,
+    actualM03DevAcceptanceVerified: false,
+    restorationAndPhysicalClosureVerified: true,
+    originalNativeExit: 1,
+    originalExceptionCaptured: false,
+    failureCauseEstablished: false,
+    paidActorStarted: false,
+    fullADAcceptance: false,
+  });
+  same(r.boundaries, {
+    productionUntouched: true,
+    recurringActivationUntouched: true,
+    externalNotificationsSent: 0,
+    r2Untouched: true,
+    mergeUntouched: true,
+    m04Unstarted: true,
+  });
+  // This later SELECT-only receipt proves the sixth SQL window is closed. It
+  // does not rewrite the failed preparation or claim a business acceptance.
+  if (hash(x.file(cfg.readbackRelative)) !== cfg.readbackSha256) fail();
+  const readback = JSON.parse(x.file(cfg.readbackRelative)),
+    native = readback.actualNativeResult,
+    inspection = native?.inspection,
+    runId = native?.runId,
+    inspectStem = 'scripts/db/out/m03-foundation-inspect-' + runId;
+  same(readback, {
+    kind: 'm03_technical19_database_readback',
+    version: 1,
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    technical19ReceiptSha256: cfg.sha256,
+    nativeExit: 0,
+  });
+  same(readback.consumer, {
+    helperBaseHead: '5f256ce915f930481b0d31ac38b919c0a7692cd1',
+    localReviewedSourceSha256: '803d47b88e33a6e81a108627176fe4420344c6ba4653c58ed4e62183dca07d90',
+    mode: 'InspectOnly TechnicalResidual19',
+    historyQueryCount: 1,
+    inspectionQueryCount: 1,
+  });
+  if (
+    !/^[a-f0-9-]{36}$/.test(runId) ||
+    !exact(readback.pins, [inspectStem + '-attempt.json', inspectStem + '-latest.json', cfg.relative])
+  )
+    fail();
+  for (const [path, sha] of Object.entries(readback.pins)) {
+    if (!/^[a-f0-9]{64}$/.test(sha) || hash(x.file(path)) !== sha) fail();
+    pins[path] = sha;
+  }
+  if (!isDeepStrictEqual(JSON.parse(x.file(inspectStem + '-latest.json')), native)) fail();
+  same(native, {
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    host: 'aws-1-eu-central-1.pooler.supabase.com',
+    port: 5432,
+    status: 'inspection_verified',
+    authenticationAttempted: true,
+    authenticationVerified: true,
+    historyBefore: 'complete',
+    historyAfter: 'complete',
+    pushAttempted: false,
+    pendingVersions: [],
+    inspectOnly: true,
+    technicalResidual19: true,
+    phaseAControl: false,
+    phaseACommands: 0,
+    phaseAClosed: false,
+    activeWindowId: foundationProjectVerifiedTechnical17Runtime.windowId,
+    bindingMatchesPriorProvision: true,
+    childrenClosed: true,
+    handoffDeleted: true,
+    leaseDeleted: true,
+    scratchDeleted: true,
+    persistentAdminPreserved: true,
+    inspectParentLockDeleted: true,
+  });
+  same(inspection, {
+    kind: 'm03_foundation_inspection',
+    identity: true,
+    familyClosed: true,
+    familyWindowCount: 6,
+    globalAdmittedCount: 11,
+    globalRequestCount: 5,
+    fixtureAuditCount: 8,
+    technical12Exact: true,
+    technical13Exact: true,
+    technical16Exact: true,
+    technical19Exact: true,
+    globalLaunchCount: 0,
+    launchCount: 0,
+    actorRunCount: 0,
+    scrapeRunCount: 0,
+    costEntryCount: 0,
+    costUsd: 0,
+    collectedItemCount: 0,
+    reservedRequests: 0,
+    incompleteRequests: 0,
+    activeLeaseCount: 0,
+    requestCount: 1,
+    windowId: foundationProjectVerifiedTechnical17Runtime.windowId,
+  });
+  same(inspection.fixture, {
+    competitorId: 'd51a39f6-fe87-4d17-aee9-3070c45693aa',
+    accountId: 'bd23314c-591f-4fb7-92fd-b7450634eeb6',
+    competitorArchived: true,
+    competitorActive: false,
+    accountPaused: true,
+    accountActive: false,
+    itemsCount: 0,
+    locked: false,
+    progressPresent: false,
+  });
+  same(inspection.window, {
+    id: foundationProjectVerifiedTechnical17Runtime.windowId,
+    commitSha: foundationProjectVerifiedTechnical17Runtime.sourceCommitSha,
+    closeCount: 1,
+    admittedCount: 2,
+    deploymentId: r.sideEffects.previewDeploymentId,
+    audience: r.sideEffects.previewAudience,
+  });
+  same(inspection.approval, { actorBuild: '0.3.99', batchMaxUsd: 2, maxChargeUsd: 1, closed: true });
+  same(readback.cleanup, {
+    childrenClosed: true,
+    scratchDeleted: true,
+    persistentAdminPreserved: true,
+    inspectParentLockDeleted: true,
+    handoffAbsent: true,
+    leaseAbsent: true,
+    scratchAbsent: true,
+    matchingParentOrDirectChildren: 0,
+    persistentOriginalsPresent: 4,
+    machinePresent: true,
+    parentLockAbsent: true,
+    privateContentsReadByMetadataCheck: false,
+    metadataCheckNetworkRequests: 0,
+  });
+  const observedAt = historicalTimestamp(readback.observedAt),
+    inspectedAt = historicalTimestamp(native.observedAt),
+    sqlClosedAt = historicalTimestamp(inspection.window.closedAt);
+  if (
+    ![observedAt, inspectedAt, sqlClosedAt].every(Number.isSafeInteger) ||
+    sqlClosedAt > close.closedAt ||
+    inspectedAt < close.closedAt ||
+    observedAt < inspectedAt ||
+    observedAt > x.clock() ||
+    !x.historicalProcessClosed(readback.consumer.parentProcessId, observedAt)
+  )
+    fail();
+  pins[cfg.readbackRelative] = cfg.readbackSha256;
+  const approvalText = x.file(cfg.approvalRelative),
+    packetText = x.file(cfg.packetRelative);
+  if (hash(approvalText) !== cfg.approvalSha256 || hash(packetText) !== cfg.packetSha256) fail();
+  const approval = JSON.parse(approvalText);
+  same(approval, {
+    kind: 'm03_remaining_allocation_after_native_prefix_fix_approval',
+    version: 1,
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    approvedPr: 8,
+    approvedHead: 'd44fbf918430e5a1d7d2a452e23acbab8ef82ca6',
+    approvedPacket: cfg.packetRelative,
+    approvedPacketSha256: cfg.packetSha256,
+    exactOwnerReply:
+      'Approve Management1728, Control3584, Combined5312 and Vercel304; retain all charges and other limits',
+    previousCaps: { management: 1408, control: 3456, combined: 4864, vercel: 256 },
+    approvedCaps: { management: 1728, control: 3584, combined: 5312, vercel: 304 },
+    retainedChargesAtApproval: {
+      management: 1317,
+      control: 1246,
+      combined: 2563,
+      vercel: 254,
+      nativeExecutionsReserved: 3,
+      actorStarts: 0,
+      providerReads: 0,
+    },
+    unchangedLimits: {
+      nativeExecutions: 120,
+      sqlAdmissions: 256,
+      providerReads: 32,
+      actorStarts: 2,
+      perActorMaximumUsd: 1,
+      totalActorReserveUsd: 2,
+      maximumNewDistinctItems: 1,
+    },
+    scope: {
+      remainingDevAcceptanceBatch: true,
+      safeWithinScopeContinuations: true,
+      production: false,
+      recurringActivity: false,
+      externalNotifications: false,
+      unrelatedR2: false,
+      merge: false,
+      m04: false,
+    },
+  });
+  if (
+    !Number.isSafeInteger(historicalTimestamp(approval.recordedAt)) ||
+    historicalTimestamp(approval.recordedAt) > x.clock()
+  )
+    fail();
+  pins[cfg.approvalRelative] = cfg.approvalSha256;
+  pins[cfg.packetRelative] = cfg.packetSha256;
+  return Object.freeze({
+    ...x.recovery,
+    technical19PriorRecovery: prior,
+    technical19Restored: true,
+    mainManagementAttempts: 1164,
+    mainControlAttempts: 1101,
+    controlRows: 1118,
+    setupRows: 510,
+    setupAttempts: 254,
+    preflightRows: 26,
+    gatewayPreflightAttempts: 10,
+    legacySqlAdmitted: 11,
+    managementMaximum: 1728,
+    controlMaximum: 3584,
+    combinedMaximum: 5312,
+    setupMaximum: 304,
+    restoredBaselineVersions: Object.freeze(versions),
+    technical19Pins: Object.freeze([
+      ...fixed,
+      cfg.relative,
+      cfg.approvalRelative,
+      cfg.packetRelative,
+      cfg.readbackRelative,
+      ...Object.keys(readback.pins),
+    ]),
+    pins: Object.freeze(pins),
+  });
+}
 function closedTechnicalAttempt(x, paths) {
   const data = record(x, { paths, allowExpired: true, checkParent: false });
   const text = x.file(paths.closedRelative),
@@ -8667,7 +9342,8 @@ function closedTechnicalAttempt(x, paths) {
       paths.ordinal <= x.recovery.restoredBrowserDiscoveryTechnicalAttempt) ||
     (paths.ordinal === 16 && x.recovery?.technical16Settled === true) ||
     (paths.ordinal === 17 && x.recovery?.technical17PreReadyReconciled === true) ||
-    (paths.ordinal === 18 && x.recovery?.technical18PreparationReconciled === true);
+    (paths.ordinal === 18 && x.recovery?.technical18PreparationReconciled === true) ||
+    (paths.ordinal === 19 && x.recovery?.technical19Restored === true);
   const noAdminSpawnReconciled =
     (paths.ordinal === 11 && x.recovery?.adminAdmissionReadonlyTechnicalAttempt === 11) ||
     (paths.ordinal === 17 && x.recovery?.technical17PreReadyReconciled === true);
@@ -8726,7 +9402,9 @@ function record(x, { paths = technicalPaths(x), allowExpired = false, checkParen
             ? foundationProjectVerifiedNextRuntime
             : paths.ordinal <= 16
               ? foundationProjectVerifiedRestoredRuntime
-              : activeRuntime(x.recovery)
+              : paths.ordinal <= 19
+                ? foundationProjectVerifiedTechnical17Runtime
+                : activeRuntime(x.recovery)
         : priorActiveRuntime
       : c;
   if (
@@ -8815,7 +9493,9 @@ function proof(data, claimed = false) {
       aggregateManagementAttempts:
         (data.recovery?.mainManagementAttempts ?? 2) + (data.recovery?.carriedManagementAttempts ?? 4),
       managementMaximum: data.recovery?.managementMaximum ?? caps.runtimeManagement,
-      ...(data.recovery?.technical16Settled ? { controlMaximum: 3456, combinedMaximum: 4864 } : {}),
+      ...(data.recovery?.technical16Settled
+        ? { controlMaximum: data.recovery.controlMaximum, combinedMaximum: data.recovery.combinedMaximum }
+        : {}),
       ...(data.recovery?.technical16Settled ? { settledNativeControlRows: data.recovery.controlRows } : {}),
       mainControlAttempts: data.recovery?.mainControlAttempts ?? 200,
       aggregateControlAttempts:
@@ -8852,6 +9532,9 @@ function proof(data, claimed = false) {
                     ...(data.recovery.technical16Settled
                       ? [foundationProjectVerifiedRestoredRuntime.windowId]
                       : []),
+                    ...(data.recovery.technical19Restored
+                      ? [foundationProjectVerifiedTechnical17Runtime.windowId]
+                      : []),
                   ]),
                 }
               : {}),
@@ -8876,6 +9559,19 @@ export function foundationProjectVerifiedContinuationRequestCaps(p) {
   const r = foundationProjectVerifiedContinuationResumeCheckpoint(p) ?? {};
   assertFoundationProjectVerifiedContinuationJournalPrefixes(p);
   const management = r.managementMaximum ?? 512;
+  if (management === 1728) {
+    if (
+      p.windowId !== foundationProjectVerifiedTechnical20Runtime.windowId ||
+      p.sourceCommitSha !== foundationProjectVerifiedTechnical20Runtime.sourceCommitSha ||
+      !Number.isSafeInteger(r.technicalAttemptOrdinal) ||
+      r.technicalAttemptOrdinal < 20 ||
+      r.controlMaximum !== 3584 ||
+      r.combinedMaximum !== 5312 ||
+      r.setupMaximum !== 304
+    )
+      fail();
+    return Object.freeze({ management: 1728, control: 3584, combined: 5312 });
+  }
   if (management === 1408) {
     if (
       p.windowId !== foundationProjectVerifiedTechnical17Runtime.windowId ||
@@ -8953,21 +9649,21 @@ export function assertFoundationProjectVerifiedContinuationJournalPrefixes(p, op
     ])
       if (hash(x.file(path)) !== expected) fail();
   }
-  if ([576, 640, 704, 832, 1024, 1408].includes(x.recovery?.managementMaximum)) {
+  if ([576, 640, 704, 832, 1024, 1408, 1728].includes(x.recovery?.managementMaximum)) {
     for (const [path, expected] of [
       [managementAllocationApproval.relative, managementAllocationApproval.sha256],
       [managementAllocationApproval.packetRelative, managementAllocationApproval.packetSha256],
     ])
       if (hash(x.file(path)) !== expected) fail();
   }
-  if ([640, 704, 832, 1024, 1408].includes(x.recovery?.managementMaximum)) {
+  if ([640, 704, 832, 1024, 1408, 1728].includes(x.recovery?.managementMaximum)) {
     for (const [path, expected] of [
       [controlManagementAllocationApproval.relative, controlManagementAllocationApproval.sha256],
       [controlManagementAllocationApproval.packetRelative, controlManagementAllocationApproval.packetSha256],
     ])
       if (hash(x.file(path)) !== expected) fail();
   }
-  if ([704, 832, 1024, 1408].includes(x.recovery?.managementMaximum)) {
+  if ([704, 832, 1024, 1408, 1728].includes(x.recovery?.managementMaximum)) {
     for (const [path, expected] of [
       [catalogManagementAllocationApproval.relative, catalogManagementAllocationApproval.sha256],
       [catalogManagementAllocationApproval.packetRelative, catalogManagementAllocationApproval.packetSha256],
@@ -9027,6 +9723,7 @@ export function assertFoundationProjectVerifiedContinuationJournalPrefixes(p, op
     }
   if (x.recovery?.technical17PreReadyReconciled) reconciledTechnical17PreReady(x);
   if (x.recovery?.technical18PreparationReconciled) reconciledTechnical18Preparation(x);
+  if (x.recovery?.technical19Restored) reconciledTechnical19Restoration(x);
   recoveryPreflight(x);
   const current = journals(x);
   if (
@@ -9066,7 +9763,7 @@ export function verifyFoundationProjectVerifiedContinuation(options = {}, depend
       windowId: x.recovery?.closedWindow ? activeRuntime(x.recovery).windowId : c.windowId,
       privateRead: false,
       networkRequests: 0,
-      ...([576, 640, 704, 832, 1024, 1408].includes(x.recovery?.managementMaximum)
+      ...([576, 640, 704, 832, 1024, 1408, 1728].includes(x.recovery?.managementMaximum)
         ? {
             managementMaximum: x.recovery.managementMaximum,
             managementAttempts: x.recovery.mainManagementAttempts + x.recovery.carriedManagementAttempts,

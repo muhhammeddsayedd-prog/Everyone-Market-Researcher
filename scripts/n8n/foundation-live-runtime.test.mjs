@@ -22,6 +22,119 @@ import { assertFoundationRuntimeRestorationAudit } from './foundation-runtime-co
 import { syntheticZeroSetup } from './foundation-live-runtime-resume-fixtures.mjs';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 
+test('genuine20 Management retains1317 charges, all510 setup rows and reciprocal3584 custody', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    technical19Restored: true,
+    technical20SourceSelected: true,
+  });
+  let budget;
+  try {
+    const proof = f.claim(f.admit()),
+      module = await f.copy('foundation-live-runtime.mjs');
+    let controls = 1246;
+    const args = { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      dependencies = {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+      };
+    assert.throws(
+      () => module.createFoundationLiveManagementBudget(args, dependencies),
+      /FOUNDATION_LIVE_RUNTIME_BLOCKED/,
+    );
+    assert.throws(
+      () =>
+        module.createFoundationLiveManagementBudget(args, { ...dependencies, controlAttempts: () => 1245 }),
+      /FOUNDATION_LIVE_RUNTIME_BLOCKED/,
+    );
+    budget = module.createFoundationLiveManagementBudget(args, {
+      ...dependencies,
+      controlAttempts: () => controls,
+    });
+    assert.equal(budget.snapshot().maximum, 1728);
+    assert.equal(budget.snapshot().attempts, 1317);
+    const auxiliary = module.foundationLiveAuxiliaryStorage(budget, 'setup');
+    assert.equal(auxiliary.previousEvents.length, 510);
+    assert.equal(auxiliary.previousEvents.filter((r) => r.event === 'setup_attempt').length, 254);
+    const before = readFileSync(f.paths.management, 'utf8');
+    controls = 3584;
+    while (budget.snapshot().attempts < 1728) budget.admit();
+    assert.equal(budget.snapshot().attempts + controls, 5312);
+    const atCap = readFileSync(f.paths.management, 'utf8');
+    assert.ok(atCap.startsWith(before));
+    assert.throws(() => budget.admit(), /FOUNDATION_LIVE_RUNTIME_BLOCKED/);
+    assert.equal(readFileSync(f.paths.management, 'utf8'), atCap);
+  } finally {
+    budget?.close();
+    f.cleanup();
+  }
+});
+
+test('genuine20 runtime requires the same branded1728 proof while preserving restored25 construction and zero transport calls', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+      technical19Restored: true,
+      technical20SourceSelected: true,
+    }),
+    live = fixture();
+  let budget, runtime;
+  try {
+    const proof = f.claim(f.admit()),
+      module = await f.copy('foundation-live-runtime.mjs'),
+      core = await f.copy('foundation-control-state.mjs');
+    let control;
+    budget = module.createFoundationLiveManagementBudget(
+      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        controlAttempts: () => control?.snapshot().attempts ?? 1246,
+      },
+    );
+    const journal = core.createFoundationControlJournal({
+      previousEvents: readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+      durableAppend() {},
+    });
+    control = core.createFoundationControlBudget({
+      journal,
+      now: f.now,
+      deadlineAt: proof.deadlineAt,
+      projectVerifiedContinuationProof: proof,
+      managementAttempts: () => budget.snapshot().attempts,
+    });
+    const input = {
+      ...live.input,
+      activeWindowId: proof.windowId,
+      setup: { ...live.input.setup, sourceCommitSha: proof.sourceCommitSha },
+      deadlineAt: proof.deadlineAt,
+    };
+    const dependencies = {
+      ...live.dependencies,
+      managementBudget: budget,
+      controlJournal: journal,
+      controlBudget: control,
+      now: f.now,
+    };
+    assert.throws(
+      () => module.createFoundationLiveRuntime(input, dependencies),
+      /FOUNDATION_(?:LIVE_RUNTIME|RUNTIME_PLAN)_BLOCKED/,
+    );
+    runtime = module.createFoundationLiveRuntime(
+      { ...input, projectVerifiedContinuationProof: proof },
+      dependencies,
+    );
+    assert.equal(runtime.checkOnly().managementMaximum, 1728);
+    assert.equal(runtime.state().managementAttempts, 1317);
+    assert.equal(runtime.state().controlAttempts, 1246);
+    assert.equal(live.calls.length, 0);
+  } finally {
+    runtime?.close();
+    budget?.close();
+    live.cleanup();
+    f.cleanup();
+  }
+});
+
 test('shared native fixture keeps settings/name-only versions and rotates structural workflow versions', async () => {
   const f = fixture();
   try {

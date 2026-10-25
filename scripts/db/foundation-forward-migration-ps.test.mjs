@@ -57,6 +57,60 @@ function run(code, timeout = 15000) {
 const native = { skip: process.platform !== 'win32' };
 
 test(
+  'technical19 SELECT-only inspection pins closed19 and rejects progress or a changed six-window family',
+  native,
+  () => {
+    const receipt = JSON.parse(
+      readFileSync(
+        resolve('milestones/M03-n8n-foundation/evidence/technical16-fixture-archive-20261024.json'),
+        'utf8',
+      ),
+    );
+    const value = structuredClone(receipt.rawResult.archiveAfter);
+    Object.assign(value, {
+      windowId: 'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
+      familyWindowCount: 6,
+      globalAdmittedCount: 11,
+      globalRequestCount: 5,
+      fixtureAuditCount: 8,
+      technical19Exact: true,
+    });
+    Object.assign(value.window, {
+      id: value.windowId,
+      audience: 'https://everyone-market-researcher-punvhefs2-muhammed-abdelrahman.vercel.app',
+      commitSha: 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80',
+      deploymentId: 'dpl_8Qy4Ywx8aEZ6j3ueVm3TaAP7LB3Y',
+      startsAt: '2026-10-25T00:35:34+00:00',
+      expiresAt: '2026-10-25T01:35:34+00:00',
+      closedAt: '2026-10-25T00:36:16+00:00',
+    });
+    assert.equal(
+      run(String.raw`
+${definitions(['Assert-Keys', 'Assert-Path', 'File-Hash', 'Read-Json', 'Read-FoundationTechnical19Closed', 'Foundation-Technical13FamilyPredicate', 'Foundation-Technical16FamilyPredicate', 'Foundation-Technical19FamilyPredicate', 'Foundation-Technical13AuditPredicate', 'Foundation-Technical13InspectionSql', 'Read-FoundationInspection', 'Assert-FoundationArchiveInspection'])}
+$repo=${quote(process.cwd())};$TechnicalResidual19=$true;$TechnicalResidual16=$false;$TechnicalResidual13=$false;$InspectOnly=$true;$projectRef='zmotjsbzhzjvpelxvxlf'
+function Get-CimInstance{return @()}
+$expected=Read-FoundationTechnical19Closed
+$sql=Foundation-Technical13InspectionSql -Technical19 $true
+if($sql -notmatch 'count\(\*\)=6' -or $sql -notmatch 'coalesce\(sum\(admitted_count\),0\)=11' -or $sql -notmatch 'count\(\*\)=5' -or $sql -notmatch 'technical19Exact' -or $sql -notmatch 'edbc6d11-7c1f-43a7-b745-1ded06deb29f' -or $sql -cmatch '(?im)^\s*(update|insert|delete|alter|do|call)\b'){throw 'NON_READ_ONLY19_SQL'}
+$json=${quote(JSON.stringify([{ inspection: value }]))}
+$result=[pscustomobject]@{ok=$true;closed=$true;text=$json}
+$parsed=Read-FoundationInspection $result;Assert-FoundationArchiveInspection $parsed $expected $true
+foreach($key in @('familyWindowCount','globalAdmittedCount','globalRequestCount','fixtureAuditCount','activeLeaseCount','launchCount','collectedItemCount')){
+ $changed=ConvertFrom-Json $json;$changed[0].inspection.$key++;$denied=$false
+ try{$bad=Read-FoundationInspection ([pscustomobject]@{ok=$true;closed=$true;text=ConvertTo-Json -InputObject $changed -Depth 30 -Compress});Assert-FoundationArchiveInspection $bad $expected $true}catch{$denied=$true};if(-not $denied){throw 'CHANGED19_FAMILY_ACCEPTED'}
+}
+foreach($key in @('familyClosed','technical12Exact','technical13Exact','technical16Exact','technical19Exact')){
+ $changed=ConvertFrom-Json $json;$changed[0].inspection.$key=$false;$denied=$false
+ try{$null=Read-FoundationInspection ([pscustomobject]@{ok=$true;closed=$true;text=ConvertTo-Json -InputObject $changed -Depth 30 -Compress})}catch{$denied=$true};if(-not $denied){throw 'CHANGED19_AUDIT_ACCEPTED'}
+}
+Write-Output 'TECHNICAL19_READ_ONLY_PASS'
+`),
+      'TECHNICAL19_READ_ONLY_PASS',
+    );
+  },
+);
+
+test(
   'historical native identities distinguish reused PIDs without treating observation as closure',
   native,
   () => {
@@ -764,31 +818,75 @@ Write-Output 'TECHNICAL16_FIXED_MODE_AND_BINDING'
 );
 
 test(
-  'technical16 read-only mode requires all fifteen original migration fingerprints without a push',
+  'technical19 read-only mode rejects all write and continuation combinations before source or credential access',
   native,
   () => {
-    const packet = JSON.parse(
-      readFileSync('scripts/db/m03-foundation-forward-dev-migration-packet.json', 'utf8'),
-    );
-    const history = [...packet.baseline, ...packet.pending].map(({ version, name, historySha256 }) => ({
-      version,
-      name,
-      historySha256,
-    }));
-    assert.equal(
-      run(`
+    for (const flags of [
+      [],
+      ['-ArchiveFixture'],
+      ['-ForwardWindow'],
+      ['-TechnicalResidual16'],
+      ['-WriterClose'],
+      ['-PhaseAControl'],
+    ]) {
+      const result = spawnSync(
+        powershell,
+        [
+          '-NoProfile',
+          '-NonInteractive',
+          '-File',
+          consumer,
+          '-TechnicalResidual19',
+          ...(flags.length ? ['-InspectOnly', ...flags] : []),
+        ],
+        {
+          encoding: 'utf8',
+          windowsHide: true,
+          timeout: 10000,
+          env: Object.fromEntries(
+            ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP'].flatMap((name) =>
+              process.env[name] === undefined ? [] : [[name, process.env[name]]],
+            ),
+          ),
+        },
+      );
+      assert.equal(result.status, 1);
+      assert.equal(result.stderr, '');
+      assert.equal(
+        result.stdout.trim(),
+        'M03_FOUNDATION PREFLIGHT_BLOCKED. Conflicting read-only19 mode; no private access.',
+      );
+    }
+  },
+);
+
+for (const ordinal of [16, 19])
+  test(
+    `technical${ordinal} read-only mode requires all fifteen original migration fingerprints without a push`,
+    native,
+    () => {
+      const packet = JSON.parse(
+        readFileSync('scripts/db/m03-foundation-forward-dev-migration-packet.json', 'utf8'),
+      );
+      const history = [...packet.baseline, ...packet.pending].map(({ version, name, historySha256 }) => ({
+        version,
+        name,
+        historySha256,
+      }));
+      assert.equal(
+        run(`
 ${definitions(['Assert-Keys', 'History-State'])}
-$TechnicalResidual16=$true;$migrations=ConvertFrom-Json ${quote(JSON.stringify(history))}
+$TechnicalResidual${ordinal}=$true;$migrations=ConvertFrom-Json ${quote(JSON.stringify(history))}
 function Result($Count){return [pscustomobject]@{ok=$true;closed=$true;text=(ConvertTo-Json -InputObject @([pscustomobject]@{receipt=[pscustomobject]@{current_user='postgres';session_user='postgres';database='postgres';migrations=@($migrations|Select-Object -First $Count)}}) -Depth 12 -Compress)}}
 if((History-State (Result 15)) -cne 'complete' -or (History-State (Result 14)) -cne 'baseline'){throw 'FIFTEEN_VERSION_RECEIPT_REQUIRED'}
 $bad=Result 15;$rows=ConvertFrom-Json $bad.text;$rows[0].receipt.migrations[4].historySha256='0'*64;$bad.text=ConvertTo-Json -InputObject @($rows) -Depth 12 -Compress
 if((History-State $bad) -cne 'rejected'){throw 'OLD_MIGRATION_DRIFT_ACCEPTED'}
 Write-Output 'TECHNICAL16_FIFTEEN_HISTORY_NO_PUSH'
 `),
-      'TECHNICAL16_FIFTEEN_HISTORY_NO_PUSH',
-    );
-  },
-);
+        'TECHNICAL16_FIFTEEN_HISTORY_NO_PUSH',
+      );
+    },
+  );
 
 test(
   'technical16 physical closure permits fixed inspection but never substitutes for missing native settlement',
@@ -1898,6 +1996,92 @@ Write-Output 'FIVE_CLOSED_PREDECESSORS_AND_TYPED_AUDITS'
 );
 
 test(
+  'seventh registered window requires closed19 and six exact predecessors without reopening any old window',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys', 'File-Hash', 'Foundation-Technical13AuditPredicate'])}
+${definitions(['Foundation-Literal', 'Assert-FoundationForwardWindowState'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$repo=${quote(process.cwd())};$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$out='synthetic';$continuationOutputStem='synthetic';$projectVerifiedForwardWindowId='e2be1a67-f6db-4c90-bfd2-671c5db9b90a';$projectVerifiedForwardSource='5f256ce915f930481b0d31ac38b919c0a7692cd1';$script:ordinal=20;$script:proofValid=$true
+function Read-FoundationForwardPrior{if(-not $script:proofValid){throw 'MISSING_EXACT19_READBACK'};return [pscustomobject]@{window=[pscustomobject]@{id='edbc6d11-7c1f-43a7-b745-1ded06deb29f';closedAt='2026-10-25T00:36:16.111Z'}}}
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=$script:ordinal;outputSegment=('synthetic'+$script:ordinal)}}
+function Assert-Path($Root,$Relative){return Join-Path $Root $Relative}
+function Read-Json($Path){return Get-Content -LiteralPath $Path -Raw|ConvertFrom-Json}
+$script:forwardWindowBinding=[pscustomobject]@{audience='https://everyone-market-researcher-synthetic20.vercel.app';deploymentId='dpl_Synthetic20'}
+$script:value=[pscustomobject]@{identity=$true;legacyClosed=$true;intermediateClosed=$true;runtimeClosed=$true;restorationClosed=$true;acceptanceClosed=$true;technical19Closed=$true;fixtureAuditCount=8;technical12Exact=$true;technical13Exact=$true;technical16Exact=$true;technical19Exact=$true;windows=6;freshWindows=0;freshPrepared=$false;globalAdmitted=11;requests=5;activeLeases=0;launches=0;bindings=0;progress=0}
+function Invoke-FoundationQuery($Sql,$Column){
+ if($Column -ceq 'ownership'){if(-not $Sql.Contains("where w.window_id='e2be1a67-f6db-4c90-bfd2-671c5db9b90a'")){throw 'WRONG_SEVENTH_OWNERSHIP'};return [pscustomobject]@{owned=$true}}
+ foreach($needle in @("'technical19Closed'","'technical19Exact'","bound_commit_sha='5f256ce915f930481b0d31ac38b919c0a7692cd1'","'dpl_8Qy4Ywx8aEZ6j3ueVm3TaAP7LB3Y'","'2026-10-25T00:36:16.111Z'::timestamptz","jsonb_build_object('fixture_version',1")){if(-not $Sql.Contains($needle)){throw 'SEVENTH_PREDECESSOR_OR_AUDIT_NOT_EXACT'}}
+ return $script:value
+}
+Assert-FoundationForwardWindowState $false
+$script:value.windows=7;$script:value.freshWindows=1;$script:value.freshPrepared=$true;Assert-FoundationForwardWindowState $true
+foreach($key in @('legacyClosed','intermediateClosed','runtimeClosed','restorationClosed','acceptanceClosed','technical19Closed','technical12Exact','technical13Exact','technical16Exact','technical19Exact','freshPrepared')){$script:value.$key=$false;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$true;if(-not $denied){throw 'UNQUALIFIED_SEVENTH_PREDECESSOR_ACCEPTED'}}
+foreach($key in @('fixtureAuditCount','windows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){$saved=$script:value.$key;$script:value.$key=$saved+1;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$saved;if(-not $denied){throw 'UNRECONCILED_SEVENTH_PROGRESS_ACCEPTED'}}
+$script:value.fixtureAuditCount='8';$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'COERCED_SEVENTH_AUDITS_ACCEPTED'};$script:value.fixtureAuditCount=8
+foreach($ordinal in @(19,21)){$script:ordinal=$ordinal;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'WRONG_SEVENTH_ORDINAL_ACCEPTED'}};$script:ordinal=20
+$script:proofValid=$false;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'MISSING19_READBACK_ACCEPTED'};$script:proofValid=$true
+$projectVerifiedForwardSource='effa3de9e1fee6c3f3c08fc347a5e3175db14c80';$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'MIXED_SEVENTH_SOURCE_ACCEPTED'}
+Write-Output 'SIX_CLOSED_PREDECESSORS_AND_TYPED19_AUDIT'
+`),
+      'SIX_CLOSED_PREDECESSORS_AND_TYPED19_AUDIT',
+    );
+  },
+);
+
+test(
+  'seventh public DTO and native prior pin actual19 readback without resetting1317 retained charges',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys', 'Assert-Path', 'File-Hash', 'Read-Json', 'Read-FoundationInspection', 'Assert-FoundationArchiveInspection', 'Read-FoundationTechnical19Database', 'Read-FoundationPostcheckContinuation'])}
+$repo=${quote(process.cwd())};$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$PhaseAControl=$true;$PostcheckContinuation=$true;$ClockAmendment=$false;$OriginalDeadlineAtMs=0;$RemainingContinuation=$false;$StartupReplacement=$false;$CheckOnly=$true;$postcheckContinuationSegment='20275b22-b7fe-4737-a9a4-c50c2feadb74';$node='never-spawned';$TechnicalResidual16=$false;$TechnicalResidual13=$false
+$prior=Read-FoundationTechnical19Database
+if($prior.familyWindowCount -ne 6 -or $prior.globalAdmittedCount -ne 11 -or $prior.globalRequestCount -ne 5 -or $prior.fixtureAuditCount -ne 8 -or -not $prior.technical19Exact){throw 'ACTUAL19_FAMILY_NOT_PINNED'}
+function Invoke-Bounded{return [pscustomobject]@{ok=$true;closed=$true;text=($script:dto|ConvertTo-Json -Compress)}}
+$script:dto=[pscustomobject]@{kind='project_verified_continuation_ready';segmentId=$postcheckContinuationSegment;sourceCommitSha='5f256ce915f930481b0d31ac38b919c0a7692cd1';windowId='e2be1a67-f6db-4c90-bfd2-671c5db9b90a';privateRead=$false;networkRequests=0;managementMaximum=1728;managementAttempts=1317;controlAttempts=1246;combinedAttempts=2563}
+$null=Read-FoundationPostcheckContinuation
+if($projectVerifiedForwardWindowId -cne $script:dto.windowId -or $projectVerifiedForwardSource -cne $script:dto.sourceCommitSha){throw 'SEVENTH_BINDING_NOT_SELECTED'}
+foreach($mutation in @(@{key='managementAttempts';value=1316},@{key='controlAttempts';value=1245},@{key='combinedAttempts';value=2562},@{key='managementMaximum';value=1408},@{key='managementMaximum';value='1728'},@{key='sourceCommitSha';value='effa3de9e1fee6c3f3c08fc347a5e3175db14c80'},@{key='privateRead';value=$true},@{key='networkRequests';value=1})){
+ $original=$script:dto.($mutation.key);$script:dto.($mutation.key)=$mutation.value;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};$script:dto.($mutation.key)=$original;if(-not $denied){throw 'SEVENTH_CHARGES_OR_BINDING_CHANGED'}
+}
+function File-Hash($Path){if($Path.EndsWith('dev-acceptance-technical19-database-readback-20261025.json')){return '0'*64};return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()}
+$denied=$false;try{$null=Read-FoundationTechnical19Database}catch{$denied=$true};if(-not $denied){throw 'UNPINNED19_READBACK_ACCEPTED'}
+Write-Output 'EXACT19_PRIOR_AND_SEVENTH_DTO'
+`),
+      'EXACT19_PRIOR_AND_SEVENTH_DTO',
+    );
+  },
+);
+
+test(
+  'technical20 fixture SQL keeps every proven absent marker and requires the real19 lifecycle',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Foundation-FixtureSql'], resolve('scripts/db/windows/Foundation-AdminControl.ps1'))}
+$repo=${quote(process.cwd())};$ProjectVerifiedContinuation=$true;$ForwardWindow=$true;$PostcheckContinuation=$true;$RemainingContinuation=$false;$StartupReplacement=$false;$projectVerifiedForwardWindowId='e2be1a67-f6db-4c90-bfd2-671c5db9b90a';$projectVerifiedForwardSource='5f256ce915f930481b0d31ac38b919c0a7692cd1';$script:ordinal=20;$script:proofValid=$true
+function Assert-Path($Root,$Relative){return Join-Path $Root $Relative}
+function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=$script:ordinal}}
+function Read-FoundationTechnical14NoAdmin([int]$Ordinal=14){if($Ordinal -eq 15){return '59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd'};return '6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960'}
+function Read-FoundationForwardPrior{if(-not $script:proofValid){throw 'EXACT19_PRIOR_REQUIRED'};return [pscustomobject]@{fixtureAuditCount=8;technical19Exact=$true}}
+function Read-FoundationTechnical18NoReactivation{return '${technical18NoReactivationSha256}'}
+$body=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'
+foreach($ordinal in @(14,15,17,18)){if(-not $body.Contains("set_config('emr.smoke_technical"+$ordinal+"_no_reactivation'")){throw 'MISSING20_GAP_MARKER'}}
+if($body.Contains("set_config('emr.smoke_technical19_no_reactivation'")){throw 'REAL19_AUDIT_SKIPPED'}
+$script:proofValid=$false;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNPROVEN20_SQL_EMITTED'};$script:proofValid=$true
+foreach($ordinal in @(19,21)){$script:ordinal=$ordinal;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SEVENTH_ORDINAL_EMITTED'}}
+Write-Output 'EXACT20_MARKERS_REAL19'
+`),
+      'EXACT20_MARKERS_REAL19',
+    );
+  },
+);
+
+test(
   'sixth public DTO derives exact cumulative usage from qualified settlement instead of caller counters',
   native,
   () => {
@@ -2346,6 +2530,21 @@ for (const profile of [
     combinedAttempts: 2168,
     technicalOrdinal: 19,
   },
+  {
+    name: 'restored19-to20',
+    options: {
+      technical16Settled: true,
+      technical17PreReady: true,
+      technical18Closed: true,
+      technical19Restored: true,
+      technical20SourceSelected: true,
+    },
+    managementMaximum: 1728,
+    managementAttempts: 1317,
+    controlAttempts: 1246,
+    combinedAttempts: 2563,
+    technicalOrdinal: 20,
+  },
 ])
   test(
     `${profile.name} fresh ForwardWindow completes the full native public Run preflight before the private boundary`,
@@ -2477,6 +2676,50 @@ for (const profile of [
             pin[0],
             "$technical18Sha256='" + hash(readFileSync(join(fixture.directory, relative))) + "'",
           );
+        }
+        if (profile.options.technical19Restored) {
+          const evidence = 'milestones/M03-n8n-foundation/evidence/';
+          const replacements = new Map([['5f256ce915f930481b0d31ac38b919c0a7692cd1', 'c'.repeat(40)]]);
+          for (const name of [
+            'dev-acceptance-technical19-restored-20261025.json',
+            'dev-acceptance-technical19-database-readback-20261025.json',
+          ]) {
+            const relative = evidence + name;
+            replacements.set(
+              hash(readFileSync(resolve(relative))),
+              hash(readFileSync(join(fixture.directory, relative))),
+            );
+          }
+          const original = JSON.parse(
+            readFileSync(
+              resolve(evidence + 'dev-acceptance-technical19-database-readback-20261025.json'),
+              'utf8',
+            ),
+          ).actualNativeResult.inspection.window;
+          const synthetic = JSON.parse(
+            readFileSync(
+              join(
+                fixture.directory,
+                evidence + 'dev-acceptance-technical19-database-readback-20261025.json',
+              ),
+              'utf8',
+            ),
+          ).actualNativeResult.inspection.window;
+          for (const key of ['audience', 'commitSha', 'deploymentId'])
+            replacements.set(original[key], synthetic[key]);
+          let controlSource = readFileSync(resolve('scripts/db/windows/Foundation-AdminControl.ps1'), 'utf8');
+          for (const [original, rebound] of replacements) {
+            helperSource = helperSource.replaceAll(original, rebound);
+            controlSource = controlSource.replaceAll(original, rebound);
+          }
+          // The existing19-family predicate also pins the older16 archive.
+          controlSource = controlSource.replaceAll(
+            'd8177cbc39dd0805b831cfddbf0f0d25ab8ce749243b1eab0a0fdf0e4ccae97d',
+            hash(
+              readFileSync(join(fixture.directory, evidence + 'technical16-fixture-archive-20261024.json')),
+            ),
+          );
+          put('scripts/db/windows/Foundation-AdminControl.ps1', controlSource);
         }
         // Keep the real guard/timeout/closure conditions. This isolated public
         // copy adds only a finite failure label so a refusal cannot be confused

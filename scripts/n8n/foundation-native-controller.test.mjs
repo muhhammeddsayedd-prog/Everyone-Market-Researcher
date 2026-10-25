@@ -38,7 +38,7 @@ test('shutdown reserve arithmetic uses the branded budget maximum without changi
     )({ snapshot: () => ({ maximum, attempts }) }, { shutdown: 460 }, () => {
       throw Error('RESERVE_BLOCKED');
     })(needed);
-  for (const maximum of [2048, 3456]) {
+  for (const maximum of [2048, 3456, 3584]) {
     assert.doesNotThrow(() => calculate(maximum, maximum - 460 - 100, 100));
     assert.throws(() => calculate(maximum, maximum - 460 - 100 + 1, 100), /RESERVE_BLOCKED/);
   }
@@ -441,6 +441,17 @@ for (const profile of [
     options: { technical16Settled: true, technical17PreReady: true, technical18Closed: true },
     controlRows: 1016,
   },
+  {
+    name: 'genuine20 native carry validates every retained row under the branded1728 seventh window without transport calls',
+    options: {
+      technical16Settled: true,
+      technical17PreReady: true,
+      technical18Closed: true,
+      technical19Restored: true,
+      technical20SourceSelected: true,
+    },
+    controlRows: 1118,
+  },
 ])
   test(profile.name, async () => {
     const f = await syntheticProjectVerifiedContinuation(profile.options);
@@ -495,6 +506,23 @@ for (const profile of [
       assert.equal(carried.starts(), 0);
       assert.equal(carried.sqlReads(), 0);
       assert.equal(carried.calls.length, 0, 'constructing a qualified controller makes no transport calls');
+      if (profile.options.technical19Restored) {
+        assert.throws(() => fixture({ activeWindowId: proof.windowId }), fixed);
+        assert.throws(
+          () => fixture({ ...options, activeWindowId: foundationRuntimeCheckpoint.windowId }),
+          fixed,
+        );
+        assert.throws(
+          () =>
+            fixture({
+              ...options,
+              beforeCreate({ ports }) {
+                ports.projectVerifiedContinuationProof = Object.freeze({ ...proof });
+              },
+            }),
+          fixed,
+        );
+      }
       const changed = structuredClone(previousEvents);
       changed[0].workflowId = '4JMHLDBSdgGxhPlk';
       assert.throws(

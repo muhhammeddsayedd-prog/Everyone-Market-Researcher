@@ -13,6 +13,8 @@ import {
   foundationProjectVerifiedNextRuntime,
   foundationProjectVerifiedRestoredRuntime,
   foundationProjectVerifiedTechnical17Runtime,
+  foundationProjectVerifiedTechnical20Runtime,
+  foundationProjectVerifiedContinuationRequestCaps,
 } from '../n8n/foundation-live-project-verified-continuation.mjs';
 import { fileURLToPath } from 'node:url';
 
@@ -157,35 +159,50 @@ export async function startFoundationAdminClient(
       const checkpoint = foundationProjectVerifiedContinuationResumeCheckpoint(verified);
       verifiedCheckpoint = checkpoint;
       verifiedControlCarry = checkpoint.aggregateControlAttempts - checkpoint.mainControlAttempts;
+      if (checkpoint.managementMaximum === 1728) {
+        const caps = foundationProjectVerifiedContinuationRequestCaps(verified);
+        if (
+          !forwardWindow ||
+          checkpoint.setupMaximum !== 304 ||
+          caps.management !== 1728 ||
+          caps.control !== 3584 ||
+          caps.combined !== 5312
+        )
+          throw fixed();
+      }
     } catch {
       throw fixed();
     }
     if (
       verified.segmentId !== '20275b22-b7fe-4737-a9a4-c50c2feadb74' ||
       verified.sourceCommitSha !==
-        (forwardWindow && verifiedCheckpoint.managementMaximum === 1408
-          ? foundationProjectVerifiedTechnical17Runtime.sourceCommitSha
-          : forwardWindow && verifiedCheckpoint.managementMaximum === 1024
-            ? foundationProjectVerifiedRestoredRuntime.sourceCommitSha
-            : forwardWindow && verifiedCheckpoint.managementMaximum === 832
-              ? foundationProjectVerifiedNextRuntime.sourceCommitSha
-              : forwardWindow && [640, 704].includes(verifiedCheckpoint.managementMaximum)
-                ? foundationProjectVerifiedActiveRuntime.sourceCommitSha
-                : forwardWindow
-                  ? 'a5e746736893d5040e93032ae740a0878f748837'
-                  : 'f42930f90c2de43c84f61ad6d966d0ee6074d70e') ||
+        (forwardWindow && verifiedCheckpoint.managementMaximum === 1728
+          ? foundationProjectVerifiedTechnical20Runtime.sourceCommitSha
+          : forwardWindow && verifiedCheckpoint.managementMaximum === 1408
+            ? foundationProjectVerifiedTechnical17Runtime.sourceCommitSha
+            : forwardWindow && verifiedCheckpoint.managementMaximum === 1024
+              ? foundationProjectVerifiedRestoredRuntime.sourceCommitSha
+              : forwardWindow && verifiedCheckpoint.managementMaximum === 832
+                ? foundationProjectVerifiedNextRuntime.sourceCommitSha
+                : forwardWindow && [640, 704].includes(verifiedCheckpoint.managementMaximum)
+                  ? foundationProjectVerifiedActiveRuntime.sourceCommitSha
+                  : forwardWindow
+                    ? 'a5e746736893d5040e93032ae740a0878f748837'
+                    : 'f42930f90c2de43c84f61ad6d966d0ee6074d70e') ||
       verified.windowId !==
-        (forwardWindow && verifiedCheckpoint.managementMaximum === 1408
-          ? foundationProjectVerifiedTechnical17Runtime.windowId
-          : forwardWindow && verifiedCheckpoint.managementMaximum === 1024
-            ? foundationProjectVerifiedRestoredRuntime.windowId
-            : forwardWindow && verifiedCheckpoint.managementMaximum === 832
-              ? foundationProjectVerifiedNextRuntime.windowId
-              : forwardWindow && [640, 704].includes(verifiedCheckpoint.managementMaximum)
-                ? foundationProjectVerifiedActiveRuntime.windowId
-                : forwardWindow
-                  ? '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
-                  : 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9') ||
+        (forwardWindow && verifiedCheckpoint.managementMaximum === 1728
+          ? foundationProjectVerifiedTechnical20Runtime.windowId
+          : forwardWindow && verifiedCheckpoint.managementMaximum === 1408
+            ? foundationProjectVerifiedTechnical17Runtime.windowId
+            : forwardWindow && verifiedCheckpoint.managementMaximum === 1024
+              ? foundationProjectVerifiedRestoredRuntime.windowId
+              : forwardWindow && verifiedCheckpoint.managementMaximum === 832
+                ? foundationProjectVerifiedNextRuntime.windowId
+                : forwardWindow && [640, 704].includes(verifiedCheckpoint.managementMaximum)
+                  ? foundationProjectVerifiedActiveRuntime.windowId
+                  : forwardWindow
+                    ? '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
+                    : 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9') ||
       verified.carriedManagementAttempts !==
         (forwardWindow
           ? verifiedCheckpoint.aggregateManagementAttempts - verifiedCheckpoint.mainManagementAttempts

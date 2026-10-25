@@ -188,20 +188,35 @@ function Invoke-ZeroSetupPublicCheck([string]$Node,[string]$Repository){
   if($null -ne $info){$info.EnvironmentVariables.Clear()}
  }
 }
+function Test-Technical20PublicBinding($Value){
+ # Real application compatibility commit. The sealed Node guard separately
+ # requires its exact normal CI and Vercel evidence before admission.
+ $source='5f256ce915f930481b0d31ac38b919c0a7692cd1'
+ return $source -is [string] -and $source -cmatch '^[a-f0-9]{40}$' -and $Value.sourceCommitSha -is [string] -and $Value.windowId -is [string] -and $Value.sourceCommitSha -ceq $source -and $Value.windowId -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a'
+}
 function Get-ProjectVerifiedPublicManagementMaximum($Value,[bool]$ProjectClock,[string]$Mode){
  if($Value -isnot [PSCustomObject]){throw 'blocked'}
  $fields=@('managementMaximum','managementAttempts','controlAttempts','combinedAttempts')
  $present=@($fields|Where-Object{$_ -cin $Value.PSObject.Properties.Name})
- if($present.Count -eq 0){if($Mode -ceq 'CheckOnly' -and ($Value.sourceCommitSha -ceq 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' -or $Value.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f')){throw 'blocked'};return 512}
+ if($present.Count -eq 0){if($Mode -ceq 'CheckOnly' -and ($Value.sourceCommitSha -ceq 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' -or $Value.windowId -cin @('edbc6d11-7c1f-43a7-b745-1ded06deb29f','e2be1a67-f6db-4c90-bfd2-671c5db9b90a'))){throw 'blocked'};return 512}
  $priorBinding=$Value.sourceCommitSha -ceq 'a5e746736893d5040e93032ae740a0878f748837' -and $Value.windowId -ceq '38b3708d-61b0-41d2-8170-5ed91c66b4dc'
  $freshBinding=$Value.sourceCommitSha -ceq 'aff94f2b2d8055cf93b5405e6b11d4e7d9c86803' -and $Value.windowId -ceq 'eda4fae1-1e19-47db-81b8-beac1a4ed883'
  $nextBinding=$Value.sourceCommitSha -ceq '7b1837201ac7925591577a1517d7288936ca3464' -and $Value.windowId -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e'
  $restoredBinding=$Value.sourceCommitSha -ceq '5087d4d93d2f6ffdca0bc0096b365723005446fc' -and $Value.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77'
  $settledBinding=$Value.sourceCommitSha -is [string] -and $Value.windowId -is [string] -and $Value.sourceCommitSha -ceq 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' -and $Value.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'
+ $technical20Binding=$Value.windowId -is [string] -and $Value.windowId -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a' -and (Test-Technical20PublicBinding $Value)
  if(-not $ProjectClock -or $Mode -cne 'CheckOnly' -or $present.Count -ne 4 -or
   $Value.kind -cne 'project_verified_continuation_ready' -or $Value.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74' -or
-  -not ($priorBinding -or $freshBinding -or $nextBinding -or $restoredBinding -or $settledBinding) -or
+  -not ($priorBinding -or $freshBinding -or $nextBinding -or $restoredBinding -or $settledBinding -or $technical20Binding) -or
   $Value.privateRead -isnot [bool] -or $Value.privateRead -ne $false){throw 'blocked'}
+ if($technical20Binding){
+  foreach($name in @($fields+'networkRequests')){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long])){throw 'blocked'}}
+  if($Value.managementMaximum -ne 1728 -or $Value.managementAttempts -ne 1317 -or $Value.controlAttempts -ne 1246 -or $Value.combinedAttempts -ne 2563 -or $Value.networkRequests -ne 0){throw 'blocked'}
+  $technical19PublicReceipt=Public-File (Join-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json')
+  $technical20Approval=Public-File (Join-Path $repo 'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-approval-20261025.json')
+  if((Get-FileHash -LiteralPath $technical19PublicReceipt -Algorithm SHA256).Hash.ToLowerInvariant() -cne '567de4bcc54962c57afb88846fd4c8a75dbfa465623aad3578aab51c4eab41dc' -or (Get-FileHash -LiteralPath $technical20Approval -Algorithm SHA256).Hash.ToLowerInvariant() -cne 'a80ea5491487b22df91c07deb4ab94b3854fe037a1f7458f25fd3afcf2a4619a'){throw 'blocked'}
+  return 1728
+ }
  # The immutable allocation keeps its original charges. A separately pinned,
  # physically closed attempt adds the exact current snapshot without reset.
  if($settledBinding){
@@ -281,6 +296,7 @@ function Invoke-ClockAmendmentPublic([string]$Node,[string]$Repository,[string]$
   $activeBinding=$activeBinding -or ($ProjectClock -and $result.sourceCommitSha -ceq '7b1837201ac7925591577a1517d7288936ca3464' -and $result.windowId -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e')
   $activeBinding=$activeBinding -or ($ProjectClock -and $result.sourceCommitSha -ceq '5087d4d93d2f6ffdca0bc0096b365723005446fc' -and $result.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77')
   $activeBinding=$activeBinding -or ($ProjectClock -and $result.sourceCommitSha -is [string] -and $result.windowId -is [string] -and $result.sourceCommitSha -ceq 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' -and $result.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f')
+  $activeBinding=$activeBinding -or ($ProjectClock -and $result.windowId -is [string] -and $result.windowId -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a' -and (Test-Technical20PublicBinding $result))
   if($result -isnot [PSCustomObject] -or @(Compare-Object -CaseSensitive @($keys|Sort-Object) @($result.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $result.segmentId -cne $segmentId -or -not ($legacyBinding -or $activeBinding) -or $result.privateRead -isnot [bool] -or $result.privateRead -ne $false -or $result.networkRequests -ne 0){throw 'blocked'}
   if($Mode -ceq 'CheckOnly'){
    if($result.kind -cne $readyKind){throw 'blocked'}
@@ -555,6 +571,7 @@ try{
  $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq '7b1837201ac7925591577a1517d7288936ca3464' -and $publicClock.windowId -ceq '3c46c791-e140-4eb9-890a-eecfa251f65e')
  $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq '5087d4d93d2f6ffdca0bc0096b365723005446fc' -and $publicClock.windowId -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77')
  $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.sourceCommitSha -ceq 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80' -and $publicClock.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f')
+ $forwardWindowPublic=$forwardWindowPublic -or ($ProjectVerifiedContinuation -and $publicClock.windowId -is [string] -and $publicClock.windowId -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a' -and (Test-Technical20PublicBinding $publicClock))
  $preparationStage='database_public'
  $adminPublicReady=Invoke-PublicDatabaseCheck $repo ([bool]$CheckOnly) $resumeDeadlineAt ([bool]$ClockAmendment) ([bool]$PostcheckContinuation) ([bool]$RemainingContinuation) ([bool]$StartupReplacement) ([bool]$ProjectVerifiedContinuation) ([bool]$forwardWindowPublic)
  $preparationStage='workflow_bindings'
@@ -567,7 +584,7 @@ try{
    [ordered]@{status='approval_required';approvalRequired=$true;privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$true;adminHandoffReady=$false;actualMcpPortVerified=$false;windowId=$seal.windowId;segmentId='e8035391-dba8-48c9-97e0-139ba980d86e';managementMaximum=512;controlMaximum=2048}|ConvertTo-Json -Compress
    exit 0
   }
-  [ordered]@{status='check_only_ready';privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$true;adminHandoffReady=$adminPublicReady;actualMcpPortVerified=$false;windowId=$seal.windowId;managementMaximum=$effectiveManagementMaximum;controlMaximum=$(if($effectiveManagementMaximum -eq 1408){3456}else{2048})}|ConvertTo-Json -Compress
+  [ordered]@{status='check_only_ready';privateRead=$false;networkRequests=0;publicCompositionLoaded=$true;adminPublicInputsVerified=$true;adminHandoffReady=$adminPublicReady;actualMcpPortVerified=$false;windowId=$seal.windowId;managementMaximum=$effectiveManagementMaximum;controlMaximum=$(if($effectiveManagementMaximum -eq 1728){3584}elseif($effectiveManagementMaximum -eq 1408){3456}else{2048})}|ConvertTo-Json -Compress
   exit 0
  }
  $preparationStage='transport'
