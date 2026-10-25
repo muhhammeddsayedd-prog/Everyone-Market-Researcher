@@ -81,7 +81,7 @@
                   "scripts/n8n/foundation-live-startup-replacement.mjs":  "36f6729c3e81bc02be962cedf373fefc0ee8a2e98c539a729aa53ce3994f2c78",
                   "scripts/n8n/foundation-management-transport.mjs":  "1f7f117cba001bb3704034409019234e755ef60499ea24ea56cea4e27173f580",
                   "scripts/n8n/foundation-native-cleanup.mjs":  "6409a402f14f28afdb3b46f45d5f873f0d44fd6218005fcdec16c50e2a3333ec",
-                  "scripts/n8n/foundation-native-controller.mjs":  "d379135fa86277c765eb078af2b7c376956b3fd9f1cbbb77813d7f33289856b6",
+                  "scripts/n8n/foundation-native-controller.mjs":  "cccb93a50a84090e45b33e60a5b379fbc669078e16ade50426ac91ad63bb055a",
                   "scripts/n8n/foundation-native-reader.mjs":  "2b52a728a755b389cb8c0cf8b2db0dc5bdae6b6ac8a2be5452b8fce6f2eba7b7",
                   "scripts/n8n/foundation-native-settlement.mjs":  "7fc539aee2385d0c7649a9ec91fe2a219ffda156e7a857198c49f8ef70fcd1cd",
                   "scripts/n8n/foundation-native-transport.mjs":  "4a65ce8a31a28155a95c89407ec5369e1ebf106ca3f32c784b3644cb0192f930",

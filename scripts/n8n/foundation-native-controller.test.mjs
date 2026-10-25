@@ -430,73 +430,91 @@ test('native aggregate carry refuses a copied or caller-shaped continuation befo
   );
 });
 
-test('settled16 native carry retains three reservations without adopting or skipping a substituted historical journal', async () => {
-  const f = await syntheticProjectVerifiedContinuation({ technical16Settled: true });
-  try {
-    const proof = f.claim(f.admit()),
-      rewrite = (path, overrides) => {
-        let text = readFileSync(resolve(path), 'utf8');
-        for (const [match, relative] of [...text.matchAll(/from '(\.\.?\/[^']+)'/g)])
-          text = text.replaceAll(
-            match,
-            `from '${pathToFileURL(overrides[relative] ?? resolve(dirname(path), relative)).href}'`,
-          );
-        return text;
-      },
-      native = f.put(
-        'scripts/n8n/settled16-native-controller.mjs',
-        rewrite('scripts/n8n/foundation-native-controller.mjs', {
-          './foundation-live-project-verified-continuation.mjs': join(
-            f.directory,
-            'scripts/n8n/foundation-live-project-verified-continuation.mjs',
-          ),
-        }),
-      ),
-      control = f.put(
-        'scripts/n8n/settled16-execution-control.mjs',
-        rewrite('scripts/n8n/foundation-execution-control.mjs', {
-          './foundation-native-controller.mjs': native,
-        }),
-      ),
-      module = await import(pathToFileURL(control).href),
-      previousEvents = readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
-      options = {
-        activeWindowId: proof.windowId,
-        controllerFactory: module.createFoundationExecutionController,
-        previousEvents,
-        beforeCreate({ ports }) {
-          ports.projectVerifiedContinuationProof = proof;
+for (const profile of [
+  {
+    name: 'settled16 native carry retains three reservations without adopting or skipping a substituted historical journal',
+    options: { technical16Settled: true },
+    controlRows: 964,
+  },
+  {
+    name: 'genuine19 native carry validates all1016 historical rows without skipping an uncertain live tail',
+    options: { technical16Settled: true, technical17PreReady: true, technical18Closed: true },
+    controlRows: 1016,
+  },
+])
+  test(profile.name, async () => {
+    const f = await syntheticProjectVerifiedContinuation(profile.options);
+    try {
+      const proof = f.claim(f.admit()),
+        rewrite = (path, overrides) => {
+          let text = readFileSync(resolve(path), 'utf8');
+          for (const [match, relative] of [...text.matchAll(/from '(\.\.?\/[^']+)'/g)])
+            text = text.replaceAll(
+              match,
+              `from '${pathToFileURL(overrides[relative] ?? resolve(dirname(path), relative)).href}'`,
+            );
+          return text;
         },
-      };
-    assert.equal(previousEvents.length, 964);
-    const carried = fixture(options);
-    assert.equal(carried.controller.snapshot().nativeExecutions, 3);
-    assert.equal(
-      carried.controller.snapshot().observedExecutionIds,
-      0,
-      'deleted closed IDs do not become active new-case receipts',
-    );
-    assert.equal(carried.starts(), 0);
-    const changed = structuredClone(previousEvents);
-    changed[0].workflowId = '4JMHLDBSdgGxhPlk';
-    assert.throws(
-      () => fixture({ ...options, previousEvents: changed }),
-      fixed,
-      'same row count is not the qualified historical prefix',
-    );
-    const appended = [
-      ...previousEvents,
-      { event: 'native_case_intent', caseId: 'later.uncertain', nativeExecutions: 118 },
-    ];
-    assert.throws(
-      () => fixture({ ...options, previousEvents: appended }),
-      fixed,
-      'a later uncertain reservation is never ignored',
-    );
-  } finally {
-    f.cleanup();
-  }
-});
+        native = f.put(
+          'scripts/n8n/settled16-native-controller.mjs',
+          rewrite('scripts/n8n/foundation-native-controller.mjs', {
+            './foundation-live-project-verified-continuation.mjs': join(
+              f.directory,
+              'scripts/n8n/foundation-live-project-verified-continuation.mjs',
+            ),
+          }),
+        ),
+        control = f.put(
+          'scripts/n8n/settled16-execution-control.mjs',
+          rewrite('scripts/n8n/foundation-execution-control.mjs', {
+            './foundation-native-controller.mjs': native,
+          }),
+        ),
+        module = await import(pathToFileURL(control).href),
+        previousEvents = readFileSync(f.paths.control, 'utf8').trimEnd().split('\n').map(JSON.parse),
+        options = {
+          activeWindowId: proof.windowId,
+          controllerFactory: module.createFoundationExecutionController,
+          previousEvents,
+          beforeCreate({ ports }) {
+            ports.projectVerifiedContinuationProof = proof;
+          },
+        };
+      assert.equal(previousEvents.length, profile.controlRows);
+      assert.equal(
+        f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof).settledNativeControlRows,
+        profile.controlRows,
+      );
+      const carried = fixture(options);
+      assert.equal(carried.controller.snapshot().nativeExecutions, 3);
+      assert.equal(
+        carried.controller.snapshot().observedExecutionIds,
+        0,
+        'deleted closed IDs do not become active new-case receipts',
+      );
+      assert.equal(carried.starts(), 0);
+      assert.equal(carried.sqlReads(), 0);
+      assert.equal(carried.calls.length, 0, 'constructing a qualified controller makes no transport calls');
+      const changed = structuredClone(previousEvents);
+      changed[0].workflowId = '4JMHLDBSdgGxhPlk';
+      assert.throws(
+        () => fixture({ ...options, previousEvents: changed }),
+        fixed,
+        'same row count is not the qualified historical prefix',
+      );
+      const appended = [
+        ...previousEvents,
+        { event: 'native_case_intent', caseId: 'later.uncertain', nativeExecutions: 118 },
+      ];
+      assert.throws(
+        () => fixture({ ...options, previousEvents: appended }),
+        fixed,
+        'a later uncertain reservation is never ignored',
+      );
+    } finally {
+      f.cleanup();
+    }
+  });
 
 test('genuine reconciled native carry preserves the consumed start and refuses121 without changing SQL gateway accounting', async () => {
   const f = await syntheticProjectVerifiedContinuation({ unadmittedWf00Reconciled: true });

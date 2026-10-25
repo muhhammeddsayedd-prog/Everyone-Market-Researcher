@@ -1,0 +1,429 @@
+{
+  "kind": "m03_technical19_restored_attempt",
+  "version": 1,
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "observedAt": "2026-10-25T00:41:04.045Z",
+  "source": {
+    "helperHead": "9e22632115e7fbe6fd509b96a6fc88fe217688fe",
+    "applicationSource": "effa3de9e1fee6c3f3c08fc347a5e3175db14c80",
+    "ci": 40146725378,
+    "allFiveCiJobsPassed": true,
+    "vercelPassed": true,
+    "pr": 8,
+    "prDraft": true
+  },
+  "attempt": {
+    "technicalAttempt": 19,
+    "parentProcessId": 41428,
+    "runtimeProcessId": 51668,
+    "windowId": "edbc6d11-7c1f-43a7-b745-1ded06deb29f",
+    "rawAdmission": {
+      "kind": "m03_project_verified_continuation_admission",
+      "version": 1,
+      "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+      "sourceCommitSha": "effa3de9e1fee6c3f3c08fc347a5e3175db14c80",
+      "windowId": "edbc6d11-7c1f-43a7-b745-1ded06deb29f",
+      "approvalSha256": "5eb38cbe8740ed9a9f72d2356de3fa2e9ce77c8de3710020a7d3de7a6ebdd610",
+      "startsAt": 1792888322116,
+      "deadlineAt": 1792891922116,
+      "stopNewAt": 1792891322116,
+      "hardDeadlineAt": 1792892522116,
+      "parentProcessId": 41428
+    },
+    "rawRuntimeClaim": {
+      "kind": "m03_project_verified_continuation_runtime_claim",
+      "version": 1,
+      "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+      "admissionSha256": "794426714366a3566efb739562db3c751fcdc3799defc4efa9a579eaf83f6161",
+      "processId": 51668,
+      "parentProcessId": 41428,
+      "claimedAt": 1792888332628
+    },
+    "rawTechnicalClose": {
+      "kind": "m03_project_verified_technical_closed",
+      "version": 1,
+      "admissionSha256": "794426714366a3566efb739562db3c751fcdc3799defc4efa9a579eaf83f6161",
+      "parentProcessId": 41428,
+      "runtimeProcessId": 51668,
+      "closedAt": 1792888685110,
+      "childClosed": true,
+      "credentialChildrenClosed": true,
+      "emergencyShutdown": false,
+      "pendingMachinePreserved": true,
+      "nativeExit": 1,
+      "bypassHandoffDeleted": true,
+      "closureVerified": true
+    },
+    "rawFrames": [
+      {
+        "kind": "m03_acceptance_transport_ready",
+        "nonce": "79f81003ab67a3f48bb2ffca47c282a8",
+        "privateRead": false,
+        "networkRequests": 0
+      },
+      {
+        "kind": "m03_acceptance_vercel_metadata",
+        "status": "metadata_covers_75_minutes",
+        "metadataValid": true,
+        "unexpired": true,
+        "covers75Minutes": true,
+        "effectiveBackendEstablished": false,
+        "networkRequests": 0,
+        "authenticationAttempted": false,
+        "refreshAttempted": false,
+        "configWritten": false,
+        "childClosed": true
+      },
+      {
+        "kind": "m03_acceptance_ready",
+        "status": "private_child_ready",
+        "deadlineAt": 1792891922116,
+        "approvedHead": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+        "sourceCommitSha": "effa3de9e1fee6c3f3c08fc347a5e3175db14c80"
+      },
+      {
+        "kind": "mcp_port_request",
+        "nonce": "9ac38c91c536ecd564056dd4014e8f45",
+        "action": "browser_discover",
+        "workflowId": "MzimjpsuyPuK7SKe"
+      },
+      {
+        "kind": "m03_acceptance_result",
+        "id": "m03_live_18004",
+        "command": "prepare",
+        "status": "blocked",
+        "managementAttempts": 1175,
+        "controlAttempts": 1196,
+        "nativeExecutions": 3,
+        "gatewayPreflightAttempts": 10,
+        "providerDirectAttempts": 0,
+        "phaseBReady": false,
+        "domainProofReady": false,
+        "businessAcceptanceProven": false,
+        "residual": true
+      },
+      {
+        "kind": "m03_acceptance_result",
+        "id": "m03_live_18005",
+        "command": "restore",
+        "status": "restoration_verified",
+        "managementAttempts": 1317,
+        "controlAttempts": 1246,
+        "nativeExecutions": 3,
+        "gatewayPreflightAttempts": 10,
+        "providerDirectAttempts": 0,
+        "phaseBReady": false,
+        "domainProofReady": false,
+        "businessAcceptanceProven": false,
+        "baselineRestored": true,
+        "environmentCleanupVerified": true,
+        "windowClosed": true,
+        "fixtureArchived": true,
+        "remoteWorkSettled": true,
+        "residual": false
+      },
+      {
+        "kind": "m03_acceptance_closed",
+        "status": "closed",
+        "managementAttempts": 1317,
+        "controlAttempts": 1246,
+        "nativeExecutions": 3,
+        "gatewayPreflightAttempts": 10,
+        "providerDirectAttempts": 0,
+        "phaseBReady": false,
+        "domainProofReady": false,
+        "businessAcceptanceProven": false,
+        "childTransportsClosed": true,
+        "adminChildClosed": true,
+        "windowClosed": true,
+        "fixtureArchived": true,
+        "baselineRestored": true,
+        "environmentCleanupVerified": true,
+        "remoteWorkSettled": true,
+        "residual": false
+      },
+      {
+        "kind": "m03_acceptance_wrapper_closed",
+        "childClosed": true,
+        "credentialChildrenClosed": true,
+        "emergencyShutdown": false,
+        "nativeExit": 1,
+        "handoffsDeleted": true,
+        "bypassHandoffDeleted": true,
+        "pendingMachinePreserved": true,
+        "privateRead": true,
+        "code": "M03_ACCEPTANCE_BLOCKED"
+      }
+    ]
+  },
+  "usage": {
+    "management": 1317,
+    "control": 1246,
+    "combined": 2563,
+    "vercel": 254,
+    "nativeExecutions": 3,
+    "actorStarts": 0,
+    "actorReserveUsd": 2,
+    "providerDirectAttempts": 0,
+    "newItemsObservedThisAttempt": 0
+  },
+  "limits": {
+    "management": 1408,
+    "control": 3456,
+    "combined": 4864,
+    "vercel": 256,
+    "nativeExecutions": 120,
+    "actorStarts": 2,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "journalPrefixes": {
+    "management": {
+      "relative": "scripts/n8n/out/foundation/live/management.jsonl",
+      "rows": 1165,
+      "bytes": 52567,
+      "sha256": "c45d12328b8711d6156bd276a1230d058da2616909e42c600c9be596d6a1e179"
+    },
+    "control": {
+      "relative": "scripts/n8n/out/foundation/live/control.jsonl",
+      "rows": 1118,
+      "bytes": 147791,
+      "sha256": "2dcaa31fd24849048568e76a79f2fcd6417c0d0cdd09eec187f0de2ddaf64e17"
+    },
+    "preflight": {
+      "relative": "scripts/n8n/out/foundation/live/preflight.jsonl",
+      "rows": 26,
+      "bytes": 6907,
+      "sha256": "c255da13d1041be1a4516f6415cac764228c5377cb6bb1615a4733eee8ca7a1d"
+    },
+    "setup": {
+      "relative": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "rows": 510,
+      "bytes": 58535,
+      "sha256": "03ec5619e004011cc3b69368fec23eeed5f6c02949e534853877a09d01835961"
+    }
+  },
+  "database": {
+    "actualAdminResult": {
+      "version": 1,
+      "runId": "fd9e28cc-25ed-4332-ae29-e1dfdf135a36",
+      "environment": "dev",
+      "projectRef": "zmotjsbzhzjvpelxvxlf",
+      "host": "aws-1-eu-central-1.pooler.supabase.com",
+      "port": 5432,
+      "status": "continuation_history_verified",
+      "authenticationAttempted": true,
+      "authenticationVerified": true,
+      "historyBefore": "complete",
+      "historyAfter": "complete",
+      "dryRunMatched": false,
+      "dryRunCheck": "not_attempted",
+      "dryRunNativeExit": null,
+      "pushAttempted": false,
+      "pushNativeExit": null,
+      "childrenClosed": true,
+      "handoffDeleted": true,
+      "leaseDeleted": true,
+      "scratchDeleted": true,
+      "pendingVersions": [],
+      "phaseAControl": true,
+      "phaseACommands": 7,
+      "phaseAClosed": true,
+      "observedAt": "2026-10-25T00:38:04.8060697Z",
+      "postcheckContinuation": true,
+      "projectVerifiedContinuation": true,
+      "forwardWindow": true,
+      "activeWindowId": "edbc6d11-7c1f-43a7-b745-1ded06deb29f",
+      "clockSegmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+      "technicalAttemptOrdinal": 19,
+      "unprovisionedFixtureArchived": false,
+      "postcheckStage": "complete",
+      "catalogChecks": {
+        "identity": true,
+        "tables_rls": true,
+        "no_machine_table_grants": true,
+        "rpc_shape": true,
+        "owner_control_restricted": true,
+        "all_project_tables_rls": true,
+        "all_views_invoker": true,
+        "gw01_closed": true,
+        "domain_auto_join_off": true,
+        "baseline_counts": true,
+        "forward_primary_key": true,
+        "forward_signatures": true,
+        "forward_namespace": true,
+        "no_new_window": true
+      },
+      "postcheckCandidate": "scripts/db/out/m03-foundation-continuation-fd9e28cc-25ed-4332-ae29-e1dfdf135a36-db.types.ts",
+      "reactivationState": "acknowledged_and_verified"
+    },
+    "migrationCount": 15,
+    "localMigrationVersionsAndHashes": [
+      {
+        "version": "20261017172928",
+        "relative": "supabase/migrations/20261017172928_extensions_schemas_roles.sql",
+        "sha256": "478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d"
+      },
+      {
+        "version": "20261017172931",
+        "relative": "supabase/migrations/20261017172931_core_tables.sql",
+        "sha256": "4f1be3f6191885add916b164975ba10a8697069a0373a05df4e03fa53ea7cba3"
+      },
+      {
+        "version": "20261017172934",
+        "relative": "supabase/migrations/20261017172934_auth_rls_views.sql",
+        "sha256": "8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9"
+      },
+      {
+        "version": "20261017172937",
+        "relative": "supabase/migrations/20261017172937_rpc_pipeline_core.sql",
+        "sha256": "978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803"
+      },
+      {
+        "version": "20261017172940",
+        "relative": "supabase/migrations/20261017172940_rpc_app_search.sql",
+        "sha256": "6111c5291e9c305e3e713180c0441ff5ffbf52b3b88f589d5d16fee55769171c"
+      },
+      {
+        "version": "20261017172943",
+        "relative": "supabase/migrations/20261017172943_storage_cron.sql",
+        "sha256": "859466fadfd940445ffe4b457e7250a179c93731e1f34736a629fe20df6e9c68"
+      },
+      {
+        "version": "20261017172945",
+        "relative": "supabase/migrations/20261017172945_seed_taxonomies.sql",
+        "sha256": "af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234"
+      },
+      {
+        "version": "20261018034220",
+        "relative": "supabase/migrations/20261018034220_rpc_n8n_foundation.sql",
+        "sha256": "457ad4351b08c47b996ae67062ed701efb7d5ef63ea7658d20931f2d5dc5d3fd"
+      },
+      {
+        "version": "20261018035417",
+        "relative": "supabase/migrations/20261018035417_price_book_plan.sql",
+        "sha256": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd"
+      },
+      {
+        "version": "20261018070042",
+        "relative": "supabase/migrations/20261018070042_n8n_worker_gateway_admission.sql",
+        "sha256": "98ebdfad9fffa819773fdbee5e3b9b8374be8a6f58497593084aed4077e9b856"
+      },
+      {
+        "version": "20261018231756",
+        "relative": "supabase/migrations/20261018231756_m03_actor_launch_admission.sql",
+        "sha256": "fc6955938bba3d08b6a1140258a1db2d0569a5f441c8cc5c934847eb84116600"
+      },
+      {
+        "version": "20261018232014",
+        "relative": "supabase/migrations/20261018232014_m03_foundation_gateway.sql",
+        "sha256": "ea1385b734e243bed4dea0030f4975a81d38d41338cb8d94d6086dd83916d334"
+      },
+      {
+        "version": "20261018232922",
+        "relative": "supabase/migrations/20261018232922_m03_foundation_safety_receipts.sql",
+        "sha256": "dffa2c23d0102bb7382106c9800e05b5806a1eee89580794aa87bdd63a7f05a5"
+      },
+      {
+        "version": "20261018233338",
+        "relative": "supabase/migrations/20261018233338_m03_foundation_boundary_hardening.sql",
+        "sha256": "bf930602b402ef0b4649e9399ed2dcb9d6f2bf576a08d9313f352ccfab4d6c90"
+      },
+      {
+        "version": "20261023163755",
+        "relative": "supabase/migrations/20261023163755_m03_foundation_window_continuation.sql",
+        "sha256": "08400005da4b595d7d1222ff77c31ba745968c3ab3d9dc1d7353f5531c7c8fde"
+      }
+    ],
+    "noMigrationReplay": true,
+    "generatedTypeRelative": "scripts/db/out/m03-foundation-continuation-fd9e28cc-25ed-4332-ae29-e1dfdf135a36-db.types.ts",
+    "restrictedWriterClose": {
+      "event": "foundation_writer_close_verified",
+      "windowId": "edbc6d11-7c1f-43a7-b745-1ded06deb29f",
+      "identityVerified": true,
+      "bindingVerified": true,
+      "closeAcknowledged": true,
+      "connectionClosed": true,
+      "at": "2026-10-25T00:36:16.104Z"
+    },
+    "archiveEvidence": {
+      "coordinatorFixtureArchived": true,
+      "competitorStatus": "archived",
+      "accountStatus": "paused",
+      "basis": "The actual restoration/Close frames and pinned native archive/readback consumer confirm receipt-owned archive/pause. No separate post19 SELECT snapshot is persisted in these artifacts.",
+      "newItemsObservedThisAttempt": 0,
+      "actorStartsObservedThisAttempt": 0,
+      "standalonePostRestoreSqlItemCount": null
+    }
+  },
+  "sideEffects": {
+    "previewDeploymentId": "dpl_8Qy4Ywx8aEZ6j3ueVm3TaAP7LB3Y",
+    "previewAudience": "https://everyone-market-researcher-punvhefs2-muhammed-abdelrahman.vercel.app",
+    "environmentIds": [
+      "7Ld6H2eQq9szN395",
+      "iPVzx0JDvlwqQLl3",
+      "0HmGhOj3rFgMuPys",
+      "L8ojnzWOmv3deDWL",
+      "EYhJnLy7K2BYrWeU",
+      "vwABlVF65TSQ7VCA",
+      "gisklijEYOm0sMIW"
+    ],
+    "environmentCleanupVerified": true,
+    "remoteBypassRevokedAndAbsent": true,
+    "runtimeHttpRequests": 234,
+    "definitionOrMachineTransitionsVerified": 69,
+    "workflowExecutionsStartedThisAttempt": 0,
+    "actorStartsThisAttempt": 0
+  },
+  "physicalCleanup": {
+    "verificationReceipt": "f0c08b",
+    "observedAt": "2026-10-25T00:40:05.3913155Z",
+    "parentAbsent": true,
+    "runtimeAbsent": true,
+    "directChildrenAbsent": true,
+    "checkedDisposableLeaves": 11,
+    "presentDisposableLeaves": 0,
+    "persistentOriginalsRetained": 4,
+    "machineRetained": true,
+    "privateContentsRead": false,
+    "networkRequests": 0
+  },
+  "interpretation": {
+    "preparationPassed": false,
+    "phaseBReady": false,
+    "domainProofReady": false,
+    "actualM03DevAcceptanceVerified": false,
+    "restorationAndPhysicalClosureVerified": true,
+    "originalNativeExit": 1,
+    "originalExceptionCaptured": false,
+    "failureCauseEstablished": false,
+    "paidActorStarted": false,
+    "fullADAcceptance": false
+  },
+  "boundaries": {
+    "productionUntouched": true,
+    "recurringActivationUntouched": true,
+    "externalNotificationsSent": 0,
+    "r2Untouched": true,
+    "mergeUntouched": true,
+    "m04Unstarted": true
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-19.json": "794426714366a3566efb739562db3c751fcdc3799defc4efa9a579eaf83f6161",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-19.runtime-claim.json": "90345f42cd5d56dc6d7c54e10eba9e96622092b4ec85dd73e95544c416d1cd3b",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-19.closed.json": "14c456684b9773e2fd7d230c79ecd99b402da6cd368aca42e72ec4d02de2ab32",
+    "scripts/n8n/out/foundation/live/technical19-coordinator-20261025-startup1.jsonl": "63a47ac255c47064e399a79bf7f988f5dd3bfa8fbbda76a9b85ab7405bf72feb",
+    "scripts/n8n/out/foundation/live/management.jsonl": "c45d12328b8711d6156bd276a1230d058da2616909e42c600c9be596d6a1e179",
+    "scripts/n8n/out/foundation/live/control.jsonl": "2dcaa31fd24849048568e76a79f2fcd6417c0d0cdd09eec187f0de2ddaf64e17",
+    "scripts/n8n/out/foundation/live/preflight.jsonl": "c255da13d1041be1a4516f6415cac764228c5377cb6bb1615a4733eee8ca7a1d",
+    "scripts/n8n/out/foundation/live/setup.jsonl": "03ec5619e004011cc3b69368fec23eeed5f6c02949e534853877a09d01835961",
+    "scripts/n8n/out/foundation/live/runtime.technical-19.jsonl": "b6e366ad9d779cbe923b44c468781e03e8f5ad364ac9d053747f347c6c8ab1cf",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-19-attempt.json": "5eb736af1bcda27106a6f4f9a18a0960dbf21ca52596b1ca3ecd7ba05e8f9705",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-19-latest.json": "e8cb87ebbeb52e04ac29c75adcb9566c539ef4973ace785df0fa4a348a4510f2",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-19-owner-provision-attempt.json": "f293ccdfd4dfca40d38ddaccf7f75f77fb5c7a33fce0c1c3807869b55e48bf56",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-19-reactivation-attempt.json": "03779571d1e8e9d7460179cd0c539f4a3d338f470d43bab921908d39cb9baa5a",
+    "scripts/db/out/m03-foundation-continuation-fd9e28cc-25ed-4332-ae29-e1dfdf135a36-db.types.ts": "de2854863855f3551dd562fc80f450a76032e084b8e7c84abdc7788d80497f59",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical18-preparation-reconciliation-20261025.json": "92a5976dbce66210abbdd76655afaf71a98c9c48f29c8c15422831a85f3737d9"
+  }
+}

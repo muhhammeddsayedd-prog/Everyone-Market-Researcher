@@ -131,13 +131,14 @@ export function createFoundationNativeController({
         if (
           usage.nativeExecutions !== 3 ||
           resume.managementMaximum !== 1408 ||
-          resume.settledNativeControlRows !== 964 ||
-          journal.rows.length < 964
+          !Number.isSafeInteger(resume.settledNativeControlRows) ||
+          resume.settledNativeControlRows < 964 ||
+          journal.rows.length < resume.settledNativeControlRows
         )
           fail();
         assertFoundationProjectVerifiedContinuationControlResume(projectVerifiedContinuationProof, {
           deadlineAt: projectVerifiedContinuationProof.deadlineAt,
-          previousEvents: journal.rows.slice(0, 964),
+          previousEvents: journal.rows.slice(0, resume.settledNativeControlRows),
         });
         settledNativeControlRows = resume.settledNativeControlRows;
       }
