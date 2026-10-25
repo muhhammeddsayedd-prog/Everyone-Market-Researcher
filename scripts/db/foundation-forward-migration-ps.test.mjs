@@ -2033,6 +2033,36 @@ Write-Output 'SIX_CLOSED_PREDECESSORS_AND_TYPED19_AUDIT'
 );
 
 test(
+  'post20 UI native public projection requires its exact receipt and preserves historical counters only when absent',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Keys', 'Read-FoundationPostcheckContinuation'])}
+$ForwardWindow=$true;$ProjectVerifiedContinuation=$true;$PhaseAControl=$true;$PostcheckContinuation=$true;$ClockAmendment=$false;$OriginalDeadlineAtMs=0;$RemainingContinuation=$false;$StartupReplacement=$false;$CheckOnly=$true;$postcheckContinuationSegment='20275b22-b7fe-4737-a9a4-c50c2feadb74';$node='never-spawned';$repo='synthetic';$script:eventPresent=$true;$script:eventValid=$true;$script:priorCalls=0
+function Assert-Path($Root,$Relative){return $Relative}
+function Test-Path([string]$LiteralPath){return $script:eventPresent}
+function File-Hash($Path){if(-not $script:eventValid){return '0'*64};return 'c5e4e506d788b399fd95354cc2bc59849076daec48e0a41901e717a4a22c157e'}
+function Read-FoundationTechnical19Database{$script:priorCalls++;return [pscustomobject]@{familyWindowCount=6;globalAdmittedCount=11;fixtureAuditCount=8;technical19Exact=$true}}
+function Read-Json{return [pscustomobject]@{usage=[pscustomobject]@{management=1317;control=1246;combined=2563}}}
+function Invoke-Bounded{return [pscustomobject]@{ok=$true;closed=$true;text=($script:dto|ConvertTo-Json -Compress)}}
+$script:dto=[pscustomobject]@{kind='project_verified_continuation_ready';segmentId=$postcheckContinuationSegment;sourceCommitSha='5f256ce915f930481b0d31ac38b919c0a7692cd1';windowId='e2be1a67-f6db-4c90-bfd2-671c5db9b90a';privateRead=$false;networkRequests=0;managementMaximum=1728;managementAttempts=1317;controlAttempts=1249;combinedAttempts=2566}
+$null=Read-FoundationPostcheckContinuation;if($script:priorCalls -ne 1){throw 'REAL19_PRIOR_SKIPPED'}
+foreach($mutation in @(@{key='managementMaximum';value=1408},@{key='managementAttempts';value=1316},@{key='controlAttempts';value=1246},@{key='controlAttempts';value='1249'},@{key='combinedAttempts';value=2563},@{key='combinedAttempts';value='2566'},@{key='sourceCommitSha';value='unknown'},@{key='windowId';value='unknown'},@{key='privateRead';value=$true},@{key='networkRequests';value=1})){
+ $original=$script:dto.($mutation.key);$script:dto.($mutation.key)=$mutation.value;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};$script:dto.($mutation.key)=$original;if(-not $denied){throw 'UI_COUNTER_REFUND_OR_BINDING_CHANGED'}
+}
+$script:eventValid=$false;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'UNPINNED_UI_COUNTERS_ACCEPTED'};$script:eventValid=$true
+$script:eventPresent=$false;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'UNPROVEN_UI_COUNTERS_ACCEPTED'}
+$script:dto.controlAttempts=1246;$script:dto.combinedAttempts=2563;$null=Read-FoundationPostcheckContinuation
+$script:eventPresent=$true;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'UI_CHARGES_REFUNDED'}
+Write-Output 'NATIVE_UI_EXACT_RECEIPT_AND_COUNTERS'
+`),
+      'NATIVE_UI_EXACT_RECEIPT_AND_COUNTERS',
+    );
+  },
+);
+
+test(
   'seventh public DTO and native prior pin actual19 readback without resetting1317 retained charges',
   native,
   () => {
@@ -2043,7 +2073,7 @@ $repo=${quote(process.cwd())};$ForwardWindow=$true;$ProjectVerifiedContinuation=
 $prior=Read-FoundationTechnical19Database
 if($prior.familyWindowCount -ne 6 -or $prior.globalAdmittedCount -ne 11 -or $prior.globalRequestCount -ne 5 -or $prior.fixtureAuditCount -ne 8 -or -not $prior.technical19Exact){throw 'ACTUAL19_FAMILY_NOT_PINNED'}
 function Invoke-Bounded{return [pscustomobject]@{ok=$true;closed=$true;text=($script:dto|ConvertTo-Json -Compress)}}
-$script:dto=[pscustomobject]@{kind='project_verified_continuation_ready';segmentId=$postcheckContinuationSegment;sourceCommitSha='5f256ce915f930481b0d31ac38b919c0a7692cd1';windowId='e2be1a67-f6db-4c90-bfd2-671c5db9b90a';privateRead=$false;networkRequests=0;managementMaximum=1728;managementAttempts=1317;controlAttempts=1246;combinedAttempts=2563}
+$script:dto=[pscustomobject]@{kind='project_verified_continuation_ready';segmentId=$postcheckContinuationSegment;sourceCommitSha='5f256ce915f930481b0d31ac38b919c0a7692cd1';windowId='e2be1a67-f6db-4c90-bfd2-671c5db9b90a';privateRead=$false;networkRequests=0;managementMaximum=1728;managementAttempts=1317;controlAttempts=1249;combinedAttempts=2566}
 $null=Read-FoundationPostcheckContinuation
 if($projectVerifiedForwardWindowId -cne $script:dto.windowId -or $projectVerifiedForwardSource -cne $script:dto.sourceCommitSha){throw 'SEVENTH_BINDING_NOT_SELECTED'}
 foreach($mutation in @(@{key='managementAttempts';value=1316},@{key='controlAttempts';value=1245},@{key='combinedAttempts';value=2562},@{key='managementMaximum';value=1408},@{key='managementMaximum';value='1728'},@{key='sourceCommitSha';value='effa3de9e1fee6c3f3c08fc347a5e3175db14c80'},@{key='privateRead';value=$true},@{key='networkRequests';value=1})){
@@ -2631,6 +2661,23 @@ for (const profile of [
     combinedAttempts: 2563,
     technicalOrdinal: 21,
   },
+  {
+    name: 'post20-ui-to21',
+    options: {
+      technical16Settled: true,
+      technical17PreReady: true,
+      technical18Closed: true,
+      technical19Restored: true,
+      technical20PreReady: true,
+      technical20SourceSelected: true,
+      post20UiStart: true,
+    },
+    managementMaximum: 1728,
+    managementAttempts: 1317,
+    controlAttempts: 1249,
+    combinedAttempts: 2566,
+    technicalOrdinal: 21,
+  },
 ])
   test(
     `${profile.name} fresh ForwardWindow completes the full native public Run preflight before the private boundary`,
@@ -2653,6 +2700,10 @@ for (const profile of [
         packet.files[
           'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical11-reconciliation-20261024.json'
         ] = 'synthetic-public-pin-recomputed-below';
+        if (!profile.options.post20UiStart)
+          delete packet.files[
+            'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-start-20261025.json'
+          ];
         // Keep all isolated historical authority bytes supplied by the existing
         // fixture. Copy only the public source/CLI/migration inputs it lacks.
         for (const relative of [
@@ -2667,6 +2718,14 @@ for (const profile of [
           }
         }
         let helperSource = readFileSync(consumer, 'utf8');
+        if (profile.options.post20UiStart) {
+          const relative =
+            'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-start-20261025.json';
+          helperSource = helperSource.replaceAll(
+            'c5e4e506d788b399fd95354cc2bc59849076daec48e0a41901e717a4a22c157e',
+            hash(readFileSync(join(fixture.directory, relative))),
+          );
+        }
         if (
           profile.options.restoredBrowserDiscovery ||
           profile.options.restoredBrowserRetryDiscovery ||

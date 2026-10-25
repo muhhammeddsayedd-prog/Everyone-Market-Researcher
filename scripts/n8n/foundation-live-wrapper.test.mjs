@@ -478,6 +478,96 @@ Write-Output 'TECHNICAL20_WRAPPER_PASS'
 );
 
 test(
+  'post20 UI wrapper retains1249 controls only with its exact public receipt and denies historical refunds while present',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-post20-ui-wrapper-'));
+    try {
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+      const extract = (name) => {
+        const start = source.indexOf('function ' + name),
+          end = source.indexOf('\nfunction ', start + 10);
+        assert.ok(start >= 0 && end > start, name);
+        return source.slice(start, end);
+      };
+      const eventRelative =
+        'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-start-20261025.json';
+      const paths = [
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json',
+        'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-approval-20261025.json',
+        eventRelative,
+      ];
+      for (const relative of paths) {
+        mkdirSync(join(directory, 'milestones/M03-n8n-foundation/evidence'), { recursive: true });
+        writeFileSync(join(directory, relative), readFileSync(resolve(relative)));
+      }
+      const ready = {
+        kind: 'project_verified_continuation_ready',
+        segmentId: '20275b22-b7fe-4737-a9a4-c50c2feadb74',
+        sourceCommitSha: '5f256ce915f930481b0d31ac38b919c0a7692cd1',
+        windowId: 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+        privateRead: false,
+        networkRequests: 0,
+        managementMaximum: 1728,
+        managementAttempts: 1317,
+        controlAttempts: 1249,
+        combinedAttempts: 2566,
+      };
+      const quote = (value) => "'" + value.replaceAll("'", "''") + "'";
+      const guard = join(directory, 'scripts/n8n/foundation-live-project-verified-continuation.mjs');
+      mkdirSync(join(directory, 'scripts/n8n'), { recursive: true });
+      writeFileSync(
+        guard,
+        `if(process.argv[2]!=='CheckOnly')process.exit(9);process.stdout.write(${JSON.stringify(JSON.stringify(ready))});`,
+      );
+      const io = source.slice(
+        source.indexOf('function Initialize-BoundedIo'),
+        source.indexOf('function Invoke-PublicCompositionCheck'),
+      );
+      const script = join(directory, 'post20-ui.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+$repo=${quote(directory)}
+${io}
+${extract('Public-File(')}
+${extract('Test-Technical20PublicBinding(')}
+${extract('Get-ProjectVerifiedPublicManagementMaximum(')}
+${extract('ConvertTo-ProjectVerifiedReadinessBlock(')}
+${extract('Invoke-ClockAmendmentPublic(')}
+Initialize-BoundedIo
+$current=ConvertFrom-Json -InputObject ${quote(JSON.stringify(ready))}
+if((Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly') -ne 1728){throw 'UI_CHARGES_NOT_PROJECTED'}
+$actual=Invoke-ClockAmendmentPublic ${quote(process.execPath)} $repo 'CheckOnly' $false $false $false $true
+if($actual.managementAttempts -ne 1317 -or $actual.controlAttempts -ne 1249 -or $actual.combinedAttempts -ne 2566 -or $actual.privateRead -ne $false -or $actual.networkRequests -ne 0){throw 'UI_WRAPPER_DTO_CHANGED'}
+foreach($mutation in @(@{key='managementMaximum';value=1408},@{key='managementAttempts';value=1316},@{key='controlAttempts';value=1246},@{key='controlAttempts';value='1249'},@{key='combinedAttempts';value=2563},@{key='combinedAttempts';value='2566'},@{key='sourceCommitSha';value='unknown'},@{key='windowId';value='unknown'},@{key='privateRead';value=$true},@{key='networkRequests';value=1})){
+ $copy=$current|ConvertTo-Json|ConvertFrom-Json;$copy.($mutation.key)=$mutation.value;$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $copy $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'UI_REFUND_OR_MIXED_PROFILE_ACCEPTED'}
+}
+$historical=$current|ConvertTo-Json|ConvertFrom-Json;$historical.controlAttempts=1246;$historical.combinedAttempts=2563
+$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $historical $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'UI_CHARGES_REFUNDED'}
+$eventPath=Join-Path $repo ${quote(eventRelative)};$original=[IO.File]::ReadAllBytes($eventPath)
+try{[IO.File]::WriteAllText($eventPath,'{}');$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'UNPINNED_UI_RECEIPT_ACCEPTED'}}finally{[IO.File]::WriteAllBytes($eventPath,$original)}
+try{[IO.File]::Delete($eventPath);if((Get-ProjectVerifiedPublicManagementMaximum $historical $true 'CheckOnly') -ne 1728){throw 'EVENT_ABSENT_HISTORY_CHANGED'};$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'UNPROVEN_UI_CHARGES_ACCEPTED'}}finally{[IO.File]::WriteAllBytes($eventPath,$original)}
+foreach($mode in @('Read','Admit')){$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true $mode}catch{$denied=$true};if(-not $denied){throw 'UI_WRONG_MODE_ACCEPTED'}}
+Write-Output 'POST20_UI_EXACT_RECEIPT_PASS'
+`,
+      );
+      const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: safeEnvironment(directory),
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 15000,
+      });
+      assert.equal(result.status, 0, result.stderr + result.stdout);
+      assert.equal(result.stderr, '');
+      assert.equal(result.stdout.trim(), 'POST20_UI_EXACT_RECEIPT_PASS');
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
   'budget readiness projection rejects stale counters and untrusted fields before private initialization',
   windowsOnly,
   () => {

@@ -154,6 +154,7 @@ function Get-M03AcceptancePublicFiles([string]$Root) {
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-database-readback-20261025.json',
   'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical20-pre-ready-reconciliation-20261025.json',
+  'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-start-20261025.json',
   'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-20261025.md',
   'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-approval-20261025.json',
   'milestones/M03-n8n-foundation/evidence/machine-metadata-readback-20261024.json',

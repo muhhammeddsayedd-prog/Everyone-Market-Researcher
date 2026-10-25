@@ -211,7 +211,14 @@ function Get-ProjectVerifiedPublicManagementMaximum($Value,[bool]$ProjectClock,[
   $Value.privateRead -isnot [bool] -or $Value.privateRead -ne $false){throw 'blocked'}
  if($technical20Binding){
   foreach($name in @($fields+'networkRequests')){if(($Value.$name -isnot [int] -and $Value.$name -isnot [long])){throw 'blocked'}}
-  if($Value.managementMaximum -ne 1728 -or $Value.managementAttempts -ne 1317 -or $Value.controlAttempts -ne 1246 -or $Value.combinedAttempts -ne 2563 -or $Value.networkRequests -ne 0){throw 'blocked'}
+  $post20UiRelative='milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-start-20261025.json'
+  $post20UiPresent=Test-Path -LiteralPath (Join-Path $repo $post20UiRelative) -ErrorAction Stop
+  if($post20UiPresent){
+   $post20UiReceipt=Public-File (Join-Path $repo $post20UiRelative)
+   if((Get-FileHash -LiteralPath $post20UiReceipt -Algorithm SHA256).Hash.ToLowerInvariant() -cne 'c5e4e506d788b399fd95354cc2bc59849076daec48e0a41901e717a4a22c157e'){throw 'blocked'}
+  }
+  $expectedControl=if($post20UiPresent){1249}else{1246};$expectedCombined=if($post20UiPresent){2566}else{2563}
+  if($Value.managementMaximum -ne 1728 -or $Value.managementAttempts -ne 1317 -or $Value.controlAttempts -ne $expectedControl -or $Value.combinedAttempts -ne $expectedCombined -or $Value.networkRequests -ne 0){throw 'blocked'}
   $technical19PublicReceipt=Public-File (Join-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json')
   $technical20Approval=Public-File (Join-Path $repo 'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-approval-20261025.json')
   if((Get-FileHash -LiteralPath $technical19PublicReceipt -Algorithm SHA256).Hash.ToLowerInvariant() -cne '567de4bcc54962c57afb88846fd4c8a75dbfa465623aad3578aab51c4eab41dc' -or (Get-FileHash -LiteralPath $technical20Approval -Algorithm SHA256).Hash.ToLowerInvariant() -cne 'a80ea5491487b22df91c07deb4ab94b3854fe037a1f7458f25fd3afcf2a4619a'){throw 'blocked'}

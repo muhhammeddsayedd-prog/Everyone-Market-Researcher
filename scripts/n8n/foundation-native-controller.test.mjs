@@ -452,6 +452,12 @@ for (const profile of [
     },
     controlRows: 1118,
   },
+  {
+    name: 'genuine21 post20 UI carry retains all four native reservations without granting copied authority or extra capacity',
+    options: { post20UiStart: true, technical20SourceSelected: true },
+    controlRows: 1118,
+    nativeExecutions: 4,
+  },
 ])
   test(profile.name, async () => {
     const f = await syntheticProjectVerifiedContinuation(profile.options);
@@ -497,7 +503,7 @@ for (const profile of [
         profile.controlRows,
       );
       const carried = fixture(options);
-      assert.equal(carried.controller.snapshot().nativeExecutions, 3);
+      assert.equal(carried.controller.snapshot().nativeExecutions, profile.nativeExecutions ?? 3);
       assert.equal(
         carried.controller.snapshot().observedExecutionIds,
         0,
@@ -506,7 +512,7 @@ for (const profile of [
       assert.equal(carried.starts(), 0);
       assert.equal(carried.sqlReads(), 0);
       assert.equal(carried.calls.length, 0, 'constructing a qualified controller makes no transport calls');
-      if (profile.options.technical19Restored) {
+      if (profile.options.technical19Restored || profile.options.post20UiStart) {
         assert.throws(() => fixture({ activeWindowId: proof.windowId }), fixed);
         assert.throws(
           () => fixture({ ...options, activeWindowId: foundationRuntimeCheckpoint.windowId }),
@@ -519,6 +525,43 @@ for (const profile of [
               beforeCreate({ ports }) {
                 ports.projectVerifiedContinuationProof = Object.freeze({ ...proof });
               },
+            }),
+          fixed,
+        );
+      }
+      if (profile.options.post20UiStart) {
+        assert.equal(
+          f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof).post20UiStartReconciled,
+          true,
+        );
+        assert.equal(
+          f.module.foundationProjectVerifiedContinuationUnadmittedUsage(proof).nativeExecutions,
+          4,
+        );
+        const cannotRefund = fixture({
+          ...options,
+          beforeCreate({ ports }) {
+            ports.projectVerifiedContinuationProof = proof;
+            ports.carriedNativeExecutions = 3;
+          },
+        });
+        assert.equal(cannotRefund.controller.snapshot().nativeExecutions, 4);
+        const atNativeCap = [
+          ...previousEvents,
+          { event: 'native_case_intent', caseId: 'later.uncertain', nativeExecutions: 116 },
+        ];
+        assert.equal(
+          fixture({ ...options, previousEvents: atNativeCap }).controller.snapshot().nativeExecutions,
+          120,
+        );
+        assert.throws(
+          () =>
+            fixture({
+              ...options,
+              previousEvents: [
+                ...previousEvents,
+                { event: 'native_case_intent', caseId: 'later.uncertain', nativeExecutions: 117 },
+              ],
             }),
           fixed,
         );

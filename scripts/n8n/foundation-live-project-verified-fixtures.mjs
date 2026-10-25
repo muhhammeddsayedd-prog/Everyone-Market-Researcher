@@ -21,7 +21,9 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  technical20PreReady = false,
+  post20UiStart = false,
+  post20UiFault,
+  technical20PreReady = post20UiStart,
   technical20PreReadyFault,
   technical19Restored = technical20PreReady,
   technical20SourceSelected = technical20PreReady,
@@ -2775,7 +2777,8 @@ export async function syntheticProjectVerifiedContinuation({
     technical17PreReadyConfiguration,
     technical18PreparationConfiguration,
     technical19RestorationConfiguration,
-    technical20PreReadyConfiguration;
+    technical20PreReadyConfiguration,
+    post20UiStartConfiguration;
   if (unadmittedWf00Reconciled) {
     const root = 'milestones/M03-n8n-foundation/evidence/',
       relative = root + 'wf00-unadmitted-manual-checkpoint-20261024.json',
@@ -4288,6 +4291,90 @@ export async function syntheticProjectVerifiedContinuation({
     put(relative, json(r));
     technical20PreReadyConfiguration = { relative, sha256: digest(json(r)) };
   }
+  if (post20UiStart) {
+    if (!technical20PreReady) throw Error('SYNTHETIC_UI_SCOPE');
+    const relative = 'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-start-20261025.json',
+      r = JSON.parse(readFileSync(join(sourceRoot, relative), 'utf8')),
+      json = (v) => JSON.stringify(v) + '\n',
+      live = 'scripts/n8n/out/foundation/live/',
+      native = structuredClone(
+        JSON.parse(
+          readFileSync(
+            join(
+              directory,
+              'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-database-readback-20261025.json',
+            ),
+          ),
+        ).actualNativeResult,
+      ),
+      ui = {
+        kind: 'm03_wf00_unadmitted_ui_observation',
+        version: 1,
+        provenance: 'Synthetic browser projection; no native API receipt.',
+        workflowId: r.workflowId,
+        editorUrl: 'https://muhhammedsayed.app.n8n.cloud/workflow/' + r.workflowId,
+        displayTimezone: 'Africa/Cairo',
+        observedStartsAt: r.event.displayedStartsAt,
+        failedNode: r.event.observedFailedNode,
+        errorCode: r.event.errorCode,
+        executionId: null,
+        nativeTerminalReceipt: false,
+        observedHttpNodes: [
+          { name: 'Invoke gateway · Audit unknown slot', method: 'POST', durationMs: 1 },
+          { name: 'Read durable gateway · Audit unknown slot', method: 'POST', durationMs: 1 },
+        ],
+        executionsList: { noActiveExecutions: true, noExecutionsFound: true },
+        retention: {
+          saveManualExecutions: false,
+          saveDataErrorExecution: 'none',
+          saveDataSuccessExecution: 'none',
+          errorWorkflow: null,
+        },
+        observedAt: '2026-10-25T11:45:55.695Z',
+      },
+      draft = {
+        kind: r.kind,
+        chargeDelta: { control: 2, combined: 2 },
+        usageAfter: { control: 1248, combined: 2565 },
+      },
+      dbStem = 'scripts/db/out/m03-foundation-inspect-' + r.dbReadback.runId;
+    native.runId = r.dbReadback.runId;
+    native.observedAt = '2026-10-25T11:41:52.7400585Z';
+    r.dbReadback.parentProcessId = 91220;
+    r.dbReadback.inspection = native.inspection;
+    if (post20UiFault === 'partial') ui.executionsList.noActiveExecutions = false;
+    if (post20UiFault === 'database') native.inspection.actorRunCount = 1;
+    if (post20UiFault === 'db-auth') native.authenticationVerified = false;
+    if (post20UiFault === 'usage') r.usageAfter.control = 1248;
+    if (post20UiFault === 'source') r.precedingHead = 'f'.repeat(40);
+    if (post20UiFault === 'count') r.event.observedHttpInvocations = 1;
+    if (post20UiFault === 'native-count') r.chargeDelta.nativeExecutions = 0;
+    if (post20UiFault === 'native-id') {
+      r.event.nativeExecutionId = '999';
+      ui.executionId = '999';
+    }
+    if (post20UiFault === 'terminal') {
+      r.event.nativeTerminalReceipt = true;
+      ui.nativeTerminalReceipt = true;
+    }
+    if (post20UiFault === 'admitted') r.event.actual21Admitted = true;
+    if (post20UiFault === 'mutation') r.dbReadback.mutation = true;
+    if (post20UiFault === 'cleanup') r.dbReadback.scratchDeleted = false;
+    if (post20UiFault === 'after-query') r.dbReadback.historyAfterIsSecondHistoryQuery = true;
+    if (post20UiFault === 'draft') draft.chargeDelta.control = 3;
+    put(live + 'wf00-unadmitted-ui-observation-20261025.json', json(ui));
+    put(live + 'wf00-unadmitted-accounting-draft-20261025.json', json(draft));
+    put(
+      dbStem + '-attempt.json',
+      json({ version: 1, runId: native.runId, purpose: 'synthetic SELECT-only UI reconciliation' }),
+    );
+    put(dbStem + '-latest.json', json(native));
+    for (const p of Object.keys(r.pins)) r.pins[p] = digest(readFileSync(join(directory, p)));
+    if (post20UiFault === 'pin')
+      r.pins[live + 'wf00-unadmitted-ui-observation-20261025.json'] = 'f'.repeat(64);
+    if (post20UiFault !== 'missing') put(relative, json(r));
+    post20UiStartConfiguration = { relative, sha256: digest(json(r)) };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -4331,6 +4418,14 @@ export async function syntheticProjectVerifiedContinuation({
     'const technical20PreReadyRecovery = ' +
       (technical20PreReadyConfiguration
         ? 'Object.freeze(' + JSON.stringify(technical20PreReadyConfiguration) + ')'
+        : 'null') +
+      ';',
+  );
+  source = source.replace(
+    /const post20UiStartRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+    'const post20UiStartRecovery = ' +
+      (post20UiStartConfiguration
+        ? 'Object.freeze(' + JSON.stringify(post20UiStartConfiguration) + ')'
         : 'null') +
       ';',
   );

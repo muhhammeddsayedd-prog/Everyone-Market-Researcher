@@ -16,6 +16,31 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('post20 UI event carries one native start and three Control reservations without inventing an execution receipt', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    post20UiStart: true,
+    technical20PreReady: true,
+    technical20SourceSelected: true,
+  });
+  try {
+    const p = f.claim(f.admit()),
+      r = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(p);
+    assert.equal(r.technicalAttemptOrdinal, 21);
+    assert.equal(r.post20UiStartReconciled, true);
+    assert.equal(r.carriedNativeExecutions, 4);
+    assert.equal(p.carriedControlAttempts, 148);
+    assert.equal(r.carriedGatewayHttpAttempts, 4);
+    assert.equal(r.aggregateManagementAttempts, 1317);
+    assert.equal(r.aggregateControlAttempts, 1249);
+    assert.deepEqual(f.module.foundationProjectVerifiedContinuationUnadmittedUsage(p), {
+      nativeExecutions: 4,
+      gatewayHttpAttempts: 4,
+    });
+  } finally {
+    f.cleanup();
+  }
+});
+
 test('typed pre-Ready20 preserves raw false closure and permits only fresh sibling21 with unchanged charges', async () => {
   const f = await syntheticProjectVerifiedContinuation({
     technical20PreReady: true,
@@ -73,12 +98,17 @@ test('closed19 preserves all charged state and exposes fresh20 only behind exact
   }
 });
 
-for (const technicalAttempt of [20, 21])
-  test(`genuine sibling${technicalAttempt} retains closed${technicalAttempt - 1} prefixes and all25 restored versions under the exact approved allocation`, async () => {
+for (const [technicalAttempt, post20UiStart] of [
+  [20, false],
+  [21, false],
+  [21, true],
+])
+  test(`genuine sibling${technicalAttempt}${post20UiStart ? ' after UI event' : ''} retains closed${technicalAttempt - 1} prefixes and all25 restored versions under the exact approved allocation`, async () => {
     const f = await syntheticProjectVerifiedContinuation({
       technical19Restored: true,
       technical20PreReady: technicalAttempt === 21,
       technical20SourceSelected: true,
+      post20UiStart,
     });
     try {
       const proof = f.claim(f.admit()),
@@ -88,9 +118,9 @@ for (const technicalAttempt of [20, 21])
       assert.equal(checkpoint.technicalAttemptOrdinal, technicalAttempt);
       assert.equal(checkpoint.runtimeFilename, `runtime.technical-${technicalAttempt}.jsonl`);
       assert.equal(checkpoint.aggregateManagementAttempts, 1317);
-      assert.equal(checkpoint.aggregateControlAttempts, 1246);
+      assert.equal(checkpoint.aggregateControlAttempts, post20UiStart ? 1249 : 1246);
       assert.equal(checkpoint.settledNativeControlRows, 1118);
-      assert.equal(checkpoint.carriedNativeExecutions, 3);
+      assert.equal(checkpoint.carriedNativeExecutions, post20UiStart ? 4 : 3);
       assert.equal(checkpoint.legacySqlAdmitted, 11);
       assert.equal(checkpoint.setupRows, 510);
       assert.equal(checkpoint.setupAttempts, 254);
@@ -149,6 +179,34 @@ for (const technicalAttempt of [20, 21])
       f.cleanup();
     }
   });
+
+test('post20 UI carry denies missing evidence, invented terminal proof, partial observations, DB drift and altered charges', async () => {
+  for (const post20UiFault of [
+    'missing',
+    'partial',
+    'database',
+    'db-auth',
+    'usage',
+    'source',
+    'count',
+    'native-count',
+    'native-id',
+    'terminal',
+    'admitted',
+    'mutation',
+    'cleanup',
+    'after-query',
+    'draft',
+    'pin',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ post20UiStart: true, post20UiFault });
+    try {
+      assert.throws(() => f.check(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/, post20UiFault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
 
 test('typed pre-Ready20 denies false cleanup, changed raw receipts, prior prefixes and every unexpected output', async () => {
   for (const technical20PreReadyFault of [

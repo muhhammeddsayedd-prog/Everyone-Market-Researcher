@@ -934,6 +934,13 @@ function Read-FoundationPostcheckContinuation {
         $null=Read-FoundationTechnical19Database
         $retainedUsage=(Read-Json (Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json')).usage
         $managementExpected=@{managementMaximum=1728;managementAttempts=$retainedUsage.management;controlAttempts=$retainedUsage.control;combinedAttempts=$retainedUsage.combined}
+        $post20UiRelative='milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-start-20261025.json'
+        if(Test-Path -LiteralPath (Join-Path $repo $post20UiRelative) -ErrorAction Stop){
+          if((File-Hash (Assert-Path $repo $post20UiRelative)) -cne 'c5e4e506d788b399fd95354cc2bc59849076daec48e0a41901e717a4a22c157e'){throw 'blocked'}
+          # The one native browser start and two observed Preview POSTs remain
+          # charged; there is no corresponding SQL admission or actor start.
+          $managementExpected.controlAttempts+=3;$managementExpected.combinedAttempts+=3
+        }
       }
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
       if($restoredMode -and $value.controlAttempts -eq 842){$null=Read-FoundationTechnical14NoAdmin}

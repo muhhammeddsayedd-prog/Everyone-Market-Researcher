@@ -135,8 +135,10 @@ export function createFoundationNativeController({
       carriedNativeExecutions = usage.nativeExecutions;
       const resume = foundationProjectVerifiedContinuationResumeCheckpoint(projectVerifiedContinuationProof);
       if (resume.settledNativeControlRows !== undefined) {
+        const post20UiCarry = resume.post20UiStartReconciled === true;
         if (
-          usage.nativeExecutions !== 3 ||
+          usage.nativeExecutions !== (post20UiCarry ? 4 : 3) ||
+          (post20UiCarry && resume.managementMaximum !== 1728) ||
           !(
             resume.managementMaximum === 1408 ||
             (resume.managementMaximum === 1728 &&

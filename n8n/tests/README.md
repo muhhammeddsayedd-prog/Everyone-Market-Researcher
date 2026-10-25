@@ -1,5 +1,14 @@
 # M03 verification
 
+Hosted browser starts require an outstanding, matching `browser_start` port
+after `dev_runtime_prepared` and materialization of that exact finite case.
+Never use the trigger menu to preselect a trigger: choosing an entry starts
+the workflow immediately. Reload the prepared case, verify its Manual trigger,
+and use the whole-workflow Execute control once for that port nonce. A click
+is not a native execution receipt; acknowledge only an actually observed ID.
+If the outcome or ID is uncertain, reconcile it before any further start.
+Keep the restored baseline unexecuted between acceptance attempts.
+
 Run from the repository root:
 
 ```powershell
