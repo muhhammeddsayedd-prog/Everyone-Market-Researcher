@@ -218,7 +218,14 @@ function Get-ProjectVerifiedPublicManagementMaximum($Value,[bool]$ProjectClock,[
    if((Get-FileHash -LiteralPath $post20UiReceipt -Algorithm SHA256).Hash.ToLowerInvariant() -cne 'c5e4e506d788b399fd95354cc2bc59849076daec48e0a41901e717a4a22c157e'){throw 'blocked'}
   }
   $expectedControl=if($post20UiPresent){1249}else{1246};$expectedCombined=if($post20UiPresent){2566}else{2563}
-  if($Value.managementMaximum -ne 1728 -or $Value.managementAttempts -ne 1317 -or $Value.controlAttempts -ne $expectedControl -or $Value.combinedAttempts -ne $expectedCombined -or $Value.networkRequests -ne 0){throw 'blocked'}
+  $expectedManagement=1317
+  if($Value.managementAttempts -eq 1340){
+   $restoreReceipt=Public-File (Join-Path $repo 'milestones/M03-n8n-foundation/evidence/wf00-current-restore-result-20261025.json')
+   $technical21Receipt=Public-File (Join-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical21-baseline-refusal-20261025.json')
+   if((Get-FileHash -LiteralPath $restoreReceipt -Algorithm SHA256).Hash.ToLowerInvariant() -cne 'b0a63be9eff10269bd4292fad294815a40eb5dbeac5472b87831606a3dc2b14d' -or (Get-FileHash -LiteralPath $technical21Receipt -Algorithm SHA256).Hash.ToLowerInvariant() -cne 'a5a47f12b284eea2ccc0e58b51e0d254b6b7c8af86431bbe369b41d373f378cb'){throw 'blocked'}
+   $expectedManagement=1340;$expectedControl=1250;$expectedCombined=2590
+  }
+  if($Value.managementMaximum -ne 1728 -or $Value.managementAttempts -ne $expectedManagement -or $Value.controlAttempts -ne $expectedControl -or $Value.combinedAttempts -ne $expectedCombined -or $Value.networkRequests -ne 0){throw 'blocked'}
   $technical19PublicReceipt=Public-File (Join-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json')
   $technical20Approval=Public-File (Join-Path $repo 'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-approval-20261025.json')
   if((Get-FileHash -LiteralPath $technical19PublicReceipt -Algorithm SHA256).Hash.ToLowerInvariant() -cne '567de4bcc54962c57afb88846fd4c8a75dbfa465623aad3578aab51c4eab41dc' -or (Get-FileHash -LiteralPath $technical20Approval -Algorithm SHA256).Hash.ToLowerInvariant() -cne 'a80ea5491487b22df91c07deb4ab94b3854fe037a1f7458f25fd3afcf2a4619a'){throw 'blocked'}

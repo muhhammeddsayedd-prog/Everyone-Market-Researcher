@@ -1,0 +1,187 @@
+{
+  "kind": "m03_technical22_local_readiness",
+  "version": 1,
+  "observedAt": "2026-10-25T13:26:46.996Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "baseHead": "b51697a58eccfafb36c202e3468c9e965a28fb58",
+  "selectedApplicationSource": "5f256ce915f930481b0d31ac38b919c0a7692cd1",
+  "standingAuthorityPreserved": true,
+  "existingCaps": {
+    "management": 1728,
+    "control": 3584,
+    "combined": 5312,
+    "vercel": 304,
+    "actorStarts": 2,
+    "actorReserveUsd": 2,
+    "newDistinctItems": 1
+  },
+  "retainedUsage": {
+    "management": 1340,
+    "control": 1250,
+    "combined": 2590,
+    "vercel": 254,
+    "nativeExecutions": 4,
+    "actorStarts": 0,
+    "providerSpendUsd": 0
+  },
+  "sourcePins": {
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "7df9e6486e5c310ca1d73c184c517ecbb61f109591ce6a6cd719f14c77f893bf",
+    "scripts/n8n/foundation-live-project-verified-fixtures.mjs": "8ec6d3f0da735ceb86771fcce06e7023dad4c4bd9d175efed41c8d3a89336364",
+    "scripts/n8n/foundation-live-project-verified-continuation.test.mjs": "926d8660b10d2f68582923b5f24400c144cc1451fddaa9f6a94bb598f67cc543",
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "a0eadd34c682a6e8f4a60705bacb64bf4bd8e7f076aa176eca6987059d105fd2",
+    "scripts/db/windows/Foundation-AdminControl.ps1": "5f5762bde5227640495d75a60d721d2008ff2a51f9391ebc920e1b96c717963d",
+    "scripts/assert/m03_smoke_reactivate_project_verified.sql": "e0634ba671f6ff5cf38bbe420e5e7f797c02e5af253d8f2609a01861b716113f",
+    "scripts/n8n/windows/Invoke-M03Acceptance.ps1": "4403df22c0c5fe22038fe44ca73816b9b893091a9ce32b58e26c0ca836cf787b",
+    "scripts/db/foundation-forward-migration-ps.test.mjs": "c70ed4c4295299e755e77ccb240d77c6c7bb1af09d48844c023b174daf7d6019",
+    "scripts/db/foundation-project-verified-reactivate.test.mjs": "0cbe68481134d7d80a7016eb6dbe547886f679b526c9c00df0c4d9fe2492c7bb",
+    "scripts/n8n/foundation-live-wrapper.test.mjs": "81f96e2ce5d9fda910fa1e13d40ef99f08cbee5084b34ef1cf2efbe104540a79"
+  },
+  "restoreEvidence": {
+    "relative": "milestones/M03-n8n-foundation/evidence/wf00-current-restore-result-20261025.json",
+    "sha256": "b0a63be9eff10269bd4292fad294815a40eb5dbeac5472b87831606a3dc2b14d",
+    "originalOuterResult": null,
+    "originalParentNativeExit": null,
+    "independentReadNativeExit": 0,
+    "writeRepeated": false
+  },
+  "localTests": {
+    "guard": {
+      "receipt": "e6e2c9",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "coherentDenialVariants": 22,
+      "lostCaptureDenialVariants": 12
+    },
+    "nativeCombinedBeforeFinalGuardTrim": {
+      "receipt": "d87ea2",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "finalNewProfileRevalidatedSeparately": true
+    },
+    "finalNativeTechnical22": {
+      "receipt": "555980",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "isolatedPostgres17": {
+      "originalSqlRed": "1e979a",
+      "finalSqlGreen": "ab6629",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "hostedSqlOperations": 0
+    },
+    "syntaxFormattingLintDiff": "passed",
+    "independentReviews": "no_P1_P2"
+  },
+  "publicSeal": {
+    "closed": true,
+    "nativeExit": 0,
+    "stderrObserved": false,
+    "elapsedSeconds": 219,
+    "publicResult": {
+      "status": "acceptance_public_seal_ready",
+      "privateRead": false,
+      "networkRequests": 0,
+      "projectFiles": 255,
+      "runtimeFiles": 840
+    }
+  },
+  "originalPublicCheck": {
+    "closed": true,
+    "nativeExit": 0,
+    "stderrObserved": false,
+    "elapsedSeconds": 123,
+    "publicResult": {
+      "status": "check_only_ready",
+      "privateRead": false,
+      "networkRequests": 0,
+      "publicCompositionLoaded": true,
+      "adminPublicInputsVerified": true,
+      "adminHandoffReady": false,
+      "actualMcpPortVerified": false,
+      "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+      "managementMaximum": 1728,
+      "controlMaximum": 3584
+    }
+  },
+  "persistentAccessStatus": {
+    "closed": true,
+    "nativeExit": 0,
+    "stderrObserved": false,
+    "elapsedSeconds": 420,
+    "publicResult": {
+      "status": "ready",
+      "persistent": true,
+      "authenticationTested": false,
+      "entries": [
+        {
+          "kind": "Admin",
+          "present": true
+        },
+        {
+          "kind": "Management",
+          "present": true
+        },
+        {
+          "kind": "Writer",
+          "present": true
+        },
+        {
+          "kind": "ApifyRead",
+          "present": true
+        }
+      ],
+      "missing": []
+    }
+  },
+  "nativeVercelMetadata": {
+    "kind": "m03_vercel_saved_auth_metadata",
+    "status": "metadata_covers_75_minutes",
+    "metadataValid": true,
+    "unexpired": true,
+    "covers75Minutes": true,
+    "effectiveBackendEstablished": false,
+    "networkRequests": 0,
+    "authenticationAttempted": false,
+    "refreshAttempted": false,
+    "configWritten": false,
+    "childClosed": true
+  },
+  "packetRefresh": [
+    {
+      "packet": "scripts/db/m03-foundation-dev-migration-packet.json",
+      "changedSourcePins": [
+        "scripts/db/windows/Invoke-M03FoundationMigrations.ps1",
+        "scripts/db/windows/Foundation-AdminControl.ps1",
+        "scripts/n8n/foundation-live-project-verified-continuation.mjs",
+        "scripts/assert/m03_smoke_reactivate_project_verified.sql"
+      ]
+    },
+    {
+      "packet": "scripts/db/m03-foundation-forward-dev-migration-packet.json",
+      "changedSourcePins": [
+        "scripts/db/windows/Invoke-M03FoundationMigrations.ps1",
+        "scripts/db/windows/Foundation-AdminControl.ps1",
+        "scripts/n8n/foundation-live-project-verified-continuation.mjs",
+        "scripts/assert/m03_smoke_reactivate_project_verified.sql",
+        "scripts/db/m03-foundation-dev-migration-packet.json"
+      ]
+    }
+  ],
+  "migrationFilesChanged": false,
+  "hostedOperationsSinceReconciliation": 0,
+  "admissionStarted": false,
+  "businessAcceptance": false,
+  "fullDAcceptance": false,
+  "normalNewHeadCiRequiredBeforeHostedContinuation": true,
+  "productionChanged": false,
+  "mergePerformed": false,
+  "m04Started": false,
+  "elapsedSecondsMeaning": "coordinator_launch_to_observation_age_not_recovered_native_duration",
+  "adminReadinessNote": "CheckOnly reports no disposable Admin copy; persistent Admin original is present and will be materialized by the existing bounded path."
+}

@@ -21,7 +21,9 @@ export async function syntheticProjectVerifiedContinuation({
   priorFault,
   projectFault,
   historicalSetupEvents,
-  post20UiStart = false,
+  technical21Closed = false,
+  technical21Fault,
+  post20UiStart = technical21Closed,
   post20UiFault,
   technical20PreReady = post20UiStart,
   technical20PreReadyFault,
@@ -2778,7 +2780,8 @@ export async function syntheticProjectVerifiedContinuation({
     technical18PreparationConfiguration,
     technical19RestorationConfiguration,
     technical20PreReadyConfiguration,
-    post20UiStartConfiguration;
+    post20UiStartConfiguration,
+    technical21BaselineConfiguration;
   if (unadmittedWf00Reconciled) {
     const root = 'milestones/M03-n8n-foundation/evidence/',
       relative = root + 'wf00-unadmitted-manual-checkpoint-20261024.json',
@@ -4375,6 +4378,301 @@ export async function syntheticProjectVerifiedContinuation({
     if (post20UiFault !== 'missing') put(relative, json(r));
     post20UiStartConfiguration = { relative, sha256: digest(json(r)) };
   }
+  if (technical21Closed) {
+    const ev = 'milestones/M03-n8n-foundation/evidence/',
+      live = 'scripts/n8n/out/foundation/live/',
+      relative = ev + 'dev-acceptance-technical21-baseline-refusal-20261025.json',
+      failedReadRelative = ev + 'wf00-finite-diagnostic-contract-failure-20261025.json',
+      currentReadRelative = ev + 'wf00-current-drift-readback-20261025.json',
+      restoreRelative = ev + 'wf00-current-restore-result-20261025.json',
+      json = (v) => JSON.stringify(v) + '\n',
+      read = (p) => JSON.parse(readFileSync(join(directory, p), 'utf8')),
+      seed = (p) => JSON.parse(readFileSync(join(sourceRoot, p), 'utf8')),
+      pinDocument = (r) => {
+        for (const p of Object.keys(r.pins)) {
+          if (!existsSync(join(directory, p))) put(p, readFileSync(join(sourceRoot, p)));
+          r.pins[p] = digest(readFileSync(join(directory, p)));
+        }
+      },
+      r = seed(relative),
+      failed = seed(failedReadRelative),
+      current = seed(currentReadRelative),
+      stem = live + 'project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-21',
+      start = Date.parse('2026-10-25T11:50:00.000Z'),
+      admission = {
+        ...read(stem.replace(/technical-21$/, 'technical-20') + '.json'),
+        startsAt: start,
+        deadlineAt: start + 3600000,
+        stopNewAt: start + 3000000,
+        hardDeadlineAt: start + 4200000,
+        parentProcessId: 91230,
+      },
+      admissionText = json(admission),
+      claim = {
+        kind: 'm03_project_verified_continuation_runtime_claim',
+        version: 1,
+        segmentId: admission.segmentId,
+        admissionSha256: digest(admissionText),
+        processId: 91231,
+        parentProcessId: 91230,
+        claimedAt: start + 1000,
+      };
+    const managementPath = live + 'management.jsonl',
+      controlPath = live + 'control.jsonl';
+    put(
+      managementPath,
+      readFileSync(join(directory, managementPath), 'utf8') +
+        Array.from({ length: 16 }, (_, i) => json({ event: 'management_attempt', ordinal: 1165 + i })).join(
+          '',
+        ),
+    );
+    put(
+      controlPath,
+      readFileSync(join(directory, controlPath), 'utf8') +
+        json({
+          event: 'control_request_intent',
+          ordinal: 1102,
+          kind: 'discovery',
+          workflowId: 'MzimjpsuyPuK7SKe',
+          at: new Date(start + 10000).toISOString(),
+        }) +
+        json({
+          event: 'browser_port_preflight_verified',
+          workflowId: 'MzimjpsuyPuK7SKe',
+          kind: 'browser_ui',
+          at: new Date(start + 15000).toISOString(),
+        }),
+    );
+    r.rawAdmission = admission;
+    r.rawClaim = claim;
+    r.rawClose = {
+      ...r.rawClose,
+      admissionSha256: digest(admissionText),
+      parentProcessId: 91230,
+      runtimeProcessId: 91231,
+      closedAt: start + 60000,
+    };
+    r.attempt.parentProcessId = 91230;
+    r.attempt.runtimeProcessId = 91231;
+    r.source.applicationSource = 'c'.repeat(40);
+    r.rawFrames[2].sourceCommitSha = 'c'.repeat(40);
+    r.rawFrames[2].deadlineAt = admission.deadlineAt;
+    r.separateDisposableCleanup.result.observedAt = '2026-10-25T11:52:00.000Z';
+    r.observedAt = '2026-10-25T11:53:00.000Z';
+    if (technical21Fault === 'closure') r.rawClose.closureVerified = true;
+    if (technical21Fault === 'credential-closure') r.rawClose.credentialChildrenClosed = false;
+    if (technical21Fault === 'cleanup') r.separateDisposableCleanup.result.directChildrenAbsent = false;
+    if (technical21Fault === 'actor') r.attempt.actorStarted = true;
+    if (technical21Fault === 'counter') r.usageAfterAttempt.management--;
+    put(stem + '.json', admissionText);
+    put(stem + '.runtime-claim.json', json(claim));
+    put(stem + '.closed.json', json(r.rawClose));
+    put(live + 'technical21-coordinator-20261025-startup1.jsonl', r.rawFrames.map(json).join(''));
+    put(live + 'technical21-disposable-cleanup-result.json', json(r.separateDisposableCleanup.result));
+    if (technical21Fault === 'old-prefix')
+      put(
+        managementPath,
+        readFileSync(join(directory, managementPath), 'utf8').replace('"ordinal":1164', '"ordinal":1163'),
+      );
+    if (technical21Fault === 'unrelated-replacement')
+      put(live + 'technical21-inventory-seal-used.json', json({ unexpectedName: '\uFFFD' }));
+    pinDocument(r);
+    put(relative, json(r));
+    failed.observedAt = '2026-10-25T11:54:00.000Z';
+    pinDocument(failed);
+    put(failedReadRelative, json(failed));
+    current.observedAt = '2026-10-25T11:55:00.000Z';
+    if (technical21Fault === 'finite-id')
+      current.rawResult.inventory.forensics.nodeDifferences[0].nodeId = 'unknown-node-id';
+    if (technical21Fault === 'finite-signature')
+      current.rawResult.inventory.forensics.nodeDifferences[0].missingParameterKeys = ['mode'];
+    if (['finite-id', 'finite-signature'].includes(technical21Fault)) {
+      current.finiteProjection.projectedNodeDifferences =
+        current.rawResult.inventory.forensics.nodeDifferences.map(
+          ({
+            nodeId,
+            changedParameterKeys,
+            missingParameterKeys,
+            extraParameterKeyCount,
+            layoutChanged,
+            canonicalOrNativeDefaultsMatch,
+          }) => ({
+            nodeId,
+            changedParameterKeys,
+            missingParameterKeys,
+            extraParameterKeyCount,
+            layoutChanged,
+            canonicalOrNativeDefaultsMatch,
+          }),
+        );
+      current.finiteProjection.projectedNodeDifferencesSha256 = digest(
+        JSON.stringify(current.finiteProjection.projectedNodeDifferences),
+      );
+      put(live + 'technical21-finite-difference-retry-result.json', json(current.rawResult));
+    }
+    if (technical21Fault === 'invalid-utf8')
+      put(
+        live + 'technical21-finite-difference-retry-result.json',
+        Buffer.concat([Buffer.from(json(current.rawResult)), Buffer.from([255])]),
+      );
+    pinDocument(current);
+    current.sourceFileSha256 = current.pins[current.sourceFile];
+    put(currentReadRelative, json(current));
+    const journalPath = 'scripts/n8n/out/foundation/wf00-restore-fe249a62-8276-47c1-a58a-7bb50705a280.jsonl',
+      backupRunId = 'da54c225-c11f-4cce-9f7e-c7b783864cf8',
+      restoredVersionId = 'synthetic22-wf00',
+      workflowId = 'MzimjpsuyPuK7SKe',
+      beforeVersionId = 'fe249a62-8276-47c1-a58a-7bb50705a280',
+      journal = [
+        {
+          kind: 'm03_current_wf00_restore_claim',
+          version: 1,
+          workflowId,
+          beforeVersionId,
+          receiptSha256: digest(json(current)),
+        },
+        {
+          event: 'request',
+          number: 1,
+          method: 'GET',
+          path: '/api/v1/workflows/' + workflowId + '?excludePinnedData=true',
+        },
+        { event: 'backup_ready', workflowId, backupRunId },
+        {
+          event: 'restore_intent',
+          workflowId,
+          sourceCommitSha: '025c2a2c0127566df71cef77797db277f1565568',
+          backupRunId,
+        },
+        {
+          event: 'request',
+          number: 2,
+          method: 'PUT',
+          path: '/api/v1/workflows/' + workflowId + '?publishIfActive=false',
+        },
+        {
+          event: 'request',
+          number: 3,
+          method: 'GET',
+          path: '/api/v1/workflows/' + workflowId + '?excludePinnedData=true',
+        },
+        {
+          event: 'restore_verified',
+          workflowId,
+          versionId: restoredVersionId,
+          backupRunId,
+          nativeReadonlySettings: { binaryMode: 'separate' },
+        },
+      ],
+      restored = {
+        ...seed(ev + 'wf00-current-restore-result-20261025.json'),
+        kind: 'm03_wf00_current_restore_result',
+        version: 1,
+        observedAt: '2026-10-25T11:58:00.000Z',
+        environment: 'dev',
+        projectRef: 'zmotjsbzhzjvpelxvxlf',
+        observedBeforeVersion: beforeVersionId,
+        targetSource: '025c2a2c0127566df71cef77797db277f1565568',
+        actualParentNativeExit: null,
+        parentClosed: true,
+        requestCount: 3,
+        rawResult: null,
+        restoredVersionId,
+        usageAfter: { management: 1340, control: 1250, combined: 2590, vercel: 254, nativeExecutions: 4 },
+        pins: {
+          ...seed(ev + 'wf00-current-restore-result-20261025.json').pins,
+          [relative]: digest(json(r)),
+          [failedReadRelative]: digest(json(failed)),
+          [currentReadRelative]: digest(json(current)),
+          [journalPath]: 'pending',
+          'n8n/fixtures/WF-00-reviewed-native-staging-025c2a2.json': 'pending',
+          'milestones/M03-n8n-foundation/evidence/wf00-restore-approval-20261023.json': 'pending',
+        },
+      };
+    const actual = seed(ev + 'wf00-current-restore-result-20261025.json');
+    restored.coordinatorFailure = structuredClone(actual.coordinatorFailure);
+    restored.coordinatorFailure.observerResult.processId = 91240;
+    restored.independentReadback = structuredClone(actual.independentReadback);
+    restored.independentReadback.rawResult.publicResult.inventory.observedVersionId = restoredVersionId;
+    restored.closureEvidence = structuredClone(actual.closureEvidence);
+    restored.closureEvidence.observedAt = '2026-10-25T11:57:00.000Z';
+    const intent = seed(restored.independentReadback.intentRelative);
+    intent.expectedVersion = restoredVersionId;
+    intent.observedAt = '2026-10-25T11:56:00.000Z';
+    if (technical21Fault === 'lost-read-counter') intent.reservedUsage.management--;
+    put(restored.independentReadback.intentRelative, json(intent));
+    if (technical21Fault === 'lost-capture-exit') restored.actualParentNativeExit = 0;
+    if (technical21Fault === 'lost-capture-raw') restored.rawResult = { nativeExit: 0 };
+    if (technical21Fault === 'lost-read-auth')
+      restored.independentReadback.rawResult.publicResult.inventory.authenticationVerified = false;
+    if (technical21Fault === 'lost-read-tls')
+      restored.independentReadback.rawResult.publicResult.inventory.diagnostics.requests[0].tlsVerified = false;
+    if (technical21Fault === 'lost-read-version')
+      restored.independentReadback.rawResult.publicResult.inventory.observedVersionId = beforeVersionId;
+    if (technical21Fault === 'lost-read-params')
+      restored.independentReadback.rawResult.publicResult.inventory.forensics.nodeCategories.parametersEqual = false;
+    if (technical21Fault === 'lost-read-closure') restored.closureEvidence.readDirectChildrenAbsent = false;
+    if (technical21Fault === 'lost-physical-leaf')
+      restored.closureEvidence.checkedManagementCopyRelative = 'Temp/unrelated.dpapi';
+    if (technical21Fault === 'lost-business') restored.fullDAcceptance = true;
+    if (technical21Fault === 'lost-extra-save') restored.coordinatorFailure.saveRepeated = true;
+    if (technical21Fault === 'lost-original-exit')
+      restored.coordinatorFailure.parentNativeExitObserved = true;
+    restored.backupEvidence = {
+      checkScope: 'post_close_backup_presence_only',
+      runId: backupRunId,
+      beforeVersionId,
+      encryptedBackupPresent: true,
+      plaintextRead: false,
+      credentialDecryptionAttempted: false,
+      networkRequests: 0,
+    };
+    if (technical21Fault === 'backup-evidence') restored.backupEvidence.encryptedBackupPresent = false;
+    if (technical21Fault === 'backup-run')
+      restored.backupEvidence.runId = '725ba4ca-f4f1-4110-966c-a4580e4a26cf';
+    if (technical21Fault === 'backup-private') restored.backupEvidence.credentialDecryptionAttempted = true;
+    if (technical21Fault === 'backup-scope') restored.backupEvidence.checkScope = 'all-private-files';
+    if (technical21Fault === 'backup-missing') delete restored.backupEvidence;
+    if (technical21Fault === 'restore-native') restored.independentReadback.rawResult.nativeExit = 1;
+    if (technical21Fault === 'restore-before') restored.observedBeforeVersion = 'wrong';
+    if (technical21Fault === 'restore-target') restored.targetSource = 'f'.repeat(40);
+    if (technical21Fault === 'restore-requests') restored.requestCount = 2;
+    if (technical21Fault === 'restore-inactive')
+      restored.independentReadback.rawResult.publicResult.inventory.baseline.components.nodesEqual = false;
+    if (technical21Fault === 'restore-backup') restored.backupEvidence.encryptedBackupPresent = false;
+    if (technical21Fault === 'restore-version') {
+      restored.restoredVersionId = beforeVersionId;
+      journal[6].versionId = beforeVersionId;
+    }
+    if (technical21Fault === 'restore-journal') journal[4].method = 'POST';
+    if (technical21Fault === 'restore-usage') restored.usageAfter.management--;
+    if (technical21Fault === 'future') restored.observedAt = '2026-10-26T00:00:00.000Z';
+    put(restored.independentReadback.resultRelative, json(restored.independentReadback.rawResult));
+    put(
+      live + 'technical21-current-wf00-restore-physical-observation-corrected.json',
+      json(restored.closureEvidence),
+    );
+    restored.journal = {
+      relative: journalPath,
+      sha256: digest(journal.map(json).join('')),
+      rowCount: journal.length,
+      rawRows: journal,
+    };
+    put(journalPath, journal.map(json).join(''));
+    pinDocument(restored);
+    if (technical21Fault !== 'restore-missing') put(restoreRelative, json(restored));
+    if (technical21Fault === 'db-output') put(r.outputsNotProduced.relativePaths[0], '{}\n');
+    technical21BaselineConfiguration = {
+      relative,
+      sha256: digest(json(r)),
+      failedReadRelative,
+      failedReadSha256: digest(json(failed)),
+      currentReadRelative,
+      currentReadSha256: digest(json(current)),
+      restoreRelative,
+      restoreSha256: digest(json(restored)),
+    };
+  }
   if (approved)
     put(
       'milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json',
@@ -4426,6 +4724,14 @@ export async function syntheticProjectVerifiedContinuation({
     'const post20UiStartRecovery = ' +
       (post20UiStartConfiguration
         ? 'Object.freeze(' + JSON.stringify(post20UiStartConfiguration) + ')'
+        : 'null') +
+      ';',
+  );
+  source = source.replace(
+    /const technical21BaselineRecovery = Object\.freeze\(\{[\s\S]*?\n\}\);/,
+    'const technical21BaselineRecovery = ' +
+      (technical21BaselineConfiguration
+        ? 'Object.freeze(' + JSON.stringify(technical21BaselineConfiguration) + ')'
         : 'null') +
       ';',
   );

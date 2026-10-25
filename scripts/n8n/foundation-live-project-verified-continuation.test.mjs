@@ -4060,3 +4060,159 @@ test('effectful raw journal and preflight prefixes cannot be edited, normalized 
       }
     }
 });
+
+test('typed21 baseline refusal and exact owned restoration permit only sibling22', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ technical21Closed: true });
+  try {
+    const p = f.claim(f.admit()),
+      r = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(p);
+    assert.equal(r.technicalAttemptOrdinal, 22);
+    assert.equal(r.aggregateManagementAttempts, 1340);
+    assert.equal(r.aggregateControlAttempts, 1250);
+    assert.equal(r.settledNativeControlRows, 1120);
+    assert.equal(r.carriedNativeExecutions, 4);
+    assert.equal(r.legacySqlAdmitted, 11);
+    assert.equal(p.carriedManagementAttempts, 160);
+    assert.equal(p.carriedControlAttempts, 148);
+    const versions = f.module.foundationProjectVerifiedContinuationRestoredBaselineVersions(p);
+    assert.equal(Object.keys(versions).length, 25);
+    assert.equal(versions['WF-00'], 'synthetic22-wf00');
+    assert.ok(
+      Object.entries(versions)
+        .filter(([k]) => k !== 'WF-00')
+        .every(([, v]) => v.startsWith('synthetic19-')),
+    );
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('closed21 reconciliation denies coherent closure accounting finite-identity backup and unexpected-effect faults', async () => {
+  for (const technical21Fault of [
+    'closure',
+    'credential-closure',
+    'cleanup',
+    'actor',
+    'counter',
+    'old-prefix',
+    'restore-missing',
+    'restore-native',
+    'restore-before',
+    'restore-target',
+    'restore-requests',
+    'restore-inactive',
+    'restore-backup',
+    'restore-version',
+    'restore-journal',
+    'restore-usage',
+    'future',
+    'db-output',
+    'finite-id',
+    'finite-signature',
+    'invalid-utf8',
+    'unrelated-replacement',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ technical21Closed: true, technical21Fault });
+    try {
+      assert.throws(() => f.check(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/, technical21Fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+test('sibling22 ReadClaimed accepts only ordered live tails after fixed21 prefixes and keeps priorUI21 unchanged', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ technical21Closed: true });
+  try {
+    const p = f.claim(f.admit());
+    f.io.processAlive = (pid) => [process.pid, process.ppid].includes(pid);
+    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+    const beforeM = readFileSync(f.paths.management, 'utf8'),
+      beforeC = readFileSync(f.paths.control, 'utf8');
+    appendFileSync(
+      f.paths.management,
+      Array.from(
+        { length: 25 },
+        (_, i) => JSON.stringify({ event: 'management_attempt', ordinal: 1181 + i }) + '\n',
+      ).join(''),
+    );
+    appendFileSync(
+      f.paths.control,
+      Array.from(
+        { length: 51 },
+        (_, i) =>
+          JSON.stringify({
+            event: 'control_request_intent',
+            ordinal: 1103 + i,
+            kind: 'discovery',
+            workflowId: 'MzimjpsuyPuK7SKe',
+            at: new Date(p.startsAt + 1000).toISOString(),
+          }) + '\n',
+      ).join(''),
+    );
+    assert.equal(f.readClaimed().windowId, p.windowId);
+    assert.doesNotThrow(() =>
+      f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(p)),
+    );
+    writeFileSync(
+      f.paths.control,
+      beforeC.replace('"ordinal":1102', '"ordinal":1101') +
+        readFileSync(f.paths.control, 'utf8').slice(beforeC.length),
+    );
+    assert.throws(() => f.readClaimed());
+    writeFileSync(f.paths.management, beforeM);
+    writeFileSync(f.paths.control, beforeC);
+  } finally {
+    f.cleanup();
+  }
+  const old = await syntheticProjectVerifiedContinuation({ post20UiStart: true });
+  try {
+    const p = old.claim(old.admit());
+    assert.equal(
+      old.module.foundationProjectVerifiedContinuationResumeCheckpoint(p).technicalAttemptOrdinal,
+      21,
+    );
+  } finally {
+    old.cleanup();
+  }
+});
+
+test('closed21 recovery requires independent exact rollback-presence scope and matching backup run', async () => {
+  for (const technical21Fault of [
+    'backup-evidence',
+    'backup-run',
+    'backup-private',
+    'backup-scope',
+    'backup-missing',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ technical21Closed: true, technical21Fault });
+    try {
+      assert.throws(() => f.check(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/, technical21Fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
+test('lost restoration capture requires independent parity custody and honest unknown exit', async () => {
+  for (const technical21Fault of [
+    'lost-capture-exit',
+    'lost-capture-raw',
+    'lost-read-auth',
+    'lost-read-tls',
+    'lost-read-version',
+    'lost-read-params',
+    'lost-read-closure',
+    'lost-read-counter',
+    'lost-physical-leaf',
+    'lost-business',
+    'lost-extra-save',
+    'lost-original-exit',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ technical21Closed: true, technical21Fault });
+    try {
+      assert.throws(() => f.check(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/, technical21Fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});

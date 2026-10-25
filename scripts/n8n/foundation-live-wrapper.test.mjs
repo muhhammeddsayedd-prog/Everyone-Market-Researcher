@@ -1631,3 +1631,75 @@ if($child.ExitCode -ne 0){throw 'blocked'};Write-Output 'SYNTHETIC_RELAY_PASS'
     }
   },
 );
+
+test('technical22 wrapper pins restored usage and preserves prior exact profiles', windowsOnly, () => {
+  const directory = mkdtempSync(join(tmpdir(), 'emr-restored22-wrapper-'));
+  try {
+    const restoreRelative =
+        'milestones/M03-n8n-foundation/evidence/wf00-current-restore-result-20261025.json',
+      relative21 =
+        'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical21-baseline-refusal-20261025.json',
+      fixture =
+        JSON.stringify({
+          kind: 'synthetic_restoration_only',
+          management: 1340,
+          control: 1250,
+          combined: 2590,
+        }) + '\n',
+      syntheticHash = createHash('sha256').update(fixture).digest('hex');
+    const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8').replace(
+      'b0a63be9eff10269bd4292fad294815a40eb5dbeac5472b87831606a3dc2b14d',
+      syntheticHash,
+    );
+    const extract = (name) => {
+      const start = source.indexOf('function ' + name),
+        end = source.indexOf('\nfunction ', start + 10);
+      assert.ok(start >= 0 && end > start);
+      return source.slice(start, end);
+    };
+    for (const relative of [
+      relative21,
+      'milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-start-20261025.json',
+      'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-restored-20261025.json',
+      'milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-approval-20261025.json',
+    ]) {
+      mkdirSync(join(directory, 'milestones/M03-n8n-foundation/evidence'), { recursive: true });
+      writeFileSync(join(directory, relative), readFileSync(resolve(relative)));
+    }
+    writeFileSync(join(directory, restoreRelative), fixture);
+    const quote = (value) => "'" + value.replaceAll("'", "''") + "'",
+      script = join(directory, 'native22-wrapper.ps1');
+    writeFileSync(
+      script,
+      `$ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+$repo=${quote(directory)}
+${extract('Public-File(')}
+${extract('Test-Technical20PublicBinding(')}
+${extract('Get-ProjectVerifiedPublicManagementMaximum(')}
+$valid=[ordered]@{kind='project_verified_continuation_ready';segmentId='20275b22-b7fe-4737-a9a4-c50c2feadb74';sourceCommitSha='5f256ce915f930481b0d31ac38b919c0a7692cd1';windowId='e2be1a67-f6db-4c90-bfd2-671c5db9b90a';privateRead=$false;networkRequests=0;managementMaximum=1728;managementAttempts=1340;controlAttempts=1250;combinedAttempts=2590}
+$current=[pscustomobject]$valid;if((Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly') -ne 1728){throw 'EXACT_RESTORED_USAGE_REQUIRED'}
+foreach($change in @(@{key='managementAttempts';value=1339},@{key='managementAttempts';value='1340'},@{key='controlAttempts';value=1249},@{key='combinedAttempts';value=2589},@{key='managementMaximum';value=1729},@{key='sourceCommitSha';value='unknown'},@{key='networkRequests';value=1})){
+ $copy=[ordered]@{};foreach($k in $valid.Keys){$copy[$k]=$valid[$k]};$copy[$change.key]=$change.value;$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum ([pscustomobject]$copy) $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MIXED_RESTORED_USAGE'}
+}
+foreach($relative in @(${quote(restoreRelative)},${quote(relative21)})){
+ $path=Join-Path $repo $relative;$bytes=[IO.File]::ReadAllBytes($path)
+ try{[IO.File]::WriteAllText($path,'{}');$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'BAD_PIN_ALLOWED'};[IO.File]::Delete($path);$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true 'CheckOnly'}catch{$denied=$true};if(-not $denied){throw 'MISSING_PIN_ALLOWED'}}finally{[IO.File]::WriteAllBytes($path,$bytes)}
+}
+$historical=$current|ConvertTo-Json|ConvertFrom-Json;$historical.managementAttempts=1317;$historical.controlAttempts=1249;$historical.combinedAttempts=2566;if((Get-ProjectVerifiedPublicManagementMaximum $historical $true 'CheckOnly') -ne 1728){throw 'HISTORICAL_PROFILE_CHANGED'}
+foreach($mode in @('Read','Admit')){$denied=$false;try{$null=Get-ProjectVerifiedPublicManagementMaximum $current $true $mode}catch{$denied=$true};if(-not $denied){throw 'WRONG_MODE_ALLOWED'}}
+Write-Output 'DRAFT_RESTORED22_EXACT_PASS'
+`,
+    );
+    const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+      env: safeEnvironment(directory),
+      encoding: 'utf8',
+      windowsHide: true,
+      timeout: 15000,
+    });
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    assert.equal(result.stderr, '');
+    assert.equal(result.stdout.trim(), 'DRAFT_RESTORED22_EXACT_PASS');
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});

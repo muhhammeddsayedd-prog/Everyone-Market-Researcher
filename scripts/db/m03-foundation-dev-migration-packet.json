@@ -107,9 +107,9 @@
     }
   ],
   "files": {
-    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "034e10b4b32f4015e6a71879902c5752c682c86d332a3f9dee3b3ee5733b5ea4",
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "a0eadd34c682a6e8f4a60705bacb64bf4bd8e7f076aa176eca6987059d105fd2",
     "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "b95e60dd2b3d2abf972f53000db83676e4f96947e6fc1a5dfc086a2c646393a3",
-    "scripts/db/windows/Foundation-AdminControl.ps1": "760e8fe097e582432f95bb7250afa6c11005a0654c49b4e83f9363ea27aa87e9",
+    "scripts/db/windows/Foundation-AdminControl.ps1": "5f5762bde5227640495d75a60d721d2008ff2a51f9391ebc920e1b96c717963d",
     "scripts/db/foundation-settlement.sql": "94ce66c3c12a305bba196bef441a51c9879cc0764403bef2241d3660baaa91e9",
     "scripts/db/foundation-postcheck.sql": "f5ee87926275b368c476258a4b826f4a63c7b2775c4fbfabb24af774e6fc5f52",
     "scripts/db/foundation-replay-snapshot.sql": "f32c8251a11b14b34680025b8e05ee2ca90e87af45ce12a0b90bca31aec7af70",
@@ -146,8 +146,8 @@
     "scripts/assert/m03_smoke_reactivate_startup.sql": "cc2654e4d499cbd5fc1a6c75c30d991ea8f46bef3fa37f66bd415ad8b192e202",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-checkpoint-20261022.json": "e144d73dfbcab1e5a286ab9ba11df28bcbd10c8a9ad39eecb7852fee3d61d758",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-startup-replacement-packet-20261022.md": "48183521fa3abcbd54591d18e738ec0eb9c77e541a11faa9ee3cb7259c97d5d0",
-    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "ff0684d18391d4a9719980bb50345ee6bc5bdd8bf90ab7b4cfb0881c76c06631",
-    "scripts/assert/m03_smoke_reactivate_project_verified.sql": "75f3cb09b3254246c59fffc27d83722a557d66855bc82c16d35247537e74d05e",
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "7df9e6486e5c310ca1d73c184c517ecbb61f109591ce6a6cd719f14c77f893bf",
+    "scripts/assert/m03_smoke_reactivate_project_verified.sql": "e0634ba671f6ff5cf38bbe420e5e7f797c02e5af253d8f2609a01861b716113f",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json": "e21e515ae446dcde7983dba87d09221ce1bf3cd2ad06d08329368a8241e6ba10",
     "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md": "13d19460cdb889378dec5ae4d93af4708baf85290c164e07961add18e7243650",
     "scripts/db/foundation-inspect.sql": "51ca08cd0e9be3ed4abf14c526933c57419d03bd5c277d6a4337d5bf3adce434",

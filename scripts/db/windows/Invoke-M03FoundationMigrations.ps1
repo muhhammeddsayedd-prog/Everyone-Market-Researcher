@@ -941,6 +941,12 @@ function Read-FoundationPostcheckContinuation {
           # charged; there is no corresponding SQL admission or actor start.
           $managementExpected.controlAttempts+=3;$managementExpected.combinedAttempts+=3
         }
+        if($value.managementAttempts -eq 1340){
+          $null=Read-FoundationTechnical21NoReactivation
+          $restorePath=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/wf00-current-restore-result-20261025.json'
+          if((File-Hash $restorePath) -cne 'b0a63be9eff10269bd4292fad294815a40eb5dbeac5472b87831606a3dc2b14d'){throw 'blocked'}
+          $managementExpected=@{managementMaximum=1728;managementAttempts=1340;controlAttempts=1250;combinedAttempts=2590}
+        }
       }
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
       if($restoredMode -and $value.controlAttempts -eq 842){$null=Read-FoundationTechnical14NoAdmin}
@@ -1089,7 +1095,7 @@ function Assert-FoundationProjectVerifiedContinuationProcessAncestry($Clock) {
     $null=Read-FoundationForwardPrior
   }
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and $Clock.windowId -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a'){
-    if($paths.technicalOrdinal -notin @(20,21)){throw 'blocked'}
+    if($paths.technicalOrdinal -notin @(20,21,22)){throw 'blocked'}
     $null=Read-FoundationForwardPrior
   }
   return $true
@@ -1245,12 +1251,20 @@ function Read-FoundationTechnical18NoReactivation {
 }
 function Read-FoundationTechnical20NoReactivation {
   # The sealed ReadClaimed gate qualifies the failed pre-Ready20 chain and its
-  # independent physical cleanup. Preserve the raw false closure flags; only21
+  # independent physical cleanup. Preserve the raw false closure flags; only21/22
   # may omit the SQL audit that20 never created.
   $technical20Sha256='d5f4353439ff6a3254f71609048ff43aa1d453308b5708bd968182ce959bf983'
   $path=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical20-pre-ready-reconciliation-20261025.json'
   if((File-Hash $path) -cne $technical20Sha256){throw 'blocked'}
   return $technical20Sha256
+}
+function Read-FoundationTechnical21NoReactivation {
+  # The sealed current proof qualifies the actual closed21 preparation refusal.
+  # Preserve its native1/false acceptance; it never created a fixture SQL audit.
+  $technical21Sha256='a5a47f12b284eea2ccc0e58b51e0d254b6b7c8af86431bbe369b41d373f378cb'
+  $path=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical21-baseline-refusal-20261025.json'
+  if((File-Hash $path) -cne $technical21Sha256){throw 'blocked'}
+  return $technical21Sha256
 }
 function Read-FoundationForwardPrior {
   # ForwardWindow already passed the sealed current ReadClaimed/native ancestry
@@ -1258,8 +1272,9 @@ function Read-FoundationForwardPrior {
   if(-not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){$null=Assert-FoundationInspectClosed}
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a'){
     $technical=Foundation-ProjectVerifiedTechnicalIdentity
-    if($technical.ordinal -notin @(20,21)){throw 'blocked'}
-    if($technical.ordinal -eq 21){$null=Read-FoundationTechnical20NoReactivation}
+    if($technical.ordinal -notin @(20,21,22)){throw 'blocked'}
+    if($technical.ordinal -in @(21,22)){$null=Read-FoundationTechnical20NoReactivation}
+    if($technical.ordinal -eq 22){$null=Read-FoundationTechnical21NoReactivation}
     return Read-FoundationTechnical19Database
   }
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'){
