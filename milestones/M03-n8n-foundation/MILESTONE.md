@@ -416,42 +416,38 @@ receipts remain unchanged. Replaced/deferred requirements are not marked passed.
 Task details elsewhere remain implementation references; this section controls
 closure where earlier name-specific or exhaustive-verifier wording conflicts.
 
-| Original AC | Functional check | Treatment and verified/pending boundary at b51 |
+| Original AC | Functional check | Treatment and latest verified boundary |
 |---|---|---|
 | AC1 — plan facts | 6 | **Retain; complete.** The five runtime/plan facts, 50K allowance and existing estimate are recorded. No renewed billing investigation. |
 | AC2 — credentials work | 1 | **Replace the native-node/name-specific gate.** Reuse actual credential IDs/types and the approved restricted strict-TLS RPC path. Direct Writer/gateway identity and four provider metadata checks are verified; the native Postgres-node TLS failure is preserved. No model inference test is required in M03. |
 | AC3 — tested RPCs/advisors | 1, 3 | **Retain.** Existing database tests/advisor/type evidence keep their dates and scope; actual22 confirms all15 migration versions and catalog/RLS/grants, with no replay. Any new security or integrity defect remains blocking. |
 | AC4 — prices/budget/fixed fees | 3 | **Retain variable prices, actual usage and the USD25 alert default; defer fixed subscription-fee completeness.** Unknown fees stay unknown, not zero. |
-| AC5 — end-to-end smoke | 2 | **Retain; pending and blocking.** No real actor/callback/item/cost completion has run; actors remain0. |
-| AC6 — repeated run/callback | 3 | **Retain; hosted proof pending.** Local idempotency/cost/recovery tests are preserved. Require actual item-count no-op and no duplicate callback completion/cost; legitimate separate runs keep their own costs. |
-| AC7 — forged callback | 4 | **Retain; hosted proof pending.** Require `apify_callback_rejected` and zero ingestion/cost effects. The separate WF99 domain denial is not this proof. |
+| AC5 — end-to-end smoke | 2 | **Retain; passed in dev.** Actual nativeWF99/31146 and WF19/31150 completed one asynchronous public-page actor into one successful run/item. Provider usage and six-decimal database cost are verified in the actual proof. |
+| AC6 — repeated run/callback | 3 | **Retain; passed in dev.** Same callback returned200/replayed; actual restricted Writer replay returned the cached original-content receipt with updated:false/finished_now:false. Item/raw/queue/cost fingerprints and the single cost entry are unchanged. |
+| AC7 — forged callback | 4 | **Retain; passed in dev.** Unknown-run callback403, audit20/native31155 reason unregistered, no registry/launch/cost row and no ingestion/cost change. |
 | AC8 — automatic error routing | 4 | **Retain; actual22 passed.** All four automatic error/cooldown groups31136–31144 settled and were cleaned. Preserve log-only Notify; external email remains deferred to its milestone/approval. |
 | AC9 — every hosted stub slot | 2, 6 | **Replace exhaustive native stub execution as an M03 closure gate.** Representative Vimeo parent/child31134/31135 passed. Keep the full local slot/unknown-slot contracts, inactive WF-00 and disabled schedules; collector-specific live matrices belong to their collector milestones. The original every-slot hosted requirement is replaced, not passed. |
 | AC10 — native health/fixed accrual | 3, 5 | **Replace standalone WF91 execution with existing health contracts and final operational readback; defer positive hosted fixed-fee accrual while fees are unknown.** Keep local health/accrual/idempotency tests; do not claim a positive fee accrual from an empty/no-row result. |
-| AC11 — clean exports | 6 | **Retain.** All25 actual restored versions/graphs are pinned. Require final sanitized exports, required CI and review at the delivery head; fixture/source checks alone do not establish live behavior. |
+| AC11 — clean exports | 6 | **Retain; native parity passed.** Canonical sanitized exports remain intact. All25 owned definitions match their reviewed inactive baselines after approved WF99/remaining SUB/Machine restoration. Preview cleanup and independent review pass. Normal delivery-head CI remains required before the separate merge decision. |
 | AC12 — daily estimate | 6 | **Retain; complete.** Existing conservative160/day pilot and181/day full estimates remain below200/day; cumulative test allowances are separate and unchanged. |
 
-Current results are in the [existing recovery/evidence record](evidence/dev-acceptance-fixture-gap-correction-20261024.md).
-The next functional outcome is the one-page asynchronous smoke, actual callback
-completion, replay and invalid-callback proof, using existing helpers/native
-evidence. Count the remaining operations and shutdown before admission; the old
-whole-batch plan is superseded by the approved smaller-sequence allocation:
-Management2048/Vercel352. The first smaller-sequence attempt closed safely at
-1861/1488/3349/V323, actors0, after a guarded WF99 staging omission; actual
-restricted Close, all25 baseline definitions/Machine, Preview cleanup and C999
-archive pass. The local one-line fix and61 causal plan/control tests do not
-establish collection acceptance. Preserve the legitimate restored-version
-checkpoint and qualify it before another baseline check. The
-[current complete remaining bound and proposed allowance](evidence/dev-acceptance-fixture-gap-correction-20261024.md#remaining-request-boundary-after-the-safely-closed-functional-attempt)
-needs269M/512C, including64V. The owner approved Management2176/Vercel400,
-retaining all1861/1488/3349/V323 charges; Control3584/Combined5312 and every
-other limit remain unchanged. No credential or time approval is needed.
-The [factored estimate](evidence/dev-acceptance-fixture-gap-correction-20261024.md#complete-smaller-functional-allowance--approved-25-october-2026)
-includes recovery and shutdown; accepted groups and retained31145 are not rerun.
-Do not reopen the closed seventh SQL window or reset prior counters. Freeze
-custom-supervisor expansion; after two failed repairs of the same testing-tool
-defect, use a supported alternative or report one precise boundary. Enforced
-blocks remain binding and unperformed checks stay unperformed.
+Current results are in the [existing recovery/evidence record](evidence/dev-acceptance-fixture-gap-correction-20261024.md)
+and [actual real collection proof](evidence/functional-collection-proof-20261025.json).
+Checks1–5 pass under functional acceptance. At21:06:53UTC25 October (26 October
+Cairo), the separately reviewed native sequence completed approved WF99, three
+SUB definitions and dedicated Machine restoration, then verified all25 inactive
+baselines. The encrypted rollback and fresh drift checks are preserved. Exports,
+focused tests and independent review pass; normal final-head CI is the remaining
+delivery gate. Keep PR8 draft and M03 open for the separate merge decision.
+
+Final charged usage is2078/2000/4078/V358 against2176/3584/5312/V400; one
+actor and one new item were used. Control includes the conservative approved512
+sequence bound, not a precise HTTP measurement. Exactly44 additional Management
+requests were used for the completed residual restoration. No new actor, batch,
+credential, allowance or time approval is needed. Preserve all prior attempts,
+execution31145, fullD:false, exact15-version history, seeds, local-only fixture
+directory and disabled CleanupTechnical22. No production, recurring collection,
+notification, R2, merge or M04 action is authorized by this continuation.
 
 ## 10. Tests to write
 

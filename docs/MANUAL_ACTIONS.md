@@ -9,7 +9,7 @@ How this works:
 3. The owner does it, ticks it in the milestone `PROGRESS.md`, and adds any non-secret value (project ref, URL) there.
 4. Secrets go only into approved native stores or the current-user-encrypted dev store below, never into the repo or chat.
 
-## Current M03 owner actions — functional acceptance reset, 25 October 2026
+## Current M03 owner actions — 26 October 2026 Cairo
 
 No new credential handoff, name-specific credential creation, billing reply or
 time-window approval is requested. The four persistent dev originals are
@@ -20,7 +20,7 @@ remain unknown; Notify stays log-only.
 The [binding decision](DECISIONS.md#m03-functional-acceptance-and-bounded-parallel-delivery--approved-25-october-2026)
 and [single six-check/AC mapping](../milestones/M03-n8n-foundation/MILESTONE.md#9-acceptance-criteria)
 replace conflicting project-level closure wording below. The [current evidence
-checkpoint](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#current-functional-acceptance-checkpoint--25-october-2026-cairo)
+checkpoint](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#current-functional-acceptance-checkpoint--26-october-2026-cairo)
 preserves the actual results and remaining gates. Execution31145 is retained,
 CleanupTechnical22 remains disabled. The [native containment and directory
 delivery](../milestones/M03-n8n-foundation/evidence/functional-acceptance-20261025.json)
@@ -28,25 +28,43 @@ confirms terminal pre-network denial for31145, no unfinished linked database
 work, and C999 archived/account paused with every row retained. Historical
 `fullD:false` stays unchanged; retained execution31145 was not deleted.
 
-Actual charges are1861 Management/1488 Control/3349 combined/Vercel323, leaving
-315 Management/77 Vercel under approved2176/3584/5312/V400 caps. Actors remain0,
-USD0. The first smaller-sequence attempt passed dev/restricted security checks,
-then stopped at the missing guarded WF99 staging save. Actual restricted Close,
-workflow/Machine restoration, Preview/bypass cleanup and C999 archive all pass.
-No collection proof is claimed. Persistent originals remain ready; no credential
-delivery or time approval is missing.
+The real actor/callback/item/cost, valid callback and original-content replay,
+and unknown-run rejection now pass. [Actual evidence](../milestones/M03-n8n-foundation/evidence/functional-collection-proof-20261025.json)
+preserves one actor, one item and USD0.000634 recorded cost. SQL windows and
+Preview access are closed; C999 is archived/account paused and collected data
+retained. Final usage is2078 Management/2000 Control/4078 combined/Vercel358, with
+Control conservatively charged for the full512 approved sequence bound rather
+than represented as individually measured traffic.
+
+**WF99 definition decision complete:** the owner replied “Restore reviewed
+WF-99 baseline.” Its newer91abbe99 native version has an encrypted verified
+rollback snapshot; the comparison finds only layout/native-default omissions,
+with origin unestablished. Fresh drift checks preceded the successful baseline
+restore to78bdc394. The three remaining SUB definitions and dedicated Machine
+binding are restored; all25 final native readbacks match their reviewed inactive
+baselines. The separate native cleanup exited0 and its child/lock are closed;
+the earlier wrapper native1/formal-closurefalse remain historical. No credential
+delivery, time approval or further live batch is needed. Four persistent
+originals remain ready; disposable copies and private scratch are absent.
+
+**Next owner decision: PR8 merge only.** After normal final-head quality, unit,
+build, e2e, db-tests and Vercel checks pass, review
+https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8 and reply
+**Approve merging PR #8 and closing M03.** This permits making the draft ready
+and merging; it does not approve production launch, schedules or M04.
 
 **MA-11 allowance complete:** the owner approved the
 [complete269M/512C/64V remaining bound](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#remaining-request-boundary-after-the-safely-closed-functional-attempt).
 Exact reply: **Approve Management2176 and Vercel400; retain all charges
 and other limits.** Do not request this decision again. It preserves Control3584,
 Combined5312, all1861/1488/3349/V323 charges, two actors/USD2 and one new item.
-Next action: integrate the decision, then the reviewed existing
-consumer proceeds only after checkpoint qualification and required CI. No new
-helper family, secret prompt or general development approval is requested.
+The approved sequence has run; preserve its actual outcomes and charges.
+Residual restoration is complete; finish required delivery checks. No
+new helper family, secret prompt or general development approval is requested.
 
-Codex must first price/count the remaining functional sequence and shutdown
-against existing limits, then use supported native evidence. After two failed
+The approved sequence and shutdown are complete; no new estimate or live batch
+is needed. For later work, count operations against existing limits before
+admission and use supported native evidence. After two failed
 repairs of the same testing-tool defect, select a supported alternative or report
 one precise boundary. Do not request another broad M03 approval or recreate the
 blocked test command. Request owner action only for the genuine boundaries in

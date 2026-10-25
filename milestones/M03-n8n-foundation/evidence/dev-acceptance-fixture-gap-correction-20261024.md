@@ -1,6 +1,68 @@
 # M03 retained fixture audit correction — 24 October 2026
 
-## Current functional acceptance checkpoint — 25 October 2026 Cairo
+## Current functional acceptance checkpoint — 26 October 2026 Cairo
+
+The [real collection proof](functional-collection-proof-20261025.json) now passes
+functional checks1–4. One public-page actor
+`SzGgfAkPmgzPFQbbO` completed asynchronously through WF19/native31150 into
+run8ab08548-97c9-4ebb-a8cb-d48b400a7690 and exactly one item. Independent stable
+provider usage is USD0.00063416972729067; the database records USD0.000634 at its
+six-decimal precision. Valid callback replay returned200/replayed; an actual
+strict-TLS Writer login replayed the original content RPC with updated:false and
+finished_now:false. All ten item/raw/queue/cost fingerprint fields were unchanged.
+Unknown-run callback returned403 with rejection audit20/native31155, no registry,
+launch or cost entry. Accepted dispatch/error groups were preserved.
+
+Restricted Close terminalized the expired read reservation as window_closed
+without replay or deletion. All nine SQL windows are closed exactly once; global
+admissions79, no unfinished work or leases. C999 is archived/account paused with
+one collected item/raw/cost and its two inert test queue messages retained. All15
+migrations and285/1754 seeds remain exact. Seven Preview settings and the
+sole/default bypass are removed. Credential-bearing children, runtime copies,
+lock, revoked local bypass and private content scratch are absent; all four
+persistent encrypted originals remain ready. No administrator entered runtime.
+
+The owner-approved WF99 restore is complete after encrypted CurrentUser rollback,
+fresh drift verification and exact inactive baseline PUT/readback. Its new version
+is78bdc394-950b-495d-9e44-1588fb361c9a. The newer91abbe99 version's origin remains
+unknown; its layout/native-default comparison and encrypted backup are retained.
+The remaining three SUB definitions and dedicated same-token Machine binding are
+restored. At21:06:53.902UTC25 October (26 October Cairo), all25 final native
+readbacks verified ownership, tags, empty pins, inactive/unpublished state and
+reviewed baseline graph/settings. The bounded sequence used44 Management
+requests and closed native0, with pending0/unclosed0; external process/lock
+presence checks also pass. The earlier wrapper native1, formal-closurefalse and
+historical fullD:false remain unchanged; this is a separate actual native result.
+
+One first local launch refused public metadata before decryption/network because
+the new check demanded a protected file ACL, while the existing protected parent
+supplies exactly inherited CurrentUser/SYSTEM access. The metadata-only correction
+passed actual public-path validation, eight denial cases and independent review;
+secret ACLs and originals were unchanged. No hosted request or admission was made
+by that failed launch. The corrected single native sequence then passed.
+
+Functional checks1–5, exports, focused tests and independent review now pass.
+Normal delivery-head CI is still required before presenting the separate PR8
+merge decision; no further actor or live acceptance batch is needed. Required
+checks and draft status remain unchanged. The root/milestone PROGRESS files,
+previously restricted helper and old CI artifact remain untouched under their
+existing write/preservation restriction; this permitted current record carries
+the completed checkpoint.
+
+Charged usage is **2078 Management/2000 Control/4078 combined/Vercel358**,
+against2176/3584/5312/V400. Control includes the entire approved512-request
+conservative sequence bound, including prior unused reservations; it is not a
+claim that512 HTTP calls were measured. One actor of two was used, one new item,
+with USD2 total reserve unchanged. Existing-plan infrastructure charges remain
+unknown and separate. The44-request native restoration is included in these
+charges. Persistent encrypted originals are retained, children/locks are closed,
+and disposable credentials/private content scratch are absent. No credential,
+allowance or time approval is missing. The exact remaining owner decision after
+normal CI is **Approve merging PR #8 and closing M03.**
+Production, schedules, external notifications, R2, merge and M04 remain untouched.
+
+### Historical first smaller-sequence attempt
+
 
 **Latest actual checkpoint:** [the first smaller-sequence attempt](functional-collection-attempt-20261025.json)
 used source73f11f0 after all five CI40221824451 jobs and Vercel passed. Dev

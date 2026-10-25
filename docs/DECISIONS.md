@@ -375,6 +375,27 @@ Control3584/Combined5312, two sequential actors/USD2 total and one new distinct
 item. The [complete269M/512C bound, including64V and recovery/shutdown](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#remaining-request-boundary-after-the-safely-closed-functional-attempt)
 is approved without resetting any attempt, counter or spending allowance.
 
+The subsequent [actual functional proof](../milestones/M03-n8n-foundation/evidence/functional-collection-proof-20261025.json)
+records one successful asynchronous actor/callback/database item, cached callback
+and content replay, stable measured/rounded cost and unknown-run rejection.
+Final restoration was independently verified at21:06:53UTC on25 October
+(26 October Cairo); this does not change production or merge boundaries.
+On25 October, the owner explicitly
+replied **Restore reviewed WF-99 baseline** for ownedqTjioYmBUVMIERVz after
+its newer91abbe99 version was observed. Preserve the verified encrypted rollback
+snapshot and recheck drift before restoring the exact inactive0bfea81 baseline.
+The source comparison establishes native-default omissions/layout equivalence,
+not who made the change; no broader credential or workflow change is approved
+by that definition decision. The remaining owned baseline/Machine cleanup stays
+within existing M03 authority and cumulative limits. The completed native
+sequence used44 Management requests: all25 owned definitions match their reviewed
+inactive baselines and the dedicated Machine binding is restored. Historical
+wrapper native1/formal-closurefalse/fullD:false remain unchanged. Final charged
+usage is2078/2000/4078/V358; Control includes the conservative approved512
+sequence bound rather than an individually measured HTTP total. The only
+remaining delivery gate is normal final-head CI/review and the separate merge
+decision; no new live batch is needed.
+
 The b51 recovery entry remains disabled. At the decision checkpoint,
 execution31145 was retained and C999 archive was pending; the subsequent
 [native containment record](../milestones/M03-n8n-foundation/evidence/functional-acceptance-20261025.json)
