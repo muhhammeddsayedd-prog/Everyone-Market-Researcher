@@ -41,6 +41,91 @@ export const wf00RestoreReadOnlyAttempt = Object.freeze({
   ]),
 });
 
+export const wf00CurrentRestoreScope = Object.freeze({
+  receiptFile: 'milestones/M03-n8n-foundation/evidence/wf00-current-drift-readback-20261025.json',
+  receiptSha256: '330d0157f60b7ef29cbafa5407092872506c4c23b02d33e0199bb15e2606e59f',
+  beforeVersionId: 'fe249a62-8276-47c1-a58a-7bb50705a280',
+  journalFile: 'wf00-restore-fe249a62-8276-47c1-a58a-7bb50705a280.jsonl',
+  finiteSignatureSha256: '2a67f1c38bd8efe4e468a0c5aeb7e31061479792f1891069c38c71f7ea24037f',
+});
+const currentWf00Contexts = new WeakMap();
+const finiteNodeSignature = (rows) =>
+  rows.map(
+    ({
+      nodeId,
+      changedParameterKeys,
+      missingParameterKeys,
+      extraParameterKeyCount,
+      layoutChanged,
+      canonicalOrNativeDefaultsMatch,
+    }) => ({
+      nodeId,
+      changedParameterKeys,
+      missingParameterKeys,
+      extraParameterKeyCount,
+      layoutChanged,
+      canonicalOrNativeDefaultsMatch,
+    }),
+  );
+export function qualifyCurrentWf00Restore(receipt) {
+  if (
+    createHash('sha256').update(JSON.stringify(receipt)).digest('hex') !==
+    '32cfeaf188981d7d50c9e9510c12db6ae1f48fe8fc6b7f70d556832caa7721ce'
+  )
+    fail();
+  const raw = receipt?.rawResult,
+    inventory = raw?.inventory,
+    signature = finiteNodeSignature(inventory?.forensics?.nodeDifferences ?? []);
+  if (
+    receipt?.kind !== 'm03_wf00_current_drift_readback' ||
+    receipt.version !== 1 ||
+    receipt.status !== 'current_drift_verified' ||
+    receipt.environment !== 'dev' ||
+    receipt.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+    receipt.host !== foundationScope.host ||
+    receipt.projectId !== foundationScope.projectId ||
+    receipt.workflowId !== wf00RestoreScope.workflowId ||
+    receipt.observedVersionId !== wf00CurrentRestoreScope.beforeVersionId ||
+    !equal(receipt.usageAfter, {
+      management: 1336,
+      control: 1250,
+      combined: 2586,
+      vercel: 254,
+      nativeExecutions: 4,
+    }) ||
+    raw.parentNativeExit !== 0 ||
+    raw.nativeExit !== 0 ||
+    raw.childClosed !== true ||
+    raw.handoffDeleted !== true ||
+    inventory.status !== 'baseline_mismatch' ||
+    inventory.requestCount !== 1 ||
+    inventory.authenticationVerified !== true ||
+    inventory.projectVerified !== true ||
+    inventory.observedVersionId !== wf00CurrentRestoreScope.beforeVersionId ||
+    createHash('sha256').update(JSON.stringify(signature)).digest('hex') !==
+      wf00CurrentRestoreScope.finiteSignatureSha256 ||
+    !equal(signature, receipt.finiteProjection?.projectedNodeDifferences)
+  )
+    fail();
+  const context = Object.freeze({
+    kind: 'm03_current_wf00_restore',
+    beforeVersionId: wf00CurrentRestoreScope.beforeVersionId,
+  });
+  currentWf00Contexts.set(
+    context,
+    structuredClone({
+      signature,
+      baseline: inventory.baseline,
+      forensic: {
+        nodeCategories: inventory.forensics.nodeCategories,
+        settingsCategories: inventory.forensics.settingsCategories,
+        knownVariants: inventory.forensics.knownVariants,
+      },
+    }),
+  );
+  return context;
+}
+
 // A fixed owner-approved restoration, independent of the acceptance clock.
 // Native save has no supported optimistic-version field. The encrypted full
 // fresh DTO precedes the once intent; subsequent content is never adopted.
@@ -87,6 +172,10 @@ export async function restoreOwnedWf00(privateKey, target, ports) {
     const continuingReadOnly =
       ports.readOnlyAttemptVerified === true &&
       isDeepStrictEqual(ports.journal.rows, wf00RestoreReadOnlyAttempt.rows);
+    const current =
+      ports.currentRestoreContext === undefined ? null : currentWf00Contexts.get(ports.currentRestoreContext);
+    if (ports.currentRestoreContext !== undefined && !current) fail();
+    if (current && continuingReadOnly) fail();
     if ((ports.journal.rows.length || ports.readOnlyAttemptVerified === true) && !continuingReadOnly) {
       r.diagnostic = 'intent_recorded';
       r.status = 'wf00_restore_reconciliation_required';
@@ -123,6 +212,7 @@ export async function restoreOwnedWf00(privateKey, target, ports) {
       versionId: target.versionId,
       tags: target.workflow.tags,
       body,
+      ...(current ? { nativeReadonlySettings: { binaryMode: 'separate' } } : {}),
     };
     const path = '/api/v1/workflows/' + wf00RestoreScope.workflowId;
     const append = (row) => {
@@ -180,10 +270,27 @@ export async function restoreOwnedWf00(privateKey, target, ports) {
       fail();
     if (JSON.stringify(dto).includes(privateKey)) fail();
     if (continuingReadOnly && dto.versionId !== wf00RestoreReadOnlyAttempt.beforeVersionId) fail();
+    if (current && dto.versionId !== wf00CurrentRestoreScope.beforeVersionId) fail();
     const before = diagnoseFoundationRuntimeBaseline(dto, baseline, foundationScope.projectId);
     const expectedFailures = ['version_mismatch', 'graph_nodes', 'graph_settings'];
     const forensic = diagnoseFoundationRuntimeBaselineVariants(dto, baseline);
-    if (
+    if (current) {
+      const { projectBaselineNodeDifferences } = await import('./inventory.mjs');
+      const { foundationRuntimeExecutionParameterCandidates } =
+        await import('./foundation-runtime-checkpoint.mjs');
+      const differences = projectBaselineNodeDifferences(
+        dto,
+        baseline,
+        foundationRuntimeExecutionParameterCandidates(body),
+      );
+      if (
+        !equal(before, current.baseline) ||
+        !equal(forensic, current.forensic) ||
+        differences === null ||
+        !equal(finiteNodeSignature(differences), current.signature)
+      )
+        fail();
+    } else if (
       !equal(before.failedChecks, expectedFailures) ||
       !equal(before.components, {
         nameEqual: true,

@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([ValidateSet('Shells','Reconcile','All','RestoreWF00','ProtectWf00Backup','RestoreTechnical13','CleanupTechnical16')][string]$Mode='All',[switch]$CheckOnly,[switch]$QualificationOnly)
+param([ValidateSet('Shells','Reconcile','All','RestoreWF00','ProtectWf00Backup','RestoreTechnical13','CleanupTechnical16')][string]$Mode='All',[switch]$CheckOnly,[switch]$QualificationOnly,[switch]$CurrentWf00)
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
@@ -104,7 +104,7 @@ function Invoke-M03Technical13Public([string]$Executable,[string]$Runner,[Valida
  }
 }
 try{
- if($Mode -cnotin @('Shells','Reconcile','All','RestoreWF00','ProtectWf00Backup','RestoreTechnical13','CleanupTechnical16') -or ($QualificationOnly -and $Mode -cne 'CleanupTechnical16')){throw 'blocked'}
+ if($Mode -cnotin @('Shells','Reconcile','All','RestoreWF00','ProtectWf00Backup','RestoreTechnical13','CleanupTechnical16') -or ($QualificationOnly -and $Mode -cne 'CleanupTechnical16') -or ($CurrentWf00 -and $Mode -cne 'RestoreWF00')){throw 'blocked'}
  $sealFile=Safe-File $repo 'scripts/n8n/foundation-provision-seal.json'
  if((Get-Item -LiteralPath $sealFile).Length -gt 262144){throw 'blocked'}
  $seal=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($sealFile))
@@ -135,9 +135,17 @@ try{
   if($attempt.kind -cne 'actual_owned_wf00_restore_attempt' -or $attempt.toolReceipt -cne '905f06' -or $attempt.environment -cne 'dev' -or $attempt.host -cne 'muhhammedsayed.app.n8n.cloud' -or $attempt.projectId -cne 'pHvQjDmjxVZ3KQLT' -or $attempt.workflowId -cne 'MzimjpsuyPuK7SKe' -or $attempt.actual.nativeExit -isnot [int] -or $attempt.actual.nativeExit -ne 1 -or $attempt.actual.requestCount -isnot [int] -or $attempt.actual.requestCount -ne 1 -or $attempt.actual.getCount -ne 1 -or $attempt.actual.putCount -ne 0 -or $attempt.actual.backupRunId -cne 'fc0bdea1-f733-4c68-ba8c-f062e83b7919' -or $attempt.journal.rowCount -ne 2 -or $attempt.journal.sha256 -cne '22c18ac86b7e0e03762cf19ad98a33560344af664fcf25f0a45673906fdc955d'){throw 'blocked'}
   foreach($name in @('backupReady','networkCompletionVerified','childClosed','parentLockDeleted','persistentManagementRetained')){if($attempt.actual.$name -isnot [bool] -or $attempt.actual.$name -ne $true){throw 'blocked'}}
   foreach($name in @('writeIntentRecorded','putAttempted','restored')){if($attempt.actual.$name -isnot [bool] -or $attempt.actual.$name -ne $false){throw 'blocked'}}
-  if($Mode -ceq 'RestoreWF00'){
+  if($Mode -ceq 'RestoreWF00' -and -not $CurrentWf00){
    $priorJournal=Safe-File $repo 'scripts/n8n/out/foundation/wf00-restore-20261023.jsonl';$entry=Get-Item -LiteralPath $priorJournal -Force
    if($entry.Length -gt 65536 -or ($null -ne $entry.PSObject.Properties['LinkType'] -and $entry.LinkType -ceq 'HardLink') -or (Get-FileHash -LiteralPath $priorJournal -Algorithm SHA256).Hash.ToLowerInvariant() -cne '22c18ac86b7e0e03762cf19ad98a33560344af664fcf25f0a45673906fdc955d'){throw 'blocked'}
+  }
+  if($CurrentWf00){
+   $currentFile=Safe-File $repo 'milestones/M03-n8n-foundation/evidence/wf00-current-drift-readback-20261025.json';$entry=Get-Item -LiteralPath $currentFile -Force
+   if($entry.Length -gt 65536 -or ($null -ne $entry.PSObject.Properties['LinkType'] -and $entry.LinkType -ceq 'HardLink') -or (Get-FileHash -LiteralPath $currentFile -Algorithm SHA256).Hash.ToLowerInvariant() -cne '330d0157f60b7ef29cbafa5407092872506c4c23b02d33e0199bb15e2606e59f'){throw 'blocked'}
+   $current=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($currentFile))
+   if($current.kind -cne 'm03_wf00_current_drift_readback' -or $current.status -cne 'current_drift_verified' -or $current.observedVersionId -cne 'fe249a62-8276-47c1-a58a-7bb50705a280' -or $current.usageAfter.management -ne 1336 -or $current.usageAfter.control -ne 1250 -or $current.usageAfter.combined -ne 2586 -or $current.usageAfter.vercel -ne 254 -or $current.usageAfter.nativeExecutions -ne 4){throw 'blocked'}
+   foreach($pin in $current.pins.PSObject.Properties){$path=Safe-File $repo $pin.Name;$entry=Get-Item -LiteralPath $path -Force;if($entry.PSIsContainer -or $entry.Length -gt 2097152 -or ($null -ne $entry.PSObject.Properties['LinkType'] -and $entry.LinkType -ceq 'HardLink') -or $pin.Value -isnot [string] -or $pin.Value -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant() -cne $pin.Value){throw 'blocked'}}
+   if(Test-Path -LiteralPath (Join-Path $repo 'scripts/n8n/out/foundation/wf00-restore-fe249a62-8276-47c1-a58a-7bb50705a280.jsonl')){throw 'blocked'}
   }
  }
  if($Mode -cin @('RestoreTechnical13','CleanupTechnical16')){
@@ -203,7 +211,9 @@ if($Mode -ceq 'CleanupTechnical16'){
  $receipt|ConvertTo-Json -Compress;exit $exitCode
 }
 if($CheckOnly){
- [ordered]@{status='foundation_public_seal_ready';windowId='df4f29ec-e2dc-4d82-a276-62a4e695e6f9';privateRead=$false;networkRequests=0;maximumRequests=$(if($Mode -ceq 'RestoreWF00'){3}elseif($Mode -ceq 'ProtectWf00Backup'){0}else{185});maximumShellCreates=$(if($Mode -cin @('RestoreWF00','ProtectWf00Backup')){0}else{25});maximumTagCreates=$(if($Mode -cin @('RestoreWF00','ProtectWf00Backup')){0}else{13});maximumCredentialCreates=$(if($Mode -cin @('RestoreWF00','ProtectWf00Backup')){0}else{1});finalBindingReady=($null -ne $publicPacket)}|ConvertTo-Json -Compress
+ $publicResult=[ordered]@{status='foundation_public_seal_ready';windowId='df4f29ec-e2dc-4d82-a276-62a4e695e6f9';privateRead=$false;networkRequests=0;maximumRequests=$(if($Mode -ceq 'RestoreWF00'){3}elseif($Mode -ceq 'ProtectWf00Backup'){0}else{185});maximumShellCreates=$(if($Mode -cin @('RestoreWF00','ProtectWf00Backup')){0}else{25});maximumTagCreates=$(if($Mode -cin @('RestoreWF00','ProtectWf00Backup')){0}else{13});maximumCredentialCreates=$(if($Mode -cin @('RestoreWF00','ProtectWf00Backup')){0}else{1});finalBindingReady=($null -ne $publicPacket)}
+ if($CurrentWf00){$publicResult.currentVersionId='fe249a62-8276-47c1-a58a-7bb50705a280';$publicResult.currentReconciliationVerified=$true}
+ $publicResult|ConvertTo-Json -Compress
  exit 0
 }
 function Read-M03Wf00PrivateInput {
@@ -341,7 +351,7 @@ if($Mode -ceq 'RestoreWF00'){
   $secret=ConvertTo-SecureString -String ([Text.Encoding]::ASCII.GetString($cipher));[Array]::Clear($cipher,0,$cipher.Length);$cipher=$null
   $bstr=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret);$key=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr);[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr);$bstr=[IntPtr]::Zero;$secret.Dispose();$secret=$null
   if([string]::IsNullOrEmpty($key) -or $key.Length -gt 4096 -or $key -cmatch '[^\x21-\x7e]'){throw 'blocked'}
-  $start=[Diagnostics.ProcessStartInfo]::new();$start.FileName=$node;$start.Arguments='"'+$runner+'" RestoreWF00';$start.WorkingDirectory=$repo;$start.UseShellExecute=$false;$start.CreateNoWindow=$true;$start.RedirectStandardInput=$true;$start.RedirectStandardOutput=$true;$start.RedirectStandardError=$true;$start.EnvironmentVariables.Clear()
+  $start=[Diagnostics.ProcessStartInfo]::new();$start.FileName=$node;$start.Arguments='"'+$runner+'" RestoreWF00'+$(if($CurrentWf00){' --current-wf00'}else{''});$start.WorkingDirectory=$repo;$start.UseShellExecute=$false;$start.CreateNoWindow=$true;$start.RedirectStandardInput=$true;$start.RedirectStandardOutput=$true;$start.RedirectStandardError=$true;$start.EnvironmentVariables.Clear()
   foreach($name in @('SystemRoot','WINDIR','PATH','TEMP','TMP','LOCALAPPDATA','APPDATA','USERPROFILE')){$value=[Environment]::GetEnvironmentVariable($name,'Process');if($null -ne $value){$start.EnvironmentVariables[$name]=$value}}
   $child=[Diagnostics.Process]::new();$child.StartInfo=$start;$started=$child.Start();if(-not $started){throw 'blocked'};$closed=$false;$receipt.requestCount=$null;$start.EnvironmentVariables.Clear()
   $buffer=New-Object byte[] 8192;$memory=[IO.MemoryStream]::new([byte[]]$buffer,$true);$stdout=$child.StandardOutput.BaseStream.CopyToAsync($memory);$stderr=$child.StandardError.BaseStream.CopyToAsync([IO.Stream]::Null)

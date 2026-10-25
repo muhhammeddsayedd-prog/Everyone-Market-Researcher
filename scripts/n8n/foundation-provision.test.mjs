@@ -13,6 +13,7 @@ import {
   wf00RestoreScope,
   wf00RestoreReadOnlyAttempt,
 } from './foundation-provision.mjs';
+import * as currentWf00 from './foundation-provision.mjs';
 
 const key = 'SYNTHETIC_TEST_KEY';
 const row = (spec, id = 'SyntheticOwned1') => ({
@@ -283,6 +284,96 @@ function assertSafeRestore(result, journal) {
   assert.equal(result.credentialsCreated, 0);
   assert.equal(result.gatewayWindowStarted, false);
 }
+
+function currentRestoreFixture(options = {}) {
+  const receipt = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../milestones/M03-n8n-foundation/evidence/wf00-current-drift-readback-20261025.json',
+        import.meta.url,
+      ),
+    ),
+  );
+  const f = restoreFixture({
+    ...options,
+    before(dto, target) {
+      dto.nodes = structuredClone(target.workflow.nodes);
+      dto.settings = { ...structuredClone(target.workflow.settings), binaryMode: 'separate' };
+      dto.versionId = 'fe249a62-8276-47c1-a58a-7bb50705a280';
+      for (const difference of receipt.rawResult.inventory.forensics.nodeDifferences) {
+        const node = dto.nodes.find((value) => value.id === difference.nodeId);
+        for (const name of difference.missingParameterKeys) delete node.parameters[name];
+        for (const name of difference.changedParameterKeys)
+          node.parameters[name] = { synthetic: 'SYNTHETIC_PRIVATE_NATIVE_OPTION' };
+        if (difference.layoutChanged) node.position[0] += 800;
+      }
+      options.before?.(dto, target);
+    },
+  });
+  f.ports.currentRestoreContext = currentWf00.qualifyCurrentWf00Restore(receipt);
+  return f;
+}
+
+test('current pinned WF00 restore uses a fresh journal, exact finite drift and encrypted backup before one PUT', async () => {
+  assert.equal(typeof currentWf00.qualifyCurrentWf00Restore, 'function');
+  const f = currentRestoreFixture(),
+    result = await f.run();
+  assert.equal(result.status, 'wf00_restore_verified');
+  assert.equal(result.requestCount, 3);
+  assert.deepEqual(
+    f.calls.map((call) => call.method),
+    ['GET', 'PUT', 'GET'],
+  );
+  assert.equal(result.beforeVersionPrivatelyBackedUp, true);
+  assert.equal(result.nativeStorageModePreserved, true);
+  const again = await f.run();
+  assert.equal(again.status, 'wf00_restore_reconciliation_required');
+  assert.equal(again.requestCount, 0);
+  assertSafeRestore(result, f.journal);
+});
+
+test('current WF00 restoration rejects forged context or changed observed version, finite drift, identity and native settings', async () => {
+  assert.equal(typeof currentWf00.qualifyCurrentWf00Restore, 'function');
+  for (const mutate of [
+    (dto) => (dto.versionId = wf00BeforeVersion),
+    (dto) => (dto.nodes.find((node) => node.name === 'Config').parameters.assignments = {}),
+    (dto) => (dto.nodes[0].name = 'SYNTHETIC_PRIVATE_DIFFERENT_NAME'),
+    (dto) => (dto.settings.binaryMode = 'combined'),
+    (dto) => (dto.settings.syntheticUnknown = true),
+    (dto) => (dto.active = true),
+    (dto) => (dto.tags = []),
+  ]) {
+    const f = currentRestoreFixture({ before: mutate }),
+      result = await f.run();
+    assert.equal(result.putAttempted, false);
+    assert.equal(result.requestCount, 1);
+    assert.equal(f.backupCalls(), 0);
+    assertSafeRestore(result, f.journal);
+  }
+  const forged = currentRestoreFixture();
+  forged.ports.currentRestoreContext = { ...forged.ports.currentRestoreContext };
+  const denied = await forged.run();
+  assert.equal(denied.requestCount, 0);
+  assert.equal(denied.putAttempted, false);
+  const receipt = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../milestones/M03-n8n-foundation/evidence/wf00-current-drift-readback-20261025.json',
+        import.meta.url,
+      ),
+    ),
+  );
+  for (const mutate of [
+    (value) => (value.rawResult.inventory.baseline.failedChecks = []),
+    (value) => (value.rawResult.childClosed = false),
+    (value) => value.usageAfter.management--,
+    (value) => (value.rawResult.inventory.forensics.nodeDifferences[0].missingParameterKeys = []),
+  ]) {
+    const altered = structuredClone(receipt);
+    mutate(altered);
+    assert.throws(() => currentWf00.qualifyCurrentWf00Restore(altered));
+  }
+});
 
 test('approved WF00 restore backs up the fresh DTO before a once-only inactive PUT and exact GET readback', async () => {
   const f = restoreFixture(),

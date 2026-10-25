@@ -18,7 +18,13 @@ import {
 import { join, dirname, resolve, basename } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
-import { foundationScope, wf00RestoreReadOnlyAttempt, wf00RestoreScope } from './foundation-provision.mjs';
+import {
+  foundationScope,
+  wf00RestoreReadOnlyAttempt,
+  wf00RestoreScope,
+  wf00CurrentRestoreScope,
+  qualifyCurrentWf00Restore,
+} from './foundation-provision.mjs';
 import { writeCompleteSync } from './foundation-export.mjs';
 
 const windows = { skip: process.platform !== 'win32' };
@@ -40,6 +46,7 @@ const fullDto = {
   pinData: { fullPrivateValue: dtoCanary },
   staticData: { retained: { nested: true } },
   otherSavedMetadata: { retained: ['all', 'fields'] },
+  unicodeFidelity: '東京 · مرحبا',
 };
 const validReceipt = {
   version: 1,
@@ -82,6 +89,12 @@ function fixture(body) {
     writeFileSync(target, readFileSync(relative));
   }
   const priorJournal = join(repo, 'scripts/n8n/out/foundation/wf00-restore-20261023.jsonl');
+  const currentReceipt = JSON.parse(readFileSync(wf00CurrentRestoreScope.receiptFile, 'utf8'));
+  for (const relative of [wf00CurrentRestoreScope.receiptFile, ...Object.keys(currentReceipt.pins)]) {
+    const target = join(repo, relative);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, readFileSync(relative));
+  }
   mkdirSync(dirname(priorJournal), { recursive: true });
   writeFileSync(
     priorJournal,
@@ -299,6 +312,159 @@ test('WF00 restore consumer PowerShell syntax is valid before any private input'
   assert.equal(r.stderr, '');
 });
 
+test('current WF00 public receipt loader pins every prior readback and creates a fresh once-only three-request journal', () =>
+  fixture(({ repo, cli, priorJournal }) => {
+    const source = readFileSync(cli, 'utf8'),
+      functions = source.slice(
+        source.indexOf('function currentRestoreReceipt()'),
+        source.indexOf('function restoreJournal()'),
+      );
+    const create = new Function(
+      'repo',
+      'out',
+      'noLinks',
+      'fail',
+      'wf00CurrentRestoreScope',
+      'wf00RestoreScope',
+      'qualifyCurrentWf00Restore',
+      'lstatSync',
+      'readFileSync',
+      'mkdirSync',
+      'join',
+      'createHash',
+      'openSync',
+      'writeCompleteSync',
+      'fsyncSync',
+      'closeSync',
+      functions + '\nreturn { receipt: currentRestoreReceipt, journal: currentRestoreJournal };',
+    );
+    const access = create(
+      repo,
+      dirname(priorJournal),
+      (path) => path,
+      () => {
+        throw Error('SYNTHETIC_FIXED_BLOCKED');
+      },
+      wf00CurrentRestoreScope,
+      wf00RestoreScope,
+      qualifyCurrentWf00Restore,
+      lstatSync,
+      readFileSync,
+      mkdirSync,
+      join,
+      createHash,
+      openSync,
+      writeCompleteSync,
+      fsyncSync,
+      closeSync,
+    );
+    assert.equal(access.receipt().beforeVersionId, wf00CurrentRestoreScope.beforeVersionId);
+    const old = readFileSync(priorJournal),
+      journal = access.journal(),
+      workflowId = wf00RestoreScope.workflowId;
+    assert.throws(access.journal, 'the operation claim is CreateNew even before remote work');
+    const get = (number) => ({
+      event: 'request',
+      number,
+      method: 'GET',
+      path: '/api/v1/workflows/' + workflowId + '?excludePinnedData=true',
+    });
+    assert.throws(() => journal.append({ ...get(1), method: 'PUT' }));
+    journal.append(get(1));
+    journal.append({ event: 'backup_ready', workflowId, backupRunId: runId });
+    journal.append({
+      event: 'restore_intent',
+      workflowId,
+      sourceCommitSha: wf00RestoreScope.sourceCommitSha,
+      backupRunId: runId,
+    });
+    journal.append({
+      event: 'request',
+      number: 2,
+      method: 'PUT',
+      path: '/api/v1/workflows/' + workflowId + '?publishIfActive=false',
+    });
+    journal.append(get(3));
+    assert.throws(() =>
+      journal.append({
+        event: 'restore_verified',
+        workflowId,
+        versionId: 'SyntheticNewExactVersion',
+        backupRunId: runId,
+        nativeReadonlySettings: { binaryMode: 'combined' },
+      }),
+    );
+    journal.append({
+      event: 'restore_verified',
+      workflowId,
+      versionId: 'SyntheticNewExactVersion',
+      backupRunId: runId,
+      nativeReadonlySettings: { binaryMode: 'separate' },
+    });
+    assert.throws(() => journal.append(get(4)));
+    assert.deepEqual(readFileSync(priorJournal), old);
+    const record = JSON.parse(readFileSync(join(repo, wf00CurrentRestoreScope.receiptFile), 'utf8')),
+      first = join(repo, Object.keys(record.pins)[0]);
+    writeFileSync(first, 'SYNTHETIC_PUBLIC_PIN_TAMPER');
+    assert.throws(access.receipt);
+  }));
+
+test(
+  'current WF00 native public CheckOnly pins the current version and refuses spent claims before private reads',
+  windows,
+  () =>
+    fixture(({ repo, consumer, run, seal }) => {
+      seal();
+      const invoke = () =>
+        run(`& ${literal(consumer)} -Mode RestoreWF00 -CurrentWf00 -CheckOnly; exit $LASTEXITCODE`);
+      const ready = invoke();
+      assert.equal(ready.status, 0, ready.stdout + ready.stderr);
+      const result = JSON.parse(ready.stdout);
+      assert.equal(result.privateRead, false);
+      assert.equal(result.networkRequests, 0);
+      assert.equal(result.maximumRequests, 3);
+      assert.equal(result.currentVersionId, wf00CurrentRestoreScope.beforeVersionId);
+      assert.equal(result.currentReconciliationVerified, true);
+      writeFileSync(
+        join(repo, 'scripts/n8n/out/foundation', wf00CurrentRestoreScope.journalFile),
+        'SYNTHETIC_SPENT_CLAIM',
+      );
+      const denied = invoke();
+      assert.equal(denied.status, 1);
+      assert.equal(
+        denied.stdout.trim(),
+        'M03_FOUNDATION_PUBLIC_PREFLIGHT_BLOCKED. No private read/decryption/network.',
+      );
+    }),
+);
+
+test(
+  'current WF00 native parent forwards only the fixed current selector and preserves the Management original',
+  windows,
+  () =>
+    fixture(({ cli, invoke, seal, setupManagement }) => {
+      const stored = setupManagement(),
+        before = readFileSync(stored);
+      writeFileSync(
+        cli,
+        `import{readFileSync}from'node:fs';const p=JSON.parse(readFileSync(0,'utf8'));if(process.argv.length!==4||process.argv[2]!=='RestoreWF00'||process.argv[3]!=='--current-wf00'||p.key!==${JSON.stringify(canary)}||p.purpose!=='m03_owned_wf00_restore'||process.env.PGPASSWORD||process.env.EMR_UNRELATED_ADMIN_CANARY)process.exit(1);console.log(JSON.stringify(${JSON.stringify(validReceipt)}));`,
+      );
+      seal();
+      const r = invoke('RestoreWF00 -CurrentWf00', undefined, {
+        PGPASSWORD: 'SYNTHETIC_UNRELATED',
+        EMR_UNRELATED_ADMIN_CANARY: 'SYNTHETIC_UNRELATED',
+      });
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      const receipt = JSON.parse(r.stdout);
+      assert.equal(receipt.privateRead, true);
+      assert.equal(receipt.childClosed, true);
+      assert.equal(receipt.parentLockDeleted, true);
+      assert.equal(receipt.requestCount, 3);
+      assert.deepEqual(readFileSync(stored), before);
+      assert.doesNotMatch(r.stdout + r.stderr, /SYNTHETIC_/);
+    }),
+);
+
 test('WF00 private full backup is CurrentUser-DPAPI, exact semantic DTO and CreateNew only', windows, () =>
   fixture(({ root, run, withParent, invoke, seal }) => {
     seal();
@@ -324,7 +490,7 @@ test('WF00 private full backup is CurrentUser-DPAPI, exact semantic DTO and Crea
     const before = readFileSync(file);
     assert.equal(before.includes(Buffer.from(dtoCanary)), false);
     const check = run(
-      `Add-Type -AssemblyName System.Security;. ${literal(resolve('scripts/n8n/windows/Dev-CredentialStore.ps1'))};Assert-M03DevPrivateAcl ${literal(dirname(file))} $true;Assert-M03DevPrivateAcl ${literal(file)} $false;$bytes=[Security.Cryptography.ProtectedData]::Unprotect([IO.File]::ReadAllBytes(${literal(file)}),$null,[Security.Cryptography.DataProtectionScope]::CurrentUser);try{$dto=ConvertFrom-Json -InputObject ([Text.Encoding]::UTF8.GetString($bytes));if($dto.pinData.fullPrivateValue -cne ${literal(dtoCanary)} -or $dto.pinData.boundedLargePrivateDefinition.Length -ne 70000 -or $dto.staticData.retained.nested -ne $true -or $dto.otherSavedMetadata.retained.Count -ne 2 -or $dto.versionId -cne 'SyntheticActualBeforeVersion'){throw 'blocked'};Write-Output 'FULL_DTO_ROUNDTRIP_READY'}finally{[Array]::Clear($bytes,0,$bytes.Length)}`,
+      `Add-Type -AssemblyName System.Security;. ${literal(resolve('scripts/n8n/windows/Dev-CredentialStore.ps1'))};Assert-M03DevPrivateAcl ${literal(dirname(file))} $true;Assert-M03DevPrivateAcl ${literal(file)} $false;$bytes=[Security.Cryptography.ProtectedData]::Unprotect([IO.File]::ReadAllBytes(${literal(file)}),$null,[Security.Cryptography.DataProtectionScope]::CurrentUser);try{$dto=ConvertFrom-Json -InputObject ([Text.Encoding]::UTF8.GetString($bytes));if($dto.pinData.fullPrivateValue -cne ${literal(dtoCanary)} -or $dto.pinData.boundedLargePrivateDefinition.Length -ne 70000 -or $dto.staticData.retained.nested -ne $true -or $dto.otherSavedMetadata.retained.Count -ne 2 -or $dto.versionId -cne 'SyntheticActualBeforeVersion' -or [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($dto.unicodeFidelity)) -cne ${literal(Buffer.from(fullDto.unicodeFidelity).toString('base64'))}){throw 'blocked'};Write-Output 'FULL_DTO_ROUNDTRIP_READY'}finally{[Array]::Clear($bytes,0,$bytes.Length)}`,
     );
     assert.equal(check.status, 0);
     assert.equal(check.stdout.trim(), 'FULL_DTO_ROUNDTRIP_READY');

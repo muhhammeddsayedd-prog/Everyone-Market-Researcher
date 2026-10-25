@@ -20,6 +20,8 @@ import {
   restoreOwnedWf00,
   wf00RestoreScope,
   wf00RestoreReadOnlyAttempt,
+  wf00CurrentRestoreScope,
+  qualifyCurrentWf00Restore,
 } from './foundation-provision.mjs';
 import { foundationManagementTransport } from './foundation-management-transport.mjs';
 import { parseFoundationPacket, createBindingJournal, machineBody } from './foundation-bind.mjs';
@@ -253,6 +255,117 @@ function restoreReadOnlyReceipt() {
   )
     fail();
   return true;
+}
+function currentRestoreReceipt() {
+  const file = noLinks(join(repo, wf00CurrentRestoreScope.receiptFile)),
+    stat = lstatSync(file);
+  if (!stat.isFile() || stat.nlink !== 1 || stat.size > 65536) fail();
+  const bytes = readFileSync(file);
+  if (createHash('sha256').update(bytes).digest('hex') !== wf00CurrentRestoreScope.receiptSha256) fail();
+  const record = JSON.parse(bytes.toString('utf8'));
+  for (const [relative, expected] of Object.entries(record.pins)) {
+    if (
+      typeof relative !== 'string' ||
+      relative.includes('..') ||
+      !/^(?:scripts\/n8n\/out\/foundation\/live\/|milestones\/M03-n8n-foundation\/evidence\/|n8n\/)/.test(
+        relative,
+      ) ||
+      !/^[a-f0-9]{64}$/.test(expected)
+    )
+      fail();
+    const path = noLinks(join(repo, relative)),
+      entry = lstatSync(path);
+    if (
+      !entry.isFile() ||
+      entry.nlink !== 1 ||
+      entry.size > 2097152 ||
+      createHash('sha256').update(readFileSync(path)).digest('hex') !== expected
+    )
+      fail();
+  }
+  return qualifyCurrentWf00Restore(record);
+}
+function currentRestoreJournal() {
+  noLinks(out);
+  mkdirSync(out, { recursive: true });
+  noLinks(out);
+  const path = noLinks(join(out, wf00CurrentRestoreScope.journalFile)),
+    rows = [],
+    fd = openSync(path, 'wx');
+  try {
+    writeCompleteSync(
+      fd,
+      JSON.stringify({
+        kind: 'm03_current_wf00_restore_claim',
+        version: 1,
+        workflowId: wf00RestoreScope.workflowId,
+        beforeVersionId: wf00CurrentRestoreScope.beforeVersionId,
+        receiptSha256: wf00CurrentRestoreScope.receiptSha256,
+      }) + '\n',
+    );
+    fsyncSync(fd);
+  } finally {
+    closeSync(fd);
+  }
+  return {
+    rows,
+    append(row) {
+      const events = ['request', 'backup_ready', 'restore_intent', 'request', 'request', 'restore_verified'];
+      if (row.event !== events[rows.length]) fail();
+      const allowed =
+        row.event === 'request'
+          ? ['event', 'number', 'method', 'path']
+          : row.event === 'backup_ready'
+            ? ['event', 'workflowId', 'backupRunId']
+            : row.event === 'restore_intent'
+              ? ['event', 'workflowId', 'sourceCommitSha', 'backupRunId']
+              : ['event', 'workflowId', 'versionId', 'backupRunId', 'nativeReadonlySettings'];
+      if (Object.keys(row).length !== allowed.length || allowed.some((key) => !Object.hasOwn(row, key)))
+        fail();
+      if (row.event === 'request') {
+        const number = rows.filter((value) => value.event === 'request').length + 1,
+          method = number === 2 ? 'PUT' : 'GET';
+        if (
+          number > 3 ||
+          row.number !== number ||
+          row.method !== method ||
+          row.path !==
+            '/api/v1/workflows/' +
+              wf00RestoreScope.workflowId +
+              (method === 'PUT' ? '?publishIfActive=false' : '?excludePinnedData=true') ||
+          (method === 'PUT' && rows.at(-1)?.event !== 'restore_intent')
+        )
+          fail();
+      } else {
+        if (
+          row.workflowId !== wf00RestoreScope.workflowId ||
+          typeof row.backupRunId !== 'string' ||
+          !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(row.backupRunId) ||
+          (row.event !== 'backup_ready' && row.backupRunId !== rows[1]?.backupRunId)
+        )
+          fail();
+        if (row.event === 'restore_intent' && row.sourceCommitSha !== wf00RestoreScope.sourceCommitSha)
+          fail();
+        if (
+          row.event === 'restore_verified' &&
+          (typeof row.versionId !== 'string' ||
+            !/^[A-Za-z0-9_-]{1,128}$/.test(row.versionId) ||
+            row.versionId === wf00CurrentRestoreScope.beforeVersionId ||
+            JSON.stringify(row.nativeReadonlySettings) !== JSON.stringify({ binaryMode: 'separate' }))
+        )
+          fail();
+      }
+      noLinks(path);
+      const appendFd = openSync(path, 'a');
+      try {
+        writeCompleteSync(appendFd, JSON.stringify(row) + '\n');
+        fsyncSync(appendFd);
+      } finally {
+        closeSync(appendFd);
+      }
+      rows.push(structuredClone(row));
+    },
+  };
 }
 function restoreJournal() {
   const readOnlyAttemptVerified = restoreReadOnlyReceipt();
@@ -2672,8 +2785,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   setImmediate(async () => {
     try {
       const mode = process.argv[2];
+      const currentWf00 = mode === 'RestoreWF00' && process.argv[3] === '--current-wf00';
       if (
-        process.argv.length !== 3 ||
+        process.argv.length !== (currentWf00 ? 4 : 3) ||
         ![
           'CheckOnly',
           'Shells',
@@ -2797,7 +2911,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         }
       } else if (mode === 'RestoreWF00') {
         const target = restoreTarget(),
-          j = restoreJournal();
+          currentRestoreContext = currentWf00 ? currentRestoreReceipt() : undefined,
+          j = currentWf00 ? currentRestoreJournal() : restoreJournal();
         privateReadAttempted = true;
         const privateInput = await input(false, true);
         key = privateInput.key;
@@ -2816,6 +2931,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
           protectBackup: protectRestoreBackup,
           journal: j,
           readOnlyAttemptVerified: j.readOnlyAttemptVerified,
+          ...(currentWf00 ? { currentRestoreContext } : {}),
         });
         if (JSON.stringify(result).includes(key)) fail();
         key = null;
