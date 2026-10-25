@@ -101,7 +101,7 @@ test('failed Admin startup accepts only branded pre-private closure and never pr
       assert.equal(
         result.code,
         mode === 'lookalike'
-          ? undefined
+          ? 'FOUNDATION_ADMIN_CLIENT_BLOCKED'
           : mode === 'unknown'
             ? 'FOUNDATION_ADMIN_PROTOCOL_REJECTED'
             : 'FOUNDATION_ADMIN_PREFLIGHT_BLOCKED',

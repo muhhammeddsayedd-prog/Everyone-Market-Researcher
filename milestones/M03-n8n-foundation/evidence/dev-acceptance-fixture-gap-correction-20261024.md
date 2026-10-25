@@ -1,5 +1,13 @@
 # M03 retained fixture audit correction — 24 October 2026
 
+## Exact-head CI diagnostic regression — 25 October 2026 Cairo
+
+Integration e098f60 received CI40187784181: quality, build, e2e, db-tests and Vercel passed; unit failed the unbranded Admin-startup diagnostic expectation. Local reproduction confirms that the new finite constructor-stage code is `FOUNDATION_ADMIN_CLIENT_BLOCKED`, while the historical test still expected no code. The one-line test correction expects that exact fixed code. All four affected remaining-CLI tests pass, zero skips, and independent review confirms the existing branded-closure, residual, lock, transport and zero-execution assertions remain unchanged. No production helper or authority check changed.
+
+Before any private use, the existing in-memory coordinator's genuine Ready source binding was corrected from the earlier application source to the selected real application commit5f256ce. A source comparison confirms only that constant and whitespace changed. Ten synthetic local stream checks cover old-source rejection, new-source readiness, exact nonce acknowledgement, serial commands, matched results, nonce-bound browser replies, returned/drained frames, physical close and malformed nonce/result denial. The previous closed coordinator and monotonic command counter are preserved. No private input, process spawn or network was used by these stream checks.
+
+Actual20 remains unadmitted. Retained charges stay1317/1246/2563/V254/native3/actors0 against the approved1728/3584/5312/V304 caps. Normal new-head CI must pass before hosted continuation; no migration replay, credential handoff or owner decision is required.
+
 ## Integrated successor20 public readiness — 25 October 2026 Cairo
 
 The [successful SELECT-only readback](dev-acceptance-technical19-database-readback-20261025.json), SHAa44ccc8aaf5366cd3cbe5bb6d76b69c0dd327d74935c40c4a7e28f4b2cf232fd, preserves the exact native0 result8c90a6f5 and its unique output pins. One15-version history query and one inspection query verify six closed windows/11 admissions/five completed requests/eight fixture audits, actual19's exact closed binding/audit, archived/paused empty C999 and zero launches/items/runs/costs/leases/reservations. This does not rewrite actual19's earlier native1 or business-acceptance failure. The reader child60816, scratch, disposable pair and parent lock are absent; persistent originals and Machine remain. No RPC, migration or other database mutation occurred.
