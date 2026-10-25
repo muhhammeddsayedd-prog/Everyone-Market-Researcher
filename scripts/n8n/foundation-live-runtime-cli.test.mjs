@@ -14,6 +14,297 @@ import * as liveSql from './foundation-live-runtime-cli.mjs';
 import { fixture, syntheticBaselinePreflight } from './foundation-live-runtime-fixtures.mjs';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
 
+test('functional commands are finite, reject inherited names and require exact identifiers', async () => {
+  const { foundationFunctionalCommand } = await import('./foundation-live-runtime-cli.mjs');
+  for (const command of [
+    'state',
+    'prepare_preview',
+    'prepare_runtime',
+    'authorize_start',
+    'callback_unknown',
+    'restore',
+    'close',
+    'close_window',
+  ])
+    assert.equal(foundationFunctionalCommand({ id: 'public_case', command }), true);
+  for (const command of ['charge_control', 'charge_management']) {
+    assert.equal(foundationFunctionalCommand({ id: 'public_case', command, count: 1 }), true);
+    for (const count of [0, -1, 101, NaN, '1'])
+      assert.equal(foundationFunctionalCommand({ id: 'public_case', command, count }), false);
+  }
+  for (const command of ['toString', '__proto__', 'constructor', 'delete', 'request', 'execute'])
+    assert.equal(foundationFunctionalCommand({ id: 'public_case', command }), false);
+  assert.equal(
+    foundationFunctionalCommand({ id: 'public_case', command: 'state', url: 'https://invalid.example' }),
+    false,
+  );
+  assert.equal(
+    foundationFunctionalCommand({
+      id: 'public_case',
+      command: 'original',
+      apifyRunId: 'SYNTHETIC_ORIGINAL',
+      runId: 'a'.repeat(36),
+    }),
+    false,
+  );
+  assert.equal(
+    foundationFunctionalCommand({
+      id: 'public_case',
+      command: 'original',
+      apifyRunId: 'SYNTHETIC_ORIGINAL',
+      runId: '00000000-0000-4000-8000-000000000001',
+    }),
+    true,
+  );
+});
+
+test('functional durable writes complete partial byte writes and refuse nonprogress before authorization', async () => {
+  const { writeFoundationFunctionalBytes } = await import('./foundation-live-runtime-cli.mjs');
+  const bytes = Buffer.from('public intent — عربي 🙂\n'),
+    chunks = [];
+  writeFoundationFunctionalBytes(42, bytes, (fd, buffer, offset, length, position) => {
+    assert.equal(fd, 42);
+    assert.equal(position, null);
+    const count = Math.min(2, length);
+    chunks.push(buffer.subarray(offset, offset + count));
+    return count;
+  });
+  assert.deepEqual(Buffer.concat(chunks), bytes);
+  for (const value of [0, -1, NaN, 1.5, bytes.length + 1])
+    assert.throws(
+      () => writeFoundationFunctionalBytes(42, bytes, () => value),
+      /M03_FUNCTIONAL_DURABLE_WRITE/,
+    );
+});
+
+test('functional cleanup blocks callback-path removal until safe Close and attempts independent known resources', async () => {
+  const { restoreFoundationFunctionalResources } = await import('./foundation-live-runtime-cli.mjs');
+  for (const failure of ['close', 'runtime', 'preview', null]) {
+    const calls = [];
+    const operation = (name) => async () => {
+      calls.push(name);
+      if (failure === name) throw Error('synthetic operation failed');
+    };
+    const work = restoreFoundationFunctionalResources({
+      closeWindow: operation('close'),
+      restoreRuntime: operation('runtime'),
+      cleanupPreview: operation('preview'),
+    });
+    if (failure === 'close') {
+      await assert.rejects(work, /synthetic operation failed/);
+      assert.deepEqual(calls, ['close']);
+    } else {
+      assert.deepEqual(await work, {
+        runtimeRestored: failure !== 'runtime',
+        previewCleaned: failure !== 'preview',
+      });
+      assert.deepEqual(calls, ['close', 'runtime', 'preview']);
+    }
+  }
+});
+
+const functionalDelivery = () => ({
+  kind: 'delivery_verified',
+  head: '890892eb7c61293f0f449102d095acc6fb212765',
+  usageUnchanged: { management: 1661, control: 1464, combined: 3125, vercel: 288, actors: 0, usd: 0 },
+});
+const functionalPacket = () => ({
+  kind: 'm03_functional_private_input',
+  version: 1,
+  sourceCommitSha: 'a'.repeat(40),
+  managementKey: 'SYNTHETIC_MANAGEMENT_ONLY',
+  writerPassword: 'SYNTHETIC_WRITER_ONLY',
+  apifyReadToken: 'SYNTHETIC_APIFY_ONLY',
+  machineToken: 'm'.repeat(43),
+  protectionBypass: 'b'.repeat(32),
+});
+async function functionalLocalCase(
+  commands,
+  { rows = [functionalDelivery()], operator, packet = functionalPacket() } = {},
+) {
+  const { writeFileSync } = await import('node:fs');
+  const { runFoundationFunctionalCli } = await import('./foundation-live-runtime-cli.mjs');
+  const directory = mkdtempSync(join(tmpdir(), 'emr-functional-public-test-'));
+  const input = new PassThrough(),
+    output = [];
+  try {
+    writeFileSync(
+      join(directory, 'functional-acceptance-20261025.jsonl'),
+      rows.map((row) => JSON.stringify(row)).join('\n') + '\n',
+    );
+    if (operator) writeFileSync(join(directory, 'functional-dev-verified.json'), JSON.stringify(operator));
+    input.end(
+      [JSON.stringify(packet), ...commands.map((command) => JSON.stringify(command))].join('\n') + '\n',
+    );
+    const exit = await runFoundationFunctionalCli({
+      input,
+      emit: (row) => output.push(row),
+      checkOnly: false,
+      stateDirectory: directory,
+    });
+    const journal = readFileSync(join(directory, 'functional-acceptance-20261025.jsonl'), 'utf8')
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map((row) => JSON.parse(row));
+    return { exit, output, journal };
+  } finally {
+    input.destroy();
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
+
+test('functional public CheckOnly reads no private input or operator record', async () => {
+  const { runFoundationFunctionalCli } = await import('./foundation-live-runtime-cli.mjs');
+  const output = [];
+  assert.equal(await runFoundationFunctionalCli({ checkOnly: true, emit: (row) => output.push(row) }), 0);
+  assert.deepEqual(output, [
+    {
+      kind: 'm03_functional_result',
+      id: 'public',
+      status: 'check_only_ready',
+      code: 'M03_FUNCTIONAL_PUBLIC_READY',
+    },
+  ]);
+});
+
+test('functional stdin retains commands buffered with its private first line and closes an untouched scope', async () => {
+  const r = await functionalLocalCase([
+    { id: 'buffered_state', command: 'state' },
+    { id: 'buffered_close', command: 'close' },
+  ]);
+  assert.equal(r.exit, 0);
+  assert.equal(
+    r.output.some(
+      (row) =>
+        row.id === 'buffered_state' && row.management === 1661 && row.control === 1464 && row.vercel === 288,
+    ),
+    true,
+  );
+  assert.equal(r.output.at(-1).code, 'M03_FUNCTIONAL_CLOSED');
+  assert.equal(
+    r.journal.some((row) => row.kind === 'functional_closed'),
+    true,
+  );
+  assert.equal(
+    r.journal.some((row) => row.kind === 'functional_setup'),
+    false,
+  );
+});
+
+test('functional usage retains checkpoint charges and precharges manual native operations without network calls', async () => {
+  const r = await functionalLocalCase([
+    { id: 'native_management', command: 'charge_management', count: 3 },
+    { id: 'native_control', command: 'charge_control', count: 2 },
+    { id: 'close', command: 'close' },
+  ]);
+  assert.equal(r.exit, 0);
+  assert.deepEqual(r.journal.filter((row) => row.kind === 'functional_usage').at(-1).usage, {
+    management: 1664,
+    control: 1466,
+    combined: 3130,
+    vercel: 288,
+  });
+});
+
+test('functional malformed operator dates, admission counts and history fail before Preview networking', async () => {
+  const baseline = {
+    method: 'native_sql_editor',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    stage: 'preflight',
+    observedAt: new Date().toISOString(),
+    identityVerified: true,
+    migrationCount: 15,
+    historyAggregate: 'ded9037b363fe2cbf6d7dc2e19731c1fe25963100db92b160967c84ec7b7c6d9',
+    quiescent: true,
+    fixtureOwned: true,
+    globalAdmittedCount: 13,
+  };
+  for (const change of [
+    { observedAt: 'not-a-date' },
+    { globalAdmittedCount: undefined },
+    { globalAdmittedCount: '13' },
+    { historyAggregate: '0'.repeat(64) },
+    { observedAt: new Date(Date.now() - 360000).toISOString() },
+  ]) {
+    const r = await functionalLocalCase([{ id: 'prepare', command: 'prepare_preview' }], {
+      operator: { ...baseline, ...change },
+    });
+    assert.equal(r.exit, 0); // An untouched scope can close; the attempted check remains failed.
+    assert.equal(r.output.find((row) => row.id === 'prepare').code, 'M03_FUNCTIONAL_DB_EVIDENCE');
+    assert.equal(
+      r.journal.some((row) => row.kind === 'functional_setup'),
+      false,
+    );
+    assert.equal(
+      r.journal.some((row) => row.kind === 'functional_usage'),
+      false,
+    );
+    assert.equal(
+      r.journal.some((row) => row.kind === 'functional_command_failure'),
+      true,
+    );
+  }
+});
+
+test('functional SQL reserve cannot consume the physical Close admission', async () => {
+  const r = await functionalLocalCase([{ id: 'prepare', command: 'prepare_preview' }], {
+    operator: {
+      method: 'native_sql_editor',
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      stage: 'preflight',
+      observedAt: new Date().toISOString(),
+      identityVerified: true,
+      migrationCount: 15,
+      historyAggregate: 'ded9037b363fe2cbf6d7dc2e19731c1fe25963100db92b160967c84ec7b7c6d9',
+      quiescent: true,
+      fixtureOwned: true,
+      globalAdmittedCount: 186,
+    },
+  });
+  assert.equal(r.exit, 0);
+  assert.equal(r.output.find((row) => row.id === 'prepare').code, 'M03_FUNCTIONAL_SQL_RESERVE');
+  assert.equal(
+    r.journal.some((row) => row.kind === 'functional_setup'),
+    false,
+  );
+});
+
+test('functional incomplete history and prior paid-start uncertainty never open another scope', async () => {
+  for (const rows of [
+    [],
+    [functionalDelivery(), { kind: 'functional_open', windowId: '00000000-0000-4000-8000-000000000001' }],
+    [functionalDelivery(), { kind: 'functional_actor_intent' }],
+  ]) {
+    const r = await functionalLocalCase([{ id: 'close', command: 'close' }], { rows });
+    assert.equal(r.exit, 1);
+    assert.equal(
+      r.journal.filter((row) => row.kind === 'functional_open').length,
+      rows.filter((row) => row.kind === 'functional_open').length,
+    );
+    assert.equal(
+      r.journal.some((row) => row.kind === 'functional_setup'),
+      false,
+    );
+  }
+});
+
+test('functional callback commands refuse before runtime and emit no secret contents', async () => {
+  for (const command of [
+    { id: 'unknown', command: 'callback_unknown' },
+    { id: 'replay', command: 'callback_valid', apifyRunId: 'SYNTHETIC_ORIGINAL' },
+  ]) {
+    const r = await functionalLocalCase([command]);
+    assert.equal(r.exit, 0);
+    assert.equal(r.output.find((row) => row.id === command.id).code, 'M03_FUNCTIONAL_CALLBACK_ORDER');
+    assert.equal(JSON.stringify(r.output).includes('SYNTHETIC_MANAGEMENT_ONLY'), false);
+    assert.equal(
+      r.journal.some((row) => row.kind === 'functional_callback_intent'),
+      false,
+    );
+  }
+});
+
 const privatePacket = () => ({
   kind: 'm03_acceptance_private_input',
   version: 1,

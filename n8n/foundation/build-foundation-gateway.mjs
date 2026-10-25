@@ -85,15 +85,10 @@ export function parseFoundationTransport(c) {
   if (
     typeof c.audience !== 'string' ||
     !/^https:\/\/everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(c.audience) ||
-    ![
-      'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
-      '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
-      'eda4fae1-1e19-47db-81b8-beac1a4ed883',
-      '3c46c791-e140-4eb9-890a-eecfa251f65e',
-      '4c602549-2c42-4ec3-9328-714d7cb66a77',
-      'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
-      'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
-    ].includes(c.windowId)
+    // Pure graph compilation is not admission. The functional scope excludes
+    // historical IDs; the registered SQL window enforces actual dev authority.
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(c.windowId) ||
+    c.windowId === '76c2ad42-c094-4ba4-9a0b-566e19b97780'
   )
     bad();
   const a = c.credential;

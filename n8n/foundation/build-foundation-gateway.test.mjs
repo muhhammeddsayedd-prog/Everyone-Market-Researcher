@@ -6,7 +6,11 @@ import {
   foundationTagNames,
   nativeFoundationTagName,
 } from '../../packages/shared/src/n8n-bindings.ts';
-import { buildFoundationGatewayWorkflows, compileFoundationGateway } from './build-foundation-gateway.mjs';
+import {
+  buildFoundationGatewayWorkflows,
+  compileFoundationGateway,
+  parseFoundationTransport,
+} from './build-foundation-gateway.mjs';
 import { nodeId } from './build-foundation.mjs';
 
 export const syntheticFoundationBindings = () => ({
@@ -45,6 +49,36 @@ export const syntheticFoundationTransport = () => ({
     name: 'M03 foundation machine [dev]',
     type: 'httpCustomAuth',
   },
+});
+test('functional compiler accepts a fresh canonical window shape without granting SQL admission', () => {
+  const transport = { ...syntheticFoundationTransport(), windowId: '11111111-1111-4111-8111-111111111111' };
+  assert.equal(parseFoundationTransport(transport).windowId, transport.windowId);
+  const graphs = buildFoundationGatewayWorkflows(syntheticFoundationBindings(), transport);
+  assert.equal(graphs.length, 25);
+  for (const change of [
+    (value) => {
+      value.windowId = 'not-a-uuid';
+    },
+    (value) => {
+      value.windowId = '11111111-1111-4111-7111-111111111111';
+    },
+    (value) => {
+      value.audience = 'https://foreign-project.vercel.app';
+    },
+    (value) => {
+      value.projectRef = 'hkiafqrcxaafdbcvjlzv';
+    },
+    (value) => {
+      value.credential.name = 'Shared credential';
+    },
+    (value) => {
+      value.credential.type = 'httpHeaderAuth';
+    },
+  ]) {
+    const value = structuredClone(transport);
+    change(value);
+    assert.throws(() => parseFoundationTransport(value), /FOUNDATION_TRANSPORT_INVALID/);
+  }
 });
 const executeCode = (n, rows, named = {}) =>
   JSON.parse(
@@ -141,7 +175,7 @@ test('fifth known window compiles only the bounded dev gateway transport', () =>
     () =>
       buildFoundationGatewayWorkflows(syntheticFoundationBindings(), {
         ...syntheticFoundationTransport(),
-        windowId: '11111111-1111-4111-8111-111111111111',
+        windowId: '11111111-1111-4111-7111-111111111111',
       }),
     /FOUNDATION_TRANSPORT_INVALID/,
   );
@@ -159,7 +193,7 @@ for (const windowId of ['edbc6d11-7c1f-43a7-b745-1ded06deb29f', 'e2be1a67-f6db-4
       () =>
         buildFoundationGatewayWorkflows(syntheticFoundationBindings(), {
           ...syntheticFoundationTransport(),
-          windowId: '11111111-1111-4111-8111-111111111111',
+          windowId: '11111111-1111-4111-7111-111111111111',
         }),
       /FOUNDATION_TRANSPORT_INVALID/,
     );

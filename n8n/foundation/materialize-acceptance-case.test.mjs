@@ -322,6 +322,7 @@ for (const windowId of [
   '4c602549-2c42-4ec3-9328-714d7cb66a77',
   'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
   'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+  '11111111-1111-4111-8111-111111111111',
 ])
   test(`fresh-window ${windowId} SUB replay requires the same first-original window as its active transport`, () => {
     const fresh = { ...transport, windowId };
@@ -346,6 +347,22 @@ for (const windowId of [
       }),
     );
   });
+test('content replay denies malformed or closed GW01 transport windows even if claimed original evidence matches', () => {
+  for (const windowId of [
+    'not-a-window',
+    '11111111-1111-4111-7111-111111111111',
+    '76c2ad42-c094-4ba4-9a0b-566e19b97780',
+  ]) {
+    const evidence = structuredClone(firstRunEvidence);
+    evidence.launch.window_id = windowId;
+    assert.throws(() =>
+      materializeFoundationAcceptanceCase(bindings, { ...transport, windowId }, 'sub.ingest.replay_a', {
+        fixtureReceipt: fixture,
+        firstRunEvidence: evidence,
+      }),
+    );
+  }
+});
 test('SUB replay checks require exact output and unchanged authoritative state without claiming native completion from SQL', () => {
   for (const id of ['sub.ingest.replay_a', 'sub.ingest.replay_b', 'sub.cost.replay_a', 'sub.cost.replay_b']) {
     const g = materializeFoundationAcceptanceCase(bindings, transport, id, {

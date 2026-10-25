@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { foundationRequest, foundationReceipt, foundationWindowId } from './n8n-foundation-contracts';
+import {
+  foundationRequest,
+  foundationReceipt,
+  foundationWindowId,
+  parseFoundationWindowId,
+  foundationSmokeInput,
+} from './n8n-foundation-contracts';
 
 const requestId = '0d83a7d6-0cb5-4f5f-a9cd-c604d5b5558a';
 const window = {
@@ -13,6 +19,31 @@ const window = {
   boundDeploymentId: 'dpl_example',
 };
 describe('separate bounded M03 foundation protocol', () => {
+  it('accepts a fresh-window fixed actor request shape without granting registration or actor execution', () => {
+    const launch = {
+      window_id: '11111111-1111-4111-8111-111111111111',
+      launch_id: requestId,
+      run_id: requestId,
+      account_id: requestId,
+      execution_id: '42',
+      actor_id: 'aYG0l9s7dbB7j3gbS',
+      actor_build: '0.3.99',
+      input: foundationSmokeInput,
+      memory_mb: 1024,
+      timeout_seconds: 300,
+      max_total_charge_usd: 1,
+    };
+    const make = (value: unknown) =>
+      foundationRequest({ version: 1, requestId, operation: 'launch.authorize', args: { launch: value } });
+    expect(make(launch).args).toEqual({ launch });
+    for (const change of [
+      { window_id: 'not-a-window' },
+      { window_id: '76c2ad42-c094-4ba4-9a0b-566e19b97780' },
+      { actor_id: 'foreign-actor' },
+      { max_total_charge_usd: 2 },
+    ])
+      expect(() => make({ ...launch, ...change })).toThrow('invalid_request');
+  });
   it.each([
     '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
     'eda4fae1-1e19-47db-81b8-beac1a4ed883',
@@ -20,21 +51,30 @@ describe('separate bounded M03 foundation protocol', () => {
     '4c602549-2c42-4ec3-9328-714d7cb66a77',
     'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
     'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
-  ])('accepts reviewed window %s but rejects unrelated or unknown windows', (fresh) => {
-    const receipt = {
-      state: 'admitted',
-      code: null,
-      result: null,
-      operation: 'identity.read',
-      replayed: false,
-      window: { ...window, id: fresh },
-    };
-    expect(foundationReceipt(receipt, 'identity.read').window.id).toBe(receipt.window.id);
-    for (const id of ['76c2ad42-c094-4ba4-9a0b-566e19b97780', requestId])
-      expect(() => foundationReceipt({ ...receipt, window: { ...window, id } }, 'identity.read')).toThrow(
-        'invalid_result',
-      );
-  });
+    '11111111-1111-4111-8111-111111111111',
+  ])(
+    'accepts canonical window %s while SQL registration and exact deployment binding remain required',
+    (fresh) => {
+      const receipt = {
+        state: 'admitted',
+        code: null,
+        result: null,
+        operation: 'identity.read',
+        replayed: false,
+        window: { ...window, id: fresh },
+      };
+      expect(foundationReceipt(receipt, 'identity.read').window.id).toBe(receipt.window.id);
+      expect(parseFoundationWindowId(fresh)).toBe(fresh);
+      for (const id of [
+        '76c2ad42-c094-4ba4-9a0b-566e19b97780',
+        '11111111-1111-4111-7111-111111111111',
+        'not-a-window',
+      ])
+        expect(() => foundationReceipt({ ...receipt, window: { ...window, id } }, 'identity.read')).toThrow(
+          'invalid_result',
+        );
+    },
+  );
   it('permits only measured keyed Apify cost replay, including nullable optional attribution', () => {
     const e = {
       provider: 'apify',

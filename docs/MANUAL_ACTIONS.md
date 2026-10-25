@@ -49,6 +49,14 @@ hosted writes and does not begin M04/M09/M10. Production, external notifications
 recurring activity, private R2 and PR merge remain separate. Earlier paragraphs
 below are dated history; they do not request already-supplied inputs again.
 
+The owner approved the complete smaller-sequence allowance. The
+[single current estimate and exact approval](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#complete-smaller-functional-allowance--approved-25-october-2026)
+approves only Management2048/Vercel352, preserving1661/1464/3125/V288 charges,
+Control3584/Combined5312 and all other limits. It includes actual callback and
+same-content replay, rejection, bounded recovery and safe shutdown. Pending
+execution readiness; no live batch or new hosted discovery was started to price it.
+No credential delivery, time renewal or general M03 approval is requested.
+
 ## Historical M03 recovery checkpoints — superseded next-step wording
 
 The [current local recovery record](../milestones/M03-n8n-foundation/evidence/technical22-local-recovery-gate-20261025.json) supersedes the next-step wording below. The narrow null-pin fix passes its affected tests. The new cleanup route is deliberately disabled before credential access: automatic approval review blocked insertion/execution of its material synthetic integration tests with “blocked by policy.” No equivalent retry was made. Execution31145 and exact C999 archive remain pending; no fresh full-reader acceptance or deletion is claimed. The independent revoked local bypass copy cleanup passed native0 without reading private contents; all disposable inputs/locks are absent and persistent originals/Machine remain. Charges remain1640/1443/3083/V288, actors0/USD0. No new password, time approval or general development approval is needed; none would resolve the enforced test boundary. Production, merge and M04 remain untouched.

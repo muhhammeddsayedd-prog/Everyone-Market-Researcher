@@ -52,9 +52,10 @@ describe('closed foundation deployment admission', () => {
     '4c602549-2c42-4ec3-9328-714d7cb66a77',
     'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
     'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
-  ])('selects only reviewed dev window %s and rejects another known receipt or production', async (fresh) => {
+    '11111111-1111-4111-8111-111111111111',
+  ])('selects canonical dev window %s and rejects a mismatched receipt or production', async (fresh) => {
     expect(foundationConfig({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: fresh }).windowId).toBe(fresh);
-    expect(() => foundationConfig({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: requestId })).toThrow(
+    expect(() => foundationConfig({ ...env, EMR_M03_FOUNDATION_WINDOW_ID: 'not-a-window' })).toThrow(
       'unavailable',
     );
     expect(() =>
@@ -123,8 +124,27 @@ describe('closed foundation deployment admission', () => {
       { EMR_M03_FOUNDATION_ENABLED: 'false' },
       { EMR_M03_FOUNDATION_WINDOW_ID: '76c2ad42-c094-4ba4-9a0b-566e19b97780' },
       { EMR_M03_FOUNDATION_COMMIT_SHA: 'b'.repeat(40) },
+      { VERCEL_PROJECT_ID: 'foreign-project' },
+      { VERCEL_URL: 'foreign-project.vercel.app' },
+      { VERCEL_GIT_COMMIT_REF: 'main' },
     ])
       expect(() => foundationConfig({ ...env, ...patch })).toThrow('unavailable');
+  });
+  it('denies a fresh dev window in an actual production environment before dispatch', async () => {
+    const dispatch = vi.fn();
+    const handle = createFoundationHandler({
+      environment: () => ({
+        ...env,
+        NODE_ENV: 'production',
+        VERCEL_ENV: 'production',
+        EMR_M03_FOUNDATION_WINDOW_ID: '11111111-1111-4111-8111-111111111111',
+      }),
+      dispatch,
+      log: vi.fn(),
+    });
+    const response = await handle(request());
+    expect(response.status).toBe(503);
+    expect(dispatch).not.toHaveBeenCalled();
   });
   it('returns typed fresh and durable receipts without serializing raw failure context', async () => {
     const log = vi.fn(),

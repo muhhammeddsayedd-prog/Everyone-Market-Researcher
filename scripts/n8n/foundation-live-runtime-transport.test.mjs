@@ -2,7 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { readFileSync } from 'node:fs';
-import { createFoundationRuntimePlan } from './foundation-runtime-plan.mjs';
+import {
+  createFoundationRuntimePlan,
+  foundationFunctionalBaselineVersions,
+} from './foundation-runtime-plan.mjs';
 import {
   createFoundationLiveManagementTransport,
   createFoundationLiveProviderReader,
@@ -435,6 +438,7 @@ function writerCloseFixture({
   endHangs = false,
   destroyCloses = true,
   windowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+  functionalScope,
 } = {}) {
   const rows = [],
     queries = [];
@@ -509,6 +513,7 @@ function writerCloseFixture({
       password: 'SYNTHETIC_PRIVATE_WRITER_CLOSE',
       ...binding,
       windowId,
+      ...(functionalScope ? { functionalScope } : {}),
       deadlineAt: Date.now() + 60000,
       previousEvents: prior,
       append:
@@ -537,6 +542,44 @@ function writerCloseFixture({
     nativeClosed: () => nativeClosed,
   };
 }
+
+test('functional Writer Close uses exact fresh scope, restricted identity and one non-replayed Close', async () => {
+  const functionalScope = {
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
+    windowId: '11111111-1111-4111-8111-111111111111',
+    sourceCommitSha: 'a'.repeat(40),
+    caps: { management: 2048, control: 3584, combined: 5312, vercel: 352 },
+    carried: { management: 1661, control: 1464, combined: 3125, vercel: 288 },
+    restoredBaselineVersions: foundationFunctionalBaselineVersions(),
+  };
+  const f = writerCloseFixture({ functionalScope, windowId: functionalScope.windowId });
+  assert.equal((await f.t.closeWindow()).closeVerified, true);
+  assert.equal(f.queries.filter((q) => q.values?.[2] === 'close').length, 1);
+  assert.equal(f.rows[0].windowId, functionalScope.windowId);
+  assert.equal(f.nativeClosed(), true);
+  for (const edit of [
+    (s) => {
+      s.projectRef = 'hkiafqrcxaafdbcvjlzv';
+    },
+    (s) => {
+      s.sourceCommitSha = 'b'.repeat(40);
+    },
+    (s) => {
+      s.caps.management++;
+    },
+    (s) => {
+      s.windowId = 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a';
+    },
+  ]) {
+    const changed = structuredClone(functionalScope);
+    edit(changed);
+    assert.throws(() => writerCloseFixture({ functionalScope: changed, windowId: changed.windowId }));
+  }
+  assert.throws(() =>
+    writerCloseFixture({ functionalScope, windowId: '22222222-2222-4222-8222-222222222222' }),
+  );
+});
 
 test('restricted Writer Close verifies identity/binding, durably admits once and awaits native end', async () => {
   const f = writerCloseFixture();

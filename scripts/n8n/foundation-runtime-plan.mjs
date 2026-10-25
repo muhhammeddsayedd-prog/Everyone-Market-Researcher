@@ -1,7 +1,10 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { isDeepStrictEqual } from 'node:util';
 import {
   foundationRuntimeCheckpoint,
   foundationRuntimeNativeReadonlyPin,
+  foundationRuntimeGraphHash,
 } from './foundation-runtime-checkpoint.mjs';
 import { graphBody, inactiveNativeStagingGraph } from './foundation-bind.mjs';
 import { materializeFoundationAcceptanceCase } from '../../n8n/foundation/materialize-acceptance-case.mjs';
@@ -23,6 +26,7 @@ const exact = (v, keys) =>
 const checkedPlans = new WeakSet();
 const checkedCases = new WeakSet();
 const checkedBodies = new WeakMap();
+const functionalRows = new WeakMap();
 export const runtimeHash = (v) => createHash('sha256').update(JSON.stringify(v)).digest('hex');
 export function freezeRuntimeValue(v) {
   if (v !== null && typeof v === 'object') {
@@ -44,6 +48,106 @@ export const foundationRuntimePublishOrder = freezeRuntimeValue([
   'SUB-FINISH',
   'WF-19',
 ]);
+const functionalKeys = ['SUB-NOTIFY', 'WF-90', 'SUB-START', 'SUB-FINISH', 'WF-30', 'WF-70', 'WF-19', 'WF-99'];
+const historicalWindows = [
+  '76c2ad42-c094-4ba4-9a0b-566e19b97780',
+  'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+  '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+  'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+  '3c46c791-e140-4eb9-890a-eecfa251f65e',
+  '4c602549-2c42-4ec3-9328-714d7cb66a77',
+  'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
+  'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+];
+// One functional scope replaces attempt profiles. This public validation is not
+// authentication: the fresh SQL provision and all live ownership checks remain.
+export function assertFoundationFunctionalScope(
+  scope,
+  { sourceCommitSha = scope?.sourceCommitSha, windowId = scope?.windowId } = {},
+) {
+  const carryFloor = { management: 1661, control: 1464, combined: 3125, vercel: 288 };
+  if (
+    !exact(scope, [
+      'projectRef',
+      'projectId',
+      'windowId',
+      'sourceCommitSha',
+      'caps',
+      'carried',
+      'restoredBaselineVersions',
+    ]) ||
+    scope.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+    scope.projectId !== 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' ||
+    typeof scope.windowId !== 'string' ||
+    typeof scope.sourceCommitSha !== 'string' ||
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(scope.windowId) ||
+    historicalWindows.includes(scope.windowId) ||
+    scope.windowId !== windowId ||
+    !/^[a-f0-9]{40}$/.test(scope.sourceCommitSha) ||
+    scope.sourceCommitSha !== sourceCommitSha ||
+    !isDeepStrictEqual(scope.caps, { management: 2048, control: 3584, combined: 5312, vercel: 352 }) ||
+    !exact(scope.carried, Object.keys(carryFloor)) ||
+    Object.entries(carryFloor).some(
+      ([key, floor]) =>
+        !Number.isSafeInteger(scope.carried[key]) ||
+        scope.carried[key] < floor ||
+        scope.carried[key] > scope.caps[key],
+    ) ||
+    scope.carried.combined !== scope.carried.management + scope.carried.control ||
+    scope.carried.vercel > scope.carried.management
+  )
+    blocked();
+  const { rows, versions } = functionalRestoration();
+  if (!isDeepStrictEqual(scope.restoredBaselineVersions, versions)) blocked();
+  functionalRows.set(scope, rows);
+  return freezeRuntimeValue(scope);
+}
+function functionalRestoration() {
+  const pinned = (name, sha) => {
+    const bytes = readFileSync(
+      new URL('../../milestones/M03-n8n-foundation/evidence/' + name, import.meta.url),
+    );
+    if (createHash('sha256').update(bytes).digest('hex') !== sha) blocked();
+    return JSON.parse(bytes);
+  };
+  const actual = pinned(
+    'dev-acceptance-technical22-domain-refusal-20261025.json',
+    '1f5d99253deb88df1df2dd9cf6f057fe878f5c1263c5711e70062e2e2fe35ff3',
+  );
+  const restored = pinned(
+    'technical22-restored-workflows-projection-20261025.json',
+    '9d96a335d6b47ce709ebbde71de0d0e679979298cb144dc021381e59a2c4cd8d',
+  );
+  const wf00 = pinned(
+    'wf00-restore-verified-20261023.json',
+    '32184be54a4b36f250fa026ece00f295c94c6149b2af5fb682bfb769f683f9ec',
+  );
+  if (
+    actual.restoration.baselineRestored !== true ||
+    restored.restored.length !== 25 ||
+    wf00.currentExport.recordHash !== foundationRuntimeCheckpoint.workflows['WF-00'].recordHash ||
+    wf00.currentExport.workflowDefinitionUnchanged !== true
+  )
+    blocked();
+  const versions = Object.fromEntries(
+    restored.restored.map((row) => {
+      if (
+        !keys.includes(row.key) ||
+        row.workflowId !== foundationRuntimeCheckpoint.workflows[row.key].id ||
+        !/^[a-f0-9-]{36}$/.test(row.restoredVersionId) ||
+        row.activeVersionId !== null ||
+        row.publishedHash !== null
+      )
+        blocked();
+      return [row.key, row.restoredVersionId];
+    }),
+  );
+  if (Object.keys(versions).length !== 25) blocked();
+  return { rows: restored.restored, versions };
+}
+export function foundationFunctionalBaselineVersions() {
+  return freezeRuntimeValue(functionalRestoration().versions);
+}
 export function createFoundationRuntimeSetupOutput(v) {
   if (
     !exact(v, [
@@ -119,13 +223,26 @@ export function createFoundationRuntimeBaseline(input) {
   }
   // Validate every canonical source record before applying only the qualified
   // native versions left by the separately reconciled restoration.
-  const restoredVersions = Object.hasOwn(input, 'projectVerifiedContinuationProof')
-    ? foundationProjectVerifiedContinuationRestoredBaselineVersions(input.projectVerifiedContinuationProof)
-    : null;
+  if (input.functionalScope !== undefined && Object.hasOwn(input, 'projectVerifiedContinuationProof'))
+    blocked();
+  const restoredVersions =
+    input.functionalScope !== undefined
+      ? assertFoundationFunctionalScope(input.functionalScope).restoredBaselineVersions
+      : Object.hasOwn(input, 'projectVerifiedContinuationProof')
+        ? foundationProjectVerifiedContinuationRestoredBaselineVersions(
+            input.projectVerifiedContinuationProof,
+          )
+        : null;
   return freezeRuntimeValue(
     keys.map((key) => {
       const record = byKey.get(key);
       if (!record) blocked();
+      if (
+        input.functionalScope &&
+        functionalRows.get(input.functionalScope).find((row) => row.key === key)?.targetGraphHash !==
+          foundationRuntimeGraphHash(bodyFor(record))
+      )
+        blocked();
       return {
         key,
         id: record.id,
@@ -159,16 +276,24 @@ export function createFoundationRuntimePlan(input) {
   const { bindings, transport, records, activeWindowId = foundationRuntimeCheckpoint.windowId } = input;
   let { setup } = input;
   setup = createFoundationRuntimeSetupOutput(setup);
+  const functional =
+    input.functionalScope === undefined
+      ? null
+      : assertFoundationFunctionalScope(input.functionalScope, {
+          sourceCommitSha: setup.sourceCommitSha,
+          windowId: activeWindowId,
+        });
   if (
-    ![
-      'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
-      '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
-      'eda4fae1-1e19-47db-81b8-beac1a4ed883',
-      '3c46c791-e140-4eb9-890a-eecfa251f65e',
-      '4c602549-2c42-4ec3-9328-714d7cb66a77',
-      'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
-      'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
-    ].includes(activeWindowId) ||
+    (!functional &&
+      ![
+        'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+        '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+        'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+        '3c46c791-e140-4eb9-890a-eecfa251f65e',
+        '4c602549-2c42-4ec3-9328-714d7cb66a77',
+        'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
+        'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
+      ].includes(activeWindowId)) ||
     !object(bindings) ||
     bindings.projectId !== foundationRuntimeCheckpoint.projectId ||
     bindings.runtimeVersion !== '2.43.5' ||
@@ -186,6 +311,7 @@ export function createFoundationRuntimePlan(input) {
   const baseline = createFoundationRuntimeBaseline(input);
   const continuationProof = input.projectVerifiedContinuationProof;
   if (
+    !functional &&
     ([
       '4c602549-2c42-4ec3-9328-714d7cb66a77',
       'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
@@ -209,7 +335,7 @@ export function createFoundationRuntimePlan(input) {
     if (staged.metadata.stagedSourceHash !== byKey.get(graph.key)?.stagedSourceHash) blocked();
   }
   const compiled = new Map(buildFoundationGatewayWorkflows(bindings, newTransport).map((g) => [g.key, g]));
-  const runtime = keys.map((key) => ({
+  const runtime = (functional ? functionalKeys : keys).map((key) => ({
     key,
     id: byKey.get(key).id,
     body: runtimeBody(compiled.get(key), setup, true, retentionPolicy),
@@ -227,9 +353,12 @@ export function createFoundationRuntimePlan(input) {
     step('save', 'SUB-NOTIFY', runtime.find((r) => r.key === 'SUB-NOTIFY').body),
     step('publish', 'SUB-NOTIFY'),
     ...runtime
-      .filter((r) => !['SUB-NOTIFY', 'WF-90'].includes(r.key))
+      .filter((r) => !['SUB-NOTIFY', 'WF-90', ...(functional ? ['WF-99'] : [])].includes(r.key))
       .map((r) => step('save', r.key, r.body)),
-    ...foundationRuntimePublishOrder
+    ...(functional
+      ? foundationRuntimePublishOrder.filter((key) => key !== 'WF-80')
+      : foundationRuntimePublishOrder
+    )
       .filter((key) => !['SUB-NOTIFY', 'WF-90'].includes(key))
       .map((key) => step('publish', key)),
   ];
@@ -255,7 +384,8 @@ export function createFoundationRuntimePlan(input) {
     runtime,
     bindings: structuredClone(bindings),
     transport: newTransport,
-    publishKeys: [...foundationRuntimePublishOrder],
+    publishKeys: [...foundationRuntimePublishOrder].filter((key) => !functional || key !== 'WF-80'),
+    ...(functional ? { functionalScope: freezeRuntimeValue(structuredClone(functional)) } : {}),
     setupSteps,
     maximumManagementRequests: 512,
     concurrencyBoundary:
@@ -267,9 +397,11 @@ export function createFoundationRuntimePlan(input) {
   checkedBodies.set(
     plan,
     new Set(
-      [...baseline, ...runtime, ...setupSteps.filter((s) => s.kind === 'save')].map((r) =>
-        runtimeHash(r.body),
-      ),
+      [
+        ...baseline.filter((row) => !functional || [...functionalKeys, 'SUB-INGEST'].includes(row.key)),
+        ...runtime,
+        ...setupSteps.filter((s) => s.kind === 'save'),
+      ].map((r) => runtimeHash(r.body)),
     ),
   );
   return plan;
@@ -293,13 +425,14 @@ export function runtimeManagementCounts(plan, caseCount = 0) {
   assertFoundationRuntimePlan(plan);
   if (!Number.isSafeInteger(caseCount) || caseCount < 0 || caseCount > 32) blocked();
   const setup = 25 + 5 + plan.setupSteps.length * 3;
-  const restore = plan.publishKeys.length * 3 + 25 * 3 + 3 + 25;
+  const restore = plan.publishKeys.length * 3 + (plan.functionalScope ? 9 : 25) * 3 + 3 + 25;
+  const finalAudit = plan.functionalScope ? 0 : 25;
   return {
     setup,
     restore,
-    finalAudit: 25,
+    finalAudit,
     caseDrafts: caseCount * 3,
-    nominalTotal: setup + restore + 25 + caseCount * 3,
+    nominalTotal: setup + restore + finalAudit + caseCount * 3,
     maximum: 512,
   };
 }
@@ -332,6 +465,7 @@ export function foundationRuntimePreparationInventory(caseCount = 23) {
 }
 export function materializeFoundationRuntimeCase(plan, caseId, options = {}) {
   assertFoundationRuntimePlan(plan);
+  if (plan.functionalScope && !['smoke.first', 'sub.ingest.replay_a'].includes(caseId)) blocked();
   const graph = materializeFoundationAcceptanceCase(plan.bindings, plan.transport, caseId, options);
   const body = graphBody(graph);
   body.settings = applyFoundationApprovedRetentionSettings(plan.retentionPolicy, graph.key, body.settings);

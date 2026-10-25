@@ -23,6 +23,278 @@ const safeEnvironment = (directory) => ({
   LOCALAPPDATA: directory,
 });
 
+test('functional wrapper has a separate restricted-runtime entry before legacy admission', () => {
+  const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+  assert.match(source, /\[switch\]\$Functional/);
+  const start = source.indexOf('function Invoke-M03FunctionalAcceptance(');
+  const dispatch = source.indexOf('if($Functional){');
+  const legacy = source.indexOf(' $admittedClockMode=$ClockAmendment');
+  assert.ok(start > 0 && dispatch > start && legacy > dispatch);
+  const branch = source.slice(start, dispatch);
+  assert.match(branch, /m03_functional_private_input/);
+  assert.match(branch, /@\('Management','Writer','ApifyRead'\)/);
+  assert.doesNotMatch(branch, /Ensure-M03DevRuntimeHandoff -Kind Admin|PGPASSWORD/);
+  assert.match(branch, /EnvironmentVariables\.Clear\(\)/);
+  assert.match(branch, /StandardInput\.WriteLine/);
+});
+
+test(
+  'functional native command and projection contracts reject arbitrary API inputs and secret reflection',
+  windowsOnly,
+  () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-functional-dto-'));
+    try {
+      const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
+      const start = source.indexOf('function Safe-M03FunctionalLine(');
+      const end = source.indexOf('function Invoke-M03FunctionalPublicCommand(', start);
+      assert.ok(start > 0 && end > start);
+      const script = join(directory, 'contracts.ps1');
+      writeFileSync(
+        script,
+        `$ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+$needles=[Collections.Generic.List[string]]::new();$needles.Add('syntheticPrivateCanary12345')
+$knownWorkflowIds=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal);$null=$knownWorkflowIds.Add('OwnedSynthetic99')
+${source.slice(start, end)}
+$valid=[pscustomobject]@{kind='m03_functional_result';status='ready';management=1661;control=1464;combined=3125;vercel=288;costUsd=0.5;workflowId='OwnedSynthetic99';code='M03_FUNCTIONAL_READY'}
+$null=Safe-M03FunctionalLine $valid
+if(Test-M03FunctionalResourceRestoration ([pscustomobject]@{kind='m03_functional_result';status='restored';code='M03_FUNCTIONAL_WINDOW_CLOSED'})){throw 'WINDOW_ONLY_CANNOT_ERASE_BYPASS'}
+if(Test-M03FunctionalResourceRestoration ([pscustomobject]@{kind='m03_functional_result';status='closed'})){throw 'UNQUALIFIED_CLOSE_CANNOT_ERASE_BYPASS'}
+if(-not(Test-M03FunctionalResourceRestoration ([pscustomobject]@{kind='m03_functional_result';status='restored';code='M03_FUNCTIONAL_RESOURCES_RESTORED'}))){throw 'EXACT_RESTORATION_REQUIRED'}
+if(-not(Test-M03FunctionalResourceRestoration ([pscustomobject]@{kind='m03_functional_result';status='closed';code='M03_FUNCTIONAL_CLOSED'}))){throw 'EXACT_CLOSED_REQUIRED'}
+foreach($change in @(@{key='management';value='1661'},@{key='management';value=2049},@{key='combined';value=5313},@{key='vercel';value=353},@{key='costUsd';value=[double]::NaN},@{key='status';value='unreviewed'},@{key='workflowId';value='ForeignWorkflow'},@{key='raw';value='secret'},@{key='apifyRunId';value='syntheticPrivateCanary12345'},@{key='apifyRunId';value=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes('syntheticPrivateCanary12345'))})){
+ $copy=$valid|ConvertTo-Json|ConvertFrom-Json;$copy|Add-Member -NotePropertyName $change.key -NotePropertyValue $change.value -Force
+ $denied=$false;try{$null=Safe-M03FunctionalLine $copy}catch{$denied=$true};if(-not $denied){throw 'UNSAFE_FUNCTIONAL_OUTPUT'}
+}
+foreach($name in @('state','prepare_preview','prepare_runtime','callback_unknown','restore','close','close_window','authorize_start')){Assert-M03FunctionalCommand ([pscustomobject]@{id='test';command=$name})}
+Assert-M03FunctionalCommand ([pscustomobject]@{id='test';command='charge_control';count=1})
+Assert-M03FunctionalCommand ([pscustomobject]@{id='test';command='charge_management';count=100})
+Assert-M03FunctionalCommand ([pscustomobject]@{id='test';command='callback_valid';apifyRunId='SyntheticRun123'})
+Assert-M03FunctionalCommand ([pscustomobject]@{id='test';command='original';apifyRunId='SyntheticRun123';runId='00000000-0000-4000-8000-000000000001'})
+foreach($bad in @(@{id='x';command='request';method='GET';path='/api/v1/variables'},@{id='x';command='state';body=@{}},@{id='x';command='charge_control';count=101},@{id='x';command='charge_control';count='1'},@{id='x';command='charge_management';count=101},@{id='x';command='charge_management';count='1'},@{id='x';command='charge_management';count=1;path='/api/v1/variables'},@{id='x';command='callback_valid';apifyRunId='bad/url'},@{id='x';command='original';apifyRunId='SyntheticRun123';runId='invalid'})){
+ $denied=$false;try{Assert-M03FunctionalCommand ([pscustomobject]$bad)}catch{$denied=$true};if(-not $denied){throw 'UNSAFE_FUNCTIONAL_COMMAND'}
+}
+Write-Output 'FUNCTIONAL_DTO_CONTRACT_PASS'
+`,
+      );
+      const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', script], {
+        env: safeEnvironment(directory),
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 15000,
+      });
+      assert.equal(result.status, 0, result.stderr + result.stdout);
+      assert.equal(result.stderr, '');
+      assert.equal(result.stdout.trim(), 'FUNCTIONAL_DTO_CONTRACT_PASS');
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  'functional native wrapper sends only selected synthetic DPAPI inputs through stdin and retains originals',
+  windowsOnly,
+  async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'emr-functional-private-'));
+    try {
+      const windows = join(directory, 'scripts/n8n/windows'),
+        pending = join(
+          directory,
+          'Everyone-Market-Radar-Private/foundation/df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+        );
+      mkdirSync(windows, { recursive: true });
+      mkdirSync(join(directory, 'Temp'));
+      mkdirSync(pending, { recursive: true });
+      mkdirSync(join(directory, 'n8n/foundation'), { recursive: true });
+      for (const file of ['Invoke-M03Acceptance.ps1', 'Dev-CredentialStore.ps1'])
+        writeFileSync(join(windows, file), readFileSync(resolve('scripts/n8n/windows', file)));
+      const module = `function Assert-M03AcceptancePublicSeal($Repository,$Seal){return '${process.execPath.replaceAll("'", "''")}'}\n`;
+      writeFileSync(join(windows, 'Acceptance-PublicRuntime.ps1'), module);
+      writeFileSync(
+        join(directory, 'scripts/n8n/foundation-acceptance-seal.json'),
+        JSON.stringify({
+          files: {
+            'scripts/n8n/windows/Acceptance-PublicRuntime.ps1': createHash('sha256')
+              .update(module)
+              .digest('hex'),
+          },
+        }),
+      );
+      const old = JSON.parse(readFileSync(resolve('scripts/n8n/foundation-delivery-packet.json'), 'utf8'));
+      writeFileSync(join(directory, 'scripts/n8n/foundation-delivery-packet.json'), JSON.stringify(old));
+      writeFileSync(
+        join(directory, 'n8n/foundation/bindings.dev.json'),
+        readFileSync(resolve('n8n/foundation/bindings.dev.json')),
+      );
+      writeFileSync(
+        join(pending, 'pending-runtime.json'),
+        JSON.stringify({
+          version: 1,
+          windowId: 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+          purpose: 'pending_inactive_m03_runtime_delivery',
+          credentialId: 'EmrM03Machine19',
+          audience: old.audience,
+          sourceCommitSha: old.sourceCommitSha,
+          createdAt: new Date().toISOString(),
+        }),
+      );
+      writeFileSync(
+        join(directory, 'scripts/n8n/foundation-live-runtime-cli.mjs'),
+        `import {createInterface} from 'node:readline';
+const watchdog=setTimeout(()=>process.exit(24),15000);watchdog.unref();
+if(process.env.EMR_PRIVATE_SENTINEL)process.exit(20);
+const emit=v=>process.stdout.write(JSON.stringify({kind:'m03_functional_result',...v})+'\\n');
+if(process.argv[2]==='FunctionalCheckOnly'){emit({status:'check_only_ready'});process.exit(0)}
+if(process.argv[2]!=='Functional')process.exit(21);
+let first=true;const input=createInterface({input:process.stdin});
+input.on('line',line=>{const p=JSON.parse(line);if(first){first=false;
+const keys=['kind','version','sourceCommitSha','managementKey','writerPassword','apifyReadToken','machineToken','protectionBypass'].sort();
+if(JSON.stringify(Object.keys(p).sort())!==JSON.stringify(keys)||p.kind!=='m03_functional_private_input'||p.version!==1||!/^[a-f0-9]{40}$/.test(p.sourceCommitSha)||p.managementKey!=='SyntheticManagement123'||p.writerPassword!=='SyntheticWriter123'||p.apifyReadToken!=='SyntheticApifyRead123'||p.machineToken!=='m'.repeat(43)||!/^[A-Za-z0-9]{32}$/.test(p.protectionBypass))process.exit(22);
+emit({status:'ready'});return}
+if(p.command==='state')emit({id:p.id,status:'prepared'});
+else if(p.command==='close'){emit({id:p.id,status:'restored',code:'M03_FUNCTIONAL_RESOURCES_RESTORED'});emit({id:p.id,status:'closed',code:'M03_FUNCTIONAL_CLOSED'});input.close();process.stdin.destroy();clearTimeout(watchdog);process.exitCode=0}
+else process.exit(23)
+});`,
+      );
+      const setup = join(directory, 'setup.ps1'),
+        quote = (value) => "'" + value.replaceAll("'", "''") + "'";
+      writeFileSync(
+        setup,
+        `$ErrorActionPreference='Stop';Set-StrictMode -Version Latest
+. ${quote(join(windows, 'Dev-CredentialStore.ps1'))}
+$root=Initialize-M03DevPrivateDirectory
+$storeLock=Join-Path $root 'store.operation.lock';$stream=[IO.File]::Open($storeLock,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);$stream.Dispose();Set-M03DevPrivateAcl $storeLock $false
+foreach($kind in @('Management','Writer','ApifyRead')){
+ $spec=Get-M03DevCredentialSpec -Kind $kind
+ $value=ConvertTo-SecureString -String ('Synthetic'+$kind+'123') -AsPlainText -Force
+ try{$cipher=ConvertFrom-SecureString -SecureString $value;Write-M03DevPrivateFile -Path $spec.Source -Bytes ([Text.Encoding]::ASCII.GetBytes($cipher))}finally{$value.Dispose();$cipher=$null}
+}
+Set-M03DevPrivateAcl ${quote(pending)} $true
+$value=ConvertTo-SecureString -String ('m'*43) -AsPlainText -Force
+try{$cipher=ConvertFrom-SecureString -SecureString $value;Write-M03DevPrivateFile -Path ${quote(join(pending, 'machine.dpapi'))} -Bytes ([Text.Encoding]::ASCII.GetBytes($cipher))}finally{$value.Dispose();$cipher=$null}
+`,
+      );
+      const environment = {
+        ...safeEnvironment(directory),
+        USERPROFILE: process.env.USERPROFILE,
+        APPDATA: process.env.APPDATA,
+        EMR_PRIVATE_SENTINEL: 'SyntheticInheritedOnly',
+      };
+      const prepared = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', setup], {
+        env: environment,
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 20000,
+      });
+      assert.equal(prepared.status, 0, prepared.stderr + prepared.stdout);
+      for (const args of [
+        ['init', '-q'],
+        [
+          '-c',
+          'user.name=Synthetic',
+          '-c',
+          'user.email=synthetic@example.invalid',
+          'commit',
+          '-q',
+          '--allow-empty',
+          '-m',
+          'synthetic',
+        ],
+      ]) {
+        const result = spawnSync('git', args, {
+          cwd: directory,
+          env: environment,
+          encoding: 'utf8',
+          windowsHide: true,
+          timeout: 15000,
+        });
+        assert.equal(result.status, 0, result.stderr);
+      }
+      const publicCheck = spawnSync(
+        'powershell.exe',
+        [
+          '-NoProfile',
+          '-NonInteractive',
+          '-File',
+          join(windows, 'Invoke-M03Acceptance.ps1'),
+          '-Functional',
+          '-CheckOnly',
+        ],
+        { env: environment, encoding: 'utf8', windowsHide: true, timeout: 20000 },
+      );
+      assert.equal(publicCheck.status, 0, publicCheck.stderr + publicCheck.stdout);
+      assert.equal(JSON.parse(publicCheck.stdout).status, 'check_only_ready');
+      const frames = [];
+      let stderr = '',
+        buffer = '';
+      const child = spawn(
+        'powershell.exe',
+        ['-NoProfile', '-NonInteractive', '-File', join(windows, 'Invoke-M03Acceptance.ps1'), '-Functional'],
+        { env: environment, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] },
+      );
+      const done = new Promise((resolveDone, reject) => {
+        const timer = setTimeout(() => {
+          child.stdin.end('{"id":"timeout","command":"close"}\n');
+          reject(Error('SYNTHETIC_FUNCTIONAL_TIMEOUT'));
+        }, 20000);
+        child.once('error', reject);
+        child.once('close', (code) => {
+          clearTimeout(timer);
+          resolveDone(code);
+        });
+      });
+      child.stderr.on('data', (chunk) => {
+        stderr += chunk;
+      });
+      child.stdout.on('data', (chunk) => {
+        buffer += chunk;
+        for (let at; (at = buffer.indexOf('\n')) >= 0;) {
+          const line = buffer.slice(0, at).trim();
+          buffer = buffer.slice(at + 1);
+          if (!line) continue;
+          const frame = JSON.parse(line);
+          frames.push(frame);
+          if (frame.kind === 'm03_acceptance_transport_ready')
+            child.stdin.write(
+              JSON.stringify({ kind: 'm03_acceptance_transport_ack', nonce: frame.nonce }) + '\n',
+            );
+          if (frame.status === 'ready') child.stdin.write('{"id":"state1","command":"state"}\n');
+          if (frame.status === 'prepared') child.stdin.end('{"id":"close1","command":"close"}\n');
+        }
+      });
+      assert.equal(await done, 0, stderr + JSON.stringify(frames));
+      assert.equal(stderr, '');
+      assert.ok(frames.some((row) => row.code === 'M03_FUNCTIONAL_WRAPPER_CLOSED'));
+      assert.doesNotMatch(
+        JSON.stringify(frames),
+        /Synthetic(?:Management|Writer|ApifyRead)|SyntheticInheritedOnly/,
+      );
+      const presence = join(directory, 'presence.ps1');
+      writeFileSync(
+        presence,
+        `. ${quote(join(windows, 'Dev-CredentialStore.ps1'))}
+foreach($kind in @('Management','Writer','ApifyRead')){$s=Get-M03DevCredentialSpec $kind;if(-not(Test-Path -LiteralPath $s.Source) -or (Test-Path -LiteralPath $s.Cipher) -or (Test-Path -LiteralPath $s.Lease)){exit 1}}
+if(Test-Path -LiteralPath (Get-M03DevCredentialSpec Admin).Source){exit 1}
+foreach($leaf in @('emr-m03-acceptance-parent.operation.lock','emr-m03-acceptance-protection-bypass.dpapi','emr-m03-foundation-dev-migration-password.dpapi')){if(Test-Path -LiteralPath (Join-Path $env:LOCALAPPDATA ('Temp/'+$leaf))){exit 1}}
+if(-not(Test-Path -LiteralPath ${quote(join(pending, 'machine.dpapi'))})){exit 1}
+Write-Output 'SYNTHETIC_FUNCTIONAL_CLEAN'
+`,
+      );
+      const verified = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', presence], {
+        env: environment,
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 15000,
+      });
+      assert.equal(verified.status, 0, verified.stderr + verified.stdout);
+      assert.equal(verified.stdout.trim(), 'SYNTHETIC_FUNCTIONAL_CLEAN');
+    } finally {
+      // Synthetic private fixtures remain outside Git. The earlier exact
+      // orphan/fixture cleanup was policy-blocked and is never retried here.
+    }
+  },
+);
+
 test(
   'public DB forward profile uses only its reviewed project context and a credential-free native child',
   windowsOnly,
@@ -1124,7 +1396,7 @@ test(
     try {
       const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
       const start = source.indexOf('function Safe-PublicLine'),
-        end = source.indexOf('\ntry{', start);
+        end = source.indexOf('\nfunction Safe-M03FunctionalLine(', start);
       assert.ok(start > 0 && end > start);
       const common = {
         sourceCommitSha: '5f256ce915f930481b0d31ac38b919c0a7692cd1',
@@ -1220,7 +1492,7 @@ test(
     try {
       const source = readFileSync(resolve('scripts/n8n/windows/Invoke-M03Acceptance.ps1'), 'utf8');
       const start = source.indexOf('function Safe-PublicLine');
-      const end = source.indexOf('\ntry{', start);
+      const end = source.indexOf('\nfunction Safe-M03FunctionalLine(', start);
       assert.ok(start > 0 && end > start);
       const cases = [
         { kind: 'm03_acceptance_result', id: 'local1', status: 'blocked', residual: true },
@@ -1472,7 +1744,7 @@ test(
       assert.match(io, /OpenStandardInput\(262144\)/);
       const projection = source.slice(
         source.indexOf('function Safe-PublicLine'),
-        source.indexOf('\ntry{', source.indexOf('function Safe-PublicLine')),
+        source.indexOf('\nfunction Safe-M03FunctionalLine(', source.indexOf('function Safe-PublicLine')),
       );
       const pumpStart = source.indexOf(
         ' $lineTask=[EmrM03AcceptanceBoundedIo]::Line($child.StandardOutput,65536);',

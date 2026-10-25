@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import * as runtime from './foundation-live-runtime.mjs';
 import { assertFoundationLiveSetupTransport } from './foundation-live-setup-transport.mjs';
+import { assertFoundationFunctionalScope } from './foundation-runtime-plan.mjs';
 import { assertFoundationRemainingSetupResume } from './foundation-live-remaining-continuation.mjs';
 import { assertFoundationStartupReplacementSetupResume } from './foundation-live-startup-replacement.mjs';
 import {
@@ -42,7 +43,7 @@ const freeze = (v) => {
 };
 export function foundationLiveSetupRequestPlan(previousAttempts, maximumRequests = maximum) {
   if (
-    ![50, 88, 132, 176, 224, 256, 304].includes(maximumRequests) ||
+    ![50, 88, 132, 176, 224, 256, 304, 352].includes(maximumRequests) ||
     !Number.isInteger(previousAttempts) ||
     previousAttempts < 0 ||
     previousAttempts > maximumRequests
@@ -110,9 +111,16 @@ export function createFoundationLiveSetupJournal({
   durableAppend,
   previousEvents = [],
   maximumRequests = maximum,
+  functionalScope,
 }) {
+  const functional =
+    functionalScope === undefined
+      ? null
+      : assertFoundationFunctionalScope(functionalScope, { sourceCommitSha });
   if (
-    ![50, 88, 132, 176, 224, 256, 304].includes(maximumRequests) ||
+    !(functional
+      ? maximumRequests === functional.caps.vercel
+      : [50, 88, 132, 176, 224, 256, 304].includes(maximumRequests)) ||
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
     typeof durableAppend !== 'function' ||
     !Array.isArray(previousEvents) ||
@@ -121,7 +129,7 @@ export function createFoundationLiveSetupJournal({
     fail();
   const rows = [];
   let failed = false,
-    ordinal = 0;
+    ordinal = functional?.carried.vercel ?? 0;
   const check = (row) => {
     if (
       !object(row) ||
@@ -187,15 +195,17 @@ export function createFoundationLiveSetupJournal({
       (row.type !== 'sensitive' ||
         row.gitBranch !== S.branch ||
         !isDeepStrictEqual(row.target, ['preview']) ||
-        ![
-          'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
-          '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
-          'eda4fae1-1e19-47db-81b8-beac1a4ed883',
-          '3c46c791-e140-4eb9-890a-eecfa251f65e',
-          '4c602549-2c42-4ec3-9328-714d7cb66a77',
-          foundationProjectVerifiedTechnical17Runtime.windowId,
-          foundationProjectVerifiedTechnical20Runtime.windowId,
-        ].some((id) => row.comment === 'M03 foundation temporary dev ' + id) ||
+        !(functional
+          ? row.comment === 'M03 foundation temporary dev ' + functional.windowId
+          : [
+              'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+              '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
+              'eda4fae1-1e19-47db-81b8-beac1a4ed883',
+              '3c46c791-e140-4eb9-890a-eecfa251f65e',
+              '4c602549-2c42-4ec3-9328-714d7cb66a77',
+              foundationProjectVerifiedTechnical17Runtime.windowId,
+              foundationProjectVerifiedTechnical20Runtime.windowId,
+            ].some((id) => row.comment === 'M03 foundation temporary dev ' + id)) ||
         !Number.isFinite(row.createdAt) ||
         !Number.isFinite(row.updatedAt))
     )
@@ -212,6 +222,7 @@ export function createFoundationLiveSetupJournal({
   const journal = Object.freeze({
     sourceCommitSha,
     maximumRequests,
+    ...(functional ? { functionalScope: freeze(structuredClone(functional)) } : {}),
     get rows() {
       return Object.freeze([...rows]);
     },
@@ -237,7 +248,12 @@ export function assertFoundationLiveDeployment(value) {
 export function createFoundationLiveSetup(input, dependencies = {}) {
   const { sourceCommitSha, transport, journal, managementBudget, verifyDevReady } = input;
   const activeWindowId = input.activeWindowId ?? S.windowId;
+  const functional =
+    input.functionalScope === undefined
+      ? null
+      : assertFoundationFunctionalScope(input.functionalScope, { sourceCommitSha, windowId: activeWindowId });
   if (
+    !functional &&
     ![
       S.windowId,
       '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
@@ -264,16 +280,35 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
   )
     fail();
   (dependencies.transportValidator ?? assertFoundationLiveSetupTransport)(transport);
-  (dependencies.managementBudgetValidator ?? runtime.assertFoundationLiveManagementBudget)(managementBudget, {
-    sourceCommitSha,
-    deadlineAt: input.deadlineAt,
-  });
+  if (functional) {
+    if (
+      !isDeepStrictEqual(journal.functionalScope, functional) ||
+      typeof managementBudget?.admit !== 'function' ||
+      typeof managementBudget.snapshot !== 'function' ||
+      managementBudget.snapshot().maximum !== functional.caps.management ||
+      managementBudget.snapshot().attempts < functional.carried.management
+    )
+      fail();
+  } else
+    (dependencies.managementBudgetValidator ?? runtime.assertFoundationLiveManagementBudget)(
+      managementBudget,
+      {
+        sourceCommitSha,
+        deadlineAt: input.deadlineAt,
+      },
+    );
   if (typeof managementBudget.attachTransport !== 'function') fail();
   managementBudget.attachTransport(transport);
   if (!exact(input.sensitive, ['writerPassword', 'machineToken', 'apifyReadToken', 'protectionBypass']))
     fail();
   let sensitive = { ...input.sensitive };
   if (
+    (functional &&
+      [
+        input.remainingContinuationProof,
+        input.startupReplacementProof,
+        input.projectVerifiedContinuationProof,
+      ].some((p) => p !== undefined)) ||
     typeof sensitive.writerPassword !== 'string' ||
     !sensitive.writerPassword ||
     sensitive.writerPassword.length > 4096 ||
@@ -332,7 +367,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
     input.projectVerifiedContinuationProof === undefined
       ? null
       : foundationProjectVerifiedContinuationResumeCheckpoint(input.projectVerifiedContinuationProof);
-  const requestMaximum = resumeCheckpoint?.setupMaximum ?? maximum;
+  const requestMaximum = functional?.caps.vercel ?? resumeCheckpoint?.setupMaximum ?? maximum;
   const legacyMetadataReplay =
     resumed && resumeCheckpoint?.closedWindow === true && activeWindowId !== S.windowId;
   const historicalWindowIds = legacyMetadataReplay
@@ -370,7 +405,7 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
               : [S.windowId];
   if (
     journal.maximumRequests !== requestMaximum ||
-    (activeWindowId !== S.windowId && !resumeCheckpoint?.closedWindow) ||
+    (!functional && activeWindowId !== S.windowId && !resumeCheckpoint?.closedWindow) ||
     (resumeCheckpoint?.closedWindow && resumeCheckpoint.activeWindowId !== activeWindowId) ||
     (requestMaximum === 132 &&
       (![640, 704].includes(resumeCheckpoint?.managementMaximum) ||
@@ -410,7 +445,8 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
     closed = false,
     failed = false,
     stopping = false,
-    attempts = journal.rows.filter((r) => r.event === 'setup_attempt').length;
+    attempts =
+      (functional?.carried.vercel ?? 0) + journal.rows.filter((r) => r.event === 'setup_attempt').length;
   let nextRequest = null,
     bypassOwned = false,
     bypassRevokeAttempted = false,
@@ -638,11 +674,13 @@ export function createFoundationLiveSetup(input, dependencies = {}) {
           sharedAttempts = sharedBudget.attempts,
           sharedMaximum = sharedBudget.maximum ?? 512;
         if (
-          ![512, 576, 640, 704, 832, 1024, 1408, 1728].includes(sharedMaximum) ||
-          (sharedMaximum !== 512 && resumeCheckpoint?.managementMaximum !== sharedMaximum) ||
+          !(functional
+            ? sharedMaximum === functional.caps.management
+            : [512, 576, 640, 704, 832, 1024, 1408, 1728].includes(sharedMaximum)) ||
+          (!functional && sharedMaximum !== 512 && resumeCheckpoint?.managementMaximum !== sharedMaximum) ||
           !Number.isInteger(sharedAttempts) ||
           sharedAttempts < 0 ||
-          sharedAttempts + 45 + 135 + 142 > sharedMaximum
+          sharedAttempts + (functional ? 44 + 81 + 73 : 45 + 135 + 142) > sharedMaximum
         )
           fail();
         const ready = await verifyDevReady();

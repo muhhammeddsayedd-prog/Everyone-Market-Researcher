@@ -4,7 +4,10 @@ import { validateFoundationAddresses } from './foundation-management-transport.m
 import { foundationRuntimeRequestAllowed } from './foundation-runtime-control.mjs';
 import { randomUUID } from 'node:crypto';
 import { nativeWriterClient } from './gw01-writer.mjs';
-import { createFoundationRuntimeBaseline } from './foundation-runtime-plan.mjs';
+import {
+  createFoundationRuntimeBaseline,
+  assertFoundationFunctionalScope,
+} from './foundation-runtime-plan.mjs';
 import { diagnoseFoundationRuntimeBaseline } from './foundation-runtime-checkpoint.mjs';
 import { isDeepStrictEqual } from 'node:util';
 
@@ -106,6 +109,7 @@ export function createFoundationLiveWriterCloser(
     previousEvents,
     append,
     windowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9',
+    functionalScope,
   },
   dependencies = {},
 ) {
@@ -119,6 +123,10 @@ export function createFoundationLiveWriterCloser(
     'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
   ];
   const requestId = '00000000-0000-4000-8000-000000000021';
+  const functional =
+    functionalScope === undefined
+      ? null
+      : assertFoundationFunctionalScope(functionalScope, { sourceCommitSha, windowId });
   const now = dependencies.now ?? Date.now;
   const exact = (v, keys) =>
     v !== null &&
@@ -127,7 +135,7 @@ export function createFoundationLiveWriterCloser(
     Object.keys(v).length === keys.length &&
     keys.every((k) => Object.hasOwn(v, k));
   if (
-    !knownWindowIds.includes(windowId) ||
+    (!functional && !knownWindowIds.includes(windowId)) ||
     typeof password !== 'string' ||
     !password ||
     password.length > 4096 ||

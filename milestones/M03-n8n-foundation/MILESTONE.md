@@ -435,7 +435,10 @@ Current results are in the [existing recovery/evidence record](evidence/dev-acce
 The next functional outcome is the one-page asynchronous smoke, actual callback
 completion, replay and invalid-callback proof, using existing helpers/native
 evidence. Count the remaining operations and shutdown before admission; the old
-whole-batch plan does not fit the remaining67 Management/16 Vercel requests.
+whole-batch plan is superseded by the approved smaller-sequence allocation:
+Management2048/Vercel352, retaining1661/1464/3125/V288 and all other caps.
+The [factored estimate](evidence/dev-acceptance-fixture-gap-correction-20261024.md#complete-smaller-functional-allowance--approved-25-october-2026)
+includes recovery and shutdown; accepted groups and retained31145 are not rerun.
 Do not reopen the closed seventh SQL window or reset prior counters. Freeze
 custom-supervisor expansion; after two failed repairs of the same testing-tool
 defect, use a supported alternative or report one precise boundary. Enforced

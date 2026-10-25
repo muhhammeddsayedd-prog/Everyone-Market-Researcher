@@ -149,6 +149,14 @@ function Initialize-M03DevCredentials {
 function Ensure-M03DevRuntimeHandoff {
  param([ValidateSet('Admin','Management','Writer','ApifyRead')][string]$Kind,[ValidateSet('ProjectVerifiedContinuation','StartupReplacement','PhaseA')][string]$AdminMode='ProjectVerifiedContinuation',[IO.FileStream]$CoordinatorLock=$null)
  $spec=Get-M03DevCredentialSpec -Kind $Kind -AdminMode $AdminMode
+ if($Kind -ceq 'Admin' -and $null -ne $CoordinatorLock -and $CoordinatorLock.CanWrite -and -not $CoordinatorLock.SafeFileHandle.IsClosed){
+  $functionalParent=Join-Path $env:LOCALAPPDATA 'Temp\emr-m03-acceptance-parent.operation.lock'
+  if([IO.Path]::GetFullPath($CoordinatorLock.Name) -ceq [IO.Path]::GetFullPath($functionalParent)){
+   $parentEntry=Assert-M03DevPlainPath $functionalParent $false;if($parentEntry.Length -gt 1024){throw 'M03_DEV_ACCESS_TEMPORARY_AMBIGUOUS'}
+   $parentMetadata=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($functionalParent)) -ErrorAction Stop
+   if($parentMetadata.kind -ceq 'm03_functional_parent'){throw 'M03_DEV_FUNCTIONAL_ADMIN_DENIED'}
+  }
+ }
  if(-not (Test-Path -LiteralPath $spec.Source)){throw ('M03_DEV_CREDENTIAL_MISSING_'+$Kind.ToUpperInvariant())}
  $root=Get-M03DevCredentialRoot;Assert-M03DevPrivateAcl $root $true;Assert-M03DevPrivateAcl ([IO.Path]::GetDirectoryName($spec.Source)) $true;Assert-M03DevPrivateAcl $spec.Source $false
  $null=Assert-M03DevPlainPath (Join-Path $env:LOCALAPPDATA 'Temp') $true
@@ -179,7 +187,8 @@ function Ensure-M03DevRuntimeHandoff {
      $parentReader=[IO.StreamReader]::new($parentStream)
      $owner=ConvertFrom-Json -InputObject ($parentReader.ReadToEnd()) -ErrorAction Stop
     }finally{if($null -ne $parentReader){$parentReader.Dispose()}elseif($null -ne $parentStream){$parentStream.Dispose()}}
-    if($owner.kind -cne 'm03_clock_admission_parent' -or $owner.version -ne 1 -or $owner.processId -ne $PID -or $owner.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74'){throw 'M03_DEV_ACCESS_TEMPORARY_AMBIGUOUS'}
+    $functionalOwner=$owner.kind -ceq 'm03_functional_parent' -and $Spec.Kind -cne 'Admin' -and $owner.version -is [int] -and $owner.version -eq 1 -and $owner.processId -is [int] -and $owner.processId -eq $PID -and @(Compare-Object -CaseSensitive @('kind','version','processId'|Sort-Object) @($owner.PSObject.Properties.Name|Sort-Object)).Count -eq 0
+    if(-not $functionalOwner -and ($owner.kind -cne 'm03_clock_admission_parent' -or $owner.version -ne 1 -or $owner.processId -ne $PID -or $owner.segmentId -cne '20275b22-b7fe-4737-a9a4-c50c2feadb74')){throw 'M03_DEV_ACCESS_TEMPORARY_AMBIGUOUS'}
     $leaseBytes=[Text.UTF8Encoding]::new($false).GetBytes(((Get-M03DevCredentialLease $spec)|ConvertTo-Json -Compress))
     $stream=[IO.File]::Open($spec.Lease,[IO.FileMode]::Open,[IO.FileAccess]::Write,[IO.FileShare]::None)
     $stream.Write($leaseBytes,0,$leaseBytes.Length);$stream.SetLength($leaseBytes.Length);$stream.Flush($true);$stream.Dispose();$stream=$null

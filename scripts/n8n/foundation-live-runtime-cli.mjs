@@ -1,4 +1,5 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, openSync, writeSync, fsyncSync, closeSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -16,8 +17,20 @@ import {
   createFoundationLiveBaselinePreflight,
   assertFoundationLiveBaselineReceipt,
 } from './foundation-live-runtime-transport.mjs';
-import { assertFoundationRuntimeRestorationAudit } from './foundation-runtime-control.mjs';
-import { createFoundationRuntimeBaseline } from './foundation-runtime-plan.mjs';
+import {
+  assertFoundationRuntimeRestorationAudit,
+  createFoundationRuntimeJournal,
+  runFoundationRuntimeSetup,
+  restoreFoundationRuntime,
+  saveFoundationRuntimeCase,
+} from './foundation-runtime-control.mjs';
+import {
+  createFoundationRuntimeBaseline,
+  createFoundationRuntimePlan,
+  materializeFoundationRuntimeCase,
+} from './foundation-runtime-plan.mjs';
+import { createFoundationLiveManagementTransport } from './foundation-live-runtime-transport.mjs';
+import { prepareFoundationRuntimeMachinePatch } from './foundation-runtime-machine.mjs';
 import {
   createFoundationLiveSetup,
   createFoundationLiveSetupJournal,
@@ -2013,8 +2026,937 @@ export async function runFoundationLiveRuntimeCli({
   return finished && !protocolFailed && !outcomeFailed ? 0 : 1;
 }
 
+// The finite functional path composes the same transports and transition code.
+// Native UI/SQL observations are operator evidence, never fabricated brands for
+// the historical supervisor. It exposes named tasks, not an arbitrary API proxy.
+export function foundationFunctionalCommand(value) {
+  const commands = {
+    state: [],
+    prepare_preview: [],
+    prepare_runtime: [],
+    authorize_start: [],
+    callback_unknown: [],
+    restore: [],
+    close: [],
+    close_window: [],
+    charge_control: ['count'],
+    charge_management: ['count'],
+    provider: ['apifyRunId'],
+    callback_valid: ['apifyRunId'],
+    original: ['apifyRunId', 'runId'],
+    save_replay: ['apifyRunId', 'runId'],
+  };
+  const keys = Object.hasOwn(commands, value?.command) ? commands[value.command] : undefined;
+  return (
+    keys !== undefined &&
+    exact(value, ['id', 'command', ...keys]) &&
+    /^[A-Za-z0-9_-]{1,64}$/.test(value.id) &&
+    (!keys.includes('count') ||
+      (Number.isSafeInteger(value.count) && value.count > 0 && value.count <= 100)) &&
+    (!keys.includes('apifyRunId') || /^[A-Za-z0-9_-]{5,64}$/.test(value.apifyRunId)) &&
+    (!keys.includes('runId') ||
+      /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(value.runId))
+  );
+}
+
+// A successful return means every byte reached the synchronous writer. The
+// caller fsyncs only afterwards, before any remote operation is authorized.
+export function writeFoundationFunctionalBytes(fd, bytes, write = writeSync) {
+  if (!Buffer.isBuffer(bytes) || typeof write !== 'function') throw Error('M03_FUNCTIONAL_DURABLE_WRITE');
+  let offset = 0;
+  while (offset < bytes.length) {
+    const written = write(fd, bytes, offset, bytes.length - offset, null);
+    if (!Number.isSafeInteger(written) || written < 1 || written > bytes.length - offset)
+      throw Error('M03_FUNCTIONAL_DURABLE_WRITE');
+    offset += written;
+  }
+}
+
+// Independent owned resources get independent cleanup after SQL/native work is
+// actually safe. A failed/unknown Close prevents removal of the callback path.
+export async function restoreFoundationFunctionalResources({ closeWindow, restoreRuntime, cleanupPreview }) {
+  if ([closeWindow, restoreRuntime, cleanupPreview].some((operation) => typeof operation !== 'function'))
+    throw Error('M03_FUNCTIONAL_CLEANUP_PORT');
+  await closeWindow();
+  let runtimeRestored = false,
+    previewCleaned = false;
+  try {
+    await restoreRuntime();
+    runtimeRestored = true;
+  } catch {
+    /* Preserve the runtime residual. */
+  }
+  try {
+    await cleanupPreview();
+    previewCleaned = true;
+  } catch {
+    /* Preserve the Preview residual. */
+  }
+  return Object.freeze({ runtimeRestored, previewCleaned });
+}
+
+export async function runFoundationFunctionalCli({
+  input: inputStream = process.stdin,
+  emit = (row) => process.stdout.write(JSON.stringify(row) + '\n'),
+  checkOnly = process.argv[2] === 'FunctionalCheckOnly',
+  stateDirectory = join(repositoryRoot, 'scripts/n8n/out/foundation/live'),
+} = {}) {
+  const { mkdirSync, lstatSync, unlinkSync } = await import('node:fs');
+  const { createHash } = await import('node:crypto');
+  const { foundationFunctionalBaselineVersions: versions } = await import('./foundation-runtime-plan.mjs');
+  const output = (row) => emit({ kind: 'm03_functional_result', ...row });
+  const blocked = (code) => {
+    throw Error('M03_FUNCTIONAL_' + code);
+  };
+  const parseJson = (text) => {
+    try {
+      return JSON.parse(text);
+    } catch {
+      return blocked('INPUT');
+    }
+  };
+  const number = (value, minimum, maximum) =>
+    Number.isSafeInteger(value) && value >= minimum && value <= maximum;
+  const stamp = (value) =>
+    typeof value === 'string' && /^\d{4}-\d\d-\d\dT/.test(value) && Number.isFinite(Date.parse(value));
+  const sha = (value) => createHash('sha256').update(value).digest('hex');
+  const caps = { management: 2048, control: 3584, combined: 5312, vercel: 352 };
+  const checkpoint = { management: 1661, control: 1464, combined: 3125, vercel: 288 };
+  const historyAggregate = 'ded9037b363fe2cbf6d7dc2e19731c1fe25963100db92b160967c84ec7b7c6d9';
+  if (checkOnly) {
+    versions();
+    output({ id: 'public', status: 'check_only_ready', code: 'M03_FUNCTIONAL_PUBLIC_READY' });
+    return 0;
+  }
+  let lineBytes = 0,
+    totalBytes = 0,
+    protocolFailed = false;
+  const lines = createInterface({ input: inputStream, crlfDelay: Infinity });
+  const guard = (chunk) => {
+    for (const byte of Buffer.from(chunk)) {
+      totalBytes++;
+      lineBytes = byte === 10 ? 0 : lineBytes + 1;
+      if (lineBytes > 32768 || totalBytes > 131072) {
+        protocolFailed = true;
+        lines.close();
+        inputStream.pause();
+        return;
+      }
+    }
+  };
+  inputStream.on('data', guard);
+  const iterator = lines[Symbol.asyncIterator]();
+  let privateInput,
+    scope,
+    append,
+    ended = false;
+  const transports = new Set();
+  const ownedScratch = new Map();
+  try {
+    const first = await iterator.next();
+    if (protocolFailed || first.done || Buffer.byteLength(first.value) > 32768) blocked('INPUT');
+    privateInput = parseJson(first.value);
+    if (
+      !exact(privateInput, [
+        'kind',
+        'version',
+        'sourceCommitSha',
+        'managementKey',
+        'writerPassword',
+        'apifyReadToken',
+        'machineToken',
+        'protectionBypass',
+      ]) ||
+      privateInput.kind !== 'm03_functional_private_input' ||
+      privateInput.version !== 1 ||
+      !/^[a-f0-9]{40}$/.test(privateInput.sourceCommitSha) ||
+      ['managementKey', 'apifyReadToken'].some(
+        (k) => typeof privateInput[k] !== 'string' || !/^[\x21-\x7e]{1,4096}$/.test(privateInput[k]),
+      ) ||
+      typeof privateInput.writerPassword !== 'string' ||
+      !privateInput.writerPassword ||
+      privateInput.writerPassword.length > 4096 ||
+      !/^[A-Za-z0-9_-]{43}$/.test(privateInput.machineToken) ||
+      !/^[A-Za-z0-9]{32}$/.test(privateInput.protectionBypass)
+    )
+      blocked('INPUT');
+    const base = resolve(stateDirectory);
+    mkdirSync(base, { recursive: true });
+    const journalPath = join(base, 'functional-acceptance-20261025.jsonl');
+    const readJson = (name, maximum = 524288) => {
+      const path = join(base, name),
+        stat = lstatSync(path);
+      if (!stat.isFile() || stat.isSymbolicLink() || stat.size < 2 || stat.size > maximum)
+        blocked('LOCAL_EVIDENCE');
+      const bytes = readFileSync(path);
+      if (bytes.length > maximum) blocked('LOCAL_EVIDENCE');
+      return parseJson(bytes.toString('utf8'));
+    };
+    const journalStat = lstatSync(journalPath);
+    if (!journalStat.isFile() || journalStat.isSymbolicLink() || journalStat.size > 4194304)
+      blocked('HISTORY');
+    const rows = readFileSync(journalPath, 'utf8')
+      .trim()
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .map((row) => parseJson(row));
+    const delivery = rows.find(
+      (row) => row.kind === 'delivery_verified' && row.head === '890892eb7c61293f0f449102d095acc6fb212765',
+    );
+    if (
+      !delivery ||
+      !exact(delivery.usageUnchanged, [...Object.keys(checkpoint), 'actors', 'usd']) ||
+      Object.keys(checkpoint).some((key) => delivery.usageUnchanged[key] !== checkpoint[key]) ||
+      delivery.usageUnchanged.actors !== 0 ||
+      delivery.usageUnchanged.usd !== 0
+    )
+      blocked('HISTORY');
+    let usage = { ...checkpoint };
+    const usageValid = (value) =>
+      exact(value, Object.keys(checkpoint)) &&
+      Object.keys(checkpoint).every((k) => number(value[k], checkpoint[k], caps[k])) &&
+      value.combined === value.management + value.control &&
+      value.vercel <= value.management;
+    let latestVercelOrdinal = checkpoint.vercel;
+    for (const row of rows) {
+      if (row.kind === 'functional_usage') {
+        if (!usageValid(row.usage) || Object.keys(checkpoint).some((k) => row.usage[k] < usage[k]))
+          blocked('HISTORY');
+        usage = { ...row.usage };
+      }
+      if (row.kind === 'functional_setup' && row.row?.event === 'setup_attempt') {
+        if (!number(row.row.ordinal, latestVercelOrdinal + 1, latestVercelOrdinal + 1)) blocked('HISTORY');
+        latestVercelOrdinal = row.row.ordinal;
+      }
+    }
+    if (usage.vercel !== latestVercelOrdinal) blocked('HISTORY_RECONCILE');
+    const opened = rows.filter((row) => row.kind === 'functional_open').at(-1);
+    if (opened && !rows.some((row) => row.kind === 'functional_closed' && row.windowId === opened.windowId))
+      blocked('RECONCILE');
+    // A prior actor intent is never permission to start a replacement actor.
+    if (rows.some((row) => row.kind === 'functional_actor_intent')) blocked('ACTOR_RECONCILE');
+    append = (row) => {
+      const fd = openSync(journalPath, 'a');
+      try {
+        writeFoundationFunctionalBytes(
+          fd,
+          Buffer.from(JSON.stringify({ at: new Date().toISOString(), ...row }) + '\n'),
+        );
+        fsyncSync(fd);
+      } finally {
+        closeSync(fd);
+      }
+    };
+    scope = {
+      projectRef: 'zmotjsbzhzjvpelxvxlf',
+      projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
+      windowId: randomUUID(),
+      sourceCommitSha: privateInput.sourceCommitSha,
+      caps,
+      carried: { ...usage },
+      restoredBaselineVersions: versions(),
+    };
+    append({ kind: 'functional_open', windowId: scope.windowId, sourceCommitSha: scope.sourceCommitSha });
+    const startsAt = Date.now(),
+      stopNewAt = startsAt + 3000000,
+      deadlineAt = startsAt + 3600000;
+    const persistUsage = () => append({ kind: 'functional_usage', usage });
+    const debit = (kind, count = 1) => {
+      if (!['management', 'control'].includes(kind) || !number(count, 1, 100)) blocked('LIMIT');
+      const next = { ...usage, [kind]: usage[kind] + count };
+      next.combined = next.management + next.control;
+      if (!usageValid(next)) blocked('LIMIT');
+      append({ kind: 'functional_usage', usage: next });
+      usage = next;
+    };
+    const budget = {
+      admit: () => debit('management'),
+      snapshot: () => ({ attempts: usage.management, maximum: caps.management }),
+      attachTransport: (t) => transports.add(t),
+    };
+    const report = (id, status, extra = {}) =>
+      output({
+        id,
+        status,
+        ...usage,
+        windowId: scope.windowId,
+        sourceCommitSha: scope.sourceCommitSha,
+        ...extra,
+      });
+    const bindings = JSON.parse(
+      readFileSync(new URL('../../n8n/foundation/bindings.dev.json', import.meta.url)),
+    );
+    const transport = JSON.parse(
+      readFileSync(new URL('../../n8n/foundation/transport.dev.json', import.meta.url)),
+    );
+    const records = Object.keys(bindings.workflowRefs).map((key) =>
+      JSON.parse(readFileSync(new URL('../../n8n/workflows/' + key + '.json', import.meta.url))),
+    );
+    let setup, deployment, plan, ports, gateway, fixtureReceipt, firstEvidence, replayDraft;
+    let runtimeReady = false,
+      runtimeRestored = false,
+      resourcesRestored = false,
+      windowClosed = false,
+      provisionObserved = false;
+    let actorIntent = false,
+      providerVerified = false,
+      replaySaved = false;
+    let providerAttempts = rows.filter((row) => row.kind === 'functional_provider_get').length;
+    let gatewayAttempts = rows.filter((row) => row.kind === 'functional_gateway_probe').length;
+    const callbacks = new Set();
+    const operator = (stage) => {
+      const r = readJson('functional-dev-verified.json', 32768),
+        observed = Date.parse(r.observedAt);
+      if (
+        r.method !== 'native_sql_editor' ||
+        r.projectRef !== scope.projectRef ||
+        r.stage !== stage ||
+        !stamp(r.observedAt) ||
+        Date.now() - observed > 300000 ||
+        observed > Date.now() + 30000 ||
+        r.identityVerified !== true ||
+        r.migrationCount !== 15 ||
+        r.historyAggregate !== historyAggregate ||
+        r.quiescent !== true ||
+        r.fixtureOwned !== true ||
+        !number(r.globalAdmittedCount, 0, 256)
+      )
+        blocked('DB_EVIDENCE');
+      if (['preflight', 'provisioned'].includes(stage) && r.globalAdmittedCount + 71 > 256)
+        blocked('SQL_RESERVE');
+      if (
+        stage !== 'preflight' &&
+        (!deployment ||
+          r.windowId !== scope.windowId ||
+          r.sourceCommitSha !== scope.sourceCommitSha ||
+          r.audience !== deployment.audience ||
+          r.deploymentId !== deployment.deploymentId)
+      )
+        blocked('DB_BINDING');
+      if (stage === 'provisioned') {
+        provisionObserved = true;
+        if (r.protectionWithoutBypassDenied !== true || ![401, 403].includes(r.protectionWithoutBypassStatus))
+          blocked('PROTECTED_PREVIEW');
+        const f = r.fixtureReceipt;
+        if (
+          !exact(f, [
+            'result',
+            'company_code',
+            'competitor_id',
+            'account_id',
+            'platform',
+            'url',
+            'competitor_status',
+            'account_status',
+          ]) ||
+          f.result !== 'M03_SMOKE_FIXTURE_READY' ||
+          f.company_code !== 'C999' ||
+          f.competitor_id !== 'd51a39f6-fe87-4d17-aee9-3070c45693aa' ||
+          f.account_id !== 'bd23314c-591f-4fb7-92fd-b7450634eeb6' ||
+          f.platform !== 'website_work_page' ||
+          f.url !== 'https://everyone.film/about-everyone' ||
+          f.competitor_status !== 'active' ||
+          f.account_status !== 'active'
+        )
+          blocked('FIXTURE');
+        fixtureReceipt = structuredClone(f);
+      }
+      if (
+        stage === 'settled' &&
+        (r.nativeWorkSettled !== true ||
+          !Array.isArray(r.unfinishedNativeExecutionIds) ||
+          r.unfinishedNativeExecutionIds.length)
+      )
+        blocked('SETTLEMENT');
+      return r;
+    };
+    const localEvidence = (name) => {
+      const r = readJson(name),
+        observed = Date.parse(r.observedAt);
+      if (
+        r.method !== 'native_sql_editor' ||
+        r.projectRef !== scope.projectRef ||
+        !stamp(r.observedAt) ||
+        Date.now() - observed > 300000 ||
+        observed > Date.now() + 30000 ||
+        r.windowId !== scope.windowId ||
+        r.sourceCommitSha !== scope.sourceCommitSha ||
+        !deployment ||
+        r.audience !== deployment.audience ||
+        r.deploymentId !== deployment.deploymentId
+      )
+        blocked('ORIGINAL_EVIDENCE');
+      return r;
+    };
+    const writeScratch = (name, value) => {
+      const path = join(base, name),
+        bytes = Buffer.from(JSON.stringify(value)),
+        fd = openSync(path, 'wx', 0o600);
+      try {
+        writeFoundationFunctionalBytes(fd, bytes);
+        fsyncSync(fd);
+      } finally {
+        closeSync(fd);
+      }
+      ownedScratch.set(path, sha(bytes));
+      return sha(bytes);
+    };
+    async function closeWindow() {
+      if (windowClosed) return;
+      if (!deployment) {
+        windowClosed = true;
+        return;
+      }
+      // Once a Preview exists, an external owner provision may have happened.
+      // Absence of a JS plan is never evidence that the SQL window is absent.
+      const r = operator('settled');
+      if (r.windowAbsent === true) {
+        if (provisionObserved || plan || actorIntent || r.launchAbsent !== true || r.actorRunId !== null)
+          blocked('SETTLEMENT');
+        append({
+          kind: 'functional_window_absent',
+          windowId: scope.windowId,
+          method: 'native_sql_editor',
+          observedAt: r.observedAt,
+        });
+        windowClosed = true;
+        return;
+      }
+      if (!actorIntent && !(r.actorRunId === null && r.launchAbsent === true)) blocked('SETTLEMENT');
+      if (
+        actorIntent &&
+        (firstEvidence
+          ? r.actorRunId !== firstEvidence.registered.apify_run_id
+          : !(typeof r.actorRunId === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(r.actorRunId)) &&
+            !(r.actorRunId === null && r.launchAbsent === true))
+      )
+        blocked('SETTLEMENT');
+      const closer = createFoundationLiveWriterCloser({
+        password: privateInput.writerPassword,
+        audience: deployment.audience,
+        sourceCommitSha: scope.sourceCommitSha,
+        deploymentId: deployment.deploymentId,
+        windowId: scope.windowId,
+        functionalScope: scope,
+        deadlineAt,
+        previousEvents: [],
+        append: (row) => append({ kind: 'functional_writer', windowId: scope.windowId, row }),
+      });
+      transports.add(closer);
+      const result = await closer.closeWindow();
+      if (!result.closeVerified || !result.connectionClosed) blocked('WINDOW_CLOSE');
+      windowClosed = true;
+    }
+    async function restore() {
+      if (resourcesRestored) return;
+      const restored = await restoreFoundationFunctionalResources({
+        closeWindow: async () => {
+          if (deployment || provisionObserved) await closeWindow();
+        },
+        restoreRuntime: async () => {
+          if (ports && !runtimeRestored) {
+            const r = await restoreFoundationRuntime(plan, ports);
+            if (r.status !== 'exact_staging_restored_unpublished') blocked('RESTORE');
+            runtimeRestored = true;
+          }
+        },
+        cleanupPreview: async () => {
+          if (setup) {
+            const r = await setup.cleanup();
+            if (r.state !== 'setup_resources_removed') blocked('PREVIEW_CLEANUP');
+          }
+        },
+      });
+      append({
+        kind: 'functional_resource_restoration',
+        windowId: scope.windowId,
+        windowClosed,
+        runtimeRestored: restored.runtimeRestored,
+        previewCleaned: restored.previewCleaned,
+      });
+      if (!restored.runtimeRestored || !restored.previewCleaned) blocked('RESTORE_RESIDUAL');
+      resourcesRestored = true;
+    }
+    const sourceReplay = (cmd) => {
+      if (
+        !firstEvidence ||
+        cmd.apifyRunId !== firstEvidence.registered.apify_run_id ||
+        (cmd.runId !== undefined && cmd.runId !== firstEvidence.registered.run_id)
+      )
+        blocked('ORIGINAL_IDENTITY');
+    };
+    async function callback(cmd, unknown) {
+      if (!runtimeReady || Date.now() >= stopNewAt || callbacks.has(cmd.command)) blocked('CALLBACK_ORDER');
+      if (unknown) {
+        const r = operator('unknown_before');
+        if (r.unknownRegistryAbsent !== true || r.unknownLaunchAbsent !== true) blocked('UNKNOWN_REGISTRY');
+      } else {
+        sourceReplay(cmd);
+        if (!providerVerified) blocked('PROVIDER_REQUIRED');
+      }
+      const apifyRunId = unknown ? 'M03AcceptanceUnknown0001' : cmd.apifyRunId;
+      // Only the already-public provider callback shape goes to this fixed URL.
+      // There is no management header, token, generic host, redirect or retry.
+      callbacks.add(cmd.command);
+      debit('control');
+      append({
+        kind: 'functional_callback_intent',
+        windowId: scope.windowId,
+        command: cmd.command,
+        apifyRunId,
+      });
+      const response = await fetch('https://muhhammedsayed.app.n8n.cloud/webhook/emr-apify-callback', {
+        method: 'POST',
+        redirect: 'error',
+        signal: AbortSignal.timeout(Math.min(20000, deadlineAt - Date.now())),
+        headers: { 'content-type': 'application/json', connection: 'close' },
+        body: JSON.stringify({ eventType: 'ACTOR.RUN.SUCCEEDED', resource: { id: apifyRunId } }),
+      });
+      let size = 0;
+      const chunks = [];
+      if (!response.body) blocked('CALLBACK_RESPONSE');
+      try {
+        for await (const chunk of response.body) {
+          size += chunk.length;
+          if (size > 1024) blocked('CALLBACK_RESPONSE');
+          chunks.push(Buffer.from(chunk));
+        }
+      } finally {
+        if (!response.body.locked) await response.body.cancel().catch(() => {});
+      }
+      const body = parseJson(Buffer.concat(chunks).toString('utf8'));
+      if (
+        response.status !== (unknown ? 403 : 200) ||
+        (unknown
+          ? body.ok !== false || body.rejected !== true
+          : body.ok !== true ||
+            body.processed !== true ||
+            body.replayed !== true ||
+            body.apify_run_id !== apifyRunId)
+      )
+        blocked('CALLBACK_RESPONSE');
+      append({
+        kind: 'functional_callback_ack',
+        windowId: scope.windowId,
+        command: cmd.command,
+        apifyRunId,
+        httpStatus: response.status,
+      });
+      report(cmd.id, 'callback_sent', {
+        apifyRunId,
+        code: unknown ? 'M03_FUNCTIONAL_UNKNOWN_CALLBACK_ACK' : 'M03_FUNCTIONAL_REPLAY_CALLBACK_ACK',
+      });
+    }
+    report('start', 'ready');
+    for (;;) {
+      const next = await iterator.next();
+      if (protocolFailed) blocked('INPUT');
+      let cmd;
+      try {
+        cmd = next.done ? { id: 'stdin_closed', command: 'close' } : parseJson(next.value);
+        if (!foundationFunctionalCommand(cmd)) blocked('COMMAND');
+        const cleanupCommand = [
+          'restore',
+          'close',
+          'close_window',
+          'state',
+          'charge_control',
+          'charge_management',
+        ].includes(cmd.command);
+        if (!cleanupCommand && Date.now() >= stopNewAt) blocked('STOP_NEW');
+        const id = cmd.id;
+        if (cmd.command === 'charge_control' || cmd.command === 'charge_management') {
+          debit(cmd.command === 'charge_control' ? 'control' : 'management', cmd.count);
+          report(id, 'ready');
+        } else if (cmd.command === 'state')
+          report(
+            id,
+            'ready',
+            deployment ? { audience: deployment.audience, deploymentId: deployment.deploymentId } : {},
+          );
+        else if (cmd.command === 'prepare_preview') {
+          if (setup) blocked('DUPLICATE');
+          operator('preflight');
+          const journal = createFoundationLiveSetupJournal({
+            sourceCommitSha: scope.sourceCommitSha,
+            maximumRequests: caps.vercel,
+            functionalScope: scope,
+            previousEvents: [],
+            durableAppend: (row) => {
+              append({ kind: 'functional_setup', windowId: scope.windowId, row });
+              if (row.event === 'setup_attempt') {
+                if (row.ordinal !== usage.vercel + 1 || row.ordinal > caps.vercel) blocked('VERCEL_HISTORY');
+                usage = { ...usage, vercel: row.ordinal };
+                persistUsage();
+              }
+            },
+          });
+          const cli = createFoundationLiveSetupCliTransport({
+            nodeExecutable: process.execPath,
+            cliPath: join(process.env.APPDATA, 'npm/node_modules/vercel/dist/index.js'),
+            noRetryPreloadPath: join(repositoryRoot, 'scripts/n8n/foundation-live-setup-no-retry.mjs'),
+            workingDirectory: repositoryRoot,
+            now: Date.now,
+            deadlineAt,
+            authorizeRequest: (spec) => setup?.authorizeRequest(spec) === true,
+          });
+          transports.add(cli);
+          setup = createFoundationLiveSetup({
+            sourceCommitSha: scope.sourceCommitSha,
+            activeWindowId: scope.windowId,
+            functionalScope: scope,
+            transport: cli,
+            journal,
+            managementBudget: budget,
+            now: Date.now,
+            deadlineAt,
+            pause: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+            verifyDevReady: async () => ({
+              projectRef: operator('preflight').projectRef,
+              migrationCount: 15,
+              ready: true,
+            }),
+            sensitive: {
+              writerPassword: privateInput.writerPassword,
+              machineToken: privateInput.machineToken,
+              apifyReadToken: privateInput.apifyReadToken,
+              protectionBypass: privateInput.protectionBypass,
+            },
+          });
+          deployment = await setup.prepare();
+          append({ kind: 'functional_preview', windowId: scope.windowId, deployment });
+          report(id, 'prepared', { audience: deployment.audience, deploymentId: deployment.deploymentId });
+        } else if (cmd.command === 'prepare_runtime') {
+          if (!deployment || plan) blocked('ORDER');
+          operator('provisioned');
+          gateway = createFoundationLiveGatewayProbe({
+            audience: deployment.audience,
+            machineToken: privateInput.machineToken,
+            protectionBypass: privateInput.protectionBypass,
+            deadlineAt,
+            admitGatewayAttempt: ({ requestId, unauthorized }) => {
+              if (++gatewayAttempts > 16) blocked('GATEWAY_LIMIT');
+              append({ kind: 'functional_gateway_probe', windowId: scope.windowId, requestId, unauthorized });
+            },
+          });
+          transports.add(gateway);
+          const a = await gateway.identity(),
+            denied = await gateway.identity({ unauthorized: true });
+          if (
+            a.status !== 200 ||
+            a.body?.result?.currentUser !== 'n8n_writer' ||
+            a.body.result.sessionUser !== 'n8n_writer' ||
+            a.body.result.projectRef !== scope.projectRef ||
+            a.body.window?.id !== scope.windowId ||
+            a.body.window.closed !== false ||
+            a.body.window.boundCommitSha !== scope.sourceCommitSha ||
+            a.body.window.boundAudience !== deployment.audience ||
+            a.body.window.boundDeploymentId !== deployment.deploymentId ||
+            ![401, 403].includes(denied.status)
+          )
+            blocked('IDENTITY');
+          append({
+            kind: 'functional_identity_verified',
+            windowId: scope.windowId,
+            restrictedRole: 'n8n_writer',
+            deniedStatus: denied.status,
+          });
+          const { createFoundationRuntimeSetupOutput } = await import('./foundation-runtime-plan.mjs');
+          plan = createFoundationRuntimePlan({
+            bindings,
+            records,
+            transport,
+            functionalScope: scope,
+            activeWindowId: scope.windowId,
+            setup: createFoundationRuntimeSetupOutput({
+              ...deployment,
+              protectionTransportVerified: true,
+              sqlAudienceBindingVerified: true,
+            }),
+          });
+          const journal = createFoundationRuntimeJournal(plan, [], (row) =>
+            append({ kind: 'functional_runtime', windowId: scope.windowId, row }),
+          );
+          const management = createFoundationLiveManagementTransport({
+            plan,
+            apiKey: privateInput.managementKey,
+            sensitiveValues: [privateInput.machineToken, privateInput.protectionBypass],
+            deadlineAt,
+          });
+          transports.add(management);
+          ports = {
+            journal,
+            send: management.send,
+            admitManagementAttempt: budget.admit,
+            prepareMachinePatch: ({ audience, restore: revert }) =>
+              prepareFoundationRuntimeMachinePatch({
+                audience,
+                restore: revert,
+                machineToken: privateInput.machineToken,
+                ...(revert ? {} : { protectionBypass: privateInput.protectionBypass }),
+              }),
+          };
+          const r = await runFoundationRuntimeSetup(plan, ports);
+          if (r.status !== 'runtime_setup_verified') blocked('RUNTIME');
+          const draft = materializeFoundationRuntimeCase(plan, 'smoke.first', {
+            fixtureReceipt,
+            release: { launchEnabled: true },
+          });
+          const receipt = await saveFoundationRuntimeCase(plan, draft, ports);
+          if (receipt.status !== 'case_draft_verified') blocked('CASE');
+          runtimeReady = true;
+          report(id, 'runtime_ready', { workflowId: receipt.workflowId, versionId: receipt.versionId });
+        } else if (cmd.command === 'authorize_start') {
+          const ready = operator('ready');
+          if (
+            !runtimeReady ||
+            actorIntent ||
+            Date.now() >= stopNewAt ||
+            usage.management + 91 > caps.management ||
+            usage.control + 126 > caps.control ||
+            usage.combined + 217 > caps.combined ||
+            usage.vercel + 18 > caps.vercel ||
+            ready.globalAdmittedCount + 71 > 256
+          )
+            blocked('START');
+          actorIntent = true;
+          append({
+            kind: 'functional_actor_intent',
+            windowId: scope.windowId,
+            workflowId: bindings.workflowRefs['WF-99'].id,
+          });
+          report(id, 'case_ready', { workflowId: bindings.workflowRefs['WF-99'].id });
+        } else if (cmd.command === 'original') {
+          if (!runtimeReady || !actorIntent || firstEvidence) blocked('ORIGINAL_ORDER');
+          const envelope = localEvidence('functional-original-context.json'),
+            original = envelope.original;
+          if (
+            !original ||
+            original.launch?.window_id !== scope.windowId ||
+            original.launch.apify_run_id !== cmd.apifyRunId ||
+            original.launch.run_id !== cmd.runId
+          )
+            blocked('ORIGINAL_IDENTITY');
+          const d = original.datasetRead;
+          if (
+            !d ||
+            !Array.isArray(d.rows) ||
+            d.rows.length !== 1 ||
+            d.transport?.requests !== 2 ||
+            d.transport.retries !== 0 ||
+            d.transport.socketsClosed !== true ||
+            d.transport.runBytesMax !== 65536 ||
+            d.transport.datasetBytesMax !== 262144
+          )
+            blocked('ORIGINAL_DATASET');
+          const shared = require('../../n8n/normalizers/smoke_website_stub.js');
+          const { createM03SmokeWebsiteNormalizer } = require('../../n8n/normalizers/smoke_website_m03.js');
+          const normalize = createM03SmokeWebsiteNormalizer(
+            shared.validateSmokeWebsiteRow,
+            shared.buildSmokeWebsiteSnapshot,
+            shared.invalidWebsiteRow,
+          );
+          const t = createApifyRecoveryRuntime().validateTerminal(d.terminal),
+            registered = original.registered;
+          const atomicInput = {
+            p_apify_run_id: registered.apify_run_id,
+            p_status: t.status,
+            p_dataset_id: t.datasetId,
+            p_usage_usd: t.usageTotalUsd,
+            p_groups: [
+              {
+                account_id: registered.account_ids[0],
+                normalizer_version: 'smoke_website_stub.v1',
+                items: [normalize(d.rows[0]).json],
+              },
+            ],
+          };
+          firstEvidence = {
+            source: 'bounded-original-dataset-read',
+            readRequestId: original.readRequestId,
+            launch: original.launch,
+            registered,
+            atomicInput,
+            costEntry: original.costEntry,
+          };
+          // The existing materializer checks exact launch/account/registry/cost identity and original receipt.
+          replayDraft = materializeFoundationRuntimeCase(plan, 'sub.ingest.replay_a', {
+            fixtureReceipt,
+            firstRunEvidence: firstEvidence,
+          });
+          createApifyRecoveryRuntime().validateReceipt(registered.processing_result, registered, atomicInput);
+          const bodySha256 = writeScratch('functional-atomic-input.json', atomicInput);
+          append({
+            kind: 'functional_original_verified',
+            windowId: scope.windowId,
+            apifyRunId: cmd.apifyRunId,
+            runId: cmd.runId,
+            bodySha256,
+          });
+          report(id, 'content_ready', { apifyRunId: cmd.apifyRunId, runId: cmd.runId, bodySha256 });
+        } else if (cmd.command === 'provider') {
+          sourceReplay(cmd);
+          if (providerVerified || !actorIntent) blocked('PROVIDER_ORDER');
+          const provider = createFoundationLiveProviderReader({
+            token: privateInput.apifyReadToken,
+            deadlineAt,
+            admitProviderAttempt: () => {
+              if (providerAttempts + 10 >= 32) blocked('PROVIDER_LIMIT');
+              append({
+                kind: 'functional_provider_get',
+                windowId: scope.windowId,
+                ordinal: ++providerAttempts,
+                apifyRunId: cmd.apifyRunId,
+              });
+            },
+          });
+          transports.add(provider);
+          const a = (await provider.read({ apifyRunId: cmd.apifyRunId })).body;
+          const firstAt = Date.now();
+          await new Promise((resolve) => setTimeout(resolve, 10000));
+          const b = (await provider.read({ apifyRunId: cmd.apifyRunId })).body;
+          for (const value of [a, b]) {
+            const d = value?.data;
+            if (
+              !d ||
+              d.id !== cmd.apifyRunId ||
+              d.actId !== 'aYG0l9s7dbB7j3gbS' ||
+              d.buildId !== 'BdKJRCYsnmlzPfH3n' ||
+              d.buildNumber !== '0.3.99' ||
+              !stamp(d.startedAt) ||
+              Date.parse(d.startedAt) < startsAt - 5000 ||
+              Date.parse(d.startedAt) > Date.now() + 30000 ||
+              d.options?.memoryMbytes !== 1024 ||
+              d.options.timeoutSecs !== 300 ||
+              d.options.maxTotalChargeUsd !== 1
+            )
+              blocked('PROVIDER_IDENTITY');
+          }
+          const recovery = createApifyRecoveryRuntime(),
+            r = firstEvidence.registered;
+          const t = recovery.settle(
+            recovery.projectTerminal(a, r),
+            recovery.projectTerminal(b, r),
+            Date.now() - firstAt,
+          );
+          if (
+            t.status !== 'SUCCEEDED' ||
+            t.usageTotalUsd > 1 ||
+            Date.parse(t.finishedAt) > Date.now() + 30000 ||
+            t.datasetId !== r.dataset_id
+          )
+            blocked('PROVIDER_PARITY');
+          recovery.validateReceipt(r.processing_result, r, {
+            ...firstEvidence.atomicInput,
+            p_usage_usd: t.usageTotalUsd,
+          });
+          providerVerified = true;
+          append({
+            kind: 'functional_provider_terminal',
+            windowId: scope.windowId,
+            apifyRunId: t.apifyRunId,
+            status: t.status,
+            usageUsd: t.usageTotalUsd,
+          });
+          report(id, 'provider_terminal', {
+            apifyRunId: t.apifyRunId,
+            providerStatus: t.status,
+            costUsd: t.usageTotalUsd,
+          });
+        } else if (cmd.command === 'save_replay') {
+          sourceReplay(cmd);
+          if (!providerVerified || !replayDraft || replaySaved) blocked('REPLAY_ORDER');
+          const checked = operator('atomic_input');
+          if (
+            checked.atomicInputMatched !== true ||
+            checked.atomicInputSha256 !== ownedScratch.get(join(base, 'functional-atomic-input.json'))
+          )
+            blocked('ATOMIC_INPUT');
+          replaySaved = true;
+          const r = await saveFoundationRuntimeCase(plan, replayDraft, ports);
+          if (r.status !== 'case_draft_verified') blocked('REPLAY_SAVE');
+          report(id, 'case_ready', {
+            workflowId: r.workflowId,
+            versionId: r.versionId,
+            apifyRunId: cmd.apifyRunId,
+            runId: cmd.runId,
+          });
+        } else if (cmd.command === 'callback_valid') await callback(cmd, false);
+        else if (cmd.command === 'callback_unknown') await callback(cmd, true);
+        else if (cmd.command === 'close_window') {
+          await closeWindow();
+          report(id, 'ready', { code: 'M03_FUNCTIONAL_WINDOW_CLOSED' });
+        } else if (cmd.command === 'restore') {
+          await restore();
+          report(id, 'restored', { code: 'M03_FUNCTIONAL_RESOURCES_RESTORED' });
+        } else if (cmd.command === 'close') {
+          await restore();
+          if (((deployment || provisionObserved) && !windowClosed) || !resourcesRestored)
+            blocked('WINDOW_OPEN');
+          for (const t of transports) await t.close();
+          if ([...transports].some((t) => t.state().pendingRequests || t.state().unclosedResponses))
+            blocked('TRANSPORT_OPEN');
+          append({ kind: 'functional_closed', windowId: scope.windowId });
+          ended = true;
+          report(id, 'closed', { code: 'M03_FUNCTIONAL_CLOSED' });
+          break;
+        }
+      } catch (error) {
+        const code = /^M03_FUNCTIONAL_[A-Z_]{1,64}$/.test(error?.message)
+          ? error.message
+          : 'M03_FUNCTIONAL_BLOCKED';
+        append({
+          kind: 'functional_command_failure',
+          windowId: scope.windowId,
+          command: foundationFunctionalCommand(cmd) ? cmd.command : 'invalid',
+          code,
+        });
+        report(foundationFunctionalCommand(cmd) ? cmd.id : 'failure', 'blocked', { code });
+        // Keep the owned process and callback path available for native state
+        // reconciliation and cleanup. EOF cannot produce an endless retry loop.
+        if (next.done) break;
+      }
+    }
+    return ended ? 0 : 1;
+  } catch (error) {
+    const code = /^M03_FUNCTIONAL_[A-Z_]{1,64}$/.test(error?.message)
+      ? error.message
+      : 'M03_FUNCTIONAL_BLOCKED';
+    if (append && scope) append({ kind: 'functional_failure', windowId: scope.windowId, code });
+    output({ id: 'failure', status: 'blocked', code });
+    return 1;
+  } finally {
+    lines.close();
+    inputStream.removeListener('data', guard);
+    inputStream.pause();
+    for (const t of transports) await t.close();
+    if (privateInput)
+      for (const key of [
+        'managementKey',
+        'writerPassword',
+        'apifyReadToken',
+        'machineToken',
+        'protectionBypass',
+      ])
+        privateInput[key] = null;
+    for (const [path, expected] of ownedScratch) {
+      try {
+        const stat = lstatSync(path);
+        if (stat.isFile() && !stat.isSymbolicLink() && sha(readFileSync(path)) === expected) unlinkSync(path);
+      } catch {
+        /* Preserve unknown scratch rather than deleting an unverified file. */
+      }
+    }
+    if (append && scope && !ended)
+      append({ kind: 'functional_interrupted', windowId: scope.windowId, reconciliationRequired: true });
+  }
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  runFoundationLiveRuntimeCli().then(
+  (process.argv[2]?.startsWith('Functional')
+    ? runFoundationFunctionalCli()
+    : runFoundationLiveRuntimeCli()
+  ).then(
     (code) => {
       process.exitCode = code;
     },

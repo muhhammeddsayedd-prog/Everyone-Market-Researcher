@@ -130,6 +130,153 @@ and workflow restoration require additional Management calls; their fit within
 allowance change was made. This is the precise remaining admission boundary;
 count the complete native plan and cleanup before any later allowance decision.
 
+### Complete smaller functional allowance — approved 25 October 2026
+
+The owner approved exactly: **Approve Management2048 and Vercel352 for the complete smaller M03 sequence through recovery and shutdown; retain all charges and other limits.**
+This records the existing scope and changes only the two cumulative ceilings;
+no request allowance, actor start or closed window is reset. The implementation
+uses one functional mode in the existing acceptance consumer, without invoking
+the superseded full-case/deletion gate or disabled CleanupTechnical22.
+
+This estimate uses source at890892e and the final local journal checkpoint:
+1661 Management/1464 Control/3125 combined/V288. Local HEAD/journal inspection
+finds no newer hosted charges; preparing this estimate made zero hosted calls.
+It approves only Management2048 and Vercel352, retaining Control3584,
+Combined5312 and every prior charge. Admission still requires actual remaining
+capacity, access/security checks and shutdown reserve. Local metadata checks
+now find all four persistent originals present, authenticationTestedfalse, and
+the earlier native Vercel metadata covered75Minutes with childClosedtrue/network0.
+The later metadata-only check found the same session unexpired but with less
+than75-minute coverage; it made zero network/authentication/refresh/configuration
+operations. The exact native CLI login action was requested for that provider
+consent boundary; persistent development originals require no replenishment.
+
+| Stage / counter | Management | Control | Combined (M+C) | Vercel, included in M |
+|---|---:|---:|---:|---:|
+| Protected dev setup, access/security and owned configuration | 107 | 101 | 208 | 26 |
+| One actor and real WF19/database completion/cost checks | 1 | 136 | 137 | 0 |
+| Replay the original content through SUB-INGEST once | 3 | 14 | 17 | 0 |
+| Replay that same valid callback | 0 | 45 | 45 | 0 |
+| Unknown-run callback rejection/no side effects | 0 | 45 | 45 | 0 |
+| Safe stop, restore, final readbacks and retained-record inventory | 91 | 126 | 217 | 18 |
+| Additional bounded recovery reserve | 64 | 45 | 109 | 20 |
+| **Additional allocation estimate, including recovery/shutdown** | **266** | **512** | **778** | **64** |
+| **Current cumulative charges** | **1661** | **1464** | **3125** | **288** |
+| **Projected cumulative use at the estimated bound** | **1927** | **1976** | **3903** | **352** |
+| **Existing ceilings** | **1728** | **3584** | **5312** | **304** |
+| **Approved cumulative ceilings** | **2048** | **3584 unchanged** | **5312 unchanged** | **352** |
+
+These are finite upper allocations rather than predicted mandatory calls. Use
+supported native evidence when it proves the fact with fewer reads. Vercel is
+already included in Management; Combined is Management plus Control, not another
+request pool to add. The Management ceiling leaves121 beyond the estimated1927
+for bounded repair/reconciliation under the same scope. Do not consume cleanup
+reserve for new work. Retain all existing actor/spending/data limits and records.
+
+Source factoring: native setup81M, late SUB-INGEST save3M, pre-actor Machine
+read1M and restoration73M total158M; protected Preview preparation26M and
+cleanup18M add44M, giving202M before64M recovery. Native setup/restoration use
+existing reviewed graph/materializer and GET→mutation→GET/readback contracts,
+with25 initial and25 final ownership reads counted once each. Touch only WF99,
+SUB-START, WF19, SUB-FINISH, WF30/WF70 stubs, WF90, log-only SUB-NOTIFY and the
+late-bound SUB-INGEST replay. Six unique temporary publications; WF80/health
+and the exhaustive stub matrix are omitted. Do not invoke the all25/full-case
+supervisor merely with fewer command names, add a cap-specific helper family,
+or execute CleanupTechnical22. Workflow source/version/ownership, private rollback,
+strict TLS, runtime restrictions and protected dev audience checks remain.
+
+Control512 factors: initial bounded all25 running/default lists100 plus native
+UI check1; first smoke's existing maximum10 native executions at10 evidence
+reads each, manual preflight4 and webhook discovery32; content replay10+4;
+valid and unknown callbacks each10+3+32; final lists100 and at most13 newly owned
+stop/confirm pairs26; recovery45. Native evidence bounds use at most8 metadata
+polls plus current graph/full read, and at most8 discovery rounds×2 filters×2
+pages. Up to13 planned new native executions takes16 to29 under unchanged120.
+The existing smoke can invoke WF19 recovery while the real provider webhook
+also arrives; this race is included without budgeting another actor. Terminal
+records are retained/inventoried; no execution DELETE/absence loop is budgeted.
+
+Provider GETs:14 planned+6 recovery=20 additional under unchanged32 (recorded
+used0). Gateway HTTP:54 planned+16 recovery=70 additional, a conservative upper
+bound for admission capacity under unchanged256. These are separate existing
+sublimits, not added again to Management/Control. The latest vacancy snapshot
+does not include cumulative admitted count; read/reconcile it during required
+dev admission and never assume a reset or expand it. The source's request/status
+pair normally consumes one SQL admission. Direct SQL readbacks/provision/bind/
+reactivate/archive/close remain in the separate bounded dev administrative path;
+they are not n8n/Vercel HTTP attempts and need no migration operation.
+
+One actor is targeted, at most USD1; two remains the existing maximum and USD2
+the unchanged total actor reserve. No ambiguous paid-start retry. Acquire only
+the original bounded single-row dataset privately for content replay, preserve
+its measured cost and verify the existing SQL JSONB payload digest. Saved
+callback replay alone has payloadEqualityVerifiedfalse and does not prove this
+content path. Expect exactly one new distinct item; compare item/raw/queue/cost
+counts and hashes before/after both replays and rejection.
+
+Infrastructure charges remain separate: no new subscription purchase is
+requested; incremental n8n/Vercel/Supabase execution, build, compute, storage and
+egress USD are unpriced under existing plans. Do not call them USD0 or include
+them inside the actor USD2 reserve. Record actual usage/billed cost when available;
+unknown subscription fees stay unknown. Actor completion latency, callback
+ordering, build polls and recovery consumption are genuine bounded unknowns.
+
+References: `foundation-runtime-control.mjs:534–583,717–739`,
+`foundation-live-setup.mjs:43–58,635–883`,
+`foundation-native-reader.mjs:1232–1290,1692–1783`,
+`foundation-live-runtime-cli.mjs:1189–1289`, and
+`n8n/foundation/materialize-acceptance-case.mjs:35–64,183–190,536–560`.
+Independent source count review agrees with the scoped setup/restoration and
+callback/content distinction; no hosted validation or completed acceptance is
+claimed by this proposal. The owner decision is only the two request ceilings,
+not a new general development/time/credential approval. Existing persistent
+credentials and supported native components are reused. Dev-only; production,
+schedules, notifications, R2, merge and M04 remain excluded. Fixture UI stays
+local-only with its production404 guard. Execution31145 remains retained and
+C999 is archived/paused until the approved exact smoke reactivation; archive it
+again after stopping, retaining all collected rows.
+
+#### Implementation and local verification for the approved sequence
+
+The existing consumer now exposes fixed functional tasks using the existing
+setup, workflow-transition, normalizer, provider-read and restricted Writer
+components. Native SQL observations remain manual evidence; no forged old
+supervisor proof, migration replay, execution deletion or Admin runtime input is
+introduced. Current source retains the15 applied histories and pinned25 restored
+versions, accepted dispatch/errors, archived/paused fixture and local-only UI.
+
+Independent source review cleared the final corrections: complete durable
+writes before admission, fresh SQL absence for cleanup before provision, and
+independent owned Preview cleanup after safe Writer Close even when workflow
+restoration fails. Final functional CLI checks pass10/10; the earlier whole CLI
+file passed63/63 before these three corrections. These are overlapping local
+results, not a new whole-suite or hosted pass. Shared12/web11/materializer20
+checks and focused fresh-window plan/setup/Writer checks passed. The Windows
+wrapper passed its finite synthetic integration, affected public/DTO tests and
+syntax checks; only runtime credentials enter its OS-only child, never Admin.
+The actual credential-free Node FunctionalCheckOnly returned native0. Normal
+changed-head CI and the actual sealed PowerShell CheckOnly precede private use.
+
+The owner renewed Vercel through the native CLI. Subsequent local metadata
+confirms75-minute coverage, native0 and child closure, with no network/auth/
+refresh/configuration operation. All four persistent dev originals remain
+present; presence is not authentication. No actor, workflow, Preview or database
+command has been started by this implementation checkpoint. Opening the native
+SQL Editor independently showed emr-dev/zmotjsbzhzjvpelxvxlf; it is not a database
+authentication receipt. Usage remains1661/1464/3125/V288 and actors0.
+
+The earlier enforced root/M03-progress, old CI-recovery and PR-body write
+restrictions remain in force; existing dirty work is preserved. Automatic
+approval review also rejected cleanup of one isolated synthetic test child and
+its temporary fixture before execution with “blocked by policy”. That cleanup
+was not performed or retried. It held no real credentials and made no network
+requests. The finite corrected synthetic integration passed separately; the
+original failed attempt and its retained test fixture are not erased.
+
+No business acceptance is inferred from these local checks. The next actions
+are normal PR CI, actual dev SQL admission/security checks and the one-start
+functional sequence through shutdown under the approved cumulative limits.
+
 ## Current local recovery gate — 25 October 2026 Cairo
 
 [The immutable current record](technical22-local-recovery-gate-20261025.json) preserves the successful actual31145 metadata read, the narrow source-backed null compatibility fix and the separate unverified recovery path. Existing reader/cleanup/domain tests pass74/74, genuine context/budget tests pass2/2, and affected native public-runtime tests pass20/20 with zero skips. These overlapping groups are not summed. The first public-runtime invocation failed at local PowerShell lookup (ENOENT), then passed after correcting only the public test launcher PATH. No database or provider authentication was attempted by those tests.

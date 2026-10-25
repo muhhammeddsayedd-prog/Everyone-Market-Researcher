@@ -4,8 +4,8 @@ import { gatewayIdentity, gatewayBusinessResult } from './n8n-worker-contracts';
 
 // Source contract only: this UUID creates no hosted window or launch authority.
 export const foundationWindowId = 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9';
-// Source-known compatibility only; SQL owner registration and cumulative caps
-// remain required. Adding an ID here never opens or reopens a database window.
+// Historical compatibility inventory only, not the admission allowlist.
+// SQL owner registration/binding and cumulative caps remain authoritative.
 export const foundationWindowIds = [
   foundationWindowId,
   '38b3708d-61b0-41d2-8170-5ed91c66b4dc',
@@ -15,7 +15,14 @@ export const foundationWindowIds = [
   'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
   'e2be1a67-f6db-4c90-bfd2-671c5db9b90a',
 ] as const;
-const knownWindow = z.enum(foundationWindowIds);
+const knownWindow = z
+  .string()
+  .regex(/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/)
+  .refine((value) => value !== '76c2ad42-c094-4ba4-9a0b-566e19b97780');
+export function parseFoundationWindowId(value: unknown): string | null {
+  const parsed = knownWindow.safeParse(value);
+  return parsed.success ? parsed.data : null;
+}
 const id = z.uuid(),
   empty = z.strictObject({});
 const identifier = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/);

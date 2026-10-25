@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$CheckOnly,[switch]$ResumeZeroSetup,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement,[switch]$ProjectVerifiedContinuation)
+param([switch]$CheckOnly,[switch]$ResumeZeroSetup,[switch]$ClockAmendment,[switch]$PostcheckContinuation,[switch]$RemainingContinuation,[switch]$StartupReplacement,[switch]$ProjectVerifiedContinuation,[switch]$Functional)
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
@@ -542,6 +542,154 @@ function Safe-PublicLine($Value){
  }
  return $Value|ConvertTo-Json -Compress
 }
+function Safe-M03FunctionalLine($Value){
+ $keys=@('kind','id','status','code','management','control','combined','vercel','windowId','audience','deploymentId','sourceCommitSha','workflowId','versionId','runId','apifyRunId','costUsd','providerStatus','bodySha256')
+ if($Value -isnot [PSCustomObject] -or $Value.kind -cne 'm03_functional_result' -or $Value.status -cnotin @('check_only_ready','ready','prepared','runtime_ready','case_ready','callback_sent','provider_terminal','content_ready','restored','closed','blocked') -or @($Value.PSObject.Properties.Name|Where-Object{$_ -cnotin $keys}).Count -ne 0){throw 'blocked'}
+ foreach($p in $Value.PSObject.Properties){
+  $v=$p.Value
+  if($p.Name -cin @('management','control','combined','vercel')){
+   $maximum=switch($p.Name){'management'{2048};'control'{3584};'combined'{5312};'vercel'{352}}
+   if(($v -isnot [int] -and $v -isnot [long]) -or $v -lt 0 -or $v -gt $maximum){throw 'blocked'}
+  }elseif($p.Name -ceq 'costUsd'){
+   if(($v -isnot [int] -and $v -isnot [long] -and $v -isnot [double] -and $v -isnot [decimal]) -or [double]::IsNaN([double]$v) -or [double]::IsInfinity([double]$v) -or $v -lt 0 -or $v -gt 2){throw 'blocked'}
+  }else{
+   if($v -isnot [string]){throw 'blocked'}
+   $valid=switch($p.Name){
+    'kind'{$v -ceq 'm03_functional_result'}
+    'status'{$true}
+    'code'{$v -cmatch '^M03_FUNCTIONAL_[A-Z_]{1,64}$'}
+    'id'{$v -cmatch '^[A-Za-z0-9_-]{1,64}$'}
+    'sourceCommitSha'{$v -cmatch '^[a-f0-9]{40}$'}
+    'bodySha256'{$v -cmatch '^[a-f0-9]{64}$'}
+    'audience'{$v -cmatch '^https://everyone-market-researcher-[a-z0-9-]+\.vercel\.app$'}
+    'deploymentId'{$v -cmatch '^dpl_[A-Za-z0-9_-]{1,100}$'}
+    'apifyRunId'{$v -cmatch '^[A-Za-z0-9_-]{5,64}$'}
+    'providerStatus'{$v -cin @('READY','RUNNING','SUCCEEDED','FAILED','TIMED_OUT','ABORTED')}
+    'workflowId'{$knownWorkflowIds.Contains($v)}
+    default{$v -cmatch '^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$'}
+   }
+   if(-not $valid){throw 'blocked'}
+  }
+ }
+ $text=$Value|ConvertTo-Json -Compress
+ foreach($needle in $needles){foreach($form in @($needle,[Uri]::EscapeDataString($needle),[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($needle)))){if($text.IndexOf($form,[StringComparison]::Ordinal) -ge 0){throw 'blocked'}}}
+ return $text
+}
+function Test-M03FunctionalResourceRestoration($Value){
+ $code=if($null -ne $Value.PSObject.Properties['code']){$Value.code}else{''}
+ return ($Value.status -ceq 'restored' -and $code -ceq 'M03_FUNCTIONAL_RESOURCES_RESTORED') -or ($Value.status -ceq 'closed' -and $code -ceq 'M03_FUNCTIONAL_CLOSED')
+}
+function Assert-M03FunctionalCommand($Value){
+ if($Value -isnot [PSCustomObject] -or $Value.id -isnot [string] -or $Value.id -cnotmatch '^[A-Za-z0-9_-]{1,64}$' -or $Value.command -isnot [string]){throw 'blocked'}
+ $keys=@('id','command')
+ switch -CaseSensitive ($Value.command){
+  {$_ -cin @('state','prepare_preview','prepare_runtime','callback_unknown','restore','close','close_window','authorize_start')}{break}
+  {$_ -cin @('charge_control','charge_management')}{$keys+='count';if(($Value.count -isnot [int] -and $Value.count -isnot [long]) -or $Value.count -lt 1 -or $Value.count -gt 100){throw 'blocked'};break}
+  {$_ -cin @('provider','callback_valid','original','save_replay')}{
+   $keys+='apifyRunId';if($Value.apifyRunId -isnot [string] -or $Value.apifyRunId -cnotmatch '^[A-Za-z0-9_-]{5,64}$'){throw 'blocked'}
+   if($_ -cin @('original','save_replay')){$keys+='runId';if($Value.runId -isnot [string] -or $Value.runId -cnotmatch '^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$'){throw 'blocked'}};break
+  }
+  default{throw 'blocked'}
+ }
+ if(@(Compare-Object -CaseSensitive @($keys|Sort-Object) @($Value.PSObject.Properties.Name|Sort-Object)).Count -ne 0){throw 'blocked'}
+}
+function Invoke-M03FunctionalPublicCommand([string]$Executable,[string]$Arguments){
+ $p=$null;$si=[Diagnostics.ProcessStartInfo]::new();$done=$true
+ try{
+  $si.FileName=$Executable;$si.Arguments=$Arguments;$si.WorkingDirectory=$repo;$si.UseShellExecute=$false;$si.CreateNoWindow=$true;$si.RedirectStandardOutput=$true;$si.RedirectStandardError=$true;$si.EnvironmentVariables.Clear()
+  foreach($name in @('SystemRoot','WINDIR','PATH','USERPROFILE','LOCALAPPDATA','APPDATA','TEMP','TMP')){if(Test-Path ('Env:'+ $name)){$si.EnvironmentVariables[$name]=[Environment]::GetEnvironmentVariable($name)}}
+  $p=[Diagnostics.Process]::new();$p.StartInfo=$si;if(-not $p.Start()){throw 'blocked'};$done=$false
+  $o=[EmrM03AcceptanceBoundedIo]::Text($p.StandardOutput,16384);$e=[EmrM03AcceptanceBoundedIo]::Text($p.StandardError,1024)
+  $done=$p.WaitForExit(15000)
+  if(-not $done -or -not [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($o,$e)).Wait(5000) -or $p.ExitCode -ne 0 -or $e.Result.Length -ne 0){throw 'blocked'}
+  return $o.Result.Trim()
+ }finally{if($null -ne $p){if(-not $done){try{$p.Kill();$null=$p.WaitForExit(5000)}catch{}};$p.Dispose()};$si.EnvironmentVariables.Clear()}
+}
+function Invoke-M03FunctionalAcceptance(){
+ $remoteRestored=$false;$normalClosed=$false;$lockPath=$null;$bypassFile=$null;$resultCode='M03_FUNCTIONAL_WRAPPER_BLOCKED'
+ try{
+  if($ResumeZeroSetup -or $ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation){throw 'blocked'}
+  $resultCode='M03_FUNCTIONAL_PUBLIC_BLOCKED'
+  $seal=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'scripts/n8n/foundation-acceptance-seal.json') 2097152)))
+  $module=Public-File (Join-Path $PSScriptRoot 'Acceptance-PublicRuntime.ps1')
+  if((Get-FileHash -LiteralPath $module -Algorithm SHA256).Hash.ToLowerInvariant() -cne $seal.files.'scripts/n8n/windows/Acceptance-PublicRuntime.ps1'){throw 'blocked'}
+  . $module;$node=Assert-M03AcceptancePublicSeal $repo $seal
+  $entry=Public-File (Join-Path $repo 'scripts/n8n/foundation-live-runtime-cli.mjs')
+  Initialize-BoundedIo
+  $ready=ConvertFrom-Json -InputObject (Invoke-M03FunctionalPublicCommand $node ('"'+$entry+'" FunctionalCheckOnly'))
+  $publicLine=Safe-M03FunctionalLine $ready;if($ready.status -cne 'check_only_ready'){throw 'blocked'}
+  if($CheckOnly){Write-Output $publicLine;$script:functionalExit=0;return}
+  $resultCode='M03_FUNCTIONAL_TRANSPORT_BLOCKED';Confirm-PublicTransport
+  . (Public-File (Join-Path $PSScriptRoot 'Dev-CredentialStore.ps1'))
+  $resultCode='M03_FUNCTIONAL_PARENT_LOCK_BLOCKED';$directory=Join-Path $env:LOCALAPPDATA 'Temp';$null=Assert-M03DevPlainPath $directory $true
+  $lockPath=Join-Path $directory 'emr-m03-acceptance-parent.operation.lock'
+  $script:lock=[IO.File]::Open($lockPath,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::Read);Set-M03DevPrivateAcl $lockPath $false
+  $bytes=[Text.UTF8Encoding]::new($false).GetBytes((([ordered]@{kind='m03_functional_parent';version=1;processId=$PID})|ConvertTo-Json -Compress))
+  $lock.Write($bytes,0,$bytes.Length);$lock.Flush($true);[Array]::Clear($bytes,0,$bytes.Length)
+  $resultCode='M03_FUNCTIONAL_SOURCE_BLOCKED';$git=(Get-Command git.exe -CommandType Application -ErrorAction Stop).Source
+  $sourceSha=Invoke-M03FunctionalPublicCommand $git 'rev-parse --verify HEAD';if($sourceSha -cnotmatch '^[a-f0-9]{40}$'){throw 'blocked'}
+  $bindings=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'n8n/foundation/bindings.dev.json'))));foreach($p in $bindings.workflowRefs.PSObject.Properties){$null=$knownWorkflowIds.Add($p.Value.id)}
+  $resultCode='M03_FUNCTIONAL_MACHINE_BLOCKED';$old=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText((Public-File (Join-Path $repo 'scripts/n8n/foundation-delivery-packet.json'))))
+  $pending=Join-Path $env:LOCALAPPDATA 'Everyone-Market-Radar-Private\foundation\df4f29ec-e2dc-4d82-a276-62a4e695e6f9'
+  $meta=ConvertFrom-Json -InputObject (Read-LockedText (Join-Path $pending 'pending-runtime.json'))
+  if(@(Compare-Object -CaseSensitive @('version','windowId','purpose','audience','sourceCommitSha','credentialId','createdAt'|Sort-Object) @($meta.PSObject.Properties.Name|Sort-Object)).Count -ne 0 -or $meta.version -ne 1 -or $meta.windowId -cne 'df4f29ec-e2dc-4d82-a276-62a4e695e6f9' -or $meta.purpose -cne 'pending_inactive_m03_runtime_delivery' -or $meta.credentialId -cne 'EmrM03Machine19' -or $meta.audience -cne $old.audience -or $meta.sourceCommitSha -cne $old.sourceCommitSha -or $meta.createdAt -isnot [string] -or $meta.createdAt -cnotmatch '^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3,7}(?:Z|\+00:00)$' -or [DateTimeOffset]::Parse($meta.createdAt,[Globalization.CultureInfo]::InvariantCulture) -gt [DateTimeOffset]::UtcNow){throw 'blocked'}
+  $machinePath=Public-File (Join-Path $pending 'machine.dpapi');Assert-M03DevPrivateAcl $pending $true;Assert-M03DevPrivateAcl $machinePath $false
+  $resultCode='M03_FUNCTIONAL_CREDENTIALS_BLOCKED';$private=@{}
+  foreach($kind in @('Management','Writer','ApifyRead')){
+   Ensure-M03DevRuntimeHandoff -Kind $kind -CoordinatorLock $lock
+   $spec=Get-M03DevCredentialSpec -Kind $kind;$consumed.Add($spec.Cipher);$consumed.Add($spec.Lease)
+   $private[$kind]=Plain-Dpapi (Read-LockedText $spec.Cipher);if([string]::IsNullOrEmpty($private[$kind])){throw 'blocked'};$needles.Add($private[$kind])
+  }
+  $machine=Plain-Dpapi (Read-LockedText $machinePath);if($machine -cnotmatch '^[A-Za-z0-9_-]{43}$'){throw 'blocked'};$needles.Add($machine)
+  $resultCode='M03_FUNCTIONAL_BYPASS_BLOCKED';$bypassFile=Join-Path $directory 'emr-m03-acceptance-protection-bypass.dpapi';if(Test-Path -LiteralPath $bypassFile){throw 'blocked'}
+  $bytes=New-Object byte[] 96;$rng=[Security.Cryptography.RandomNumberGenerator]::Create();$characters='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';$builder=[Text.StringBuilder]::new()
+  try{while($builder.Length -lt 32){$rng.GetBytes($bytes);foreach($b in $bytes){if($b -lt 248 -and $builder.Length -lt 32){$null=$builder.Append($characters[$b%62])}}}}finally{$rng.Dispose();[Array]::Clear($bytes,0,$bytes.Length)};$bypass=$builder.ToString();$builder=$null;$needles.Add($bypass)
+  $secret=ConvertTo-SecureString -String $bypass -AsPlainText -Force
+  $bypassStream=$null;$bytes=$null
+  try{$cipher=ConvertFrom-SecureString -SecureString $secret;$bypassStream=[IO.File]::Open($bypassFile,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);$bypassCreated=$true;Set-M03DevPrivateAcl $bypassFile $false;$bytes=[Text.Encoding]::ASCII.GetBytes($cipher);$bypassStream.Write($bytes,0,$bytes.Length);$bypassStream.Flush($true)}finally{if($null -ne $bypassStream){$bypassStream.Dispose()};if($null -ne $bytes){[Array]::Clear($bytes,0,$bytes.Length)};$secret.Dispose();$secret=$null;$cipher=$null}
+  $packet=[ordered]@{kind='m03_functional_private_input';version=1;sourceCommitSha=$sourceSha;managementKey=$private.Management;writerPassword=$private.Writer;apifyReadToken=$private.ApifyRead;machineToken=$machine;protectionBypass=$bypass}
+  $resultCode='M03_FUNCTIONAL_CHILD_BLOCKED';$script:start=[Diagnostics.ProcessStartInfo]::new();$start.FileName=$node;$start.Arguments='"'+$entry+'" Functional';$start.WorkingDirectory=$repo;$start.UseShellExecute=$false;$start.CreateNoWindow=$true;$start.RedirectStandardInput=$true;$start.RedirectStandardOutput=$true;$start.RedirectStandardError=$true;$start.EnvironmentVariables.Clear()
+  foreach($name in @('SystemRoot','WINDIR','PATH','USERPROFILE','LOCALAPPDATA','APPDATA','TEMP','TMP')){if(Test-Path ('Env:'+ $name)){$start.EnvironmentVariables[$name]=[Environment]::GetEnvironmentVariable($name)}}
+  $script:child=[Diagnostics.Process]::new();$child.StartInfo=$start;$script:started=$child.Start();if(-not $started){throw 'blocked'};$script:closed=$false
+  $child.StandardInput.WriteLine(($packet|ConvertTo-Json -Compress));$child.StandardInput.Flush();$packet=$null;$private=$null;$machine=$null;$bypass=$null
+  $deadline=[DateTimeOffset]::UtcNow.AddMinutes(60);$stopNewAt=$deadline.AddMinutes(-10);$script:childDeadline=$deadline.AddMinutes(10)
+  $output=[EmrM03AcceptanceBoundedIo]::Line($child.StandardOutput,16384);$errorOutput=[EmrM03AcceptanceBoundedIo]::Text($child.StandardError,1024);$functionalInputTask=[EmrM03AcceptanceBoundedIo]::Line([Console]::In,4096);$closing=$false
+  while(-not $child.HasExited){
+   if($errorOutput.IsFaulted -or ($errorOutput.IsCompleted -and $errorOutput.Result.Length -ne 0)){throw 'blocked'}
+   if($output.IsCompleted){$line=$output.GetAwaiter().GetResult();if($null -eq $line){break};$value=ConvertFrom-Json -InputObject $line;$safe=Safe-M03FunctionalLine $value;if(Test-M03FunctionalResourceRestoration $value){$remoteRestored=$true;if($value.status -ceq 'closed'){$normalClosed=$true}};Write-Output $safe;$output=[EmrM03AcceptanceBoundedIo]::Line($child.StandardOutput,16384)}
+   if(-not $closing -and ($functionalInputTask.IsCompleted -or [DateTimeOffset]::UtcNow -ge $stopNewAt)){
+    $line=if([DateTimeOffset]::UtcNow -lt $stopNewAt -and $functionalInputTask.IsCompleted){$functionalInputTask.GetAwaiter().GetResult()}else{$null}
+    $command=if($null -eq $line){[pscustomobject]@{id='parent_close';command='close'}}else{ConvertFrom-Json -InputObject $line};Assert-M03FunctionalCommand $command
+    $child.StandardInput.WriteLine(($command|ConvertTo-Json -Compress));$child.StandardInput.Flush();$closing=$command.command -ceq 'close';if($closing){$child.StandardInput.Close()}else{$functionalInputTask=[EmrM03AcceptanceBoundedIo]::Line([Console]::In,4096)}
+   }
+   if([DateTimeOffset]::UtcNow -ge $childDeadline){throw 'blocked'}
+   Start-Sleep -Milliseconds 25
+  }
+  $script:closed=$child.WaitForExit(5000)
+  $tail=0
+  while($closed -and $output.Wait(5000)){$line=$output.GetAwaiter().GetResult();if($null -eq $line){break};if(++$tail -gt 128){throw 'blocked'};$value=ConvertFrom-Json -InputObject $line;$safe=Safe-M03FunctionalLine $value;if(Test-M03FunctionalResourceRestoration $value){$remoteRestored=$true;if($value.status -ceq 'closed'){$normalClosed=$true}};Write-Output $safe;$output=[EmrM03AcceptanceBoundedIo]::Line($child.StandardOutput,16384)}
+  if(-not $closed -or -not $errorOutput.Wait(5000) -or $errorOutput.Result.Length -ne 0 -or $child.ExitCode -ne 0 -or -not $normalClosed){throw 'blocked'}
+  $resultCode='M03_FUNCTIONAL_WRAPPER_CLOSED'
+ }catch{}finally{
+  if($started -and -not $closed){
+   try{$child.StandardInput.WriteLine('{"id":"parent_close","command":"close"}');$child.StandardInput.Flush();$child.StandardInput.Close()}catch{}
+   # Preserve the existing technical shutdown reserve even when a public line
+   # or coordinator command is refused. Discard private output without logging.
+   try{$null=$child.StandardOutput.BaseStream.CopyToAsync([IO.Stream]::Null);$null=$child.StandardError.BaseStream.CopyToAsync([IO.Stream]::Null)}catch{}
+   while(-not $child.HasExited -and [DateTimeOffset]::UtcNow -lt $childDeadline){$null=$child.WaitForExit(100)}
+   if(-not $child.HasExited){$treeClosed=Stop-OwnedProcessTree $child};$script:closed=$child.WaitForExit(0)
+  }
+  if($null -ne $child){$child.Dispose()};if($null -ne $start){$start.EnvironmentVariables.Clear()}
+  foreach($stream in $opened){$stream.Dispose()};$needles.Clear();$packet=$null;$private=$null;$machine=$null;$bypass=$null
+  $deleted=$true;if($closed){foreach($path in $consumed){try{$null=Public-File $path;[IO.File]::Delete($path)}catch{$deleted=$false}}}else{$deleted=$false}
+  if($bypassCreated -and $closed -and ($remoteRestored -or -not $started)){try{$null=Public-File $bypassFile;[IO.File]::Delete($bypassFile)}catch{$deleted=$false}}
+  if($null -ne $lock){$lock.Dispose();if($closed){try{[IO.File]::Delete($lockPath)}catch{$deleted=$false}}}
+  if(-not $closed -or -not $deleted){$resultCode='M03_FUNCTIONAL_WRAPPER_BLOCKED'}
+ }
+ [ordered]@{kind='m03_functional_result';status=$(if($resultCode -ceq 'M03_FUNCTIONAL_WRAPPER_CLOSED'){'closed'}else{'blocked'});code=$resultCode}|ConvertTo-Json -Compress|Write-Output
+ if(-not $CheckOnly){$script:functionalExit=$(if($resultCode -ceq 'M03_FUNCTIONAL_WRAPPER_CLOSED'){0}else{1})}
+}
+if($Functional){$script:functionalExit=1;Invoke-M03FunctionalAcceptance;exit $script:functionalExit}
 try{
  if(@($ResumeZeroSetup,$ClockAmendment,$PostcheckContinuation,$RemainingContinuation,$StartupReplacement,$ProjectVerifiedContinuation|Where-Object{$_}).Count -gt 1){throw 'blocked'}
  $admittedClockMode=$ClockAmendment -or $PostcheckContinuation -or $RemainingContinuation -or $StartupReplacement -or $ProjectVerifiedContinuation

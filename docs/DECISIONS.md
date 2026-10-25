@@ -359,8 +359,13 @@ Preserve the actual Vimeo dispatch and four automatic error groups, all15 dev
 migrations, seeded data, workflow restoration, prior attempts, closed windows,
 side-effect IDs and every charged request. Actors remain0 of2 sequential starts,
 USD1 each/USD2 total and at most one new distinct item. Current cumulative
-ceilings remain1728 Management/3584 Control/5312 combined/Vercel304; this reset
-adds no allowance. Admit no new live batch unless its remaining operations and
+ceilings at the reset were1728 Management/3584 Control/5312 combined/Vercel304;
+the reset itself added no allowance. The owner's subsequent25 October exact
+smaller-sequence approval raises only Management to2048 and Vercel to352,
+retaining1661/1464/3125/V288 charged and Control3584/Combined5312 unchanged.
+The [complete factored estimate and approval](../milestones/M03-n8n-foundation/evidence/dev-acceptance-fixture-gap-correction-20261024.md#complete-smaller-functional-allowance--approved-25-october-2026)
+includes recovery/shutdown; target one actor, retaining the original two/USD2
+maximum. Admit no new live batch unless its remaining operations and
 shutdown fit. The real collection/callback/item/cost, replay and invalid-callback
 checks remain pending.
 

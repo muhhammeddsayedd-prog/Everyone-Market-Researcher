@@ -3,7 +3,7 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import {
   foundationRequest,
   foundationReceipt,
-  foundationWindowIds,
+  parseFoundationWindowId,
   type FoundationRequest,
 } from '@emr/shared';
 import { readBody, response } from './dispatcher';
@@ -13,13 +13,13 @@ export interface FoundationConfig {
   audience: string;
   password: string;
   verifier: string;
-  windowId: (typeof foundationWindowIds)[number];
+  windowId: string;
   commitSha: string;
   deploymentId: string;
   apifyReadToken: string;
 }
 export function foundationConfig(env: Record<string, string | undefined>): FoundationConfig {
-  const windowId = foundationWindowIds.find((id) => id === env.EMR_M03_FOUNDATION_WINDOW_ID);
+  const windowId = parseFoundationWindowId(env.EMR_M03_FOUNDATION_WINDOW_ID);
   if (
     env.EMR_M03_FOUNDATION_ENABLED !== 'true' ||
     env.VERCEL_ENV !== 'preview' ||
@@ -30,7 +30,7 @@ export function foundationConfig(env: Record<string, string | undefined>): Found
     !env.EMR_M03_FOUNDATION_APIFY_READ_TOKEN ||
     !/^[a-f0-9]{64}$/.test(env.EMR_M03_FOUNDATION_TOKEN_SHA256 ?? '') ||
     env.EMR_M03_FOUNDATION_AUDIENCE !== 'vercel-deployment' ||
-    !/^[a-z0-9-]+\.vercel\.app$/.test(env.VERCEL_URL ?? '') ||
+    !/^everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(env.VERCEL_URL ?? '') ||
     !/^[a-f0-9]{40}$/.test(env.VERCEL_GIT_COMMIT_SHA ?? '') ||
     env.VERCEL_GIT_COMMIT_SHA !== env.EMR_M03_FOUNDATION_COMMIT_SHA ||
     !/^dpl_[A-Za-z0-9]{1,80}$/.test(env.VERCEL_DEPLOYMENT_ID ?? '')

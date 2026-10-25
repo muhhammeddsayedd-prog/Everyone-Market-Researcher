@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { syntheticProjectVerifiedContinuation } from './foundation-live-project-verified-fixtures.mjs';
+import { foundationFunctionalBaselineVersions } from './foundation-runtime-plan.mjs';
 import {
   createFoundationLiveSetup,
   createFoundationLiveSetupJournal,
@@ -11,6 +12,89 @@ import {
   assertFoundationLiveDeployment,
   foundationLiveSetupRequestPlan,
 } from './foundation-live-setup.mjs';
+
+function functionalScope() {
+  return {
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
+    windowId: '11111111-1111-4111-8111-111111111111',
+    sourceCommitSha: sha,
+    caps: { management: 2048, control: 3584, combined: 5312, vercel: 352 },
+    carried: { management: 1661, control: 1464, combined: 3125, vercel: 288 },
+    restoredBaselineVersions: foundationFunctionalBaselineVersions(),
+  };
+}
+test('functional protected Preview retains288 charged requests,12 polls and18 shutdown requests', async () => {
+  const scope = functionalScope();
+  let attempts = 1661;
+  const managementBudget = {
+    admit() {
+      attempts++;
+    },
+    snapshot() {
+      return { attempts, maximum: 2048 };
+    },
+    attachTransport() {},
+  };
+  const f = fixture({
+    functionalScope: scope,
+    activeWindowId: scope.windowId,
+    maximumRequests: 352,
+    expectedMigrationCount: 15,
+    managementBudget,
+    fault: 'last_poll',
+  });
+  try {
+    assert.equal(f.setup.snapshot().requestCount, 288);
+    await f.setup.prepare();
+    assert.equal(f.setup.snapshot().buildPollLimit, 12);
+    const close = await f.setup.cleanup();
+    assert.equal(close.state, 'setup_resources_removed');
+    assert.equal(f.calls.length, 44);
+    assert.equal(close.requestCount, 332);
+    assert.equal(attempts, 1705);
+    assert.equal(f.rows.filter((r) => r.event === 'setup_attempt')[0].ordinal, 289);
+    assert.equal(f.rows.filter((r) => r.event === 'setup_attempt').at(-1).ordinal, 332);
+    assert.equal(f.envs.length, 0);
+    assert.deepEqual(f.bypass, {});
+  } finally {
+    f.setup.close();
+  }
+});
+test('functional setup refuses scope drift, old windows and an unscoped352 journal before requests', () => {
+  const scope = functionalScope();
+  assert.throws(() =>
+    createFoundationLiveSetupJournal({ sourceCommitSha: sha, maximumRequests: 352, durableAppend() {} }),
+  );
+  for (const edit of [
+    (s) => {
+      s.projectRef = 'hkiafqrcxaafdbcvjlzv';
+    },
+    (s) => {
+      s.caps.vercel = 353;
+    },
+    (s) => {
+      s.carried.vercel = 0;
+    },
+    (s) => {
+      s.windowId = foundationLiveSetupScope.windowId;
+    },
+    (s) => {
+      s.sourceCommitSha = 'b'.repeat(40);
+    },
+  ]) {
+    const changed = structuredClone(scope);
+    edit(changed);
+    assert.throws(() =>
+      fixture({
+        functionalScope: changed,
+        activeWindowId: changed.windowId,
+        maximumRequests: 352,
+        expectedMigrationCount: 15,
+      }),
+    );
+  }
+});
 
 test('technical20 Vercel capacity304 retains254 charges and never grants an unbranded setup continuation', () => {
   const p = foundationLiveSetupRequestPlan(254, 304);
@@ -857,6 +941,7 @@ function fixture({
   expectedMigrationCount = 14,
   managementBudget,
   managementInitialAttempts = 0,
+  functionalScope,
 } = {}) {
   const calls = [],
     rows = [],
@@ -899,6 +984,7 @@ function fixture({
     sourceCommitSha: sourceSha,
     maximumRequests,
     previousEvents,
+    ...(functionalScope ? { functionalScope } : {}),
     durableAppend(row) {
       persist(row);
       rows.push(row);
@@ -1000,6 +1086,7 @@ function fixture({
   const setup = (setupModule?.createFoundationLiveSetup ?? createFoundationLiveSetup)(
     {
       sourceCommitSha: sourceSha,
+      ...(functionalScope ? { functionalScope } : {}),
       activeWindowId,
       transport,
       journal,

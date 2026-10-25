@@ -7,7 +7,128 @@ import {
   materializeFoundationRuntimeCase,
   runtimeManagementCounts,
   createFoundationRuntimeBaseline,
+  assertFoundationFunctionalScope,
+  foundationFunctionalBaselineVersions,
+  foundationRuntimeBodyAllowed,
 } from './foundation-runtime-plan.mjs';
+
+export function functionalScopeFixture() {
+  return {
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
+    windowId: '11111111-1111-4111-8111-111111111111',
+    sourceCommitSha: 'a'.repeat(40),
+    caps: { management: 2048, control: 3584, combined: 5312, vercel: 352 },
+    carried: { management: 1661, control: 1464, combined: 3125, vercel: 288 },
+    restoredBaselineVersions: foundationFunctionalBaselineVersions(),
+  };
+}
+
+test('functional scope preserves exact actual25 versions and limits without reopening historical windows', () => {
+  const scope = functionalScopeFixture();
+  assert.equal(Object.keys(scope.restoredBaselineVersions).length, 25);
+  assert.equal(scope.restoredBaselineVersions['WF-00'], '4f6e943b-5a31-43df-b379-5ea9b8fac87d');
+  assert.equal(assertFoundationFunctionalScope(scope), scope);
+  for (const edit of [
+    (s) => {
+      s.projectRef = 'hkiafqrcxaafdbcvjlzv';
+    },
+    (s) => {
+      s.projectId = 'other';
+    },
+    (s) => {
+      s.windowId = 'e2be1a67-f6db-4c90-bfd2-671c5db9b90a';
+    },
+    (s) => {
+      s.windowId = 'not-a-uuid';
+    },
+    (s) => {
+      s.caps.management++;
+    },
+    (s) => {
+      s.caps.vercel++;
+    },
+    (s) => {
+      s.carried.management--;
+    },
+    (s) => {
+      s.restoredBaselineVersions['WF-00'] = '00000000-0000-4000-8000-000000000001';
+    },
+  ]) {
+    const changed = structuredClone(scope);
+    edit(changed);
+    assert.throws(() => assertFoundationFunctionalScope(changed));
+  }
+  assert.throws(() => assertFoundationFunctionalScope(scope, { sourceCommitSha: 'b'.repeat(40) }));
+});
+
+test('functional reconciliation carries actual higher journal usage without reset, overlap or ceiling expansion', () => {
+  for (const carried of [
+    { management: 1662, control: 1465, combined: 3127, vercel: 289 },
+    { management: 1900, control: 3400, combined: 5300, vercel: 352 },
+  ]) {
+    const scope = { ...functionalScopeFixture(), carried };
+    assert.equal(assertFoundationFunctionalScope(scope), scope);
+  }
+  for (const carried of [
+    { management: 1660, control: 1464, combined: 3124, vercel: 288 },
+    { management: 1661, control: 1463, combined: 3124, vercel: 288 },
+    { management: 1661, control: 1464, combined: 3125, vercel: 287 },
+    { management: 2049, control: 1464, combined: 3513, vercel: 288 },
+    { management: 1661, control: 3585, combined: 5246, vercel: 288 },
+    { management: 1661, control: 1464, combined: 3125, vercel: 353 },
+    { management: 2048, control: 3400, combined: 5448, vercel: 352 },
+    { management: 1900, control: 1464, combined: 3125, vercel: 288 },
+    { management: 1661.5, control: 1464, combined: 3125.5, vercel: 288 },
+  ])
+    assert.throws(() => assertFoundationFunctionalScope({ ...functionalScopeFixture(), carried }));
+});
+
+test('functional setup limits writes/publication to asynchronous closure and late genuine content replay', () => {
+  const functionalScope = functionalScopeFixture(),
+    original = runtimeFixture();
+  const p = createFoundationRuntimePlan({
+    ...original,
+    functionalScope,
+    activeWindowId: functionalScope.windowId,
+  });
+  assert.equal(p.baseline.length, 25);
+  assert.equal(p.runtime.length, 8);
+  assert.equal(p.setupSteps.filter((s) => s.kind === 'save').length, 8);
+  assert.equal(
+    p.setupSteps.some((s) => s.key === 'WF-99'),
+    false,
+  ); // one materialized save, not blocked then enabled
+  assert.deepEqual(p.publishKeys, ['SUB-NOTIFY', 'WF-90', 'WF-30', 'WF-70', 'SUB-FINISH', 'WF-19']);
+  assert.equal(p.setupSteps.length, 16);
+  assert.deepEqual(runtimeManagementCounts(p, 2), {
+    setup: 78,
+    restore: 73,
+    finalAudit: 0,
+    caseDrafts: 6,
+    nominalTotal: 157,
+    maximum: 512,
+  });
+  assert.equal(foundationRuntimeBodyAllowed(p, p.baseline.find((b) => b.key === 'WF-80').body), false);
+  assert.throws(() => materializeFoundationRuntimeCase(p, 'dispatch.vimeo'));
+  assert.throws(() => materializeFoundationRuntimeCase(p, 'smoke.second'));
+  assert.throws(() =>
+    createFoundationRuntimePlan({
+      ...original,
+      functionalScope,
+      activeWindowId: functionalScope.windowId,
+      setup: { ...original.setup, sourceCommitSha: 'b'.repeat(40) },
+    }),
+  );
+  assert.throws(() =>
+    createFoundationRuntimePlan({
+      ...original,
+      functionalScope,
+      activeWindowId: functionalScope.windowId,
+      projectVerifiedContinuationProof: {},
+    }),
+  );
+});
 
 export function runtimeFixture() {
   const bindings = JSON.parse(
