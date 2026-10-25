@@ -1001,6 +1001,7 @@ function constructFoundationLiveAcceptanceSession(input, emit, dependencies, ope
       });
       fail();
     }
+    preparationStage = 'WRITER_CLOSER';
     writerCloser = (dependencies.createWriterCloser ?? createFoundationLiveWriterCloser)(
       {
         windowId: activeWindowId,
@@ -1015,6 +1016,7 @@ function constructFoundationLiveAcceptanceSession(input, emit, dependencies, ope
       dependencies.writerTransport ?? {},
     );
     budget.attachTransport(writerCloser);
+    preparationStage = null;
     provisionAttempted = true;
     const provision = await admin.provision({
       audience: deployment.audience,

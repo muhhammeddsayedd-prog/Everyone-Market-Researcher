@@ -64,21 +64,25 @@ function Foundation-FixtureSql([string]$Name,$ExpectedFixture=$null) {
     $technical=Foundation-ProjectVerifiedTechnicalIdentity
     $settings+="  perform pg_catalog.set_config('emr.smoke_technical_ordinal','"+$technical.ordinal+"',true);`n"
     $forwardTarget=if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){Foundation-ForwardWindowId}else{''}
-    if($forwardTarget -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f' -and $technical.ordinal -notin @(17,18)){throw 'blocked'}
-    if(($forwardTarget -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77' -and $technical.ordinal -in @(15,16)) -or ($forwardTarget -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f' -and $technical.ordinal -in @(17,18))){
+    if($forwardTarget -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f' -and $technical.ordinal -notin @(17,18,19)){throw 'blocked'}
+    if(($forwardTarget -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77' -and $technical.ordinal -in @(15,16)) -or ($forwardTarget -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f' -and $technical.ordinal -in @(17,18,19))){
       $proof=Read-FoundationTechnical14NoAdmin
       if($proof -cne '6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960'){throw 'blocked'}
       $settings+="  perform pg_catalog.set_config('emr.smoke_technical14_no_reactivation','$proof',true);`n"
-      if($technical.ordinal -in @(16,17,18)){
+      if($technical.ordinal -in @(16,17,18,19)){
         $proof=Read-FoundationTechnical14NoAdmin -Ordinal 15
         if($proof -cne '59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd'){throw 'blocked'}
         $settings+="  perform pg_catalog.set_config('emr.smoke_technical15_no_reactivation','$proof',true);`n"
       }
-      if($technical.ordinal -eq 18){
+      if($technical.ordinal -in @(18,19)){
         # The sealed ReadClaimed gate qualified the exact closed pre-Ready17
         # chain. Recheck the same archived baseline; never invent audit17.
         $null=Read-FoundationForwardPrior
         $settings+="  perform pg_catalog.set_config('emr.smoke_technical17_no_reactivation','d16198186698ddefdad06902f4c39d50ac51e46e87686d77bb3d0f3429f491ac',true);`n"
+        if($technical.ordinal -eq 19){
+          $proof=Read-FoundationTechnical18NoReactivation
+          $settings+="  perform pg_catalog.set_config('emr.smoke_technical18_no_reactivation','$proof',true);`n"
+        }
       }
     }
   }
@@ -183,7 +187,7 @@ function Assert-FoundationForwardWindowState([bool]$Prepared) {
   $restored=$window -ceq '4c602549-2c42-4ec3-9328-714d7cb66a77'
   $settled=$window -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'
   if($restored){$technical=Foundation-ProjectVerifiedTechnicalIdentity;if($technical.ordinal -notin @(14,15,16)){throw 'blocked'};if($technical.ordinal -eq 15){$null=Read-FoundationTechnical14NoAdmin};if($technical.ordinal -eq 16){$null=Read-FoundationTechnical14NoAdmin -Ordinal 15}}
-  if($settled){$technical=Foundation-ProjectVerifiedTechnicalIdentity;if($technical.ordinal -notin @(17,18) -or $priorState.window.closedAt -isnot [string]){throw 'blocked'};[DateTimeOffset]$closedAt=[DateTimeOffset]::MinValue;if(-not [DateTimeOffset]::TryParse($priorState.window.closedAt,[ref]$closedAt)){throw 'blocked'}}
+  if($settled){$technical=Foundation-ProjectVerifiedTechnicalIdentity;if($technical.ordinal -notin @(17,18,19) -or $priorState.window.closedAt -isnot [string]){throw 'blocked'};[DateTimeOffset]$closedAt=[DateTimeOffset]::MinValue;if(-not [DateTimeOffset]::TryParse($priorState.window.closedAt,[ref]$closedAt)){throw 'blocked'}}
   $next=$window -cin @('3c46c791-e140-4eb9-890a-eecfa251f65e','4c602549-2c42-4ec3-9328-714d7cb66a77','edbc6d11-7c1f-43a7-b745-1ded06deb29f')
   $fresh=$window -cin @('eda4fae1-1e19-47db-81b8-beac1a4ed883','3c46c791-e140-4eb9-890a-eecfa251f65e','4c602549-2c42-4ec3-9328-714d7cb66a77','edbc6d11-7c1f-43a7-b745-1ded06deb29f')
   $stateSql=@'
@@ -441,7 +445,7 @@ and (select count(*) from ops.audit_log l join ops.audit_log o on o.id::text=l.a
   $forwardTarget=if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){Foundation-ForwardWindowId}else{''}
   if($forwardTarget -cin @('4c602549-2c42-4ec3-9328-714d7cb66a77','edbc6d11-7c1f-43a7-b745-1ded06deb29f')){
     $settled=$forwardTarget -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'
-    if(($settled -and $technical.ordinal -notin @(17,18)) -or (-not $settled -and $technical.ordinal -notin @(14,15,16))){throw 'blocked'}
+    if(($settled -and $technical.ordinal -notin @(17,18,19)) -or (-not $settled -and $technical.ordinal -notin @(14,15,16))){throw 'blocked'}
     if($technical.ordinal -eq 15){$null=Read-FoundationTechnical14NoAdmin}
     if($technical.ordinal -eq 16){$null=Read-FoundationTechnical14NoAdmin -Ordinal 15}
     $needle="and o.after->>'competitor_id'=c.id::text and o.after->>'account_id'=a.id::text)=1;"

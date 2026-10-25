@@ -19,12 +19,13 @@ import { pathToFileURL } from 'node:url';
 import { syntheticProjectVerifiedContinuation } from '../n8n/foundation-live-project-verified-fixtures.mjs';
 
 const consumer = resolve('scripts/db/windows/Invoke-M03FoundationMigrations.ps1');
+const technical18NoReactivationSha256 = '92a5976dbce66210abbdd76655afaf71a98c9c48f29c8c15422831a85f3737d9';
 const powershell = 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
 const quote = (value) => `'${value.replaceAll("'", "''")}'`;
 const definitions = (names, file = consumer) => `
 $tokens=$null;$errors=$null;$ast=[Management.Automation.Language.Parser]::ParseFile(${quote(file)},[ref]$tokens,[ref]$errors)
 if($errors.Count -ne 0){throw 'PUBLIC_SOURCE_PARSE_FAILED'}
-foreach($name in @(${[...new Set([...(file.endsWith('Foundation-AdminControl.ps1') ? ['Foundation-ForwardWindowId'] : ['Assert-FoundationHistoricalIdentityAbsent']), ...names])].map(quote).join(',')})){
+foreach($name in @(${[...new Set([...(file.endsWith('Foundation-AdminControl.ps1') ? ['Foundation-ForwardWindowId'] : ['Assert-FoundationHistoricalIdentityAbsent', 'Read-FoundationTechnical18NoReactivation']), ...names])].map(quote).join(',')})){
  $functions=@($ast.FindAll({param($item) $item -is [Management.Automation.Language.FunctionDefinitionAst] -and $item.Name -ceq $name},$true))
  if($functions.Count -ne 1){throw 'EXPECTED_FUNCTION_MISSING'};Invoke-Expression $functions[0].Extent.Text
 }`;
@@ -1146,7 +1147,7 @@ Write-Output 'FIXED_FORWARD_DISPATCH'
 );
 
 test(
-  'technical18 fixture SQL receives the fixed qualified no-command17 marker only for the sixth binding',
+  'technical18 and19 fixture SQL require each fixed qualified no-reactivation marker for the sixth binding',
   native,
   () => {
     assert.equal(
@@ -1157,15 +1158,36 @@ function Assert-Path($Root,$Relative){return Join-Path $Root $Relative}
 function Foundation-ProjectVerifiedTechnicalIdentity{return [pscustomobject]@{ordinal=$script:ordinal}}
 function Read-FoundationTechnical14NoAdmin([int]$Ordinal=14){if($Ordinal -eq 15){return '59bed1a8b06484542ceefc6d010cce25f7b3014b8821589f9240aa5e88af5bbd'};return '6df34613f0155ae7e7f6517cf4604d9e6e85b7b63fe2159591d1ee32580c3960'}
 function Read-FoundationForwardPrior{if(-not $script:proofValid){throw 'QUALIFIED_READCLAIMED_PRIOR_REQUIRED'};return [pscustomobject]@{fixtureAuditCount=7}}
+function Read-FoundationTechnical18NoReactivation{if(-not $script:proofValid){throw 'QUALIFIED_TECHNICAL18_PRIOR_REQUIRED'};return '${technical18NoReactivationSha256}'}
 $marker="set_config('emr.smoke_technical17_no_reactivation','d16198186698ddefdad06902f4c39d50ac51e46e87686d77bb3d0f3429f491ac',true)"
 $body=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql';if(-not $body.Contains($marker)){throw 'QUALIFIED_NO_COMMAND17_MARKER_MISSING'}
 $script:proofValid=$false;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNQUALIFIED18_SQL_EMITTED'};$script:proofValid=$true
 $script:ordinal=17;$body=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql';if($body.Contains($marker)){throw 'HISTORICAL17_SETTING_CHANGED'}
-foreach($ordinal in @(16,19)){$script:ordinal=$ordinal;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SIXTH_ORDINAL_EMITTED'}}
+$script:ordinal=19;$body=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql';if(-not $body.Contains($marker) -or -not $body.Contains("set_config('emr.smoke_technical18_no_reactivation','${technical18NoReactivationSha256}',true)")){throw 'QUALIFIED_TECHNICAL19_MARKERS_MISSING'}
+$script:proofValid=$false;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNQUALIFIED19_SQL_EMITTED'};$script:proofValid=$true
+foreach($ordinal in @(16,20)){$script:ordinal=$ordinal;$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SIXTH_ORDINAL_EMITTED'}}
 $script:ordinal=18;$projectVerifiedForwardSource='5087d4d93d2f6ffdca0bc0096b365723005446fc';$denied=$false;try{$null=Foundation-FixtureSql 'm03_smoke_reactivate_project_verified.sql'}catch{$denied=$true};if(-not $denied){throw 'MIXED_SIXTH_SOURCE_EMITTED'}
 Write-Output 'QUALIFIED_TECHNICAL18_SQL_ONLY'
 `),
       'QUALIFIED_TECHNICAL18_SQL_ONLY',
+    );
+  },
+);
+
+test(
+  'technical19 native proof pins the actual immutable18 receipt and denies a different hash',
+  native,
+  () => {
+    assert.equal(
+      run(`
+${definitions(['Assert-Path', 'File-Hash', 'Read-FoundationTechnical18NoReactivation'])}
+$repo=${quote(resolve('.'))}
+if((Read-FoundationTechnical18NoReactivation) -cne '${technical18NoReactivationSha256}'){throw 'QUALIFIED18_RECEIPT_PIN_CHANGED'}
+function File-Hash{return 'unverified'}
+$denied=$false;try{$null=Read-FoundationTechnical18NoReactivation}catch{$denied=$true};if(-not $denied){throw 'UNVERIFIED18_RECEIPT_ACCEPTED'}
+Write-Output 'EXACT_IMMUTABLE18_RECEIPT_ONLY'
+`),
+      'EXACT_IMMUTABLE18_RECEIPT_ONLY',
     );
   },
 );
@@ -1859,7 +1881,8 @@ function Invoke-FoundationQuery($Sql,$Column){
 Assert-FoundationForwardWindowState $false
 $script:value.windows=6;$script:value.freshWindows=1;$script:value.freshPrepared=$true;Assert-FoundationForwardWindowState $true
 $script:ordinal=18;Assert-FoundationForwardWindowState $true
-$script:ordinal=19;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SIXTH_SUCCESSOR_ACCEPTED'};$script:ordinal=17
+$script:ordinal=19;Assert-FoundationForwardWindowState $true
+$script:ordinal=20;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};if(-not $denied){throw 'UNKNOWN_SIXTH_SUCCESSOR_ACCEPTED'};$script:ordinal=17
 foreach($key in @('legacyClosed','intermediateClosed','runtimeClosed','restorationClosed','acceptanceClosed','technical12Exact','technical13Exact','technical16Exact','freshPrepared')){$script:value.$key=$false;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$true;if(-not $denied){throw 'UNQUALIFIED_SIXTH_PREDECESSOR_ACCEPTED'}}
 $script:value.acceptanceClosed=$null;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.acceptanceClosed=$true;if(-not $denied){throw 'NULL_SIXTH_CLOSURE_ACCEPTED'}
 foreach($key in @('fixtureAuditCount','windows','globalAdmitted','requests','activeLeases','launches','bindings','progress')){$saved=$script:value.$key;$script:value.$key=$saved+1;$denied=$false;try{Assert-FoundationForwardWindowState $true}catch{$denied=$true};$script:value.$key=$saved;if(-not $denied){throw 'UNRECONCILED_SIXTH_PROGRESS_ACCEPTED'}}
@@ -1895,6 +1918,11 @@ foreach($change in @(@{key='managementMaximum';value=1024},@{key='managementMaxi
 $valid.managementAttempts=919;$valid.controlAttempts=1050;$valid.combinedAttempts=1969;$script:dto=[pscustomobject]$valid
 $denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'CALLER_REPLACED_QUALIFIED_N'}
 $script:usage=[pscustomobject]@{management=919;control=1050;combined=1969};$null=Read-FoundationPostcheckContinuation
+function Read-FoundationTechnical18NoReactivation{if(-not $script:proofValid){throw 'UNQUALIFIED_TECHNICAL18'};return '${technical18NoReactivationSha256}'}
+function Read-Json{return [pscustomobject]@{usage=$script:newUsage}}
+$valid.managementAttempts=1023;$valid.controlAttempts=1145;$valid.combinedAttempts=2168;$script:dto=[pscustomobject]$valid
+$script:newUsage=[pscustomobject]@{management=1023;control=1145;combined=2168};$null=Read-FoundationPostcheckContinuation
+$script:newUsage.management=1022;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'UNQUALIFIED19_COUNTERS_ACCEPTED'};$script:newUsage.management=1023
 $script:proofValid=$false;$denied=$false;try{$null=Read-FoundationPostcheckContinuation}catch{$denied=$true};if(-not $denied){throw 'UNQUALIFIED_DYNAMIC_USAGE_ACCEPTED'}
 Write-Output 'EXACT_QUALIFIED_DYNAMIC_SETTLEMENT_USAGE'
 `),
@@ -2309,6 +2337,15 @@ for (const profile of [
     combinedAttempts: 2057,
     technicalOrdinal: 18,
   },
+  {
+    name: 'closed18-to19',
+    options: { technical16Settled: true, technical17PreReady: true, technical18Closed: true },
+    managementMaximum: 1408,
+    managementAttempts: 1023,
+    controlAttempts: 1145,
+    combinedAttempts: 2168,
+    technicalOrdinal: 19,
+  },
 ])
   test(
     `${profile.name} fresh ForwardWindow completes the full native public Run preflight before the private boundary`,
@@ -2429,6 +2466,16 @@ for (const profile of [
                 readFileSync(join(fixture.directory, evidence + 'technical16-fixture-archive-20261024.json')),
               ) +
               "'",
+          );
+        }
+        if (profile.options.technical18Closed) {
+          const relative =
+            'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical18-preparation-reconciliation-20261025.json';
+          const pin = helperSource.match(/\$technical18Sha256='[a-f0-9]{64}'/g);
+          assert.equal(pin?.length, 1);
+          helperSource = helperSource.replace(
+            pin[0],
+            "$technical18Sha256='" + hash(readFileSync(join(fixture.directory, relative))) + "'",
           );
         }
         // Keep the real guard/timeout/closure conditions. This isolated public

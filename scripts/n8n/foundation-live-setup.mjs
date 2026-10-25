@@ -8,6 +8,7 @@ import {
   assertFoundationProjectVerifiedContinuationSetupResume,
   foundationProjectVerifiedContinuationResumeCheckpoint,
   foundationProjectVerifiedContinuationRequestCaps,
+  foundationProjectVerifiedSetupJournalMaximumRows,
   foundationProjectVerifiedTechnical17Runtime,
 } from './foundation-live-project-verified-continuation.mjs';
 
@@ -114,7 +115,7 @@ export function createFoundationLiveSetupJournal({
     !/^[a-f0-9]{40}$/.test(sourceCommitSha) ||
     typeof durableAppend !== 'function' ||
     !Array.isArray(previousEvents) ||
-    previousEvents.length > 500
+    previousEvents.length > foundationProjectVerifiedSetupJournalMaximumRows
   )
     fail();
   const rows = [];
@@ -213,7 +214,7 @@ export function createFoundationLiveSetupJournal({
       return Object.freeze([...rows]);
     },
     append(row) {
-      if (failed || rows.length >= 500) fail();
+      if (failed || rows.length >= foundationProjectVerifiedSetupJournalMaximumRows) fail();
       const copy = check(row);
       try {
         sync(durableAppend, copy);

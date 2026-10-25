@@ -23,6 +23,103 @@ test('technical17 Vercel capacity256 is planning only and never a caller supplie
   assert.throws(() => foundationLiveSetupRequestPlan(184, 257));
 });
 
+test('setup event capacity832 remains bounded independently of the approved256 request ceiling', () => {
+  const capacity = 3 * 256 + 64;
+  const events = Array.from({ length: capacity }, (_, at) => ({
+    event: 'setup_verified',
+    kind: 'deployment',
+    at,
+    deploymentId: 'dpl_SyntheticRowCapacity',
+    audience: 'https://everyone-market-researcher-row-capacity.vercel.app',
+  }));
+  const build = (previousEvents) =>
+    createFoundationLiveSetupJournal({
+      sourceCommitSha: sha,
+      maximumRequests: 256,
+      durableAppend() {},
+      previousEvents,
+    });
+  const loaded = build(events);
+  assert.equal(loaded.rows.length, capacity);
+  assert.throws(() => loaded.append(events[0]), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+  assert.throws(() => build([...events, events[0]]), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+  const appended = build(events.slice(0, -1));
+  appended.append(events.at(-1));
+  assert.equal(appended.rows.length, capacity);
+  assert.throws(() => appended.append(events[0]), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+  assert.throws(() => build([{ ...events[0], unexpected: true }]), /FOUNDATION_LIVE_SETUP_BLOCKED/);
+  assert.throws(
+    () => build([{ event: 'setup_attempt', ordinal: 257, kind: 'GET', at: epoch }]),
+    /FOUNDATION_LIVE_SETUP_BLOCKED/,
+  );
+});
+
+test('genuine19 retains all439 prior setup rows and219 requests through complete owned prepare and cleanup', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    technical16Settled: true,
+    technical17PreReady: true,
+    technical18Closed: true,
+  });
+  let budget, current;
+  try {
+    const proof = f.claim(f.admit()),
+      resume = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof),
+      runtimeModule = await f.copy('foundation-live-runtime.mjs'),
+      setupModule = await f.copy('foundation-live-setup.mjs'),
+      previousText = readFileSync(f.paths.setup, 'utf8'),
+      previousEvents = previousText.trimEnd().split('\n').map(JSON.parse);
+    assert.equal(previousEvents.length, 439);
+    assert.equal(previousEvents.filter((row) => row.event === 'setup_attempt').length, 219);
+    assert.equal(resume.setupMaximum, 256);
+    assert.equal(resume.aggregateManagementAttempts, 1023);
+    budget = runtimeModule.createFoundationLiveManagementBudget(
+      { sourceCommitSha: proof.sourceCommitSha, deadlineAt: proof.deadlineAt },
+      {
+        directory: dirname(f.paths.management),
+        now: f.now,
+        projectVerifiedContinuationProof: proof,
+        controlAttempts: () => resume.aggregateControlAttempts,
+      },
+    );
+    current = fixture({
+      fault: 'fifth_poll',
+      setupModule,
+      sourceSha: proof.sourceCommitSha,
+      startsAt: proof.startsAt,
+      projectVerifiedContinuationProof: proof,
+      previousEvents,
+      activeWindowId: proof.windowId,
+      maximumRequests: 256,
+      expectedMigrationCount: 15,
+      managementBudget: budget,
+    });
+    assert.equal(current.setup.snapshot().requestCount, 219);
+    await current.setup.prepare();
+    assert.equal(current.setup.snapshot().buildPollLimit, 5);
+    const close = await current.setup.cleanup();
+    assert.equal(close.state, 'setup_resources_removed');
+    assert.equal(
+      current.calls.filter((call) => call.method === 'POST' && call.path.includes('/env?')).length,
+      7,
+    );
+    assert.equal(current.calls.filter((call) => call.method === 'DELETE').length, 7);
+    assert.equal(current.calls.filter((call) => call.body?.generate).length, 1);
+    assert.equal(current.calls.filter((call) => call.body?.revoke).length, 1);
+    assert.ok(current.journal.rows.length > 500);
+    assert.equal(current.journal.rows.length, 512);
+    assert.equal(close.requestCount, 219 + current.calls.length);
+    assert.equal(close.requestCount, 256);
+    assert.equal(budget.snapshot().attempts, 1023 + current.calls.length);
+    assert.deepEqual(current.bypass, {});
+    assert.equal(current.envs.length, 0);
+    assert.equal(readFileSync(f.paths.setup, 'utf8'), previousText);
+  } finally {
+    current?.setup.close();
+    budget?.close();
+    f.cleanup();
+  }
+});
+
 // Scripted Vercel API boundaries only: no actual deployment, key or network.
 const scope = foundationLiveSetupScope;
 const sha = 'f'.repeat(40),
@@ -810,7 +907,10 @@ function fixture({
           status: 200,
           data: {
             ...structuredClone(deployment),
-            readyState: fault === 'last_poll' && polls < 12 ? 'BUILDING' : 'READY',
+            readyState:
+              (fault === 'last_poll' && polls < 12) || (fault === 'fifth_poll' && polls < 5)
+                ? 'BUILDING'
+                : 'READY',
           },
           closed: fault !== 'unclosed',
         };

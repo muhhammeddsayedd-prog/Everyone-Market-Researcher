@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "kind": "m03_pre18_public_database_refusal",
+  "observedAt": "2026-10-24T23:56:21.585Z",
+  "sourceHead": "03db233e3fd77e3e3cbd78e090d8f5f69a44b10d",
+  "invocation": {
+    "entry": "scripts/n8n/windows/Invoke-M03Acceptance.ps1",
+    "arguments": [
+      "-ProjectVerifiedContinuation",
+      "-CheckOnly"
+    ],
+    "environment": "cleared_os8",
+    "stdin": "closed"
+  },
+  "nativeExit": 1,
+  "elapsedMilliseconds": null,
+  "frames": [
+    {
+      "kind": "m03_acceptance_preparation_blocked",
+      "stage": "database_public",
+      "credentialDecryptionAttempted": false
+    },
+    {
+      "kind": "m03_acceptance_wrapper_closed",
+      "childClosed": true,
+      "credentialChildrenClosed": true,
+      "emergencyShutdown": false,
+      "nativeExit": null,
+      "handoffsDeleted": false,
+      "bypassHandoffDeleted": false,
+      "pendingMachinePreserved": true,
+      "privateRead": false,
+      "code": "M03_ACCEPTANCE_BLOCKED"
+    }
+  ],
+  "credentialDecryptionAttempted": false,
+  "admissionStarted": false,
+  "networkRequests": 0,
+  "usage": {
+    "management": 963,
+    "control": 1094,
+    "combined": 2057,
+    "vercel": 184,
+    "actors": 0
+  },
+  "cause": "unestablished",
+  "timing": {
+    "approximateObservedSeconds": 74,
+    "exactChildDurationCaptured": false
+  }
+}

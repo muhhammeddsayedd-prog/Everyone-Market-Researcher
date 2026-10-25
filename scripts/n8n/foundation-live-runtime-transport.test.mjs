@@ -599,6 +599,45 @@ test('Writer Close binds the fifth owned window without replaying any predecesso
   assert.equal(f.ends(), 1);
 });
 
+test('Writer Close constructs for the exact sixth owned window without connecting or writing', () => {
+  let clientCalls = 0;
+  const rows = [];
+  const options = {
+    password: 'SYNTHETIC_PRIVATE_WRITER_CLOSE',
+    windowId: 'edbc6d11-7c1f-43a7-b745-1ded06deb29f',
+    audience: 'https://everyone-market-researcher-synthetic-sixth.vercel.app',
+    sourceCommitSha: 'effa3de9e1fee6c3f3c08fc347a5e3175db14c80',
+    deploymentId: 'dpl_SyntheticSixth',
+    deadlineAt: Date.now() + 60000,
+    previousEvents: [],
+    append: (row) => {
+      rows.push(row);
+    },
+  };
+  const dependencies = {
+    createClient() {
+      clientCalls++;
+      throw Error('NO_CONSTRUCTOR_CONNECTION');
+    },
+  };
+  const closer = liveTransport.createFoundationLiveWriterCloser(options, dependencies);
+  assert.deepEqual(closer.state(), { pendingRequests: 0, unclosedResponses: 0 });
+  assert.equal(clientCalls, 0);
+  assert.deepEqual(rows, []);
+  closer.close();
+  assert.equal(clientCalls, 0);
+  assert.throws(
+    () =>
+      liveTransport.createFoundationLiveWriterCloser(
+        { ...options, windowId: '11111111-1111-4111-8111-111111111111' },
+        dependencies,
+      ),
+    /FOUNDATION_LIVE_MANAGEMENT_BLOCKED/,
+  );
+  assert.equal(clientCalls, 0);
+  assert.deepEqual(rows, []);
+});
+
 test('Writer Close refuses wrong actual login or binding before durable mutation intent', async () => {
   for (const wrong of ['identity', 'binding']) {
     const f = writerCloseFixture({

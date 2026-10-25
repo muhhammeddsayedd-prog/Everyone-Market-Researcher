@@ -857,6 +857,10 @@ function Read-FoundationPostcheckContinuation {
         # The exact independently pinned settlement supplies N; caller numbers
         # never select a new charge or capacity profile.
         $settledUsage=(Assert-FoundationTechnical16Settled (Read-FoundationTechnical16Closed)).usage
+        if($value.managementMaximum -eq 1408 -and $value.managementAttempts -eq 1023 -and $value.controlAttempts -eq 1145 -and $value.combinedAttempts -eq 2168){
+          $null=Read-FoundationTechnical18NoReactivation
+          $settledUsage=(Read-Json (Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical18-preparation-reconciliation-20261025.json')).usage
+        }
         $managementExpected=@{managementMaximum=1408;managementAttempts=$settledUsage.management;controlAttempts=$settledUsage.control;combinedAttempts=$settledUsage.combined}
       }
       foreach($field in $managementExpected.Keys){if(($value.$field -isnot [int] -and $value.$field -isnot [long]) -or $value.$field -ne $managementExpected[$field]){throw 'blocked'}}
@@ -1002,7 +1006,7 @@ function Assert-FoundationProjectVerifiedContinuationProcessAncestry($Clock) {
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and $Clock.windowId -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'){
     # ReadClaimed qualifies the fixed no-command17 receipt before18 can exist;
     # the kernel ancestry below still selects this exact active sibling.
-    if($paths.technicalOrdinal -notin @(17,18)){throw 'blocked'}
+    if($paths.technicalOrdinal -notin @(17,18,19)){throw 'blocked'}
     $null=Read-FoundationForwardPrior
   }
   return $true
@@ -1148,13 +1152,22 @@ function Push-Matches($Result,[bool]$DryRun) {
   return (Push-Check $Result $DryRun) -ceq 'matched'
 }
 
+function Read-FoundationTechnical18NoReactivation {
+  # ReadClaimed validates typed18's closure/readback before the current child.
+  # Pin that same immutable receipt before19 may omit its nonexistent SQL audit.
+  $technical18Sha256='92a5976dbce66210abbdd76655afaf71a98c9c48f29c8c15422831a85f3737d9'
+  $path=Assert-Path $repo 'milestones/M03-n8n-foundation/evidence/dev-acceptance-technical18-preparation-reconciliation-20261025.json'
+  if((File-Hash $path) -cne $technical18Sha256){throw 'blocked'}
+  return $technical18Sha256
+}
 function Read-FoundationForwardPrior {
   # ForwardWindow already passed the sealed current ReadClaimed/native ancestry
   # gate, which verifies the immutable prior closure while allowing its new sibling.
   if(-not [bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue)){$null=Assert-FoundationInspectClosed}
   if([bool](Get-Variable -Name ForwardWindow -ValueOnly -ErrorAction SilentlyContinue) -and (Foundation-ForwardWindowId) -ceq 'edbc6d11-7c1f-43a7-b745-1ded06deb29f'){
     $technical=Foundation-ProjectVerifiedTechnicalIdentity
-    if($technical.ordinal -notin @(17,18)){throw 'blocked'}
+    if($technical.ordinal -notin @(17,18,19)){throw 'blocked'}
+    if($technical.ordinal -eq 19){$null=Read-FoundationTechnical18NoReactivation}
     # The separately captured and independently verified native archive qualifies
     # only this fixed successor; preserve the original zero-auth failed output.
     $archiveSha256='d8177cbc39dd0805b831cfddbf0f0d25ab8ce749243b1eab0a0fdf0e4ccae97d'

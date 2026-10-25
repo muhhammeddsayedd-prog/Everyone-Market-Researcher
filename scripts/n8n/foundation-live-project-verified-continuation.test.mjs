@@ -16,6 +16,127 @@ import { syntheticRemainingContinuation } from './foundation-live-remaining-fixt
 import { syntheticStartupReplacement } from './foundation-live-startup-replacement-fixtures.mjs';
 import { fixture as liveRuntimeFixture } from './foundation-live-runtime-fixtures.mjs';
 
+test('typed closed preparation18 permits only sibling19 and retains every prior attempt and charged request', async () => {
+  const f = await syntheticProjectVerifiedContinuation({
+    technical17PreReady: true,
+    technical18Closed: true,
+  });
+  try {
+    const ready = f.check();
+    assert.equal(ready.managementAttempts, 1023);
+    assert.equal(ready.controlAttempts, 1145);
+    const proof = f.claim(f.admit()),
+      checkpoint = f.module.foundationProjectVerifiedContinuationResumeCheckpoint(proof);
+    assert.equal(checkpoint.technicalAttemptOrdinal, 19);
+    assert.equal(checkpoint.runtimeFilename, 'runtime.technical-19.jsonl');
+    assert.equal(checkpoint.aggregateManagementAttempts, 1023);
+    assert.equal(checkpoint.aggregateControlAttempts, 1145);
+    assert.equal(checkpoint.setupAttempts, 219);
+    assert.equal(checkpoint.setupRows, 439);
+    assert.equal(checkpoint.carriedNativeExecutions, 3);
+    assert.deepEqual(f.module.foundationProjectVerifiedContinuationRequestCaps(proof), {
+      management: 1408,
+      control: 3456,
+      combined: 4864,
+    });
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('genuine sibling19 ReadClaimed retains closed18 prefixes while accepting only ordered live25M51C tails', async () => {
+  const f = await syntheticProjectVerifiedContinuation({ technical18Closed: true });
+  try {
+    const proof = f.claim(f.admit()),
+      beforeM = readFileSync(f.paths.management, 'utf8'),
+      beforeC = readFileSync(f.paths.control, 'utf8');
+    f.io.processAlive = (pid) => [process.pid, process.ppid].includes(pid);
+    f.put('scripts/n8n/out/foundation/live/runtime.operation.lock', 'emr-m03-foundation-live-runtime-v1\n');
+    appendFileSync(
+      f.paths.management,
+      Array.from(
+        { length: 25 },
+        (_, i) => JSON.stringify({ event: 'management_attempt', ordinal: 871 + i }) + '\n',
+      ).join(''),
+    );
+    appendFileSync(
+      f.paths.control,
+      Array.from(
+        { length: 51 },
+        (_, i) =>
+          JSON.stringify({
+            event: 'control_request_intent',
+            ordinal: 1001 + i,
+            kind: 'discovery',
+            workflowId: 'MzimjpsuyPuK7SKe',
+            at: new Date(proof.startsAt + 1000).toISOString(),
+          }) + '\n',
+      ).join(''),
+    );
+    assert.equal(f.readClaimed().windowId, 'edbc6d11-7c1f-43a7-b745-1ded06deb29f');
+    assert.doesNotThrow(() =>
+      f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof)),
+    );
+    const setup = join(f.directory, 'scripts/n8n/out/foundation/live/setup.jsonl');
+    const nextSetup = readFileSync(setup, 'utf8')
+      .trimEnd()
+      .split('\n')
+      .slice(-71)
+      .map((line) => {
+        const row = JSON.parse(line);
+        if (row.event === 'setup_attempt') row.ordinal += 35;
+        if (typeof row.id === 'string') row.id += 'Next';
+        if (typeof row.deploymentId === 'string') row.deploymentId = 'dpl_Synthetic19';
+        if (typeof row.audience === 'string')
+          row.audience = 'https://everyone-market-researcher-synthetic-19.vercel.app';
+        for (const key of ['at', 'createdAt', 'updatedAt'])
+          if (typeof row[key] === 'number') row[key] = proof.startsAt + 2000;
+        return row;
+      });
+    assert.equal(nextSetup.filter((row) => row.event === 'setup_attempt').length, 35);
+    appendFileSync(setup, nextSetup.map((row) => JSON.stringify(row) + '\n').join(''));
+    assert.doesNotThrow(
+      () => f.scoped(() => f.module.assertFoundationProjectVerifiedContinuationJournalPrefixes(proof)),
+      'the parser preserves510 cumulative rows with254 requests, within the unchanged256 cap',
+    );
+    writeFileSync(
+      f.paths.control,
+      beforeC.replace('"ordinal":1000', '"ordinal":999') +
+        readFileSync(f.paths.control, 'utf8').slice(beforeC.length),
+    );
+    assert.throws(() => f.readClaimed(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/);
+    writeFileSync(f.paths.management, beforeM);
+  } finally {
+    f.cleanup();
+  }
+});
+
+test('typed18 reconciliation denies coherently pinned false closure, counters, cleanup, DB vacancy and unexpected effects', async () => {
+  for (const technical18Fault of [
+    'usage',
+    'raw-close',
+    'raw-fullD',
+    'database-status',
+    'database-vacancy',
+    'cleanup',
+    'decryption',
+    'source',
+    'old-prefix',
+    'runtime-output',
+    'owner-output',
+    'reactivation-output',
+    'pending-environment',
+  ]) {
+    const f = await syntheticProjectVerifiedContinuation({ technical18Closed: true, technical18Fault });
+    try {
+      assert.throws(() => f.check(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/, technical18Fault);
+      assert.throws(() => f.admit(), /^Error: M03_PROJECT_VERIFIED_CONTINUATION_BLOCKED$/, technical18Fault);
+    } finally {
+      f.cleanup();
+    }
+  }
+});
+
 test('genuine sibling18 qualifies every verified historical PID by stable later identity while retaining active ownership', async () => {
   const f = await syntheticProjectVerifiedContinuation({ technical17PreReady: true });
   try {
