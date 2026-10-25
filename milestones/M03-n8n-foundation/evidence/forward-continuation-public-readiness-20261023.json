@@ -1,0 +1,46 @@
+{
+  "observedAt": "2026-10-23T17:25:35.715Z",
+  "scope": "actual-sealed-public-check-only",
+  "seal": {
+    "toolReceipt": "e27a02",
+    "nativeExit": 0,
+    "projectFiles": 225,
+    "runtimeFiles": 840,
+    "sha256": "0e42093ee86101fb7476cf5654f2aac5a10a9074252447a0e432bb541ba8a56c"
+  },
+  "checkOnly": {
+    "toolReceipt": "5703d9",
+    "nativeExit": 0,
+    "result": {
+      "kind": "project_verified_continuation_blocked",
+      "status": "setup_cap_insufficient",
+      "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+      "sourceCommitSha": "a5e746736893d5040e93032ae740a0878f748837",
+      "windowId": "38b3708d-61b0-41d2-8170-5ed91c66b4dc",
+      "managementAttempts": 98,
+      "controlAttempts": 301,
+      "combinedAttempts": 399,
+      "gatewayPreflightAttempts": 2,
+      "setupAttempts": 44,
+      "setupMaximum": 50,
+      "minimumNewSetupRequests": 32,
+      "proposedSetupMaximum": 88,
+      "privateRead": false,
+      "networkRequests": 0
+    }
+  },
+  "adminPublicCheck": {
+    "toolReceipt": "d66ea3",
+    "expectedNativeExit": 4,
+    "privateRead": false,
+    "authenticationAttempted": false
+  },
+  "admissionStarted": false,
+  "credentialOriginals": {
+    "toolReceipt": "24e1f5",
+    "entriesPresent": 4,
+    "missing": [],
+    "statusOnly": true
+  },
+  "sharedParentLockAbsent": true
+}

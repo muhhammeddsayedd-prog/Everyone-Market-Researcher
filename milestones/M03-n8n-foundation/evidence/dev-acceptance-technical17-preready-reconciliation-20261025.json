@@ -1,0 +1,166 @@
+{
+  "kind": "m03_technical17_preready_reconciliation",
+  "version": 1,
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "technicalAttempt": 17,
+  "windowId": "edbc6d11-7c1f-43a7-b745-1ded06deb29f",
+  "sourceCommitSha": "effa3de9e1fee6c3f3c08fc347a5e3175db14c80",
+  "deliveryCommitSha": "1c36c5abff7e97e7e52feb27ad55198ac3980a12",
+  "outerNativeExit": 1,
+  "parentProcessId": 13800,
+  "runtimeProcessId": 58200,
+  "rawAdmission": {
+    "kind": "m03_project_verified_continuation_admission",
+    "version": 1,
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "sourceCommitSha": "effa3de9e1fee6c3f3c08fc347a5e3175db14c80",
+    "windowId": "edbc6d11-7c1f-43a7-b745-1ded06deb29f",
+    "approvalSha256": "5eb38cbe8740ed9a9f72d2356de3fa2e9ce77c8de3710020a7d3de7a6ebdd610",
+    "startsAt": 1792880831803,
+    "deadlineAt": 1792884431803,
+    "stopNewAt": 1792883831803,
+    "hardDeadlineAt": 1792885031803,
+    "parentProcessId": 13800
+  },
+  "rawRuntimeClaim": {
+    "kind": "m03_project_verified_continuation_runtime_claim",
+    "version": 1,
+    "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+    "admissionSha256": "9577146d14c9554419199af1bf937a2fad595a461ad99072f80697fe982efde3",
+    "processId": 58200,
+    "parentProcessId": 13800,
+    "claimedAt": 1792880835968
+  },
+  "rawTechnicalClose": {
+    "kind": "m03_project_verified_technical_closed",
+    "version": 1,
+    "admissionSha256": "9577146d14c9554419199af1bf937a2fad595a461ad99072f80697fe982efde3",
+    "parentProcessId": 13800,
+    "runtimeProcessId": 58200,
+    "closedAt": 1792880837940,
+    "childClosed": true,
+    "credentialChildrenClosed": false,
+    "emergencyShutdown": false,
+    "pendingMachinePreserved": true,
+    "nativeExit": 1,
+    "bypassHandoffDeleted": false,
+    "closureVerified": false
+  },
+  "rawFrames": [
+    {
+      "kind": "m03_acceptance_transport_ready",
+      "nonce": "8659fdd4a5d9fd3fb764e0769eb1281a",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    {
+      "kind": "m03_acceptance_vercel_metadata",
+      "status": "metadata_covers_75_minutes",
+      "metadataValid": true,
+      "unexpired": true,
+      "covers75Minutes": true,
+      "effectiveBackendEstablished": false,
+      "networkRequests": 0,
+      "authenticationAttempted": false,
+      "refreshAttempted": false,
+      "configWritten": false,
+      "childClosed": true
+    },
+    {
+      "kind": "m03_acceptance_closed",
+      "status": "blocked",
+      "residual": true
+    },
+    {
+      "kind": "m03_acceptance_wrapper_closed",
+      "childClosed": true,
+      "credentialChildrenClosed": false,
+      "emergencyShutdown": false,
+      "nativeExit": 1,
+      "handoffsDeleted": false,
+      "bypassHandoffDeleted": false,
+      "pendingMachinePreserved": true,
+      "privateRead": true,
+      "code": "M03_ACCEPTANCE_BLOCKED"
+    }
+  ],
+  "qualification": {
+    "noPrepareSent": true,
+    "noMcpPortRequested": true,
+    "noHttpIntentAdded": true,
+    "noRuntimeJournal": true,
+    "noAdminOutputs": true,
+    "businessAcceptance": false,
+    "fullD": false
+  },
+  "localDiagnosis": {
+    "code": "verified_mixed_control_legacy_restriction",
+    "scope": "local_causal_reproduction",
+    "originalExceptionCaptured": false,
+    "redCell": "d27379",
+    "greenCell": "5ed186"
+  },
+  "journalCounts": {
+    "management": 811,
+    "control": 964,
+    "preflight": 21,
+    "setup": 368,
+    "runtime16": 382
+  },
+  "usage": {
+    "management": 963,
+    "control": 1094,
+    "combined": 2057,
+    "vercel": 184,
+    "nativeExecutions": 3,
+    "actors": 0,
+    "costUsd": 0,
+    "newItems": 0
+  },
+  "cleanup": {
+    "kind": "m03_technical17_pre_ready_cleanup_result",
+    "version": 1,
+    "status": "exact_eleven_leaves_removed",
+    "parentAbsent": true,
+    "runtimeAbsent": true,
+    "directChildrenAbsent": true,
+    "bothLocksAbsent": true,
+    "deleted": [
+      "emr-m03-foundation-dev-migration-password.dpapi",
+      "emr-m03-foundation-dev-migration-password.lease.json",
+      "emr-m03-acceptance-management.dpapi",
+      "emr-m03-acceptance-management.lease.json",
+      "emr-m03-acceptance-writer.dpapi",
+      "emr-m03-acceptance-writer.lease.json",
+      "emr-m03-acceptance-apifyread.dpapi",
+      "emr-m03-acceptance-apifyread.lease.json",
+      "emr-m03-acceptance-protection-bypass.dpapi",
+      "emr-m03-acceptance-parent.operation.lock",
+      "runtime.operation.lock"
+    ],
+    "persistentOriginalsRetained": true,
+    "machineRetained": true,
+    "journalsUnchanged": true,
+    "newRuntimeJournalAbsent": true,
+    "plaintextRead": false,
+    "credentialDecryptionAttempted": false,
+    "networkRequests": 0,
+    "businessAcceptance": false,
+    "fullD": false,
+    "observedAt": "2026-10-24T22:32:13.9660610Z"
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/live/management.jsonl": "6d1d84b0d45ddba7850589474e5a2fa626e2dd2f142aaee409faaf7ad6ba762a",
+    "scripts/n8n/out/foundation/live/control.jsonl": "69ddf9605a3c8ee37f6d55a07d47caefbdb6f505862b73ebebc1ac0a1da025f1",
+    "scripts/n8n/out/foundation/live/preflight.jsonl": "6852f59aef9da9efdd767dbc647d2ced37976c37d3bc1f9dd7f9f91360785155",
+    "scripts/n8n/out/foundation/live/setup.jsonl": "59b21ada0ef3aa8272c2d871aa9c7577974bdfaee30c686be391e4936179bae1",
+    "scripts/n8n/out/foundation/live/runtime.technical-16.jsonl": "52765bb86f1d80ef68cb160b7b3c426dbf60d1901831e8ce3d00a726e04f1c9d",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-17.json": "9577146d14c9554419199af1bf937a2fad595a461ad99072f80697fe982efde3",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-17.runtime-claim.json": "0b7f4522cbc062368063bd1da47f1e3153b222b3f5e7ce7903c49a9bb88f66f1",
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-17.closed.json": "e00dc1b9bdcf761706a845fb2560593ade4b9f9e3313fa5950ce9c2e58448414",
+    "scripts/n8n/out/foundation/live/technical17-coordinator-20261024-startup3.jsonl": "ac4677bacbb1a698d5d02dfd00180f3adf7ae7985dca0c290eb0e97a6bb9f8d3",
+    "scripts/n8n/out/foundation/live/technical17-pre-ready-cleanup.intent.json": "7e21bbe26fe913ac18ce8ada148651327726833d240ce75ee67ba8aaa4e92574",
+    "scripts/n8n/out/foundation/live/technical17-pre-ready-cleanup.result.json": "cf084b67807f7cc910dd58f6a8e3214d7add3b02de1424d61189ca3b99322c9f"
+  }
+}

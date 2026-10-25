@@ -1,0 +1,280 @@
+{
+  "kind": "m03_startup_replacement_actual_attempt",
+  "version": 1,
+  "deliveryHead": "25a46213a90f4a37bf9b07f9f6455b7c1c3a1d25",
+  "deliveryCi": 39755626355,
+  "deliveryCiFiveJobsAndVercelVerified": true,
+  "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "segmentId": "1c69c89e-7807-46d5-b7b8-ca28285ff2b4",
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+  "clock": {
+    "startsAtUtc": "2026-10-22T10:52:53.414Z",
+    "stopNewAtUtc": "2026-10-22T11:42:53.414Z",
+    "deadlineAtUtc": "2026-10-22T11:52:53.414Z",
+    "physicalCloseDeadlineUtc": "2026-10-22T12:02:53.414Z",
+    "parentProcessId": 44408,
+    "runtimeProcessId": 60040,
+    "oneUseConsumed": true,
+    "automaticRenewalOrSecondChildAuthorized": false
+  },
+  "readiness": {
+    "metadataReceipt": "bba48e",
+    "metadataObservedAtUtc": "2026-10-22T10:46:49.5103427Z",
+    "allFourPairsValidAndCover75Minutes": true,
+    "publicCheckOnlyReceipt": "3c6be0",
+    "publicCheckOnlyNativeExit": 0,
+    "actualMcpPortVerified": false,
+    "authenticationEstablishedByReadiness": false,
+    "publicOsAppDataBoundaryCorrectedBeforeAdmission": true
+  },
+  "commands": [
+    "startup_prepare_01",
+    "startup_restore_01",
+    "startup_close_01"
+  ],
+  "prepareResult": {
+    "kind": "m03_acceptance_result",
+    "id": "startup_prepare_01",
+    "command": "prepare",
+    "status": "blocked",
+    "managementAttempts": 5,
+    "controlAttempts": 201,
+    "nativeExecutions": 0,
+    "gatewayPreflightAttempts": 0,
+    "providerDirectAttempts": 0,
+    "phaseBReady": false,
+    "domainProofReady": false,
+    "businessAcceptanceProven": false,
+    "residual": true
+  },
+  "restoreResult": {
+    "kind": "m03_acceptance_result",
+    "id": "startup_restore_01",
+    "command": "restore",
+    "status": "restoration_residual",
+    "managementAttempts": 5,
+    "controlAttempts": 201,
+    "nativeExecutions": 0,
+    "gatewayPreflightAttempts": 0,
+    "providerDirectAttempts": 0,
+    "phaseBReady": false,
+    "domainProofReady": false,
+    "businessAcceptanceProven": false,
+    "baselineRestored": false,
+    "environmentCleanupVerified": true,
+    "windowClosed": false,
+    "fixtureArchived": true,
+    "remoteWorkSettled": false,
+    "residual": true
+  },
+  "coordinatorClose": {
+    "kind": "m03_acceptance_closed",
+    "status": "closed",
+    "managementAttempts": 5,
+    "controlAttempts": 201,
+    "nativeExecutions": 0,
+    "gatewayPreflightAttempts": 0,
+    "providerDirectAttempts": 0,
+    "phaseBReady": false,
+    "domainProofReady": false,
+    "businessAcceptanceProven": false,
+    "childTransportsClosed": true,
+    "adminChildClosed": true,
+    "windowClosed": false,
+    "fixtureArchived": true,
+    "baselineRestored": false,
+    "environmentCleanupVerified": true,
+    "remoteWorkSettled": false,
+    "residual": true
+  },
+  "wrapperClose": {
+    "kind": "m03_acceptance_wrapper_closed",
+    "childClosed": true,
+    "credentialChildrenClosed": true,
+    "emergencyShutdown": false,
+    "nativeExit": 1,
+    "handoffsDeleted": true,
+    "bypassHandoffDeleted": false,
+    "pendingMachinePreserved": true,
+    "privateRead": true,
+    "code": "M03_ACCEPTANCE_BLOCKED"
+  },
+  "outerClose": {
+    "kind": "public_supervisor_outer_exit",
+    "nativeExit": 1,
+    "stderrPresent": false,
+    "protocolBlocked": false,
+    "stdoutEnded": true,
+    "wrapperReceipt": {
+      "kind": "m03_acceptance_wrapper_closed",
+      "childClosed": true,
+      "credentialChildrenClosed": true,
+      "emergencyShutdown": false,
+      "nativeExit": 1,
+      "handoffsDeleted": true,
+      "bypassHandoffDeleted": false,
+      "pendingMachinePreserved": true,
+      "privateRead": true,
+      "code": "M03_ACCEPTANCE_BLOCKED"
+    },
+    "observedAt": "2026-10-22T10:57:00.225Z"
+  },
+  "database": {
+    "version": 1,
+    "runId": "255bb1e3-5084-4cd4-be55-0f6598a1620e",
+    "environment": "dev",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "host": "aws-1-eu-central-1.pooler.supabase.com",
+    "port": 5432,
+    "status": "continuation_history_verified",
+    "authenticationAttempted": true,
+    "authenticationVerified": true,
+    "historyBefore": "complete",
+    "historyAfter": "complete",
+    "dryRunMatched": false,
+    "dryRunCheck": "not_attempted",
+    "dryRunNativeExit": null,
+    "pushAttempted": false,
+    "pushNativeExit": null,
+    "childrenClosed": true,
+    "handoffDeleted": true,
+    "leaseDeleted": true,
+    "scratchDeleted": true,
+    "pendingVersions": [],
+    "phaseAControl": true,
+    "phaseACommands": 5,
+    "phaseAClosed": false,
+    "observedAt": "2026-10-22T10:57:00.0495514Z",
+    "postcheckContinuation": true,
+    "startupReplacement": true,
+    "clockSegmentId": "1c69c89e-7807-46d5-b7b8-ca28285ff2b4",
+    "unprovisionedFixtureArchived": true,
+    "postcheckStage": "complete",
+    "postchecksReused": {
+      "reused": true,
+      "observedAt": "2026-10-21T18:43:05.9104107Z",
+      "runId": "3860e4ad-eac9-4b19-a08f-6dce4c79a372",
+      "typesCandidate": "scripts/db/out/m03-foundation-continuation-3860e4ad-eac9-4b19-a08f-6dce4c79a372-db.types.ts",
+      "typesAstEquivalent": true,
+      "advisorsSourceOrdered": true,
+      "checkpointSha256": "2954a33504376de123c2ca1638b11f3356d94fd274d35a7f62591642da463404"
+    },
+    "reactivationState": "acknowledged_and_verified",
+    "migrationCount": 14,
+    "migrationsAppliedThisAttempt": 0,
+    "dryRunAttempted": false,
+    "ownerProvisionIntentPresent": false,
+    "sqlWindowProvisioned": false,
+    "historicalPostchecksReusedRemainDated": true
+  },
+  "setup": {
+    "journalRows": 2,
+    "previousAttemptRows": 1,
+    "currentAttemptRows": 1,
+    "allRowsGetOnly": true,
+    "writeIntents": 0,
+    "environmentWrites": 0,
+    "previewCreated": false,
+    "bypassInstalledRemotely": false,
+    "failureBoundary": "first_resumed_project_get_or_project_contract",
+    "preciseTransportDiagnosticRetained": false,
+    "historicalCause": "unestablished"
+  },
+  "usage": {
+    "priorManagement": 4,
+    "priorControl": 151,
+    "priorCombined": 155,
+    "currentManagement": 5,
+    "currentControl": 201,
+    "currentCombined": 206,
+    "managementCeiling": 512,
+    "controlCeiling": 2048,
+    "combinedCeiling": 2560,
+    "actualNativeExecutions": 0,
+    "actualActorStarts": 0,
+    "gatewayPreflightAttempts": 0,
+    "providerDirectAttempts": 0,
+    "actorReserveUsd": 2,
+    "actorSpendUsd": 0
+  },
+  "independentSupabaseMcp": {
+    "projectUrlReadAttempted": true,
+    "result": "oauth_refresh_failed",
+    "sqlReadAttempted": false,
+    "retryAttempted": false,
+    "doesNotInvalidateActualNativeDatabaseReceipts": true
+  },
+  "unusedBypassCleanup": {
+    "status": "startup_unused_bypass_deleted",
+    "deleted": true,
+    "privateContentsRead": false,
+    "networkRequests": 0,
+    "observedAtUtc": "2026-10-22T11:09:58.0965040Z",
+    "nativeExit": 0,
+    "review": "74fc93",
+    "reviewScope": "exact_current_unused_uninstalled_local_leaf",
+    "originalPasswordsPreserved": true,
+    "pendingMachinePreserved": true
+  },
+  "postClosurePresence": {
+    "observedAtUtc": "2026-10-22T11:10:53.178Z",
+    "allEightInputFilesAbsent": true,
+    "parentLockAbsent": true,
+    "runtimeLockAbsent": true,
+    "privateSqlScratchAbsent": true,
+    "unusedBypassAbsent": true,
+    "privateContentsRead": false
+  },
+  "acceptance": {
+    "phaseB": false,
+    "domainProof": false,
+    "businessAcceptance": false,
+    "fullD": false,
+    "localCredentialClosure": true,
+    "historicalMissingWrapperAndUnknownOrphanLimitsPreserved": true
+  },
+  "exclusions": {
+    "migrationReplay": false,
+    "production": false,
+    "schedules": false,
+    "externalNotifications": false,
+    "privateIncidentRemediation": false,
+    "merge": false,
+    "M04": false
+  },
+  "publicArtifacts": [
+    {
+      "path": "scripts/n8n/out/foundation/live/startup-replacement-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.json",
+      "sha256": "f8c6b4d4082318c643c363b22fe7918a6fa6bced9d6cda5a0f49044caae3a5a1"
+    },
+    {
+      "path": "scripts/n8n/out/foundation/live/startup-replacement-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.runtime-claim.json",
+      "sha256": "57d3a8a95e57dabca26e9aa5987ccf6bbe85bc0ff8fc4276b413ad4a25ad1634"
+    },
+    {
+      "path": "scripts/n8n/out/foundation/live/startup-supervisor-1c69c89e-7807-46d5-b7b8-ca28285ff2b4.jsonl",
+      "sha256": "5cd091876c5426fa1f6880a24bd66cb790de3e20479950f01b702017701f66dd"
+    },
+    {
+      "path": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "sha256": "e4e039e57925811bdc4b4246031f7de095e5e6a021814679638a720a88dbb917"
+    },
+    {
+      "path": "scripts/n8n/out/foundation/live/management.jsonl",
+      "sha256": "dcb0d2d596dd61a114d3074d84e401e2ee68e02e582fa5c4052b048ec51f3ce1"
+    },
+    {
+      "path": "scripts/n8n/out/foundation/live/control.jsonl",
+      "sha256": "fa8d7745b1b7e783314b09e23fccbc8a0c4cdb753a07939c46324345eded0a8c"
+    },
+    {
+      "path": "scripts/db/out/m03-foundation-startup-replacement-1c69c89e-7807-46d5-b7b8-ca28285ff2b4-latest.json",
+      "sha256": "a546df7aa9ff5c123940fa4faecfa3633afd583ab15d0ea1da2884f5e96b9221"
+    },
+    {
+      "path": "scripts/n8n/windows/Remove-M03StartupUnusedBypass.ps1",
+      "sha256": "0d4441481b591aba8be3290e1ac24d2f3fc457bad60ced927be0a05ba1af91b3"
+    }
+  ],
+  "recordedAtUtc": "2026-10-22T11:10:53.215Z"
+}

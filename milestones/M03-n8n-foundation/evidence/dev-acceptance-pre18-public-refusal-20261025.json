@@ -1,0 +1,76 @@
+{
+  "kind": "m03_pre18_public_refusal",
+  "version": 1,
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "deliveryCommitSha": "7b028801d3236b234a2368230123d06b2be784fe",
+  "deliveryCi": {
+    "runId": "40140215927",
+    "allFiveJobs": "success",
+    "vercel": "success"
+  },
+  "parentProcessId": 68944,
+  "outerNativeExit": 1,
+  "rawFrames": [
+    {
+      "kind": "m03_acceptance_preparation_blocked",
+      "stage": "public_clock",
+      "credentialDecryptionAttempted": false
+    },
+    {
+      "kind": "m03_acceptance_wrapper_closed",
+      "childClosed": true,
+      "credentialChildrenClosed": true,
+      "emergencyShutdown": false,
+      "nativeExit": null,
+      "handoffsDeleted": false,
+      "bypassHandoffDeleted": false,
+      "pendingMachinePreserved": true,
+      "privateRead": false,
+      "code": "M03_ACCEPTANCE_BLOCKED"
+    }
+  ],
+  "physicalVerification": {
+    "observedAt": "2026-10-24T23:01:11.815Z",
+    "parentAndChildrenAbsent": true,
+    "oldPidPresent": true,
+    "oldPidCreatedAfterClose": true,
+    "allElevenDisposableLeavesAbsent": true,
+    "allFourEncryptedOriginalsRetained": true,
+    "admission18Absent": true,
+    "runtime18Absent": true,
+    "actual17PinsUnchanged": true
+  },
+  "diagnosis": {
+    "stage": "public_clock",
+    "confirmedLocalPredicate": "historical PID-only liveness gate treats a new holder of technical10 parent PID9824 as the historical parent",
+    "historicalClosedAt": 1792808892900,
+    "reusedProcessCreatedAfterHistoricalClose": true,
+    "unrelatedProcessPreserved": true,
+    "activeAncestryChecksUnchanged": true
+  },
+  "effects": {
+    "credentialDecryptionAttempted": false,
+    "privateRead": false,
+    "newAdmission": false,
+    "runtimeChildStarted": false,
+    "networkRequests": 0,
+    "actors": 0,
+    "newItems": 0
+  },
+  "usage": {
+    "management": 963,
+    "control": 1094,
+    "combined": 2057,
+    "vercel": 184,
+    "nativeExecutions": 3,
+    "actors": 0,
+    "costUsd": 0,
+    "newItems": 0
+  },
+  "businessAcceptance": false,
+  "fullD": false,
+  "pins": {
+    "scripts/n8n/out/foundation/live/technical18-coordinator-20261025.jsonl": "7a595aac56ef9ee0dc8bc46aef2db5756a45fd3ceee4999d4fa2bde84564c3a0"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T09:11:41.523898+00:00",
+  "scope": "local_synthetic_GET_only_log_continuation",
+  "files": {
+    "scripts/n8n/gw01-log-read.mjs": "1d8226b1e7b7f9533ccd860696521a77718f839462b9e00e1448771653e0e155",
+    "scripts/n8n/windows/Invoke-M03GW01LogRead.ps1": "64cbec99920c9cfc28d311b0977713de500e81bbba8d055a32db106a86793afa",
+    "scripts/n8n/gw01-log-read.test.mjs": "6fca32193428958fc72a688f7141598e8f161a9714a82c944dfb40f5ad3adabc",
+    "scripts/n8n/gw01-private-log-read.test.mjs": "4c633fb06884a4f522bf0803cf4159ae0a6ede054e5639fad91806d7401001b4"
+  },
+  "review": {
+    "root": "Complete source/typed output/journal binding review clear",
+    "peer": "/root/m02_prod_packet source review clear;19 pure tests independently pass"
+  },
+  "authorChecks": {
+    "initialFull": {
+      "pureNodePassed": 19,
+      "isolatedWindowsPassed": 9,
+      "nativeExit": 0
+    },
+    "finalScalarCorrections": {
+      "redReproduced": 3,
+      "affectedWindowsPassed": 5,
+      "nativeExit": 0
+    },
+    "parserLintFormat": "passed"
+  },
+  "boundary": "Local synthetic checks only; separate gw01-log-read-20261018.json records actual root invocation. No replay/reservation/write operation exists in this reader."
+}

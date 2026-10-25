@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "scope": "Local historical CloudA regression fixture correction, not a new Cloud run",
+  "fixture": {
+    "path": "n8n/fixtures/GW01-cloud-a-saved-export.json",
+    "sourceGitObject": "3d141fb9d971d39237e744f2770cf42e425f0420:n8n/workflows/GW01-acceptance-dev.json",
+    "sha256": "7e90318f564c98d04941788c084ae6f0ee305c6586ae911a2d9c86e1e277709b",
+    "byteEqualsHistoricalGitBlob": true,
+    "independentParityToolReceiptRef": "2a4f30",
+    "boundary": "An exact historical saved export, not fabricated live output. It is distinct from the later actual current disabled/cleaned-up workflow export."
+  },
+  "red": {
+    "rootToolReceiptRef": "2ddd05",
+    "nativeExit": 1,
+    "fixedFailureStage": "current_credential",
+    "boundary": "The old regression incorrectly reused the mutable current export after real machine-credential and disabled-node changes."
+  },
+  "green": {
+    "rootToolReceiptRef": "3ac79b",
+    "selectedPassed": 1,
+    "nativeExit": 0
+  },
+  "independentReview": {
+    "status": "clear",
+    "test": "scripts/n8n/gw01-privacy-read.test.mjs",
+    "sourceDiffToolReceiptRef": "03180a",
+    "changedOnly": ["Historical fixture pathname", "Explicit historical test title"],
+    "consumerAssertionsChanged": false,
+    "testStillRequiresExportCanaryVerified": true,
+    "testStillRequiresExecutionCanaryUnverifiedForMissingExecution": true,
+    "reranTest": false,
+    "privateOrHostedOperations": false
+  },
+  "acceptanceBoundary": "This local test does not prove current runtime privacy or new execution acceptance, relax any guard, replay the real trial, change the current saved export or remove earlier failed evidence."
+}

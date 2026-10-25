@@ -1,0 +1,32 @@
+{
+    "kind":  "m03_technical16_local_cleanup",
+    "version":  1,
+    "observedAt":  "2026-10-24T16:39:12.4455734+00:00",
+    "environment":  "dev",
+    "projectRef":  "zmotjsbzhzjvpelxvxlf",
+    "technicalAttempt":  16,
+    "nativeExit":  0,
+    "attemptReceiptSha256":  "d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb",
+    "privateContentsRead":  false,
+    "networkRequests":  0,
+    "deletedLeaves":  [
+                          "emr-m03-acceptance-protection-bypass.dpapi"
+                      ],
+    "allTenDisposableLeavesAbsent":  true,
+    "parentProcessAbsent":  true,
+    "runtimeProcessAbsent":  true,
+    "parentLockAbsent":  true,
+    "runtimeLockAbsent":  true,
+    "persistentOriginalsRetained":  true,
+    "machineRetained":  true,
+    "presenceSourceTool":  "ff8c58",
+    "deletionSourceTool":  "a8da2b",
+    "originalFailedAttemptPreserved":  true,
+    "managementAttempts":  824,
+    "controlAttempts":  955,
+    "combinedAttempts":  1779,
+    "vercelAttempts":  184,
+    "actorStarts":  0,
+    "fixtureArchiveVerified":  false,
+    "remoteSettlementVerified":  false
+}

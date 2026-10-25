@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T09:24:59Z",
+  "scope": "Local-only enabled-runtime lineage guard and narrow public source transition revision",
+  "files": {
+    "scripts/n8n/gw01-gateway-transport.mjs": "d0f4183c749a9f0a8d63357c31360e373317f26c1cf2e10dda5f5626cdadd331",
+    "scripts/n8n/gw01-gateway-transport.test.mjs": "5d428591683d911ed3fd7c0452f7a5ea81ac06816160ca7207e6b28f64391d9b",
+    "scripts/n8n/windows/Invoke-M03GW01Gateway.ps1": "85fc2e377ddee1f93541c7d0b7a2fe6f84e9b34f84053591c1d19100b971f7c7",
+    "scripts/n8n/windows/New-M03GW01GatewayPublicSeal.ps1": "1c905d019c7a3a08e238cb0f45ab1f3017e6faacd54d6a7b28a20873232b439a",
+    "scripts/n8n/gw01-public-seal.test.mjs": "de0166abbcde701cc4d5f9354c4b7b170fe6e1b18971ad442d8de4beab05e587"
+  },
+  "contract": {
+    "requestTargetDisabledFlag": false,
+    "oldCloudBTarget": "Exact compiled original deployment tuple; its disabled503/log proof is not copied to a new target",
+    "newRuntimeTarget": "Exact current reviewed tuple and append-only registered deployment; distinct original audience/deployment ID",
+    "sourceLineage": "Five exact pinned Git tree/blob object IDs for app/shared/lock/package/workspace on both old and new declarations; root vercel.json absent",
+    "environment": "Exact fixed completed three-record public delivery ledger, read from its fixed file by the CLI and compared with embedded records",
+    "readback": "Fixed evidence reference/kind, nativeExit0, exact team/Preview/READY/target/time and autoExposeSystemEnvs strictly true",
+    "configuration": "Exactly four public names scoped to Preview and m03 branch, including exact commit/window and vercel-deployment audience sentinel",
+    "failureBoundary": "Missing or contradictory phase fails before reservation/DNS; the PowerShell public check precedes private read",
+    "sourceAdvance": "Only the exact previous reviewed transport/Gateway source pair can advance to the new compiled pair; no packet-selected source paths"
+  },
+  "authorChecks": {
+    "finalAffectedTransportTests": {
+      "passed": 69,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "newRuntimePhaseAndPublicCliCases": 26,
+      "source": "Author-reported actual local run at the frozen hashes; not rerun as a full suite by reviewer"
+    },
+    "selectedSealerSourcePairTests": { "passed": 2, "failed": 0, "nativeExit": 0 },
+    "parserLintFormatDiff": "passed at frozen source, author reported"
+  },
+  "rootHistoricalChecks": {
+    "toolReceiptRef": "861ac9",
+    "passed": 8,
+    "nativeExit": 0,
+    "boundary": "Focused critical checks preceded the final strict autoExposeSystemEnvs field/negative cases; not presented as complete final-source coverage"
+  },
+  "independentReviewerChecks": {
+    "reviewer": "/root/m02_handles",
+    "sourceReview": "clear; no remaining P0/P1/P2 in the reviewed scope",
+    "sourceHashesVerified": true,
+    "command": "node --test --test-name-pattern \"runtime phase|actual public CLI rejects\" scripts/n8n/gw01-gateway-transport.test.mjs",
+    "toolReceiptRef": "3c0ca4",
+    "passed": 26,
+    "failed": 0,
+    "skipped": 0,
+    "nativeExit": 0,
+    "durationMs": 1914.4523,
+    "coverage": [
+      "Truthful new-target false disabled flag and exact old/new lineage",
+      "Absent/mismatched old CloudB target/request/log acceptance",
+      "Wrong source tree/path or root configuration",
+      "Missing/incomplete/mismatched fixed environment ledger",
+      "Unready/wrong target/readback/native exit and false/coercible autoExposeSystemEnvs",
+      "Wrong Preview/branch/config names/commit/window/audience",
+      "Actual plain Node public CLI rejects absent phase and accepts only the complete synthetic public ledger"
+    ]
+  },
+  "actualStateBoundary": {
+    "actualRuntimePhase": "absent at the author's separate public-proof read",
+    "actualNewEnabledTargetReady": false,
+    "environmentDeliveryPerformedByThisWork": false,
+    "privateHandoffReadByReviewer": false,
+    "actualHelperOrDependencyInspectionByReviewer": false,
+    "actualGatewayRequestsByReviewer": 0,
+    "productionChanges": 0,
+    "clockOrCounterReset": false
+  },
+  "preservedEvidence": [
+    "gw01-workstation-check-20261018.json",
+    "gw01-probe-20261018.json",
+    "gw01-log-read-20261018.json",
+    "gw01-public-seal-transitions-20261018.json"
+  ],
+  "boundary": "Synthetic/local source validation only. Pinned object IDs and readback records are root-reviewed evidence declarations, not a new live deployment observation. Existing Probe/log/transition results are not reinterpreted. Actual Environment configuration, fresh runtime readback/registration/sealing, deployment binding, gateway HTTP identity and the bounded trial remain separate gates."
+}

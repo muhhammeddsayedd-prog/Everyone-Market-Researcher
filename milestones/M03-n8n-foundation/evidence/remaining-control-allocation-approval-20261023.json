@@ -1,0 +1,71 @@
+{
+  "kind": "m03_cumulative_vercel_allocation_approval",
+  "recordedAt": "2026-10-23T18:27:46Z",
+  "questionCallId": "call_9bd1dfd31b95479381b5bc036dfa1925",
+  "ownerReply": "Approve cumulative88; keep44 charged",
+  "decision": "approved",
+  "environment": "dev",
+  "milestone": "M03",
+  "referencePacket": {
+    "path": "milestones/M03-n8n-foundation/evidence/remaining-control-allocation-20261023.md",
+    "sourceCommitSha": "df4b5395879f08921095acebf18005672b506c90",
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/blob/df4b5395879f08921095acebf18005672b506c90/milestones/M03-n8n-foundation/evidence/remaining-control-allocation-20261023.md"
+  },
+  "allocation": {
+    "previousSetupMaximum": 50,
+    "setupMaximum": 88,
+    "usedSetupRequests": 44,
+    "additionalSetupRequestsMaximum": 44,
+    "countersReset": false
+  },
+  "unchangedGlobalCaps": {
+    "management": 512,
+    "control": 2048,
+    "combined": 2560,
+    "nativeExecutions": 120,
+    "gatewayAttempts": 256,
+    "directProviderReads": 32,
+    "actorStarts": 2,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "actorsSequential": true,
+    "newDistinctCollectedItems": 1
+  },
+  "actualPriorUsage": {
+    "management": 102,
+    "control": 301,
+    "combined": 403,
+    "carriedManagement": 10,
+    "actorStarts": 0,
+    "actorSpendUsd": 0,
+    "receiptPath": "milestones/M03-n8n-foundation/evidence/wf00-restore-verified-20261023.json",
+    "receiptSha256": "32184be54a4b36f250fa026ece00f295c94c6149b2af5fb682bfb769f683f9ec"
+  },
+  "limitsPreserved": {
+    "historicalAttempts": true,
+    "closedWindows": true,
+    "old44SetupRequests": true,
+    "dev15AndOriginal14Fingerprints": true,
+    "closedDf4": true,
+    "archivedC999": true,
+    "synchronousPerRequestAccounting": true,
+    "cleanupReserveBeforeNewWork": true
+  },
+  "boundaries": {
+    "spendingIncrease": false,
+    "globalRequestIncrease": false,
+    "actorAllowanceReplenished": false,
+    "productionApproved": false,
+    "recurringActivityApproved": false,
+    "externalMessagingApproved": false,
+    "mergeApproved": false,
+    "m04Approved": false,
+    "credentialDelivery": false,
+    "timeWindowRenewal": false
+  },
+  "acceptance": {
+    "allocationDecisionComplete": true,
+    "executionStartedByThisRecord": false,
+    "m03DevAcceptanceVerified": false
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "kind": "m03_temporary_sole_default_bypass_approval",
+  "version": 1,
+  "receivedOn": "2026-10-23",
+  "reviewedHead": "9e7a8bec472ed57a39beae8bba120759fd9ce099",
+  "packet": "milestones/M03-n8n-foundation/evidence/sole-bypass-scope-decision-20261023.md",
+  "ownerReply": "I approve",
+  "approvalContext": "Exact temporary sole/default bypass exception for remaining M03 dev acceptance, with existing cumulative limits and cleanup.",
+  "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+  "teamId": "team_gboXPxTevpCOZuaA8eY9PmR1",
+  "branch": "m03-n8n-foundation",
+  "maximumConcurrentOwnedBypasses": 1,
+  "requireEmptyInitialMap": true,
+  "requireRevokeAndVerifiedAbsence": true,
+  "soleOwnedDefaultVerified": false,
+  "verificationPending": true,
+  "allowancesReplenished": false,
+  "priorAttemptsPreserved": true,
+  "productionOperationsApproved": false,
+  "mergeApproved": false,
+  "m04Approved": false
+}

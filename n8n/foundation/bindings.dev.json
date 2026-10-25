@@ -1,0 +1,195 @@
+{
+  "runtimeVersion": "2.43.5",
+  "environment": "dev",
+  "instanceUrl": "https://muhhammedsayed.app.n8n.cloud",
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflowRefs": {
+    "WF-10": {
+      "id": "4JMHLDBSdgGxhPlk",
+      "name": "WF-10 · Vimeo collector [dev]"
+    },
+    "WF-11": {
+      "id": "Oq19AMI9C3B1wbo9",
+      "name": "WF-11 · Instagram posts/reels collector [dev]"
+    },
+    "WF-12": {
+      "id": "8pz1lF0xPDQCs3ab",
+      "name": "WF-12 · Instagram stories collector [dev]"
+    },
+    "WF-13": {
+      "id": "F7S8Llr0ZSaSuw4T",
+      "name": "WF-13 · YouTube collector [dev]"
+    },
+    "WF-18": {
+      "id": "VbJn4mLYm0sGy1X2",
+      "name": "WF-18 · LinkedIn posts collector [dev]"
+    },
+    "WF-18b": {
+      "id": "h6lUXSGN5sV2jxuQ",
+      "name": "WF-18b · LinkedIn employees [dev]"
+    },
+    "WF-21": {
+      "id": "02yefa9uEPYwmM3N",
+      "name": "WF-21 · Websites collector [dev]"
+    },
+    "WF-22": {
+      "id": "83LybyawRpHXbjx6",
+      "name": "WF-22 · News [dev]"
+    },
+    "WF-23": {
+      "id": "qzgT9giRQJ7eMDmV",
+      "name": "WF-23 · Awards and trade [dev]"
+    },
+    "WF-30": {
+      "id": "mySfLZbU7I1850uP",
+      "name": "WF-30 · AI extractor [dev]"
+    },
+    "WF-32": {
+      "id": "kkAGgnbD8NjWHMKC",
+      "name": "WF-32 · Campaign linker [dev]"
+    },
+    "WF-40": {
+      "id": "ze8T1o0Cx0OGi3Wd",
+      "name": "WF-40 · Removal check [dev]"
+    },
+    "WF-50": {
+      "id": "2U6nPs3uJkmjij82",
+      "name": "WF-50 · Weekly briefs [dev]"
+    },
+    "WF-70": {
+      "id": "S6KDFsx5IjQRf6tm",
+      "name": "WF-70 · Publish / revalidate [dev]"
+    },
+    "WF-80": {
+      "id": "gBDmjIIEoM6XC7Wi",
+      "name": "WF-80 · Alerts [dev]"
+    },
+    "WF-00": {
+      "id": "MzimjpsuyPuK7SKe",
+      "name": "WF-00 · Orchestrator [dev]"
+    },
+    "WF-19": {
+      "id": "TsqSMa5MlO3QBLkt",
+      "name": "WF-19 · Apify run callback [dev]"
+    },
+    "WF-90": {
+      "id": "S9NHRkKFUIiXX2wv",
+      "name": "WF-90 · Error handler [dev]"
+    },
+    "WF-91": {
+      "id": "sowAIvuN7adg0JBq",
+      "name": "WF-91 · Health & cost [dev]"
+    },
+    "WF-99": {
+      "id": "qTjioYmBUVMIERVz",
+      "name": "WF-99 · Foundation smoke test [dev]"
+    },
+    "SUB-START": {
+      "id": "lkVDS0oO4WULipeV",
+      "name": "SUB · Start run [dev]"
+    },
+    "SUB-FINISH": {
+      "id": "RUTwaXMRh3PgLhJq",
+      "name": "SUB · Finish run [dev]"
+    },
+    "SUB-INGEST": {
+      "id": "nDijMP0IurUw58Kg",
+      "name": "SUB · Ingest items [dev]"
+    },
+    "SUB-COST": {
+      "id": "v4yeqqNm6xHjZ5ue",
+      "name": "SUB · Log cost [dev]"
+    },
+    "SUB-NOTIFY": {
+      "id": "tiEhU3dXrMifOnTL",
+      "name": "SUB · Notify [dev]"
+    }
+  },
+  "tagRefs": {
+    "env:dev": {
+      "id": "f599CX7WOg9azPEC",
+      "name": "env:dev"
+    },
+    "layer:collector": {
+      "id": "9VKnf3HlzT1qNNfW",
+      "name": "layer:collector"
+    },
+    "layer:ai": {
+      "id": "xypXIZGL9udCiwND",
+      "name": "layer:ai"
+    },
+    "layer:ops": {
+      "id": "OxnbDrBVAtziiuTk",
+      "name": "layer:ops"
+    },
+    "layer:sub": {
+      "id": "gKQ40iTbrD5MKnK8",
+      "name": "layer:sub"
+    },
+    "platform:vimeo": {
+      "id": "onHkKuv75MhQwmPx",
+      "name": "platform:vimeo"
+    },
+    "platform:instagram": {
+      "id": "9A8MARQoIZ2KBpJN",
+      "name": "platform:instagram"
+    },
+    "platform:instagram_stories": {
+      "id": "9N3BQMVj0uqaD0p1",
+      "name": "platform:ig_stories"
+    },
+    "platform:youtube": {
+      "id": "IDZNRDEVXu6ifxpJ",
+      "name": "platform:youtube"
+    },
+    "platform:linkedin": {
+      "id": "PccyUXHyUcidOTXA",
+      "name": "platform:linkedin"
+    },
+    "platform:linkedin_employees": {
+      "id": "QaHjrtRVHOsUIeFI",
+      "name": "platform:li_employees"
+    },
+    "platform:website_work_page": {
+      "id": "K1Ba9kSABaM0RTzi",
+      "name": "platform:web_work"
+    },
+    "platform:news": {
+      "id": "cEuk3rckVIVM8Xp6",
+      "name": "platform:news"
+    }
+  },
+  "credentials": {
+    "postgres": {
+      "id": "3ZZtc9kMDcminv6w",
+      "name": "Supabase Postgres · n8n_writer · dev",
+      "type": "postgres",
+      "environment": "dev",
+      "projectRef": "zmotjsbzhzjvpelxvxlf"
+    },
+    "apify": {
+      "id": "EYmaOt0rd45ysq0J",
+      "name": "Apify account",
+      "type": "apifyApi",
+      "environment": "dev"
+    },
+    "openai": {
+      "id": "e04LREfPBELWQQ9D",
+      "name": "OpenAI account",
+      "type": "openAiApi",
+      "environment": "dev"
+    },
+    "vimeo": {
+      "id": "HeZBOZhFMeFYOC0N",
+      "name": "Vimeo Token",
+      "type": "httpHeaderAuth",
+      "environment": "dev"
+    },
+    "youtube": {
+      "id": "ltvBSloVLGVeUjqV",
+      "name": "YouTube Data API key",
+      "type": "httpHeaderAuth",
+      "environment": "dev"
+    }
+  }
+}

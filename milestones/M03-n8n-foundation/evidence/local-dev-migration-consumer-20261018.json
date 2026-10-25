@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "environment": "local Windows synthetic fixtures only",
+  "observedDate": "2026-10-18",
+  "scope": "New M03 dev-only DPAPI creator and bounded exact-version migration consumer; no hosted acceptance claim",
+  "source": {
+    "scripts/db/windows/New-M03DevMigrationHandoff.ps1": "4d304ce88ecc39138a62b5ca0a07c023d79bc383fed565bbecdfd6f7f536ce48",
+    "scripts/db/windows/Invoke-M03DevMigrations.ps1": "22f89522d81f3590d6a2f2d662d8a22e06e276385449efae055ad57f3fa69930"
+  },
+  "tests": {
+    "uniqueCasesPresent": 17,
+    "fullRun": {
+      "command": "node --test scripts/db/m03-dev-migrations.test.mjs",
+      "passed": 16,
+      "failed": 0,
+      "nativeExit": 0,
+      "durationMs": 45783.1236,
+      "boundary": "Actual full run before adding the final public-seal reporting regression; not a claimed 17-case full run"
+    },
+    "finalAffectedRun": {
+      "command": "node --test --test-name-pattern=\"broken public seal|missing handoff|records exact completion\" scripts/db/m03-dev-migrations.test.mjs",
+      "passed": 3,
+      "failed": 0,
+      "nativeExit": 0,
+      "durationMs": 8812.4795,
+      "boundary": "Runs the new reporting-precedence case plus missing-handoff and complete happy-path cases against final consumer source"
+    },
+    "redEvidence": [
+      "Creator test-first: 3 failures before creator existed, then 3/3 passed after implementation.",
+      "Consumer test-first: 3 existing creator tests passed and 10 new consumer cases failed because Invoke-M03DevMigrations.ps1 did not exist.",
+      "Synthetic execution exposed typed-null empty PGPASSWORD forwarding to --version; fixed before real use.",
+      "Synthetic execution exposed PowerShell5 ConvertFrom-Json singleton array nesting under @(...); fixed by direct assignment and strict Array assertion.",
+      "Timeout regression preserved actual Windows killed-child native exit -1; the original test incorrectly expected 1 and was corrected.",
+      "Recorded-completion CheckOnly regression failed before support; the completed receipt now avoids requesting a new handoff or replaying migrations.",
+      "Final reporting regression failed with native2/HANDOFF_MISSING when a public seal was broken and the handoff absent; fixed to report native1/PREFLIGHT_BLOCKED first."
+    ],
+    "coveredBoundaries": [
+      "Same-account DPAPI uses isolated mkdtemp fixture folders and explicitly synthetic passwords only; unrelated old handoff sentinels preserved.",
+      "An actual compiled synthetic C# executable exercises native child launch, fresh environment, stdout/stderr suppression, JSON parsing, timeout kill and closed-child reconciliation.",
+      "Exact original-seven ledger fingerprints and identity are checked before any dry-run; mismatches and unknown local migrations fail closed.",
+      "Exact two-file dry-run excludes seed/roles before one durable admitted push; completed history never replays.",
+      "Failed/ambiguous push reconciles actual fixture history without replay; partial history retains a permanent admission.",
+      "Strict TLS password-free URI, clean public-only scratch config/migrations and CA copy, consumed DPAPI deletion and scratch cleanup are verified.",
+      "Failed public TLS preserves the private handoff and performs no database command.",
+      "CheckOnly verifies public seals/presence without decrypting or connecting."
+    ]
+  },
+  "targetedChecks": {
+    "eslint": {
+      "command": "pnpm.cmd exec eslint scripts/db/m03-dev-migrations.test.mjs",
+      "nativeExit": 0,
+      "note": "An unused test import was removed after the initial lint finding."
+    },
+    "prettier": {
+      "command": "pnpm.cmd exec prettier --check scripts/db/m03-dev-migrations.test.mjs",
+      "nativeExit": 0
+    },
+    "windowsPowerShell5Parser": {
+      "files": [
+        "scripts/db/windows/New-M03DevMigrationHandoff.ps1",
+        "scripts/db/windows/Invoke-M03DevMigrations.ps1"
+      ],
+      "errorsEach": 0
+    }
+  },
+  "independentReview": {
+    "reviewer": "/root/agent_probe_review",
+    "consumerSha256": "22f89522d81f3590d6a2f2d662d8a22e06e276385449efae055ad57f3fa69930",
+    "result": "No blocking finding",
+    "boundary": "Static source/CLI2.121.0 implementation review and non-secret PowerShell5 parser reproduction; no real credential or database calls by reviewer",
+    "confirmed": [
+      "Native CLI supports db query --file with --agent no and JSON output; no --query flag.",
+      "verify-full uses node-postgres rejectUnauthorized true, pinned CA and original hostname; password-free user@host uses child PGPASSWORD.",
+      "Successful non-dry db push JSON uses the same six keys as dry-run, with dryRun false.",
+      "Clean scratch avoids CLI dotenv, Vault and linked-project resolution; fixed dev endpoint only.",
+      "Final root/reparse checks, exclusive session lock, completed-receipt CheckOnly and authenticated identity/history distinction align."
+    ]
+  },
+  "executionBoundary": {
+    "realHandoffReadByImplementer": false,
+    "realPasswordDecryptedByImplementer": false,
+    "realDatabaseAuthenticationByImplementer": false,
+    "networkCallByImplementer": false,
+    "hostedMigrationByImplementer": false,
+    "productionAction": false,
+    "note": "Root separately sealed the public packet and reported actual CheckOnly HANDOFF_MISSING after public verification; credential delivery and hosted execution are separate later receipts."
+  }
+}

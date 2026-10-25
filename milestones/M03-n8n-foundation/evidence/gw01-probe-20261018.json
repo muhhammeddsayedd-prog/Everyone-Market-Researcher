@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T08:58:34Z",
+  "observedAt": null,
+  "environment": "Actual approved dev protected Preview; disabled-route probe only",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "windowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+  "toolReceiptRef": "e99d57",
+  "source": "Root's observed actual private consumer receipt and supplied durable journal timestamps; observedAt is not inferred from journal time",
+  "journalReservedAt": "2026-10-18T08:55:41.664Z",
+  "journalFinishedAt": "2026-10-18T08:55:42.950Z",
+  "consumerReceipt": {
+    "version": 1,
+    "mode": "Probe",
+    "status": "privacy_pending",
+    "privateRead": true,
+    "rootChildClosed": true,
+    "nativeExit": 1,
+    "handoffsRetained": true,
+    "result": {
+      "version": 1,
+      "mode": "Probe",
+      "status": "complete",
+      "code": null,
+      "requestId": "80162039-6088-4011-bdf1-a2a7b5ec11cb",
+      "operation": "identity.read",
+      "kind": "preflight",
+      "attemptRecorded": true,
+      "httpStatus": 503,
+      "tlsVerified": true,
+      "headersReceived": true,
+      "socketsClosed": true,
+      "disabledRouteVerified": true,
+      "identityVerified": false,
+      "response": {
+        "requestId": null,
+        "error": { "code": "unavailable" }
+      },
+      "logScan": {
+        "version": 1,
+        "status": "unverified",
+        "code": "GW01_LOGS_NO_CAPTURE",
+        "capturedMatchingRequest": false,
+        "logsScanned": 0,
+        "publicAuthMarkerFound": false,
+        "requestBodyMarkerFound": false,
+        "ownBypassFound": false,
+        "truncated": false,
+        "childClosed": true,
+        "observedAt": null
+      }
+    }
+  },
+  "rootReportedPostState": {
+    "attemptsRecorded": 2,
+    "attemptLimit": 100,
+    "thisProbeHttpAttempts": 1,
+    "earlierNativeProtection401Attempts": 1,
+    "trialClockStarted": false,
+    "serverWindowBound": false,
+    "serverAdmissions": 0,
+    "countersReset": false,
+    "independentReadbackByEvidenceAuthor": false
+  },
+  "gates": {
+    "publicWorkstationCheckPassed": true,
+    "cloudAComplete": true,
+    "disabledRoute503Verified": true,
+    "capturedLogPrivacyVerified": false,
+    "cloudBComplete": false,
+    "restrictedDatabaseIdentityVerified": false,
+    "writerMachineDeliveryReleased": false
+  },
+  "cleanup": {
+    "credentialBearingRootChildClosed": true,
+    "httpSocketsClosed": true,
+    "logChildClosed": true,
+    "encryptedHandoffsRetained": true,
+    "parentProcessCredentialsCleared": "not claimed"
+  },
+  "boundary": "The single actual POST verifies strict transport and the disabled handler's503/unavailable response, not database identity. Zero captured logs cannot establish secret/body absence; all negative marker flags remain unverified in that scope. Retain the recorded attempt and use reviewed GET-only log reconciliation without another Probe POST or counter reset. No Writer/Admin/Machine request, production change, actor/model call, collection, activation, merge or M04 is authorized by this result."
+}

@@ -1,0 +1,60 @@
+{
+  "kind": "m03_remaining_allocation_after_snapshot_diagnosis_approval",
+  "version": 1,
+  "recordedAt": "2026-10-24 17:45:54 UTC",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "approvedPr": 8,
+  "approvedHead": "71f1d0a9be788c9bcdd1479d0c89d49c62509564",
+  "approvedPacket": "milestones/M03-n8n-foundation/evidence/remaining-allocation-after-snapshot-diagnosis-20261024.md",
+  "approvedPacketSha256": "aa0a1a106ab2ade523368f1bdfc917aa66a58280916ffb8ba13e5b7dfecad28e",
+  "exactOwnerReply": "Approve Management1408, Control3456, Combined4864 and Vercel256; retain all charges and other limits",
+  "previousCaps": {
+    "management": 1024,
+    "control": 2048,
+    "combined": 2560,
+    "vercel": 224
+  },
+  "approvedCaps": {
+    "management": 1408,
+    "control": 3456,
+    "combined": 4864,
+    "vercel": 256
+  },
+  "retainedChargesAtApproval": {
+    "management": 828,
+    "control": 959,
+    "combined": 1787,
+    "vercel": 184,
+    "nativeExecutionsReserved": 3,
+    "actorStarts": 0,
+    "providerReads": 0
+  },
+  "unchangedLimits": {
+    "nativeExecutions": 120,
+    "sqlAdmissions": 256,
+    "providerReads": 32,
+    "actorStarts": 2,
+    "perActorMaximumUsd": 1,
+    "totalActorReserveUsd": 2,
+    "maximumNewDistinctItems": 1
+  },
+  "scope": {
+    "remainingForensicAndExactSyntheticCleanup": true,
+    "remainingDevAcceptanceBatch": true,
+    "safeWithinScopeContinuations": true,
+    "production": false,
+    "recurringActivity": false,
+    "externalNotifications": false,
+    "unrelatedR2": false,
+    "merge": false,
+    "m04": false
+  },
+  "conditions": [
+    "All earlier attempts, closed windows, side-effect IDs and cumulative charges remain immutable; every later qualified charge also remains counted.",
+    "Native ownership, executed-body, linked-terminal, independent settlement, exact deletion acknowledgement and cleanup gates are unchanged.",
+    "Required CI/branch protection remain enabled; the documented unit fixture failure on the approved packet head must be corrected and the delivery head pass before another acceptance batch.",
+    "This approval changes four cumulative request ceilings only; it does not replenish actor, spending, provider-read, SQL-admission or item allowances.",
+    "No credential handoff, artificial expiry reset, migration replay or overlap of uncertain work is authorized."
+  ]
+}

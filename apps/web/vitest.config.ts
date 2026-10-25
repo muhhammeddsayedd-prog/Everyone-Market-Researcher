@@ -8,7 +8,7 @@ export default defineConfig({
   test: {
     name: 'web',
     environment: 'jsdom',
-    include: ['components/**/*.test.tsx'],
+    include: ['components/**/*.test.tsx', 'server/**/*.test.ts'],
     setupFiles: ['./vitest.setup.ts'],
   },
 });

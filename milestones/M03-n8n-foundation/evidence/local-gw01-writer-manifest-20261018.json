@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-18T08:45:36.865084+00:00",
+  "scope": "local_synthetic_writer_manifest_compatibility",
+  "problem": "Writer PowerShell consumer rejected the actual strict ten-field shared Preview manifest using its former five-field key list. No actual writer handoff was consumed for discovery.",
+  "correction": "Validate all ten keys, case, types and fixed project/team/branch/Preview/protection metadata, then project exactly the five keys accepted by the unchanged pure JavaScript writerPreview contract. routeDisabledVerified remains typed metadata, not a standalone CloudB acceptance flag. Full CloudB gate remains separate.",
+  "files": {
+    "scripts/n8n/windows/Invoke-M03GW01Writer.ps1": "3baaee25fdfef213c22b701e3d800de65694f3fa2f84d54a672e2004997addd6",
+    "scripts/n8n/gw01-private-writer.test.mjs": "6cdc700b1af7d228eed3f561780721bd7095d518a8ad6ac5c0db693af025e227"
+  },
+  "red": {
+    "oldFiveKeyConsumerRejectedTenFieldFixture": true
+  },
+  "authorChecks": {
+    "affectedWindowsTestsPassed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "nativeExit": 0,
+    "durationSeconds": 33.3,
+    "powerShellParser": "passed",
+    "nodeSyntax": "passed",
+    "eslint": "passed",
+    "prettier": "passed",
+    "diffWhitespace": "passed"
+  },
+  "independentReview": {
+    "reviewer": "/root/m02_prod_packet",
+    "status": "clear",
+    "newWindowsCasesPassed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "nativeExit": 0,
+    "durationSeconds": 18.33,
+    "sourceHashVerified": true,
+    "rootDiffReview": "clear"
+  },
+  "boundary": {
+    "actualWriterLogin": false,
+    "actualHandoffRead": false,
+    "actualWriterSealCreated": false,
+    "networkRequests": 0,
+    "actualRuntimeDependenciesInspected": false,
+    "hostedAcceptance": false
+  }
+}

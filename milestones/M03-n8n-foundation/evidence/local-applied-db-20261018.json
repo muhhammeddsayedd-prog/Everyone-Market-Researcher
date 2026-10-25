@@ -1,0 +1,77 @@
+{
+  "milestone": "M03",
+  "environment": "owned local stack; never hosted",
+  "target": {
+    "container": "supabase_db_everyone-market-radar",
+    "image": "public.ecr.aws/supabase/postgres:17.11.0.004",
+    "postgresVersion": 170011,
+    "verifiedProjectLabelsAndWorkdir": true
+  },
+  "migrationUp": {
+    "command": "pnpm.cmd exec supabase migration up --local",
+    "nativeExit": 0,
+    "applied": [
+      "20261018034220",
+      "20261018035417"
+    ],
+    "seedApplied": false,
+    "reset": false
+  },
+  "history": {
+    "originalSevenPreserved": true,
+    "total": 9
+  },
+  "preservation": {
+    "competitors": 1,
+    "accounts": 3,
+    "items": 10,
+    "runs": 0,
+    "costs": 0,
+    "audit": 0,
+    "fixture": "C999/test-house retained; smoke fixture not created"
+  },
+  "appliedVerification": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "34246c",
+      "wall_time_seconds": 7.4775781,
+      "exit_code": 0,
+      "original_token_count": 34,
+      "output": "{\"Operation\":\"M03 local applied database pgTAP\",\"NativeExit\":0,\"Files\":11,\"Assertions\":379,\"ResultPass\":true,\"RawOutputWithheld\":true}\r\n"
+    }
+  },
+  "security": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "5638b2",
+      "wall_time_seconds": 2.7165011999999997,
+      "exit_code": 0,
+      "original_token_count": 29,
+      "output": "{\"Operation\":\"M03 local security advisors\",\"NativeExit\":0,\"Result\":\"{\\\"results\\\":[],\\\"message\\\":\\\"db advisors\\\"}\"}\r\n"
+    }
+  },
+  "performance": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "f818fb",
+      "wall_time_seconds": 2.7197825,
+      "exit_code": 0,
+      "original_token_count": 30,
+      "output": "{\"Operation\":\"M03 local performance advisors\",\"NativeExit\":0,\"Result\":\"{\\\"results\\\":[],\\\"message\\\":\\\"db advisors\\\"}\"}\r\n"
+    }
+  },
+  "types": {
+    "command": "pnpm.cmd exec supabase gen types --local --lang typescript --schema app,api,ops,ingest",
+    "nativeExit": 0,
+    "output": "packages/shared/src/db.types.ts",
+    "rootTypecheckExit": 0
+  },
+  "plan": {
+    "reviewedApifyRows": 17,
+    "budget": 25,
+    "unknownFixedFeesNotInvented": true
+  },
+  "hostedM03Applied": false,
+  "productionTouched": false,
+  "providerCalls": 0
+}

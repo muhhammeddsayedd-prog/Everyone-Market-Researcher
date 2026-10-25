@@ -1,0 +1,265 @@
+{
+  "version": 1,
+  "date": "2026-10-19",
+  "status": "local_implementation_review_complete_live_approval_pending",
+  "environment": "local source, scripted native/SQL/provider/transport ports; no hosted acceptance",
+  "preservedBase": {
+    "branch": "m03-n8n-foundation",
+    "draftPr": 8,
+    "reviewedHead": "eee9a277c6a7d63fffe967811c92a7fd50c15b14",
+    "lastVerifiedPriorCi": 39199206035,
+    "priorCiReceipt": "560821",
+    "newSourceReceivesNormalPrCi": true,
+    "noDocumentationCommitSolelyToAnnounceCi": true
+  },
+  "authorization": {
+    "exactPolicyInventory": "m03-c01-retention-proposal-20261019.json",
+    "approvedAtCommit": "eee9a277c6a7d63fffe967811c92a7fd50c15b14",
+    "localImplementationTestsReviewApproved": true,
+    "liveBatchApproved": false,
+    "credentialConsumptionApprovedByThisTurn": false,
+    "productionMergeM04Approved": false
+  },
+  "policy": {
+    "ownedWorkflowUnion": 25,
+    "manualSaveSet": [
+      "WF-00",
+      "WF-91",
+      "WF-99",
+      "SUB-INGEST",
+      "SUB-COST"
+    ],
+    "successErrorAllSetCount": 21,
+    "successErrorAllExcluded": [
+      "WF-00",
+      "WF-99",
+      "SUB-INGEST",
+      "SUB-COST"
+    ],
+    "overlap": "WF-91",
+    "progress": false,
+    "exactOtherFieldsAndBaselineRestore": true,
+    "fullIntermediateInputsOutputsSnapshotsErrorsStored": true,
+    "webhookHeadersBodiesMayPersistBeforeValidation": true,
+    "metadataOnlyNativeStorage": false,
+    "secretAbsenceCertified": false,
+    "cloudPolicyApplied": false
+  },
+  "privateOutputBoundary": {
+    "fullResponsePrivateProcessOnly": true,
+    "streamingCeilingBytes": 8388608,
+    "representativeOnePageNestedFailureFixtureBytes": 262144,
+    "rejectsOversizeTruncationInvalidUtf8InvalidJsonNativeSizeSafeguardReflectionMissingFields": true,
+    "modelGitLogsArtifactsReceiveRawData": false,
+    "output": "allowlisted native metadata, safe causal/settlement facts, fixed refusal codes",
+    "nativeManualSeed": "Only exact sole enabled MCP ManualTrigger empty-item seed in manual mode; no user/business or webhook pins",
+    "workflowSnapshot": "actual minimal snapshot excludes activeVersionId/versionId/pinData; top-level metadata plus fresh current/published version and executed-body fences remain",
+    "listProjection": "list-only absent version stays unknown, never substitutes for exact metadata/full receipt"
+  },
+  "implemented": {
+    "reader": "scripts/n8n/foundation-native-reader.mjs",
+    "controller": "scripts/n8n/foundation-native-controller.mjs",
+    "cleanup": "scripts/n8n/foundation-native-cleanup.mjs",
+    "transport": "scripts/n8n/foundation-native-transport.mjs",
+    "settlement": "scripts/n8n/foundation-native-settlement.mjs",
+    "durableControlState": "scripts/n8n/foundation-control-state.mjs",
+    "fixedCallbacks": "scripts/n8n/foundation-callback-cases.mjs",
+    "existingRuntimeIntegration": [
+      "scripts/n8n/foundation-runtime-plan.mjs",
+      "scripts/n8n/foundation-runtime-control.mjs",
+      "scripts/n8n/foundation-execution-control.mjs"
+    ],
+    "privateLiveCompositionStillRequiresReviewedPurposeBoundPortsAndDelivery": true,
+    "builtInCredentialLoaderOrLiveCliAdded": false,
+    "durableAppendContract": "synchronous full write/fsync and exclusive process ownership required; asynchronous/failed appends fence control"
+  },
+  "controlInvariants": {
+    "genuineRuntimeCaseAndReaderReceiptBrands": true,
+    "sameSharedJournalDeadlineCounter": true,
+    "metadataPollsPerId": 8,
+    "unknownStartNeverReplaced": true,
+    "failedChildDiscoveryRequiresActualNativeBacklink": true,
+    "asynchronousErrorHandlerMustActuallyAppear": true,
+    "waitingStoppedAtOrStopAckNotClosure": true,
+    "nativeProviderSqlTransportSettlementSeparate": true,
+    "launchRootAndSubStartNativeIdsDistinctAndCausallyVerified": true,
+    "independentTerminalSamplesAndActualPostgresRoundedCostParity": true,
+    "phaseBAll11RecordsSettledAcknowledgedDeletedAndAbsentBeforeActors": true,
+    "durableSafeEvidenceBeforeDelete": true,
+    "lostDeleteAckAnd404AmbiguousNoRetry": true,
+    "cleanupLimitedToExactOwnedCausalTerminalSettledRecords": true,
+    "residualFollowUpOwner": "Mohamed Abdelrahman",
+    "physicalErasureOrBackupDeletionProven": false,
+    "callbackPair": "two overlapping requests, actual unpinned trace bijection; processed replay no-op boundary only",
+    "callbackDrill": "controlled private response verification then withheld ACK, not an actual I/O outage or first-ingestion race"
+  },
+  "focusedTests": {
+    "countsOverlapDoNotAdd": true,
+    "initialAffectedSelection": {
+      "receipt": "c3793a",
+      "nativeExit": 0,
+      "passed": 145,
+      "failed": 0,
+      "skipped": 0,
+      "note": "Before final source-native snapshot/pin corrections; preserves actual checkpoint"
+    },
+    "snapshotCorrectionAffected": {
+      "receipt": "089107",
+      "nativeExit": 0,
+      "passed": 47,
+      "skipped": 0
+    },
+    "executedPinGuardAffected": {
+      "receipt": "aafe16",
+      "nativeExit": 0,
+      "passed": 48,
+      "skipped": 0
+    },
+    "nativeManualSeedCorrection": {
+      "redReceipt": "b88ca8",
+      "greenReceipt": "55c265",
+      "affectedReceipt": "bf6b28",
+      "passed": 53,
+      "nativeExit": 0,
+      "skipped": 0,
+      "note": "32reader +17integration +4producer; final eligible-trigger correction checked separately"
+    },
+    "finalSourceCorrection": {
+      "redReceipt": "1fc568",
+      "greenReceipt": "ca7288",
+      "receipt": "c9eefd",
+      "nativeExit": 0,
+      "passed": 53,
+      "failed": 0,
+      "skipped": 0,
+      "groups": {
+        "reader": 32,
+        "controllerIntegration": 17,
+        "callbackProducer": 4
+      },
+      "note": "Actual native five-trigger MCP set allows retained When called trigger without permitting its pins; overlaps prior 145/47/48/53 runs, never sum"
+    },
+    "fullUnchangedLocalSuiteRepeated": false,
+    "actualCloudOrNativeEngineExecutionsThisContinuation": 0,
+    "actualSqlProviderNetworkCallsInTests": 0
+  },
+  "independentReview": {
+    "scope": "Exact approved policy/runtime binding, pinned native DTO producers and pin seed, private streaming/reflection boundaries, causal/error discovery, shared budgets/deadlines, physical transport closure, SQL/provider settlement/cost parity, ordered actors, callback trace matching and exact-record cleanup",
+    "findingsCorrected": [
+      "physical socket closure after response end",
+      "actual SQL rounded measured cost parity",
+      "distinct WF99 launch/SUB-START run identities",
+      "PhaseB exact-cleanup brands before paid work",
+      "actual callback403",
+      "native list/snapshot shapes",
+      "native ManualTrigger seed and supported trigger set"
+    ],
+    "earlierIntegration17Receipt": "a5af85",
+    "finalNarrowReview": {
+      "remainingP1P2": 0,
+      "snapshotPinRegressions": {
+        "receipt": "8201df",
+        "passed": 3
+      },
+      "actualShapedMainEntry": {
+        "receipt": "95596d",
+        "passed": 1
+      },
+      "sourceNativeManualSeedAndFiveEligibleTypesVerified": true,
+      "nonMcpWhenCalledTriggerNotMistakenForEligibleMcpEntry": true
+    },
+    "hostedAcceptanceEstablished": false
+  },
+  "localCleanup": {
+    "ownerReported": "C01 synthetic state deleted",
+    "exactPath": ".c01-repro.local/state",
+    "present": false,
+    "method": "exact Test-Path -LiteralPath only",
+    "agentDeleteOrRetry": false,
+    "originalReceipt": "c01-native-local-repro-20261019.json",
+    "originalReceiptSha256": "590647a17db84b59def8511d5c0bc35e8b520eae3c29df19333c564681a9fb40",
+    "historicalCountsPreserved": {
+      "native": 38,
+      "valid": 24,
+      "invalidFixtures": 14,
+      "nonExecutingGuards": 9,
+      "priorPolicyTests": 6,
+      "priorControls": 54
+    }
+  },
+  "preserved": {
+    "actualStagedWorkflows": 25,
+    "tags": 13,
+    "deferredErrorLinks": 24,
+    "machineCredential": "EmrM03Machine19",
+    "encryptedPendingTokenUnchanged": true,
+    "historicalProvisionRequests": 188,
+    "tenAppliedDevMigrationsUntouched": true,
+    "fourPendingMigrationHashesReverifiedReceipt": "eba807",
+    "fourPendingMigrationsApplied": false,
+    "m02CompetitorsAccountsLogos": [
+      285,
+      1754,
+      257
+    ],
+    "sevenYoutubeExclusionsUnchanged": true,
+    "closedGw01ReplayedOrTransferred": false,
+    "sharedCanonicalApifyRuntimeChanged": false,
+    "privateR2Touched": false,
+    "toolingFollowUp": "2026-10-24"
+  },
+  "futureBatchOnly": {
+    "packet": "live-acceptance-outline-20261018.md",
+    "decisionReply": "Approve M03 dev acceptance A–D at the reviewed PR #8 head",
+    "controlMaximumReplaces416": 2048,
+    "runtimeMaximum": 512,
+    "combinedMaximum": 2560,
+    "shutdownControlReserveProtected": 460,
+    "nativeMaximum": 120,
+    "gatewayAttemptMaximum": 256,
+    "providerGetMaximum": 32,
+    "actorStarts": 2,
+    "requestedActorUsdEach": 1,
+    "actorReserveUsd": 2,
+    "durationMinutes": 60,
+    "stopNewWorkMinute": 50,
+    "uniqueDependencies": 7,
+    "publicationActions": 8,
+    "wf00Wf99Publication": false,
+    "unknownInfrastructureFeesRemainUnknown": true,
+    "realCredentialHandoffRequestedNow": false
+  },
+  "thisContinuation": {
+    "credentialReadsDecryptions": 0,
+    "cloudRetentionChanges": 0,
+    "hostedMigrations": 0,
+    "workflowPublicationsExecutions": 0,
+    "providerActorModelCalls": 0,
+    "gatewayAdmissions": 0,
+    "productionMutations": 0,
+    "prMerge": false,
+    "m03Closed": false,
+    "m04Started": false
+  },
+  "sourceSha256": {
+    "scripts/n8n/foundation-retention-proposal.mjs": "4dcbf9702901a3e51385562c06af818e695a8f867f9ea7884c1c958b55a50685",
+    "scripts/n8n/foundation-runtime-plan.mjs": "8f9206bdff96cbf9248c0082d12b34e5fc675e31945c40b9227f5ffcc7aefb9c",
+    "scripts/n8n/foundation-runtime-control.mjs": "94c1db1a21a769060a8649c28416a3d4e98ff94d2d2ae6dd45f11972f6cf7267",
+    "scripts/n8n/foundation-execution-control.mjs": "1e7202730934e22d906da12c6eedaab7b073fdfb279bc486fb1cbcca5fd5b15a",
+    "scripts/n8n/foundation-control-state.mjs": "ca6a120e491d5b77551bbbec81a3a6a52497181f604bf2c3b9dbc31ef3ecd8f4",
+    "scripts/n8n/foundation-native-reader.mjs": "8a77e45e22ab3aadcdc4efb154c28eb2a64b2122e56a17bc9b35d65353e2ee4f",
+    "scripts/n8n/foundation-native-controller.mjs": "2dbc3b1e0f481e0ddb752d381c017e3e02a738756e3e5cc2291b8c82a007a60b",
+    "scripts/n8n/foundation-native-cleanup.mjs": "0d3f743639a4f421e7bb6d26b0ce0670e0c88786d2a7a2d7a46e40861e67aaa7",
+    "scripts/n8n/foundation-native-transport.mjs": "e33781048875bd68703ad0579a3f95bf863e957095a75622f75b4e7c8218f34a",
+    "scripts/n8n/foundation-native-settlement.mjs": "34f6bc8ca61fa26e57a3f62b00a69d88ee081a4b8e4220567854bf31b942cd1c",
+    "scripts/n8n/foundation-callback-cases.mjs": "9cfb3abb9b7eb7ff703fa25e156bdfecf95e38702b5e48280ded9cd959c722ed"
+  },
+  "recordedAt": "2026-10-19T05:33:11.773Z",
+  "quality": {
+    "changedFilePrettierExit": 0,
+    "changedFileEslintExit": 0,
+    "gitDiffCheckExit": 0,
+    "receipt": "b0f800",
+    "independentFinalReaderLintReceipt": "e8e0ee"
+  }
+}

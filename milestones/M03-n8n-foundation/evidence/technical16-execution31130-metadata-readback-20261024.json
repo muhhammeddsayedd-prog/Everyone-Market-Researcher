@@ -1,0 +1,152 @@
+{
+  "kind": "m03_technical16_execution_metadata_readback",
+  "version": 1,
+  "observedAt": "2026-10-24T16:51:02.824Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "technicalAttempt": 16,
+  "originalAttemptSha256": "d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb",
+  "toolReceipt": {
+    "tool": "exec_command/write_stdin",
+    "run": "efc1a8",
+    "completion": "77bf24",
+    "nativeExit": 0,
+    "rawStructuredResultTranscribed": true,
+    "nativeOutputFileEmitted": false
+  },
+  "rawResult": {
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "complete",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": {
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "technicalAttempt": 16,
+      "status": "execution_metadata_classified",
+      "requestCount": 1,
+      "maximumRequests": 1,
+      "httpStatus": 200,
+      "authenticationVerified": true,
+      "networkCompletionVerified": true,
+      "acceptanceProven": false,
+      "metadata": {
+        "executionId": "31130",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "mode": "manual",
+        "status": "success"
+      },
+      "fields": {
+        "objectShape": true,
+        "idPresent": true,
+        "idString": true,
+        "idMatches": true,
+        "workflowIdPresent": true,
+        "workflowIdString": true,
+        "workflowIdMatches": true,
+        "modePresent": true,
+        "modeKnown": true,
+        "modeManual": true,
+        "statusPresent": true,
+        "statusKnown": true,
+        "versionPresent": true,
+        "versionIdentifier": true,
+        "versionMatchesBinding": true,
+        "createdAtPresent": true,
+        "createdAtString": true,
+        "createdAtCanonical": true,
+        "createdAtWithinIntent": true,
+        "timestampsNotFuture": true,
+        "startedAtPresent": true,
+        "startedAtCanonical": true,
+        "stoppedAtPresent": true,
+        "stoppedAtCanonical": true,
+        "waitTillPresent": true,
+        "waitTillNull": true,
+        "terminalTimestampsOrdered": true,
+        "terminalWaitNull": true,
+        "payloadAbsent": true,
+        "sizeFlagSafe": true,
+        "finishedPresent": true,
+        "finishedBoolean": true,
+        "readerMetadataContractSatisfied": true,
+        "versionNull": false,
+        "startedAtNull": false,
+        "stoppedAtNull": false,
+        "waitTillCanonical": false,
+        "sizeFlagPresent": false,
+        "sizeFlagBoolean": false
+      },
+      "diagnostics": {
+        "version": 1,
+        "dns": "complete",
+        "requests": [
+          {
+            "resource": "executions",
+            "page": 1,
+            "tcpConnected": true,
+            "tlsVerified": true,
+            "httpStatus": 200,
+            "bodyRead": "complete",
+            "jsonParsed": true,
+            "schemaValidated": true,
+            "socketClosed": true,
+            "failureStage": "none",
+            "failureCode": "none"
+          }
+        ]
+      }
+    }
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/execution-31130-metadata-diagnostic-20261024.jsonl": "e2811b178fba990d12b20ed3988820a37e144ca41959c5483f0694684f5de763",
+    "scripts/n8n/m03-inventory-seal.json": "5a46660d891aef73a82630b793f168c2bc2914664980877ea09e8e4ffa4e2ccf",
+    "scripts/n8n/inventory.mjs": "a0376f0975da35e45284e536f5810daa90bec4f11820a3e128c4d164d65492fd",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "0e36e2f22565eb3e2ef469e8184f8045f0cc4fcd7f4ccc4043846e105987eff7"
+  },
+  "usage": {
+    "management": 825,
+    "control": 955,
+    "combined": 1780,
+    "vercel": 184,
+    "nativeExecutionsReserved": 3,
+    "actorStarts": 0,
+    "managementMaximum": 1024,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "vercelMaximum": 224,
+    "allowancesReplenished": false
+  },
+  "cleanup": {
+    "sourceTool": "52a398",
+    "parentProcessId": 16336,
+    "childProcessId": 70120,
+    "parentAbsent": true,
+    "childAbsent": true,
+    "managementCopyAbsent": true,
+    "parentLockAbsent": true,
+    "persistentManagementRetained": true,
+    "privateContentsRead": false,
+    "networkRequests": 0
+  },
+  "interpretation": {
+    "rootTerminalMetadataVerified": true,
+    "nativeExecutedGraphVerified": false,
+    "nativeTreeSettlementVerified": false,
+    "firstReaderFaultEstablished": false,
+    "fullAcceptance": false,
+    "originalFailedAttemptPreserved": true
+  },
+  "scope": {
+    "mutations": 0,
+    "executionsStarted": 0,
+    "actorStarts": 0,
+    "providerCalls": 0,
+    "production": false
+  }
+}

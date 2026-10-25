@@ -1,0 +1,108 @@
+{
+  "kind": "m03_ui_carry_local_readiness",
+  "version": 1,
+  "observedAt": "2026-10-25T12:04:53.664Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "helperBaseHead": "075766d65a076c2f4393cc5574e1ab387c2729f5",
+  "reconciledEvent": {
+    "relative": "milestones/M03-n8n-foundation/evidence/wf00-unadmitted-manual-start-20261025.json",
+    "sha256": "c5e4e506d788b399fd95354cc2bc59849076daec48e0a41901e717a4a22c157e",
+    "nativeExecutionId": null,
+    "nativeApiTerminalReceipt": false,
+    "noBusinessAcceptanceClaim": true
+  },
+  "sameUnadmittedTechnicalAttempt": 21,
+  "applicationSource": "5f256ce915f930481b0d31ac38b919c0a7692cd1",
+  "sameUnprovisionedWindowId": "e2be1a67-f6db-4c90-bfd2-671c5db9b90a",
+  "usage": {
+    "management": 1317,
+    "control": 1249,
+    "combined": 2566,
+    "vercel": 254,
+    "nativeExecutions": 4,
+    "actors": 0,
+    "costUsd": 0,
+    "newItems": 0
+  },
+  "approvedCaps": {
+    "management": 1728,
+    "control": 3584,
+    "combined": 5312,
+    "vercel": 304,
+    "nativeExecutions": 120,
+    "actorStarts": 2,
+    "actorReserveUsd": 2
+  },
+  "sqlAdmissions": 11,
+  "informationalUnadmittedGatewayHttpSends": 4,
+  "frozenSourcePins": {
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "034e10b4b32f4015e6a71879902c5752c682c86d332a3f9dee3b3ee5733b5ea4",
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "ff0684d18391d4a9719980bb50345ee6bc5bdd8bf90ab7b4cfb0881c76c06631",
+    "scripts/n8n/foundation-native-controller.mjs": "b7307a9b08342a7a25948b2e31d9f37625be326de1a3b4bdb5cc59572ecd4f55",
+    "scripts/n8n/windows/Invoke-M03Acceptance.ps1": "5f2baa5059d75d9b4480dc4be04bddde759a7a6c278868076288aaae0a0d7407"
+  },
+  "localVerification": {
+    "guardPositiveCases": 3,
+    "historicalGuardCompatibilityCases": 2,
+    "coherentlyRepinnedDenialCases": 16,
+    "currentNativeCarryConstructorCases": 1,
+    "historicalNativeCarryCases": 3,
+    "currentFullNativePublicRunCases": 1,
+    "historicalFullNativePublicRunCases": 1,
+    "nativeProjectionCases": 2,
+    "wrapperProjectionCases": 2,
+    "outputFilterCases": 2,
+    "syntheticUiStartGuardGroups": 4,
+    "independentReview": "no_P1_P2",
+    "overlappingSuitesNotSummed": true,
+    "adminControlAndSqlBytesUnchanged": true
+  },
+  "publicFoundationSeal": {
+    "nativeExit": 0,
+    "projectFiles": 99,
+    "runtimeFiles": 840,
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "publicAcceptanceSeal": {
+    "nativeExit": 0,
+    "projectFiles": 255,
+    "runtimeFiles": 840,
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "originalSealedCheckOnly": {
+    "nativeExit": 0,
+    "status": "check_only_ready",
+    "privateRead": false,
+    "networkRequests": 0,
+    "publicCompositionLoaded": true,
+    "adminPublicInputsVerified": true,
+    "adminHandoffReady": false,
+    "actualMcpPortVerified": false,
+    "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+    "managementMaximum": 1728,
+    "controlMaximum": 3584
+  },
+  "packets": {
+    "regularFiles": 74,
+    "forwardFiles": 76,
+    "mismatches": 0,
+    "onlyTwoSourceFingerprintsAndRegularDependencyChanged": true,
+    "authorityTargetBaselinePendingNodeMetadataUnchanged": true,
+    "all15MigrationFingerprintsPreserved": true
+  },
+  "boundaries": {
+    "actual21Admitted": false,
+    "hostedBusinessAcceptance": false,
+    "migrationReplay": false,
+    "production": false,
+    "recurringActivity": false,
+    "externalNotifications": false,
+    "r2": false,
+    "merge": false,
+    "m04": false
+  },
+  "nextStep": "Commit scoped accounting/protocol correction with evidence. Verify normal exact-head CI/Vercel and fresh native session coverage. Then original sole coordinator; only matching browser_start ports may arm a prepared whole-workflow Manual click, once per nonce. No owner credential or time approval."
+}

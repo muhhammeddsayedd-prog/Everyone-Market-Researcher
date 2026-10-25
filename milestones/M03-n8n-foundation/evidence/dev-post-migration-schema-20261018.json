@@ -1,0 +1,452 @@
+{
+  "version": 1,
+  "environment": "hosted emr-dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "recordedAt": "2026-10-18T05:37:19Z",
+  "afterRunId": "03a85d53-9ad2-4d42-abb0-08945872e707",
+  "method": "Read-only PostgreSQL metadata/settings queries through the already-working scoped dev MCP; administrator metadata inspection is not a restricted-login receipt",
+  "summary": {
+    "rpcCount": 12,
+    "all12Present": true,
+    "allDefiner": true,
+    "allEmptySearchPath": true,
+    "allWriterOnly": true,
+    "sevenExclusionsPreserved": true,
+    "security": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "count": 11
+      }
+    ],
+    "performance": [
+      {
+        "name": "unused_index",
+        "level": "INFO",
+        "count": 67
+      },
+      {
+        "name": "auth_db_connections_absolute",
+        "level": "INFO",
+        "count": 1
+      }
+    ],
+    "reviewedPrices": 17
+  },
+  "rpcMetadata": [
+    {
+      "signature": "ops.accrue_fixed_costs(date)",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    },
+    {
+      "signature": "ops.apify_runs_pending(uuid)",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    },
+    {
+      "signature": "ops.complete_apify_run(text,text,text,numeric)",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    },
+    {
+      "signature": "ops.daily_health()",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    },
+    {
+      "signature": "ops.error_count_24h(text,boolean)",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    },
+    {
+      "signature": "ops.get_apify_run(text)",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    },
+    {
+      "signature": "ops.get_price_book()",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    },
+    {
+      "signature": "ops.get_setting(text)",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    },
+    {
+      "signature": "ops.log_cost(jsonb)",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    },
+    {
+      "signature": "ops.log_workflow_error(jsonb)",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    },
+    {
+      "signature": "ops.process_apify_run(text,text,text,numeric,jsonb)",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    },
+    {
+      "signature": "ops.register_apify_run(text,text,uuid,uuid[],text)",
+      "present": true,
+      "security_definer": true,
+      "function_config": [
+        "search_path=\"\""
+      ],
+      "writer_execute": true,
+      "agent_execute": false,
+      "anon_execute": false,
+      "authenticated_execute": false,
+      "public_execute": false
+    }
+  ],
+  "schemaAndPriceState": {
+    "processing_result_column": [
+      {
+        "nullable": "YES",
+        "data_type": "jsonb"
+      }
+    ],
+    "project_tables_without_rls": 0,
+    "api_views_without_security_invoker": 0,
+    "m03_indexes": [
+      "audit_log_workflow_error_time",
+      "cost_ledger_cost_key"
+    ],
+    "writer_direct_dml_grants": 0,
+    "authenticator_exposed_schema_setting": null,
+    "reviewed_apify_prices": [
+      {
+        "sku": "apify/instagram-scraper:result",
+        "unit": "1k results",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 1.9
+      },
+      {
+        "sku": "apify/website-content-crawler:cu",
+        "unit": "compute unit",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 0.16
+      },
+      {
+        "sku": "data-slayer/instagram-stories-scraper:result",
+        "unit": "1k results",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 1.83
+      },
+      {
+        "sku": "data-slayer/instagram-stories-scraper:start",
+        "unit": "run",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 0.0005
+      },
+      {
+        "sku": "dltik/vimeo-scraper:start",
+        "unit": "run",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 0.00005
+      },
+      {
+        "sku": "dltik/vimeo-scraper:video",
+        "unit": "1k videos",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 0.5
+      },
+      {
+        "sku": "harvestapi/linkedin-company-employees:query_start",
+        "unit": "1k queries",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 20
+      },
+      {
+        "sku": "harvestapi/linkedin-company-employees:short_profile",
+        "unit": "1k profiles",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 2.5
+      },
+      {
+        "sku": "harvestapi/linkedin-company-posts:empty_query",
+        "unit": "1k queries",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 1
+      },
+      {
+        "sku": "harvestapi/linkedin-company-posts:post",
+        "unit": "1k posts",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 1.75
+      },
+      {
+        "sku": "harvestapi/linkedin-company-posts:start",
+        "unit": "run",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 0.00005
+      },
+      {
+        "sku": "igview-owner/instagram-story-viewer:result",
+        "unit": "1k results",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 5
+      },
+      {
+        "sku": "igview-owner/instagram-story-viewer:start",
+        "unit": "run",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 0.02
+      },
+      {
+        "sku": "louisdeconinck/instagram-story-details-scraper:profile",
+        "unit": "1k profiles",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 18
+      },
+      {
+        "sku": "louisdeconinck/instagram-story-details-scraper:start",
+        "unit": "run",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 0.08
+      },
+      {
+        "sku": "streamers/youtube-scraper:date_range",
+        "unit": "1k videos",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 0.8
+      },
+      {
+        "sku": "streamers/youtube-scraper:video",
+        "unit": "1k videos",
+        "valid_from": "2026-10-18",
+        "usd_per_unit": 2.6
+      }
+    ],
+    "price_verification": {
+      "note": "Unknown fees omitted; non-Apify placeholders require actual model/plan verification before later spend",
+      "apify_plan": "Scale",
+      "unverified": [
+        "goat255/vimeo-scraper:video",
+        "openai",
+        "serpapi",
+        "firecrawl",
+        "fixed_monthly_fees"
+      ],
+      "observed_date": "2026-10-18",
+      "plan_provenance": "owner_reported",
+      "verified_apify_actor_count": 9,
+      "fixed_fee_coverage_complete": false
+    },
+    "cost_ledger_rows": 0,
+    "audit_log_rows": 0
+  },
+  "ownerExclusions": [
+    {
+      "company_code": "C102",
+      "source_url": "https://www.youtube.com/mvmpro",
+      "stored_url": "https://www.youtube.com/mvmpro",
+      "status": "invalid",
+      "resolve_status": "failed",
+      "channel_id_null": true,
+      "uploads_id_null": true,
+      "items_count": 0,
+      "no_collection_run": true
+    },
+    {
+      "company_code": "C142",
+      "source_url": "https://www.youtube.com/@Gearbox-channel",
+      "stored_url": "https://www.youtube.com/@gearbox-channel",
+      "status": "invalid",
+      "resolve_status": "failed",
+      "channel_id_null": true,
+      "uploads_id_null": true,
+      "items_count": 0,
+      "no_collection_run": true
+    },
+    {
+      "company_code": "C218",
+      "source_url": "https://www.youtube.com/c/ActionFilmzStudioDubaiProductions_Rentals_Events",
+      "stored_url": "https://www.youtube.com/c/actionfilmzstudiodubaiproductions_rentals_events",
+      "status": "invalid",
+      "resolve_status": "failed",
+      "channel_id_null": true,
+      "uploads_id_null": true,
+      "items_count": 0,
+      "no_collection_run": true
+    },
+    {
+      "company_code": "C231",
+      "source_url": "https://www.youtube.com/user/cityfilmsbeirut",
+      "stored_url": "https://www.youtube.com/user/cityfilmsbeirut",
+      "status": "invalid",
+      "resolve_status": "failed",
+      "channel_id_null": true,
+      "uploads_id_null": true,
+      "items_count": 0,
+      "no_collection_run": true
+    },
+    {
+      "company_code": "C233",
+      "source_url": "https://www.youtube.com/@createproductiondxb5110",
+      "stored_url": "https://www.youtube.com/@createproductiondxb5110",
+      "status": "invalid",
+      "resolve_status": "failed",
+      "channel_id_null": true,
+      "uploads_id_null": true,
+      "items_count": 0,
+      "no_collection_run": true
+    },
+    {
+      "company_code": "C245",
+      "source_url": "https://www.youtube.com/firstandtenproductions",
+      "stored_url": "https://www.youtube.com/firstandtenproductions",
+      "status": "invalid",
+      "resolve_status": "failed",
+      "channel_id_null": true,
+      "uploads_id_null": true,
+      "items_count": 0,
+      "no_collection_run": true
+    },
+    {
+      "company_code": "C283",
+      "source_url": "https://www.youtube.com/wonderfulprodbeirut",
+      "stored_url": "https://www.youtube.com/wonderfulprodbeirut",
+      "status": "invalid",
+      "resolve_status": "failed",
+      "channel_id_null": true,
+      "uploads_id_null": true,
+      "items_count": 0,
+      "no_collection_run": true
+    }
+  ],
+  "typeCoverage": {
+    "checkedInFourSchemaTypes": {
+      "processingResultNullableJson": true,
+      "rpcNameCoverage": {
+        "log_cost": true,
+        "register_apify_run": true,
+        "get_apify_run": true,
+        "apify_runs_pending": true,
+        "complete_apify_run": true,
+        "get_setting": true,
+        "get_price_book": true,
+        "log_workflow_error": true,
+        "error_count_24h": true,
+        "accrue_fixed_costs": true,
+        "daily_health": true,
+        "process_apify_run": true
+      },
+      "sha256": "03a3db063231fc2f963401bdfd0741fd86f7b5cd0809267f2e1c677435d631ac",
+      "file": "packages/shared/src/db.types.ts",
+      "schemas": [
+        "api",
+        "app",
+        "ingest",
+        "ops"
+      ]
+    },
+    "hostedMetadataCoverage": "All twelve M03 function signatures/ACLs and nullable jsonb processing_result independently observed. Existing local types cover all twelve names and processing_result; reviewed migration/source hashes match hosted history.",
+    "freshMcpGeneration": {
+      "succeeded": true,
+      "schemas": [
+        "public"
+      ],
+      "coversApp": false,
+      "coversApi": false,
+      "coversIngest": false,
+      "coversOps": false,
+      "boundary": "MCP generator returns public-only types. It does not establish generated coverage of the four project schemas and was not written over packages/shared/src/db.types.ts."
+    },
+    "localGenerationBoundary": "Four-schema local generation and prior local379 SQL checks are retained as local evidence, not represented as a hosted functional suite."
+  },
+  "dataApiExposureBoundary": "No role-level pgrst.db_schemas override was observed in this query. This null does not establish the dashboard Data API exposed-schema setting. M03 migrations do not change exposure; prior saved-state evidence remains separate.",
+  "writesPerformedByReadback": false
+}

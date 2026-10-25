@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T09:09:41.890412+00:00",
+  "scope": "actual_existing_probe_GET_only_log_read",
+  "toolReceipt": "d9983c",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "windowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+  "status": "verified",
+  "nativeExit": 0,
+  "privateRead": true,
+  "rootChildClosed": true,
+  "handoffRetained": true,
+  "requestId": "80162039-6088-4011-bdf1-a2a7b5ec11cb",
+  "attemptId": "66233386-4962-44fe-b499-df973fde25c9",
+  "since": "2026-10-18T08:55:36.664Z",
+  "until": "2026-10-18T08:55:47.950Z",
+  "gatewayRequests": 0,
+  "logCliInvocations": 1,
+  "logScan": {
+    "version": 1,
+    "status": "verified",
+    "code": null,
+    "capturedMatchingRequest": true,
+    "logsScanned": 1,
+    "publicAuthMarkerFound": false,
+    "requestBodyMarkerFound": false,
+    "ownBypassFound": false,
+    "truncated": false,
+    "childClosed": true,
+    "observedAt": "2026-10-18T08:55:45.763Z"
+  },
+  "journal": {
+    "attempts": 2,
+    "clockStarted": false,
+    "serverAdmissions": 0,
+    "replayedProbe": false
+  },
+  "boundary": "CloudA plus captured CLI log privacy and disabled-handler503 verified. Restricted database identity and live bounded trial remain unverified. Log matching uses exact deployment/domain/path/method/status/time, without asserting equality to a separately captured platform trace ID or unseen provider storage."
+}

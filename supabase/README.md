@@ -7,8 +7,143 @@ tracked in [M01 progress](../milestones/M01-supabase-foundation/PROGRESS.md).
 M01 is complete. The owner separately approved PR4's merge, and GitHub confirms
 the exact reviewed head4ffca85 merged as4702a31 at02:56:30 Cairo on18October2026.
 [Merge receipt](../milestones/M01-supabase-foundation/evidence/merge-closure-20261018.json).
-M02 remains unstarted; the completed password handoffs/probes below must not be
-repeated as part of closing M01.
+M02 is also complete (PR6 and protected closure PR7). M03 is in progress. The
+completed M01/M02 password handoffs/probes below are historical and must not be
+reused or replayed.
+
+M03 adds CLI-generated `20261018034220_rpc_n8n_foundation` and
+`20261018035417_price_book_plan`. Both are applied to hosted dev, with all nine
+versions and statement fingerprints verified. The completed local379 pgTAP
+assertions remain separate from hosted schema/advisor/type coverage; native
+n8n Postgres TLS/login is still blocked. Production received no M03 migration.
+See the [dev completion](../milestones/M03-n8n-foundation/evidence/dev-migration-completion-20261018.json)
+and [M03 progress](../milestones/M03-n8n-foundation/PROGRESS.md). Never replay the
+completed M03 consumer, reset/seed an existing stack to resume, or treat local
+types as proof of hosted deployment.
+
+## 23 October — forward-only dev continuation repair
+
+The original14 migration files and successful hosted history remain unchanged.
+The original foundation SQL window is now independently verified permanently
+closed; C999 is archived/paused. The new CLI-created fifteenth migration permits
+owner-registered continuations in the existing dev family while retaining
+cumulative gateway/actor/spending limits. It creates no window or fixture data.
+The [repair packet](../milestones/M03-n8n-foundation/evidence/forward-continuation-repair-20261023.md)
+records actual isolated replay, local advisors/types, the exclusive existing
+consumer's `-ForwardMigration` commands and recovery procedure. Hosted application
+is tracked separately in current M03 progress; local replay is not hosted proof.
+Use the persistent dev Admin entry automatically through this bounded consumer.
+No new handoff, password reset, old migration replay or time-only approval is
+required. Production remains excluded.
+
+## 21 October - actual M03 dev migration completion; acceptance still open
+
+The single approved amended acceptance segment was admitted at13:42:15.608 UTC.
+Its exact four-file dry-run matched and one push completed native0: hosted dev
+now has14 versions. The ten existing versions and all four new statement
+fingerprints match the reviewed packet. **Do not replay any migration or delete
+the durable attempt/admission/claim records.** Production still has no M03
+changes.
+
+The first native postcheck stopped at generated-type validation after producing
+`scripts/db/out/m03-foundation-hosted-db.types.ts`. The actual candidate is
+preserved. The reviewed local checker correction removes only redundant type parentheses; that unchanged actual hosted output now passes the offline four-schema/six-table/nine-RPC AST comparison. The original native postcheck still failed; no live coordinator pass is claimed.
+The child closed and deleted its temporary administrator handoff/lease/private
+scratch. No fixture or foundation gateway window was created, and no workflow,
+provider or actor ran. Independent signed-in dev dashboard SQL verifies the
+catalog/RLS/grants/views/RPC restrictions,14 migrations,285 competitors,
+1,754 accounts and257 media objects. Dashboard advisor reruns are distinct:
+performance0warnings/errors; security0errors and1Auth warning for disabled
+leaked-password protection. Auth settings were unchanged.
+
+[Actual attempt and readback](../milestones/M03-n8n-foundation/evidence/dev-acceptance-amended-attempt-20261021.json).
+The one-use consumer is closed. Local diagnosis/review continues; this record
+does not authorize another live child, clock, credentials, production or merge.
+The19October section below remains the historical local-only checkpoint.
+
+## 19 October — full M03 source, local acceptance only
+
+The actual GW-01 dev connection trial and cleanup are complete; its window is
+permanently closed. Preserve the ten applied hosted versions, original hashes
+and all successful/failed trial receipts. The following GW-01 section is the
+historical pretrial source checkpoint, not a request to rerun or reopen it.
+
+Four new CLI-created forward versions add durable one-shot actor admission,
+exact callback-rejection audit, a separate fixed-alias foundation lifecycle and
+typed/read-proof/Close hardening. They were applied once to the existing local
+stack, without reset or seed replay. Local history now has 14 versions; these
+four are **not applied to hosted dev or production**:
+
+- `20261018231756_m03_actor_launch_admission.sql`;
+- `20261018232014_m03_foundation_gateway.sql`;
+- `20261018232922_m03_foundation_safety_receipts.sql`;
+- `20261018233338_m03_foundation_boundary_hardening.sql`.
+
+[Local database evidence](../milestones/M03-n8n-foundation/evidence/local-foundation-db-20261019.json)
+records 173 new rollback pgTAP assertions, retained-suite results, actual local
+concurrent gateway checks, clean local advisors and regenerated four-schema
+types. C999/TestHouse and the existing local data were preserved. SQL session
+simulation is not a new hosted restricted-login receipt. Full actor concurrency
+is reserved for the separately guarded empty CI fixture; an ordinary developer
+resume never resets its stack to manufacture that condition.
+
+No active foundation window or actor approval row is seeded. The
+[existing final-batch preparation packet](../milestones/M03-n8n-foundation/evidence/live-acceptance-outline-20261018.md)
+must be completed with actual saved bindings and separately approved before any
+hosted application/window, actor or multi-workflow batch. No administrator,
+Writer or provider password is needed merely to repeat completed evidence.
+
+## GW-01 dev connection layer — historical local checkpoint
+
+The owner approved the separate
+[strict-TLS dev gateway packet](../milestones/M03-n8n-foundation/evidence/strict-tls-connection-proposal-20261018.md)
+at head `100290a`. The CLI-generated additive migration is
+`20261018070042_n8n_worker_gateway_admission.sql`; this checkpoint proves local
+behavior only. Its pending hosted deployment, actual restricted login,
+reviewed preview binding and bounded n8n-to-gateway trial need their own actual
+receipts. Gateway acceptance must never be labeled native Postgres acceptance.
+
+Three RLS-enabled private tables hold one trial window, durable request
+digests/results and two business-operation leases. `n8n_writer` has no direct
+table privileges. Its only new entry points are:
+
+- `ops.worker_gateway_admit(uuid,uuid,text,jsonb,text)`;
+- `ops.worker_gateway_execute(uuid,uuid,text,jsonb)`;
+- `ops.worker_gateway_status(uuid,uuid)`.
+
+These definers have empty search paths and no PUBLIC/browser/agent execution.
+Admission and execution are separate transactions: admission commits its
+counter/reservation first; an operation and its saved outcome then commit
+atomically. The digest uses PostgreSQL JSONB text, not client serialization.
+Status uses a fresh admitted correlation ID plus the original target ID and
+cannot execute it. An expired unknown reservation requires reconciliation.
+
+The immutable `gw01-dev` window pins one reviewed Vercel audience, commit and
+deployment ID before the first ordinary admission starts its30-minute clock.
+Direct restricted control modes `bind`, `inspect` and `close` are not HTTP
+operation aliases. Inspect changes no counters/clock; close waits for prior
+executing transactions and cannot reopen/reset the window. Limits are100
+admitted calls,30/minute,500/day and two business leases; the trial coordinator
+separately counts all100 network attempts, including pre-SQL denial tests.
+The route verifies actual connection `current_user` and `session_user` before
+the wrappers; definer `current_user` is not a writer-login receipt.
+
+Only seven trial aliases are enabled: `identity.read`, `request.status`,
+`settings.read`, `prices.read`, `health.read`, `error.log` and `error.count`.
+The latter two are fixed to `M03-GATEWAY-ACCEPTANCE-DEV`, with a fixed log
+acknowledgment and no notification claim. Actor/run/ingest/cost/fixed-fee aliases
+remain blocked. No C999, actor/model run, content or fake provider cost is
+included in this connection trial. `ops` remains unexposed to the Data API.
+
+[Local evidence](../milestones/M03-n8n-foundation/evidence/local-gw01-db-20261018.json):
+102 rollback-only pgTAP assertions,19 process/transaction checks,8 checker
+safety tests, both advisors without findings and regenerated four-schema types
+pass. Session authorization in the local superuser fixture is explicitly a
+simulation. The checker restores only initially pristine local gateway tables
+and retains designated audit acknowledgments; it is never a hosted cleanup.
+The locally applied initial draft was iterated only on new objects without
+rewriting its ledger. Fresh final-source CI replay and the pinned offline
+statement fingerprint are separate from that draft history.
 
 ## Local development
 
@@ -18,12 +153,29 @@ From the repository root:
 
 ```sh
 corepack pnpm exec supabase start --exclude realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
-corepack pnpm exec supabase db reset --local
-corepack pnpm exec supabase test db --local
+corepack pnpm exec supabase migration up --local
+corepack pnpm exec supabase test db --local supabase/tests/10_n8n_foundation.test.sql
 corepack pnpm exec supabase db advisors --local --type security --level warn --fail-on warn
 corepack pnpm exec supabase db advisors --local --type performance --level info --fail-on error
 node scripts/db/check-data-api.mjs
 ```
+
+The focused command above covers the original M03 RPC suite. The full CI runner
+`scripts/db/run-local-ci.sh` keeps the original11 suites under their existing
+local principal and runs `11_worker_gateway.test.sql` separately under the
+local `supabase_admin` fixture, so its session-authorization guard is exercised
+without weakening it. The latter password-free local URI and public fixture
+password are never a hosted credential delivery method. Do not run the whole
+12-file glob under ordinary local `postgres` and misreport its15 preliminary
+checks as complete gateway acceptance. For the dedicated local checker:
+
+```sh
+node --test scripts/db/check-gw01-concurrency.test.mjs
+node scripts/db/check-gw01-concurrency.mjs --local
+```
+
+It refuses an already opened/bound/nonempty gateway journal. Reset/seed is
+reserved for a separately admitted fresh CI fixture, not an ordinary resume.
 
 `start` and `status` can print local keys. Keep their output private; never copy
 it into Git, CI logs, chat or progress files. CI uses a wrapper that withholds
@@ -332,8 +484,8 @@ role. It will remove consumed temporary credentials/private SQL and close the
 owned children. Keep your separately saved passwords for later integration.
 This does not authorize workflows, production promotion, merge or M02.
 
-Local informational advisor findings are intentional deny-all policies on the
-eleven internal tables and unused indexes on a fresh database. Retain required
+Local informational advisor findings include intentional deny-all policies on
+private internal tables and unused indexes on a fresh database. Retain required
 FK/list/search indexes; reassess performance on real data in later milestones.
 Security warnings/errors are blockers. Search correctness is tested here;
 the M11 scale benchmark and full OAuth UI flow in M09 remain future work.

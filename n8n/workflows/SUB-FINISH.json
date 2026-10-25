@@ -1,0 +1,640 @@
+{
+  "key": "SUB-FINISH",
+  "id": "RUTwaXMRh3PgLhJq",
+  "versionId": "11b75d2f-b4c0-48ce-aae4-6bf7aeb95ab8",
+  "active": false,
+  "activeVersionId": null,
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflow": {
+    "name": "SUB · Finish run [dev]",
+    "nodes": [
+      {
+        "id": "39083a98-e8e3-47b7-a64a-97edf3cf39ee",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "run_id",
+                "type": "string"
+              },
+              {
+                "name": "status",
+                "type": "string"
+              },
+              {
+                "name": "error",
+                "type": "any"
+              },
+              {
+                "name": "completion",
+                "type": "any"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "6ff07104-4692-4091-a484-a4ebb070e1c2",
+        "name": "Prepare finish",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const invalid = () => { throw new Error('EMR_N8N_INPUT_INVALID'); };\nconst items = $input.all();\nif (items.length !== 1) invalid();\nconst j = items[0].json;\nconst object = x => x !== null && typeof x === 'object' && !Array.isArray(x);\nconst exact = (x,allowed,required=[]) => object(x) && Object.keys(x).every(k=>allowed.includes(k)) && required.every(k=>Object.hasOwn(x,k));\nconst uuid = x => typeof x==='string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x);\nconst identifier = x => typeof x==='string' && /^[A-Za-z0-9_-]{1,200}$/.test(x);\nif (!object(j) || (j.env !== undefined && j.env !== null && j.env !== 'dev')) invalid();\nif (!exact(j,['run_id','status','error','completion','env'],['run_id','status']) || !uuid(j.run_id) ||\n  !['success','partial','failed'].includes(j.status) || (j.error!==undefined && j.error!==null && (typeof j.error!=='string' || j.error.length>4096))) invalid();\nconst completion=j.completion ?? null;\nif(completion!==null && j.error!==undefined && j.error!==null) invalid();\nif(completion!==null && (!exact(completion,[\"updated\",\"finished_now\",\"apify_run_id\",\"run_id\",\"account_ids\",\"status\",\"dataset_id\",\"cost_usd\",\"groups_sha256\",\"normalizer_version\",\"cost_keys\",\"items_seen\",\"items_new\",\"new_item_ids\",\"accounts_ok\",\"accounts_failed\",\"run_summary\"],[\"updated\",\"finished_now\",\"apify_run_id\",\"run_id\",\"account_ids\",\"status\",\"dataset_id\",\"cost_usd\",\"groups_sha256\",\"normalizer_version\",\"cost_keys\",\"items_seen\",\"items_new\",\"new_item_ids\",\"accounts_ok\",\"accounts_failed\",\"run_summary\"]) ||\n  !exact(completion.run_summary,[\"run_id\",\"status\",\"accounts_total\",\"accounts_ok\",\"accounts_failed\",\"items_seen\",\"items_new\",\"cost_usd\"],[\"run_id\",\"status\",\"accounts_total\",\"accounts_ok\",\"accounts_failed\",\"items_seen\",\"items_new\",\"cost_usd\"]) ||\n  typeof completion.updated!=='boolean' || typeof completion.finished_now!=='boolean' ||\n  completion.updated!==completion.finished_now || !uuid(completion.run_id) || completion.run_id!==j.run_id ||\n  !identifier(completion.apify_run_id) || !['SUCCEEDED','FAILED','TIMED_OUT','ABORTED'].includes(completion.status) ||\n  (completion.dataset_id!==null && (typeof completion.dataset_id!=='string' || completion.dataset_id.length>200)) ||\n  (completion.status==='SUCCEEDED' && (typeof completion.dataset_id!=='string' || !completion.dataset_id.trim())) ||\n  !Array.isArray(completion.account_ids) || completion.account_ids.length!==1 || !uuid(completion.account_ids[0]) ||\n  completion.normalizer_version!=='smoke_website_stub.v1' || !/^[a-f0-9]{64}$/.test(completion.groups_sha256) ||\n  !Array.isArray(completion.new_item_ids) || completion.new_item_ids.some(id=>!uuid(id)) ||\n  !Number.isInteger(completion.items_seen) || completion.items_seen<0 || completion.items_seen>1 ||\n  !Number.isInteger(completion.items_new) || completion.items_new<0 || completion.items_new>completion.items_seen ||\n  completion.new_item_ids.length!==completion.items_new ||\n  (completion.status==='SUCCEEDED' ? completion.accounts_ok!==1 || completion.accounts_failed!==0 :\n    completion.accounts_ok!==0 || completion.accounts_failed!==1 || completion.items_seen!==0 || completion.items_new!==0) ||\n  !Array.isArray(completion.cost_keys) || completion.cost_keys.length!==1 ||\n  completion.cost_keys[0]!=='apify:'+completion.apify_run_id+':'+completion.account_ids[0])) invalid();\nconst error=j.error==null?null:['workflow_failed','callback_retryable','apify_failed','unexpected_error'].includes(j.error)?j.error:'workflow_failed';\nreturn [{json:{params:[j.run_id,j.status,error,completion?.apify_run_id ?? null],completion}}];"
+        },
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "id": "06cf5bf7-2867-4a45-a5e9-1611afeb6e5f",
+        "name": "Prepare gateway · Finish run",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst execution=String($execution.id??'');if(!/^[A-Za-z0-9_-]{1,200}$/.test(execution))fail();\nconst hash=purpose=>{const h=require('crypto').createHash('sha256').update(\"emr-m03-foundation:SUB-FINISH:Finish run:\"+execution+':'+purpose).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};\nconst p=$json.params;if(!Array.isArray(p))fail();\nlet args;try{args=({runId:p[0],status:p[1],error:p[2],apifyRunId:p[3]});}catch{fail();}\nif(!object(args))fail();\nreturn[{json:{request:{version:1,requestId:hash('business'),operation:\"run.finish\",args},statusRequest:{version:1,requestId:hash('status'),operation:'request.status',args:{targetRequestId:hash('business')}}}}];"
+        },
+        "position": [
+          480,
+          0
+        ]
+      },
+      {
+        "id": "4439c34c-b2ef-4355-a4d8-3c84fdc24b35",
+        "name": "Invoke gateway · Finish run",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          600,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "23fe2798-4f6e-4d42-ae8d-d7f1a06dc4ba",
+        "name": "Observe gateway · Finish run",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Prepare gateway · Finish run\").first().json,r=rows[0].json;\nconst b=r.body;const observed=r.statusCode===200&&object(b)&&b.requestId===prepared.request.requestId&&b.operation===prepared.request.operation&&b.outcome==='completed'&&b.replayed===false&&exact(b.result,[\"r\",\"durable\"]);\n// Retain no raw error, headers, request or provider response.\nreturn[{json:{...prepared,observed,observedResult:null}}];"
+        },
+        "position": [
+          720,
+          0
+        ]
+      },
+      {
+        "id": "2dc5a38b-b2d5-4da6-a652-1435af9df042",
+        "name": "Read durable gateway · Finish run",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app/api/internal/n8n/foundation",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.statusRequest }}",
+          "sendHeaders": false,
+          "sendQuery": false,
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          840,
+          0
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "6970f03c-8134-4a5f-a45e-0399debca90a",
+        "name": "Finish run",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const fail=()=>{throw Error('EMR_FOUNDATION_RESPONSE_UNCONFIRMED');};\nconst object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);\nconst exact=(x,keys)=>object(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));\nconst rows=$input.all();if(rows.length!==1||!object(rows[0].json))fail();const $json=rows[0].json;\nconst prepared=$(\"Observe gateway · Finish run\").first().json,r=rows[0].json,b=r.body;\nif(r.statusCode!==200||!object(b)||b.version!==1||b.requestId!==prepared.statusRequest.requestId||b.operation!==prepared.request.operation||b.outcome!=='completed'||b.replayed!==true)fail();\nconst w=b.window;if(!object(w)||w.id!==\"df4f29ec-e2dc-4d82-a276-62a4e695e6f9\"||w.boundAudience!==\"https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app\"||w.closed!==false||!Number.isSafeInteger(w.totalAdmitted)||w.totalAdmitted<1||w.totalAdmitted>256)fail();\nconst start=Date.parse(w.startsAt),end=Date.parse(w.expiresAt),now=Date.now();if(!Number.isFinite(start)||!Number.isFinite(end)||start>now||end<=now||end<=start||end-start>3600000)fail();\nconst result=b.result;\nif(!exact(result,[\"r\",\"durable\"]))fail();\n\nreturn[{json:result}];"
+        },
+        "position": [
+          960,
+          0
+        ]
+      },
+      {
+        "id": "77f249dd-ebbe-4472-a3bd-3646e39ec849",
+        "name": "Validate completion",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const bad=()=>{throw new Error('EMR_N8N_COMPLETION_INVALID');};\nconst p=$('Prepare finish').first().json;\nconst rows=$input.all();\nif(rows.length!==1) bad();\nconst r=rows[0].json.r;\nconst keys=[\"run_id\",\"status\",\"accounts_total\",\"accounts_ok\",\"accounts_failed\",\"items_seen\",\"items_new\",\"cost_usd\"];\nif(!r || typeof r!=='object' || Array.isArray(r) || Object.keys(r).length!==keys.length ||\n  !keys.every(k=>Object.hasOwn(r,k)) || r.run_id!==p.params[0] || r.status!==p.params[1] ||\n  !['accounts_total','accounts_ok','accounts_failed','items_seen','items_new'].every(k=>Number.isInteger(r[k]) && r[k]>=0) ||\n  !Number.isFinite(r.cost_usd) || r.cost_usd<0 || r.items_new>r.items_seen) bad();\nconst c=p.completion;\nconst durable=rows[0].json.durable;\nconst receiptKeys=[\"updated\",\"finished_now\",\"apify_run_id\",\"run_id\",\"account_ids\",\"status\",\"dataset_id\",\"cost_usd\",\"groups_sha256\",\"normalizer_version\",\"cost_keys\",\"items_seen\",\"items_new\",\"new_item_ids\",\"accounts_ok\",\"accounts_failed\",\"run_summary\"];\nif(c && (!durable || typeof durable!=='object' || Array.isArray(durable) ||\n  durable.updated!==true || durable.finished_now!==true ||\n  Object.keys(durable).length!==receiptKeys.length || !receiptKeys.every(k=>Object.hasOwn(durable,k)) ||\n  !receiptKeys.filter(k=>!['updated','finished_now','run_summary'].includes(k)).every(k=>JSON.stringify(c[k])===JSON.stringify(durable[k])) ||\n  !keys.every(k=>c.run_summary[k]===r[k] && durable.run_summary?.[k]===r[k]) || c.items_seen!==r.items_seen || c.items_new!==r.items_new ||\n  c.accounts_ok!==r.accounts_ok || c.accounts_failed!==r.accounts_failed || c.cost_usd!==r.cost_usd ||\n  c.new_item_ids.length!==r.items_new || r.accounts_total!==c.account_ids.length ||\n  (c.status==='SUCCEEDED'?'success':'partial')!==r.status)) bad();\nconst first=c!==null && c.finished_now===true;\nreturn [{json:{summary:r,dispatch_ai:first && r.items_new>0,dispatch_publish:first && r.items_new>0 && r.status!=='failed'}}];"
+        },
+        "position": [
+          720,
+          0
+        ]
+      },
+      {
+        "id": "0a533ae3-5990-4f27-a816-b8f3da64396a",
+        "name": "Dispatch AI?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "20e0ad28-acea-44bf-a28d-752f814aacae",
+                "leftValue": "={{ $json.dispatch_ai }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          960,
+          0
+        ]
+      },
+      {
+        "id": "f7feba78-639e-4d31-af08-40cedf4b1efc",
+        "name": "Call AI stub",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "mySfLZbU7I1850uP"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "manual",
+              "limit": null,
+              "result_type": null,
+              "env": "dev"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1200,
+          -100
+        ]
+      },
+      {
+        "id": "d395f0ad-d935-405c-ac75-6cdaeb9926c1",
+        "name": "Dispatch publish?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "ebf8a929-b2ba-4aa8-a826-fcfecf81ed3e",
+                "leftValue": "={{ $('Validate completion').first().json.dispatch_publish }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          1440,
+          0
+        ]
+      },
+      {
+        "id": "b53ecde2-57cb-4e57-ad0d-77390c8a1d91",
+        "name": "Call publish stub",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "S6KDFsx5IjQRf6tm"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "manual",
+              "limit": null,
+              "result_type": null,
+              "env": "dev",
+              "tags": [
+                "feed",
+                "stats"
+              ]
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "tags",
+                "displayName": "tags",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "array",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": false
+          }
+        },
+        "position": [
+          1680,
+          -100
+        ]
+      },
+      {
+        "id": "3a25b322-26f0-452a-ab8b-105860ac1936",
+        "name": "Return summary",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "return [{json:$('Validate completion').first().json.summary}];"
+        },
+        "position": [
+          1920,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Prepare finish",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare finish": {
+        "main": [
+          [
+            {
+              "node": "Prepare gateway · Finish run",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Finish run": {
+        "main": [
+          [
+            {
+              "node": "Validate completion",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate completion": {
+        "main": [
+          [
+            {
+              "node": "Dispatch AI?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Dispatch AI?": {
+        "main": [
+          [
+            {
+              "node": "Call AI stub",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Dispatch publish?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call AI stub": {
+        "main": [
+          [
+            {
+              "node": "Dispatch publish?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Dispatch publish?": {
+        "main": [
+          [
+            {
+              "node": "Call publish stub",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call publish stub": {
+        "main": [
+          [
+            {
+              "node": "Return summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare gateway · Finish run": {
+        "main": [
+          [
+            {
+              "node": "Invoke gateway · Finish run",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Invoke gateway · Finish run": {
+        "main": [
+          [
+            {
+              "node": "Observe gateway · Finish run",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Observe gateway · Finish run": {
+        "main": [
+          [
+            {
+              "node": "Read durable gateway · Finish run",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read durable gateway · Finish run": {
+        "main": [
+          [
+            {
+              "node": "Finish run",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "gKQ40iTbrD5MKnK8",
+        "name": "layer:sub"
+      }
+    ],
+    "pinData": {}
+  },
+  "definitionProfile": "inactive_native_staging",
+  "deferredErrorWorkflowId": "S9NHRkKFUIiXX2wv",
+  "intendedSourceHash": "9d6a8c597b803aeec12b968ea31c99c8a404e570f2798ce4dde39d7256fab718",
+  "stagedSourceHash": "7ee5865556151fc19aab6ad26998ec8bc7d8dcb71f6900f2d7bfddb5b7c41e88",
+  "canonicalParity": false,
+  "kind": "actual_saved_inactive_foundation_staging",
+  "version": 1,
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9"
+}

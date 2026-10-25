@@ -1,0 +1,577 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T07:33:33Z",
+  "environment": "hosted emr-dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "projectUrl": "https://zmotjsbzhzjvpelxvxlf.supabase.co",
+  "sourceCheckpoint": "100290a291530d30d0387269c1a0805ad4f86fcc plus reviewed uncommitted GW-01 implementation",
+  "afterRunId": "e3693aa9-be79-4f24-be54-bf743045c77d",
+  "method": "Independent read-only scoped-dev MCP: target URL first, then PostgreSQL catalog/history/data SELECTs and hosted advisors. No credentials, writes or restricted-role login by this reader.",
+  "summary": {
+    "migrationCount": 10,
+    "allTenHistoryDigestsMatchSealedPacket": true,
+    "originalNineHistoryDigestsPreserved": true,
+    "newMigration": {
+      "version": "20261018070042",
+      "name": "n8n_worker_gateway_admission",
+      "file": "supabase/migrations/20261018070042_n8n_worker_gateway_admission.sql",
+      "sha256": "98ebdfad9fffa819773fdbee5e3b9b8374be8a6f58497593084aed4077e9b856",
+      "historySha256": "53ceb5deb54eef53750aa70064820343797474d8b1b28696a559d71f4db40373"
+    },
+    "newTablesRlsEnabled": 3,
+    "writerOnlyWrappers": 3,
+    "ownerOnlyHelpers": 2,
+    "preparedUnbound": true,
+    "trialRequestCount": 0,
+    "heldLeases": 0,
+    "baselineUnchanged": true,
+    "hostedAdvisorsWarnings": 0,
+    "hostedAdvisorsErrors": 0
+  },
+  "history": [
+    {
+      "version": "20261017172928",
+      "name": "extensions_schemas_roles",
+      "history_sha256": "d5c1a3c8b821bb14919c32d722042e15aa8775c966b3eade572531f066db093b"
+    },
+    {
+      "version": "20261017172931",
+      "name": "core_tables",
+      "history_sha256": "0d7587a24dc96c35e639729369dd1650952381c356e5ed1ba867934669e1abcc"
+    },
+    {
+      "version": "20261017172934",
+      "name": "auth_rls_views",
+      "history_sha256": "bb7713ce9dd0bfb4de0cc0bc98ae5f558d39807375b86f46b1bdbd002d7f0aad"
+    },
+    {
+      "version": "20261017172937",
+      "name": "rpc_pipeline_core",
+      "history_sha256": "ed23d0424c7c16cf325feceaa141baecf26f4f281725e28be1286fd6e76b196d"
+    },
+    {
+      "version": "20261017172940",
+      "name": "rpc_app_search",
+      "history_sha256": "2b36ed94ddfdc674e1097b4dee4141faf6e0912120c22e83c9b91b3353ec20b2"
+    },
+    {
+      "version": "20261017172943",
+      "name": "storage_cron",
+      "history_sha256": "50b6a9aacfbf530783ba2defc23183293b1acfd6ce8a8612e871f5bb104c33ee"
+    },
+    {
+      "version": "20261017172945",
+      "name": "seed_taxonomies",
+      "history_sha256": "3cb258773590c0225732727ea2701ad2dfc3ede8d9b62cc1d522bab3e4e9b61b"
+    },
+    {
+      "version": "20261018034220",
+      "name": "rpc_n8n_foundation",
+      "history_sha256": "dedf2cae9d1cfb7d7c5cb996d4c871a55c2628af868ee57fcb6df4598582a6d6"
+    },
+    {
+      "version": "20261018035417",
+      "name": "price_book_plan",
+      "history_sha256": "3086cac77d3e68ecd0695b00a62c883e0cf706605432ff153b25b0c27e43a6d2"
+    },
+    {
+      "version": "20261018070042",
+      "name": "n8n_worker_gateway_admission",
+      "history_sha256": "53ceb5deb54eef53750aa70064820343797474d8b1b28696a559d71f4db40373"
+    }
+  ],
+  "gatewayCatalog": {
+    "tables": [
+      {
+        "rls": true,
+        "name": "ops.worker_gateway_leases",
+        "owner": "postgres",
+        "anon_any": false,
+        "policies": 0,
+        "agent_any": false,
+        "public_acl": false,
+        "writer_delete": false,
+        "writer_insert": false,
+        "writer_select": false,
+        "writer_update": false,
+        "authenticated_any": false
+      },
+      {
+        "rls": true,
+        "name": "ops.worker_gateway_rate_windows",
+        "owner": "postgres",
+        "anon_any": false,
+        "policies": 0,
+        "agent_any": false,
+        "public_acl": false,
+        "writer_delete": false,
+        "writer_insert": false,
+        "writer_select": false,
+        "writer_update": false,
+        "authenticated_any": false
+      },
+      {
+        "rls": true,
+        "name": "ops.worker_gateway_requests",
+        "owner": "postgres",
+        "anon_any": false,
+        "policies": 0,
+        "agent_any": false,
+        "public_acl": false,
+        "writer_delete": false,
+        "writer_insert": false,
+        "writer_select": false,
+        "writer_update": false,
+        "authenticated_any": false
+      }
+    ],
+    "window": {
+      "unbound": true,
+      "prepared": true,
+      "day_count": 0,
+      "namespace": "gw01-dev",
+      "window_id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+      "close_count": 0,
+      "environment": "dev",
+      "project_ref": "zmotjsbzhzjvpelxvxlf",
+      "minute_count": 0,
+      "admitted_count": 0
+    },
+    "functions": [
+      {
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "ops.worker_gateway_admit(uuid,uuid,text,jsonb,text)",
+        "anon_execute": false,
+        "agent_execute": false,
+        "public_execute": false,
+        "writer_execute": true,
+        "security_definer": true,
+        "authenticated_execute": false
+      },
+      {
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "ops.worker_gateway_execute(uuid,uuid,text,jsonb)",
+        "anon_execute": false,
+        "agent_execute": false,
+        "public_execute": false,
+        "writer_execute": true,
+        "security_definer": true,
+        "authenticated_execute": false
+      },
+      {
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "ops.worker_gateway_response(uuid,text,text,jsonb)",
+        "anon_execute": false,
+        "agent_execute": false,
+        "public_execute": false,
+        "writer_execute": false,
+        "security_definer": false,
+        "authenticated_execute": false
+      },
+      {
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "ops.worker_gateway_status(uuid,uuid)",
+        "anon_execute": false,
+        "agent_execute": false,
+        "public_execute": false,
+        "writer_execute": true,
+        "security_definer": true,
+        "authenticated_execute": false
+      },
+      {
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "ops.worker_gateway_validate(uuid,uuid,text,jsonb)",
+        "anon_execute": false,
+        "agent_execute": false,
+        "public_execute": false,
+        "writer_execute": false,
+        "security_definer": false,
+        "authenticated_execute": false
+      }
+    ],
+    "lease_rows": 2,
+    "held_leases": 0,
+    "request_count": 0
+  },
+  "guardCatalogMarkers": {
+    "observed_at": "2026-10-18 07:32:41.779244+00",
+    "session_identity_guard": true,
+    "role_guard": true,
+    "fixed_validation_errors": true,
+    "status_target_guard": true,
+    "execute_parent_share_lock": true,
+    "admit_parent_update_lock": true,
+    "execution_clock_guard": true,
+    "deployment_binding_guard": true,
+    "closed_operation_guard": true,
+    "jsonb_digest_envelope": true,
+    "type_columns": [
+      {
+        "type": "uuid",
+        "table": "worker_gateway_leases",
+        "column": "window_id",
+        "nullable": "NO"
+      },
+      {
+        "type": "int2",
+        "table": "worker_gateway_leases",
+        "column": "slot",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "worker_gateway_leases",
+        "column": "request_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamptz",
+        "table": "worker_gateway_leases",
+        "column": "expires_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "worker_gateway_rate_windows",
+        "column": "namespace",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "worker_gateway_rate_windows",
+        "column": "window_id",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "worker_gateway_rate_windows",
+        "column": "project_ref",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "worker_gateway_rate_windows",
+        "column": "environment",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "worker_gateway_rate_windows",
+        "column": "bound_audience",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "worker_gateway_rate_windows",
+        "column": "bound_commit_sha",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "worker_gateway_rate_windows",
+        "column": "bound_deployment_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamptz",
+        "table": "worker_gateway_rate_windows",
+        "column": "starts_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamptz",
+        "table": "worker_gateway_rate_windows",
+        "column": "expires_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamptz",
+        "table": "worker_gateway_rate_windows",
+        "column": "closed_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "int4",
+        "table": "worker_gateway_rate_windows",
+        "column": "admitted_count",
+        "nullable": "NO"
+      },
+      {
+        "type": "int4",
+        "table": "worker_gateway_rate_windows",
+        "column": "close_count",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamptz",
+        "table": "worker_gateway_rate_windows",
+        "column": "minute_start",
+        "nullable": "YES"
+      },
+      {
+        "type": "int4",
+        "table": "worker_gateway_rate_windows",
+        "column": "minute_count",
+        "nullable": "NO"
+      },
+      {
+        "type": "date",
+        "table": "worker_gateway_rate_windows",
+        "column": "day_start",
+        "nullable": "YES"
+      },
+      {
+        "type": "int4",
+        "table": "worker_gateway_rate_windows",
+        "column": "day_count",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "worker_gateway_requests",
+        "column": "window_id",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "worker_gateway_requests",
+        "column": "request_id",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "worker_gateway_requests",
+        "column": "operation",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "worker_gateway_requests",
+        "column": "payload_sha256",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "worker_gateway_requests",
+        "column": "state",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamptz",
+        "table": "worker_gateway_requests",
+        "column": "created_at",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamptz",
+        "table": "worker_gateway_requests",
+        "column": "lease_expires_at",
+        "nullable": "NO"
+      },
+      {
+        "type": "timestamptz",
+        "table": "worker_gateway_requests",
+        "column": "completed_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "jsonb",
+        "table": "worker_gateway_requests",
+        "column": "result",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "worker_gateway_requests",
+        "column": "error_code",
+        "nullable": "YES"
+      }
+    ]
+  },
+  "executableErrorGuardAndRpcSignatures": {
+    "no_executable_raw_sqlerrm": true,
+    "rpc_type_signatures": [
+      {
+        "args": "p_window_id uuid, p_request_id uuid, p_operation text, p_args jsonb, p_mode text DEFAULT 'admit'::text",
+        "name": "worker_gateway_admit",
+        "result": "jsonb"
+      },
+      {
+        "args": "p_window_id uuid, p_request_id uuid, p_operation text, p_args jsonb",
+        "name": "worker_gateway_execute",
+        "result": "jsonb"
+      },
+      {
+        "args": "p_window_id uuid, p_target_request_id uuid",
+        "name": "worker_gateway_status",
+        "result": "jsonb"
+      }
+    ]
+  },
+  "baseline": {
+    "costs": 0,
+    "items": 0,
+    "accounts": 1754,
+    "audit_log": 0,
+    "raw_items": 0,
+    "apify_runs": 0,
+    "exclusions": [
+      {
+        "status": "invalid",
+        "platform": "youtube",
+        "company_code": "C102",
+        "resolve_status": "failed",
+        "external_id_empty": true,
+        "uploads_playlist_empty": true
+      },
+      {
+        "status": "invalid",
+        "platform": "youtube",
+        "company_code": "C142",
+        "resolve_status": "failed",
+        "external_id_empty": true,
+        "uploads_playlist_empty": true
+      },
+      {
+        "status": "invalid",
+        "platform": "youtube",
+        "company_code": "C218",
+        "resolve_status": "failed",
+        "external_id_empty": true,
+        "uploads_playlist_empty": true
+      },
+      {
+        "status": "invalid",
+        "platform": "youtube",
+        "company_code": "C231",
+        "resolve_status": "failed",
+        "external_id_empty": true,
+        "uploads_playlist_empty": true
+      },
+      {
+        "status": "invalid",
+        "platform": "youtube",
+        "company_code": "C233",
+        "resolve_status": "failed",
+        "external_id_empty": true,
+        "uploads_playlist_empty": true
+      },
+      {
+        "status": "invalid",
+        "platform": "youtube",
+        "company_code": "C245",
+        "resolve_status": "failed",
+        "external_id_empty": true,
+        "uploads_playlist_empty": true
+      },
+      {
+        "status": "invalid",
+        "platform": "youtube",
+        "company_code": "C283",
+        "resolve_status": "failed",
+        "external_id_empty": true,
+        "uploads_playlist_empty": true
+      }
+    ],
+    "logo_paths": 257,
+    "test_house": 0,
+    "competitors": 285,
+    "logo_assets": 257,
+    "scrape_runs": 0,
+    "media_objects": 257
+  },
+  "advisors": {
+    "security": {
+      "warningCount": 0,
+      "errorCount": 0,
+      "notices": [
+        {
+          "name": "rls_enabled_no_policy",
+          "level": "INFO",
+          "count": 14,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+        }
+      ]
+    },
+    "performance": {
+      "warningCount": 0,
+      "errorCount": 0,
+      "notices": [
+        {
+          "name": "unused_index",
+          "level": "INFO",
+          "count": 68,
+          "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+        },
+        {
+          "name": "auth_db_connections_absolute",
+          "level": "INFO",
+          "count": 1,
+          "remediation": "https://supabase.com/docs/guides/deployment/going-into-prod"
+        }
+      ]
+    }
+  },
+  "generatedTypeCoverage": {
+    "schema": "ops",
+    "columnCount": 30,
+    "allColumnsMatch": true,
+    "functions": [
+      {
+        "name": "worker_gateway_admit",
+        "argumentsMatch": true,
+        "returnsJson": true
+      },
+      {
+        "name": "worker_gateway_execute",
+        "argumentsMatch": true,
+        "returnsJson": true
+      },
+      {
+        "name": "worker_gateway_status",
+        "argumentsMatch": true,
+        "returnsJson": true
+      }
+    ],
+    "typesSha256": "be35ca469e4cee9951c467f563d6f73ef7188f572ce5f5e0b3c4c24cf0f66242",
+    "nativeExit": 0,
+    "path": "packages/shared/src/db.types.ts",
+    "method": "TypeScript AST comparison of existing four-schema generated Row fields against actual hosted information_schema field/type/nullability, plus all three RPC argument names and Json returns.",
+    "regeneration": "Four-schema types were regenerated locally after the final new migration. The dev MCP generator has no schema-selection argument, so its public-only output was not substituted for those types.",
+    "limits": "Catalog/type parity is not hosted restricted-login or RPC behavior acceptance."
+  },
+  "diagnosticCorrections": [
+    {
+      "operation": "Initial read-only baseline SELECT",
+      "code": "42P01",
+      "cause": "The diagnostic referenced nonexistent ops.workflow_errors. No statement executed; corrected SELECT counted existing ops.audit_log and returned zero. No schema or data change."
+    },
+    {
+      "operation": "Initial no-raw-error source marker",
+      "initialResult": false,
+      "cause": "The broad SQLERRM text search matched a source comment that says not to save SQLERRM. A comment-stripped executable source check returned true; full deployed migration statement digest independently matches the reviewed source."
+    }
+  ],
+  "scope": {
+    "databaseWritesByReader": 0,
+    "migrationReplays": 0,
+    "seedRuns": 0,
+    "providerCalls": 0,
+    "collectedFixtureInsertions": 0,
+    "productionActions": 0,
+    "gatewayTrialRequests": 0,
+    "restrictedLoginReceipt": false,
+    "actualGatewayAcceptance": false
+  },
+  "remaining": "Cloud privacy, private runtime delivery, actual restricted-writer bind/login/denials, and the separately bounded gateway trial remain pending. The window is prepared, unbound and unused; no trial clock started."
+}

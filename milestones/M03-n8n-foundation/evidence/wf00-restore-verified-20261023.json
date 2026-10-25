@@ -1,0 +1,231 @@
+{
+  "kind": "actual_owned_wf00_restore_verified",
+  "recordedAt": "2026-10-23T18:21:26.124Z",
+  "toolReceipt": "87a22f",
+  "nativeChildSession": 93129,
+  "environment": "dev",
+  "actual": {
+    "version": 1,
+    "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "workflowId": "MzimjpsuyPuK7SKe",
+    "status": "wf00_restore_verified",
+    "requestCount": 3,
+    "backupReady": true,
+    "writeIntentRecorded": true,
+    "putAttempted": true,
+    "putAcknowledged": true,
+    "exactContentVerified": true,
+    "inactiveVerified": true,
+    "ownerAndTagsVerified": true,
+    "versionId": "f5f755b7-9683-4fb6-a26d-87b001127244",
+    "beforeVersionPrivatelyBackedUp": true,
+    "nativeStorageModePreserved": true,
+    "executionCount": 0,
+    "credentialsCreated": 0,
+    "gatewayWindowStarted": false,
+    "networkCompletionVerified": true,
+    "diagnostic": null,
+    "nativeExit": 0,
+    "childClosed": true,
+    "operationLockAcquired": true,
+    "parentLockDeleted": true,
+    "privateRead": true,
+    "persistentManagementRetained": true
+  },
+  "failedAttempt": {
+    "path": "milestones/M03-n8n-foundation/evidence/wf00-restore-attempt-20261023.json",
+    "sha256": "e5d6188f80281a0603209b57de131f4f8fe16278c7d56a53ae3f56b77156a3f7",
+    "toolReceipt": "905f06",
+    "requestCount": 1,
+    "restored": false,
+    "preservedSeparately": true
+  },
+  "readiness": {
+    "toolReceipt": "0efa6c",
+    "nativeExit": 0,
+    "sourceFileCount": 39,
+    "privateRead": false,
+    "networkRequests": 0,
+    "maximumRequests": 3,
+    "sealPath": "scripts/n8n/foundation-provision-seal.json",
+    "sealSha256": "56f5b834c3b72ab2a6ebdb97846a26b88c314284cdb653b2793fab9e916b9e10",
+    "inventoryRecordedFromPreExecutionSeal": true,
+    "currentSourcesMayContainPostVerificationChanges": true,
+    "consumedSourcePins": {
+      "core": "a08efc3ccbfe83786441a46288a99d3967f2fcea7008ee655fea0537499ded04",
+      "cli": "56ee29c49a01a26d12f12beaa97c1eedd7f120bc4b0c3546230d70b64f709cd2",
+      "consumer": "3de17bb167d0575c82995c21e29b521bb03a5566343795cc541039e9fa03560f",
+      "publicModule": "6f1af26b5e4143731a0890f4ec93b849e7261a708583c772ba8de5873b18ddd0",
+      "checkpoint": "5bf610900c556d8b72b065856ab2a0b648b89c676a8c903b9eb1a342eaff04ad",
+      "bind": "d0ccb67f693840a761c64b695aa4fc3adf0b860a507f4cbcc0cedbfbd3ff5e04"
+    }
+  },
+  "journal": {
+    "metadataReadReceipt": "82952a",
+    "path": "scripts/n8n/out/foundation/wf00-restore-20261023.jsonl",
+    "rowCount": 9,
+    "byteLength": 1233,
+    "sha256": "53b1620b0ee3bdd54645076cd81cfc2c80d6040ee58d2c0cdb6511fc68b5298b",
+    "originalPrefix": {
+      "rowCount": 2,
+      "byteLength": 223,
+      "sha256": "22c18ac86b7e0e03762cf19ad98a33560344af664fcf25f0a45673906fdc955d",
+      "byteIdentical": true
+    },
+    "requestOrdinals": [1, 2, 3, 4],
+    "requestMethods": ["GET", "GET", "PUT", "GET"],
+    "putCount": 1,
+    "continuationBackupRunId": "4586bbde-add3-4376-b8b4-5200443c06d5",
+    "rows": [
+      {
+        "event": "request",
+        "number": 1,
+        "method": "GET",
+        "path": "/api/v1/workflows/MzimjpsuyPuK7SKe?excludePinnedData=true"
+      },
+      {
+        "event": "backup_ready",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "backupRunId": "fc0bdea1-f733-4c68-ba8c-f062e83b7919"
+      },
+      {
+        "event": "restore_continuation",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "priorToolReceipt": "905f06",
+        "priorRequestCount": 1,
+        "priorBackupRunId": "fc0bdea1-f733-4c68-ba8c-f062e83b7919"
+      },
+      {
+        "event": "request",
+        "number": 2,
+        "method": "GET",
+        "path": "/api/v1/workflows/MzimjpsuyPuK7SKe?excludePinnedData=true"
+      },
+      {
+        "event": "backup_ready",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "backupRunId": "4586bbde-add3-4376-b8b4-5200443c06d5"
+      },
+      {
+        "event": "restore_intent",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "sourceCommitSha": "025c2a2c0127566df71cef77797db277f1565568",
+        "backupRunId": "4586bbde-add3-4376-b8b4-5200443c06d5"
+      },
+      {
+        "event": "request",
+        "number": 3,
+        "method": "PUT",
+        "path": "/api/v1/workflows/MzimjpsuyPuK7SKe?publishIfActive=false"
+      },
+      {
+        "event": "request",
+        "number": 4,
+        "method": "GET",
+        "path": "/api/v1/workflows/MzimjpsuyPuK7SKe?excludePinnedData=true"
+      },
+      {
+        "event": "restore_verified",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "versionId": "f5f755b7-9683-4fb6-a26d-87b001127244",
+        "backupRunId": "4586bbde-add3-4376-b8b4-5200443c06d5",
+        "nativeReadonlySettings": { "binaryMode": "separate" }
+      }
+    ]
+  },
+  "cleanup": {
+    "toolReceipt": "76da3d",
+    "nativeExit": 0,
+    "credentialDecryption": false,
+    "networkRequests": 0,
+    "rollbackBackups": [
+      {
+        "runId": "fc0bdea1-f733-4c68-ba8c-f062e83b7919",
+        "retained": true,
+        "intendedUserAndSystemAclVerified": true
+      },
+      {
+        "runId": "4586bbde-add3-4376-b8b4-5200443c06d5",
+        "retained": true,
+        "intendedUserAndSystemAclVerified": true
+      }
+    ],
+    "acceptanceParentLockAbsent": true,
+    "provisionMutexExclusiveOpenCloseVerified": true,
+    "persistentStatus": {
+      "toolReceipt": "82952a",
+      "readyEntries": ["Admin", "Management", "Writer", "ApifyRead"],
+      "missing": [],
+      "authenticationTested": false
+    }
+  },
+  "usage": {
+    "beforeRestore": { "management": 98, "control": 301, "combined": 399 },
+    "failedAttempt": { "management": 1, "control": 0, "combined": 1 },
+    "verifiedContinuation": { "management": 3, "control": 0, "combined": 3 },
+    "totalRestore": { "management": 4, "control": 0, "combined": 4 },
+    "after": { "management": 102, "control": 301, "combined": 403 },
+    "carriedManagementBefore": 6,
+    "carriedManagementAfter": 10,
+    "actorStartsUsed": 0,
+    "actorStartsMaximum": 2,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "currentExport": {
+    "path": "n8n/workflows/WF-00.json",
+    "previousFileSha256": "905e40aa96bea9291961f8e73297a8668b76ead397c834dbc7dc796e14ecfea9",
+    "previousVersionId": "b2ff9a94-89b8-4fe2-9bed-093774f0feff",
+    "versionId": "f5f755b7-9683-4fb6-a26d-87b001127244",
+    "recordHash": "c12fad19e44c495708a9f33728ae7c3b050563b09e133dfc20945750da7c3c00",
+    "fileSha256": "db764d55ae2b8b7ed2b6ac2c2fa605e4bc1e968acab2b5183092eb90db9209f0",
+    "onlyMetadataChanged": true,
+    "workflowDefinitionUnchanged": true,
+    "editableSettingCount": 9,
+    "stagedSourceHash": "1090db04ecf847c64c28a8bcb247e1080b1db85d37503c1108aa99f307d21239",
+    "intendedSourceHash": "7877dca03efdd2d9a859ba57b42ad3c865112c00a22eefc964e8735c28b2ae4b",
+    "nativeStorageModeVerifiedFromFinalJournal": true,
+    "immutableReviewedFixture": {
+      "path": "n8n/fixtures/WF-00-reviewed-native-staging-025c2a2.json",
+      "sha256": "905e40aa96bea9291961f8e73297a8668b76ead397c834dbc7dc796e14ecfea9",
+      "unchanged": true
+    }
+  },
+  "localVerificationBeforeActual": {
+    "nativePublicParser": {
+      "toolReceipt": "9b78d3",
+      "passed": 34,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "independentWf00Cases": { "toolReceipt": "e04be5", "passed": 14, "nativeExit": 0 },
+    "independentPsProjection": { "toolReceipt": "3ec2bd", "passed": 5, "nativeExit": 0 },
+    "independentNativeHelper": { "toolReceipt": "71be0b", "passed": 3, "nativeExit": 0 },
+    "peerReview": "No P1/P2 findings; local tests are distinct from actual saved-state verification."
+  },
+  "boundaries": {
+    "workflowDefinitionsWritten": 1,
+    "otherWorkflowMutations": false,
+    "sharedCredentialChanges": false,
+    "productionOperationsPerformed": false,
+    "databaseOperations": 0,
+    "migrationReplay": false,
+    "fixtureOperations": false,
+    "environmentChanges": false,
+    "recurringActivation": false,
+    "externalNotifications": false,
+    "paidProviderCalls": 0,
+    "actorStarts": 0,
+    "mergePerformed": false,
+    "m04Started": false
+  },
+  "acceptance": {
+    "ownerRestoreDecisionFulfilled": true,
+    "wf00RestoreVerified": true,
+    "m03DevAcceptanceComplete": false,
+    "remaining": "Integrate only proven WF00 metadata and cumulative charges, preserve C01 conditions, then complete remaining A-D after the separate Vercel50-to88 request allocation decision. Production and PR8 merge remain separate."
+  }
+}

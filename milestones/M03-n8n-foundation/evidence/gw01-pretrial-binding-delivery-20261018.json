@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T10:16:23Z",
+  "scope": "Actual dev-only target registration, immutable prepared-window Writer binding and owned n8n machine credential delivery before the HTTP trial",
+  "evidenceBoundary": "Fixed safe receipts only. No credential value, handoff, request header/body, raw provider output or private incident content was read or copied by this documentation review.",
+  "prerequisiteEvidence": [
+    "milestones/M03-n8n-foundation/evidence/gw01-environment-delivery-20261018.json",
+    "milestones/M03-n8n-foundation/evidence/gw01-runtime-readback-20261018.json"
+  ],
+  "rootObservedPublicPreparation": {
+    "registrationToolReceiptRef": "50f3cd",
+    "exactVerifiedTargetRegistered": true,
+    "publicSealToolReceiptRef": "1742b2",
+    "publicSealNativeExit": 0,
+    "publicSealPrivateRead": false,
+    "boundary": "Root's observed public registration and seal completion are distinct from the copied Writer and RuntimeCredential receipts below. Registration does not replenish counters or start the clock."
+  },
+  "writerBind": {
+    "toolReceiptRef": "5b745d",
+    "sourceFile": "scripts/n8n/out/gw01-writer-bind-receipt.json",
+    "fileSha256": "b34437e8f2c8a28f35425e378b39016996384924f09157071b35d2d969818c5e",
+    "observedAt": null,
+    "receipt": {
+      "version": 1,
+      "mode": "Bind",
+      "status": "complete",
+      "privateRead": true,
+      "rootChildClosed": true,
+      "handoffRetained": true,
+      "nativeExit": 0,
+      "result": {
+        "version": 1,
+        "status": "complete",
+        "mode": "Bind",
+        "code": null,
+        "identity": {
+          "currentUser": "n8n_writer",
+          "sessionUser": "n8n_writer",
+          "database": "postgres",
+          "projectRef": "zmotjsbzhzjvpelxvxlf"
+        },
+        "authorizationDenials": 0,
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "closed": false,
+          "startsAt": null,
+          "expiresAt": null,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "totalAdmitted": 0,
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        },
+        "connectionClosed": true
+      }
+    },
+    "boundary": "Actual direct restricted Writer identity and exact immutable deployment binding; not gateway HTTP identity or native n8n Cloud Postgres TLS. Zero denials in this Bind phase does not replace the earlier four-denial Verify receipt. Binding left both clock fields null and admitted no request."
+  },
+  "runtimeCredential": {
+    "toolReceiptRef": "559ac3",
+    "sourceFile": "scripts/n8n/out/gw01-runtime-credential-receipt.json",
+    "fileSha256": "6e243ab6d0a868a7b1a36c6149b3fabbb0f349939dc4699bd5454ae38be07783",
+    "receipt": {
+      "version": 1,
+      "mode": "RuntimeCredential",
+      "status": "complete",
+      "code": null,
+      "privacyStage": null,
+      "privacyParameterDiagnostic": null,
+      "privateRead": true,
+      "rootChildClosed": true,
+      "nativeExit": 0,
+      "handoffsRetained": true,
+      "delivery": {
+        "version": 1,
+        "status": "complete",
+        "mode": "RuntimeCredential",
+        "managementRequests": 3,
+        "credential": {
+          "id": "EmrGw01Machine18",
+          "name": "M03 GW-01 machine [dev]",
+          "type": "httpCustomAuth",
+          "createdAt": "2026-10-18T10:15:27.290Z"
+        },
+        "branch": "m03-n8n-foundation",
+        "previewOnly": true
+      }
+    },
+    "boundary": "Three bounded n8n Management requests created the owned credential metadata, using the refreshed handoff. All encrypted handoffs were retained and the child closed. Creation is not a successful gateway call or workflow execution."
+  },
+  "rootReportedStateAtThisCheckpoint": {
+    "gatewayAttempts": 2,
+    "gatewayAttemptBudget": 100,
+    "gatewayRequestsAddedByThesePreparations": 0,
+    "clockStarted": false,
+    "serverWindowBound": true,
+    "serverAdmissions": 0,
+    "refreshedManagementConsumed": true,
+    "handoffsRetained": true,
+    "ownedInactiveWorkflowPreparationOnly": true
+  },
+  "acceptanceLimits": {
+    "gatewayHttpIdentityVerified": false,
+    "nativeN8nCloudPostgresTlsVerified": false,
+    "trialStarted": false,
+    "actorsOrModelsOrPaidCollectionStarted": false,
+    "workflowScheduleActivated": false,
+    "productionOrMergeOrM04Started": false
+  },
+  "remaining": [
+    "Complete only the reviewed owned inactive workflow preparation, then perform separately counted gateway HTTP identity/trial/status/recovery within the same non-replenished window.",
+    "Preserve all successful operations and earlier failed readbacks; do not replay Create, delivery, binding or credential creation.",
+    "Complete ordered Writer/local closure, dedicated bypass revocation, every-known-deployment public shutdown verification and owned credential/environment/handoff cleanup."
+  ]
+}

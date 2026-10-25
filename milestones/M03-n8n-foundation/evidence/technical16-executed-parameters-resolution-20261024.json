@@ -1,0 +1,221 @@
+{
+  "kind": "m03_technical16_executed_parameters_resolution",
+  "version": 1,
+  "observedAt": "2026-10-24 18:03:40 UTC",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "technicalAttempt": 16,
+  "originalAttemptSha256": "d6097e43d5e060bdc6a950d9e2cee8edd7718249f845a5e021f8368f401924eb",
+  "rootExecutionId": "31130",
+  "childExecutionId": "31131",
+  "sourceCommitSha": "5087d4d93d2f6ffdca0bc0096b365723005446fc",
+  "currentRepositoryHead": "71f1d0a9be788c9bcdd1479d0c89d49c62509564",
+  "windowId": "4c602549-2c42-4ec3-9328-714d7cb66a77",
+  "parametersQualified": true,
+  "candidate": "native_defaults",
+  "nativeAcceptanceProven": false,
+  "settlementProven": false,
+  "originalMaskedFirstFailureRecovered": false,
+  "toolResults": {
+    "publicSeal": "fe1c93",
+    "checkOnly": "ef8908",
+    "actual": "44f0fa",
+    "cleanup": "33d89c"
+  },
+  "localSourceParity": {
+    "path": "milestones/M03-n8n-foundation/evidence/local-native-parameter-defaults-20261024.json",
+    "sha256": "871cff58286d30d557c2785324025dee4655c8e1a271712d0cbdb896cacc2aec",
+    "graphs": 80,
+    "nodes": 1350,
+    "exactTypeVersionPairs": 13,
+    "mismatches": 0,
+    "networkRequests": 0,
+    "workflowExecutions": 0
+  },
+  "priorCategoryReceiptSha256": "414874a3dc27f724d399e0dad3bc1a07f96a75fe1709175114c6c5084b795a7c",
+  "nativeOutputFileEmitted": false,
+  "rawResultSource": "Projected bounded wrapper stdout in tool44f0fa, transcribed exactly. No raw native payload or parameters persisted.",
+  "rawResult": {
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "complete",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": {
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "technicalAttempt": 16,
+      "status": "native_snapshot_classified",
+      "requestCount": 1,
+      "maximumRequests": 1,
+      "httpStatus": 200,
+      "tlsVerified": true,
+      "readerMetadataVerified": false,
+      "networkCompletionVerified": true,
+      "controlReservationConservative": true,
+      "acceptanceProven": false,
+      "metadata": {
+        "executionId": "31130",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "mode": "manual",
+        "status": "success",
+        "versionMatchesIntent": true
+      },
+      "readerFailure": null,
+      "transportFailureCode": null,
+      "readerState": null,
+      "transportState": {
+        "pendingRequests": 0,
+        "unclosedResponses": 0
+      },
+      "forensics": {
+        "fields": {
+          "objectShape": true,
+          "dataObject": true,
+          "resultDataObject": true,
+          "idMatches": true,
+          "workflowMatches": true,
+          "versionMatchesIntent": true,
+          "snapshotObject": true,
+          "snapshotIdMatches": true,
+          "snapshotVersionMatches": false,
+          "graphComputable": true,
+          "executedGraphMatches": false,
+          "nodesShape": true,
+          "runDataShape": true,
+          "runDataNamesKnown": true,
+          "pinsPresent": true,
+          "pinsNull": false,
+          "pinsObject": true,
+          "pinsEmpty": true,
+          "pinsSingleEmptyManual": false,
+          "pinsPassExistingReader": true,
+          "redactionPresent": false,
+          "redactionPassesExistingReader": true,
+          "rootParentAbsent": true,
+          "manualOutputEmptyJson": true,
+          "executeRunsShape": true,
+          "childLinksShape": true,
+          "observedChildLink": true,
+          "unexpectedChildLink": false
+        },
+        "childExecutionIds": [],
+        "nativeTreeSettlementProven": false,
+        "parameterDefaults": {
+          "fields": {
+            "sourceBodyHashMatches": true,
+            "rootIdentityMatches": true,
+            "versionMatchesIntent": true,
+            "knownSetExecuted": true,
+            "nativeDefaultsMatch": true,
+            "nativeDefaultsAndSetOutputMatch": false,
+            "graphQualified": true
+          },
+          "nodeTypes": {
+            "executeWorkflowTrigger": {
+              "present": false,
+              "parametersMatch": true
+            },
+            "manualTrigger": {
+              "present": true,
+              "parametersMatch": true
+            },
+            "code": {
+              "present": true,
+              "parametersMatch": true
+            },
+            "set": {
+              "present": true,
+              "parametersMatch": true
+            },
+            "httpRequest": {
+              "present": true,
+              "parametersMatch": true
+            },
+            "if": {
+              "present": false,
+              "parametersMatch": true
+            },
+            "executeWorkflow": {
+              "present": true,
+              "parametersMatch": true
+            },
+            "errorTrigger": {
+              "present": false,
+              "parametersMatch": true
+            },
+            "scheduleTrigger": {
+              "present": true,
+              "parametersMatch": true
+            },
+            "switch": {
+              "present": true,
+              "parametersMatch": true
+            },
+            "webhook": {
+              "present": false,
+              "parametersMatch": true
+            },
+            "wait": {
+              "present": false,
+              "parametersMatch": true
+            },
+            "respondToWebhook": {
+              "present": false,
+              "parametersMatch": true
+            }
+          }
+        }
+      },
+      "snapshotStage": "complete"
+    }
+  },
+  "nativeProcessExit": 0,
+  "pins": {
+    "scripts/n8n/inventory.mjs": "b6166a5bcbad80e382678b3f84c3fa4713ea730cfd1f1c39f5e780ec4b5ea3ed",
+    "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "9e433d1284fcc2e94d36f3b2468e48a13bd3d85d98b1f5f0f28756b3ab8b6643",
+    "scripts/n8n/foundation-runtime-checkpoint.mjs": "e4e3fcf4b7f3b5d1555e69fef123bcea8515ea954b34db8167303e9636f06039",
+    "scripts/n8n/m03-inventory-seal.json": "587c4192461aef861072a4c4a606f602e0b33289589730a93631600f4f199c33",
+    "scripts/n8n/foundation-acceptance-seal.json": "7dc5ec73b46128ea4c3941cb97e1354485c53839d4566ee7f4a175cc5c5b6c1a",
+    "scripts/n8n/out/foundation/execution-31130-parameter-defaults-diagnostic-20261024.jsonl": "8d907d4698b24f0e0859ead148bc14adbc8fe55ddf48a76999bd1ee1589a3da2"
+  },
+  "cleanup": {
+    "parentProcessId": 44648,
+    "childProcessId": 18544,
+    "parentAbsent": true,
+    "childAbsent": true,
+    "managementCopyAbsent": true,
+    "parentLockAbsent": true,
+    "persistentManagementRetained": true,
+    "privateContentsRead": false,
+    "networkRequests": 0
+  },
+  "usage": {
+    "management": 829,
+    "control": 960,
+    "combined": 1789,
+    "vercel": 184,
+    "nativeExecutionsReserved": 3,
+    "actorStarts": 0,
+    "additionalHttpRequests": 1,
+    "additionalNativeReadControlReservation": 1,
+    "allowancesReplenished": false
+  },
+  "findings": {
+    "sourceDerivedNativeConstructorDefaultsExactlyMatchRetainedRoot": true,
+    "alternativeSetOutputCandidateMatches": false,
+    "currentWorkflowEditableGraphComparisonRemainsStrict": true,
+    "childTreeQualified": false,
+    "fixtureArchived": false,
+    "fullAcceptance": false
+  },
+  "limitations": [
+    "Exact parameter qualification explains the retained root snapshot mismatch; it does not recover the original masked first failure.",
+    "Only the root was read. Full linked-tree ownership, terminal state, current canonical custody, drain and native deletion still need their separate cleanup qualification.",
+    "No paid start, workflow execution, database mutation, fixture archive, production or M04 operation occurred."
+  ]
+}

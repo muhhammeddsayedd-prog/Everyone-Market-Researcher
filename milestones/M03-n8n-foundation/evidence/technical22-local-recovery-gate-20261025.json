@@ -1,0 +1,213 @@
+{
+  "kind": "m03_technical22_local_recovery_gate",
+  "version": 1,
+  "observedAt": "2026-10-25T15:07:14.373Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "status": "local_fix_verified_cleanup_disabled",
+  "baseCommit": "ecdedd466f276940c7039ff758395c63a4952853",
+  "actualRead": {
+    "receipt": "milestones/M03-n8n-foundation/evidence/execution31145-diagnostic-result-20261025.json",
+    "sha256": "9f3693b227a706227d4b46bf7cb28f7d0188e43905df47d28239a9e31103da57",
+    "management": 1640,
+    "control": 1443,
+    "combined": 3083,
+    "vercel": 288,
+    "nativeExecutions": 16,
+    "actorStarts": 0,
+    "providerSpendUsd": 0,
+    "oneUseReadSpent": true,
+    "acceptanceProven": false
+  },
+  "sources": {
+    "scripts/n8n/foundation-native-reader.mjs": "5e1338900bc20713e8befd15c78c252af6ca435ad0c2f8d1b506afdc41c2c1f8",
+    "scripts/n8n/foundation-native-reader.test.mjs": "295366ebd1c30760056f6719c13ee97a4e2131d648ab7ba393b9bfe7b38516e8",
+    "scripts/n8n/foundation-native-cleanup.mjs": "7e97e5574b621c2c74306f927008ea9e3a6c3991233bec808bf7d2632fa7eb5e",
+    "scripts/n8n/foundation-native-cleanup.test.mjs": "d77a10a4173cd1756de35fc62237060f2f54ae734cca4aad6a3425d64f6974d0",
+    "scripts/n8n/foundation-live-runtime-domain.test.mjs": "f21e27d7dea01dca3019ff3604d32e258c864650f423551c133877688b288ff0",
+    "scripts/n8n/foundation-provision-cli.mjs": "0b889c0623186160ecf4285e78d8c8d7bcb991adedb8dd9781450d00c9f4dc48",
+    "scripts/n8n/foundation-handoff.test.mjs": "fd483e451f7abfc255ea82956d71b8bf40fce731d7e38af3870d68d95b68b828",
+    "scripts/n8n/windows/Invoke-M03FoundationProvision.ps1": "bfad0c7aade131e29d3d1cfc0a296d5b88f343d7718c34f61229e7db219ba777"
+  },
+  "contractSources": [
+    "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/%40n8n/db/src/entities/workflow-entity.ts#L89-L94",
+    "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/manual-execution.service.ts#L158-L166",
+    "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/core/src/execution-engine/workflow-execute.ts#L208-L218"
+  ],
+  "local": {
+    "nullCompatibility": {
+      "causalRed": "7c1abb",
+      "causalGreen": "12ead9",
+      "narrowManualMcpEmptyTriggerOnly": true
+    },
+    "existingReaderCleanupDomainTests": {
+      "passed": 74,
+      "failed": 0,
+      "skipped": 0,
+      "observation": "16b475",
+      "genuine22IntegrationIncluded": false
+    },
+    "existingGenuineIssuerBudgetTests": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "observation": "324c57",
+      "currentCountsRetained": true,
+      "requests55Produce": {
+        "management": 1695,
+        "control": 1498,
+        "combined": 3193
+      },
+      "request56Denied": true
+    },
+    "nativePublicRuntimeTests": {
+      "initial": {
+        "nativeExit": 1,
+        "spawnFailure": "ENOENT",
+        "boundary": "public test OS-only PATH lacked native PowerShell directory; no authentication attempted"
+      },
+      "corrected": {
+        "nativeExit": 0,
+        "passed": 20,
+        "failed": 0,
+        "skipped": 0,
+        "nativePowerShellResolved": true,
+        "credentialRead": false,
+        "networkRequests": 0
+      }
+    },
+    "groupsOverlapDoNotSum": true
+  },
+  "enforcedBlock": {
+    "action": "insert and execute synthetic genuine22 qualifier-to-cleanup, denial and ambiguous-DELETE tests in existing foundation-handoff.test.mjs",
+    "reason": "blocked by policy",
+    "beforeExecution": true,
+    "testBlockWritten": false,
+    "testsRun": false,
+    "alternativeRecreationAttempted": false,
+    "unperformed": [
+      "genuine branded context through53 reads, qualification, one DELETE and absence",
+      "cursor, foreign candidate and changed final metadata denial before DELETE",
+      "first slow local pin recheck freshness regression",
+      "lost DELETE acknowledgement plus404 must remain ambiguous and unretried"
+    ],
+    "newGeneralDevApprovalWouldResolve": false
+  },
+  "review": {
+    "staticSourceFindingsResolved": true,
+    "freshnessAnchoredToFinalMetadataObservation": true,
+    "privateUseReady": false,
+    "disabledEntryReviewClear": true
+  },
+  "publicChecks": {
+    "preDisable": {
+      "seal": {
+        "status": "foundation_public_seal_built",
+        "version": 2,
+        "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+        "projectFiles": 99,
+        "runtimeFiles": 840,
+        "privateRead": false,
+        "networkRequests": 0,
+        "nodeExecuted": false,
+        "finalBindingReady": true
+      },
+      "checkOnly": {
+        "kind": "m03_technical22_cleanup_public",
+        "version": 1,
+        "status": "technical22_cleanup_public_ready",
+        "windowId": "e2be1a67-f6db-4c90-bfd2-671c5db9b90a",
+        "privateRead": false,
+        "networkRequests": 0,
+        "maximumRequests": 55,
+        "maximumControlRequests": 55,
+        "canonicalWorkflowCount": 25,
+        "maximumDrainRequests": 50,
+        "maximumNativeRecords": 1,
+        "executionCount": 0,
+        "actorStarts": 0,
+        "qualifiedSideEffects": false,
+        "cleanupQualificationReady": true
+      },
+      "nativeExit": 0,
+      "notLiveAcceptance": true
+    },
+    "disabled": {
+      "seal": {
+        "status": "foundation_public_seal_built",
+        "version": 2,
+        "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+        "projectFiles": 99,
+        "runtimeFiles": 840,
+        "privateRead": false,
+        "networkRequests": 0,
+        "nodeExecuted": false,
+        "finalBindingReady": true
+      },
+      "wrapperNativeExit": 1,
+      "wrapperFixedResult": "M03_FOUNDATION_PUBLIC_PREFLIGHT_BLOCKED. No private read/decryption/network.",
+      "directCliNativeExit": 1,
+      "directCliResult": {
+        "kind": "m03_technical22_cleanup_public",
+        "version": 1,
+        "status": "technical22_cleanup_public_blocked",
+        "windowId": "e2be1a67-f6db-4c90-bfd2-671c5db9b90a",
+        "privateRead": false,
+        "networkRequests": 0,
+        "maximumRequests": 55,
+        "maximumControlRequests": 55,
+        "canonicalWorkflowCount": 25,
+        "maximumDrainRequests": 50,
+        "maximumNativeRecords": 1,
+        "executionCount": 0,
+        "actorStarts": 0,
+        "qualifiedSideEffects": false,
+        "cleanupQualificationReady": false
+      },
+      "privateRead": false,
+      "networkRequests": 0
+    }
+  },
+  "localCiphertextCleanup": {
+    "nativeExit": 0,
+    "result": {
+      "kind": "m03_technical22_local_bypass_cleanup",
+      "status": "local_copy_absent",
+      "privateContentsRead": false,
+      "networkRequests": 0,
+      "knownParentsAndChildrenAbsent": true,
+      "regularRuntimePairsAndLocksAbsent": true,
+      "revokedBypassCopyAbsent": true,
+      "persistentOriginalsRetained": true,
+      "machineRetained": true,
+      "execution31145Deleted": false,
+      "fixtureArchived": false
+    },
+    "stderrObserved": true,
+    "stderrClass": "CLIXML Preparing modules for first use progress; no Error stream",
+    "scriptSha256": "7063b7a7ad58d9993542f72e8a1f0bba85c24b686e2dded33c1fc8b459510306"
+  },
+  "remaining": {
+    "execution31145Retained": true,
+    "exactC999ArchivePending": true,
+    "genuine22CleanupTestsPending": true,
+    "fullADAcceptanceIncomplete": true,
+    "productionUntouched": true,
+    "mergeUntouched": true,
+    "M04Unstarted": true,
+    "credentialsNeeded": false,
+    "timeApprovalNeeded": false
+  },
+  "pins": {
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical22-domain-refusal-20261025.json": "1f5d99253deb88df1df2dd9cf6f057fe878f5c1263c5711e70062e2e2fe35ff3",
+    "milestones/M03-n8n-foundation/evidence/execution31145-diagnostic-result-20261025.json": "9f3693b227a706227d4b46bf7cb28f7d0188e43905df47d28239a9e31103da57",
+    "milestones/M03-n8n-foundation/evidence/technical22-restored-workflows-projection-20261025.json": "9d96a335d6b47ce709ebbde71de0d0e679979298cb144dc021381e59a2c4cd8d",
+    "scripts/n8n/foundation-provision-seal.json": "629c029f2adcd556296dca9eee454f3758d383b0c46e89ed3f5a539fbc62f927"
+  },
+  "publicEvidenceWriteFailure": {
+    "reason": "writer requires serialized bytes; initial object rejected",
+    "remoteOperations": 0,
+    "emptyFilePreserved": "scripts/n8n/out/foundation/live/technical22-local-recovery-gate-first-write.empty",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

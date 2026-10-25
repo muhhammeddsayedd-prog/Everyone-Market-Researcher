@@ -1,0 +1,116 @@
+{
+  "kind": "m03_clock_amendment_delivery_checkpoint",
+  "version": 1,
+  "segmentId": "30e75d0d-7e4c-46c6-9a07-556f90b63859",
+  "authority": "dev-acceptance-clock-approval-20261021.json",
+  "approvalSha256": "3d2346715e08edfc9eef4fab04c9c1b7be55d450660c862235b92195976bed31",
+  "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "clockModuleSha256": "de2d33be3e30bb58a7bdf7abfbb846610fbe0826e730edac4a4fcc9f56aa5ce6",
+  "review": "Independent clock/core/runtime/CLI, DB and root-wrapper review GREEN; no remaining P1/P2",
+  "localEvidence": {
+    "clockRuntimeAndCompatibility": "34 PASS/0 FAIL/0 SKIP/native0 b3c420; new9 plus existing25; synthetic IO/scripted ports and actual isolated Node children, not hosted acceptance",
+    "independentClockRuntime": "9 PASS/native0 98f8f8, including second child after zero-effect close denied",
+    "database": "8 client checks988ae0 and7 affected Windows checksabd459/163119/bdb185 pass; independent2 ee27b6 pass; synthetic DPAPI/CLI, not authentication",
+    "windowsCustodyAndPublicClosure": "12 PASS/native0 471386 plus new stale-public-readiness1 PASS4ec473; actual Windows wrapper/processes and isolated synthetic credentials/scripted business ports",
+    "staleLeaseDiagnosticRed": "cbaff9 captured previous private-style1 instead of new public-readiness2; bdb185 passes narrow corrected condition",
+    "publicPins": "24 standalone DB source/artifact pins verified8599c7 after final module freeze; actual preflight2002e8 independently validates before fixed lease refusal",
+    "lintFormatParser": "Changed-source ESLint/format and PowerShell parser passed; no unchanged full local suite rerun"
+  },
+  "actualPublicEvidence": {
+    "sealReceipt": "28a459",
+    "sealNativeExit": 0,
+    "projectInputs": 108,
+    "zodRuntimeFiles": 840,
+    "installedVercelRuntimeFiles": 3462,
+    "standaloneAdminCheck": "2002e8 native2 HANDOFF_LEASE_NOT_READY: public inputs verified, old two-hour lease insufficient, no decryption/authentication",
+    "coordinatorCheckOnly": "f4e5da native0 check_only_ready; publicCompositionLoaded/adminPublicInputsVerified true, adminHandoffReady false, actualMcpPortVerified false",
+    "privateRead": false,
+    "networkRequests": 0,
+    "admissionStarted": false
+  },
+  "actualLeaseReadback": {
+    "receipt": "310117",
+    "observedAtUtc": "2026-10-21T13:23:09.2105612Z",
+    "adminExpired": true,
+    "managementWriterApifyReadUnexpiredAtObservation": true,
+    "allFourCoverNewSeventyFiveMinutes": false,
+    "allCiphertextsAndLeasesRetainedUnchanged": true,
+    "ciphertextOpenedOrDecrypted": false,
+    "newAdmissionAndRuntimeClaimAbsent": true
+  },
+  "freshOwnerDelivery": {
+    "ownerReply": "M03 amended-window handoffs ready",
+    "metadataOnlyReceipt": "c3822b",
+    "observedAtUtc": "2026-10-21T13:32:05.7315354Z",
+    "allFourCiphertextsPresent": true,
+    "allFourExactMetadataValid": true,
+    "allFourCoverNewSeventyFiveMinutes": true,
+    "bypassParentLockAndAdmissionAbsent": true,
+    "ciphertextsOpenedOrDecrypted": false,
+    "authenticationAttempted": false
+  },
+  "ciPortabilityCorrection": {
+    "firstDeliveryHead": "64f50e14e959faaa0b513509c47fe3f8f175c922",
+    "failedCi": 39608289275,
+    "qualityBuildAndBrowserJobsPassed": true,
+    "unitAndDbSafetyFailure": "Only synthetic fixture path construction assumed LOCALAPPDATA on Linux; DB replay had not run. Actual logs b8c8d2/c26c1f",
+    "correction": "Test-only synchronous scoped synthetic environment restores exact prior presence/value; shared fixture replaces duplicated DB test implementation. Real production guard unchanged",
+    "productionClockModuleHashUnchanged": true,
+    "affectedAbsentEnvironmentChecks": "19 PASS/native0/0skip in OS-only fresh child with LOCALAPPDATA absent16ec3d; new permanent regressions and independent2 PASS32ad22",
+    "review": "Independent test-only portability review GREEN; not relabeled as Linux CI",
+    "priorBlockedDiagnostic": "One disposable temporary diagnostic harness was blocked before execution (generic blocked by policy). No file/child was created; that operation was not retried. Permanent checked-in no-file regression used instead",
+    "next": "Completed historical step: explicit seal ed8820, CI39609646416 all five jobs plus Vercel, and actual CheckOnly8cd582 passed before13:42:15.608 admission. The later failed actual attempt is preserved separately."
+  },
+  "mechanism": {
+    "admitOnlyAfterPublicChecksTransportProvenanceAndLeases": true,
+    "parentLockAndImmutableCreateNewAdmissionBeforeDecryption": true,
+    "separateCreateNewRuntimeClaimBeforePrivateDto": true,
+    "secondChildDeniedAfterZeroEffectClose": true,
+    "originalHeaderAndAggregateCountersPreserved": true,
+    "singleClockStopActionPhysicalLeaseMinutes": [
+      50,
+      60,
+      70,
+      75
+    ],
+    "noAutomaticRenewalReplayOrRecordDeletion": true,
+    "adminRevalidatesClaimBeforeDecryption": true,
+    "publicStaleLeaseExit2DoesNotRelaxActualPrivateGuard": true
+  },
+  "actualHostedAcceptance": {
+    "newAdmission": true,
+    "newCiphertextOpened": true,
+    "authenticationAttempted": true,
+    "managementAttempts": 0,
+    "controlAttempts": 50,
+    "nativeExecutions": 0,
+    "migrationsApplied": 4,
+    "actorStarts": 0,
+    "setupStatus": "postcheck_blocked",
+    "businessAcceptanceProven": false,
+    "credentialChildrenClosed": true,
+    "details": "dev-acceptance-amended-attempt-20261021.json"
+  },
+  "next": "Finish local generated-type root-cause diagnosis/regressions/review. Preserve applied dev14 migrations, one-use admission/claim and original header/counters. No replay, new child, clock renewal or credential delivery under the consumed authority.",
+  "excluded": [
+    "production",
+    "recurring schedules",
+    "external notifications",
+    "shared credentials",
+    "private incident remediation",
+    "PR8 merge",
+    "M03 closure",
+    "M04"
+  ],
+  "gw01RemainsPermanentlyClosed": true,
+  "historicalPreAdmissionHostedState": {
+    "newAdmission": false,
+    "newCiphertextOpened": false,
+    "authenticationAttempted": false,
+    "managementAttempts": 0,
+    "controlAttempts": 0,
+    "nativeExecutions": 0,
+    "migrationsApplied": 0,
+    "actorStarts": 0
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "kind": "m03_cumulative_post_restoration_allocation_approval",
+  "recordedAt": "2026-10-24T14:32:59.362Z",
+  "clientDate": "2026-10-24",
+  "questionCallId": "call_4fa827820a284427b7989c20f6dc9e81",
+  "ownerReply": "Approve Management1024 and Vercel224; retain all charges and other limits.",
+  "decision": "approved",
+  "environment": "dev",
+  "milestone": "M03",
+  "referencePacket": {
+    "path": "milestones/M03-n8n-foundation/evidence/remaining-allocation-after-runtime-restoration-20261024.md",
+    "sha256": "9ac6eee07e781b44c76049d32e1fa86d4803b159c292ba9299a005a5d6b6079d",
+    "sourceCommitSha": "9b3f9db7153e6896617d09214ed8cea19d2d04a7",
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/blob/9b3f9db7153e6896617d09214ed8cea19d2d04a7/milestones/M03-n8n-foundation/evidence/remaining-allocation-after-runtime-restoration-20261024.md"
+  },
+  "reviewedDelivery": {
+    "ciRunId": 40091747711,
+    "ciAttempt": 1,
+    "headSha": "9b3f9db7153e6896617d09214ed8cea19d2d04a7",
+    "allFiveJobsPassed": true,
+    "vercel": "success",
+    "pullRequest": 8,
+    "pullRequestOpen": true,
+    "pullRequestDraft": true,
+    "currentVerificationTool": "e20601"
+  },
+  "allocation": {
+    "previousManagementMaximum": 832,
+    "managementMaximum": 1024,
+    "usedManagementRequests": 524,
+    "remainingManagementRequestsMaximum": 500,
+    "remainingPlanMaximum": 377,
+    "planCumulativeMaximum": 901,
+    "reserveAbovePlan": 123,
+    "previousVercelMaximum": 176,
+    "vercelMaximum": 224,
+    "usedVercelRequests": 149,
+    "remainingVercelRequestsMaximum": 75,
+    "remainingVercelPlanMaximum": 44,
+    "vercelPlanCumulativeMaximum": 193,
+    "vercelReserveAbovePlan": 31,
+    "vercelIncludedInManagement": true,
+    "countersReset": false
+  },
+  "actualPriorUsage": {
+    "management": 524,
+    "control": 841,
+    "combined": 1365,
+    "vercel": 149,
+    "actorStarts": 0,
+    "actorSpendUsd": 0,
+    "runtimeRestorationPath": "milestones/M03-n8n-foundation/evidence/runtime-restoration-20261024.json",
+    "runtimeRestorationSha256": "365c8bb069e6f7246c89261fb543b8fa9dbd8f38587500da64d5f4d38e065946",
+    "fixtureArchivePath": "milestones/M03-n8n-foundation/evidence/runtime-restoration-fixture-archive-20261024.json",
+    "fixtureArchiveSha256": "37c3f0dc518799700cde6c56f18569634c33b919ba26b4bbac1e6d2d09baa656",
+    "cleanupPath": "milestones/M03-n8n-foundation/evidence/runtime-restoration-cleanup-20261024.json",
+    "cleanupSha256": "50b274b1f6e26d6ba34b602c2cae45136aea19353073d185a1b25ba4b9cc016a"
+  },
+  "unchangedCaps": {
+    "control": 2048,
+    "combined": 2560,
+    "nativeExecutions": 120,
+    "gatewayAttempts": 256,
+    "directProviderReads": 32,
+    "actorStarts": 2,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "actorsSequential": true,
+    "newDistinctCollectedItems": 1
+  },
+  "continuation": {
+    "plannedWindowId": "4c602549-2c42-4ec3-9328-714d7cb66a77",
+    "registered": false,
+    "usesExistingOwnerRegistration": true,
+    "changesExistingClosedRows": false,
+    "replenishesFamilyAllowances": false,
+    "requiresQualifiedRestoredVersions": true,
+    "preservesOriginalTechnical13Plan": true
+  },
+  "boundaries": {
+    "spendingIncrease": false,
+    "actorAllowanceReplenished": false,
+    "productionApproved": false,
+    "migrationReplayApproved": false,
+    "recurringActivityApproved": false,
+    "externalMessagingApproved": false,
+    "sharedCredentialRotationApproved": false,
+    "mergeApproved": false,
+    "m04Approved": false,
+    "credentialDelivery": false,
+    "timeWindowRenewal": false
+  },
+  "acceptance": {
+    "allocationDecisionComplete": true,
+    "executionStartedByThisRecord": false,
+    "consumerIntegrationVerified": false,
+    "m03DevAcceptanceVerified": false
+  }
+}

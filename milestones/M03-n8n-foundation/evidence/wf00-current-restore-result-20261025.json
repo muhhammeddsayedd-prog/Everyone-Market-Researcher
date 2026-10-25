@@ -1,0 +1,235 @@
+{
+  "kind": "m03_wf00_current_restore_result",
+  "version": 1,
+  "observedAt": "2026-10-25T13:09:00.665Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "status": "restoration_reconciled_after_lost_capture",
+  "rawResult": null,
+  "actualParentNativeExit": null,
+  "parentClosed": true,
+  "requestCount": 3,
+  "observedBeforeVersion": "fe249a62-8276-47c1-a58a-7bb50705a280",
+  "targetSource": "025c2a2c0127566df71cef77797db277f1565568",
+  "restoredVersionId": "ffa708a7-464d-4951-9882-0aa6ceae53ef",
+  "sourceHead": "b51697a58eccfafb36c202e3468c9e965a28fb58",
+  "sourceCiRunId": 40195672901,
+  "sourceCiAllFivePassed": true,
+  "sourceVercelPassed": true,
+  "usageAfter": {
+    "management": 1340,
+    "control": 1250,
+    "combined": 2590,
+    "vercel": 254,
+    "nativeExecutions": 4,
+    "actorStarts": 0,
+    "providerSpendUsd": 0
+  },
+  "coordinatorFailure": {
+    "code": "UNBOUND_RESULT_HANDLE",
+    "subprocessStarted": true,
+    "resultHandleLost": true,
+    "publicResultCaptureObserved": false,
+    "parentNativeExitObserved": false,
+    "saveRepeated": false,
+    "observerResult": {
+      "status": "process_identity_unavailable",
+      "processId": 48640
+    },
+    "separateReadRequests": 1
+  },
+  "independentReadback": {
+    "intentRelative": "scripts/n8n/out/foundation/live/technical21-current-wf00-restore-reconciliation-read-intent.json",
+    "resultRelative": "scripts/n8n/out/foundation/live/technical21-current-wf00-restore-reconciliation-read-result.json",
+    "rawResult": {
+      "closed": true,
+      "nativeExit": 0,
+      "stderrObserved": false,
+      "elapsedSeconds": 31,
+      "publicResult": {
+        "version": 1,
+        "host": "muhhammedsayed.app.n8n.cloud",
+        "projectId": "pHvQjDmjxVZ3KQLT",
+        "status": "complete",
+        "nativeExit": 0,
+        "childClosed": true,
+        "handoffDeleted": true,
+        "inventory": {
+          "version": 1,
+          "environment": "dev",
+          "host": "muhhammedsayed.app.n8n.cloud",
+          "projectId": "pHvQjDmjxVZ3KQLT",
+          "status": "baseline_mismatch",
+          "requestCount": 1,
+          "authenticationVerified": true,
+          "projectVerified": true,
+          "workflowKey": "WF-00",
+          "observedVersionId": "ffa708a7-464d-4951-9882-0aa6ceae53ef",
+          "baseline": {
+            "version": 1,
+            "workflowKey": "WF-00",
+            "failedChecks": [
+              "version_mismatch"
+            ],
+            "components": {
+              "nameEqual": true,
+              "nodesEqual": true,
+              "connectionsEqual": true,
+              "settingsEqual": true
+            }
+          },
+          "forensics": {
+            "nodeCategories": {
+              "identityEqual": true,
+              "parametersEqual": true,
+              "credentialsEqual": true,
+              "behaviorEqual": true,
+              "layoutEqual": true,
+              "annotationsEqual": true
+            },
+            "settingsCategories": {
+              "retentionEqual": true,
+              "mcpVisibilityEqual": true,
+              "errorRoutingEqual": true,
+              "otherEqual": false
+            },
+            "knownVariants": {
+              "c01RetentionSettingsEqual": false,
+              "c01RuntimeSettingsEqual": false,
+              "c01ManualSettingsEqual": false,
+              "stagingMcpSettingsEqual": false,
+              "stagingManualSettingsEqual": false,
+              "schedulesDisabledNodesEqual": false,
+              "c01RetentionGraphEqual": false,
+              "stagedManualGraphEqual": false,
+              "stagedC01ManualGraphEqual": false
+            },
+            "nodeDifferences": []
+          },
+          "diagnostics": {
+            "version": 1,
+            "dns": "complete",
+            "requests": [
+              {
+                "resource": "workflows",
+                "page": 1,
+                "tcpConnected": true,
+                "tlsVerified": true,
+                "httpStatus": 200,
+                "bodyRead": "complete",
+                "jsonParsed": true,
+                "schemaValidated": true,
+                "socketClosed": true,
+                "failureStage": "none",
+                "failureCode": "none"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "closureEvidence": {
+    "observedAt": "2026-10-25T13:08:18.8539616+00:00",
+    "checkScope": "post_close_process_and_backup_presence_only",
+    "observedProcesses": [],
+    "restoreParentAbsent": true,
+    "restoreDirectChildrenAbsent": true,
+    "readParentAbsent": true,
+    "readDirectChildrenAbsent": true,
+    "parentLockAbsent": true,
+    "managementCopyAbsent": true,
+    "persistentManagementPresent": true,
+    "encryptedBackupPresent": true,
+    "plaintextRead": false,
+    "credentialDecryptionAttempted": false,
+    "networkRequests": 0,
+    "checkedManagementCopyRelative": "Temp/emr-m03-n8n-api-key.dpapi",
+    "priorObservationTemporaryLeafCorrection": "first_observation_checked_unused_foundation_management_leaf"
+  },
+  "backupEvidence": {
+    "checkScope": "post_close_backup_presence_only",
+    "runId": "35c0936a-5ab0-4b2e-9964-cbe45118681a",
+    "beforeVersionId": "fe249a62-8276-47c1-a58a-7bb50705a280",
+    "encryptedBackupPresent": true,
+    "plaintextRead": false,
+    "credentialDecryptionAttempted": false,
+    "networkRequests": 0
+  },
+  "journal": {
+    "relative": "scripts/n8n/out/foundation/wf00-restore-fe249a62-8276-47c1-a58a-7bb50705a280.jsonl",
+    "sha256": "89bd9807eb23f84238182b392dc0d78beeff820fc6f16822281264f1a1175de7",
+    "rowCount": 7,
+    "rawRows": [
+      {
+        "kind": "m03_current_wf00_restore_claim",
+        "version": 1,
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "beforeVersionId": "fe249a62-8276-47c1-a58a-7bb50705a280",
+        "receiptSha256": "330d0157f60b7ef29cbafa5407092872506c4c23b02d33e0199bb15e2606e59f"
+      },
+      {
+        "event": "request",
+        "number": 1,
+        "method": "GET",
+        "path": "/api/v1/workflows/MzimjpsuyPuK7SKe?excludePinnedData=true"
+      },
+      {
+        "event": "backup_ready",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "backupRunId": "35c0936a-5ab0-4b2e-9964-cbe45118681a"
+      },
+      {
+        "event": "restore_intent",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "sourceCommitSha": "025c2a2c0127566df71cef77797db277f1565568",
+        "backupRunId": "35c0936a-5ab0-4b2e-9964-cbe45118681a"
+      },
+      {
+        "event": "request",
+        "number": 2,
+        "method": "PUT",
+        "path": "/api/v1/workflows/MzimjpsuyPuK7SKe?publishIfActive=false"
+      },
+      {
+        "event": "request",
+        "number": 3,
+        "method": "GET",
+        "path": "/api/v1/workflows/MzimjpsuyPuK7SKe?excludePinnedData=true"
+      },
+      {
+        "event": "restore_verified",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "versionId": "ffa708a7-464d-4951-9882-0aa6ceae53ef",
+        "backupRunId": "35c0936a-5ab0-4b2e-9964-cbe45118681a",
+        "nativeReadonlySettings": {
+          "binaryMode": "separate"
+        }
+      }
+    ]
+  },
+  "pins": {
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical21-baseline-refusal-20261025.json": "a5a47f12b284eea2ccc0e58b51e0d254b6b7c8af86431bbe369b41d373f378cb",
+    "milestones/M03-n8n-foundation/evidence/wf00-finite-diagnostic-contract-failure-20261025.json": "b9a0691894a5949a8d5816faf3d51dfe3a05999e86f87ffde47e8db900835d74",
+    "milestones/M03-n8n-foundation/evidence/wf00-current-drift-readback-20261025.json": "330d0157f60b7ef29cbafa5407092872506c4c23b02d33e0199bb15e2606e59f",
+    "milestones/M03-n8n-foundation/evidence/wf00-restore-approval-20261023.json": "2fe70820c5aec160d77e1ae64e5160f8faacdfb055cf7258bc0f6308926a197e",
+    "n8n/fixtures/WF-00-reviewed-native-staging-025c2a2.json": "905e40aa96bea9291961f8e73297a8668b76ead397c834dbc7dc796e14ecfea9",
+    "scripts/n8n/foundation-provision.mjs": "8d67a259cab82baf62a5adacc07be71e3dffb15bcc704be1c1206e2275d41b08",
+    "scripts/n8n/foundation-provision-cli.mjs": "3abc0958e1ff98cebc3e2675defab4a2c4417908408421d16e69a70f40f43fbb",
+    "scripts/n8n/windows/Invoke-M03FoundationProvision.ps1": "9901d00d43b359ac8167c25993551997a3b093126b180527f153966ee64e2fb1",
+    "scripts/n8n/out/foundation/wf00-restore-fe249a62-8276-47c1-a58a-7bb50705a280.jsonl": "89bd9807eb23f84238182b392dc0d78beeff820fc6f16822281264f1a1175de7",
+    "scripts/n8n/out/foundation/live/technical21-current-wf00-restore-intent.json": "3aee8443ab514056f5f5e05b8d0c7301c2fb94c309b97ca570b38d024799bb21",
+    "scripts/n8n/out/foundation/live/technical21-current-wf00-restore-public-seal-used.json": "417fe6e91919c6f3c81d242adfb0a3c75fcfb13dd07f23fb38ba24cf2372087a",
+    "scripts/n8n/out/foundation/live/technical21-current-wf00-restore-public-check.json": "e77edf66e8e1e02cdc5b86a2253ea4144efc8f2458ee32623e9077dc178b6243",
+    "scripts/n8n/out/foundation/live/technical21-current-wf00-restore-reconciliation-read-intent.json": "3a4786112dba62f5bab291813e632fd9da43fe536787da6f2555ce350f081e2d",
+    "scripts/n8n/out/foundation/live/technical21-current-wf00-restore-reconciliation-read-result.json": "e8a6d71b2ff10d8cfa1841f64b72e826bd97dfd2232c3af2852f5e4ba46e3ab8",
+    "scripts/n8n/out/foundation/live/technical21-current-wf00-restore-reconciliation-inventory-seal-used.json": "e7529c1f4a9436fef14323528b02a208904fddbe7529e4d39ab0fe52eb59fdf5",
+    "scripts/n8n/out/foundation/live/technical21-current-wf00-restore-physical-observation.json": "23fde0019b553a99d8f13391b8f85ef0f83c4e54899432b01b2e75fe2bbc0861",
+    "scripts/n8n/out/foundation/live/technical21-current-wf00-restore-physical-observation-corrected.json": "dab2d3ae4f809d60187c76b9947af4f300e1a7284dfbb2b919b1ac21b3f5136e"
+  },
+  "fullDAcceptance": false,
+  "businessAcceptance": false,
+  "productionChanged": false,
+  "mergePerformed": false,
+  "m04Started": false
+}

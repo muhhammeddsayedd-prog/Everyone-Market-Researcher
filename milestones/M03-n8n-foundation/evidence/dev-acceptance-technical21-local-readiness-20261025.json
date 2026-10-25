@@ -1,0 +1,110 @@
+{
+  "kind": "m03_technical21_local_readiness",
+  "version": 1,
+  "observedAt": "2026-10-25T11:38:37.395Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "helperBaseHead": "1f1f195321e56c94645fc3e109a5f4f3399983e1",
+  "failedAttemptReceipt": {
+    "relative": "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical20-pre-ready-reconciliation-20261025.json",
+    "sha256": "d5f4353439ff6a3254f71609048ff43aa1d453308b5708bd968182ce959bf983",
+    "parentNativeExit": 1,
+    "childNativeExit": 0,
+    "rawFalseClosurePreserved": true,
+    "separateDisposableCleanupVerified": true
+  },
+  "selectedApplicationSource": {
+    "head": "5f256ce915f930481b0d31ac38b919c0a7692cd1",
+    "ci": 40186141405,
+    "allFiveJobsPassed": true,
+    "vercelPassed": true
+  },
+  "sameUnprovisionedWindowId": "e2be1a67-f6db-4c90-bfd2-671c5db9b90a",
+  "usage": {
+    "management": 1317,
+    "control": 1246,
+    "combined": 2563,
+    "vercel": 254,
+    "nativeExecutions": 3,
+    "actorStarts": 0,
+    "costUsd": 0,
+    "newItems": 0
+  },
+  "approvedCaps": {
+    "management": 1728,
+    "control": 3584,
+    "combined": 5312,
+    "vercel": 304
+  },
+  "sourcePins": {
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "0ab8eee912c66e361e8e845037b5fb0f7978dd419ec617c4f17cf00fdbf767e7",
+    "scripts/db/windows/Foundation-AdminControl.ps1": "760e8fe097e582432f95bb7250afa6c11005a0654c49b4e83f9363ea27aa87e9",
+    "scripts/assert/m03_smoke_reactivate_project_verified.sql": "75f3cb09b3254246c59fffc27d83722a557d66855bc82c16d35247537e74d05e",
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "83bb5d4cbf0a8142c49902467403f411979928225513c5b1fe6d6074b19dba49",
+    "scripts/n8n/windows/Invoke-M03Acceptance.ps1": "9395036d58fca84a73423fcec9e21d55ca92121cc6d682ad27f1d2ba1aa7e210"
+  },
+  "localChecks": {
+    "nativeOutputFilterCases": 3,
+    "guardPositiveCases": 3,
+    "coherentGuardDenialFaults": 19,
+    "nativeFocusedCases": 6,
+    "fullNativePublicRunIncluded": true,
+    "isolatedPostgresLifecycle": {
+      "passed": 1,
+      "nativeExit": 0,
+      "skipped": 0,
+      "includesUnexpected20AuditDenial": true,
+      "priorReal19AuditRequired": true
+    },
+    "independentCrossReview": "no_P1_P2",
+    "overlappingSuitesNotSummed": true,
+    "skippedOptInAttemptNotCounted": true
+  },
+  "publicFoundationSeal": {
+    "nativeExit": 0,
+    "projectFiles": 99,
+    "runtimeFiles": 840,
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "publicAcceptanceSeal": {
+    "nativeExit": 0,
+    "projectFiles": 254,
+    "runtimeFiles": 840,
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "originalSealedCheckOnly": {
+    "nativeExit": 0,
+    "status": "check_only_ready",
+    "privateRead": false,
+    "networkRequests": 0,
+    "publicCompositionLoaded": true,
+    "adminPublicInputsVerified": true,
+    "adminHandoffReady": false,
+    "actualMcpPortVerified": false,
+    "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+    "managementMaximum": 1728,
+    "controlMaximum": 3584
+  },
+  "packets": {
+    "regularFiles": 74,
+    "forwardFiles": 76,
+    "mismatches": 0,
+    "onlyFourSourcePinsAndRegularDependencyChanged": true,
+    "authorityTargetBaselinePendingNodeMetadataUnchanged": true
+  },
+  "boundaries": {
+    "technical21Admitted": false,
+    "all15MigrationsPreserved": true,
+    "migrationReplay": false,
+    "hostedBusinessAcceptance": false,
+    "production": false,
+    "recurringActivity": false,
+    "externalNotifications": false,
+    "r2": false,
+    "merge": false,
+    "m04": false
+  },
+  "nextStep": "Commit scoped correction/evidence and require normal exact-head CI/Vercel, fresh native75minute metadata and browser readiness. Then use the same original bounded coordinator with automatic dev copies; no owner credential or time approval."
+}

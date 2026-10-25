@@ -1,0 +1,230 @@
+{
+  "kind": "m03_guard_repair_local_public_readiness",
+  "version": 1,
+  "recordedAt": "2026-10-23T19:04:47.168Z",
+  "environment": "dev",
+  "historicalEvidence": {
+    "failedAttempt": {
+      "path": "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical3-attempt-20261023.json",
+      "bytes": 6495,
+      "sha256": "bdb2c97c4a4a64be2b24dbd4422edec2ebf9da1aa3c021bad9d3b1aea9382642"
+    },
+    "reconciliation": {
+      "path": "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical3-reconciliation-20261023.json",
+      "bytes": 7765,
+      "sha256": "176831e9c435b174e7d19e436c42c40d825b72ca677f7fb0ab1bd3b1f14e610b"
+    },
+    "immutableTechnical3ClosedSha256": "95622cb4b4b82381758b4889be770588522b62b0469204f328fb9212a38c7783",
+    "historicalClosureVerifiedRemainsFalse": true
+  },
+  "implementedLocalRepair": {
+    "immutablePrefixReconciliation": true,
+    "legitimateManagementAndControlAppendsAllowed": true,
+    "historicalBytesAndCountersPreserved": true,
+    "unknownPriorTechnical3ArtifactsRejected": true,
+    "fixedPriorArtifactPaths": [
+      "technical-3-attempt.json",
+      "technical-3-latest.json",
+      "technical-3-owner-provision-attempt.json",
+      "technical-3-reactivation-attempt.json",
+      "technical-3-unprovisioned-archive-attempt.json",
+      "runtime.technical-3.jsonl"
+    ],
+    "independentP2Regression": {
+      "toolReceipt": "7150d0",
+      "nativeExit": 0,
+      "readyBeforeUnexpectedIntent": true,
+      "blockedAfterUnexpectedIntent": true,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "previousCounterexample": {
+      "toolReceipt": "dced10",
+      "unexpectedIntentAccepted": true,
+      "preservedAsRepairedFinding": true
+    },
+    "defaultHistorical14AndApplied15NotReplayed": true,
+    "newDatabaseOrFixtureOperationPerformedByThisRecord": false
+  },
+  "proofReuse": {
+    "early25BaselineGets": "Actual same-attempt WeakMap-branded proof, tied to exact baseline/deadline/shared budget, consumed once by setup.",
+    "final25BaselineGets": "Actual restoration reads retained; same-plan/journal/request-count proof replaces only the immediately duplicate final audit.",
+    "everyPerTransitionFreshGetPutGetRetained": true,
+    "all24CaseDraftsRetained": true,
+    "twoMachineMetadataChecksRetained": true,
+    "arbitraryCopiedReceiptsRejected": true,
+    "wrongBudgetOrDeadlineRejected": true,
+    "changedWf00Rejected": true,
+    "falseFinalProofRejected": true,
+    "oldRuntimeManagementMaximum": 357,
+    "runtimeManagementMaximum": 307,
+    "projectedManagement": {
+      "alreadyCharged": 127,
+      "freshBaseline": 25,
+      "remainingVercelMaximum": 44,
+      "runtimeMaximum": 307,
+      "totalMaximum": 503,
+      "globalMaximum": 512,
+      "reserve": 9
+    },
+    "allowanceReplenished": false
+  },
+  "earlyNativeGate": {
+    "location": "Before the25 baseline reads and before Admin/Preview/database work on the reconciled closed-window path.",
+    "operation": "Owned WF-00 details metadata only",
+    "exactFields": [
+      "id",
+      "versionId",
+      "canExecute",
+      "scopes"
+    ],
+    "exactOwnedIdAndVersionRequired": true,
+    "canExecuteFalseIsValidMetadata": true,
+    "synchronousControlAdmissionBeforeRequest": true,
+    "successJournalAfterValidatedResponse": true,
+    "executionsOrActorsStartedForVerification": 0,
+    "actualMcpPortVerified": false,
+    "localTests": {
+      "root": {
+        "toolReceipt": "4dc1be",
+        "passed": 1,
+        "nativeExit": 0
+      },
+      "independent": {
+        "toolReceipt": "14a688",
+        "nativeExit": 0
+      }
+    }
+  },
+  "targetedLocalVerification": {
+    "priorArtifactDenialMatrix": {
+      "toolReceipt": "dd8c88",
+      "fixedPaths": 6,
+      "nativeExit": 0
+    },
+    "guardSuite": {
+      "toolReceipt": "03d329",
+      "passed": 43,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "focusedGuardCase": {
+      "passed": 1,
+      "failed": 0,
+      "nativeExit": 0,
+      "receiptReferenceOmitted": true
+    },
+    "deduplicatedReadProofs": {
+      "toolReceipt": "7496c2",
+      "passed": 67,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "wholeCliSuite": {
+      "toolReceipt": "649c80",
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "independentProofReview": {
+      "toolReceipt": "f8806a",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "nativeExit": 0,
+      "p1p2Findings": 0
+    },
+    "guardEslint": {
+      "toolReceipt": "f60efe",
+      "nativeExit": 0
+    },
+    "resultsNotSummed": true,
+    "limitation": "Local/synthetic checks and targeted review are distinct from new-head CI and actual hosted A-D."
+  },
+  "currentPublicReadiness": {
+    "jsCheckOnly": {
+      "toolReceipt": "0175a0",
+      "status": "ready",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "basePublicSeal": {
+      "toolReceipt": "a9106a",
+      "nativeExit": 0,
+      "foundationSourceFiles": 39,
+      "runtimeFiles": 840
+    },
+    "earlierSealInvocation": {
+      "toolReceipt": "609dfb",
+      "nativeExit": 1,
+      "classification": "Required ReplaceReviewedSeal flag omitted; public invocation failed before authentication. Existing flag supplied on corrected invocation.",
+      "privateRead": false,
+      "authenticationAttempted": false
+    },
+    "acceptancePublicSeal": {
+      "toolReceipt": "5d3bb0",
+      "nativeExit": 0,
+      "projectSourceFiles": 230,
+      "runtimeFiles": 840,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "actualAcceptanceWrapperCheck": {
+      "toolReceipt": "887d9e",
+      "nativeExit": 0,
+      "status": "check_only_ready",
+      "privateRead": false,
+      "networkRequests": 0,
+      "publicCompositionLoaded": true,
+      "adminPublicInputsVerified": true,
+      "adminHandoffReady": false,
+      "actualMcpPortVerified": false
+    },
+    "newHeadCi": "pending",
+    "noFutureResultClaimed": true
+  },
+  "credentialMetadata": {
+    "toolReceipt": "0ed376",
+    "entriesPresent": 4,
+    "missing": [],
+    "authenticationTested": false,
+    "persistentOriginalsRetained": true,
+    "newOwnerInputRequired": false
+  },
+  "actualUsageUnchanged": {
+    "management": 127,
+    "control": 351,
+    "combined": 478,
+    "carriedManagement": 10,
+    "carriedControl": 1,
+    "vercelSetupUsed": 44,
+    "vercelSetupMaximum": 88,
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "actorStartsMaximum": 2,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "acceptance": {
+    "implementationAndFocusedReviewComplete": true,
+    "sealingAndDeliveryChecksPending": true,
+    "newTechnicalAttemptAdmitted": false,
+    "m03DevAcceptanceVerified": false,
+    "productionChanged": false,
+    "pr8Merged": false,
+    "m04Started": false
+  },
+  "boundaries": {
+    "privateContentsReadToCreateThisRecord": false,
+    "hostedCallsToCreateThisRecord": 0,
+    "newCredentialsRequested": false,
+    "timeOnlyApprovalRequested": false,
+    "oldClosedWindowReopened": false,
+    "completedSetupReplayed": false
+  },
+  "nextStep": "Deliver the scoped repair through normal PR CI, then continue the incomplete M03 dev acceptance under standing authority and unchanged cumulative limits. Actual wrapper public CheckOnly passed; no new technical admission or hosted acceptance is claimed."
+}

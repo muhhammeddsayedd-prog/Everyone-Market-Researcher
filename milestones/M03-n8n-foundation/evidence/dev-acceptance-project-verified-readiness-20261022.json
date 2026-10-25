@@ -1,0 +1,229 @@
+{
+  "kind": "m03_project_verified_continuation_readiness",
+  "version": 1,
+  "observedAtUtc": "2026-10-22T17:27:59.398Z",
+  "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+  "authority": "Proposed only; separate time/retained-fixture approval absent. No credential request or admission.",
+  "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+  "positiveProjectRead": {
+    "path": "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-preflight-actual-20261022.json",
+    "sha256": "33bc37b6a9245a7f4f4876edeff20014eedca481a44e9613be188ca2eb19e7b6",
+    "completedAtUtc": "2026-10-22T17:04:25.170Z",
+    "sourceHead": "f4775b2fd1c88e0110555fa006027a3d39cdcd89",
+    "sourceCi": 39818174853,
+    "httpStatus": 200,
+    "nativeExit": 0,
+    "predicatesTrue": 12,
+    "childrenClosed": true,
+    "separateReadFenceConsumed": true,
+    "historicalCauseUnestablished": true,
+    "effectiveStorageBackendUnestablished": true
+  },
+  "implementation": {
+    "separatePurposeBoundProof": true,
+    "oldProofBrandsRejected": true,
+    "noPushPath": true,
+    "knownPriorReactivationAuditRequired": true,
+    "externalArchiveReceiptPinned": true,
+    "noArchiveAuditInvented": true,
+    "earlyActualRunSavedMetadata75BeforeAnyInputMetadataDpapiOrAdmit": true,
+    "checkOnlyNeverReadsAuthMetadata": true,
+    "newFixedMetadataFailureClosureCodeAllowlisted": true,
+    "independentReviewNoRemainingP1P2": true
+  },
+  "publicChecks": {
+    "directGuard": {
+      "receipt": "3ce2aa",
+      "nativeExit": 0,
+      "status": "project_verified_continuation_approval_required",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "seal": {
+      "receipt": "3d3ce2",
+      "nativeExit": 0,
+      "status": "acceptance_public_seal_ready",
+      "sha256": "104363298c950773e4ee1074ccf6714f6368fd42a2fe9e21635f3926745fe356",
+      "projectFiles": 136,
+      "zodFiles": 840,
+      "vercelFiles": 3462,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "coordinator": {
+      "receipt": "ee7ff4",
+      "nativeExit": 0,
+      "status": "project_verified_continuation_approval_required",
+      "publicCompositionLoaded": true,
+      "adminPublicInputsVerified": false,
+      "adminHandoffReady": false,
+      "actualMcpPortVerified": false,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "admin": {
+      "receipt": "fbb6bb",
+      "nativeExit": 3,
+      "status": "APPROVAL_REQUIRED",
+      "flags": [
+        "-CheckOnly",
+        "-PhaseAControl",
+        "-ProjectVerifiedContinuation"
+      ],
+      "credentialMetadataRead": false,
+      "privateContentsRead": false,
+      "authenticationAttempted": false
+    },
+    "earlierAdminInvocations": [
+      {
+        "receipt": "8eee83",
+        "outerExit": 1,
+        "status": "Conflicting continuation modes",
+        "reason": "Root omitted mandatory PhaseAControl; guard correctly rejected before private access. No source defect or fix."
+      },
+      {
+        "receipt": "a90c6b",
+        "outerExit": 1,
+        "status": "APPROVAL_REQUIRED",
+        "reason": "Correct flags; native3 was not propagated by outer shell. Explicit LASTEXITCODE propagation in fbb6bb verified native3; no consumer retry or authority."
+      }
+    ]
+  },
+  "verification": {
+    "publicDbPins": 43,
+    "preservedPublicRecords": 39,
+    "journalPins": 3,
+    "migrationSourceVersionsUnchanged": 14,
+    "typesRegenerated": false,
+    "hostedAdvisorsRerun": false,
+    "historicalAdvisorsAndTypesKeepOriginalObservedAt": true,
+    "gitIndexPinsVerified": true,
+    "gitIndexPublicPins": 41,
+    "gitIndexMigrationSourcesUnchanged": 14,
+    "targetedIndexSecretScan": {
+      "receipt": "53b122",
+      "trackedFiles": 1304,
+      "violations": 0,
+      "completeCredentialAudit": false
+    },
+    "finalRecordsReviewNoP1P2": true
+  },
+  "targetedTests": {
+    "jsAuthor": {
+      "receipt": "8417cd",
+      "passed": 45,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "jsIndependent": {
+      "receipt": "e54d25",
+      "passed": 26,
+      "skipped": 0,
+      "nativeExit": 0,
+      "overlapsAuthor": true
+    },
+    "windowsIndependent": {
+      "receipt": "b62f84",
+      "passed": 16,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "windowsLegacyAffected": {
+      "receipt": "f65f5d",
+      "passed": 21,
+      "skipped": 0,
+      "nativeExit": 0
+    },
+    "windowsOwnedAncestry": {
+      "receipt": "21ca82",
+      "passed": 1,
+      "nativeExit": 0,
+      "harmlessSyntheticOnly": true
+    },
+    "postgres17Local": {
+      "receipt": "890db0",
+      "passed": 64,
+      "skipped": 0,
+      "nativeExit": 0,
+      "cachedImage": "sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
+      "network": "none",
+      "ports": 0,
+      "volumes": 0,
+      "imagePulled": false,
+      "credentialsUsed": false,
+      "ownedContainerRemoved": true,
+      "oldStartupAndTeardownActuallyExecuted": true,
+      "hostedAcceptance": false
+    },
+    "lint": {
+      "receipt": "c696de",
+      "nativeExit": 0
+    },
+    "formatAndDiff": {
+      "receipt": "f82d6a",
+      "nativeExit": 0
+    }
+  },
+  "accounting": {
+    "mainManagement": 2,
+    "separateManagement": 4,
+    "aggregateManagement": 6,
+    "managementMaximum": 512,
+    "mainControl": 200,
+    "separateControl": 1,
+    "aggregateControl": 201,
+    "controlMaximum": 2048,
+    "aggregateCombined": 207,
+    "combinedMaximum": 2560
+  },
+  "publicAuthorityPathsAbsent": {
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-approval-20261022.json": true,
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.json": true,
+    "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.runtime-claim.json": true
+  },
+  "sourcePins": {
+    "scripts/n8n/foundation-live-project-verified-continuation.mjs": "0fa59fd2924be77213c2aae915935836721ce43237471bfab3c0c6cfe5b603ff",
+    "scripts/n8n/foundation-live-runtime-cli.mjs": "8bff51806522684adac231d898c819fd3749c4bbc5a44b8015b7e607ca77f404",
+    "scripts/n8n/foundation-live-runtime.mjs": "b1d000ee7eef9d3fe150dff3a64a047476b7afe839722ed27e3d99deb30a0f55",
+    "scripts/n8n/foundation-control-state.mjs": "ac4b0c97941b1d44249e2b54161c72e05179119f8e738aa87d8444b717d28fde",
+    "scripts/n8n/foundation-live-setup.mjs": "ee685d5ded80c6f6324706ce560f243675684806933a8dea59dab4a1e4303010",
+    "scripts/n8n/foundation-wrapper-public-reader.mjs": "c15aa70907ec5b25c875b40c565cb8d0d01a5583ad9b664ad17f2fe0ad467dff",
+    "scripts/db/foundation-admin-client.mjs": "c845c9fc2c1344aa79b62903c1d44ed66e5002e2f6ac146a8ce583af5a1efe74",
+    "scripts/db/windows/Foundation-AdminControl.ps1": "d93a7d7f619ffc050aa089dad2b1da9f5a1d33b09657f91501714e2987f99a73",
+    "scripts/db/windows/Invoke-M03FoundationMigrations.ps1": "92d34f9027c8368536414bd052478c26701faaf75feb816548c8fcf35b014a77",
+    "scripts/db/windows/New-M03FoundationMigrationHandoff.ps1": "b45c56364678a11283aab92cb60292ee29a86383a1114fa623af122f4b592c7e",
+    "scripts/n8n/windows/Acceptance-PublicRuntime.ps1": "f0e2270e11d2970167d7c883a8b30ab9d1fbf626ff3ae81a76b3a3b5c63ea874",
+    "scripts/n8n/windows/Invoke-M03Acceptance.ps1": "c59c8eac7546304958ac7e3439ce7521416e8db6e24e8a12f66fb819a40c855e",
+    "scripts/assert/m03_smoke_reactivate_project_verified.sql": "56c692a31ae43328af03107a0f3c98fd8c14eb7f1d0ab0a71198641d08a869b6",
+    "scripts/db/m03-foundation-dev-migration-packet.json": "1ec7abbf4e200ed2b1603815e485d4528d030c27367b70a24727698ccfaa792f",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-checkpoint-20261022.json": "e21e515ae446dcde7983dba87d09221ce1bf3cd2ad06d08329368a8241e6ba10",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-project-verified-packet-20261022.md": "13d19460cdb889378dec5ae4d93af4708baf85290c164e07961add18e7243650"
+  },
+  "delivery": "This substantive commit receives ordinary PR8 five-job CI/Vercel. Verify its actual checks before presenting the single time/fixture decision; no future head/pass claimed here.",
+  "closure": {
+    "allPublicCheckProcessesClosed": true,
+    "noDpapiInputConsumed": true,
+    "noAuthMetadataReadByTheseCheckOnlyModes": true,
+    "noNewClock": true,
+    "savedOriginalsAndPendingMachinePreserved": true,
+    "priorKnownCredentialCleanupPreserved": true,
+    "parentEnvironmentErasureNotClaimed": true
+  },
+  "exclusions": {
+    "migrationOperation": false,
+    "hostedDatabaseMutation": false,
+    "fixtureMutation": false,
+    "n8nExecution": false,
+    "gatewayAttempt": false,
+    "directProviderGet": false,
+    "actorStart": false,
+    "newPaidSpendUsd": 0,
+    "production": false,
+    "schedules": false,
+    "externalNotification": false,
+    "privateIncidentExecution": false,
+    "merge": false,
+    "M04": false
+  }
+}

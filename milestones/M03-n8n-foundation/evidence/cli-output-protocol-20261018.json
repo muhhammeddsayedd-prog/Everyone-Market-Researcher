@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-18T05:27:57Z",
+  "scope": "Independent public-source branch reproduction only; no CLI invocation, database connection, credentials, private output, denied-command replay or hosted change",
+  "cliVersion": "2.121.0",
+  "officialTag": "v2.121.0",
+  "resolvedCommit": "8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2",
+  "sources": [
+    {
+      "path": "apps/cli/src/cli/root.ts",
+      "url": "https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/cli/root.ts#L243-L250",
+      "sha256": "def4c4f75512c3415b1afaf7b7894a154173def8decf3c28fdd0edb21e58aa8f",
+      "finding": "An explicit legacy --output json selects quietProgressTextOutputLayer, even when resolved --output-format is json. This selection happens after resolving the requested structured format."
+    },
+    {
+      "path": "apps/cli/src/output/quiet-progress-text-output.layer.ts",
+      "url": "https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/output/quiet-progress-text-output.layer.ts",
+      "sha256": "57fe9105b32ea552c89b1e531b7398e660dcf677df367abecfbaf611bb5a7166",
+      "finding": "The wrapper retains the base text format and suppresses only transient task/progress output. It is not the JSON success emitter."
+    },
+    {
+      "path": "apps/cli/src/command-internal/db-push-core.ts",
+      "url": "https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/command-internal/db-push-core.ts#L256-L265",
+      "sha256": "678acd711169d74ad897105739b3e7ba1d3a5508728944e2c037145efc06f84a",
+      "finding": "The text branch writes a human completion line to stdout. Only the non-text branch calls the structured success emitter. Dry-run plan/progress writes are separately directed to stderr."
+    },
+    {
+      "path": "apps/cli/src/shared/output/output.layer.ts",
+      "url": "https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/shared/output/output.layer.ts#L461-L529",
+      "sha256": "e6694a782ff6f0beb2a96c9ba9d823d988b9b86ea1d45c5d3155aa117279115b",
+      "finding": "The JSON layer writes the final success object to stdout and logs/progress to stderr. The required six-field push object is correct only when this layer is actually selected."
+    }
+  ],
+  "whyQueryPassed": {
+    "source": "https://github.com/supabase/cli/blob/8a549dffa6bc5c88069c61c1f55ef55ad9b82ae2/apps/cli/src/commands/db/query/query.handler.ts#L86-L126",
+    "explanation": "db query separately resolves its legacy --output json payload format and writes rendered rows through output.raw. It can emit JSON while the shared output layer remains text. A successful query therefore did not validate the push output protocol."
+  },
+  "reproduction": {
+    "method": "Extract exact root output-layer selection and db-push-core final emission from the pinned public files; execute those pure branches in node:vm with minimal mock output sinks, synthetic public pending filenames and no Effect runtime/CLI/database",
+    "nativeExit": 0,
+    "checks": [
+      {
+        "flags": "--agent no --output json --output-format json",
+        "selectedLayer": "text",
+        "stdout": "Finished supabase db push.\n",
+        "stdoutJsonParsed": false
+      },
+      {
+        "flags": "--agent no --output-format json",
+        "selectedLayer": "json",
+        "stdoutJsonParsed": true,
+        "shape": [
+          "upToDate",
+          "dryRun",
+          "migrations",
+          "seeds",
+          "roles",
+          "message"
+        ],
+        "pendingBasenames": [
+          "20261018034220_rpc_n8n_foundation.sql",
+          "20261018035417_price_book_plan.sql"
+        ],
+        "seeds": [],
+        "roles": []
+      }
+    ],
+    "immutableSourceBytesMatchTagBytes": true
+  },
+  "actualReceiptBoundary": {
+    "firstAttempt": "Original wrapper exit 1 and generic dry-run rejection preserved; its dry-run child exit/output were not retained, so its exact cause remains unknown.",
+    "secondAttempt": "Root reports authenticated exact seven-version baseline, dryRunNativeExit 0, dryRunCheck invalid_json, pushAttempted false and completed cleanup. This review did not read raw private stdout or repeat that attempt.",
+    "conclusion": "A deterministic flag conflict is reproduced from the exact pinned CLI source and is consistent with the second observed failure. The actual discarded bytes are not retroactively claimed to have been captured or compared."
+  },
+  "reviewedCorrection": "Use command-specific output arguments: db query retains --output json; db push omits legacy --output and uses --output-format json. Preserve exact six-field/two-migration/no-seed/no-role checks. Do not strip arbitrary lines, search for the last JSON object, weaken the parser or bypass migration history checks.",
+  "correctionReview": {
+    "consumerSha256": "530b7a7395b980b13d77c0254206c6bf9ae65ba653bf7a359f71fd6c3438db35",
+    "testsSha256": "1a2322b304fbbb7c6cdda63b257897e08740d99bbc1ff7de956b7a1767b1a151",
+    "change": "Invoke-Cli permits only db query/db push, always uses --output-format json and adds legacy --output json only for query. The synthetic native CLI now reproduces the official legacy-output precedence for push rather than always emitting the desired success object.",
+    "independentCommand": "node --test --test-name-pattern='command-specific output|distinguishes malformed dry-run JSON' scripts/db/m03-dev-migrations.test.mjs",
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "nativeExit": 0,
+    "checks": [
+      "Both actual constructed query calls retain legacy JSON; both dry-run/push calls omit it and request structured JSON",
+      "Synthetic successful dry-run, push and history reconciliation parse correctly using the modeled upstream output selection",
+      "Malformed JSON remains rejected before push admission; no text stripping or last-JSON heuristic introduced"
+    ],
+    "findings": "No remaining P0/P1/P2 in the narrow correction. Exact migration/history/hash/no-seed/no-role/TLS/cleanup gates and private-output suppression are unchanged.",
+    "boundary": "Independent isolated synthetic Windows DPAPI/native CLI fixtures only. No actual handoff consumed or database authentication attempted by reviewer. Author's separate affected-suite count remains distinct."
+  },
+  "historicalNextGateAtReview": "Root reseals the exact reviewed public files after the author's affected checks complete, then coordinates any fresh dev-only handoff under existing M03 authorization. The discarded historical stdout is not reconstructed, and successful migration replay is not permitted.",
+  "currentCompletion": "Corrected exact dev dry-run/push completed native0 as03a85d53-9ad2-4d42-abb0-08945872e707. See dev-migration-completion-20261018.json. No new handoff or successful-operation replay."
+}

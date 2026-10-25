@@ -1,0 +1,55 @@
+{
+  "name": "M03 · Runtime capability probe [dev]",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "5d85345a-d689-4955-9929-e31468f821b8",
+      "name": "Manual runtime probe",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function invalidWebsiteRow() {\n  throw new Error('contract_drift: invalid website crawler row');\n}\nfunction smokeBoundedText(input, limit) {\n  const bounded = input.slice(0, limit);\n  const last = bounded.charCodeAt(bounded.length - 1);\n  return last >= 0xd800 && last <= 0xdbff ? bounded.slice(0, -1) : bounded;\n}\nfunction hasSensitiveUrlQuery(url) {\n  const credentialKeys = ['accesstoken','refreshtoken','idtoken','apikey','clientsecret','clientpassword','accesskey','password','passwd','pwd','secret','token','auth','authorization','credential','credentials','signature','sig','key','xgoogapikey','xamzcredential','xamzsignature','xamzsecuritytoken'];\n  for (const rawKey of url.searchParams.keys()) {\n    let key = rawKey;\n    for (let pass = 0; pass < 2 && key.includes('%'); pass += 1) {\n      try { key = decodeURIComponent(key); } catch { return true; }\n    }\n    if (key.includes('%') || credentialKeys.includes(key.toLowerCase().replace(/[-_]/g, ''))) return true;\n  }\n  return false;\n}\nfunction canonicalWebsiteUrl(input) {\n  if (typeof input !== 'string' || !input || input.length > 8192 || !/^https?:\\/\\/[^/?#]/i.test(input) || /^https?:\\/\\/[^/?#]*@/i.test(input) || /[\\s\\u0000-\\u001f\\u007f\\\\]/u.test(input)) return invalidWebsiteRow();\n  let url;\n  try { url = new URL(input); } catch { return invalidWebsiteRow(); }\n  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.port) return invalidWebsiteRow();\n  if (hasSensitiveUrlQuery(url)) return invalidWebsiteRow();\n  const labels = url.hostname.split('.');\n  const suffix = labels[labels.length - 1];\n  const privateSuffixes = ['arpa','example','home','internal','invalid','lan','local','localdomain','localhost','onion','test'];\n  if (labels.length < 2 || /^[\\d.]+$/.test(url.hostname) || privateSuffixes.includes(suffix) || !/^[a-z][a-z\\d-]*$/i.test(suffix) || labels.some((label) => !/^[a-z\\d](?:[a-z\\d-]{0,61}[a-z\\d])?$/i.test(label))) return invalidWebsiteRow();\n  url.protocol = 'https:';\n  url.search = '';\n  url.hash = '';\n  return url.href;\n}\nfunction normalizeSmokeWebsite(row) {\n  if (!row || typeof row !== 'object' || Array.isArray(row) || row.error !== undefined || (row.markdown !== undefined && row.markdown !== null && typeof row.markdown !== 'string') || (row.metadata !== undefined && row.metadata !== null && (typeof row.metadata !== 'object' || Array.isArray(row.metadata))) || (row.metadata?.title !== undefined && row.metadata?.title !== null && typeof row.metadata.title !== 'string')) return invalidWebsiteRow();\n  const url = canonicalWebsiteUrl(row.url);\n  for (const retainedUrl of [row.crawl?.loadedUrl, row.crawl?.referrerUrl, row.metadata?.canonicalUrl]) {\n    if (retainedUrl !== undefined && retainedUrl !== null && retainedUrl !== '') canonicalWebsiteUrl(retainedUrl);\n  }\n  const title = row.metadata?.title ? smokeBoundedText(row.metadata.title, 2000) : null;\n  const caption = smokeBoundedText(row.markdown || '', 8000);\n  let hash;\n  try {\n    if (typeof require !== 'function') throw new Error('unavailable');\n    hash = require('crypto').createHash('sha256').update(url, 'utf8').digest('hex');\n    if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('unavailable');\n  } catch { throw new Error('sha256_unavailable'); }\n  return {json:{platform:'website_work_page',external_id:hash.slice(0,32),actor:'apify/website-content-crawler',item_type:'project_page',url,published_at:null,title,caption,metrics:{},payload:{url,markdown:caption,metadata:{title}}},matchKey:url};\n}\nconst lc = (s) => (s || '').toString().trim().toLowerCase();\nconst noAt = (s) => lc(s).replace(/^@+/, '');\nconst iso = (v) => { if (v === null || v === undefined || v === '') return null; const d = typeof v === 'number' ? new Date(v < 1e12 ? v * 1000 : v) : new Date(v); return isNaN(d) ? null : d.toISOString(); };\nconst tags = (text) => [...new Set(((text || '').match(/#([\\p{L}\\p{N}_]+)/gu) || []).map((t) => lc(t.slice(1))))];\nconst ats = (text) => [...new Set(((text || '').match(/@([A-Za-z0-9._]+)/g) || []).map((t) => noAt(t)))];\nconst int = (v) => v === null || v === undefined || v === '' || Number(v) < 0 ? null : Math.round(Number(v));\nconst isoDur = (s) => { const m = /P(?:(\\d+)D)?T?(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?/.exec(s || ''); if (!m) return null; return (+m[1] || 0) * 86400 + (+m[2] || 0) * 3600 + (+m[3] || 0) * 60 + (+m[4] || 0); };\nconst hms = (s) => { if (!s) return null; const p = s.split(':').map(Number); return p.reduce((a,n)=>a*60+n,0); };\nconst trim8k = (s) => (s || '').slice(0,8000);\nconst result = {probe:'m03_runtime_capability',synthetic_only:true,external_calls:false,url_global:false,url_search_params:false,crypto_require:false,sha256_matches:false,buffer_utf8:false,text_encoder_utf8:false,common_helpers:false,smoke_normalizer:false,smoke_error_code:'not_run'};\ntry { const u = new URL('https://everyone.film/about-everyone?public=1#probe'); result.url_global=u.hostname==='everyone.film'&&u.pathname==='/about-everyone'; result.url_search_params=[...u.searchParams.keys()].join(',')==='public'; } catch {}\ntry { const h=require('crypto').createHash('sha256').update('https://everyone.film/about-everyone','utf8').digest('hex'); result.crypto_require=true; result.sha256_matches=h==='e4d69e3fb0d821183258d75248f9df241119036f3eb3175841f0198ff05b104d'; } catch {}\ntry { result.buffer_utf8=Buffer.from('A😀é','utf8').length===7&&Buffer.from('A😀é','utf8').toString('utf8')==='A😀é'; } catch {}\ntry { result.text_encoder_utf8=new TextEncoder().encode('A😀é').length===7; } catch {}\ntry { result.common_helpers=lc(' A ')==='a'&&noAt('@@A')==='a'&&iso(0)==='1970-01-01T00:00:00.000Z'&&tags('#É #é').join(',')==='é'&&ats('@AA @aa').join(',')==='aa'&&int('3.6')===4&&isoDur('PT1H2M3S')===3723&&hms('01:02:03')===3723&&trim8k('x'.repeat(8001)).length===8000; } catch {}\ntry { const normalized=normalizeSmokeWebsite({url:'https://everyone.film/about-everyone?public=1#probe',markdown:'Synthetic runtime capability text',metadata:{title:'Synthetic runtime probe'}}); result.smoke_normalizer=normalized.matchKey==='https://everyone.film/about-everyone'&&normalized.json.external_id==='e4d69e3fb0d821183258d75248f9df241'&&normalized.json.payload.markdown==='Synthetic runtime capability text'&&Object.keys(normalized.json).length===10; result.smoke_error_code=result.smoke_normalizer?'none':'normalizer_result_mismatch'; } catch (e) { result.smoke_error_code=e&&e.message==='sha256_unavailable'?'sha256_unavailable':'normalizer_runtime_failed'; }\nreturn [{json:result}];\n"
+      },
+      "id": "55751597-1fb5-43be-80fd-b0a122eacff4",
+      "name": "Runtime capability checks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        32
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual runtime probe": {
+      "main": [
+        [
+          {
+            "node": "Runtime capability checks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1e885594-dded-47ac-bce9-25f831c91f78",
+  "meta": {
+    "instanceId": "fe5facdb5abbccc9433fc2854c55f8eda5bd15bbdaa2eb5873e386d9cc9b2495"
+  },
+  "nodeGroups": [],
+  "id": "B6Bpuo31PAw68vj5",
+  "tags": []
+}

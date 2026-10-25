@@ -1,0 +1,60 @@
+{
+  "kind": "m03_project_preflight_readiness",
+  "version": 1,
+  "recordedAtUtc": "2026-10-22T16:54:09.244Z",
+  "authority": "Existing M03 development read-only diagnostic; no A-D renewal",
+  "consumer": {
+    "path": "scripts/n8n/foundation-live-project-preflight.mjs",
+    "sha256": "fcf97adc0e41699eba9e7ed55b1488a01aa1f4c58ebb76b82df1d807c7914c5a",
+    "review": "remaining_guard_review; both P2 findings closed; no remaining P1/P2"
+  },
+  "tests": {
+    "path": "scripts/n8n/foundation-live-project-preflight.test.mjs",
+    "sha256": "78ec539c0ff46b7a96cf4989459264b96a6bf05fb8e9be33081de8440c8a0bee",
+    "passed": 11,
+    "skipped": 0,
+    "nativeExit": 0,
+    "receipt": "03feca",
+    "syntheticOnly": true,
+    "installedCliOrIgnoredStateNotRequired": true
+  },
+  "actualPublicCheckOnly": {
+    "toolReceipt": "ced183",
+    "nativeExit": 0,
+    "kind": "m03_project_preflight_ready",
+    "privateRead": false,
+    "networkRequests": 0,
+    "managementAttempts": 5,
+    "controlAttempts": 201,
+    "combinedAttempts": 206,
+    "getAttemptDebited": false,
+    "newAcceptanceWindow": false
+  },
+  "publicRuntime": {
+    "status": "public_runtime_verified",
+    "nativeExit": 0,
+    "verifiedFiles": 3462,
+    "mismatches": 0,
+    "manifestSha256": "f627ad24e87097db493974fa463e68b5d0bfac3a0bf60213ab5a2023b30c42da",
+    "vercelSubtreeSha256": "efb2ce741510bce3858052a6f530f69a3a84ca03a93629c4565958e0fd4c26b6",
+    "observedAtUtc": "2026-10-22T16:52:47.329Z",
+    "privateRead": false,
+    "networkRequests": 0,
+    "projectSealRebuilt": false,
+    "oldAcceptanceSealReadyClaim": false,
+    "initialPublicOnlyReader": "Node REPL 30-second timeout; kernel reset, no private read or network",
+    "completedPublicVerifier": "scripts/n8n/out/verify-vercel-public-runtime-20261022.mjs",
+    "completedPublicVerifierSha256": "96bd720abcdfed2f5e209fea1c61bf949ffbf029b04871b84f59152cec3bbe5d"
+  },
+  "liveReadNotStarted": true,
+  "ledgerCreated": false,
+  "managementAttempts": 5,
+  "controlAttempts": 201,
+  "combinedAttempts": 206,
+  "next": "Verify normal current-source PR8 CI and unchanged source/runtime, then invoke ReadProject once; record actual result without retry.",
+  "newAcceptanceWindow": false,
+  "administratorOrRuntimeHandoffNeeded": false,
+  "production": false,
+  "merge": false,
+  "M04": false
+}

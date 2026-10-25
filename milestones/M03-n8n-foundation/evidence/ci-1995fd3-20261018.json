@@ -1,0 +1,70 @@
+{
+  "observedAt": "2026-10-18 05:50:40 UTC",
+  "environment": "GitHub-hosted isolated CI and Vercel preview metadata; not hosted Supabase/n8n acceptance",
+  "pr": 8,
+  "branch": "m03-n8n-foundation",
+  "draft": true,
+  "merged": false,
+  "head": "1995fd3bfc32ba9dd27df60d9649a0b501871bc3",
+  "runId": 39101756910,
+  "runUrl": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39101756910",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 117599290014,
+      "name": "quality",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 117599290129,
+      "name": "unit",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 117599290152,
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 117599290170,
+      "name": "db-tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 117599362859,
+      "name": "e2e",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "vercel": {
+    "state": "success",
+    "url": "https://vercel.com/muhammed-abdelrahman/everyone-market-researcher/25Y8Kjnnt78KdFjhkJf6YYdp5CHR"
+  },
+  "localFinalIndexScan": {
+    "trackedFiles": 920,
+    "violations": 0,
+    "nativeExit": 0
+  },
+  "publicArtifactValidation": {
+    "milestoneJsonParsedAtHead": 28,
+    "runtimeExportByteSealsMatched": 3,
+    "actualProviderExportsInactiveAndReferencesOnly": 5
+  },
+  "documentationFollowup": "This receipt is added after observing this exact completed run. A later documentation-only commit is not retroactively covered; it receives normal PR CI.",
+  "preservedPriorReviewedHead": "ab9c3c620e0367c258ad1560e3c3063db7164557",
+  "preservedPriorRun": 39097738601,
+  "remaining": "Strict native writer TLS, complete inactive foundation bindings/graphs, full callback/replay/rejection/error/dispatch/health acceptance and a concrete bounded live packet.",
+  "productionChanged": false,
+  "actorStarted": false,
+  "modelCalled": false,
+  "schedulesActivated": false,
+  "externalNotificationSent": false,
+  "mergeAuthorized": false,
+  "M04Started": false
+}

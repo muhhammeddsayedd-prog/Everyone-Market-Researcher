@@ -1,0 +1,1095 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T10:25:39Z",
+  "scope": "Approved bounded GW-01 dev connection trial and verified owned closeout; full M03 acceptance remains open",
+  "status": "trial_and_owned_closeout_complete_full_m03_open",
+  "evidenceBoundary": "Fixed sanitized public receipts only. No secret, private handoff, raw editor snapshot, response header/body log or unrelated incident content was read or copied by this aggregation.",
+  "windowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+  "deployment": {
+    "commitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+    "deploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA",
+    "audience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+    "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+    "branch": "m03-n8n-foundation"
+  },
+  "clock": {
+    "sourceFile": "scripts/n8n/out/gw01-clock-start.json",
+    "fileSha256": "7a23d696f42b1e06b34a184a6960f36db9ce0f7c70bbc06fb23754c385ab16e3",
+    "localStartedAt": "2026-10-18T10:18:17.801Z",
+    "localExpiresAt": "2026-10-18T10:48:17.801Z",
+    "databaseStartedAtRaw": "2026-10-18T10:18:29.04736+00:00",
+    "databaseExpiresAtRaw": "2026-10-18T10:48:29.04736+00:00",
+    "controllingDeadline": "Earlier local absolute deadline; binding did not extend it",
+    "authoritativeBindToolRef": "ac028a"
+  },
+  "gatewayCases": [
+    {
+      "name": "identity",
+      "sourceFile": "scripts/n8n/out/gw01/identity.json",
+      "fileSha256": "4aee8ea63e76dd642dccd37ddcbffa6ea591c7eaff321ad84f7b52bd5cd9b6e2",
+      "toolReceiptRef": "02dbc7",
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "13d79863-9c54-4041-b85b-e95121eb002f",
+        "operation": "identity.read",
+        "kind": "ordinary",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "completed",
+        "responseErrorCode": null,
+        "result": {
+          "database": "postgres",
+          "projectRef": "zmotjsbzhzjvpelxvxlf",
+          "sessionUser": "n8n_writer",
+          "connectionCount": 1,
+          "currentUser": "n8n_writer"
+        },
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 1,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      }
+    },
+    {
+      "name": "budget",
+      "sourceFile": "scripts/n8n/out/gw01/budget.json",
+      "fileSha256": "c596378e8d8e18d8a117eba9043efbbdc2486b41711a85790eed8505c7839cd9",
+      "toolReceiptRef": null,
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "b36e726b-2e05-470a-981f-c6123b5e80df",
+        "operation": "settings.read",
+        "kind": "ordinary",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "completed",
+        "responseErrorCode": null,
+        "result": {
+          "key": "daily_budget_usd",
+          "value": 25
+        },
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 3,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      }
+    },
+    {
+      "name": "prices",
+      "sourceFile": "scripts/n8n/out/gw01/prices.json",
+      "fileSha256": "b18a05b5f88107c84b31e7a8fd4eaa70b09f169b3ed9ad81543ac7a3cc7e32aa",
+      "toolReceiptRef": null,
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "212397cf-8f67-4e40-9771-4b4b6918de8d",
+        "operation": "prices.read",
+        "kind": "ordinary",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "completed",
+        "responseErrorCode": null,
+        "result": {
+          "priceEntryCount": 25
+        },
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 4,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      },
+      "resultProjectionBoundary": "Only the entry count is copied; the complete typed public price receipt remains at the hashed source file."
+    },
+    {
+      "name": "health",
+      "sourceFile": "scripts/n8n/out/gw01/health.json",
+      "fileSha256": "71ae32d1abcbd5f8ba095c8f174ca8d85ac3814dee28d5bedcb79170a6fea866",
+      "toolReceiptRef": null,
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "73c71874-5a99-4feb-9038-fba095988ed5",
+        "operation": "health.read",
+        "kind": "ordinary",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "completed",
+        "responseErrorCode": null,
+        "result": {
+          "budget": {
+            "over_budget": false,
+            "daily_budget_usd": 25
+          },
+          "queues": {
+            "embed": 0,
+            "media": 0,
+            "ai_extract": 0
+          },
+          "cost_yesterday": {
+            "total": 0,
+            "by_provider": {}
+          },
+          "stale_accounts": [],
+          "failing_accounts": [],
+          "month_to_date_usd": 0,
+          "forecast_month_usd": 0,
+          "items_new_yesterday": {},
+          "workflow_errors_24h": {}
+        },
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 5,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      }
+    },
+    {
+      "name": "errorCountBefore",
+      "sourceFile": "scripts/n8n/out/gw01/errorCountBefore.json",
+      "fileSha256": "62dc14e5c744fc794440da1a7fa47ccb59b9eacfc0f50a33a179c7cce009bc34",
+      "toolReceiptRef": null,
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "b1b2c577-278f-4c65-a4e5-d2185a9abb04",
+        "operation": "error.count",
+        "kind": "ordinary",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "completed",
+        "responseErrorCode": null,
+        "result": {
+          "count": 0
+        },
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 6,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      }
+    },
+    {
+      "name": "duplicate2",
+      "sourceFile": "scripts/n8n/out/gw01/duplicate2.json",
+      "fileSha256": "43fd2cbf56c0d3ab12fa99d463ead2c2cbc680db89bed1799b3fe76daaa390cc",
+      "toolReceiptRef": "d837b0",
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempts": [
+        {
+          "requestId": "58bf4f92-f201-4e8a-9dbd-475ec483c97e",
+          "operation": "error.log",
+          "kind": "ordinary",
+          "status": "complete",
+          "code": null,
+          "httpStatus": 200,
+          "tlsVerified": true,
+          "headersReceived": true,
+          "socketsClosed": true,
+          "attemptRecorded": true,
+          "responseOutcome": "completed",
+          "responseErrorCode": null,
+          "result": {
+            "acknowledged": true
+          },
+          "window": {
+            "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+            "startsAt": "2026-10-18T10:18:29.04736+00:00",
+            "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+            "closed": false,
+            "totalAdmitted": 7,
+            "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+            "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+            "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+          }
+        },
+        {
+          "requestId": "58bf4f92-f201-4e8a-9dbd-475ec483c97e",
+          "operation": "error.log",
+          "kind": "ordinary",
+          "status": "complete",
+          "code": null,
+          "httpStatus": 200,
+          "tlsVerified": true,
+          "headersReceived": true,
+          "socketsClosed": true,
+          "attemptRecorded": true,
+          "responseOutcome": "completed",
+          "responseErrorCode": null,
+          "result": {
+            "acknowledged": true
+          },
+          "window": {
+            "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+            "startsAt": "2026-10-18T10:18:29.04736+00:00",
+            "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+            "closed": false,
+            "totalAdmitted": 8,
+            "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+            "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+            "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+          }
+        }
+      ],
+      "attemptsRecorded": 2,
+      "maxConcurrentTransports": 2,
+      "concurrencyVerified": true
+    },
+    {
+      "name": "auditStatus",
+      "sourceFile": "scripts/n8n/out/gw01/auditStatus.json",
+      "fileSha256": "46dbde6f03336f47c1e45a9774b27833311fb8ada6ff52cc37e2b0516e6594e6",
+      "toolReceiptRef": null,
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "d17ce47c-8494-47b9-875e-88bc80557b34",
+        "operation": "request.status",
+        "kind": "status",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "completed",
+        "responseErrorCode": null,
+        "result": {
+          "acknowledged": true
+        },
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 9,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      }
+    },
+    {
+      "name": "auditReplay",
+      "sourceFile": "scripts/n8n/out/gw01/auditReplay.json",
+      "fileSha256": "c746b60fc6ca9f2a0d2e38308fb079fc2c39781563081c6fd102edacd1376fe2",
+      "toolReceiptRef": null,
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "58bf4f92-f201-4e8a-9dbd-475ec483c97e",
+        "operation": "error.log",
+        "kind": "ordinary",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "completed",
+        "responseErrorCode": null,
+        "result": {
+          "acknowledged": true
+        },
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 10,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      }
+    },
+    {
+      "name": "auditConflict",
+      "sourceFile": "scripts/n8n/out/gw01/auditConflict.json",
+      "fileSha256": "1411c34f8eefbf57dcfb29149a31e4905cafed2564b731ccc252d55a6e4b203b",
+      "toolReceiptRef": null,
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "58bf4f92-f201-4e8a-9dbd-475ec483c97e",
+        "operation": "error.log",
+        "kind": "ordinary",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 409,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "conflict",
+        "responseErrorCode": null,
+        "result": null,
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 11,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      }
+    },
+    {
+      "name": "beforeAbort",
+      "sourceFile": "scripts/n8n/out/gw01/beforeAbort.json",
+      "fileSha256": "fafb9d0d70408a9100ef71de26ed2007cb8cdd6d8bd6a04971cd11f284741950",
+      "toolReceiptRef": "c758de",
+      "nativeExit": 1,
+      "outerStatus": "stopped_reconcile",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "51c86e75-b18a-46e5-a75a-4b05d7d6bb22",
+        "operation": "error.log",
+        "kind": "ordinary",
+        "status": "stopped_reconcile",
+        "code": "GW01_GATEWAY_BEFORE_SEND_ABORT",
+        "httpStatus": null,
+        "tlsVerified": false,
+        "headersReceived": false,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": null,
+        "responseErrorCode": null,
+        "result": null,
+        "window": null
+      }
+    },
+    {
+      "name": "beforeStatus",
+      "sourceFile": "scripts/n8n/out/gw01/beforeStatus.json",
+      "fileSha256": "ebeae59cfd13175b56f2452ffbec2d9f25acdbf5f7d6fd93095c90b3e4116343",
+      "toolReceiptRef": "9e7caf",
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "16302caf-c2e7-4f14-9c99-06b5a77ee6f2",
+        "operation": "request.status",
+        "kind": "status",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "absent",
+        "responseErrorCode": null,
+        "result": null,
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 12,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      }
+    },
+    {
+      "name": "afterCancel",
+      "sourceFile": "scripts/n8n/out/gw01/afterCancel.json",
+      "fileSha256": "b9f0ce0b110d4e8a9fd660d006f12e69e5651bc6a91429f5538116b67a0b4efc",
+      "toolReceiptRef": "f4dd35",
+      "nativeExit": 1,
+      "outerStatus": "stopped_reconcile",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "da5d7a35-975e-4ab8-9472-a82a7cf3b823",
+        "operation": "error.log",
+        "kind": "ordinary",
+        "status": "stopped_reconcile",
+        "code": "GW01_GATEWAY_AFTER_HEADERS_CANCELLED",
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": null,
+        "responseErrorCode": null,
+        "result": null,
+        "window": null
+      }
+    },
+    {
+      "name": "afterStatus",
+      "sourceFile": "scripts/n8n/out/gw01/afterStatus.json",
+      "fileSha256": "11e1cf5d8948570b8a15dc082254d412f1065622b146e882789c0449adc468a5",
+      "toolReceiptRef": "db1ddb",
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "1ab39d61-5b5c-45ee-ae8c-ff77459f2321",
+        "operation": "request.status",
+        "kind": "status",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "completed",
+        "responseErrorCode": null,
+        "result": {
+          "acknowledged": true
+        },
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 14,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      }
+    },
+    {
+      "name": "errorCountAfter",
+      "sourceFile": "scripts/n8n/out/gw01/errorCountAfter.json",
+      "fileSha256": "7954794cd62797982ee6cf3ea372c0d82925e6c79b7a5bc8eb300da05ee1aae5",
+      "toolReceiptRef": "f4eec2",
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "07e3074e-680e-42dc-b592-b9d80474b39e",
+        "operation": "error.count",
+        "kind": "ordinary",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "completed",
+        "responseErrorCode": null,
+        "result": {
+          "count": 0
+        },
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 15,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      }
+    },
+    {
+      "name": "missingAuth",
+      "sourceFile": "scripts/n8n/out/gw01/missingAuth.json",
+      "fileSha256": "4f518b5539a097f6c045903c93f58fbdda00782dbaa5a3ec6a11da50d1887449",
+      "toolReceiptRef": "f4eec2",
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "207ca8e9-6dd3-4a3e-876f-0598a791c4e3",
+        "operation": "identity.read",
+        "kind": "denial",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 401,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": null,
+        "responseErrorCode": "unauthorized",
+        "result": null,
+        "window": null
+      }
+    },
+    {
+      "name": "invalidAuth",
+      "sourceFile": "scripts/n8n/out/gw01/invalidAuth.json",
+      "fileSha256": "9d9ed7be8114ce77a242ad15857bdc0e63a9db65b27763d2a5519df849695ef2",
+      "toolReceiptRef": "f4eec2",
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "e437861c-de07-4094-9ec2-dc42b78de099",
+        "operation": "identity.read",
+        "kind": "denial",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 401,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": null,
+        "responseErrorCode": "unauthorized",
+        "result": null,
+        "window": null
+      }
+    },
+    {
+      "name": "finalIdentity",
+      "sourceFile": "scripts/n8n/out/gw01/finalIdentity.json",
+      "fileSha256": "16af681c7b4bd126a4b4580ed2f7f3256c9fec7eb5c9c5b0cbabf3249f0d8918",
+      "toolReceiptRef": "f4eec2",
+      "nativeExit": 0,
+      "outerStatus": "complete",
+      "rootChildClosed": true,
+      "handoffsRetained": true,
+      "attempt": {
+        "requestId": "134d9def-f414-4255-9fe3-e4ac1484d24f",
+        "operation": "identity.read",
+        "kind": "ordinary",
+        "status": "complete",
+        "code": null,
+        "httpStatus": 200,
+        "tlsVerified": true,
+        "headersReceived": true,
+        "socketsClosed": true,
+        "attemptRecorded": true,
+        "responseOutcome": "completed",
+        "responseErrorCode": null,
+        "result": {
+          "database": "postgres",
+          "projectRef": "zmotjsbzhzjvpelxvxlf",
+          "sessionUser": "n8n_writer",
+          "connectionCount": 2,
+          "currentUser": "n8n_writer"
+        },
+        "window": {
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closed": false,
+          "totalAdmitted": 16,
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        }
+      }
+    }
+  ],
+  "nativeN8nHttpNode": {
+    "sourceFile": "scripts/n8n/out/gw01/n8n-identity.json",
+    "fileSha256": "e44409b99ecbfb00cbcc525c3e8a0db7e172ec7755fca984444e1a298998f4e6",
+    "receipt": {
+      "version": 1,
+      "source": "owned_n8n_native_http_node_ui",
+      "toolRef": "mcp__cua_repl.js safe table projection",
+      "workflowId": "p8GikCM8C9Tq3lo4",
+      "requestId": "3a564cef-0e96-4a09-a412-cd948002a4d0",
+      "statusCode": 200,
+      "identityVerified": true,
+      "headersOmitted": true,
+      "rawErrorsOmitted": true,
+      "response": {
+        "version": 1,
+        "requestId": "3a564cef-0e96-4a09-a412-cd948002a4d0",
+        "outcome": "completed",
+        "result": {
+          "connectionCount": 1,
+          "currentUser": "n8n_writer",
+          "database": "postgres",
+          "projectRef": "zmotjsbzhzjvpelxvxlf",
+          "sessionUser": "n8n_writer"
+        },
+        "window": {
+          "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+          "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA",
+          "closed": false,
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "totalAdmitted": 2
+        }
+      }
+    },
+    "journalFinishToolReceiptRef": "0a4ca1",
+    "boundary": "Actual completion of the owned native HTTP node only. The whole manual workflow completion was not independently classified, and this is not full foundation smoke or native Postgres-node TLS success."
+  },
+  "faultInterpretation": {
+    "beforeAbort": "Client reported BEFORE_SEND_ABORT with an unknown attempt. No response proves non-arrival. A separate fresh request.status returned absent and scoped DB readback found no request/audit; no original-operation retry occurred.",
+    "afterHeadersCancel": "Client observed HTTP 200 headers then cancelled before interpreting the response body, preserving unknown. A separate fresh request.status returned completed, and scoped readback verified one exact saved acknowledgement/audit. No hidden retry or duplicate effect was claimed.",
+    "duplicateAndConflict": "Two real concurrent duplicate requests returned the same acknowledgement; later replay returned it again, changed args returned 409, and scoped audit readback found one original audit and zero conflict audit."
+  },
+  "scopedDatabaseReadback": {
+    "sourceFile": "scripts/n8n/out/gw01/scoped-db-readback.json",
+    "fileSha256": "3dcafd0a2d8e35ebdde1c2afab77d91ffe4e891522ce1655417633ea6eb48133",
+    "receipt": {
+      "audit": [
+        {
+          "actual_count": 0,
+          "execution_id": "4d456354-66a3-47e3-8182-804bb845f7de",
+          "count_matches": true,
+          "expected_count": 0,
+          "exact_safe_payload": true
+        },
+        {
+          "actual_count": 1,
+          "execution_id": "92a0da22-7155-48d7-ba29-62f10909764a",
+          "count_matches": true,
+          "expected_count": 1,
+          "exact_safe_payload": true
+        },
+        {
+          "actual_count": 1,
+          "execution_id": "a781131a-26bd-4298-9621-7b70835d744a",
+          "count_matches": true,
+          "expected_count": 1,
+          "exact_safe_payload": true
+        },
+        {
+          "actual_count": 0,
+          "execution_id": "ae7ef5e0-f7da-4476-983b-916ddcd05d6c",
+          "count_matches": true,
+          "expected_count": 0,
+          "exact_safe_payload": true
+        }
+      ],
+      "requests": [
+        {
+          "state": null,
+          "exact_ack": false,
+          "request_id": "51c86e75-b18a-46e5-a75a-4b05d7d6bb22",
+          "expected_saved": false,
+          "presence_matches": true
+        },
+        {
+          "state": "completed",
+          "exact_ack": true,
+          "request_id": "58bf4f92-f201-4e8a-9dbd-475ec483c97e",
+          "expected_saved": true,
+          "presence_matches": true
+        },
+        {
+          "state": "completed",
+          "exact_ack": true,
+          "request_id": "da5d7a35-975e-4ab8-9472-a82a7cf3b823",
+          "expected_saved": true,
+          "presence_matches": true
+        }
+      ],
+      "observedAt": "2026-10-18T10:22:20.010671+00:00",
+      "gatewaySessions": 0,
+      "occupiedGatewaySlots": 0,
+      "gatewayActiveSessions": 0
+    },
+    "boundary": "Timepoint visible gateway sessions and occupied slots were zero. These observations do not establish an unobserved global minimum or replace the separate local two-client concurrency tests."
+  },
+  "accounting": {
+    "sourceFile": "scripts/n8n/out/gw01/gw01-trial.jsonl",
+    "fileSha256": "d9c699337099ac56de6531a2f1dc91e0c4f8352bbbbe566fb29323072a8585d9",
+    "historicalPreflightAttempts": 2,
+    "newTrialAttempts": 19,
+    "shutdownAttempts": 2,
+    "totalAttempts": 23,
+    "budget": 100,
+    "reservedEvents": 23,
+    "finishedEvents": 23,
+    "inFlight": 0,
+    "serverAdmittedCountAtClose": 17,
+    "serverCloseCount": 1,
+    "boundary": "Local all-attempt accounting includes auth denials, unknown outcomes and public shutdown. SQL admittedCount has a different scope and includes the one direct Close; neither metric was reset or replenished.",
+    "gatewayServerAdmissions": 16,
+    "connectionCountBoundary": "Final identity reports two sessions visible for the restricted role, not an attributed application-pool peak. The separate scoped readback observed zero gateway sessions/slots at one timepoint."
+  },
+  "closeout": {
+    "writerClose": {
+      "toolReceiptRef": "acdaba",
+      "sourceFile": "scripts/n8n/out/gw01-writer-close-receipt.json",
+      "fileSha256": "88a8d78a11082cdf41db25d8100ffd422046be136437635c898b9c37504ae238",
+      "receipt": {
+        "version": 1,
+        "mode": "Close",
+        "status": "complete",
+        "privateRead": true,
+        "rootChildClosed": true,
+        "handoffRetained": true,
+        "nativeExit": 0,
+        "result": {
+          "version": 1,
+          "status": "complete",
+          "mode": "Close",
+          "code": null,
+          "identity": {
+            "currentUser": "n8n_writer",
+            "sessionUser": "n8n_writer",
+            "database": "postgres",
+            "projectRef": "zmotjsbzhzjvpelxvxlf"
+          },
+          "authorizationDenials": 0,
+          "window": {
+            "id": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+            "closed": true,
+            "startsAt": "2026-10-18T10:18:29.04736+00:00",
+            "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+            "boundAudience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+            "totalAdmitted": 17,
+            "boundCommitSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+            "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+          },
+          "connectionClosed": true
+        }
+      }
+    },
+    "localClose": {
+      "toolReceiptRef": "44dbdc",
+      "sourceFile": "scripts/n8n/out/gw01/local-close.json",
+      "fileSha256": "a0c06938411893884f36443be5260118fd20743177d415359d2e6a63864a1151",
+      "receipt": {
+        "windowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+        "startedAt": "2026-10-18T10:18:17.801Z",
+        "expiresAt": "2026-10-18T10:48:17.801Z",
+        "authoritativeWindowBound": true,
+        "databaseStartedAt": "2026-10-18T10:18:29.047Z",
+        "databaseExpiresAt": "2026-10-18T10:48:29.047Z",
+        "closed": true,
+        "attempts": 21,
+        "inFlight": 0,
+        "remaining": 79,
+        "verifiedRejectedAudiences": [],
+        "unverifiedAudiences": [
+          "https://everyone-market-researcher-7k5et630y-muhammed-abdelrahman.vercel.app",
+          "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app"
+        ]
+      },
+      "boundary": "This snapshot has 21 attempts before the two separately reserved shutdown attempts."
+    },
+    "publicDisable": {
+      "toolReceiptRef": "376b08",
+      "nativeExit": 0,
+      "sourceFile": "scripts/n8n/out/gw01-public-config-disable.json",
+      "fileSha256": "189f40f7d7d8cd99ee0ca1d6b692c8a1a9d0e9f767912f64fc251314d1a8a5c1",
+      "receipt": {
+        "version": 1,
+        "status": "disabled",
+        "sourceSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+        "enabledDisabled": true,
+        "sensitiveEntriesAbsent": false,
+        "observedAt": "2026-10-18T10:23:08.071Z"
+      }
+    },
+    "initialEnvironmentCleanup": {
+      "toolReceiptRef": "48bcc2",
+      "nativeExit": 1,
+      "sourceFile": "scripts/n8n/out/gw01-public-config-cleanup.json",
+      "fileSha256": "b1007f0af60f5da1b87899654f78ada06a8690ded0265196808d0fef111d1848",
+      "receipt": {
+        "version": 1,
+        "status": "stopped_reconcile",
+        "code": "GW01_PUBLIC_CONFIG_NATIVE"
+      },
+      "boundary": "Failed before a confirmed DELETE. Do not treat intent or native failure as deletion.",
+      "rootSourceDiagnosis": "Pinned Vercel CLI confirmation blocked DELETE before fetch when stdin was piped; --yes did not answer that branch. No API authentication rejection or real DELETE occurred on this historical path. The later separately reviewed ResumeCleanup below completed once."
+    },
+    "environmentReconciliation": {
+      "toolReceiptRef": "867be9",
+      "sourceFile": "scripts/n8n/out/gw01-public-config-reconcile-cleanup.json",
+      "fileSha256": "dd5defc4843ad89a773736b3ef4161766cd641561ef67e5ef1d769d3d793f486",
+      "receipt": {
+        "version": 1,
+        "status": "disabled",
+        "sourceSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+        "enabledDisabled": true,
+        "sensitiveEntriesAbsent": false,
+        "observedAt": "2026-10-18T10:23:47.605Z"
+      },
+      "boundary": "This historical GET-only reconciliation confirmed disabled flag and both sensitive entries still present. It did not authorize blind replay; later explicit one-time ResumeCleanup performed the reviewed correction."
+    },
+    "bypassRevocation": {
+      "toolReceiptRef": "344d2f",
+      "sourceFile": "scripts/n8n/out/gw01-bypass-revoke-receipt.json",
+      "fileSha256": "b722723ed685f27d59f536e2cd733ab3c2f2831268f59c22d1eca9e86402e878",
+      "receipt": {
+        "version": 1,
+        "mode": "Revoke",
+        "status": "complete",
+        "code": null,
+        "nativeExit": 0,
+        "childClosed": true,
+        "handoffRetained": false,
+        "ownEntryPresent": false,
+        "defaultFlagShape": "true",
+        "ownershipMetadataVerified": true,
+        "createdReceiptRecorded": false,
+        "recoveredReadbackRecorded": true,
+        "provenance": "recovered_sole_readback",
+        "soleOwnedDefaultVerified": false,
+        "revocationReadbackVerified": true,
+        "nonDefaultVerified": false,
+        "otherEntryCount": 0,
+        "otherAutomationCount": 0,
+        "otherSelectedDefaultCount": 0,
+        "unknownOtherFlagCount": 0,
+        "otherEntriesRequested": false
+      },
+      "boundary": "Recovered-sole ownership provenance retained. Final readback verifies the own entry absent; original successful-POST metadata remains absent rather than fabricated."
+    },
+    "publicShutdown": {
+      "toolReceiptRef": "fccbe4",
+      "nativeExit": 0,
+      "sourceFile": "scripts/n8n/out/gw01-shutdown-receipt.json",
+      "fileSha256": "c8e11e4f1ce8a9d654d6e9009c51729ed7dff62c827d9e1f95bc207162c9ed43",
+      "receipt": {
+        "version": 1,
+        "status": "verified",
+        "code": null,
+        "privateRead": false,
+        "ownedChildClosed": true,
+        "attemptsReserved": 2,
+        "networkRequests": 2,
+        "attemptsAfter": 23,
+        "results": [
+          {
+            "audience": "https://everyone-market-researcher-7k5et630y-muhammed-abdelrahman.vercel.app",
+            "requestId": "ffbda215-462b-45d2-97ac-5e5c308e3c73",
+            "attemptId": "e038c032-cfc0-45e0-92d8-f8f551d58dcd",
+            "httpStatus": 401,
+            "tlsVerified": true,
+            "socketsClosed": true,
+            "bodyDiscarded": true,
+            "journalFinished": true,
+            "rejected": true,
+            "code": null
+          },
+          {
+            "audience": "https://everyone-market-researcher-q3akvdm8s-muhammed-abdelrahman.vercel.app",
+            "requestId": "adc3fa50-2837-4929-af28-8d35436f9590",
+            "attemptId": "a246ba8b-78e7-4faa-a29e-c0f8cc028873",
+            "httpStatus": 401,
+            "tlsVerified": true,
+            "socketsClosed": true,
+            "bodyDiscarded": true,
+            "journalFinished": true,
+            "rejected": true,
+            "code": null
+          }
+        ]
+      },
+      "boundary": "Unauthenticated public POSTs to both known immutable deployments were rejected by protection with complete strict-TLS 401 responses. This does not assert erasure of immutable environment snapshots or substitute for the separate database closed receipt."
+    },
+    "ownedCredentialCleanup": {
+      "toolReceiptRef": "f47cba",
+      "sourceFile": "scripts/n8n/out/gw01-credential-cleanup-receipt.json",
+      "fileSha256": "cb9765552536cb03f39daa6b9d5f43d45142636b4af3542d7ffdc9e01ec435c4",
+      "receipt": {
+        "version": 1,
+        "mode": "Cleanup",
+        "status": "complete",
+        "code": null,
+        "privacyStage": null,
+        "privacyParameterDiagnostic": null,
+        "privateRead": true,
+        "rootChildClosed": true,
+        "nativeExit": 0,
+        "handoffsRetained": false,
+        "delivery": {
+          "version": 1,
+          "status": "complete",
+          "mode": "Cleanup",
+          "managementRequests": 4,
+          "deletedCredentialIds": [
+            "EmrGw01Canary18",
+            "EmrGw01Machine18"
+          ]
+        }
+      }
+    },
+    "temporaryCleanup": {
+      "rootToolReceiptRef": "5b8c72",
+      "checkedTemporaryPaths": 6,
+      "allAbsent": true,
+      "boundary": "Root-observed presence-only result; no private file was read by this reviewer."
+    },
+    "postCloseDatabase": {
+      "sourceFile": "scripts/n8n/out/gw01/post-close-db-readback.json",
+      "fileSha256": "d804f13a7a103ea34ad0b279c1c24487319b7c963c7a0ec68500f1005f0e2e8a",
+      "receipt": {
+        "items": 0,
+        "window": {
+          "closed": true,
+          "startsAt": "2026-10-18T10:18:29.04736+00:00",
+          "expiresAt": "2026-10-18T10:48:29.04736+00:00",
+          "closeCount": 1,
+          "admittedCount": 17,
+          "boundDeploymentId": "dpl_8znjr8BcFcBaMZh1fuEChPyqyTdA"
+        },
+        "accounts": 1754,
+        "observedAt": "2026-10-18T10:25:10.885142+00:00",
+        "competitors": 285,
+        "activeLeaseCount": 0
+      },
+      "priorQueryFailure": {
+        "sqlstate": "42P01",
+        "boundary": "One earlier readback used an incorrect public schema name and returned no result; corrected fixed-schema readback below established the actual state."
+      }
+    },
+    "finalEnvironmentCleanup": {
+      "toolReceiptRef": "4fc1ec",
+      "nativeExit": 0,
+      "sourceFile": "scripts/n8n/out/gw01-public-config-resume-cleanup.json",
+      "fileSha256": "cef98c787a620f3ba773c8fb6667f34a275053e90fe6a6442f61465c76aa9a81",
+      "receipt": {
+        "version": 1,
+        "status": "cleanup_complete",
+        "sourceSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+        "enabledDisabled": true,
+        "sensitiveEntriesAbsent": true,
+        "observedAt": "2026-10-18T10:30:38.409Z"
+      },
+      "helperSha256": "24f6c442013268e7b0240b9ea7b2d6da8bc660165766d6cd2b5106a384ff7265",
+      "ledger": {
+        "sourceFile": "scripts/n8n/out/gw01/gw01-public-config.jsonl",
+        "fileSha256": "c5fddf63f5f6dd0ce4911023ea638cb5f5a50ce37ec15af40a839e018ebb955f",
+        "events": 15,
+        "resumeMarkers": 1,
+        "deletedMarkers": 2,
+        "originalFailedIntentPreserved": true
+      },
+      "boundary": "One explicit ResumeCleanup followed fresh owned-metadata readback and independent source review. Original failed intent and GET-only reconciliation remain above. Mandatory final GET proves both owned project Environment entries absent and enabled false; no claim of erasing immutable old deployment snapshots."
+    }
+  },
+  "finalOwnedWorkflow": {
+    "sourceFile": "n8n/workflows/GW01-acceptance-dev.json",
+    "fileSha256": "a538ade21e3751909eaa38d545846198a4399cce880c4d27241e9feeef091e2b",
+    "active": false,
+    "httpNodeDisabled": true,
+    "connectionOnlyFlag": true,
+    "retention": {
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "saveExecutionProgress": false,
+      "saveManualExecutions": false
+    },
+    "boundary": "Sanitized actual inactive saved export, with disabled HTTP node; no complete foundation workflow acceptance inferred."
+  },
+  "acceptanceLimits": {
+    "gatewayHttpRestrictedIdentityVerified": true,
+    "nativeN8nHttpNodeIdentityVerified": true,
+    "nativeN8nPostgresTlsVerified": false,
+    "fullManualWorkflowCompletionClassified": false,
+    "fullM03AcceptanceComplete": false,
+    "environmentSensitiveEntriesDeleted": true,
+    "actorsOrModelsOrPaidCollectionStarted": false,
+    "schedulesActivated": false,
+    "productionOrMergeOrM04Started": false,
+    "ownedCloseoutComplete": true
+  },
+  "remaining": [
+    "Continue the source-only full M03 technical packet: full restricted backbone transport, durable spend admission, exact callback rejection audit, native privacy/bounds/bindings and concrete two-run caps remain open.",
+    "Do not replay the successful trial, reset/reopen its journal/window, recreate temporary credentials or infer actor/model/workflow/production/merge approval."
+  ],
+  "localSourceVerification": {
+    "previewHelperSha256": "c59ca710a16b630b4db72e3626598e1272a0061aac2f23b7412e645132d4d320",
+    "rootFullPreviewReader": {
+      "toolReceiptRef": "133798",
+      "passed": 36,
+      "nativeExit": 0
+    },
+    "boundary": "Local source verification is separate from the actual native metadata/read/trial receipts."
+  },
+  "costBoundary": {
+    "newActorOrModelCalls": 0,
+    "actorOrInferenceInvoiceClaim": false,
+    "proposalOneDollarReserve": "Approval reserve only, not an invoiced cost or a verified platform billing cap",
+    "unknownFixedFeesRemainUnknown": true
+  },
+  "lastUpdatedAt": "2026-10-18T10:31:03Z"
+}

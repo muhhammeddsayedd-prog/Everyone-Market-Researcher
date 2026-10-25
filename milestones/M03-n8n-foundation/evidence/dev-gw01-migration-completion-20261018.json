@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "runId": "e3693aa9-be79-4f24-be54-bf743045c77d",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "host": "aws-1-eu-central-1.pooler.supabase.com",
+  "port": 5432,
+  "status": "complete",
+  "authenticationAttempted": true,
+  "authenticationVerified": true,
+  "historyBefore": "baseline",
+  "historyAfter": "complete",
+  "dryRunMatched": true,
+  "dryRunCheck": "matched",
+  "dryRunNativeExit": 0,
+  "pushAttempted": true,
+  "pushNativeExit": 0,
+  "childrenClosed": true,
+  "handoffDeleted": true,
+  "scratchDeleted": true,
+  "pendingVersions": [
+    "20261018070042"
+  ],
+  "observedAt": "2026-10-18T07:31:09.6796705Z"
+}

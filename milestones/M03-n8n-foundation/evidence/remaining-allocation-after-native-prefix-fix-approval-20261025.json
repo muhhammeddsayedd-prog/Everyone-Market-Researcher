@@ -1,0 +1,58 @@
+{
+  "kind": "m03_remaining_allocation_after_native_prefix_fix_approval",
+  "version": 1,
+  "recordedAt": "2026-10-25T10:40:52.669Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "approvedPr": 8,
+  "approvedHead": "d44fbf918430e5a1d7d2a452e23acbab8ef82ca6",
+  "approvedPacket": "milestones/M03-n8n-foundation/evidence/remaining-allocation-after-native-prefix-fix-20261025.md",
+  "approvedPacketSha256": "b782c04c7dfdcd6e6e223172f24f75248651eec1a16cc3f742d0a7bc71ebe3d1",
+  "exactOwnerReply": "Approve Management1728, Control3584, Combined5312 and Vercel304; retain all charges and other limits",
+  "previousCaps": {
+    "management": 1408,
+    "control": 3456,
+    "combined": 4864,
+    "vercel": 256
+  },
+  "approvedCaps": {
+    "management": 1728,
+    "control": 3584,
+    "combined": 5312,
+    "vercel": 304
+  },
+  "retainedChargesAtApproval": {
+    "management": 1317,
+    "control": 1246,
+    "combined": 2563,
+    "vercel": 254,
+    "nativeExecutionsReserved": 3,
+    "actorStarts": 0,
+    "providerReads": 0
+  },
+  "unchangedLimits": {
+    "nativeExecutions": 120,
+    "sqlAdmissions": 256,
+    "providerReads": 32,
+    "actorStarts": 2,
+    "perActorMaximumUsd": 1,
+    "totalActorReserveUsd": 2,
+    "maximumNewDistinctItems": 1
+  },
+  "scope": {
+    "remainingDevAcceptanceBatch": true,
+    "safeWithinScopeContinuations": true,
+    "production": false,
+    "recurringActivity": false,
+    "externalNotifications": false,
+    "unrelatedR2": false,
+    "merge": false,
+    "m04": false
+  },
+  "conditions": [
+    "Retain all attempts, permanently closed windows, paid-start fences, side-effect IDs and charged requests.",
+    "No migration replay, credential replacement, recurring activation or extra actor/spending allowance.",
+    "Use the existing coordinator after exact closure reconciliation, local/native contracts, independent review, sealed public preflight and all required CI.",
+    "The closed sixth SQL window cannot be reopened; existing forward-window mechanism must prove all six closed and preserve actual19 audit before a fresh owned dev window."
+  ]
+}

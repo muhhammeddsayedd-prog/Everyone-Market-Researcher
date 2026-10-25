@@ -1,0 +1,1250 @@
+{
+  "kind": "m03_wf00_current_drift_readback",
+  "version": 1,
+  "observedAt": "2026-10-25T12:38:39.061Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "host": "muhhammedsayed.app.n8n.cloud",
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflowId": "MzimjpsuyPuK7SKe",
+  "workflowKey": "WF-00",
+  "helperHead": "29ba84ae83d7ce02443ca3b3c68d32eb130a2ed8",
+  "ci": 40193421312,
+  "allFiveJobsPassed": true,
+  "vercelPassed": true,
+  "status": "current_drift_verified",
+  "observedVersionId": "fe249a62-8276-47c1-a58a-7bb50705a280",
+  "rawIntent": {
+    "kind": "m03_owned_wf00_finite_difference_retry_after_empty_key_fix",
+    "version": 1,
+    "environment": "dev",
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "workflowId": "MzimjpsuyPuK7SKe",
+    "method": "GET",
+    "maximumRequests": 1,
+    "helperHead": "29ba84ae83d7ce02443ca3b3c68d32eb130a2ed8",
+    "ci": 40193421312,
+    "allFiveJobsPassed": true,
+    "vercelPassed": true,
+    "prior": {
+      "management": 1335,
+      "control": 1250,
+      "combined": 2585,
+      "vercel": 254,
+      "native": 4
+    },
+    "reserved": {
+      "management": 1336,
+      "control": 1250,
+      "combined": 2586,
+      "vercel": 254,
+      "native": 4
+    },
+    "priorFailureRetained": true,
+    "mutationAllowed": false,
+    "executionAllowed": false
+  },
+  "rawResult": {
+    "parentNativeExit": 0,
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "complete",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": {
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "status": "baseline_mismatch",
+      "requestCount": 1,
+      "authenticationVerified": true,
+      "projectVerified": true,
+      "workflowKey": "WF-00",
+      "observedVersionId": "fe249a62-8276-47c1-a58a-7bb50705a280",
+      "baseline": {
+        "version": 1,
+        "workflowKey": "WF-00",
+        "failedChecks": [
+          "version_mismatch",
+          "graph_nodes"
+        ],
+        "components": {
+          "nameEqual": true,
+          "nodesEqual": false,
+          "connectionsEqual": true,
+          "settingsEqual": true
+        }
+      },
+      "forensics": {
+        "nodeCategories": {
+          "identityEqual": true,
+          "parametersEqual": false,
+          "credentialsEqual": true,
+          "behaviorEqual": true,
+          "layoutEqual": false,
+          "annotationsEqual": true
+        },
+        "settingsCategories": {
+          "retentionEqual": true,
+          "mcpVisibilityEqual": true,
+          "errorRoutingEqual": true,
+          "otherEqual": false
+        },
+        "knownVariants": {
+          "c01RetentionSettingsEqual": false,
+          "c01RuntimeSettingsEqual": false,
+          "c01ManualSettingsEqual": false,
+          "stagingMcpSettingsEqual": false,
+          "stagingManualSettingsEqual": false,
+          "schedulesDisabledNodesEqual": false,
+          "c01RetentionGraphEqual": false,
+          "stagedManualGraphEqual": false,
+          "stagedC01ManualGraphEqual": false
+        },
+        "nodeDifferences": [
+          {
+            "nodeId": "74c946d3-bdef-4f55-a596-286cdc98b072",
+            "nodeName": "Cairo clock",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "misfireGraceSeconds",
+              "misfirePolicy"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": false,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "3722c2f1-84e4-4a0a-abd8-85c914085e74",
+            "nodeName": "PM stories (disabled)",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "misfireGraceSeconds",
+              "misfirePolicy"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "e4bc7d0a-5576-4d60-a5e2-6771aee033b8",
+            "nodeName": "Backfill waves (disabled)",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "misfireGraceSeconds",
+              "misfirePolicy"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": false,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "ec2f4308-bc5f-454d-a48b-e8aad3e18082",
+            "nodeName": "Manual slot test",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": true
+          },
+          {
+            "nodeId": "d821156a-90ba-4c5b-a8d7-ed6019e03bc5",
+            "nodeName": "Config",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "includeOtherFields",
+              "mode"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "e834f0ae-93c5-4848-a0d9-2c00f87b5129",
+            "nodeName": "Which slot?",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "d5092170-c451-4d05-ab42-efa2c9ed15c1",
+            "nodeName": "Route child",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "a856156d-e414-4073-ad8b-65a16dfe674b",
+            "nodeName": "Call WF-21",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "6fad9ff7-41b6-415f-a67d-521d2b910e55",
+            "nodeName": "Call WF-10",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "326a45bf-3ab9-43e3-a5f7-5c71180dc3b5",
+            "nodeName": "Call WF-11",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "368fe417-3ec1-4d58-a341-10c25207c537",
+            "nodeName": "Call WF-13",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "11990dc2-4bbc-4d88-aa65-7f5ef4c24447",
+            "nodeName": "Call WF-18",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "528dfa4e-0a4b-4663-a472-10f950d4e30a",
+            "nodeName": "Call WF-40",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "1622b820-ae9e-4255-a2b8-1243f6ab66ab",
+            "nodeName": "Call WF-18b",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "72d141f3-b138-4163-aa7e-4bf110a79110",
+            "nodeName": "Call WF-12",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "e660cd29-3dea-44a8-a941-fbefa0e649bb",
+            "nodeName": "Call WF-32",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "2aee76ae-7abc-4488-a5bc-d7728c5ff3ec",
+            "nodeName": "Call WF-22",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "9c9dec4b-51b4-4106-a3f7-bb558a114e64",
+            "nodeName": "Call WF-50",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "fc17ff48-63ba-4cee-a090-cd1aee4fee3c",
+            "nodeName": "Call WF-80",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "98011899-9f7b-45b0-a623-91e11ff10be6",
+            "nodeName": "Call WF-91",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "1bad439f-c262-421e-acca-a11a494d9b8c",
+            "nodeName": "Call WF-23",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode",
+              "source"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "9d88938c-aba8-407c-aafb-9d596621e075",
+            "nodeName": "Prepare gateway � Audit unknown slot",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "73487e99-7e76-468c-a0fa-236cc6d18374",
+            "nodeName": "Invoke gateway � Audit unknown slot",
+            "changedParameterKeys": [
+              "options"
+            ],
+            "missingParameterKeys": [
+              "sendHeaders",
+              "sendQuery"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": false,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "936748af-efbf-40cf-aaff-d508b2a8c1a3",
+            "nodeName": "Observe gateway � Audit unknown slot",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "fbc9cddc-0b1b-4186-a908-2a5095aebf8a",
+            "nodeName": "Read durable gateway � Audit unknown slot",
+            "changedParameterKeys": [
+              "options"
+            ],
+            "missingParameterKeys": [
+              "sendHeaders",
+              "sendQuery"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": false,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "a7e57afb-578d-4675-a4fb-a856ca56cc3a",
+            "nodeName": "Audit unknown slot",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          },
+          {
+            "nodeId": "0922f25e-3f56-4a1f-a652-b9f2df8c536d",
+            "nodeName": "Reject invalid dispatch",
+            "changedParameterKeys": [],
+            "missingParameterKeys": [
+              "mode"
+            ],
+            "extraParameterKeyCount": 0,
+            "layoutChanged": true,
+            "canonicalOrNativeDefaultsMatch": false
+          }
+        ]
+      },
+      "diagnostics": {
+        "version": 1,
+        "dns": "complete",
+        "requests": [
+          {
+            "resource": "workflows",
+            "page": 1,
+            "tcpConnected": true,
+            "tlsVerified": true,
+            "httpStatus": 200,
+            "bodyRead": "complete",
+            "jsonParsed": true,
+            "schemaValidated": true,
+            "socketClosed": true,
+            "failureStage": "none",
+            "failureCode": "none"
+          }
+        ]
+      }
+    }
+  },
+  "consumerSourceSeal": {
+    "relative": "scripts/n8n/out/foundation/live/technical21-finite-difference-retry-inventory-seal-used.json",
+    "sha256": "e7529c1f4a9436fef14323528b02a208904fddbe7529e4d39ab0fe52eb59fdf5",
+    "files": {
+      "scripts/n8n/windows/New-M03N8nApiHandoff.ps1": "c8c9d34855ef55c5391f5b14c80a7768b51761a149982f4917b910c391c788e2",
+      "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "05308654b52d4f9431d6a09b69b63438b775c57a4e5fdf4c7df1969af59d6edd",
+      "scripts/n8n/inventory.mjs": "7ac59e05744fe79666bbb3a20501f81e061858538c1a521209f61381e45e4752"
+    },
+    "baselineFiles": {
+      "scripts/n8n/foundation-runtime-checkpoint.mjs": "e4e3fcf4b7f3b5d1555e69fef123bcea8515ea954b34db8167303e9636f06039",
+      "n8n/workflows/WF-00.json": "db764d55ae2b8b7ed2b6ac2c2fa605e4bc1e968acab2b5183092eb90db9209f0",
+      "scripts/n8n/windows/Dev-CredentialStore.ps1": "49c16b64f9b57c4e27cf6ad92dc16cd05c6cf29a7ada7f9c7fa6e8f64ca5fc13"
+    }
+  },
+  "finiteProjection": {
+    "rowCount": 27,
+    "nodeIdentityBasis": "Known canonical nodeId only. Raw projected nodeName strings are retained unchanged in rawResult and are not a Unicode byte-identity assertion.",
+    "rawNameUnicodeIdentityVerified": false,
+    "projectedNodeDifferences": [
+      {
+        "nodeId": "74c946d3-bdef-4f55-a596-286cdc98b072",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "misfireGraceSeconds",
+          "misfirePolicy"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": false,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "3722c2f1-84e4-4a0a-abd8-85c914085e74",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "misfireGraceSeconds",
+          "misfirePolicy"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "e4bc7d0a-5576-4d60-a5e2-6771aee033b8",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "misfireGraceSeconds",
+          "misfirePolicy"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": false,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "ec2f4308-bc5f-454d-a48b-e8aad3e18082",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": true
+      },
+      {
+        "nodeId": "d821156a-90ba-4c5b-a8d7-ed6019e03bc5",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "includeOtherFields",
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "e834f0ae-93c5-4848-a0d9-2c00f87b5129",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "d5092170-c451-4d05-ab42-efa2c9ed15c1",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "a856156d-e414-4073-ad8b-65a16dfe674b",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "6fad9ff7-41b6-415f-a67d-521d2b910e55",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "326a45bf-3ab9-43e3-a5f7-5c71180dc3b5",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "368fe417-3ec1-4d58-a341-10c25207c537",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "11990dc2-4bbc-4d88-aa65-7f5ef4c24447",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "528dfa4e-0a4b-4663-a472-10f950d4e30a",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "1622b820-ae9e-4255-a2b8-1243f6ab66ab",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "72d141f3-b138-4163-aa7e-4bf110a79110",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "e660cd29-3dea-44a8-a941-fbefa0e649bb",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "2aee76ae-7abc-4488-a5bc-d7728c5ff3ec",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "9c9dec4b-51b4-4106-a3f7-bb558a114e64",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "fc17ff48-63ba-4cee-a090-cd1aee4fee3c",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "98011899-9f7b-45b0-a623-91e11ff10be6",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "1bad439f-c262-421e-acca-a11a494d9b8c",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "9d88938c-aba8-407c-aafb-9d596621e075",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "73487e99-7e76-468c-a0fa-236cc6d18374",
+        "changedParameterKeys": [
+          "options"
+        ],
+        "missingParameterKeys": [
+          "sendHeaders",
+          "sendQuery"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": false,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "936748af-efbf-40cf-aaff-d508b2a8c1a3",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "fbc9cddc-0b1b-4186-a908-2a5095aebf8a",
+        "changedParameterKeys": [
+          "options"
+        ],
+        "missingParameterKeys": [
+          "sendHeaders",
+          "sendQuery"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": false,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "a7e57afb-578d-4675-a4fb-a856ca56cc3a",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      },
+      {
+        "nodeId": "0922f25e-3f56-4a1f-a652-b9f2df8c536d",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false
+      }
+    ],
+    "projectedNodeDifferencesSha256": "2a67f1c38bd8efe4e468a0c5aeb7e31061479792f1891069c38c71f7ea24037f",
+    "canonicalNameSummary": [
+      {
+        "nodeId": "74c946d3-bdef-4f55-a596-286cdc98b072",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "misfireGraceSeconds",
+          "misfirePolicy"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": false,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Cairo clock"
+      },
+      {
+        "nodeId": "3722c2f1-84e4-4a0a-abd8-85c914085e74",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "misfireGraceSeconds",
+          "misfirePolicy"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "PM stories (disabled)"
+      },
+      {
+        "nodeId": "e4bc7d0a-5576-4d60-a5e2-6771aee033b8",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "misfireGraceSeconds",
+          "misfirePolicy"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": false,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Backfill waves (disabled)"
+      },
+      {
+        "nodeId": "ec2f4308-bc5f-454d-a48b-e8aad3e18082",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": true,
+        "canonicalNodeName": "Manual slot test"
+      },
+      {
+        "nodeId": "d821156a-90ba-4c5b-a8d7-ed6019e03bc5",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "includeOtherFields",
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Config"
+      },
+      {
+        "nodeId": "e834f0ae-93c5-4848-a0d9-2c00f87b5129",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Which slot?"
+      },
+      {
+        "nodeId": "d5092170-c451-4d05-ab42-efa2c9ed15c1",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Route child"
+      },
+      {
+        "nodeId": "a856156d-e414-4073-ad8b-65a16dfe674b",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-21"
+      },
+      {
+        "nodeId": "6fad9ff7-41b6-415f-a67d-521d2b910e55",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-10"
+      },
+      {
+        "nodeId": "326a45bf-3ab9-43e3-a5f7-5c71180dc3b5",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-11"
+      },
+      {
+        "nodeId": "368fe417-3ec1-4d58-a341-10c25207c537",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-13"
+      },
+      {
+        "nodeId": "11990dc2-4bbc-4d88-aa65-7f5ef4c24447",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-18"
+      },
+      {
+        "nodeId": "528dfa4e-0a4b-4663-a472-10f950d4e30a",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-40"
+      },
+      {
+        "nodeId": "1622b820-ae9e-4255-a2b8-1243f6ab66ab",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-18b"
+      },
+      {
+        "nodeId": "72d141f3-b138-4163-aa7e-4bf110a79110",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-12"
+      },
+      {
+        "nodeId": "e660cd29-3dea-44a8-a941-fbefa0e649bb",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-32"
+      },
+      {
+        "nodeId": "2aee76ae-7abc-4488-a5bc-d7728c5ff3ec",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-22"
+      },
+      {
+        "nodeId": "9c9dec4b-51b4-4106-a3f7-bb558a114e64",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-50"
+      },
+      {
+        "nodeId": "fc17ff48-63ba-4cee-a090-cd1aee4fee3c",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-80"
+      },
+      {
+        "nodeId": "98011899-9f7b-45b0-a623-91e11ff10be6",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-91"
+      },
+      {
+        "nodeId": "1bad439f-c262-421e-acca-a11a494d9b8c",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode",
+          "source"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Call WF-23"
+      },
+      {
+        "nodeId": "9d88938c-aba8-407c-aafb-9d596621e075",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Prepare gateway · Audit unknown slot"
+      },
+      {
+        "nodeId": "73487e99-7e76-468c-a0fa-236cc6d18374",
+        "changedParameterKeys": [
+          "options"
+        ],
+        "missingParameterKeys": [
+          "sendHeaders",
+          "sendQuery"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": false,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Invoke gateway · Audit unknown slot"
+      },
+      {
+        "nodeId": "936748af-efbf-40cf-aaff-d508b2a8c1a3",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Observe gateway · Audit unknown slot"
+      },
+      {
+        "nodeId": "fbc9cddc-0b1b-4186-a908-2a5095aebf8a",
+        "changedParameterKeys": [
+          "options"
+        ],
+        "missingParameterKeys": [
+          "sendHeaders",
+          "sendQuery"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": false,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Read durable gateway · Audit unknown slot"
+      },
+      {
+        "nodeId": "a7e57afb-578d-4675-a4fb-a856ca56cc3a",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Audit unknown slot"
+      },
+      {
+        "nodeId": "0922f25e-3f56-4a1f-a652-b9f2df8c536d",
+        "changedParameterKeys": [],
+        "missingParameterKeys": [
+          "mode"
+        ],
+        "extraParameterKeyCount": 0,
+        "layoutChanged": true,
+        "canonicalOrNativeDefaultsMatch": false,
+        "canonicalNodeName": "Reject invalid dispatch"
+      }
+    ],
+    "rowsWithChangedParameterKeys": 2,
+    "rowsWithMissingParameterKeys": 26,
+    "rowsWithLayoutChanged": 23,
+    "allProjectedParameterValuesExcluded": true,
+    "exactActualParameterValuesEstablished": false,
+    "httpOptionsSemanticsEstablished": false,
+    "causeEstablished": false,
+    "allNativeDefaultsEquivalenceEstablished": false
+  },
+  "usage": {
+    "management": 1336,
+    "control": 1250,
+    "combined": 2586,
+    "vercel": 254,
+    "nativeExecutions": 4,
+    "actorStarts": 0,
+    "providerDirectRequests": 0,
+    "newSpendUsd": 0,
+    "newItems": 0
+  },
+  "accounting": {
+    "precedingAttemptUsage": {
+      "management": 1334,
+      "control": 1250,
+      "combined": 2584,
+      "vercel": 254,
+      "nativeExecutions": 4,
+      "actorStarts": 0,
+      "costUsd": 0,
+      "newItems": 0
+    },
+    "failedFiniteReadUsage": {
+      "management": 1335,
+      "control": 1250,
+      "combined": 2585,
+      "vercel": 254,
+      "native": 4,
+      "actors": 0,
+      "newSpendUsd": 0
+    },
+    "currentIntentPrior": {
+      "management": 1335,
+      "control": 1250,
+      "combined": 2585,
+      "vercel": 254,
+      "native": 4
+    },
+    "currentReadDelta": {
+      "management": 1,
+      "control": 0,
+      "combined": 1,
+      "vercel": 0,
+      "nativeExecutions": 0
+    },
+    "allPriorAttemptsAndChargesRetained": true
+  },
+  "physicalCleanup": {
+    "processMetadata": {
+      "kind": "m03_three_readonly_reader_process_projection",
+      "observedAt": "2026-10-25T12:37:30.5627635+00:00",
+      "parentProcessIds": [
+        51108,
+        37004,
+        54804
+      ],
+      "parentsAndDirectChildrenAbsent": true,
+      "matchingProcesses": [],
+      "commandLinesRead": false,
+      "privateContentsRead": false,
+      "networkRequests": 0,
+      "innerChildProcessIds": null,
+      "innerChildClosureBasis": "Each original inventory wrapper records childClosed:true; inner child IDs were not emitted. The bounded CIM check covers only the three known parents and their direct children."
+    },
+    "credentialMetadata": {
+      "kind": "m03_readonly_inventory_credential_presence",
+      "observedAt": "2026-10-25T12:38:01.9984953+00:00",
+      "disposableManagementHandoffAbsent": true,
+      "persistentManagementOriginalPresent": true,
+      "credentialContentsRead": false,
+      "credentialDecryptionAttempted": false,
+      "networkRequests": 0
+    },
+    "parentResultsReportedByCoordinator": [
+      {
+        "processId": 51108,
+        "nativeExit": 0
+      },
+      {
+        "processId": 37004,
+        "nativeExit": 1
+      },
+      {
+        "processId": 54804,
+        "nativeExit": 0
+      }
+    ],
+    "noPrivateContentsReadForThisReceipt": true
+  },
+  "existingRestorationAuthority": {
+    "approvalRelative": "milestones/M03-n8n-foundation/evidence/wf00-restore-approval-20261023.json",
+    "approvalSha256": "2fe70820c5aec160d77e1ae64e5160f8faacdfb055cf7258bc0f6308926a197e",
+    "ownerReply": "Restore reviewed WF-00 (Recommended)",
+    "sourceCommitSha": "025c2a2c0127566df71cef77797db277f1565568",
+    "sourceFile": "n8n/workflows/WF-00.json",
+    "reviewedTargetRelative": "n8n/fixtures/WF-00-reviewed-native-staging-025c2a2.json",
+    "reviewedTargetSha256": "905e40aa96bea9291961f8e73297a8668b76ead397c834dbc7dc796e14ecfea9",
+    "reviewedTargetVersionId": "b2ff9a94-89b8-4fe2-9bed-093774f0feff",
+    "targetActive": false,
+    "targetActiveVersionId": null,
+    "standingMilestoneAuthorizationRetained": true,
+    "requiredFreshVersionId": "fe249a62-8276-47c1-a58a-7bb50705a280",
+    "privateEncryptedRollbackRequired": true,
+    "freshDriftRecheckRequired": true,
+    "savedGraphReadbackRequired": true,
+    "maximumManagementRequests": 3,
+    "restoreAlreadyExecuted": false,
+    "otherWorkflowMutationAllowed": false,
+    "executionAllowed": false,
+    "productionAllowed": false,
+    "budgetReplenished": false
+  },
+  "interpretation": {
+    "currentMetadataReadSucceeded": true,
+    "baselineMatches": false,
+    "allNineReviewedVariantsMatch": false,
+    "credentialsCategoryEqual": true,
+    "behaviorCategoryEqual": true,
+    "exactParameterValuesEstablished": false,
+    "fullM03Acceptance": false,
+    "baselineRestored": false,
+    "nativeExecutionReceiptEstablished": false,
+    "readOnlyResultIsNotWorkflowAcceptance": true,
+    "allWorkflowSemanticsEqualEstablished": false,
+    "pureDefaultsOnlyEstablished": false
+  },
+  "boundaries": {
+    "workflowMutationsThisRead": 0,
+    "workflowExecutionsThisRead": 0,
+    "administratorUse": false,
+    "migrationReplay": false,
+    "production": false,
+    "recurringActivity": false,
+    "externalNotifications": false,
+    "r2": false,
+    "merge": false,
+    "m04": false
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/live/technical21-finite-difference-retry-intent.json": "b89ec4e22ce6b6169f0ac8cd107793d41948d56c62ff72d669863dee05b24a59",
+    "scripts/n8n/out/foundation/live/technical21-finite-difference-retry-result.json": "c3f1ff0e653592b193116e2bd6f561139871cff6a66430de60d893397ccb0cb2",
+    "scripts/n8n/out/foundation/live/technical21-finite-difference-retry-inventory-seal-used.json": "e7529c1f4a9436fef14323528b02a208904fddbe7529e4d39ab0fe52eb59fdf5",
+    "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical21-baseline-refusal-20261025.json": "a5a47f12b284eea2ccc0e58b51e0d254b6b7c8af86431bbe369b41d373f378cb",
+    "milestones/M03-n8n-foundation/evidence/wf00-finite-diagnostic-contract-failure-20261025.json": "b9a0691894a5949a8d5816faf3d51dfe3a05999e86f87ffde47e8db900835d74",
+    "milestones/M03-n8n-foundation/evidence/wf00-restore-approval-20261023.json": "2fe70820c5aec160d77e1ae64e5160f8faacdfb055cf7258bc0f6308926a197e",
+    "n8n/fixtures/WF-00-reviewed-native-staging-025c2a2.json": "905e40aa96bea9291961f8e73297a8668b76ead397c834dbc7dc796e14ecfea9",
+    "n8n/workflows/WF-00.json": "db764d55ae2b8b7ed2b6ac2c2fa605e4bc1e968acab2b5183092eb90db9209f0"
+  },
+  "sourceFile": "n8n/workflows/WF-00.json",
+  "sourceFileSha256": "db764d55ae2b8b7ed2b6ac2c2fa605e4bc1e968acab2b5183092eb90db9209f0",
+  "usageAfter": {
+    "management": 1336,
+    "control": 1250,
+    "combined": 2586,
+    "vercel": 254,
+    "nativeExecutions": 4
+  }
+}

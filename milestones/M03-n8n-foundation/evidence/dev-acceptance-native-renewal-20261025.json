@@ -1,0 +1,54 @@
+{
+  "kind": "m03_native_renewal_public_checkpoint",
+  "version": 1,
+  "observedAt": "2026-10-24T23:47:43.609Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "head": "00b4bc2d3bd0e6374650ce7c48299e5a55692c69",
+  "ownerReportedRenewal": true,
+  "verifiedNativeMetadata": {
+    "kind": "m03_vercel_saved_auth_metadata",
+    "status": "metadata_covers_75_minutes",
+    "metadataValid": true,
+    "unexpired": true,
+    "covers75Minutes": true,
+    "effectiveBackendEstablished": false,
+    "networkRequests": 0,
+    "authenticationAttempted": false,
+    "refreshAttempted": false,
+    "configWritten": false,
+    "childClosed": true
+  },
+  "publicGuard": {
+    "nativeExit": 1,
+    "privateRead": false,
+    "networkRequests": 0,
+    "firstFailure": {
+      "sourceLine": 5195,
+      "reason": "historical technical12 parent PID now identifies a process created after its pinned close",
+      "historicalParentProcessId": 59876,
+      "historicalClosedAt": 1792836552816,
+      "createdAfterHistoricalClose": true,
+      "unrelatedProcessPreserved": true
+    }
+  },
+  "acceptance": {
+    "newAdmission": false,
+    "credentialDecryptionAttempted": false,
+    "runtimeStarted": false,
+    "browserExecutionStarted": false,
+    "usage": {
+      "management": 963,
+      "control": 1094,
+      "combined": 2057,
+      "vercel": 184,
+      "nativeExecutions": 3,
+      "actors": 0,
+      "costUsd": 0,
+      "newItems": 0
+    },
+    "businessAcceptance": false,
+    "fullD": false
+  },
+  "correctionScope": "Use existing historical identity check consistently for verified historical references; retain active kernel ancestry and all pinned records and limits."
+}

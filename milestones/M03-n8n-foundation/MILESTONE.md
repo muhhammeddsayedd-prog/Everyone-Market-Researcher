@@ -7,7 +7,7 @@
 Build the n8n Cloud backbone every collector plugs into. When M03 is done, all of the following are true:
 - **Plan facts:** the five n8n Cloud plan facts are verified and recorded: execution timeout, whether sub-workflows count against the quota, Variables, Apify community node, Postgres query parameters.
 - **Codex access:** Codex can create, update, run and export workflows through the owner's n8n MCP/API connection.
-- **Credentials:** all credentials exist under their canonical names (dev now; prod copies in M08).
+- **Credentials:** reuse existing approved dev credentials by actual ID and compatible type; logical names do not require renaming or duplication. Production copies belong to their separately approved milestone.
 - **Supabase RPCs** used by the backbone are implemented and tested (migration + pgTAP): `ops.log_cost`, `ops.register_apify_run`, `ops.complete_apify_run`, `ops.get_apify_run`, `ops.apify_runs_pending`, `ops.get_setting`, `ops.get_price_book`, `ops.log_workflow_error`, `ops.error_count_24h`, `ops.daily_health`, `ops.accrue_fixed_costs`. The price book holds the owner's real plan prices, and `daily_budget_usd` is set.
 - **Shared sub-workflows:** `SUB · Start run`, `SUB · Finish run`, `SUB · Ingest items`, `SUB · Log cost` and `SUB · Notify` (log-only or temporary SMTP until M13).
 - **Workflows:**
@@ -97,7 +97,7 @@ Build the n8n Cloud backbone every collector plugs into. When M03 is done, all o
 | **MA-11**: n8n credentials created + Codex's n8n MCP/API access | T2, T3 |
 | **MA-12**: OpenAI project key with a budget limit (stored now, used in M07) | T3 |
 | **MA-13**: daily budget USD | T4 |
-| Fixed monthly fees: n8n plan, Supabase Pro × 2, Vercel plan (owner tells Codex) | T4 |
+| Fixed monthly fees: n8n plan, Supabase Pro × 2, Vercel plan | Reporting deferred by the owner; unknown amounts stay unknown and do not block M03 |
 
 ## 4. Scope
 
@@ -165,21 +165,14 @@ Also record the n8n version and instance URL. Never record the API key.
 **Done when:** Codex can create an empty test workflow in dev and delete it again.
 
 ### T3: Credentials (MA-10, MA-11, MA-12)
-1. The owner creates the credentials listed in §2 with the exact names. Dev only for now; `Firecrawl`, `SerpAPI` and `Email (Resend)` may come later.
-2. Codex verifies by name with a throwaway test workflow:
-   - Postgres: `select 1`;
-   - Apify: `GET https://api.apify.com/v2/users/me` → plan name;
-   - Vimeo: `GET https://api.vimeo.com/users/everyonefilms?fields=uri`;
-   - YouTube: `channels?part=id&forHandle=@AflamProductions`;
-   - OpenAI: `GET https://api.openai.com/v1/models` → 200.
-
-   Record OK/FAIL per credential; never record values.
+1. Reuse the existing credentials by ID and compatible actual type, as recorded in `docs/DECISIONS.md`. Do not recreate, rename, duplicate or rotate shared credentials because a display name differs. `Firecrawl`, `SerpAPI` and `Email (Resend)` belong to later milestones.
+2. Preserve completed bounded metadata checks and actual restricted-role identity receipts. Verify only genuinely changed or unused required bindings through supported native operations; record saved configuration separately from endpoint success. Use the approved restricted strict-TLS RPC transport. The native Postgres-node certificate-chain failure remains historical; do not disable SSL, enable Ignore SSL Issues or substitute an administrator login. Do not start an actor or inference as a credential test.
 3. Decide on the Apify callback verification and record it:
    - **(b) re-fetch run + registered-run check** is the default;
    - **(a) secret header** only if Variables exist and the owner wants both.
 4. Config: create Variables if available, otherwise use the `Config` Set node pattern (`env = dev`, `app_url = <Vercel preview or placeholder>`, `webhook_base = <n8n instance base URL>`).
 
-**Done when:** all present credentials test OK.
+**Done when:** the dev path used by the functional checks authenticates with the intended restricted identity and compatible bindings; unused later-milestone integrations are explicitly deferred. No secret values are recorded.
 
 ### T4: Migration: M03 RPCs + price book (needs MA-10, MA-13, fixed fees)
 Create `supabase migration new rpc_n8n_foundation`. Every function is `security definer`, `set search_path = ''`, fully qualified, with `revoke … from public` and `grant execute … to n8n_writer`:
@@ -396,20 +389,70 @@ Clean-up: the smoke item stays in dev and is queued for AI. That's fine; M07 pro
 
 ## 9. Acceptance criteria
 
-| # | Criterion | Check |
+The owner's [25 October functional-acceptance decision](../../docs/DECISIONS.md#m03-functional-acceptance-and-bounded-parallel-delivery--approved-25-october-2026)
+sets the current M03 closure checklist:
+
+1. **Correct dev target and restricted access.** Verify the intended dev project,
+   strict TLS and the actual least-privilege path; no administrator credential in
+   application or n8n runtime.
+2. **One real asynchronous collection-to-callback-to-database completion.** An
+   approved public-source run completes through WF-19 and persists its run/item.
+3. **Duplicate/replay and cost correctness.** Repeated content does not duplicate
+   the item; callback replay does not duplicate completion or cost. Actual
+   provider usage and legitimate separate run costs are recorded accurately.
+4. **Invalid-callback and error handling.** Reject an unknown/unowned run with
+   the rejection audit and no ingestion/cost side effects; preserve the verified
+   automatic error routing and cooldown behavior.
+5. **Safe stopping and documented test-data retention.** Stop admissions and
+   recurring activity, reconcile owned work and resources, and document retained
+   native records and C999 disposition. Unresolved work is not called settled,
+   restored settings are not erasure, and collected data is not deleted.
+6. **Required CI, workflow exports, and review.** Keep required tests and branch
+   protection, sanitized exports and independent review. Distinguish local,
+   native/manual, CI and hosted evidence; present the separate merge decision.
+
+This is the one-time mapping of the original AC1–AC12. Historical tests and
+receipts remain unchanged. Replaced/deferred requirements are not marked passed.
+Task details elsewhere remain implementation references; this section controls
+closure where earlier name-specific or exhaustive-verifier wording conflicts.
+
+| Original AC | Functional check | Treatment and latest verified boundary |
 |---|---|---|
-| AC1 | Plan facts recorded | PROGRESS has answers 1–5 (T1) |
-| AC2 | Credentials work | PROGRESS shows OK for Postgres dev, Apify, Vimeo, YouTube, OpenAI (others marked "pending MA-xx") |
-| AC3 | RPCs implemented and tested | `supabase test db` passes, including `10_n8n_foundation.test.sql`; advisors clean |
-| AC4 | Price book + budget set | `select ops.get_price_book()` has the Apify keys for the owner's tier + 3 fixed-fee rows; `ops.get_setting('daily_budget_usd')` = owner value |
-| AC5 | Smoke path end to end | `scripts/assert/m03_smoke.sql` results as in T9 (run success, 1 item, cost row = Apify `usageTotalUsd`, apify run processed) |
-| AC6 | Idempotency | Re-running WF-99 → `inserted = 0`, item count unchanged; replayed callback → no new cost row |
-| AC7 | Forged callback rejected | Unknown run ID → audit row `apify_callback_rejected`, nothing ingested |
-| AC8 | Error routing | Forced error → `ops.audit_log` `workflow_error` row; third → one notify row (and an email if temp SMTP exists); fourth within 6 h → none |
-| AC9 | Orchestrator dispatch | Each `slot_override` triggers the right stub (executions list screenshot or n8n API output in PROGRESS); WF-00 inactive |
-| AC10 | Health | Manual WF-91 run → `ops.daily_health()` JSON has all keys; fixed costs accrued once for yesterday (second run adds 0) |
-| AC11 | Exports clean | `n8n/workflows/*.json` committed for every dev workflow; the secret grep finds nothing |
-| AC12 | Budget documented | Executions/day estimate in PROGRESS ≤ 200/day steady state |
+| AC1 — plan facts | 6 | **Retain; complete.** The five runtime/plan facts, 50K allowance and existing estimate are recorded. No renewed billing investigation. |
+| AC2 — credentials work | 1 | **Replace the native-node/name-specific gate.** Reuse actual credential IDs/types and the approved restricted strict-TLS RPC path. Direct Writer/gateway identity and four provider metadata checks are verified; the native Postgres-node TLS failure is preserved. No model inference test is required in M03. |
+| AC3 — tested RPCs/advisors | 1, 3 | **Retain.** Existing database tests/advisor/type evidence keep their dates and scope; actual22 confirms all15 migration versions and catalog/RLS/grants, with no replay. Any new security or integrity defect remains blocking. |
+| AC4 — prices/budget/fixed fees | 3 | **Retain variable prices, actual usage and the USD25 alert default; defer fixed subscription-fee completeness.** Unknown fees stay unknown, not zero. |
+| AC5 — end-to-end smoke | 2 | **Retain; passed in dev.** Actual nativeWF99/31146 and WF19/31150 completed one asynchronous public-page actor into one successful run/item. Provider usage and six-decimal database cost are verified in the actual proof. |
+| AC6 — repeated run/callback | 3 | **Retain; passed in dev.** Same callback returned200/replayed; actual restricted Writer replay returned the cached original-content receipt with updated:false/finished_now:false. Item/raw/queue/cost fingerprints and the single cost entry are unchanged. |
+| AC7 — forged callback | 4 | **Retain; passed in dev.** Unknown-run callback403, audit20/native31155 reason unregistered, no registry/launch/cost row and no ingestion/cost change. |
+| AC8 — automatic error routing | 4 | **Retain; actual22 passed.** All four automatic error/cooldown groups31136–31144 settled and were cleaned. Preserve log-only Notify; external email remains deferred to its milestone/approval. |
+| AC9 — every hosted stub slot | 2, 6 | **Replace exhaustive native stub execution as an M03 closure gate.** Representative Vimeo parent/child31134/31135 passed. Keep the full local slot/unknown-slot contracts, inactive WF-00 and disabled schedules; collector-specific live matrices belong to their collector milestones. The original every-slot hosted requirement is replaced, not passed. |
+| AC10 — native health/fixed accrual | 3, 5 | **Replace standalone WF91 execution with existing health contracts and final operational readback; defer positive hosted fixed-fee accrual while fees are unknown.** Keep local health/accrual/idempotency tests; do not claim a positive fee accrual from an empty/no-row result. |
+| AC11 — clean exports | 6 | **Retain; passed.** Canonical sanitized exports remain intact. All25 owned definitions match their reviewed inactive baselines after approved WF99/remaining SUB/Machine restoration. Preview cleanup, independent review and acceptance-head CI pass. Owner merge approval is recorded; normal checks on the final closure head still precede merge. |
+| AC12 — daily estimate | 6 | **Retain; complete.** Existing conservative160/day pilot and181/day full estimates remain below200/day; cumulative test allowances are separate and unchanged. |
+
+Current results are in the [existing recovery/evidence record](evidence/dev-acceptance-fixture-gap-correction-20261024.md)
+and [actual real collection proof](evidence/functional-collection-proof-20261025.json).
+Checks1–5 pass under functional acceptance. At21:06:53UTC25 October (26 October
+Cairo), the separately reviewed native sequence completed approved WF99, three
+SUB definitions and dedicated Machine restoration, then verified all25 inactive
+baselines. The encrypted rollback and fresh drift checks are preserved. Exports,
+focused tests and independent review pass. All five CI40234431917 jobs and Vercel
+passed atc29f18e, completing check6. On26 October2026 Cairo, the owner explicitly
+approved merging PR8 and closing M03. Normal protected checks on the final
+closure-documentation head still precede making the draft ready and merging.
+Successful PR8 merge changes M03 to **Done**; the GitHub merge record gives the
+actual closing time and SHA. No further live acceptance batch is needed.
+
+Final charged usage is2078/2000/4078/V358 against2176/3584/5312/V400; one
+actor and one new item were used. Control includes the conservative approved512
+sequence bound, not a precise HTTP measurement. Exactly44 additional Management
+requests were used for the completed residual restoration. No new actor, batch,
+credential, allowance or time approval is needed. Preserve all prior attempts,
+execution31145, fullD:false, exact15-version history, seeds, local-only fixture
+directory and disabled CleanupTechnical22. The owner's separate approval permits
+PR8 merge and M03 closure only; production, recurring collection, notification,
+R2 and M04 remain outside this continuation.
 
 ## 10. Tests to write
 
@@ -422,12 +465,12 @@ Clean-up: the smoke item stays in dev and is queued for AI. That's fine; M07 pro
 
 | MA | What | When | How Codex verifies |
 |---|---|---|---|
-| MA-10 | Confirm the Apify plan tier (sets prices; `louisdeconinck` needs a paid plan) + create an API token → n8n credential `Apify API` | Before T3/T4 | `GET /v2/users/me` OK; tier in PROGRESS |
-| MA-11 | Create the n8n credentials with the canonical names (§2) and connect Codex's n8n MCP/API access | Before T2/T3 | Codex lists them; test calls OK |
-| MA-12 | OpenAI project `market-radar` key with a monthly budget limit → `OpenAI API` credential | T3 | `GET /v1/models` 200 |
-| MA-13 | Daily budget USD (`daily_budget_usd`); the recommendation is $150 on backfill days, $25 steady state | T4 | Setting value |
-| (info) | Monthly fees: n8n plan, Supabase Pro (×2), Vercel plan | T4 | price_book rows |
-| (optional) | Temporary SMTP credential `Email (SMTP temp)` (e.g. Workspace SMTP/app password) so alerts email before M13 | T5 | Notify test email received |
+| MA-10 | Existing Apify plan/token already supplied; reuse by actual ID/type | Only a genuine revocation/access mismatch needs owner action | Preserve completed metadata/price evidence; actual actor use is a separate functional check |
+| MA-11 | Existing n8n access/credentials and persistent dev originals supplied | No new handoff, name change or time renewal is requested | Use supported native stores/integrations and scoped consumers; authenticate only for the incomplete approved step |
+| MA-12 | Existing OpenAI credential available; inference belongs to M07 | No M03 inference or new-key action | Preserve the bounded metadata result; do not claim it proves inference or a project spend cap |
+| MA-13 | USD25/day alert default retained | No repeated billing questionnaire | Preserve the actual setting; the alert threshold is not a provider spending cap |
+| (deferred) | Monthly subscription fees remain unknown where not supplied | Reporting deferred by the owner | Do not fabricate fee rows or use their absence to block M03 |
+| (later) | External email/SMTP notifications | Separate later milestone/approval | M03 Notify remains log-only |
 
 ## 12. Risks & gotchas
 
@@ -454,7 +497,10 @@ Clean-up: the smoke item stays in dev and is queued for AI. That's fine; M07 pro
 
 ## 14. Definition of done & hand-off
 
-- All ACs pass, with the evidence in PROGRESS; the PR is merged (migrations + exports + README); root PROGRESS.md shows M03 Done and M04 current.
+- All six functional checks are verified with the retained/deferred dispositions from §9. The owner approved PR8 merge and M03 closure on26 October2026 Cairo. Complete the protected merge after final-head checks; M03 is Done when PR8 is merged. This closes development delivery, not production launch or the start of M04.
+- **Hand-off:** preserve all15 dev migrations, the285 seeded competitors/1754 seeded accounts plus retained C999/account, the one retained public-page item/raw/cost, two inert test queue messages, archived/paused C999, retained execution31145, persistent encrypted originals and all historical failures/charges. All25 workflows are at reviewed inactive baselines, Machine is restored, temporary Preview access is revoked and the restricted strict-TLS gateway path is verified. The native Postgres-node TLS failure remains a documented limitation. Unknown fixed fees remain unknown; USD25/day remains the alert default.
+- **Next step after merge:** wait for the owner's instruction to start M04. Do not run another actor, apply production changes, activate schedules, send notifications or continue private R2. The local fixture directory stays local-only with its production404 guard. Previously restricted PROGRESS/helper/CI-artifact and PR-body writes remain untouched; this permitted milestone record carries the current closure and handoff.
+- The authorized isolated fixture directory slice is complete and stays local-only with no hosted writes. Closing M03 does not authorize another frontend task or start M04, M09 or M10; fixtures do not prove live ingestion.
 - **M04 expects:**
   - the SUB workflows, WF-19 and WF-90 working in dev;
   - stubs WF-10 and WF-11 to replace;

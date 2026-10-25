@@ -1,0 +1,171 @@
+{
+  "kind": "m03_technical6_closed_baseline_discovery_reconciliation",
+  "version": 1,
+  "recordedAt": "2026-10-23T22:16:15.229Z",
+  "environment": "dev",
+  "source": {
+    "head": "3d5ef1d8b67404ce8c82f777c04131599e26de3e",
+    "verification": "Root verified all five required CI jobs and Vercel before actual admission; this receipt preserves the later partial failure."
+  },
+  "immutableTechnicalRecords": {
+    "admission": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-6.json",
+      "bytes": 446,
+      "sha256": "8d5a91f1fc2e8e5b973a73b4e19b3c89f199c6e273fe80bdf33170b04d0b516e"
+    },
+    "runtimeClaim": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-6.runtime-claim.json",
+      "bytes": 275,
+      "sha256": "68b45d5c16af4503b1148189a0a99a3dfa772a79e0a2fb569516a893fecda946"
+    },
+    "closed": {
+      "path": "scripts/n8n/out/foundation/live/project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74.technical-6.closed.json",
+      "bytes": 396,
+      "sha256": "601562b4d1e4fa385ec1c45525fc133aa740764af842c37d0651a4c80363df10"
+    },
+    "closedReceiptNotRewritten": true,
+    "closureVerifiedRemainsFalse": true,
+    "bypassHandoffDeletedRemainsFalse": true
+  },
+  "actualFailure": {
+    "source": "Root fixed public result and independent local public journal inspection; no raw error or private response copied.",
+    "phase": "baseline_execution_discovery",
+    "lastWorkflowKey": "WF-70",
+    "readerCodeRecorded": false,
+    "httpStatusRecorded": false,
+    "browserAcknowledgementAccepted": true,
+    "baselineSourceGets": 25,
+    "executionDiscoveryAttempts": 28,
+    "browserDiscoveryAttempts": 1,
+    "newControlAttempts": 29,
+    "nativeExecutions": 0,
+    "actorStarts": 0,
+    "administrativePrivateRead": false,
+    "administrativeAuthenticationAttempted": false,
+    "newPreviewRequests": 0,
+    "newWorkflowWrites": 0,
+    "newDatabaseOrFixtureWrites": 0,
+    "limitation": "Failure localized after all25 saved-definition GETs and during the second WF-70 execution-list request, before Admin startup. The caught Reader code and HTTP status were not retained; no exact code is inferred."
+  },
+  "actualPublicJournals": {
+    "management": {
+      "path": "scripts/n8n/out/foundation/live/management.jsonl",
+      "bytes": 6412,
+      "sha256": "6e57af593ca1e4d4379c40c57f20fd963b35dfbd1088d7fd520ddf4e9c8dca76",
+      "rowCount": 143
+    },
+    "control": {
+      "path": "scripts/n8n/out/foundation/live/control.jsonl",
+      "bytes": 50312,
+      "sha256": "199c4f6298e50b040b15f76e1ddca83fed9407d43596cc95b3de9bd10d758bf3",
+      "rowCount": 382
+    },
+    "setup": {
+      "path": "scripts/n8n/out/foundation/live/setup.jsonl",
+      "bytes": 9102,
+      "sha256": "0cad48fd9550da762c0b629ee63364e4668f4829c3a89bd6f75ec2843d32f624",
+      "rowCount": 84
+    },
+    "preflight": {
+      "path": "scripts/n8n/out/foundation/live/preflight.jsonl",
+      "bytes": 938,
+      "sha256": "ae07f30519e51f81d60bfa5cabe5ef80b5694fe13bac3da181c2b8fe38d08598",
+      "rowCount": 4
+    },
+    "runtime": {
+      "path": "scripts/n8n/out/foundation/live/runtime.jsonl",
+      "bytes": 5713,
+      "sha256": "3f1c85ad7d185481da33c8989b34b82cbbef26aa3ec01209bc13561bd3481378",
+      "rowCount": 50
+    }
+  },
+  "absentSideEffectOutputs": [
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-6-attempt.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-6-latest.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-6-owner-provision-attempt.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-6-reactivation-attempt.json",
+    "scripts/db/out/m03-foundation-project-verified-continuation-20275b22-b7fe-4737-a9a4-c50c2feadb74-technical-6-unprovisioned-archive-attempt.json",
+    "scripts/n8n/out/foundation/live/runtime.technical-6.jsonl"
+  ],
+  "actualCleanup": {
+    "source": "Root guarded cleanup864135; exact raw closed receipt/PIDs/parent and Admin locks verified before removing only unused disposable inputs.",
+    "toolReceipt": "864135",
+    "nativeExit": 0,
+    "closedReceiptSha256": "601562b4d1e4fa385ec1c45525fc133aa740764af842c37d0651a4c80363df10",
+    "parentProcessId": 43980,
+    "runtimeProcessId": 55076,
+    "bothProcessesDead": true,
+    "parentLockAbsent": true,
+    "adminSessionLockExclusive": true,
+    "unusedAdminPasswordAbsent": true,
+    "unusedAdminLeaseAbsent": true,
+    "bypassAbsent": true,
+    "cleanupLockRemoved": true,
+    "contentsRead": false,
+    "networkRequests": 0,
+    "persistentOriginalsUntouched": true
+  },
+  "usage": {
+    "mainManagement": 142,
+    "carriedManagement": 10,
+    "management": 152,
+    "mainControl": 381,
+    "carriedControl": 1,
+    "control": 382,
+    "combined": 534,
+    "vercelSetupUsed": 44,
+    "vercelSetupMaximum": 88,
+    "managementMaximum": 512,
+    "controlMaximum": 2048,
+    "combinedMaximum": 2560,
+    "gatewayPreflightAttempts": 2,
+    "actorStarts": 0,
+    "maxActorUsd": 1,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "continuation": {
+    "requiresTargetedTestsAndPublicReadiness": true,
+    "closedAdmissionReopened": false,
+    "credentialsRecreated": false,
+    "capsReplenished": false,
+    "timeOnlyApprovalRequired": false,
+    "nextManagementPlanRequests": 528,
+    "managementMaximum": 512,
+    "managementBudgetExhaustionBlocksNewAdmission": true
+  },
+  "acceptance": {
+    "actualM03DevAcceptanceVerified": false,
+    "browserInventoryAcknowledgementAccepted": true,
+    "all25SavedWorkflowBaselineVerified": true,
+    "executionBaselineComplete": false,
+    "fullDVerified": false,
+    "productionChanged": false,
+    "pr8Merged": false,
+    "m04Started": false
+  },
+  "executionDiscovery": {
+    "browserIntent": {
+      "event": "control_request_intent",
+      "ordinal": 353,
+      "kind": "discovery",
+      "workflowId": "MzimjpsuyPuK7SKe",
+      "at": "2026-10-23T22:11:50.532Z"
+    },
+    "browserVerified": {
+      "event": "browser_port_preflight_verified",
+      "workflowId": "MzimjpsuyPuK7SKe",
+      "kind": "browser_ui",
+      "at": "2026-10-23T22:12:07.544Z"
+    },
+    "lastIntent": {
+      "event": "control_request_intent",
+      "ordinal": 381,
+      "kind": "discovery",
+      "workflowId": "S6KDFsx5IjQRf6tm",
+      "at": "2026-10-23T22:12:26.308Z"
+    },
+    "metadataOnly": true,
+    "executionStarted": false
+  }
+}

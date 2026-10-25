@@ -1,0 +1,108 @@
+{
+  "kind": "m03_technical16_wf32_discovery_readback",
+  "version": 1,
+  "observedAt": "2026-10-24T19:46:24Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "technicalAttempt": 16,
+  "consumerCommitSha": "762dbf05a664362f327b2d035d7693840d53fe58",
+  "windowId": "4c602549-2c42-4ec3-9328-714d7cb66a77",
+  "priorFailedAttemptSha256": "68fecd32ceda855b5f522bf9448f5fa94c1411dc4bd4950ea6d7a3979602bc72",
+  "toolResults": {
+    "actual": "75c862",
+    "publicPreflight": "d87f3c",
+    "publicSourceGitParity": "8a9391",
+    "artifactAndCleanupReadback": "66605d"
+  },
+  "outerNativeExit": 0,
+  "rawResult": {
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "complete",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": {
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "workflowKey": "WF-32",
+      "technicalAttempt": 16,
+      "status": "discovery_page_classified",
+      "requestCount": 1,
+      "maximumRequests": 1,
+      "httpStatus": 200,
+      "stage": "complete",
+      "nativeTransportCode": null,
+      "readerCode": null,
+      "tlsVerified": true,
+      "networkCompletionVerified": true,
+      "controlReservationConservative": true,
+      "acceptanceProven": false,
+      "drainProven": false,
+      "firstPageSchemaValidated": true,
+      "nextReadRefusedLocally": true,
+      "fields": {
+        "objectShape": true,
+        "dataArray": true,
+        "listWithinLimit": true,
+        "nextCursorPresent": true,
+        "nextCursorShape": true,
+        "firstPageEmpty": true,
+        "pendingCountZero": true,
+        "unknownStatusCountZero": true,
+        "workflowIdsMatch": true,
+        "idsShape": true,
+        "payloadAbsent": true,
+        "listShapeVerified": true
+      },
+      "transportState": {
+        "pendingRequests": 0,
+        "unclosedResponses": 0
+      }
+    }
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.jsonl": "54f2981b2d0faaa4b71793de2d5eaa59d22161657a449c4244ad3ceddbdb10f2",
+    "scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.inventory-seal.json": "985fb551e12a66e106c267a2fd43e4fb8a15194d76f50fd35d828c2474809cc4",
+    "scripts/n8n/out/foundation/wf32-discovery-diagnostic-20261024.foundation-seal.json": "12575579756a116397b7e0249e7ed37d99398fe7fd211056ac2007b885b8387e"
+  },
+  "cleanup": {
+    "parentLockAbsent": true,
+    "runtimeManagementHandoffAbsent": true,
+    "persistentManagementRetained": true,
+    "credentialChildClosed": true,
+    "privateContentsReadByReadback": false
+  },
+  "usage": {
+    "management": 863,
+    "control": 994,
+    "combined": 1857,
+    "vercel": 184,
+    "nativeExecutionsReserved": 3,
+    "actorStarts": 0,
+    "providerReads": 0,
+    "allowancesReplenished": false
+  },
+  "acceptance": {
+    "firstPageSchemaValidated": true,
+    "firstPageEmpty": true,
+    "currentEndpointSuccess": true,
+    "originalFailureLayerEstablished": false,
+    "fullPaginationProven": false,
+    "drainProven": false,
+    "recordsDeleted": 0,
+    "fixtureArchived": false,
+    "fullAcceptance": false
+  },
+  "continuation": {
+    "ownerInputRequired": false,
+    "remainingForensicRequests": 124,
+    "minimumCleanupRequests": 85,
+    "minimumPreMutationReserve": 4,
+    "allPriorAttemptsPreserved": true,
+    "closedClaimReusable": false
+  }
+}

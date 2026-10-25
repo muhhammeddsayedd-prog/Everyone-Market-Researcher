@@ -18,3 +18,21 @@ supabase/.temp/
 __pycache__/
 .m00-clean-*/
 scripts/seed/out/
+
+# Locally generated public runtime inventory; byte form is checked by its owner-only sealer.
+scripts/n8n/gw01-gateway-seal.json
+
+scripts/n8n/gw01-gateway-transition.json
+
+scripts/n8n/gw01-log-read-seal.json
+scripts/n8n/gw01-public-config-packet.json
+scripts/n8n/gw01-public-config-seal.json
+scripts/n8n/gw01-public-config-proof.json
+scripts/n8n/gw01-shutdown-packet.json
+scripts/n8n/gw01-shutdown-seal.json
+scripts/n8n/gw01-preview-read-packet.json
+scripts/n8n/gw01-preview-read-seal.json
+
+# Workstation public closure; the explicit builder verifies reviewed source bytes.
+scripts/n8n/foundation-acceptance-seal.json
+scripts/n8n/.foundation-acceptance-seal.pending

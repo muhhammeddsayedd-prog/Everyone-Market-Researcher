@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T09:11:41.523898+00:00",
+  "scope": "actual_public_only_seal_transitions",
+  "transitions": [
+    {
+      "previousSealSha256": "0a4f8b59cf2ca1fdce34918656a9981adba9bf88ab359b65ace1ccadea885025",
+      "nextSealSha256": "25a664c9f1d7b45030ab0de35e0b87e8ad137f669b88107def87ce34671869f3",
+      "changedFiles": [
+        "scripts/n8n/gw01-cloud-privacy.json",
+        "scripts/n8n/gw01-reviewed-preview.json"
+      ],
+      "sourceUpdates": [],
+      "archiveAndAtomicBackupVerified": true,
+      "recordKind": "intent_not_completion"
+    },
+    {
+      "previousSealSha256": "683ccac27f2155cea02a5097e97e247307bee10059f1547648cd1b0b7424ee3e",
+      "nextSealSha256": "0a4f8b59cf2ca1fdce34918656a9981adba9bf88ab359b65ace1ccadea885025",
+      "changedFiles": [],
+      "sourceUpdates": [
+        "scripts/n8n/gw01-gateway-transport.mjs",
+        "scripts/n8n/gw01-trial.mjs",
+        "scripts/n8n/windows/Invoke-M03GW01Gateway.ps1"
+      ],
+      "archiveAndAtomicBackupVerified": true,
+      "recordKind": "intent_not_completion"
+    }
+  ],
+  "sourceTransition": {
+    "toolRefs": [
+      "8f92b3",
+      "a4602a"
+    ],
+    "nativeExit": 0,
+    "checkOnlyReady": true,
+    "privateRead": false,
+    "rootChildClosed": true
+  },
+  "proofConfigTransition": {
+    "publicReadyMarkerObserved": true,
+    "originalNativeCompletionReceiptCaptured": false,
+    "reason": "Root printed only the initial output and did not retain the running command session identifier. No installation retry was performed.",
+    "reconciliationToolRef": "b5edee",
+    "currentSealExpectedHashVerified": true,
+    "archiveAndReplaceBackupVerified": true,
+    "freshReadOnlyCheckOnlyNativeExit": 0,
+    "privateRead": false,
+    "rootChildClosed": true
+  },
+  "currentSealSha256": "25a664c9f1d7b45030ab0de35e0b87e8ad137f669b88107def87ce34671869f3",
+  "clockStarted": false,
+  "gatewayAttempts": 2,
+  "gatewayRequestsAddedByTransitions": 0,
+  "originalConfigUnchanged": true,
+  "boundary": "Preserved intent/archives plus separately observed native completion/read-only state reconciliation. Intent files alone are not successful completion receipts."
+}

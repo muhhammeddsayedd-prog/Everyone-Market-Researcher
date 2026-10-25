@@ -1,0 +1,1088 @@
+{
+  "version": 1,
+  "status": "actual_isolated_local_runtime_evidence_not_cloud_acceptance",
+  "observedAt": "2026-10-19T04:16:36.213Z",
+  "runtime": {
+    "n8n": "2.43.5",
+    "node": "26.7.0",
+    "image": "n8nio/n8n:2.43.5",
+    "docker": "29.6.1",
+    "database": "isolated SQLite",
+    "executionEntry": "local internal REST manual; actual local public webhook for automatic Error Trigger",
+    "nativeRead": "actual local public GET executions/{id}?includeData=false plus isolated SQLite execution_entity/execution_data inspection",
+    "cloudProof": false,
+    "imageId": "sha256:4fc4c67bf5fb990201a71d94c7070abf8dd0619cb8af1d059877a447f3640392",
+    "repoDigest": "n8nio/n8n@sha256:4fc4c67bf5fb990201a71d94c7070abf8dd0619cb8af1d059877a447f3640392",
+    "repoDigestVerification": "Actual local docker image inspect RepoDigests; configuration image ID independently recorded, same value on this engine."
+  },
+  "resources": {
+    "cpu": 1,
+    "memoryMiB": 1024,
+    "pids": 256,
+    "network": "new labeled internal Docker network; no successful outbound access",
+    "hostedOperations": 0,
+    "realCredentials": 0,
+    "providerCalls": 0,
+    "existingContainersModified": 0
+  },
+  "history": {
+    "preExecutionSchemaFailures": 3,
+    "initialAutomaticWebhookRegistration404": 1,
+    "invalidFixtureNativeExecutions": 14,
+    "validFixtureNativeExecutions": 24,
+    "totalNativeExecutions": 38,
+    "invalidFixtureReason": "synthetic ExecuteWorkflowTrigger empty declared schema; corrected to native inputSource passthrough before valid cases",
+    "notAcceptance": [
+      "invalid first seven fixture attempts",
+      "mocked adapter tests",
+      "same-version local success as Cloud acceptance"
+    ],
+    "countValidation": {
+      "isolatedExecutionRows": 38,
+      "maxNativeId": 38,
+      "source": "Actual isolated SQLite before container removal."
+    }
+  },
+  "cases": [
+    {
+      "name": "none-success",
+      "rootExecutionId": "15",
+      "nativeMetadata": [
+        {
+          "id": 15,
+          "workflowId": "UYuWlpgiMcsnmzTj",
+          "workflowVersionId": "59074a8c-e0c6-4a14-aca3-ea766bc8cd60",
+          "mode": "manual",
+          "status": "running",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:10:19.083",
+          "stoppedAt": null,
+          "deletedAt": "2026-10-19 04:10:20",
+          "waitTill": null
+        },
+        {
+          "id": 16,
+          "workflowId": "eg9Al9tNpHgEkIzw",
+          "workflowVersionId": "6785bd36-086b-4dcc-bd29-661e10bde6bd",
+          "mode": "integrated",
+          "status": "running",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:10:19.522",
+          "stoppedAt": null,
+          "deletedAt": "2026-10-19 03:10:20.604",
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": 404,
+      "publicRootWorkflowVersionId": null,
+      "nativeChildLinks": [],
+      "nativeParentLinks": [
+        {
+          "executionId": "16",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "15",
+          "parentWorkflowId": "UYuWlpgiMcsnmzTj",
+          "shouldResume": true
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 2,
+        "historicalRowsExcluded": []
+      },
+      "completionBoundary": "Public metadata unavailable after logical deletion; initial child parent context is not a final outcome.",
+      "privacy": {
+        "rootIntermediateOutputRetained": false,
+        "rootThrownFailureRetained": false,
+        "rootSafeFinalCheckpointRetained": false,
+        "rawErrorsRetained": false,
+        "runtimeCanaryPaths": {
+          "childOutput": [],
+          "thrownFailure": [],
+          "automaticFailure": []
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    },
+    {
+      "name": "manual-retention-output",
+      "rootExecutionId": "17",
+      "nativeMetadata": [
+        {
+          "id": 17,
+          "workflowId": "8qj9n61qbrYtxfPI",
+          "workflowVersionId": "469133b1-44e5-45d0-9422-dc1eb9fc1ae0",
+          "mode": "manual",
+          "status": "success",
+          "finished": 1,
+          "startedAt": "2026-10-19 04:10:21.714",
+          "stoppedAt": "2026-10-19 04:10:22.098",
+          "deletedAt": null,
+          "waitTill": null
+        },
+        {
+          "id": 18,
+          "workflowId": "qTIHCnJJ8wppdrpV",
+          "workflowVersionId": "01a811c1-0e09-4902-bb1d-c625a5607775",
+          "mode": "integrated",
+          "status": "running",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:10:21.978",
+          "stoppedAt": null,
+          "deletedAt": "2026-10-19 03:10:22.072",
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": 200,
+      "publicRootWorkflowVersionId": "469133b1-44e5-45d0-9422-dc1eb9fc1ae0",
+      "nativeChildLinks": [
+        {
+          "producerExecutionId": "17",
+          "producerPath": "resultData.runData.Call fixed synthetic child[0].metadata.subExecution",
+          "executionId": "18",
+          "workflowId": "qTIHCnJJ8wppdrpV"
+        }
+      ],
+      "nativeParentLinks": [
+        {
+          "executionId": "18",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "17",
+          "parentWorkflowId": "8qj9n61qbrYtxfPI",
+          "shouldResume": true
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 2,
+        "historicalRowsExcluded": []
+      },
+      "completionBoundary": "Actual local native metadata and causal links; not Cloud proof or external-work closure.",
+      "privacy": {
+        "rootIntermediateOutputRetained": true,
+        "rootThrownFailureRetained": false,
+        "rootSafeFinalCheckpointRetained": true,
+        "rawErrorsRetained": false,
+        "runtimeCanaryPaths": {
+          "childOutput": [
+            "resultData.runData.Call fixed synthetic child[0].data.main[0][0].json.providerPayload"
+          ],
+          "thrownFailure": [],
+          "automaticFailure": []
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    },
+    {
+      "name": "manual-retention-caught-failure",
+      "rootExecutionId": "19",
+      "nativeMetadata": [
+        {
+          "id": 19,
+          "workflowId": "s2XQgeo7Ic5bh0iT",
+          "workflowVersionId": "b05c4c94-bd97-4a93-8f81-f1a5425000b6",
+          "mode": "manual",
+          "status": "success",
+          "finished": 1,
+          "startedAt": "2026-10-19 04:10:22.605",
+          "stoppedAt": "2026-10-19 04:10:22.973",
+          "deletedAt": null,
+          "waitTill": null
+        },
+        {
+          "id": 20,
+          "workflowId": "AraFnxqjc8tC6xUw",
+          "workflowVersionId": "4dfcd7a8-3f24-47e8-97e3-c44b398dfca2",
+          "mode": "integrated",
+          "status": "running",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:10:22.821",
+          "stoppedAt": null,
+          "deletedAt": "2026-10-19 03:10:22.887",
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": 200,
+      "publicRootWorkflowVersionId": "b05c4c94-bd97-4a93-8f81-f1a5425000b6",
+      "nativeChildLinks": [],
+      "nativeParentLinks": [
+        {
+          "executionId": "20",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "19",
+          "parentWorkflowId": "s2XQgeo7Ic5bh0iT",
+          "shouldResume": true
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 2,
+        "historicalRowsExcluded": []
+      },
+      "completionBoundary": "Actual local native metadata and causal links; not Cloud proof or external-work closure.",
+      "privacy": {
+        "rootIntermediateOutputRetained": false,
+        "rootThrownFailureRetained": true,
+        "rootSafeFinalCheckpointRetained": true,
+        "rawErrorsRetained": false,
+        "runtimeCanaryPaths": {
+          "childOutput": [],
+          "thrownFailure": [
+            "resultData.runData.Call fixed synthetic child[0].data.main[0][0].json.error"
+          ],
+          "automaticFailure": []
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    },
+    {
+      "name": "manual-retention-uncaught-failure",
+      "rootExecutionId": "21",
+      "nativeMetadata": [
+        {
+          "id": 21,
+          "workflowId": "AspJZIdLQheoitC9",
+          "workflowVersionId": "3d1e4c0b-3a91-4f46-8376-fbfbada54739",
+          "mode": "manual",
+          "status": "error",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:10:23.412",
+          "stoppedAt": "2026-10-19 04:10:23.769",
+          "deletedAt": null,
+          "waitTill": null
+        },
+        {
+          "id": 22,
+          "workflowId": "AraFnxqjc8tC6xUw",
+          "workflowVersionId": "4dfcd7a8-3f24-47e8-97e3-c44b398dfca2",
+          "mode": "integrated",
+          "status": "running",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:10:23.641",
+          "stoppedAt": null,
+          "deletedAt": "2026-10-19 03:10:23.685",
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": 200,
+      "publicRootWorkflowVersionId": "3d1e4c0b-3a91-4f46-8376-fbfbada54739",
+      "nativeChildLinks": [],
+      "nativeParentLinks": [
+        {
+          "executionId": "22",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "21",
+          "parentWorkflowId": "AspJZIdLQheoitC9",
+          "shouldResume": true
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 3,
+        "historicalRowsExcluded": [
+          {
+            "id": 20,
+            "workflowId": "AraFnxqjc8tC6xUw",
+            "workflowVersionId": "4dfcd7a8-3f24-47e8-97e3-c44b398dfca2",
+            "mode": "integrated",
+            "status": "running",
+            "finished": 0,
+            "startedAt": "2026-10-19 04:10:22.821",
+            "stoppedAt": null,
+            "deletedAt": "2026-10-19 03:10:22.887",
+            "waitTill": null
+          }
+        ]
+      },
+      "completionBoundary": "Actual local native metadata and causal links; not Cloud proof or external-work closure.",
+      "privacy": {
+        "rootIntermediateOutputRetained": false,
+        "rootThrownFailureRetained": true,
+        "rootSafeFinalCheckpointRetained": false,
+        "rawErrorsRetained": true,
+        "runtimeCanaryPaths": {
+          "childOutput": [],
+          "thrownFailure": [
+            "resultData.runData.Call fixed synthetic child[0].error.message",
+            "resultData.error.message"
+          ],
+          "automaticFailure": []
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    },
+    {
+      "name": "detached-final",
+      "rootExecutionId": "23",
+      "nativeMetadata": [
+        {
+          "id": 23,
+          "workflowId": "tUdzRXkzjhwFKGj8",
+          "workflowVersionId": "d55a0264-f4e7-4c94-8f92-7c5de79a9e7a",
+          "mode": "manual",
+          "status": "success",
+          "finished": 1,
+          "startedAt": "2026-10-19 04:10:24.337",
+          "stoppedAt": "2026-10-19 04:10:24.675",
+          "deletedAt": null,
+          "waitTill": null
+        },
+        {
+          "id": 24,
+          "workflowId": "jgI1C8EroM54sCVC",
+          "workflowVersionId": "a7318581-f5c8-490f-91d3-b4eb3cd0749b",
+          "mode": "integrated",
+          "status": "success",
+          "finished": 1,
+          "startedAt": "2026-10-19 04:10:24.594",
+          "stoppedAt": "2026-10-19 04:10:28.686",
+          "deletedAt": null,
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": 200,
+      "publicRootWorkflowVersionId": "d55a0264-f4e7-4c94-8f92-7c5de79a9e7a",
+      "nativeChildLinks": [
+        {
+          "producerExecutionId": "23",
+          "producerPath": "resultData.runData.Call fixed synthetic child[0].metadata.subExecution",
+          "executionId": "24",
+          "workflowId": "jgI1C8EroM54sCVC"
+        }
+      ],
+      "nativeParentLinks": [
+        {
+          "executionId": "24",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "23",
+          "parentWorkflowId": "tUdzRXkzjhwFKGj8",
+          "shouldResume": false
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 2,
+        "historicalRowsExcluded": []
+      },
+      "completionBoundary": "Actual local native metadata and causal links; not Cloud proof or external-work closure.",
+      "privacy": {
+        "rootIntermediateOutputRetained": false,
+        "rootThrownFailureRetained": false,
+        "rootSafeFinalCheckpointRetained": true,
+        "rawErrorsRetained": false,
+        "runtimeCanaryPaths": {
+          "childOutput": [],
+          "thrownFailure": [],
+          "automaticFailure": []
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    },
+    {
+      "name": "timeout-final",
+      "rootExecutionId": "25",
+      "nativeMetadata": [
+        {
+          "id": 25,
+          "workflowId": "jc3bOJs6anLi2HKU",
+          "workflowVersionId": "c72d166e-dc43-4262-a9da-f22a994c2d5b",
+          "mode": "manual",
+          "status": "canceled",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:10:29.276",
+          "stoppedAt": "2026-10-19 04:10:30.301",
+          "deletedAt": null,
+          "waitTill": null
+        },
+        {
+          "id": 26,
+          "workflowId": "Juevm5wquMiSUStN",
+          "workflowVersionId": "379c534b-4486-49f2-891c-f76dbe2f38ed",
+          "mode": "integrated",
+          "status": "canceled",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:10:29.587",
+          "stoppedAt": "2026-10-19 04:10:39.669",
+          "deletedAt": null,
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": 200,
+      "publicRootWorkflowVersionId": "c72d166e-dc43-4262-a9da-f22a994c2d5b",
+      "nativeChildLinks": [],
+      "nativeParentLinks": [
+        {
+          "executionId": "26",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "25",
+          "parentWorkflowId": "jc3bOJs6anLi2HKU",
+          "shouldResume": true
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 2,
+        "historicalRowsExcluded": []
+      },
+      "completionBoundary": "Actual local native metadata and causal links; not Cloud proof or external-work closure.",
+      "privacy": {
+        "rootIntermediateOutputRetained": false,
+        "rootThrownFailureRetained": false,
+        "rootSafeFinalCheckpointRetained": false,
+        "rawErrorsRetained": false,
+        "runtimeCanaryPaths": {
+          "childOutput": [],
+          "thrownFailure": [],
+          "automaticFailure": []
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    },
+    {
+      "name": "same-workflow-second-native-id",
+      "rootExecutionId": "27",
+      "nativeMetadata": [
+        {
+          "id": 27,
+          "workflowId": "8qj9n61qbrYtxfPI",
+          "workflowVersionId": "469133b1-44e5-45d0-9422-dc1eb9fc1ae0",
+          "mode": "manual",
+          "status": "success",
+          "finished": 1,
+          "startedAt": "2026-10-19 04:10:39.920",
+          "stoppedAt": "2026-10-19 04:10:40.279",
+          "deletedAt": null,
+          "waitTill": null
+        },
+        {
+          "id": 28,
+          "workflowId": "qTIHCnJJ8wppdrpV",
+          "workflowVersionId": "01a811c1-0e09-4902-bb1d-c625a5607775",
+          "mode": "integrated",
+          "status": "running",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:10:40.151",
+          "stoppedAt": null,
+          "deletedAt": "2026-10-19 03:10:40.194",
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": 200,
+      "publicRootWorkflowVersionId": "469133b1-44e5-45d0-9422-dc1eb9fc1ae0",
+      "nativeChildLinks": [
+        {
+          "producerExecutionId": "27",
+          "producerPath": "resultData.runData.Call fixed synthetic child[0].metadata.subExecution",
+          "executionId": "28",
+          "workflowId": "qTIHCnJJ8wppdrpV"
+        }
+      ],
+      "nativeParentLinks": [
+        {
+          "executionId": "28",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "27",
+          "parentWorkflowId": "8qj9n61qbrYtxfPI",
+          "shouldResume": true
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 4,
+        "historicalRowsExcluded": [
+          {
+            "id": 17,
+            "workflowId": "8qj9n61qbrYtxfPI",
+            "workflowVersionId": "469133b1-44e5-45d0-9422-dc1eb9fc1ae0",
+            "mode": "manual",
+            "status": "success",
+            "finished": 1,
+            "startedAt": "2026-10-19 04:10:21.714",
+            "stoppedAt": "2026-10-19 04:10:22.098",
+            "deletedAt": null,
+            "waitTill": null
+          },
+          {
+            "id": 18,
+            "workflowId": "qTIHCnJJ8wppdrpV",
+            "workflowVersionId": "01a811c1-0e09-4902-bb1d-c625a5607775",
+            "mode": "integrated",
+            "status": "running",
+            "finished": 0,
+            "startedAt": "2026-10-19 04:10:21.978",
+            "stoppedAt": null,
+            "deletedAt": "2026-10-19 03:10:22.072",
+            "waitTill": null
+          }
+        ]
+      },
+      "completionBoundary": "Actual local native metadata and causal links; not Cloud proof or external-work closure.",
+      "privacy": {
+        "rootIntermediateOutputRetained": true,
+        "rootThrownFailureRetained": false,
+        "rootSafeFinalCheckpointRetained": true,
+        "rawErrorsRetained": false,
+        "runtimeCanaryPaths": {
+          "childOutput": [
+            "resultData.runData.Call fixed synthetic child[0].data.main[0][0].json.providerPayload"
+          ],
+          "thrownFailure": [],
+          "automaticFailure": []
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    },
+    {
+      "name": "wait-resume-final",
+      "rootExecutionId": "29",
+      "nativeMetadata": [
+        {
+          "id": 29,
+          "workflowId": "VMOcj3KnpA2mRtEF",
+          "workflowVersionId": "5e83df5b-d217-42f0-92f5-8e87fd0233d8",
+          "mode": "manual",
+          "status": "success",
+          "finished": 1,
+          "startedAt": "2026-10-19 04:10:40.860",
+          "stoppedAt": "2026-10-19 04:10:43.368",
+          "deletedAt": null,
+          "waitTill": null
+        },
+        {
+          "id": 30,
+          "workflowId": "AFOjIWlFnxzgS3fQ",
+          "workflowVersionId": "40bebda4-d71f-4d59-8198-087a2ff8edd5",
+          "mode": "integrated",
+          "status": "running",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:10:41.121",
+          "stoppedAt": "2026-10-19 04:10:41.385",
+          "deletedAt": "2026-10-19 03:10:43.224",
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": 200,
+      "publicRootWorkflowVersionId": "5e83df5b-d217-42f0-92f5-8e87fd0233d8",
+      "nativeChildLinks": [
+        {
+          "producerExecutionId": "29",
+          "producerPath": "resultData.runData.Call fixed synthetic child[0].metadata.subExecution",
+          "executionId": "30",
+          "workflowId": "AFOjIWlFnxzgS3fQ"
+        }
+      ],
+      "nativeParentLinks": [
+        {
+          "executionId": "30",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "29",
+          "parentWorkflowId": "VMOcj3KnpA2mRtEF",
+          "shouldResume": true
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 2,
+        "historicalRowsExcluded": []
+      },
+      "completionBoundary": "Actual local native metadata and causal links; not Cloud proof or external-work closure.",
+      "privacy": {
+        "rootIntermediateOutputRetained": true,
+        "rootThrownFailureRetained": false,
+        "rootSafeFinalCheckpointRetained": true,
+        "rawErrorsRetained": false,
+        "runtimeCanaryPaths": {
+          "childOutput": [
+            "resultData.runData.Call fixed synthetic child[0].data.main[0][0].json.providerPayload"
+          ],
+          "thrownFailure": [],
+          "automaticFailure": []
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    },
+    {
+      "name": "proposal-success-pair",
+      "rootExecutionId": "31",
+      "nativeMetadata": [
+        {
+          "id": 31,
+          "workflowId": "UtQDQiR4IXg3zjWI",
+          "workflowVersionId": "dd9a553c-6795-4b23-a7a9-e7b46a131338",
+          "mode": "manual",
+          "status": "success",
+          "finished": 1,
+          "startedAt": "2026-10-19 04:11:33.764",
+          "stoppedAt": "2026-10-19 04:11:34.171",
+          "deletedAt": null,
+          "waitTill": null
+        },
+        {
+          "id": 32,
+          "workflowId": "wbfrKPFOLxx5GVJD",
+          "workflowVersionId": "36aa3bce-9aac-458d-b6c4-fe386eb6cb32",
+          "mode": "integrated",
+          "status": "success",
+          "finished": 1,
+          "startedAt": "2026-10-19 04:11:33.982",
+          "stoppedAt": "2026-10-19 04:11:34.019",
+          "deletedAt": null,
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": 200,
+      "publicRootWorkflowVersionId": "dd9a553c-6795-4b23-a7a9-e7b46a131338",
+      "nativeChildLinks": [
+        {
+          "producerExecutionId": "31",
+          "producerPath": "resultData.runData.Call fixed synthetic child[0].metadata.subExecution",
+          "executionId": "32",
+          "workflowId": "wbfrKPFOLxx5GVJD"
+        }
+      ],
+      "nativeParentLinks": [
+        {
+          "executionId": "32",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "31",
+          "parentWorkflowId": "UtQDQiR4IXg3zjWI",
+          "shouldResume": true
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 2,
+        "historicalRowsExcluded": []
+      },
+      "completionBoundary": "Actual local native metadata and causal links; not Cloud proof or external-work closure.",
+      "privacy": {
+        "rootIntermediateOutputRetained": true,
+        "rootThrownFailureRetained": false,
+        "rootSafeFinalCheckpointRetained": true,
+        "rawErrorsRetained": false,
+        "runtimeCanaryPaths": {
+          "childOutput": [
+            "resultData.runData.Call fixed synthetic child[0].data.main[0][0].json.providerPayload"
+          ],
+          "thrownFailure": [],
+          "automaticFailure": []
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    },
+    {
+      "name": "proposal-error-pair",
+      "rootExecutionId": "33",
+      "nativeMetadata": [
+        {
+          "id": 33,
+          "workflowId": "lC0WHulxhbntT9nO",
+          "workflowVersionId": "bdd7c17e-c8d8-488c-8fa2-94af2ac7495d",
+          "mode": "manual",
+          "status": "error",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:11:34.653",
+          "stoppedAt": "2026-10-19 04:11:34.984",
+          "deletedAt": null,
+          "waitTill": null
+        },
+        {
+          "id": 34,
+          "workflowId": "tiRex21gsuSjV7wj",
+          "workflowVersionId": "9748edf2-b40a-44fc-81a4-f05c5f96a831",
+          "mode": "integrated",
+          "status": "error",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:11:34.887",
+          "stoppedAt": "2026-10-19 04:11:34.964",
+          "deletedAt": null,
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": 200,
+      "publicRootWorkflowVersionId": "bdd7c17e-c8d8-488c-8fa2-94af2ac7495d",
+      "nativeChildLinks": [],
+      "nativeParentLinks": [
+        {
+          "executionId": "34",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "33",
+          "parentWorkflowId": "lC0WHulxhbntT9nO",
+          "shouldResume": true
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 2,
+        "historicalRowsExcluded": []
+      },
+      "completionBoundary": "Actual local native metadata and causal links; not Cloud proof or external-work closure.",
+      "privacy": {
+        "rootIntermediateOutputRetained": false,
+        "rootThrownFailureRetained": true,
+        "rootSafeFinalCheckpointRetained": false,
+        "rawErrorsRetained": true,
+        "runtimeCanaryPaths": {
+          "childOutput": [],
+          "thrownFailure": [
+            "resultData.runData.Call fixed synthetic child[0].error.message",
+            "resultData.error.message"
+          ],
+          "automaticFailure": []
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    },
+    {
+      "name": "proposal-wait-resume-pair",
+      "rootExecutionId": "35",
+      "nativeMetadata": [
+        {
+          "id": 35,
+          "workflowId": "FJvxVWTzhbBHGTYb",
+          "workflowVersionId": "5e04041e-1acc-4850-a8a8-172add634877",
+          "mode": "manual",
+          "status": "success",
+          "finished": 1,
+          "startedAt": "2026-10-19 04:11:35.509",
+          "stoppedAt": "2026-10-19 04:11:37.265",
+          "deletedAt": null,
+          "waitTill": null
+        },
+        {
+          "id": 36,
+          "workflowId": "Owbr7OeAUe6rjNPx",
+          "workflowVersionId": "06813a92-9b72-473b-8ed8-a56af00602b2",
+          "mode": "integrated",
+          "status": "success",
+          "finished": 1,
+          "startedAt": "2026-10-19 04:11:35.722",
+          "stoppedAt": "2026-10-19 04:11:37.122",
+          "deletedAt": null,
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": 200,
+      "publicRootWorkflowVersionId": "5e04041e-1acc-4850-a8a8-172add634877",
+      "nativeChildLinks": [
+        {
+          "producerExecutionId": "35",
+          "producerPath": "resultData.runData.Call fixed synthetic child[0].metadata.subExecution",
+          "executionId": "36",
+          "workflowId": "Owbr7OeAUe6rjNPx"
+        }
+      ],
+      "nativeParentLinks": [
+        {
+          "executionId": "36",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "35",
+          "parentWorkflowId": "FJvxVWTzhbBHGTYb",
+          "shouldResume": true
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 2,
+        "historicalRowsExcluded": []
+      },
+      "completionBoundary": "Actual local native metadata and causal links; not Cloud proof or external-work closure.",
+      "privacy": {
+        "rootIntermediateOutputRetained": true,
+        "rootThrownFailureRetained": false,
+        "rootSafeFinalCheckpointRetained": true,
+        "rawErrorsRetained": false,
+        "runtimeCanaryPaths": {
+          "childOutput": [
+            "resultData.runData.Call fixed synthetic child[0].data.main[0][0].json.providerPayload"
+          ],
+          "thrownFailure": [],
+          "automaticFailure": []
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    },
+    {
+      "name": "proposal-automatic-error-child",
+      "rootExecutionId": "37",
+      "nativeMetadata": [
+        {
+          "id": 37,
+          "workflowId": "IxKza3PjD4onhiSO",
+          "workflowVersionId": "428dfa45-3aea-426e-8df6-3e6646c1736c",
+          "mode": "webhook",
+          "status": "error",
+          "finished": 0,
+          "startedAt": "2026-10-19 04:12:34.105",
+          "stoppedAt": "2026-10-19 04:12:34.155",
+          "deletedAt": null,
+          "waitTill": null
+        },
+        {
+          "id": 38,
+          "workflowId": "DYPXtxOatvMiFGfa",
+          "workflowVersionId": "503e3923-7415-4302-baa4-2076e273405a",
+          "mode": "error",
+          "status": "success",
+          "finished": 1,
+          "startedAt": "2026-10-19 04:12:34.283",
+          "stoppedAt": "2026-10-19 04:12:34.356",
+          "deletedAt": null,
+          "waitTill": null
+        }
+      ],
+      "publicRootMetadataStatus": null,
+      "publicRootWorkflowVersionId": null,
+      "nativeChildLinks": [],
+      "nativeParentLinks": [
+        {
+          "executionId": "38",
+          "producerPath": "data.parentExecution",
+          "parentExecutionId": "37",
+          "parentWorkflowId": "IxKza3PjD4onhiSO",
+          "shouldResume": false
+        }
+      ],
+      "candidateWorkflowScan": {
+        "scope": "isolated fixture workflow IDs; historical rows are not adopted as case closure",
+        "candidateRows": 2,
+        "historicalRowsExcluded": []
+      },
+      "completionBoundary": "Actual local native metadata and causal links; not Cloud proof or external-work closure.",
+      "privacy": {
+        "rootIntermediateOutputRetained": false,
+        "rootThrownFailureRetained": false,
+        "rootSafeFinalCheckpointRetained": false,
+        "rawErrorsRetained": true,
+        "runtimeCanaryPaths": {
+          "childOutput": [],
+          "thrownFailure": [],
+          "automaticFailure": [
+            "resultData.runData.Synthetic automatic failure[0].error.message",
+            "resultData.error.message"
+          ]
+        },
+        "sourceDefinitionsExcluded": true,
+        "businessNodePayloadsPrinted": false
+      }
+    }
+  ],
+  "detachedIntermediate": [
+    {
+      "id": 23,
+      "workflowId": "tUdzRXkzjhwFKGj8",
+      "workflowVersionId": "d55a0264-f4e7-4c94-8f92-7c5de79a9e7a",
+      "mode": "manual",
+      "status": "success",
+      "finished": 1,
+      "startedAt": "2026-10-19 04:10:24.337",
+      "stoppedAt": "2026-10-19 04:10:24.675",
+      "deletedAt": null,
+      "waitTill": null
+    },
+    {
+      "id": 24,
+      "workflowId": "jgI1C8EroM54sCVC",
+      "workflowVersionId": "a7318581-f5c8-490f-91d3-b4eb3cd0749b",
+      "mode": "integrated",
+      "status": "running",
+      "finished": 0,
+      "startedAt": "2026-10-19 04:10:24.594",
+      "stoppedAt": null,
+      "deletedAt": null,
+      "waitTill": null
+    }
+  ],
+  "waitingNone": {
+    "metadata": [
+      {
+        "id": 29,
+        "workflowId": "VMOcj3KnpA2mRtEF",
+        "workflowVersionId": "5e83df5b-d217-42f0-92f5-8e87fd0233d8",
+        "mode": "manual",
+        "status": "waiting",
+        "finished": 0,
+        "startedAt": "2026-10-19 04:10:40.860",
+        "stoppedAt": "2026-10-19 04:10:41.489",
+        "deletedAt": null,
+        "waitTill": "2999-12-31 00:00:00.000"
+      },
+      {
+        "id": 30,
+        "workflowId": "AFOjIWlFnxzgS3fQ",
+        "workflowVersionId": "40bebda4-d71f-4d59-8198-087a2ff8edd5",
+        "mode": "integrated",
+        "status": "waiting",
+        "finished": 0,
+        "startedAt": "2026-10-19 04:10:41.121",
+        "stoppedAt": "2026-10-19 04:10:41.385",
+        "deletedAt": null,
+        "waitTill": "3000-01-01 00:00:00.000"
+      }
+    ],
+    "transientPayloadPersisted": true,
+    "runtimeCanaryPaths": [
+      {
+        "executionId": 29,
+        "path": "resultData.runData.Call fixed synthetic child[0].data.main[0][0].json.transientPayload"
+      },
+      {
+        "executionId": 30,
+        "path": "resultData.runData.Before native webhook wait[0].data.main[0][0].json.transientPayload"
+      },
+      {
+        "executionId": 30,
+        "path": "resultData.runData.Native webhook wait[0].data.main[0][0].json.transientPayload"
+      }
+    ],
+    "snapshotOutputsPrinted": false
+  },
+  "waitingProposed": {
+    "metadata": [
+      {
+        "id": 35,
+        "workflowId": "FJvxVWTzhbBHGTYb",
+        "workflowVersionId": "5e04041e-1acc-4850-a8a8-172add634877",
+        "mode": "manual",
+        "status": "waiting",
+        "finished": 0,
+        "startedAt": "2026-10-19 04:11:35.509",
+        "stoppedAt": "2026-10-19 04:11:35.884",
+        "deletedAt": null,
+        "waitTill": "2999-12-31 00:00:00.000"
+      },
+      {
+        "id": 36,
+        "workflowId": "Owbr7OeAUe6rjNPx",
+        "workflowVersionId": "06813a92-9b72-473b-8ed8-a56af00602b2",
+        "mode": "integrated",
+        "status": "waiting",
+        "finished": 0,
+        "startedAt": "2026-10-19 04:11:35.722",
+        "stoppedAt": "2026-10-19 04:11:35.779",
+        "deletedAt": null,
+        "waitTill": "3000-01-01 00:00:00.000"
+      }
+    ],
+    "transientPayloadPersisted": true,
+    "runtimeCanaryPaths": [
+      {
+        "executionId": 35,
+        "path": "resultData.runData.Call fixed synthetic child[0].data.main[0][0].json.transientPayload"
+      },
+      {
+        "executionId": 36,
+        "path": "resultData.runData.Before native webhook wait[0].data.main[0][0].json.transientPayload"
+      },
+      {
+        "executionId": 36,
+        "path": "resultData.runData.Native webhook wait[0].data.main[0][0].json.transientPayload"
+      }
+    ],
+    "snapshotOutputsPrinted": false
+  },
+  "reusedId": {
+    "first": "17",
+    "second": "27",
+    "distinct": true,
+    "oldLookupId": "17",
+    "newLookupId": "27"
+  },
+  "privacyConclusions": [
+    "Safe final output did not remove retained intermediate child output.",
+    "Caught and uncaught child failures retained original native error details.",
+    "Waiting executions persisted transient payload under none until resume.",
+    "None deleted public terminal metadata but initial child parent context remained in logically deleted local storage; absence is not a wipe guarantee.",
+    "Read-time redaction is not claimed to wipe native storage."
+  ],
+  "cleanup": {
+    "containerClosed": true,
+    "containerExitCode": 0,
+    "containerRemoved": true,
+    "networkRemoved": true,
+    "loopbackPort56794Free": true,
+    "credentialBearingLocalChildrenClosed": true,
+    "rawSyntheticStateRemoved": false,
+    "rawSyntheticStatePath": "D:/Everyone/everyone Market Research/everyone-market-radar/.c01-repro.local/state",
+    "cleanupAttempt": {
+      "applied": false,
+      "automaticApprovalReview": "rejected before execution",
+      "reason": "blocked by policy",
+      "retried": false
+    },
+    "privateRawSyntheticData": "Remains under ignored local state only; contains synthetic lab owner/API key/database/snapshots. No real credentials or raw execution payload exported to Git.",
+    "parentApplicationClearingClaimed": false
+  },
+  "policyComparison": {
+    "manualRoots": "Actual saveManualExecutions=true with success/error none tested.",
+    "nonmanualFixtures": "Actual success/error all tested; saveManualExecutions=true was additionally present but unused in integrated/error modes.",
+    "boundary": "Mode-equivalent field behavior, not exact all-25 configuration or Cloud acceptance."
+  },
+  "reproductionSource": {
+    "entry": "scripts/n8n/foundation-native-repro.mjs --isolated-local",
+    "instructions": "scripts/n8n/foundation-native-repro.md",
+    "sourceFiles": [
+      {
+        "path": "scripts/n8n/foundation-native-repro.mjs",
+        "sha256": "4eca2c8fcd9254a461377362672cff395c95f1947ab61edbed49a3498d6ed3ed"
+      },
+      {
+        "path": "scripts/n8n/foundation-native-repro.md",
+        "sha256": "0597cd65c81db1f74378b23a0c2b2c2fabd3556187a18c62e9f02b483d48ec24"
+      },
+      {
+        "path": "scripts/n8n/foundation-native-repro/c01-auto-probe.mjs",
+        "sha256": "a6e9b78b9c5807383fabba5cd0cb0629c26063e0de4699a74f09e063c7f14671"
+      },
+      {
+        "path": "scripts/n8n/foundation-native-repro/c01-inspect-db.mjs",
+        "sha256": "f2992491cafcd569e8c58676121492b2e9f2e0e6232585759055e3de29070754"
+      },
+      {
+        "path": "scripts/n8n/foundation-native-repro/c01-project.mjs",
+        "sha256": "aab018ac30309cd7a36b5637ad6251c87534a0f45e05ab28fef637c089172685"
+      },
+      {
+        "path": "scripts/n8n/foundation-native-repro/c01-repro.mjs",
+        "sha256": "af26ff69a419062c56de1411d6746bd4e77f0aa43c484ff32f0fee7bc40cc7a4"
+      },
+      {
+        "path": "scripts/n8n/foundation-native-repro/c01-setup.mjs",
+        "sha256": "c081dbbc0640e1448600e5c2f39ef7285b5fcb2f9c391fdc3d5a0c09f617f008"
+      }
+    ],
+    "archiveBoundary": "Final guarded/formatted archive of corrected actual fixtures; guard/native Flatted-resolution deltas were syntax/argument checked without rerunning native cases.",
+    "validation": {
+      "syntax": "all six modules pass",
+      "lintExitCode": 0,
+      "localGuardChecks": 9,
+      "localGuardNativeExecutions": 0,
+      "sourceGuardReceipt": "4d4956"
+    }
+  },
+  "postCaptureOwnerCleanupVerification": {
+    "observedAt": "2026-10-19T05:05:09Z",
+    "ownerReply": "C01 synthetic state deleted.",
+    "method": "Test-Path -LiteralPath on the exact existing target only",
+    "path": ".c01-repro.local/state",
+    "pathExists": false,
+    "privateFilesRead": false,
+    "agentDeletionAttempted": false,
+    "reproductionReplayed": false,
+    "sourceArchivesAndProjectedEvidencePreserved": true,
+    "priorRecordCommit": "eee9a277c6a7d63fffe967811c92a7fd50c15b14",
+    "priorRecordSha256": "590647a17db84b59def8511d5c0bc35e8b520eae3c29df19333c564681a9fb40",
+    "boundary": "This later exact-path absence supersedes the outstanding local cleanup action only. Historical blocked deletion, fixture failures and native execution counts are unchanged."
+  }
+}

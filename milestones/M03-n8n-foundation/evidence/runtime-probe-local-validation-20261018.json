@@ -1,0 +1,76 @@
+{
+  "observedAt": "2026-10-18T05:35:24.695Z",
+  "scope": "local public-source validation only; not hosted execution proof",
+  "smokeSourceSha256": "739967d070fbe15180a404599241748199141cc4344d7b3df037f9fa52767964",
+  "commonSourceSha256": "b8598eb2dde606149a944b5de55598782f1454bb7e810840fe933f5b0463a70a",
+  "checks": [
+    {
+      "label": "original",
+      "parseDiagnostics": 0,
+      "functionAstEquivalence": true,
+      "commonHelperAstEquivalence": true,
+      "sourceFunctions": 5,
+      "noVariablesEnvironmentOrNetworkReferences": true,
+      "onlyReviewedPublicStringLiterals": true,
+      "codeSha256": "4fcc58073777508af2f5d9d95c87d3047f60243d4ea0532fa4f7d737bcca6055",
+      "nativeLocalSyntheticResult": {
+        "probe": "m03_runtime_capability",
+        "synthetic_only": true,
+        "external_calls": false,
+        "url_global": true,
+        "url_search_params": true,
+        "crypto_require": true,
+        "sha256_matches": true,
+        "buffer_utf8": true,
+        "text_encoder_utf8": true,
+        "common_helpers": true,
+        "smoke_normalizer": false,
+        "smoke_error_code": "normalizer_result_mismatch"
+      },
+      "localRestrictedSimulation": {
+        "probe": "m03_runtime_capability",
+        "synthetic_only": true,
+        "external_calls": false,
+        "url_global": false,
+        "url_search_params": false,
+        "crypto_require": true,
+        "sha256_matches": true,
+        "buffer_utf8": true,
+        "text_encoder_utf8": true,
+        "common_helpers": true,
+        "smoke_normalizer": false,
+        "smoke_error_code": "normalizer_runtime_failed"
+      }
+    },
+    {
+      "label": "url_module_followup",
+      "parseDiagnostics": 0,
+      "functionAstEquivalence": true,
+      "commonHelperAstEquivalence": null,
+      "sourceFunctions": 5,
+      "noVariablesEnvironmentOrNetworkReferences": true,
+      "onlyReviewedPublicStringLiterals": true,
+      "codeSha256": "4c8448108e4c436df6de175d3ad55003763b572816264a8aaa7990c9f03d54c0",
+      "nativeLocalSyntheticResult": {
+        "probe": "m03_url_module_followup",
+        "synthetic_only": true,
+        "external_calls": false,
+        "url_module_constructor": true,
+        "node_url_module_constructor": true,
+        "selected_constructor": "url",
+        "smoke_normalizer": true,
+        "smoke_error_code": "none"
+      },
+      "localRestrictedSimulation": {
+        "probe": "m03_url_module_followup",
+        "synthetic_only": true,
+        "external_calls": false,
+        "url_module_constructor": false,
+        "node_url_module_constructor": false,
+        "selected_constructor": "none",
+        "smoke_normalizer": false,
+        "smoke_error_code": "not_run_no_supported_constructor"
+      }
+    }
+  ]
+}

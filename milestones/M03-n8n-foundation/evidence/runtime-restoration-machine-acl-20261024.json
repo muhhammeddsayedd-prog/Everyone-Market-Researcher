@@ -1,0 +1,44 @@
+{
+  "kind": "actual_m03_owned_machine_acl_tightening",
+  "version": 1,
+  "toolReceipt": "9d8afd",
+  "nativeProcessExit": 0,
+  "scope": {
+    "directory": "Everyone-Market-Radar-Private/foundation/df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+    "knownChildren": [
+      "machine.dpapi",
+      "pending-runtime.json",
+      "pending-runtime.credential-id-transition.jsonl"
+    ],
+    "inheritedMetadataAclMayTighten": true,
+    "sharedParentsExcluded": true
+  },
+  "before": {
+    "metadataOnlyTool": "fb70ce",
+    "managementDirectoryPrivate": true,
+    "managementFilePrivate": true,
+    "machineDirectoryPrivate": false,
+    "machineFilePrivate": false,
+    "privateCipherRead": false,
+    "networkRequests": 0
+  },
+  "actual": {
+    "kind": "m03_owned_machine_acl_tightening",
+    "status": "owned_acl_private_verified",
+    "privateCipherRead": false,
+    "networkRequests": 0,
+    "directoryPrivate": true,
+    "machinePrivate": true,
+    "knownChildrenOnly": true,
+    "contentWriteAttempted": false,
+    "sharedParentChanged": false
+  },
+  "interpretation": {
+    "credentialContentRead": false,
+    "credentialContentWritten": false,
+    "passwordOrTokenRotated": false,
+    "credentialsPersist": true,
+    "originalFailedSubgateNotRecorded": true,
+    "actualProducerConsumerAclMismatchVerified": true
+  }
+}

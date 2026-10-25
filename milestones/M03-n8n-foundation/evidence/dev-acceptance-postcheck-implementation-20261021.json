@@ -1,0 +1,93 @@
+{
+  "kind": "m03_postcheck_continuation_delivery_checkpoint",
+  "version": 1,
+  "segmentId": "a570212a-634c-444f-90a2-578ae47e8d27",
+  "authority": "dev-acceptance-postcheck-approval-20261021.json",
+  "approvalSha256": "ab24cf3488a0990988550ec361a7bbe4f147d0bce5a62a5aa5d2eb9cdf17e19a",
+  "reviewedPacketHead": "d834968cd99d6360d1dd3bd0cad237f186424fb3",
+  "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "clockModuleSha256": "9a1b10a38d2fe952954df4baa331afb88dd8297e060a2ad32313903cbf43dfe5",
+  "review": "Independent clock, runtime, Windows custody and database review GREEN; no remaining P1/P2. Final review6917ee/f9e152, runtimebb56c5, clock593e32. Review used source and local synthetic tests only.",
+  "localEvidence": {
+    "clock": "6 PASS/native0/0skip60e0d3. Meaningful initial REDa500ed and added cleanup-intent RED4a45ce. Preserves old receipts/header/control50; admission and claim are immutable, one-use and process-bound; partial writes and contradictory cleanup history remain fenced.",
+    "runtimeAndProcessComposition": "14 PASSfac72f across clock, continuation runtime and actual isolated-child tests; overlaps the six clock cases and must not be added as a unique total. Windows custody new5 PASS87282b/8d8292; old-clock compatibility2 PASS8d8292. All synthetic/isolated-process evidence, not hosted acceptance.",
+    "runtimeCleanup": "22 affected runtime/CLI checks PASSc29992, including11 continuation cases (eight cleanup) and11 existing lifecycle/route checks. Meaningful REDab332d demonstrated skipped cleanup before the correction. Zero skips. Independent cleanup8 PASSbb56c5; no broad repeat suite.",
+    "databaseCore": "51 affected Windows/client/type checks PASS8184e4 before final cleanup changes; creator4 PASSc774d5 and replay/history2 PASS253131 are separate affected runs, not additional unique totals. Synthetic DPAPI/CLI tests do not prove hosted authentication.",
+    "databaseFinalCleanup": "14 continuation checks PASS36d41e after exact-ID guards and EOF cleanup. Final both-intent fences3 PASSdf6045; client10 PASSc5c5f3. Meaningful C999 RED3d4f834 -> GREEN4e5f4d3; missing cleanup command RED7bc62c -> archive4 PASS4613f3. Independent final legacy-intent negative1 PASSf9e152.",
+    "ownedLocalPostgres": "Actual generated fresh-only setup DO compiled and rejected adoption inside rollback; existing local C999 and counts/digest unchanged. Opt-in local PostgreSQL proof1 PASS372b8b/c5c5f3, not hosted acceptance or proof of a fresh committed fixture mutation. Original reviewed setup/teardown SQL files unchanged.",
+    "publicPins": "e5a176:29 standalone database source/artifact pins verified; all14 migration source hashes and reviewed baseline/pending metadata unchanged. The continuation has no reachable dry-run, push, reset or migration-history write.",
+    "lintFormatParser": "Owned-source ESLint/Prettier/PowerShell AST checks passed. Root changed-MJS ESLint628957 and all changed text Prettierabddad pass; staged diff46e12e clean; tracked-index secret scanecbe80 reports1233 files/zero violations. No unchanged full local suite rerun solely for resumption."
+  },
+  "mechanism": {
+    "oneReplacementSegmentOnly": true,
+    "clockMinutesStopActionPhysicalLeaseFloor": [50, 60, 70, 75],
+    "preserveBothPriorAttemptsAndOriginalManagementHeader": true,
+    "controlCounterStartsAt50BeforeFreshBaseline": true,
+    "aggregateCapsUnchanged": {
+      "runtimeManagement": 512,
+      "control": 2048,
+      "combined": 2560,
+      "nativeExecutions": 120,
+      "gatewayAttempts": 256,
+      "providerGetAttempts": 32,
+      "actorStartsSequential": 2,
+      "actorRequestedUsdPerRun": 1,
+      "actorReserveUsdTotal": 2
+    },
+    "freshFourteenVersionFingerprintVerification": true,
+    "noMigrationReplay": true,
+    "newDbReceiptsAndGeneratedTypesUseSeparateFixedPaths": true,
+    "fixtureCannotAdoptExistingC999OrSlug": true,
+    "fixtureAndProvisionRecheckStopNewImmediatelyBeforeWrites": true,
+    "unprovisionedArchiveRequiresThisChildsExactFixtureAndVacantWindow": true,
+    "archiveUsesOneDurableIntentAndLockedRowIdGuards": true,
+    "unknownArchiveAcknowledgementNeverReplayed": true,
+    "archiveOnlyDoesNotProveWindowClosureOrFullD": true,
+    "temporaryInputsRemovedOnlyAfterCredentialChildrenClose": true
+  },
+  "actualPublicEvidence": {
+    "clockCheckOnly": "2e4ae0 native0 postcheck_continuation_ready after final cleanup-intent fence",
+    "finalSeal": "c3d577 native0 acceptance_public_seal_ready:114 project inputs,840 Zod files,3462 installed Vercel runtime files; no private read or network",
+    "coordinatorCheckOnly": "7cd5fa native0 check_only_ready; publicCompositionLoaded/adminPublicInputsVerified true, adminHandoffReady/actualMcpPortVerified false. Missing handoff is not an authentication failure; actual MCP transport remains an admission gate.",
+    "privateRead": false,
+    "networkRequests": 0,
+    "admissionStarted": false,
+    "newRuntimeClaimCreated": false
+  },
+  "actualInputPresence": {
+    "receipt": "74bf17",
+    "observedAtUtc": "2026-10-21T14:57:22.1289195Z",
+    "adminManagementWriterApifyReadCiphertextsAndLeasesPresent": false,
+    "parentLockUnusedBypassNewAdmissionAndClaimPresent": false,
+    "ciphertextOpenedOrDecrypted": false,
+    "authenticationAttempted": false,
+    "ownerAction": "After final source/public readiness, use dev-acceptance-postcheck-handoff-20261021.md to deliver only the same four saved values. No reset, rotation, new Machine or production input."
+  },
+  "normalCi": {
+    "reviewedBase": "d834968cd99d6360d1dd3bd0cad237f186424fb3",
+    "reviewedBaseRun": 39613851080,
+    "reviewedBaseResult": "all five jobs and Vercel passed; historical base evidence only",
+    "newDelivery": "The commit containing this checkpoint receives normal PR8 quality/unit/build/e2e/db-tests and Vercel. See current PR checks; no extra documentation-only commit solely to announce their result."
+  },
+  "actualHostedAcceptanceThisContinuation": {
+    "managementAttempts": 0,
+    "controlAttemptsAdded": 0,
+    "nativeExecutions": 0,
+    "migrationsApplied": 0,
+    "actorStarts": 0,
+    "businessAcceptanceProven": false,
+    "priorSuccessfulDevMigrationsPreserved": 14,
+    "gw01RemainsPermanentlyClosed": true
+  },
+  "next": "Final seal/public CheckOnly pass. Deliver this reviewed source and normal CI; request only the four actually absent temporary handoffs using existing saved values. Admit only after interactive transport, provenance, actual lease metadata and all readiness gates pass. No replay or automatic renewal.",
+  "excluded": [
+    "production",
+    "recurring schedules",
+    "external notifications",
+    "shared credential changes",
+    "private incident R2",
+    "PR8 merge",
+    "M03 closure",
+    "M04"
+  ]
+}

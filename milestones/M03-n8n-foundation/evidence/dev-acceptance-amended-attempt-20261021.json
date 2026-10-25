@@ -1,0 +1,221 @@
+{
+  "kind": "m03_amended_window_actual_attempt",
+  "version": 1,
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "applicationSource": "f42930f90c2de43c84f61ad6d966d0ee6074d70e",
+  "deliveryHead": "61d3d64fef5cdc314bba0814f1bc265adfeb2174",
+  "ci": {
+    "runId": 39609646416,
+    "fiveJobs": "passed",
+    "vercel": "success",
+    "receipt": "da859e"
+  },
+  "publicReadiness": {
+    "sealReceipt": "ed8820",
+    "checkOnlyReceipt": "8cd582",
+    "nativeExit": 0,
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "segmentId": "30e75d0d-7e4c-46c6-9a07-556f90b63859",
+  "admission": {
+    "startsAt": "2026-10-21T13:42:15.608Z",
+    "stopNewAt": "2026-10-21T14:32:15.608Z",
+    "deadlineAt": "2026-10-21T14:42:15.608Z",
+    "hardDeadlineAt": "2026-10-21T14:52:15.608Z",
+    "parentProcessId": 57808,
+    "runtimeProcessId": 38184,
+    "admissionAndClaimRetained": true,
+    "secondChildOrRenewalAuthorized": false
+  },
+  "commands": [
+    {
+      "id": "amended_prepare_1",
+      "status": "blocked",
+      "receipt": "abe85a"
+    },
+    {
+      "id": "amended_restore_1",
+      "status": "restoration_residual",
+      "receipt": "a4743a"
+    },
+    {
+      "id": "amended_close_1",
+      "status": "closed",
+      "nativeExit": 1,
+      "receipt": "0d7033"
+    }
+  ],
+  "aggregateAttempts": {
+    "management": 0,
+    "control": 50,
+    "controlPurpose": "baseline execution discovery for the 25 owned workflows",
+    "nativeExecutions": 0,
+    "gatewayPreflight": 0,
+    "providerDirect": 0,
+    "actorStarts": 0
+  },
+  "database": {
+    "runId": "69dc136a-ed61-4ae4-aab0-d4a117acc9ed",
+    "receipt": "3a1bd3",
+    "authenticationVerified": true,
+    "historyBefore": "baseline",
+    "historyAfter": "complete",
+    "dryRunMatched": true,
+    "dryRunNativeExit": 0,
+    "pushAttempted": true,
+    "pushNativeExit": 0,
+    "status": "phase_a_control_failed",
+    "phaseACommands": 1,
+    "failedCommand": "postcheck",
+    "phaseAClosed": false,
+    "receiptObservedAt": "2026-10-21T13:43:38.9765560Z",
+    "fourVersionsAppliedExactlyOnce": [
+      "20261018231756",
+      "20261018232014",
+      "20261018232922",
+      "20261018233338"
+    ],
+    "replayResetOrHistoryFabrication": false,
+    "generatedTypeCandidate": "scripts/db/out/m03-foundation-hosted-db.types.ts",
+    "candidateCreatedAt": "2026-10-21T13:43:38.201Z",
+    "candidateBytes": 96752,
+    "actualOfflineTypesCheck": "FOUNDATION_TYPES_BLOCKED/native1/869abf",
+    "postcheckAcceptance": "incomplete; generated-type mismatch under diagnosis, not authentication or migration rejection",
+    "localDiagnosis": {
+      "receipt": "16b58f",
+      "candidateParseErrors": 0,
+      "referenceParseErrors": 0,
+      "candidateParenthesizedTypes": 67,
+      "referenceParenthesizedTypes": 10,
+      "exactAstEqualityAfterOnlyRedundantTypeParenthesesRemoved": true,
+      "genuineSchemaDifferencesDetected": false,
+      "candidatePreserved": true,
+      "regressionAndReview": "Five focused tests4639e2, existing AST test5a6cc6, lint61df0e pass; independent review GREEN and five checksfa03ab pass, plus eight genuine semantic differences rejected.",
+      "fixedCheckerSha256": "f36202043923fa1418f36e144b077338a363779de82b399de5e6beb117e1fa98",
+      "actualPreservedCandidateCheck": {
+        "receipt": "93817b",
+        "nativeExit": 0,
+        "status": "types_coverage_verified",
+        "schemas": 4,
+        "foundationTables": 6,
+        "foundationFunctions": 9,
+        "astEquivalent": true,
+        "candidateSha256BeforeAndAfter": "baa632751cc0f74543be52ae0405934f7fe8254b55ddf5e171ea6e1b3a3f1ed8",
+        "postHocLocalCheckOfActualHostedOutput": true,
+        "notACompletedLiveCoordinatorPostcheck": true
+      }
+    },
+    "sourceOrderedInference": "The actual candidate is CreateNew/Flush only after catalog proof, both native CLI advisors (native0/closed/results[]), and successful native types generation. Its fresh in-run creation supports these prior gates passing. No separate advisor/postcheck receipt was emitted; this is source-order inference, not an explicit CLI advisor receipt."
+  },
+  "independentDashboardReadback": {
+    "reason": "dev MCP get_project_url and both advisor calls failed OAuth refresh; no login/setup retry",
+    "queryId": "e2026746-95df-471f-b1de-490ecb2d129a",
+    "migrationCount": 14,
+    "fourStatementFingerprintsMatchPacket": true,
+    "fingerprintSeparator": "chr(10); an initial UI-pasted literal newline normalized line endings and was replaced by explicit LF for the canonical comparison",
+    "catalogPostcheckBooleans": {
+      "identity": true,
+      "tables_rls": true,
+      "no_machine_table_grants": true,
+      "rpc_shape": true,
+      "owner_control_restricted": true,
+      "all_project_tables_rls": true,
+      "all_views_invoker": true,
+      "gw01_closed": true,
+      "domain_auto_join_off": true
+    },
+    "competitors": 285,
+    "accounts": 1754,
+    "mediaObjects": 257,
+    "fixtureRows": 0,
+    "foundationWindowRows": 0,
+    "foundationApprovals": 0,
+    "foundationRequests": 0,
+    "foundationBindings": 0,
+    "foundationLeases": 0,
+    "securityRerun": {
+      "errors": 0,
+      "warnings": 1,
+      "info": 20,
+      "warning": "Leaked Password Protection Disabled (Auth); setting unchanged"
+    },
+    "performanceRerun": {
+      "errors": 0,
+      "warnings": 0,
+      "info": 66
+    },
+    "dashboardAdvisorsAreNotCliAdvisorReceipts": true,
+    "generatedTypesAreNotYetAccepted": true
+  },
+  "cleanup": {
+    "rootNativeExit": 1,
+    "rootChildClosed": true,
+    "credentialChildrenClosed": true,
+    "childTransportsClosed": true,
+    "adminChildClosed": true,
+    "adminReceiptChildrenClosed": true,
+    "adminHandoffLeaseAndScratchDeleted": true,
+    "threeRuntimeHandoffPairsDeleted": true,
+    "allEightConsumedTemporaryFilesAbsent": true,
+    "parentLockAbsent": true,
+    "ownedAcceptanceProcessCountAfterClose": 0,
+    "physicalReconciliationReceipt": "df56aa",
+    "pendingMachinePreserved": true,
+    "unusedBypassPresent": true,
+    "unusedBypassEverInstalledRemotely": false,
+    "fullDFlags": {
+      "baselineRestored": false,
+      "environmentCleanupVerified": false,
+      "windowClosed": false,
+      "fixtureArchived": false,
+      "remoteWorkSettled": false,
+      "residual": true
+    },
+    "fullDNotClaimed": true,
+    "unusedBypassCleanup": {
+      "receipt": "4f7998",
+      "status": "unused_uninstalled_bypass_deleted",
+      "remoteInstalled": false,
+      "physicalClosureVerified": true,
+      "setupComposed": false,
+      "managementAttempts": 0,
+      "pathBasename": "emr-m03-acceptance-protection-bypass.dpapi",
+      "deletionAttempted": true,
+      "fileAbsent": true,
+      "privateRead": false,
+      "networkRequests": 0,
+      "pendingMachinePreserved": true,
+      "fullDNotClaimed": true
+    }
+  },
+  "acceptance": {
+    "phaseBReady": false,
+    "domainProofReady": false,
+    "businessAcceptanceProven": false,
+    "M03Complete": false
+  },
+  "next": "Local typechecker false-negative corrected/reviewed; actual preserved candidate passes offline with unchanged hash. Deliver normal PR CI and proposed remaining-window packet. No live child, clock renewal or credential request is authorized by the consumed authority.",
+  "excludedUntouched": [
+    "production",
+    "recurring activation",
+    "external notifications",
+    "shared credentials",
+    "private incident R2",
+    "PR8 merge",
+    "M04"
+  ],
+  "localDelivery": {
+    "typeCheckerTests": "5 new +1 existing AST regression pass; independent five tests and eight semantic denials pass",
+    "review": "GREEN/no P1-P2",
+    "dbPublicInputPinRefreshed": true,
+    "pinVerificationReceipt": "2816b2: all24 public input pins match",
+    "outerRuntimeSeal": "Historical ed8820 belongs to the actual61d3d64 admitted attempt; future changed-source use requires explicit new seal/readiness, not claimed here",
+    "proposedContinuation": "dev-acceptance-postcheck-continuation-20261021.md",
+    "proposalReview": "Independent GREEN; no authority/operative continuation path changed",
+    "newWindowApproved": false,
+    "fixCommit": "0b032101f4f3e59779f529353181a6f374ee8b6e",
+    "normalPrCi": "pending for the delivered documentation/fix head; historical CI39609646416 remains tied to the actual attempt source61d3d64"
+  }
+}

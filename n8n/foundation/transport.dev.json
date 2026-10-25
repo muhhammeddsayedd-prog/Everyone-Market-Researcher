@@ -1,0 +1,11 @@
+{
+  "kind": "actual_saved_inactive_staging_transport_binding",
+  "audience": "https://everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app",
+  "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+  "credential": {
+    "id": "EmrM03Machine19",
+    "name": "M03 foundation machine [dev]",
+    "type": "httpCustomAuth"
+  },
+  "activationAuthorized": false
+}

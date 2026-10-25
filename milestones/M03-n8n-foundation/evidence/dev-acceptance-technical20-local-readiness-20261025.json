@@ -1,0 +1,108 @@
+{
+  "kind": "m03_technical20_local_readiness",
+  "version": 1,
+  "observedAt": "2026-10-25T11:09:03.140Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "helperBaseHead": "5f256ce915f930481b0d31ac38b919c0a7692cd1",
+  "selectedApplicationSource": {
+    "head": "5f256ce915f930481b0d31ac38b919c0a7692cd1",
+    "ci": 40186141405,
+    "allFiveJobsPassed": true,
+    "vercelPassed": true
+  },
+  "freshWindowId": "e2be1a67-f6db-4c90-bfd2-671c5db9b90a",
+  "actualUsage": {
+    "management": 1317,
+    "control": 1246,
+    "combined": 2563,
+    "vercel": 254,
+    "nativeExecutions": 3,
+    "actorStarts": 0
+  },
+  "approvedCaps": {
+    "management": 1728,
+    "control": 3584,
+    "combined": 5312,
+    "vercel": 304
+  },
+  "readback": {
+    "relative": "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical19-database-readback-20261025.json",
+    "sha256": "a44ccc8aaf5366cd3cbe5bb6d76b69c0dd327d74935c40c4a7e28f4b2cf232fd",
+    "nativeExit": 0,
+    "queryCount": 2,
+    "sqlMutation": false
+  },
+  "publicFoundationSeal": {
+    "nativeExit": 0,
+    "projectFiles": 99,
+    "runtimeFiles": 840,
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "publicAcceptanceSeal": {
+    "nativeExit": 0,
+    "projectFiles": 253,
+    "runtimeFiles": 840,
+    "privateRead": false,
+    "networkRequests": 0
+  },
+  "originalSealedCheckOnly": {
+    "status": "check_only_ready",
+    "privateRead": false,
+    "networkRequests": 0,
+    "publicCompositionLoaded": true,
+    "adminPublicInputsVerified": true,
+    "adminHandoffReady": false,
+    "actualMcpPortVerified": false,
+    "windowId": "df4f29ec-e2dc-4d82-a276-62a4e695e6f9",
+    "managementMaximum": 1728,
+    "controlMaximum": 3584
+  },
+  "nativeAuth": {
+    "command": "vercel whoami --non-interactive",
+    "nativeExit": 0,
+    "rawOutputDiscarded": true,
+    "beforeStatus": "saved_auth_expired",
+    "afterStatus": "metadata_covers_75_minutes",
+    "manualTokenOrCacheManipulation": false,
+    "nativeOauthAndAccountTrafficSeparateFromProjectResourceAccounting": true,
+    "projectOperation": false
+  },
+  "browser": {
+    "browserId": "1",
+    "tabId": "1091385407",
+    "workflowId": "MzimjpsuyPuK7SKe",
+    "observedName": "WF-00 · Orchestrator [dev]",
+    "executeControlPresent": true,
+    "workflowExecuted": false
+  },
+  "localVerification": {
+    "newWindowProtocolCases": 5,
+    "affectedApplicationCases": 19,
+    "brandedOldAndNewRuntimePlans": 2,
+    "adapterFocusedCases": 21,
+    "coherentGuardDenialCases": 16,
+    "independentNativeFocusedCases": 4,
+    "isolatedPostgresLifecycleNativeExit": 0,
+    "genuineNativePublicRunNativeExit": 0,
+    "overlappingSuitesNotSummed": true
+  },
+  "preservedLocalFailures": [
+    "Local test launcher25second timeout before TAP; no private inputs, prior local test processes verified absent.",
+    "Misplaced final19 top-level linkage assertion rejected old/new proof fixtures before access; exact block moved into19 only, corrected final positives/denials and independent old/new runtime plans pass."
+  ],
+  "boundaries": {
+    "technical20Admitted": false,
+    "migrationReplay": false,
+    "actorStarted": false,
+    "hostedBusinessAcceptance": false,
+    "production": false,
+    "recurringActivity": false,
+    "externalNotifications": false,
+    "r2": false,
+    "merge": false,
+    "m04": false
+  },
+  "nextStep": "Commit the reviewed integration and verify normal exact-head CI/Vercel. Then fresh native session coverage and original coordinator; no extra credential or time approval."
+}

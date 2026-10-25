@@ -1,0 +1,63 @@
+{
+  "kind": "m03_pre19_public_contract_refusal",
+  "version": 1,
+  "observedAt": "2026-10-25T00:24:40.039Z",
+  "sourceHead": "c6c3f74418f89225eb114982525eba3aabb2195e",
+  "invocation": {
+    "entry": "scripts/n8n/windows/Invoke-M03Acceptance.ps1",
+    "arguments": [
+      "-ProjectVerifiedContinuation",
+      "-CheckOnly"
+    ],
+    "environment": "cleared_os8",
+    "stdin": "closed"
+  },
+  "nativeExit": 1,
+  "frames": [
+    {
+      "kind": "m03_acceptance_preparation_blocked",
+      "stage": "public_clock",
+      "credentialDecryptionAttempted": false
+    },
+    {
+      "kind": "m03_acceptance_wrapper_closed",
+      "childClosed": true,
+      "credentialChildrenClosed": true,
+      "emergencyShutdown": false,
+      "nativeExit": null,
+      "handoffsDeleted": false,
+      "bypassHandoffDeleted": false,
+      "pendingMachinePreserved": true,
+      "privateRead": false,
+      "code": "M03_ACCEPTANCE_BLOCKED"
+    }
+  ],
+  "directUnchangedNodeGuard": {
+    "nativeExit": 0,
+    "receipt": {
+      "kind": "project_verified_continuation_ready",
+      "segmentId": "20275b22-b7fe-4737-a9a4-c50c2feadb74",
+      "sourceCommitSha": "effa3de9e1fee6c3f3c08fc347a5e3175db14c80",
+      "windowId": "edbc6d11-7c1f-43a7-b745-1ded06deb29f",
+      "privateRead": false,
+      "networkRequests": 0,
+      "managementMaximum": 1408,
+      "managementAttempts": 1023,
+      "controlAttempts": 1145,
+      "combinedAttempts": 2168
+    }
+  },
+  "diagnosis": {
+    "wrapperFunction": "Get-ProjectVerifiedPublicManagementMaximum",
+    "oldSettledManagementMinimum": 963,
+    "oldSettledManagementMaximum": 987,
+    "actualManagement": 1023,
+    "actualControl": 1145,
+    "actualCombined": 2168,
+    "rangeWidened": false
+  },
+  "newAdmission": false,
+  "credentialDecryptionAttempted": false,
+  "networkRequests": 0,
+  "allPriorAttemptsAndChargesPreserved": true
+}

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "files": {
+    "scripts/n8n/windows/Invoke-M03GW01Bypass.ps1": "6e0529f2c40fc552fe50c7cd6eb3faff9020c0c5aeda394db7b5a55c088fd405",
+    "scripts/n8n/gw01-local-privacy.json": "39e49afd4ca883f3d05a8ea9006ebc0cd2682115b7c6e6140b9cc9198f27661f",
+    "scripts/n8n/gw01-cloud-privacy.json": "87092f6ed46616a1552d32ff3ee35c9b0a3022ae929b73282ebd045177d1993b",
+    "scripts/n8n/gw01-vercel-no-retry.mjs": "8492a298cf967176c85f111dffe58a6908f181af39f10934f6ed6dfd336607f1",
+    "scripts/n8n/gw01-gateway-seal.json": "76fc07c3722ad58edb6e5960c29e9def8533eea93c424f00356049fe2ec986d9",
+    "scripts/n8n/gw01-bypass-known-create.json": "f7446f453da33df33e1bfde9b52648375333c3e1b33985ae8cdd6d04852e6079"
+  },
+  "vercelCliSha256": "59b3fc5480456b92d33bdb463a9c8c847669bb53627364e58f7f82236dbcd804",
+  "vercelPackageSha256": "a879c88b917b50a1bf2e46c8b6e0d0fdc12c2454db4764af1e86428280081a18"
+}

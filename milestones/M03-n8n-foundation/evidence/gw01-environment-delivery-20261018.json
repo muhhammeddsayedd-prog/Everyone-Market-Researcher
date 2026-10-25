@@ -1,0 +1,244 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-18T09:59:01Z",
+  "scope": "Actual dev branch-Preview public configuration and two-value Environment delivery; no gateway trial",
+  "target": {
+    "environment": "dev",
+    "projectRef": "zmotjsbzhzjvpelxvxlf",
+    "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+    "teamId": "team_gboXPxTevpCOZuaA8eY9PmR1",
+    "branch": "m03-n8n-foundation",
+    "selectedSourceSha": "3d141fb9d971d39237e744f2770cf42e425f0420"
+  },
+  "evidenceBoundary": "Safe metadata receipts read from the fixed ignored output files only. No credential handoff, secret value, raw CLI output, environment dump or secret-bearing log was read or copied by this documentation work.",
+  "executionSource": {
+    "publicConfigHelperSha256": "3f2b5042b14d7dbc3f3d07689e0575160c35704ac55b21f32f3a92b7bbc81e6e",
+    "noRetryPreloadSha256": "8492a298cf967176c85f111dffe58a6908f181af39f10934f6ed6dfd336607f1",
+    "environmentParentSha256": "28996d72b642370a7fd64f7613736bb1abc80996653ecab4b68a4176f74cb7f2",
+    "environmentRunnerSha256": "aa45512dd72c48ad49b0596a358f20c4a3656af264ccc7593621e189463d0e08",
+    "boundary": "These are the reviewed sources used for the successful operations. A subsequent local Close-window timestamp correction is a separate future reviewed/resealed source, not a retroactive change to these receipts."
+  },
+  "publicCheckOnly": {
+    "toolReceiptRef": "99a5dd",
+    "nativeExit": 0,
+    "rootObservedResult": {
+      "status": "check_only_ready",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "observedAt": null
+  },
+  "plan": {
+    "toolReceiptRef": "4ad4c9",
+    "nativeExit": 0,
+    "sourceFile": "scripts/n8n/out/gw01-public-config-plan.json",
+    "receipt": {
+      "version": 1,
+      "status": "planned",
+      "sourceSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+      "missingPublic": [
+        "EMR_WORKER_GATEWAY_ENABLED",
+        "EMR_WORKER_GATEWAY_AUDIENCE",
+        "EMR_WORKER_GATEWAY_WINDOW_ID",
+        "EMR_WORKER_GATEWAY_COMMIT_SHA"
+      ],
+      "sensitiveMetadataVerified": false,
+      "sensitiveMetadataAbsent": true,
+      "autoExposeSystemEnvs": true,
+      "observedAt": "2026-10-18T09:55:01.985Z"
+    }
+  },
+  "apply": {
+    "toolReceiptRef": "f95bb2",
+    "nativeExit": 0,
+    "sourceFile": "scripts/n8n/out/gw01-public-config-apply.json",
+    "receipt": {
+      "version": 1,
+      "status": "public_ready",
+      "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+      "teamId": "team_gboXPxTevpCOZuaA8eY9PmR1",
+      "sourceSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+      "configuration": {
+        "target": "preview",
+        "gitBranch": "m03-n8n-foundation",
+        "values": {
+          "EMR_WORKER_GATEWAY_ENABLED": "true",
+          "EMR_WORKER_GATEWAY_AUDIENCE": "vercel-deployment",
+          "EMR_WORKER_GATEWAY_WINDOW_ID": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "EMR_WORKER_GATEWAY_COMMIT_SHA": "3d141fb9d971d39237e744f2770cf42e425f0420"
+        }
+      },
+      "autoExposeSystemEnvs": true,
+      "sensitiveMetadataVerified": false,
+      "sensitiveMetadataAbsent": true,
+      "missingPublic": [],
+      "createdControls": 4,
+      "observedAt": "2026-10-18T09:55:42.212Z"
+    }
+  },
+  "environmentCheckOnly": {
+    "toolReceiptRef": "924e98",
+    "nativeExit": 0,
+    "rootObservedResult": {
+      "status": "check_only_ready",
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "observedAt": null
+  },
+  "environment": {
+    "toolReceiptRef": "63eed5",
+    "sourceFile": "scripts/n8n/out/gw01-environment-receipt.json",
+    "receipt": {
+      "version": 1,
+      "mode": "Environment",
+      "status": "complete",
+      "code": null,
+      "privacyStage": null,
+      "privacyParameterDiagnostic": null,
+      "privateRead": true,
+      "rootChildClosed": true,
+      "nativeExit": 0,
+      "handoffsRetained": true,
+      "delivery": {
+        "version": 1,
+        "status": "complete",
+        "mode": "Environment",
+        "managementRequests": 0,
+        "vercelCommands": 2,
+        "branch": "m03-n8n-foundation",
+        "previewOnly": true
+      }
+    },
+    "completionObservedAt": null,
+    "ledgerSourceFile": "scripts/n8n/out/gw01-environment-delivery.jsonl",
+    "ledger": [
+      {
+        "version": 1,
+        "kind": "environment_intent",
+        "windowId": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+        "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+        "branch": "m03-n8n-foundation",
+        "createdAt": "2026-10-18T09:56:11.378Z"
+      },
+      {
+        "kind": "environment_delivered",
+        "name": "EMR_WORKER_DB_PASSWORD"
+      },
+      {
+        "kind": "environment_delivered",
+        "name": "EMR_WORKER_GATEWAY_TOKEN_SHA256"
+      }
+    ],
+    "ledgerCreatedAtIsIntentNotCompletion": true
+  },
+  "verify": {
+    "toolReceiptRef": "cec4b8",
+    "nativeExit": 0,
+    "sourceFile": "scripts/n8n/out/gw01-public-config-verify.json",
+    "receipt": {
+      "version": 1,
+      "status": "verified",
+      "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu",
+      "teamId": "team_gboXPxTevpCOZuaA8eY9PmR1",
+      "sourceSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+      "configuration": {
+        "target": "preview",
+        "gitBranch": "m03-n8n-foundation",
+        "values": {
+          "EMR_WORKER_GATEWAY_ENABLED": "true",
+          "EMR_WORKER_GATEWAY_AUDIENCE": "vercel-deployment",
+          "EMR_WORKER_GATEWAY_WINDOW_ID": "76c2ad42-c094-4ba4-9a0b-566e19b97780",
+          "EMR_WORKER_GATEWAY_COMMIT_SHA": "3d141fb9d971d39237e744f2770cf42e425f0420"
+        }
+      },
+      "autoExposeSystemEnvs": true,
+      "sensitiveMetadataVerified": true,
+      "sensitiveMetadataAbsent": false,
+      "missingPublic": [],
+      "createdControls": 0,
+      "observedAt": "2026-10-18T09:56:48.660Z"
+    },
+    "sensitiveOwnershipMetadata": {
+      "kind": "environment_owned",
+      "at": 1792317408659,
+      "provenance": "recovered_get_after_native_environment",
+      "metadata": {
+        "EMR_WORKER_DB_PASSWORD": {
+          "key": "EMR_WORKER_DB_PASSWORD",
+          "id": "nu5Xuvi8Pb2cnAxz",
+          "createdAt": 1792317379426,
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "m03-n8n-foundation"
+        },
+        "EMR_WORKER_GATEWAY_TOKEN_SHA256": {
+          "key": "EMR_WORKER_GATEWAY_TOKEN_SHA256",
+          "id": "OGz0my8VgQEFhNgi",
+          "createdAt": 1792317383979,
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "m03-n8n-foundation"
+        }
+      }
+    },
+    "ownershipBoundary": "The successful native Environment receipt, prior absence, exact delivery ledger and creation metadata permit this recovered GET ownership receipt. It is not a raw original environment-create API response and contains no sensitive value."
+  },
+  "sourceDelivery": {
+    "localHeadObserved": "3d141fb9d971d39237e744f2770cf42e425f0420",
+    "rootReportsPushedAfterEnvironment": true,
+    "rootPushReceiptRef": "70e9f1",
+    "remoteReadBoundary": "Immediate GitHub read still showed the older d6 checkpoint; no fresh remote CI or READY Preview is established by this record."
+  },
+  "rootReportedPreservedState": {
+    "gatewayAttempts": 2,
+    "gatewayAttemptBudget": 100,
+    "gatewayRequestsAddedByThisSequence": 0,
+    "clockStarted": false,
+    "serverWindowBound": false,
+    "serverAdmissions": 0,
+    "writerAndMachineHandoffsRetained": true,
+    "refreshedManagementConsumed": false
+  },
+  "subsequentSourceCi": {
+    "sourceSha": "3d141fb9d971d39237e744f2770cf42e425f0420",
+    "runId": "39117331294",
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39117331294",
+    "toolReceiptRef": "c9f1be",
+    "allFiveJobsPassed": true,
+    "source": "Root's later observed CI receipt; no actual execution timestamp supplied",
+    "boundary": "This supplements the earlier cached GitHub read. It does not establish a fresh READY Preview or runtime identity."
+  },
+  "subsequentLocalCloseoutCorrection": {
+    "helperSha256": "811bfb533b6a193fbf7f48541f7cb1f1e272b62ba9b5409c05c124cb0b58103c",
+    "testSha256": "c51cd12439c5fa2c51c922059f5628f90806be61114bddbae214bfc0845d253d",
+    "independentReview": "clear; PostgreSQL window microseconds/offset validated without rewriting receipts, exact thirty-minute BigInt duration, canonical Environment ledger unchanged",
+    "command": "node --test --test-name-pattern \"PostgreSQL closeout\" scripts/n8n/gw01-public-config.test.mjs",
+    "chunkId": "1b814d",
+    "passed": 11,
+    "failed": 0,
+    "nativeExit": 0,
+    "actualUseOrResealByThisReview": false,
+    "boundary": "Future closeout source only. The successful Apply and Verify execution-source hash remains 3f2b5042 above."
+  },
+  "acceptanceLimits": {
+    "publicValuesAndTwoSensitiveMetadataScopesVerified": true,
+    "existingImmutablePreviewRuntimeValuesProven": false,
+    "freshPreviewReady": false,
+    "gatewayHttpIdentityVerified": false,
+    "nativeN8nCloudPostgresTlsVerified": false,
+    "trialStarted": false,
+    "actorsOrModelsOrPaidCollectionStarted": false,
+    "productionOrMergeOrM04Started": false
+  },
+  "remaining": [
+    "Reseal only the separately reviewed 811bfb53 future closeout source; preserve successful 3f2b5042 Apply/Verify receipts without replay.",
+    "Read back the fresh READY Preview for exactly the selected source with project/branch/protection/runtime/source checks.",
+    "Register the exact new deployment, complete the truthful runtime-phase proof and immutable Writer binding before the bounded trial.",
+    "Perform separately counted gateway HTTP identity/trial/status/recovery and ordered Close/revocation/public shutdown/owned cleanup; no acceptance is inferred from environment metadata alone."
+  ]
+}

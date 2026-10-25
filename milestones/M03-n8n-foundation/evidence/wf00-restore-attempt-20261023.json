@@ -1,0 +1,85 @@
+{
+  "kind": "actual_owned_wf00_restore_attempt",
+  "recordedAt": "2026-10-23T18:00:15Z",
+  "toolReceipt": "905f06",
+  "environment": "dev",
+  "host": "muhhammedsayed.app.n8n.cloud",
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "workflowId": "MzimjpsuyPuK7SKe",
+  "reviewedTarget": {
+    "sourceCommitSha": "025c2a2c0127566df71cef77797db277f1565568",
+    "historicalSourceFile": "n8n/workflows/WF-00.json",
+    "immutableFixture": "n8n/fixtures/WF-00-reviewed-native-staging-025c2a2.json",
+    "sha256": "905e40aa96bea9291961f8e73297a8668b76ead397c834dbc7dc796e14ecfea9"
+  },
+  "actual": {
+    "status": "wf00_restore_blocked",
+    "nativeExit": 1,
+    "requestCount": 1,
+    "getCount": 1,
+    "putCount": 0,
+    "backupReady": true,
+    "backupRunId": "fc0bdea1-f733-4c68-ba8c-f062e83b7919",
+    "beforeVersionPrivatelyBackedUp": true,
+    "writeIntentRecorded": false,
+    "putAttempted": false,
+    "exactContentVerified": false,
+    "restored": false,
+    "diagnostic": "settings_merge_unsupported",
+    "networkCompletionVerified": true,
+    "childClosed": true,
+    "parentLockDeleted": true,
+    "persistentManagementRetained": true,
+    "workflowExecutions": 0,
+    "actorStarts": 0
+  },
+  "journal": {
+    "path": "scripts/n8n/out/foundation/wf00-restore-20261023.jsonl",
+    "rowCount": 2,
+    "sha256": "22c18ac86b7e0e03762cf19ad98a33560344af664fcf25f0a45673906fdc955d",
+    "lastWriteTimeUtc": "2026-10-23T17:58:56.9887151Z",
+    "rows": [
+      {
+        "event": "request",
+        "number": 1,
+        "method": "GET",
+        "path": "/api/v1/workflows/MzimjpsuyPuK7SKe?excludePinnedData=true"
+      },
+      {
+        "event": "backup_ready",
+        "workflowId": "MzimjpsuyPuK7SKe",
+        "backupRunId": "fc0bdea1-f733-4c68-ba8c-f062e83b7919"
+      }
+    ],
+    "appendOnlyPreserved": true,
+    "containsWriteIntent": false
+  },
+  "usage": {
+    "before": { "management": 98, "control": 301, "combined": 399 },
+    "thisAttempt": { "management": 1, "control": 0, "combined": 1 },
+    "after": { "management": 99, "control": 301, "combined": 400 },
+    "actorStartsUsed": 0,
+    "actorStartsMaximum": 2,
+    "actorReserveUsd": 2,
+    "allowancesReplenished": false
+  },
+  "boundaries": {
+    "pinnedDataRequested": false,
+    "executionPayloadsRequested": false,
+    "variablesRequested": false,
+    "credentialsRotatedOrCreated": false,
+    "otherWorkflowMutations": false,
+    "activationOrExecution": false,
+    "gatewayWindowStarted": false,
+    "exportUpdated": false,
+    "checkpointUpdated": false,
+    "productionOperations": false,
+    "mergePerformed": false,
+    "m04Started": false
+  },
+  "acceptance": {
+    "restoreComplete": false,
+    "m03DevAcceptanceComplete": false,
+    "nextStep": "Project the unsupported settings names privately, repair the supported native settings merge locally, and reconcile this closed read-only prefix before a fresh GET and encrypted backup followed by the exact once-only inactive PUT and readback."
+  }
+}

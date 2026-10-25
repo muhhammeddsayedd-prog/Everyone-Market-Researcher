@@ -1,0 +1,226 @@
+{
+  "kind": "m03_execution31145_actual_pin_diagnostic",
+  "version": 1,
+  "observedAt": "2026-10-25T14:38:17.363Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "source": {
+    "head": "ecdedd466f276940c7039ff758395c63a4952853",
+    "ciRunId": "40202518285",
+    "allFiveCiPassed": true,
+    "vercelPassed": true,
+    "sourcePins": {
+      "scripts/n8n/inventory.mjs": "f736341104ba6d01cb7e0ce29d143ce83826994c1b90a9560b31a550b8ca5e3d",
+      "scripts/n8n/inventory-diagnostics.test.mjs": "da4543c160dadfcdbbcd8d5e35b7d186d55bdb0ad3e47f2018d1bd262cd1799e",
+      "scripts/n8n/windows/Invoke-M03N8nInventory.ps1": "a8ae23dd33188faed1fa59e6cf0a9f011a2bde6979533a10609d82aca54976b2",
+      "scripts/n8n/private-inventory.test.mjs": "1bf81cd111330ca8ea854f1d39378dd4dcabf8083b6c7e60e2e2e23c31f1bbfa"
+    }
+  },
+  "priorActual22": {
+    "path": "milestones/M03-n8n-foundation/evidence/dev-acceptance-technical22-domain-refusal-20261025.json",
+    "sha256": "1f5d99253deb88df1df2dd9cf6f057fe878f5c1263c5711e70062e2e2fe35ff3"
+  },
+  "request": {
+    "workflowKey": "WF-99",
+    "workflowId": "qTjioYmBUVMIERVz",
+    "executionId": "31145",
+    "method": "GET",
+    "count": 1,
+    "parentProcessId": 62192,
+    "childProcessId": 23336,
+    "administratorUsed": false
+  },
+  "nativeExit": 0,
+  "rawResult": {
+    "version": 1,
+    "host": "muhhammedsayed.app.n8n.cloud",
+    "projectId": "pHvQjDmjxVZ3KQLT",
+    "status": "complete",
+    "nativeExit": 0,
+    "childClosed": true,
+    "handoffDeleted": true,
+    "inventory": {
+      "version": 1,
+      "environment": "dev",
+      "host": "muhhammedsayed.app.n8n.cloud",
+      "projectId": "pHvQjDmjxVZ3KQLT",
+      "technicalAttempt": 22,
+      "status": "native_snapshot_classified",
+      "requestCount": 1,
+      "maximumRequests": 1,
+      "httpStatus": 200,
+      "tlsVerified": true,
+      "readerMetadataVerified": false,
+      "networkCompletionVerified": true,
+      "controlReservationConservative": true,
+      "acceptanceProven": false,
+      "metadata": {
+        "executionId": "31145",
+        "workflowId": "qTjioYmBUVMIERVz",
+        "mode": "manual",
+        "status": "error",
+        "versionMatchesIntent": true
+      },
+      "readerFailure": null,
+      "transportFailureCode": null,
+      "readerState": null,
+      "transportState": {
+        "pendingRequests": 0,
+        "unclosedResponses": 0
+      },
+      "forensics": {
+        "fields": {
+          "objectShape": true,
+          "idMatches": true,
+          "workflowMatches": true,
+          "versionMatchesIntent": true,
+          "modeManual": true,
+          "statusError": true,
+          "snapshotObject": true,
+          "snapshotIdMatches": true,
+          "snapshotVersionMatches": false,
+          "graphComputable": true,
+          "executedGraphMatches": false,
+          "fixedDomainBodyMatches": false,
+          "runDataShape": true,
+          "runDataNamesKnown": true,
+          "redactionPresent": false,
+          "redactionPassesExistingReader": true,
+          "pinsPresent": true,
+          "pinsNull": true,
+          "pinsArray": false,
+          "pinsObject": false,
+          "pinsEmpty": false,
+          "pinKeysKnown": false,
+          "pinKeysOnlyManual": false,
+          "manualPinPresent": false,
+          "pinItemsArray": false,
+          "pinSingleItem": false,
+          "pinItemObject": false,
+          "pinItemHasJson": false,
+          "pinItemOnlyJson": false,
+          "pinItemHasPairedItem": false,
+          "pinItemPairedItemZero": false,
+          "pinItemHasBinary": false,
+          "pinJsonObject": false,
+          "pinJsonEmpty": false,
+          "pinsPassExistingReader": false,
+          "manualOutputEmptyJson": true,
+          "mcpEnabled": true,
+          "domainDenialShapeMatches": false
+        },
+        "counts": {
+          "pinNodeCount": null,
+          "enabledTriggerCount": 1,
+          "manualTriggerCount": 1,
+          "pinItemCount": null,
+          "pinItemKeyCount": null,
+          "pinItemExtraKeyCount": null,
+          "pinJsonKeyCount": null,
+          "runNodeCount": 2
+        }
+      },
+      "snapshotStage": "complete"
+    }
+  },
+  "physicalClosure": {
+    "nativeExit": 0,
+    "result": {
+      "kind": "m03_diagnostic_process_presence",
+      "parentPid": 62192,
+      "matchingProcesses": [],
+      "allAbsent": true,
+      "privateRead": false,
+      "networkRequests": 0
+    },
+    "presence": {
+      "managementDisposablePresent": false,
+      "coordinatorLockPresent": false,
+      "persistentManagementPresent": true,
+      "retainedBypassPresent": true,
+      "privateContentsRead": false
+    }
+  },
+  "usageBefore": {
+    "management": 1639,
+    "control": 1442,
+    "combined": 3081,
+    "vercel": 288,
+    "native": 16,
+    "actors": 0,
+    "actorUsd": 0
+  },
+  "delta": {
+    "management": 1,
+    "control": 1,
+    "combined": 2,
+    "vercel": 0,
+    "native": 0,
+    "actors": 0,
+    "additionalControlHttpRequest": false
+  },
+  "usage": {
+    "management": 1640,
+    "control": 1443,
+    "combined": 3083,
+    "vercel": 288,
+    "native": 16,
+    "actors": 0,
+    "actorUsd": 0
+  },
+  "limits": {
+    "management": 1728,
+    "control": 3584,
+    "combined": 5312,
+    "vercel": 304,
+    "native": 120,
+    "actors": 2,
+    "actorUsd": 2,
+    "newDistinctItems": 1
+  },
+  "actualFindings": {
+    "tlsVerified": true,
+    "httpStatus": 200,
+    "networkCompletionVerified": true,
+    "executionIdentityMatches": true,
+    "dtoVersionMatchesIntent": true,
+    "manual": true,
+    "error": true,
+    "pinsNull": true,
+    "manualOutputEmptyJson": true,
+    "redactionPassesExistingReader": true,
+    "fullNativeAcceptance": false,
+    "remoteCleanup": false
+  },
+  "interpretation": [
+    "This is successful read-only forensic classification; its acceptanceProven:false and readerMetadataVerified:false remain unchanged.",
+    "The actual saved resultData.pinData is null. The original full reader rejects a present non-object at EXECUTED_PIN_DATA.",
+    "The raw forensic snapshotVersionMatches and raw foundationRuntimeGraphHash comparisons are false. These raw comparisons are not the production executedGraphMatches/native-default qualification.",
+    "Source-order inference: the unchanged original fullProjection checks metadata and executed body at lines1047–1071 before its pin-data gate. The original EXECUTED_PIN_DATA code therefore does not establish an earlier executed-body failure. No unknown graph normalization or drift adoption is authorized by this inference.",
+    "No new live window, workflow execution, callback, actor, provider read or fixture mutation occurred.",
+    "The Management child closed native0, one-use claim remains spent, disposable copy and parent lock are absent, and its persistent original remains. The separately revoked bypass copy and C999 archive remain pending recovery."
+  ],
+  "remaining": {
+    "freshQualifiedSameIdNativeCleanup": true,
+    "exactC999Archive": true,
+    "revokedBypassCopyCleanup": true,
+    "remainingAandC": true,
+    "fullD": false,
+    "M03Complete": false
+  },
+  "boundaries": {
+    "production": false,
+    "recurringActivity": false,
+    "externalNotification": false,
+    "merge": false,
+    "M04": false
+  },
+  "pins": {
+    "scripts/n8n/out/foundation/live/execution31145-diagnostic-20261025-intent.json": "a5292c9a32d57e34ae00399e88ca9f9217a98ac3633ee3730eb5386ffdb78148",
+    "scripts/n8n/out/foundation/live/execution31145-diagnostic-20261025-result.json": "36068a1161c403da27443e18a0804e589c2811097449d084b8cfaa12d45bd53b",
+    "scripts/n8n/out/foundation/live/execution31145-diagnostic-20261025-physical.json": "1ca81fd7d6e0a8db26241e4663ab82eec38cbbd29594173a26729becf8d06cae",
+    "scripts/n8n/out/foundation/live/execution31145-diagnostic-20261025.acceptance-seal.json": "6c45dd027d72ac1da121595066269797e80cf15342365af7ae4d1f24e8abe4ff",
+    "scripts/n8n/out/foundation/live/execution31145-diagnostic-20261025.inventory-seal.json": "64bb9d80988312e3b1545bb62ba31a4de4adb460be43763d063a6836a3938879",
+    "scripts/n8n/out/foundation/execution-31145-pin-diagnostic-20261025.jsonl": "e02cf8e12516e8891b3d9d69ac58e7ec495684afb5a70745a6104cd8424ff6f4"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "version": "2.43.5",
+  "tagEntitySource": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/%40n8n/db/src/entities/tag-entity.ts",
+  "columnExcerpt": "@Column({ length: 24 })",
+  "lengthExcerpt": "@Length(1, 24, { message: 'Tag name must be $constraint1 to $constraint2 characters long.' })",
+  "serviceSource": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/services/tag.service.ts#L24",
+  "validatedBeforeSave": true,
+  "trimmedBeforeSave": true,
+  "controllerSource": "https://github.com/n8n-io/n8n/blob/n8n%402.43.5/packages/cli/src/public-api/v1/controllers/tags.public.controller.ts#L76",
+  "allSaveExceptionsMapTo409": true,
+  "evidenceBoundary": "Pinned source contract, not an authenticated instance result or proof of the precise hosted 409 cause."
+}

@@ -1,0 +1,56 @@
+{
+    "recordedAt":  "2026-10-18T04:36:30.0751298Z",
+    "environment":  "GitHub hosted CI and Vercel preview",
+    "head":  "6e6db7ead293f7835d165c8ae574c8888ba7c41a",
+    "pr":  {
+               "number":  8,
+               "url":  "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/pull/8",
+               "draft":  true
+           },
+    "ci":  {
+               "status":  "completed",
+               "url":  "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/39097436130",
+               "conclusion":  "success",
+               "id":  39097436130,
+               "jobs":  [
+                            {
+                                "name":  "unit",
+                                "status":  "completed",
+                                "conclusion":  "success",
+                                "completedAt":  "2026-10-18T04:32:40Z"
+                            },
+                            {
+                                "name":  "quality",
+                                "status":  "completed",
+                                "conclusion":  "success",
+                                "completedAt":  "2026-10-18T04:32:58Z"
+                            },
+                            {
+                                "name":  "build",
+                                "status":  "completed",
+                                "conclusion":  "success",
+                                "completedAt":  "2026-10-18T04:32:38Z"
+                            },
+                            {
+                                "name":  "db-tests",
+                                "status":  "completed",
+                                "conclusion":  "success",
+                                "completedAt":  "2026-10-18T04:34:40Z"
+                            },
+                            {
+                                "name":  "e2e",
+                                "status":  "completed",
+                                "conclusion":  "success",
+                                "completedAt":  "2026-10-18T04:33:32Z"
+                            }
+                        ]
+           },
+    "vercel":  [
+                   {
+                       "context":  "Vercel",
+                       "state":  "SUCCESS",
+                       "targetUrl":  "https://vercel.com/muhammed-abdelrahman/everyone-market-researcher/2xvGHUbVwq35T4CfQMXm9SP4CbAs"
+                   }
+               ],
+    "boundary":  "Code head6e6db7e verified, including48 native/API contract checks in CI and the isolated localDB suite/concurrency step. Hosted dev deployment, real credential/API/provider calls and actual n8n workflow execution remain pending."
+}
