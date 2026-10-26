@@ -95,7 +95,8 @@ erDiagram
 | `ops.start_run(workflow, platform, mode, env, execution_id) → uuid` | M01 | Opens a run |
 | `ops.finish_run(run_id, status, error) → jsonb` | M01 | Closes it with totals and cost, returning the n8n summary |
 | `ops.get_due_accounts(platform, limit, run_id, mode) → rows` | M01 | Claims due accounts (`SKIP LOCKED`) |
-| `ops.report_account_result(run_id, account_id, status, seen, new, error, backfill_done, cursor)` | M01 (p_secondary added in M04) | Per-account result, cadence-minus-four-hours schedule, six-hour failure retry |
+| `ops.report_account_result(run_id, account_id, status, seen, new, error, backfill_done, cursor)` | M01 (p_secondary planned in M04; not yet applied) | Per-account result, cadence-minus-four-hours schedule, six-hour failure retry |
+| `ops.set_account_external_id(account_id uuid, external_id text, uploads_playlist_id text default null) → void` | M04 first slice (local only) | Resolve only a live claimed account under a running dev Vimeo parent and active competitor. Writer-only; preserves scheduling, lease, watermarks and human fields. Null external ID records a fixed resolution failure without erasing saved identifiers. Not yet applied to hosted dev/prod. |
 | `ingest.upsert_raw_items(run_id, account_id, items jsonb) → jsonb` | M01 | Single writer path (§5.3 TECHNICAL) |
 | `ops.register_apify_run / ops.complete_apify_run` | M03 | Async Apify tracking |
 | `ops.process_apify_run(apify_run_id, status, dataset_id, usage_usd, groups) → jsonb` | M03 | Atomic development-only one-page website callback; persisted `ops.apify_runs.processing_result` receipt, replay-safe ingest/report/cost/complete/finish. Existing M01 signatures unchanged; other branches remain gated. |

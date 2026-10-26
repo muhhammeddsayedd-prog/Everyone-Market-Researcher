@@ -78,7 +78,7 @@ for suite in supabase/tests/*.sql; do
     *) old_suites+=("$suite") ;;
   esac
 done
-[[ "${#old_suites[@]}" == 11 ]] || { printf 'Expected eleven retained SQL suites.\n' >&2; exit 1; }
+[[ "${#old_suites[@]}" == 12 ]] || { printf 'Expected twelve SQL suites including the M04 resolver.\n' >&2; exit 1; }
 run_private 'pgTAP' supabase test db --local "${old_suites[@]}"
 
 # Emit only numeric TAP summaries. An empty/skipped or incomplete suite is not acceptance.
@@ -92,8 +92,8 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     verdict=PASS
   fi
 done <"$private_log"
-if [[ "$files" != 11 || "$assertions" -eq 0 || "$verdict" != PASS ]]; then
-  printf 'pgTAP: FAIL (expected eleven files, nonzero assertions and PASS).\n' >&2
+if [[ "$files" != 12 || "$assertions" -eq 0 || "$verdict" != PASS ]]; then
+  printf 'pgTAP: FAIL (expected twelve files, nonzero assertions and PASS).\n' >&2
   exit 1
 fi
 printf 'pgTAP: %s files, %s assertions, PASS\n' "$files" "$assertions"

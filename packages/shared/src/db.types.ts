@@ -3178,6 +3178,10 @@ export type Database = {
         };
         Returns: undefined;
       };
+      set_account_external_id: {
+        Args: { p_account_id: string; p_external_id: string; p_uploads_playlist_id?: string };
+        Returns: undefined;
+      };
       start_run: {
         Args: {
           p_env: string;

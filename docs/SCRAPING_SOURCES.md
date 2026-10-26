@@ -12,7 +12,7 @@ Workflow wiring: `docs/N8N_WORKFLOWS.md`. Writer path and contract: `docs/DATA_S
 
 | Platform (account rows) | Primary | Fallback | Watermark method | Cadence |
 |---|---|---|---|---|
-| Vimeo (`vimeo`) | **Vimeo API** (`/users/{id}/videos`, sort=date desc) | `goat255/vimeo-scraper` (latest 60, daily only); `dltik/vimeo-scraper` only for showcase/channel/group URLs | API paging stop-on-older-than-watermark + stop-on-known-ID | Daily |
+| Vimeo (`vimeo`) | **Vimeo API** (`/users/{id}/videos`, sort=date desc) | `goat255/vimeo-scraper` (latest 60, daily only); `dltik/vimeo-scraper` only for showcase/channel/group URLs | API cutoff plus 30-day metrics horizon; include known IDs | Daily |
 | Instagram posts + reels (`instagram`) | `apify/instagram-scraper` (`resultsType: posts` and a second run `reels`) | — (retry next day; flag account) | Actor filter `onlyPostsNewerThan` = watermark − 1 day; dedupe on shortCode | Daily |
 | Instagram stories (`instagram_stories`) | `data-slayer/instagram-stories-scraper` | Pilot bake-off: `igview-owner/instagram-story-viewer`, `louisdeconinck/instagram-story-details-scraper` | Not applicable (24 h window); dedupe on story ID | Daily (12 h if pilot shows misses) |
 | Websites (`website` + `website_work_page`) | **Firecrawl `/map`** daily → `ops.diff_website_urls` → `apify/website-content-crawler` on new URLs only | Firecrawl `/scrape` for single URLs | URL diff (set of known URLs) | Daily |
@@ -28,7 +28,7 @@ Workflow wiring: `docs/N8N_WORKFLOWS.md`. Writer path and contract: `docs/DATA_S
 ### Common rules for every collector
 1. Get due accounts with `ops.get_due_accounts(platform, limit, run_id, mode)`; mode `backfill` for accounts with `backfill_status in ('pending','running')`, else `daily`.
 2. **Overlap window:** request from `watermark_published_at − 1 day` (catches late-indexed posts); duplicates are free to drop because `ingest.upsert_raw_items` is `ON CONFLICT DO NOTHING`. Metrics of overlapping known items update as a side effect. Metrics refresh policy (FR-S4): free APIs (Vimeo, YouTube) refresh the last 30 days daily; paid sources (Instagram, LinkedIn) refresh weekly through the WF-40 30-day listing that also runs the removal check (`removal_window_days_paid` = 30).
-3. **Stop-on-known-ID** for API paging: stop when an item's ID equals `watermark_external_id` or its date is older than the cutoff.
+3. **API traversal:** include known IDs while refreshing the required 30-day metrics horizon. A known watermark ID alone must not suppress that refresh. Stop only once the applicable cutoff/metrics horizon is crossed, the source is exhausted, or the bounded page cap is reached; a cap is incomplete, not proof of exhaustion.
 4. Normalize with the platform normalizer (`SUB · Normalize <platform>`, JS in `docs/N8N_WORKFLOWS.md` §7) → call `SUB · Ingest items` per account (≤ 500 items per RPC call).
 5. Report each account with `ops.report_account_result(...)`; log provider cost with `ops.log_cost(...)` (Apify: run `usageTotalUsd` split evenly across the run's accounts unless the actor returns per-input counts).
 6. Timestamps are stored UTC (`timestamptz`); convert actor strings explicitly (formats per actor below).
@@ -40,17 +40,17 @@ Workflow wiring: `docs/N8N_WORKFLOWS.md`. Writer path and contract: `docs/DATA_S
 
 ### 1.1 Primary — Vimeo API (official)
 - **Auth:** personal access token with `public` scope (owner creates a Vimeo developer app — manual action MA-07 in M02). Header `Authorization: bearer <VIMEO_TOKEN>`, `Accept: application/vnd.vimeo.*+json;version=3.4`.
-- **Resolve once (M02/M04):** for each `vimeo` account, `GET https://api.vimeo.com/users/{vanity}?fields=uri,name,link` → numeric id from `uri` (`/users/123456`) → store in `competitor_accounts.external_id`, `resolve_status='resolved'`. A URL like `vimeo.com/channels/x`, `/showcase/…`, `/groups/…` or `vimeo.com/user123` is handled: `/channels/{id}/videos`, `/albums/{id}/videos` (showcase), `/groups/{id}/videos`; record the endpoint kind in `backfill_cursor.endpoint`.
+- **Resolve once (M02/M04):** for each `vimeo` account, `GET https://api.vimeo.com/users/{vanity}?fields=uri,name,link` → numeric id from `uri` (`/users/123456`) → store in `competitor_accounts.external_id`, `resolve_status='resolved'`. A URL like `vimeo.com/channels/x`, `/showcase/…`, `/groups/…` or `vimeo.com/user123` is handled: `/channels/{id}/videos`, verified owner-scoped `/users/{owner}/albums/{id}/videos` (showcase), `/groups/{id}/videos`; record endpoint, resourcePath and next page in the cursor. A showcase without a verified owner path fails explicitly.
 - **List (daily and backfill):**
   ```
   GET https://api.vimeo.com/users/{external_id}/videos
       ?sort=date&direction=desc&per_page=100&page={n}
       &fields=uri,name,description,link,created_time,release_time,duration,pictures.sizes,tags.name,stats.plays,metadata.connections.likes.total,metadata.connections.comments.total,privacy.view,user.name,user.link
   ```
-  - Daily: page 1..n, stop at the first video with `release_time` (fallback `created_time`) `< watermark − 1 day` or `uri` id = `watermark_external_id`.
-  - Backfill: page until `release_time < backfill_from` (2024-01-01) or `paging.next` is null. Save `{endpoint, page}` in `backfill_cursor` after each page so a timeout resumes.
+  - Daily: page1..3, include public items within the overlap cutoff or the last30days metrics horizon. Do not stop merely at a known ID. Stop after the older applicable horizon, exhaustion or the page cap; report incomplete traversal explicitly.
+  - Backfill: page until `release_time < backfill_from` (2024-01-01) or `paging.next` is null. Save `{endpoint, resourcePath, page}` in `backfill_cursor` at a successful bounded page boundary. Resume only when endpoint/resourcePath match the current account; never skip pages using a foreign cursor. Ambiguous failed attempts require reconciliation rather than a guessed checkpoint.
   - Skip `privacy.view` not in (`anybody`, `unlisted`?) → **only `anybody`** (public data only).
-- **Rate limits:** respect `X-RateLimit-Remaining`; when < 10, Wait until `X-RateLimit-Reset`. HTTP 429 → wait 60 s, retry (max 3). The live docs could not be machine-read during research — verify limits on developer.vimeo.com in M04.
+- **Rate limits:** respect `X-RateLimit-Remaining`; when < 10, Wait until `X-RateLimit-Reset`. HTTP 429 → wait 60 s, retry (max 3). Current official guidance was checked26October2026; see the implementation note below. Bound total waits to10minutes/account and stop on quota/access failure; never use scraping to evade a rate limit or access restriction.
 - **Cost:** free (cost ledger row with `cost_usd = 0`, `quantity = calls` for visibility).
 
 | Vimeo API field | Normalized field |
@@ -66,10 +66,10 @@ Workflow wiring: `docs/N8N_WORKFLOWS.md`. Writer path and contract: `docs/DATA_S
 | `duration` | `duration_seconds` |
 | `pictures.sizes` largest width ≤ 1280 → `link` | `thumbnail_url` |
 | `stats.plays`, `metadata.connections.likes.total`, `metadata.connections.comments.total` | `metrics.plays`, `metrics.likes`, `metrics.comments` |
-| whole object | `payload` |
+| Metadata-only field projection (no download URLs/files or unknown nested data) | `payload` |
 
 ### 1.2 Fallback — `goat255/vimeo-scraper` (daily only)
-Use when the API returns 401/403 for an account or the token is unavailable. **Returns at most the latest 60 videos per user — cannot backfill.** No date filter: filter client-side.
+Planned daily fallback for an otherwise public account whose API access is unavailable; verify public accessibility and the approved source conditions first. Never use fallback to evade private/login/access controls or rate limits. It is not enabled by the first M04 slice. **Returns at most the latest 60 videos per user — cannot backfill.** No date filter: filter client-side.
 
 Daily input (batch up to 50 users per run):
 ```json
@@ -96,6 +96,12 @@ Client-side filter: keep `published_at ≥ watermark − 1 day`; drop rows with 
 Only for accounts whose URL is a **showcase, channel or group** that the API cannot list (rare). Input `{ "urls": ["https://vimeo.com/channels/x"], "maxResults": 50 }`. Fields: `id, url, title, upload_date ("YYYYMMDD"), view_count, like_count, thumbnail, tags, duration`. **Never use its download URLs** (D-19). Price conflict ($0.50 vs $2 per 1k) — budget $2/1k.
 
 ---
+
+### 1.4 M04 implementation verification — 26 October 2026
+
+The first slice implements the official API in `n8n/collectors/vimeo.mjs` and a local lifecycle in `vimeo-run.mjs`. Transport is injected; native HTTP credential binding, restricted M04 gateway operations and live provider fixtures remain pending. Fallback normalizers exist, but no actor is started. Tests use synthetic source examples and do not establish live coverage or an approved spend.
+
+Primary sources: [Vimeo common formats](https://developer.vimeo.com/api/common-formats), [rate limiting](https://developer.vimeo.com/guidelines/rate-limiting), [API reference](https://developer.vimeo.com/api/reference), [native n8n HTTP Request](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/), [goat255 actor](https://apify.com/goat255/vimeo-scraper), [dltik actor](https://apify.com/dltik/vimeo-scraper). The native adapter must preserve strict TLS, reject redirects and bound response size/time. The Vimeo helper uses Node's URL API; it is not yet a verified Cloud Code paste-in.
 
 ## 2. Instagram posts and reels — `apify/instagram-scraper`
 
@@ -125,7 +131,9 @@ Backfill input (one profile per run or ≤ 10 per run; async with webhook, see N
   "skipPinnedPosts": true
 }
 ```
-Run the same with `"resultsType": "reels"`.
+Run the same with `"resultsType": "reels"` only after its complete dev-batch estimate is approved.
+
+M04 source check26October2026: the [current input schema](https://apify.com/apify/instagram-scraper/input-schema) supports reels; the [actor documentation](https://apify.com/apify/instagram-scraper) describes date/pinned-post filtering for posts. Equivalent reels guarantees are unverified. The local adapter filters reels by date and reports `reels_backfill_exhaustion_unverified`; it does not mark reels backfill complete from a short result page. Posts/reels share account ownership and must use the complete reviewed secondary/settlement path before native execution. Current fixtures are explicitly synthetic.
 
 | instagram-scraper field | Normalized |
 |---|---|

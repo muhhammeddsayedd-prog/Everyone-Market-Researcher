@@ -2,6 +2,8 @@
 
 > Status lives in `./PROGRESS.md`. Read `AGENTS.md` first, then the root `PROGRESS.md`.
 
+> **Owner kickoff26October2026:** M04 is authorized after merged M03. Use focused local/integration tests and representative native/database evidence; no general-purpose acceptance framework. Before any paid fixture or live collector batch, present one complete new M04 estimate including accounts, provider use, retries and shutdown. Production pilot, recurring schedules, notifications and merge remain separate decisions. The first official-API implementation and current source corrections are in PROGRESS.md and SCRAPING_SOURCES.md; historical examples below are not proof of current API/actor contracts.
+
 ## 1. Goal and outcome
 
 Build the first two production collectors on top of the M03 foundation, then backfill the pilot from **1 Jan 2024**:
@@ -186,7 +188,7 @@ Build it exactly as in `docs/N8N_WORKFLOWS.md` §6 WF-10:
 2. **Start the run:** `SUB · Start run` (`WF-10`, `vimeo`, mode), then `ops.get_due_accounts('vimeo', $1, $2::uuid, $3)`.
 3. **Per account (Loop Over Items, batch 1):**
    - **External ID.** If `external_id` is empty, call `GET https://api.vimeo.com/users/{handle}?fields=uri,name,link` → the ID is the last segment of `uri` → `ops.set_account_external_id`.
-     - URLs with `/channels/{x}`, `/showcase/{x}` (API: `/albums/{x}`) or `/groups/{x}` use those endpoints instead. Record `backfill_cursor.endpoint`. If the API refuses → dltik list.
+     - URLs with `/channels/{x}` or `/groups/{x}` use those collections. Showcase listing needs a verified owner-scoped `/users/{owner}/albums/{x}` path; do not guess a global `/albums/{x}`. Record `backfill_cursor.endpoint`. If the API refuses → dltik list.
    - **Cutoff:** daily → `watermark_published_at − 1 day` (or `backfill_from` if null); backfill → `backfill_from` (`2024-01-01`), resuming from `backfill_cursor.page` if set.
    - **List videos:**
      - HTTP Request `GET https://api.vimeo.com/users/{external_id}/videos?sort=date&direction=desc&per_page=100&page={n}&fields=<as T1>`.
@@ -196,7 +198,7 @@ Build it exactly as in `docs/N8N_WORKFLOWS.md` §6 WF-10:
    - **Rate limit:**
      - Read `x-ratelimit-remaining` and `x-ratelimit-reset`. If remaining < 10 → Wait until the reset time (max 10 min, else stop the account with `status='failed'`, `error='vimeo_rate_limited'`).
      - HTTP 429 → Wait 60 s, retry up to 3 times.
-   - **Normalize:** Code "Normalize Vimeo API" (from `n8n/normalizers/vimeoApi.js`). It stops at `watermark_external_id` or the cutoff.
+   - **Normalize:** Code "Normalize Vimeo API" (from `n8n/normalizers/vimeoApi.js`). It includes known IDs through the 30-day metrics horizon (AC5); stop after the older applicable horizon, exhaustion or the explicit page cap. A bounded incomplete cursor is not a finished backfill.
    - **Errors:** HTTP 401/403/404 → group `status='failed'`, `error='vimeo_api_<code>'`; add the account to the fallback list.
    - **Backfill state:** `backfill_done = true` when the last page reached the cutoff or `paging.next` is null. Otherwise save `backfill_cursor = {endpoint, page: next_page}`, so a timeout or next wave resumes.
 4. **Fallback (daily mode only):** if the fallback list is not empty, start `goat255~vimeo-scraper` async (≤ 50 users per run) with this input:
