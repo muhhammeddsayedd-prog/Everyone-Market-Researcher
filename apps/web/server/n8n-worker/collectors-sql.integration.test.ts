@@ -10,7 +10,7 @@ import { dispatchCollectorDatabase } from './collector-database';
 import { createCollectorCallback } from './collector-callback';
 import {
   buildNativeCollector,
-  extendNativeCallback,
+  buildNativeCallback,
 } from '../../../../n8n/collectors/build-native-collectors.mjs';
 import type { NativeCollectorState as CollectorState } from '../../../../n8n/collectors/native-runtime.mjs';
 
@@ -343,18 +343,45 @@ describe.skipIf(process.env.EMR_M04_LOCAL_SQL_TEST !== 'true')(
         expect(
           (await c.query('select status from ops.scrape_runs where id=$1', [i.runId])).rows[0].status,
         ).toBe('running');
-        const callbackGraph = extendNativeCallback(
-          bindings,
-          {
-            audience: origin,
-            credential: {
-              id: 'EmrM03Machine19',
-              name: 'M03 foundation machine [dev]',
-              type: 'httpCustomAuth',
-            },
+        const errorEvent = {
+          version: 1,
+          operation: 'execution.error',
+          args: {
+            workflow_id: 'TsqSMa5MlO3QBLkt',
+            execution_id: '99201',
+            error_code: 'callback_retryable',
           },
-          JSON.parse(readFileSync(new URL('../../../../n8n/workflows/WF-19.json', import.meta.url), 'utf8')),
-        );
+        };
+        // The real private RPC under local role simulation. New request IDs
+        // cannot duplicate an execution's audit or release its live claim.
+        for (let attempt = 0; attempt < 2; attempt++)
+          expect((await http({ ...errorEvent, requestId: randomUUID() })).body.result).toEqual({
+            logged: true,
+            reconciliation_required: true,
+          });
+        expect(
+          (
+            await c.query(
+              "select count(*)::int n from ops.audit_log where entity_id='WF-19' and action='workflow_error' and after->>'execution_id'='99201'",
+            )
+          ).rows[0].n,
+        ).toBe(1);
+        expect(
+          (
+            await c.query(
+              'select r.status,a.locked_until>now() held from ops.scrape_runs r join app.competitor_accounts a on a.last_run_id=r.id where r.id=$1 and a.id=$2',
+              [i.runId, ig],
+            )
+          ).rows[0],
+        ).toMatchObject({ status: 'running', held: true });
+        const callbackGraph = buildNativeCallback(bindings, {
+          audience: origin,
+          credential: {
+            id: 'EmrM03Machine19',
+            name: 'M03 foundation machine [dev]',
+            type: 'httpCustomAuth',
+          },
+        });
         let callbackExecution = 99200;
         const callbackCode = (
           name: string,

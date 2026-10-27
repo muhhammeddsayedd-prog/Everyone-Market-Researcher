@@ -45,7 +45,7 @@ export interface NativeCollectorState {
 }
 export type InstagramBatchPlanner = (
   accounts: NativeCollectorAccount[],
-  options: { mode: 'daily' | 'backfill'; result_type: 'posts' | 'reels' },
+  options: { mode: 'daily' | 'backfill'; result_type: 'posts' | 'reels'; now?: string },
 ) => NativeActorBatch[];
 export type VimeoPageNormalizer = (
   rows: unknown[],
@@ -79,6 +79,7 @@ export function advanceVimeoNative(
 ): NativeCollectorState;
 export function advanceInstagramNative(state: NativeCollectorState, response: unknown): NativeCollectorState;
 export function vimeoNativeAccount(state: NativeCollectorState): NativeCollectorState;
+export function vimeoNativeCursorValid(current: Record<string, unknown>, mode: string): boolean;
 export function vimeoNativeRequest(state: NativeCollectorState): NativeCollectorState;
 export function vimeoNativeReport(state: NativeCollectorState): NativeCollectorState;
 export function vimeoNativeFallback(state: NativeCollectorState, reason: string): NativeCollectorState;

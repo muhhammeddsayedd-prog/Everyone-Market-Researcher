@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Pool, type PoolClient } from 'pg';
 import { attachDatabasePool } from '@vercel/functions';
+import { collectorExecutionErrorArgs, collectorWorkflowIds } from '@emr/shared';
 import { databaseConfig, type WorkerPool } from './database';
 import type { CollectorConfig, CollectorDispatch } from './collectors';
 import { WorkerFailure } from './errors';
@@ -23,6 +24,7 @@ const operations = new Set([
   'stage',
   'settle',
   'status',
+  'execution.error',
 ]);
 /** The existing pinned dev writer/TLS pool, one fixed SQL call and native principal checks.
  * Every request and its effects commit together; a lost receipt is never retried here.
@@ -36,6 +38,19 @@ export async function dispatchCollectorDatabase(
   signal: AbortSignal,
 ): Promise<{ replayed: boolean; result: unknown }> {
   if (!operations.has(operation) || signal.aborted) throw new WorkerFailure('outcome_unknown', 503);
+  let errorEntry: Record<string, unknown> | undefined;
+  if (operation === 'execution.error') {
+    const parsed = collectorExecutionErrorArgs.safeParse(args);
+    if (!parsed.success) throw new WorkerFailure('invalid_request', 400);
+    const input = parsed.data;
+    errorEntry = {
+      kind: 'error',
+      workflow: Object.entries(collectorWorkflowIds).find(([, id]) => id === input.workflow_id)![0],
+      execution_id: input.execution_id,
+      node: input.execution_id.startsWith('handler-') ? 'Trigger activation' : 'Workflow',
+      message: input.error_code,
+    };
+  }
   const client = await pool.connect();
   let released = false,
     closed: Promise<void> | undefined;
@@ -83,6 +98,14 @@ export async function dispatchCollectorDatabase(
       identity?.database !== 'postgres'
     )
       throw new WorkerFailure('identity_denied', 403);
+    // Existing private RPC deduplicates workflow/execution/node atomically.
+    // Omit run_id: an error event cannot prove actor completion or safely
+    // fail a parent/release claims. Reconciliation remains explicit.
+    if (errorEntry) {
+      await query('select ops.log_workflow_error($1::jsonb) as logged', [JSON.stringify(errorEntry)]);
+      await query('commit');
+      return { replayed: false, result: { logged: true, reconciliation_required: true } };
+    }
     const result = (
       await query('select ops.collector_execute($1::uuid,$2::text,$3::jsonb) as receipt', [
         requestId,

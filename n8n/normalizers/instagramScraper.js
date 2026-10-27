@@ -32,6 +32,18 @@ const instagramDate = (value) => {
     return null;
   return parsed.toISOString();
 };
+function instagramCutoff(account, mode, now) {
+  const reference = now === undefined ? null : instagramDate(now);
+  if (now !== undefined && !reference) throw new Error('ig_reference_time_invalid');
+  const floor = Date.parse('2024-01-01T00:00:00.000Z');
+  if (mode === 'backfill') return new Date(floor).toISOString();
+  const watermark = instagramDate(account.last_item_published_at);
+  if (!watermark) throw new Error('ig_daily_watermark_required');
+  const overlap = Date.parse(watermark) - 86400000;
+  return new Date(
+    Math.max(floor, Math.min(overlap, Date.parse(reference ?? watermark) - 30 * 86400000)),
+  ).toISOString();
+}
 const instagramCount = (value, max = Number.MAX_SAFE_INTEGER) => {
   if (
     value === null ||
@@ -255,10 +267,7 @@ function prepareInstagramResults(rawItems, ctx) {
   const groups = [...byHandle.values()].map(({ account, handle, rows }) => {
     const watermark = instagramDate(account.last_item_published_at);
     if (ctx.mode === 'daily' && !watermark) throw new Error('ig_daily_watermark_required');
-    const cutoff =
-      ctx.mode === 'backfill'
-        ? '2024-01-01T00:00:00.000Z'
-        : new Date(Date.parse(watermark) - 86400000).toISOString();
+    const cutoff = instagramCutoff(account, ctx.mode, ctx.now);
     const items = [];
     const sourceDates = [];
     const unpinnedDates = [];
@@ -311,7 +320,12 @@ function prepareInstagramResults(rawItems, ctx) {
         error,
         invalidation_required: invalidationRequired,
       });
-    const priorWaves = account.backfill_cursor?.full_waves;
+    const checkpoint = account.backfill_cursor;
+    const passCursor =
+      instagramRecord(checkpoint) && Object.hasOwn(checkpoint, ctx.result_type)
+        ? checkpoint[ctx.result_type]
+        : checkpoint;
+    const priorWaves = passCursor?.full_waves;
     const fullWaves =
       sourceDates.length >= ctx.resultsLimit
         ? (Number.isSafeInteger(priorWaves) && priorWaves >= 0 ? priorWaves : 0) + 1
@@ -324,7 +338,17 @@ function prepareInstagramResults(rawItems, ctx) {
       backfill_done: complete,
       backfill_cursor:
         !error && ctx.mode === 'backfill' && !complete && oldest
-          ? { oldest_seen: oldest, full_waves: fullWaves }
+          ? {
+              oldest_seen: oldest,
+              full_waves: fullWaves,
+              results_limit: ctx.resultsLimit,
+              history_state:
+                sourceDates.length >= ctx.resultsLimit && ctx.resultsLimit === 3000
+                  ? 'limit_exhausted'
+                  : 'incomplete',
+              strategy: 'latest_limit_escalation',
+              resume_supported: false,
+            }
           : null,
     };
   });
@@ -334,8 +358,25 @@ function prepareInstagramResults(rawItems, ctx) {
     unmatched,
     dropped,
     secondary: ctx.result_type === 'reels',
-    limitations:
-      ctx.mode === 'backfill' && ctx.result_type === 'reels' ? ['reels_backfill_exhaustion_unverified'] : [],
+    // A normalized page cannot establish complete daily metrics coverage.
+    // The callback/parent owns dataset EOF and source-cap accounting.
+    coverage_complete: false,
+    limitations: [
+      ...(ctx.mode === 'backfill' && ctx.result_type === 'reels'
+        ? ['reels_backfill_exhaustion_unverified']
+        : []),
+      ...(ctx.mode === 'backfill' && groups.some((g) => g.backfill_cursor)
+        ? ['historical_cursor_unsupported']
+        : []),
+      ...(ctx.mode === 'backfill' &&
+      groups.some((g) => g.backfill_cursor?.history_state === 'limit_exhausted')
+        ? ['historical_results_limit_exhausted']
+        : []),
+      ...(ctx.mode === 'daily' && ctx.now === undefined ? ['daily_metrics_horizon_not_supplied'] : []),
+      ...(ctx.mode === 'daily' && [...byHandle.values()].some((g) => g.rows.length >= ctx.resultsLimit)
+        ? ['daily_results_limit_reached']
+        : []),
+    ],
   };
 }
 
@@ -345,4 +386,5 @@ if (typeof module !== 'undefined')
     prepareInstagramResults,
     validateInstagramAccounts,
     instagramDate,
+    instagramCutoff,
   };

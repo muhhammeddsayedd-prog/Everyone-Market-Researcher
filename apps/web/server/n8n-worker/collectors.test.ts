@@ -48,6 +48,23 @@ function setup(env = environment) {
   };
 }
 describe('M04 fixed collector gateway, local HTTP integration', () => {
+  it('accepts only a fixed classified error envelope for owned workflow identities', async () => {
+    const t = setup();
+    const args = { workflow_id: 'TsqSMa5MlO3QBLkt', execution_id: '314', error_code: 'callback_retryable' };
+    expect((await t.handler(req('execution.error', args))).status).toBe(200);
+    expect(t.dispatch).toHaveBeenCalledWith(
+      id,
+      'execution.error',
+      args,
+      expect.any(Object),
+      expect.any(AbortSignal),
+    );
+    for (const extra of [{ message: 'private text' }, { stack: 'private stack' }, { run_id: id }]) {
+      expect((await t.handler(req('execution.error', { ...args, ...extra }))).status).toBe(400);
+    }
+    expect((await t.handler(req('execution.error', { ...args, workflow_id: 'unrelated' }))).status).toBe(400);
+    expect(t.dispatch).toHaveBeenCalledTimes(1);
+  });
   it('connects a validated owned start request to the database adapter', async () => {
     const t = setup();
     const r = await t.handler(req());

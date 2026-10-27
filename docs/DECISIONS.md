@@ -448,16 +448,50 @@ they do not broaden direct table grants or replace historical RPCs.
 
 Native definitions are generated inactive local blueprints until saved and
 read back from Cloud. Explicit selected UUIDs are required before a native run
-starts; WF-00 selection wiring is still pending. Official Vimeo runs inline;
+starts. WF-00 now has a local fixed-selection definition; native installation
+and delivery of this maintained revision remain pending. Official Vimeo runs inline;
 fallbacks and Instagram remain asynchronous with durable launch intents, no
 automatic paid POST retry, trusted provider identity/input/cost verification
 and idempotent paged settlement. Native evidence and real source fixtures
 remain separate from local synthetic/code/SQL results.
 
-The one [representative dev packet](../milestones/M04-collectors-vimeo-instagram/evidence/live-test-estimate-20261027.md)
-is proposed, not approved: target two/max four sequential Instagram starts,
-USD1/start and USD4 aggregate, selected public accounts and setup/recovery/
-shutdown included. It explicitly includes the requested temporary project-default
-bypass exception; the earlier M03 exception does not carry forward. No live
-collection or hosted M04 migration has begun. Production, recurring activity,
-notifications, PR13 merge and M05 remain separate decisions.
+The approved representative packet is now closed: ten Vimeo records, including
+two content duplicates, a zero-new-item rerun, eleven unique Instagram items,
+two actors and USD0.046 actual usage. All seventeen dev migrations, retained
+rows, persistent credentials, prior charges and verified shutdown remain.
+
+### Maintained product paths after the representative sample
+
+The continued local implementation uses a maintained M04-only WF-19 and a
+dedicated WF-90-M04 Error Trigger. It does not activate closed foundation
+dispatch, SUB workflows or M03 test windows. The new handler has no installed
+Cloud ID yet: consumers omit `settings.errorWorkflow` until the actual dedicated
+ID is read back and explicitly bound. Its fixed `execution.error` operation
+reuses `ops.log_workflow_error` through the restricted writer connection. No
+run ID, raw message, stack, URL or execution data is accepted. It logs a
+deduplicated classification only; failing a parent, releasing a claim or
+restarting an uncertain actor requires separate reconciliation evidence.
+
+Vimeo resume cursors bind the resource path and page width. A legacy resumed
+page without its original width fails closed rather than skipping history.
+Daily pagination caps are incomplete coverage, not successful full traversal.
+Instagram daily INPUT uses the claimed watermark minus thirty days (floor
+2024-01-01), with a trusted launch timestamp for the normalization horizon.
+This adds bounded metrics refresh through duplicate upserts in the daily path;
+full weekly WF-40 refresh remains M06. Result caps can still prevent complete
+metrics coverage. No new schedule is authorized.
+
+Instagram's provider has no verified historical cursor/upper-date input.
+Latest-result expansion is bounded at 3,000, with per-pass checkpoints and an
+explicit unsupported-history stop when that bound may be saturated. SQL keeps
+normalized counts rather than raw per-account counts; final settlement uses
+the batch raw count conservatively. This can stop or flag coverage early; it
+cannot assert complete history from filtered counts, repeated capped pages or
+short reels output. Such a stop retains claims/run records for reconciliation;
+the global error handler does not silently release them.
+
+The [incremental dev packet](../milestones/M04-collectors-vimeo-instagram/evidence/incremental-dev-coverage-packet-20261027.md)
+is a new, **unapproved and unexecuted** scope, including all setup/recovery/
+shutdown and its temporary sole/default-bypass decision. Unused capacity from
+the closed sample is not expanded-scope authority. Production, recurring
+activity, notifications, PR13 merge and M05 remain separate decisions.

@@ -11,6 +11,7 @@ import {
   edge,
   line,
   booleanIf,
+  execute,
 } from '../foundation/build-foundation.mjs';
 import { buildInstagramBatches } from './instagram.mjs';
 import * as runtime from './native-runtime.mjs';
@@ -108,16 +109,422 @@ function nativeWait(key) {
   };
 }
 
-export function buildNativeCollector(input, transport, kind) {
+const collectorInputFields = [
+  ['mode', 'string'],
+  ['limit', 'number'],
+  ['result_type', 'string'],
+  ['env', 'string'],
+  ['max_pages', 'number'],
+  ['page_size', 'number'],
+  ['results_limit', 'number'],
+  ['max_actor_starts', 'number'],
+  ['account_ids', 'array'],
+];
+
+function errorWorkflowBinding(bindings, workflowId) {
+  if (workflowId === undefined) return { key: 'WF-90-M04', state: 'unresolved', reason: 'not_installed' };
+  if (
+    typeof workflowId !== 'string' ||
+    !/^[A-Za-z0-9_-]{1,128}$/.test(workflowId) ||
+    workflowId === 'M04ErrorHandlerNotInstalled' ||
+    Object.values(bindings.workflowRefs).some((r) => r.id === workflowId)
+  )
+    throw Error('M04_ERROR_WORKFLOW_BINDING_INVALID');
+  return { key: 'WF-90-M04', state: 'bound', id: workflowId };
+}
+
+function privateSettings(bindings, key, errorWorkflowId) {
+  const result = settings(bindings, key);
+  delete result.errorWorkflow;
+  const binding = errorWorkflowBinding(bindings, errorWorkflowId);
+  return {
+    ...result,
+    ...(binding.state === 'bound' ? { errorWorkflow: binding.id } : {}),
+    executionTimeout: 1800,
+    saveDataSuccessExecution: 'none',
+    saveDataErrorExecution: 'none',
+    saveManualExecutions: false,
+    saveExecutionProgress: false,
+  };
+}
+
+/** Explicit selection is authored into this inactive definition. Trigger input
+ * cannot choose another account, mode, workflow ID or independent IG pass. */
+export function buildNativeOrchestrator(input, transport, selection, errorWorkflowId) {
+  const b = parseN8nBindings(input);
+  parseCollectorTransport(transport);
+  const key = 'WF-00',
+    bad = () => {
+      throw Error('M04_ORCHESTRATOR_SELECTION_INVALID');
+    };
+  if (
+    !selection ||
+    typeof selection !== 'object' ||
+    Array.isArray(selection) ||
+    Object.keys(selection).length !== 7 ||
+    Object.keys(selection).some(
+      (k) =>
+        ![
+          'mode',
+          'vimeo_account_ids',
+          'instagram_account_ids',
+          'max_pages',
+          'page_size',
+          'results_limit',
+          'max_actor_starts',
+        ].includes(k),
+    ) ||
+    !['daily', 'backfill'].includes(selection.mode) ||
+    ['max_pages', 'page_size', 'results_limit', 'max_actor_starts'].some(
+      (field) => !Number.isInteger(selection[field]),
+    )
+  )
+    bad();
+  const fixed = {};
+  for (const kind of ['vimeo', 'instagram']) {
+    const accountIds = selection[kind + '_account_ids'];
+    if (!Array.isArray(accountIds)) bad();
+    const normalized = accountIds.map((id) => (typeof id === 'string' ? id.toLowerCase() : id));
+    const collectorInput = {
+      mode: selection.mode,
+      limit: normalized.length,
+      result_type: 'both',
+      env: 'dev',
+      max_pages: selection.max_pages,
+      page_size: selection.page_size,
+      results_limit: selection.results_limit,
+      max_actor_starts: selection.max_actor_starts,
+      account_ids: normalized,
+    };
+    try {
+      runtime.initializeCollector(collectorInput, kind, '1', '2026-10-27T00:00:00Z');
+    } catch {
+      bad();
+    }
+    fixed[kind] = collectorInput;
+  }
+  if (fixed.vimeo.account_ids.some((id) => fixed.instagram.account_ids.includes(id))) bad();
+  const nodes = [
+    trigger(key, [['env', 'string']]),
+    code(key, 'Fixed M04 collector selection', 'return [{json:' + JSON.stringify(fixed) + '}];', [200, 0]),
+    ...['vimeo', 'instagram'].map((kind, i) =>
+      execute(
+        b,
+        key,
+        kind === 'vimeo' ? 'Collect selected Vimeo accounts' : 'Collect selected Instagram posts and reels',
+        kind === 'vimeo' ? 'WF-10' : 'WF-11',
+        collectorInputFields,
+        Object.fromEntries(
+          collectorInputFields.map(([field]) => [
+            field,
+            `={{ $('Fixed M04 collector selection').first().json.${kind}.${field} }}`,
+          ]),
+        ),
+        true,
+        [400 + i * 200, 0],
+      ),
+    ),
+    code(
+      key,
+      'Return M04 orchestration result',
+      `const v=$('Collect selected Vimeo accounts').first().json,i=$input.first().json;return[{json:{env:'dev',vimeo:v,instagram:i}}];`,
+      [800, 0],
+    ),
+  ];
+  return {
+    key,
+    kind: 'native-json-blueprint',
+    hostedAcceptance: false,
+    runnableWorkflow: true,
+    liveEnabled: false,
+    definitionProfile: 'inactive_native_staging',
+    errorWorkflowBinding: errorWorkflowBinding(b, errorWorkflowId),
+    requiredRefs: {
+      workflowKeys: ['WF-10', 'WF-11', 'WF-90-M04'],
+      credentialKeys: [],
+      tagNames: ['env:dev', 'layer:ops'],
+    },
+    workflow: {
+      name: ref(b, key).name,
+      active: false,
+      nodes,
+      connections: line(
+        'When called',
+        'Fixed M04 collector selection',
+        'Collect selected Vimeo accounts',
+        'Collect selected Instagram posts and reels',
+        'Return M04 orchestration result',
+      ),
+      settings: privateSettings(b, key, errorWorkflowId),
+      tags: tags(b, ['env:dev', 'layer:ops']),
+      pinData: {},
+    },
+    limitations: ['Local fixed-selection wiring only; no native execution or recurring schedule acceptance.'],
+  };
+}
+
+/** Maintained M04 callback. The closed M03 manual/stub/dispatch definition is
+ * historical evidence, never a dependency of this product graph. */
+export function buildNativeCallback(input, transport, errorWorkflowId) {
+  const b = parseN8nBindings(input),
+    c = parseCollectorTransport(transport),
+    key = 'WF-19';
+  const webhook = {
+    id: nodeId(key, 'Apify callback'),
+    name: 'Apify callback',
+    type: 'n8n-nodes-base.webhook',
+    typeVersion: 2.2,
+    parameters: {
+      httpMethod: 'POST',
+      path: 'emr-apify-callback',
+      authentication: 'none',
+      responseMode: 'responseNode',
+      options: {},
+    },
+    position: [0, -200],
+    webhookId: nodeId(key, 'M04 callback webhook'),
+  };
+  const response = (name, status, body, position) => ({
+    id: nodeId(key, name),
+    name,
+    type: 'n8n-nodes-base.respondToWebhook',
+    typeVersion: 1.5,
+    parameters: {
+      respondWith: 'json',
+      responseBody: body,
+      options: { responseCode: status, enableStreaming: false },
+    },
+    position,
+  });
+  const nodes = [
+    webhook,
+    trigger(key, [
+      ['apify_run_id', 'string'],
+      ['env', 'string'],
+      ['transport', 'string'],
+    ]),
+    code(
+      key,
+      'Validate callback source',
+      one +
+        `const bad=()=>{throw Error('M04_CALLBACK_INVALID');};
+let id,transport;if(Object.hasOwn(j,'body')){const b=j.body;if(!b||typeof b!=='object'||Array.isArray(b)||!['ACTOR.RUN.SUCCEEDED','ACTOR.RUN.FAILED','ACTOR.RUN.TIMED_OUT','ACTOR.RUN.ABORTED'].includes(b.eventType)||!b.resource||typeof b.resource!=='object'||Array.isArray(b.resource))bad();id=b.resource.id;transport='webhook';}
+else{if(Object.keys(j).length!==3||Object.keys(j).some(k=>!['apify_run_id','env','transport'].includes(k))||j.env!=='dev'||j.transport!=='recovery')bad();id=j.apify_run_id;transport='recovery';}
+if(typeof id!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(id))bad();return[{json:{apify_run_id:id,transport}}];`,
+      [200, 0],
+    ),
+    code(
+      key,
+      'Prepare callback classification',
+      one +
+        runtime.collectorRequestId.toString() +
+        `\nreturn[{json:{source:j,request:{version:1,requestId:collectorRequestId(String($execution.id),1),operation:'callback.classify',args:{apify_run_id:j.apify_run_id}}}}];`,
+      [400, 0],
+    ),
+    http(
+      c,
+      key,
+      'Classify registered callback',
+      'gateway',
+      'POST',
+      c.audience + '/api/internal/n8n/collectors',
+      [600, 0],
+      '={{ $json.request }}',
+    ),
+    code(
+      key,
+      'Check callback classification',
+      one +
+        `const prior=$('Prepare callback classification').item.json,b=j.body;if(j.statusCode!==200||b?.version!==1||b.requestId!==prior.request.requestId||b.operation!=='callback.classify'||!['m04','foundation','unknown'].includes(b.result?.scope))throw Error('M04_CALLBACK_RECONCILIATION_REQUIRED');return[{json:{...prior.source,scope:b.result.scope}}];`,
+      [800, 0],
+    ),
+    booleanIf(key, 'M04 registered callback?', "={{ $json.scope === 'm04' }}", [1000, 0]),
+    booleanIf(key, 'Unknown callback webhook?', "={{ $json.transport === 'webhook' }}", [1200, 300]),
+    response('Respond unknown callback', 403, '={{ {ok:false,rejected:true} }}', [1400, 200]),
+    code(key, 'Unknown callback rejected', `throw Error('M04_UNKNOWN_CALLBACK_REJECTED');`, [1400, 400]),
+    code(
+      key,
+      'Prepare M04 callback processing',
+      one +
+        runtime.collectorRequestId.toString() +
+        `\nconst page=j.pageNumber??0;if(!Number.isInteger(page)||page<0||page>=61)throw Error('M04_CALLBACK_PAGE_BOUND');return[{json:{source:j,pageNumber:page,request:{version:1,requestId:collectorRequestId(String($execution.id),2+page),operation:'callback.process',args:{apify_run_id:j.apify_run_id}}}}];`,
+      [1200, -200],
+    ),
+    http(
+      c,
+      key,
+      'Process verified M04 callback',
+      'gateway',
+      'POST',
+      c.audience + '/api/internal/n8n/collectors',
+      [1400, -200],
+      '={{ $json.request }}',
+      60000,
+    ),
+    code(
+      key,
+      'Verify M04 callback receipt',
+      one +
+        `const prior=$('Prepare M04 callback processing').item.json,b=j.body;if(j.statusCode!==200||b?.version!==1||b.requestId!==prior.request.requestId||b.operation!=='callback.process'||typeof b.replayed!=='boolean'||!b.result||!['pending','completed'].includes(b.result.state))throw Error('M04_CALLBACK_RECONCILIATION_REQUIRED');return[{json:{apify_run_id:prior.source.apify_run_id,pageNumber:prior.pageNumber+1,transport:prior.source.transport,accepted:true,replayed:b.replayed||(b.result.state==='completed'&&b.result.updated===false),completion:b.result,pending:b.result.state==='pending'}}];`,
+      [1600, -200],
+    ),
+    booleanIf(key, 'M04 dataset pages pending?', '={{ $json.pending }}', [1800, -200]),
+    booleanIf(key, 'M04 webhook response?', "={{ $json.transport === 'webhook' }}", [2000, 0]),
+    response(
+      'Respond M04 callback',
+      200,
+      '={{ {ok:true,accepted:true,replayed:$json.replayed} }}',
+      [2200, -100],
+    ),
+    code(key, 'Return M04 callback result', one + 'return [{json:j}];', [2200, 100]),
+  ];
+  return {
+    key,
+    kind: 'native-json-blueprint',
+    hostedAcceptance: false,
+    runnableWorkflow: true,
+    liveEnabled: false,
+    definitionProfile: 'inactive_native_staging',
+    errorWorkflowBinding: errorWorkflowBinding(b, errorWorkflowId),
+    requiredRefs: {
+      workflowKeys: ['WF-90-M04'],
+      credentialKeys: ['foundationGateway'],
+      tagNames: ['env:dev', 'layer:ops'],
+    },
+    workflow: {
+      name: ref(b, key).name,
+      active: false,
+      nodes,
+      settings: privateSettings(b, key, errorWorkflowId),
+      tags: tags(b, ['env:dev', 'layer:ops']),
+      pinData: {},
+      connections: {
+        ...line('Apify callback', 'Validate callback source'),
+        ...line('When called', 'Validate callback source'),
+        ...line(
+          'Validate callback source',
+          'Prepare callback classification',
+          'Classify registered callback',
+          'Check callback classification',
+          'M04 registered callback?',
+        ),
+        'M04 registered callback?': {
+          main: [[edge('Prepare M04 callback processing')], [edge('Unknown callback webhook?')]],
+        },
+        'Unknown callback webhook?': {
+          main: [[edge('Respond unknown callback')], [edge('Unknown callback rejected')]],
+        },
+        ...line(
+          'Prepare M04 callback processing',
+          'Process verified M04 callback',
+          'Verify M04 callback receipt',
+          'M04 dataset pages pending?',
+        ),
+        'M04 dataset pages pending?': {
+          main: [[edge('Prepare M04 callback processing')], [edge('M04 webhook response?')]],
+        },
+        'M04 webhook response?': {
+          main: [[edge('Respond M04 callback')], [edge('Return M04 callback result')]],
+        },
+      },
+    },
+    limitations: [
+      'Only registered M04 callbacks are accepted; foundation callbacks remain with their historical workflow.',
+      'Local definition only; native webhook delivery remains separate acceptance.',
+    ],
+  };
+}
+
+/** A dedicated M04 error workflow logs a bounded classification only. It never
+ * guesses a scrape run, releases claims, retries starts or invokes closed M03. */
+export function buildNativeErrorHandler(input, transport, workflowId) {
+  const b = parseN8nBindings(input),
+    c = parseCollectorTransport(transport),
+    key = 'WF-90-M04';
+  const sources = Object.fromEntries(['WF-00', 'WF-10', 'WF-11', 'WF-19'].map((k) => [ref(b, k).id, k]));
+  const nodes = [
+    node(key, 'On M04 workflow error', 'errorTrigger', {}, [0, 0]),
+    code(
+      key,
+      'Prepare classified M04 error',
+      one +
+        runtime.collectorRequestId.toString() +
+        `
+const sources=${JSON.stringify(sources)},workflow=j.workflow?.id;
+if(typeof workflow!=='string'||!Object.hasOwn(sources,workflow))throw Error('M04_ERROR_SOURCE_INVALID');
+const handler=String($execution.id);let execution=j.execution?.id;
+if(execution===undefined||execution===null||execution===''){
+  if(!j.trigger||typeof j.trigger!=='object'||Array.isArray(j.trigger)||!/^\\d{1,15}$/.test(handler))throw Error('M04_ERROR_CORRELATION_INVALID');
+  execution='handler-'+handler;
+}else{if(!['string','number'].includes(typeof execution)||!/^\\d{1,15}$/.test(String(execution))||!Number.isSafeInteger(Number(execution)))throw Error('M04_ERROR_CORRELATION_INVALID');execution=String(execution);}
+return[{json:{request:{version:1,requestId:collectorRequestId(handler,1),operation:'execution.error',args:{workflow_id:workflow,execution_id:execution,error_code:execution.startsWith('handler-')?'workflow_failed':sources[workflow]==='WF-19'?'callback_retryable':'workflow_failed'}}}}];`,
+      [200, 0],
+    ),
+    http(
+      c,
+      key,
+      'Log classified M04 error',
+      'gateway',
+      'POST',
+      c.audience + '/api/internal/n8n/collectors',
+      [400, 0],
+      '={{ $json.request }}',
+    ),
+    code(
+      key,
+      'Verify M04 error receipt',
+      one +
+        `const prior=$('Prepare classified M04 error').item.json,b=j.body;
+if(j.statusCode!==200||b?.version!==1||b.requestId!==prior.request.requestId||b.operation!=='execution.error'||b.replayed!==false||b.result?.logged!==true||b.result.reconciliation_required!==true)throw Error('M04_ERROR_LOG_UNCONFIRMED');return[{json:{logged:true,reconciliation_required:true}}];`,
+      [600, 0],
+    ),
+  ];
+  return {
+    key,
+    kind: 'native-json-blueprint',
+    hostedAcceptance: false,
+    runnableWorkflow: true,
+    liveEnabled: false,
+    definitionProfile: 'inactive_native_staging',
+    errorWorkflowBinding: errorWorkflowBinding(b, workflowId),
+    requiredRefs: {
+      workflowKeys: [],
+      credentialKeys: ['foundationGateway'],
+      tagNames: ['env:dev', 'layer:ops'],
+    },
+    workflow: {
+      name: 'WF-90-M04 · Collector error handler [dev]',
+      active: false,
+      nodes,
+      connections: line(
+        'On M04 workflow error',
+        'Prepare classified M04 error',
+        'Log classified M04 error',
+        'Verify M04 error receipt',
+      ),
+      settings: privateSettings(b, key),
+      tags: tags(b, ['env:dev', 'layer:ops']),
+      pinData: {},
+    },
+    limitations: [
+      ...(workflowId === undefined
+        ? [
+            'Not installed: generated consumers omit settings.errorWorkflow until a real dedicated M04 workflow ID is explicitly bound.',
+          ]
+        : []),
+      'Logs classification only; reconciliation must preserve actor, claim and parent state.',
+      'Native Error Trigger acceptance requires an automatic failure; manual execution cannot prove it.',
+    ],
+  };
+}
+
+export function buildNativeCollector(input, transport, kind, errorWorkflowId) {
   const b = parseN8nBindings(input),
     c = parseCollectorTransport(transport),
     key = kind === 'vimeo' ? 'WF-10' : 'WF-11';
   ref(b, key);
-  ref(b, 'WF-90');
   if (!['vimeo', 'instagram'].includes(kind)) throw Error('M04_COLLECTOR_KIND_INVALID');
-  const collectorSettings = settings(b, key);
-  const deferredErrorWorkflowId = collectorSettings.errorWorkflow;
-  delete collectorSettings.errorWorkflow;
+  const collectorSettings = privateSettings(b, key, errorWorkflowId);
   const webhooks = Buffer.from(
     JSON.stringify([
       {
@@ -187,17 +594,7 @@ export function buildNativeCollector(input, transport, kind) {
     [1200, 200],
   );
   const nodes = [
-    trigger(key, [
-      ['mode', 'string'],
-      ['limit', 'number'],
-      ['result_type', 'string'],
-      ['env', 'string'],
-      ['max_pages', 'number'],
-      ['page_size', 'number'],
-      ['results_limit', 'number'],
-      ['max_actor_starts', 'number'],
-      ['account_ids', 'array'],
-    ]),
+    trigger(key, collectorInputFields),
     init,
     prepare,
     booleanIf(key, 'Collector complete?', "={{ $json.action === 'done' }}", [600, 0]),
@@ -272,9 +669,9 @@ export function buildNativeCollector(input, transport, kind) {
     runnableWorkflow: true,
     liveEnabled: false,
     definitionProfile: 'inactive_native_staging',
-    deferredErrorWorkflowId,
+    errorWorkflowBinding: errorWorkflowBinding(b, errorWorkflowId),
     requiredRefs: {
-      workflowKeys: ['WF-90'],
+      workflowKeys: ['WF-90-M04'],
       credentialKeys:
         kind === 'vimeo' ? ['foundationGateway', 'vimeo', 'apify'] : ['foundationGateway', 'apify'],
       tagNames: ['env:dev', 'layer:collector', 'platform:' + kind],
@@ -298,7 +695,11 @@ export function buildNativeCollector(input, transport, kind) {
     limitations: [
       'Generated code and local database proof do not establish native Cloud or provider acceptance.',
       'No automatic actor POST retries; ambiguous starts require reconciliation.',
-      'Global error-handler binding is deferred until WF90 has a compatible M04 logging gateway; no closed M03 window is invoked.',
+      ...(errorWorkflowId === undefined
+        ? [
+            'Dedicated M04 error-handler binding remains unresolved until its actual Cloud ID is explicitly supplied; no closed M03 window is invoked.',
+          ]
+        : []),
       ...(kind === 'vimeo'
         ? [
             'Fallback actors require their own explicit approved policy; the representative Instagram-only live policy cannot enable them.',

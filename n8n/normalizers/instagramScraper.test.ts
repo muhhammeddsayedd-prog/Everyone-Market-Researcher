@@ -170,12 +170,12 @@ describe('Instagram pure account results and explicit limits', () => {
     expect(result.groups[0].items).toHaveLength(4);
     expect(result.unmatched).toEqual({ count: 1, owner_usernames: ['renamed_studio'] });
   });
-  it('drops daily old pinned rows and enforces each account overlap cutoff', () => {
+  it('drops daily old pinned rows and enforces each account 30-day metrics cutoff', () => {
     const result = prepareInstagramResults(
       [
         row({ shortCode: 'OldPinned', timestamp: '2026-10-24T08:00:00Z', isPinned: true }),
-        row({ shortCode: 'OldOrdinary', timestamp: '2026-10-23T08:59:59Z' }),
-        row({ shortCode: 'Overlap', timestamp: '2026-10-23T09:00:00Z' }),
+        row({ shortCode: 'OldOrdinary', timestamp: '2026-09-24T08:59:59Z' }),
+        row({ shortCode: 'Overlap', timestamp: '2026-09-24T09:00:00Z' }),
       ],
       context(),
     );
@@ -277,7 +277,7 @@ describe('Instagram pure asynchronous batch inputs', () => {
       input: {
         resultsType: 'posts',
         resultsLimit: 30,
-        onlyPostsNewerThan: '2026-10-23',
+        onlyPostsNewerThan: '2026-09-24',
         skipPinnedPosts: true,
         addParentData: false,
       },
@@ -290,7 +290,7 @@ describe('Instagram pure asynchronous batch inputs', () => {
       [account(1), account(2, { last_item_published_at: '2026-09-01T00:00:00Z' })],
       { mode: 'daily', result_type: 'posts' },
     );
-    expect(batches.map((batch) => batch.input.onlyPostsNewerThan)).toEqual(['2026-08-31', '2026-10-23']);
+    expect(batches.map((batch) => batch.input.onlyPostsNewerThan)).toEqual(['2026-08-02', '2026-09-24']);
     expect(() =>
       buildInstagramBatches([account(1, { last_item_published_at: null })], {
         mode: 'daily',

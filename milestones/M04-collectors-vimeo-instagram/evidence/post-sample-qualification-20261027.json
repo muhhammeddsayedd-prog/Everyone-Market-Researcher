@@ -1,0 +1,119 @@
+{
+  "observedAt": "2026-10-27T15:00:58.986Z",
+  "scope": "local post-sample M04 implementation; no new hosted or provider operation",
+  "baseHead": "6cc21ab0df367e644eae3097532da7b1dcdd3720",
+  "checks": {
+    "changedGatewayCallback": {
+      "passed": 50,
+      "files": 3,
+      "exit": 0
+    },
+    "localSql": {
+      "passed": 1,
+      "exit": 0,
+      "boundary": "localhost PostgreSQL; actual product/error RPCs; synthetic providers; role simulation; rollback and child closed"
+    },
+    "shared": {
+      "passed": 265,
+      "files": 8,
+      "exit": 0
+    },
+    "rootWorkspaceTypecheck": {
+      "exit": 0
+    },
+    "changedEslint": {
+      "exit": 0
+    },
+    "sourceNormalizers": {
+      "passed": 239,
+      "files": 8,
+      "exit": 0
+    },
+    "nativeBuilders": {
+      "passed": 33,
+      "exit": 0
+    },
+    "changedFormatting": {
+      "exit": 0
+    }
+  },
+  "review": {
+    "scope": "independent source/orchestration/gateway/packet review",
+    "resolved": [
+      "native empty nonterminal Vimeo page must fail before cursor progress",
+      "daily callback input/date mismatch and page-stripped cap markers",
+      "global error logs fixed classification without failing parent or releasing claim",
+      "pure Vimeo daily-cap path preserves validated metrics rows while account/run remain failed; ordinary failure buffers remain excluded"
+    ],
+    "pending": [],
+    "result": "independent focused review clear; no unresolved blocking local finding"
+  },
+  "preservation": {
+    "devMigrationFilesChanged": 0,
+    "historicalM03FilesChanged": 0,
+    "acceptedUsage": {
+      "management": 88,
+      "control": 282,
+      "combined": 370,
+      "vercel": 36,
+      "actors": 2,
+      "actualActorUsd": 0.046
+    },
+    "persistentCredentials": "not read or altered",
+    "originalWorkspaceDirt": "verified unchanged",
+    "newHostedRequests": 0,
+    "privateScratchOrCredentialsCreated": 0
+  },
+  "nativeGaps": [
+    "WF-00 maintained native invocation",
+    "dedicated WF-90-M04 installation, actual ID binding and automatic Error Trigger delivery",
+    "maintained WF-19 live callback revision",
+    "remaining accounts, metrics, history and fallback observations"
+  ],
+  "ci": {
+    "historicalRun": 40518899158,
+    "state": "new pushed-head required checks pending; GitHub checks authoritative"
+  },
+  "framework": "existing builders, adapter and focused tests only; no new acceptance supervisor",
+  "sourceSha256": {
+    "apps/web/server/n8n-worker/collector-callback.test.ts": "a8437216dcb05350b5c43d3ebace286f65a850c45b084e88f5992d1ee11bbc4a",
+    "apps/web/server/n8n-worker/collector-callback.ts": "d56fa78cd6929f21036c8e9a765b19bb9149c2b992a7422ad2e7eb97808eb865",
+    "apps/web/server/n8n-worker/collector-database.test.ts": "e50b0e5df55f112b402e5448af102f24b90dd1e37e93ced8a945069a0aa18ef4",
+    "apps/web/server/n8n-worker/collector-database.ts": "7f26fcae58430d21774ae5311b5a42221d98ea0b931d00a9eab633e8e87a78b6",
+    "apps/web/server/n8n-worker/collectors-sql.integration.test.ts": "bf2c91c1d3e82b145539c6f495baaeb18858f185de507945319715d27d2cdb48",
+    "apps/web/server/n8n-worker/collectors.test.ts": "5814826c1e88cf8390b8f22d1b1e4aa904807b47acf2bc28519ed1dec008c905",
+    "n8n/collectors/blueprints/WF-10.json": "f900d841552cff20bbd188d09bcf46c0e82c051203e9124af55da67ad5c86856",
+    "n8n/collectors/blueprints/WF-11.json": "d50644e8e3122c01258e502302b6f0c9bf9a0741271fb9bf299267b1a3be8191",
+    "n8n/collectors/blueprints/WF-19.json": "b2d04f28a9a4e53e18d717f849efd3ad179ea48e6d1cec4f57ab4614fcf536b6",
+    "n8n/collectors/build-native-collectors.d.mts": "5e9ea1915c2efafaee5724a7b681dccbd78875d1463a402812d6b7e78558764f",
+    "n8n/collectors/build-native-collectors.mjs": "a7cc86737242e6fad05b937b7d9956550a5961de15d182473c0030084a596a01",
+    "n8n/collectors/build-native-collectors.test.mjs": "4a5edd62c3806df73c2f5aff7b61c4eb6e657b6fa253940616532f7fb3a74000",
+    "n8n/collectors/generate-native-collectors.mjs": "694d03fae521db48fc69b4626cd5fac271058185248861d55747572ab12426ed",
+    "n8n/collectors/instagram.mjs": "5f39adc5153f83c249daaf05cc5f88756c63333dba7e8621b0cd0bc56e65d273",
+    "n8n/collectors/native-runtime.d.mts": "3d197d60f8277cfa51eb0680f4ea0665b63b7dcd2a2e5ff54c9bb25c02618e90",
+    "n8n/collectors/native-runtime.mjs": "4c0dce4b662308cd8b97ca94785f380c14019aac6e73c15d600ac8544f4ad387",
+    "n8n/collectors/vimeo-run.mjs": "80b496d86fd69e9449dba2656ebb5093b536b29174a0dff71892f469da56f169",
+    "n8n/collectors/vimeo.d.mts": "aebaeda520d95f086d6456980c7dcc27042c9fe5acf76496964a01aa94fbe001",
+    "n8n/collectors/vimeo.mjs": "fcef5cb82b09dd2fcde3bf1d5e774f11210377e49eb69b9d14eb48efb1ad3e0f",
+    "n8n/normalizers/instagramScraper.js": "7905a97be969efff079020291a5db4ef62227c8422ed1b1c16b8cecb604323fc",
+    "n8n/normalizers/instagramScraper.test.ts": "d0f489e6644bea50fad2f675b70c68c3667c687f5729a46581cdda29057b7044",
+    "n8n/normalizers/vimeo-collector.test.ts": "69bc9316f1b618116006f60a1e13c660971bf8fade04e6465098c86e2bf952d6",
+    "n8n/normalizers/vimeo-run.test.ts": "2c2725c2b76edc4fb5f6b5c69e58f79705d47d4d05c6b28325ff589bae46c20b",
+    "packages/shared/src/index.ts": "f57d6b0990b37b8a41b86057eac5bf85bf731cfdbebb2cf10d9057533dd2bc62",
+    "packages/shared/src/n8n-collector-contracts.ts": "3be4a9b888456935847681d95d73e7fccf7de4415888bc8f44392e42c96c1c32",
+    "n8n/collectors/blueprints/WF-00.json": "e27ce2e508004ca7af12d0b40cdf84d0eae7061932c4f4f749d61e35a651ab79",
+    "n8n/collectors/blueprints/WF-90-M04.json": "d87471b20301ad9fa71bf6b94050f2b29a6e4705ac46b4abff46e03f70ecd3f5",
+    "n8n/collectors/instagram.d.mts": "21ca102b6985a7b130bb9f18bff47e342fb35165951f5e3ab1ffc43b58ec4d6a",
+    "n8n/collectors/selection.dev.json": "d437b5c89b97638ffba15aadb90d762cec189291d6274ad91af2b2a75310fe6d",
+    "n8n/normalizers/collector-source-regressions.test.ts": "61e0a155bb7ef6b767d9fe7da49ba2403c06bcf99a8ab41759c5a4bd9d2dd317"
+  },
+  "commands": [
+    "pnpm typecheck",
+    "pnpm exec vitest run --project normalizers",
+    "node --test n8n/collectors/build-native-collectors.test.mjs",
+    "pnpm exec vitest run --project web apps/web/server/n8n-worker/{collector-callback,collector-database,collectors}.test.ts",
+    "EMR_M04_LOCAL_SQL_TEST=true pnpm exec vitest run --project web apps/web/server/n8n-worker/collectors-sql.integration.test.ts",
+    "pnpm exec vitest run --project shared",
+    "eslint changed-code paths; prettier --check changed paths; node scripts/check-secrets.mjs"
+  ]
+}

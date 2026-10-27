@@ -1,7 +1,7 @@
 // Pure input planning only. The existing async start/callback pipeline owns network and cost effects.
 import instagram from '../normalizers/instagramScraper.js';
 
-const { validateInstagramAccounts, instagramDate } = instagram;
+const { validateInstagramAccounts, instagramDate, instagramCutoff } = instagram;
 
 /** Claimed account rows only; a daily reels caller obtains these from the secondary-pass RPC. */
 export function buildInstagramBatches(accounts, options) {
@@ -11,6 +11,7 @@ export function buildInstagramBatches(accounts, options) {
     !['posts', 'reels'].includes(options.result_type)
   )
     throw new Error('ig_batch_context_invalid');
+  if (options.now !== undefined && !instagramDate(options.now)) throw new Error('ig_reference_time_invalid');
   const validated = validateInstagramAccounts(accounts).map(({ account, handle }) => {
     // The joint posts/reels report stores both checkpoints in one account row.
     // Resume this pass's checkpoint, while accepting the legacy flat cursor.
@@ -20,6 +21,8 @@ export function buildInstagramBatches(accounts, options) {
       backfill_cursor:
         cursor && Object.hasOwn(cursor, options.result_type) ? cursor[options.result_type] : cursor,
     };
+    if (options.mode === 'backfill' && account.backfill_cursor?.history_state === 'limit_exhausted')
+      throw new Error('ig_backfill_history_unsupported');
     const watermark = instagramDate(account.last_item_published_at);
     if (options.mode === 'daily' && !watermark) throw new Error('ig_daily_watermark_required');
     const waves = account.backfill_cursor?.full_waves;
@@ -30,10 +33,8 @@ export function buildInstagramBatches(accounts, options) {
       handle,
       watermark,
       resultsLimit,
-      date:
-        options.mode === 'backfill'
-          ? '2024-01-01'
-          : new Date(Date.parse(watermark) - 86400000).toISOString().slice(0, 10),
+      // A watermark-derived input is stable across launch/callback midnight.
+      date: instagramCutoff(account, options.mode).slice(0, 10),
     };
   });
   validated.sort(

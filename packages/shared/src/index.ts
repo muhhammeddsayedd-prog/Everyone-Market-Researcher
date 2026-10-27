@@ -50,5 +50,7 @@ export {
   collectorPolicy,
   collectorBuild,
   collectorAccountIds,
+  collectorExecutionErrorArgs,
+  collectorWorkflowIds,
 } from './n8n-collector-contracts';
 export type { CollectorRequest, CollectorOperation, CollectorPolicy } from './n8n-collector-contracts';

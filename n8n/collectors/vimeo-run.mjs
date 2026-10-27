@@ -86,16 +86,21 @@ export async function runVimeoCollector(input, deps) {
           requestId(input.executionId, 'resolve', account.account_id),
         );
       }
+      // The page cap leaves validated rows suitable for metrics refresh, while
+      // the account still reports incomplete. Other failures retain no rows.
+      const cappedDaily = collected.status === 'failed' && collected.error === 'vimeo_daily_page_cap';
       const [group] = ingestion.prepareIngestGroups([
         {
           account_id: account.account_id,
           items: collected.normalizedItems,
-          status: collected.status,
-          error: collected.error,
+          status: cappedDaily ? 'success' : collected.status,
+          error: cappedDaily ? null : collected.error,
           backfill_done: collected.backfillDone,
           backfill_cursor: collected.cursor,
         },
       ]);
+      const status = cappedDaily && group.status === 'success' ? collected.status : group.status;
+      const error = cappedDaily && group.status === 'success' ? collected.error : group.error;
       let inserted = 0;
       for (let index = 0; index < group.batches.length; index++) {
         stage = 'ingest';
@@ -121,10 +126,10 @@ export async function runVimeoCollector(input, deps) {
         {
           run_id: runId,
           account_id: account.account_id,
-          status: group.status,
+          status,
           items_seen: group.items_seen,
           items_new: inserted,
-          error: group.error,
+          error,
           backfill_done: group.backfill_done,
           backfill_cursor: group.backfill_cursor,
         },
@@ -133,8 +138,8 @@ export async function runVimeoCollector(input, deps) {
       itemsNew += inserted;
       accountResults.push({
         account_id: account.account_id,
-        status: group.status,
-        error: group.error,
+        status,
+        error,
         complete: collected.complete === true,
         fallback: collected.fallback,
       });

@@ -161,9 +161,9 @@ function verifyInput(value: unknown, r: Registry, config: CollectorConfig) {
   if (r.actor_id === 'apify/instagram-scraper') {
     const dates = accounts
       .map((a) =>
-        r.purpose === 'backfill'
-          ? '2024-01-01'
-          : new Date(Date.parse(String(a.watermark_published_at)) - 86400000).toISOString().slice(0, 10),
+        instagram
+          .instagramCutoff({ ...a, last_item_published_at: a.watermark_published_at }, r.purpose)
+          .slice(0, 10),
       )
       .sort();
     expected = {
@@ -218,6 +218,9 @@ function normalizePage(rows: unknown[], r: Registry): Group[] {
       mode: r.purpose,
       result_type: r.pass,
       resultsLimit: r.results_limit,
+      // A trusted launch timestamp fixes the metrics horizon across callback
+      // retries, UTC midnight and paginated dataset reads.
+      now: String(r.launch_created_at),
     });
     return result.groups.map((g: Row) => ({
       account_id: String(g.account_id),
@@ -364,15 +367,30 @@ export function createCollectorCallback(deps: Dependencies) {
         ? r.pass_results.find((p) => object(p) && p.account_id === a.account_id)
         : null;
       if (!p) throw new WorkerFailure('provider_pass_context_invalid', 503);
-      const seen = Number(p.items_seen),
-        failure =
-          terminal.status !== 'SUCCEEDED' || p.stage_status === 'failed' || p.source_evidence !== true;
+      // SQL retains normalized item counts, not raw per-account counts. The
+      // batch raw count is a conservative saturation bound: if it reaches one
+      // profile's limit, that profile might have been truncated. Never infer
+      // complete history or daily coverage from filtered/normalized counts.
+      const possiblyCapped = r.next_offset >= r.results_limit;
+      const dailyCapped = r.purpose === 'daily' && possiblyCapped;
+      const failure =
+        terminal.status !== 'SUCCEEDED' ||
+        p.stage_status === 'failed' ||
+        p.source_evidence !== true ||
+        dailyCapped;
       const prior = object(a.backfill_cursor) ? a.backfill_cursor : {};
       const sourceCursor = object(p.backfill_cursor) ? p.backfill_cursor : {};
-      const full = seen >= r.results_limit;
+      const full = possiblyCapped;
       const cursor =
         r.purpose === 'backfill'
-          ? { ...sourceCursor, full_waves: full ? Number(prior.full_waves ?? 0) + 1 : 0 }
+          ? {
+              ...sourceCursor,
+              full_waves: full ? Number(prior.full_waves ?? 0) + 1 : 0,
+              results_limit: r.results_limit,
+              history_state: full && r.results_limit === 3000 ? 'limit_exhausted' : 'incomplete',
+              strategy: 'latest_limit_escalation',
+              resume_supported: false,
+            }
           : null;
       // Bounded representative runs and reels never assert complete history.
       const complete =
@@ -381,7 +399,7 @@ export function createCollectorCallback(deps: Dependencies) {
         r.purpose === 'backfill' &&
         r.pass === 'posts' &&
         r.results_limit >= 1500 &&
-        r.next_offset < r.results_limit * r.account_ids.length &&
+        r.next_offset < r.results_limit &&
         !full;
       return {
         account_id: String(a.account_id),
@@ -396,9 +414,11 @@ export function createCollectorCallback(deps: Dependencies) {
         error: failure
           ? typeof p.error === 'string'
             ? p.error
-            : terminal.status !== 'SUCCEEDED'
-              ? 'apify_' + terminal.status.toLowerCase()
-              : 'collector_no_account_evidence'
+            : dailyCapped
+              ? 'collector_daily_coverage_capped'
+              : terminal.status !== 'SUCCEEDED'
+                ? 'apify_' + terminal.status.toLowerCase()
+                : 'collector_no_account_evidence'
           : null,
         backfill_done: complete,
         backfill_cursor: complete ? null : cursor,

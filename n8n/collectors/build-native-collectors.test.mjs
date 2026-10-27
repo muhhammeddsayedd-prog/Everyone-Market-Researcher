@@ -8,6 +8,9 @@ import {
   collectorCloudSource,
   parseCollectorTransport,
   withManualCollectorEntry,
+  buildNativeOrchestrator,
+  buildNativeCallback,
+  buildNativeErrorHandler,
 } from './build-native-collectors.mjs';
 import {
   initializeCollector,
@@ -484,7 +487,17 @@ test('native Vimeo waits for an exhausted successful-response quota before the n
     {
       statusCode: 200,
       headers: { 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': '2026-10-27T10:01:00Z' },
-      body: { data: [], paging: { next: '/users/101/videos?page=2&per_page=5' } },
+      body: {
+        data: [
+          {
+            uri: '/videos/991',
+            link: 'https://vimeo.com/991',
+            privacy: { view: 'anybody' },
+            release_time: '2026-10-26T10:00:00Z',
+          },
+        ],
+        paging: { next: '/users/101/videos?page=2&per_page=5' },
+      },
     },
     vimeo.normalizeVimeoApiResult,
   );
@@ -680,6 +693,15 @@ test('checked-in blueprints match the current builder and all connected node nam
       readFileSync(new URL('./blueprints/' + graph.key + '.json', import.meta.url), 'utf8'),
     );
     assert.deepEqual(saved, graph);
+    assert.equal(graph.workflow.active, false);
+    assert.equal(graph.liveEnabled, false);
+    assert.equal(graph.workflow.settings.saveDataSuccessExecution, 'none');
+    assert.equal(graph.workflow.settings.saveDataErrorExecution, 'none');
+    assert.equal(graph.workflow.settings.saveManualExecutions, false);
+    assert.equal(graph.workflow.settings.saveExecutionProgress, false);
+    assert.deepEqual(graph.workflow.pinData, {});
+    assert.equal(Object.hasOwn(graph.workflow.settings, 'errorWorkflow'), false);
+    assert.equal(graph.errorWorkflowBinding.state, 'unresolved');
     const names = new Set(graph.workflow.nodes.map((n) => n.name));
     assert.equal(names.size, graph.workflow.nodes.length);
     for (const [from, connection] of Object.entries(graph.workflow.connections)) {
@@ -687,6 +709,8 @@ test('checked-in blueprints match the current builder and all connected node nam
       for (const branch of connection.main ?? [])
         for (const target of branch) assert.ok(names.has(target.node), target.node);
     }
+    for (const n of graph.workflow.nodes.filter((n) => n.type.endsWith('.code')))
+      new vm.Script('(function(){' + n.parameters.jsCode + '\n})()');
   }
 });
 
@@ -822,13 +846,263 @@ test('callback processing HTTP covers its55-second server deadline without lengt
   assert.equal(nativeNode(collector, 'Restricted collector RPC').parameters.options.timeout, 25000);
 });
 
-test('collector error-workflow links remain deferred while WF90 uses its closed foundation gateway', () => {
+test('collector error-workflow links fail closed until the dedicated M04 handler has a real binding', () => {
   for (const kind of ['vimeo', 'instagram']) {
     const graph = buildNativeCollector(bindings, transport, kind);
     assert.equal(Object.hasOwn(graph.workflow.settings, 'errorWorkflow'), false);
-    assert.equal(graph.deferredErrorWorkflowId, bindings.workflowRefs['WF-90'].id);
+    assert.deepEqual(graph.errorWorkflowBinding, {
+      key: 'WF-90-M04',
+      state: 'unresolved',
+      reason: 'not_installed',
+    });
     assert.equal(graph.definitionProfile, 'inactive_native_staging');
+    const bound = buildNativeCollector(bindings, transport, kind, 'SYNTHETIC_M04_ERROR');
+    assert.equal(bound.workflow.settings.errorWorkflow, 'SYNTHETIC_M04_ERROR');
+    assert.equal(bound.errorWorkflowBinding.state, 'bound');
+    assert.throws(
+      () => buildNativeCollector(bindings, transport, kind, bindings.workflowRefs['WF-90'].id),
+      /M04_ERROR_WORKFLOW_BINDING_INVALID/,
+    );
+    assert.throws(
+      () => buildNativeCollector(bindings, transport, kind, 'M04ErrorHandlerNotInstalled'),
+      /M04_ERROR_WORKFLOW_BINDING_INVALID/,
+    );
   }
   const callback = extendNativeCallback(bindings, transport, baseline);
   assert.deepEqual(callback.workflow.settings, baseline.workflow.settings);
+});
+
+test('dedicated M04 error handler projects only fixed classification and IDs, with honest trigger correlation', () => {
+  const graph = buildNativeErrorHandler(bindings, transport);
+  assert.equal(graph.key, 'WF-90-M04');
+  assert.equal(graph.workflow.nodes[0].type, 'n8n-nodes-base.errorTrigger');
+  assert.equal(graph.workflow.active, false);
+  assert.equal(Object.hasOwn(graph.workflow.settings, 'errorWorkflow'), false);
+  assert.equal(graph.errorWorkflowBinding.state, 'unresolved');
+  const source = nativeNode(graph, 'Prepare classified M04 error').parameters.jsCode;
+  for (const workflow of ['WF-00', 'WF-10', 'WF-11', 'WF-19']) {
+    const request = vmCode(source, {
+      workflow: { id: bindings.workflowRefs[workflow].id },
+      execution: {
+        id: '99124',
+        error: { message: 'Bearer PRIVATE_SENTINEL https://private.invalid', stack: 'PRIVATE_STACK' },
+        url: 'https://private.invalid',
+        lastNodeExecuted: 'PRIVATE_NODE',
+        customData: { run_id: runId },
+      },
+    })[0].json.request;
+    assert.equal(request.operation, 'execution.error');
+    assert.deepEqual(Object.keys(request.args), ['workflow_id', 'execution_id', 'error_code']);
+    assert.equal(request.args.workflow_id, bindings.workflowRefs[workflow].id);
+    assert.equal(request.args.execution_id, '99124');
+    assert.equal(request.args.error_code, workflow === 'WF-19' ? 'callback_retryable' : 'workflow_failed');
+    assert.equal(JSON.stringify(request).includes('PRIVATE'), false);
+  }
+  const trigger = vmCode(source, {
+    workflow: { id: bindings.workflowRefs['WF-19'].id },
+    trigger: { error: { message: 'PRIVATE' } },
+  })[0].json.request;
+  assert.equal(trigger.args.execution_id, 'handler-99123');
+  assert.equal(trigger.args.error_code, 'workflow_failed');
+  assert.throws(
+    () => vmCode(source, { workflow: { id: 'ARBITRARY' }, execution: { id: '99124' } }),
+    /M04_ERROR_SOURCE_INVALID/,
+  );
+  assert.throws(
+    () => vmCode(source, { workflow: { id: bindings.workflowRefs['WF-10'].id } }),
+    /M04_ERROR_CORRELATION_INVALID/,
+  );
+  assert.throws(
+    () =>
+      vmCode(source, {
+        workflow: { id: bindings.workflowRefs['WF-10'].id },
+        execution: { id: 'https://private.invalid' },
+      }),
+    /M04_ERROR_CORRELATION_INVALID/,
+  );
+  const httpNode = nativeNode(graph, 'Log classified M04 error');
+  assert.equal(httpNode.retryOnFail, false);
+  const request = vmCode(source, {
+    workflow: { id: bindings.workflowRefs['WF-10'].id },
+    execution: { id: '99124' },
+  })[0].json.request;
+  const receipt = vmCode(
+    nativeNode(graph, 'Verify M04 error receipt').parameters.jsCode,
+    ack({ request }, { logged: true, reconciliation_required: true }),
+    { 'Prepare classified M04 error': { request } },
+  )[0].json;
+  assert.equal(receipt.reconciliation_required, true);
+  assert.equal(
+    graph.workflow.nodes.some((n) => n.type.endsWith('.executeWorkflow')),
+    false,
+  );
+});
+
+const selectedPlan = () => ({
+  mode: 'backfill',
+  vimeo_account_ids: ids(2),
+  instagram_account_ids: ids(4).slice(2),
+  max_pages: 1,
+  page_size: 5,
+  results_limit: 5,
+  max_actor_starts: 2,
+});
+
+test('M04 orchestrator passes the exact fixed selection into actual typed collectors with one joint Instagram invocation', () => {
+  const graph = buildNativeOrchestrator(bindings, transport, selectedPlan());
+  assert.equal(graph.key, 'WF-00');
+  assert.equal(graph.workflow.active, false);
+  assert.equal(graph.liveEnabled, false);
+  assert.equal(
+    graph.workflow.nodes.some((n) => n.type.endsWith('.scheduleTrigger')),
+    false,
+  );
+  const fixed = vmCode(nativeNode(graph, 'Fixed M04 collector selection').parameters.jsCode, {
+    account_ids: ids(10),
+    workflow_id: 'ARBITRARY',
+    env: 'prod',
+    result_type: 'posts',
+  })[0].json;
+  assert.deepEqual(JSON.parse(JSON.stringify(fixed.vimeo.account_ids)), ids(2));
+  assert.deepEqual(JSON.parse(JSON.stringify(fixed.instagram.account_ids)), ids(4).slice(2));
+  assert.equal(fixed.instagram.result_type, 'both');
+  const calls = graph.workflow.nodes.filter((n) => n.type.endsWith('.executeWorkflow'));
+  assert.equal(calls.length, 2);
+  for (const [index, kind] of ['vimeo', 'instagram'].entries()) {
+    const call = calls[index],
+      child = buildNativeCollector(bindings, transport, kind);
+    const declared = nativeNode(child, 'When called').parameters.workflowInputs.values;
+    assert.equal(call.typeVersion, 1.4);
+    assert.deepEqual(call.parameters.workflowId, {
+      __rl: true,
+      mode: 'id',
+      value: bindings.workflowRefs[kind === 'vimeo' ? 'WF-10' : 'WF-11'].id,
+    });
+    assert.equal(call.parameters.options.waitForSubWorkflow, true);
+    assert.equal(call.parameters.workflowInputs.mappingMode, 'defineBelow');
+    assert.equal(call.parameters.workflowInputs.attemptToConvertTypes, false);
+    assert.deepEqual(
+      call.parameters.workflowInputs.schema.map(({ id, type }) => ({ name: id, type })),
+      declared,
+    );
+    assert.deepEqual(
+      Object.keys(call.parameters.workflowInputs.value),
+      declared.map(({ name }) => name),
+    );
+    const mapped = Object.fromEntries(
+      Object.entries(call.parameters.workflowInputs.value).map(([field, expression]) => [
+        field,
+        vm.runInNewContext(expression.slice(3, -2), { $: () => ({ first: () => ({ json: fixed }) }) }),
+      ]),
+    );
+    const childState = vmCode(nativeNode(child, 'Initialize collector').parameters.jsCode, mapped)[0].json;
+    assert.deepEqual(Array.from(childState.accountIds), Array.from(fixed[kind].account_ids));
+    assert.equal(childState.limit, 2);
+    assert.equal(childState.mode, 'backfill');
+  }
+});
+
+test('M04 orchestrator refuses missing, duplicate, cross-platform and expanded plan parameters', () => {
+  for (const value of [
+    undefined,
+    {},
+    { ...selectedPlan(), vimeo_account_ids: [] },
+    { ...selectedPlan(), vimeo_account_ids: [ids(2)[0], ids(2)[0].toUpperCase()] },
+    { ...selectedPlan(), instagram_account_ids: ids(2) },
+    { ...selectedPlan(), workflow_id: 'ARBITRARY' },
+    { ...selectedPlan(), max_pages: 51 },
+    { ...selectedPlan(), result_type: 'posts' },
+  ])
+    assert.throws(
+      () => buildNativeOrchestrator(bindings, transport, value),
+      /M04_ORCHESTRATOR_SELECTION_INVALID/,
+    );
+});
+
+test('maintained M04 callback is independent of historical foundation gateway, stubs and finish paths', () => {
+  const graph = buildNativeCallback(bindings, transport);
+  const serialized = JSON.stringify(graph);
+  for (const forbidden of [
+    'SUB-FINISH',
+    'SUB-START',
+    'smoke_website_stub',
+    'apify.terminal.read',
+    'foundation/request',
+    'Dispatch AI stub',
+  ])
+    assert.equal(serialized.includes(forbidden), false, forbidden);
+  assert.equal(graph.workflow.active, false);
+  assert.equal(graph.workflow.nodes.filter((n) => n.type.endsWith('.webhook')).length, 1);
+  for (const n of graph.workflow.nodes.filter((n) => n.type.endsWith('.code')))
+    new vm.Script('(function(){' + n.parameters.jsCode + '\n})()');
+  const source = vmCode(nativeNode(graph, 'Validate callback source').parameters.jsCode, {
+    body: {
+      eventType: 'ACTOR.RUN.SUCCEEDED',
+      resource: { id: 'SYNTHETIC_RUN' },
+      items: [{ injected: true }],
+    },
+  })[0].json;
+  assert.deepEqual(Object.keys(source), ['apify_run_id', 'transport']);
+  const prepared = vmCode(nativeNode(graph, 'Prepare callback classification').parameters.jsCode, source)[0]
+    .json;
+  for (const scope of ['unknown', 'foundation', 'm04']) {
+    const checked = vmCode(
+      nativeNode(graph, 'Check callback classification').parameters.jsCode,
+      ack({ request: prepared.request }, { scope }),
+      { 'Prepare callback classification': prepared },
+    )[0].json;
+    assert.equal(checked.scope, scope);
+  }
+  assert.deepEqual(
+    graph.workflow.connections['M04 registered callback?'].main[1].map((e) => e.node),
+    ['Unknown callback webhook?'],
+  );
+  assert.equal(nativeNode(graph, 'Respond unknown callback').parameters.options.responseCode, 403);
+  assert.equal(nativeNode(graph, 'Process verified M04 callback').parameters.options.timeout, 60000);
+  assert.throws(
+    () =>
+      vmCode(nativeNode(graph, 'Validate callback source').parameters.jsCode, {
+        apify_run_id: 'SYNTHETIC_RUN',
+        env: 'dev',
+        transport: 'recovery',
+        rows: [],
+      }),
+    /M04_CALLBACK_INVALID/,
+  );
+});
+
+test('maintained callback pages to a verified terminal receipt and exposes an exact durable replay', () => {
+  const graph = buildNativeCallback(bindings, transport);
+  let source = vmCode(nativeNode(graph, 'Validate callback source').parameters.jsCode, {
+    apify_run_id: 'SYNTHETIC_RUN',
+    env: 'dev',
+    transport: 'recovery',
+  })[0].json;
+  const prepareCode = nativeNode(graph, 'Prepare M04 callback processing').parameters.jsCode;
+  const receiptCode = nativeNode(graph, 'Verify M04 callback receipt').parameters.jsCode;
+  const first = vmCode(prepareCode, source)[0].json;
+  source = vmCode(receiptCode, ack(first, { state: 'pending', next_offset: 500 }), {
+    'Prepare M04 callback processing': first,
+  })[0].json;
+  assert.equal(source.pending, true);
+  assert.equal(source.pageNumber, 1);
+  assert.equal(source.transport, 'recovery');
+  const next = vmCode(prepareCode, source)[0].json;
+  assert.notEqual(next.request.requestId, first.request.requestId);
+  assert.deepEqual(Object.keys(next.request.args), ['apify_run_id']);
+  const completed = vmCode(receiptCode, ack(next, { state: 'completed', updated: false }), {
+    'Prepare M04 callback processing': next,
+  })[0].json;
+  assert.equal(completed.replayed, true);
+  assert.equal(completed.pending, false);
+  assert.equal(completed.apify_run_id, 'SYNTHETIC_RUN');
+  const finalPage = vmCode(prepareCode, { ...source, pageNumber: 60 })[0].json;
+  assert.equal(finalPage.pageNumber, 60);
+  assert.throws(() => vmCode(prepareCode, { ...source, pageNumber: 61 }), /M04_CALLBACK_PAGE_BOUND/);
+  const malformed = ack(next, { state: 'completed' });
+  malformed.body.requestId = first.request.requestId;
+  assert.throws(
+    () => vmCode(receiptCode, malformed, { 'Prepare M04 callback processing': next }),
+    /M04_CALLBACK_RECONCILIATION_REQUIRED/,
+  );
 });

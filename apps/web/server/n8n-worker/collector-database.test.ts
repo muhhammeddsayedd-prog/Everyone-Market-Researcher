@@ -54,3 +54,88 @@ describe('M04 concrete restricted database adapter', () => {
     expect(t.query).not.toHaveBeenCalled();
   });
 });
+
+describe('M04 classified global error audit', () => {
+  it('uses the existing idempotent error RPC without failing a parent or releasing claims', async () => {
+    const t = setup();
+    const receipt = await dispatchCollectorDatabase(
+      t.pool,
+      'unused-audit-id',
+      'execution.error',
+      {
+        workflow_id: 'TsqSMa5MlO3QBLkt',
+        execution_id: '314',
+        error_code: 'callback_retryable',
+      },
+      config,
+      new AbortController().signal,
+    );
+    expect(receipt).toEqual({ replayed: false, result: { logged: true, reconciliation_required: true } });
+    expect(t.query).toHaveBeenCalledWith('select ops.log_workflow_error($1::jsonb) as logged', [
+      JSON.stringify({
+        kind: 'error',
+        workflow: 'WF-19',
+        execution_id: '314',
+        node: 'Workflow',
+        message: 'callback_retryable',
+      }),
+    ]);
+    expect(
+      t.query.mock.calls.some(([sql]) => /collector_execute|finish_run|report_account_result/.test(sql)),
+    ).toBe(false);
+    expect(t.client.release).toHaveBeenCalledExactlyOnceWith();
+  });
+  it('marks trigger errors using their real handler execution, never an invented originating run', async () => {
+    const t = setup();
+    await dispatchCollectorDatabase(
+      t.pool,
+      'unused-audit-id',
+      'execution.error',
+      {
+        workflow_id: '4JMHLDBSdgGxhPlk',
+        execution_id: 'handler-315',
+        error_code: 'workflow_failed',
+      },
+      config,
+      new AbortController().signal,
+    );
+    expect(t.query).toHaveBeenCalledWith('select ops.log_workflow_error($1::jsonb) as logged', [
+      JSON.stringify({
+        kind: 'error',
+        workflow: 'WF-10',
+        execution_id: 'handler-315',
+        node: 'Trigger activation',
+        message: 'workflow_failed',
+      }),
+    ]);
+  });
+  it.each([
+    { workflow_id: 'unrelated-workflow', execution_id: '314', error_code: 'workflow_failed' },
+    { workflow_id: '4JMHLDBSdgGxhPlk', execution_id: '314', error_code: 'callback_retryable' },
+    {
+      workflow_id: 'TsqSMa5MlO3QBLkt',
+      execution_id: '314',
+      error_code: 'callback_retryable',
+      run_id: 'guessed',
+    },
+    {
+      workflow_id: 'TsqSMa5MlO3QBLkt',
+      execution_id: '314',
+      error_code: 'callback_retryable',
+      message: 'private error text',
+    },
+  ])('rejects untrusted audit context before opening a connection', async (args) => {
+    const t = setup();
+    await expect(
+      dispatchCollectorDatabase(
+        t.pool,
+        'unused',
+        'execution.error',
+        args,
+        config,
+        new AbortController().signal,
+      ),
+    ).rejects.toThrow('invalid_request');
+    expect(t.query).not.toHaveBeenCalled();
+  });
+});

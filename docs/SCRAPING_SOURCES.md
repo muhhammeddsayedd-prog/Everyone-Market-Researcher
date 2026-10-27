@@ -393,8 +393,9 @@ Backfill runs in waves (10 accounts per platform per hourly slot, 10:00–23:00 
 
 ## 9. Health checks
 
-M04 integration27October: representative collection remains unapproved. The
-new private callback path attests actual run `userId` against a pinned
+M04 integration27October: representative collection is accepted and safely
+closed; see the current milestone's actual source and cost receipts. The
+private callback path attests actual run `userId` against a pinned
 non-secret owner ID, actor/build IDs, configured memory/timeout/charge/result
 options and the original public INPUT before ingestion. Input defaults require
 explicit build review; credential/download/transcription fields are rejected
@@ -412,7 +413,24 @@ Matched valid old public content is success with zero selected items; absence
 of account/collection ownership is not. Dltik uploader identity alone does not
 prove collection membership, and a short representative run/reels response
 does not establish full backfill. Native fallback and pinned-post/reels source
-coverage remain live-only gaps; the single live packet approves no fallback.
+coverage remain live-only gaps; the closed representative packet approved no fallback.
+
+Post-sample source review27October: Vimeo cursors retain the original page
+width and resource path; resumed legacy pages without that width fail closed.
+An empty page with a next-page link is a contract failure, not history progress.
+The maintained daily path includes known IDs for thirty-day metric upserts and
+reports a daily page cap as incomplete. Instagram daily INPUT is deterministic
+from the claimed watermark minus thirty days; normalization uses the trusted
+launch timestamp. Its result cap can leave daily coverage incomplete. The
+current [Instagram input schema](https://apify.com/apify/instagram-scraper/input-schema)
+and [actor documentation](https://apify.com/apify/instagram-scraper) provide no
+verified upper-date/historical cursor. Count escalation remains latest-page
+retrieval; 3,000-result saturation stops further starts and never proves reels
+exhaustion. The callback persists that limitation using conservative batch raw
+counts because stored per-account counts are normalized. Current primary
+[Vimeo pagination formats](https://developer.vimeo.com/api/common-formats)
+and the actor schema were checked for this local implementation. New native
+source cases remain gated by the one incremental dev packet.
 
 | Check | Rule | Action |
 |---|---|---|

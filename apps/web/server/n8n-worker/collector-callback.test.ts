@@ -61,15 +61,34 @@ const actorInput = {
   skipPinnedPosts: true,
   addParentData: false,
 };
+type TestAccount = {
+  account_id: string;
+  handle: string;
+  url?: string;
+  backfill_from?: string;
+  watermark_published_at?: string;
+  backfill_cursor: Record<string, unknown> | null;
+};
+type TestPass = {
+  account_id: string;
+  items_seen: number;
+  items_new: number;
+  stage_status: string;
+  source_evidence: boolean;
+  error: string | null;
+  backfill_cursor: Record<string, unknown> | null;
+};
 function setup() {
   let clock = 0;
   const r = {
     apify_run_id: 'syntheticRun',
     actor_id: 'apify/instagram-scraper',
     account_ids: [id],
-    accounts: [{ account_id: id, handle: 'synthetic', backfill_from: '2024-01-01', backfill_cursor: null }],
-    purpose: 'backfill',
-    pass: 'posts',
+    accounts: [
+      { account_id: id, handle: 'synthetic', backfill_from: '2024-01-01', backfill_cursor: null },
+    ] as TestAccount[],
+    purpose: 'backfill' as 'daily' | 'backfill',
+    pass: 'posts' as 'posts' | 'reels' | 'primary',
     results_limit: 5,
     next_offset: 0,
     dataset_complete: false,
@@ -88,22 +107,39 @@ function setup() {
         error: null,
         backfill_cursor: null,
       },
-    ],
+    ] as TestPass[],
   };
   const calls: { operation: string; args: Record<string, unknown> }[] = [];
   const dispatch: CollectorDispatch = async (_request, operation, args) => {
     calls.push({ operation, args });
     if (operation === 'lookup') return { replayed: false, result: structuredClone(r) };
     if (operation === 'stage') {
-      const g = (
-        args.groups as Array<{ items: unknown[]; status: string; error: null; source_evidence: boolean }>
-      )[0]!;
       r.next_offset += Number(args.raw_count);
       r.dataset_complete = !args.has_more;
-      r.pass_results[0]!.items_seen += g.items.length;
-      r.pass_results[0]!.stage_status = g.status;
-      r.pass_results[0]!.source_evidence ||= g.source_evidence;
-      r.pass_results[0]!.error = g.error;
+      for (const g of args.groups as Array<{
+        account_id: string;
+        items: unknown[];
+        status: string;
+        error: string | null;
+        source_evidence: boolean;
+        backfill_cursor: Record<string, unknown> | null;
+      }>) {
+        const pass = r.pass_results.find((p) => p.account_id === g.account_id);
+        if (!pass) throw Error('unexpected test account');
+        pass.items_seen += g.items.length;
+        if (g.status === 'failed') pass.stage_status = 'failed';
+        pass.source_evidence ||= g.source_evidence;
+        pass.error ??= g.error;
+        // Match the SQL page-stage boundary: only the earliest source date
+        // persists here; final settlement must reconstruct coverage fields.
+        const oldest = g.backfill_cursor?.oldest_seen;
+        if (typeof oldest === 'string') {
+          const prior = pass.backfill_cursor?.oldest_seen;
+          pass.backfill_cursor = {
+            oldest_seen: typeof prior === 'string' && prior < oldest ? prior : oldest,
+          };
+        }
+      }
       return {
         replayed: false,
         result: { next_offset: r.next_offset, dataset_complete: r.dataset_complete },
@@ -292,6 +328,211 @@ describe('M04 private callback source verification and bounded settlement', () =
       raw_count: 0,
       has_more: false,
       groups: [{ items: [], status: 'failed', error: 'collector_dataset_limit_exceeded' }],
+    });
+  });
+  it('rejects a daily INPUT using only watermark-minus-one instead of the stable thirty-day listing', async () => {
+    const t = setup();
+    t.r.purpose = 'daily';
+    t.r.accounts[0]!.watermark_published_at = '2026-10-20T12:00:00Z';
+    t.get.mockImplementation(async (path) =>
+      path.includes('actor-runs') ? metadata : { ...actorInput, onlyPostsNewerThan: '2026-10-19' },
+    );
+    await expect(t.handler(input, config, new AbortController().signal)).rejects.toThrow(
+      'provider_reconciliation_required',
+    );
+    expect(t.calls.map((c) => c.operation)).toEqual(['lookup']);
+  });
+  it.each(['2026-10-28T00:02:00Z', '2026-11-15T12:00:00Z'])(
+    'normalizes daily metrics against the trusted launch horizon when delivered at %s',
+    async (deliveredAt) => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(deliveredAt));
+      try {
+        const t = setup();
+        t.r.purpose = 'daily';
+        t.r.launch_created_at = '2026-10-27T23:59:50Z';
+        t.r.accounts[0]!.watermark_published_at = '2026-10-27T23:00:00Z';
+        const terminal = {
+          data: {
+            ...metadata.data,
+            startedAt: '2026-10-27T23:59:51Z',
+            finishedAt: '2026-10-28T00:01:00Z',
+          },
+        };
+        t.get.mockImplementation(async (path) =>
+          path.includes('actor-runs')
+            ? terminal
+            : path.includes('records/INPUT')
+              ? { ...actorInput, onlyPostsNewerThan: '2026-09-27' }
+              : [
+                  { ...row, shortCode: 'InsideLaunchHorizon', timestamp: '2026-09-27T23:59:55Z' },
+                  { ...row, shortCode: 'BeforeLaunchHorizon', timestamp: '2026-09-27T23:59:49Z' },
+                ],
+        );
+        await expect(t.handler(input, config, new AbortController().signal)).resolves.toMatchObject({
+          state: 'completed',
+          cost_usd: 0.0019,
+        });
+        expect(t.calls.find((c) => c.operation === 'stage')?.args).toMatchObject({
+          raw_count: 2,
+          groups: [
+            {
+              items: [{ external_id: 'InsideLaunchHorizon' }],
+              source_evidence: true,
+              status: 'success',
+            },
+          ],
+        });
+        const staged = t.calls.find((c) => c.operation === 'stage')?.args.groups as Array<{
+          items: unknown[];
+        }>;
+        expect(staged[0]!.items).toHaveLength(1);
+        expect(t.calls.find((c) => c.operation === 'settle')?.args).toMatchObject({
+          usage_usd: 0.0019,
+          groups: [{ status: 'success', error: null }],
+        });
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
+  it('keeps the 3000-row history cap exhausted after seven pages even when all source rows normalize away', async () => {
+    const t = setup(),
+      altered = structuredClone(config);
+    altered.policy!.max_results_per_profile = 3000;
+    t.r.results_limit = 3000;
+    t.r.pass = 'reels';
+    t.r.accounts[0]!.backfill_cursor = {
+      posts: { full_waves: 99 },
+      reels: { full_waves: 3 },
+    };
+    t.get.mockImplementation(async (path) => {
+      if (path.includes('actor-runs'))
+        return { data: { ...metadata.data, options: { ...metadata.data.options, maxItems: 3000 } } };
+      if (path.includes('records/INPUT')) {
+        return {
+          directUrls: actorInput.directUrls,
+          resultsType: 'reels',
+          resultsLimit: 3000,
+          onlyPostsNewerThan: actorInput.onlyPostsNewerThan,
+          addParentData: false,
+        };
+      }
+      const offset = Number(new URL('https://api.apify.com' + path).searchParams.get('offset'));
+      return offset < 3000
+        ? Array.from({ length: 500 }, (_, n) => ({
+            ...row,
+            shortCode: 'FilteredSource' + (offset + n),
+            timestamp: '2023-12-31T23:59:00Z',
+          }))
+        : [];
+    });
+    for (let page = 0; page < 7; page++) {
+      const result = await t.handler(
+        { ...input, requestId: `27000000-0000-4000-8000-${String(page + 10).padStart(12, '0')}` },
+        altered,
+        new AbortController().signal,
+      );
+      expect(result).toMatchObject({ state: page < 6 ? 'pending' : 'completed' });
+    }
+    expect(t.r.next_offset).toBe(3000);
+    expect(t.r.pass_results[0]).toMatchObject({
+      items_seen: 0,
+      source_evidence: true,
+      stage_status: 'success',
+    });
+    expect(t.r.pass_results[0]!.backfill_cursor).toEqual({ oldest_seen: '2023-12-31T23:59:00.000Z' });
+    expect(t.calls.filter((c) => c.operation === 'settle')).toHaveLength(1);
+    expect(t.calls.find((c) => c.operation === 'settle')?.args).toMatchObject({
+      usage_usd: 0.0019,
+      groups: [
+        {
+          status: 'success',
+          backfill_done: false,
+          backfill_cursor: {
+            oldest_seen: '2023-12-31T23:59:00.000Z',
+            full_waves: 4,
+            results_limit: 3000,
+            history_state: 'limit_exhausted',
+            strategy: 'latest_limit_escalation',
+            resume_supported: false,
+          },
+        },
+      ],
+    });
+  });
+  it('never declares either posts profile complete from filtered counts when the batch raw total reaches one profile limit', async () => {
+    const t = setup(),
+      altered = structuredClone(config),
+      secondId = '27000000-0000-4000-8000-000000000002';
+    altered.accountIds.push(secondId);
+    altered.policy!.max_results_per_profile = 1500;
+    t.r.results_limit = 1500;
+    t.r.account_ids.push(secondId);
+    t.r.accounts.push({ account_id: secondId, handle: 'secondsynthetic', backfill_cursor: null });
+    t.r.pass_results.push({ ...t.r.pass_results[0]!, account_id: secondId });
+    t.r.dataset_complete = true;
+    t.r.next_offset = 1500;
+    for (const pass of t.r.pass_results) {
+      pass.items_seen = 1;
+      pass.source_evidence = true;
+    }
+    t.get.mockImplementation(async (path) =>
+      path.includes('actor-runs')
+        ? { data: { ...metadata.data, options: { ...metadata.data.options, maxItems: 3000 } } }
+        : {
+            ...actorInput,
+            directUrls: [
+              'https://www.instagram.com/synthetic/',
+              'https://www.instagram.com/secondsynthetic/',
+            ],
+            resultsLimit: 1500,
+          },
+    );
+    await t.handler(input, altered, new AbortController().signal);
+    expect(t.get).toHaveBeenCalledTimes(3);
+    const groups = t.calls.find((c) => c.operation === 'settle')?.args.groups;
+    expect(groups).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ account_id: id, backfill_done: false }),
+        expect.objectContaining({ account_id: secondId, backfill_done: false }),
+      ]),
+    );
+    expect(t.calls.find((c) => c.operation === 'settle')?.args).toMatchObject({ usage_usd: 0.0019 });
+  });
+  it('settles saturated daily output as incomplete coverage while retaining actual cost and matched source evidence', async () => {
+    const t = setup();
+    t.r.purpose = 'daily';
+    t.r.accounts[0]!.watermark_published_at = '2026-10-25T00:00:00Z';
+    t.get.mockImplementation(async (path) =>
+      path.includes('actor-runs')
+        ? metadata
+        : path.includes('records/INPUT')
+          ? { ...actorInput, onlyPostsNewerThan: '2026-09-25' }
+          : Array.from({ length: 5 }, (_, n) => ({
+              ...row,
+              shortCode: 'DailyFiltered' + n,
+              timestamp: '2026-09-01T00:00:00Z',
+            })),
+    );
+    await expect(t.handler(input, config, new AbortController().signal)).resolves.toMatchObject({
+      state: 'completed',
+      cost_usd: 0.0019,
+    });
+    expect(t.calls.find((c) => c.operation === 'stage')?.args).toMatchObject({
+      raw_count: 5,
+      groups: [{ items: [], status: 'success', source_evidence: true }],
+    });
+    expect(t.calls.find((c) => c.operation === 'settle')?.args).toMatchObject({
+      usage_usd: 0.0019,
+      groups: [
+        {
+          status: 'failed',
+          error: 'collector_daily_coverage_capped',
+          backfill_done: false,
+          backfill_cursor: null,
+        },
+      ],
     });
   });
 });

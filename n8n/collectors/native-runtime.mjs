@@ -165,12 +165,15 @@ export function vimeoNativeAccount(state) {
   )
     bad();
   let path,
+    endpoint = 'users',
     resolving = false,
     collection = false;
   if (['channels', 'groups'].includes(match[1]) && match[2]) {
+    endpoint = match[1];
     path = '/' + match[1] + '/' + match[2];
     collection = true;
   } else if (match[1] === 'showcase' && /^\d+$/.test(match[2] ?? '')) {
+    endpoint = 'albums';
     path = account.backfill_cursor?.resourcePath;
     collection = true;
     if (
@@ -205,18 +208,13 @@ export function vimeoNativeAccount(state) {
         ).toISOString()
       : floor + 'T00:00:00.000Z';
   const page = state.mode === 'backfill' ? (account.backfill_cursor?.page ?? 1) : 1;
-  if (
-    !Number.isSafeInteger(page) ||
-    page < 1 ||
-    (state.mode === 'backfill' &&
-      account.backfill_cursor?.resourcePath &&
-      account.backfill_cursor.resourcePath !== path)
-  )
-    bad();
+  if (!Number.isSafeInteger(page) || page < 1) bad();
   state.current = {
     account,
     path,
+    endpoint,
     page,
+    pageSize: state.pageSize,
     pages: 0,
     resolving,
     collection,
@@ -230,8 +228,28 @@ export function vimeoNativeAccount(state) {
     waitedMs: 0,
     oldest: null,
   };
+  if (!vimeoNativeCursorValid(state.current, state.mode)) bad();
   if (!path) return vimeoNativeFallback(state, 'vimeo_showcase_owner_required');
   return vimeoNativeRequest(state);
+}
+
+export function vimeoNativeCursorValid(current, mode) {
+  const cursor = current.account.backfill_cursor;
+  if (mode !== 'backfill' || cursor === null || cursor === undefined) return true;
+  return (
+    typeof cursor === 'object' &&
+    !Array.isArray(cursor) &&
+    (cursor.page_size === undefined || cursor.page_size === current.pageSize) &&
+    (cursor.endpoint === undefined || cursor.endpoint === current.endpoint) &&
+    (cursor.resourcePath === undefined ||
+      (current.resolving
+        ? typeof cursor.resourcePath === 'string' && /^\/users\/\d+$/.test(cursor.resourcePath)
+        : cursor.resourcePath === current.path)) &&
+    (current.page === 1 ||
+      (cursor.endpoint === current.endpoint &&
+        typeof cursor.resourcePath === 'string' &&
+        cursor.page_size === current.pageSize))
+  );
 }
 
 export function vimeoNativeFallback(state, reason) {
@@ -368,6 +386,10 @@ export function advanceVimeoNative(state, response, normalize) {
     }
     c.path = '/users/' + id;
     c.resolving = false;
+    if (!vimeoNativeCursorValid(c, state.mode)) {
+      c.error = 'vimeo_invalid_cursor';
+      return vimeoNativeReport(state);
+    }
     return collectorGateway(state, 'resolve', {
       account_id: c.account.account_id,
       external_id: id,
@@ -378,10 +400,16 @@ export function advanceVimeoNative(state, response, normalize) {
   if (
     !Array.isArray(rows) ||
     rows.length > state.pageSize ||
+    (Object.hasOwn(response.body, 'page') && response.body.page !== c.page) ||
+    (Object.hasOwn(response.body, 'per_page') && response.body.per_page !== state.pageSize) ||
     !response.body.paging ||
     !Object.hasOwn(response.body.paging, 'next')
   ) {
     c.error = 'vimeo_contract_drift';
+    return vimeoNativeReport(state);
+  }
+  if (rows.length === 0 && response.body.paging.next !== null) {
+    c.error = 'vimeo_pagination_invalid';
     return vimeoNativeReport(state);
   }
   let normalized;
@@ -423,7 +451,9 @@ export function advanceVimeoNative(state, response, normalize) {
           (seen.add(k), v === undefined),
       ) ||
       !params.some(([k, v]) => k === 'page' && /^\d+$/.test(v) && Number(v) === c.page + 1) ||
-      params.some(([k, v]) => k === 'per_page' && Number(v) !== state.pageSize)
+      params.some(([k, v]) => k === 'per_page' && v !== String(state.pageSize)) ||
+      params.some(([k, v]) => k === 'sort' && v !== 'date') ||
+      params.some(([k, v]) => k === 'direction' && v !== 'desc')
     ) {
       c.error = 'vimeo_pagination_invalid';
       return vimeoNativeReport(state);
@@ -433,9 +463,10 @@ export function advanceVimeoNative(state, response, normalize) {
   const exhausted = nextPage === null || (c.oldest && Date.parse(c.oldest) < Date.parse(c.cutoff));
   if (exhausted || c.pages >= state.maxPages) {
     c.backfillDone = state.mode === 'backfill' && Boolean(exhausted);
+    if (state.mode === 'daily' && !exhausted) c.error = 'vimeo_daily_page_cap';
     c.cursor =
       state.mode === 'backfill' && !exhausted
-        ? { endpoint: c.path.split('/')[1], resourcePath: c.path, page: nextPage }
+        ? { endpoint: c.endpoint, resourcePath: c.path, page: nextPage, page_size: state.pageSize }
         : null;
     c.chunks = [];
     let chunk = [],
@@ -506,7 +537,7 @@ export function advanceCollectorGateway(state, response, planInstagram) {
       last_item_published_at: a.watermark_published_at ?? a.last_item_published_at,
     }));
     state.batches = ['posts', 'reels']
-      .flatMap((result_type) => planInstagram(accounts, { mode: state.mode, result_type }))
+      .flatMap((result_type) => planInstagram(accounts, { mode: state.mode, result_type, now: state.now }))
       .map((batch, index) => ({
         ...batch,
         index,

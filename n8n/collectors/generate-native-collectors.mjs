@@ -2,21 +2,28 @@
 // a credential, imports a workflow or grants live execution authority.
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { buildNativeCollector, extendNativeCallback } from './build-native-collectors.mjs';
+import {
+  buildNativeCollector,
+  buildNativeCallback,
+  buildNativeOrchestrator,
+  buildNativeErrorHandler,
+} from './build-native-collectors.mjs';
 
 export function generateCollectorBlueprints() {
   const bindings = JSON.parse(
     readFileSync(new URL('../foundation/bindings.dev.json', import.meta.url), 'utf8'),
   );
-  const baseline = JSON.parse(readFileSync(new URL('../workflows/WF-19.json', import.meta.url), 'utf8'));
+  const selection = JSON.parse(readFileSync(new URL('./selection.dev.json', import.meta.url), 'utf8'));
   const transport = {
     audience: 'https://everyone-market-researcher-m04-binding-pending.vercel.app',
     credential: { id: 'EmrM03Machine19', name: 'M03 foundation machine [dev]', type: 'httpCustomAuth' },
   };
   return [
+    buildNativeOrchestrator(bindings, transport, selection),
     buildNativeCollector(bindings, transport, 'vimeo'),
     buildNativeCollector(bindings, transport, 'instagram'),
-    extendNativeCallback(bindings, transport, baseline),
+    buildNativeCallback(bindings, transport),
+    buildNativeErrorHandler(bindings, transport),
   ];
 }
 

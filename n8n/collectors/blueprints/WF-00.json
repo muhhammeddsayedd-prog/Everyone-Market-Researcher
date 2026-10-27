@@ -1,0 +1,389 @@
+{
+  "key": "WF-00",
+  "kind": "native-json-blueprint",
+  "hostedAcceptance": false,
+  "runnableWorkflow": true,
+  "liveEnabled": false,
+  "definitionProfile": "inactive_native_staging",
+  "errorWorkflowBinding": {
+    "key": "WF-90-M04",
+    "state": "unresolved",
+    "reason": "not_installed"
+  },
+  "requiredRefs": {
+    "workflowKeys": ["WF-10", "WF-11", "WF-90-M04"],
+    "credentialKeys": [],
+    "tagNames": ["env:dev", "layer:ops"]
+  },
+  "workflow": {
+    "name": "WF-00 · Orchestrator [dev]",
+    "active": false,
+    "nodes": [
+      {
+        "id": "351c0eac-d725-41a1-a156-df303329b656",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [0, 0]
+      },
+      {
+        "id": "04ff088f-651e-4d71-a8bb-b54f94bfc912",
+        "name": "Fixed M04 collector selection",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "return [{json:{\"vimeo\":{\"mode\":\"backfill\",\"limit\":2,\"result_type\":\"both\",\"env\":\"dev\",\"max_pages\":1,\"page_size\":5,\"results_limit\":5,\"max_actor_starts\":2,\"account_ids\":[\"985a57dd-7934-422d-9d18-4e8ca59fc197\",\"8fefa9a1-3637-43db-843d-97caa9afcc79\"]},\"instagram\":{\"mode\":\"backfill\",\"limit\":2,\"result_type\":\"both\",\"env\":\"dev\",\"max_pages\":1,\"page_size\":5,\"results_limit\":5,\"max_actor_starts\":2,\"account_ids\":[\"962c9c7e-aa0f-46ae-911b-3265859e0577\",\"bed82782-753f-4ba9-91ca-691ef36f75c6\"]}}}];"
+        },
+        "position": [200, 0]
+      },
+      {
+        "id": "61c4a291-21ae-49f8-a6e0-b56d394ab788",
+        "name": "Collect selected Vimeo accounts",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "4JMHLDBSdgGxhPlk"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $('Fixed M04 collector selection').first().json.vimeo.mode }}",
+              "limit": "={{ $('Fixed M04 collector selection').first().json.vimeo.limit }}",
+              "result_type": "={{ $('Fixed M04 collector selection').first().json.vimeo.result_type }}",
+              "env": "={{ $('Fixed M04 collector selection').first().json.vimeo.env }}",
+              "max_pages": "={{ $('Fixed M04 collector selection').first().json.vimeo.max_pages }}",
+              "page_size": "={{ $('Fixed M04 collector selection').first().json.vimeo.page_size }}",
+              "results_limit": "={{ $('Fixed M04 collector selection').first().json.vimeo.results_limit }}",
+              "max_actor_starts": "={{ $('Fixed M04 collector selection').first().json.vimeo.max_actor_starts }}",
+              "account_ids": "={{ $('Fixed M04 collector selection').first().json.vimeo.account_ids }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "max_pages",
+                "displayName": "max_pages",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "page_size",
+                "displayName": "page_size",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "results_limit",
+                "displayName": "results_limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "max_actor_starts",
+                "displayName": "max_actor_starts",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "account_ids",
+                "displayName": "account_ids",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "array",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [400, 0]
+      },
+      {
+        "id": "fb9983a1-9767-4c5c-a527-4640ba84beda",
+        "name": "Collect selected Instagram posts and reels",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.4,
+        "parameters": {
+          "source": "database",
+          "mode": "once",
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "Oq19AMI9C3B1wbo9"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "mode": "={{ $('Fixed M04 collector selection').first().json.instagram.mode }}",
+              "limit": "={{ $('Fixed M04 collector selection').first().json.instagram.limit }}",
+              "result_type": "={{ $('Fixed M04 collector selection').first().json.instagram.result_type }}",
+              "env": "={{ $('Fixed M04 collector selection').first().json.instagram.env }}",
+              "max_pages": "={{ $('Fixed M04 collector selection').first().json.instagram.max_pages }}",
+              "page_size": "={{ $('Fixed M04 collector selection').first().json.instagram.page_size }}",
+              "results_limit": "={{ $('Fixed M04 collector selection').first().json.instagram.results_limit }}",
+              "max_actor_starts": "={{ $('Fixed M04 collector selection').first().json.instagram.max_actor_starts }}",
+              "account_ids": "={{ $('Fixed M04 collector selection').first().json.instagram.account_ids }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "mode",
+                "displayName": "mode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "limit",
+                "displayName": "limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "result_type",
+                "displayName": "result_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "env",
+                "displayName": "env",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "max_pages",
+                "displayName": "max_pages",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "page_size",
+                "displayName": "page_size",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "results_limit",
+                "displayName": "results_limit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "max_actor_starts",
+                "displayName": "max_actor_starts",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number",
+                "removed": false
+              },
+              {
+                "id": "account_ids",
+                "displayName": "account_ids",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "array",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "position": [600, 0]
+      },
+      {
+        "id": "e0961149-03a7-4e0b-accd-380b10566494",
+        "name": "Return M04 orchestration result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const v=$('Collect selected Vimeo accounts').first().json,i=$input.first().json;return[{json:{env:'dev',vimeo:v,instagram:i}}];"
+        },
+        "position": [800, 0]
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Fixed M04 collector selection",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fixed M04 collector selection": {
+        "main": [
+          [
+            {
+              "node": "Collect selected Vimeo accounts",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Collect selected Vimeo accounts": {
+        "main": [
+          [
+            {
+              "node": "Collect selected Instagram posts and reels",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Collect selected Instagram posts and reels": {
+        "main": [
+          [
+            {
+              "node": "Return M04 orchestration result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 1800,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataSuccessExecution": "none",
+      "saveDataErrorExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "OxnbDrBVAtziiuTk",
+        "name": "layer:ops"
+      }
+    ],
+    "pinData": {}
+  },
+  "limitations": ["Local fixed-selection wiring only; no native execution or recurring schedule acceptance."]
+}

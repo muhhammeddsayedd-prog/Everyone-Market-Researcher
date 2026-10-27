@@ -84,7 +84,10 @@ describe('official Vimeo collector with injected transport — no live calls', (
   it('resumes backfill and returns an incomplete cursor at the page cap', async () => {
     const t = transport([response([raw('999')], '/users/123/videos?page=5')]);
     const r = await collectVimeoAccount(
-      { ...account, backfill_cursor: { page: 4, endpoint: 'users', resourcePath: '/users/123' } },
+      {
+        ...account,
+        backfill_cursor: { page: 4, endpoint: 'users', resourcePath: '/users/123', page_size: 100 },
+      },
       { ...config, mode: 'backfill', maxPages: 1 },
       t.deps,
     );

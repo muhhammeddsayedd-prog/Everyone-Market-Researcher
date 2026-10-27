@@ -16,6 +16,24 @@ const accounts = z
   .max(100)
   .refine((a) => new Set(a).size === a.length);
 export const collectorAccountIds = accounts;
+// Fixed dev workflow identities, not caller-provided workflow names or run IDs.
+export const collectorWorkflowIds = {
+  'WF-00': 'MzimjpsuyPuK7SKe',
+  'WF-10': '4JMHLDBSdgGxhPlk',
+  'WF-11': 'Oq19AMI9C3B1wbo9',
+  'WF-19': 'TsqSMa5MlO3QBLkt',
+} as const;
+export const collectorExecutionErrorArgs = z
+  .strictObject({
+    workflow_id: z.enum(Object.values(collectorWorkflowIds)),
+    execution_id: z.string().regex(/^(?:[0-9]{1,15}|handler-[0-9]{1,15})$/),
+    error_code: z.enum(['workflow_failed', 'callback_retryable']),
+  })
+  .refine(
+    (v) =>
+      v.error_code !== 'callback_retryable' ||
+      (v.workflow_id === collectorWorkflowIds['WF-19'] && !v.execution_id.startsWith('handler-')),
+  );
 const json = z.json();
 const item = z.strictObject({
   platform: z.enum(['vimeo', 'instagram']),
@@ -129,6 +147,7 @@ export const collectorArgs = {
   'request.status': z.strictObject({ request_id: id }),
   'callback.classify': z.strictObject({ apify_run_id: external }),
   'callback.process': z.strictObject({ apify_run_id: external }),
+  'execution.error': collectorExecutionErrorArgs,
 };
 export type CollectorOperation = keyof typeof collectorArgs;
 export type CollectorRequest = {

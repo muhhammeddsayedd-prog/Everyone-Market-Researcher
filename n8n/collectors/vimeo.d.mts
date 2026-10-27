@@ -6,7 +6,7 @@ export type VimeoCollectorResult = {
   normalizedItems: Record<string, unknown>[];
   apiRequestCount: number;
   backfillDone: boolean;
-  cursor: { endpoint: string; resourcePath: string; page: number } | null;
+  cursor: { endpoint: string; resourcePath: string; page: number; page_size: number } | null;
   fallback: { actor: string | null; blocked: true; reason: string; coverage: string } | null;
   resolvedExternalId: string | null;
   complete?: boolean;

@@ -88,8 +88,11 @@ function validateCursor(account, endpoint, settings) {
     !h.vimeoRecord(cursor) ||
     (cursor.endpoint !== undefined && cursor.endpoint !== endpoint.kind) ||
     (cursor.resourcePath !== undefined && cursor.resourcePath !== endpoint.resourcePath) ||
+    (cursor.page_size !== undefined && cursor.page_size !== 100) ||
     (settings.page > 1 &&
-      (cursor.endpoint !== endpoint.kind || cursor.resourcePath !== endpoint.resourcePath))
+      (cursor.endpoint !== endpoint.kind ||
+        cursor.resourcePath !== endpoint.resourcePath ||
+        cursor.page_size !== 100))
   )
     return failure('vimeo_invalid_cursor');
 }
@@ -122,7 +125,14 @@ function nextPage(value, resourcePath, page) {
   )
     return failure('vimeo_invalid_pagination');
   const n = Number(u.searchParams.get('page'));
-  if (!Number.isSafeInteger(n) || n !== page + 1) return failure('vimeo_invalid_pagination');
+  if (
+    !Number.isSafeInteger(n) ||
+    n !== page + 1 ||
+    (u.searchParams.has('per_page') && u.searchParams.get('per_page') !== '100') ||
+    (u.searchParams.has('sort') && u.searchParams.get('sort') !== 'date') ||
+    (u.searchParams.has('direction') && u.searchParams.get('direction') !== 'desc')
+  )
+    return failure('vimeo_invalid_pagination');
   return n;
 }
 function header(headers, key) {
@@ -167,7 +177,10 @@ export async function collectVimeoAccount(account, config, deps) {
   const result = (status, error = null, extra = {}) => ({
     status,
     error,
-    normalizedItems: status === 'success' ? normalizedItems : [],
+    normalizedItems:
+      status === 'success' || (status === 'failed' && error === 'vimeo_daily_page_cap')
+        ? normalizedItems
+        : [],
     apiRequestCount,
     backfillDone: false,
     cursor: null,
@@ -245,6 +258,8 @@ export async function collectVimeoAccount(account, config, deps) {
         !h.vimeoRecord(body) ||
         !Array.isArray(body.data) ||
         body.data.length > 100 ||
+        (Object.hasOwn(body, 'page') && body.page !== page) ||
+        (Object.hasOwn(body, 'per_page') && body.per_page !== 100) ||
         !h.vimeoRecord(body.paging) ||
         !Object.hasOwn(body.paging, 'next')
       )
@@ -268,8 +283,16 @@ export async function collectVimeoAccount(account, config, deps) {
       if (next === null || reachedCutoff)
         return result('success', null, { backfillDone: settings.mode === 'backfill', complete: true });
       if (!dates.length) return failure('vimeo_invalid_pagination');
-      const cursor = { endpoint: endpoint.kind, resourcePath: endpoint.resourcePath, page: next };
-      if (pages === settings.maxPages) return result('success', null, { cursor, complete: false });
+      const cursor = {
+        endpoint: endpoint.kind,
+        resourcePath: endpoint.resourcePath,
+        page: next,
+        page_size: 100,
+      };
+      if (pages === settings.maxPages)
+        return settings.mode === 'daily'
+          ? result('failed', 'vimeo_daily_page_cap', { complete: false })
+          : result('success', null, { cursor, complete: false });
       await respectRate(response.headers);
       page = next;
     }

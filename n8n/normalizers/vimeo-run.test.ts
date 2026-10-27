@@ -62,7 +62,12 @@ function setup(accounts = [account], inserted = 1) {
   return {
     calls,
     gateway,
-    deps: { gateway, request: async () => response, wait: async () => {}, now: () => '2026-10-26T00:00:00Z' },
+    deps: {
+      gateway,
+      request: async (): Promise<unknown> => response,
+      wait: async () => {},
+      now: () => '2026-10-26T00:00:00Z',
+    },
   };
 }
 describe('Vimeo official API lifecycle through fixed gateway ports, synthetic integration', () => {
@@ -116,6 +121,72 @@ describe('Vimeo official API lifecycle through fixed gateway ports, synthetic in
     const t = setup([account], 0);
     expect(await runVimeoCollector(input, t.deps)).toMatchObject({ state: 'completed', items_new: 0 });
     expect(t.calls.find((c) => c.method === 'report')?.value).toMatchObject({ items_new: 0 });
+  });
+  it('upserts known IDs for metrics after a three-page daily cap while reporting the incomplete account failed', async () => {
+    const t = setup([account], 0);
+    let page = 0;
+    t.deps.request = async () => {
+      page++;
+      return {
+        ...response,
+        body: {
+          data: [
+            {
+              ...response.body.data[0],
+              uri: `/videos/${320 + page}`,
+              link: `https://vimeo.com/${320 + page}`,
+              release_time: `2026-10-${26 - page}T00:00:00Z`,
+              stats: { plays: 30 + page },
+            },
+          ],
+          paging: { next: `/users/123/videos?page=${page + 1}` },
+        },
+      };
+    };
+    const upserts: Record<string, unknown>[] = [];
+    t.gateway.ingest = async ({ items }) => {
+      upserts.push(...items);
+      return { inserted: 0, duplicates: items.length, metrics_updated: items.length, new_item_ids: [] };
+    };
+    const result = await runVimeoCollector({ ...input, mode: 'daily' }, t.deps);
+    expect(result).toMatchObject({ state: 'completed', status: 'failed', items_new: 0, api_requests: 3 });
+    expect(upserts.map(({ external_id, metrics }) => ({ external_id, metrics }))).toEqual([
+      { external_id: '321', metrics: { plays: 31, likes: null, comments: null } },
+      { external_id: '322', metrics: { plays: 32, likes: null, comments: null } },
+      { external_id: '323', metrics: { plays: 33, likes: null, comments: null } },
+    ]);
+    expect(upserts.every((item) => !('ai_status' in item) && !('locked_fields' in item))).toBe(true);
+    expect(t.calls.find((c) => c.method === 'report')?.value).toMatchObject({
+      status: 'failed',
+      error: 'vimeo_daily_page_cap',
+      items_seen: 3,
+      items_new: 0,
+      backfill_done: false,
+      backfill_cursor: null,
+    });
+    expect(result.accounts[0]).toMatchObject({
+      status: 'failed',
+      error: 'vimeo_daily_page_cap',
+      complete: false,
+    });
+    expect(t.calls.find((c) => c.method === 'cost')?.value).toMatchObject({ entries: [{ quantity: 3 }] });
+    expect(t.calls.find((c) => c.method === 'finish')?.value).toMatchObject({ status: 'failed' });
+  });
+  it('does not upsert buffered daily rows after an ordinary later provider failure', async () => {
+    const t = setup([account], 0);
+    let page = 0;
+    t.deps.request = async () =>
+      ++page === 1
+        ? { ...response, body: { ...response.body, paging: { next: '/users/123/videos?page=2' } } }
+        : { ...response, status: 403 };
+    const result = await runVimeoCollector({ ...input, mode: 'daily' }, t.deps);
+    expect(result).toMatchObject({ state: 'completed', status: 'failed', items_new: 0, api_requests: 2 });
+    expect(t.calls.some((c) => c.method === 'ingest')).toBe(false);
+    expect(t.calls.find((c) => c.method === 'report')?.value).toMatchObject({
+      status: 'failed',
+      error: 'vimeo_api_403',
+      items_seen: 0,
+    });
   });
   it('reports an API failure without starting a paid fallback or ingesting', async () => {
     const t = setup();

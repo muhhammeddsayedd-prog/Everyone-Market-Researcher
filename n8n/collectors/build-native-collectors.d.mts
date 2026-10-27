@@ -21,13 +21,16 @@ export interface NativeCollectorWorkflow {
   pinData: Record<string, never>;
 }
 export interface NativeCollectorGraph {
-  key: 'WF-10' | 'WF-11' | 'WF-19';
+  key: 'WF-00' | 'WF-10' | 'WF-11' | 'WF-19' | 'WF-90-M04';
   kind: 'native-json-blueprint';
   hostedAcceptance: false;
   runnableWorkflow: true;
   liveEnabled: false;
   definitionProfile?: 'inactive_native_staging';
   deferredErrorWorkflowId?: string;
+  errorWorkflowBinding?:
+    | { key: 'WF-90-M04'; state: 'unresolved'; reason: 'not_installed' }
+    | { key: 'WF-90-M04'; state: 'bound'; id: string };
   workflow: NativeCollectorWorkflow;
   requiredRefs: { workflowKeys: string[]; credentialKeys: string[]; tagNames: string[] };
 }
@@ -37,6 +40,32 @@ export function buildNativeCollector(
   input: unknown,
   transport: unknown,
   kind: 'vimeo' | 'instagram',
+  errorWorkflowId?: string,
+): NativeCollectorGraph;
+export interface CollectorSelection {
+  mode: 'daily' | 'backfill';
+  vimeo_account_ids: string[];
+  instagram_account_ids: string[];
+  max_pages: number;
+  page_size: number;
+  results_limit: number;
+  max_actor_starts: number;
+}
+export function buildNativeOrchestrator(
+  input: unknown,
+  transport: unknown,
+  selection: CollectorSelection,
+  errorWorkflowId?: string,
+): NativeCollectorGraph;
+export function buildNativeCallback(
+  input: unknown,
+  transport: unknown,
+  errorWorkflowId?: string,
+): NativeCollectorGraph;
+export function buildNativeErrorHandler(
+  input: unknown,
+  transport: unknown,
+  workflowId?: string,
 ): NativeCollectorGraph;
 export interface ManualCollectorEntry {
   triggerNodeName: 'Manual representative collection';
