@@ -44,5 +44,10 @@
       "Retained immutable Preview is protected, not disabled by deleting current branch env settings."
     ]
   },
-  "ci": "Normal changed-head CI required; existing five jobs and branch protection retained. New pure query regressions added to existing unit step."
+  "ci": "Normal changed-head CI required; existing five jobs and branch protection retained. New pure query regressions added to existing unit step.",
+  "rootTypecheck": {
+    "exit": 0,
+    "afterReproducedCiFixtureGuardCorrection": true,
+    "evidence": "ci-fixture-type-guard-20261027.json"
+  }
 }

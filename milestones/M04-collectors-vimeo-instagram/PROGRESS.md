@@ -140,3 +140,5 @@ Not ready. M04 remains open; no next milestone started.
 ### Batched local qualification
 
 The [affected qualification record](evidence/local-qualification-20261027.json) reports60 passing bounded-consumer checks with one opt-in local test skipped in that run; the separate public-local PostgreSQL query suite passed7/7 with no skips. Five actual projected-fixture contract checks, affected lint/format and tracked-file secret scanning pass. These overlapping suites are not added together. The existing CI unit step now includes the new pure query regressions; all five required jobs remain.
+
+- 27 October — CI40518037319 quality found TS18048/TS2532 in the new projected-fixture test indexes. Root `pnpm typecheck` reproduced it before repair. Explicit missing-sample guards and a still-failing-if-absent caption assertion now pass root TypeScript and all5 focused fixture tests. [Repair record](evidence/ci-fixture-type-guard-20261027.json). Live data, cost and safe closure remain preserved; normal corrected-head CI is required.

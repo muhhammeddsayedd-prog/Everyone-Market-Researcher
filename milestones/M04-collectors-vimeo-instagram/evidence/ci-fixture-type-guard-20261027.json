@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-27T14:12:12.464Z",
+  "failedHead": "73e7067d057ce2bd82b12ba94263c7b78a8a226f",
+  "ciRun": 40518037319,
+  "job": "quality / root typecheck",
+  "errors": [
+    "TS18048: indexed sample can be undefined",
+    "TS2532: indexed fourth item can be undefined"
+  ],
+  "localReproduction": {
+    "command": "pnpm typecheck",
+    "exit": 2
+  },
+  "change": "Explicitly reject missing matching samples; optional caption lookup retains an assertion that fails when absent.",
+  "verification": {
+    "rootTypecheck": {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    "focusedFixtureTests": {
+      "tests": 5,
+      "passed": 5,
+      "failed": 0
+    }
+  },
+  "hostedOperations": 0,
+  "liveEvidencePreserved": true
+}

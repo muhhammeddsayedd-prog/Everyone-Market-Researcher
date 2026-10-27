@@ -112,6 +112,7 @@ describe('M04 actual persisted public metadata projections — local contract re
       expect(result.items).toHaveLength(2);
       result.items.forEach((item, index) => {
         const sample = samples[index];
+        if (!sample) throw new Error('Actual Vimeo item has no matching projected sample');
         expect(schemaValid(item), JSON.stringify(schemaValid.errors)).toBe(true);
         expect(item).toMatchObject({
           platform: 'vimeo',
@@ -144,6 +145,7 @@ describe('M04 actual persisted public metadata projections — local contract re
     expect(items.map(({ item_type }) => item_type)).toEqual(['reel', 'carousel', 'reel', 'reel']);
     items.forEach((item, index) => {
       const sample = instagram.samples[index];
+      if (!sample) throw new Error('Actual Instagram item has no matching projected sample');
       expect(schemaValid(item), JSON.stringify(schemaValid.errors)).toBe(true);
       expect(item).toMatchObject({
         platform: 'instagram',
@@ -162,7 +164,7 @@ describe('M04 actual persisted public metadata projections — local contract re
       expect(item.thumbnail_url).toBeNull();
       expect(item.duration_seconds).toBeNull();
     });
-    expect(items[3].caption).toBe('');
+    expect(items[3]?.caption).toBe('');
   });
 
   it('assigns the mixed actual Instagram owners to the two exact selected account IDs', () => {
