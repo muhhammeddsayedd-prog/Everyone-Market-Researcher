@@ -392,15 +392,11 @@ export function createCollectorCallback(deps: Dependencies) {
               resume_supported: false,
             }
           : null;
-      // Bounded representative runs and reels never assert complete history.
-      const complete =
-        !failure &&
-        r.actor_id === 'apify/instagram-scraper' &&
-        r.purpose === 'backfill' &&
-        r.pass === 'posts' &&
-        r.results_limit >= 1500 &&
-        r.next_offset < r.results_limit &&
-        !full;
+      // Dataset EOF drains captured output; it does not attest full source traversal.
+      // A larger latest-results limit and SUCCEEDED provide no per-profile stop
+      // reason in the pinned contract. Preserve successful bounded work/cost, but
+      // keep history incomplete until supported coverage evidence is available.
+      // https://docs.apify.com/api/v2/dataset-items-get
       return {
         account_id: String(a.account_id),
         items: [],
@@ -420,8 +416,8 @@ export function createCollectorCallback(deps: Dependencies) {
                 ? 'apify_' + terminal.status.toLowerCase()
                 : 'collector_no_account_evidence'
           : null,
-        backfill_done: complete,
-        backfill_cursor: complete ? null : cursor,
+        backfill_done: false,
+        backfill_cursor: cursor,
       };
     });
     const result = await call('settle', 'settle', {

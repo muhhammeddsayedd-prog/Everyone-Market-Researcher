@@ -213,7 +213,7 @@ Build it exactly as in `docs/N8N_WORKFLOWS.md` §6 WF-10:
      - HTTP 429 → Wait 60 s, retry up to 3 times.
    - **Normalize:** Code "Normalize Vimeo API" (from `n8n/normalizers/vimeoApi.js`). It includes known IDs through the 30-day metrics horizon (AC5); stop after the older applicable horizon, exhaustion or the explicit page cap. A bounded incomplete cursor is not a finished backfill.
    - **Errors:** HTTP 401/403/404 → group `status='failed'`, `error='vimeo_api_<code>'`; add the account to the fallback list.
-   - **Backfill state:** `backfill_done = true` when the last page reached the cutoff or `paging.next` is null. Otherwise save `backfill_cursor = {endpoint, page: next_page}`, so a timeout or next wave resumes.
+   - **Backfill state:** `backfill_done = true` when verified descending traversal is strictly earlier than the cutoff or `paging.next` is null. Otherwise save `backfill_cursor = {endpoint, resourcePath, page: next_page, page_size}` so a timeout or next wave resumes with the same verified path/width.
 4. **Fallback (daily mode only):** if the fallback list is not empty, start `goat255~vimeo-scraper` async (≤ 50 users per run) with this input:
    ```json
    {"videoUrls": [], "users": ["https://vimeo.com/<handle>", "…"], "maxVideosPerUser": 20, "includeProfile": false, "concurrency": 5}
@@ -261,11 +261,9 @@ Build it exactly as in `docs/N8N_WORKFLOWS.md` §6 WF-10:
    - Error rows:
      - a private profile or `errorDescription` containing private, login, challenge or checkpoint → the account fails with `error='ig_private_or_login'`;
      - after 3 such runs the account goes `invalid` (handled by the consecutive-failures logic plus a check in the branch: on the 3rd, call `ops.set_account_status` if it exists, else log for the owner).
-   - **`backfill_done`:** true when the account returned fewer than `resultsLimit` results, or its oldest item ≤ 2024-01-01. Otherwise:
-     - set `backfill_cursor = {oldest_seen: <iso>}`;
-     - leave `backfill_done=false`;
-     - the next wave sets `onlyPostsNewerThan` = 2024-01-01 again, and only new rows insert.
-     - If 3 waves return a full `resultsLimit` for the same account, raise `resultsLimit` to 3000 for that account and note it.
+   - **`backfill_done` implementation correction (27 October):** the draft short-output/oldest-row heuristic is insufficient source-coverage evidence. Final callback settlement keeps history incomplete until each posts/reels pass has attributable cutoff or public-source-exhaustion proof. Dataset EOF, one out-of-order old row and a higher result limit are not that proof. See [history review](evidence/history-capability-decision-20261027.md). This corrects an unsafe implementation prescription; the full-history target and AC2 remain unchanged pending explicit HC-01 decision.
+     - Keep per-pass `oldest_seen`, raw cap/escalation evidence and `backfill_done=false`; existing 3000-result saturation is a local stop, not a provider-wide prohibition.
+     - Repeating the same lower-date latest query can add new IDs idempotently but does not prove history or authorize another wave. No repeated capture is ordered by this note.
    - Reels pass → `report_account_result(..., p_secondary := true)`.
 7. Settings as in T5.
 

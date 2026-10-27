@@ -500,6 +500,33 @@ describe('M04 private callback source verification and bounded settlement', () =
     );
     expect(t.calls.find((c) => c.operation === 'settle')?.args).toMatchObject({ usage_usd: 0.0019 });
   });
+  it('keeps source history unverified when a larger requested limit only yields a short completed dataset', async () => {
+    const t = setup(),
+      altered = structuredClone(config);
+    altered.policy!.max_results_per_profile = 1500;
+    t.r.results_limit = 1500;
+    t.r.dataset_complete = true;
+    t.r.next_offset = 1;
+    t.r.pass_results[0]!.items_seen = 1;
+    t.r.pass_results[0]!.source_evidence = true;
+    t.get.mockImplementation(async (path) =>
+      path.includes('actor-runs')
+        ? { data: { ...metadata.data, options: { ...metadata.data.options, maxItems: 1500 } } }
+        : { ...actorInput, resultsLimit: 1500 },
+    );
+    await t.handler(input, altered, new AbortController().signal);
+    expect(t.get).toHaveBeenCalledTimes(3);
+    expect(t.calls.find((c) => c.operation === 'settle')?.args).toMatchObject({
+      usage_usd: 0.0019,
+      groups: [
+        {
+          status: 'success',
+          backfill_done: false,
+          backfill_cursor: { results_limit: 1500, history_state: 'incomplete', resume_supported: false },
+        },
+      ],
+    });
+  });
   it('settles saturated daily output as incomplete coverage while retaining actual cost and matched source evidence', async () => {
     const t = setup();
     t.r.purpose = 'daily';

@@ -259,6 +259,28 @@ describe('Instagram pure account results and explicit limits', () => {
         .backfill_done,
     ).toBe(true);
   });
+  it('never completes a full posts result from an old unpinned row in either source order', () => {
+    const rows = [
+      row({ shortCode: 'RecentFullPost', timestamp: '2026-10-20T00:00:00Z', isPinned: false }),
+      row({ shortCode: 'OldFullPost', timestamp: '2023-12-31T23:59:00Z', isPinned: false }),
+    ];
+    for (const raw of [rows, [...rows].reverse()]) {
+      const result = prepareInstagramResults(raw, context({ mode: 'backfill', resultsLimit: 2 }));
+      expect(result.groups[0]).toMatchObject({
+        status: 'success',
+        backfill_done: false,
+        backfill_cursor: {
+          oldest_seen: '2023-12-31T23:59:00.000Z',
+          full_waves: 1,
+          results_limit: 2,
+          history_state: 'incomplete',
+        },
+      });
+      expect(result.groups[0].items.map((item: { external_id: string }) => item.external_id)).toEqual([
+        'RecentFullPost',
+      ]);
+    }
+  });
   it('fails a matched account on schema drift rather than ingesting a partial result', () => {
     const result = prepareInstagramResults([row(), row({ shortCode: 'Bad', timestamp: null })], context());
     expect(result.groups[0]).toMatchObject({ status: 'failed', error: 'ig_contract_drift', items: [] });

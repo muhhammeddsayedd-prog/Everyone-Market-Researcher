@@ -448,8 +448,9 @@ they do not broaden direct table grants or replace historical RPCs.
 
 Native definitions are generated inactive local blueprints until saved and
 read back from Cloud. Explicit selected UUIDs are required before a native run
-starts. WF-00 now has a local fixed-selection definition; native installation
-and delivery of this maintained revision remain pending. Official Vimeo runs inline;
+starts. WF-00 fixed-selection native delivery was verified in the accepted
+27 October increment; the saved definitions were restored inactive at closure.
+New blueprints are local until separately delivered. Official Vimeo runs inline;
 fallbacks and Instagram remain asynchronous with durable launch intents, no
 automatic paid POST retry, trusted provider identity/input/cost verification
 and idempotent paged settlement. Native evidence and real source fixtures
@@ -464,9 +465,11 @@ rows, persistent credentials, prior charges and verified shutdown remain.
 
 The continued local implementation uses a maintained M04-only WF-19 and a
 dedicated WF-90-M04 Error Trigger. It does not activate closed foundation
-dispatch, SUB workflows or M03 test windows. The new handler has no installed
-Cloud ID yet: consumers omit `settings.errorWorkflow` until the actual dedicated
-ID is read back and explicitly bound. Its fixed `execution.error` operation
+dispatch, SUB workflows or M03 test windows. The dedicated handler was installed
+as `AwxhktgJdvLXE0FZ`, temporarily published before binding under the approved
+native save contract, and retained inactive at incremental closure. Future
+consumer bindings require verified saved state; no notification/schedule is
+authorized. Its fixed `execution.error` operation
 reuses `ops.log_workflow_error` through the restricted writer connection. No
 run ID, raw message, stack, URL or execution data is accepted. It logs a
 deduplicated classification only; failing a parent, releasing a claim or
@@ -483,7 +486,7 @@ metrics coverage. No new schedule is authorized.
 
 Instagram's provider has no verified historical cursor/upper-date input.
 Latest-result expansion is bounded at 3,000, with per-pass checkpoints and an
-explicit unsupported-history stop when that bound may be saturated. SQL keeps
+explicit local history-limit stop when that bound may be saturated. SQL keeps
 normalized counts rather than raw per-account counts; final settlement uses
 the batch raw count conservatively. This can stop or flag coverage early; it
 cannot assert complete history from filtered counts, repeated capped pages or
@@ -491,7 +494,30 @@ short reels output. Such a stop retains claims/run records for reconciliation;
 the global error handler does not silently release them.
 
 The [incremental dev packet](../milestones/M04-collectors-vimeo-instagram/evidence/incremental-dev-coverage-packet-20261027.md)
-is a new, **unapproved and unexecuted** scope, including all setup/recovery/
-shutdown and its temporary sole/default-bypass decision. Unused capacity from
-the closed sample is not expanded-scope authority. Production, recurring
-activity, notifications, PR13 merge and M05 remain separate decisions.
+was approved at `2c450f4` and is now completed/safely closed at accepted
+`6dea884`. Its source observations and limitations are retained, including
+four cumulative actors/USD0.8395 and236 selected rows. Neither closed packet
+grants substitute collection authority. Production, recurring activity,
+notifications, PR13 merge and M05 remain separate decisions.
+
+### History review and pending HC-01 — 27 October 2026
+
+The [local history review](../milestones/M04-collectors-vimeo-instagram/evidence/history-capability-decision-20261027.md)
+separates Everyone Vimeo page4/width5 continuation from Instagram coverage
+proof. The saved Instagram0.0.831 schema has no exposed history cursor;
+3000/latest-limit escalation and `resume_supported:false` are our local
+controls, not a proven provider-wide restriction. Dataset EOF, a high limit
+or one out-of-order old row cannot certify per-profile history completion.
+The unsafe final posts-completion inference is removed; accepted bounded
+collection/cost evidence remains unchanged. Source-stop evidence for posts
+and reels remains independently unproved.
+
+**HC-01 is proposed, not approved or implemented:** permit fixed-selector
+recent monitoring for the five watermarked dev Instagram accounts, retaining
+incomplete history and shared ownership, and explicitly defer only the
+Instagram-completeness part of dev AC2 to a source-capability follow-up.
+The general scheduled selector, production AC6, Vimeo AC2 and every other
+criterion/gate remain unchanged. Until the owner decides, daily eligibility
+remains gated on history completion. No status is fabricated and no forward
+migration is created in this review. The exact wording, future local change
+and separate future live-estimate gate are in the linked record.

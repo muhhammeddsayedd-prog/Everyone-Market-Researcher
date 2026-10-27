@@ -270,7 +270,6 @@ function prepareInstagramResults(rawItems, ctx) {
     const cutoff = instagramCutoff(account, ctx.mode, ctx.now);
     const items = [];
     const sourceDates = [];
-    const unpinnedDates = [];
     let error = rows.length === 0 ? 'ig_no_account_evidence' : null;
     let invalidationRequired = false;
     for (const row of rows) {
@@ -295,7 +294,6 @@ function prepareInstagramResults(rawItems, ctx) {
         continue;
       }
       sourceDates.push(item.published_at);
-      if (row.isPinned !== true) unpinnedDates.push(item.published_at);
       if (ctx.mode === 'daily' && row.isPinned === true && item.published_at < watermark) {
         dropped.pinned_before_watermark += 1;
         continue;
@@ -307,12 +305,14 @@ function prepareInstagramResults(rawItems, ctx) {
       items.push(item);
     }
     const oldest = sourceDates.length ? [...sourceDates].sort()[0] : null;
-    const oldestUnpinned = unpinnedDates.length ? [...unpinnedDates].sort()[0] : null;
+    // A short result is only a provisional candidate; the callback does not
+    // authorize history completion without source-stop evidence. An old row in an unordered capped result
+    // cannot establish that profile history reached its source boundary.
     const complete =
       !error &&
       ctx.mode === 'backfill' &&
       ctx.result_type === 'posts' &&
-      (sourceDates.length < ctx.resultsLimit || (oldestUnpinned !== null && oldestUnpinned <= cutoff));
+      sourceDates.length < ctx.resultsLimit;
     if (error)
       errors.push({
         account_id: account.id,

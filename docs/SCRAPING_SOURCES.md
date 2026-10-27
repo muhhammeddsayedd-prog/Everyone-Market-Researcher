@@ -425,12 +425,25 @@ launch timestamp. Its result cap can leave daily coverage incomplete. The
 current [Instagram input schema](https://apify.com/apify/instagram-scraper/input-schema)
 and [actor documentation](https://apify.com/apify/instagram-scraper) provide no
 verified upper-date/historical cursor. Count escalation remains latest-page
-retrieval; 3,000-result saturation stops further starts and never proves reels
-exhaustion. The callback persists that limitation using conservative batch raw
-counts because stored per-account counts are normalized. Current primary
+retrieval; our local 3,000-result guard stops further starts and never proves
+source exhaustion. That bound is not a maximum in the retained actor schema. The callback persists that limitation using conservative batch raw
+counts because stored per-account counts are normalized. This is a local
+coverage limit, not a documented inability to retrieve older public content.
+Current primary
 [Vimeo pagination formats](https://developer.vimeo.com/api/common-formats)
 and the actor schema were checked for this local implementation. New native
-source cases remain gated by the one incremental dev packet.
+source cases require a new exact estimate/approval: the incremental packet
+is completed and closed, and its spare capacity is not substitute authority.
+
+The [27 October history review](../milestones/M04-collectors-vimeo-instagram/evidence/history-capability-decision-20261027.md)
+uses the saved actor0.0.831/buildyvA3PQRWe95APBdIh schema, not an assumption
+that current documentation proves its exact behavior. Posts date/pinned
+handling is documented today; equivalent reels traversal/date-stop proof
+remains missing. Dataset EOF and SUCCEEDED establish captured-output/process
+completion, not per-profile January2024 history. The final callback no longer
+infers full posts history from a short output with a higher result limit.
+Everyone Vimeo page4/width5 is separately actionable continuation work; the
+restored database cursor must be verified before any future scoped write.
 
 | Check | Rule | Action |
 |---|---|---|
