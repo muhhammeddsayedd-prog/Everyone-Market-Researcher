@@ -1,0 +1,84 @@
+{
+  "at": "2026-10-27T16:26:24.911Z",
+  "event": "incremental_functional_closeout",
+  "scope": "incremental",
+  "approvalId": "123e88b6-5920-4e54-832a-ad6d87c22675",
+  "totals": {
+    "management": 193,
+    "control": 775,
+    "combined": 968,
+    "vercel": 73,
+    "nativeActions": 12,
+    "actorStarts": 4,
+    "actorUsd": 0.8395
+  },
+  "actorRunIds": [
+    "9vvqGr2sFvbqWFDAQ",
+    "D9QTgPLLep5EP4MqI"
+  ],
+  "incrementalActorUsd": 0.7935,
+  "incrementalNativeActions": 7,
+  "checks": {
+    "migrationHistoryUnchanged": true,
+    "catalogCountsUnchanged": true,
+    "tenOperationalSelectionsRestored": true,
+    "itemsRawAndQueuesPreserved": true,
+    "watermarksPreserved": true,
+    "allParentsTerminal": true,
+    "noSelectedLiveClaims": true,
+    "noSelectedUnprocessedActors": true,
+    "noGlobalUnfinished": true,
+    "noUncertainLaunches": true,
+    "allFiveDefinitionsInactive": true,
+    "machineRestored": true,
+    "ownedVercelCleanupComplete": true
+  },
+  "sourceHead": "376f9ddc03b9c9a3a6f7d921ddeab8d8c6eca2f6",
+  "ci": "40535634604",
+  "incremental": {
+    "management": 105,
+    "control": 493,
+    "combined": 598,
+    "vercel": 37,
+    "actors": 2,
+    "actorUsd": 0.7935,
+    "nativeActions": 7,
+    "storedAdditions": 215,
+    "nonduplicateAdditions": 214,
+    "exclusiveChargedCategories": {
+      "database": 16,
+      "provider": 154,
+      "vercel": 37,
+      "n8n": 68,
+      "gateway": 297,
+      "callback": 26
+    }
+  },
+  "caps": {
+    "management": 296,
+    "control": 1446,
+    "combined": 1742,
+    "vercel": 100,
+    "nativeActions": 17,
+    "actorStarts": 10,
+    "actorUsd": 8.046
+  },
+  "counterTreatment": "All historical charges and conservative precharges retained without refund; actual paid actor usage independently reconciled from stable terminal callbacks and cost ledger.",
+  "runtime": {
+    "newErrorWorkflowId": "AwxhktgJdvLXE0FZ",
+    "newErrorWorkflowActive": false,
+    "allOriginalsRestored": true,
+    "temporaryEnvEntriesRemoved": 7,
+    "ownedBypassAbsent": true,
+    "protectedDeploymentRetained": "dpl_Gzr1tfmLmZBh45YY1yUhj4zFT1Vx",
+    "protectedDeploymentNotProvenDisabled": true,
+    "persistentCredentialsRetained": true,
+    "queryScratchDeleted": true,
+    "boundedDatabaseChildrenClosed": true,
+    "productionWrites": 0,
+    "recurringSchedulesActivated": 0,
+    "externalNotifications": 0,
+    "productionBuildChecks": "No queued/initializing/building Production deployment was reported at setup or cleanup; continuous absence during the bypass interval is not established. No Production operation was initiated."
+  },
+  "infrastructure": "Automatic Cloud/Preview/CI executions, marginal infrastructure charges and fixed subscriptions are not independently measured; unknown is not zero."
+}

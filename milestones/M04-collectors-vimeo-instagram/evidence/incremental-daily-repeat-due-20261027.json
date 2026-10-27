@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "phase": "Query",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "host": "aws-1-eu-central-1.pooler.supabase.com",
+  "port": 5432,
+  "status": "reviewed_query_complete",
+  "privateRead": true,
+  "authenticationAttempted": true,
+  "authenticationVerified": true,
+  "databaseCommands": 1,
+  "childrenClosed": true,
+  "persistentAdminPreserved": true,
+  "scratchDeleted": true,
+  "observedAt": "2026-10-27T16:10:28.0215252Z",
+  "scope": "incremental",
+  "readOnly": false,
+  "preparationStage": "bounded_database_command",
+  "lastNativeExit": 0,
+  "databaseClientClosed": true,
+  "querySqlState": null,
+  "queryResult": [
+    {
+      "incremental_operational": {
+        "accounts": [
+          {
+            "id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "url": "https://vimeo.com/thetalkiesproductionsleb",
+            "handle": "thetalkiesproductionsleb",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "vimeo",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T16:10:29.08251+00:00",
+            "external_id": "10268148",
+            "handle_norm": "thetalkiesproductionsleb",
+            "items_count": 18,
+            "last_run_id": "8fd7bed3-7915-4d87-92bb-d6a61aaca9c5",
+            "next_due_at": "2026-10-27T16:10:28.082509+00:00",
+            "locked_until": null,
+            "backfill_from": "2024-01-01",
+            "competitor_id": "db652794-e33e-4723-ab48-cf75e0b8ae68",
+            "last_error_at": null,
+            "resolve_status": "resolved",
+            "backfill_cursor": null,
+            "backfill_status": "done",
+            "last_success_at": "2026-10-27T16:09:48.303052+00:00",
+            "last_external_id": "1200061860",
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": "2026-06-10T11:24:26+00:00"
+          }
+        ],
+        "operation": "daily-due",
+        "preservedContentAndWatermarks": true
+      }
+    }
+  ],
+  "querySha256": "7f28213b48b4ce49942ee61dbce455428d354660c4d4d1d398d91bfc90dce46f"
+}

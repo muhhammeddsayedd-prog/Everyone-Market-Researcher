@@ -1,0 +1,12 @@
+{
+  "status": "completed",
+  "task": "Probe",
+  "phase": "malformed",
+  "observedAt": "2026-10-27T16:01:43.278Z",
+  "callback": {
+    "phase": "malformed",
+    "status": 500,
+    "providerCalls": 0,
+    "limitation": "Automatic error delivery requires exact native execution and database audit readback."
+  }
+}

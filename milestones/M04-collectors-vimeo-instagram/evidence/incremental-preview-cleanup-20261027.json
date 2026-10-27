@@ -1,0 +1,11 @@
+{
+  "status": "completed",
+  "task": "Setup",
+  "phase": "cleanup",
+  "observedAt": "2026-10-27T16:19:52.304Z",
+  "code": null,
+  "requestCount": 19,
+  "cleanupComplete": true,
+  "protectedDeploymentRetained": "dpl_Gzr1tfmLmZBh45YY1yUhj4zFT1Vx",
+  "pendingMutation": false
+}

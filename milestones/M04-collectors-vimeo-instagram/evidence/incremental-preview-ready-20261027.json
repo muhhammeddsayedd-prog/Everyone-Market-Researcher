@@ -1,0 +1,19 @@
+{
+  "status": "completed",
+  "task": "Setup",
+  "phase": "poll",
+  "observedAt": "2026-10-27T16:00:56.431Z",
+  "code": null,
+  "requestCount": 2,
+  "deployment": {
+    "id": "dpl_Gzr1tfmLmZBh45YY1yUhj4zFT1Vx",
+    "audience": "https://everyone-market-researcher-ioamm7t3r-muhammed-abdelrahman.vercel.app",
+    "readyState": "READY",
+    "sourceHead": "376f9ddc03b9c9a3a6f7d921ddeab8d8c6eca2f6",
+    "branch": "m04-collectors-vimeo-instagram",
+    "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu"
+  },
+  "ready": true,
+  "polls": 1,
+  "pendingMutation": false
+}
