@@ -146,7 +146,9 @@ function verifyInput(value: unknown, r: Registry, config: CollectorConfig) {
     } else if (object(input)) {
       for (const [key, child] of Object.entries(input)) {
         if (
-          /cookie|session|password|authorization|token|login|download|transcri|audio|video.?file/i.test(key)
+          /cookie|session|password|auth|token|api.?key|secret|login|download|transcri|audio|video.?file/i.test(
+            key,
+          )
         )
           throw bad();
         publicOnly(child, depth + 1);

@@ -178,20 +178,26 @@ describe('M04 private callback source verification and bounded settlement', () =
     await expect(t.handler(input, config, new AbortController().signal)).rejects.toThrow();
     expect(t.calls).toHaveLength(1);
   });
-  it.each(['cookies', 'login', 'accessToken', 'downloadVideo', 'transcribe'])(
-    'rejects nested %s even in reviewed defaults',
-    async (key) => {
-      const t = setup(),
-        extra = { advanced: { [key]: 'synthetic-forbidden' } };
-      const altered = structuredClone(config);
-      altered.policy!.actors['apify/instagram-scraper']!.inputDefaults = extra;
-      t.get.mockImplementation(async (path) =>
-        path.includes('actor-runs') ? metadata : { ...actorInput, ...extra },
-      );
-      await expect(t.handler(input, altered, new AbortController().signal)).rejects.toThrow();
-      expect(t.calls).toHaveLength(1);
-    },
-  );
+  it.each([
+    'cookies',
+    'login',
+    'auth',
+    'apiKey',
+    'clientSecret',
+    'accessToken',
+    'downloadVideo',
+    'transcribe',
+  ])('rejects nested %s even in reviewed defaults', async (key) => {
+    const t = setup(),
+      extra = { advanced: { [key]: 'synthetic-forbidden' } };
+    const altered = structuredClone(config);
+    altered.policy!.actors['apify/instagram-scraper']!.inputDefaults = extra;
+    t.get.mockImplementation(async (path) =>
+      path.includes('actor-runs') ? metadata : { ...actorInput, ...extra },
+    );
+    await expect(t.handler(input, altered, new AbortController().signal)).rejects.toThrow();
+    expect(t.calls).toHaveLength(1);
+  });
   it('accepts matched old content as successful zero-item evidence without ingesting it', async () => {
     const t = setup();
     t.get.mockImplementation(async (path) =>
