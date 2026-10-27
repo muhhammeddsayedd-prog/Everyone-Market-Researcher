@@ -93,8 +93,12 @@ function environmentMetadata(row, comment) {
   const { id, key, type, target, gitBranch, createdAt, updatedAt } = row;
   return { id, key, type, target, gitBranch, comment, createdAt, updatedAt };
 }
-function bypassRecord(dto, state, requireDefault = true) {
-  projectRecord(dto);
+function bypassRecord(dto, state, requireDefault = true, partialPatch = false) {
+  // Protection PATCH returns its map, not a full Project DTO. The subsequent
+  // exact Project GET independently verifies account, repo and protection.
+  if (partialPatch) {
+    if (!object(dto) || !object(dto.protectionBypass)) fail('BYPASS');
+  } else projectRecord(dto);
   const entries = Object.keys(dto.protectionBypass),
     row = dto.protectionBypass[state.protectionBypass];
   if (
@@ -320,7 +324,15 @@ export async function runVercelTask({ phase, state, secrets = {}, repo, send }) 
       const v = state.vercelSetup;
       if (!v?.prepared) fail('PREPARE_REQUIRED');
       if (phase === 'configure') {
-        if (v.pending || v.configured || v.environments.length || v.bypassOwned || state.deployment) fail();
+        const resumeKnownBypass = v.pending?.action === 'bypass.create';
+        if (
+          (v.pending && !resumeKnownBypass) ||
+          v.configured ||
+          v.environments.length ||
+          v.bypassOwned ||
+          state.deployment
+        )
+          fail();
         if (state.sourceHead !== currentHead(repo)) fail('SOURCE');
         if (!/^[A-Za-z0-9_-]{43}$/.test(secrets.machine ?? '') || !secrets.writer || !secrets.apifyRead)
           fail('INPUT');
@@ -340,19 +352,31 @@ export async function runVercelTask({ phase, state, secrets = {}, repo, send }) 
           fail('POLICY');
         const baseline = projectRecord(await request('GET', paths.project));
         const rows = environmentRows(await request('GET', paths.env));
-        if (Object.keys(baseline.protectionBypass).length || conflicts(rows).length)
-          fail('OWNERSHIP_CONFLICT');
-        v.pending = { action: 'bypass.create', at: Date.now() };
-        let p = await request('PATCH', paths.bypass, {
-          generate: { secret: state.protectionBypass, note: v.comment },
-        });
-        const owned = bypassRecord(p, state, false);
-        v.bypassCreatedAt = owned.createdAt;
-        v.bypassOwned = true;
-        v.pending = null;
-        bypassRecord(p, state);
-        p = await request('GET', paths.project);
-        bypassRecord(p, state);
+        if (conflicts(rows).length) fail('OWNERSHIP_CONFLICT');
+        if (resumeKnownBypass) {
+          // Resume the one recorded creation, never issue a replacement PATCH.
+          // A private secret known before the attempt plus exact note/time and
+          // a fresh sole/default map identifies this already-created resource.
+          const owned = bypassRecord(baseline, state);
+          if (!Number.isFinite(v.pending.at) || Math.abs(owned.createdAt - v.pending.at) > 30000)
+            fail('BYPASS');
+          v.bypassCreatedAt = owned.createdAt;
+          v.bypassOwned = true;
+          v.bypassRecoveredByPrivateIdentity = true;
+          v.pending = null;
+        } else {
+          if (Object.keys(baseline.protectionBypass).length) fail('OWNERSHIP_CONFLICT');
+          v.pending = { action: 'bypass.create', at: Date.now() };
+          const p = await request('PATCH', paths.bypass, {
+            generate: { secret: state.protectionBypass, note: v.comment },
+          });
+          const owned = bypassRecord(p, state, false, true);
+          v.bypassCreatedAt = owned.createdAt;
+          v.bypassOwned = true;
+          v.pending = null;
+          bypassRecord(p, state, true, true);
+          bypassRecord(await request('GET', paths.project), state);
+        }
         const values = [
           'true',
           state.sourceHead,

@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "status": "closed_verified",
+  "observedAt": "2026-10-27T13:58:56.188Z",
+  "approval_id": "3f3aed72-4f14-4cc4-aefe-4999038efe27",
+  "sourceHead": "ffa957d8186f2e054179bf81aae0e69600232818",
+  "totals": {
+    "management": 88,
+    "control": 282,
+    "combined": 370,
+    "vercel": 36,
+    "nativeActions": 5,
+    "actorStarts": 2,
+    "actorUsd": 0.046
+  },
+  "chargedByCategory": {
+    "n8n": 52,
+    "database": 21,
+    "provider": 134,
+    "vercel": 36,
+    "gateway": 101,
+    "callback": 26
+  },
+  "limits": {
+    "management": 160,
+    "control": 472,
+    "combined": 632,
+    "vercel": 64,
+    "n8n": 96,
+    "gateway": 128,
+    "provider": 256,
+    "callback": 56,
+    "database": 32,
+    "nativeActions": 6,
+    "actorStarts": 4,
+    "actorUsd": 4
+  },
+  "requestAccounting": "Includes conservative precharges for native nested requests and all callback retry bounds; not a claim that all charged HTTP requests occurred. No unused charge refunded.",
+  "actualActors": {
+    "starts": 2,
+    "runIds": [
+      "Wo1flJIBKg7bk07IJ",
+      "upaQMg5GMmwBdNMq4"
+    ],
+    "usageUsd": [
+      0.023,
+      0.023
+    ],
+    "totalUsd": 0.046
+  },
+  "closure": {
+    "selectedOperationalFieldsRestored": true,
+    "allItemsRunsCostsRetained": true,
+    "nativeDefinitionsInactiveAndBaselineRestored": true,
+    "machineAudienceRestored": true,
+    "previewEnvironmentEntriesRemoved": 7,
+    "ownedDefaultBypassAbsent": true,
+    "protectedImmutablePreviewRetained": "dpl_FM5qAL13kxUQVba8A57mFoVmpQUL",
+    "selectedLiveClaims": 0,
+    "selectedRunningParents": 0,
+    "selectedUnprocessedActors": 0,
+    "otherAdminSessions": 0,
+    "boundedChildrenClosed": true,
+    "scratchDeleted": true,
+    "persistentEncryptedOriginalsRetained": true
+  },
+  "infrastructure": {
+    "vercelRequests": 36,
+    "protectedPreviewDeployments": 1,
+    "deliberateNativeActions": 5,
+    "automaticExecutionCount": "not_independently_measured",
+    "incrementalInfrastructureUsd": "not_independently_measured",
+    "fixedFees": "unknown; not treated as zero",
+    "scope": "Explicit live-setup deployment and controlled request counts only. Automatic Git CI/Preview builds are excluded from this count; actual billing is not independently measured."
+  },
+  "production": false,
+  "recurring": false,
+  "notifications": false,
+  "merge": false,
+  "nextMilestone": false,
+  "provenance": {
+    "previewApplicationCommit": "ffa957d8186f2e054179bf81aae0e69600232818",
+    "applicationCi": "40508929266: five jobs passed",
+    "testedNativeDefinitions": "live-native-m04-export-20261027.json",
+    "consumerQualification": "Later consumer/staging corrections were locally tested and reviewed before actual use; final batched PR CI is separate from application CI at ffa957d.",
+    "sourceSha256": {
+      "scripts/db/m04-query.mjs": "7893fb63352109b3009a9dda2a697f1f4e3384f21331d54a0380c6767a4b3a86",
+      "scripts/db/windows/Invoke-M04DevDatabase.ps1": "471de815110e87ba4fa6e75bf34668dcd6c9ab4e5eaca7880f12df8831f6e933",
+      "scripts/n8n/m04-dev-task.mjs": "c140736118a0c23dad9fee5e915559bb29995a42dc2ee89297d8c5b80bb65d59",
+      "scripts/n8n/m04-native-tasks.mjs": "3711323ba11e766795a29a21e0e899883cd6d36333b3c65cbacbdcb15cd717f6",
+      "scripts/n8n/m04-vercel-tasks.mjs": "5dd220793a346a888b6b0ae1f8b453a823d9e477ff9154717ab29d15fda53eeb",
+      "scripts/n8n/windows/Invoke-M04DevTask.ps1": "ce3f950e61d386fdb028b4c28658834d635f55676fd2f0ab34f83f14cfee3046"
+    },
+    "sourceSha256AtLiveUse": {
+      "scripts/db/m04-query.mjs": "1907a413431b3dfc2f2f2a4cf74fbdfb5732feb37ef230c3493738569503c96e",
+      "scripts/db/windows/Invoke-M04DevDatabase.ps1": "471de815110e87ba4fa6e75bf34668dcd6c9ab4e5eaca7880f12df8831f6e933",
+      "scripts/n8n/m04-dev-task.mjs": "c140736118a0c23dad9fee5e915559bb29995a42dc2ee89297d8c5b80bb65d59",
+      "scripts/n8n/m04-native-tasks.mjs": "3711323ba11e766795a29a21e0e899883cd6d36333b3c65cbacbdcb15cd717f6",
+      "scripts/n8n/m04-vercel-tasks.mjs": "5dd220793a346a888b6b0ae1f8b453a823d9e477ff9154717ab29d15fda53eeb",
+      "scripts/n8n/windows/Invoke-M04DevTask.ps1": "ce3f950e61d386fdb028b4c28658834d635f55676fd2f0ab34f83f14cfee3046"
+    },
+    "formatOnlyAfterLiveUse": [
+      "scripts/db/m04-query.mjs"
+    ]
+  }
+}

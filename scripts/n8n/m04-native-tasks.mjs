@@ -1,7 +1,7 @@
 // Three owned M04 definitions only. The coordinator supplies the existing
 // private transport, durable ledger and encrypted state persistence. No secret
 // loading, execution, provider request, schedule or transport lives here.
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import {
@@ -19,6 +19,10 @@ import { prepareFoundationRuntimeMachinePatch } from './foundation-runtime-machi
 
 const keys = ['WF-10', 'WF-11', 'WF-19'];
 const machine = { id: 'EmrM03Machine19', name: 'M03 foundation machine [dev]', type: 'httpCustomAuth' };
+const closedFoundationDispatch = {
+  name: 'Confirm finish and dispatch stubs',
+  target: 'RUTwaXMRh3PgLhJq',
+};
 const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const fail = (code = 'RECONCILIATION_REQUIRED') => {
   throw Error('M04_NATIVE_' + code);
@@ -92,6 +96,25 @@ function credentialMetadata(dto, expected, bindings) {
 }
 function unchanged(actual, expected) {
   if (!isDeepStrictEqual(actual, expected)) fail('DRIFT');
+}
+function withoutClosedFoundationDispatch(graph) {
+  const result = structuredClone(graph);
+  const matches = result.workflow.nodes.filter((node) => node.name === closedFoundationDispatch.name);
+  const node = matches[0];
+  if (
+    result.key !== 'WF-19' ||
+    matches.length !== 1 ||
+    node.type !== 'n8n-nodes-base.executeWorkflow' ||
+    node.parameters.source !== 'database' ||
+    node.parameters.workflowId?.value !== closedFoundationDispatch.target
+  )
+    fail('WORKFLOW_IDENTITY');
+  // n8n@2.43.5 workflow-validation.service.ts:616-660 rejects enabled
+  // references to unpublished subworkflows, including conditional branches.
+  // This closed M03 dispatch is not an M04 callback dependency. Preserve its
+  // parameters, identity and connections for exact baseline restoration.
+  node.disabled = true;
+  return result;
 }
 
 /** Mutates only supplied private state. The coordinator durably records each
@@ -239,35 +262,72 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
         fail('RECONCILIATION_REQUIRED');
       await changeMachine(false);
     } else if (phase === 'stage') {
-      if (!n.inventoryComplete || n.pending || n.machine.pending || Object.keys(n.staged).length)
-        fail('RECONCILIATION_REQUIRED');
-      const transport = { audience: state.deployment?.audience, credential: machine };
-      for (const [key, kind] of [
-        ['WF-10', 'vimeo'],
-        ['WF-11', 'instagram'],
-      ])
-        n.staged[key] = withManualCollectorEntry(
-          buildNativeCollector(bindings, transport, kind),
-          state.selection?.[kind],
+      if (!n.inventoryComplete || n.pending || n.machine.pending) fail('RECONCILIATION_REQUIRED');
+      if (Object.keys(n.staged).length) {
+        if (
+          !n.stageComplete ||
+          n.published ||
+          n.publishAttemptClosedVersion !== n.current['WF-19']?.versionId ||
+          n.staged['WF-19']?.workflow.nodes.find((node) => node.name === closedFoundationDispatch.name)
+            ?.disabled === true ||
+          bindings.workflowRefs['SUB-FINISH']?.id !== closedFoundationDispatch.target
+        )
+          fail('RECONCILIATION_REQUIRED');
+        // One fixed metadata read establishes the exact unpublished dependency
+        // before saving only the already-owned rejected callback definition.
+        const dependencyDto = await request(
+          'GET',
+          '/api/v1/workflows/' + closedFoundationDispatch.target + '?excludePinnedData=true',
         );
-      n.staged['WF-19'] = extendNativeCallback(bindings, transport, {
-        key: 'WF-19',
-        id: bindings.workflowRefs['WF-19'].id,
-        versionId: n.snapshots['WF-19'].versionId,
-        workflow: {
-          ...body(n.snapshots['WF-19']),
-          active: false,
-          tags: n.snapshots['WF-19'].tags,
-          pinData: {},
-        },
-      });
-      for (const key of keys) await save(key, n.staged[key].workflow, 'staged');
-      n.stageComplete = true;
+        const dependency = workflowMetadata(dependencyDto, 'SUB-FINISH', bindings);
+        n.foundationDependency = {
+          key: 'SUB-FINISH',
+          id: dependency.id,
+          versionId: dependency.versionId,
+          active: dependency.active,
+          activeVersionId: dependency.activeVersionId,
+          evidence: 'native_dependency_metadata_only',
+          activationDiagnostic: 'not_exposed_by_workflow_get',
+        };
+        receipt.foundationDependency = structuredClone(n.foundationDependency);
+        if (dependency.active || dependency.activeVersionId !== null) fail('DEPENDENCY_PUBLISHED');
+        const corrected = withoutClosedFoundationDispatch(n.staged['WF-19']);
+        await save('WF-19', corrected.workflow, 'closed_foundation_dispatch_disabled');
+        n.staged['WF-19'] = corrected;
+        receipt.closedFoundationDispatch = { ...closedFoundationDispatch, disabled: true };
+      } else {
+        const transport = { audience: state.deployment?.audience, credential: machine };
+        for (const [key, kind] of [
+          ['WF-10', 'vimeo'],
+          ['WF-11', 'instagram'],
+        ])
+          n.staged[key] = withManualCollectorEntry(
+            buildNativeCollector(bindings, transport, kind),
+            state.selection?.[kind],
+          );
+        n.staged['WF-19'] = withoutClosedFoundationDispatch(
+          extendNativeCallback(bindings, transport, {
+            key: 'WF-19',
+            id: bindings.workflowRefs['WF-19'].id,
+            versionId: n.snapshots['WF-19'].versionId,
+            workflow: {
+              ...body(n.snapshots['WF-19']),
+              active: false,
+              tags: n.snapshots['WF-19'].tags,
+              pinData: {},
+            },
+          }),
+        );
+        for (const key of keys) await save(key, n.staged[key].workflow, 'staged');
+        n.stageComplete = true;
+        receipt.closedFoundationDispatch = { ...closedFoundationDispatch, disabled: true };
+      }
     } else if (phase === 'publish') {
       if (!n.stageComplete || !n.machine.rebound || n.pending || n.machine.pending || n.published) fail();
       const before = await read('WF-19');
       unchanged(before.metadata, n.current['WF-19']);
       if (before.metadata.active || before.metadata.activeVersionId !== null) fail('DRIFT');
+      if (n.publishAttemptClosedVersion === before.metadata.versionId) fail('PUBLISH_ATTEMPT_CLOSED');
       n.pending = { key: 'WF-19', action: 'publish', before: before.metadata };
       await request('POST', path('WF-19', '/publish'), { versionId: before.metadata.versionId });
       const after = await read('WF-19');
@@ -287,6 +347,119 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
       n.published = true;
       completeIntent();
       checkpoint({ action: 'published', key: 'WF-19', ...after.metadata });
+    } else if (phase === 'readback') {
+      if (
+        !n.stageComplete ||
+        n.machine.pending ||
+        (n.pending && (n.pending.key !== 'WF-19' || n.pending.action !== 'publish')) ||
+        !/^[a-f0-9]{40}$/.test(state.sourceHead ?? '')
+      )
+        fail();
+      // Three read-only requests, including after a rejected or lost publish
+      // response. Never retry publication while reconciling its outcome.
+      const actual = {};
+      for (const key of keys) actual[key] = await read(key);
+      const pending = n.pending;
+      let reconciledPublication = null;
+      for (const key of keys) {
+        const after = actual[key];
+        const before = n.current[key];
+        if (key !== 'WF-19' || !pending) {
+          unchanged(after.metadata, before);
+          continue;
+        }
+        unchanged(pending.before, before);
+        if (!after.metadata.active && after.metadata.activeVersionId === null) {
+          unchanged(after.metadata, before);
+          reconciledPublication = 'not_active';
+        } else {
+          if (
+            !after.metadata.active ||
+            after.metadata.versionId !== before.versionId ||
+            after.metadata.activeVersionId !== before.versionId ||
+            after.metadata.graphHash !== before.graphHash ||
+            !isDeepStrictEqual(after.metadata.tags, before.tags) ||
+            !isDeepStrictEqual(after.metadata.readonlySettings, before.readonlySettings) ||
+            !object(after.dto.activeVersion) ||
+            after.dto.activeVersion.workflowId !== before.id ||
+            after.dto.activeVersion.versionId !== before.versionId ||
+            !sameBody(
+              { ...after.dto.activeVersion, name: after.dto.name, settings: after.dto.settings },
+              n.staged[key].workflow,
+            )
+          )
+            fail('DRIFT');
+          reconciledPublication = 'published';
+        }
+      }
+      // Validation completes before private DTO fields can enter an export.
+      // The graph is the exact acknowledged source-bound definition; users,
+      // native response extras, static data and execution/pinned data are omitted.
+      const directory = join(repo, 'milestones/M04-collectors-vimeo-instagram/evidence');
+      const exports = keys.map((key) => {
+        const { dto, metadata } = actual[key];
+        return {
+          filename: 'native-saved-' + key + '.json',
+          record: {
+            key,
+            id: metadata.id,
+            versionId: metadata.versionId,
+            active: metadata.active,
+            activeVersionId: metadata.activeVersionId,
+            sourceHead: state.sourceHead,
+            graphHash: metadata.graphHash,
+            evidence: 'native_saved_definition_only',
+            workflow: {
+              name: dto.name,
+              nodes: structuredClone(dto.nodes),
+              connections: structuredClone(dto.connections),
+              settings: structuredClone(dto.settings),
+              tags: structuredClone(metadata.tags),
+              pinData: {},
+            },
+          },
+        };
+      });
+      for (const entry of exports) {
+        let filename = join(directory, entry.filename);
+        if (
+          existsSync(filename) &&
+          !isDeepStrictEqual(JSON.parse(readFileSync(filename, 'utf8')), entry.record)
+        ) {
+          // A later known native version is new evidence. Preserve the prior
+          // actual saved export rather than replacing its historical receipt.
+          entry.filename = 'native-saved-' + entry.record.key + '.' + entry.record.versionId + '.json';
+          filename = join(directory, entry.filename);
+        }
+        if (existsSync(filename)) unchanged(JSON.parse(readFileSync(filename, 'utf8')), entry.record);
+      }
+      mkdirSync(directory, { recursive: true });
+      for (const entry of exports) {
+        const filename = join(directory, entry.filename);
+        if (!existsSync(filename))
+          writeFileSync(filename, JSON.stringify(entry.record, null, 2) + '\n', { flag: 'wx' });
+      }
+      if (pending) {
+        n.current['WF-19'] = actual['WF-19'].metadata;
+        n.published = reconciledPublication === 'published';
+        if (!n.published) n.publishAttemptClosedVersion = pending.before.versionId;
+        completeIntent();
+        checkpoint({
+          action: 'publish_readback',
+          outcome: reconciledPublication,
+          ...actual['WF-19'].metadata,
+        });
+      }
+      receipt.exports = exports.map(({ filename, record }) => ({
+        filename,
+        key: record.key,
+        id: record.id,
+        versionId: record.versionId,
+        active: record.active,
+        graphHash: record.graphHash,
+        sourceHead: record.sourceHead,
+      }));
+      receipt.publicationReadback = reconciledPublication;
     } else if (phase === 'machine_restore') {
       if (n.machine.pending) fail();
       if (n.machine.rebound) await changeMachine(true);
@@ -337,6 +510,8 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
         'INVENTORY_REQUIRED',
         'INVENTORY_EXISTS',
         'RECONCILIATION_REQUIRED',
+        'PUBLISH_ATTEMPT_CLOSED',
+        'DEPENDENCY_PUBLISHED',
       ].map((code) => 'M04_NATIVE_' + code),
     );
     receipt.status = 'blocked';

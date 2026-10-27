@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "observedAt": "2026-10-27T13:51:11.958Z",
+  "firstParent": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+  "repeatParent": "f468793d-5bae-430b-909e-a6aed4de7e26",
+  "repeatNativeExecutionId": "31163",
+  "sameTenItemIds": true,
+  "aiAndMediaQueuesUnchanged": true,
+  "repeatItemsSeen": 10,
+  "repeatItemsNew": 0,
+  "repeatProviderCalls": 2,
+  "repeatProviderUsd": 0,
+  "originalDuplicateContentRows": 2,
+  "baselineSource": "live-vimeo-first-assertions-20261027.json",
+  "afterSource": "live-before-callback-probes-20261027.json"
+}

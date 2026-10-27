@@ -7,14 +7,15 @@ param(
 )
 
 # M04 product database operations, not an acceptance supervisor. The coordinator
-# reviews public SQL before Query; only this native CLI child receives Admin.
+# reviews public SQL before Query; only the selected bounded database child
+# receives Admin (native CLI for migrations/advisors; pg for transaction bodies).
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
 $project='zmotjsbzhzjvpelxvxlf'
 $hostName='aws-1-eu-central-1.pooler.supabase.com'
 $password=$null;$secret=$null;$cipherBytes=$null;$bstr=[IntPtr]::Zero
-$scratch=$null;$lock=$null;$lockPath=$null;$cliPath=$null;$dbUri=$null
+$scratch=$null;$lock=$null;$lockPath=$null;$cliPath=$null;$dbUri=$null;$queryRunnerLock=$null
 $receipt=[ordered]@{version=1;phase=$Phase;environment='dev';projectRef=$project;host=$hostName;port=5432;
   status='public_preflight_blocked';privateRead=$false;authenticationAttempted=$false;authenticationVerified=$false;
   databaseCommands=0;childrenClosed=$true;persistentAdminPreserved=$true;scratchDeleted=$true;observedAt=$null}
@@ -87,6 +88,7 @@ function Invoke-M04Bounded([string]$Executable,[string[]]$Arguments,[string]$Wor
   return [pscustomobject]@{ok=$valid;started=$started;closed=$closed;nativeExit=$nativeExit;text=$text}
 }
 function Invoke-M04Cli([string[]]$Arguments,[int]$TimeoutMs=30000) {
+  if($Phase -ceq 'Query'){throw 'M04_COMMAND_BLOCKED'}
   $key=$Arguments -join '|'
   $allowed=$key -cin @('db|push|--dry-run|--skip-vault','db|push|--skip-vault|--yes',
     'db|advisors|--type|security|--level|warn|--fail-on|warn',
@@ -102,6 +104,26 @@ function Invoke-M04Cli([string[]]$Arguments,[int]$TimeoutMs=30000) {
   if(-not $result.ok -or -not $result.closed){throw 'M04_NATIVE_FAILURE'}
   if($null -ne $password -and $password.Length -gt 0 -and $result.text.Contains($password)){$result.text=$null;throw 'M04_NATIVE_OUTPUT_BLOCKED'}
   return $result
+}
+function Invoke-M04NativeQuery {
+  if($Phase -cne 'Query' -or (M04-Hash $queryRunner) -cne $queryRunnerHash -or (M04-Hash $queryCopy) -cne $wrappedQueryHash){throw 'M04_QUERY_BLOCKED'}
+  $receipt.databaseCommands++
+  $result=Invoke-M04Bounded $nodePath @($queryRunner,$queryCopy,$wrappedQueryHash) $repo 40000 $password
+  if($result.started){$receipt.authenticationAttempted=$true}
+  if(-not $result.closed){$receipt.childrenClosed=$false}
+  $receipt['lastNativeExit']=$result.nativeExit
+  if(-not $result.ok -or -not $result.closed){throw 'M04_NATIVE_FAILURE'}
+  try{
+    if($null -ne $password -and $password.Length -gt 0 -and $result.text.Contains($password)){throw 'M04_NATIVE_OUTPUT_BLOCKED'}
+    $value=M04-Json $result
+    if($value.status -cnotin @('query_complete','query_failed','query_input_blocked','query_closure_unverified') -or
+      $value.clientClosed -isnot [bool] -or $value.rows -isnot [Array] -or
+      ($null -ne $value.sqlstate -and $value.sqlstate -cnotmatch '^[0-9A-Z]{5}$')){throw 'M04_QUERY_PROTOCOL_BLOCKED'}
+    $receipt['databaseClientClosed']=$value.clientClosed;$receipt['querySqlState']=$value.sqlstate
+    if(-not $value.clientClosed){throw 'M04_QUERY_CLOSURE_UNVERIFIED'}
+    if($value.status -cne 'query_complete'){throw 'M04_QUERY_FAILED'}
+    return $value
+  }finally{$result.text=$null}
 }
 function M04-Json($Result) {
   try{
@@ -183,6 +205,13 @@ try{
   if(($Phase -ceq 'Query') -ne (-not [string]::IsNullOrEmpty($QueryFile) -and -not [string]::IsNullOrEmpty($QuerySha256))){throw 'M04_QUERY_BLOCKED'}
   if($Phase -cne 'Query' -and ($QueryFile -or $QuerySha256)){throw 'M04_QUERY_BLOCKED'}
   $queryOriginal=if($Phase -ceq 'Query'){M04-QueryPath $QueryFile $QuerySha256}else{$null}
+  if($Phase -ceq 'Query'){
+    $nodePath=M04-File 'C:/Program Files/nodejs/node.exe'
+    if((M04-Hash $nodePath) -cne '9a4eb5f1c29c6a2e93852ead46b999e284a6a5ca8bab4d4e241d587d025a52de'){throw 'M04_SOURCE_BLOCKED'}
+    $queryRunner=M04-File (Join-Path $repo 'scripts/db/m04-query.mjs');$queryRunnerHash=M04-Hash $queryRunner
+    $pgPackage=M04-File (Join-Path $repo 'node_modules/.pnpm/pg@8.23.1/node_modules/pg/package.json') $false $true
+    if((M04-Hash $pgPackage) -cne 'b1e53333a3d0c2c47c49a5cb919d221135dc03145df740925b899bc2baacc435'){throw 'M04_SOURCE_BLOCKED'}
+  }
   $preflightOriginal=$null
   if($Phase -ceq 'Preflight'){
     $preflightOriginal=M04-File (Join-Path $repo 'milestones/M04-collectors-vimeo-instagram/evidence/live-preflight.sql')
@@ -262,6 +291,8 @@ end $m04_identity$;
       # Reviewed public Query files are transaction bodies, without top-level
       # BEGIN/COMMIT/ROLLBACK. The one native command owns the transaction.
       [IO.File]::WriteAllText($queryCopy,$identityGuard+"`n"+[IO.File]::ReadAllText($queryCopy)+"`ncommit;`n")
+      $wrappedQueryHash=M04-Hash $queryCopy
+      $queryRunnerLock=[IO.File]::Open($queryRunner,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::Read)
     }
     $receipt['preparationStage']='persistent_admin_decrypt'
     $receipt.privateRead=$true;$cipherBytes=[IO.File]::ReadAllBytes($spec.Source);Assert-M03DevCipherFraming $cipherBytes
@@ -316,18 +347,19 @@ end $m04_identity$;
       $receipt.status='postcheck_readbacks_complete'
     }
     else{
-      $result=Invoke-M04Cli @('db','query','--file',$queryCopy)
-      try{$receipt['queryResult']=@(M04-Json $result);$receipt['querySha256']=$QuerySha256;$receipt.authenticationVerified=$true}finally{$result.text=$null}
+      $value=Invoke-M04NativeQuery
+      $receipt['queryResult']=@($value.rows);$receipt['querySha256']=$QuerySha256;$receipt.authenticationVerified=$true
       $receipt.status='reviewed_query_complete'
     }
     $exitCode=0
   }
 }catch{
-  $allowed=@('M04_PATH_BLOCKED','M04_QUERY_BLOCKED','M04_CLI_BLOCKED','M04_CA_BLOCKED','M04_BASELINE_BLOCKED','M04_SOURCE_BLOCKED','M04_COMMAND_BLOCKED','M04_NATIVE_FAILURE','M04_NATIVE_OUTPUT_BLOCKED','M04_JSON_BLOCKED','M04_HISTORY_BLOCKED','M04_IDENTITY_BLOCKED','M04_PENDING_BLOCKED','M04_INPUT_BLOCKED','M04_APPLY_RECONCILIATION_REQUIRED','M04_POSTCHECK_HISTORY_BLOCKED','M04_QUERY_HISTORY_BLOCKED','M04_TYPES_BLOCKED','M04_ADVISORS_BLOCKED','M04_CATALOG_BLOCKED')
+  $allowed=@('M04_PATH_BLOCKED','M04_QUERY_BLOCKED','M04_CLI_BLOCKED','M04_CA_BLOCKED','M04_BASELINE_BLOCKED','M04_SOURCE_BLOCKED','M04_COMMAND_BLOCKED','M04_NATIVE_FAILURE','M04_NATIVE_OUTPUT_BLOCKED','M04_JSON_BLOCKED','M04_HISTORY_BLOCKED','M04_IDENTITY_BLOCKED','M04_PENDING_BLOCKED','M04_INPUT_BLOCKED','M04_APPLY_RECONCILIATION_REQUIRED','M04_POSTCHECK_HISTORY_BLOCKED','M04_QUERY_HISTORY_BLOCKED','M04_TYPES_BLOCKED','M04_ADVISORS_BLOCKED','M04_CATALOG_BLOCKED','M04_QUERY_PROTOCOL_BLOCKED','M04_QUERY_CLOSURE_UNVERIFIED','M04_QUERY_FAILED')
   $receipt.status=if($_.Exception.Message -cin $allowed){$_.Exception.Message}else{'M04_OPERATION_BLOCKED'}
 }finally{
   $password=$null;if($null -ne $secret){$secret.Dispose()};if($bstr -ne [IntPtr]::Zero){[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)}
   if($null -ne $cipherBytes){[Array]::Clear($cipherBytes,0,$cipherBytes.Length)}
+  if($null -ne $queryRunnerLock){$queryRunnerLock.Dispose()}
   if($null -ne $scratch -and $receipt.childrenClosed){
     try{
       $resolved=[IO.Path]::GetFullPath($scratch);$prefix=[IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')+'\emr-m04-db-'

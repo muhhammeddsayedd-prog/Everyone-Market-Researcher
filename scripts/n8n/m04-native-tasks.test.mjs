@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { runNativeTask } from './m04-native-tasks.mjs';
+import { foundationRuntimeGraphHash } from './foundation-runtime-checkpoint.mjs';
 
 const repo = resolve('.');
 const bindings = JSON.parse(readFileSync('n8n/foundation/bindings.dev.json', 'utf8'));
@@ -12,7 +14,7 @@ const ids = (start) =>
   [start, start + 1].map((n) => `${String(n).padStart(8, '0')}-1111-4111-a111-111111111111`);
 function fixture() {
   const workflows = Object.fromEntries(
-    keys.map((key) => {
+    [...keys, 'SUB-FINISH'].map((key) => {
       const reviewed = JSON.parse(readFileSync(`n8n/workflows/${key}.json`, 'utf8'));
       return [
         reviewed.id,
@@ -46,6 +48,7 @@ function fixture() {
     ]),
   );
   const state = {
+    sourceHead: 'a'.repeat(40),
     selection: { vimeo: ids(1), instagram: ids(3) },
     deployment: { audience: 'https://everyone-market-researcher-m04-synthetic.vercel.app' },
     machineBaseline: { audience: 'https://everyone-market-researcher-disabled.vercel.app' },
@@ -93,13 +96,13 @@ function fixture() {
     } else assert.equal(method, 'GET');
     return { status: 200, body: structuredClone(dto) };
   };
-  const run = async (phase, override = send) => {
+  const run = async (phase, override = send, exportRepo = repo) => {
     const result = await runNativeTask({
       phase,
       state,
       send: override,
       bindings,
-      repo,
+      repo: exportRepo,
       machineToken: syntheticToken,
     });
     assert.ok(['completed', 'blocked'].includes(result.public.status));
@@ -146,6 +149,113 @@ test('three owned definitions and real credential types inventory before inactiv
   assert.equal(patches[0].value.data.allowedDomains, new URL(f.state.deployment.audience).hostname);
   assert.equal(patches[1].value.data.allowedDomains, new URL(f.state.machineBaseline.audience).hostname);
   assert.equal(JSON.parse(patches[1].value.data.json).headers['x-vercel-protection-bypass'], undefined);
+});
+
+test('M04 staging disables only the closed foundation dispatch and restores its exact original definition', async () => {
+  const f = fixture();
+  await f.run('inventory');
+  const original = structuredClone(f.state.native.snapshots['WF-19']);
+  const result = await f.run('stage');
+  assert.equal(result.public.status, 'completed', JSON.stringify(result.public));
+  const saved = f.workflows[bindings.workflowRefs['WF-19'].id];
+  const name = 'Confirm finish and dispatch stubs';
+  for (const before of original.nodes) {
+    const after = saved.nodes.find((node) => node.id === before.id);
+    assert.deepEqual(after, before.name === name ? { ...before, disabled: true } : before);
+  }
+  assert.deepEqual(saved.connections[name], original.connections[name]);
+  assert.equal((await f.run('restore')).public.status, 'completed');
+  assert.deepEqual(f.workflows[original.id].nodes, original.nodes);
+  assert.deepEqual(f.workflows[original.id].connections, original.connections);
+});
+
+async function legacyRejectedCallback(f) {
+  for (const phase of ['inventory', 'machine', 'stage'])
+    assert.equal((await f.run(phase)).public.status, 'completed');
+  const dto = f.workflows[bindings.workflowRefs['WF-19'].id];
+  // Reproduce the already-saved pre-correction graph, not a new Cloud call.
+  delete dto.nodes.find((node) => node.name === 'Confirm finish and dispatch stubs').disabled;
+  delete f.state.native.staged['WF-19'].workflow.nodes.find(
+    (node) => node.name === 'Confirm finish and dispatch stubs',
+  ).disabled;
+  f.state.native.current['WF-19'].graphHash = foundationRuntimeGraphHash(dto, { editableSettingsOnly: true });
+  f.state.native.publishAttemptClosedVersion = dto.versionId;
+  f.state.native.published = false;
+}
+
+test('known rejected callback correction reads one fixed dependency and saves only WF19 after fresh CAS', async () => {
+  const f = fixture();
+  await legacyRejectedCallback(f);
+  const before = structuredClone(f.workflows),
+    start = f.calls.length;
+  const result = await f.run('stage');
+  assert.equal(result.public.status, 'completed', JSON.stringify(result.public));
+  assert.deepEqual(
+    f.calls.slice(start).map(({ method }) => method),
+    ['GET', 'GET', 'PUT', 'GET'],
+  );
+  assert.equal(f.calls[start].path, '/api/v1/workflows/RUTwaXMRh3PgLhJq?excludePinnedData=true');
+  assert.equal(result.public.foundationDependency.activeVersionId, null);
+  assert.equal(result.public.foundationDependency.activationDiagnostic, 'not_exposed_by_workflow_get');
+  const callbackId = bindings.workflowRefs['WF-19'].id;
+  for (const [id, dto] of Object.entries(before)) {
+    if (id !== callbackId) assert.deepEqual(f.workflows[id], dto);
+    else {
+      assert.deepEqual(f.workflows[id].connections, dto.connections);
+      assert.deepEqual(
+        f.workflows[id].nodes,
+        dto.nodes.map((node) =>
+          node.name === 'Confirm finish and dispatch stubs' ? { ...node, disabled: true } : node,
+        ),
+      );
+    }
+  }
+  assert.equal((await f.run('stage')).public.code, 'M04_NATIVE_RECONCILIATION_REQUIRED');
+  assert.equal((await f.run('publish')).public.status, 'completed');
+  assert.equal((await f.run('restore')).public.status, 'completed');
+});
+
+test('a published dependency refuses the candidate correction before any write', async () => {
+  const f = fixture();
+  await legacyRejectedCallback(f);
+  const dependency = f.workflows[bindings.workflowRefs['SUB-FINISH'].id];
+  dependency.active = true;
+  dependency.activeVersionId = dependency.versionId;
+  const start = f.calls.length,
+    result = await f.run('stage');
+  assert.equal(result.public.code, 'M04_NATIVE_DEPENDENCY_PUBLISHED');
+  assert.equal(f.calls.length - start, 1);
+  assert.equal(f.calls[start].method, 'GET');
+  assert.equal(f.state.native.pending, null);
+});
+
+test('new corrected native readback preserves the earlier saved-version export', async (t) => {
+  const f = fixture(),
+    output = mkdtempSync(join(tmpdir(), 'emr-m04-readback-'));
+  t.after(() => rmSync(output, { recursive: true, force: true }));
+  await legacyRejectedCallback(f);
+  assert.equal((await f.run('readback', f.send, output)).public.status, 'completed');
+  const firstFile = join(
+    output,
+    'milestones/M04-collectors-vimeo-instagram/evidence/native-saved-WF-19.json',
+  );
+  const originalExport = readFileSync(firstFile, 'utf8');
+  assert.equal((await f.run('stage')).public.status, 'completed');
+  assert.equal((await f.run('publish')).public.status, 'completed');
+  const result = await f.run('readback', f.send, output);
+  assert.equal(result.public.status, 'completed', JSON.stringify(result.public));
+  const latest = result.public.exports.find(({ key }) => key === 'WF-19');
+  assert.equal(latest.filename, 'native-saved-WF-19.' + f.state.native.current['WF-19'].versionId + '.json');
+  assert.equal(readFileSync(firstFile, 'utf8'), originalExport);
+  assert.equal(
+    JSON.parse(
+      readFileSync(
+        join(output, 'milestones/M04-collectors-vimeo-instagram/evidence', latest.filename),
+        'utf8',
+      ),
+    ).active,
+    true,
+  );
 });
 
 test('unknown saved definition drift preserves all three snapshots and finishes credential reads before refusing writes', async () => {
@@ -215,4 +325,91 @@ test('only the sole owned callback may publish, with native current-version and 
   await f.run('inventory');
   assert.equal((await f.run('publish')).public.code, 'M04_NATIVE_RECONCILIATION_REQUIRED');
   assert.ok(f.calls.every((c) => c.method === 'GET'));
+});
+
+test('readback reconciles rejected publication using three GETs, exports actual saved definitions and never retries that version', async (t) => {
+  const f = fixture(),
+    output = mkdtempSync(join(tmpdir(), 'emr-m04-readback-'));
+  t.after(() => rmSync(output, { recursive: true, force: true }));
+  for (const phase of ['inventory', 'machine', 'stage'])
+    assert.equal((await f.run(phase)).public.status, 'completed');
+  assert.equal(
+    (
+      await f.run('publish', async (method, path, value) => {
+        if (method === 'POST') return { status: 400, body: { message: 'private native diagnostic omitted' } };
+        return f.send(method, path, value);
+      })
+    ).public.status,
+    'blocked',
+  );
+  const start = f.calls.length;
+  const result = await f.run('readback', f.send, output);
+  assert.equal(result.public.status, 'completed', JSON.stringify(result.public));
+  assert.equal(result.public.publicationReadback, 'not_active');
+  assert.equal(result.public.pendingMutation, false);
+  assert.equal(result.public.exports.length, 3);
+  assert.equal(f.calls.length - start, 3);
+  assert.ok(f.calls.slice(start).every((call) => call.method === 'GET'));
+  assert.equal(f.state.native.published, false);
+  for (const file of result.public.exports) {
+    const record = JSON.parse(
+      readFileSync(join(output, 'milestones/M04-collectors-vimeo-instagram/evidence', file.filename), 'utf8'),
+    );
+    const native = f.workflows[file.id];
+    assert.deepEqual(record.workflow.nodes, native.nodes);
+    assert.deepEqual(record.workflow.settings, native.settings);
+    assert.deepEqual(record.workflow.pinData, {});
+    assert.deepEqual(Object.keys(record.workflow).sort(), [
+      'connections',
+      'name',
+      'nodes',
+      'pinData',
+      'settings',
+      'tags',
+    ]);
+    assert.equal(record.versionId, native.versionId);
+    assert.equal(record.sourceHead, f.state.sourceHead);
+    assert.ok(!JSON.stringify(record).includes(syntheticToken));
+    assert.ok(!JSON.stringify(record).includes(f.state.protectionBypass));
+    assert.ok(!JSON.stringify(record).includes('shared'));
+  }
+  assert.equal((await f.run('publish')).public.code, 'M04_NATIVE_PUBLISH_ATTEMPT_CLOSED');
+  assert.equal((await f.run('restore')).public.status, 'completed');
+});
+
+test('readback can establish an exactly acknowledged active publication after its response was lost', async (t) => {
+  const f = fixture(),
+    output = mkdtempSync(join(tmpdir(), 'emr-m04-readback-'));
+  t.after(() => rmSync(output, { recursive: true, force: true }));
+  for (const phase of ['inventory', 'machine', 'stage']) await f.run(phase);
+  await f.run('publish', async (method, path, value) => {
+    const response = await f.send(method, path, value);
+    if (method === 'POST') throw Error('lost publication acknowledgment');
+    return response;
+  });
+  const result = await f.run('readback', f.send, output);
+  assert.equal(result.public.status, 'completed', JSON.stringify(result.public));
+  assert.equal(result.public.publicationReadback, 'published');
+  assert.equal(result.public.pendingMutation, false);
+  assert.equal(f.state.native.published, true);
+  assert.equal(result.public.exports.find((e) => e.key === 'WF-19').active, true);
+  assert.equal(f.calls.filter((c) => c.path.endsWith('/publish')).length, 1);
+});
+
+test('readback preserves pending publication on unknown drift, exports nothing and performs no mutation', async (t) => {
+  const f = fixture(),
+    output = mkdtempSync(join(tmpdir(), 'emr-m04-readback-'));
+  t.after(() => rmSync(output, { recursive: true, force: true }));
+  for (const phase of ['inventory', 'machine', 'stage']) await f.run(phase);
+  await f.run('publish', async (method, path, value) =>
+    method === 'POST' ? { status: 400, body: {} } : f.send(method, path, value),
+  );
+  f.workflows[bindings.workflowRefs['WF-19'].id].versionId = 'unknown-owner-version';
+  const start = f.calls.length,
+    result = await f.run('readback', f.send, output);
+  assert.equal(result.public.code, 'M04_NATIVE_DRIFT');
+  assert.equal(result.public.pendingMutation, true);
+  assert.equal(existsSync(join(output, 'milestones/M04-collectors-vimeo-instagram/evidence')), false);
+  assert.ok(f.calls.slice(start).every((call) => call.method === 'GET'));
+  assert.equal(f.calls.length - start, 3);
 });

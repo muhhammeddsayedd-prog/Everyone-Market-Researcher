@@ -1,0 +1,25 @@
+{
+  "status": "completed",
+  "task": "Setup",
+  "phase": "prepare",
+  "observedAt": "2026-10-27T13:05:12.925Z",
+  "code": null,
+  "requestCount": 0,
+  "prepared": {
+    "sourceHead": "ffa957d8186f2e054179bf81aae0e69600232818",
+    "selection": {
+      "vimeo": [
+        "985a57dd-7934-422d-9d18-4e8ca59fc197",
+        "8fefa9a1-3637-43db-843d-97caa9afcc79"
+      ],
+      "instagram": [
+        "962c9c7e-aa0f-46ae-911b-3265859e0577",
+        "bed82782-753f-4ba9-91ca-691ef36f75c6"
+      ]
+    },
+    "actorBuild": "0.0.831",
+    "minimumActorLimitUsd": 0.0027,
+    "snapshotObservedAt": "2026-10-27T12:40:51.5318851Z"
+  },
+  "pendingMutation": false
+}

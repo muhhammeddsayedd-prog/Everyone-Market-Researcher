@@ -15,7 +15,7 @@ try {
   'Inventory' {@('default')}
   'ProviderMetadata' {@('default')}
   'Setup' {@('project','prepare','configure','poll','cleanup')}
-  'Stage' {@('stage','publish','machine')}
+  'Stage' {@('stage','publish','machine','readback')}
   'Observe' {@('default')}
   'Probe' {@('default','replay','unknown')}
   'Restore' {@('native')}

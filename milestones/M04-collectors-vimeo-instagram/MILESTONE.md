@@ -29,8 +29,8 @@ No AI yet: items wait in the `ai_extract` queue for M07.
 > selected set once for posts+reels; the new fixed product RPC tracks every
 > registration/page/pass and reports only after registration closes and all
 > passes settle. The eight-argument report RPC is preserved; there is no new
-> independently unlocked `p_secondary` path. Both M04 migrations remain pending
-> hosted dev. Do not implement the obsolete draft T3 selector/signature change.
+> independently unlocked `p_secondary` path. Both M04 migrations were applied to
+> emr-dev on27October (17 total, original15 fingerprints preserved); production remains untouched. Do not implement the obsolete draft T3 selector/signature change.
 > Representative dev setup snapshots/restores only the four explicitly selected
 > accounts in the single live packet; broad pause-all-account mutation in the
 > draft T2 is not authorized by that packet. The full five-account/backfill and

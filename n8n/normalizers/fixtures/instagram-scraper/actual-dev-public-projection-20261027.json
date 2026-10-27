@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "provenance": {
+    "kind": "actual_raw_metadata_projection",
+    "environment": "dev",
+    "project_ref": "zmotjsbzhzjvpelxvxlf",
+    "observed_at": "2026-10-27T13:51:48.4054960Z",
+    "source_record": "milestones/M04-collectors-vimeo-instagram/evidence/live-public-fixture-projection-20261027.json",
+    "source_query_sha256": "62860b8efc35ccf767e2f53b76f677643d5a96b1a5ffc5e873ce5e1cfc3545a7",
+    "account_context_record": "milestones/M04-collectors-vimeo-instagram/evidence/live-db-preflight-after-path-fix-20261027.json",
+    "actor": "apify/instagram-scraper",
+    "parent_run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+    "collection_method": "apify/instagram-scraper public metadata persisted through the real callback",
+    "projection_note": "Selected raw metadata fields only, not a full actor response. Each caption is its exact original prefix before the first newline or @, at most 80 characters. Full captions, personal mentions, owner numeric IDs and volatile CDN URLs are omitted. No missing provider field is fabricated.",
+    "limitations": [
+      "Observed types are Video/clips and Sidecar/carousel_container; no real Image-only row in this fixture.",
+      "The raw-item projection does not identify the originating posts/reels pass. Item type is not evidence of that pass.",
+      "Caption projection is intentionally incomplete. No live thumbnail, duration, tagged-user, story or historical-exhaustion field coverage."
+    ]
+  },
+  "accounts": [
+    {
+      "id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+      "handle": "everyone.film",
+      "platform": "instagram",
+      "competitor_id": "94928d31-8983-403c-bdbd-f5f44613d631",
+      "company_code": "C000"
+    },
+    {
+      "id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+      "handle": "goodpeoplefilms",
+      "platform": "instagram",
+      "competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+      "company_code": "C001"
+    }
+  ],
+  "samples": [
+    {
+      "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+      "external_id": "DeEq2JLscE1",
+      "raw_metadata": {
+        "id": "4000510807676928309",
+        "url": "https://www.instagram.com/p/DeEq2JLscE1/",
+        "type": "Video",
+        "caption": "Our latest project made entirely with AI??",
+        "hashtags": [],
+        "inputUrl": "https://www.instagram.com/everyone.film/",
+        "shortCode": "DeEq2JLscE1",
+        "timestamp": "2026-10-04T12:53:50.000Z",
+        "likesCount": 240,
+        "productType": "clips",
+        "commentsCount": 15,
+        "ownerUsername": "everyone.film",
+        "videoPlayCount": 11408
+      }
+    },
+    {
+      "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+      "external_id": "Dd1dzJIjMHw",
+      "raw_metadata": {
+        "id": "3996231302210437616",
+        "url": "https://www.instagram.com/p/Dd1dzJIjMHw/",
+        "type": "Sidecar",
+        "caption": "our latest project with ",
+        "hashtags": [],
+        "inputUrl": "https://www.instagram.com/everyone.film/",
+        "shortCode": "Dd1dzJIjMHw",
+        "timestamp": "2026-09-28T15:05:31.000Z",
+        "likesCount": 310,
+        "productType": "carousel_container",
+        "commentsCount": 7,
+        "ownerUsername": "everyone.film"
+      }
+    },
+    {
+      "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+      "external_id": "DaIw7P3MXCn",
+      "raw_metadata": {
+        "id": "3929605852594532519",
+        "url": "https://www.instagram.com/p/DaIw7P3MXCn/",
+        "type": "Video",
+        "caption": "Our latest for ",
+        "hashtags": [],
+        "inputUrl": "https://www.instagram.com/goodpeoplefilms/",
+        "shortCode": "DaIw7P3MXCn",
+        "timestamp": "2026-06-28T16:53:39.000Z",
+        "likesCount": 111,
+        "productType": "clips",
+        "commentsCount": 1,
+        "ownerUsername": "goodpeoplefilms",
+        "videoPlayCount": 6371
+      }
+    },
+    {
+      "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+      "external_id": "DaIxISGsrPW",
+      "raw_metadata": {
+        "id": "3929606748355343318",
+        "url": "https://www.instagram.com/p/DaIxISGsrPW/",
+        "type": "Video",
+        "caption": "",
+        "hashtags": [],
+        "inputUrl": "https://www.instagram.com/goodpeoplefilms/",
+        "shortCode": "DaIxISGsrPW",
+        "timestamp": "2026-06-28T16:54:38.000Z",
+        "likesCount": 169,
+        "productType": "clips",
+        "commentsCount": 3,
+        "ownerUsername": "goodpeoplefilms",
+        "videoPlayCount": 6037
+      }
+    }
+  ]
+}

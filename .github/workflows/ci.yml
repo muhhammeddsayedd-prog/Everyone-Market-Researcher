@@ -59,7 +59,7 @@ jobs:
       - name: Check owned inactive M03 foundation provisioning
         run: node --test scripts/n8n/foundation-*.test.mjs
       - name: Check fixed M04 native and private transport contracts
-        run: node --test scripts/n8n/m04-*.test.mjs scripts/db/m04-dev-database.test.mjs
+        run: node --test scripts/n8n/m04-*.test.mjs scripts/db/m04-dev-database.test.mjs scripts/db/m04-query.test.mjs
 
   build:
     runs-on: ubuntu-latest

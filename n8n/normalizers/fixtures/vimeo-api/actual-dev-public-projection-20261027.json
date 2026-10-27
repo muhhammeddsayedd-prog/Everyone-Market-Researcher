@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "provenance": {
+    "kind": "actual_raw_metadata_projection",
+    "environment": "dev",
+    "project_ref": "zmotjsbzhzjvpelxvxlf",
+    "observed_at": "2026-10-27T13:51:48.4054960Z",
+    "source_record": "milestones/M04-collectors-vimeo-instagram/evidence/live-public-fixture-projection-20261027.json",
+    "source_query_sha256": "62860b8efc35ccf767e2f53b76f677643d5a96b1a5ffc5e873ce5e1cfc3545a7",
+    "account_context_record": "milestones/M04-collectors-vimeo-instagram/evidence/live-db-preflight-after-path-fix-20261027.json",
+    "actor": "vimeo-api",
+    "parent_run_id": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+    "collection_method": "Official Vimeo API metadata",
+    "projection_note": "Selected raw metadata fields only, not a full API response. Public descriptions/credits, pictures, tags and metrics are omitted. No missing provider field is fabricated.",
+    "limitations": [
+      "Official API only; neither Vimeo fallback actor is captured here.",
+      "No live thumbnail, stats, tags, credits, pagination or historical-exhaustion field coverage."
+    ]
+  },
+  "accounts": [
+    {
+      "id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+      "handle": "everyonefilms",
+      "platform": "vimeo",
+      "competitor_id": "94928d31-8983-403c-bdbd-f5f44613d631",
+      "company_code": "C000"
+    },
+    {
+      "id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+      "handle": "goodpeoplefilms",
+      "platform": "vimeo",
+      "competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+      "company_code": "C001"
+    }
+  ],
+  "samples": [
+    {
+      "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+      "external_id": "981255405",
+      "raw_metadata": {
+        "uri": "/videos/981255405",
+        "link": "https://vimeo.com/981255405",
+        "name": "Dosy | Fear (Sexual Harassment PSA)",
+        "privacy": {
+          "view": "anybody"
+        },
+        "duration": 149,
+        "created_time": "2024-07-09T11:07:48+00:00",
+        "release_time": "2024-07-09T11:07:48+00:00"
+      }
+    },
+    {
+      "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+      "external_id": "981269995",
+      "raw_metadata": {
+        "uri": "/videos/981269995",
+        "link": "https://vimeo.com/981269995",
+        "name": "Floward | The Mad Queen",
+        "privacy": {
+          "view": "anybody"
+        },
+        "duration": 78,
+        "created_time": "2024-07-09T11:55:32+00:00",
+        "release_time": "2024-07-09T11:55:32+00:00"
+      }
+    },
+    {
+      "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+      "external_id": "1231686951",
+      "raw_metadata": {
+        "uri": "/videos/1231686951",
+        "link": "https://vimeo.com/1231686951",
+        "name": "Allianz x Ghandour //Wedding",
+        "privacy": {
+          "view": "anybody"
+        },
+        "duration": 56,
+        "created_time": "2026-09-30T14:14:13+00:00",
+        "release_time": "2026-09-30T14:14:13+00:00"
+      }
+    },
+    {
+      "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+      "external_id": "1231691230",
+      "raw_metadata": {
+        "uri": "/videos/1231691230",
+        "link": "https://vimeo.com/1231691230",
+        "name": "Allianz x Ghandour //Park",
+        "privacy": {
+          "view": "anybody"
+        },
+        "duration": 57,
+        "created_time": "2026-09-30T14:26:46+00:00",
+        "release_time": "2026-09-30T14:26:46+00:00"
+      }
+    }
+  ]
+}

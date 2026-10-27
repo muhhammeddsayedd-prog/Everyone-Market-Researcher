@@ -79,7 +79,11 @@ function fixture() {
         assert.equal(value.revoke.regenerate, false);
         delete projectDto.protectionBypass[value.revoke.secret];
       }
-      return { status: 200, data: structuredClone(projectDto), closed: true };
+      return {
+        status: 200,
+        data: { protectionBypass: structuredClone(projectDto.protectionBypass) },
+        closed: true,
+      };
     }
     if (path.includes('/env?')) {
       if (method === 'GET') return { status: 200, data: { envs: structuredClone(rows) }, closed: true };
@@ -298,6 +302,54 @@ test('Machine custody pins refuse another valid Preview audience, source commit 
       assert.equal((await f.run('prepare')).public.code, 'M04_VERCEL_MACHINE_BASELINE');
       assert.equal(f.calls.length, 0);
       assert.equal(f.state.machineBaseline, undefined);
+    } finally {
+      f.close();
+    }
+  }
+});
+test('the exact pending bypass creation resumes from full Project readback without another creation PATCH', async () => {
+  const f = fixture();
+  try {
+    await f.run('prepare');
+    const v = f.state.vercelSetup,
+      at = Date.now();
+    v.pending = { action: 'bypass.create', at };
+    f.projectDto.protectionBypass[f.state.protectionBypass] = {
+      scope: 'automation-bypass',
+      note: v.comment,
+      createdAt: at,
+      isEnvVar: true,
+    };
+    const result = await f.run('configure');
+    assert.equal(result.public.status, 'completed', JSON.stringify(result.public));
+    assert.equal(v.bypassRecoveredByPrivateIdentity, true);
+    assert.equal(v.environments.length, 7);
+    assert.equal(f.calls.filter((c) => c.method === 'PATCH').length, 0);
+    assert.equal(f.calls.filter((c) => c.method === 'POST' && c.path.includes('/env?')).length, 7);
+  } finally {
+    f.close();
+  }
+});
+test('pending bypass recovery refuses a mismatched note, time, default or extra environment before writes', async () => {
+  for (const fault of ['note', 'time', 'default', 'environment']) {
+    const f = fixture();
+    try {
+      await f.run('prepare');
+      const v = f.state.vercelSetup,
+        at = Date.now();
+      v.pending = { action: 'bypass.create', at };
+      f.projectDto.protectionBypass[f.state.protectionBypass] = {
+        scope: 'automation-bypass',
+        note: fault === 'note' ? 'another owner' : v.comment,
+        createdAt: fault === 'time' ? at - 31000 : at,
+        isEnvVar: fault !== 'default',
+      };
+      if (fault === 'environment')
+        f.rows.push({ key: 'EMR_COLLECTORS_ENABLED', gitBranch: 'm04-collectors-vimeo-instagram' });
+      const result = await f.run('configure');
+      assert.equal(result.public.status, 'blocked');
+      assert.ok(f.calls.every((c) => c.method === 'GET'));
+      assert.equal(v.pending.action, 'bypass.create');
     } finally {
       f.close();
     }

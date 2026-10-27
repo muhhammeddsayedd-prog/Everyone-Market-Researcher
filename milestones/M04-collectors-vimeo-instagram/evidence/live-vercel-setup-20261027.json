@@ -1,0 +1,9 @@
+{
+  "status": "blocked",
+  "task": "Setup",
+  "phase": "configure",
+  "observedAt": "2026-10-27T13:13:43.734Z",
+  "code": "M04_VERCEL_PROJECT",
+  "requestCount": 3,
+  "pendingMutation": true
+}

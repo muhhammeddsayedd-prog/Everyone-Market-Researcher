@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { runTask, validOperation } from './m04-dev-task.mjs';
+import { bindOwnedInstagramReplay, runTask, validOperation } from './m04-dev-task.mjs';
 test('only concrete M04 task and phase pairs are accepted', () => {
   assert.equal(validOperation('ProviderMetadata', 'default'), true);
   for (const [task, phase] of [
@@ -155,7 +156,16 @@ test('access checks use only safe reads or denied operations and keep the five o
               return { status: 400, body: { error: { code: 'invalid_request' } } };
             if (body.operation === 'resolve')
               return { status: 403, body: { error: { code: 'account_not_permitted' } } };
-            return { status: 200, body: { result: { scope: 'unknown' } } };
+            return {
+              status: 200,
+              body: {
+                version: 1,
+                requestId: body.requestId,
+                operation: body.operation,
+                replayed: false,
+                result: { scope: 'unknown' },
+              },
+            };
           },
           close() {
             return true;
@@ -186,4 +196,85 @@ test('access checks use only safe reads or denied operations and keep the five o
   );
   assert.deepEqual(calls, ['callback.classify', 'callback.classify', 'callback.classify', 'sql', 'resolve']);
   assert.equal(JSON.stringify(r.public).includes('synthetic-'), false);
+});
+
+const replayReceipt = JSON.parse(
+  readFileSync(
+    new URL(
+      '../../milestones/M04-collectors-vimeo-instagram/evidence/live-instagram-first-assertions-20261027.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
+);
+const replayApproval = JSON.parse(
+  readFileSync(
+    new URL(
+      '../../milestones/M04-collectors-vimeo-instagram/evidence/live-test-approval-20261027.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
+);
+const replayState = () => ({
+  selection: { instagram: ['962c9c7e-aa0f-46ae-911b-3265859e0577', 'bed82782-753f-4ba9-91ca-691ef36f75c6'] },
+});
+test('replay binds only the completed owned Instagram posts run from the fixed public database receipt', () => {
+  const state = replayState();
+  assert.equal(
+    bindOwnedInstagramReplay(state, structuredClone(replayReceipt), replayApproval),
+    'Wo1flJIBKg7bk07IJ',
+  );
+  assert.deepEqual(state.functional, {
+    replayRunId: 'Wo1flJIBKg7bk07IJ',
+    parentRunId: 'd0c86952-df68-48ff-8f41-132500e2e90b',
+    executionId: '31159',
+    approvalId: '3f3aed72-4f14-4cc4-aefe-4999038efe27',
+  });
+});
+test('replay rejects wrong ownership, pending work and cost disagreement without caching an ID', () => {
+  for (const mutate of [
+    (r) => {
+      r.projectRef = 'other-project';
+    },
+    (r) => {
+      r.childrenClosed = false;
+    },
+    (r) => {
+      r.queryResult[0].collector_assertions.runs.find((x) => x.workflow === 'WF-11').n8n_execution_id =
+        '31158';
+    },
+    (r) => {
+      r.queryResult[0].collector_assertions.accounts.find((x) => x.platform === 'instagram').last_run_id =
+        'other-parent';
+    },
+    (r) => {
+      r.queryResult[0].collector_assertions.launches[0].approval_id = 'other-approval';
+    },
+    (r) => {
+      r.queryResult[0].collector_assertions.launches[0].account_ids[0] =
+        '00000000-0000-4000-8000-000000000004';
+    },
+    (r) => {
+      r.queryResult[0].collector_assertions.actorRuns[0].status = 'RUNNING';
+    },
+    (r) => {
+      r.queryResult[0].collector_assertions.actorRuns[0].processed_at = null;
+    },
+    (r) => {
+      r.queryResult[0].collector_assertions.selectedLiveClaims = 1;
+    },
+    (r) => {
+      r.queryResult[0].collector_assertions.costs.find((x) => x.provider === 'apify').cost_usd += 0.001;
+    },
+  ]) {
+    const receipt = structuredClone(replayReceipt),
+      state = replayState();
+    mutate(receipt);
+    assert.throws(
+      () => bindOwnedInstagramReplay(state, receipt, replayApproval),
+      /M04_OWNED_CALLBACK_RECEIPT_REQUIRED/,
+    );
+    assert.equal(state.functional, undefined);
+  }
 });

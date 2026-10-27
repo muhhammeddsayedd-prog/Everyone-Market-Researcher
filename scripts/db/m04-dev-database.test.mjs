@@ -455,3 +455,42 @@ test('persistent originals are only read and are never materialized or deleted',
   assert.match(source, /if\(\$null -ne \$scratch -and \$receipt\.childrenClosed\)/);
   assert.ok(existsSync(consumer));
 });
+
+test(
+  'Query uses one bounded Node child with SQL path/hash and no credential arguments',
+  { skip: !windows },
+  () => {
+    const result = run(`${definitions(['Invoke-M04NativeQuery', 'M04-Json'])}
+$Phase='Query';$queryRunner='runner.mjs';$queryRunnerHash='public-hash';$queryCopy='reviewed.sql';$wrappedQueryHash='public-hash'
+$nodePath='fixed-node';$repo='fixed-repo';$password='local-synthetic-only';$receipt=@{databaseCommands=0;childrenClosed=$true;authenticationAttempted=$false}
+$call=$null
+function M04-Hash {return 'public-hash'}
+function Invoke-M04Bounded($Executable,$Arguments,$WorkingDirectory,$TimeoutMs,$PrivatePassword){
+ $script:call=[pscustomobject]@{executable=$Executable;args=$Arguments;privateInputMatched=($PrivatePassword -ceq 'local-synthetic-only');parentPasswordAbsent=($null -eq $env:PGPASSWORD)}
+ return [pscustomobject]@{ok=$true;started=$true;closed=$true;nativeExit=0;text='{"status":"query_complete","sqlstate":null,"clientClosed":true,"rows":[{"proof":true}]}'}
+}
+$value=Invoke-M04NativeQuery
+Write-Output (@{call=$call;commands=$receipt.databaseCommands;clientClosed=$receipt.databaseClientClosed;rows=$value.rows}|ConvertTo-Json -Depth 6 -Compress)
+`);
+    assert.equal(result.status, 0, result.stderr);
+    const value = JSON.parse(result.stdout);
+    assert.equal(value.commands, 1);
+    assert.equal(value.clientClosed, true);
+    assert.equal(value.call.executable, 'fixed-node');
+    assert.deepEqual(value.call.args, ['runner.mjs', 'reviewed.sql', 'public-hash']);
+    assert.equal(value.call.privateInputMatched, true);
+    assert.equal(value.call.parentPasswordAbsent, true);
+    assert.deepEqual(value.rows, [{ proof: true }]);
+  },
+);
+
+test('Query cannot fall back to the twice-failed CLI transaction mechanism', { skip: !windows }, () => {
+  const result = run(`${definitions(['Invoke-M04Cli'])}
+$Phase='Query';$historyFile='history.sql';$catalogFile='catalog.sql';$queryCopy='reviewed.sql';$calls=0
+function Invoke-M04Bounded {$script:calls++;throw 'UNEXPECTED_CHILD'}
+try{$null=Invoke-M04Cli @('db','query','--file','reviewed.sql');throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_COMMAND_BLOCKED'){throw}}
+Write-Output $calls
+`);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), '0');
+});

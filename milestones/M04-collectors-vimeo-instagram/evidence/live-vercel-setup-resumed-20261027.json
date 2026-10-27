@@ -1,0 +1,17 @@
+{
+  "status": "completed",
+  "task": "Setup",
+  "phase": "configure",
+  "observedAt": "2026-10-27T13:19:26.290Z",
+  "code": null,
+  "requestCount": 11,
+  "deployment": {
+    "id": "dpl_FM5qAL13kxUQVba8A57mFoVmpQUL",
+    "audience": "https://everyone-market-researcher-rbxsp51ht-muhammed-abdelrahman.vercel.app",
+    "readyState": "INITIALIZING",
+    "sourceHead": "ffa957d8186f2e054179bf81aae0e69600232818",
+    "branch": "m04-collectors-vimeo-instagram",
+    "projectId": "prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu"
+  },
+  "pendingMutation": false
+}

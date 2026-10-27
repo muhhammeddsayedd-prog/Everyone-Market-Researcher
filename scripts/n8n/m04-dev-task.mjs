@@ -23,12 +23,160 @@ export function validOperation(task, phase) {
       Inventory: ['default'],
       ProviderMetadata: ['default'],
       Setup: ['project', 'prepare', 'configure', 'poll', 'cleanup'],
-      Stage: ['stage', 'publish', 'machine'],
+      Stage: ['stage', 'publish', 'machine', 'readback'],
       Observe: ['default'],
       Probe: ['default', 'replay', 'unknown'],
       Restore: ['native'],
     }[task]?.includes(phase) === true
   );
+}
+// Bind this one representative replay to its already-completed public database
+// receipt. This never discovers a run, starts an actor, or accepts a caller ID.
+export function bindOwnedInstagramReplay(state, receipt, approval) {
+  const reject = () => fail('M04_OWNED_CALLBACK_RECEIPT_REQUIRED');
+  const parentId = 'd0c86952-df68-48ff-8f41-132500e2e90b',
+    executionId = '31159';
+  const approvalId = '3f3aed72-4f14-4cc4-aefe-4999038efe27';
+  const selected = state.selection?.instagram;
+  const sameAccounts = (ids) =>
+    Array.isArray(ids) &&
+    ids.length === 2 &&
+    new Set(ids).size === 2 &&
+    [...ids].sort().every((id, index) => id === [...selected].sort()[index]);
+  const date = (v) => typeof v === 'string' && Number.isFinite(Date.parse(v));
+  const money = (v) => {
+    if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || !Number.isSafeInteger(Math.round(v * 1e9)))
+      reject();
+    return Math.round(v * 1e9);
+  };
+  if (
+    !Array.isArray(selected) ||
+    selected.length !== 2 ||
+    new Set(selected).size !== 2 ||
+    selected.some((id) => typeof id !== 'string' || !/^[a-f0-9-]{36}$/.test(id)) ||
+    approval?.approval_id !== approvalId ||
+    approval.environment !== 'dev' ||
+    approval.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+    receipt?.version !== 1 ||
+    receipt.phase !== 'Query' ||
+    receipt.environment !== 'dev' ||
+    receipt.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+    receipt.host !== 'aws-1-eu-central-1.pooler.supabase.com' ||
+    receipt.port !== 5432 ||
+    receipt.status !== 'reviewed_query_complete' ||
+    receipt.authenticationVerified !== true ||
+    receipt.childrenClosed !== true ||
+    receipt.databaseClientClosed !== true ||
+    receipt.lastNativeExit !== 0 ||
+    !Array.isArray(receipt.queryResult) ||
+    receipt.queryResult.length !== 1
+  )
+    reject();
+  const data = receipt.queryResult[0]?.collector_assertions;
+  if (
+    !data ||
+    data.selectedLiveClaims !== 0 ||
+    data.selectedUnprocessedActors !== 0 ||
+    !['runs', 'accounts', 'launches', 'actorRuns', 'costs', 'accountResults'].every((key) =>
+      Array.isArray(data[key]),
+    )
+  )
+    reject();
+  const parents = data.runs.filter((r) => r.id === parentId);
+  const parent = parents[0];
+  if (
+    parents.length !== 1 ||
+    parent.env !== 'dev' ||
+    parent.workflow !== 'WF-11' ||
+    parent.platform !== 'instagram' ||
+    parent.mode !== 'backfill' ||
+    parent.n8n_execution_id !== executionId ||
+    parent.status !== 'success' ||
+    parent.error !== null ||
+    !date(parent.finished_at) ||
+    parent.accounts_total !== 2 ||
+    parent.accounts_ok !== 2 ||
+    parent.accounts_failed !== 0
+  )
+    reject();
+  const accounts = data.accounts.filter((a) => selected.includes(a.id));
+  if (
+    !sameAccounts(accounts.map((a) => a.id)) ||
+    accounts.some((a) => a.platform !== 'instagram' || a.last_run_id !== parentId || a.locked_until !== null)
+  )
+    reject();
+  const launches = data.launches.filter((l) => l.run_id === parentId);
+  const actors = data.actorRuns.filter((a) => a.run_id === parentId);
+  const costs = data.costs.filter((c) => c.run_id === parentId);
+  const results = data.accountResults.filter((r) => r.run_id === parentId);
+  if (
+    launches.length !== 2 ||
+    actors.length !== 2 ||
+    costs.length !== 4 ||
+    results.length !== 2 ||
+    new Set(launches.map((l) => l.pass)).size !== 2 ||
+    launches.some((l) => !['posts', 'reels'].includes(l.pass)) ||
+    new Set(launches.map((l) => l.apify_run_id)).size !== 2 ||
+    new Set(costs.map((c) => c.cost_key)).size !== 4 ||
+    !sameAccounts(results.map((r) => r.account_id)) ||
+    results.some((r) => r.status !== 'success' || r.error !== null || !date(r.finished_at))
+  )
+    reject();
+  for (const launch of launches) {
+    const matches = actors.filter((a) => a.apify_run_id === launch.apify_run_id),
+      actor = matches[0];
+    const entries = costs.filter((c) => c.apify_run_id === launch.apify_run_id);
+    if (
+      matches.length !== 1 ||
+      !/^[A-Za-z0-9_-]{1,128}$/.test(launch.apify_run_id ?? '') ||
+      launch.approval_id !== approvalId ||
+      launch.actor_id !== 'apify/instagram-scraper' ||
+      launch.purpose !== 'backfill' ||
+      !sameAccounts(launch.account_ids) ||
+      launch.results_limit !== 5 ||
+      launch.dataset_complete !== true ||
+      !Number.isSafeInteger(launch.next_offset) ||
+      launch.next_offset < 0 ||
+      launch.next_offset > 10 ||
+      launch.max_actor_usd !== approval.ceilings?.perActorUsd ||
+      launch.max_total_usd !== approval.ceilings?.actorUsd ||
+      launch.max_actor_starts !== approval.ceilings?.actorStarts ||
+      actor.actor_id !== 'apify/instagram-scraper' ||
+      actor.purpose !== 'backfill' ||
+      !sameAccounts(actor.account_ids) ||
+      actor.status !== 'SUCCEEDED' ||
+      !date(actor.finished_at) ||
+      !date(actor.processed_at) ||
+      entries.length !== 2 ||
+      entries.some(
+        (c) =>
+          c.provider !== 'apify' ||
+          c.platform !== 'instagram' ||
+          c.category !== 'scrape' ||
+          c.unit !== 'result' ||
+          !Number.isSafeInteger(c.quantity) ||
+          c.quantity < 0 ||
+          c.quantity > 5,
+      ) ||
+      !selected.every(
+        (id) => entries.filter((c) => c.cost_key === 'apify:' + actor.apify_run_id + ':' + id).length === 1,
+      ) ||
+      entries.reduce((sum, c) => sum + money(c.cost_usd), 0) !== money(actor.usage_usd) ||
+      money(actor.usage_usd) > money(launch.max_actor_usd)
+    )
+      reject();
+  }
+  if (
+    costs.reduce((sum, c) => sum + money(c.cost_usd), 0) !== money(parent.cost_usd) ||
+    costs.reduce((sum, c) => sum + c.quantity, 0) !== parent.items_seen ||
+    results.reduce((sum, r) => sum + r.items_seen, 0) !== parent.items_seen ||
+    results.reduce((sum, r) => sum + r.items_new, 0) !== parent.items_new
+  )
+    reject();
+  const replayRunId = launches.find((l) => l.pass === 'posts').apify_run_id;
+  if (state.functional?.replayRunId && state.functional.replayRunId !== replayRunId) reject();
+  state.functional = { ...state.functional, replayRunId, parentRunId: parentId, executionId, approvalId };
+  return replayRunId;
 }
 function charge(category, operation) {
   const rows = readFileSync(usage, 'utf8').trim().split('\n').filter(Boolean).map(JSON.parse);
@@ -191,7 +339,7 @@ export async function runTask(input, dependencies = {}) {
       const audience = state.deployment?.audience;
       if (
         !/^https:\/\/everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(audience ?? '') ||
-        !state.native?.published
+        (phase !== 'default' && !state.native?.published)
       )
         fail('M04_PROBE_SETUP_REQUIRED');
       if (phase === 'default') {
@@ -244,8 +392,34 @@ export async function runTask(input, dependencies = {}) {
         receipt.probes = [];
         for (const [name, send, body, status] of tests) {
           const r = await send('POST', endpoint, body);
-          receipt.probes.push({ name, status: r.status });
-          if (r.status !== status || (name === 'restricted_identity' && r.body?.result?.scope !== 'unknown'))
+          const expectedCode = {
+            missing_machine: 'unauthorized',
+            cookie_rejected: 'forbidden',
+            arbitrary_operation_rejected: 'invalid_request',
+            unselected_account_rejected: 'account_not_permitted',
+          }[name];
+          receipt.probes.push({
+            name,
+            status: r.status,
+            ...(expectedCode
+              ? { errorCode: r.body?.error?.code }
+              : {
+                  version: r.body?.version,
+                  requestId: r.body?.requestId,
+                  operation: r.body?.operation,
+                  replayed: r.body?.replayed,
+                }),
+          });
+          if (
+            r.status !== status ||
+            (name === 'restricted_identity' &&
+              (r.body?.result?.scope !== 'unknown' ||
+                r.body?.version !== 1 ||
+                r.body?.requestId !== body.requestId ||
+                r.body?.operation !== body.operation ||
+                typeof r.body?.replayed !== 'boolean')) ||
+            (expectedCode && r.body?.error?.code !== expectedCode)
+          )
             fail('M04_ACCESS_ASSERTION_FAILED');
         }
         state.accessVerified = true;
@@ -254,7 +428,27 @@ export async function runTask(input, dependencies = {}) {
         // may supply a replay. Unknown-run deliberately uses a new fake ID.
         const run =
           phase === 'replay'
-            ? state.functional?.replayRunId
+            ? bindOwnedInstagramReplay(
+                state,
+                JSON.parse(
+                  readFileSync(
+                    resolve(
+                      root,
+                      'milestones/M04-collectors-vimeo-instagram/evidence/live-instagram-first-assertions-20261027.json',
+                    ),
+                    'utf8',
+                  ),
+                ),
+                JSON.parse(
+                  readFileSync(
+                    resolve(
+                      root,
+                      'milestones/M04-collectors-vimeo-instagram/evidence/live-test-approval-20261027.json',
+                    ),
+                    'utf8',
+                  ),
+                ),
+              )
             : 'M04Unknown' + randomUUID().replaceAll('-', '');
         if (!/^[A-Za-z0-9_-]{1,128}$/.test(run ?? '')) fail('M04_OWNED_CALLBACK_ID_REQUIRED');
         const send = sendJson(
@@ -263,6 +457,12 @@ export async function runTask(input, dependencies = {}) {
           'no_machine',
           'callback',
         );
+        // Incoming delivery and outgoing WF-19 calls are distinct. Retain this
+        // reviewed nested bound even if the incoming response is ambiguous.
+        for (const operation of phase === 'replay'
+          ? ['callback.classify', 'callback.process']
+          : ['callback.classify'])
+          admit('gateway', 'WF-19 ' + phase + ' nested bound ' + operation);
         const r = await send('POST', '/webhook/emr-apify-callback', {
           eventType: 'ACTOR.RUN.SUCCEEDED',
           resource: { id: run },
