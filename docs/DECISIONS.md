@@ -500,7 +500,7 @@ four cumulative actors/USD0.8395 and236 selected rows. Neither closed packet
 grants substitute collection authority. Production, recurring activity,
 notifications, PR13 merge and M05 remain separate decisions.
 
-### History review and pending HC-01 — 27 October 2026
+### History review and HC-01 approval — 27 October 2026
 
 The [local history review](../milestones/M04-collectors-vimeo-instagram/evidence/history-capability-decision-20261027.md)
 separates Everyone Vimeo page4/width5 continuation from Instagram coverage
@@ -512,12 +512,32 @@ The unsafe final posts-completion inference is removed; accepted bounded
 collection/cost evidence remains unchanged. Source-stop evidence for posts
 and reels remains independently unproved.
 
-**HC-01 is proposed, not approved or implemented:** permit fixed-selector
-recent monitoring for the five watermarked dev Instagram accounts, retaining
-incomplete history and shared ownership, and explicitly defer only the
-Instagram-completeness part of dev AC2 to a source-capability follow-up.
-The general scheduled selector, production AC6, Vimeo AC2 and every other
-criterion/gate remain unchanged. Until the owner decides, daily eligibility
-remains gated on history completion. No status is fabricated and no forward
-migration is created in this review. The exact wording, future local change
-and separate future live-estimate gate are in the linked record.
+The linked review records the original pending proposal. The owner subsequently
+approved **HC-01** with this exact decision:
+
+> Approve fixed-selector recent Instagram monitoring for the five identified watermarked dev accounts, keeping history incomplete; explicitly defer only Instagram January2024 completeness in dev AC2 to follow-up HC-01-F1. All other criteria, production boundaries and live-spending gates remain unchanged.
+
+This authorizes the narrow local implementation: only the existing fixed M04
+daily selector may claim these active, watermarked dev Instagram identities
+despite incomplete history: C000 `962c9c7e-aa0f-46ae-911b-3265859e0577`,
+C001 `bed82782-753f-4ba9-91ca-691ef36f75c6`,
+C130 `46149fb9-8905-4b76-9834-4b38f668a2e2`,
+C270 `2d42d451-ac9a-42ac-a879-8760d63c8108`, and
+C226 `3ca3befa-abe6-4540-a389-0cf16115c581`.
+No future mutable selector can enlarge this exception. The general scheduled
+selector remains gated on completed history, and schedules stay off.
+
+Keep incomplete history/cursors, joint posts/reels ownership and registration
+barriers, monotonic primary watermarks, reels watermark preservation, claim
+fencing and replay safety. Do not force `done`/`not_applicable`; an unverified or
+saturated recent result remains incomplete coverage. A forward function
+migration and regression tests implement the exception without replaying the
+seventeen applied dev migrations. Approval and local qualification are not
+evidence of hosted application or successful daily collection.
+
+Only Instagram January2024 completeness in **dev AC2 is deferred, not passed**,
+to HC-01-F1. Vimeo AC2, production AC6 and every other criterion remain
+unchanged. No live batch, spending increase, Preview/bypass activation,
+production operation, recurring schedule, notification, merge, M04 completion
+or M05 is authorized by this decision. A complete targeted live estimate and
+its separate approval remain required before any new collection.

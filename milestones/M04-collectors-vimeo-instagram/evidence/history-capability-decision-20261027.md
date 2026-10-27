@@ -1,5 +1,7 @@
 # M04 history capability and completion decision — 27 October 2026
 
+> **Approval update27October:** HC-01 was explicitly approved after this proposal. Only Instagram January2024 completeness in dev AC2 is now deferred to HC-01-F1, not passed. The exact five-identity eligibility migration is locally implemented/qualified; hosted application and new collection remain unstarted. See [local qualification](hc01-local-qualification-20261027.json), the current criterion map and DECISIONS.md. Pending wording below is preserved as the historical pre-approval proposal.
+
 **Local review from accepted head 6dea884. No new collection or hosted change. M04 remains open and PR13 stays draft.** The completed sample and increment remain accepted bounded observations. This review neither spends their unused allowance nor changes any acceptance criterion without approval.
 
 ## Result and recommended decision

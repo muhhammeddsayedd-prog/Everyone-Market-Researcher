@@ -50,7 +50,7 @@ describe.skipIf(process.env.EMR_M04_LOCAL_SQL_TEST !== 'true')(
           );
         if (
           !(await c.query("select to_regprocedure('ops.collector_execute(uuid,text,jsonb)') as f")).rows[0].f
-        )
+        ) {
           await c.query(
             readFileSync(
               new URL(
@@ -60,6 +60,18 @@ describe.skipIf(process.env.EMR_M04_LOCAL_SQL_TEST !== 'true')(
               'utf8',
             ),
           );
+        }
+        // Install the reviewed function inside this rollback transaction even
+        // when a reused local stack has the older M04 product objects.
+        await c.query(
+          readFileSync(
+            new URL(
+              '../../../../supabase/migrations/20261027192743_m04_recent_instagram_dev_eligibility.sql',
+              import.meta.url,
+            ),
+            'utf8',
+          ),
+        );
         const company = '27000000-0000-4000-8000-000000000010',
           vimeo = '27000000-0000-4000-8000-000000000011',
           ig = '27000000-0000-4000-8000-000000000012',

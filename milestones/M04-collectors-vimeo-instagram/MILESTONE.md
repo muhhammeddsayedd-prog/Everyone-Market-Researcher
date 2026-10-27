@@ -4,6 +4,8 @@
 
 > **Owner kickoff26October2026:** M04 is authorized after merged M03. Use focused local/integration tests and representative native/database evidence; no general-purpose acceptance framework. Before any paid fixture or live collector batch, present one complete new M04 estimate including accounts, provider use, retries and shutdown. Production pilot, recurring schedules, notifications and merge remain separate decisions. The first official-API implementation and current source corrections are in PROGRESS.md and SCRAPING_SOURCES.md; historical examples below are not proof of current API/actor contracts.
 
+> **HC-01 approved27October2026:** the owner approved fixed-selector recent Instagram monitoring for the five identified watermarked dev accounts while history remains incomplete, and deferred only Instagram January2024 completeness in dev AC2 to HC-01-F1. This narrow exception supersedes the original daily-history gate below only for the exact five identities and fixed selector recorded in [DECISIONS.md](../../docs/DECISIONS.md#m04-collector-integration--27-october-2026). The general scheduled selector, Vimeo AC2, production AC6 and all other criteria/gates are unchanged. Local implementation/qualification does not prove hosted application, daily collection or complete history; no new live collection is approved.
+
 ## 1. Goal and outcome
 
 Build the first two production collectors on top of the M03 foundation, then backfill the pilot from **1 Jan 2024**:
@@ -51,7 +53,7 @@ No AI yet: items wait in the `ai_extract` queue for M07.
     - `backfill_from` (2024-01-01), `backfill_cursor`.
   - Mode `backfill` picks accounts with `backfill_status in ('pending','running')`.
   - Mode `daily` picks only accounts with `backfill_status in ('done','not_applicable')` and `next_due_at <= now()`.
-  - An account therefore enters the daily rotation only after its backfill completes.
+  - The general daily rotation therefore requires completed backfill. HC-01 permits a narrow fixed-selector-only dev exception for the five approved, watermarked Instagram identities; it does not enable recurring rotation or assert completed history. Joint claims/barriers, watermarks, replay safety and incomplete history/cursors must be preserved.
 - **Per-account result.** `ops.report_account_result(run_id, account_id, status, items_seen, items_new, error, backfill_done, backfill_cursor)` unlocks the account and schedules `next_due_at`. It counts failures and sets the account to `failing` after 3 consecutive failures.
 - **Apify pattern (M03).** Every Apify actor runs **asynchronously** with an ad-hoc webhook to **WF-19 · Apify run callback** (`docs/N8N_WORKFLOWS.md` §4, §6 WF-19):
   - The collector starts the run and calls `ops.register_apify_run(...)`.
@@ -261,7 +263,7 @@ Build it exactly as in `docs/N8N_WORKFLOWS.md` §6 WF-10:
    - Error rows:
      - a private profile or `errorDescription` containing private, login, challenge or checkpoint → the account fails with `error='ig_private_or_login'`;
      - after 3 such runs the account goes `invalid` (handled by the consecutive-failures logic plus a check in the branch: on the 3rd, call `ops.set_account_status` if it exists, else log for the owner).
-   - **`backfill_done` implementation correction (27 October):** the draft short-output/oldest-row heuristic is insufficient source-coverage evidence. Final callback settlement keeps history incomplete until each posts/reels pass has attributable cutoff or public-source-exhaustion proof. Dataset EOF, one out-of-order old row and a higher result limit are not that proof. See [history review](evidence/history-capability-decision-20261027.md). This corrects an unsafe implementation prescription; the full-history target and AC2 remain unchanged pending explicit HC-01 decision.
+   - **`backfill_done` implementation correction (27 October):** the draft short-output/oldest-row heuristic is insufficient source-coverage evidence. Final callback settlement keeps history incomplete until each posts/reels pass has attributable cutoff or public-source-exhaustion proof. Dataset EOF, one out-of-order old row and a higher result limit are not that proof. See [history review](evidence/history-capability-decision-20261027.md). This corrects an unsafe implementation prescription; the full-history target remains. The subsequent HC-01 approval defers only Instagram January2024 completeness in dev AC2 to HC-01-F1, not passed; it does not authorize a false `backfill_done` result.
      - Keep per-pass `oldest_seen`, raw cap/escalation evidence and `backfill_done=false`; existing 3000-result saturation is a local stop, not a provider-wide prohibition.
      - Repeating the same lower-date latest query can add new IDs idempotently but does not prove history or authorize another wave. No repeated capture is ordered by this note.
    - Reels pass → `report_account_result(..., p_secondary := true)`.
@@ -336,7 +338,7 @@ Build it exactly as in `docs/N8N_WORKFLOWS.md` §6 WF-10:
 Run the SQL in `scripts/assert/m04.sql` and paste the results in PROGRESS.
 
 - **AC1: Contract.** `pnpm test` is green. Every fixture normalizes to schema-valid items, and every item_type rule is covered.
-- **AC2: Dev backfill.** All 5 dev test accounts per platform have `backfill_status='done'`.
+- **AC2: Dev backfill.** Original criterion: all 5 dev test accounts per platform have `backfill_status='done'`. **HC-01 approved27October2026 defers only the Instagram January2024-completeness component to HC-01-F1, not passed.** Keep those histories truthfully incomplete; recent monitoring is not a substitute completion signal. The five-account Vimeo requirement and the original history target remain unchanged. Production AC6 is not deferred. The following aggregate query remains an observation, not proof of per-account source traversal or completion:
   ```sql
   select a.platform, min(i.published_at)::date as oldest, count(*) as items
   from app.items i join app.competitor_accounts a on a.id = i.account_id
