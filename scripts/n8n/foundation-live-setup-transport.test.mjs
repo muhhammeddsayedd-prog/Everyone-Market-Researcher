@@ -70,6 +70,16 @@ function fixture({
     },
   };
 }
+
+test('production conflict inspection is the exact read-only project-scoped deployment list', async () => {
+  const route = `/v6/deployments?projectId=${project}&target=production&state=QUEUED,INITIALIZING,BUILDING&limit=100&teamId=${team}`;
+  const allowed = fixture();
+  await allowed.run('GET', route, null);
+  assert.equal(allowed.calls.length, 1);
+  const denied = fixture();
+  await assert.rejects(denied.run('POST', route, null));
+  assert.equal(denied.calls.length, 0);
+});
 test('real CLI protocol puts private JSON only on stdin and waits for child close', async () => {
   const f = fixture({ mode: 'delayed_close' });
   assert.equal(assertFoundationLiveSetupTransport(f.transport), f.transport);

@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "approval_kind": "incremental",
+  "approval_id": "123e88b6-5920-4e54-832a-ad6d87c22675",
+  "approvedAt": "2026-10-27T15:24:25.740Z",
+  "ownerStatement": "Approve the M04 incremental dev packet at 2c450f40557e7582525d96b5dd63bba2338baa0d including temporary default-bypass exception and narrow owned error-handler publication correction.",
+  "reviewedHead": "2c450f40557e7582525d96b5dd63bba2338baa0d",
+  "packetSha256": "9c5dc3709e4e44024f91bad16e9188cc8a4c500f4a8f494e41a3fb74e2d5ae26",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "ceilings": {
+    "management": 208,
+    "control": 1164,
+    "combined": 1372,
+    "vercel": 64,
+    "nativeActions": 12,
+    "actorStarts": 8,
+    "perActorUsd": 1,
+    "actorUsd": 8,
+    "resultsPerProfile": 50
+  },
+  "cumulative": {
+    "management": 296,
+    "control": 1446,
+    "combined": 1742,
+    "vercel": 100,
+    "nativeActions": 17,
+    "actorStarts": 10,
+    "actorUsd": 8.046
+  },
+  "retained": {
+    "management": 88,
+    "control": 282,
+    "combined": 370,
+    "vercel": 36,
+    "nativeActions": 5,
+    "actorStarts": 2,
+    "actorUsd": 0.046
+  },
+  "categories": {
+    "n8n": 144,
+    "vercel": 64,
+    "gateway": 512,
+    "provider": 512,
+    "callback": 100,
+    "database": 40
+  },
+  "companyCodes": [
+    "C000",
+    "C001",
+    "C130",
+    "C270",
+    "C226"
+  ],
+  "errorPublication": {
+    "onlyOwnedNewHandler": "WF-90-M04",
+    "temporary": true,
+    "restoreInactive": true,
+    "originalFoundationHandlerUntouched": true
+  },
+  "excluded": [
+    "production",
+    "recurring schedules",
+    "external notifications",
+    "private R2",
+    "merge",
+    "M05",
+    "dltik",
+    "ambiguous paid replacement"
+  ]
+}

@@ -23,9 +23,9 @@ export function validOperation(task, phase) {
       Inventory: ['default'],
       ProviderMetadata: ['default'],
       Setup: ['project', 'prepare', 'configure', 'poll', 'cleanup'],
-      Stage: ['stage', 'publish', 'machine', 'readback'],
+      Stage: ['stage', 'publish', 'machine', 'readback', 'cohort'],
       Observe: ['default'],
-      Probe: ['default', 'replay', 'unknown'],
+      Probe: ['default', 'replay', 'unknown', 'malformed'],
       Restore: ['native'],
     }[task]?.includes(phase) === true
   );
@@ -178,7 +178,26 @@ export function bindOwnedInstagramReplay(state, receipt, approval) {
   state.functional = { ...state.functional, replayRunId, parentRunId: parentId, executionId, approvalId };
   return replayRunId;
 }
-function charge(category, operation) {
+export function checkM04IncrementalCharge(totals, categoryCount, category) {
+  if (
+    !['management', 'control', 'combined', 'vercel'].every(
+      (key) => Number.isSafeInteger(totals[key]) && totals[key] >= 0,
+    ) ||
+    !Number.isSafeInteger(categoryCount) ||
+    categoryCount < 0 ||
+    totals.management + totals.control !== totals.combined ||
+    totals.vercel > totals.management
+  )
+    fail('M04_LEDGER_INVALID');
+  if (totals.management > 296 || totals.control > 1446 || totals.combined > 1742 || totals.vercel > 100)
+    fail('M04_ALLOWANCE_EXHAUSTED');
+  if (
+    categoryCount >=
+    ({ n8n: 196, vercel: 100, provider: 646, gateway: 613, callback: 126, database: 61 }[category] ?? 0)
+  )
+    fail('M04_CATEGORY_EXHAUSTED');
+}
+export function chargeM04Request(category, operation, scope) {
   const rows = readFileSync(usage, 'utf8').trim().split('\n').filter(Boolean).map(JSON.parse);
   const latest = [...rows].reverse().find((r) => r.totals || r.management !== undefined);
   const totals = { ...(latest?.totals ?? latest) };
@@ -193,7 +212,10 @@ function charge(category, operation) {
   else totals.control++;
   totals.combined++;
   if (category === 'vercel') totals.vercel++;
-  if (totals.management > 160 || totals.control > 472 || totals.combined > 632 || totals.vercel > 64)
+  if (
+    scope !== 'incremental' &&
+    (totals.management > 160 || totals.control > 472 || totals.combined > 632 || totals.vercel > 64)
+  )
     fail('M04_ALLOWANCE_EXHAUSTED');
   const categoryCount = rows
     .filter(
@@ -202,15 +224,22 @@ function charge(category, operation) {
         (r.category === category || (category === 'n8n' && r.category === 'n8n_management')),
     )
     .reduce((count, row) => count + (row.charged ?? 1), 0);
-  if (
+  if (scope === 'incremental') checkM04IncrementalCharge(totals, categoryCount, category);
+  else if (
     categoryCount >=
     ({ n8n: 96, vercel: 64, provider: 256, gateway: 128, callback: 56, database: 32 }[category] ?? 0)
   )
     fail('M04_CATEGORY_EXHAUSTED');
   appendFileSync(
     usage,
-    JSON.stringify({ at: new Date().toISOString(), event: 'request_intent', category, operation, totals }) +
-      '\n',
+    JSON.stringify({
+      at: new Date().toISOString(),
+      event: 'request_intent',
+      category,
+      operation,
+      ...(scope ? { scope } : {}),
+      totals,
+    }) + '\n',
   );
 }
 function result(category, operation, status) {
@@ -226,8 +255,40 @@ export async function runTask(input, dependencies = {}) {
     phase = input.phase ?? 'default';
   const state = structuredClone(input.state ?? {}),
     transports = [];
+  if (input.scope !== undefined && input.scope !== 'incremental') fail('M04_SCOPE_INVALID');
+  if (input.scope === 'incremental') {
+    if (state.scope !== undefined && state.scope !== 'incremental') fail('M04_SCOPE_INVALID');
+    if (input.cohort !== undefined && (task !== 'Stage' || phase !== 'cohort')) fail('M04_SCOPE_INVALID');
+    const approval = JSON.parse(
+      readFileSync(
+        resolve(
+          root,
+          'milestones/M04-collectors-vimeo-instagram/evidence/incremental-dev-approval-20261027.json',
+        ),
+        'utf8',
+      ),
+    );
+    if (
+      approval.reviewedHead !== '2c450f40557e7582525d96b5dd63bba2338baa0d' ||
+      approval.approval_id !== '123e88b6-5920-4e54-832a-ad6d87c22675' ||
+      approval.environment !== 'dev' ||
+      approval.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+      approval.ceilings?.actorStarts !== 8 ||
+      approval.ceilings.actorUsd !== 8 ||
+      approval.cumulative?.combined !== 1742 ||
+      (state.approvalId && state.approvalId !== approval.approval_id)
+    )
+      fail('M04_INCREMENTAL_APPROVAL_REQUIRED');
+    state.scope = 'incremental';
+    state.approvalId = approval.approval_id;
+    if (input.cohort !== undefined) state.cohort = structuredClone(input.cohort);
+  } else if (state.scope !== undefined || input.cohort !== undefined) fail('M04_SCOPE_INVALID');
+  if ((phase === 'cohort' || phase === 'malformed') && state.scope !== 'incremental')
+    fail('M04_SCOPE_INVALID');
+  if (phase === 'replay' && state.scope === 'incremental') fail('M04_SCOPE_INVALID');
   const now = dependencies.now ?? Date.now;
-  const admit = dependencies.charge ?? charge;
+  const admit =
+    dependencies.charge ?? ((category, operation) => chargeM04Request(category, operation, state.scope));
   const record = dependencies.result ?? result;
   const deadlineAt = now() + 100000;
   let receipt = { status: 'completed', task, phase, observedAt: new Date(now()).toISOString() };
@@ -242,7 +303,7 @@ export async function runTask(input, dependencies = {}) {
         maxBytes: 2097152,
         api,
         extraHeaders,
-        statuses: [200, 201, 202, 204, 400, 401, 403, 404, 409, 422],
+        statuses: [200, 201, 202, 204, 400, 401, 403, 404, 409, 422, 500],
         allowed: (m, p, b) => permitted?.method === m && permitted?.path === p && permitted?.body === b,
       },
       {
@@ -277,6 +338,7 @@ export async function runTask(input, dependencies = {}) {
     } else if (task === 'Observe') {
       const send = sendJson('muhhammedsayed.app.n8n.cloud', secrets.management, 'n8n', 'n8n');
       const ids = ['4JMHLDBSdgGxhPlk', 'Oq19AMI9C3B1wbo9', 'TsqSMa5MlO3QBLkt'];
+      if (state.scope === 'incremental') ids.unshift('MzimjpsuyPuK7SKe');
       const executions = [];
       for (const id of ids) {
         const r = await send('GET', '/api/v1/executions?workflowId=' + id + '&limit=3&includeData=false');
@@ -390,7 +452,7 @@ export async function runTask(input, dependencies = {}) {
           ],
         ];
         receipt.probes = [];
-        for (const [name, send, body, status] of tests) {
+        for (const [name, send, body, status] of state.scope === 'incremental' ? tests.slice(0, 2) : tests) {
           const r = await send('POST', endpoint, body);
           const expectedCode = {
             missing_machine: 'unauthorized',
@@ -423,6 +485,23 @@ export async function runTask(input, dependencies = {}) {
             fail('M04_ACCESS_ASSERTION_FAILED');
         }
         state.accessVerified = true;
+      } else if (phase === 'malformed') {
+        if (state.native?.errorHandler?.current?.active !== true) fail('M04_ERROR_WORKFLOW_NOT_PUBLISHED');
+        const send = sendJson(
+          'muhhammedsayed.app.n8n.cloud',
+          'public-callback-probe',
+          'no_machine',
+          'callback',
+        );
+        admit('gateway', 'WF-90-M04 bounded automatic error log');
+        const r = await send('POST', '/webhook/emr-apify-callback', { eventType: 'M04.INVALID.CALLBACK' });
+        if (r.status !== 500) fail('M04_AUTOMATIC_ERROR_PROBE_UNCONFIRMED');
+        receipt.callback = {
+          phase,
+          status: r.status,
+          providerCalls: 0,
+          limitation: 'Automatic error delivery requires exact native execution and database audit readback.',
+        };
       } else {
         // Only a terminal owned-run ID projected by the reviewed DB assertion
         // may supply a replay. Unknown-run deliberately uses a new fake ID.
@@ -490,6 +569,19 @@ export async function runTask(input, dependencies = {}) {
         send: () => fail('M04_PREPARE_NETWORK_FORBIDDEN'),
       });
       receipt = { ...receipt, ...prepared.public };
+      if (state.scope === 'incremental' && prepared.public.status === 'completed') {
+        state.orchestratorSelection = {
+          mode: 'backfill',
+          vimeo_account_ids: state.accountSnapshot
+            .filter((a) => a.platform === 'vimeo' && ['C130', 'C270', 'C226'].includes(a.company_code))
+            .map((a) => a.id),
+          instagram_account_ids: [...state.selection.instagram],
+          max_pages: 2,
+          page_size: 20,
+          results_limit: 50,
+          max_actor_starts: 2,
+        };
+      }
     } else if (task === 'Setup') {
       const meta = readFoundationVercelAuthMetadata();
       if (

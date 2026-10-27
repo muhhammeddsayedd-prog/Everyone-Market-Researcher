@@ -2,6 +2,9 @@
 param(
  [Parameter(Mandatory=$true)][ValidateSet('Inventory','ProviderMetadata','Setup','Stage','Observe','Probe','Restore')][string]$Task,
  [ValidatePattern('\A[a-z][a-z0-9-]{0,40}\z')][string]$Phase='default',
+ [switch]$Incremental,
+ [ValidateSet('history-pair','cursor','daily-vimeo','daily-instagram')][string]$Cohort,
+ [string[]]$AccountIds=@(),
  [switch]$CheckOnly
 )
 # One bounded product adapter. Persistent originals are read only; no Admin,
@@ -15,12 +18,15 @@ try {
   'Inventory' {@('default')}
   'ProviderMetadata' {@('default')}
   'Setup' {@('project','prepare','configure','poll','cleanup')}
-  'Stage' {@('stage','publish','machine','readback')}
+  'Stage' {if($Incremental){@('stage','publish','machine','readback','cohort')}else{@('stage','publish','machine','readback')}}
   'Observe' {@('default')}
-  'Probe' {@('default','replay','unknown')}
+  'Probe' {if($Incremental){@('default','unknown','malformed')}else{@('default','replay','unknown')}}
   'Restore' {@('native')}
  }
  if($Phase -cnotin @($allowedPhases)){throw 'M04_TASK_PHASE_BLOCKED'}
+ if($Phase -ceq 'cohort') {
+  if(-not $Incremental -or [string]::IsNullOrEmpty($Cohort) -or $AccountIds.Count -lt 1 -or $AccountIds.Count -gt 2 -or @($AccountIds|Where-Object{$_ -cnotmatch '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'}).Count){throw 'M04_COHORT_BLOCKED'}
+ } elseif(-not [string]::IsNullOrEmpty($Cohort) -or $AccountIds.Count){throw 'M04_COHORT_BLOCKED'}
  $stage='public_files'
  $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
  $runner=Join-Path $repo 'scripts\n8n\m04-dev-task.mjs'
@@ -60,7 +66,8 @@ try {
   $operationLock=[IO.File]::Open($lockPath,[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
   Set-M03DevPrivateAcl $lockPath $false
   Add-Type -AssemblyName System.Security
-  $statePath=Join-Path $directory 'state.dpapi';$state=[pscustomobject]@{};$stage='state_decrypt'
+  $stateName=if($Incremental){'incremental-state.dpapi'}else{'state.dpapi'}
+  $statePath=Join-Path $directory $stateName;$state=[pscustomobject]@{};$stage='state_decrypt'
   if(Test-Path -LiteralPath $statePath) {
    Assert-M03DevPrivateAcl $statePath $false
    $entry=Get-Item -LiteralPath $statePath -Force
@@ -103,6 +110,8 @@ try {
    }
   }
   $privateInput=[ordered]@{task=$Task;phase=$Phase;secrets=$selected;state=$state}
+  if($Incremental){$privateInput['scope']='incremental'}
+  if($Phase -ceq 'cohort'){$privateInput['cohort']=[ordered]@{key=$Cohort;account_ids=@($AccountIds)}}
   $inputJson=ConvertTo-Json -InputObject $privateInput -Depth 100 -Compress
   $inputBytes=[Text.UTF8Encoding]::new($false).GetBytes($inputJson)
   if($inputBytes.Length -gt 6291456){throw 'M04_INPUT_BLOCKED'}

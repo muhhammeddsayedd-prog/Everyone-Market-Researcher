@@ -8,6 +8,10 @@ import {
   buildNativeCollector,
   extendNativeCallback,
   withManualCollectorEntry,
+  withManualOrchestratorEntry,
+  buildNativeOrchestrator,
+  buildNativeCallback,
+  buildNativeErrorHandler,
 } from '../../n8n/collectors/build-native-collectors.mjs';
 import {
   foundationRuntimeGraphHash,
@@ -18,6 +22,9 @@ import {
 import { prepareFoundationRuntimeMachinePatch } from './foundation-runtime-machine.mjs';
 
 const keys = ['WF-10', 'WF-11', 'WF-19'];
+const incrementalApprovalId = '123e88b6-5920-4e54-832a-ad6d87c22675';
+const errorKey = 'WF-90-M04';
+const historicalVimeoPair = ['985a57dd-7934-422d-9d18-4e8ca59fc197', '8fefa9a1-3637-43db-843d-97caa9afcc79'];
 const machine = { id: 'EmrM03Machine19', name: 'M03 foundation machine [dev]', type: 'httpCustomAuth' };
 const closedFoundationDispatch = {
   name: 'Confirm finish and dispatch stubs',
@@ -122,6 +129,8 @@ function withoutClosedFoundationDispatch(graph) {
  * before mutation phases; pending intent is also set before injected send. */
 export async function runNativeTask({ phase, state, send, bindings, repo, machineToken }) {
   const receipt = { phase, status: 'blocked', code: null, requestCount: 0, needsReconciliation: false };
+  const incremental = state.scope === 'incremental';
+  const originals = incremental ? ['WF-00', ...keys] : keys;
   const n = (state.native ??= {
     snapshots: {},
     current: {},
@@ -131,17 +140,39 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
     pending: null,
     events: [],
   });
-  const request = async (method, path, value = null) => {
+  const request = async (method, path, value = null, statuses = [200]) => {
     receipt.requestCount++;
     const response = await send(method, path, value);
-    if (!object(response) || response.status !== 200 || !object(response.body)) fail();
+    if (!object(response) || !statuses.includes(response.status) || !object(response.body)) fail();
     return response.body;
   };
+  const managedRef = (key) => {
+    if (key !== errorKey) {
+      if (!originals.includes(key)) fail('WORKFLOW_IDENTITY');
+      return bindings.workflowRefs[key];
+    }
+    const id = n.errorHandler?.id;
+    if (
+      !incremental ||
+      typeof id !== 'string' ||
+      !/^[A-Za-z0-9_-]{1,128}$/.test(id) ||
+      Object.values(bindings.workflowRefs).some((r) => r.id === id) ||
+      n.errorHandler.approvalId !== incrementalApprovalId
+    )
+      fail('WORKFLOW_IDENTITY');
+    return { id, name: 'WF-90-M04 · Collector error handler [dev]' };
+  };
   const path = (key, suffix = '?excludePinnedData=true') =>
-    '/api/v1/workflows/' + bindings.workflowRefs[key].id + suffix;
+    '/api/v1/workflows/' + managedRef(key).id + suffix;
   const read = async (key) => {
     const dto = await request('GET', path(key));
-    return { dto, metadata: workflowMetadata(dto, key, bindings) };
+    return {
+      dto,
+      metadata: workflowMetadata(dto, key, {
+        ...bindings,
+        workflowRefs: { ...bindings.workflowRefs, [key]: managedRef(key) },
+      }),
+    };
   };
   const checkpoint = (event) => {
     n.events.push({ ...event, observedAt: new Date().toISOString() });
@@ -194,8 +225,8 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
     if (!Object.hasOwn(wire.settings, 'errorWorkflow')) wire.settings.errorWorkflow = 'DEFAULT';
     n.pending = { key, action, before: before.metadata, targetHash: hash(target) };
     const saved = await request('PUT', path(key, '?publishIfActive=false'), wire);
-    if (saved.id !== bindings.workflowRefs[key].id || !/^[A-Za-z0-9_-]{1,128}$/.test(saved.versionId ?? ''))
-      fail();
+    if (saved.id !== managedRef(key).id || !/^[A-Za-z0-9_-]{1,128}$/.test(saved.versionId ?? '')) fail();
+    n.pending.savedVersionId = saved.versionId;
     const after = await read(key);
     if (
       after.metadata.versionId !== saved.versionId ||
@@ -210,12 +241,155 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
     completeIntent();
     checkpoint({ action, key, ...after.metadata });
   };
+  const approvedPlan = () => {
+    const plan = state.orchestratorSelection;
+    const selected = state.selection;
+    const uuid = (id) =>
+      typeof id === 'string' &&
+      /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(id);
+    const setEqual = (a, b) =>
+      Array.isArray(a) && Array.isArray(b) && isDeepStrictEqual([...a].sort(), [...b].sort());
+    if (
+      state.approvalId !== incrementalApprovalId ||
+      !/^[a-f0-9]{40}$/.test(state.sourceHead ?? '') ||
+      !object(selected) ||
+      ['vimeo', 'instagram'].some(
+        (kind) =>
+          !Array.isArray(selected[kind]) ||
+          selected[kind].length !== 5 ||
+          selected[kind].some((id) => !uuid(id)) ||
+          new Set(selected[kind]).size !== 5,
+      ) ||
+      new Set([...selected.vimeo, ...selected.instagram]).size !== 10 ||
+      !historicalVimeoPair.every((id) => selected.vimeo.includes(id)) ||
+      !object(plan) ||
+      !setEqual(
+        plan.vimeo_account_ids,
+        selected.vimeo.filter((id) => !historicalVimeoPair.includes(id)),
+      ) ||
+      !setEqual(plan.instagram_account_ids, selected.instagram) ||
+      !isDeepStrictEqual(
+        Object.fromEntries(Object.entries(plan).filter(([k]) => !k.endsWith('_account_ids'))),
+        {
+          mode: 'backfill',
+          max_pages: 2,
+          page_size: 20,
+          results_limit: 50,
+          max_actor_starts: 2,
+        },
+      )
+    )
+      fail('SELECTION');
+    return plan;
+  };
+  const verifyPublication = (after, before, graph, active) => {
+    if (
+      after.metadata.active !== active ||
+      after.metadata.activeVersionId !== (active ? before.versionId : null) ||
+      after.metadata.versionId !== before.versionId ||
+      after.metadata.graphHash !== before.graphHash ||
+      !isDeepStrictEqual(after.metadata.tags, before.tags) ||
+      !isDeepStrictEqual(after.metadata.readonlySettings, before.readonlySettings) ||
+      (active &&
+        (!object(after.dto.activeVersion) ||
+          after.dto.activeVersion.workflowId !== before.id ||
+          after.dto.activeVersion.versionId !== before.versionId ||
+          !sameBody(
+            { ...after.dto.activeVersion, name: after.dto.name, settings: after.dto.settings },
+            graph.workflow,
+          )))
+    )
+      fail('DRIFT');
+  };
+  const setPublication = async (key, graph, active) => {
+    const before = await read(key);
+    unchanged(before.metadata, n.current[key]);
+    if (
+      before.metadata.active === active &&
+      before.metadata.activeVersionId === (active ? before.metadata.versionId : null)
+    )
+      return;
+    if (active && n.closedPublication?.[key] === before.metadata.versionId) fail('PUBLISH_ATTEMPT_CLOSED');
+    n.pending = { key, action: active ? 'publish' : 'unpublish', before: before.metadata };
+    await request(
+      'POST',
+      path(key, active ? '/publish' : '/unpublish'),
+      active ? { versionId: before.metadata.versionId } : null,
+    );
+    const after = await read(key);
+    verifyPublication(after, before.metadata, graph, active);
+    n.current[key] = after.metadata;
+    if (key === errorKey) n.errorHandler.current = after.metadata;
+    if (key === 'WF-19') n.published = active;
+    completeIntent();
+    checkpoint({ action: active ? 'published' : 'unpublished', key, ...after.metadata });
+  };
+  const ensureOwnedErrorHandler = async () => {
+    const graph = buildNativeErrorHandler(bindings, {
+      audience: state.deployment?.audience,
+      credential: machine,
+    });
+    // Exact approval marker belongs to the created graph and survives retention.
+    graph.workflow.nodes[0].notes = 'emr-m04-incremental:' + incrementalApprovalId;
+    n.staged[errorKey] = graph;
+    if (!n.errorHandler) {
+      n.pending = {
+        key: errorKey,
+        action: 'create',
+        targetHash: hash(graph.workflow),
+        approvalId: incrementalApprovalId,
+      };
+      const created = await request(
+        'POST',
+        '/api/v1/workflows',
+        { ...body(graph.workflow), projectId: bindings.projectId },
+        [200, 201],
+      );
+      if (
+        typeof created.id !== 'string' ||
+        !/^[A-Za-z0-9_-]{1,128}$/.test(created.id) ||
+        Object.values(bindings.workflowRefs).some((r) => r.id === created.id)
+      )
+        fail('WORKFLOW_IDENTITY');
+      n.errorHandler = {
+        id: created.id,
+        approvalId: incrementalApprovalId,
+        createdGraphHash: hash(graph.workflow),
+      };
+      n.pending.savedVersionId = created.versionId;
+      const after = await read(errorKey);
+      if (
+        after.metadata.active ||
+        after.metadata.activeVersionId !== null ||
+        after.metadata.versionId !== created.versionId ||
+        !sameBody(after.dto, graph.workflow)
+      )
+        fail('DRIFT');
+      n.snapshots[errorKey] = structuredClone(after.dto);
+      n.current[errorKey] = after.metadata;
+      n.errorHandler.current = after.metadata;
+      completeIntent();
+      checkpoint({ action: 'created_owned_error_handler', key: errorKey, ...after.metadata });
+    } else {
+      managedRef(errorKey);
+      const after = await read(errorKey);
+      unchanged(after.metadata, n.current[errorKey]);
+      if (n.errorHandler.createdGraphHash !== hash(graph.workflow) || !sameBody(after.dto, graph.workflow))
+        fail('DRIFT');
+    }
+    // n8n@2.43.5 ErrorWorkflowValidationService106-123 and WorkflowService162-195:
+    // a changed settings.errorWorkflow must target a published Error Trigger.
+    // This is required even when the consumer itself remains an inactive draft.
+    await setPublication(errorKey, graph, true);
+    return n.errorHandler.id;
+  };
   try {
     if (
       typeof send !== 'function' ||
       bindings.environment !== 'dev' ||
       bindings.projectId !== 'pHvQjDmjxVZ3KQLT' ||
       bindings.instanceUrl !== 'https://muhhammedsayed.app.n8n.cloud' ||
+      (state.scope !== undefined && state.scope !== 'incremental') ||
       !Array.isArray(n.events)
     )
       fail('CONFIG');
@@ -223,7 +397,7 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
       if (Object.keys(n.snapshots).length || n.pending || n.machine.pending) fail('INVENTORY_EXISTS');
       // Complete the six allocated metadata reads before reporting drift. Full
       // DTOs remain in encrypted coordinator state, never in this receipt.
-      for (const key of keys) {
+      for (const key of originals) {
         const dto = await request('GET', path(key));
         n.snapshots[key] = structuredClone(dto);
       }
@@ -237,7 +411,7 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
       }
       n.machine.baseline = structuredClone(n.credentials.machine);
       n.machine.current = structuredClone(n.credentials.machine);
-      for (const key of keys) {
+      for (const key of originals) {
         const snapshot = n.snapshots[key],
           meta = workflowMetadata(snapshot, key, bindings);
         const reviewed = JSON.parse(readFileSync(join(repo, 'n8n/workflows', key + '.json'), 'utf8'));
@@ -256,14 +430,28 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
         n.current[key] = meta;
       }
       n.inventoryComplete = true;
-      checkpoint({ action: 'inventory_verified', workflowIds: keys.map((key) => n.current[key].id) });
+      checkpoint({ action: 'inventory_verified', workflowIds: originals.map((key) => n.current[key].id) });
     } else if (phase === 'machine') {
       if (!n.inventoryComplete || n.pending || n.machine.pending || n.machine.rebound)
         fail('RECONCILIATION_REQUIRED');
       await changeMachine(false);
     } else if (phase === 'stage') {
       if (!n.inventoryComplete || n.pending || n.machine.pending) fail('RECONCILIATION_REQUIRED');
-      if (Object.keys(n.staged).length) {
+      if (incremental) {
+        if (n.stageComplete || n.published) fail('RECONCILIATION_REQUIRED');
+        const plan = approvedPlan();
+        const handlerId = await ensureOwnedErrorHandler();
+        const transport = { audience: state.deployment?.audience, credential: machine };
+        n.staged['WF-00'] = withManualOrchestratorEntry(
+          buildNativeOrchestrator(bindings, transport, plan, handlerId),
+        );
+        n.staged['WF-10'] = buildNativeCollector(bindings, transport, 'vimeo', handlerId);
+        n.staged['WF-11'] = buildNativeCollector(bindings, transport, 'instagram', handlerId);
+        n.staged['WF-19'] = buildNativeCallback(bindings, transport, handlerId);
+        for (const key of originals) await save(key, n.staged[key].workflow, 'staged');
+        n.stageComplete = true;
+        receipt.errorWorkflow = { key: errorKey, ...n.errorHandler.current };
+      } else if (Object.keys(n.staged).length) {
         if (
           !n.stageComplete ||
           n.published ||
@@ -322,12 +510,91 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
         n.stageComplete = true;
         receipt.closedFoundationDispatch = { ...closedFoundationDispatch, disabled: true };
       }
+    } else if (phase === 'cohort') {
+      if (
+        !incremental ||
+        !n.stageComplete ||
+        !n.published ||
+        !n.machine.rebound ||
+        n.pending ||
+        n.machine.pending
+      )
+        fail('RECONCILIATION_REQUIRED');
+      const plan = approvedPlan(),
+        cohort = state.cohort;
+      if (
+        !object(cohort) ||
+        Object.keys(cohort).length !== 2 ||
+        !Array.isArray(cohort.account_ids) ||
+        new Set(cohort.account_ids).size !== cohort.account_ids.length
+      )
+        fail('SELECTION');
+      const choices = {
+        'history-pair': {
+          kind: 'vimeo',
+          count: 2,
+          allowed: historicalVimeoPair,
+          bounds: { mode: 'backfill', max_pages: 2, page_size: 5, results_limit: 5, max_actor_starts: 2 },
+        },
+        cursor: {
+          kind: 'vimeo',
+          count: 1,
+          allowed: plan.vimeo_account_ids,
+          bounds: { mode: 'backfill', max_pages: 2, page_size: 20, results_limit: 5, max_actor_starts: 2 },
+        },
+        'daily-vimeo': {
+          kind: 'vimeo',
+          count: 1,
+          allowed: state.selection.vimeo,
+          bounds: { mode: 'daily', max_pages: 1, page_size: 20, results_limit: 20, max_actor_starts: 1 },
+        },
+        'daily-instagram': {
+          kind: 'instagram',
+          count: 1,
+          allowed: state.selection.instagram,
+          bounds: { mode: 'daily', max_pages: 1, page_size: 5, results_limit: 5, max_actor_starts: 2 },
+        },
+      };
+      const selected = choices[cohort.key];
+      if (
+        !selected ||
+        cohort.account_ids.length !== selected.count ||
+        cohort.account_ids.some((id) => !selected.allowed.includes(id))
+      )
+        fail('SELECTION');
+      const handler = await read(errorKey);
+      unchanged(handler.metadata, n.current[errorKey]);
+      if (!handler.metadata.active || handler.metadata.activeVersionId !== handler.metadata.versionId)
+        fail('DRIFT');
+      const key = selected.kind === 'vimeo' ? 'WF-10' : 'WF-11';
+      const graph = withManualCollectorEntry(
+        buildNativeCollector(
+          bindings,
+          { audience: state.deployment?.audience, credential: machine },
+          selected.kind,
+          n.errorHandler.id,
+        ),
+        cohort.account_ids,
+        selected.bounds,
+      );
+      n.staged[key] = graph;
+      await save(key, graph.workflow, 'cohort_staged');
+      receipt.cohort = {
+        key: cohort.key,
+        workflowKey: key,
+        ...n.current[key],
+        input: graph.manualEntry.input,
+      };
     } else if (phase === 'publish') {
       if (!n.stageComplete || !n.machine.rebound || n.pending || n.machine.pending || n.published) fail();
       const before = await read('WF-19');
       unchanged(before.metadata, n.current['WF-19']);
       if (before.metadata.active || before.metadata.activeVersionId !== null) fail('DRIFT');
-      if (n.publishAttemptClosedVersion === before.metadata.versionId) fail('PUBLISH_ATTEMPT_CLOSED');
+      if (
+        n.publishAttemptClosedVersion === before.metadata.versionId ||
+        (incremental && n.closedPublication?.['WF-19'] === before.metadata.versionId)
+      )
+        fail('PUBLISH_ATTEMPT_CLOSED');
       n.pending = { key: 'WF-19', action: 'publish', before: before.metadata };
       await request('POST', path('WF-19', '/publish'), { versionId: before.metadata.versionId });
       const after = await read('WF-19');
@@ -349,21 +616,63 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
       checkpoint({ action: 'published', key: 'WF-19', ...after.metadata });
     } else if (phase === 'readback') {
       if (
-        !n.stageComplete ||
+        (!n.stageComplete && !incremental) ||
+        (incremental && !n.inventoryComplete) ||
         n.machine.pending ||
-        (n.pending && (n.pending.key !== 'WF-19' || n.pending.action !== 'publish')) ||
+        (n.pending && !incremental && (n.pending.key !== 'WF-19' || n.pending.action !== 'publish')) ||
         !/^[a-f0-9]{40}$/.test(state.sourceHead ?? '')
       )
         fail();
+      if (incremental && n.pending?.action === 'create' && !n.errorHandler) fail('CREATE_OUTCOME_UNKNOWN');
+      const managed = incremental && n.errorHandler ? [...originals, errorKey] : originals;
       // Three read-only requests, including after a rejected or lost publish
       // response. Never retry publication while reconciling its outcome.
       const actual = {};
-      for (const key of keys) actual[key] = await read(key);
+      for (const key of managed) actual[key] = await read(key);
       const pending = n.pending;
       let reconciledPublication = null;
-      for (const key of keys) {
+      for (const key of managed) {
         const after = actual[key];
         const before = n.current[key];
+        if (incremental && pending?.key === key) {
+          const target = pending.action === 'restored' ? n.snapshots[key] : n.staged[key]?.workflow;
+          if (pending.action === 'create') {
+            if (
+              key !== errorKey ||
+              after.metadata.active ||
+              after.metadata.activeVersionId !== null ||
+              after.metadata.versionId !== pending.savedVersionId ||
+              hash(after.dto) !== pending.targetHash ||
+              !sameBody(after.dto, target)
+            )
+              fail('DRIFT');
+            n.snapshots[key] = structuredClone(after.dto);
+          } else if (['publish', 'unpublish'].includes(pending.action)) {
+            unchanged(pending.before, before);
+            const active = after.metadata.active;
+            verifyPublication(after, before, n.staged[key], active);
+            reconciledPublication = active ? 'published' : 'not_active';
+            if (pending.action === 'publish' && !active) {
+              (n.closedPublication ??= {})[key] = before.versionId;
+            }
+          } else {
+            if (
+              !target ||
+              after.metadata.active ||
+              after.metadata.activeVersionId !== null ||
+              !sameBody(after.dto, target) ||
+              (pending.savedVersionId && after.metadata.versionId !== pending.savedVersionId) ||
+              !isDeepStrictEqual(after.metadata.tags, before.tags) ||
+              !isDeepStrictEqual(after.metadata.readonlySettings, before.readonlySettings)
+            )
+              fail('DRIFT');
+          }
+          continue;
+        }
+        if (incremental) {
+          unchanged(after.metadata, before);
+          continue;
+        }
         if (key !== 'WF-19' || !pending) {
           unchanged(after.metadata, before);
           continue;
@@ -396,7 +705,7 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
       // The graph is the exact acknowledged source-bound definition; users,
       // native response extras, static data and execution/pinned data are omitted.
       const directory = join(repo, 'milestones/M04-collectors-vimeo-instagram/evidence');
-      const exports = keys.map((key) => {
+      const exports = managed.map((key) => {
         const { dto, metadata } = actual[key];
         return {
           filename: 'native-saved-' + key + '.json',
@@ -409,6 +718,14 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
             sourceHead: state.sourceHead,
             graphHash: metadata.graphHash,
             evidence: 'native_saved_definition_only',
+            ...(incremental
+              ? {
+                  definitionOrigin:
+                    n.staged[key] && sameBody(dto, n.staged[key].workflow)
+                      ? 'maintained_m04_source'
+                      : 'captured_baseline',
+                }
+              : {}),
             workflow: {
               name: dto.name,
               nodes: structuredClone(dto.nodes),
@@ -440,14 +757,17 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
           writeFileSync(filename, JSON.stringify(entry.record, null, 2) + '\n', { flag: 'wx' });
       }
       if (pending) {
-        n.current['WF-19'] = actual['WF-19'].metadata;
-        n.published = reconciledPublication === 'published';
-        if (!n.published) n.publishAttemptClosedVersion = pending.before.versionId;
+        const key = incremental ? pending.key : 'WF-19';
+        n.current[key] = actual[key].metadata;
+        if (key === errorKey) n.errorHandler.current = actual[key].metadata;
+        if (key === 'WF-19')
+          n.published = incremental ? actual[key].metadata.active : reconciledPublication === 'published';
+        if (!incremental && !n.published) n.publishAttemptClosedVersion = pending.before.versionId;
         completeIntent();
         checkpoint({
-          action: 'publish_readback',
+          action: incremental ? 'mutation_readback' : 'publish_readback',
           outcome: reconciledPublication,
-          ...actual['WF-19'].metadata,
+          ...actual[key].metadata,
         });
       }
       receipt.exports = exports.map(({ filename, record }) => ({
@@ -483,7 +803,7 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
           n.published = false;
           completeIntent();
         }
-        for (const key of keys) {
+        for (const key of originals) {
           if (n.current[key].graphHash === hash(n.snapshots[key])) {
             const fresh = await read(key);
             unchanged(fresh.metadata, n.current[key]);
@@ -491,6 +811,7 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
           }
           await save(key, n.snapshots[key], 'restored');
         }
+        if (incremental && n.errorHandler) await setPublication(errorKey, n.staged[errorKey], false);
         n.restoreComplete = true;
       } finally {
         // A conflicting workflow never prevents an independent, already-owned
@@ -512,6 +833,8 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
         'RECONCILIATION_REQUIRED',
         'PUBLISH_ATTEMPT_CLOSED',
         'DEPENDENCY_PUBLISHED',
+        'SELECTION',
+        'CREATE_OUTCOME_UNKNOWN',
       ].map((code) => 'M04_NATIVE_' + code),
     );
     receipt.status = 'blocked';
@@ -519,7 +842,9 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
     receipt.needsReconciliation = true;
     checkpoint({ action: 'blocked', phase, code: receipt.code });
   }
-  receipt.workflows = keys.filter((key) => n.current[key]).map((key) => ({ key, ...n.current[key] }));
+  receipt.workflows = [...originals, ...(incremental && n.errorHandler ? [errorKey] : [])]
+    .filter((key) => n.current[key])
+    .map((key) => ({ key, ...n.current[key] }));
   receipt.credentials = Object.values(n.credentials).map(({ id, name, type, projectReadback }) => ({
     id,
     name,

@@ -1,7 +1,56 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { bindOwnedInstagramReplay, runTask, validOperation } from './m04-dev-task.mjs';
+import {
+  bindOwnedInstagramReplay,
+  checkM04IncrementalCharge,
+  runTask,
+  validOperation,
+} from './m04-dev-task.mjs';
+
+test('incremental ceilings retain historical charges and count Vercel inside Management', () => {
+  assert.doesNotThrow(() =>
+    checkM04IncrementalCharge({ management: 296, control: 1446, combined: 1742, vercel: 100 }, 99, 'vercel'),
+  );
+  for (const key of ['management', 'control', 'combined', 'vercel']) {
+    const totals = { management: 296, control: 1446, combined: 1742, vercel: 100 };
+    totals[key]++;
+    if (key === 'management' || key === 'control') totals.combined++;
+    if (key === 'combined') totals.management++;
+    assert.throws(() => checkM04IncrementalCharge(totals, 99, 'vercel'), /ALLOWANCE_EXHAUSTED/);
+  }
+  assert.throws(
+    () =>
+      checkM04IncrementalCharge({ management: 88, control: 282, combined: 370, vercel: 36 }, 100, 'vercel'),
+    /CATEGORY_EXHAUSTED/,
+  );
+  assert.throws(
+    () =>
+      checkM04IncrementalCharge({ management: 88, control: 282, combined: 370, vercel: 36 }, 61, 'database'),
+    /CATEGORY_EXHAUSTED/,
+  );
+});
+
+test('invalid counters or cross-scope state cannot admit incremental work', async () => {
+  for (const value of [NaN, Infinity, -1, 0.5])
+    assert.throws(
+      () =>
+        checkM04IncrementalCharge({ management: value, control: 282, combined: 370, vercel: 36 }, 0, 'n8n'),
+      /LEDGER_INVALID/,
+    );
+  assert.throws(
+    () => checkM04IncrementalCharge({ management: 88, control: 282, combined: 0, vercel: 36 }, 0, 'n8n'),
+    /LEDGER_INVALID/,
+  );
+  await assert.rejects(
+    runTask({ task: 'ProviderMetadata', scope: 'incremental', state: { scope: 'other' } }),
+    /SCOPE_INVALID/,
+  );
+  await assert.rejects(
+    runTask({ task: 'ProviderMetadata', scope: 'incremental', cohort: { key: 'cursor' } }),
+    /SCOPE_INVALID/,
+  );
+});
 test('only concrete M04 task and phase pairs are accepted', () => {
   assert.equal(validOperation('ProviderMetadata', 'default'), true);
   for (const [task, phase] of [
@@ -65,6 +114,43 @@ const good = [
     },
   },
 ];
+
+test('incremental malformed callback logs only the fixed status and reserves its error audit', async () => {
+  const charges = [],
+    calls = [];
+  const result = await runTask(
+    {
+      task: 'Probe',
+      phase: 'malformed',
+      scope: 'incremental',
+      state: {
+        deployment: { audience: 'https://everyone-market-researcher-synthetic.vercel.app' },
+        native: { published: true, errorHandler: { current: { active: true } } },
+      },
+    },
+    {
+      charge: (...a) => charges.push(a),
+      result() {},
+      jsonTransport() {
+        return {
+          async send(method, path, body) {
+            calls.push({ method, path, body });
+            return { status: 500, body: { message: 'private-native-error-must-not-escape' } };
+          },
+          close() {
+            return true;
+          },
+        };
+      },
+    },
+  );
+  assert.equal(result.public.status, 'completed');
+  assert.equal(result.public.callback.status, 500);
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0].body, { eventType: 'M04.INVALID.CALLBACK' });
+  assert.equal(charges.filter(([category]) => category === 'gateway').length, 1);
+  assert.equal(JSON.stringify(result).includes('private-native-error'), false);
+});
 test('metadata uses one authenticated identity read and three public pinned actor/build reads', async () => {
   const t = transport(structuredClone(good));
   const r = await runTask(

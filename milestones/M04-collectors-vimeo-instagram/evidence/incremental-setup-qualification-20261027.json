@@ -1,0 +1,60 @@
+{
+  "observedAt": "2026-10-27T15:50:04.777Z",
+  "scope": "approved M04 incremental setup correction",
+  "approvalId": "123e88b6-5920-4e54-832a-ad6d87c22675",
+  "reviewedHead": "2c450f40557e7582525d96b5dd63bba2338baa0d",
+  "local": {
+    "nativeConsumer": 23,
+    "builders": 33,
+    "vercelTasks": 17,
+    "coordinator": 13,
+    "transport": 15,
+    "rootWorkspaceTypecheck": 0,
+    "scopeCipherIsolation": "1/1 actual Windows synthetic CurrentUser DPAPI test; closed sample ciphertext unchanged",
+    "databaseGeneratedMutators": "36/36 database tests including actual local PostgreSQL rollback, zero skips",
+    "finalSafety": "40/40 Windows/DB/coordinator safety assertions passed; two local-database cases excluded in this no-opt-in invocation and separately passed in the 36-test local run"
+  },
+  "review": {
+    "native": "independent review clear; actual pinned publication contract reconciled",
+    "database": "full-row CAS/terminal ownership reviewed; enum cast and scope-case bypass fixed before hosted writes",
+    "coordinator": "counter sanity/state-scope/cohort restrictions reviewed and fixed"
+  },
+  "hostedReadOnly": {
+    "databaseCommands": 1,
+    "providerHttp": 4,
+    "n8nHttp": 7,
+    "vercelHttp": 2,
+    "newActors": 0,
+    "mutations": 0
+  },
+  "cumulative": {
+    "management": 97,
+    "control": 287,
+    "combined": 384,
+    "vercel": 38,
+    "nativeActions": 5,
+    "actorStarts": 2,
+    "actorUsd": 0.046
+  },
+  "limits": {
+    "management": 296,
+    "control": 1446,
+    "combined": 1742,
+    "vercel": 100,
+    "nativeActions": 17,
+    "actorStarts": 10,
+    "actorUsd": 8.046
+  },
+  "limitations": [
+    "Local mocked native tests are not Cloud publication or automatic Error Trigger proof",
+    "New source/data evidence remains pending the approved execution",
+    "Required normal CI on committed correction must pass before staging"
+  ],
+  "preserved": [
+    "17 applied dev migrations and hashes",
+    "accepted representative sample",
+    "all historical charges",
+    "persistent encrypted originals and closed state.dpapi",
+    "production and closed M03 dependencies untouched"
+  ]
+}

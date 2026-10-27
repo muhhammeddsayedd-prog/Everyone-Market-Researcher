@@ -713,7 +713,7 @@ export function buildNativeCollector(input, transport, kind, errorWorkflowId) {
 /** Native Manual Trigger has no JSON input parameter. Attach only the fixed
  * representative selection to an existing collector; this does not save, run,
  * publish or alter the ordinary generated blueprints. */
-export function withManualCollectorEntry(graph, accountIds) {
+export function withManualCollectorEntry(graph, accountIds, bounds) {
   const bad = () => {
     throw Error('M04_MANUAL_ENTRY_INVALID');
   };
@@ -733,13 +733,13 @@ export function withManualCollectorEntry(graph, accountIds) {
     Object.keys(graph.workflow.pinData ?? {}).length !== 0 ||
     graph.manualEntry !== undefined ||
     !Array.isArray(accountIds) ||
-    accountIds.length !== 2 ||
+    (bounds === undefined && accountIds.length !== 2) ||
     accountIds.some(
       (id) =>
         typeof id !== 'string' ||
         !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(id),
     ) ||
-    new Set(accountIds.map((id) => id.toLowerCase())).size !== 2
+    new Set(accountIds.map((id) => id.toLowerCase())).size !== accountIds.length
   )
     bad();
   const original = graph.workflow;
@@ -772,12 +772,65 @@ export function withManualCollectorEntry(graph, accountIds) {
     },
     triggerNodeName = 'Manual representative collection',
     inputNodeName = 'Fixed representative selection';
+  if (bounds !== undefined) {
+    if (
+      !bounds ||
+      typeof bounds !== 'object' ||
+      Array.isArray(bounds) ||
+      Object.keys(bounds).length !== 5 ||
+      Object.keys(bounds).some(
+        (key) => !['mode', 'max_pages', 'page_size', 'results_limit', 'max_actor_starts'].includes(key),
+      )
+    )
+      bad();
+    Object.assign(input, bounds, { limit: accountIds.length });
+    try {
+      runtime.initializeCollector(
+        input,
+        graph.key === 'WF-10' ? 'vimeo' : 'instagram',
+        '1',
+        '2026-10-27T00:00:00Z',
+      );
+    } catch {
+      bad();
+    }
+  }
   const manual = node(graph.key, triggerNodeName, 'manualTrigger', {}, [0, 200]),
     fixed = code(graph.key, inputNodeName, 'return [{json:' + JSON.stringify(input) + '}];', [200, 200]);
   if (original.nodes.some((n) => [manual.id, fixed.id].includes(n.id))) bad();
   result.workflow.nodes.push(manual, fixed);
   Object.assign(result.workflow.connections, line(triggerNodeName, inputNodeName, 'Initialize collector'));
   result.manualEntry = { triggerNodeName, inputNodeName, input };
+  return result;
+}
+
+/** The orchestrator already embeds its reviewed inputs; a native Manual Trigger
+ * only enters that fixed node and cannot supply a selector or workflow ID. */
+export function withManualOrchestratorEntry(graph) {
+  if (
+    !graph ||
+    graph.key !== 'WF-00' ||
+    graph.kind !== 'native-json-blueprint' ||
+    graph.hostedAcceptance !== false ||
+    graph.liveEnabled !== false ||
+    graph.workflow?.active !== false ||
+    graph.workflow.settings?.saveManualExecutions !== false ||
+    graph.workflow.settings?.saveDataSuccessExecution !== 'none' ||
+    graph.workflow.settings?.saveDataErrorExecution !== 'none' ||
+    graph.workflow.settings?.saveExecutionProgress !== false ||
+    Object.keys(graph.workflow.pinData ?? {}).length !== 0 ||
+    graph.workflow.nodes.filter(
+      (n) => n.name === 'Fixed M04 collector selection' && n.type === 'n8n-nodes-base.code',
+    ).length !== 1 ||
+    graph.workflow.nodes.some((n) =>
+      ['n8n-nodes-base.manualTrigger', 'n8n-nodes-base.scheduleTrigger'].includes(n.type),
+    )
+  )
+    throw Error('M04_MANUAL_ENTRY_INVALID');
+  const result = structuredClone(graph),
+    name = 'Manual selected M04 collection';
+  result.workflow.nodes.push(node(graph.key, name, 'manualTrigger', {}, [0, 200]));
+  Object.assign(result.workflow.connections, line(name, 'Fixed M04 collector selection'));
   return result;
 }
 

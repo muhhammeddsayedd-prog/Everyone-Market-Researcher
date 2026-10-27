@@ -70,6 +70,7 @@ foreach($kind in @('Management','Writer','ApifyRead')) {
  $secure=ConvertTo-SecureString ('SYNTHETIC_'+$kind+'_LOCAL_ONLY') -AsPlainText -Force
  try{$bytes=[Text.Encoding]::ASCII.GetBytes((ConvertFrom-SecureString $secure));Write-M03DevPrivateFile -Path (Get-M03DevCredentialSpec $kind).Source -Bytes $bytes}finally{$secure.Dispose();[Array]::Clear($bytes,0,$bytes.Length)}
 }
+
 $directory=Join-Path $env:LOCALAPPDATA 'Everyone-Market-Radar-Private\\foundation\\df4f29ec-e2dc-4d82-a276-62a4e695e6f9'
 $null=[IO.Directory]::CreateDirectory($directory);Set-M03DevPrivateAcl $directory $true
 $secure=ConvertTo-SecureString 'SYNTHETIC_Machine_LOCAL_ONLY' -AsPlainText -Force
@@ -244,5 +245,29 @@ $acl=[Security.AccessControl.FileSecurity]::new();$acl.SetOwner([Security.Princi
         code: 'M04_BOUNDED_TASK_BLOCKED',
         stage: 'private_acl',
       });
+    }),
+);
+
+test(
+  'incremental scope preserves the closed sample ciphertext and uses only its new purpose state',
+  { skip: !windows },
+  () =>
+    fixture((f) => {
+      initialize(f);
+      const directory = join(f.directory, 'local/Everyone-Market-Radar-Private/m04');
+      mkdirSync(directory, { recursive: true });
+      ps(
+        f.directory,
+        `. ${q(f.helper)}; Set-M03DevPrivateAcl ${q(directory)} $true; Write-Output 'private-test-directory-ready'`,
+      );
+      const previous = Buffer.from('closed sample opaque ciphertext retained');
+      writeFileSync(join(directory, 'state.dpapi'), previous);
+      writeFileSync(
+        f.runner,
+        `let raw='';for await(const b of process.stdin)raw+=b;const x=JSON.parse(raw);if(x.scope!=='incremental'||Object.keys(x.state).length)throw Error('scope');process.stdout.write(JSON.stringify({public:{status:'completed'},private:{scope:'incremental',marker:1}}));`,
+      );
+      ps(f.directory, `& ${q(f.entry)} -Task ProviderMetadata -Incremental`);
+      assert.deepEqual(readFileSync(join(directory, 'state.dpapi')), previous);
+      assert.ok(readFileSync(join(directory, 'incremental-state.dpapi')).length > 20);
     }),
 );

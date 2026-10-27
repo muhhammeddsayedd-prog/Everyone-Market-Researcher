@@ -3,6 +3,8 @@ param(
   [ValidateSet('Preflight','Apply','Postcheck','Query')][string]$Phase='Preflight',
   [string]$QueryFile='',
   [string]$QuerySha256='',
+  [ValidateSet('Representative','Incremental')][string]$Scope='Representative',
+  [switch]$ReadOnly,
   [switch]$CheckOnly
 )
 
@@ -202,6 +204,8 @@ function Get-M04ExpectedColumns {
 $exitCode=1;$historyFile=$null;$catalogFile=$null;$queryCopy=$null
 try{
   $null=M04-File $repo $true
+  if(($Scope -eq 'Incremental' -or $ReadOnly) -and $Phase -cne 'Query'){throw 'M04_QUERY_BLOCKED'}
+  if($Scope -eq 'Incremental'){$receipt['scope']='incremental';$receipt['readOnly']=$ReadOnly.IsPresent}
   if(($Phase -ceq 'Query') -ne (-not [string]::IsNullOrEmpty($QueryFile) -and -not [string]::IsNullOrEmpty($QuerySha256))){throw 'M04_QUERY_BLOCKED'}
   if($Phase -cne 'Query' -and ($QueryFile -or $QuerySha256)){throw 'M04_QUERY_BLOCKED'}
   $queryOriginal=if($Phase -ceq 'Query'){M04-QueryPath $QueryFile $QuerySha256}else{$null}
@@ -288,6 +292,7 @@ do $m04_identity$ begin
  end if;
 end $m04_identity$;
 '@
+      if($ReadOnly){$identityGuard=$identityGuard -replace '\Abegin;\r?\n', "begin;`nset transaction read only;`n"}
       # Reviewed public Query files are transaction bodies, without top-level
       # BEGIN/COMMIT/ROLLBACK. The one native command owns the transaction.
       [IO.File]::WriteAllText($queryCopy,$identityGuard+"`n"+[IO.File]::ReadAllText($queryCopy)+"`ncommit;`n")

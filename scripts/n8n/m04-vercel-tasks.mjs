@@ -29,6 +29,7 @@ const paths = {
   createEnv: `/v10/projects/${project}/env?teamId=${team}`,
   bypass: `/v1/projects/${project}/protection-bypass?teamId=${team}`,
   deploy: `/v13/deployments?forceNew=1&teamId=${team}`,
+  productionBuilds: `/v6/deployments?projectId=${project}&target=production&state=QUEUED,INITIALIZING,BUILDING&limit=100&teamId=${team}`,
 };
 const object = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const fail = (code = 'RECONCILIATION_REQUIRED') => {
@@ -137,25 +138,58 @@ function deploymentRecord(dto, state) {
     projectId: project,
   };
 }
-function prepare(state, repo) {
+function prepare(state, repo, readEvidence) {
   if (state.vercelSetup?.configured || state.vercelSetup?.pending) fail();
-  const receipt = read(repo, 'live-db-preflight-after-path-fix-20261027.json'),
-    snapshot = receipt.preflight;
+  const incremental = state.scope === 'incremental';
+  const approval = readEvidence(
+    repo,
+    incremental ? 'incremental-dev-approval-20261027.json' : 'live-test-approval-20261027.json',
+  );
+  const starts = incremental ? 8 : 4,
+    results = incremental ? 50 : 5;
   if (
-    receipt.status !== 'preflight_verified' ||
+    approval.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+    approval.environment !== 'dev' ||
+    approval.ceilings?.actorStarts !== starts ||
+    approval.ceilings.actorUsd !== starts ||
+    approval.ceilings.perActorUsd !== 1 ||
+    (incremental &&
+      (approval.approval_kind !== 'incremental' ||
+        approval.ceilings.resultsPerProfile !== results ||
+        approval.reviewedHead !== '2c450f40557e7582525d96b5dd63bba2338baa0d' ||
+        !Number.isFinite(Date.parse(approval.approvedAt))))
+  )
+    fail('APPROVAL');
+  const receipt = readEvidence(
+    repo,
+    incremental ? 'incremental-db-preflight-20261027.json' : 'live-db-preflight-after-path-fix-20261027.json',
+  );
+  const snapshot = incremental ? receipt.queryResult?.[0]?.incremental_preflight : receipt.preflight;
+  if (
+    receipt.status !== (incremental ? 'reviewed_query_complete' : 'preflight_verified') ||
     receipt.environment !== 'dev' ||
     receipt.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
     receipt.authenticationVerified !== true ||
     receipt.childrenClosed !== true ||
     receipt.lastNativeExit !== 0 ||
+    (incremental &&
+      (receipt.phase !== 'Query' ||
+        receipt.host !== 'aws-1-eu-central-1.pooler.supabase.com' ||
+        receipt.port !== 5432 ||
+        receipt.databaseClientClosed !== true ||
+        !Array.isArray(receipt.queryResult) ||
+        receipt.queryResult.length !== 1 ||
+        !Number.isFinite(Date.parse(receipt.observedAt)) ||
+        Date.parse(receipt.observedAt) < Date.parse(approval.approvedAt) ||
+        Date.parse(receipt.observedAt) > Date.now() + 30000)) ||
     !object(snapshot) ||
     snapshot.current_user !== 'postgres' ||
     snapshot.session_user !== 'postgres' ||
     snapshot.database !== 'postgres' ||
-    snapshot.selectedCount !== 4 ||
+    snapshot.selectedCount !== (incremental ? 10 : 4) ||
     snapshot.selectedLiveClaims !== 0 ||
     !Array.isArray(snapshot.accounts) ||
-    snapshot.accounts.length !== 4 ||
+    snapshot.accounts.length !== (incremental ? 10 : 4) ||
     !Array.isArray(snapshot.selectedRunningParents) ||
     snapshot.selectedRunningParents.length ||
     !Array.isArray(snapshot.selectedUnprocessedActors) ||
@@ -167,30 +201,57 @@ function prepare(state, repo) {
     'C001:vimeo': 'goodpeoplefilms',
     'C000:instagram': 'everyone.film',
     'C001:instagram': 'goodpeoplefilms',
+    ...(incremental
+      ? {
+          'C130:vimeo': 'bigfootfilmseg',
+          'C270:vimeo': 'thetalkiesproductionsleb',
+          'C226:vimeo': 'bigkahunafilms',
+          'C130:instagram': 'bigfootfilms',
+          'C270:instagram': 'thetalkies',
+          'C226:instagram': 'bigkahunafilms',
+        }
+      : {}),
   };
-  const seen = new Set();
+  const seen = new Set(),
+    seenIds = new Set();
   for (const account of snapshot.accounts) {
     const key = account.company_code + ':' + account.platform;
     if (
       !Object.hasOwn(expected, key) ||
       expected[key] !== account.handle ||
       seen.has(key) ||
+      seenIds.has(account.id) ||
       !/^[a-f0-9-]{36}$/.test(account.id ?? '') ||
       account.status !== 'active' ||
       account.competitor_status !== 'active' ||
-      account.backfill_status !== 'pending' ||
+      (incremental
+        ? !['pending', 'running', 'done', 'not_applicable'].includes(account.backfill_status)
+        : account.backfill_status !== 'pending') ||
       account.backfill_from !== '2024-01-01' ||
-      account.locked_until !== null
+      account.locked_until !== null ||
+      (incremental &&
+        account.url !==
+          (account.platform === 'vimeo'
+            ? 'https://vimeo.com/' + expected[key]
+            : 'https://www.instagram.com/' + expected[key] + '/'))
     )
       fail('ACCOUNT_SELECTION');
     seen.add(key);
+    seenIds.add(account.id);
   }
-  const providerReceipt = read(repo, 'live-provider-preflight-20261027.json'),
+  const providerReceipt = readEvidence(
+      repo,
+      incremental ? 'incremental-provider-preflight-20261027.json' : 'live-provider-preflight-20261027.json',
+    ),
     provider = providerReceipt.provider;
   if (
     providerReceipt.status !== 'completed' ||
     !object(provider) ||
-    !object(provider.inputSchema?.properties)
+    !object(provider.inputSchema?.properties) ||
+    (incremental &&
+      (!Number.isFinite(Date.parse(providerReceipt.observedAt)) ||
+        Date.parse(providerReceipt.observedAt) < Date.parse(approval.approvedAt) ||
+        Date.parse(providerReceipt.observedAt) > Date.now() + 30000))
   )
     fail('PROVIDER_PIN');
   for (const key of ['owner_id', 'actorId', 'build', 'buildId'])
@@ -220,15 +281,6 @@ function prepare(state, repo) {
     book.usd_per_unit !== scalePrice * 1000
   )
     fail('PRICE');
-  const approval = read(repo, 'live-test-approval-20261027.json');
-  if (
-    approval.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
-    approval.environment !== 'dev' ||
-    approval.ceilings?.actorStarts !== 4 ||
-    approval.ceilings.actorUsd !== 4 ||
-    approval.ceilings.perActorUsd !== 1
-  )
-    fail('APPROVAL');
   const pending = JSON.parse(
     readFileSync(
       join(
@@ -256,7 +308,17 @@ function prepare(state, repo) {
     pending.credentialId !== 'EmrM03Machine19' ||
     pending.purpose !== 'pending_inactive_m03_runtime_delivery' ||
     !/^https:\/\/everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(pending.audience ?? '') ||
-    state.native?.machine?.baseline?.updatedAt !== '2026-10-25T21:06:39.771Z'
+    (incremental
+      ? state.native?.inventoryComplete !== true ||
+        state.native.machine.rebound === true ||
+        state.native.machine.pending ||
+        state.native.machine.baseline?.id !== 'EmrM03Machine19' ||
+        state.native.machine.baseline.type !== 'httpCustomAuth' ||
+        !Number.isFinite(Date.parse(state.native.machine.baseline.updatedAt)) ||
+        !['id', 'name', 'type', 'createdAt', 'updatedAt'].every(
+          (key) => state.native.machine.baseline[key] === state.native.machine.current?.[key],
+        )
+      : state.native?.machine?.baseline?.updatedAt !== '2026-10-25T21:06:39.771Z')
   )
     fail('MACHINE_BASELINE');
   state.machineBaseline = { audience: pending.audience };
@@ -273,10 +335,10 @@ function prepare(state, repo) {
   );
   state.livePolicy = collectorPolicy.parse({
     approval_id: approval.approval_id,
-    max_actor_starts: 4,
+    max_actor_starts: starts,
     max_actor_usd: 1,
-    max_total_usd: 4,
-    max_results_per_profile: 5,
+    max_total_usd: starts,
+    max_results_per_profile: results,
     actors: {
       'apify/instagram-scraper': {
         owner_id: provider.owner_id,
@@ -299,7 +361,8 @@ function prepare(state, repo) {
     bypassOwned: false,
     polls: 0,
     approvalId: approval.approval_id,
-    comment: 'M04 representative temporary dev ' + approval.approval_id,
+    comment:
+      'M04 ' + (incremental ? 'incremental' : 'representative') + ' temporary dev ' + approval.approval_id,
   };
   return {
     sourceHead: state.sourceHead,
@@ -310,7 +373,7 @@ function prepare(state, repo) {
   };
 }
 
-export async function runVercelTask({ phase, state, secrets = {}, repo, send }) {
+export async function runVercelTask({ phase, state, secrets = {}, repo, send, readEvidence = read }) {
   const receipt = { status: 'completed', code: null, phase, requestCount: 0 };
   const request = async (method, path, value) => {
     receipt.requestCount++;
@@ -318,8 +381,31 @@ export async function runVercelTask({ phase, state, secrets = {}, repo, send }) 
     if (!object(r) || ![200, 201, 204].includes(r.status) || r.closed === false) fail();
     return r.data;
   };
+  const checkProductionBuilds = async () => {
+    const data = await request('GET', paths.productionBuilds);
+    if (
+      !object(data) ||
+      !Array.isArray(data.deployments) ||
+      data.deployments.length > 100 ||
+      data.pagination?.next ||
+      data.deployments.some(
+        (d) =>
+          !object(d) ||
+          !/^dpl_[A-Za-z0-9]{1,80}$/.test(d.uid ?? d.id ?? '') ||
+          !['QUEUED', 'INITIALIZING', 'BUILDING'].includes(d.readyState ?? d.state) ||
+          (d.projectId !== undefined && d.projectId !== project) ||
+          (d.target !== undefined && d.target !== 'production'),
+      )
+    )
+      fail('PRODUCTION_METADATA');
+    const builds = data.deployments.map((d) => ({ id: d.uid ?? d.id, state: d.readyState ?? d.state }));
+    if (builds.length) {
+      receipt.productionBuildConflict = builds;
+      fail('PRODUCTION_BUILD_CONFLICT');
+    }
+  };
   try {
-    if (phase === 'prepare') receipt.prepared = prepare(state, repo);
+    if (phase === 'prepare') receipt.prepared = prepare(state, repo, readEvidence);
     else {
       const v = state.vercelSetup;
       if (!v?.prepared) fail('PREPARE_REQUIRED');
@@ -337,12 +423,13 @@ export async function runVercelTask({ phase, state, secrets = {}, repo, send }) 
         if (!/^[A-Za-z0-9_-]{43}$/.test(secrets.machine ?? '') || !secrets.writer || !secrets.apifyRead)
           fail('INPUT');
         const policy = collectorPolicy.parse(state.livePolicy);
+        const incremental = state.scope === 'incremental';
         if (
           policy.approval_id !== v.approvalId ||
-          policy.max_actor_starts !== 4 ||
+          policy.max_actor_starts !== (incremental ? 8 : 4) ||
           policy.max_actor_usd !== 1 ||
-          policy.max_total_usd !== 4 ||
-          policy.max_results_per_profile !== 5 ||
+          policy.max_total_usd !== (incremental ? 8 : 4) ||
+          policy.max_results_per_profile !== (incremental ? 50 : 5) ||
           !isDeepStrictEqual(Object.keys(policy.actors), ['apify/instagram-scraper']) ||
           !isDeepStrictEqual(policy.actors['apify/instagram-scraper'].inputDefaults, {
             searchType: 'hashtag',
@@ -353,6 +440,7 @@ export async function runVercelTask({ phase, state, secrets = {}, repo, send }) 
         const baseline = projectRecord(await request('GET', paths.project));
         const rows = environmentRows(await request('GET', paths.env));
         if (conflicts(rows).length) fail('OWNERSHIP_CONFLICT');
+        if (incremental) await checkProductionBuilds();
         if (resumeKnownBypass) {
           // Resume the one recorded creation, never issue a replacement PATCH.
           // A private secret known before the attempt plus exact note/time and
@@ -427,7 +515,14 @@ export async function runVercelTask({ phase, state, secrets = {}, repo, send }) 
         v.configured = true;
         receipt.deployment = state.deployment;
       } else if (phase === 'poll') {
-        if (!v.configured || v.pending || !state.deployment || v.polls >= 12) fail('POLL_LIMIT');
+        if (
+          !v.configured ||
+          v.pending ||
+          !state.deployment ||
+          v.polls >= 12 ||
+          (state.scope === 'incremental' && v.ready)
+        )
+          fail('POLL_LIMIT');
         v.polls++;
         const d = deploymentRecord(
           await request('GET', `/v13/deployments/${state.deployment.id}?teamId=${team}`),
@@ -447,7 +542,15 @@ export async function runVercelTask({ phase, state, secrets = {}, repo, send }) 
         // Unknown creates remain recorded; never adopt an unidentified env or
         // replay a create. Independent acknowledged resources can be removed.
         let rows = [],
-          environmentError;
+          environmentError,
+          productionError;
+        if (state.scope === 'incremental') {
+          try {
+            await checkProductionBuilds();
+          } catch (error) {
+            productionError = error;
+          }
+        }
         try {
           rows = environmentRows(await request('GET', paths.env));
           for (const expected of v.environments) {
@@ -512,6 +615,7 @@ export async function runVercelTask({ phase, state, secrets = {}, repo, send }) 
         v.cleanupComplete = true;
         receipt.cleanupComplete = true;
         receipt.protectedDeploymentRetained = state.deployment?.id ?? null;
+        if (productionError) throw productionError;
       } else fail('PHASE');
     }
   } catch (error) {

@@ -61,6 +61,49 @@ test('native PowerShell parses the bounded M04 entrypoint', { skip: !windows }, 
   assert.equal(result.stdout.trim(), 'OK');
 });
 
+for (const scope of ['Incremental', 'incremental', 'INCREMENTAL', 'iNcReMeNtAl'])
+  test(
+    `incremental scope ${scope} refuses migration phases before private access or native commands`,
+    { skip: !windows },
+    () => {
+      const result = spawnSync(
+        ps,
+        [
+          '-NoProfile',
+          '-NonInteractive',
+          '-File',
+          consumer,
+          '-Scope',
+          scope,
+          '-Phase',
+          'Apply',
+          '-CheckOnly',
+        ],
+        {
+          env: publicEnv,
+          encoding: 'utf8',
+          timeout: 15000,
+          windowsHide: true,
+        },
+      );
+      assert.equal(result.status, 1);
+      const value = JSON.parse(result.stdout);
+      assert.equal(value.status, 'M04_QUERY_BLOCKED');
+      assert.equal(value.privateRead, false);
+      assert.equal(value.databaseCommands, 0);
+    },
+  );
+
+test('read-only Query adds transaction enforcement to either native line ending', { skip: !windows }, () => {
+  const source = readFileSync(consumer, 'utf8');
+  assert.match(source, /if\(\$ReadOnly\)\{\$identityGuard=\$identityGuard -replace/);
+  const result = run(
+    `foreach($guard in @("begin;\nselect 1;", "begin;\r\nselect 1;")) {\n $actual=$guard -replace '\\Abegin;\\r?\\n', "begin;\nset transaction read only;\n"\n if($actual -notmatch 'set transaction read only;'){throw 'READONLY_MISSING'}\n}\n'READONLY_ENFORCED'`,
+  );
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), 'READONLY_ENFORCED');
+});
+
 test('a fresh worktree creates only its owned public output directory', { skip: !windows }, () => {
   const directory = fixture();
   const result = run(`${definitions(['M04-File', 'M04-OutputDirectory'])}

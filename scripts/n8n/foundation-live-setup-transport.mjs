@@ -48,6 +48,12 @@ function allowed(method, path) {
   if (typeof path !== 'string') return false;
   if (method === 'GET' && path === `/v9/projects/${project}?teamId=${team}`) return true;
   if (method === 'GET' && path === `/v10/projects/${project}/env?decrypt=false&teamId=${team}`) return true;
+  if (
+    method === 'GET' &&
+    path ===
+      `/v6/deployments?projectId=${project}&target=production&state=QUEUED,INITIALIZING,BUILDING&limit=100&teamId=${team}`
+  )
+    return true;
   if (method === 'POST' && path === `/v10/projects/${project}/env?teamId=${team}`) return true;
   if (method === 'PATCH' && path === `/v1/projects/${project}/protection-bypass?teamId=${team}`) return true;
   if (method === 'POST' && path === `/v13/deployments?forceNew=1&teamId=${team}`) return true;
