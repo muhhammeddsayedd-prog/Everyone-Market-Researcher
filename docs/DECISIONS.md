@@ -422,6 +422,16 @@ R2, PR #8 merge and advancement to M04 remain separate.
 
 ## M04 collector integration — 27 October 2026
 
+**Representative dev packet approved:** the owner replied “Approve the M04
+representative dev packet and temporary default-bypass exception.” to reviewed
+`c2dc884`. The [approval](../milestones/M04-collectors-vimeo-instagram/evidence/live-test-approval-20261027.json)
+authorizes the exact four accounts, target two/max four sequential Instagram
+starts, USD1/start/USD4 total, Management160/Control472/Combined632/Vercel64
+and six native actions, including the temporary sole/default protection effect,
+recovery, restoration and retention. Prior charges remain. Actual provider
+expiry/consent and consequential drift remain genuine boundaries; production,
+recurring activity, notifications, merge and M05 remain excluded.
+
 The owner started M04 after merged M03 and requested connected Vimeo,
 Instagram posts/reels and WF-19 implementation. Use the existing restricted
 writer/TLS path with a fixed product-operation adapter; do not extend M03's

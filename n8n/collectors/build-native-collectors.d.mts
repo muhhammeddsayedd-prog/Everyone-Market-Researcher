@@ -38,6 +38,24 @@ export function buildNativeCollector(
   transport: unknown,
   kind: 'vimeo' | 'instagram',
 ): NativeCollectorGraph;
+export interface ManualCollectorEntry {
+  triggerNodeName: 'Manual representative collection';
+  inputNodeName: 'Fixed representative selection';
+  input: {
+    env: 'dev';
+    mode: 'backfill';
+    limit: 2;
+    max_pages: 1;
+    page_size: 5;
+    results_limit: 5;
+    max_actor_starts: 2;
+    account_ids: [string, string];
+  };
+}
+export function withManualCollectorEntry(
+  graph: NativeCollectorGraph,
+  accountIds: readonly [string, string],
+): NativeCollectorGraph & { manualEntry: ManualCollectorEntry };
 export function extendNativeCallback(
   input: unknown,
   transport: unknown,

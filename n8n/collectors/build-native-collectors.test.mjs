@@ -7,6 +7,7 @@ import {
   extendNativeCallback,
   collectorCloudSource,
   parseCollectorTransport,
+  withManualCollectorEntry,
 } from './build-native-collectors.mjs';
 import {
   initializeCollector,
@@ -63,6 +64,81 @@ const vmCode = (source, input, selectors = {}, executionId = '99123') =>
     console: undefined,
   });
 const nativeNode = (graph, name) => graph.workflow.nodes.find((n) => n.name === name);
+
+test('representative manual entry supplies only fixed approved bounds and preserves the collector and privacy contracts', () => {
+  for (const kind of ['vimeo', 'instagram']) {
+    const original = buildNativeCollector(bindings, transport, kind);
+    const before = structuredClone(original);
+    const graph = withManualCollectorEntry(original, ids(2));
+    assert.deepEqual(original, before);
+    assert.deepEqual(graph.workflow.settings, original.workflow.settings);
+    assert.deepEqual(graph.workflow.pinData, {});
+    assert.equal(graph.workflow.active, false);
+    assert.deepEqual(graph.workflow.nodes.slice(0, original.workflow.nodes.length), original.workflow.nodes);
+    assert.deepEqual(graph.workflow.connections['When called'], original.workflow.connections['When called']);
+    assert.equal(graph.workflow.nodes.filter((n) => n.type.endsWith('.manualTrigger')).length, 1);
+    assert.equal(
+      graph.workflow.nodes.some((n) => n.type.endsWith('.scheduleTrigger')),
+      false,
+    );
+    const { triggerNodeName, inputNodeName, input } = graph.manualEntry;
+    assert.equal(nativeNode(graph, triggerNodeName).typeVersion, 1);
+    assert.deepEqual(
+      graph.workflow.connections[triggerNodeName].main[0].map((e) => e.node),
+      [inputNodeName],
+    );
+    assert.deepEqual(
+      graph.workflow.connections[inputNodeName].main[0].map((e) => e.node),
+      ['Initialize collector'],
+    );
+    const fixed = vmCode(nativeNode(graph, inputNodeName).parameters.jsCode, { malicious: 'ignored' })[0]
+      .json;
+    assert.deepEqual(JSON.parse(JSON.stringify(fixed)), {
+      env: 'dev',
+      mode: 'backfill',
+      limit: 2,
+      max_pages: 1,
+      page_size: 5,
+      results_limit: 5,
+      max_actor_starts: 2,
+      account_ids: ids(2),
+    });
+    assert.deepEqual(JSON.parse(JSON.stringify(fixed)), input);
+    const state = vmCode(nativeNode(graph, 'Initialize collector').parameters.jsCode, fixed)[0].json;
+    assert.equal(state.request.operation, 'start');
+    assert.equal(state.request.args.platform, kind);
+    assert.deepEqual(Array.from(state.accountIds), ids(2));
+    assert.deepEqual(graph, withManualCollectorEntry(original, ids(2)));
+  }
+});
+
+test('representative manual entry refuses expanded selection, injected input and alternate trigger graphs', () => {
+  const graph = buildNativeCollector(bindings, transport, 'instagram');
+  for (const selection of [
+    null,
+    [],
+    ids(1),
+    ids(3),
+    [ids(2)[0], ids(2)[0]],
+    [ids(2)[0], 'not-a-uuid'],
+    { account_ids: ids(2), code: 'arbitrary' },
+  ])
+    assert.throws(() => withManualCollectorEntry(graph, selection), /M04_MANUAL_ENTRY_INVALID/);
+  const callback = extendNativeCallback(bindings, transport, baseline);
+  assert.throws(() => withManualCollectorEntry(callback, ids(2)), /M04_MANUAL_ENTRY_INVALID/);
+  const once = withManualCollectorEntry(graph, ids(2));
+  assert.throws(() => withManualCollectorEntry(once, ids(2)), /M04_MANUAL_ENTRY_INVALID/);
+  const changed = structuredClone(graph);
+  changed.workflow.settings.saveManualExecutions = true;
+  assert.throws(() => withManualCollectorEntry(changed, ids(2)), /M04_MANUAL_ENTRY_INVALID/);
+  const schedule = structuredClone(graph);
+  schedule.workflow.nodes.push({
+    id: 'unexpected',
+    name: 'Unexpected schedule',
+    type: 'n8n-nodes-base.scheduleTrigger',
+  });
+  assert.throws(() => withManualCollectorEntry(schedule, ids(2)), /M04_MANUAL_ENTRY_INVALID/);
+});
 
 test('all emitted Code compiles and executes initialization without URL, require, credentials or network', () => {
   for (const kind of ['vimeo', 'instagram']) {

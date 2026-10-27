@@ -1,7 +1,7 @@
 # M04 — Collectors I: Vimeo + Instagram (posts & reels) · PROGRESS
 
 ## Status
-**In progress — connected collector integration qualified locally; native/live acceptance pending.**
+**In progress — approved dev preflight and exact migrations verified; representative collection pending.**
 
 | Field | Value |
 |---|---|
@@ -12,15 +12,15 @@
 | Worktree | `D:\Everyone\everyone Market Research\everyone-market-radar-m04` |
 | Base | M03 merge `4f6ba6adf1ae4f9e385dd98681b2174a4e3bf5f4` |
 | Current task | T3/T5/T6: concrete restricted gateway, generated WF-10/WF-11/WF-19 and joint multi-batch posts/reels settlement |
-| Next step | Finish normal changed-head PR checks/review, then obtain the single [representative live packet](evidence/live-test-estimate-20261027.md) decision before any hosted collector setup or collection. No credential setup is requested. |
+| Next step | Finish the approved protected Preview and native collector setup after scoped helper CI. Persistent credentials and renewed Vercel access verified; execute Vimeo then Instagram within the recorded caps, followed by replay/unknown callback and restoration. No new approval or credential handoff needed. |
 
 The owner started M04 on 26 October. M03 is complete: PR #8 is merged and post-merge CI40236388598 was read back as passing all five jobs. This does not reopen M03, its retained execution31145/C999 decisions, counters, credentials, migrations or disabled cleanup consumer. The old root board and M03 records are preserved under their existing enforced write restriction; this permitted current-milestone record supplies M04's current state. The original workspace's uncommitted work is untouched; development is isolated on the merged base above.
 
 ## Task checklist
 
-- [ ] T1 — Real dev fixtures: pending a complete new M04 estimate/approval. Current fixtures are explicitly synthetic.
+- [ ] T1 — Real dev fixtures: owner-approved representative packet ready; actual provider collection still pending. Existing local fixtures remain explicitly synthetic.
 - [ ] T2 — Dev account set: no account statuses or due dates have been changed.
-- [ ] T3 — RPC migrations: resolver and fixed M04 product contract locally qualified, including joint claims/registration barrier/paged settlement. Both M04 migrations remain unapplied to hosted dev.
+- [ ] T3 — RPC migrations: resolver and fixed M04 product contract locally qualified, including joint claims/registration barrier/paged settlement. The exact two migrations are now applied to dev (17 total; original15 fingerprints preserved); actual catalog/RLS/grants/advisors pass. Hosted generated types were not attempted; fixed catalog matches reviewed local generated contracts.
 - [ ] T4 — Normalizers: Vimeo API, goat255, dltik and Instagram adapters plus synthetic contract tests implemented; real provider captures and field coverage pending.
 - [ ] T5 — WF-10: generated native HTTP/code workflow connected through the strict-TLS writer adapter to normalization, ingestion, reporting, cost and completion. Reviewed async fallback implementation also holds its claim until callback; native/provider/five-account proofs remain pending.
 - [ ] T6 — WF-11: generated posts/reels batches, async launch/registration, WF-19 processing and final settlement connected locally. Native/provider coverage and complete history remain pending.
@@ -44,7 +44,7 @@ All milestone criteria remain open. Local proofs below are not hosted acceptance
 | AC6 Production pilot | Unstarted; separate MA-14 target/migration/backfill approval. |
 | AC7 Cost | Local connected path records counted Vimeo requests at USD0 and exactly USD0.0038 across two synthetic Instagram runs, without replay duplication. The private consumer derives cost from two stable authenticated provider snapshots, not callback fields; real usage reconciliation remains pending. Unknown fixed fees stay unknown. |
 | AC8 Failure | Synthetic HTTP/contract/rate-limit and ambiguous gateway failures covered. Live failure/cooldown proof pending; do not repeat accepted M03 error groups merely to manufacture M04 evidence. |
-| AC9 Security | Actual local role simulation/grant/RLS tests and focused gateway/public-input/TLS-contract tests pass. Native strict-TLS restricted login, live build/owner/default attestation and fresh sanitized exports remain pending. No credential read/reset/shared credential change occurred. |
+| AC9 Security | Actual local role simulation/grant/RLS tests and focused gateway/public-input/TLS-contract tests pass. Native strict-TLS restricted login, live build/owner/default attestation and fresh sanitized exports remain pending. Persistent dev credentials have now been used only by bounded purpose-specific children; no reset/rotation or provider credential extraction. |
 
 ## Reviewed first slice and historical evidence (26 October)
 
@@ -86,13 +86,15 @@ Remaining integration/live boundaries: WF-00 must pass a reviewed explicit selec
 
 ## Manual actions needed from the owner
 
+27 October approval update: owner replied **Approve the M04 representative dev packet and temporary default-bypass exception.** at reviewed `c2dc884`; CI40490128421 all five jobs and Vercel pass. [Exact approval/caps](evidence/live-test-approval-20261027.json) preserves all prior usage. Persistent Admin/Management/Writer/ApifyRead entries are present with private ACL checks; presence is not authentication. The initial metadata-only native Vercel check returned `saved_auth_expired`; owner renewed the existing session and the fresh read confirms 75-minute coverage with zero network/authentication/refresh/config writes. Native browser read confirms signed-in Personal / owned WF-10 inactive. One connector read failed internally and remains conservatively charged; no repeat discovery loop. First DB preflight stopped before private read/authentication/command because the new worktree lacked `scripts/db/out`; the local path defect is corrected and its attempt preserved. The exact two approved migrations have since applied successfully; no actor, workflow or Vercel configuration write has begun.
+
 **None for the current local implementation.** Reuse the existing persistent dev entries and saved native credentials. No readiness or new credential delivery is inferred from this kickoff.
 
 | ID / decision | Actual status | Exact next gate |
 |---|---|---|
 | MA-07 Vimeo public token | Existing n8n Header Auth configuration from M03 retained; no new credential requested | Verify that binding in the future bounded dev check; do not expose/extract token. |
 | MA-10 Apify | Existing native `Apify API` credential and Scale-plan decision retained | Reuse actual ID/type; collect current price-book/build metadata for the single complete live estimate. |
-| M04 dev fixture/live allowance | One [complete packet](evidence/live-test-estimate-20261027.md) prepared; not yet approved; no live collection begun | Four public accounts, target two/max four sequential Instagram starts, USD1 each/USD4 total; Management160/Control472/Combined632/Vercel64 plus six native actions, including recovery/shutdown and the explicitly scoped temporary sole/default bypass exception. M03 authority is not reused. |
+| M04 dev fixture/live allowance | Owner approved the [complete packet](evidence/live-test-estimate-20261027.md) and temporary sole/default bypass exception; no live collection begun | Four public accounts, target two/max four sequential Instagram starts, USD1 each/USD4 total; Management160/Control472/Combined632/Vercel64 plus six native actions, including recovery/shutdown and the explicitly scoped temporary sole/default bypass exception. M03 authority is not reused. |
 | MA-14 production pilot | Unstarted | Separate exact target/migration/backfill/budget packet after representative dev results. |
 | MA-11 production runtime | Unchanged, untested in M04 | Only inspect when production work has its separate approval; no prod credential enters the default dev profile. |
 | Recurring schedules / notifications / merge | Unstarted | Separate owner decisions; M04 PR remains draft. |
@@ -108,12 +110,14 @@ Remaining integration/live boundaries: WF-00 must pass a reviewed explicit selec
 
 ## Usage and preservation
 
-- **M04 runtime provider requests:0; actor starts:0; new collected items:0; hosted database/workflow writes:0.** Local Docker qualification and ordinary GitHub/preview CI are separate infrastructure activity; infrastructure billing is not measured here.
+- **Current M04 usage is recorded in [the append-only live ledger](evidence/live-usage-20261027.jsonl). Actor starts:0; new collected items:0; hosted writes:two approved dev migrations, no workflow/Vercel configuration writes at this checkpoint.** Local Docker qualification and ordinary GitHub/preview CI are separate infrastructure activity; infrastructure billing is not measured here.
 - Frozen M03 ledger remains2078 Management /2000 Control /4078 combined /Vercel358, one actor. No reset or transfer of that allowance.
-- All15 successful dev migrations, seeded competitors/accounts/exclusions/logos, existing hosted shared workflows and persistent encrypted credentials are preserved. Both M04 migrations are pending hosted application.
+- All15 successful dev migrations, seeded competitors/accounts/exclusions/logos, existing hosted shared workflows and persistent encrypted credentials are preserved. Both M04 migrations are applied only to hosted dev; original15 and seeded/retained data are preserved.
 - Production, collection schedules, external notifications, unrelated R2 work, M04 merge and M05 remain untouched.
 
 ## Session log
+
+- 2026-10-27 · Owner-approved dev packet begun. Exact two migrations dry-run/push/parity passed, retaining all original15 fingerprints. Actual four selected accounts are active/due/pending with no unfinished selected work. Six n8n metadata reads match owned inactive baselines and existing IDs/types; four Apify reads pin owner/build0.0.831/pricing/defaults; two native Vercel reads confirm protection/no conflicts. RLS/grants/catalog plus security/performance advisors pass; a final `$false` receipt typo was reconciled offline without repeating the four successful native commands. Persistent originals retained; bounded children/scratch closed. Collection remains pending.
 
 - 2026-10-27 · Added an actual generated-WF-10 second-run proof: one conditional owned/unlocked operational rewind, no content/watermark change, new invocation succeeds with zero new items. Updated the one live packet to include this necessary replay setup (21 planned DB commands +11 reserve = unchanged32). Connected local integration and targeted lint pass, native0; no live call or new allowance used.
 - 2026-10-27 · Preserved failed CI40488383493 and reproduced its single stale schema-count assertion locally before changing it. Updated only expected19→25 and its description; actual postgres schema21/21 + collector132/132 pass with fixture rollback, history14/baseline counts unchanged and temporary objects absent. New normal head CI remains required; no full-suite bypass or diagnostic framework added.

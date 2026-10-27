@@ -58,6 +58,8 @@ jobs:
         run: node --test scripts/n8n/gw01-trial.test.mjs scripts/n8n/gw01-delivery.test.mjs scripts/n8n/gw01-delivery-transport.test.mjs scripts/n8n/gw01-privacy-read.test.mjs scripts/n8n/gw01-writer.test.mjs scripts/n8n/gw01-gateway-transport.test.mjs scripts/n8n/gw01-gateway-logs.test.mjs scripts/n8n/gw01-log-read.test.mjs scripts/n8n/gw01-public-config.test.mjs scripts/n8n/gw01-vercel-no-retry.test.mjs scripts/n8n/gw01-shutdown-read.test.mjs scripts/n8n/gw01-preview-read.test.mjs
       - name: Check owned inactive M03 foundation provisioning
         run: node --test scripts/n8n/foundation-*.test.mjs
+      - name: Check fixed M04 native and private transport contracts
+        run: node --test scripts/n8n/m04-*.test.mjs scripts/db/m04-dev-database.test.mjs
 
   build:
     runs-on: ubuntu-latest

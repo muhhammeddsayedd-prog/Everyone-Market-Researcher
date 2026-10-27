@@ -502,7 +502,7 @@ export function createFoundationLiveGatewayProbe(
     },
   });
 }
-function privateJsonTransport(
+export function privateJsonTransport(
   { host, apiKey, sensitiveValues, deadlineAt, maxBytes, api, allowed, extraHeaders = {}, statuses },
   dependencies,
 ) {

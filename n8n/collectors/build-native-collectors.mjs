@@ -309,6 +309,77 @@ export function buildNativeCollector(input, transport, kind) {
   };
 }
 
+/** Native Manual Trigger has no JSON input parameter. Attach only the fixed
+ * representative selection to an existing collector; this does not save, run,
+ * publish or alter the ordinary generated blueprints. */
+export function withManualCollectorEntry(graph, accountIds) {
+  const bad = () => {
+    throw Error('M04_MANUAL_ENTRY_INVALID');
+  };
+  if (
+    !graph ||
+    !['WF-10', 'WF-11'].includes(graph.key) ||
+    graph.kind !== 'native-json-blueprint' ||
+    graph.hostedAcceptance !== false ||
+    graph.liveEnabled !== false ||
+    !graph.workflow ||
+    graph.workflow.active !== false ||
+    !Array.isArray(graph.workflow.nodes) ||
+    graph.workflow.settings?.saveDataSuccessExecution !== 'none' ||
+    graph.workflow.settings?.saveDataErrorExecution !== 'none' ||
+    graph.workflow.settings?.saveManualExecutions !== false ||
+    graph.workflow.settings?.saveExecutionProgress !== false ||
+    Object.keys(graph.workflow.pinData ?? {}).length !== 0 ||
+    graph.manualEntry !== undefined ||
+    !Array.isArray(accountIds) ||
+    accountIds.length !== 2 ||
+    accountIds.some(
+      (id) =>
+        typeof id !== 'string' ||
+        !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(id),
+    ) ||
+    new Set(accountIds.map((id) => id.toLowerCase())).size !== 2
+  )
+    bad();
+  const original = graph.workflow;
+  if (
+    original.nodes.filter((n) => n.name === 'Initialize collector' && n.type === 'n8n-nodes-base.code')
+      .length !== 1 ||
+    original.nodes.filter(
+      (n) => n.name === 'When called' && n.type === 'n8n-nodes-base.executeWorkflowTrigger',
+    ).length !== 1 ||
+    original.nodes.some(
+      (n) =>
+        ['n8n-nodes-base.manualTrigger', 'n8n-nodes-base.scheduleTrigger', 'n8n-nodes-base.webhook'].includes(
+          n.type,
+        ) || ['Manual representative collection', 'Fixed representative selection'].includes(n.name),
+    ) ||
+    JSON.stringify(original.connections?.['When called']) !==
+      JSON.stringify({ main: [[edge('Initialize collector')]] })
+  )
+    bad();
+  const result = structuredClone(graph),
+    input = {
+      env: 'dev',
+      mode: 'backfill',
+      limit: 2,
+      max_pages: 1,
+      page_size: 5,
+      results_limit: 5,
+      max_actor_starts: 2,
+      account_ids: accountIds.map((id) => id.toLowerCase()),
+    },
+    triggerNodeName = 'Manual representative collection',
+    inputNodeName = 'Fixed representative selection';
+  const manual = node(graph.key, triggerNodeName, 'manualTrigger', {}, [0, 200]),
+    fixed = code(graph.key, inputNodeName, 'return [{json:' + JSON.stringify(input) + '}];', [200, 200]);
+  if (original.nodes.some((n) => [manual.id, fixed.id].includes(n.id))) bad();
+  result.workflow.nodes.push(manual, fixed);
+  Object.assign(result.workflow.connections, line(triggerNodeName, inputNodeName, 'Initialize collector'));
+  result.manualEntry = { triggerNodeName, inputNodeName, input };
+  return result;
+}
+
 /** Preserve every historical foundation node and route only registered M04 IDs
  * into the new trusted server-side processor. No callback-supplied row/cost is
  * forwarded. The existing foundation branch is unchanged byte-for-byte. */

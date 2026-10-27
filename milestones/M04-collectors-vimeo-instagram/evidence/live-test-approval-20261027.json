@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "approval_id": "3f3aed72-4f14-4cc4-aefe-4999038efe27",
+  "recordedAt": "2026-10-27T12:21:17.814Z",
+  "approvedHead": "c2dc8845069fcd9762061878132cc06f309d7836",
+  "packet": "milestones/M04-collectors-vimeo-instagram/evidence/live-test-estimate-20261027.md",
+  "packetGitBlobSha256": "48084b1861623761f4e21da9b28b79d80a54c6267952a06fd77065ad0e6e8704",
+  "ownerReply": "Approve the M04 representative dev packet and temporary default-bypass exception.",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "ceilings": {
+    "management": 160,
+    "control": 472,
+    "combined": 632,
+    "vercel": 64,
+    "nativeActions": 6,
+    "actorStarts": 4,
+    "actorUsd": 4,
+    "perActorUsd": 1
+  },
+  "targetActorStarts": 2,
+  "retainsAllPriorCharges": true,
+  "production": false,
+  "recurring": false,
+  "notifications": false,
+  "merge": false,
+  "nextMilestone": false
+}
