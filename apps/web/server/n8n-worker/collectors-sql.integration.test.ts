@@ -305,6 +305,40 @@ describe.skipIf(process.env.EMR_M04_LOCAL_SQL_TEST !== 'true')(
         expect(
           (await c.query('select status,items_new from ops.scrape_runs where id=$1', [v.runId])).rows[0],
         ).toMatchObject({ status: 'success', items_new: 1 });
+        const watermarkBeforeReplay = (
+          await c.query(
+            'select last_external_id,last_item_published_at from app.competitor_accounts where id=$1',
+            [vimeo],
+          )
+        ).rows[0];
+        // Representative replay deliberately rewinds only this terminal,
+        // unlocked owned account's operational selection, never its content or
+        // watermark. A normal backfill continuation would select the next page.
+        expect(
+          (
+            await c.query(
+              "update app.competitor_accounts set backfill_status='pending',backfill_cursor=null,next_due_at='2000-01-01' where id=$1 and last_run_id=$2 and locked_until is null",
+              [vimeo, v.runId],
+            )
+          ).rowCount,
+        ).toBe(1);
+        const vReplay = await workflow('vimeo', vimeo, '99125');
+        expect(
+          (await c.query('select status,items_new from ops.scrape_runs where id=$1', [vReplay.runId]))
+            .rows[0],
+        ).toMatchObject({ status: 'success', items_new: 0 });
+        expect(
+          (await c.query('select last_external_id from app.competitor_accounts where id=$1', [vimeo])).rows[0]
+            .last_external_id,
+        ).toBe('27001');
+        expect(
+          (
+            await c.query(
+              'select last_external_id,last_item_published_at from app.competitor_accounts where id=$1',
+              [vimeo],
+            )
+          ).rows[0],
+        ).toEqual(watermarkBeforeReplay);
         const i = await workflow('instagram', ig, '99124');
         expect(
           (await c.query('select status from ops.scrape_runs where id=$1', [i.runId])).rows[0].status,
