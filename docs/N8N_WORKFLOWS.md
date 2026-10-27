@@ -602,6 +602,43 @@ return rows.filter(r => r.link).map(r => ({ json: {
 
 ## 8. RPCs added by these workflows (mirror in DATA_SCHEMA §5 when implementing)
 
+### M04 connected implementation (27 October; local, not Cloud acceptance)
+
+`n8n/collectors/blueprints/` contains generated inactive WF-10/WF-11/WF-19
+definitions. These are explicitly local blueprints; `n8n/workflows/` retains
+the actual prior Cloud exports. The concrete route
+`POST /api/internal/n8n/collectors` reuses the existing pinned dev CA/session
+pooler, strict TLS, actual writer principal checks and machine authentication.
+It accepts only the typed operations in `n8n-collector-contracts.ts`, exact
+account UUIDs and the protected Preview's bound project/branch/commit.
+
+WF-10 connects native Vimeo HTTP resolution/listing/rate waits to canonical
+normalization, bounded ingestion, account reporting, zero-dollar API-call cost
+and completion. Approved fallback dispatch remains asynchronous and retains
+the same claim until callback. No fallback follows login/access denial or rate
+limiting. Native HTTP response streaming size behavior is not yet verified;
+field/page/time and ingest-byte bounds are implemented.
+
+WF-11 claims once, registers every posts/reels batch and closes registration.
+WF-19's M04 wrapper classifies registered IDs before processing; unknown IDs
+are rejected, while the preserved foundation branch remains distinct. Trusted
+server-side GETs verify the run owner, actor/build, options, reviewed public
+INPUT and stable usage before private paged ingestion/settlement. Completed
+replay uses its saved receipt without provider reads. Joint completion reports
+once and never releases another pass's account claim. This replaces the draft
+independent secondary-pass selector and keeps the existing report signature.
+
+Native initialization rejects omitted/empty `account_ids` before start. WF-00
+must supply the reviewed exact UUID selection; this remaining wiring is not
+claimed complete. No schedule is enabled. Native provider credentials retain
+their actual supported types, including Apify predefined `apifyApi`; no token
+extraction or duplicate Header Auth credential is introduced. Generated-code
+VM/actual-local-SQL tests prove the connected contract, not native Cloud login,
+saved binding success, source coverage or live callback delivery.
+WF-10/WF-11's global WF-90 link is deferred staging metadata until a compatible
+M04 logging binding exists; no closed M03 gateway is automatically invoked.
+Handled collector/API/source errors still report through the new product path.
+
 | RPC | Milestone | Purpose |
 |---|---|---|
 | `ops.get_setting(key) → jsonb` | M03 | Read a tunable (n8n has no table grants) |
@@ -609,7 +646,7 @@ return rows.filter(r => r.link).map(r => ({ json: {
 | `ops.get_apify_run(apify_run_id) → jsonb`, `ops.apify_runs_pending(run_id) → int` | M03 | WF-19 guard and completion |
 | `ops.log_workflow_error(jsonb)`, `ops.error_count_24h(workflow) → int` | M03 | WF-90 |
 | `ops.set_account_external_id(account_id, external_id, uploads_playlist_id)` | M04 | Vimeo/YouTube resolution |
-| `ops.get_accounts_for_secondary_pass(platform, run_id)` | M04 | IG reels pass |
+| `ops.collector_execute(request_id, operation, args)` | M04 | Fixed owned collector operations, joint posts/reels registration and settlement; replaces draft independent secondary selector |
 | `ops.get_removal_targets(platform, window_days)` | M06 | WF-40 |
 | `ops.get_media_targets(ids)`, `ops.save_media_asset(...)` | M06 | WF-31 (media v1 moved to M06 because story/Instagram CDN URLs expire) |
 | `ops.fail_ai_items(item_ids, msg_ids)`, `ops.get_taxonomy_snapshot()`, `ops.get_embedding_inputs(jsonb)` | M07 | WF-30/33 |

@@ -12,6 +12,14 @@ export function buildInstagramBatches(accounts, options) {
   )
     throw new Error('ig_batch_context_invalid');
   const validated = validateInstagramAccounts(accounts).map(({ account, handle }) => {
+    // The joint posts/reels report stores both checkpoints in one account row.
+    // Resume this pass's checkpoint, while accepting the legacy flat cursor.
+    const cursor = account.backfill_cursor;
+    account = {
+      ...account,
+      backfill_cursor:
+        cursor && Object.hasOwn(cursor, options.result_type) ? cursor[options.result_type] : cursor,
+    };
     const watermark = instagramDate(account.last_item_published_at);
     if (options.mode === 'daily' && !watermark) throw new Error('ig_daily_watermark_required');
     const waves = account.backfill_cursor?.full_waves;

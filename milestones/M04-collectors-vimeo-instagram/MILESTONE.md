@@ -23,6 +23,19 @@ No AI yet: items wait in the `ai_extract` queue for M07.
 
 ## 2. Context you need (read before T1)
 
+> **Current integration27October:** the owner's multi-batch/joint-ownership
+> instruction and DECISIONS.md's M04 entry supersede the draft independent
+> secondary-pass and one-run-per-parent examples below. WF-11 claims the exact
+> selected set once for posts+reels; the new fixed product RPC tracks every
+> registration/page/pass and reports only after registration closes and all
+> passes settle. The eight-argument report RPC is preserved; there is no new
+> independently unlocked `p_secondary` path. Both M04 migrations remain pending
+> hosted dev. Do not implement the obsolete draft T3 selector/signature change.
+> Representative dev setup snapshots/restores only the four explicitly selected
+> accounts in the single live packet; broad pause-all-account mutation in the
+> draft T2 is not authorized by that packet. The full five-account/backfill and
+> production criteria remain open.
+
 - **Priorities.** Vimeo and Instagram are the top two sources (with websites). Most competitor commercials are posted on Vimeo, often with full credits in the description. Instagram carries the social cut-downs, reels and client tags.
 - **Single writer path.** Collectors never write tables. They normalize every source object to the **normalized item contract** (`reference/n8n/normalized_item.schema.json`, `docs/DATA_SCHEMA.md` §7) and call `ingest.upsert_raw_items(run_id, account_id, items jsonb)` through `SUB · Ingest items`. That RPC does all of this:
   - inserts new rows only (`ON CONFLICT (platform, external_id) DO NOTHING`);

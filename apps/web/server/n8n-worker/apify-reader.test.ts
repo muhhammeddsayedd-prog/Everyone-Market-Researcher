@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createServer, request as httpRequest, type Server, type IncomingMessage } from 'node:http';
 import {
   boundedApifyJson,
+  boundedCollectorApifyJson,
   publicApifyAddresses,
   readFoundationDataset,
   readFoundationLaunch,
@@ -49,6 +50,36 @@ async function local(body: string, headers: Record<string, string> = {}, code = 
   return { transport, observed };
 }
 describe('bounded fixed Apify reader', () => {
+  it('uses the same strict transport for a fixed M04 page and rejects URL/offset overrides before DNS', async () => {
+    const f = await local('[]');
+    const dns = vi.fn(async () => [{ address: '8.8.8.8', family: 4 }]);
+    await expect(
+      boundedCollectorApifyJson(
+        '/v2/datasets/Synthetic/items?format=json&offset=500&limit=500&skipHidden=true',
+        'synthetic',
+        4194304,
+        f.transport,
+        undefined,
+        dns,
+      ),
+    ).resolves.toEqual([]);
+    expect(f.observed[0]).toMatchObject({
+      hostname: 'api.apify.com',
+      method: 'GET',
+      rejectUnauthorized: true,
+      minVersion: 'TLSv1.2',
+    });
+    const before = dns.mock.calls.length;
+    for (const path of [
+      'https://another.invalid/',
+      '/v2/datasets/X/items?format=json&offset=-1&limit=500&skipHidden=true',
+      '/v2/datasets/X/items?format=json&offset=0&limit=9999&skipHidden=true',
+    ])
+      await expect(
+        boundedCollectorApifyJson(path, 'synthetic', 4194304, f.transport, undefined, dns),
+      ).rejects.toThrow('EMR_APIFY_READER_INPUT_INVALID');
+    expect(dns).toHaveBeenCalledTimes(before);
+  });
   it('rejects private, mapped and mixed DNS answers instead of falling back to a public address', () => {
     for (const rows of [
       [{ address: '127.0.0.1', family: 4 }],

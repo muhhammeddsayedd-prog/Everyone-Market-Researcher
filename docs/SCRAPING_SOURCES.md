@@ -393,6 +393,27 @@ Backfill runs in waves (10 accounts per platform per hourly slot, 10:00–23:00 
 
 ## 9. Health checks
 
+M04 integration27October: representative collection remains unapproved. The
+new private callback path attests actual run `userId` against a pinned
+non-secret owner ID, actor/build IDs, configured memory/timeout/charge/result
+options and the original public INPUT before ingestion. Input defaults require
+explicit build review; credential/download/transcription fields are rejected
+at every nesting level. Two authenticated terminal snapshots at least ten
+seconds apart must agree before logging usage. `maxItems` equality proves the
+configured parameter, **not** an actual PPE output/spend cap; independent
+result bounds and `maxTotalChargeUsd` remain required. Provider fields/defaults
+and native behavior must be verified during the proposed preflight before any
+paid start. Missing/unexpected metadata fails closed.
+
+One fixed500-row dataset page per gateway call preserves the real raw offset
+(`skipHidden=true`, without row-filtering query switches). Excess approved
+output is contained as a failed empty ingestion result with actual cost retained.
+Matched valid old public content is success with zero selected items; absence
+of account/collection ownership is not. Dltik uploader identity alone does not
+prove collection membership, and a short representative run/reels response
+does not establish full backfill. Native fallback and pinned-post/reels source
+coverage remain live-only gaps; the single live packet approves no fallback.
+
 | Check | Rule | Action |
 |---|---|---|
 | Account freshness | `last_success_at` older than 48 h (daily) / 9 days (weekly) | Listed in WF-91 health email |

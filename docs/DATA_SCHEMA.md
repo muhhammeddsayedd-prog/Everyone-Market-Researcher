@@ -197,6 +197,41 @@ separate and pending at this checkpoint.
 Read: views `api.items_v` (over `app.feed_v`), `api.competitors_v`, `api.campaigns_v` (over `app.campaigns_v`, which the web app also uses), `api.organizations_v`, `api.people_v`, `api.briefs_v`, `api.news_v`; functions `app.search`, `app.similar`, `api.market_stats`.
 Write: `api.add_competitor` (write), `api.resolve_review` (write), `api.request_rescrape` (admin).
 
+### M04 fixed collector product contracts (27 October; pending hosted dev)
+
+`20261027092832_m04_collector_product_contracts.sql` adds six private `ops`
+tables: `collector_runs`, `collector_accounts`, `collector_launches`,
+`collector_passes`, `collector_pages` and `collector_requests`. All have RLS;
+machine roles receive no direct table grants. The writer-only
+`ops.collector_execute(uuid,text,jsonb)` accepts a closed operation catalog,
+hashes immutable request arguments and commits each receipt with its effects.
+The private completion function is not executable by the writer. Both definer
+functions have empty `search_path`; PUBLIC/anon/authenticated/api_agent cannot
+execute them.
+
+The contract reuses existing ingest, account-report, cost and parent-run RPCs.
+An exact selected-account claim creates primary or posts+reels pass state.
+Registration cannot close with an unregistered required pass, and completion
+cannot report/unlock until all passes and registration are complete. Reels
+ingestion restores the primary watermark; only final joint reporting schedules
+the account. Source evidence is retained across pages independently of filtered
+item count, so matched old public content may correctly yield zero items.
+
+Actor launch intent reserves approved aggregate starts/USD across parents.
+Registration binds the returned provider ID to its actor/pass/account set.
+Private page staging hashes each offset and atomically ingests/cursors without
+early reporting or cost. Settlement uses the trusted server's stable provider
+facts, apportions actual USD with an exact rounding remainder and stores the
+completed receipt. Completed replay cannot duplicate items/cost or release a
+newer account owner's claim. The HTTP surface exposes neither raw staging nor
+settlement nor arbitrary SQL/RPC; live policy and selected UUIDs are server-bound.
+
+This replaces the draft M04 secondary-selector/signature-extension plan; the
+existing eight-argument account report is unchanged. Local qualification and
+generated member coverage are in current M04 PROGRESS. Existing local14 versus
+hosted/committed15 baseline migration drift is preserved explicitly; the two
+new M04 migrations are not yet applied to hosted dev.
+
 ## 6. Seed data
 
 | File | Rows | Loads into |

@@ -419,3 +419,35 @@ parallel using stable contracts and labeled fixtures, with no hosted writes.
 This is a bounded delivery exception within the current work, not the start of
 M04, M09 or M10. Production, recurring activity, external notifications, private
 R2, PR #8 merge and advancement to M04 remain separate.
+
+## M04 collector integration — 27 October 2026
+
+The owner started M04 after merged M03 and requested connected Vimeo,
+Instagram posts/reels and WF-19 implementation. Use the existing restricted
+writer/TLS path with a fixed product-operation adapter; do not extend M03's
+closed acceptance windows or introduce another verifier/credential system.
+
+Instagram posts and reels share one owned account claim and parent. Register
+all account batches before closing registration; finish/report/release only
+after every required pass settles. Reels ingestion preserves the primary
+watermark. This replaces the draft secondary-selector/`p_secondary` approach:
+an independently selected reels pass cannot establish ownership safely after
+the primary releases it. Keep the existing eight-argument report function.
+The new M04 RPC and private tables track batch/page receipts and joint completion;
+they do not broaden direct table grants or replace historical RPCs.
+
+Native definitions are generated inactive local blueprints until saved and
+read back from Cloud. Explicit selected UUIDs are required before a native run
+starts; WF-00 selection wiring is still pending. Official Vimeo runs inline;
+fallbacks and Instagram remain asynchronous with durable launch intents, no
+automatic paid POST retry, trusted provider identity/input/cost verification
+and idempotent paged settlement. Native evidence and real source fixtures
+remain separate from local synthetic/code/SQL results.
+
+The one [representative dev packet](../milestones/M04-collectors-vimeo-instagram/evidence/live-test-estimate-20261027.md)
+is proposed, not approved: target two/max four sequential Instagram starts,
+USD1/start and USD4 aggregate, selected public accounts and setup/recovery/
+shutdown included. It explicitly includes the requested temporary project-default
+bypass exception; the earlier M03 exception does not carry forward. No live
+collection or hosted M04 migration has begun. Production, recurring activity,
+notifications, PR13 merge and M05 remain separate decisions.

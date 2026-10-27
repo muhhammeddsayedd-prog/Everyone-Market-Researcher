@@ -34,27 +34,33 @@ function vimeoDate(v) {
 }
 function vimeoUrl(value, image = false) {
   if (typeof value !== 'string' || /[\s\\\u0000-\u001f\u007f]/u.test(value)) return null;
-  try {
-    const u = new URL(value);
-    const hosts = image ? ['i.vimeocdn.com', 'secure-b.vimeocdn.com'] : ['vimeo.com', 'www.vimeo.com'];
-    if (
-      u.protocol !== 'https:' ||
-      !hosts.includes(u.hostname) ||
-      u.port ||
-      u.username ||
-      u.password ||
-      u.search ||
-      u.hash
-    )
-      return null;
-    return u.href;
-  } catch {
+  // Known public hosts only. Lexical projection also works in n8n Cloud Code,
+  // where URL and package imports are unavailable. Encoded separators and dot
+  // segments are rejected rather than letting a different parser rewrite them.
+  const match = /^https:\/\/([^/?#]+)(\/[^?#]*)?$/.exec(value);
+  if (!match) return null;
+  const hosts = image ? ['i.vimeocdn.com', 'secure-b.vimeocdn.com'] : ['vimeo.com', 'www.vimeo.com'];
+  const host = match[1].toLowerCase(),
+    path = match[2] || '/';
+  if (
+    !hosts.includes(host) ||
+    /%(?:2e|2f|5c|00)/i.test(path) ||
+    path.split('/').some((p) => p === '.' || p === '..')
+  )
     return null;
-  }
+  return 'https://' + host + path;
 }
 function vimeoOwner(url) {
   const canonical = vimeoUrl(url);
-  return canonical ? vimeoHandle(new URL(canonical).pathname.split('/').filter(Boolean).pop()) : '';
+  return canonical
+    ? vimeoHandle(
+        canonical
+          .replace(/^https:\/\/[^/]+/, '')
+          .split('/')
+          .filter(Boolean)
+          .pop(),
+      )
+    : '';
 }
 function vimeoTrim(value) {
   const text = vimeoText(value).slice(0, 8000);
@@ -93,7 +99,10 @@ function vimeoItem(
     payload,
   };
   // Reject hostile identity disagreement rather than storing the public URL of another video.
-  const parts = new URL(item.url).pathname.split('/').filter(Boolean);
+  const parts = item.url
+    .replace(/^https:\/\/[^/]+/, '')
+    .split('/')
+    .filter(Boolean);
   return parts[parts.length - 1] === id && vimeoRecord(raw) ? item : null;
 }
 function vimeoRows(rawItems) {
