@@ -3,6 +3,12 @@ create extension if not exists pgtap with schema extensions;
 set local search_path=public,extensions;
 select extensions.no_plan();
 
+-- The native local postgres is NOSUPERUSER with ADMIN but no SET membership.
+-- Permit only this rollback fixture to assume the tested roles; application
+-- grants and actual hosted restricted-login evidence are unchanged.
+grant n8n_writer,api_agent to postgres with inherit false;
+grant n8n_writer,api_agent to postgres with set true;
+
 select extensions.ok(has_function_privilege('n8n_writer','ops.get_media_targets(uuid[])','EXECUTE'),'writer can read bounded media targets');
 select extensions.ok(has_function_privilege('n8n_writer','ops.save_media_asset(uuid,text,text,text,integer,integer)','EXECUTE'),'writer can save a thumbnail receipt');
 select extensions.ok(not has_function_privilege('api_agent','ops.save_media_asset(uuid,text,text,text,integer,integer)','EXECUTE')
