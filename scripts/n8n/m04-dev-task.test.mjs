@@ -31,6 +31,33 @@ test('incremental ceilings retain historical charges and count Vercel inside Man
   );
 });
 
+test('HC01 ceilings preserve every old charge and bound all six exclusive categories', () => {
+  const totals = { management: 482, control: 3151, combined: 3633, vercel: 138 };
+  for (const [category, ceiling] of Object.entries({
+    n8n: 344,
+    vercel: 138,
+    provider: 1568,
+    gateway: 1166,
+    callback: 316,
+    database: 101,
+  })) {
+    assert.doesNotThrow(() => checkM04IncrementalCharge(totals, ceiling - 1, category, 'hc01'));
+    assert.throws(() => checkM04IncrementalCharge(totals, ceiling, category, 'hc01'), /CATEGORY_EXHAUSTED/);
+  }
+  assert.throws(
+    () => checkM04IncrementalCharge({ ...totals, management: 483, combined: 3634 }, 0, 'n8n', 'hc01'),
+    /ALLOWANCE_EXHAUSTED/,
+  );
+});
+
+test('HC01 cannot reopen old encrypted scope or run a new failure campaign', async () => {
+  await assert.rejects(
+    runTask({ task: 'ProviderMetadata', scope: 'hc01', state: { scope: 'incremental' } }),
+    /HC01_APPROVAL_REQUIRED/,
+  );
+  await assert.rejects(runTask({ task: 'Probe', phase: 'unknown', scope: 'hc01' }), /HC01_APPROVAL_REQUIRED/);
+});
+
 test('invalid counters or cross-scope state cannot admit incremental work', async () => {
   for (const value of [NaN, Infinity, -1, 0.5])
     assert.throws(

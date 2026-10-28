@@ -200,6 +200,44 @@ describe('M04 private callback source verification and bounded settlement', () =
     expect(t.get).not.toHaveBeenCalled();
     expect(t.calls).toHaveLength(1);
   });
+  it.each(['FAILED', 'TIMED-OUT', 'ABORTED'])(
+    'settles verified %s usage without reading or staging a dataset',
+    async (status) => {
+      const t = setup();
+      t.get.mockImplementation(async (path) =>
+        path.includes('actor-runs') ? { data: { ...metadata.data, status } } : actorInput,
+      );
+      await expect(t.handler(input, config, new AbortController().signal)).resolves.toMatchObject({
+        state: 'completed',
+        cost_usd: 0.0019,
+      });
+      expect(t.get).toHaveBeenCalledTimes(3);
+      expect(t.get.mock.calls.some(([path]) => path.includes('/datasets/'))).toBe(false);
+      expect(t.calls.map((call) => call.operation)).toEqual(['lookup', 'settle']);
+      const normalizedStatus = status.replace('TIMED-OUT', 'TIMED_OUT');
+      expect(t.calls.find((call) => call.operation === 'settle')?.args).toMatchObject({
+        status: normalizedStatus,
+        usage_usd: 0.0019,
+        groups: [
+          {
+            items: [],
+            status: 'failed',
+            error: 'apify_' + normalizedStatus.toLowerCase(),
+            backfill_done: false,
+          },
+        ],
+      });
+    },
+  );
+  it('leaves nonterminal provider work unsettled for reconciliation without staging side effects', async () => {
+    const t = setup();
+    t.get.mockImplementation(async () => ({ data: { ...metadata.data, status: 'RUNNING' } }));
+    await expect(t.handler(input, config, new AbortController().signal)).rejects.toMatchObject({
+      status: 503,
+    });
+    expect(t.get).toHaveBeenCalledTimes(1);
+    expect(t.calls.map((call) => call.operation)).toEqual(['lookup']);
+  });
   it.each(['userId', 'actId', 'buildId'])('rejects mismatched trusted %s before staging', async (key) => {
     const t = setup();
     t.get.mockImplementation(async () => ({ data: { ...metadata.data, [key]: 'foreign' } }));

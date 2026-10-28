@@ -1,5 +1,38 @@
 # M04 AC1–AC9 — actual evidence and remaining work
 
+## Current development gate — owner decision28October2026
+
+The [binding consolidated decision](../../../docs/DECISIONS.md#m04-development-acceptance-and-m05-sequencing--28-october-2026) approves the existing staged packet and separates essential development acceptance from the exact obligations below. This section supersedes historical evidence-only stops and the earlier all-original-criteria sequencing gate. **M04 development is not yet accepted by this record.** No missing observation is marked passed; no observed defect is waived. PR13 stays draft/unmerged.
+
+| Essential development check | Accepted evidence reused | Remaining actual proof |
+| --- | --- | --- |
+| Hosted HC-01 and identity | Narrow migration/local48+132 SQL, generated/native integration and full18-migration CI; exact five identities | Apply only reviewed18th after17-version/hash dry-run; hosted parity/role/scope/advisors and real claims |
+| Five-account recent posts/reels and repeats | Accepted async collection/callback/orchestration and joint registration/ownership paths | Everyone4 starts, then conditional remaining four16 starts; each account/pass/repeat recorded performed/passed, performed/failed or unperformed |
+| Ownership, completion, replay, duplicates and queues | Accepted registration barrier, replay/unknown rejection, source duplicates and queue parity | Per-stage actual claim/parent/actor settlement; no duplicate canonical or AI/media side effects for unchanged content; separately attribute genuine new publications and investigate unexpected older discoveries |
+| Truthful history/watermarks/coverage | False-completion fixes and retained incomplete Instagram histories | No fabricated backfill_done or watermark rewinds; capped recent results remain partial/failed; verified Vimeo cursor progression |
+| Metrics correctness | Retained normalization/ingestion and metrics contracts | Actual natural re-observation, or meaningful retained-data normalization→ingestion→DB proof of timestamp update with unchanged AI and no redundant queue work; mocked assignment is insufficient |
+| Costs, failure handling and safe closure | Accepted actual costs, automatic error audit, deterministic failure checks and shutdown | Reconcile all newly attempted work/costs; focused escalation/release/retry/terminal/no-duplicate contract checks; restore config, revoke bypass and verify closure |
+| Required delivery checks | Ordinary green implementation CI/export/review evidence | Required checks for the actual delivered head; no verifier framework or unchanged full-suite rerun solely for resume |
+
+Absent metrics/pinned/fallback examples do not by themselves stop conditional Stage2 if mandatory checks pass. An observed handling defect does. Legitimate independently attributable publications between repeats may add rows/queues; items_new>0 alone is not a failure. Security/identity, ownership, integrity, incorrect costs, exhausted reserves, uncertain paid outcomes and cap saturation/insufficient recent coverage remain stops. Never collect repeatedly to manufacture examples.
+
+| Exact deferred obligation | Remaining evidence and future trigger |
+| --- | --- |
+| HC-01-F1 — Instagram January2024 completeness | Separate posts/reels per-profile cutoff/exhaustion evidence under a later approved coverage packet; recent monitoring cannot close it |
+| Everyone Vimeo residual history | Perform the approved single page4/width5 operation and retain actual result/next cursor first; further historical acquisition is deferred to later scoped coverage approval. Cursor correctness remains essential now |
+| Real old-pinned observation | Retain filtering tests; qualify one natural public example when available within future authorized collection, without repeated hunting |
+| Natural recent-metrics re-observation | Defer only unavailable provider reappearance after meaningful actual normalization/ingestion/DB integration proof; revisit on a naturally observed recent item |
+| Real fallback/source examples | Provider observations for unexercised sources require later representative approval; unverified fallback execution remains disabled/unreachable in the accepted operational configuration |
+| Full-five Vimeo daily-repeat breadth | Accepted repeat/duplicate/queue evidence retained; expand live matrix only under later explicit coverage authority |
+| Native parent/error UI pairing and live consecutive failures | Preserve audit21/native31166 and deterministic failure behavior; later separately scoped operational verification, without reopening M03 retention/deletion machinery |
+| Production AC6 and production AC7 | Separate target/migration/copies/backfill/cost estimate and production approval; no dev result is production acceptance |
+| Recurring overlap and health-email delivery | Separate recurring/notification authorization and operational observation window |
+| Launch issue: general scheduled Instagram with incomplete history | Generic scheduled selector still requires done/not_applicable. A separately decided/tested production eligibility solution is required; the exact five-account dev HC-01 exception does not solve or authorize it |
+
+When all essential checks and planned validation pass, record **M04 development accepted; coverage and rollout obligations open**; do not mark original full Done/production ready/merged. M05 local development then uses a separate branch from that accepted CI-green head and a stacked draft PR targeting M04. The protected stale root/M03 board does not independently block the owner's exception. M05 paid/live/hosted work remains separately gated.
+
+## Preserved original criterion evidence
+
 **M04 remains open; PR13 remains draft and unmerged.** The [representative results](representative-dev-results-20261027.md) and [incremental results](incremental-dev-results-20261027.md) preserve two safely closed development sequences. The increment was approved at `2c450f4` and executed after correction `376f9dd`; [CI40535634604](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40535634604) passed all five required jobs and Vercel before staging. This map records saved evidence and makes no new hosted requests.
 
 The accepted sample remains unchanged: ten Vimeo source IDs including two content duplicates, first-run eight new, same-content repeat zero new; eleven unique Instagram items; two actors/USD 0.046; callback replay/unknown denial with twelve unchanged projections. The increment adds 215 stored rows/214 nonduplicate additions, two actors/USD 0.7935, actual five-account/platform observations, one Vimeo daily pair, and a maintained automatic fixed error-log receipt. It does not establish complete history for all ten accounts.

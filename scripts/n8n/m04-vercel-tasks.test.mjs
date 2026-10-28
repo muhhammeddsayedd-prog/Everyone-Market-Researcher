@@ -22,7 +22,8 @@ const secrets = {
 const originalMachine = JSON.parse(
   readFileSync(join(repo, 'scripts/n8n/foundation-delivery-packet.json'), 'utf8'),
 );
-function fixture({ incremental = false } = {}) {
+function fixture({ incremental = false, hc01 = false } = {}) {
+  incremental ||= hc01;
   const local = mkdtempSync(join(tmpdir(), 'emr-m04-vercel-local-'));
   const meta = join(local, 'Everyone-Market-Radar-Private/foundation/df4f29ec-e2dc-4d82-a276-62a4e695e6f9');
   mkdirSync(meta, { recursive: true });
@@ -113,6 +114,41 @@ function fixture({ incremental = false } = {}) {
       observedAt,
       provider: structuredClone(publicProvider),
     };
+  }
+  if (hc01) {
+    state.scope = 'hc01';
+    const approval = records['incremental-dev-approval-20261027.json'];
+    records['hc01-dev-approval-20261028.json'] = {
+      ...approval,
+      approval_kind: 'hc01',
+      approval_id: '1cf8406c-1142-445e-a237-6d0fd7a67b22',
+      recordedAt: approval.approvedAt,
+      reviewedHead: 'bb0cd01d3a6ee239540e73b1d366f86e46b17d42',
+      ceilings: { actorStarts: 22, actorUsd: 22, perActorUsd: 1, resultsPerProfile: 30 },
+    };
+    const historical = JSON.parse(
+      readFileSync(
+        join(
+          repo,
+          'milestones/M04-collectors-vimeo-instagram/evidence/incremental-final-readback-20261027.json',
+        ),
+        'utf8',
+      ),
+    );
+    records['incremental-final-readback-20261027.json'] = historical;
+    const db = structuredClone(records['incremental-db-preflight-20261027.json']);
+    db.queryResult[0].incremental_preflight = structuredClone(
+      historical.queryResult[0].incremental_preflight,
+    );
+    db.queryResult[0].incremental_preflight.migrations.push({
+      version: '20261027192743',
+      name: 'm04_recent_instagram_dev_eligibility',
+      historySha256: '1'.repeat(64),
+    });
+    records['hc01-db-preflight-20261028.json'] = db;
+    records['hc01-provider-preflight-20261028.json'] = structuredClone(
+      records['incremental-provider-preflight-20261027.json'],
+    );
   }
   const projectDto = {
     id: project,
@@ -438,6 +474,41 @@ test('pending bypass recovery refuses a mismatched note, time, default or extra 
       assert.equal(result.public.status, 'blocked');
       assert.ok(f.calls.every((c) => c.method === 'GET'));
       assert.equal(v.pending.action, 'bypass.create');
+    } finally {
+      f.close();
+    }
+  }
+});
+
+test('HC01 preparation preserves18-version parity and narrows runtime selection to exactfive Instagram plusEveryoneVimeo', async () => {
+  const f = fixture({ hc01: true });
+  try {
+    const r = await f.run('prepare');
+    assert.equal(r.public.status, 'completed', JSON.stringify(r.public));
+    assert.equal(f.state.selection.instagram.length, 5);
+    assert.deepEqual(f.state.selection.vimeo, ['985a57dd-7934-422d-9d18-4e8ca59fc197']);
+    assert.equal(f.state.livePolicy.max_actor_starts, 22);
+    assert.equal(f.state.livePolicy.max_results_per_profile, 30);
+    for (const phase of ['configure', 'poll', 'cleanup'])
+      assert.equal((await f.run(phase)).public.status, 'completed', phase);
+    assert.equal(f.rows.length, 0);
+    assert.deepEqual(f.projectDto.protectionBypass, {});
+  } finally {
+    f.close();
+  }
+});
+
+test('HC01 preparation refuses changed approvedidentity, completehistory or missing18th migration before network', async () => {
+  for (const fault of ['identity', 'history', 'migration']) {
+    const f = fixture({ hc01: true });
+    try {
+      const snapshot = f.records['hc01-db-preflight-20261028.json'].queryResult[0].incremental_preflight;
+      const a = snapshot.accounts.find((a) => a.platform === 'instagram');
+      if (fault === 'identity') a.id = '27000000-0000-4000-8000-000000000001';
+      if (fault === 'history') a.backfill_status = 'done';
+      if (fault === 'migration') snapshot.migrations.pop();
+      assert.equal((await f.run('prepare')).public.status, 'blocked');
+      assert.equal(f.calls.length, 0);
     } finally {
       f.close();
     }

@@ -63,6 +63,32 @@ export const incrementalSelectors = Object.freeze(
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const record = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const literal = (value) => "'" + String(value).replaceAll("'", "''") + "'";
+const hc01InstagramIds = Object.freeze({
+  C000: '962c9c7e-aa0f-46ae-911b-3265859e0577',
+  C001: 'bed82782-753f-4ba9-91ca-691ef36f75c6',
+  C130: '46149fb9-8905-4b76-9834-4b38f668a2e2',
+  C270: '2d42d451-ac9a-42ac-a879-8760d63c8108',
+  C226: '3ca3befa-abe6-4540-a389-0cf16115c581',
+});
+const hc01Approval = '1cf8406c-1142-445e-a237-6d0fd7a67b22';
+const hc01ApprovedAt = '2026-10-28T00:43:24Z';
+function queryScope(options = {}) {
+  if (!record(options) || !['incremental', 'hc01'].includes(options.scope ?? 'incremental'))
+    throw Error('incremental_scope_blocked');
+  return options.scope ?? 'incremental';
+}
+function validHc01Instagram(entry) {
+  const a = entry.account;
+  return (
+    a.platform !== 'instagram' ||
+    (a.id === hc01InstagramIds[entry.company_code] &&
+      ['pending', 'running'].includes(a.backfill_status) &&
+      typeof a.last_external_id === 'string' &&
+      a.last_external_id.trim().length > 0 &&
+      Number.isFinite(Date.parse(a.last_item_published_at)) &&
+      Date.parse(a.last_item_published_at) <= Date.now())
+  );
+}
 function incrementalHistory() {
   const previous = JSON.parse(
     readFileSync(new URL('./m03-foundation-forward-dev-migration-packet.json', import.meta.url), 'utf8'),
@@ -117,7 +143,8 @@ select jsonb_build_object('current_user',current_user,'session_user',session_use
    'costRows',(select count(*) from ops.cost_ledger),'costUsd',(select coalesce(sum(cost_usd),0) from ops.cost_ledger))) as incremental_preflight;\n`;
 }
 
-export function bindIncrementalAccounts(preflight) {
+export function bindIncrementalAccounts(preflight, options = {}) {
+  const scope = queryScope(options);
   const history = incrementalHistory();
   if (
     !record(preflight) ||
@@ -125,10 +152,15 @@ export function bindIncrementalAccounts(preflight) {
     preflight.session_user !== 'postgres' ||
     preflight.database !== 'postgres' ||
     !Array.isArray(preflight.migrations) ||
-    preflight.migrations.length !== 17 ||
+    preflight.migrations.length !== (scope === 'hc01' ? 18 : 17) ||
     preflight.migrations.some(
       (row, index) =>
-        !record(row) || ['version', 'name', 'historySha256'].some((key) => row[key] !== history[index][key]),
+        !record(row) ||
+        (index < 17
+          ? ['version', 'name', 'historySha256'].some((key) => row[key] !== history[index][key])
+          : row.version !== '20261027192743' ||
+            row.name !== 'm04_recent_instagram_dev_eligibility' ||
+            !/^[0-9a-f]{64}$/.test(row.historySha256 ?? '')),
     ) ||
     !Array.isArray(preflight.selectorCounts) ||
     preflight.selectorCounts.length !== 10 ||
@@ -171,7 +203,8 @@ export function bindIncrementalAccounts(preflight) {
       account.locked_until !== null ||
       typeof account.updated_at !== 'string' ||
       !Number.isFinite(Date.parse(account.updated_at)) ||
-      (owners.has(selector.company_code) && owners.get(selector.company_code) !== account.competitor_id)
+      (owners.has(selector.company_code) && owners.get(selector.company_code) !== account.competitor_id) ||
+      (scope === 'hc01' && !validHc01Instagram(entry))
     )
       throw Error('incremental_selection_blocked');
     ids.add(account.id);
@@ -183,7 +216,8 @@ export function bindIncrementalAccounts(preflight) {
 
 const incrementalApproval = '123e88b6-5920-4e54-832a-ad6d87c22675';
 const incrementalApprovedAt = '2026-10-27T15:24:25.740Z';
-function selectedEntry(entry) {
+function selectedEntry(entry, options = {}) {
+  const scope = queryScope(options);
   const selector = incrementalSelectors.find((s) => s.key === entry?.key),
     a = entry?.account;
   if (
@@ -199,7 +233,8 @@ function selectedEntry(entry) {
     a.locked_until !== null ||
     !['pending', 'running', 'done', 'not_applicable'].includes(a.backfill_status) ||
     typeof a.next_due_at !== 'string' ||
-    !Number.isFinite(Date.parse(a.next_due_at))
+    !Number.isFinite(Date.parse(a.next_due_at)) ||
+    (scope === 'hc01' && !validHc01Instagram(entry))
   )
     throw Error('incremental_selection_blocked');
   return selector;
@@ -210,7 +245,10 @@ function sqlJson(value) {
   if (json.includes(delimiter) || json.length > 90000) throw Error('incremental_snapshot_blocked');
   return delimiter + json + delimiter + '::jsonb';
 }
-function operationalSql(changes, label) {
+function operationalSql(changes, label, options = {}) {
+  const scope = queryScope(options);
+  const approval = scope === 'hc01' ? hc01Approval : incrementalApproval;
+  const approvedAt = scope === 'hc01' ? hc01ApprovedAt : incrementalApprovedAt;
   if (
     !changes.length ||
     changes.length > 10 ||
@@ -218,7 +256,16 @@ function operationalSql(changes, label) {
   )
     throw Error('incremental_snapshot_blocked');
   for (const entry of changes) {
-    selectedEntry(entry);
+    selectedEntry(entry, options);
+    if (
+      scope === 'hc01' &&
+      ((entry.account.platform !== 'instagram' && entry.key !== 'C000:vimeo:0') ||
+        !record(entry.selection) ||
+        Object.keys(entry.selection).some((key) => !['next_due_at', 'backfill_cursor'].includes(key)) ||
+        (Object.hasOwn(entry.selection, 'backfill_cursor') &&
+          (entry.key !== 'C000:vimeo:0' || entry.accepted_vimeo_parent !== true)))
+    )
+      throw Error('incremental_snapshot_blocked');
     if (
       entry.owner &&
       (!uuid.test(entry.owner.run_id ?? '') || !/^\d{1,15}$/.test(entry.owner.execution_id ?? ''))
@@ -229,6 +276,15 @@ function operationalSql(changes, label) {
 do $m04_operational$
 declare entries jsonb:=${sqlJson(changes)}; e jsonb; a app.competitor_accounts%rowtype; r ops.scrape_runs%rowtype;
 begin
+ ${
+   scope === 'hc01'
+     ? `if exists(select 1 from app.competitor_accounts where locked_until>clock_timestamp())
+  or exists(select 1 from ops.scrape_runs where status='running')
+  or exists(select 1 from ops.apify_runs where processed_at is null) then
+  raise exception using errcode='55000',message='M04 HC01 global unfinished work changed';
+ end if;`
+     : ''
+ }
  perform 1 from ops.scrape_runs where id in (select coalesce(x->'owner'->>'run_id',x->'account'->>'last_run_id')::uuid from jsonb_array_elements(entries) x) order by id for update;
  perform 1 from app.competitors where id in (select (x->'account'->>'competitor_id')::uuid from jsonb_array_elements(entries) x) order by id for share;
  for e in select x from jsonb_array_elements(entries) x order by x->'account'->>'id' loop
@@ -245,23 +301,40 @@ begin
   end if;
   if e ? 'owner' then
    select * into r from ops.scrape_runs where id=(e->'owner'->>'run_id')::uuid;
-   if not found or r.env<>'dev' or r.started_at<${literal(incrementalApprovedAt)}::timestamptz or r.workflow is distinct from (case when a.platform='vimeo' then 'WF-10' else 'WF-11' end)
+   if not found or r.env<>'dev' or r.started_at<${literal(approvedAt)}::timestamptz or r.workflow is distinct from (case when a.platform='vimeo' then 'WF-10' else 'WF-11' end)
     or r.platform is distinct from a.platform or r.n8n_execution_id is distinct from e->'owner'->>'execution_id'
     or r.status='running' or r.finished_at is null or a.last_run_id is distinct from r.id
     or not exists(select 1 from ops.collector_accounts where run_id=r.id and account_id=a.id)
     or not exists(select 1 from ops.scrape_run_accounts where run_id=r.id and account_id=a.id)
     or not exists(select 1 from ops.collector_runs where run_id=r.id and registration_closed)
     or exists(select 1 from ops.collector_passes where run_id=r.id and status='pending')
-    or exists(select 1 from ops.collector_launches where run_id=r.id and (apify_run_id is null or approval_id<>${literal(incrementalApproval)}::uuid))
+    or exists(select 1 from ops.collector_launches where run_id=r.id and (apify_run_id is null or approval_id<>${literal(approval)}::uuid))
     or exists(select 1 from ops.apify_runs where run_id=r.id and processed_at is null) then
     raise exception using errcode='55000',message='M04 incremental recorded parent ownership or closure changed';
    end if;
   elsif a.last_run_id is not null and exists(select 1 from ops.scrape_runs where id=a.last_run_id and (status='running' or finished_at is null)) then
    raise exception using errcode='55000',message='M04 incremental baseline parent unfinished';
   end if;
+  ${
+    scope === 'hc01'
+      ? `if e ? 'accepted_vimeo_parent' then
+   select * into r from ops.scrape_runs where id='74fae456-a34c-4460-a5ea-6ab66ecec431'::uuid;
+   if not found or r.env<>'dev' or r.workflow<>'WF-10' or r.platform<>'vimeo' or r.mode<>'backfill'
+    or r.status<>'success' or r.finished_at is null or r.n8n_execution_id<>'31176' or a.last_run_id is distinct from r.id
+    or not exists(select 1 from ops.collector_accounts where run_id=r.id and account_id=a.id)
+    or not exists(select 1 from ops.scrape_run_accounts where run_id=r.id and account_id=a.id and status='success')
+    or not exists(select 1 from ops.collector_runs where run_id=r.id and registration_closed)
+    or exists(select 1 from ops.collector_passes where run_id=r.id and status='pending')
+    or exists(select 1 from ops.collector_launches where run_id=r.id)
+    or exists(select 1 from ops.apify_runs where run_id=r.id) then
+    raise exception using errcode='55000',message='M04 HC01 accepted Vimeo parent ownership or closure changed';
+   end if;
+  end if;`
+      : ''
+  }
   update app.competitor_accounts set
-   backfill_status=coalesce((e->'selection'->>'backfill_status')::app.backfill_status,a.backfill_status),
-   backfill_cursor=case when e->'selection' ? 'backfill_cursor' then nullif(e->'selection'->'backfill_cursor','null'::jsonb) else a.backfill_cursor end,
+   ${scope === 'hc01' ? '' : "backfill_status=coalesce((e->'selection'->>'backfill_status')::app.backfill_status,a.backfill_status),"}
+   ${scope === 'hc01' && !changes.some((entry) => Object.hasOwn(entry.selection, 'backfill_cursor')) ? '' : "backfill_cursor=case when e->'selection' ? 'backfill_cursor' then nullif(e->'selection'->'backfill_cursor','null'::jsonb) else a.backfill_cursor end,"}
    next_due_at=case when e->'selection' ? 'next_due_at' then (e->'selection'->>'next_due_at')::timestamptz else least(a.next_due_at,clock_timestamp()-interval '1 second') end,
    updated_at=clock_timestamp()
    where id=a.id and updated_at=a.updated_at and locked_until is null;
@@ -273,7 +346,92 @@ select jsonb_build_object('operation',${literal(label)},'preservedContentAndWate
   (select (x->'account'->>'id')::uuid from jsonb_array_elements(${sqlJson(changes)}) x))) as incremental_operational;\n`;
 }
 
-export function buildIncrementalSetupSql(bound, cohort) {
+function acceptedHc01VimeoCursor(entry) {
+  const receipt = (file) => {
+    const saved = JSON.parse(
+      readFileSync(
+        new URL('../../milestones/M04-collectors-vimeo-instagram/evidence/' + file, import.meta.url),
+        'utf8',
+      ),
+    );
+    if (
+      saved.status !== 'reviewed_query_complete' ||
+      saved.environment !== 'dev' ||
+      saved.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+      saved.databaseClientClosed !== true ||
+      saved.lastNativeExit !== 0
+    )
+      throw Error('incremental_accepted_cursor_blocked');
+    return saved;
+  };
+  const saved = receipt('incremental-vimeo-pair-settled-20261027.json').queryResult?.[0]
+    ?.incremental_assertions;
+  const final = receipt('incremental-final-readback-20261027.json').queryResult?.[0]?.incremental_preflight;
+  const prior = saved?.accounts?.find((a) => a.id === entry.account.id);
+  const restored = final?.accounts?.find((e) => e.key === entry.key)?.account;
+  const run = saved?.runs?.find(
+    (r) =>
+      r.id === '74fae456-a34c-4460-a5ea-6ab66ecec431' &&
+      r.n8n_execution_id === '31176' &&
+      r.env === 'dev' &&
+      r.workflow === 'WF-10' &&
+      r.platform === 'vimeo' &&
+      r.mode === 'backfill' &&
+      r.status === 'success' &&
+      Number.isFinite(Date.parse(r.finished_at)),
+  );
+  const expectedCursor = (cursor) =>
+    record(cursor) &&
+    Object.keys(cursor).length === 4 &&
+    cursor.page === 4 &&
+    cursor.page_size === 5 &&
+    cursor.endpoint === 'users' &&
+    cursor.resourcePath === '/users/157330576';
+  if (
+    !run ||
+    prior?.last_run_id !== run.id ||
+    !expectedCursor(prior?.backfill_cursor) ||
+    restored?.last_run_id !== run.id ||
+    restored.external_id !== '157330576' ||
+    entry.account.last_run_id !== run.id ||
+    entry.account.external_id !== '157330576' ||
+    !['pending', 'running'].includes(entry.account.backfill_status) ||
+    (entry.account.backfill_cursor !== null && !expectedCursor(entry.account.backfill_cursor))
+  )
+    throw Error('incremental_accepted_cursor_blocked');
+  return structuredClone(prior.backfill_cursor);
+}
+
+export function buildIncrementalSetupSql(bound, cohort, options = {}) {
+  const scope = queryScope(options);
+  if (scope === 'hc01') {
+    if (!Array.isArray(bound) || bound.length !== 10 || new Set(bound.map((e) => e.key)).size !== 10)
+      throw Error('incremental_snapshot_blocked');
+    bound.forEach((entry) => selectedEntry(entry, options));
+    const keys =
+      cohort === 'first-instagram'
+        ? ['C000:instagram:0']
+        : cohort === 'remaining-instagram'
+          ? incrementalSelectors
+              .filter((s) => s.platform === 'instagram' && s.company_code !== 'C000')
+              .map((s) => s.key)
+          : cohort === 'vimeo-continuation'
+            ? ['C000:vimeo:0']
+            : null;
+    if (!keys) throw Error('incremental_cohort_blocked');
+    const changes = keys.map((key) => {
+      const entry = bound.find((e) => e.key === key);
+      if (!entry || entry.account.status !== 'active') throw Error('incremental_selection_blocked');
+      return {
+        key,
+        company_code: entry.company_code,
+        account: entry.account,
+        ...(cohort === 'vimeo-continuation' ? { accepted_vimeo_parent: true } : {}),
+        selection: cohort === 'vimeo-continuation' ? { backfill_cursor: acceptedHc01VimeoCursor(entry) } : {},
+      };
+    });
+    return operationalSql(changes, 'hc01-setup-' + cohort, options);
+  }
   const keys =
     cohort === 'new-vimeo'
       ? incrementalSelectors.filter((s) => s.platform === 'vimeo' && !s.knownId).map((s) => s.key)
@@ -332,11 +490,13 @@ export function buildIncrementalSetupSql(bound, cohort) {
   return operationalSql(changes, 'setup-' + cohort);
 }
 
-export function buildIncrementalResumeSql(entry, owner, mode) {
-  const selector = selectedEntry(entry),
+export function buildIncrementalResumeSql(entry, owner, mode, options = {}) {
+  const scope = queryScope(options);
+  const selector = selectedEntry(entry, options),
     a = entry.account;
   if (!['vimeo-cursor', 'daily-due'].includes(mode) || a.status !== 'active')
     throw Error('incremental_resume_blocked');
+  if (scope === 'hc01' && mode !== 'daily-due') throw Error('incremental_resume_blocked');
   if (
     mode === 'vimeo-cursor' &&
     (selector.platform !== 'vimeo' ||
@@ -351,25 +511,29 @@ export function buildIncrementalResumeSql(entry, owner, mode) {
     throw Error('incremental_resume_blocked');
   if (
     mode === 'daily-due' &&
-    (!['done', 'not_applicable'].includes(a.backfill_status) ||
-      !Number.isFinite(Date.parse(a.last_item_published_at)))
+    (scope === 'hc01'
+      ? selector.platform !== 'instagram' || !validHc01Instagram(entry)
+      : !['done', 'not_applicable'].includes(a.backfill_status) ||
+        !Number.isFinite(Date.parse(a.last_item_published_at)))
   )
     throw Error('incremental_daily_ineligible');
   if (!owner) throw Error('incremental_owner_blocked');
   return operationalSql(
     [{ key: entry.key, company_code: entry.company_code, account: a, owner, selection: {} }],
     mode,
+    options,
   );
 }
 
-export function buildIncrementalRestoreSql(baseline, finalEntries) {
+export function buildIncrementalRestoreSql(baseline, finalEntries, options = {}) {
+  const scope = queryScope(options);
   if (!Array.isArray(baseline) || !Array.isArray(finalEntries)) throw Error('incremental_snapshot_blocked');
   const changes = finalEntries.map((current) => {
     const originals = baseline.filter((e) => e.key === current.key && e.account.id === current.account?.id);
     if (originals.length !== 1) throw Error('incremental_owner_blocked');
     const original = originals[0];
-    selectedEntry(original);
-    selectedEntry(current);
+    selectedEntry(original, options);
+    selectedEntry(current, options);
     if (
       !current.owner &&
       (!record(current.setup_account) ||
@@ -386,16 +550,22 @@ export function buildIncrementalRestoreSql(baseline, finalEntries) {
         ? { setup_account: current.setup_account, baseline_run_id: original.account.last_run_id }
         : {}),
       selection: {
-        backfill_status: original.account.backfill_status,
-        backfill_cursor: original.account.backfill_cursor,
+        ...(scope === 'hc01'
+          ? {}
+          : {
+              backfill_status: original.account.backfill_status,
+              backfill_cursor: original.account.backfill_cursor,
+            }),
         next_due_at: original.account.next_due_at,
       },
     };
   });
-  return operationalSql(changes, 'restore-operational-selection');
+  return operationalSql(changes, 'restore-operational-selection', options);
 }
 
-export function buildIncrementalAssertionsSql(bound, parents = []) {
+export function buildIncrementalAssertionsSql(bound, parents = [], options = {}) {
+  const scope = queryScope(options);
+  const approval = scope === 'hc01' ? hc01Approval : incrementalApproval;
   if (
     !Array.isArray(bound) ||
     bound.length !== 10 ||
@@ -405,7 +575,7 @@ export function buildIncrementalAssertionsSql(bound, parents = []) {
     parents.some((p) => !uuid.test(p.run_id ?? '') || !/^\d{1,15}$/.test(p.execution_id ?? ''))
   )
     throw Error('incremental_owner_blocked');
-  bound.forEach(selectedEntry);
+  bound.forEach((entry) => selectedEntry(entry, options));
   const ids = bound.map((e) => e.account.id);
   if (new Set(ids).size !== 10) throw Error('incremental_selection_blocked');
   return `-- Read-only owned parent, account, metrics, queue and actual-cost projection.
@@ -423,7 +593,7 @@ select jsonb_build_object('accounts',(select jsonb_agg(to_jsonb(a) order by a.id
    from ops.cost_ledger c where c.run_id in (select run_id from parents)),
  'actorRuns',(select coalesce(jsonb_agg(jsonb_build_object('apify_run_id',a.apify_run_id,'run_id',a.run_id,'actor_id',a.actor_id,'account_ids',a.account_ids,'status',a.status,'usage_usd',a.usage_usd,'processed_at',a.processed_at) order by a.apify_run_id),'[]'::jsonb)
    from ops.apify_runs a where a.run_id in (select run_id from parents)),
- 'launches',(select coalesce(jsonb_agg(to_jsonb(l) order by l.created_at),'[]'::jsonb) from ops.collector_launches l where l.approval_id=${literal(incrementalApproval)}::uuid),
+ 'launches',(select coalesce(jsonb_agg(to_jsonb(l) order by l.created_at),'[]'::jsonb) from ops.collector_launches l where l.approval_id=${literal(approval)}::uuid),
  'passes',(select coalesce(jsonb_agg(to_jsonb(p) order by p.run_id,p.account_id,p.pass),'[]'::jsonb) from ops.collector_passes p where p.run_id in (select run_id from parents)),
  'collectorRuns',(select coalesce(jsonb_agg(to_jsonb(r) order by r.run_id),'[]'::jsonb) from ops.collector_runs r where r.run_id in (select run_id from parents)),
  'aiQueueCounts',(select coalesce(jsonb_agg(jsonb_build_object('item_id',i.id,'count',(select count(*) from pgmq.q_ai_extract q where q.message->>'item_id'=i.id::text)) order by i.id),'[]'::jsonb) from items i),
@@ -434,29 +604,32 @@ select jsonb_build_object('accounts',(select jsonb_agg(to_jsonb(a) order by a.id
  'selectedUnprocessedActors',(select count(*) from ops.apify_runs a where a.processed_at is null and exists(select 1 from selected s where s.id=any(a.account_ids)))) as incremental_assertions;\n`;
 }
 
-export function buildIncrementalObservationSql(bound) {
+export function buildIncrementalObservationSql(bound, options = {}) {
+  const scope = queryScope(options);
+  const approvalId = scope === 'hc01' ? hc01Approval : incrementalApproval;
   const approval = JSON.parse(
     readFileSync(
       new URL(
-        '../../milestones/M04-collectors-vimeo-instagram/evidence/incremental-dev-approval-20261027.json',
+        '../../milestones/M04-collectors-vimeo-instagram/evidence/' +
+          (scope === 'hc01' ? 'hc01-dev-approval-20261028.json' : 'incremental-dev-approval-20261027.json'),
         import.meta.url,
       ),
       'utf8',
     ),
   );
   if (
-    approval.approval_id !== incrementalApproval ||
+    approval.approval_id !== approvalId ||
     approval.environment !== 'dev' ||
     approval.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
-    !Number.isFinite(Date.parse(approval.approvedAt))
+    !Number.isFinite(Date.parse(scope === 'hc01' ? approval.recordedAt : approval.approvedAt))
   )
     throw Error('incremental_owner_blocked');
-  const exact = buildIncrementalAssertionsSql(bound);
+  const exact = buildIncrementalAssertionsSql(bound, [], options);
   // Discovery is a readback, never a restoration ownership permit. The owner
   // must correlate returned native execution IDs to the actual clicked runs.
   const discovery = `parents as (select r.id run_id,r.n8n_execution_id execution_id from ops.scrape_runs r
- where r.env='dev' and r.workflow in ('WF-10','WF-11') and r.started_at>=${literal(approval.approvedAt)}::timestamptz
- and (exists(select 1 from ops.collector_launches l where l.run_id=r.id and l.approval_id=${literal(incrementalApproval)}::uuid)
+ where r.env='dev' and r.workflow in ('WF-10','WF-11') and r.started_at>=${literal(scope === 'hc01' ? approval.recordedAt : approval.approvedAt)}::timestamptz
+ and (exists(select 1 from ops.collector_launches l where l.run_id=r.id and l.approval_id=${literal(approvalId)}::uuid)
  or (r.workflow='WF-10' and exists(select 1 from ops.collector_accounts ca where ca.run_id=r.id)
  and not exists(select 1 from ops.collector_accounts ca where ca.run_id=r.id and ca.account_id not in
  (select x::uuid from jsonb_array_elements_text(${sqlJson(bound.map((e) => e.account.id))}) x))))),`;

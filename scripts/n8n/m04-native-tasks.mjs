@@ -23,6 +23,14 @@ import { prepareFoundationRuntimeMachinePatch } from './foundation-runtime-machi
 
 const keys = ['WF-10', 'WF-11', 'WF-19'];
 const incrementalApprovalId = '123e88b6-5920-4e54-832a-ad6d87c22675';
+const hc01ApprovalId = '1cf8406c-1142-445e-a237-6d0fd7a67b22';
+const hc01Instagram = [
+  '962c9c7e-aa0f-46ae-911b-3265859e0577',
+  'bed82782-753f-4ba9-91ca-691ef36f75c6',
+  '46149fb9-8905-4b76-9834-4b38f668a2e2',
+  '2d42d451-ac9a-42ac-a879-8760d63c8108',
+  '3ca3befa-abe6-4540-a389-0cf16115c581',
+];
 const errorKey = 'WF-90-M04';
 const historicalVimeoPair = ['985a57dd-7934-422d-9d18-4e8ca59fc197', '8fefa9a1-3637-43db-843d-97caa9afcc79'];
 const machine = { id: 'EmrM03Machine19', name: 'M03 foundation machine [dev]', type: 'httpCustomAuth' };
@@ -129,7 +137,9 @@ function withoutClosedFoundationDispatch(graph) {
  * before mutation phases; pending intent is also set before injected send. */
 export async function runNativeTask({ phase, state, send, bindings, repo, machineToken }) {
   const receipt = { phase, status: 'blocked', code: null, requestCount: 0, needsReconciliation: false };
-  const incremental = state.scope === 'incremental';
+  const hc01 = state.scope === 'hc01';
+  const incremental = hc01 || state.scope === 'incremental';
+  const approvalId = hc01 ? hc01ApprovalId : incrementalApprovalId;
   const originals = incremental ? ['WF-00', ...keys] : keys;
   const n = (state.native ??= {
     snapshots: {},
@@ -157,7 +167,8 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
       typeof id !== 'string' ||
       !/^[A-Za-z0-9_-]{1,128}$/.test(id) ||
       Object.values(bindings.workflowRefs).some((r) => r.id === id) ||
-      n.errorHandler.approvalId !== incrementalApprovalId
+      n.errorHandler.approvalId !== approvalId ||
+      (hc01 && id !== 'AwxhktgJdvLXE0FZ')
     )
       fail('WORKFLOW_IDENTITY');
     return { id, name: 'WF-90-M04 · Collector error handler [dev]' };
@@ -249,6 +260,16 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
       /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(id);
     const setEqual = (a, b) =>
       Array.isArray(a) && Array.isArray(b) && isDeepStrictEqual([...a].sort(), [...b].sort());
+    if (hc01) {
+      if (
+        state.approvalId !== hc01ApprovalId ||
+        !/^[a-f0-9]{40}$/.test(state.sourceHead ?? '') ||
+        !setEqual(selected?.instagram, hc01Instagram) ||
+        !setEqual(selected?.vimeo, [historicalVimeoPair[0]])
+      )
+        fail('SELECTION');
+      return { instagram_account_ids: [...selected.instagram], vimeo_account_ids: [...selected.vimeo] };
+    }
     if (
       state.approvalId !== incrementalApprovalId ||
       !/^[a-f0-9]{40}$/.test(state.sourceHead ?? '') ||
@@ -332,6 +353,15 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
     // Exact approval marker belongs to the created graph and survives retention.
     graph.workflow.nodes[0].notes = 'emr-m04-incremental:' + incrementalApprovalId;
     n.staged[errorKey] = graph;
+    if (hc01) {
+      if (!n.errorHandler || !n.snapshots[errorKey]) fail('INVENTORY_REQUIRED');
+      const before = await read(errorKey);
+      unchanged(before.metadata, n.current[errorKey]);
+      if (before.metadata.active || before.metadata.activeVersionId !== null) fail('DRIFT');
+      await save(errorKey, graph.workflow, 'hc01_owned_handler_staged');
+      await setPublication(errorKey, graph, true);
+      return n.errorHandler.id;
+    }
     if (!n.errorHandler) {
       n.pending = {
         key: errorKey,
@@ -389,7 +419,7 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
       bindings.environment !== 'dev' ||
       bindings.projectId !== 'pHvQjDmjxVZ3KQLT' ||
       bindings.instanceUrl !== 'https://muhhammedsayed.app.n8n.cloud' ||
-      (state.scope !== undefined && state.scope !== 'incremental') ||
+      (state.scope !== undefined && !['incremental', 'hc01'].includes(state.scope)) ||
       !Array.isArray(n.events)
     )
       fail('CONFIG');
@@ -429,6 +459,26 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
           fail('DRIFT');
         n.current[key] = meta;
       }
+      if (hc01) {
+        n.errorHandler = { id: 'AwxhktgJdvLXE0FZ', approvalId: hc01ApprovalId };
+        const handler = await read(errorKey);
+        const retained = JSON.parse(
+          readFileSync(
+            join(repo, 'milestones/M04-collectors-vimeo-instagram/evidence/native-saved-WF-90-M04.json'),
+            'utf8',
+          ),
+        );
+        if (
+          retained.id !== n.errorHandler.id ||
+          handler.metadata.active ||
+          handler.metadata.activeVersionId !== null ||
+          !sameBody(handler.dto, retained.workflow)
+        )
+          fail('DRIFT');
+        n.snapshots[errorKey] = structuredClone(handler.dto);
+        n.current[errorKey] = handler.metadata;
+        n.errorHandler.current = handler.metadata;
+      }
       n.inventoryComplete = true;
       checkpoint({ action: 'inventory_verified', workflowIds: originals.map((key) => n.current[key].id) });
     } else if (phase === 'machine') {
@@ -442,13 +492,28 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
         const plan = approvedPlan();
         const handlerId = await ensureOwnedErrorHandler();
         const transport = { audience: state.deployment?.audience, credential: machine };
-        n.staged['WF-00'] = withManualOrchestratorEntry(
-          buildNativeOrchestrator(bindings, transport, plan, handlerId),
-        );
-        n.staged['WF-10'] = buildNativeCollector(bindings, transport, 'vimeo', handlerId);
-        n.staged['WF-11'] = buildNativeCollector(bindings, transport, 'instagram', handlerId);
+        n.staged['WF-00'] = hc01
+          ? { workflow: structuredClone(n.snapshots['WF-00']) }
+          : withManualOrchestratorEntry(buildNativeOrchestrator(bindings, transport, plan, handlerId));
+        n.staged['WF-10'] = hc01
+          ? withManualCollectorEntry(
+              buildNativeCollector(bindings, transport, 'vimeo', handlerId),
+              [historicalVimeoPair[0]],
+              { mode: 'backfill', max_pages: 1, page_size: 5, results_limit: 5, max_actor_starts: 1 },
+            )
+          : buildNativeCollector(bindings, transport, 'vimeo', handlerId);
+        n.staged['WF-11'] = hc01
+          ? withManualCollectorEntry(
+              buildNativeCollector(bindings, transport, 'instagram', handlerId),
+              [hc01Instagram[0]],
+              { mode: 'daily', max_pages: 1, page_size: 5, results_limit: 30, max_actor_starts: 2 },
+            )
+          : buildNativeCollector(bindings, transport, 'instagram', handlerId);
         n.staged['WF-19'] = buildNativeCallback(bindings, transport, handlerId);
-        for (const key of originals) await save(key, n.staged[key].workflow, 'staged');
+        for (const key of originals) {
+          if (hc01 && key === 'WF-00') continue;
+          await save(key, n.staged[key].workflow, 'staged');
+        }
         n.stageComplete = true;
         receipt.errorWorkflow = { key: errorKey, ...n.errorHandler.current };
       } else if (Object.keys(n.staged).length) {
@@ -529,32 +594,65 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
         new Set(cohort.account_ids).size !== cohort.account_ids.length
       )
         fail('SELECTION');
-      const choices = {
-        'history-pair': {
-          kind: 'vimeo',
-          count: 2,
-          allowed: historicalVimeoPair,
-          bounds: { mode: 'backfill', max_pages: 2, page_size: 5, results_limit: 5, max_actor_starts: 2 },
-        },
-        cursor: {
-          kind: 'vimeo',
-          count: 1,
-          allowed: plan.vimeo_account_ids,
-          bounds: { mode: 'backfill', max_pages: 2, page_size: 20, results_limit: 5, max_actor_starts: 2 },
-        },
-        'daily-vimeo': {
-          kind: 'vimeo',
-          count: 1,
-          allowed: state.selection.vimeo,
-          bounds: { mode: 'daily', max_pages: 1, page_size: 20, results_limit: 20, max_actor_starts: 1 },
-        },
-        'daily-instagram': {
-          kind: 'instagram',
-          count: 1,
-          allowed: state.selection.instagram,
-          bounds: { mode: 'daily', max_pages: 1, page_size: 5, results_limit: 5, max_actor_starts: 2 },
-        },
-      };
+      const choices = hc01
+        ? {
+            'first-instagram': {
+              kind: 'instagram',
+              count: 1,
+              allowed: [hc01Instagram[0]],
+              bounds: { mode: 'daily', max_pages: 1, page_size: 5, results_limit: 30, max_actor_starts: 2 },
+            },
+            'remaining-instagram': {
+              kind: 'instagram',
+              count: 4,
+              allowed: hc01Instagram.slice(1),
+              bounds: { mode: 'daily', max_pages: 1, page_size: 5, results_limit: 30, max_actor_starts: 8 },
+            },
+            'recovery-instagram': {
+              kind: 'instagram',
+              count: 1,
+              allowed: hc01Instagram,
+              bounds: { mode: 'daily', max_pages: 1, page_size: 5, results_limit: 30, max_actor_starts: 2 },
+            },
+            'vimeo-continuation': {
+              kind: 'vimeo',
+              count: 1,
+              allowed: [historicalVimeoPair[0]],
+              bounds: { mode: 'backfill', max_pages: 1, page_size: 5, results_limit: 5, max_actor_starts: 1 },
+            },
+          }
+        : {
+            'history-pair': {
+              kind: 'vimeo',
+              count: 2,
+              allowed: historicalVimeoPair,
+              bounds: { mode: 'backfill', max_pages: 2, page_size: 5, results_limit: 5, max_actor_starts: 2 },
+            },
+            cursor: {
+              kind: 'vimeo',
+              count: 1,
+              allowed: plan.vimeo_account_ids,
+              bounds: {
+                mode: 'backfill',
+                max_pages: 2,
+                page_size: 20,
+                results_limit: 5,
+                max_actor_starts: 2,
+              },
+            },
+            'daily-vimeo': {
+              kind: 'vimeo',
+              count: 1,
+              allowed: state.selection.vimeo,
+              bounds: { mode: 'daily', max_pages: 1, page_size: 20, results_limit: 20, max_actor_starts: 1 },
+            },
+            'daily-instagram': {
+              kind: 'instagram',
+              count: 1,
+              allowed: state.selection.instagram,
+              bounds: { mode: 'daily', max_pages: 1, page_size: 5, results_limit: 5, max_actor_starts: 2 },
+            },
+          };
       const selected = choices[cohort.key];
       if (
         !selected ||
@@ -811,7 +909,17 @@ export async function runNativeTask({ phase, state, send, bindings, repo, machin
           }
           await save(key, n.snapshots[key], 'restored');
         }
-        if (incremental && n.errorHandler) await setPublication(errorKey, n.staged[errorKey], false);
+        if (incremental && n.errorHandler) {
+          if (hc01 && !n.staged[errorKey]) {
+            const fresh = await read(errorKey);
+            unchanged(fresh.metadata, n.current[errorKey]);
+            if (fresh.metadata.active || fresh.metadata.activeVersionId !== null) fail('DRIFT');
+          } else {
+            await setPublication(errorKey, n.staged[errorKey], false);
+            if (hc01 && n.current[errorKey].graphHash !== hash(n.snapshots[errorKey]))
+              await save(errorKey, n.snapshots[errorKey], 'hc01_owned_handler_restored');
+          }
+        }
         n.restoreComplete = true;
       } finally {
         // A conflicting workflow never prevents an independent, already-owned

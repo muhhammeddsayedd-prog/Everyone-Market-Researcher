@@ -69,6 +69,186 @@ function syntheticIncrementalPreflight() {
   };
 }
 
+function syntheticHc01Preflight() {
+  const fixture = syntheticIncrementalPreflight();
+  fixture.migrations.push({
+    version: '20261027192743',
+    name: 'm04_recent_instagram_dev_eligibility',
+    historySha256: 'a'.repeat(64),
+  });
+  const ids = {
+    C000: '962c9c7e-aa0f-46ae-911b-3265859e0577',
+    C001: 'bed82782-753f-4ba9-91ca-691ef36f75c6',
+    C130: '46149fb9-8905-4b76-9834-4b38f668a2e2',
+    C270: '2d42d451-ac9a-42ac-a879-8760d63c8108',
+    C226: '3ca3befa-abe6-4540-a389-0cf16115c581',
+  };
+  for (const entry of fixture.accounts) {
+    if (entry.account.platform === 'instagram') {
+      entry.id = entry.account.id = ids[entry.company_code];
+      entry.account.last_item_published_at = '2026-10-12T15:01:56Z';
+      entry.account.last_external_id = 'retained-public-id';
+    } else if (entry.company_code === 'C000') {
+      entry.account.external_id = '157330576';
+      entry.account.last_run_id = '74fae456-a34c-4460-a5ea-6ab66ecec431';
+    }
+  }
+  return fixture;
+}
+
+test('HC01 binding requires all original17 fingerprints plus exact eighteenth identity and five fixed Instagram UUIDs', () => {
+  const fixture = syntheticHc01Preflight();
+  assert.equal(bindIncrementalAccounts(fixture, { scope: 'hc01' }).length, 10);
+  assert.throws(() => bindIncrementalAccounts(fixture), /incremental_preflight_blocked/);
+  for (const mutate of [
+    (p) => {
+      p.migrations[0].historySha256 = '0'.repeat(64);
+    },
+    (p) => {
+      p.migrations[17].version = '20261027192744';
+    },
+    (p) => {
+      p.migrations[17].name = 'foreign_migration';
+    },
+    (p) => {
+      p.migrations[17].historySha256 = 'not-a-history-hash';
+    },
+    (p) => {
+      p.accounts[7].account.id = '90000000-0000-4000-8000-000000000077';
+    },
+    (p) => {
+      p.accounts[5].account.last_external_id = '';
+    },
+    (p) => {
+      p.accounts[5].account.last_item_published_at = 'infinity';
+    },
+    (p) => {
+      p.accounts[5].account.backfill_status = 'done';
+    },
+  ]) {
+    const changed = syntheticHc01Preflight();
+    mutate(changed);
+    assert.throws(
+      () => bindIncrementalAccounts(changed, { scope: 'hc01' }),
+      /incremental_(?:preflight|selection)_blocked/,
+    );
+  }
+  assert.throws(() => bindIncrementalAccounts(fixture, { scope: 'prod' }), /incremental_scope_blocked/);
+});
+
+test('HC01 binding accepts the retained actual ten-account projection with only a synthetic eighteenth history receipt', () => {
+  const fixture = JSON.parse(
+    readFileSync(
+      resolve('milestones/M04-collectors-vimeo-instagram/evidence/incremental-final-readback-20261027.json'),
+      'utf8',
+    ),
+  ).queryResult[0].incremental_preflight;
+  fixture.migrations.push({
+    version: '20261027192743',
+    name: 'm04_recent_instagram_dev_eligibility',
+    historySha256: 'a'.repeat(64),
+  });
+  const bound = bindIncrementalAccounts(fixture, { scope: 'hc01' });
+  assert.equal(bound.length, 10);
+  for (const entry of bound.filter((e) => e.account.platform === 'instagram')) {
+    assert.equal(typeof entry.account.last_external_id, 'string');
+    assert.equal(Object.hasOwn(entry.account, 'last_item_external_id'), false);
+  }
+});
+
+test('HC01 first/rest daily setup and repeat rearm change only due time, preserving history and watermarks', () => {
+  const bound = bindIncrementalAccounts(syntheticHc01Preflight(), { scope: 'hc01' });
+  for (const [cohort, expected] of [
+    ['first-instagram', 1],
+    ['remaining-instagram', 4],
+  ]) {
+    const sql = buildIncrementalSetupSql(bound, cohort, { scope: 'hc01' });
+    assert.equal((sql.match(/"selection":\{\}/g) ?? []).length, expected * 2);
+    assert.doesNotMatch(sql, /set\s+backfill_status|backfill_cursor\s*=/);
+    assert.match(sql, /to_jsonb\(a\) is distinct from e->'account'/);
+    assert.match(sql, /M04 HC01 global unfinished work changed/);
+  }
+  const entry = bound.find((e) => e.key === 'C000:instagram:0');
+  const owner = { run_id: '70000000-0000-4000-8000-000000000001', execution_id: '99200' };
+  const repeat = buildIncrementalResumeSql(entry, owner, 'daily-due', { scope: 'hc01' });
+  assert.match(repeat, /2026-10-28T00:43:24Z/);
+  assert.match(repeat, /1cf8406c-1142-445e-a237-6d0fd7a67b22/);
+  assert.doesNotMatch(repeat, /123e88b6-5920-4e54-832a-ad6d87c22675/);
+  assert.doesNotMatch(repeat, /set\s+backfill_status|backfill_cursor\s*=/);
+  assert.throws(
+    () => buildIncrementalResumeSql(entry, null, 'daily-due', { scope: 'hc01' }),
+    /incremental_owner_blocked/,
+  );
+  assert.throws(
+    () => buildIncrementalSetupSql(bound, 'instagram-history', { scope: 'hc01' }),
+    /incremental_cohort_blocked/,
+  );
+  assert.throws(
+    () => buildIncrementalResumeSql(bound[2], owner, 'vimeo-cursor', { scope: 'hc01' }),
+    /incremental_resume_blocked/,
+  );
+});
+
+test('HC01 Vimeo continuation is pinned to recorded31176 page4 width5 and rechecks historical parent closure in SQL', () => {
+  const bound = bindIncrementalAccounts(syntheticHc01Preflight(), { scope: 'hc01' });
+  const sql = buildIncrementalSetupSql(bound, 'vimeo-continuation', { scope: 'hc01' });
+  assert.match(sql, /"page":4/);
+  assert.match(sql, /"page_size":5/);
+  assert.match(sql, /\/users\/157330576/);
+  assert.match(sql, /31176/);
+  assert.match(sql, /accepted Vimeo parent ownership or closure changed/);
+  assert.doesNotMatch(sql, /backfill_status\s*=/);
+  const entry = bound.find((e) => e.key === 'C000:vimeo:0');
+  for (const mutate of [
+    (a) => {
+      a.external_id = '49236950';
+    },
+    (a) => {
+      a.last_run_id = null;
+    },
+    (a) => {
+      a.backfill_status = 'done';
+    },
+    (a) => {
+      a.backfill_cursor = { page: 5, page_size: 5, endpoint: 'users', resourcePath: '/users/157330576' };
+    },
+  ]) {
+    const altered = structuredClone(bound);
+    mutate(altered.find((e) => e.key === entry.key).account);
+    assert.throws(
+      () => buildIncrementalSetupSql(altered, 'vimeo-continuation', { scope: 'hc01' }),
+      /incremental_accepted_cursor_blocked/,
+    );
+  }
+});
+
+test('HC01 restore retains legitimately advanced Vimeo cursor/history and uses scoped launch assertions', () => {
+  const bound = bindIncrementalAccounts(syntheticHc01Preflight(), { scope: 'hc01' });
+  const original = bound.find((e) => e.key === 'C000:vimeo:0');
+  const current = structuredClone(original);
+  current.account.backfill_status = 'running';
+  current.account.backfill_cursor = {
+    endpoint: 'users',
+    resourcePath: '/users/157330576',
+    page: 5,
+    page_size: 5,
+  };
+  current.owner = { run_id: '70000000-0000-4000-8000-000000000001', execution_id: '99200' };
+  const sql = buildIncrementalRestoreSql(bound, [current], { scope: 'hc01' });
+  assert.doesNotMatch(sql, /backfill_status\s*=|backfill_cursor\s*=/);
+  assert.match(sql, /"next_due_at":"2026-10-18T00:00:00Z"/);
+  assert.match(
+    buildIncrementalAssertionsSql(bound, [current.owner], { scope: 'hc01' }),
+    /1cf8406c-1142-445e-a237-6d0fd7a67b22/,
+  );
+  const unrelated = structuredClone(bound.find((e) => e.key === 'C001:vimeo:0'));
+  unrelated.owner = current.owner;
+  assert.throws(
+    () => buildIncrementalRestoreSql(bound, [unrelated], { scope: 'hc01' }),
+    /incremental_snapshot_blocked/,
+  );
+});
+
 test('incremental catalog query contains exactly the approved selectors, no invented six UUIDs or mutations', () => {
   const sql = buildIncrementalPreflightSql();
   assert.equal(incrementalSelectors.length, 10);
@@ -154,7 +334,7 @@ test('incremental operational planning preserves historical width and refuses fa
 });
 
 test(
-  'actual local rollback executes generated setup, cursor resume, daily due and both restoration ownership paths',
+  'actual local rollback executes generated setup, cursor resume, daily due, HC01 due/cursor containment and restoration ownership paths',
   { skip: process.env.EMR_M04_QUERY_LOCAL_TEST !== 'true' },
   async () => {
     const { Client } = createRequire(import.meta.url)(
@@ -187,6 +367,12 @@ test(
         .account;
     const owner = { run_id: '70000000-0000-4000-8000-000000000001', execution_id: '99124' };
     await client.connect();
+    const preservationSql = `select jsonb_build_object(
+ 'migrations',(select coalesce(jsonb_agg(version order by version),'[]'::jsonb) from supabase_migrations.schema_migrations),
+ 'competitors',(select count(*) from app.competitors),'accounts',(select count(*) from app.competitor_accounts),
+ 'items',(select count(*) from app.items),'rawItems',(select count(*) from ingest.raw_items),
+ 'costRows',(select count(*) from ops.cost_ledger)) baseline`;
+    const preservedBefore = (await client.query(preservationSql)).rows[0].baseline;
     try {
       await client.query(`begin;
 create temporary table m04_accounts (like app.competitor_accounts including all);
@@ -198,7 +384,7 @@ create temporary table m04_collector_accounts(run_id uuid,account_id uuid);
 create temporary table m04_collector_runs(run_id uuid,registration_closed boolean);
 create temporary table m04_passes(run_id uuid,status text);
 create temporary table m04_launches(run_id uuid,apify_run_id text,approval_id uuid);`);
-      const fixture = syntheticIncrementalPreflight(),
+      const fixture = syntheticHc01Preflight(),
         companies = new Set();
       const baseline = [];
       for (const entry of fixture.accounts) {
@@ -218,7 +404,7 @@ create temporary table m04_launches(run_id uuid,apify_run_id text,approval_id uu
                 ? '19672181'
                 : null;
         await client.query(
-          `insert into pg_temp.m04_accounts(id,competitor_id,platform,handle,url,external_id,next_due_at,last_item_published_at) values($1,$2,$3,$4,$5,$6,'2026-10-18','2026-10-20')`,
+          `insert into pg_temp.m04_accounts(id,competitor_id,platform,handle,url,external_id,next_due_at,last_item_published_at,last_external_id) values($1,$2,$3,$4,$5,$6,'2026-10-18','2026-10-20','retained-public-id')`,
           [
             entry.account.id,
             entry.account.competitor_id,
@@ -302,9 +488,180 @@ create temporary table m04_launches(run_id uuid,apify_run_id text,approval_id uu
         (error) => error.code === '55000',
       );
       await client.query('rollback to savepoint wrong_owner');
+
+      const hc = { scope: 'hc01' };
+      const freshBound = async () => {
+        const rows = [];
+        for (const entry of baseline) rows.push({ ...entry, account: await snapshot(entry.account.id) });
+        return rows;
+      };
+      let hcBound = await freshBound();
+      const ig = hcBound.find((entry) => entry.key === 'C000:instagram:0');
+      const igHistory = {
+        status: ig.account.backfill_status,
+        cursor: ig.account.backfill_cursor,
+        watermark: ig.account.last_item_published_at,
+        external: ig.account.last_external_id,
+      };
+      await client.query(local(buildIncrementalSetupSql(hcBound, 'first-instagram', hc)));
+      const firstIg = await snapshot(ig.account.id);
+      assert.deepEqual(
+        {
+          status: firstIg.backfill_status,
+          cursor: firstIg.backfill_cursor,
+          watermark: firstIg.last_item_published_at,
+          external: firstIg.last_external_id,
+        },
+        igHistory,
+      );
+      assert.ok(Date.parse(firstIg.next_due_at) <= Date.now());
+      await client.query(local(buildIncrementalSetupSql(await freshBound(), 'remaining-instagram', hc)));
+
+      const hcOwner = { run_id: '70000000-0000-4000-8000-000000000002', execution_id: '99200' };
+      await client.query(
+        `insert into pg_temp.m04_runs(id,workflow,platform,mode,env,n8n_execution_id,status,started_at,finished_at)
+ values($1,'WF-11','instagram','daily','dev',$2,'success','2026-10-28T00:44:24Z','2026-10-28T00:45:24Z')`,
+        [hcOwner.run_id, hcOwner.execution_id],
+      );
+      await client.query('insert into pg_temp.m04_collector_runs values($1,true)', [hcOwner.run_id]);
+      await client.query('insert into pg_temp.m04_collector_accounts values($1,$2)', [
+        hcOwner.run_id,
+        ig.account.id,
+      ]);
+      await client.query(
+        "insert into pg_temp.m04_run_accounts(run_id,account_id,status) values($1,$2,'success')",
+        [hcOwner.run_id, ig.account.id],
+      );
+      await client.query(
+        "insert into pg_temp.m04_launches values($1,'owned-synthetic-actor','1cf8406c-1142-445e-a237-6d0fd7a67b22')",
+        [hcOwner.run_id],
+      );
+      await client.query(
+        "update pg_temp.m04_accounts set last_run_id=$1,next_due_at=clock_timestamp()+interval '1 day' where id=$2",
+        [hcOwner.run_id, ig.account.id],
+      );
+      let igCurrent = { ...ig, account: await snapshot(ig.account.id) };
+      await client.query(local(buildIncrementalResumeSql(igCurrent, hcOwner, 'daily-due', hc)));
+      igCurrent = { ...ig, account: await snapshot(ig.account.id), owner: hcOwner };
+      await client.query(local(buildIncrementalRestoreSql(baseline, [igCurrent], hc)));
+      const igRestored = await snapshot(ig.account.id);
+      assert.equal(igRestored.next_due_at, baseline.find((e) => e.key === ig.key).account.next_due_at);
+      assert.equal(igRestored.last_run_id, hcOwner.run_id);
+      assert.deepEqual(
+        {
+          status: igRestored.backfill_status,
+          cursor: igRestored.backfill_cursor,
+          watermark: igRestored.last_item_published_at,
+          external: igRestored.last_external_id,
+        },
+        igHistory,
+      );
+
+      await client.query('savepoint foreign_hc_approval');
+      await client.query(
+        "update pg_temp.m04_launches set approval_id='123e88b6-5920-4e54-832a-ad6d87c22675' where run_id=$1",
+        [hcOwner.run_id],
+      );
+      await assert.rejects(
+        client.query(
+          local(buildIncrementalResumeSql({ ...ig, account: igRestored }, hcOwner, 'daily-due', hc)),
+        ),
+        (error) => error.code === '55000',
+      );
+      await client.query('rollback to savepoint foreign_hc_approval');
+      await client.query('savepoint hc_global_work');
+      await client.query(
+        "insert into pg_temp.m04_runs(id,workflow,platform,mode,env,status) values('70000000-0000-4000-8000-000000000099','WF-11','instagram','daily','dev','running')",
+      );
+      await assert.rejects(
+        client.query(local(buildIncrementalSetupSql(await freshBound(), 'remaining-instagram', hc))),
+        (error) => error.code === '55000',
+      );
+      await client.query('rollback to savepoint hc_global_work');
+
+      const acceptedOwner = { run_id: '74fae456-a34c-4460-a5ea-6ab66ecec431', execution_id: '31176' };
+      const vimeoOriginal = baseline.find((entry) => entry.key === 'C000:vimeo:0');
+      await client.query(
+        `insert into pg_temp.m04_runs(id,workflow,platform,mode,env,n8n_execution_id,status,started_at,finished_at)
+ values($1,'WF-10','vimeo','backfill','dev',$2,'success','2026-10-27T16:08:00Z','2026-10-27T16:08:35Z')`,
+        [acceptedOwner.run_id, acceptedOwner.execution_id],
+      );
+      await client.query('insert into pg_temp.m04_collector_runs values($1,true)', [acceptedOwner.run_id]);
+      await client.query('insert into pg_temp.m04_collector_accounts values($1,$2)', [
+        acceptedOwner.run_id,
+        vimeoOriginal.account.id,
+      ]);
+      await client.query(
+        "insert into pg_temp.m04_run_accounts(run_id,account_id,status) values($1,$2,'success')",
+        [acceptedOwner.run_id, vimeoOriginal.account.id],
+      );
+      await client.query(
+        "update pg_temp.m04_accounts set last_run_id=$1,backfill_status='pending',backfill_cursor=null where id=$2",
+        [acceptedOwner.run_id, vimeoOriginal.account.id],
+      );
+      hcBound = await freshBound();
+      await client.query('savepoint changed_vimeo_source');
+      await client.query("update pg_temp.m04_runs set n8n_execution_id='31177' where id=$1", [
+        acceptedOwner.run_id,
+      ]);
+      await assert.rejects(
+        client.query(local(buildIncrementalSetupSql(hcBound, 'vimeo-continuation', hc))),
+        (error) => error.code === '55000',
+      );
+      await client.query('rollback to savepoint changed_vimeo_source');
+      await client.query(local(buildIncrementalSetupSql(hcBound, 'vimeo-continuation', hc)));
+      const resumedVimeo = await snapshot(vimeoOriginal.account.id);
+      assert.deepEqual(resumedVimeo.backfill_cursor, {
+        endpoint: 'users',
+        resourcePath: '/users/157330576',
+        page: 4,
+        page_size: 5,
+      });
+      assert.equal(resumedVimeo.backfill_status, 'pending');
+      const newVimeoOwner = { run_id: '70000000-0000-4000-8000-000000000003', execution_id: '99201' };
+      await client.query(
+        `insert into pg_temp.m04_runs(id,workflow,platform,mode,env,n8n_execution_id,status,started_at,finished_at)
+ values($1,'WF-10','vimeo','backfill','dev',$2,'success','2026-10-28T00:44:24Z','2026-10-28T00:45:24Z')`,
+        [newVimeoOwner.run_id, newVimeoOwner.execution_id],
+      );
+      await client.query('insert into pg_temp.m04_collector_runs values($1,true)', [newVimeoOwner.run_id]);
+      await client.query('insert into pg_temp.m04_collector_accounts values($1,$2)', [
+        newVimeoOwner.run_id,
+        vimeoOriginal.account.id,
+      ]);
+      await client.query(
+        "insert into pg_temp.m04_run_accounts(run_id,account_id,status) values($1,$2,'success')",
+        [newVimeoOwner.run_id, vimeoOriginal.account.id],
+      );
+      await client.query(
+        `update pg_temp.m04_accounts set last_run_id=$1,backfill_status='running',backfill_cursor='{"endpoint":"users","resourcePath":"/users/157330576","page":5,"page_size":5}' where id=$2`,
+        [newVimeoOwner.run_id, vimeoOriginal.account.id],
+      );
+      await client.query(
+        local(
+          buildIncrementalRestoreSql(
+            baseline,
+            [{ ...vimeoOriginal, account: await snapshot(vimeoOriginal.account.id), owner: newVimeoOwner }],
+            hc,
+          ),
+        ),
+      );
+      const closedVimeo = await snapshot(vimeoOriginal.account.id);
+      assert.equal(closedVimeo.backfill_cursor.page, 5);
+      assert.equal(closedVimeo.backfill_status, 'running');
+      assert.equal(closedVimeo.next_due_at, vimeoOriginal.account.next_due_at);
+      assert.equal(closedVimeo.last_item_published_at, vimeoOriginal.account.last_item_published_at);
     } finally {
-      await client.query('rollback');
-      await client.end();
+      try {
+        await client.query('rollback');
+        assert.deepEqual((await client.query(preservationSql)).rows[0].baseline, preservedBefore);
+        assert.equal(
+          (await client.query("select to_regclass('pg_temp.m04_accounts') absent")).rows[0].absent,
+          null,
+        );
+      } finally {
+        await client.end();
+      }
     }
   },
 );

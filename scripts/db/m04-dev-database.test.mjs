@@ -137,6 +137,63 @@ test('actual public CheckOnly runs before private access and starts no child', {
   assert.deepEqual(receipt.pendingVersions, ['20261026013910', '20261027092832']);
 });
 
+test(
+  'HC01 public preparation admits only the one forward migration without private access',
+  { skip: !windows },
+  () => {
+    const result = spawnSync(
+      ps,
+      ['-NoProfile', '-NonInteractive', '-File', consumer, '-Scope', 'HC01', '-Phase', 'Apply', '-CheckOnly'],
+      {
+        env: publicEnv,
+        encoding: 'utf8',
+        timeout: 30000,
+        windowsHide: true,
+      },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    const receipt = JSON.parse(result.stdout);
+    assert.equal(receipt.status, 'public_ready');
+    assert.equal(receipt.scope, 'hc01');
+    assert.equal(receipt.privateRead, false);
+    assert.equal(receipt.authenticationAttempted, false);
+    assert.equal(receipt.databaseCommands, 0);
+    assert.deepEqual(receipt.pendingVersions, ['20261027192743']);
+  },
+);
+
+test(
+  'HC01 keeps all seventeen history fingerprints and rejects extra or malformed forward history',
+  { skip: !windows },
+  () => {
+    const result = run(`${definitions(['M04-History', 'M04-Json', 'M04-PushMatches'])}
+$old=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText(${q(resolve('scripts/db/m03-foundation-forward-dev-migration-packet.json'))}))
+$baseline=@($old.baseline)+@($old.pending)+@(
+ [pscustomobject]@{version='20261026013910';name='m04_vimeo_account_resolution';historySha256='9391ae1b1f029e2ea9aa93b812a80b46f9f5abd8fe6245c05da1703bfcf2b56c'},
+ [pscustomobject]@{version='20261027092832';name='m04_collector_product_contracts';historySha256='7f036a391743189b3e8031070aa4f18fbd893df7619aab92b02f6a5996b4db7f'}
+)
+$pending=@([pscustomobject]@{version='20261027192743';name='m04_recent_instagram_dev_eligibility';file='supabase/migrations/20261027192743_m04_recent_instagram_dev_eligibility.sql';historySha256=$null})
+$receipt=@{authenticationVerified=$false}
+$history=@($baseline|ForEach-Object{[pscustomobject]@{version=$_.version;name=$_.name;historySha256=$_.historySha256}})
+function Make-Result {return [pscustomobject]@{text=(ConvertTo-Json -InputObject @(@{receipt=@{current_user='postgres';session_user='postgres';database='postgres';migrations=$history}}) -Depth 8 -Compress)}}
+if(@(M04-History (Make-Result)).Count -ne 17){throw 'BEFORE_FAILED'}
+$history+=@([pscustomobject]@{version='20261027192743';name='m04_recent_instagram_dev_eligibility';historySha256=('a'*64)})
+if(@(M04-History (Make-Result)).Count -ne 18){throw 'AFTER_FAILED'}
+$saved=$history[16].historySha256;$history[16].historySha256='0'*64
+try{$null=M04-History (Make-Result);throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_HISTORY_BLOCKED'){throw}}
+$history[16].historySha256=$saved;$history[17].historySha256='invalid'
+try{$null=M04-History (Make-Result);throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_HISTORY_BLOCKED'){throw}}
+$push=@{upToDate=$false;dryRun=$true;message='Finished supabase db push.';seeds=@();roles=@();migrations=@('20261027192743_m04_recent_instagram_dev_eligibility.sql')}
+$null=M04-PushMatches ([pscustomobject]@{text=($push|ConvertTo-Json -Depth 6 -Compress)}) $true
+$push.migrations+=@('20261027092832_m04_collector_product_contracts.sql')
+try{$null=M04-PushMatches ([pscustomobject]@{text=($push|ConvertTo-Json -Depth 6 -Compress)}) $true;throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_PENDING_BLOCKED'){throw}}
+'HC01_HISTORY_AND_DRYRUN_VERIFIED'
+`);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout.trim(), 'HC01_HISTORY_AND_DRYRUN_VERIFIED');
+  },
+);
+
 test('Query rejects an external path or wrong hash before decryption', { skip: !windows }, () => {
   for (const path of [consumer, resolve('milestones/M04-collectors-vimeo-instagram/evidence/no-such.sql')]) {
     const result = spawnSync(
@@ -289,6 +346,10 @@ $columns[0].type=$saved;$tables[0].writerTableGrant=$true
 try{$null=M04-Catalog (Make-Result);throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_CATALOG_BLOCKED'){throw}}
 $tables[0].writerTableGrant=$false;$functions[0].anonExecute=$true
 try{$null=M04-Catalog (Make-Result);throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_CATALOG_BLOCKED'){throw}}
+$functions[0].anonExecute=$false;$Scope='HC01';$catalog.collectorDefinitionMd5='9d65ad95661ffd77d1d9effc3e52fa83'
+$null=M04-Catalog (Make-Result)
+$catalog.collectorDefinitionMd5='0'*32
+try{$null=M04-Catalog (Make-Result);throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_CATALOG_BLOCKED'){throw}}
 'CATALOG_VERIFIED'
 `);
     assert.equal(result.status, 0, result.stderr);
@@ -423,7 +484,7 @@ test(
     const result = run(`${definitions(['M04-Catalog', 'M04-Json', 'Get-M04ExpectedColumns'])}
 $ErrorActionPreference='Stop'
 $actual=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText(${q(receiptFile)}))
-$history=@($actual.historyBefore);$receipt=[ordered]@{status='not_completed'};$catalogFile='catalog.sql';$calls=0
+$history=@($actual.historyBefore);$all=@($actual.historyBefore);$receipt=[ordered]@{status='not_completed'};$catalogFile='catalog.sql';$calls=0
 function Invoke-M04Cli($Arguments,$TimeoutMs){
  $script:calls++
  if($Arguments[1] -ceq 'query'){return [pscustomobject]@{text=(ConvertTo-Json -InputObject @(@{catalog=$actual.catalog}) -Depth 15 -Compress)}}

@@ -3,7 +3,8 @@ param(
  [Parameter(Mandatory=$true)][ValidateSet('Inventory','ProviderMetadata','Setup','Stage','Observe','Probe','Restore')][string]$Task,
  [ValidatePattern('\A[a-z][a-z0-9-]{0,40}\z')][string]$Phase='default',
  [switch]$Incremental,
- [ValidateSet('history-pair','cursor','daily-vimeo','daily-instagram')][string]$Cohort,
+ [ValidateSet('HC01')][string]$Scope,
+ [ValidateSet('history-pair','cursor','daily-vimeo','daily-instagram','first-instagram','remaining-instagram','recovery-instagram','vimeo-continuation')][string]$Cohort,
  [string[]]$AccountIds=@(),
  [switch]$CheckOnly
 )
@@ -14,18 +15,21 @@ $exitCode=1;$stage='phase';$process=$null;$operationLock=$null;$privateInput=$nu
 $inputBytes=$null;$stateBytes=$null;$stateCipher=$null;$stdoutBytes=$null;$stderrBytes=$null
 $stdoutStream=$null;$stderrStream=$null;$stdoutCopy=$null;$stderrCopy=$null;$selected=@{}
 try {
+ if($Incremental -and -not [string]::IsNullOrEmpty($Scope)){throw 'M04_SCOPE_BLOCKED'}
+ $hc01=$Scope -eq 'HC01';$expanded=$Incremental -or $hc01
  $allowedPhases=switch -CaseSensitive ($Task) {
   'Inventory' {@('default')}
   'ProviderMetadata' {@('default')}
   'Setup' {@('project','prepare','configure','poll','cleanup')}
-  'Stage' {if($Incremental){@('stage','publish','machine','readback','cohort')}else{@('stage','publish','machine','readback')}}
+  'Stage' {if($expanded){@('stage','publish','machine','readback','cohort')}else{@('stage','publish','machine','readback')}}
   'Observe' {@('default')}
-  'Probe' {if($Incremental){@('default','unknown','malformed')}else{@('default','replay','unknown')}}
+  'Probe' {if($hc01){@('default')}elseif($Incremental){@('default','unknown','malformed')}else{@('default','replay','unknown')}}
   'Restore' {@('native')}
  }
  if($Phase -cnotin @($allowedPhases)){throw 'M04_TASK_PHASE_BLOCKED'}
  if($Phase -ceq 'cohort') {
-  if(-not $Incremental -or [string]::IsNullOrEmpty($Cohort) -or $AccountIds.Count -lt 1 -or $AccountIds.Count -gt 2 -or @($AccountIds|Where-Object{$_ -cnotmatch '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'}).Count){throw 'M04_COHORT_BLOCKED'}
+  $maximumIds=if($hc01){4}else{2}
+  if(-not $expanded -or [string]::IsNullOrEmpty($Cohort) -or $AccountIds.Count -lt 1 -or $AccountIds.Count -gt $maximumIds -or @($AccountIds|Where-Object{$_ -cnotmatch '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'}).Count){throw 'M04_COHORT_BLOCKED'}
  } elseif(-not [string]::IsNullOrEmpty($Cohort) -or $AccountIds.Count){throw 'M04_COHORT_BLOCKED'}
  $stage='public_files'
  $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
@@ -66,7 +70,7 @@ try {
   $operationLock=[IO.File]::Open($lockPath,[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
   Set-M03DevPrivateAcl $lockPath $false
   Add-Type -AssemblyName System.Security
-  $stateName=if($Incremental){'incremental-state.dpapi'}else{'state.dpapi'}
+  $stateName=if($hc01){'hc01-state.dpapi'}elseif($Incremental){'incremental-state.dpapi'}else{'state.dpapi'}
   $statePath=Join-Path $directory $stateName;$state=[pscustomobject]@{};$stage='state_decrypt'
   if(Test-Path -LiteralPath $statePath) {
    Assert-M03DevPrivateAcl $statePath $false
@@ -110,7 +114,7 @@ try {
    }
   }
   $privateInput=[ordered]@{task=$Task;phase=$Phase;secrets=$selected;state=$state}
-  if($Incremental){$privateInput['scope']='incremental'}
+  if($hc01){$privateInput['scope']='hc01'}elseif($Incremental){$privateInput['scope']='incremental'}
   if($Phase -ceq 'cohort'){$privateInput['cohort']=[ordered]@{key=$Cohort;account_ids=@($AccountIds)}}
   $inputJson=ConvertTo-Json -InputObject $privateInput -Depth 100 -Compress
   $inputBytes=[Text.UTF8Encoding]::new($false).GetBytes($inputJson)

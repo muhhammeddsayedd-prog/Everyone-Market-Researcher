@@ -18,6 +18,49 @@ const kinds = {
   Restore: ['machine', 'management'],
 };
 
+test(
+  'HC01 wrapper is a separate persistent-state purpose and caps four-account cohorts before private access',
+  { skip: !windows },
+  () => {
+    const source = readFileSync(wrapper, 'utf8');
+    assert.match(source, /hc01-state\.dpapi/);
+    assert.match(source, /\$maximumIds=if\(\$hc01\)\{4\}else\{2\}/);
+    const result = spawnSync(
+      join(process.env.SystemRoot ?? 'C:\\Windows', 'System32/WindowsPowerShell/v1.0/powershell.exe'),
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-File',
+        wrapper,
+        '-Scope',
+        'HC01',
+        '-Task',
+        'Stage',
+        '-Phase',
+        'cohort',
+        '-Cohort',
+        'remaining-instagram',
+        '-CheckOnly',
+      ],
+      {
+        encoding: 'utf8',
+        timeout: 10000,
+        windowsHide: true,
+        env: Object.fromEntries(
+          ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP', 'LOCALAPPDATA', 'APPDATA', 'USERPROFILE'].flatMap(
+            (key) => (process.env[key] ? [[key, process.env[key]]] : []),
+          ),
+        ),
+      },
+    );
+    assert.equal(result.status, 1);
+    assert.equal(result.stderr, '');
+    const body = JSON.parse(result.stdout);
+    assert.equal(body.status, 'blocked');
+    assert.equal(body.stage, 'phase');
+  },
+);
+
 function ps(directory, code, expectedStatus = 0) {
   const script = `$ErrorActionPreference='Stop';$ProgressPreference='SilentlyContinue';Set-StrictMode -Version Latest;$env:LOCALAPPDATA=${q(join(directory, 'local'))}\n${code}`;
   const result = spawnSync(

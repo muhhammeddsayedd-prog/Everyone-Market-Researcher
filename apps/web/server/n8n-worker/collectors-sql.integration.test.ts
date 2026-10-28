@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { Client } from 'pg';
 import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
 vi.mock('server-only', () => ({}));
 import { createCollectorHandler, type CollectorConfig } from './collectors';
@@ -13,6 +14,15 @@ import {
   buildNativeCallback,
 } from '../../../../n8n/collectors/build-native-collectors.mjs';
 import type { NativeCollectorState as CollectorState } from '../../../../n8n/collectors/native-runtime.mjs';
+
+const { prepareInstagramResults } = createRequire(import.meta.url)(
+  '../../../../n8n/normalizers/instagramScraper.js',
+) as {
+  prepareInstagramResults: (
+    rows: Record<string, unknown>[],
+    context: Record<string, unknown>,
+  ) => { groups: { status: string; items: Record<string, unknown>[] }[]; errors: unknown[] };
+};
 
 // Existing local PostgreSQL only. Public fixture password, session-authorization
 // simulation and savepoints are NOT hosted restricted-login, TLS or Cloud proof.
@@ -32,6 +42,23 @@ describe.skipIf(process.env.EMR_M04_LOCAL_SQL_TEST !== 'true')(
       });
       c.on('error', () => {});
       await c.connect();
+      const localSnapshot = async () =>
+        (
+          await c.query(`select
+            (select array_agg(version order by version) from supabase_migrations.schema_migrations) versions,
+            (select count(*)::int from app.competitors) competitors,
+            (select count(*)::int from app.competitor_accounts) accounts,
+            (select count(*)::int from app.items) items,
+            (select count(*)::int from ingest.raw_items) raw_items,
+            (select count(*)::int from ops.scrape_runs) runs,
+            (select count(*)::int from ops.cost_ledger) costs,
+            (select queue_length::text from pgmq.metrics('ai_extract')) ai_queue,
+            (select queue_length::text from pgmq.metrics('media')) media_queue,
+            case when to_regprocedure('ops.collector_execute(uuid,text,jsonb)') is not null
+              then md5(pg_get_functiondef(to_regprocedure('ops.collector_execute(uuid,text,jsonb)')))
+              else null end collector_definition`)
+        ).rows[0];
+      const localBefore = await localSnapshot();
       try {
         await c.query('begin');
         await c.query("set local statement_timeout='10s';set local lock_timeout='3s'");
@@ -490,10 +517,124 @@ describe.skipIf(process.env.EMR_M04_LOCAL_SQL_TEST !== 'true')(
           (await c.query('select count(*)::int n from app.items where competitor_id=$1', [company])).rows[0]
             .n,
         ).toBe(2);
+
+        // Retained public metadata exercises the real normalizer and ingestion
+        // RPC. Publication time is a labelled local clock fixture so this test
+        // does not expire; the metric delta is synthetic, not provider evidence.
+        // now() is transaction-stable: establish a historical snapshot baseline
+        // before the repeat, then require the RPC itself to update its timestamp.
+        const retained = JSON.parse(
+          readFileSync(
+            new URL(
+              '../../../../n8n/normalizers/fixtures/instagram-scraper/actual-dev-public-projection-20261027.json',
+              import.meta.url,
+            ),
+            'utf8',
+          ),
+        ) as { provenance: { observed_at: string }; samples: { raw_metadata: Record<string, unknown> }[] };
+        const sample = retained.samples[0]?.raw_metadata;
+        if (!sample || typeof sample.ownerUsername !== 'string' || typeof sample.likesCount !== 'number')
+          throw Error('retained_metrics_sample_missing');
+        const metricsAccount = randomUUID();
+        const metricsRun = (
+          await c.query(
+            "select ops.start_run('M04-local-metrics','instagram','daily','dev','metrics-fixture') id",
+          )
+        ).rows[0].id;
+        const fixtureTime = (await c.query("select now() n,now()-interval '1 day' publication")).rows[0];
+        const publication = new Date(fixtureTime.publication).toISOString();
+        await c.query(
+          `insert into app.competitor_accounts
+            (id,competitor_id,platform,handle,url,status,backfill_status,last_run_id,locked_until,last_item_published_at,last_external_id)
+           values($1,$2,'instagram',$3,$4,'active','pending',$5,now()+interval '1 hour',$6,$7)`,
+          [
+            metricsAccount,
+            company,
+            sample.ownerUsername,
+            `https://www.instagram.com/${sample.ownerUsername}/`,
+            metricsRun,
+            publication,
+            sample.shortCode,
+          ],
+        );
+        const normalizeMetrics = (likesCount: number) => {
+          const result = prepareInstagramResults([{ ...sample, timestamp: publication, likesCount }], {
+            accounts: [
+              { id: metricsAccount, handle: sample.ownerUsername, last_item_published_at: publication },
+            ],
+            mode: 'daily',
+            result_type: 'reels',
+            resultsLimit: 30,
+            now: new Date(fixtureTime.n).toISOString(),
+          });
+          expect(result.errors).toEqual([]);
+          expect(result.groups).toHaveLength(1);
+          expect(result.groups[0]?.status).toBe('success');
+          expect(result.groups[0]?.items).toHaveLength(1);
+          return result.groups[0]!.items;
+        };
+        const ingestMetrics = async (items: Record<string, unknown>[]) => {
+          await c.query('set local session authorization n8n_writer');
+          try {
+            return (
+              await c.query('select ingest.upsert_raw_items($1,$2,$3::jsonb) result', [
+                metricsRun,
+                metricsAccount,
+                JSON.stringify(items),
+              ])
+            ).rows[0].result;
+          } finally {
+            await c.query('reset session authorization');
+          }
+        };
+        expect(await ingestMetrics(normalizeMetrics(sample.likesCount))).toMatchObject({ inserted: 1 });
+        await c.query('update app.items set metrics_updated_at=$1 where account_id=$2', [
+          retained.provenance.observed_at,
+          metricsAccount,
+        ]);
+        const metricsSnapshot = async () =>
+          (
+            await c.query(
+              `select
+              (select to_jsonb(i)-'metrics'-'metrics_updated_at'-'updated_at' from app.items i where account_id=$1) immutable_item,
+              (select metrics from app.items where account_id=$1) metrics,
+              (select metrics_updated_at from app.items where account_id=$1) metrics_updated_at,
+              (select md5(to_jsonb(r)::text) from ingest.raw_items r where account_id=$1) immutable_raw,
+              (select count(*)::int from app.items where account_id=$1) items,
+              (select count(*)::int from ingest.raw_items where account_id=$1) raw_items,
+              (select queue_length::text from pgmq.metrics('ai_extract')) ai_queue,
+              (select queue_length::text from pgmq.metrics('media')) media_queue`,
+              [metricsAccount],
+            )
+          ).rows[0];
+        const beforeMetrics = await metricsSnapshot();
+        expect(await ingestMetrics(normalizeMetrics(sample.likesCount + 1))).toMatchObject({
+          inserted: 0,
+          duplicates: 0,
+          metrics_updated: 1,
+          new_item_ids: [],
+        });
+        const afterMetrics = await metricsSnapshot();
+        expect(new Date(afterMetrics.metrics_updated_at).getTime()).toBeGreaterThan(
+          new Date(beforeMetrics.metrics_updated_at).getTime(),
+        );
+        expect(afterMetrics.metrics.likes).toBe(sample.likesCount + 1);
+        expect({ ...afterMetrics, metrics: null, metrics_updated_at: null }).toEqual({
+          ...beforeMetrics,
+          metrics: null,
+          metrics_updated_at: null,
+        });
+        expect(await ingestMetrics(normalizeMetrics(sample.likesCount + 1))).toMatchObject({
+          inserted: 0,
+          metrics_updated: 0,
+          new_item_ids: [],
+        });
+        expect(await metricsSnapshot()).toEqual(afterMetrics);
       } finally {
         try {
           await c.query('reset session authorization');
           await c.query('rollback');
+          expect(await localSnapshot()).toEqual(localBefore);
         } finally {
           await c.end();
         }

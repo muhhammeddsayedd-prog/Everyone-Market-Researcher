@@ -178,7 +178,7 @@ export function bindOwnedInstagramReplay(state, receipt, approval) {
   state.functional = { ...state.functional, replayRunId, parentRunId: parentId, executionId, approvalId };
   return replayRunId;
 }
-export function checkM04IncrementalCharge(totals, categoryCount, category) {
+export function checkM04IncrementalCharge(totals, categoryCount, category, scope = 'incremental') {
   if (
     !['management', 'control', 'combined', 'vercel'].every(
       (key) => Number.isSafeInteger(totals[key]) && totals[key] >= 0,
@@ -189,11 +189,16 @@ export function checkM04IncrementalCharge(totals, categoryCount, category) {
     totals.vercel > totals.management
   )
     fail('M04_LEDGER_INVALID');
-  if (totals.management > 296 || totals.control > 1446 || totals.combined > 1742 || totals.vercel > 100)
-    fail('M04_ALLOWANCE_EXHAUSTED');
+  const limits =
+    scope === 'hc01'
+      ? { management: 482, control: 3151, combined: 3633, vercel: 138 }
+      : { management: 296, control: 1446, combined: 1742, vercel: 100 };
+  if (Object.keys(limits).some((key) => totals[key] > limits[key])) fail('M04_ALLOWANCE_EXHAUSTED');
   if (
     categoryCount >=
-    ({ n8n: 196, vercel: 100, provider: 646, gateway: 613, callback: 126, database: 61 }[category] ?? 0)
+    ((scope === 'hc01'
+      ? { n8n: 344, vercel: 138, provider: 1568, gateway: 1166, callback: 316, database: 101 }
+      : { n8n: 196, vercel: 100, provider: 646, gateway: 613, callback: 126, database: 61 })[category] ?? 0)
   )
     fail('M04_CATEGORY_EXHAUSTED');
 }
@@ -213,7 +218,7 @@ export function chargeM04Request(category, operation, scope) {
   totals.combined++;
   if (category === 'vercel') totals.vercel++;
   if (
-    scope !== 'incremental' &&
+    !['incremental', 'hc01'].includes(scope) &&
     (totals.management > 160 || totals.control > 472 || totals.combined > 632 || totals.vercel > 64)
   )
     fail('M04_ALLOWANCE_EXHAUSTED');
@@ -224,7 +229,8 @@ export function chargeM04Request(category, operation, scope) {
         (r.category === category || (category === 'n8n' && r.category === 'n8n_management')),
     )
     .reduce((count, row) => count + (row.charged ?? 1), 0);
-  if (scope === 'incremental') checkM04IncrementalCharge(totals, categoryCount, category);
+  if (['incremental', 'hc01'].includes(scope))
+    checkM04IncrementalCharge(totals, categoryCount, category, scope);
   else if (
     categoryCount >=
     ({ n8n: 96, vercel: 64, provider: 256, gateway: 128, callback: 56, database: 32 }[category] ?? 0)
@@ -255,7 +261,32 @@ export async function runTask(input, dependencies = {}) {
     phase = input.phase ?? 'default';
   const state = structuredClone(input.state ?? {}),
     transports = [];
-  if (input.scope !== undefined && input.scope !== 'incremental') fail('M04_SCOPE_INVALID');
+  if (input.scope !== undefined && !['incremental', 'hc01'].includes(input.scope)) fail('M04_SCOPE_INVALID');
+  if (input.scope === 'hc01') {
+    const approval = JSON.parse(
+      readFileSync(
+        resolve(root, 'milestones/M04-collectors-vimeo-instagram/evidence/hc01-dev-approval-20261028.json'),
+        'utf8',
+      ),
+    );
+    if (
+      (state.scope !== undefined && state.scope !== 'hc01') ||
+      approval.approval_id !== '1cf8406c-1142-445e-a237-6d0fd7a67b22' ||
+      approval.reviewedHead !== 'bb0cd01d3a6ee239540e73b1d366f86e46b17d42' ||
+      approval.environment !== 'dev' ||
+      approval.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+      approval.ceilings?.actorStarts !== 22 ||
+      approval.ceilings?.actorUsd !== 22 ||
+      approval.cumulative?.combined !== 3633 ||
+      (state.approvalId && state.approvalId !== approval.approval_id) ||
+      (input.cohort !== undefined && (task !== 'Stage' || phase !== 'cohort')) ||
+      (task === 'Probe' && phase !== 'default')
+    )
+      fail('M04_HC01_APPROVAL_REQUIRED');
+    state.scope = 'hc01';
+    state.approvalId = approval.approval_id;
+    if (input.cohort !== undefined) state.cohort = structuredClone(input.cohort);
+  }
   if (input.scope === 'incremental') {
     if (state.scope !== undefined && state.scope !== 'incremental') fail('M04_SCOPE_INVALID');
     if (input.cohort !== undefined && (task !== 'Stage' || phase !== 'cohort')) fail('M04_SCOPE_INVALID');
@@ -282,8 +313,9 @@ export async function runTask(input, dependencies = {}) {
     state.scope = 'incremental';
     state.approvalId = approval.approval_id;
     if (input.cohort !== undefined) state.cohort = structuredClone(input.cohort);
-  } else if (state.scope !== undefined || input.cohort !== undefined) fail('M04_SCOPE_INVALID');
-  if ((phase === 'cohort' || phase === 'malformed') && state.scope !== 'incremental')
+  } else if (input.scope !== 'hc01' && (state.scope !== undefined || input.cohort !== undefined))
+    fail('M04_SCOPE_INVALID');
+  if ((phase === 'cohort' || phase === 'malformed') && !['incremental', 'hc01'].includes(state.scope))
     fail('M04_SCOPE_INVALID');
   if (phase === 'replay' && state.scope === 'incremental') fail('M04_SCOPE_INVALID');
   const now = dependencies.now ?? Date.now;
@@ -338,7 +370,7 @@ export async function runTask(input, dependencies = {}) {
     } else if (task === 'Observe') {
       const send = sendJson('muhhammedsayed.app.n8n.cloud', secrets.management, 'n8n', 'n8n');
       const ids = ['4JMHLDBSdgGxhPlk', 'Oq19AMI9C3B1wbo9', 'TsqSMa5MlO3QBLkt'];
-      if (state.scope === 'incremental') ids.unshift('MzimjpsuyPuK7SKe');
+      if (['incremental', 'hc01'].includes(state.scope)) ids.unshift('MzimjpsuyPuK7SKe');
       const executions = [];
       for (const id of ids) {
         const r = await send('GET', '/api/v1/executions?workflowId=' + id + '&limit=3&includeData=false');
@@ -375,7 +407,7 @@ export async function runTask(input, dependencies = {}) {
       )
         fail('M04_ACTOR_METADATA_UNAVAILABLE');
       const a = actor.body.data,
-        buildId = a.taggedBuilds?.latest?.buildId;
+        buildId = state.scope === 'hc01' ? 'yvA3PQRWe95APBdIh' : a.taggedBuilds?.latest?.buildId;
       if (!/^[A-Za-z0-9]{1,64}$/.test(a.id ?? '') || !/^[A-Za-z0-9]{1,64}$/.test(buildId ?? ''))
         fail('M04_BUILD_METADATA_UNAVAILABLE');
       const build = await publicRead('GET', '/v2/actors/' + a.id + '/builds/' + buildId);
@@ -452,7 +484,9 @@ export async function runTask(input, dependencies = {}) {
           ],
         ];
         receipt.probes = [];
-        for (const [name, send, body, status] of state.scope === 'incremental' ? tests.slice(0, 2) : tests) {
+        for (const [name, send, body, status] of ['incremental', 'hc01'].includes(state.scope)
+          ? tests.slice(0, 2)
+          : tests) {
           const r = await send('POST', endpoint, body);
           const expectedCode = {
             missing_machine: 'unauthorized',

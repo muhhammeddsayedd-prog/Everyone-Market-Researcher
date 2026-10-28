@@ -3,7 +3,7 @@ param(
   [ValidateSet('Preflight','Apply','Postcheck','Query')][string]$Phase='Preflight',
   [string]$QueryFile='',
   [string]$QuerySha256='',
-  [ValidateSet('Representative','Incremental')][string]$Scope='Representative',
+  [ValidateSet('Representative','Incremental','HC01')][string]$Scope='Representative',
   [switch]$ReadOnly,
   [switch]$CheckOnly
 )
@@ -25,6 +25,7 @@ $pending=@(
   [pscustomobject]@{version='20261026013910';name='m04_vimeo_account_resolution';file='supabase/migrations/20261026013910_m04_vimeo_account_resolution.sql';sha256='e2fa1cbf59b2e010b8b76caff6a34c5a752074e1e843071c36463c5a1a9717c1';historySha256='9391ae1b1f029e2ea9aa93b812a80b46f9f5abd8fe6245c05da1703bfcf2b56c'},
   [pscustomobject]@{version='20261027092832';name='m04_collector_product_contracts';file='supabase/migrations/20261027092832_m04_collector_product_contracts.sql';sha256='19eb07af9446189496cde17d1b9a735b99816c5008c37588d38cddbc41e6a05a';historySha256='7f036a391743189b3e8031070aa4f18fbd893df7619aab92b02f6a5996b4db7f'}
 )
+$hc01Migration=[pscustomobject]@{version='20261027192743';name='m04_recent_instagram_dev_eligibility';file='supabase/migrations/20261027192743_m04_recent_instagram_dev_eligibility.sql';sha256='635b8303d69ab32560d5acda903fee4c4555a9b3f6f35923d4d7b3655513f61d';historySha256=$null}
 
 function M04-File([string]$Path,[bool]$Directory=$false,[bool]$PinnedExecutable=$false) {
   $absolute=[IO.Path]::GetFullPath($Path)
@@ -141,12 +142,15 @@ function M04-History($Result) {
   $value=$rows[0].receipt
   if($value.current_user -cne 'postgres' -or $value.session_user -cne 'postgres' -or $value.database -cne 'postgres') {throw 'M04_IDENTITY_BLOCKED'}
   $history=@($value.migrations)
-  if($history.Count -notin @(15,16,17)){throw 'M04_HISTORY_BLOCKED'}
-  for($i=0;$i -lt 15;$i++){
+  if($history.Count -lt $baseline.Count -or $history.Count -gt ($baseline.Count+$pending.Count)){throw 'M04_HISTORY_BLOCKED'}
+  for($i=0;$i -lt $baseline.Count;$i++){
     foreach($key in @('version','name','historySha256')){if($history[$i].$key -cne $baseline[$i].$key){throw 'M04_HISTORY_BLOCKED'}}
   }
-  for($i=15;$i -lt $history.Count;$i++){
-    foreach($key in @('version','name','historySha256')){if($history[$i].$key -cne $pending[$i-15].$key){throw 'M04_HISTORY_BLOCKED'}}
+  for($i=$baseline.Count;$i -lt $history.Count;$i++){
+    $expected=$pending[$i-$baseline.Count]
+    foreach($key in @('version','name')){if($history[$i].$key -cne $expected.$key){throw 'M04_HISTORY_BLOCKED'}}
+    if($null -ne $expected.historySha256){if($history[$i].historySha256 -cne $expected.historySha256){throw 'M04_HISTORY_BLOCKED'}}
+    elseif($history[$i].historySha256 -cnotmatch '^[a-f0-9]{64}$'){throw 'M04_HISTORY_BLOCKED'}
   }
   $receipt.authenticationVerified=$true
   return $history
@@ -154,14 +158,15 @@ function M04-History($Result) {
 function M04-PushMatches($Result,[bool]$DryRun) {
   $value=M04-Json $Result
   if($value.upToDate -isnot [bool] -or $value.upToDate -ne $false -or $value.dryRun -isnot [bool] -or $value.dryRun -ne $DryRun -or $value.message -cne 'Finished supabase db push.' -or
-    @($value.seeds).Count -ne 0 -or @($value.roles).Count -ne 0 -or @($value.migrations).Count -ne 2){throw 'M04_PENDING_BLOCKED'}
-  for($i=0;$i -lt 2;$i++){if($value.migrations[$i] -cne [IO.Path]::GetFileName($pending[$i].file)){throw 'M04_PENDING_BLOCKED'}}
+    @($value.seeds).Count -ne 0 -or @($value.roles).Count -ne 0 -or @($value.migrations).Count -ne $pending.Count){throw 'M04_PENDING_BLOCKED'}
+  for($i=0;$i -lt $pending.Count;$i++){if($value.migrations[$i] -cne [IO.Path]::GetFileName($pending[$i].file)){throw 'M04_PENDING_BLOCKED'}}
 }
 function M04-Catalog($Result) {
   $rows=@(M04-Json $Result)
   if($rows.Count -ne 1){throw 'M04_CATALOG_BLOCKED'}
   $catalog=$rows[0].catalog
   if($catalog.identity -ne $true -or @($catalog.tables).Count -ne 6 -or @($catalog.functions).Count -ne 3){throw 'M04_CATALOG_BLOCKED'}
+  if($Scope -eq 'HC01' -and $catalog.collectorDefinitionMd5 -cne '9d65ad95661ffd77d1d9effc3e52fa83'){throw 'M04_CATALOG_BLOCKED'}
   $tableNames=@('collector_runs','collector_accounts','collector_launches','collector_passes','collector_pages','collector_requests')
   if(@(Compare-Object -CaseSensitive @($tableNames|Sort-Object) @($catalog.tables.name|Sort-Object)).Count -ne 0){throw 'M04_CATALOG_BLOCKED'}
   foreach($table in $catalog.tables){if($table.rls -ne $true -or $table.writerTableGrant -ne $false){throw 'M04_CATALOG_BLOCKED'}}
@@ -206,6 +211,7 @@ try{
   $null=M04-File $repo $true
   if(($Scope -eq 'Incremental' -or $ReadOnly) -and $Phase -cne 'Query'){throw 'M04_QUERY_BLOCKED'}
   if($Scope -eq 'Incremental'){$receipt['scope']='incremental';$receipt['readOnly']=$ReadOnly.IsPresent}
+  if($Scope -eq 'HC01'){$receipt['scope']='hc01';$receipt['readOnly']=$ReadOnly.IsPresent}
   if(($Phase -ceq 'Query') -ne (-not [string]::IsNullOrEmpty($QueryFile) -and -not [string]::IsNullOrEmpty($QuerySha256))){throw 'M04_QUERY_BLOCKED'}
   if($Phase -cne 'Query' -and ($QueryFile -or $QuerySha256)){throw 'M04_QUERY_BLOCKED'}
   $queryOriginal=if($Phase -ceq 'Query'){M04-QueryPath $QueryFile $QuerySha256}else{$null}
@@ -231,9 +237,16 @@ try{
   if((M04-Hash $packetFile) -cne '91265ad652b9bc3026238b890c5abd11eb07d9a1ddde650fd5e1aa57266631f0'){throw 'M04_BASELINE_BLOCKED'}
   $old=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($packetFile));$baseline=@($old.baseline)+@($old.pending)
   if($baseline.Count -ne 15 -or $old.target -cne $project){throw 'M04_BASELINE_BLOCKED'}
+  $sourceAll=@($baseline)+@($pending)+@($hc01Migration)
+  if(@(Get-ChildItem -LiteralPath (Join-Path $repo 'supabase/migrations') -Force).Count -ne 18){throw 'M04_SOURCE_BLOCKED'}
+  foreach($migration in $sourceAll){$file=M04-File (Join-Path $repo $migration.file);if((M04-Hash $file) -cne $migration.sha256){throw 'M04_SOURCE_BLOCKED'}}
+  if($Scope -eq 'HC01'){
+    $approvalPath=M04-File (Join-Path $repo 'milestones/M04-collectors-vimeo-instagram/evidence/hc01-dev-approval-20261028.json')
+    $approval=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($approvalPath))
+    if($approval.approval_kind -cne 'hc01' -or $approval.approval_id -cne '1cf8406c-1142-445e-a237-6d0fd7a67b22' -or $approval.projectRef -cne $project -or $approval.environment -cne 'dev'){throw 'M04_BASELINE_BLOCKED'}
+    $baseline=@($baseline)+@($pending);$pending=@($hc01Migration)
+  }
   $all=@($baseline)+@($pending)
-  if(@(Get-ChildItem -LiteralPath (Join-Path $repo 'supabase/migrations') -Force).Count -ne 17){throw 'M04_SOURCE_BLOCKED'}
-  foreach($migration in $all){$file=M04-File (Join-Path $repo $migration.file);if((M04-Hash $file) -cne $migration.sha256){throw 'M04_SOURCE_BLOCKED'}}
   # No private state, decryption, network, native process or copy in CheckOnly.
   if($CheckOnly){$receipt.status='public_ready';$receipt['pendingVersions']=@($pending.version);$exitCode=0}
   else{
@@ -272,6 +285,7 @@ try{
     $catalogFile=Join-Path $scratch 'catalog.sql'
     [IO.File]::WriteAllText($catalogFile,@'
 select jsonb_build_object('identity',current_user='postgres' and session_user='postgres' and current_database()='postgres',
+ 'collectorDefinitionMd5',md5(pg_get_functiondef('ops.collector_execute(uuid,text,jsonb)'::regprocedure)),
  'tables',(select jsonb_agg(jsonb_build_object('name',c.relname,'rls',c.relrowsecurity,'writerTableGrant',has_table_privilege('n8n_writer',c.oid,'SELECT,INSERT,UPDATE,DELETE')) order by c.relname)
    from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='ops' and c.relname in ('collector_runs','collector_accounts','collector_launches','collector_passes','collector_pages','collector_requests')),
  'functions',(select jsonb_agg(jsonb_build_object('name',p.proname,'definer',p.prosecdef,'config',p.proconfig,'writerExecute',has_function_privilege('n8n_writer',p.oid,'EXECUTE'),'browserExecute',has_function_privilege('authenticated',p.oid,'EXECUTE'),'anonExecute',has_function_privilege('anon',p.oid,'EXECUTE'),'agentExecute',has_function_privilege('api_agent',p.oid,'EXECUTE'),'identityArgs',pg_get_function_identity_arguments(p.oid),'returns',pg_get_function_result(p.oid),'defaultsCount',p.pronargdefaults) order by p.proname)
@@ -318,10 +332,11 @@ end $m04_identity$;
       $receipt.status='preflight_verified';$receipt['newHistorySourceParity']=$true
     }
     elseif($Phase -ceq 'Apply'){
-      $intentPath=Join-Path $out 'm04-dev-migration-intent.json'
+      $intentName=if($Scope -eq 'HC01'){'m04-hc01-dev-migration-intent.json'}else{'m04-dev-migration-intent.json'}
+      $intentPath=Join-Path $out $intentName
       # An existing intent means a possibly successful push, never a new permit.
       if(Test-Path -LiteralPath $intentPath){throw 'M04_APPLY_RECONCILIATION_REQUIRED'}
-      if($history.Count -ne 15){throw 'M04_APPLY_RECONCILIATION_REQUIRED'}
+      if($history.Count -ne $baseline.Count){throw 'M04_APPLY_RECONCILIATION_REQUIRED'}
       $dry=Invoke-M04Cli @('db','push','--dry-run','--skip-vault') 60000
       try{M04-PushMatches $dry $true;$receipt['dryRunMatched']=$true}finally{$dry.text=$null}
       $intent=[ordered]@{version=1;projectRef=$project;pending=$pending;historyBefore=$history;createdAt=[DateTime]::UtcNow.ToString('o')}
@@ -331,11 +346,11 @@ end $m04_identity$;
       $push=Invoke-M04Cli @('db','push','--skip-vault','--yes') 180000
       try{M04-PushMatches $push $false;$receipt['pushAcknowledged']=$true}finally{$push.text=$null}
       $after=Invoke-M04Cli @('db','query','--file',$historyFile)
-      try{$historyAfter=@(M04-History $after);if($historyAfter.Count -ne 17){throw 'M04_APPLY_RECONCILIATION_REQUIRED'};$receipt['historyAfter']=$historyAfter}finally{$after.text=$null}
+      try{$historyAfter=@(M04-History $after);if($historyAfter.Count -ne $all.Count){throw 'M04_APPLY_RECONCILIATION_REQUIRED'};$receipt['historyAfter']=$historyAfter}finally{$after.text=$null}
       $receipt.status='migrations_applied_verified'
     }
     elseif($Phase -ceq 'Postcheck'){
-      if($history.Count -ne 17){throw 'M04_POSTCHECK_HISTORY_BLOCKED'}
+      if($history.Count -ne $all.Count){throw 'M04_POSTCHECK_HISTORY_BLOCKED'}
       $catalog=Invoke-M04Cli @('db','query','--file',$catalogFile)
       try{$receipt['catalog']=M04-Catalog $catalog}finally{$catalog.text=$null}
       foreach($type in @('security','performance')){

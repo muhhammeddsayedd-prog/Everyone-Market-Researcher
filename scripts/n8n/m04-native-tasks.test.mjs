@@ -12,7 +12,8 @@ const keys = ['WF-10', 'WF-11', 'WF-19'];
 const syntheticToken = 'x'.repeat(43);
 const ids = (start) =>
   [start, start + 1].map((n) => `${String(n).padStart(8, '0')}-1111-4111-a111-111111111111`);
-function fixture({ incremental = false } = {}) {
+function fixture({ incremental = false, hc01 = false } = {}) {
+  incremental ||= hc01;
   const workflows = Object.fromEntries(
     [...(incremental ? ['WF-00', ...keys] : keys), 'SUB-FINISH'].map((key) => {
       const reviewed = JSON.parse(readFileSync(`n8n/workflows/${key}.json`, 'utf8'));
@@ -76,6 +77,32 @@ function fixture({ incremental = false } = {}) {
       max_actor_starts: 2,
     };
   }
+  if (hc01) {
+    state.scope = 'hc01';
+    state.approvalId = '1cf8406c-1142-445e-a237-6d0fd7a67b22';
+    state.selection = {
+      vimeo: ['985a57dd-7934-422d-9d18-4e8ca59fc197'],
+      instagram: [
+        '962c9c7e-aa0f-46ae-911b-3265859e0577',
+        'bed82782-753f-4ba9-91ca-691ef36f75c6',
+        '46149fb9-8905-4b76-9834-4b38f668a2e2',
+        '2d42d451-ac9a-42ac-a879-8760d63c8108',
+        '3ca3befa-abe6-4540-a389-0cf16115c581',
+      ],
+    };
+    const retained = JSON.parse(
+      readFileSync('milestones/M04-collectors-vimeo-instagram/evidence/native-saved-WF-90-M04.json', 'utf8'),
+    );
+    workflows[retained.id] = {
+      ...structuredClone(retained.workflow),
+      id: retained.id,
+      versionId: retained.versionId,
+      active: false,
+      activeVersionId: null,
+      isArchived: false,
+      shared: [{ projectId: bindings.projectId, role: 'workflow:owner' }],
+    };
+  }
   const calls = [];
   let version = 0;
   const send = async (method, path, value) => {
@@ -121,7 +148,7 @@ function fixture({ incremental = false } = {}) {
       assert.deepEqual(Object.keys(value).sort(), ['connections', 'name', 'nodes', 'settings']);
       if (value.settings.errorWorkflow !== 'DEFAULT') {
         assert.equal(incremental, true);
-        assert.equal(value.settings.errorWorkflow, 'SyntheticM04Error1');
+        assert.equal(value.settings.errorWorkflow, hc01 ? 'AwxhktgJdvLXE0FZ' : 'SyntheticM04Error1');
         const target = workflows[value.settings.errorWorkflow];
         assert.ok(
           target.activeVersionId,
@@ -140,7 +167,7 @@ function fixture({ incremental = false } = {}) {
       dto.activeVersionId = dto.versionId;
       dto.activeVersion = { ...structuredClone(dto), workflowId: dto.id };
     } else if (method === 'POST' && match[2] === '/unpublish') {
-      if (dto.id === 'SyntheticM04Error1')
+      if (dto.id === 'SyntheticM04Error1' || dto.id === 'AwxhktgJdvLXE0FZ')
         assert.ok(
           Object.values(workflows).every((w) => w.settings?.errorWorkflow !== dto.id),
           'consumers must be restored before handler unpublication',
@@ -166,6 +193,74 @@ function fixture({ incremental = false } = {}) {
   };
   return { state, calls, workflows, credentials, send, run };
 }
+
+test('HC01 reuses the retained handler, stages exact1+4 daily cohorts and restores every original definition', async () => {
+  const f = fixture({ hc01: true }),
+    originals = structuredClone(f.workflows);
+  for (const phase of ['inventory', 'machine', 'stage', 'publish'])
+    assert.equal((await f.run(phase)).public.status, 'completed', phase);
+  assert.equal(
+    f.calls.filter((c) => c.method === 'PUT' && c.path.includes(bindings.workflowRefs['WF-00'].id)).length,
+    0,
+  );
+  assert.equal(f.calls.filter((c) => c.method === 'POST' && c.path === '/api/v1/workflows').length, 0);
+  for (const [key, ids, starts] of [
+    ['first-instagram', [f.state.selection.instagram[0]], 2],
+    ['remaining-instagram', f.state.selection.instagram.slice(1), 8],
+  ]) {
+    f.state.cohort = { key, account_ids: ids };
+    const r = await f.run('cohort');
+    assert.equal(r.public.status, 'completed', JSON.stringify(r.public));
+    assert.deepEqual(r.public.cohort.input.account_ids, ids);
+    assert.equal(r.public.cohort.input.results_limit, 30);
+    assert.equal(r.public.cohort.input.max_actor_starts, starts);
+  }
+  f.state.cohort = { key: 'vimeo-continuation', account_ids: f.state.selection.vimeo };
+  const v = await f.run('cohort');
+  assert.equal(v.public.status, 'completed');
+  assert.equal(v.public.cohort.input.page_size, 5);
+  assert.equal(v.public.cohort.input.max_pages, 1);
+  assert.equal((await f.run('restore')).public.status, 'completed');
+  for (const [id, before] of Object.entries(originals)) {
+    assert.deepEqual(f.workflows[id].nodes, before.nodes);
+    assert.deepEqual(f.workflows[id].settings, before.settings);
+    assert.equal(f.workflows[id].active, false);
+  }
+  assert.equal(f.state.native.machine.rebound, false);
+});
+
+test('HC01 rejects cohort widening and retained-handler drift before mutation', async () => {
+  const f = fixture({ hc01: true });
+  f.workflows.AwxhktgJdvLXE0FZ.nodes[0].notes = 'unrecognized newer work';
+  assert.equal((await f.run('inventory')).public.status, 'blocked');
+  assert.equal(f.calls.filter((c) => c.method !== 'GET').length, 0);
+  const g = fixture({ hc01: true });
+  for (const phase of ['inventory', 'machine', 'stage', 'publish'])
+    assert.equal((await g.run(phase)).public.status, 'completed');
+  g.state.cohort = {
+    key: 'remaining-instagram',
+    account_ids: [...g.state.selection.instagram.slice(1, 4), g.state.selection.instagram[0]],
+  };
+  const before = g.calls.length;
+  assert.equal((await g.run('cohort')).public.status, 'blocked');
+  assert.equal(g.calls.slice(before).filter((c) => c.method !== 'GET').length, 0);
+});
+
+test('HC01 inventory-only restoration performs no workflow mutation and can independently restore a rebound Machine', async () => {
+  for (const rebound of [false, true]) {
+    const f = fixture({ hc01: true });
+    assert.equal((await f.run('inventory')).public.status, 'completed');
+    if (rebound) assert.equal((await f.run('machine')).public.status, 'completed');
+    const before = f.calls.length;
+    const r = await f.run('restore');
+    assert.equal(r.public.status, 'completed', JSON.stringify(r.public));
+    assert.equal(
+      f.calls.slice(before).filter((c) => c.method !== 'GET' && c.path.includes('/workflows/')).length,
+      0,
+    );
+    assert.equal(f.state.native.machine.rebound, false);
+  }
+});
 
 test('incremental native staging publishes only the newly owned error handler before binding four consumers and reverses that order at shutdown', async () => {
   const f = fixture({ incremental: true }),

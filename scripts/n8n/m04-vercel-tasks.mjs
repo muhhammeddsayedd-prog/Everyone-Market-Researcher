@@ -140,13 +140,19 @@ function deploymentRecord(dto, state) {
 }
 function prepare(state, repo, readEvidence) {
   if (state.vercelSetup?.configured || state.vercelSetup?.pending) fail();
-  const incremental = state.scope === 'incremental';
+  const hc01 = state.scope === 'hc01';
+  const incremental = hc01 || state.scope === 'incremental';
   const approval = readEvidence(
     repo,
-    incremental ? 'incremental-dev-approval-20261027.json' : 'live-test-approval-20261027.json',
+    hc01
+      ? 'hc01-dev-approval-20261028.json'
+      : incremental
+        ? 'incremental-dev-approval-20261027.json'
+        : 'live-test-approval-20261027.json',
   );
-  const starts = incremental ? 8 : 4,
-    results = incremental ? 50 : 5;
+  const starts = hc01 ? 22 : incremental ? 8 : 4,
+    results = hc01 ? 30 : incremental ? 50 : 5;
+  const approvedAt = hc01 ? approval.recordedAt : approval.approvedAt;
   if (
     approval.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
     approval.environment !== 'dev' ||
@@ -154,15 +160,21 @@ function prepare(state, repo, readEvidence) {
     approval.ceilings.actorUsd !== starts ||
     approval.ceilings.perActorUsd !== 1 ||
     (incremental &&
-      (approval.approval_kind !== 'incremental' ||
+      (approval.approval_kind !== (hc01 ? 'hc01' : 'incremental') ||
         approval.ceilings.resultsPerProfile !== results ||
-        approval.reviewedHead !== '2c450f40557e7582525d96b5dd63bba2338baa0d' ||
-        !Number.isFinite(Date.parse(approval.approvedAt))))
+        approval.reviewedHead !==
+          (hc01 ? 'bb0cd01d3a6ee239540e73b1d366f86e46b17d42' : '2c450f40557e7582525d96b5dd63bba2338baa0d') ||
+        (hc01 && approval.approval_id !== '1cf8406c-1142-445e-a237-6d0fd7a67b22') ||
+        !Number.isFinite(Date.parse(approvedAt))))
   )
     fail('APPROVAL');
   const receipt = readEvidence(
     repo,
-    incremental ? 'incremental-db-preflight-20261027.json' : 'live-db-preflight-after-path-fix-20261027.json',
+    hc01
+      ? 'hc01-db-preflight-20261028.json'
+      : incremental
+        ? 'incremental-db-preflight-20261027.json'
+        : 'live-db-preflight-after-path-fix-20261027.json',
   );
   const snapshot = incremental ? receipt.queryResult?.[0]?.incremental_preflight : receipt.preflight;
   if (
@@ -180,7 +192,7 @@ function prepare(state, repo, readEvidence) {
         !Array.isArray(receipt.queryResult) ||
         receipt.queryResult.length !== 1 ||
         !Number.isFinite(Date.parse(receipt.observedAt)) ||
-        Date.parse(receipt.observedAt) < Date.parse(approval.approvedAt) ||
+        Date.parse(receipt.observedAt) < Date.parse(approvedAt) ||
         Date.parse(receipt.observedAt) > Date.now() + 30000)) ||
     !object(snapshot) ||
     snapshot.current_user !== 'postgres' ||
@@ -196,6 +208,24 @@ function prepare(state, repo, readEvidence) {
     snapshot.selectedUnprocessedActors.length
   )
     fail('DATABASE_SNAPSHOT');
+  if (hc01) {
+    const historical = readEvidence(repo, 'incremental-final-readback-20261027.json').queryResult?.[0]
+      ?.incremental_preflight?.migrations;
+    const actual = snapshot.migrations;
+    if (
+      !Array.isArray(historical) ||
+      historical.length !== 17 ||
+      !Array.isArray(actual) ||
+      actual.length !== 18 ||
+      historical.some((row, index) =>
+        ['version', 'name', 'historySha256'].some((k) => row[k] !== actual[index]?.[k]),
+      ) ||
+      actual[17].version !== '20261027192743' ||
+      actual[17].name !== 'm04_recent_instagram_dev_eligibility' ||
+      !/^[a-f0-9]{64}$/.test(actual[17].historySha256 ?? '')
+    )
+      fail('DATABASE_SNAPSHOT');
+  }
   const expected = {
     'C000:vimeo': 'everyonefilms',
     'C001:vimeo': 'goodpeoplefilms',
@@ -241,7 +271,11 @@ function prepare(state, repo, readEvidence) {
   }
   const providerReceipt = readEvidence(
       repo,
-      incremental ? 'incremental-provider-preflight-20261027.json' : 'live-provider-preflight-20261027.json',
+      hc01
+        ? 'hc01-provider-preflight-20261028.json'
+        : incremental
+          ? 'incremental-provider-preflight-20261027.json'
+          : 'live-provider-preflight-20261027.json',
     ),
     provider = providerReceipt.provider;
   if (
@@ -250,12 +284,19 @@ function prepare(state, repo, readEvidence) {
     !object(provider.inputSchema?.properties) ||
     (incremental &&
       (!Number.isFinite(Date.parse(providerReceipt.observedAt)) ||
-        Date.parse(providerReceipt.observedAt) < Date.parse(approval.approvedAt) ||
+        Date.parse(providerReceipt.observedAt) < Date.parse(approvedAt) ||
         Date.parse(providerReceipt.observedAt) > Date.now() + 30000))
   )
     fail('PROVIDER_PIN');
   for (const key of ['owner_id', 'actorId', 'build', 'buildId'])
     if (state.provider?.[key] !== provider[key]) fail('PROVIDER_PIN');
+  if (
+    hc01 &&
+    (provider.actorId !== 'shu8hvrXbJbY3Eb9W' ||
+      provider.build !== '0.0.831' ||
+      provider.buildId !== 'yvA3PQRWe95APBdIh')
+  )
+    fail('PROVIDER_PIN');
   if (
     provider.inputSchema.properties.searchType?.default !== 'hashtag' ||
     provider.inputSchema.properties.addParentData?.default !== false
@@ -333,6 +374,27 @@ function prepare(state, repo, readEvidence) {
         .map((a) => a.id),
     ]),
   );
+  if (hc01) {
+    const expectedIds = {
+      C000: '962c9c7e-aa0f-46ae-911b-3265859e0577',
+      C001: 'bed82782-753f-4ba9-91ca-691ef36f75c6',
+      C130: '46149fb9-8905-4b76-9834-4b38f668a2e2',
+      C270: '2d42d451-ac9a-42ac-a879-8760d63c8108',
+      C226: '3ca3befa-abe6-4540-a389-0cf16115c581',
+    };
+    for (const a of snapshot.accounts.filter((a) => a.platform === 'instagram')) {
+      if (
+        a.id !== expectedIds[a.company_code] ||
+        !['pending', 'running'].includes(a.backfill_status) ||
+        !Number.isFinite(Date.parse(a.last_item_published_at)) ||
+        Date.parse(a.last_item_published_at) > Date.now() ||
+        typeof a.last_external_id !== 'string' ||
+        !a.last_external_id
+      )
+        fail('ACCOUNT_SELECTION');
+    }
+    state.selection.vimeo = ['985a57dd-7934-422d-9d18-4e8ca59fc197'];
+  }
   state.livePolicy = collectorPolicy.parse({
     approval_id: approval.approval_id,
     max_actor_starts: starts,
@@ -362,7 +424,10 @@ function prepare(state, repo, readEvidence) {
     polls: 0,
     approvalId: approval.approval_id,
     comment:
-      'M04 ' + (incremental ? 'incremental' : 'representative') + ' temporary dev ' + approval.approval_id,
+      'M04 ' +
+      (hc01 ? 'HC01' : incremental ? 'incremental' : 'representative') +
+      ' temporary dev ' +
+      approval.approval_id,
   };
   return {
     sourceHead: state.sourceHead,
@@ -423,13 +488,14 @@ export async function runVercelTask({ phase, state, secrets = {}, repo, send, re
         if (!/^[A-Za-z0-9_-]{43}$/.test(secrets.machine ?? '') || !secrets.writer || !secrets.apifyRead)
           fail('INPUT');
         const policy = collectorPolicy.parse(state.livePolicy);
-        const incremental = state.scope === 'incremental';
+        const hc01 = state.scope === 'hc01';
+        const incremental = hc01 || state.scope === 'incremental';
         if (
           policy.approval_id !== v.approvalId ||
-          policy.max_actor_starts !== (incremental ? 8 : 4) ||
+          policy.max_actor_starts !== (hc01 ? 22 : incremental ? 8 : 4) ||
           policy.max_actor_usd !== 1 ||
-          policy.max_total_usd !== (incremental ? 8 : 4) ||
-          policy.max_results_per_profile !== (incremental ? 50 : 5) ||
+          policy.max_total_usd !== (hc01 ? 22 : incremental ? 8 : 4) ||
+          policy.max_results_per_profile !== (hc01 ? 30 : incremental ? 50 : 5) ||
           !isDeepStrictEqual(Object.keys(policy.actors), ['apify/instagram-scraper']) ||
           !isDeepStrictEqual(policy.actors['apify/instagram-scraper'].inputDefaults, {
             searchType: 'hashtag',
@@ -520,7 +586,7 @@ export async function runVercelTask({ phase, state, secrets = {}, repo, send, re
           v.pending ||
           !state.deployment ||
           v.polls >= 12 ||
-          (state.scope === 'incremental' && v.ready)
+          (['incremental', 'hc01'].includes(state.scope) && v.ready)
         )
           fail('POLL_LIMIT');
         v.polls++;
@@ -544,7 +610,7 @@ export async function runVercelTask({ phase, state, secrets = {}, repo, send, re
         let rows = [],
           environmentError,
           productionError;
-        if (state.scope === 'incremental') {
+        if (['incremental', 'hc01'].includes(state.scope)) {
           try {
             await checkProductionBuilds();
           } catch (error) {
