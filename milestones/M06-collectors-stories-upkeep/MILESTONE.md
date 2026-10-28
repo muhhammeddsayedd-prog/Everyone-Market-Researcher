@@ -155,17 +155,19 @@ When M06 is done, every in-scope source collects on schedule, with thumbnails st
 3. Deploy via a PR to Preview (dev) and smoke-test with curl. Production follows the merge.
 
 ### T4: WF-31 · Media v1 (dev)
+
+**Connected local implementation29October:** supported n8n trigger/HTTP nodes call the authenticated Vercel Node endpoint. All image download/Sharp/JPEG/binary upload runs there; do not paste server imports into Cloud Code. The worker retains max50 contracts; this Node deployment uses a server-selected batch1–5/default1. Four private audit-backed RPCs guard durable claims/outcomes/ACK/finish, same-execution replay and held uncertain writes. Generated inactive/unbound WF-31 is qualified locally, not a native saved/executed workflow. No scheduler/callback caller is enabled. See [current evidence](evidence/native-media-local-20261029.md) and [one prepared dev plan](evidence/native-media-dev-validation-20261029.md); original live criteria below remain open.
 1. **Triggers:**
    - an Execute Workflow Trigger, called by `SUB · Finish run` when `items_new > 0` (add the call in the SUB, "don't wait");
    - a Schedule Trigger every 2 h as a fallback (until M07 makes WF-30 the caller).
-2. **Claim:** `select * from ops.claim_queue_batch('media', 50, 600);` If it returns nothing → end.
+2. **Claim:** `ops.claim_media_batch(execution_id, server_batch_size)` wraps `ops.claim_queue_batch('media', n, 600)` with durable ownership/replay guards. Worker ceiling50; current Node arrangement defaults1 and supports1–5. If no work, finish the durable empty batch.
 3. **Targets:** `ops.get_media_targets(item_ids)`. Skip any with `has_thumbnail = true` or no source URL, and ack them.
 4. **Loop (batch 5):**
    1. HTTP GET the `thumbnail_source_url` as binary, with a 20 s timeout and a browser-like `User-Agent`. A 403/404/410 response means the link expired: ack the message, record the failure in the run log, and count it as `media_expired`.
-   2. Edit Image: resize to a maximum width of 1280, JPEG quality 80, and read the width and height.
-   3. HTTP POST `{app_url}/api/internal/media-upload-url` (credential `EMR internal secret`) with body `{path}` → HTTP PUT the binary to `signedUrl` (`Content-Type: image/jpeg`).
+   2. In the supported Node runtime, Sharp resizes to maximum1280px/JPEG80 and reads actual dimensions. No server imports run in Cloud Code.
+   3. Node HTTP POSTs `{path}` to the authenticated signing route, then immutable raw JPEG PUTs the exact single-use capability. Application/Preview secrets never go to the CDN/Storage host.
    4. `ops.save_media_asset(item_id, 'thumbnail', path, source_url, w, h)`.
-   5. Ack.
+   5. Persist the controlled outcome/unknown charge in product audit records, then ownership-checked ACK. Finish derives the durable batch summary; no blind retry of uncertain writes.
 5. **Stories priority:** WF-12 calls WF-31 **directly** right after its WF-19 ingest completes (via `SUB · Finish run`), so story thumbnails are stored within minutes.
 6. **Logging:** run start/finish (`WF-31`, platform null, mode `daily`), bytes for visibility and actual reconciled Storage charges when available. The local port outcome leaves cost unknown (`null`); do not fabricate USD0 or claim hosted cost persistence.
 

@@ -246,6 +246,9 @@ export async function runMediaBatch(
         const signed = signedTarget(await ports.sign(target.storage_path, signal), target);
         stage = 'upload';
         signal.throwIfAborted();
+        // Payload bytes offered to PUT, not an assertion of wire delivery,
+        // object persistence or billable usage when the response is uncertain.
+        outcome.bytes = jpeg.bytes.byteLength;
         const uploaded = await ports.upload(
           signed.signedUrl,
           jpeg.bytes,
@@ -259,6 +262,7 @@ export async function runMediaBatch(
           return;
         }
         if (![200, 201].includes(uploaded.status)) {
+          outcome = { ...outcome, outcome: 'reconciliation_required', code: 'media_upload_failed' };
           await finish(false);
           return;
         }

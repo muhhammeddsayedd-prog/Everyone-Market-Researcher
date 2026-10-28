@@ -3361,9 +3361,11 @@ export type Database = {
     };
     Functions: {
       accrue_fixed_costs: { Args: { p_day: string }; Returns: number };
+      ack_media_batch: { Args: { p_execution_id: string; p_msg_ids: number[] }; Returns: undefined };
       ack_queue: { Args: { p_msg_ids: number[]; p_queue: string }; Returns: undefined };
       apify_runs_pending: { Args: { p_run_id: string }; Returns: number };
       authorize_apify_launch: { Args: { p: Json }; Returns: Json };
+      claim_media_batch: { Args: { p_execution_id: string; p_limit?: number }; Returns: Json };
       claim_queue_batch: {
         Args: { p_n: number; p_queue: string; p_vt_seconds?: number };
         Returns: {
@@ -3381,6 +3383,7 @@ export type Database = {
       daily_health: { Args: Record<PropertyKey, never>; Returns: Json };
       diff_website_urls: { Args: { p_account_id: string; p_urls: string[] }; Returns: string[] };
       error_count_24h: { Args: { p_claim_notify?: boolean; p_workflow: string }; Returns: number };
+      finish_media_batch: { Args: { p_execution_id: string }; Returns: Json };
       finish_run: { Args: { p_error?: string; p_run_id: string; p_status: string }; Returns: Json };
       foundation_gateway_admit: {
         Args: {
@@ -3491,6 +3494,7 @@ export type Database = {
         Returns: Json;
       };
       reconcile_apify_launch: { Args: { p: Json }; Returns: Json };
+      record_media_outcome: { Args: { p_execution_id: string; p_outcome: Json }; Returns: undefined };
       register_apify_run: {
         Args: {
           p_account_ids: string[];

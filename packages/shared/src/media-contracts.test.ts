@@ -1,7 +1,50 @@
 import { describe, expect, it } from 'vitest';
-import { mediaQueueMessage, mediaStoragePath, mediaTarget, mediaThumbnailPath } from './media-contracts';
+import {
+  mediaQueueMessage,
+  mediaStoragePath,
+  mediaTarget,
+  mediaThumbnailPath,
+  mediaBatchInput,
+  mediaBatchSummary,
+} from './media-contracts';
 
 describe('M06 thumbnail contracts', () => {
+  it('accepts only a native execution identity, never caller-selected targets or source URLs', () => {
+    expect(mediaBatchInput.safeParse({ execution_id: '310001' }).success).toBe(true);
+    for (const input of [
+      { execution_id: '0' },
+      { execution_id: '1'.repeat(21) },
+      { execution_id: '310001', url: 'https://attacker.example/x' },
+      { execution_id: '310001', batch_size: 50 },
+    ])
+      expect(mediaBatchInput.safeParse(input).success).toBe(false);
+  });
+  it('keeps held work and unknown charges distinct from successful completion', () => {
+    const base = {
+      state: 'completed',
+      claimed: 0,
+      processed: 0,
+      held: 0,
+      stored: 0,
+      skipped: 0,
+      expired: 0,
+      retryable: 0,
+      reconciliation_required: 0,
+      bytes: 0,
+      infrastructure_cost_usd: null,
+    };
+    expect(mediaBatchSummary.safeParse(base).success).toBe(true);
+    expect(
+      mediaBatchSummary.safeParse({ ...base, state: 'reconciliation_required', claimed: 1, held: 1 }).success,
+    ).toBe(true);
+    for (const changed of [
+      { claimed: 1 },
+      { infrastructure_cost_usd: 0 },
+      { claimed: 51 },
+      { claimed: 1, processed: 1, retryable: 1 },
+    ])
+      expect(mediaBatchSummary.safeParse({ ...base, ...changed }).success).toBe(false);
+  });
   it('derives one canonical thumbnail key from trusted item identity', () => {
     expect(
       mediaThumbnailPath({

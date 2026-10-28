@@ -53,7 +53,7 @@ jobs:
       - name: Check bounded YouTube response diagnostics
         run: node --test scripts/seed/diagnose-youtube.test.mjs
       - name: Check native n8n foundation and read-only API contracts
-        run: node --test n8n/foundation/*.test.mjs n8n/collectors/*.test.mjs scripts/n8n/inventory.test.mjs scripts/n8n/inventory-diagnostics.test.mjs scripts/n8n/check-dns.test.mjs
+        run: node --test n8n/foundation/*.test.mjs n8n/collectors/*.test.mjs n8n/media/*.test.mjs scripts/n8n/inventory.test.mjs scripts/n8n/inventory-diagnostics.test.mjs scripts/n8n/check-dns.test.mjs
       - name: Check bounded GW-01 trial and private delivery contracts
         run: node --test scripts/n8n/gw01-trial.test.mjs scripts/n8n/gw01-delivery.test.mjs scripts/n8n/gw01-delivery-transport.test.mjs scripts/n8n/gw01-privacy-read.test.mjs scripts/n8n/gw01-writer.test.mjs scripts/n8n/gw01-gateway-transport.test.mjs scripts/n8n/gw01-gateway-logs.test.mjs scripts/n8n/gw01-log-read.test.mjs scripts/n8n/gw01-public-config.test.mjs scripts/n8n/gw01-vercel-no-retry.test.mjs scripts/n8n/gw01-shutdown-read.test.mjs scripts/n8n/gw01-preview-read.test.mjs
       - name: Check owned inactive M03 foundation provisioning

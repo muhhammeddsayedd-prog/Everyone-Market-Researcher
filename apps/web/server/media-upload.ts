@@ -65,7 +65,7 @@ function authorize(request: Request, config: MediaUploadConfig) {
   if (!timingSafeEqual(supplied, expected)) throw new WorkerFailure('unauthorized', 401);
 }
 
-async function readBody(request: Request, signal: AbortSignal): Promise<unknown> {
+export async function readMediaBody(request: Request, signal: AbortSignal): Promise<unknown> {
   if (request.headers.has('content-encoding')) throw new WorkerFailure('unsupported_encoding', 415);
   if (!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(request.headers.get('content-type') ?? ''))
     throw new WorkerFailure('invalid_content_type', 415);
@@ -148,7 +148,7 @@ export function createMediaUploadHandler(dependencies: {
       const config = mediaUploadConfig(dependencies.environment());
       authorize(request, config);
       if (controller.signal.aborted) throw new WorkerFailure('unavailable', 503);
-      const parsed = mediaUploadRequest.safeParse(await readBody(request, controller.signal));
+      const parsed = mediaUploadRequest.safeParse(await readMediaBody(request, controller.signal));
       if (!parsed.success) throw new WorkerFailure('invalid_request', 400);
       if (controller.signal.aborted) throw new WorkerFailure('unavailable', 503);
       const raw = await dependencies.signUpload(parsed.data.path, config, controller.signal);
@@ -165,6 +165,31 @@ export function createMediaUploadHandler(dependencies: {
     } finally {
       clearTimeout(timer);
       request.signal.removeEventListener('abort', abort);
+    }
+  };
+}
+
+/** Authenticated configuration check only: no SDK call or capability creation. */
+export function createMediaUploadReadinessHandler(environment: () => Record<string, string | undefined>) {
+  return async (request: Request) => {
+    try {
+      if (request.method !== 'HEAD') throw new WorkerFailure('method_not_allowed', 405);
+      const config = mediaUploadConfig(environment());
+      authorize(request, config);
+      if (request.signal.aborted) throw new WorkerFailure('unavailable', 503);
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'cache-control': 'no-store, private',
+          'x-content-type-options': 'nosniff',
+          'referrer-policy': 'no-referrer',
+        },
+      });
+    } catch (error) {
+      return new Response(null, {
+        status: error instanceof WorkerFailure ? error.status : 503,
+        headers: { 'cache-control': 'no-store, private' },
+      });
     }
   };
 }

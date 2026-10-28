@@ -604,3 +604,11 @@ Technical safeguards for this local slice:
 - Queue outcomes record bytes and unknown infrastructure cost (`null`), never an invented USD0. Only after confirmed upload does the writer save the exact owner/path/current-source receipt, then record and acknowledge. Retry exhaustion and ambiguous effects remain visible and unacknowledged.
 
 Shared callbacks/schedulers remain pending where they depend on M05 website completion. No hosted migration, live capture, seven-day comparison, Storage upload, recurrence, external email, production or merge is authorized by this exception. No new credentials, budget gates or acceptance framework are introduced.
+
+### Supported WF-31 runtime — 29 October 2026
+
+The owner continued the independent local adapter. Use an authenticated Vercel Node function for safe HTTPS image I/O, Sharp and actual binary Storage PUT; n8n Cloud uses supported HTTP/trigger nodes and plain JS only. Preserve the existing signing route as the sole runtime consumer of the Storage secret. Its HEAD readiness checks configuration/auth without issuing a capability. Native service authentication remains separate from optional temporary Preview protection access; missing bindings fail closed.
+
+Extend only pending migration20 (not the19 applied hosted migrations) with four writer-only durable media operations using existing audit_log, queue and media contracts. Fixed session-pooler advisory locking and short serialized transactions enforce claim ownership. Unknown/reconciliation messages are held, same execution replays its receipt and complete saved pointers can be ACKed without another upload. Unknown charges stay null; byte counts describe attempted JPEG body payload, not uncertain wire transfer or actual billing. No new table, credential store, supervisor or approval framework.
+
+For the bounded Node arrangement, the server selects batch1–5/default1 within the worker's50 ceiling. This is an adjustable operational safety setting under standing development authority, not a financial approval threshold. Current scope remains local tests/docs/branch/CI; the single prepared live plan includes exact migration, FIFO sample readiness, bindings, necessary shared-default bypass decision, reconciliation and shutdown. No live side effect or M05 waiver is inferred.

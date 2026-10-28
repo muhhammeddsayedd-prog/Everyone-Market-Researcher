@@ -76,3 +76,41 @@ export const mediaQueueMessage = z.strictObject({
 export type MediaTarget = z.infer<typeof mediaTarget>;
 export type MediaQueueMessage = z.infer<typeof mediaQueueMessage>;
 export type MediaSignedUpload = z.infer<typeof mediaSignedUpload>;
+
+export const mediaExecutionId = z.string().regex(/^[1-9][0-9]{0,19}$/);
+export const mediaBatchInput = z.strictObject({ execution_id: mediaExecutionId });
+const batchCount = z.number().int().min(0).max(50);
+export const mediaBatchSummary = z
+  .strictObject({
+    state: z.enum(['completed', 'partial', 'reconciliation_required']),
+    claimed: batchCount,
+    processed: batchCount,
+    held: batchCount,
+    stored: batchCount,
+    skipped: batchCount,
+    expired: batchCount,
+    retryable: batchCount,
+    reconciliation_required: batchCount,
+    bytes: z
+      .number()
+      .int()
+      .min(0)
+      .max(50 * 2 * 1024 * 1024),
+    infrastructure_cost_usd: z.null(),
+  })
+  .refine(
+    (v) =>
+      v.processed + v.held <= v.claimed &&
+      v.stored + v.skipped + v.expired + v.retryable + v.reconciliation_required === v.processed &&
+      (v.state !== 'completed' ||
+        (v.held === 0 &&
+          v.retryable === 0 &&
+          v.reconciliation_required === 0 &&
+          (v.claimed === 0 || v.processed > 0))),
+  );
+export const mediaBatchReceipt = mediaBatchSummary.safeExtend({
+  version: z.literal(1),
+  execution_id: mediaExecutionId,
+  replayed: z.boolean(),
+});
+export type MediaBatchSummary = z.infer<typeof mediaBatchSummary>;

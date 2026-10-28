@@ -85,5 +85,97 @@ set local role api_agent;
 select extensions.throws_ok($q$select ops.get_media_targets('{}'::uuid[])$q$,'42501',null,'read-only agent cannot invoke media worker context');
 select extensions.throws_ok($q$select ops.save_media_asset('20000000-0000-4000-8000-000000000011','thumbnail','m06-local/vimeo/media01/thumb.jpg','https://i.vimeocdn.com/video/local.jpg',1280,720)$q$,'42501',null,'read-only agent cannot mutate media');
 reset role;
+
+select extensions.ok(has_function_privilege('n8n_writer','ops.claim_media_batch(text,integer)','EXECUTE')
+  and has_function_privilege('n8n_writer','ops.record_media_outcome(text,jsonb)','EXECUTE')
+  and has_function_privilege('n8n_writer','ops.ack_media_batch(text,bigint[])','EXECUTE')
+  and has_function_privilege('n8n_writer','ops.finish_media_batch(text)','EXECUTE'),'writer has the four narrow media runtime RPCs');
+select extensions.ok(not has_function_privilege('n8n_writer','private.assert_media_session(text)','EXECUTE')
+  and not has_table_privilege('n8n_writer','ops.audit_log','INSERT,UPDATE,DELETE'),'writer cannot bypass guarded audit/claim operations');
+set local role n8n_writer;
+select extensions.throws_ok($q$select ops.claim_media_batch('3100601')$q$,'42501',null,'runtime claim requires the fixed owned media session lock');
+select extensions.throws_ok($q$select ops.claim_media_batch('not-an-execution')$q$,'22023',null,'native execution identity is bounded');
+reset role;
+select pg_advisory_xact_lock(73106,31);
+select set_config('test.m06_msg1',pgmq.send('media','{"item_id":"20000000-0000-4000-8000-000000000011"}')::text,true);
+select set_config('test.m06_msg2',pgmq.send('media','{"item_id":"20000000-0000-4000-8000-000000000011"}')::text,true);
+select set_config('test.m06_msg3',pgmq.send('media','{"item_id":"20000000-0000-4000-8000-000000000012"}')::text,true);
+set local role n8n_writer;
+select set_config('test.m06_runtime_claim',ops.claim_media_batch('3100601')::text,true);
+select extensions.is((current_setting('test.m06_runtime_claim')::jsonb->>'replayed')::boolean,false,'first native execution claims once');
+select extensions.is(jsonb_array_length(current_setting('test.m06_runtime_claim')::jsonb->'messages'),3,'actual queue IDs are durably claimed');
+select extensions.is(jsonb_typeof(current_setting('test.m06_runtime_claim')::jsonb->'messages'->0->'msg_id'),'string','queue bigint identity stays an exact JSON string');
+select extensions.is(ops.claim_media_batch('3100601')->>'state','reconciliation_required','uncertain repeated execution cannot claim or upload again');
+select extensions.throws_ok($q$select ops.ack_media_batch('3100601',array[current_setting('test.m06_msg1')::bigint])$q$,'42501',null,'ack requires a prior durable safe outcome');
+select set_config('test.m06_stored_outcome',jsonb_build_object('item_id','20000000-0000-4000-8000-000000000011',
+  'msg_ids',jsonb_build_array(current_setting('test.m06_msg1'),current_setting('test.m06_msg2')),
+  'outcome','stored','code','thumbnail_saved','bytes',128,'cost_usd',null)::text,true);
+select extensions.lives_ok($q$select ops.record_media_outcome('3100601',current_setting('test.m06_stored_outcome')::jsonb)$q$,'confirmed asset outcome is durably recorded for duplicate queue messages');
+select extensions.lives_ok($q$select ops.record_media_outcome('3100601',current_setting('test.m06_stored_outcome')::jsonb)$q$,'identical durable record replay is a no-op');
+select extensions.throws_ok($q$select ops.record_media_outcome('3100601',jsonb_set(current_setting('test.m06_stored_outcome')::jsonb,'{cost_usd}','0'))$q$,'22023',null,'unknown infrastructure cost cannot become invented zero cost');
+select extensions.throws_ok($q$select ops.record_media_outcome('3100601',jsonb_set(current_setting('test.m06_stored_outcome')::jsonb,'{msg_ids}','["9223372036854775807"]'))$q$,'42501',null,'another message cannot be released through this batch');
+select extensions.lives_ok($q$select ops.ack_media_batch('3100601',array[current_setting('test.m06_msg1')::bigint,current_setting('test.m06_msg2')::bigint])$q$,'safe outcome and exact owned claim acknowledge together');
+select extensions.lives_ok($q$select ops.ack_media_batch('3100601',array[current_setting('test.m06_msg1')::bigint])$q$,'already committed acknowledgment replays without more work');
+select extensions.lives_ok($q$select ops.record_media_outcome('3100601',jsonb_build_object('item_id','20000000-0000-4000-8000-000000000012',
+  'msg_ids',jsonb_build_array(current_setting('test.m06_msg3')),'outcome','retryable','code','media_download_failed','bytes',0,'cost_usd',null))$q$,'retryable source failure is durable and unpriced');
+select extensions.throws_ok($q$select ops.ack_media_batch('3100601',array[current_setting('test.m06_msg3')::bigint])$q$,'42501',null,'retryable outcome cannot be acknowledged');
+select set_config('test.m06_runtime_finish',ops.finish_media_batch('3100601')::text,true);
+select extensions.is(current_setting('test.m06_runtime_finish')::jsonb->>'state','partial','finish truthfully reports the unacknowledged retryable item');
+select extensions.is((current_setting('test.m06_runtime_finish')::jsonb->>'claimed')::int,3,'batch summary retains actual leased message count');
+select extensions.is((current_setting('test.m06_runtime_finish')::jsonb->>'processed')::int,2,'duplicate messages count one processed item');
+select extensions.is((current_setting('test.m06_runtime_finish')::jsonb->>'bytes')::int,128,'duplicate messages and record replay do not duplicate uploaded bytes');
+select extensions.is(current_setting('test.m06_runtime_finish')::jsonb->'infrastructure_cost_usd','null'::jsonb,'unknown infrastructure charge remains null in final summary');
+select extensions.is(ops.claim_media_batch('3100601')->'result',current_setting('test.m06_runtime_finish')::jsonb,'finished execution replay returns the persisted summary');
+reset role;
+select extensions.is((select count(*)::int from ops.audit_log where action='media_outcome' and entity_id='3100601:20000000-0000-4000-8000-000000000011'),1,'duplicate record has one product accounting observation');
+select extensions.is((select count(*)::int from pgmq.q_media where msg_id in (current_setting('test.m06_msg1')::bigint,current_setting('test.m06_msg2')::bigint)),0,'only acknowledged owned messages left the queue');
+update pgmq.q_media set vt=now()-interval '1 second' where msg_id=current_setting('test.m06_msg3')::bigint;
+set local role n8n_writer;
+select extensions.is(jsonb_array_length(ops.claim_media_batch('3100602')->'messages'),1,'known retryable download can be attempted in a later owned batch');
+select extensions.lives_ok($q$select ops.record_media_outcome('3100602',jsonb_build_object('item_id','20000000-0000-4000-8000-000000000012',
+  'msg_ids',jsonb_build_array(current_setting('test.m06_msg3')),'outcome','reconciliation_required','code','immutable_object_exists','bytes',0,'cost_usd',null))$q$,'immutable conflict is recorded without pretending it was stored');
+select extensions.is(ops.finish_media_batch('3100602')->>'state','reconciliation_required','conflict remains an explicit reconciliation state');
+reset role;
+update pgmq.q_media set vt=now()-interval '1 second' where msg_id=current_setting('test.m06_msg3')::bigint;
+set local role n8n_writer;
+select set_config('test.m06_held_claim',ops.claim_media_batch('3100603')::text,true);
+select extensions.is(jsonb_array_length(current_setting('test.m06_held_claim')::jsonb->'messages'),0,'known uncertain/immutable item is held without another I/O attempt');
+select extensions.is((current_setting('test.m06_held_claim')::jsonb->>'held_count')::int,1,'held queue claim remains visible');
+select extensions.is(ops.finish_media_batch('3100603')->>'claimed','1','held-only batch reports the real leased message');
+reset role;
+select set_config('test.m06_uncertain_msg',pgmq.send('media','{"item_id":"20000000-0000-4000-8000-000000000012"}')::text,true);
+set local role n8n_writer;
+select extensions.is(jsonb_array_length(ops.claim_media_batch('3100604')->'messages'),1,'a different fresh message can enter a bounded batch');
+reset role;
+update pgmq.q_media set vt=now()-interval '1 second' where msg_id=current_setting('test.m06_uncertain_msg')::bigint;
+set local role n8n_writer;
+select extensions.is(jsonb_array_length(ops.claim_media_batch('3100605')->'messages'),0,'missing prior outcome after an uncertain batch is not blindly repeated');
+reset role;
+set local role api_agent;
+select extensions.throws_ok($q$select ops.claim_media_batch('3100606')$q$,'42501',null,'agent cannot claim media runtime work');
+select extensions.throws_ok($q$select ops.record_media_outcome('3100606','{}')$q$,'42501',null,'agent cannot write media audit outcomes');
+select extensions.throws_ok($q$select ops.ack_media_batch('3100606',array[1::bigint])$q$,'42501',null,'agent cannot acknowledge media messages');
+select extensions.throws_ok($q$select ops.finish_media_batch('3100606')$q$,'42501',null,'agent cannot settle media batches');
+reset role;
+set local role n8n_writer;
+select extensions.throws_ok($q$select ops.claim_media_batch('3100609',0)$q$,'22023',null,'zero batch size cannot admit work');
+select extensions.throws_ok($q$select ops.claim_media_batch('3100609',51)$q$,'22023',null,'oversized batch cannot admit work');
+select extensions.throws_ok($q$select ops.claim_media_batch('3100609',null)$q$,'22023',null,'null batch size cannot admit work');
+select extensions.is(ops.finish_media_batch('3100604')->>'state','reconciliation_required','missing durable item outcome cannot become a completed or ordinary partial receipt');
+reset role;
+select set_config('test.m06_limited_msg',pgmq.send('media','{"item_id":"20000000-0000-4000-8000-000000000013"}')::text,true);
+select pgmq.send('media','{"item_id":"20000000-0000-4000-8000-000000000013"}');
+set local role n8n_writer;
+select extensions.is(jsonb_array_length(ops.claim_media_batch('3100608',1)->'messages'),1,'server-selected batch size one leases only one item');
+select set_config('test.m06_skip_outcome',jsonb_build_object('item_id','20000000-0000-4000-8000-000000000013',
+  'msg_ids',jsonb_build_array(current_setting('test.m06_limited_msg')),'outcome','skipped','code','no_source','bytes',0,'cost_usd',null)::text,true);
+select extensions.lives_ok($q$select ops.record_media_outcome('3100608',current_setting('test.m06_skip_outcome')::jsonb)$q$,'known missing source has a durable safe skip');
+reset role;
+-- Simulate a different pass acquiring a later lease; never reset its counter.
+update pgmq.q_media set read_ct=read_ct+1,vt=now()+interval '10 minutes' where msg_id=current_setting('test.m06_limited_msg')::bigint;
+set local role n8n_writer;
+select extensions.throws_ok($q$select ops.record_media_outcome('3100608',current_setting('test.m06_skip_outcome')::jsonb)$q$,'42501',null,'record replay cannot impersonate a later queue lease');
+select extensions.throws_ok($q$select ops.ack_media_batch('3100608',array[current_setting('test.m06_limited_msg')::bigint])$q$,'42501',null,'earlier pass cannot release another pass queue claim');
+reset role;
 select * from extensions.finish();
 rollback;

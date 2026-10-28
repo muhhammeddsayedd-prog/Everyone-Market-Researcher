@@ -113,6 +113,18 @@ describe('M06 local media queue orchestration', () => {
     expect(ports.save).not.toHaveBeenCalled();
     expect(ports.ack).not.toHaveBeenCalled();
   });
+  it('holds an unsuccessful upload response for reconciliation rather than retrying an uncertain write', async () => {
+    const { ports } = fixture();
+    ports.upload = vi.fn(async () => ({ status: 503 }));
+    expect((await runMediaBatch(ports)).outcomes[0]).toMatchObject({
+      outcome: 'reconciliation_required',
+      code: 'media_upload_failed',
+      bytes: 6,
+    });
+    expect(ports.save).not.toHaveBeenCalled();
+    expect(ports.ack).not.toHaveBeenCalled();
+    expect(ports.upload).toHaveBeenCalledOnce();
+  });
   it('preserves an acknowledged object when its metadata save fails', async () => {
     const { ports } = fixture();
     ports.save = vi.fn(async () => {
@@ -195,6 +207,7 @@ describe('M06 local media queue orchestration', () => {
     expect((await runMediaBatch(ports)).outcomes[0]).toMatchObject({
       outcome: 'reconciliation_required',
       code: 'media_upload_failed',
+      bytes: 6,
     });
     expect(ports.upload).toHaveBeenCalledTimes(1);
     expect(ports.save).not.toHaveBeenCalled();
