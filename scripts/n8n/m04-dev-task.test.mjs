@@ -12,7 +12,331 @@ import {
   m05SubsetAccounts,
   chargeM05Request,
   requalifyM05SourceBeforeSetup,
+  bindM05OwnedRuns,
 } from './m04-dev-task.mjs';
+
+function ownedRunFixture() {
+  const receipt = JSON.parse(
+    readFileSync(
+      'milestones/M05-collectors-web-youtube-linkedin/evidence/live-subset-linkedin-first-20261028.json',
+      'utf8',
+    ),
+  );
+  const provider = JSON.parse(
+    readFileSync(
+      'milestones/M05-collectors-web-youtube-linkedin/evidence/live-subset-provider-preflight-20261028.json',
+      'utf8',
+    ),
+  ).provider;
+  const launches = receipt.queryResult[0].m05_subset.launches;
+  const state = {
+    scope: 'm05-subset',
+    approvalId: launches[0].approval_id,
+    provider,
+    accountIds: m05SubsetAccounts.map((a) => a.id),
+    selection: Object.fromEntries(
+      ['youtube', 'linkedin', 'linkedin_employees'].map((platform) => [
+        platform,
+        m05SubsetAccounts.filter((a) => a.platform === platform).map((a) => a.id),
+      ]),
+    ),
+    livePolicy: {
+      approval_id: launches[0].approval_id,
+      max_actor_starts: launches[0].max_actor_starts,
+      max_actor_usd: launches[0].max_actor_usd,
+      max_total_usd: launches[0].max_total_usd,
+      max_results_per_profile: 20,
+      actors: Object.fromEntries(
+        Object.entries(provider.actors).map(([name, pin]) => [
+          name,
+          {
+            owner_id: provider.owner_id,
+            actorId: pin.actorId,
+            buildId: pin.buildId,
+            build: pin.build,
+            billingModel: 'PPE',
+          },
+        ]),
+      ),
+    },
+  };
+  return { receipt, state };
+}
+
+function ownedSampleFixture() {
+  const { state } = ownedRunFixture();
+  const receipt = JSON.parse(
+    readFileSync(
+      'milestones/M05-collectors-web-youtube-linkedin/evidence/live-subset-first-reconciled-20261028.json',
+      'utf8',
+    ),
+  );
+  state.accountSnapshot = JSON.parse(
+    readFileSync(
+      'milestones/M05-collectors-web-youtube-linkedin/evidence/live-subset-baseline-20261028.json',
+      'utf8',
+    ),
+  ).queryResult[0].m05_subset.accounts;
+  state.collectorSelections = {
+    'WF-18': { mode: 'backfill', account_ids: state.selection.linkedin, results_limit: 20 },
+    'WF-18b': { mode: 'weekly', account_ids: state.selection.linkedin_employees, results_limit: 20 },
+  };
+  const runs = bindM05OwnedRuns(state, receipt).map((binding) => ({
+    status: 200,
+    body: {
+      data: {
+        id: binding.id,
+        userId: binding.ownerId,
+        actId: binding.actId,
+        buildId: binding.buildId,
+        status: 'SUCCEEDED',
+        defaultDatasetId: receipt.queryResult[0].m05_subset.actorRuns.find(
+          (actor) => actor.apify_run_id === binding.id,
+        ).dataset_id,
+        startedAt: '2026-10-28T16:57:09.000Z',
+        finishedAt: '2026-10-28T16:58:19.000Z',
+        usageTotalUsd: 0.08,
+      },
+    },
+  }));
+  const post = {
+    type: 'post',
+    id: '7356789012345678901',
+    linkedinUrl: 'https://www.linkedin.com/feed/update/urn:li:activity:7356789012345678901',
+    author: {
+      type: 'company',
+      linkedinUrl: 'https://www.linkedin.com/company/everyonefilms/',
+      universalName: 'everyonefilms',
+      name: 'sentinel-private-author',
+    },
+    postedAt: { date: '2026-10-20T12:00:00.000Z' },
+    content: 'sentinel-private-post-text',
+    engagement: { likes: 2, comments: 0, shares: 1 },
+  };
+  const employee = {
+    publicIdentifier: 'sentinel-private-profile',
+    firstName: 'sentinel-private-firstname',
+    lastName: 'sentinel-private-lastname',
+    headline: 'sentinel-private-title',
+    location: { linkedinText: 'sentinel-private-location' },
+    email: 'sentinel-private@example.invalid',
+    photo: 'https://private-profile.example.invalid/photo',
+    currentPosition: [{ companyLinkedinUrl: 'https://www.linkedin.com/company/everyonefilms/' }],
+  };
+  return { state, receipt, runs, post, employee };
+}
+
+test('M05 retained samples execute both actual normalizers with only privacy-safe counts and structural paths', async () => {
+  const { state, receipt, runs, post, employee } = ownedSampleFixture();
+  const t = transport([...runs, { status: 200, body: [post] }, { status: 200, body: [employee] }]);
+  const r = await runTask(
+    {
+      task: 'ProviderMetadata',
+      phase: 'samples',
+      scope: 'm05-subset',
+      state,
+      secrets: { apifyRead: 'synthetic-private-key' },
+    },
+    { ...t.dependencies, ownedSampleReceipt: receipt },
+  );
+  assert.equal(r.public.status, 'completed', JSON.stringify(r.public));
+  assert.equal(t.calls.length, 4);
+  assert.ok(t.calls.slice(0, 2).every((call) => call.path.startsWith('/v2/actor-runs/')));
+  assert.deepEqual(
+    t.calls.slice(2).map((call) => call.path),
+    [
+      '/v2/datasets/idZHEAfpctpowPi9k/items?format=json&offset=0&limit=41&skipHidden=true',
+      '/v2/datasets/apqVyGXRrulYNgLSV/items?format=json&offset=0&limit=21&skipHidden=true',
+    ],
+  );
+  const diagnostic = r.public.ownedSampleDiagnostics;
+  assert.equal(diagnostic.evidence, 'retained_provider_rows_local_normalization_only');
+  assert.deepEqual(diagnostic, r.private.ownedSampleDiagnostics);
+  assert.deepEqual(
+    diagnostic.samples[0].groups.map((group) => [group.account_id, group.status, group.item_count]),
+    [
+      [state.selection.linkedin[0], 'success', 1],
+      [state.selection.linkedin[1], 'success', 0],
+    ],
+  );
+  assert.equal(diagnostic.samples[1].groups[0].people_count, 1);
+  assert.equal(diagnostic.samples[1].groups[0].coverage.complete, false);
+  assert.ok(diagnostic.samples[1].sourceShape.typePaths.includes('row.firstName:string'));
+  for (const secret of [
+    'sentinel-private-author',
+    'sentinel-private-post-text',
+    'sentinel-private-profile',
+    'sentinel-private-firstname',
+    'sentinel-private-lastname',
+    'sentinel-private-title',
+    'sentinel-private-location',
+    'sentinel-private@example.invalid',
+    'https://private-profile.example.invalid/photo',
+  ])
+    assert.ok(!JSON.stringify(r).includes(secret), secret);
+});
+
+test('M05 retained samples refuse unknown datasets, oversized pages or missing original context', async () => {
+  for (const fault of ['dataset', 'rows', 'context']) {
+    const { state, receipt, runs, post } = ownedSampleFixture();
+    if (fault === 'dataset') runs[0].body.data.defaultDatasetId = 'UnregisteredDataset';
+    if (fault === 'context') delete state.collectorSelections['WF-18b'];
+    const t = transport([
+      ...runs,
+      { status: 200, body: Array.from({ length: 41 }, () => structuredClone(post)) },
+    ]);
+    const r = await runTask(
+      {
+        task: 'ProviderMetadata',
+        phase: 'samples',
+        scope: 'm05-subset',
+        state,
+        secrets: { apifyRead: 'synthetic-private-key' },
+      },
+      { ...t.dependencies, ownedSampleReceipt: receipt },
+    );
+    assert.equal(r.public.status, 'blocked', fault);
+    assert.equal(t.calls.length, fault === 'dataset' ? 1 : fault === 'rows' ? 3 : 0, fault);
+    assert.equal(r.private.ownedSampleDiagnostics, undefined);
+  }
+  await assert.rejects(
+    runTask({ task: 'ProviderMetadata', phase: 'samples' }),
+    /M05_OWNED_RUN_SCOPE_REQUIRED/,
+  );
+});
+
+test('M05 owned runs diagnostic joins the actual two registered IDs and projects no source values', async () => {
+  const { receipt, state } = ownedRunFixture();
+  const provider = structuredClone(state.provider),
+    policy = structuredClone(state.livePolicy);
+  const bound = bindM05OwnedRuns(state, receipt);
+  assert.deepEqual(
+    bound.map((a) => a.id),
+    ['VTAMD1cHlRUaIzYvg', 'PiXO5JPDL90mHT1es'],
+  );
+  const responses = bound.map((binding) => ({
+    status: 200,
+    body: {
+      data: {
+        id: binding.id,
+        userId: binding.ownerId,
+        actId: binding.actId,
+        buildId: binding.buildId,
+        status: 'SUCCEEDED',
+        startedAt: '2026-10-28T16:57:09.000Z',
+        finishedAt: '2026-10-28T16:58:19.000Z',
+        usageTotalUsd: 0.08,
+        maxTotalChargeUsd: 1,
+        usageTotalUsdWithinLimit: 0.08,
+        options: { memoryMbytes: 1024, timeoutSecs: 600, INPUT: 'synthetic-private-input' },
+        pricingInfo: {
+          maxTotalChargeUsd: 1,
+          isMaxTotalChargeUsdSetByUser: true,
+          privateBillingData: 'synthetic-private-billing',
+        },
+        defaultDatasetId: 'synthetic-private-dataset',
+        token: 'synthetic-private-native-token',
+      },
+    },
+  }));
+  const t = transport(responses);
+  const r = await runTask(
+    {
+      task: 'ProviderMetadata',
+      phase: 'runs',
+      scope: 'm05-subset',
+      state,
+      secrets: { apifyRead: 'synthetic-private-key' },
+    },
+    { ...t.dependencies, ownedRunReceipt: receipt },
+  );
+  assert.equal(r.public.status, 'completed', JSON.stringify(r.public));
+  assert.deepEqual(
+    t.calls.map((call) => call.path),
+    bound.map((binding) => '/v2/actor-runs/' + binding.id),
+  );
+  assert.ok(t.calls.every((call) => call.api === 'apify'));
+  assert.equal(t.calls.length, 2);
+  assert.deepEqual(r.private.provider, provider);
+  assert.deepEqual(r.private.livePolicy, policy);
+  assert.deepEqual(r.public.ownedRunDiagnostics, r.private.ownedRunDiagnostics);
+  const first = r.public.ownedRunDiagnostics.runs[0];
+  assert.equal(first.billingCaps.pricingInfo.maxTotalChargeUsd, 1);
+  assert.equal(first.billingCaps.options.maxTotalChargeUsd, undefined);
+  assert.equal(first.finiteUsageFields.usageTotalUsdWithinLimit, 0.08);
+  assert.ok(first.fieldNames.options.includes('INPUT'));
+  for (const sentinel of [
+    'synthetic-private-input',
+    'synthetic-private-billing',
+    'synthetic-private-dataset',
+    'synthetic-private-native-token',
+    'synthetic-private-key',
+  ])
+    assert.ok(!JSON.stringify(r).includes(sentinel), sentinel);
+});
+
+test('M05 owned runs diagnostic rejects mismatched receipt ownership before any request', async () => {
+  for (const fault of ['approval', 'account', 'project', 'closure', 'extra']) {
+    const { receipt, state } = ownedRunFixture();
+    if (fault === 'approval')
+      receipt.queryResult[0].m05_subset.launches[0].approval_id = '00000000-0000-4000-8000-000000000001';
+    if (fault === 'account')
+      receipt.queryResult[0].m05_subset.launches[0].account_ids[0] = m05SubsetAccounts[0].id;
+    if (fault === 'project') receipt.projectRef = 'hkiafqrcxaafdbcvjlzv';
+    if (fault === 'closure') receipt.databaseClientClosed = false;
+    if (fault === 'extra')
+      receipt.queryResult[0].m05_subset.actorRuns.push(
+        structuredClone(receipt.queryResult[0].m05_subset.actorRuns[0]),
+      );
+    const t = transport([]);
+    const r = await runTask(
+      {
+        task: 'ProviderMetadata',
+        phase: 'runs',
+        scope: 'm05-subset',
+        state,
+        secrets: { apifyRead: 'synthetic-private-key' },
+      },
+      { ...t.dependencies, ownedRunReceipt: receipt },
+    );
+    assert.equal(r.public.status, 'blocked', fault);
+    assert.equal(t.calls.length, 0, fault);
+  }
+});
+
+test('M05 owned runs diagnostic rejects returned owner/build mismatch and every old scope', async () => {
+  for (const field of ['userId', 'actId', 'buildId']) {
+    const { receipt, state } = ownedRunFixture(),
+      binding = bindM05OwnedRuns(state, receipt)[0];
+    const data = {
+      id: binding.id,
+      userId: binding.ownerId,
+      actId: binding.actId,
+      buildId: binding.buildId,
+      status: 'RUNNING',
+      startedAt: '2026-10-28T16:57:09.000Z',
+    };
+    data[field] = 'unrelated';
+    const t = transport([{ status: 200, body: { data } }]);
+    const r = await runTask(
+      {
+        task: 'ProviderMetadata',
+        phase: 'runs',
+        scope: 'm05-subset',
+        state,
+        secrets: { apifyRead: 'synthetic-private-key' },
+      },
+      { ...t.dependencies, ownedRunReceipt: receipt },
+    );
+    assert.equal(r.public.code, 'M05_OWNED_RUN_IDENTITY_REQUIRED');
+    assert.equal(t.calls.length, 1);
+    assert.equal(r.private.ownedRunDiagnostics, undefined);
+  }
+  await assert.rejects(
+    runTask({ task: 'ProviderMetadata', phase: 'runs', state: {} }),
+    /M05_OWNED_RUN_SCOPE_REQUIRED/,
+  );
+});
 
 function subsetBaseline() {
   return {

@@ -88,6 +88,67 @@ describe('LinkedIn source contracts — synthetic local fixtures, not provider c
       errors: [{ error: 'linkedin_repost_shape_unverified' }],
     });
   });
+  it('accepts and discards observed inert metadata from a labelled shape-derived synthetic post', () => {
+    // Only keys/types derive from the retained provider observation; all values
+    // are synthetic. This is not a copied post, person, image or actor INPUT.
+    const shaped = {
+      ...postFixture.rows[0],
+      entityId: 'discarded-entity',
+      header: { text: null },
+      query: { targetUrl: account().url, page: '1', sessionId: 'discarded-session', sortBy: 'recent' },
+      shareLinkedinUrl: 'https://www.linkedin.com/feed/update/urn:li:activity:1111111111111111111',
+      shareUrn: 'discarded-share-urn',
+      contentAttributes: [{ start: 0, length: 3, type: 'company', textLink: 'discarded-rich-link' }],
+      reactionIds: ['discarded-reaction'],
+      commentIds: ['discarded-comment'],
+      postVideo: { thumbnailUrl: 'discarded-thumbnail', videoUrl: 'discarded-video' },
+    };
+    const plain = posts.normalizeLinkedInPosts(postFixture.rows.slice(0, 1));
+    const result = posts.normalizeLinkedInPosts([shaped]);
+    expect(result.errors).toEqual([]);
+    expect(result.items).toEqual(plain.items);
+    for (const value of ['discarded-', 'sessionId', 'contentAttributes', 'reactionIds', 'postVideo'])
+      expect(JSON.stringify(result.items)).not.toContain(value);
+    expect(result.items[0]?.json).toMatchObject({
+      thumbnail_url: null,
+      duration_seconds: null,
+      media_urls: [],
+    });
+  });
+  it('requires query ownership to agree with the author and registered company mapping', () => {
+    const foreign = {
+      ...postFixture.rows[0],
+      query: { targetUrl: account(2, 'linkedin', 'another-films').url },
+    };
+    expect(posts.normalizeLinkedInPosts([foreign])).toMatchObject({
+      items: [],
+      errors: [{ error: 'linkedin_query_owner_mismatch' }],
+    });
+    const sameForeignOwner = {
+      ...postFixture.rows[0],
+      author: {
+        type: 'company',
+        universalName: 'another-films',
+        linkedinUrl: account(2, 'linkedin', 'another-films').url,
+      },
+      query: { targetUrl: account(2, 'linkedin', 'another-films').url },
+    };
+    expect(posts.prepareLinkedInPostResults([sameForeignOwner], postContext)).toMatchObject({
+      unmatched_count: 1,
+      groups: [{ status: 'failed', items: [] }],
+    });
+  });
+  it('keeps nonempty headers, ambiguous reposts, private targets and unknown extra metadata blocked', () => {
+    for (const patch of [
+      { header: { text: 'A synthetic company reposted this' } },
+      { header: { text: null, owner: { type: 'company' } } },
+      { isRepost: true },
+      { unknownProviderExtension: 'discarded-is-not-authorization' },
+      { query: { targetUrl: 'https://www.linkedin.com/in/synthetic-profile/' } },
+      { query: { targetUrl: account().url, unverifiedTarget: account().url } },
+    ])
+      expect(posts.normalizeLinkedInPosts([{ ...postFixture.rows[0], ...patch }]).items).toEqual([]);
+  });
   it('rejects spoofed URLs, mismatched activity IDs, impossible dates and conflicting company ownership', () => {
     for (const input of [
       'https://linkedin.com.evil.test/company/fixture-films/',
@@ -143,6 +204,108 @@ describe('LinkedIn source contracts — synthetic local fixtures, not provider c
     for (const person of result.groups[0]?.people ?? [])
       expect(Object.keys(person).sort()).toEqual(['location', 'name', 'public_id', 'title']);
     expect(JSON.stringify(result)).not.toMatch(/photo|email|about|skills|experience|fixture@example/);
+  });
+  it('projects the retained plural-position/public-URL field shape without retaining rich profile data', () => {
+    // Values are synthetic; keys/types derive from the bounded real Short read.
+    const shaped = {
+      id: 'private-actor-id-ignored',
+      linkedinUrl: 'https://www.linkedin.com/in/fixture-person-1/',
+      firstName: 'Person',
+      lastName: '1',
+      location: { linkedinText: 'Cairo' },
+      currentPositions: [
+        {
+          current: true,
+          companyLinkedinUrl: employeeContext.input.companies[0],
+          title: 'Director',
+          description: 'discard-description',
+          companyName: 'Not identity',
+        },
+      ],
+      summary: 'discard-summary',
+      pictureUrl: 'https://example.invalid/discard-picture',
+      email: 'discard-email',
+      premium: true,
+      openProfile: true,
+    };
+    const result = employees.normalizeLinkedInEmployees([shaped], employeeContext);
+    expect(result.groups[0]).toMatchObject({
+      status: 'success',
+      people: [{ public_id: 'fixture-person-1', name: 'Person 1', title: 'Director', location: 'Cairo' }],
+      coverage: { complete: false, membership_evidence: 'registered_company_query' },
+    });
+    expect(JSON.stringify(result)).not.toMatch(/private-actor|discard|premium|openProfile|companyName/);
+  });
+  it('does not infer public identity or employment from a private ID, former role, hostile URL or conflicting aliases', () => {
+    const source = {
+      linkedinUrl: 'https://www.linkedin.com/in/fixture-person-1/',
+      firstName: 'Person',
+      lastName: '1',
+      currentPositions: [
+        { current: true, companyLinkedinUrl: employeeContext.input.companies[0], title: 'Director' },
+      ],
+    };
+    for (const change of [
+      { linkedinUrl: 'https://linkedin.com.evil.invalid/in/fixture-person-1/' },
+      { linkedinUrl: 'https://owner@linkedin.com/in/fixture-person-1/' },
+      { linkedinUrl: 'https://www.linkedin.com/in/fixture%2fperson/' },
+      { publicIdentifier: 'foreign-person' },
+      { linkedinUrl: undefined, id: 'private-actor-id' },
+      { currentPositions: [{ current: false, companyLinkedinUrl: employeeContext.input.companies[0] }] },
+      {
+        currentPositions: [
+          { current: true, companyLinkedinUrl: 'https://www.linkedin.com/company/foreign/' },
+        ],
+      },
+      {
+        currentPositions: [
+          { current: true, companyLinkedinUrl: 'https://linkedin.com.evil.invalid/company/fixture-films/' },
+        ],
+      },
+      { currentPosition: [{ companyLinkedinUrl: 'https://www.linkedin.com/company/foreign/' }] },
+    ]) {
+      const result = employees.normalizeLinkedInEmployees([{ ...source, ...change }], employeeContext);
+      expect(result.groups[0]?.people).toEqual([]);
+      expect(result.groups[0]?.status).toBe('failed');
+    }
+  });
+  it('matches numeric company URLs only to an explicitly resolved catalog ID', () => {
+    const row = {
+      linkedinUrl: 'https://www.linkedin.com/in/fixture-person-1/',
+      firstName: 'Person',
+      lastName: '1',
+      currentPositions: [
+        { current: true, companyLinkedinUrl: 'https://www.linkedin.com/company/12345678', title: 'Director' },
+      ],
+    };
+    const resolved = {
+      ...employeeContext,
+      accounts: [{ ...employeeContext.accounts[0], external_id: '12345678' }],
+    };
+    expect(employees.normalizeLinkedInEmployees([row], resolved)).toMatchObject({
+      groups: [
+        {
+          status: 'success',
+          people: [{ public_id: 'fixture-person-1', title: 'Director' }],
+          coverage: { complete: false },
+        },
+      ],
+    });
+    for (const ctx of [
+      employeeContext,
+      { ...resolved, accounts: [{ ...resolved.accounts[0], external_id: '99999999' }] },
+    ]) {
+      expect(employees.normalizeLinkedInEmployees([row], ctx)).toMatchObject({
+        unmatched_count: 1,
+        groups: [{ status: 'failed', people: [] }],
+      });
+    }
+    expect(() =>
+      employees.normalizeLinkedInEmployees([row], {
+        ...resolved,
+        accounts: [{ ...resolved.accounts[0], external_id: 'unverified-name' }],
+      }),
+    ).toThrow(/context_invalid/);
   });
   it('never uses fuzzy company names or guesses a mixed-query target; rejects Full mode', () => {
     const another = account(2, 'linkedin_employees', 'another-films');

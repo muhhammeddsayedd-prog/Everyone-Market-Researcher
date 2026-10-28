@@ -135,10 +135,31 @@ function normalizeLinkedInPosts(rows) {
       row.repostedPost ||
       row.quotedPost ||
       row.repostedBy ||
-      row.resharedPost
+      row.resharedPost ||
+      (row.header != null &&
+        (!liRecord(row.header) ||
+          Object.keys(row.header).some((key) => key !== 'text') ||
+          (row.header.text != null &&
+            (typeof row.header.text !== 'string' || row.header.text.trim() !== ''))))
     ) {
       fail('linkedin_repost_shape_unverified');
       continue;
+    }
+    if (row.query != null) {
+      if (
+        !liRecord(row.query) ||
+        Object.keys(row.query).some((key) => !['targetUrl', 'page', 'sessionId', 'sortBy'].includes(key))
+      ) {
+        fail('linkedin_query_shape_unverified');
+        continue;
+      }
+      // Query metadata is not an ownership fallback. A supplied target must
+      // agree with the verified company author; prepareLinkedInPostResults
+      // separately requires that company to belong to the registered accounts.
+      if (Object.hasOwn(row.query, 'targetUrl') && linkedinCompany(row.query.targetUrl)?.slug !== matchKey) {
+        fail('linkedin_query_owner_mismatch');
+        continue;
+      }
     }
     if (
       Object.keys(row).some(
@@ -154,6 +175,17 @@ function normalizeLinkedInPosts(rows) {
             'postImages',
             'document',
             'socialContent',
+            // Observed non-authorizing metadata is discarded by the explicit
+            // projection below. postVideo is not a verified media/download path.
+            'entityId',
+            'header',
+            'query',
+            'shareLinkedinUrl',
+            'shareUrn',
+            'contentAttributes',
+            'reactionIds',
+            'commentIds',
+            'postVideo',
           ].includes(key),
       )
     ) {

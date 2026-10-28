@@ -194,7 +194,16 @@ export function createM05Callback(deps: Dependencies) {
         // models. maxItems is a PPR charge count, not an output-size guarantee.
         // https://docs.apify.com/api/v2/actors-runs-post
         cap_acknowledged:
-          d.options.memoryMbytes === 1024 &&
+          // The owned PPE runs acknowledged USD1/600s, with256/512MiB below
+          // our1024MiB ceiling. Accept a smaller valid PPE resource envelope;
+          // retain the website rule and exact immutable monetary option.
+          (job.actor_id === 'apify/website-content-crawler'
+            ? d.options.memoryMbytes === 1024
+            : pin.billingModel !== 'PPU' &&
+              Number.isSafeInteger(d.options.memoryMbytes) &&
+              Number(d.options.memoryMbytes) >= 128 &&
+              Number(d.options.memoryMbytes) <= 1024 &&
+              (Number(d.options.memoryMbytes) & (Number(d.options.memoryMbytes) - 1)) === 0) &&
           d.options.timeoutSecs === 600 &&
           d.options.maxTotalChargeUsd === Number(job.max_actor_usd) &&
           (pin.billingModel !== 'PPU' || d.options.isMaxTotalChargeUsdSetByUser === true),

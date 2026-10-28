@@ -4,6 +4,7 @@ import { readFileSync, appendFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { lookup } from 'node:dns/promises';
+import { isDeepStrictEqual } from 'node:util';
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { m05RunPolicy } from '../../packages/shared/src/n8n-collector-contracts.ts';
@@ -11,6 +12,9 @@ import { parseFoundationPacket } from './foundation-bind.mjs';
 import { privateJsonTransport } from './foundation-live-runtime-transport.mjs';
 import { createFoundationLiveSetupCliTransport } from './foundation-live-setup-transport.mjs';
 import { readFoundationVercelAuthMetadata } from './foundation-vercel-auth-preflight.mjs';
+import linkedInPosts from '../../n8n/normalizers/linkedinPosts.js';
+import linkedInEmployees from '../../n8n/normalizers/linkedinEmployees.js';
+import { buildLinkedInPostBatches, buildLinkedInEmployeeBatches } from '../../n8n/collectors/linkedin.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const project = 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu';
@@ -198,7 +202,7 @@ export function validOperation(task, phase) {
   return (
     {
       Inventory: ['default'],
-      ProviderMetadata: ['default'],
+      ProviderMetadata: ['default', 'runs', 'samples'],
       Setup: ['project', 'prepare', 'configure', 'poll', 'cleanup'],
       Stage: ['stage', 'publish', 'machine', 'readback', 'cohort'],
       Observe: ['default'],
@@ -206,6 +210,326 @@ export function validOperation(task, phase) {
       Restore: ['native'],
     }[task]?.includes(phase) === true
   );
+}
+export function bindM05OwnedRuns(state, receipt) {
+  const reject = () => fail('M05_OWNED_RUN_RECEIPT_REQUIRED');
+  const data = receipt?.queryResult?.[0]?.m05_subset;
+  if (
+    state.scope !== 'm05-subset' ||
+    receipt?.status !== 'reviewed_query_complete' ||
+    receipt.environment !== 'dev' ||
+    receipt.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+    receipt.host !== 'aws-1-eu-central-1.pooler.supabase.com' ||
+    receipt.port !== 5432 ||
+    receipt.authenticationVerified !== true ||
+    receipt.childrenClosed !== true ||
+    receipt.databaseClientClosed !== true ||
+    receipt.lastNativeExit !== 0 ||
+    receipt.queryResult.length !== 1 ||
+    data?.current_user !== 'postgres' ||
+    data.session_user !== 'postgres' ||
+    data.database !== 'postgres' ||
+    !Array.isArray(data.launches) ||
+    data.launches.length !== 2 ||
+    !Array.isArray(data.actorRuns) ||
+    data.actorRuns.length !== 2 ||
+    !Array.isArray(data.runs)
+  )
+    reject();
+  const policy = m05RunPolicy.parse(state.livePolicy);
+  const expected = {
+    'harvestapi/linkedin-company-posts': { platform: 'linkedin', workflow: 'WF-18' },
+    'harvestapi/linkedin-company-employees': { platform: 'linkedin_employees', workflow: 'WF-18b' },
+  };
+  if (
+    policy.approval_id !== state.approvalId ||
+    Object.keys(policy.actors).length !== 2 ||
+    !Object.keys(expected).every((key) => policy.actors[key]) ||
+    !/^[A-Za-z0-9_-]{1,128}$/.test(state.provider?.owner_id ?? '')
+  )
+    reject();
+  const ids = new Set(),
+    actors = new Set();
+  return data.launches.map((launch) => {
+    const specification = expected[launch.actor_id],
+      pin = policy.actors[launch.actor_id];
+    const actor = data.actorRuns.find((entry) => entry.apify_run_id === launch.apify_run_id);
+    const parent = data.runs.find((entry) => entry.id === launch.run_id);
+    const selected = specification && state.selection?.[specification.platform];
+    if (
+      !specification ||
+      !Array.isArray(selected) ||
+      !selected.length ||
+      !Array.isArray(state.accountIds) ||
+      launch.approval_id !== state.approvalId ||
+      !/^[A-Za-z0-9_-]{1,128}$/.test(launch.apify_run_id ?? '') ||
+      ids.has(launch.apify_run_id) ||
+      actors.has(launch.actor_id) ||
+      !actor ||
+      actor.run_id !== launch.run_id ||
+      actor.actor_id !== launch.actor_id ||
+      parent?.env !== 'dev' ||
+      parent.workflow !== specification.workflow ||
+      parent.platform !== specification.platform ||
+      !Array.isArray(launch.account_ids) ||
+      !Array.isArray(actor.account_ids) ||
+      launch.max_actor_usd !== policy.max_actor_usd ||
+      launch.max_total_usd !== policy.max_total_usd ||
+      launch.max_actor_starts !== policy.max_actor_starts ||
+      !isDeepStrictEqual([...launch.account_ids].sort(), [...selected].sort()) ||
+      !isDeepStrictEqual([...actor.account_ids].sort(), [...selected].sort()) ||
+      selected.some((id) => !state.accountIds.includes(id)) ||
+      pin.owner_id !== state.provider.owner_id ||
+      !['actorId', 'buildId', 'build'].every(
+        (key) => pin[key] === state.provider.actors?.[launch.actor_id]?.[key],
+      )
+    )
+      reject();
+    ids.add(launch.apify_run_id);
+    actors.add(launch.actor_id);
+    return {
+      id: launch.apify_run_id,
+      actor_id: launch.actor_id,
+      actId: pin.actorId,
+      buildId: pin.buildId,
+      ownerId: pin.owner_id,
+    };
+  });
+}
+
+function ownedRunProjection(data, binding) {
+  if (
+    data?.id !== binding.id ||
+    data.userId !== binding.ownerId ||
+    data.actId !== binding.actId ||
+    data.buildId !== binding.buildId ||
+    !['READY', 'RUNNING', 'SUCCEEDED', 'FAILED', 'TIMING-OUT', 'TIMED-OUT', 'ABORTING', 'ABORTED'].includes(
+      data.status,
+    ) ||
+    !Number.isFinite(Date.parse(data.startedAt)) ||
+    (data.finishedAt != null && !Number.isFinite(Date.parse(data.finishedAt))) ||
+    (data.usageTotalUsd != null &&
+      (typeof data.usageTotalUsd !== 'number' ||
+        !Number.isFinite(data.usageTotalUsd) ||
+        data.usageTotalUsd < 0))
+  )
+    fail('M05_OWNED_RUN_IDENTITY_REQUIRED');
+  const names = (value) =>
+    value !== null && typeof value === 'object' && !Array.isArray(value)
+      ? Object.keys(value)
+          .filter((key) => /^[A-Za-z][A-Za-z0-9_]{0,99}$/.test(key))
+          .sort()
+      : [];
+  const caps = (value) =>
+    Object.fromEntries(
+      [
+        'maxTotalChargeUsd',
+        'maxItems',
+        'memoryMbytes',
+        'timeoutSecs',
+        'isMaxTotalChargeUsdSetByUser',
+      ].flatMap((key) => {
+        const amount = value?.[key];
+        return key === 'isMaxTotalChargeUsdSetByUser'
+          ? typeof amount === 'boolean'
+            ? [[key, amount]]
+            : []
+          : typeof amount === 'number' && Number.isFinite(amount) && amount >= 0
+            ? [[key, amount]]
+            : [];
+      }),
+    );
+  return {
+    id: data.id,
+    actId: data.actId,
+    buildId: data.buildId,
+    status: data.status,
+    startedAt: data.startedAt,
+    finishedAt: data.finishedAt ?? null,
+    usageTotalUsd: data.usageTotalUsd ?? null,
+    fieldNames: { root: names(data), options: names(data.options), pricingInfo: names(data.pricingInfo) },
+    billingCaps: { root: caps(data), options: caps(data.options), pricingInfo: caps(data.pricingInfo) },
+    finiteUsageFields: Object.fromEntries(
+      ['usageTotalUsdWithinLimit', 'usageTotalUsdLimit', 'usageChargedWithinFinite'].flatMap((key) =>
+        typeof data[key] === 'number' && Number.isFinite(data[key]) && data[key] >= 0
+          ? [[key, data[key]]]
+          : [],
+      ),
+    ),
+  };
+}
+function ownedSampleContexts(state, receipt) {
+  const data = receipt.queryResult[0].m05_subset;
+  return bindM05OwnedRuns(state, receipt).map((binding) => {
+    const launch = data.launches.find((entry) => entry.apify_run_id === binding.id);
+    const actor = data.actorRuns.find((entry) => entry.apify_run_id === binding.id);
+    const parent = data.runs.find((entry) => entry.id === launch.run_id);
+    const job = data.jobs?.find((entry) => entry.launch_id === launch.launch_id);
+    const selection = state.collectorSelections?.[parent.workflow];
+    const accounts = state.accountSnapshot?.filter((account) => launch.account_ids.includes(account.id));
+    if (
+      actor.status !== 'SUCCEEDED' ||
+      !Number.isFinite(Date.parse(actor.processed_at)) ||
+      !/^[A-Za-z0-9_-]{1,128}$/.test(actor.dataset_id ?? '') ||
+      parent.mode !== launch.purpose ||
+      !Number.isFinite(Date.parse(parent.started_at)) ||
+      !Array.isArray(accounts) ||
+      accounts.length !== launch.account_ids.length ||
+      !selection ||
+      selection.mode !== launch.purpose ||
+      selection.results_limit !== launch.results_limit ||
+      !isDeepStrictEqual([...selection.account_ids].sort(), [...launch.account_ids].sort()) ||
+      !Number.isSafeInteger(launch.results_limit) ||
+      launch.results_limit < 1
+    )
+      fail('M05_SAMPLE_CONTEXT_REQUIRED');
+    let batches;
+    if (parent.workflow === 'WF-18')
+      batches = buildLinkedInPostBatches(accounts, {
+        mode: launch.purpose,
+        now: parent.started_at,
+        maxPosts: launch.results_limit,
+      });
+    else {
+      const parts = new Intl.DateTimeFormat('en', {
+        timeZone: 'Africa/Cairo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).formatToParts(new Date(parent.started_at));
+      const value = (type) => parts.find((part) => part.type === type)?.value;
+      if (job?.snapshot_date !== `${value('year')}-${value('month')}-${value('day')}`)
+        fail('M05_SAMPLE_CONTEXT_REQUIRED');
+      batches = buildLinkedInEmployeeBatches(accounts, {
+        snapshotDate: job.snapshot_date,
+        maxItemsPerCompany: launch.results_limit,
+      });
+    }
+    if (
+      batches.length !== 1 ||
+      batches[0].actor !== binding.actor_id ||
+      !isDeepStrictEqual([...batches[0].account_ids].sort(), [...launch.account_ids].sort())
+    )
+      fail('M05_SAMPLE_CONTEXT_REQUIRED');
+    const bound = parent.workflow === 'WF-18' ? launch.results_limit * accounts.length : launch.results_limit;
+    if (bound < 1 || bound > 49) fail('M05_SAMPLE_DATASET_BOUND_REQUIRED');
+    return {
+      ...binding,
+      datasetId: actor.dataset_id,
+      accounts,
+      input: batches[0].input,
+      mode: launch.purpose,
+      maxPosts: launch.results_limit,
+      bound,
+      capturedAt: parent.started_at,
+    };
+  });
+}
+function sampleShape(rows) {
+  const fields = new Set(),
+    paths = new Set();
+  const walk = (value, path, depth) => {
+    const type = value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value;
+    paths.add(path + ':' + type);
+    if (depth === 3 || paths.size >= 500) return;
+    if (Array.isArray(value)) for (const entry of value.slice(0, 3)) walk(entry, path + '[]', depth + 1);
+    else if (value && typeof value === 'object')
+      for (const [key, entry] of Object.entries(value)) {
+        if (/^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(key)) walk(entry, path + '.' + key, depth + 1);
+      }
+  };
+  for (const row of rows) {
+    if (row && typeof row === 'object' && !Array.isArray(row))
+      for (const key of Object.keys(row)) if (/^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(key)) fields.add(key);
+    walk(row, 'row', 0);
+  }
+  return { topLevelFields: [...fields].sort(), typePaths: [...paths].sort() };
+}
+function normalizeOwnedSample(rows, context) {
+  const shape = sampleShape(rows);
+  if (context.actor_id === 'harvestapi/linkedin-company-posts') {
+    shape.companyOwners = [
+      ...new Set(
+        rows.flatMap((row) => {
+          const slug = linkedInPosts.linkedinHelpers.linkedinOwner(row);
+          const url = linkedInPosts.linkedinHelpers.linkedinCompany(row?.author?.linkedinUrl);
+          const query = linkedInPosts.linkedinHelpers.linkedinCompany(row?.query?.targetUrl);
+          if (
+            !slug ||
+            query?.slug !== slug ||
+            !context.accounts.some(
+              (a) => linkedInPosts.linkedinHelpers.linkedinCompany(a.url)?.slug === slug,
+            ) ||
+            typeof row?.author?.companyId !== 'string' ||
+            !/^[A-Za-z0-9:_-]{1,128}$/.test(row.author.companyId)
+          )
+            return [];
+          return [JSON.stringify({ slug, companyId: row.author.companyId, companyUrl: url?.url ?? null })];
+        }),
+      ),
+    ].map(JSON.parse);
+  }
+  if (context.actor_id === 'harvestapi/linkedin-company-employees') {
+    const publicCompanyUrl = (value) =>
+      typeof value === 'string' &&
+      /^https:\/\/(?:(?:www|[a-z]{2})\.)?linkedin\.com\/company\/[\p{L}\p{N}._&+%-]{1,160}\/?$/iu.test(value)
+        ? value
+        : null;
+    shape.companyHints = [
+      ...new Set(
+        rows.flatMap((row) =>
+          (Array.isArray(row?.currentPositions)
+            ? row.currentPositions
+            : Array.isArray(row?.currentPosition)
+              ? row.currentPosition
+              : []
+          ).map((position) =>
+            JSON.stringify({
+              companyUrl: publicCompanyUrl(position?.companyLinkedinUrl ?? position?.linkedinUrl),
+              nestedCompanyUrl: publicCompanyUrl(position?.company?.linkedinUrl ?? position?.company?.url),
+              nestedCompanyFields:
+                position?.company && typeof position.company === 'object'
+                  ? Object.keys(position.company)
+                      .filter((key) => /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(key))
+                      .sort()
+                  : [],
+              current: typeof position?.current === 'boolean' ? position.current : null,
+            }),
+          ),
+        ),
+      ),
+    ].map(JSON.parse);
+  }
+  const prepared =
+    context.actor_id === 'harvestapi/linkedin-company-posts'
+      ? linkedInPosts.prepareLinkedInPostResults(rows, {
+          accounts: context.accounts,
+          mode: context.mode,
+          now: context.capturedAt,
+          maxPosts: context.maxPosts,
+        })
+      : linkedInEmployees.prepareLinkedInEmployeeResults(rows, {
+          accounts: context.accounts,
+          input: context.input,
+        });
+  if (
+    !Array.isArray(prepared.groups) ||
+    prepared.groups.length !== context.accounts.length ||
+    new Set(prepared.groups.map((group) => group.account_id)).size !== context.accounts.length ||
+    prepared.groups.some((group) => !context.accounts.some((account) => account.id === group.account_id))
+  )
+    fail('M05_SAMPLE_NORMALIZER_OWNERSHIP_REQUIRED');
+  return {
+    groups: prepared.groups.map((group) => ({
+      account_id: group.account_id,
+      status: group.status,
+      error: group.error ?? null,
+      item_count: group.items?.length ?? 0,
+      people_count: group.people?.length ?? 0,
+      coverage: group.coverage,
+    })),
+    sourceShape: shape,
+  };
 }
 // Bind this one representative replay to its already-completed public database
 // receipt. This never discovers a run, starts an actor, or accepts a caller ID.
@@ -439,6 +763,7 @@ export async function runTask(input, dependencies = {}) {
   const state = structuredClone(input.state ?? {}),
     transports = [];
   const m05 = input.scope === 'm05-subset';
+  if (['runs', 'samples'].includes(phase) && !m05) fail('M05_OWNED_RUN_SCOPE_REQUIRED');
   if (input.scope !== undefined && !['incremental', 'hc01', 'm05-subset'].includes(input.scope))
     fail('M04_SCOPE_INVALID');
   if (m05) {
@@ -648,6 +973,63 @@ export async function runTask(input, dependencies = {}) {
       state.executions = executions;
       receipt.executions = executions;
       receipt.limitation = 'Native metadata alone does not prove callback/database completion.';
+    } else if (task === 'ProviderMetadata' && phase === 'samples') {
+      const contexts = ownedSampleContexts(
+        state,
+        dependencies.ownedSampleReceipt ??
+          JSON.parse(
+            readFileSync(resolve(root, m05Evidence, 'live-subset-first-reconciled-20261028.json'), 'utf8'),
+          ),
+      );
+      const authenticated = sendJson('api.apify.com', secrets.apifyRead, 'apify', 'provider');
+      for (const context of contexts) {
+        const result = await authenticated('GET', '/v2/actor-runs/' + context.id);
+        if (result.status !== 200) fail('M05_OWNED_RUN_READ_UNAVAILABLE');
+        const run = ownedRunProjection(result.body?.data, context);
+        if (run.status !== 'SUCCEEDED' || result.body.data.defaultDatasetId !== context.datasetId)
+          fail('M05_SAMPLE_DATASET_IDENTITY_REQUIRED');
+      }
+      const samples = [];
+      for (const context of contexts) {
+        const result = await authenticated(
+          'GET',
+          '/v2/datasets/' +
+            context.datasetId +
+            '/items?format=json&offset=0&limit=' +
+            (context.bound + 1) +
+            '&skipHidden=true',
+        );
+        if (result.status !== 200 || !Array.isArray(result.body) || result.body.length > context.bound)
+          fail('M05_SAMPLE_DATASET_BOUND_REQUIRED');
+        try {
+          samples.push(normalizeOwnedSample(result.body, context));
+        } finally {
+          result.body.length = 0;
+        }
+      }
+      state.ownedSampleDiagnostics = {
+        observedAt: new Date(now()).toISOString(),
+        evidence: 'retained_provider_rows_local_normalization_only',
+        samples,
+      };
+      receipt.ownedSampleDiagnostics = structuredClone(state.ownedSampleDiagnostics);
+    } else if (task === 'ProviderMetadata' && phase === 'runs') {
+      const bound = bindM05OwnedRuns(
+        state,
+        dependencies.ownedRunReceipt ??
+          JSON.parse(
+            readFileSync(resolve(root, m05Evidence, 'live-subset-linkedin-first-20261028.json'), 'utf8'),
+          ),
+      );
+      const authenticated = sendJson('api.apify.com', secrets.apifyRead, 'apify', 'provider');
+      const runs = [];
+      for (const binding of bound) {
+        const result = await authenticated('GET', '/v2/actor-runs/' + binding.id);
+        if (result.status !== 200) fail('M05_OWNED_RUN_READ_UNAVAILABLE');
+        runs.push(ownedRunProjection(result.body?.data, binding));
+      }
+      state.ownedRunDiagnostics = { observedAt: new Date(now()).toISOString(), runs };
+      receipt.ownedRunDiagnostics = structuredClone(state.ownedRunDiagnostics);
     } else if (task === 'ProviderMetadata') {
       if (state.provider) fail('M04_PROVIDER_ALREADY_RECORDED');
       const authenticated = sendJson('api.apify.com', secrets.apifyRead, 'apify', 'provider');

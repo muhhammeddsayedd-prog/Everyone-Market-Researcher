@@ -14,14 +14,42 @@ function employeeCompany(value) {
   }
   return /^[\p{L}\p{N}._&+-]{1,160}$/u.test(slug) ? slug : null;
 }
-function employeePerson(row) {
-  if (!employeeRecord(row) || !/^[\p{L}\p{N}._-]{1,160}$/u.test(row.publicIdentifier ?? '')) return null;
+function employeePublicId(row) {
+  const valid = (value) => typeof value === 'string' && /^[\p{L}\p{N}._-]{1,160}$/u.test(value);
+  let fromUrl = null;
+  if (row.linkedinUrl !== undefined) {
+    if (typeof row.linkedinUrl !== 'string' || /[\s\\\u0000-\u001f\u007f]/u.test(row.linkedinUrl))
+      return null;
+    const match = /^https:\/\/(?:(?:www|[a-z]{2})\.)?linkedin\.com\/in\/([^/?#]+)\/?$/iu.exec(
+      row.linkedinUrl.split(/[?#]/, 1)[0],
+    );
+    try {
+      fromUrl = match ? decodeURIComponent(match[1]) : null;
+    } catch {
+      return null;
+    }
+    if (!valid(fromUrl)) return null;
+  }
+  if (
+    row.publicIdentifier !== undefined &&
+    row.publicIdentifier !== null &&
+    (!valid(row.publicIdentifier) ||
+      (fromUrl && fromUrl.toLowerCase() !== row.publicIdentifier.toLowerCase()))
+  )
+    return null;
+  const id = row.publicIdentifier ?? fromUrl;
+  return valid(id) ? id.toLowerCase() : null;
+}
+function employeePerson(row, positionTitle) {
+  if (!employeeRecord(row)) return null;
+  const publicId = employeePublicId(row);
+  if (!publicId) return null;
   const name = [employeeText(row.firstName, 100), employeeText(row.lastName, 100)].filter(Boolean).join(' ');
   if (!name) return null;
   return {
-    public_id: row.publicIdentifier,
+    public_id: publicId,
     name,
-    title: employeeText(row.headline),
+    title: employeeText(positionTitle || row.headline),
     location: employeeText(row.location?.linkedinText, 300),
   };
 }
@@ -70,7 +98,8 @@ function normalizeLinkedInEmployees(rows, ctx) {
   const targets = ctx.input.companies.map(employeeCompany);
   if (targets.some((slug) => !slug) || new Set(targets).size !== targets.length)
     throw Error('linkedin_employee_context_invalid');
-  const bySlug = new Map();
+  const bySlug = new Map(),
+    configuredCompanyIds = new Map();
   const ids = new Set();
   for (const account of ctx.accounts) {
     const slug = employeeCompany(account?.url),
@@ -81,25 +110,48 @@ function normalizeLinkedInEmployees(rows, ctx) {
       account.platform !== 'linkedin_employees' ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id ?? '') ||
       ids.has(id) ||
-      bySlug.has(slug)
+      bySlug.has(slug) ||
+      (account.external_id != null &&
+        (typeof account.external_id !== 'string' ||
+          !/^[1-9][0-9]{0,19}$/.test(account.external_id) ||
+          configuredCompanyIds.has(account.external_id)))
     )
       throw Error('linkedin_employee_context_invalid');
     ids.add(id);
     bySlug.set(slug, { account_id: id, people: new Map(), errors: new Set(), observed: 0 });
+    if (account.external_id != null) configuredCompanyIds.set(account.external_id, slug);
   }
   if (bySlug.size !== targets.length) throw Error('linkedin_employee_context_invalid');
+  // Numeric company URLs require an already-resolved catalog identity. Never
+  // infer this alias from a person's employer name or from the query alone.
+  const positionCompany = (value) => {
+    const key = employeeCompany(value);
+    return configuredCompanyIds.get(key) ?? key;
+  };
   let unmatched = 0;
   for (const row of rows) {
-    const positions = Array.isArray(row?.currentPosition) ? row.currentPosition : [];
+    // The retained public Short response uses currentPositions + linkedinUrl;
+    // retain the earlier singular example, without inferring a foreign employer.
+    const singular = Array.isArray(row?.currentPosition) ? row.currentPosition : null;
+    const plural = Array.isArray(row?.currentPositions) ? row.currentPositions : null;
+    const conflictingPositions = singular && plural && JSON.stringify(singular) !== JSON.stringify(plural);
+    const sourcePositions = plural ?? singular ?? [];
+    const positions = sourcePositions.filter((position) => position?.current !== false);
+    const unsafePositionHint =
+      sourcePositions.some((position) => position?.current === false) ||
+      positions.some((position) => {
+        const hint = position?.companyLinkedinUrl ?? position?.linkedinUrl;
+        return hint !== undefined && !employeeCompany(hint);
+      });
     const positionSlugs = positions
-      .map((position) => employeeCompany(position?.companyLinkedinUrl ?? position?.linkedinUrl))
+      .map((position) => positionCompany(position?.companyLinkedinUrl ?? position?.linkedinUrl))
       .filter(Boolean);
     const matches = [...new Set(positionSlugs.filter((slug) => bySlug.has(slug)))];
     // One attested company query proves query ownership only, not employment or a full roster.
     const slug =
       matches.length === 1
         ? matches[0]
-        : matches.length === 0 && targets.length === 1 && positionSlugs.length === 0
+        : matches.length === 0 && targets.length === 1 && positionSlugs.length === 0 && !unsafePositionHint
           ? targets[0]
           : null;
     if (!slug) {
@@ -108,11 +160,32 @@ function normalizeLinkedInEmployees(rows, ctx) {
     }
     const group = bySlug.get(slug);
     group.observed++;
+    if (
+      conflictingPositions ||
+      positions.some(
+        (position) =>
+          !employeeRecord(position) ||
+          (position.current !== undefined && typeof position.current !== 'boolean'),
+      )
+    ) {
+      group.errors.add('linkedin_employee_contract_drift');
+      continue;
+    }
     if (Object.hasOwn(row ?? {}, 'error')) {
       group.errors.add('linkedin_employee_source_error');
       continue;
     }
-    const person = employeePerson(row);
+    const titles = [
+      ...new Set(
+        positions
+          .filter(
+            (position) => positionCompany(position?.companyLinkedinUrl ?? position?.linkedinUrl) === slug,
+          )
+          .map((position) => employeeText(position.title))
+          .filter(Boolean),
+      ),
+    ];
+    const person = employeePerson(row, titles.join('; '));
     if (!person) {
       group.errors.add('linkedin_employee_contract_drift');
       continue;

@@ -161,6 +161,76 @@ function fixture(
   return { job, config, input, dispatch, get, process, actor_input };
 }
 describe('M05 registered async callback, local provider contracts', () => {
+  it.each([256, 512])(
+    'accepts an authenticated lower PPE memory envelope of %s MiB with the exact recorded charge option',
+    async (memoryMbytes) => {
+      const t = fixture(),
+        original = t.get.getMockImplementation()!;
+      t.get.mockImplementation(async (path) => {
+        const value = await original(path);
+        if (path.startsWith('/v2/actor-runs/')) {
+          const d = (value as { data: { options: object } }).data;
+          return { data: { ...d, options: { ...d.options, memoryMbytes } } };
+        }
+        return value;
+      });
+      expect(await t.process(t.input, t.config, new AbortController().signal)).toMatchObject({
+        state: 'completed',
+        requires_review: false,
+      });
+      expect(t.dispatch.mock.calls.find((c) => c[1] === 'm05.settle')![2]).toMatchObject({
+        usage_usd: 0.012,
+        groups: [
+          {
+            status: 'success',
+            people: [{ public_id: 'person-1', name: 'Person 1', title: 'Director', location: 'Cairo' }],
+          },
+        ],
+      });
+      expect(t.job.max_actor_usd).toBe(1);
+    },
+  );
+  it.each([0, 64, 384, 2048, '512', null, NaN, Infinity])(
+    'still costs and rejects invalid or larger PPE memory %s before content reads',
+    async (memoryMbytes) => {
+      const t = fixture(),
+        original = t.get.getMockImplementation()!;
+      t.get.mockImplementation(async (path) => {
+        const value = await original(path);
+        if (path.startsWith('/v2/actor-runs/')) {
+          const d = (value as { data: { options: object } }).data;
+          return { data: { ...d, options: { ...d.options, memoryMbytes } } };
+        }
+        return value;
+      });
+      expect(await t.process(t.input, t.config, new AbortController().signal)).toMatchObject({
+        state: 'completed',
+        requires_review: true,
+      });
+      expect(t.get.mock.calls.some((c) => c[0].startsWith('/v2/datasets/'))).toBe(false);
+      expect(t.dispatch.mock.calls.find((c) => c[1] === 'm05.settle')![2]).toMatchObject({
+        usage_usd: 0.012,
+        groups: [{ status: 'failed', error: 'm05_actor_cap_unacknowledged' }],
+      });
+    },
+  );
+  it('preserves the independent website memory rule', async () => {
+    const t = fixture('apify/website-content-crawler'),
+      original = t.get.getMockImplementation()!;
+    t.get.mockImplementation(async (path) => {
+      const value = await original(path);
+      if (path.startsWith('/v2/actor-runs/')) {
+        const d = (value as { data: { options: object } }).data;
+        return { data: { ...d, options: { ...d.options, memoryMbytes: 512 } } };
+      }
+      return value;
+    });
+    expect(await t.process(t.input, t.config, new AbortController().signal)).toMatchObject({
+      state: 'completed',
+      requires_review: true,
+    });
+    expect(t.get.mock.calls.some((c) => c[0].startsWith('/v2/datasets/'))).toBe(false);
+  });
   it('projects employees to four public fields and measured cost; no raw profile is ingested', async () => {
     const t = fixture();
     const out = await t.process(t.input, t.config, new AbortController().signal);

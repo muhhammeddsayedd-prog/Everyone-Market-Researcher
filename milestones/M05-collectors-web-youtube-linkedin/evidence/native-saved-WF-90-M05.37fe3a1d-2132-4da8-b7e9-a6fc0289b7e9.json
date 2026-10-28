@@ -1,0 +1,156 @@
+{
+  "key": "WF-90-M05",
+  "id": "tUQB8tRvfrMOrb4M",
+  "versionId": "37fe3a1d-2132-4da8-b7e9-a6fc0289b7e9",
+  "active": true,
+  "activeVersionId": "37fe3a1d-2132-4da8-b7e9-a6fc0289b7e9",
+  "graphHash": "6503ca28ed96fe9c2b1384b9104de543323c2925c5dfc484f177ef071483cd55",
+  "readonlySettings": {
+    "binaryMode": null
+  },
+  "tags": [],
+  "sourceHead": "13b2fcbece3b42cbace80524b06d52a29f117656",
+  "evidence": "native_saved_definition_only",
+  "scope": "m05-subset",
+  "websiteExcluded": true,
+  "workflow": {
+    "name": "WF-90-M05 · Collector error handler [dev]",
+    "nodes": [
+      {
+        "id": "683b93a7-440e-4e7c-a279-55c84975507e",
+        "name": "On M04 workflow error",
+        "notes": "emr-m05-subset:a946c93c-1bf4-4d1d-82c5-ccbe2a44b3c1",
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "c0378b21-278e-4c7e-ad23-064e4f824bde",
+        "name": "Prepare classified M04 error",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          200,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M04_NATIVE_INPUT_INVALID');const j=rows[0].json;\nfunction collectorRequestId(executionId, sequence) {\n  if (\n    !/^\\d{1,15}$/.test(executionId) ||\n    !Number.isSafeInteger(Number(executionId)) ||\n    Number(executionId) >= 2 ** 48 ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M04_EXECUTION_ID_INVALID');\n  return `c04c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(executionId).toString(16).padStart(12, '0')}`;\n}\nconst sources={\"MzimjpsuyPuK7SKe\":\"WF-00\",\"F7S8Llr0ZSaSuw4T\":\"WF-13\",\"VbJn4mLYm0sGy1X2\":\"WF-18\",\"h6lUXSGN5sV2jxuQ\":\"WF-18b\",\"02yefa9uEPYwmM3N\":\"WF-21\",\"TsqSMa5MlO3QBLkt\":\"WF-19\"},workflow=j.workflow?.id;\nif(typeof workflow!=='string'||!Object.hasOwn(sources,workflow))throw Error('M04_ERROR_SOURCE_INVALID');\nconst handler=String($execution.id);let execution=j.execution?.id;\nif(execution===undefined||execution===null||execution===''){\n  if(!j.trigger||typeof j.trigger!=='object'||Array.isArray(j.trigger)||!/^\\d{1,15}$/.test(handler))throw Error('M04_ERROR_CORRELATION_INVALID');\n  execution='handler-'+handler;\n}else{if(!['string','number'].includes(typeof execution)||!/^\\d{1,15}$/.test(String(execution))||!Number.isSafeInteger(Number(execution)))throw Error('M04_ERROR_CORRELATION_INVALID');execution=String(execution);}\nreturn[{json:{request:{version:1,requestId:collectorRequestId(handler,1),operation:'m05.execution.error',args:{workflow_id:workflow,execution_id:execution,error_code:execution.startsWith('handler-')?'workflow_failed':sources[workflow]==='WF-19'?'callback_retryable':'workflow_failed'}}}}];"
+        }
+      },
+      {
+        "id": "256810aa-fe13-4163-a7d4-325e43f3f78c",
+        "name": "Log classified M04 error",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "retryOnFail": false,
+        "onError": "continueRegularOutput",
+        "position": [
+          400,
+          0
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-74whfp148-muhammed-abdelrahman.vercel.app/api/internal/n8n/collectors",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        }
+      },
+      {
+        "id": "5267a936-8909-44ac-a873-6d7ac5e00355",
+        "name": "Verify M04 error receipt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          600,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M04_NATIVE_INPUT_INVALID');const j=rows[0].json;\nconst prior=$('Prepare classified M04 error').item.json,b=j.body;\nif(j.statusCode!==200||b?.version!==1||b.requestId!==prior.request.requestId||b.operation!=='m05.execution.error'||b.replayed!==false||b.result?.logged!==true||b.result.reconciliation_required!==true)throw Error('M04_ERROR_LOG_UNCONFIRMED');return[{json:{logged:true,reconciliation_required:true}}];"
+        }
+      }
+    ],
+    "connections": {
+      "On M04 workflow error": {
+        "main": [
+          [
+            {
+              "node": "Prepare classified M04 error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare classified M04 error": {
+        "main": [
+          [
+            {
+              "node": "Log classified M04 error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Log classified M04 error": {
+        "main": [
+          [
+            {
+              "node": "Verify M04 error receipt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "saveExecutionProgress": false,
+      "saveManualExecutions": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "executionTimeout": 1800,
+      "timezone": "Africa/Cairo",
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false
+    },
+    "tags": [],
+    "pinData": {}
+  }
+}

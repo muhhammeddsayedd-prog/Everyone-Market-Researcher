@@ -19,7 +19,7 @@ try {
  $hc01=$Scope -eq 'HC01';$m05=$Scope -eq 'M05Subset';$expanded=$Incremental -or $hc01
  $allowedPhases=switch -CaseSensitive ($Task) {
   'Inventory' {@('default')}
-  'ProviderMetadata' {@('default')}
+  'ProviderMetadata' {if($m05){@('default','runs','samples')}else{@('default')}}
   'Setup' {@('project','prepare','configure','poll','cleanup')}
   'Stage' {if($expanded){@('stage','publish','machine','readback','cohort')}else{@('stage','publish','machine','readback')}}
   'Observe' {@('default')}
