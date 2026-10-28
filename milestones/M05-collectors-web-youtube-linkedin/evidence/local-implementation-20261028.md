@@ -176,3 +176,14 @@ gateway/native/rollback-SQL results and does not claim Windows-wide acceptance.
 The enforced three-file edit boundary above remains unchanged. This permitted
 record is the current handoff while the corresponding M05 progress/packet
 corrections are unperformed. The live packet remains unready for approval.
+
+CI40630684945 passed quality, unit, build, e2e and Vercel. Its database job
+passed605 regular pgTAP assertions,102 GW-01 assertions and the foundation,
+M04 and M05 actual SQL/app contracts before rejecting generated-type parity.
+The local type-generation schema omitted the older fifteenth migration and
+therefore lost the two-argument `foundation_gateway_provision` overload. The
+accepted M04 generated overload is now preserved alongside the new native M05
+output. An independent AST comparison confirms no other legacy member loss or
+drift, apart from the intended employee `coverage` field. Shared typecheck and
+formatting pass. The full-chain native CI comparison remains required; this
+correction does not claim that the earlier local clone covered all migrations.

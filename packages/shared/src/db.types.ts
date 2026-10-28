@@ -3401,7 +3401,9 @@ export type Database = {
         Returns: Json;
       };
       foundation_gateway_process: { Args: { p_args: Json; p_window_id: string }; Returns: Json };
-      foundation_gateway_provision: { Args: { p: Json }; Returns: undefined };
+      foundation_gateway_provision:
+        | { Args: { p: Json }; Returns: undefined }
+        | { Args: { p: Json; p_window_id: string }; Returns: undefined };
       foundation_gateway_read_context: {
         Args: { p_apify_run_id: string; p_request_id: string; p_window_id: string };
         Returns: Json;
