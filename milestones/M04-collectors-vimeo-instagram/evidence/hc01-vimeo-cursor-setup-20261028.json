@@ -1,0 +1,67 @@
+{
+    "version":  1,
+    "phase":  "Query",
+    "environment":  "dev",
+    "projectRef":  "zmotjsbzhzjvpelxvxlf",
+    "host":  "aws-1-eu-central-1.pooler.supabase.com",
+    "port":  5432,
+    "status":  "reviewed_query_complete",
+    "privateRead":  true,
+    "authenticationAttempted":  true,
+    "authenticationVerified":  true,
+    "databaseCommands":  1,
+    "childrenClosed":  true,
+    "persistentAdminPreserved":  true,
+    "scratchDeleted":  true,
+    "observedAt":  "2026-10-28T01:31:21.6119136Z",
+    "scope":  "hc01",
+    "readOnly":  false,
+    "preparationStage":  "bounded_database_command",
+    "lastNativeExit":  0,
+    "databaseClientClosed":  true,
+    "querySqlState":  null,
+    "queryResult":  [
+                        {
+                            "incremental_operational":  {
+                                                            "accounts":  [
+                                                                             {
+                                                                                 "id":  "985a57dd-7934-422d-9d18-4e8ca59fc197",
+                                                                                 "url":  "https://vimeo.com/everyonefilms",
+                                                                                 "handle":  "everyonefilms",
+                                                                                 "status":  "active",
+                                                                                 "cadence":  "1 day",
+                                                                                 "platform":  "vimeo",
+                                                                                 "created_at":  "2026-10-18T01:12:10.339281+00:00",
+                                                                                 "last_error":  null,
+                                                                                 "updated_at":  "2026-10-28T01:31:21.038609+00:00",
+                                                                                 "external_id":  "157330576",
+                                                                                 "handle_norm":  "everyonefilms",
+                                                                                 "items_count":  13,
+                                                                                 "last_run_id":  "74fae456-a34c-4460-a5ea-6ab66ecec431",
+                                                                                 "next_due_at":  "2026-10-18T01:12:10.339281+00:00",
+                                                                                 "locked_until":  null,
+                                                                                 "backfill_from":  "2024-01-01",
+                                                                                 "competitor_id":  "94928d31-8983-403c-bdbd-f5f44613d631",
+                                                                                 "last_error_at":  null,
+                                                                                 "resolve_status":  "resolved",
+                                                                                 "backfill_cursor":  {
+                                                                                                         "page":  4,
+                                                                                                         "endpoint":  "users",
+                                                                                                         "page_size":  5,
+                                                                                                         "resourcePath":  "/users/157330576"
+                                                                                                     },
+                                                                                 "backfill_status":  "pending",
+                                                                                 "last_success_at":  "2026-10-27T16:08:35.094646+00:00",
+                                                                                 "last_external_id":  "1236174183",
+                                                                                 "uploads_playlist_id":  null,
+                                                                                 "consecutive_failures":  0,
+                                                                                 "last_item_published_at":  "2026-10-15T11:11:11+00:00"
+                                                                             }
+                                                                         ],
+                                                            "operation":  "hc01-setup-vimeo-continuation",
+                                                            "preservedContentAndWatermarks":  true
+                                                        }
+                        }
+                    ],
+    "querySha256":  "ccdc677dc909a9f1040ce85a103eeaca4305711bc6b0fcf39ece985f65f119dd"
+}

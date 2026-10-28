@@ -8,6 +8,8 @@
 
 > **28 October 2026 owner decision:** the [binding consolidated decision](../../docs/DECISIONS.md#m04-development-acceptance-and-m05-sequencing--28-october-2026) now approves the existing staged HC-01 dev packet with its exact actors/requests/setup/shutdown, amended natural-example and repeat-idempotency rules, and the explicit coverage/rollout deferrals in the [current criteria map](evidence/criteria-mapping-20261027.md). Historical no-live-approval statements above/below retain their original date. Essential development checks and planned five-account validation must actually pass before recording **M04 development accepted; coverage and rollout obligations open** and beginning M05 local development on a separate stacked draft branch/PR from the accepted CI-green head. This is not original full Done, production readiness or merge. The general scheduled selector remains unchanged and incomplete-history production eligibility remains a launch issue. No observed defect is deferred.
 
+> **Actual28October outcome:** **M04 development accepted; coverage and rollout obligations open.** The [actual report](evidence/hc01-dev-results-20261028.md) records hosted18 versions, allfive Instagram accounts twice/20 actors/USD0.2300 with correct settlement/queues/real recent metrics, Vimeo page4/width5→page5/width5, and verified restoration/shutdown. Code948e618 passed all five CI40612074064 jobs; final result-head CI precedes M05 branch creation. Original full outcomes below and exact deferred coverage/rollout obligations remain open; PR13 stays draft/unmerged and M05 is not started by this record.
+
 ## 1. Goal and outcome
 
 Build the first two production collectors on top of the M03 foundation, then backfill the pilot from **1 Jan 2024**:

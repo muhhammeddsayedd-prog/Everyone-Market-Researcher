@@ -4,7 +4,7 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Not started — development authorized after essential M04 development acceptance at a CI-green head; production and paid/live M05 work remain separately gated.**
+**Not started — essential M04 development is accepted; create M05's separate stacked branch after normal final M04 result-head CI passes. Production and paid/live M05 work remain separately gated.**
 
 | Field | Value |
 |---|---|
@@ -13,7 +13,7 @@
 | Finished | — |
 | Branch / PR | `m05-collectors-web-youtube-linkedin` / — |
 | Current task | — |
-| Next step | After M04 essential development checks and staged validation pass, branch separately from its accepted CI-green head; implement source contracts locally using official examples/retained data/labeled fixtures, test and deliver a stacked draft PR targeting M04. Prepare one complete M05 live packet before new paid captures or hosted work. |
+| Next step | Verify normal final M04 result-head CI, then branch separately from that accepted CI-green head; implement source contracts locally using official examples/retained data/labeled fixtures, test and deliver a stacked draft PR targeting M04. Prepare one complete M05 live packet before new paid captures or hosted work. |
 
 ## Task checklist
 <!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
@@ -55,6 +55,7 @@
 ## Decisions & deviations
 <!-- Anything that differs from the docs. Also add to docs/DECISIONS.md → Changes if it changes a decision. -->
 - Planned: same prod-backfill default as M04 (confirm in MA-15).
+- Actual28October [M04 development acceptance](../M04-collectors-vimeo-instagram/evidence/hc01-dev-results-20261028.md) passed the essential five-account/metrics/ownership/cost/closure checks on application948e618 with all five CI jobs passing. Final M04 result-head CI remains the next branch-delivery gate; M05 implementation is not started by this note.
 - 28 October owner decision separates M04 development acceptance from deferred coverage and rollout. See [binding decision](../../docs/DECISIONS.md#m04-development-acceptance-and-m05-sequencing--28-october-2026); M05 is not started by this record. Once its prerequisite actually passes, M05 local implementation, migrations/tests, documentation, scoped commits, required CI, protected Previews and a separate stacked draft PR are authorized. Keep M05 changes out of PR13. No M04 spending authority transfers to M05.
 - Planned: website `external_id` hash function (sha256 vs FNV fallback) is fixed forever after the first backfill — record which one is used here.
 

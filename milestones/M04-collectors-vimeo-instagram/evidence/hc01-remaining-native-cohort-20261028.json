@@ -1,0 +1,180 @@
+{
+    "status":  "completed",
+    "task":  "Stage",
+    "phase":  "cohort",
+    "observedAt":  "2026-10-28T01:20:29.545Z",
+    "code":  null,
+    "requestCount":  4,
+    "needsReconciliation":  false,
+    "cohort":  {
+                   "key":  "remaining-instagram",
+                   "workflowKey":  "WF-11",
+                   "id":  "Oq19AMI9C3B1wbo9",
+                   "versionId":  "5825c4b3-2b5a-4125-9e81-1e19b54df39f",
+                   "active":  false,
+                   "activeVersionId":  null,
+                   "graphHash":  "a8b417b387be29b00fabc11ba1eaba16caaee72999d8612029769c109e077d8b",
+                   "readonlySettings":  {
+                                            "binaryMode":  null
+                                        },
+                   "tags":  [
+                                {
+                                    "id":  "9A8MARQoIZ2KBpJN",
+                                    "name":  "platform:instagram"
+                                },
+                                {
+                                    "id":  "9VKnf3HlzT1qNNfW",
+                                    "name":  "layer:collector"
+                                },
+                                {
+                                    "id":  "f599CX7WOg9azPEC",
+                                    "name":  "env:dev"
+                                }
+                            ],
+                   "input":  {
+                                 "env":  "dev",
+                                 "mode":  "daily",
+                                 "limit":  4,
+                                 "max_pages":  1,
+                                 "page_size":  5,
+                                 "results_limit":  30,
+                                 "max_actor_starts":  8,
+                                 "account_ids":  [
+                                                     "bed82782-753f-4ba9-91ca-691ef36f75c6",
+                                                     "46149fb9-8905-4b76-9834-4b38f668a2e2",
+                                                     "2d42d451-ac9a-42ac-a879-8760d63c8108",
+                                                     "3ca3befa-abe6-4540-a389-0cf16115c581"
+                                                 ]
+                             }
+               },
+    "workflows":  [
+                      {
+                          "key":  "WF-00",
+                          "id":  "MzimjpsuyPuK7SKe",
+                          "versionId":  "f834ba74-9df7-4830-907a-679e2ef378f7",
+                          "active":  false,
+                          "activeVersionId":  null,
+                          "graphHash":  "ecd7a73f59581c85ad740fb488147a5807b0c764acd9f97fb09ba9c728b0c808",
+                          "readonlySettings":  {
+                                                   "binaryMode":  "separate"
+                                               },
+                          "tags":  [
+                                       {
+                                           "id":  "f599CX7WOg9azPEC",
+                                           "name":  "env:dev"
+                                       },
+                                       {
+                                           "id":  "OxnbDrBVAtziiuTk",
+                                           "name":  "layer:ops"
+                                       }
+                                   ]
+                      },
+                      {
+                          "key":  "WF-10",
+                          "id":  "4JMHLDBSdgGxhPlk",
+                          "versionId":  "ceeccba6-4250-44be-b9ab-c8c017c64789",
+                          "active":  false,
+                          "activeVersionId":  null,
+                          "graphHash":  "347d99bfc6d0288e3b2326918a04d4de6028bf6888358367578a5d3c23100aaa",
+                          "readonlySettings":  {
+                                                   "binaryMode":  null
+                                               },
+                          "tags":  [
+                                       {
+                                           "id":  "9VKnf3HlzT1qNNfW",
+                                           "name":  "layer:collector"
+                                       },
+                                       {
+                                           "id":  "f599CX7WOg9azPEC",
+                                           "name":  "env:dev"
+                                       },
+                                       {
+                                           "id":  "onHkKuv75MhQwmPx",
+                                           "name":  "platform:vimeo"
+                                       }
+                                   ]
+                      },
+                      {
+                          "key":  "WF-11",
+                          "id":  "Oq19AMI9C3B1wbo9",
+                          "versionId":  "5825c4b3-2b5a-4125-9e81-1e19b54df39f",
+                          "active":  false,
+                          "activeVersionId":  null,
+                          "graphHash":  "a8b417b387be29b00fabc11ba1eaba16caaee72999d8612029769c109e077d8b",
+                          "readonlySettings":  {
+                                                   "binaryMode":  null
+                                               },
+                          "tags":  [
+                                       {
+                                           "id":  "9A8MARQoIZ2KBpJN",
+                                           "name":  "platform:instagram"
+                                       },
+                                       {
+                                           "id":  "9VKnf3HlzT1qNNfW",
+                                           "name":  "layer:collector"
+                                       },
+                                       {
+                                           "id":  "f599CX7WOg9azPEC",
+                                           "name":  "env:dev"
+                                       }
+                                   ]
+                      },
+                      {
+                          "key":  "WF-19",
+                          "id":  "TsqSMa5MlO3QBLkt",
+                          "versionId":  "14a62fe4-8c7c-4e63-95a7-f5250884e0e7",
+                          "active":  true,
+                          "activeVersionId":  "14a62fe4-8c7c-4e63-95a7-f5250884e0e7",
+                          "graphHash":  "00a227a68aac8bc9664131f1ba50801f43ec7483ff45883eba6bd6d8f42d7744",
+                          "readonlySettings":  {
+                                                   "binaryMode":  null
+                                               },
+                          "tags":  [
+                                       {
+                                           "id":  "f599CX7WOg9azPEC",
+                                           "name":  "env:dev"
+                                       },
+                                       {
+                                           "id":  "OxnbDrBVAtziiuTk",
+                                           "name":  "layer:ops"
+                                       }
+                                   ]
+                      },
+                      {
+                          "key":  "WF-90-M04",
+                          "id":  "AwxhktgJdvLXE0FZ",
+                          "versionId":  "ec8ab959-5d2e-4751-b2dc-d1c1bef63c17",
+                          "active":  true,
+                          "activeVersionId":  "ec8ab959-5d2e-4751-b2dc-d1c1bef63c17",
+                          "graphHash":  "ed8b9ab45969a90b3964f519e5f2164f492ca9ed124a76ac83e440d1e340dfcc",
+                          "readonlySettings":  {
+                                                   "binaryMode":  null
+                                               },
+                          "tags":  [
+
+                                   ]
+                      }
+                  ],
+    "credentials":  [
+                        {
+                            "id":  "EmrM03Machine19",
+                            "name":  "M03 foundation machine [dev]",
+                            "type":  "httpCustomAuth",
+                            "projectReadback":  "not_exposed"
+                        },
+                        {
+                            "id":  "HeZBOZhFMeFYOC0N",
+                            "name":  "Vimeo Token",
+                            "type":  "httpHeaderAuth",
+                            "projectReadback":  "not_exposed"
+                        },
+                        {
+                            "id":  "EYmaOt0rd45ysq0J",
+                            "name":  "Apify account",
+                            "type":  "apifyApi",
+                            "projectReadback":  "not_exposed"
+                        }
+                    ],
+    "pendingMutation":  false,
+    "machineRebound":  true
+}

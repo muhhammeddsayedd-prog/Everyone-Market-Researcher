@@ -8,6 +8,8 @@ The board at the repo root (`PROGRESS.md`) normally shows where the project stan
 
 **28 October 2026 sequencing exception:** [the owner decision](DECISIONS.md#m04-development-acceptance-and-m05-sequencing--28-october-2026) permits M05 development after essential M04 development checks and the approved staged validation pass, with the status **M04 development accepted; coverage and rollout obligations open**. This is not original full Done, production readiness or merge. Branch M05 from the accepted CI-green M04 head and open a separate stacked draft PR targeting the unmerged M04 branch; PR13 remains draft/unmerged. Keep paid M05 capture/AI, hosted migration, activation, recurrence, notifications and production separately gated. The exact deferred M04 obligations stay in its existing criteria map.
 
+The [actual28October result](../milestones/M04-collectors-vimeo-instagram/evidence/hc01-dev-results-20261028.md) now accepts essential M04 development on CI-green application948e618. Verify normal final result/documentation-head CI before creating M05's separate stacked branch; this status is not original full milestone Done or production readiness. The protected root/M03 board remains stale and untouched.
+
 ## 1. Milestones
 
 | ID | Milestone | Goal (one line) | Depends on | Gate to close |
