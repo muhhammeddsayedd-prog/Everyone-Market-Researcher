@@ -1,0 +1,21 @@
+{
+  "status": "completed",
+  "task": "Probe",
+  "phase": "default",
+  "observedAt": "2026-10-27T16:01:20.843Z",
+  "probes": [
+    {
+      "name": "restricted_identity",
+      "status": 200,
+      "version": 1,
+      "requestId": "04f38ada-b06a-452d-a67f-f93dec8e80d0",
+      "operation": "callback.classify",
+      "replayed": false
+    },
+    {
+      "name": "missing_machine",
+      "status": 401,
+      "errorCode": "unauthorized"
+    }
+  ]
+}

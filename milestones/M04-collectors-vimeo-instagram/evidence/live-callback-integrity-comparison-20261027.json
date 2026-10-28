@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "observedAt": "2026-10-27T13:54:07.029Z",
+  "sources": [
+    "live-before-callback-probes-20261027.json",
+    "live-after-callback-probes-20261027.json"
+  ],
+  "unchanged": {
+    "runs": true,
+    "costs": true,
+    "items": true,
+    "accounts": true,
+    "launches": true,
+    "rawItems": true,
+    "actorRuns": true,
+    "aiQueueCounts": true,
+    "accountResults": true,
+    "mediaQueueCounts": true,
+    "passes": true,
+    "pages": true
+  },
+  "selectedLiveClaims": 0,
+  "selectedRunningParents": 0,
+  "selectedUnprocessedActors": 0,
+  "retainedItemCount": 21,
+  "actorCostUsd": 0.046
+}

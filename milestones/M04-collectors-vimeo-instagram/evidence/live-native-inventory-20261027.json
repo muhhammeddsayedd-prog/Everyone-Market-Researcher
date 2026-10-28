@@ -1,0 +1,104 @@
+{
+  "status": "completed",
+  "task": "Inventory",
+  "phase": "inventory",
+  "observedAt": "2026-10-27T12:44:11.551Z",
+  "code": null,
+  "requestCount": 6,
+  "needsReconciliation": false,
+  "workflows": [
+    {
+      "key": "WF-10",
+      "id": "4JMHLDBSdgGxhPlk",
+      "versionId": "d3191e0b-80a7-48c0-953b-f31fc78899de",
+      "active": false,
+      "activeVersionId": null,
+      "graphHash": "ac078c63dd7c2df53a64a45bf2a69d524cf2cc1ac3e23de03731706799264088",
+      "readonlySettings": {
+        "binaryMode": null
+      },
+      "tags": [
+        {
+          "id": "9VKnf3HlzT1qNNfW",
+          "name": "layer:collector"
+        },
+        {
+          "id": "f599CX7WOg9azPEC",
+          "name": "env:dev"
+        },
+        {
+          "id": "onHkKuv75MhQwmPx",
+          "name": "platform:vimeo"
+        }
+      ]
+    },
+    {
+      "key": "WF-11",
+      "id": "Oq19AMI9C3B1wbo9",
+      "versionId": "9ffb2a4e-1747-477f-b1d2-69a14a803155",
+      "active": false,
+      "activeVersionId": null,
+      "graphHash": "5f0e2bfc36a4a7ce4eec5a033df865c97a294954d79bcaaefb139b2ab7635240",
+      "readonlySettings": {
+        "binaryMode": null
+      },
+      "tags": [
+        {
+          "id": "9A8MARQoIZ2KBpJN",
+          "name": "platform:instagram"
+        },
+        {
+          "id": "9VKnf3HlzT1qNNfW",
+          "name": "layer:collector"
+        },
+        {
+          "id": "f599CX7WOg9azPEC",
+          "name": "env:dev"
+        }
+      ]
+    },
+    {
+      "key": "WF-19",
+      "id": "TsqSMa5MlO3QBLkt",
+      "versionId": "5ca16766-5618-4e19-9509-1d88cb5f0cb2",
+      "active": false,
+      "activeVersionId": null,
+      "graphHash": "9ab5ce2fe33ed2c0406e98e0e6f02a3a74e6649702c0f164a90cbd84500e7d38",
+      "readonlySettings": {
+        "binaryMode": null
+      },
+      "tags": [
+        {
+          "id": "f599CX7WOg9azPEC",
+          "name": "env:dev"
+        },
+        {
+          "id": "OxnbDrBVAtziiuTk",
+          "name": "layer:ops"
+        }
+      ]
+    }
+  ],
+  "credentials": [
+    {
+      "id": "EmrM03Machine19",
+      "name": "M03 foundation machine [dev]",
+      "type": "httpCustomAuth",
+      "projectReadback": "not_exposed"
+    },
+    {
+      "id": "HeZBOZhFMeFYOC0N",
+      "name": "Vimeo Token",
+      "type": "httpHeaderAuth",
+      "projectReadback": "not_exposed"
+    },
+    {
+      "id": "EYmaOt0rd45ysq0J",
+      "name": "Apify account",
+      "type": "apifyApi",
+      "projectReadback": "not_exposed"
+    }
+  ],
+  "pendingMutation": false,
+  "machineRebound": false
+}

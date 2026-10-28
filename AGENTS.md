@@ -17,7 +17,7 @@ Owner and approver: **Mohamed Abdelrahman** (mohamed.abdelrahman@everyone.film).
 
 ## 2. The working loop
 
-- Work **one milestone at a time, in order** (M00 → M15). The only exception is when the root board marks a milestone `Parallel-OK`.
+- Work **one milestone at a time, in order** (M00 → M15), subject to an explicit owner sequencing exception. The 28 October 2026 M04 development-acceptance/M05 exception is recorded in `docs/DECISIONS.md`; it does not require editing the protected stale root/M03 board.
 - For each task in `MILESTONE.md`:
   1. Implement it.
   2. Run its tests.
@@ -43,6 +43,8 @@ Owner and approver: **Mohamed Abdelrahman** (mohamed.abdelrahman@everyone.film).
   3. Set the status to `Done`.
   4. Update the root `PROGRESS.md` board.
   5. Open a PR `m{NN}-{slug}` → `main`.
+
+For the owner's 28 October 2026 exception, distinguish **M04 development accepted; coverage and rollout obligations open** from the original full milestone Done, production readiness and merge. Record that development status only after the essential checks and approved staged validation pass. M05 local development then proceeds on a separate branch from the accepted CI-green M04 head, with a stacked draft PR targeting the M04 branch while PR13 remains draft/unmerged. Keep M05 changes out of PR13. M05 paid captures/AI, hosted migrations, workflow activation, recurring work, notifications and production require their separate authorization. The current M04 records are authoritative while protected root/M03 pointers remain stale.
 
 ## 3. Where the truth lives
 
@@ -97,7 +99,7 @@ If two documents disagree:
     - Regenerate the types after every migration.
 12. **Idempotency:** re-running any job on the same window must not duplicate rows or re-run AI.
 
-The owner's 23 October 2026 development-autonomy reset supersedes older project-level disposable-secret and repeated time-only approval requirements. The 25 October M03 functional-acceptance reset replaces the project-level closure conditions identified in the milestone's AC mapping; it does not mark unverified work complete or disable existing required checks. Neither reset overrides enforced platform/organization controls, actual provider expiry, production boundaries or spending limits. Production credentials are excluded from the default dev profile. The unrelated private R2 incident and PR merge decisions remain separate; M04 must not start before the owner's next instruction.
+The owner's 23 October 2026 development-autonomy reset supersedes older project-level disposable-secret and repeated time-only approval requirements. The 25 October M03 functional-acceptance reset replaces the project-level closure conditions identified in the milestone's AC mapping; it does not mark unverified work complete or disable existing required checks. The 28 October M04 decision separates development acceptance from the explicitly deferred coverage and rollout obligations and permits the conditional M05 development sequence above. None overrides enforced platform/organization controls, actual provider expiry, production boundaries or spending limits. Production credentials are excluded from the default dev profile. The unrelated private R2 incident and PR merge decisions remain separate.
 
 ## 5. Tools you may use
 

@@ -2,6 +2,8 @@
 
 > Status lives in `./PROGRESS.md`. Read `AGENTS.md` first, then the root `PROGRESS.md`.
 
+> **28 October 2026 owner sequencing exception:** local M05 development is authorized once the essential M04 development checks and approved staged validation pass at a CI-green accepted head. Original full M04 Done, production rollout and merge are not prerequisites for this bounded development sequence. Use a separate branch and stacked draft PR targeting the unmerged M04 branch; keep PR13 draft. M05 paid captures/AI, hosted migrations, workflow activation, recurrence, notifications and production remain separately gated. See [the binding decision](../../docs/DECISIONS.md#m04-development-acceptance-and-m05-sequencing--28-october-2026) and M04's current criteria map; do not treat a protected stale root board as a new blocker.
+
 ## 1. Goal and outcome
 
 Build four collectors and backfill the pilot from **1 Jan 2024** (websites: all current work pages):
@@ -34,7 +36,7 @@ When M05 is done, all five in-scope sources except stories are collecting daily.
 
 | Item | Needed for | Check |
 |---|---|---|
-| M04 Done | Patterns, `ops.set_account_external_id`, WF-19 branches, prod copies of SUBs/WF-19/WF-90 | root board |
+| M04 development acceptance at a CI-green head | Stable restricted gateway, ingestion, ownership and callback contracts; production copies are not a local-development prerequisite | Current M04 PROGRESS and essential-development evidence under28October decision, not the protected stale root board |
 | MA-08 YouTube API key | WF-13 | n8n credential `YouTube Data API key`; `channels.list?forHandle=@AflamProductions` → 200 |
 | MA-15 Firecrawl key + backfill approval | WF-21; T9 | n8n credential `Firecrawl`; `POST /v2/map` on `https://everyone.film/by-everyone` → URLs |
 | MA-10 Apify token | crawler, harvestapi, youtube fallback | already verified in M04 |

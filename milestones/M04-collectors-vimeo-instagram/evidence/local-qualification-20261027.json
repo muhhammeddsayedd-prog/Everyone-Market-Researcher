@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "environment": "local only; no hosted credentials used by tests",
+  "observedAt": "2026-10-27T14:05:36.302Z",
+  "affectedConsumerBatch": {
+    "tests": 61,
+    "passed": 60,
+    "failed": 0,
+    "skipped": 1,
+    "skip": "Opt-in local PostgreSQL test not enabled in this batch; verified separately below."
+  },
+  "querySuiteWithPublicLocalPostgres": {
+    "tests": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "host": "127.0.0.1",
+    "port": 60322,
+    "transaction": "BEGIN / identity assertion / SELECT / ROLLBACK / client closure",
+    "persistentCredentialsRead": false
+  },
+  "realProjectedFixtureTests": {
+    "tests": 5,
+    "passed": 5,
+    "source": "actual metadata projections; tests local, no provider requests"
+  },
+  "lint": {
+    "exit": 0
+  },
+  "format": {
+    "exit": 0,
+    "afterFormatOnlyCorrection": true
+  },
+  "secretScan": {
+    "exit": 0,
+    "trackedFiles": 1595,
+    "violations": 0
+  },
+  "independentReview": {
+    "blockingP1": 0,
+    "blockingP2": 0,
+    "caveats": [
+      "Application CI at ffa957d does not cover later helpers/native staging adaptation.",
+      "Retained immutable Preview is protected, not disabled by deleting current branch env settings."
+    ]
+  },
+  "ci": "Normal changed-head CI required; existing five jobs and branch protection retained. New pure query regressions added to existing unit step.",
+  "rootTypecheck": {
+    "exit": 0,
+    "afterReproducedCiFixtureGuardCorrection": true,
+    "evidence": "ci-fixture-type-guard-20261027.json"
+  }
+}

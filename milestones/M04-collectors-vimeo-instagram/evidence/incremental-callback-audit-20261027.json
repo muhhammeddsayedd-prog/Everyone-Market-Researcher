@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "phase": "Query",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "host": "aws-1-eu-central-1.pooler.supabase.com",
+  "port": 5432,
+  "status": "reviewed_query_complete",
+  "privateRead": true,
+  "authenticationAttempted": true,
+  "authenticationVerified": true,
+  "databaseCommands": 1,
+  "childrenClosed": true,
+  "persistentAdminPreserved": true,
+  "scratchDeleted": true,
+  "observedAt": "2026-10-27T16:02:50.7721852Z",
+  "scope": "incremental",
+  "readOnly": true,
+  "preparationStage": "bounded_database_command",
+  "lastNativeExit": 0,
+  "databaseClientClosed": true,
+  "querySqlState": null,
+  "queryResult": [
+    {
+      "incremental_callback_security": {
+        "running_parents": 0,
+        "workflow_errors": [
+          {
+            "id": 21,
+            "node": "Workflow",
+            "run_id": null,
+            "message": "callback_retryable",
+            "workflow": "WF-19",
+            "created_at": "2026-10-27T16:01:47.31175+00:00",
+            "execution_id": "31166"
+          }
+        ],
+        "unknown_rejections": 0,
+        "unprocessed_actors": 0
+      }
+    }
+  ],
+  "querySha256": "3b2d3904115c70a1c0cd3d458c2f92d58ff2032e0fd641101ae202ded1ef0827"
+}

@@ -1,0 +1,623 @@
+{
+  "key": "WF-19",
+  "id": "TsqSMa5MlO3QBLkt",
+  "versionId": "14a62fe4-8c7c-4e63-95a7-f5250884e0e7",
+  "active": true,
+  "activeVersionId": "14a62fe4-8c7c-4e63-95a7-f5250884e0e7",
+  "sourceHead": "948e61822694af6a2e9cbe5f69c6a97c9a751c37",
+  "graphHash": "00a227a68aac8bc9664131f1ba50801f43ec7483ff45883eba6bd6d8f42d7744",
+  "evidence": "native_saved_definition_only",
+  "definitionOrigin": "maintained_m04_source",
+  "workflow": {
+    "name": "WF-19 · Apify run callback [dev]",
+    "nodes": [
+      {
+        "id": "6a7afc3f-2bab-4807-ae38-6be1aeb9d0ee",
+        "name": "Apify callback",
+        "webhookId": "0f3b45f3-1bc0-4b43-afd0-1f11ff1614aa",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.2,
+        "position": [
+          0,
+          -200
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "emr-apify-callback",
+          "authentication": "none",
+          "responseMode": "responseNode",
+          "options": {}
+        }
+      },
+      {
+        "id": "c7035617-8c76-4f16-ac5d-4cd0e436905d",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "apify_run_id",
+                "type": "string"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              },
+              {
+                "name": "transport",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "83fb481a-4691-4b80-a706-056b0bc53802",
+        "name": "Validate callback source",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          200,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M04_NATIVE_INPUT_INVALID');const j=rows[0].json;\nconst bad=()=>{throw Error('M04_CALLBACK_INVALID');};\nlet id,transport;if(Object.hasOwn(j,'body')){const b=j.body;if(!b||typeof b!=='object'||Array.isArray(b)||!['ACTOR.RUN.SUCCEEDED','ACTOR.RUN.FAILED','ACTOR.RUN.TIMED_OUT','ACTOR.RUN.ABORTED'].includes(b.eventType)||!b.resource||typeof b.resource!=='object'||Array.isArray(b.resource))bad();id=b.resource.id;transport='webhook';}\nelse{if(Object.keys(j).length!==3||Object.keys(j).some(k=>!['apify_run_id','env','transport'].includes(k))||j.env!=='dev'||j.transport!=='recovery')bad();id=j.apify_run_id;transport='recovery';}\nif(typeof id!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(id))bad();return[{json:{apify_run_id:id,transport}}];"
+        }
+      },
+      {
+        "id": "78962ed6-493f-4cd5-a7b4-2d3410a950a8",
+        "name": "Prepare callback classification",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          400,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M04_NATIVE_INPUT_INVALID');const j=rows[0].json;\nfunction collectorRequestId(executionId, sequence) {\n  if (\n    !/^\\d{1,15}$/.test(executionId) ||\n    !Number.isSafeInteger(Number(executionId)) ||\n    Number(executionId) >= 2 ** 48 ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M04_EXECUTION_ID_INVALID');\n  return `c04c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(executionId).toString(16).padStart(12, '0')}`;\n}\nreturn[{json:{source:j,request:{version:1,requestId:collectorRequestId(String($execution.id),1),operation:'callback.classify',args:{apify_run_id:j.apify_run_id}}}}];"
+        }
+      },
+      {
+        "id": "9a474aaa-4554-40f1-abb3-233b92eaacdd",
+        "name": "Classify registered callback",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "retryOnFail": false,
+        "onError": "continueRegularOutput",
+        "position": [
+          600,
+          0
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-qw1gc5bb4-muhammed-abdelrahman.vercel.app/api/internal/n8n/collectors",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        }
+      },
+      {
+        "id": "6bc49093-0d30-42c4-a551-3c73672c2e2c",
+        "name": "Check callback classification",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          800,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M04_NATIVE_INPUT_INVALID');const j=rows[0].json;\nconst prior=$('Prepare callback classification').item.json,b=j.body;if(j.statusCode!==200||b?.version!==1||b.requestId!==prior.request.requestId||b.operation!=='callback.classify'||!['m04','foundation','unknown'].includes(b.result?.scope))throw Error('M04_CALLBACK_RECONCILIATION_REQUIRED');return[{json:{...prior.source,scope:b.result.scope}}];"
+        }
+      },
+      {
+        "id": "11cf8da5-53d6-4af2-ad49-c363e03deb43",
+        "name": "M04 registered callback?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1000,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "4d838e74-9978-43a7-a8cd-2b0a946e440d",
+                "leftValue": "={{ $json.scope === 'm04' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "427f5afa-ffe8-46cc-ab29-e4ce3b3642ee",
+        "name": "Unknown callback webhook?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1200,
+          300
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "f6059cda-bd31-4897-a111-a3af98aff2c2",
+                "leftValue": "={{ $json.transport === 'webhook' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "683e9ca1-54aa-48b7-a72b-f8405f5ee1bc",
+        "name": "Respond unknown callback",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1400,
+          200
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:false,rejected:true} }}",
+          "options": {
+            "responseCode": 403,
+            "enableStreaming": false
+          }
+        }
+      },
+      {
+        "id": "fc935512-06fb-4847-a9fe-b2d47ade341f",
+        "name": "Unknown callback rejected",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1400,
+          400
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw Error('M04_UNKNOWN_CALLBACK_REJECTED');"
+        }
+      },
+      {
+        "id": "b202ae6b-9fdc-418e-a069-632997f8ae44",
+        "name": "Prepare M04 callback processing",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1200,
+          -200
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M04_NATIVE_INPUT_INVALID');const j=rows[0].json;\nfunction collectorRequestId(executionId, sequence) {\n  if (\n    !/^\\d{1,15}$/.test(executionId) ||\n    !Number.isSafeInteger(Number(executionId)) ||\n    Number(executionId) >= 2 ** 48 ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M04_EXECUTION_ID_INVALID');\n  return `c04c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(executionId).toString(16).padStart(12, '0')}`;\n}\nconst page=j.pageNumber??0;if(!Number.isInteger(page)||page<0||page>=61)throw Error('M04_CALLBACK_PAGE_BOUND');return[{json:{source:j,pageNumber:page,request:{version:1,requestId:collectorRequestId(String($execution.id),2+page),operation:'callback.process',args:{apify_run_id:j.apify_run_id}}}}];"
+        }
+      },
+      {
+        "id": "56562836-9522-49f1-a265-53ae8c20ba2a",
+        "name": "Process verified M04 callback",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "retryOnFail": false,
+        "onError": "continueRegularOutput",
+        "position": [
+          1400,
+          -200
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-qw1gc5bb4-muhammed-abdelrahman.vercel.app/api/internal/n8n/collectors",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 60000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        }
+      },
+      {
+        "id": "ace70a2c-7f3c-4a35-aeab-6febbd99c076",
+        "name": "Verify M04 callback receipt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1600,
+          -200
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M04_NATIVE_INPUT_INVALID');const j=rows[0].json;\nconst prior=$('Prepare M04 callback processing').item.json,b=j.body;if(j.statusCode!==200||b?.version!==1||b.requestId!==prior.request.requestId||b.operation!=='callback.process'||typeof b.replayed!=='boolean'||!b.result||!['pending','completed'].includes(b.result.state))throw Error('M04_CALLBACK_RECONCILIATION_REQUIRED');return[{json:{apify_run_id:prior.source.apify_run_id,pageNumber:prior.pageNumber+1,transport:prior.source.transport,accepted:true,replayed:b.replayed||(b.result.state==='completed'&&b.result.updated===false),completion:b.result,pending:b.result.state==='pending'}}];"
+        }
+      },
+      {
+        "id": "bc071d75-9fc9-412e-a527-8f05a7e7fbf6",
+        "name": "M04 dataset pages pending?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1800,
+          -200
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "da4d3e43-b4d4-4739-a7ab-34d8f5e302d0",
+                "leftValue": "={{ $json.pending }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "225d9903-90a9-45f7-adb0-e076b7a5388f",
+        "name": "M04 webhook response?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          2000,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "7df9b9a6-d66f-48f0-acd1-39e54885b315",
+                "leftValue": "={{ $json.transport === 'webhook' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "0ee5209c-7ce6-40e5-a873-026b2f2bea99",
+        "name": "Respond M04 callback",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          2200,
+          -100
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {ok:true,accepted:true,replayed:$json.replayed} }}",
+          "options": {
+            "responseCode": 200,
+            "enableStreaming": false
+          }
+        }
+      },
+      {
+        "id": "0ea9abac-f98f-4eaa-a3f4-e513a447906c",
+        "name": "Return M04 callback result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2200,
+          100
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M04_NATIVE_INPUT_INVALID');const j=rows[0].json;\nreturn [{json:j}];"
+        }
+      }
+    ],
+    "connections": {
+      "Apify callback": {
+        "main": [
+          [
+            {
+              "node": "Validate callback source",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Validate callback source",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate callback source": {
+        "main": [
+          [
+            {
+              "node": "Prepare callback classification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare callback classification": {
+        "main": [
+          [
+            {
+              "node": "Classify registered callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Classify registered callback": {
+        "main": [
+          [
+            {
+              "node": "Check callback classification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check callback classification": {
+        "main": [
+          [
+            {
+              "node": "M04 registered callback?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "M04 registered callback?": {
+        "main": [
+          [
+            {
+              "node": "Prepare M04 callback processing",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Unknown callback webhook?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Unknown callback webhook?": {
+        "main": [
+          [
+            {
+              "node": "Respond unknown callback",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Unknown callback rejected",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare M04 callback processing": {
+        "main": [
+          [
+            {
+              "node": "Process verified M04 callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process verified M04 callback": {
+        "main": [
+          [
+            {
+              "node": "Verify M04 callback receipt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify M04 callback receipt": {
+        "main": [
+          [
+            {
+              "node": "M04 dataset pages pending?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "M04 dataset pages pending?": {
+        "main": [
+          [
+            {
+              "node": "Prepare M04 callback processing",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "M04 webhook response?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "M04 webhook response?": {
+        "main": [
+          [
+            {
+              "node": "Respond M04 callback",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return M04 callback result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "saveExecutionProgress": false,
+      "saveManualExecutions": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "executionTimeout": 1800,
+      "timezone": "Africa/Cairo",
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "errorWorkflow": "AwxhktgJdvLXE0FZ"
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "OxnbDrBVAtziiuTk",
+        "name": "layer:ops"
+      }
+    ],
+    "pinData": {}
+  }
+}

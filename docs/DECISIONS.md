@@ -419,3 +419,145 @@ parallel using stable contracts and labeled fixtures, with no hosted writes.
 This is a bounded delivery exception within the current work, not the start of
 M04, M09 or M10. Production, recurring activity, external notifications, private
 R2, PR #8 merge and advancement to M04 remain separate.
+
+## M04 collector integration — 27 October 2026
+
+**Representative dev packet approved:** the owner replied “Approve the M04
+representative dev packet and temporary default-bypass exception.” to reviewed
+`c2dc884`. The [approval](../milestones/M04-collectors-vimeo-instagram/evidence/live-test-approval-20261027.json)
+authorizes the exact four accounts, target two/max four sequential Instagram
+starts, USD1/start/USD4 total, Management160/Control472/Combined632/Vercel64
+and six native actions, including the temporary sole/default protection effect,
+recovery, restoration and retention. Prior charges remain. Actual provider
+expiry/consent and consequential drift remain genuine boundaries; production,
+recurring activity, notifications, merge and M05 remain excluded.
+
+The owner started M04 after merged M03 and requested connected Vimeo,
+Instagram posts/reels and WF-19 implementation. Use the existing restricted
+writer/TLS path with a fixed product-operation adapter; do not extend M03's
+closed acceptance windows or introduce another verifier/credential system.
+
+Instagram posts and reels share one owned account claim and parent. Register
+all account batches before closing registration; finish/report/release only
+after every required pass settles. Reels ingestion preserves the primary
+watermark. This replaces the draft secondary-selector/`p_secondary` approach:
+an independently selected reels pass cannot establish ownership safely after
+the primary releases it. Keep the existing eight-argument report function.
+The new M04 RPC and private tables track batch/page receipts and joint completion;
+they do not broaden direct table grants or replace historical RPCs.
+
+Native definitions are generated inactive local blueprints until saved and
+read back from Cloud. Explicit selected UUIDs are required before a native run
+starts. WF-00 fixed-selection native delivery was verified in the accepted
+27 October increment; the saved definitions were restored inactive at closure.
+New blueprints are local until separately delivered. Official Vimeo runs inline;
+fallbacks and Instagram remain asynchronous with durable launch intents, no
+automatic paid POST retry, trusted provider identity/input/cost verification
+and idempotent paged settlement. Native evidence and real source fixtures
+remain separate from local synthetic/code/SQL results.
+
+The approved representative packet is now closed: ten Vimeo records, including
+two content duplicates, a zero-new-item rerun, eleven unique Instagram items,
+two actors and USD0.046 actual usage. All seventeen dev migrations, retained
+rows, persistent credentials, prior charges and verified shutdown remain.
+
+### Maintained product paths after the representative sample
+
+The continued local implementation uses a maintained M04-only WF-19 and a
+dedicated WF-90-M04 Error Trigger. It does not activate closed foundation
+dispatch, SUB workflows or M03 test windows. The dedicated handler was installed
+as `AwxhktgJdvLXE0FZ`, temporarily published before binding under the approved
+native save contract, and retained inactive at incremental closure. Future
+consumer bindings require verified saved state; no notification/schedule is
+authorized. Its fixed `execution.error` operation
+reuses `ops.log_workflow_error` through the restricted writer connection. No
+run ID, raw message, stack, URL or execution data is accepted. It logs a
+deduplicated classification only; failing a parent, releasing a claim or
+restarting an uncertain actor requires separate reconciliation evidence.
+
+Vimeo resume cursors bind the resource path and page width. A legacy resumed
+page without its original width fails closed rather than skipping history.
+Daily pagination caps are incomplete coverage, not successful full traversal.
+Instagram daily INPUT uses the claimed watermark minus thirty days (floor
+2024-01-01), with a trusted launch timestamp for the normalization horizon.
+This adds bounded metrics refresh through duplicate upserts in the daily path;
+full weekly WF-40 refresh remains M06. Result caps can still prevent complete
+metrics coverage. No new schedule is authorized.
+
+Instagram's provider has no verified historical cursor/upper-date input.
+Latest-result expansion is bounded at 3,000, with per-pass checkpoints and an
+explicit local history-limit stop when that bound may be saturated. SQL keeps
+normalized counts rather than raw per-account counts; final settlement uses
+the batch raw count conservatively. This can stop or flag coverage early; it
+cannot assert complete history from filtered counts, repeated capped pages or
+short reels output. Such a stop retains claims/run records for reconciliation;
+the global error handler does not silently release them.
+
+The [incremental dev packet](../milestones/M04-collectors-vimeo-instagram/evidence/incremental-dev-coverage-packet-20261027.md)
+was approved at `2c450f4` and is now completed/safely closed at accepted
+`6dea884`. Its source observations and limitations are retained, including
+four cumulative actors/USD0.8395 and236 selected rows. Neither closed packet
+grants substitute collection authority. Production, recurring activity,
+notifications, PR13 merge and M05 remain separate decisions.
+
+### History review and HC-01 approval — 27 October 2026
+
+The [local history review](../milestones/M04-collectors-vimeo-instagram/evidence/history-capability-decision-20261027.md)
+separates Everyone Vimeo page4/width5 continuation from Instagram coverage
+proof. The saved Instagram0.0.831 schema has no exposed history cursor;
+3000/latest-limit escalation and `resume_supported:false` are our local
+controls, not a proven provider-wide restriction. Dataset EOF, a high limit
+or one out-of-order old row cannot certify per-profile history completion.
+The unsafe final posts-completion inference is removed; accepted bounded
+collection/cost evidence remains unchanged. Source-stop evidence for posts
+and reels remains independently unproved.
+
+The linked review records the original pending proposal. The owner subsequently
+approved **HC-01** with this exact decision:
+
+> Approve fixed-selector recent Instagram monitoring for the five identified watermarked dev accounts, keeping history incomplete; explicitly defer only Instagram January2024 completeness in dev AC2 to follow-up HC-01-F1. All other criteria, production boundaries and live-spending gates remain unchanged.
+
+This authorizes the narrow local implementation: only the existing fixed M04
+daily selector may claim these active, watermarked dev Instagram identities
+despite incomplete history: C000 `962c9c7e-aa0f-46ae-911b-3265859e0577`,
+C001 `bed82782-753f-4ba9-91ca-691ef36f75c6`,
+C130 `46149fb9-8905-4b76-9834-4b38f668a2e2`,
+C270 `2d42d451-ac9a-42ac-a879-8760d63c8108`, and
+C226 `3ca3befa-abe6-4540-a389-0cf16115c581`.
+No future mutable selector can enlarge this exception. The general scheduled
+selector remains gated on completed history, and schedules stay off.
+
+Keep incomplete history/cursors, joint posts/reels ownership and registration
+barriers, monotonic primary watermarks, reels watermark preservation, claim
+fencing and replay safety. Do not force `done`/`not_applicable`; an unverified or
+saturated recent result remains incomplete coverage. A forward function
+migration and regression tests implement the exception without replaying the
+seventeen applied dev migrations. Approval and local qualification are not
+evidence of hosted application or successful daily collection.
+
+Only Instagram January2024 completeness in **dev AC2 is deferred, not passed**,
+to HC-01-F1. Vimeo AC2, production AC6 and every other criterion remain
+unchanged. No live batch, spending increase, Preview/bypass activation,
+production operation, recurring schedule, notification, merge, M04 completion
+or M05 is authorized by this decision. A complete targeted live estimate and
+its separate approval remain required before any new collection.
+
+### M04 development acceptance and M05 sequencing — 28 October 2026
+
+The owner approved the [HC-01 staged live packet](../milestones/M04-collectors-vimeo-instagram/evidence/hc01-staged-live-validation-packet-20261027.md) at reviewed `bb0cd01d3a6ee239540e73b1d366f86e46b17d42`, with the acceptance amendments below. This supersedes its pending-decision and evidence-only stops; historical receipts and the original packet remain unchanged. It is execution authority, not evidence that any new operation succeeded.
+
+Scope remains exact emr-dev `zmotjsbzhzjvpelxvxlf`, the existing five Instagram identities and retained provider/build contract. Apply only migration `20261027192743_m04_recent_instagram_dev_eligibility.sql` after exact17-version preflight/dry-run, preserving all17 originals. Run Everyone posts/reels twice (4 starts), then the other four accounts twice (16 further starts) only after mandatory Stage1 checks pass. At most one reconciled two-start recovery is reserved. Everyone Vimeo is exactly one page4/width5 operation within the packet's retry bound, with no fallback actor. Protected dev setup, seven owned bindings, temporary Machine audience, temporary sole/default bypass, required owned callback/log-only-handler publication, restoration, revocation and shutdown are included. Application authentication and production-build safeguards remain.
+
+The delivery-inclusive baseline is194 Management /775 Control /969 Combined /Vercel74, retaining frozen collection-only193/775/968/V73 and all earlier charges. New ceilings are288/2376/2664/V64; cumulative ceilings are **482 Management /3151 Control /3633 Combined /Vercel138**, with Vercel included in Management. Preserve the packet's exclusive category and recovery/shutdown reserves. At most7 new deliberate native actions and22 new actor starts, USD1/start/USD22 total; retain historical four actors/USD0.8395. Infrastructure charges remain separate. No allowance is a target, refund or scope expansion.
+
+Missing natural metrics/pinned/fallback examples are observation gaps, not automatic Stage2 stops when mandatory checks pass. Incorrect handling of an observed example is a defect. Repeat execution must not duplicate canonical records or AI/media work for unchanged known content; independently attributable new publications may legitimately create new rows/work. Investigate unexpectedly discovered older content separately as a coverage issue. Do not force dates or real watermarks to reduce starts. Security/identity, ownership/settlement, integrity, cost, reserve, uncertain-paid-start and cap/insufficient-recent-coverage stops remain mandatory. Advancing a newest timestamp does not certify uncapped recent coverage.
+
+**Development acceptance is separate from original full Done and rollout.** Only after essential checks and planned validation pass, record exactly **“M04 development accepted; coverage and rollout obligations open.”** Essential checks are hosted HC-01 with the exact five-account exception; actual five-account posts/reels plus repeats through selector/workflow/provider/callback/DB; correct joint claims/registration/completion/replay/duplicate/queues; truthful incomplete history and watermarks; reconciled costs and attempted work; restored configuration/verified shutdown; and ordinary required CI for delivered code. Metrics still needs meaningful normalization→ingestion→actual-DB evidence of timestamp advancement with unchanged AI/no redundant queue, using retained data if natural re-observation is absent. Failure handling still needs focused affected-contract proof for escalation, claim release, retry/terminal classification and duplicate-side-effect safety; no new live failure campaign/notification is authorized.
+
+The exact obligations approved deferred from development acceptance remain open, with evidence/future triggers in the existing [M04 criteria map](../milestones/M04-collectors-vimeo-instagram/evidence/criteria-mapping-20261027.md): Instagram January2024 history HC-01-F1; residual Everyone Vimeo history after the authorized page (cursor correctness stays mandatory); missing real old-pinned and fallback/source examples; unavailable natural recent-metrics re-observation after meaningful integration proof; full-five Vimeo daily-repeat breadth; exact native parent/error-execution UI pairing and live consecutive-failure demonstration; production AC6/production AC7, production copies/backfill, recurring overlap and health-email delivery. Unverified fallbacks stay disabled/unreachable. General scheduled Instagram eligibility still requires complete history: resolving incomplete-history production monitoring is a separate launch issue, not an expansion of HC-01. No observed defect is waived or missing evidence marked passed.
+
+After actual essential M04 acceptance and CI-green delivery, start M05 local development on a separate branch from that head, with a stacked draft PR targeting the M04 branch while PR13 remains draft/unmerged. Retarget/rebase only after a separate merge decision. M05 authority covers source-contract research, local website/YouTube/LinkedIn collectors, local migrations/tests, docs, scoped commits, draft delivery, required CI and ordinary protected Previews using stable contracts and honestly labeled examples/fixtures. Prepare a complete M05 live estimate when concrete; M04 allowance grants no M05 paid captures/AI, hosted migrations, activation, recurrence, notifications or production.
+
+The protected older root/M03 boards remain stale pointers; the permitted current M04 record carries this authoritative sequencing exception. Do not bypass their enforced write restriction. Leave the denied optional staged-input JSON generation/probe unperformed; do not recreate it via a new filename, shell, tool or indirect script. An independently permitted existing execution path may proceed with required validation intact. Production, recurring activation, notifications, private R2, PR merges and direct main pushes remain excluded.
+
+**Actual outcome28October:** **M04 development accepted; coverage and rollout obligations open.** [Actual results](../milestones/M04-collectors-vimeo-instagram/evidence/hc01-dev-results-20261028.md) establish allfive Instagram accounts twice,20 settled actors/USD0.2300, actual recent-metrics/unchanged-AI proof, correct Vimeo page4→page5 cursor,18 hosted dev versions and verified restoration/shutdown. Application948e618 passed all five CI40612074064 jobs; final result-head normal CI remains required before creating M05's separate stacked branch. The exact remaining obligations stay open and PR13 remains draft/unmerged; original full Done, production readiness and M05 start are not claimed by this record.

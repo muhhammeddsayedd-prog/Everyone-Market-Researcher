@@ -60,14 +60,44 @@ export async function boundedApifyJson(
   signal?: AbortSignal,
   resolver: Resolver = () => nativeLookup('api.apify.com', { all: true }),
 ): Promise<unknown> {
-  if (
-    !/^\/v2\/(?:actor-runs\/[A-Za-z0-9_-]{1,128}|key-value-stores\/[A-Za-z0-9_-]{1,128}\/records\/INPUT|datasets\/[A-Za-z0-9_-]{1,128}\/items\?format=json&offset=0&limit=2&skipHidden=true&fields=url%2Cmarkdown%2Cmetadata%2Ccrawl%2Cerror)$/.test(
+  return boundedJson(path, token, maxBytes, transport, signal, resolver, false);
+}
+/** Fixed M04 terminal/dataset GETs reuse the same strict-TLS, public-DNS,
+ * streaming-size and socket-closure implementation. Never accepts a URL/host.
+ */
+export async function boundedCollectorApifyJson(
+  path: string,
+  token: string,
+  maxBytes: number,
+  transport: Transport = request,
+  signal?: AbortSignal,
+  resolver: Resolver = () => nativeLookup('api.apify.com', { all: true }),
+): Promise<unknown> {
+  return boundedJson(path, token, maxBytes, transport, signal, resolver, true);
+}
+async function boundedJson(
+  path: string,
+  token: string,
+  maxBytes: number,
+  transport: Transport,
+  signal: AbortSignal | undefined,
+  resolver: Resolver,
+  collector: boolean,
+): Promise<unknown> {
+  const collectorPath =
+    /^\/v2\/(?:actor-runs\/[A-Za-z0-9_-]{1,128}|key-value-stores\/[A-Za-z0-9_-]{1,128}\/records\/INPUT|datasets\/[A-Za-z0-9_-]{1,128}\/items\?format=json&offset=(?:0|[1-9][0-9]{0,4})&limit=500&skipHidden=true)$/.test(
       path,
-    ) ||
+    );
+  if (
+    !(collector
+      ? collectorPath
+      : /^\/v2\/(?:actor-runs\/[A-Za-z0-9_-]{1,128}|key-value-stores\/[A-Za-z0-9_-]{1,128}\/records\/INPUT|datasets\/[A-Za-z0-9_-]{1,128}\/items\?format=json&offset=0&limit=2&skipHidden=true&fields=url%2Cmarkdown%2Cmetadata%2Ccrawl%2Cerror)$/.test(
+          path,
+        )) ||
     typeof token !== 'string' ||
     token.length < 1 ||
     /[\r\n]/.test(token) ||
-    ![4096, 65536, 262144, 64].includes(maxBytes)
+    !(collector ? [65536, 4194304] : [4096, 65536, 262144, 64]).includes(maxBytes)
   )
     throw new Error('EMR_APIFY_READER_INPUT_INVALID');
   if (signal?.aborted) throw reject();

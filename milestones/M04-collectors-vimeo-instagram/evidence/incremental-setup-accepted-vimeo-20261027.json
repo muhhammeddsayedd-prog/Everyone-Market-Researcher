@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "phase": "Query",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "host": "aws-1-eu-central-1.pooler.supabase.com",
+  "port": 5432,
+  "status": "reviewed_query_complete",
+  "privateRead": true,
+  "authenticationAttempted": true,
+  "authenticationVerified": true,
+  "databaseCommands": 1,
+  "childrenClosed": true,
+  "persistentAdminPreserved": true,
+  "scratchDeleted": true,
+  "observedAt": "2026-10-27T16:07:49.2870058Z",
+  "scope": "incremental",
+  "readOnly": false,
+  "preparationStage": "bounded_database_command",
+  "lastNativeExit": 0,
+  "databaseClientClosed": true,
+  "querySqlState": null,
+  "queryResult": [
+    {
+      "incremental_operational": {
+        "accounts": [
+          {
+            "id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "url": "https://vimeo.com/goodpeoplefilms",
+            "handle": "goodpeoplefilms",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "vimeo",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T16:07:50.376523+00:00",
+            "external_id": "49236950",
+            "handle_norm": "goodpeoplefilms",
+            "items_count": 5,
+            "last_run_id": "f468793d-5bae-430b-909e-a6aed4de7e26",
+            "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+            "locked_until": null,
+            "backfill_from": "2024-01-01",
+            "competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+            "last_error_at": null,
+            "resolve_status": "resolved",
+            "backfill_cursor": {
+              "page": 2,
+              "endpoint": "users",
+              "page_size": 5,
+              "resourcePath": "/users/49236950"
+            },
+            "backfill_status": "pending",
+            "last_success_at": "2026-10-27T13:47:53.212108+00:00",
+            "last_external_id": "981277189",
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": "2024-07-09T12:14:00+00:00"
+          },
+          {
+            "id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "url": "https://vimeo.com/everyonefilms",
+            "handle": "everyonefilms",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "vimeo",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T16:07:50.377236+00:00",
+            "external_id": "157330576",
+            "handle_norm": "everyonefilms",
+            "items_count": 5,
+            "last_run_id": "f468793d-5bae-430b-909e-a6aed4de7e26",
+            "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+            "locked_until": null,
+            "backfill_from": "2024-01-01",
+            "competitor_id": "94928d31-8983-403c-bdbd-f5f44613d631",
+            "last_error_at": null,
+            "resolve_status": "resolved",
+            "backfill_cursor": {
+              "page": 2,
+              "endpoint": "users",
+              "page_size": 5,
+              "resourcePath": "/users/157330576"
+            },
+            "backfill_status": "pending",
+            "last_success_at": "2026-10-27T13:47:54.079492+00:00",
+            "last_external_id": "1236174183",
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": "2026-10-15T11:11:11+00:00"
+          }
+        ],
+        "operation": "setup-accepted-vimeo",
+        "preservedContentAndWatermarks": true
+      }
+    }
+  ],
+  "querySha256": "b4ac4397b57689b060d83626e348f455405564e71e39edce703c81c3eb5fbd25"
+}

@@ -1,0 +1,31 @@
+{
+  "status": "completed",
+  "task": "Setup",
+  "phase": "prepare",
+  "observedAt": "2026-10-27T15:42:17.921Z",
+  "code": null,
+  "requestCount": 0,
+  "prepared": {
+    "sourceHead": "2c450f40557e7582525d96b5dd63bba2338baa0d",
+    "selection": {
+      "vimeo": [
+        "985a57dd-7934-422d-9d18-4e8ca59fc197",
+        "8fefa9a1-3637-43db-843d-97caa9afcc79",
+        "fda97004-0b26-40aa-baf5-d961277302fe",
+        "85bc33c7-25b0-44e7-b7e7-037bd8343e84",
+        "4cf4fd24-c266-4246-941f-c5f9c4e23c2d"
+      ],
+      "instagram": [
+        "962c9c7e-aa0f-46ae-911b-3265859e0577",
+        "bed82782-753f-4ba9-91ca-691ef36f75c6",
+        "46149fb9-8905-4b76-9834-4b38f668a2e2",
+        "3ca3befa-abe6-4540-a389-0cf16115c581",
+        "2d42d451-ac9a-42ac-a879-8760d63c8108"
+      ]
+    },
+    "actorBuild": "0.0.831",
+    "minimumActorLimitUsd": 0.0027,
+    "snapshotObservedAt": "2026-10-27T15:32:45.1445000Z"
+  },
+  "pendingMutation": false
+}

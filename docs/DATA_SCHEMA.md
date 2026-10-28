@@ -95,7 +95,8 @@ erDiagram
 | `ops.start_run(workflow, platform, mode, env, execution_id) → uuid` | M01 | Opens a run |
 | `ops.finish_run(run_id, status, error) → jsonb` | M01 | Closes it with totals and cost, returning the n8n summary |
 | `ops.get_due_accounts(platform, limit, run_id, mode) → rows` | M01 | Claims due accounts (`SKIP LOCKED`) |
-| `ops.report_account_result(run_id, account_id, status, seen, new, error, backfill_done, cursor)` | M01 (p_secondary added in M04) | Per-account result, cadence-minus-four-hours schedule, six-hour failure retry |
+| `ops.report_account_result(run_id, account_id, status, seen, new, error, backfill_done, cursor)` | M01 (p_secondary planned in M04; not yet applied) | Per-account result, cadence-minus-four-hours schedule, six-hour failure retry |
+| `ops.set_account_external_id(account_id uuid, external_id text, uploads_playlist_id text default null) → void` | M04 first slice (local only) | Resolve only a live claimed account under a running dev Vimeo parent and active competitor. Writer-only; preserves scheduling, lease, watermarks and human fields. Null external ID records a fixed resolution failure without erasing saved identifiers. Not yet applied to hosted dev/prod. |
 | `ingest.upsert_raw_items(run_id, account_id, items jsonb) → jsonb` | M01 | Single writer path (§5.3 TECHNICAL) |
 | `ops.register_apify_run / ops.complete_apify_run` | M03 | Async Apify tracking |
 | `ops.process_apify_run(apify_run_id, status, dataset_id, usage_usd, groups) → jsonb` | M03 | Atomic development-only one-page website callback; persisted `ops.apify_runs.processing_result` receipt, replay-safe ingest/report/cost/complete/finish. Existing M01 signatures unchanged; other branches remain gated. |
@@ -195,6 +196,41 @@ separate and pending at this checkpoint.
 ### Agents (EXECUTE: `api_agent`; scope checked inside)
 Read: views `api.items_v` (over `app.feed_v`), `api.competitors_v`, `api.campaigns_v` (over `app.campaigns_v`, which the web app also uses), `api.organizations_v`, `api.people_v`, `api.briefs_v`, `api.news_v`; functions `app.search`, `app.similar`, `api.market_stats`.
 Write: `api.add_competitor` (write), `api.resolve_review` (write), `api.request_rescrape` (admin).
+
+### M04 fixed collector product contracts (27 October; pending hosted dev)
+
+`20261027092832_m04_collector_product_contracts.sql` adds six private `ops`
+tables: `collector_runs`, `collector_accounts`, `collector_launches`,
+`collector_passes`, `collector_pages` and `collector_requests`. All have RLS;
+machine roles receive no direct table grants. The writer-only
+`ops.collector_execute(uuid,text,jsonb)` accepts a closed operation catalog,
+hashes immutable request arguments and commits each receipt with its effects.
+The private completion function is not executable by the writer. Both definer
+functions have empty `search_path`; PUBLIC/anon/authenticated/api_agent cannot
+execute them.
+
+The contract reuses existing ingest, account-report, cost and parent-run RPCs.
+An exact selected-account claim creates primary or posts+reels pass state.
+Registration cannot close with an unregistered required pass, and completion
+cannot report/unlock until all passes and registration are complete. Reels
+ingestion restores the primary watermark; only final joint reporting schedules
+the account. Source evidence is retained across pages independently of filtered
+item count, so matched old public content may correctly yield zero items.
+
+Actor launch intent reserves approved aggregate starts/USD across parents.
+Registration binds the returned provider ID to its actor/pass/account set.
+Private page staging hashes each offset and atomically ingests/cursors without
+early reporting or cost. Settlement uses the trusted server's stable provider
+facts, apportions actual USD with an exact rounding remainder and stores the
+completed receipt. Completed replay cannot duplicate items/cost or release a
+newer account owner's claim. The HTTP surface exposes neither raw staging nor
+settlement nor arbitrary SQL/RPC; live policy and selected UUIDs are server-bound.
+
+This replaces the draft M04 secondary-selector/signature-extension plan; the
+existing eight-argument account report is unchanged. Local qualification and
+generated member coverage are in current M04 PROGRESS. Existing local14 versus
+hosted/committed15 baseline migration drift is preserved explicitly; the two
+new M04 migrations are not yet applied to hosted dev.
 
 ## 6. Seed data
 

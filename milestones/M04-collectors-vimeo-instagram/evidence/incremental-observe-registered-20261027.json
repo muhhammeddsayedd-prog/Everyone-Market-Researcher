@@ -1,0 +1,2246 @@
+{
+  "version": 1,
+  "phase": "Query",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "host": "aws-1-eu-central-1.pooler.supabase.com",
+  "port": 5432,
+  "status": "reviewed_query_complete",
+  "privateRead": true,
+  "authenticationAttempted": true,
+  "authenticationVerified": true,
+  "databaseCommands": 1,
+  "childrenClosed": true,
+  "persistentAdminPreserved": true,
+  "scratchDeleted": true,
+  "observedAt": "2026-10-27T16:03:53.6764476Z",
+  "scope": "incremental",
+  "readOnly": true,
+  "preparationStage": "bounded_database_command",
+  "lastNativeExit": 0,
+  "databaseClientClosed": true,
+  "querySqlState": null,
+  "queryResult": [
+    {
+      "incremental_assertions": {
+        "runs": [
+          {
+            "id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "env": "dev",
+            "mode": "backfill",
+            "error": null,
+            "status": "success",
+            "cost_usd": 0,
+            "platform": "vimeo",
+            "workflow": "WF-10",
+            "items_new": 23,
+            "items_seen": 23,
+            "started_at": "2026-10-27T16:03:35.856242+00:00",
+            "accounts_ok": 3,
+            "finished_at": "2026-10-27T16:03:41.001331+00:00",
+            "accounts_total": 3,
+            "accounts_failed": 0,
+            "n8n_execution_id": "31170",
+            "expected_execution_id": "31170"
+          },
+          {
+            "id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "env": "dev",
+            "mode": "backfill",
+            "error": null,
+            "status": "running",
+            "cost_usd": 0,
+            "platform": "instagram",
+            "workflow": "WF-11",
+            "items_new": 0,
+            "items_seen": 0,
+            "started_at": "2026-10-27T16:03:41.442231+00:00",
+            "accounts_ok": 0,
+            "finished_at": null,
+            "accounts_total": 0,
+            "accounts_failed": 0,
+            "n8n_execution_id": "31171",
+            "expected_execution_id": "31171"
+          }
+        ],
+        "costs": [
+          {
+            "id": 10,
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "cost_usd": 0,
+            "provider": "vimeo",
+            "quantity": 1,
+            "apify_run_id": null
+          },
+          {
+            "id": 11,
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "cost_usd": 0,
+            "provider": "vimeo",
+            "quantity": 1,
+            "apify_run_id": null
+          },
+          {
+            "id": 12,
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "cost_usd": 0,
+            "provider": "vimeo",
+            "quantity": 1,
+            "apify_run_id": null
+          }
+        ],
+        "items": [
+          {
+            "id": "035b1dd0-1fc7-4bde-afcd-27a1fb2f7af4",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "936253687",
+            "duplicate_of": null,
+            "published_at": "2024-04-18T12:51:07+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "038e9fc5-4338-4e26-ba52-d0e59cfd2a1a",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "created_at": "2026-10-27T13:42:30.07574+00:00",
+            "external_id": "1236174183",
+            "duplicate_of": null,
+            "published_at": "2026-10-15T11:11:11+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:42:30.07574+00:00"
+          },
+          {
+            "id": "0d041ad4-b1e7-4149-b837-be344cddb970",
+            "status": "active",
+            "metrics": {
+              "likes": 16,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "created_at": "2026-10-27T16:03:40.442225+00:00",
+            "external_id": "901504885",
+            "duplicate_of": null,
+            "published_at": "2024-01-10T13:40:41+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:40.442225+00:00"
+          },
+          {
+            "id": "0dd049ab-a82e-4c82-8ba2-09666cb012d8",
+            "status": "active",
+            "metrics": {
+              "likes": 1,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1153489173",
+            "duplicate_of": null,
+            "published_at": "2026-01-12T07:25:15+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "16e91a79-969d-40f3-9321-d993691022d5",
+            "status": "active",
+            "metrics": {
+              "likes": 114,
+              "views": 10905,
+              "shares": null,
+              "comments": 2
+            },
+            "platform": "instagram",
+            "ai_status": "pending",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "created_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "Ddq_YJMskvH",
+            "duplicate_of": null,
+            "published_at": "2026-09-24T13:39:15+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:46:15.278528+00:00"
+          },
+          {
+            "id": "19cf4d96-5ed1-4a43-9d18-9e2d87a58452",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "910709483",
+            "duplicate_of": null,
+            "published_at": "2024-02-07T07:32:35+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "25419ef1-b79c-4db9-bf1b-5b9474060213",
+            "status": "active",
+            "metrics": {
+              "likes": 1,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "968721940",
+            "duplicate_of": null,
+            "published_at": "2024-06-26T11:24:39+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "2b0bc709-a183-46d8-9ca8-2b3426583e36",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1053291702",
+            "duplicate_of": null,
+            "published_at": "2025-02-04T07:57:39+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "305865e2-8d81-41b1-9ca3-fe719f8f27f2",
+            "status": "active",
+            "metrics": {
+              "likes": 5,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "created_at": "2026-10-27T13:42:28.845047+00:00",
+            "external_id": "981269995",
+            "duplicate_of": null,
+            "published_at": "2024-07-09T11:55:32+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:42:28.845047+00:00"
+          },
+          {
+            "id": "31df381f-cb7e-4685-afa0-fd25583b40ad",
+            "status": "active",
+            "metrics": {
+              "likes": 1,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1036268867",
+            "duplicate_of": null,
+            "published_at": "2024-12-05T08:06:51+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "4d583ddd-7211-401a-a668-59b670c18bb6",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "duplicate",
+            "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "created_at": "2026-10-27T13:42:30.07574+00:00",
+            "external_id": "1231689725",
+            "duplicate_of": "ad656243-fb37-41c8-94da-1bd45cfcd794",
+            "published_at": "2026-09-30T14:22:24+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:42:30.07574+00:00"
+          },
+          {
+            "id": "619bd41e-87d5-4ea1-9102-907ceef8bc34",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "981188083",
+            "duplicate_of": null,
+            "published_at": "2024-07-09T08:15:07+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "682ef95a-1d18-4c2a-aa8e-8e111638d846",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "968742017",
+            "duplicate_of": null,
+            "published_at": "2024-06-26T11:48:01+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "6862495b-089c-4834-bbe8-c2b96e1d3081",
+            "status": "active",
+            "metrics": {
+              "likes": 5,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "created_at": "2026-10-27T16:03:40.442225+00:00",
+            "external_id": "1012019703",
+            "duplicate_of": null,
+            "published_at": "2024-09-23T13:24:32+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:40.442225+00:00"
+          },
+          {
+            "id": "6eb65041-b629-4c12-aa06-9899ab22ac60",
+            "status": "active",
+            "metrics": {
+              "likes": 391,
+              "views": 20394,
+              "shares": null,
+              "comments": 7
+            },
+            "platform": "instagram",
+            "ai_status": "pending",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "created_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DdHVn45MQub",
+            "duplicate_of": null,
+            "published_at": "2026-09-10T17:24:24+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:46:15.278528+00:00"
+          },
+          {
+            "id": "6f94fa78-ea0e-4a81-a971-79c0c91397a5",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1140020594",
+            "duplicate_of": null,
+            "published_at": "2025-11-24T12:39:01+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "74f9b89e-b7d4-49e5-804b-2857f547097c",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1200061860",
+            "duplicate_of": null,
+            "published_at": "2026-06-10T11:24:26+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "7a875172-f14a-4bb1-874c-a405db1618ab",
+            "status": "active",
+            "metrics": {
+              "likes": 62,
+              "views": 4468,
+              "shares": null,
+              "comments": 2
+            },
+            "platform": "instagram",
+            "ai_status": "pending",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "created_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DaIxJwnMgXl",
+            "duplicate_of": null,
+            "published_at": "2026-06-28T16:54:42+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:46:15.278528+00:00"
+          },
+          {
+            "id": "7cde050e-f8a8-481d-bad7-8a903c8e98f0",
+            "status": "active",
+            "metrics": {
+              "likes": 84,
+              "views": 5599,
+              "shares": null,
+              "comments": 2
+            },
+            "platform": "instagram",
+            "ai_status": "pending",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "created_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DaIxMPasd4-",
+            "duplicate_of": null,
+            "published_at": "2026-06-28T16:55:05+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:46:15.278528+00:00"
+          },
+          {
+            "id": "7eac5667-cd5e-4465-bfff-19fe2710886d",
+            "status": "active",
+            "metrics": {
+              "likes": 13,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "created_at": "2026-10-27T13:42:28.845047+00:00",
+            "external_id": "981271933",
+            "duplicate_of": null,
+            "published_at": "2024-07-09T12:00:46+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:42:28.845047+00:00"
+          },
+          {
+            "id": "7f6c37fe-1ef9-484b-bbab-6a5ef8a4d55c",
+            "status": "active",
+            "metrics": {
+              "likes": 2,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "created_at": "2026-10-27T13:42:28.845047+00:00",
+            "external_id": "981255405",
+            "duplicate_of": null,
+            "published_at": "2024-07-09T11:07:48+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:42:28.845047+00:00"
+          },
+          {
+            "id": "9c72f29d-4329-41d1-96fe-0cfe3c54effd",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "duplicate",
+            "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "created_at": "2026-10-27T13:42:30.07574+00:00",
+            "external_id": "1231694742",
+            "duplicate_of": "ad656243-fb37-41c8-94da-1bd45cfcd794",
+            "published_at": "2026-09-30T14:36:31+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:42:30.07574+00:00"
+          },
+          {
+            "id": "a6b0b5d8-5b90-4ea1-8cf1-a198775fe218",
+            "status": "active",
+            "metrics": {
+              "likes": 7,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "created_at": "2026-10-27T13:42:28.845047+00:00",
+            "external_id": "981277189",
+            "duplicate_of": null,
+            "published_at": "2024-07-09T12:14:00+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:42:28.845047+00:00"
+          },
+          {
+            "id": "aa6b98e1-6580-40c7-a18f-f5530287e501",
+            "status": "active",
+            "metrics": {
+              "likes": 310,
+              "views": null,
+              "shares": null,
+              "comments": 7
+            },
+            "platform": "instagram",
+            "ai_status": "pending",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "created_at": "2026-10-27T13:47:37.471148+00:00",
+            "external_id": "Dd1dzJIjMHw",
+            "duplicate_of": null,
+            "published_at": "2026-09-28T15:05:31+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:47:37.471148+00:00"
+          },
+          {
+            "id": "ad656243-fb37-41c8-94da-1bd45cfcd794",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "created_at": "2026-10-27T13:42:30.07574+00:00",
+            "external_id": "1231686951",
+            "duplicate_of": null,
+            "published_at": "2026-09-30T14:14:13+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:42:30.07574+00:00"
+          },
+          {
+            "id": "adec9965-622f-4e1f-88c6-aa5cdb9950d9",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1021439279",
+            "duplicate_of": null,
+            "published_at": "2024-10-20T14:55:47+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "b16cfce3-0424-482f-bbd1-b277c0abd81d",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1052983173",
+            "duplicate_of": null,
+            "published_at": "2025-02-03T11:37:24+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "b4f9c13f-9515-4e9f-83e2-525008e92b8b",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "936259479",
+            "duplicate_of": null,
+            "published_at": "2024-04-18T13:06:52+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "bd4b0ff3-73b1-4c7f-a6e3-19a325e86a94",
+            "status": "active",
+            "metrics": {
+              "likes": 420,
+              "views": null,
+              "shares": null,
+              "comments": 54
+            },
+            "platform": "instagram",
+            "ai_status": "pending",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "created_at": "2026-10-27T13:47:37.471148+00:00",
+            "external_id": "DeZgi_rDHGi",
+            "duplicate_of": null,
+            "published_at": "2026-10-12T15:01:56+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:47:37.471148+00:00"
+          },
+          {
+            "id": "c2833628-0cd3-4015-8063-f63a24471a54",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1140014145",
+            "duplicate_of": null,
+            "published_at": "2025-11-24T12:16:23+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "c547165a-48f6-44b9-8dfb-8930e6b5d22d",
+            "status": "active",
+            "metrics": {
+              "likes": 6,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "created_at": "2026-10-27T16:03:40.442225+00:00",
+            "external_id": "1012022130",
+            "duplicate_of": null,
+            "published_at": "2024-09-23T13:31:51+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:40.442225+00:00"
+          },
+          {
+            "id": "c84883ab-e850-48ad-8345-88142a121c3c",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "created_at": "2026-10-27T13:42:30.07574+00:00",
+            "external_id": "1231691230",
+            "duplicate_of": null,
+            "published_at": "2026-09-30T14:26:46+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:42:30.07574+00:00"
+          },
+          {
+            "id": "cc0346fd-33af-409b-97c7-b20523e369c4",
+            "status": "active",
+            "metrics": {
+              "likes": 4,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "created_at": "2026-10-27T13:42:28.845047+00:00",
+            "external_id": "981273406",
+            "duplicate_of": null,
+            "published_at": "2024-07-09T12:04:42+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:42:28.845047+00:00"
+          },
+          {
+            "id": "d0a47f22-0397-4dee-92ae-ab6f6b182626",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "998055976",
+            "duplicate_of": null,
+            "published_at": "2024-08-13T06:03:27+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "d54174e8-b4cf-4313-947e-007afebb36e8",
+            "status": "active",
+            "metrics": {
+              "likes": 1,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1081403868",
+            "duplicate_of": null,
+            "published_at": "2025-05-05T07:29:20+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "d5cee191-54d7-4c7d-9139-a6e794c77bed",
+            "status": "active",
+            "metrics": {
+              "likes": 21,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "created_at": "2026-10-27T16:03:40.442225+00:00",
+            "external_id": "910790514",
+            "duplicate_of": null,
+            "published_at": "2024-02-07T12:38:28+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:40.442225+00:00"
+          },
+          {
+            "id": "dde522a8-d487-464f-8326-eae348db076f",
+            "status": "active",
+            "metrics": {
+              "likes": 169,
+              "views": 6037,
+              "shares": null,
+              "comments": 3
+            },
+            "platform": "instagram",
+            "ai_status": "pending",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "created_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DaIxISGsrPW",
+            "duplicate_of": null,
+            "published_at": "2026-06-28T16:54:38+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:46:15.278528+00:00"
+          },
+          {
+            "id": "deeb86b2-704a-4d90-94f0-e90a0d52aa25",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1062700912",
+            "duplicate_of": null,
+            "published_at": "2025-03-05T08:47:36+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "e4fe2ba7-94d9-4a62-927e-8c9942598c12",
+            "status": "active",
+            "metrics": {
+              "likes": 3,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "created_at": "2026-10-27T16:03:40.442225+00:00",
+            "external_id": "1012024031",
+            "duplicate_of": null,
+            "published_at": "2024-09-23T13:37:15+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:40.442225+00:00"
+          },
+          {
+            "id": "e5d645b0-02f1-4b1f-b297-68a5ac62ef91",
+            "status": "active",
+            "metrics": {
+              "likes": 240,
+              "views": 11408,
+              "shares": null,
+              "comments": 15
+            },
+            "platform": "instagram",
+            "ai_status": "pending",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "created_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DeEq2JLscE1",
+            "duplicate_of": null,
+            "published_at": "2026-10-04T12:53:50+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:46:15.278528+00:00"
+          },
+          {
+            "id": "e82e97e0-d09e-4be5-b456-0aab5b60d811",
+            "status": "active",
+            "metrics": {
+              "likes": 0,
+              "plays": null,
+              "comments": 0
+            },
+            "platform": "vimeo",
+            "ai_status": "pending",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "created_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "988837306",
+            "duplicate_of": null,
+            "published_at": "2024-07-23T10:15:02+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T16:03:37.454395+00:00"
+          },
+          {
+            "id": "ea8199da-fa87-470e-ab73-89ea62f85866",
+            "status": "active",
+            "metrics": {
+              "likes": 84,
+              "views": 5039,
+              "shares": null,
+              "comments": 2
+            },
+            "platform": "instagram",
+            "ai_status": "pending",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "created_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DaIxLIVMeWc",
+            "duplicate_of": null,
+            "published_at": "2026-06-28T16:54:53+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:46:15.278528+00:00"
+          },
+          {
+            "id": "f4e98e71-a912-4500-b421-a74b11b379b6",
+            "status": "active",
+            "metrics": {
+              "likes": 111,
+              "views": 6371,
+              "shares": null,
+              "comments": 1
+            },
+            "platform": "instagram",
+            "ai_status": "pending",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "created_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DaIw7P3MXCn",
+            "duplicate_of": null,
+            "published_at": "2026-06-28T16:53:39+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:46:15.278528+00:00"
+          },
+          {
+            "id": "f7d4467e-a77f-48f3-b3a1-4f2f0fcd2129",
+            "status": "active",
+            "metrics": {
+              "likes": 110,
+              "views": 7803,
+              "shares": null,
+              "comments": 2
+            },
+            "platform": "instagram",
+            "ai_status": "pending",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "created_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "Ddo3uLZMapJ",
+            "duplicate_of": null,
+            "published_at": "2026-09-23T17:49:12+00:00",
+            "locked_fields": [],
+            "last_extraction_id": null,
+            "metrics_updated_at": "2026-10-27T13:46:15.278528+00:00"
+          }
+        ],
+        "passes": [
+          {
+            "pass": "posts",
+            "error": null,
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "pending",
+            "items_new": 0,
+            "launch_id": "c04c0000-0003-4000-a000-0000000079c3",
+            "account_id": "2d42d451-ac9a-42ac-a879-8760d63c8108",
+            "items_seen": 0,
+            "stage_status": "success",
+            "backfill_done": false,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "reels",
+            "error": null,
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "pending",
+            "items_new": 0,
+            "launch_id": "c04c0000-0005-4000-a000-0000000079c3",
+            "account_id": "2d42d451-ac9a-42ac-a879-8760d63c8108",
+            "items_seen": 0,
+            "stage_status": "success",
+            "backfill_done": false,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "posts",
+            "error": null,
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "pending",
+            "items_new": 0,
+            "launch_id": "c04c0000-0003-4000-a000-0000000079c3",
+            "account_id": "3ca3befa-abe6-4540-a389-0cf16115c581",
+            "items_seen": 0,
+            "stage_status": "success",
+            "backfill_done": false,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "reels",
+            "error": null,
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "pending",
+            "items_new": 0,
+            "launch_id": "c04c0000-0005-4000-a000-0000000079c3",
+            "account_id": "3ca3befa-abe6-4540-a389-0cf16115c581",
+            "items_seen": 0,
+            "stage_status": "success",
+            "backfill_done": false,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "posts",
+            "error": null,
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "pending",
+            "items_new": 0,
+            "launch_id": "c04c0000-0003-4000-a000-0000000079c3",
+            "account_id": "46149fb9-8905-4b76-9834-4b38f668a2e2",
+            "items_seen": 0,
+            "stage_status": "success",
+            "backfill_done": false,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "reels",
+            "error": null,
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "pending",
+            "items_new": 0,
+            "launch_id": "c04c0000-0005-4000-a000-0000000079c3",
+            "account_id": "46149fb9-8905-4b76-9834-4b38f668a2e2",
+            "items_seen": 0,
+            "stage_status": "success",
+            "backfill_done": false,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "posts",
+            "error": null,
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "pending",
+            "items_new": 0,
+            "launch_id": "c04c0000-0003-4000-a000-0000000079c3",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "items_seen": 0,
+            "stage_status": "success",
+            "backfill_done": false,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "reels",
+            "error": null,
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "pending",
+            "items_new": 0,
+            "launch_id": "c04c0000-0005-4000-a000-0000000079c3",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "items_seen": 0,
+            "stage_status": "success",
+            "backfill_done": false,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "posts",
+            "error": null,
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "pending",
+            "items_new": 0,
+            "launch_id": "c04c0000-0003-4000-a000-0000000079c3",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "items_seen": 0,
+            "stage_status": "success",
+            "backfill_done": false,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "reels",
+            "error": null,
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "pending",
+            "items_new": 0,
+            "launch_id": "c04c0000-0005-4000-a000-0000000079c3",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "items_seen": 0,
+            "stage_status": "success",
+            "backfill_done": false,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "primary",
+            "error": null,
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "status": "success",
+            "items_new": 18,
+            "launch_id": null,
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "items_seen": 18,
+            "stage_status": "success",
+            "backfill_done": true,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "primary",
+            "error": null,
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "status": "success",
+            "items_new": 0,
+            "launch_id": null,
+            "account_id": "85bc33c7-25b0-44e7-b7e7-037bd8343e84",
+            "items_seen": 0,
+            "stage_status": "success",
+            "backfill_done": true,
+            "backfill_cursor": null,
+            "source_evidence": false
+          },
+          {
+            "pass": "primary",
+            "error": null,
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "status": "success",
+            "items_new": 5,
+            "launch_id": null,
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "items_seen": 5,
+            "stage_status": "success",
+            "backfill_done": true,
+            "backfill_cursor": null,
+            "source_evidence": false
+          }
+        ],
+        "accounts": [
+          {
+            "id": "2d42d451-ac9a-42ac-a879-8760d63c8108",
+            "url": "https://www.instagram.com/thetalkies/",
+            "handle": "thetalkies",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "instagram",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T16:03:41.564353+00:00",
+            "external_id": null,
+            "handle_norm": "thetalkies",
+            "items_count": 0,
+            "last_run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+            "locked_until": "2026-10-27T18:03:41.564353+00:00",
+            "backfill_from": "2024-01-01",
+            "competitor_id": "db652794-e33e-4723-ab48-cf75e0b8ae68",
+            "last_error_at": null,
+            "resolve_status": "not_needed",
+            "backfill_cursor": null,
+            "backfill_status": "running",
+            "last_success_at": null,
+            "last_external_id": null,
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": null
+          },
+          {
+            "id": "3ca3befa-abe6-4540-a389-0cf16115c581",
+            "url": "https://www.instagram.com/bigkahunafilms/",
+            "handle": "bigkahunafilms",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "instagram",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T16:03:41.564353+00:00",
+            "external_id": null,
+            "handle_norm": "bigkahunafilms",
+            "items_count": 0,
+            "last_run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+            "locked_until": "2026-10-27T18:03:41.564353+00:00",
+            "backfill_from": "2024-01-01",
+            "competitor_id": "1cd50dba-b2de-4740-b28c-6d53ebd2b08d",
+            "last_error_at": null,
+            "resolve_status": "not_needed",
+            "backfill_cursor": null,
+            "backfill_status": "running",
+            "last_success_at": null,
+            "last_external_id": null,
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": null
+          },
+          {
+            "id": "46149fb9-8905-4b76-9834-4b38f668a2e2",
+            "url": "https://www.instagram.com/bigfootfilms/",
+            "handle": "bigfootfilms",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "instagram",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T16:03:41.564353+00:00",
+            "external_id": null,
+            "handle_norm": "bigfootfilms",
+            "items_count": 0,
+            "last_run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+            "locked_until": "2026-10-27T18:03:41.564353+00:00",
+            "backfill_from": "2024-01-01",
+            "competitor_id": "7ba084a1-52a1-49d5-b3a9-e488289cb504",
+            "last_error_at": null,
+            "resolve_status": "not_needed",
+            "backfill_cursor": null,
+            "backfill_status": "running",
+            "last_success_at": null,
+            "last_external_id": null,
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": null
+          },
+          {
+            "id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "url": "https://vimeo.com/thetalkiesproductionsleb",
+            "handle": "thetalkiesproductionsleb",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "vimeo",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T16:03:37.617588+00:00",
+            "external_id": "10268148",
+            "handle_norm": "thetalkiesproductionsleb",
+            "items_count": 18,
+            "last_run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "next_due_at": "2026-10-28T12:03:37.617588+00:00",
+            "locked_until": null,
+            "backfill_from": "2024-01-01",
+            "competitor_id": "db652794-e33e-4723-ab48-cf75e0b8ae68",
+            "last_error_at": null,
+            "resolve_status": "resolved",
+            "backfill_cursor": null,
+            "backfill_status": "done",
+            "last_success_at": "2026-10-27T16:03:37.617588+00:00",
+            "last_external_id": "1200061860",
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": "2026-06-10T11:24:26+00:00"
+          },
+          {
+            "id": "85bc33c7-25b0-44e7-b7e7-037bd8343e84",
+            "url": "https://vimeo.com/bigkahunafilms",
+            "handle": "bigkahunafilms",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "vimeo",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T16:03:38.989677+00:00",
+            "external_id": "18596714",
+            "handle_norm": "bigkahunafilms",
+            "items_count": 0,
+            "last_run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "next_due_at": "2026-10-28T12:03:38.989677+00:00",
+            "locked_until": null,
+            "backfill_from": "2024-01-01",
+            "competitor_id": "1cd50dba-b2de-4740-b28c-6d53ebd2b08d",
+            "last_error_at": null,
+            "resolve_status": "resolved",
+            "backfill_cursor": null,
+            "backfill_status": "done",
+            "last_success_at": "2026-10-27T16:03:38.989677+00:00",
+            "last_external_id": null,
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": null
+          },
+          {
+            "id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "url": "https://vimeo.com/goodpeoplefilms",
+            "handle": "goodpeoplefilms",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "vimeo",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T13:55:13.57849+00:00",
+            "external_id": "49236950",
+            "handle_norm": "goodpeoplefilms",
+            "items_count": 5,
+            "last_run_id": "f468793d-5bae-430b-909e-a6aed4de7e26",
+            "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+            "locked_until": null,
+            "backfill_from": "2024-01-01",
+            "competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+            "last_error_at": null,
+            "resolve_status": "resolved",
+            "backfill_cursor": null,
+            "backfill_status": "pending",
+            "last_success_at": "2026-10-27T13:47:53.212108+00:00",
+            "last_external_id": "981277189",
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": "2024-07-09T12:14:00+00:00"
+          },
+          {
+            "id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "url": "https://www.instagram.com/everyone.film/",
+            "handle": "everyone.film",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "instagram",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T16:03:41.564353+00:00",
+            "external_id": null,
+            "handle_norm": "everyone.film",
+            "items_count": 6,
+            "last_run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+            "locked_until": "2026-10-27T18:03:41.564353+00:00",
+            "backfill_from": "2024-01-01",
+            "competitor_id": "94928d31-8983-403c-bdbd-f5f44613d631",
+            "last_error_at": null,
+            "resolve_status": "not_needed",
+            "backfill_cursor": null,
+            "backfill_status": "running",
+            "last_success_at": "2026-10-27T13:47:37.549203+00:00",
+            "last_external_id": "DeZgi_rDHGi",
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": "2026-10-12T15:01:56+00:00"
+          },
+          {
+            "id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "url": "https://vimeo.com/everyonefilms",
+            "handle": "everyonefilms",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "vimeo",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T13:55:13.580745+00:00",
+            "external_id": "157330576",
+            "handle_norm": "everyonefilms",
+            "items_count": 5,
+            "last_run_id": "f468793d-5bae-430b-909e-a6aed4de7e26",
+            "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+            "locked_until": null,
+            "backfill_from": "2024-01-01",
+            "competitor_id": "94928d31-8983-403c-bdbd-f5f44613d631",
+            "last_error_at": null,
+            "resolve_status": "resolved",
+            "backfill_cursor": null,
+            "backfill_status": "pending",
+            "last_success_at": "2026-10-27T13:47:54.079492+00:00",
+            "last_external_id": "1236174183",
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": "2026-10-15T11:11:11+00:00"
+          },
+          {
+            "id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "url": "https://www.instagram.com/goodpeoplefilms/",
+            "handle": "goodpeoplefilms",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "instagram",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T16:03:41.564353+00:00",
+            "external_id": null,
+            "handle_norm": "goodpeoplefilms",
+            "items_count": 5,
+            "last_run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "next_due_at": "2026-10-18T01:12:10.339281+00:00",
+            "locked_until": "2026-10-27T18:03:41.564353+00:00",
+            "backfill_from": "2024-01-01",
+            "competitor_id": "9a0dba8a-b946-45a1-bd53-933216f1fc4d",
+            "last_error_at": null,
+            "resolve_status": "not_needed",
+            "backfill_cursor": null,
+            "backfill_status": "running",
+            "last_success_at": "2026-10-27T13:47:37.549203+00:00",
+            "last_external_id": "DaIxMPasd4-",
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": "2026-06-28T16:55:05+00:00"
+          },
+          {
+            "id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "url": "https://vimeo.com/bigfootfilmseg",
+            "handle": "bigfootfilmseg",
+            "status": "active",
+            "cadence": "1 day",
+            "platform": "vimeo",
+            "created_at": "2026-10-18T01:12:10.339281+00:00",
+            "last_error": null,
+            "updated_at": "2026-10-27T16:03:40.602034+00:00",
+            "external_id": "19672181",
+            "handle_norm": "bigfootfilmseg",
+            "items_count": 5,
+            "last_run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "next_due_at": "2026-10-28T12:03:40.602034+00:00",
+            "locked_until": null,
+            "backfill_from": "2024-01-01",
+            "competitor_id": "7ba084a1-52a1-49d5-b3a9-e488289cb504",
+            "last_error_at": null,
+            "resolve_status": "resolved",
+            "backfill_cursor": null,
+            "backfill_status": "done",
+            "last_success_at": "2026-10-27T16:03:40.602034+00:00",
+            "last_external_id": "1012024031",
+            "uploads_playlist_id": null,
+            "consecutive_failures": 0,
+            "last_item_published_at": "2024-09-23T13:37:15+00:00"
+          }
+        ],
+        "launches": [
+          {
+            "pass": "posts",
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "purpose": "backfill",
+            "actor_id": "apify/instagram-scraper",
+            "launch_id": "c04c0000-0003-4000-a000-0000000079c3",
+            "created_at": "2026-10-27T16:03:41.698802+00:00",
+            "account_ids": [
+              "2d42d451-ac9a-42ac-a879-8760d63c8108",
+              "3ca3befa-abe6-4540-a389-0cf16115c581",
+              "46149fb9-8905-4b76-9834-4b38f668a2e2",
+              "962c9c7e-aa0f-46ae-911b-3265859e0577",
+              "bed82782-753f-4ba9-91ca-691ef36f75c6"
+            ],
+            "approval_id": "123e88b6-5920-4e54-832a-ad6d87c22675",
+            "next_offset": 0,
+            "apify_run_id": "9vvqGr2sFvbqWFDAQ",
+            "max_actor_usd": 1,
+            "max_total_usd": 8,
+            "results_limit": 50,
+            "dataset_complete": false,
+            "max_actor_starts": 8
+          },
+          {
+            "pass": "reels",
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "purpose": "backfill",
+            "actor_id": "apify/instagram-scraper",
+            "launch_id": "c04c0000-0005-4000-a000-0000000079c3",
+            "created_at": "2026-10-27T16:03:42.737838+00:00",
+            "account_ids": [
+              "2d42d451-ac9a-42ac-a879-8760d63c8108",
+              "3ca3befa-abe6-4540-a389-0cf16115c581",
+              "46149fb9-8905-4b76-9834-4b38f668a2e2",
+              "962c9c7e-aa0f-46ae-911b-3265859e0577",
+              "bed82782-753f-4ba9-91ca-691ef36f75c6"
+            ],
+            "approval_id": "123e88b6-5920-4e54-832a-ad6d87c22675",
+            "next_offset": 0,
+            "apify_run_id": "D9QTgPLLep5EP4MqI",
+            "max_actor_usd": 1,
+            "max_total_usd": 8,
+            "results_limit": 50,
+            "dataset_complete": false,
+            "max_actor_starts": 8
+          }
+        ],
+        "rawItems": [
+          {
+            "id": 2,
+            "actor": "vimeo-api",
+            "run_id": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+            "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "fetched_at": "2026-10-27T13:42:28.845047+00:00",
+            "external_id": "981255405"
+          },
+          {
+            "id": 3,
+            "actor": "vimeo-api",
+            "run_id": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+            "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "fetched_at": "2026-10-27T13:42:28.845047+00:00",
+            "external_id": "981269995"
+          },
+          {
+            "id": 4,
+            "actor": "vimeo-api",
+            "run_id": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+            "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "fetched_at": "2026-10-27T13:42:28.845047+00:00",
+            "external_id": "981271933"
+          },
+          {
+            "id": 5,
+            "actor": "vimeo-api",
+            "run_id": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+            "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "fetched_at": "2026-10-27T13:42:28.845047+00:00",
+            "external_id": "981273406"
+          },
+          {
+            "id": 6,
+            "actor": "vimeo-api",
+            "run_id": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+            "account_id": "8fefa9a1-3637-43db-843d-97caa9afcc79",
+            "fetched_at": "2026-10-27T13:42:28.845047+00:00",
+            "external_id": "981277189"
+          },
+          {
+            "id": 7,
+            "actor": "vimeo-api",
+            "run_id": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+            "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "fetched_at": "2026-10-27T13:42:30.07574+00:00",
+            "external_id": "1231686951"
+          },
+          {
+            "id": 8,
+            "actor": "vimeo-api",
+            "run_id": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+            "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "fetched_at": "2026-10-27T13:42:30.07574+00:00",
+            "external_id": "1231689725"
+          },
+          {
+            "id": 9,
+            "actor": "vimeo-api",
+            "run_id": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+            "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "fetched_at": "2026-10-27T13:42:30.07574+00:00",
+            "external_id": "1231691230"
+          },
+          {
+            "id": 10,
+            "actor": "vimeo-api",
+            "run_id": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+            "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "fetched_at": "2026-10-27T13:42:30.07574+00:00",
+            "external_id": "1231694742"
+          },
+          {
+            "id": 11,
+            "actor": "vimeo-api",
+            "run_id": "f77352da-6efb-4d33-bacb-2e2f8826dd37",
+            "account_id": "985a57dd-7934-422d-9d18-4e8ca59fc197",
+            "fetched_at": "2026-10-27T13:42:30.07574+00:00",
+            "external_id": "1236174183"
+          },
+          {
+            "id": 12,
+            "actor": "apify/instagram-scraper",
+            "run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "fetched_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DdHVn45MQub"
+          },
+          {
+            "id": 13,
+            "actor": "apify/instagram-scraper",
+            "run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "fetched_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "Ddo3uLZMapJ"
+          },
+          {
+            "id": 14,
+            "actor": "apify/instagram-scraper",
+            "run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "fetched_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "Ddq_YJMskvH"
+          },
+          {
+            "id": 15,
+            "actor": "apify/instagram-scraper",
+            "run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "fetched_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DeEq2JLscE1"
+          },
+          {
+            "id": 16,
+            "actor": "apify/instagram-scraper",
+            "run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "fetched_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DaIw7P3MXCn"
+          },
+          {
+            "id": 17,
+            "actor": "apify/instagram-scraper",
+            "run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "fetched_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DaIxISGsrPW"
+          },
+          {
+            "id": 18,
+            "actor": "apify/instagram-scraper",
+            "run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "fetched_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DaIxJwnMgXl"
+          },
+          {
+            "id": 19,
+            "actor": "apify/instagram-scraper",
+            "run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "fetched_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DaIxLIVMeWc"
+          },
+          {
+            "id": 20,
+            "actor": "apify/instagram-scraper",
+            "run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+            "account_id": "bed82782-753f-4ba9-91ca-691ef36f75c6",
+            "fetched_at": "2026-10-27T13:46:15.278528+00:00",
+            "external_id": "DaIxMPasd4-"
+          },
+          {
+            "id": 21,
+            "actor": "apify/instagram-scraper",
+            "run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "fetched_at": "2026-10-27T13:47:37.471148+00:00",
+            "external_id": "Dd1dzJIjMHw"
+          },
+          {
+            "id": 23,
+            "actor": "apify/instagram-scraper",
+            "run_id": "d0c86952-df68-48ff-8f41-132500e2e90b",
+            "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+            "fetched_at": "2026-10-27T13:47:37.471148+00:00",
+            "external_id": "DeZgi_rDHGi"
+          },
+          {
+            "id": 38,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1021439279"
+          },
+          {
+            "id": 39,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1036268867"
+          },
+          {
+            "id": 40,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1052983173"
+          },
+          {
+            "id": 41,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1053291702"
+          },
+          {
+            "id": 42,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1062700912"
+          },
+          {
+            "id": 43,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1081403868"
+          },
+          {
+            "id": 44,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1140014145"
+          },
+          {
+            "id": 45,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1140020594"
+          },
+          {
+            "id": 46,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1153489173"
+          },
+          {
+            "id": 47,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "1200061860"
+          },
+          {
+            "id": 48,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "910709483"
+          },
+          {
+            "id": 49,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "936253687"
+          },
+          {
+            "id": 50,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "936259479"
+          },
+          {
+            "id": 51,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "968721940"
+          },
+          {
+            "id": 52,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "968742017"
+          },
+          {
+            "id": 53,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "981188083"
+          },
+          {
+            "id": 54,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "988837306"
+          },
+          {
+            "id": 55,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "fetched_at": "2026-10-27T16:03:37.454395+00:00",
+            "external_id": "998055976"
+          },
+          {
+            "id": 56,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "fetched_at": "2026-10-27T16:03:40.442225+00:00",
+            "external_id": "1012019703"
+          },
+          {
+            "id": 57,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "fetched_at": "2026-10-27T16:03:40.442225+00:00",
+            "external_id": "1012022130"
+          },
+          {
+            "id": 58,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "fetched_at": "2026-10-27T16:03:40.442225+00:00",
+            "external_id": "1012024031"
+          },
+          {
+            "id": 59,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "fetched_at": "2026-10-27T16:03:40.442225+00:00",
+            "external_id": "901504885"
+          },
+          {
+            "id": 60,
+            "actor": "vimeo-api",
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "fetched_at": "2026-10-27T16:03:40.442225+00:00",
+            "external_id": "910790514"
+          }
+        ],
+        "actorRuns": [
+          {
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "RUNNING",
+            "actor_id": "apify/instagram-scraper",
+            "usage_usd": null,
+            "account_ids": [
+              "2d42d451-ac9a-42ac-a879-8760d63c8108",
+              "3ca3befa-abe6-4540-a389-0cf16115c581",
+              "46149fb9-8905-4b76-9834-4b38f668a2e2",
+              "962c9c7e-aa0f-46ae-911b-3265859e0577",
+              "bed82782-753f-4ba9-91ca-691ef36f75c6"
+            ],
+            "apify_run_id": "9vvqGr2sFvbqWFDAQ",
+            "processed_at": null
+          },
+          {
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "status": "RUNNING",
+            "actor_id": "apify/instagram-scraper",
+            "usage_usd": null,
+            "account_ids": [
+              "2d42d451-ac9a-42ac-a879-8760d63c8108",
+              "3ca3befa-abe6-4540-a389-0cf16115c581",
+              "46149fb9-8905-4b76-9834-4b38f668a2e2",
+              "962c9c7e-aa0f-46ae-911b-3265859e0577",
+              "bed82782-753f-4ba9-91ca-691ef36f75c6"
+            ],
+            "apify_run_id": "D9QTgPLLep5EP4MqI",
+            "processed_at": null
+          }
+        ],
+        "aiQueueCounts": [
+          {
+            "count": 1,
+            "item_id": "035b1dd0-1fc7-4bde-afcd-27a1fb2f7af4"
+          },
+          {
+            "count": 1,
+            "item_id": "038e9fc5-4338-4e26-ba52-d0e59cfd2a1a"
+          },
+          {
+            "count": 1,
+            "item_id": "0d041ad4-b1e7-4149-b837-be344cddb970"
+          },
+          {
+            "count": 1,
+            "item_id": "0dd049ab-a82e-4c82-8ba2-09666cb012d8"
+          },
+          {
+            "count": 1,
+            "item_id": "16e91a79-969d-40f3-9321-d993691022d5"
+          },
+          {
+            "count": 1,
+            "item_id": "19cf4d96-5ed1-4a43-9d18-9e2d87a58452"
+          },
+          {
+            "count": 1,
+            "item_id": "25419ef1-b79c-4db9-bf1b-5b9474060213"
+          },
+          {
+            "count": 1,
+            "item_id": "2b0bc709-a183-46d8-9ca8-2b3426583e36"
+          },
+          {
+            "count": 1,
+            "item_id": "305865e2-8d81-41b1-9ca3-fe719f8f27f2"
+          },
+          {
+            "count": 1,
+            "item_id": "31df381f-cb7e-4685-afa0-fd25583b40ad"
+          },
+          {
+            "count": 0,
+            "item_id": "4d583ddd-7211-401a-a668-59b670c18bb6"
+          },
+          {
+            "count": 1,
+            "item_id": "619bd41e-87d5-4ea1-9102-907ceef8bc34"
+          },
+          {
+            "count": 1,
+            "item_id": "682ef95a-1d18-4c2a-aa8e-8e111638d846"
+          },
+          {
+            "count": 1,
+            "item_id": "6862495b-089c-4834-bbe8-c2b96e1d3081"
+          },
+          {
+            "count": 1,
+            "item_id": "6eb65041-b629-4c12-aa06-9899ab22ac60"
+          },
+          {
+            "count": 1,
+            "item_id": "6f94fa78-ea0e-4a81-a971-79c0c91397a5"
+          },
+          {
+            "count": 1,
+            "item_id": "74f9b89e-b7d4-49e5-804b-2857f547097c"
+          },
+          {
+            "count": 1,
+            "item_id": "7a875172-f14a-4bb1-874c-a405db1618ab"
+          },
+          {
+            "count": 1,
+            "item_id": "7cde050e-f8a8-481d-bad7-8a903c8e98f0"
+          },
+          {
+            "count": 1,
+            "item_id": "7eac5667-cd5e-4465-bfff-19fe2710886d"
+          },
+          {
+            "count": 1,
+            "item_id": "7f6c37fe-1ef9-484b-bbab-6a5ef8a4d55c"
+          },
+          {
+            "count": 0,
+            "item_id": "9c72f29d-4329-41d1-96fe-0cfe3c54effd"
+          },
+          {
+            "count": 1,
+            "item_id": "a6b0b5d8-5b90-4ea1-8cf1-a198775fe218"
+          },
+          {
+            "count": 1,
+            "item_id": "aa6b98e1-6580-40c7-a18f-f5530287e501"
+          },
+          {
+            "count": 1,
+            "item_id": "ad656243-fb37-41c8-94da-1bd45cfcd794"
+          },
+          {
+            "count": 1,
+            "item_id": "adec9965-622f-4e1f-88c6-aa5cdb9950d9"
+          },
+          {
+            "count": 1,
+            "item_id": "b16cfce3-0424-482f-bbd1-b277c0abd81d"
+          },
+          {
+            "count": 1,
+            "item_id": "b4f9c13f-9515-4e9f-83e2-525008e92b8b"
+          },
+          {
+            "count": 1,
+            "item_id": "bd4b0ff3-73b1-4c7f-a6e3-19a325e86a94"
+          },
+          {
+            "count": 1,
+            "item_id": "c2833628-0cd3-4015-8063-f63a24471a54"
+          },
+          {
+            "count": 1,
+            "item_id": "c547165a-48f6-44b9-8dfb-8930e6b5d22d"
+          },
+          {
+            "count": 1,
+            "item_id": "c84883ab-e850-48ad-8345-88142a121c3c"
+          },
+          {
+            "count": 1,
+            "item_id": "cc0346fd-33af-409b-97c7-b20523e369c4"
+          },
+          {
+            "count": 1,
+            "item_id": "d0a47f22-0397-4dee-92ae-ab6f6b182626"
+          },
+          {
+            "count": 1,
+            "item_id": "d54174e8-b4cf-4313-947e-007afebb36e8"
+          },
+          {
+            "count": 1,
+            "item_id": "d5cee191-54d7-4c7d-9139-a6e794c77bed"
+          },
+          {
+            "count": 1,
+            "item_id": "dde522a8-d487-464f-8326-eae348db076f"
+          },
+          {
+            "count": 1,
+            "item_id": "deeb86b2-704a-4d90-94f0-e90a0d52aa25"
+          },
+          {
+            "count": 1,
+            "item_id": "e4fe2ba7-94d9-4a62-927e-8c9942598c12"
+          },
+          {
+            "count": 1,
+            "item_id": "e5d645b0-02f1-4b1f-b297-68a5ac62ef91"
+          },
+          {
+            "count": 1,
+            "item_id": "e82e97e0-d09e-4be5-b456-0aab5b60d811"
+          },
+          {
+            "count": 1,
+            "item_id": "ea8199da-fa87-470e-ab73-89ea62f85866"
+          },
+          {
+            "count": 1,
+            "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6"
+          },
+          {
+            "count": 1,
+            "item_id": "f7d4467e-a77f-48f3-b3a1-4f2f0fcd2129"
+          }
+        ],
+        "collectorRuns": [
+          {
+            "run_id": "5191b37f-e7e3-4567-acfe-91d81385d564",
+            "created_at": "2026-10-27T16:03:41.442231+00:00",
+            "registration_closed": true
+          },
+          {
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "created_at": "2026-10-27T16:03:35.856242+00:00",
+            "registration_closed": true
+          }
+        ],
+        "accountResults": [
+          {
+            "error": null,
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "status": "success",
+            "items_new": 18,
+            "account_id": "4cf4fd24-c266-4246-941f-c5f9c4e23c2d",
+            "items_seen": 18,
+            "finished_at": "2026-10-27T16:03:37.617588+00:00"
+          },
+          {
+            "error": null,
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "status": "success",
+            "items_new": 0,
+            "account_id": "85bc33c7-25b0-44e7-b7e7-037bd8343e84",
+            "items_seen": 0,
+            "finished_at": "2026-10-27T16:03:38.989677+00:00"
+          },
+          {
+            "error": null,
+            "run_id": "87b63677-ef54-49e9-a7f9-aa9a3778fa6a",
+            "status": "success",
+            "items_new": 5,
+            "account_id": "fda97004-0b26-40aa-baf5-d961277302fe",
+            "items_seen": 5,
+            "finished_at": "2026-10-27T16:03:40.602034+00:00"
+          }
+        ],
+        "mediaQueueCounts": [
+          {
+            "count": 1,
+            "item_id": "035b1dd0-1fc7-4bde-afcd-27a1fb2f7af4"
+          },
+          {
+            "count": 1,
+            "item_id": "038e9fc5-4338-4e26-ba52-d0e59cfd2a1a"
+          },
+          {
+            "count": 1,
+            "item_id": "0d041ad4-b1e7-4149-b837-be344cddb970"
+          },
+          {
+            "count": 1,
+            "item_id": "0dd049ab-a82e-4c82-8ba2-09666cb012d8"
+          },
+          {
+            "count": 1,
+            "item_id": "16e91a79-969d-40f3-9321-d993691022d5"
+          },
+          {
+            "count": 1,
+            "item_id": "19cf4d96-5ed1-4a43-9d18-9e2d87a58452"
+          },
+          {
+            "count": 1,
+            "item_id": "25419ef1-b79c-4db9-bf1b-5b9474060213"
+          },
+          {
+            "count": 1,
+            "item_id": "2b0bc709-a183-46d8-9ca8-2b3426583e36"
+          },
+          {
+            "count": 1,
+            "item_id": "305865e2-8d81-41b1-9ca3-fe719f8f27f2"
+          },
+          {
+            "count": 1,
+            "item_id": "31df381f-cb7e-4685-afa0-fd25583b40ad"
+          },
+          {
+            "count": 0,
+            "item_id": "4d583ddd-7211-401a-a668-59b670c18bb6"
+          },
+          {
+            "count": 1,
+            "item_id": "619bd41e-87d5-4ea1-9102-907ceef8bc34"
+          },
+          {
+            "count": 1,
+            "item_id": "682ef95a-1d18-4c2a-aa8e-8e111638d846"
+          },
+          {
+            "count": 1,
+            "item_id": "6862495b-089c-4834-bbe8-c2b96e1d3081"
+          },
+          {
+            "count": 1,
+            "item_id": "6eb65041-b629-4c12-aa06-9899ab22ac60"
+          },
+          {
+            "count": 1,
+            "item_id": "6f94fa78-ea0e-4a81-a971-79c0c91397a5"
+          },
+          {
+            "count": 1,
+            "item_id": "74f9b89e-b7d4-49e5-804b-2857f547097c"
+          },
+          {
+            "count": 1,
+            "item_id": "7a875172-f14a-4bb1-874c-a405db1618ab"
+          },
+          {
+            "count": 1,
+            "item_id": "7cde050e-f8a8-481d-bad7-8a903c8e98f0"
+          },
+          {
+            "count": 1,
+            "item_id": "7eac5667-cd5e-4465-bfff-19fe2710886d"
+          },
+          {
+            "count": 1,
+            "item_id": "7f6c37fe-1ef9-484b-bbab-6a5ef8a4d55c"
+          },
+          {
+            "count": 0,
+            "item_id": "9c72f29d-4329-41d1-96fe-0cfe3c54effd"
+          },
+          {
+            "count": 1,
+            "item_id": "a6b0b5d8-5b90-4ea1-8cf1-a198775fe218"
+          },
+          {
+            "count": 1,
+            "item_id": "aa6b98e1-6580-40c7-a18f-f5530287e501"
+          },
+          {
+            "count": 1,
+            "item_id": "ad656243-fb37-41c8-94da-1bd45cfcd794"
+          },
+          {
+            "count": 1,
+            "item_id": "adec9965-622f-4e1f-88c6-aa5cdb9950d9"
+          },
+          {
+            "count": 1,
+            "item_id": "b16cfce3-0424-482f-bbd1-b277c0abd81d"
+          },
+          {
+            "count": 1,
+            "item_id": "b4f9c13f-9515-4e9f-83e2-525008e92b8b"
+          },
+          {
+            "count": 1,
+            "item_id": "bd4b0ff3-73b1-4c7f-a6e3-19a325e86a94"
+          },
+          {
+            "count": 1,
+            "item_id": "c2833628-0cd3-4015-8063-f63a24471a54"
+          },
+          {
+            "count": 1,
+            "item_id": "c547165a-48f6-44b9-8dfb-8930e6b5d22d"
+          },
+          {
+            "count": 1,
+            "item_id": "c84883ab-e850-48ad-8345-88142a121c3c"
+          },
+          {
+            "count": 1,
+            "item_id": "cc0346fd-33af-409b-97c7-b20523e369c4"
+          },
+          {
+            "count": 1,
+            "item_id": "d0a47f22-0397-4dee-92ae-ab6f6b182626"
+          },
+          {
+            "count": 1,
+            "item_id": "d54174e8-b4cf-4313-947e-007afebb36e8"
+          },
+          {
+            "count": 1,
+            "item_id": "d5cee191-54d7-4c7d-9139-a6e794c77bed"
+          },
+          {
+            "count": 1,
+            "item_id": "dde522a8-d487-464f-8326-eae348db076f"
+          },
+          {
+            "count": 1,
+            "item_id": "deeb86b2-704a-4d90-94f0-e90a0d52aa25"
+          },
+          {
+            "count": 1,
+            "item_id": "e4fe2ba7-94d9-4a62-927e-8c9942598c12"
+          },
+          {
+            "count": 1,
+            "item_id": "e5d645b0-02f1-4b1f-b297-68a5ac62ef91"
+          },
+          {
+            "count": 1,
+            "item_id": "e82e97e0-d09e-4be5-b456-0aab5b60d811"
+          },
+          {
+            "count": 1,
+            "item_id": "ea8199da-fa87-470e-ab73-89ea62f85866"
+          },
+          {
+            "count": 1,
+            "item_id": "f4e98e71-a912-4500-b421-a74b11b379b6"
+          },
+          {
+            "count": 1,
+            "item_id": "f7d4467e-a77f-48f3-b3a1-4f2f0fcd2129"
+          }
+        ],
+        "selectedLiveClaims": 5,
+        "duplicateExternalIds": 0,
+        "selectedRunningParents": 1,
+        "selectedUnprocessedActors": 2
+      }
+    }
+  ],
+  "querySha256": "06f056a57b100f4f22be7853a65ad73d95f0367b33724819ec70322e597aa6c7"
+}

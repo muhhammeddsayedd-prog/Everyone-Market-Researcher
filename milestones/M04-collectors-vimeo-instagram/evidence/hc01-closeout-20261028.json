@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-28T01:41:09.4072061Z",
+  "status": "M04 development accepted; coverage and rollout obligations open",
+  "approvalId": "1cf8406c-1142-445e-a237-6d0fd7a67b22",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "applicationSourceHead": "948e61822694af6a2e9cbe5f69c6a97c9a751c37",
+  "applicationCI": {
+    "run": 40612074064,
+    "allFiveJobs": "success"
+  },
+  "finalRecordHeadCI": "pending normal required checks before M05 branch creation",
+  "migration": {
+    "version": "20261027192743",
+    "fileSha256": "635b8303d69ab32560d5acda903fee4c4555a9b3f6f35923d4d7b3655513f61d",
+    "appliedOnce": true,
+    "versions": 18,
+    "original17Unchanged": true,
+    "functionMd5": "9d65ad95661ffd77d1d9effc3e52fa83",
+    "advisors": {
+      "securityWarnings": 0,
+      "securityErrors": 0,
+      "performanceWarnings": 0,
+      "performanceErrors": 0
+    }
+  },
+  "instagram": {
+    "nativeExecutionIds": [
+      "31179",
+      "31184",
+      "31187",
+      "31202"
+    ],
+    "plannedAccounts": 5,
+    "allAccountsBothInvocationsPassed": true,
+    "actorStarts": 20,
+    "actorUsd": 0.23,
+    "normalizedObservations": 50,
+    "rawProviderObservations": 100,
+    "newItems": 0,
+    "duplicateOrRedundantQueueWork": 0,
+    "historiesRemainPending": true,
+    "watermarksTruthful": true,
+    "realRecentMetricsObserved": true,
+    "recoveryStarts": 0
+  },
+  "vimeo": {
+    "nativeExecutionId": "31211",
+    "page": 4,
+    "width": 5,
+    "pages": 1,
+    "seen": 5,
+    "newItems": 5,
+    "providerUsd": 0,
+    "actorStarts": 0,
+    "backfillStatus": "running",
+    "nextCursor": {
+      "page": 5,
+      "page_size": 5,
+      "endpoint": "users",
+      "resourcePath": "/users/157330576"
+    }
+  },
+  "data": {
+    "globalCompetitors": 286,
+    "globalAccounts": 1755,
+    "globalItems": 242,
+    "globalRawItems": 242,
+    "selectedItems": 241,
+    "selectedRawItems": 241,
+    "prior236Preserved": true,
+    "eachNewVimeoNonduplicateHasOneAIAndMediaMessage": true,
+    "externalIdDuplicates": 0
+  },
+  "totals": {
+    "management": 300,
+    "control": 2609,
+    "combined": 2909,
+    "vercel": 111,
+    "nativeActions": 18,
+    "actorStarts": 24,
+    "actorUsd": 1.0695
+  },
+  "newCharges": {
+    "management": 106,
+    "control": 1834,
+    "combined": 1940,
+    "vercel": 37,
+    "nativeActions": 6,
+    "actorStarts": 20,
+    "actorUsd": 0.23
+  },
+  "exclusiveCumulative": {
+    "n8n": 189,
+    "vercel": 111,
+    "gateway": 938,
+    "provider": 1316,
+    "callback": 292,
+    "database": 63
+  },
+  "accounting": "Control includes conservative nested precharges retained without refund; actor IDs/costs are measured. Infrastructure fees separate/unmeasured. Packet provider derivation1140 versus stated1240 leaves100 implicit headroom, no new scope.",
+  "closure": {
+    "allParentsTerminal": true,
+    "registrationClosed": true,
+    "noLiveClaims": true,
+    "noRunningParents": true,
+    "noUnprocessedActors": true,
+    "sixDueSelectionsRestored": true,
+    "realCursorPreserved": true,
+    "allFiveDefinitionsInactive": true,
+    "allWorkflowBaselineHashesRestored": true,
+    "machineRestored": true,
+    "sevenOwnedEnvironmentEntriesRemoved": true,
+    "ownedBypassVerifiedAbsent": true,
+    "noPendingMutation": true,
+    "boundedChildrenClosed": true,
+    "persistentOriginalsRetained": true
+  },
+  "retention": {
+    "protectedDeploymentId": "dpl_DY7ZaVXrcCLVqP1RayGg7brF7mJL",
+    "immutableDeploymentValuesErased": false,
+    "endpointsClaimedDisabled": false,
+    "collectedRowsPreserved": true,
+    "deniedStagedInputActionStillUnperformed": true
+  },
+  "obligationsOpen": [
+    "HC-01-F1 Instagram January2024 completeness",
+    "Everyone Vimeo residual history from page5/width5",
+    "old pinned live example",
+    "unexercised fallback/source examples; disabled/unreachable in accepted configuration",
+    "full-five Vimeo daily-repeat breadth",
+    "native parent/error UI pairing and live consecutive-failure evidence",
+    "production AC6/prod AC7/copies/backfill",
+    "recurring overlap and health-email delivery",
+    "production scheduled Instagram eligibility with incomplete history"
+  ],
+  "originalFullMilestoneDone": false,
+  "productionReady": false,
+  "mergeAuthorized": false,
+  "M05LiveAuthority": false
+}

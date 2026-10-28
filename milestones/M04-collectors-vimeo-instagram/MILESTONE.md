@@ -2,6 +2,14 @@
 
 > Status lives in `./PROGRESS.md`. Read `AGENTS.md` first, then the root `PROGRESS.md`.
 
+> **Owner kickoff26October2026:** M04 is authorized after merged M03. Use focused local/integration tests and representative native/database evidence; no general-purpose acceptance framework. Before any paid fixture or live collector batch, present one complete new M04 estimate including accounts, provider use, retries and shutdown. Production pilot, recurring schedules, notifications and merge remain separate decisions. The first official-API implementation and current source corrections are in PROGRESS.md and SCRAPING_SOURCES.md; historical examples below are not proof of current API/actor contracts.
+
+> **HC-01 approved27October2026:** the owner approved fixed-selector recent Instagram monitoring for the five identified watermarked dev accounts while history remains incomplete, and deferred only Instagram January2024 completeness in dev AC2 to HC-01-F1. This narrow exception supersedes the original daily-history gate below only for the exact five identities and fixed selector recorded in [DECISIONS.md](../../docs/DECISIONS.md#m04-collector-integration--27-october-2026). The general scheduled selector, Vimeo AC2, production AC6 and all other criteria/gates are unchanged. Local implementation/qualification does not prove hosted application, daily collection or complete history; no new live collection is approved.
+
+> **28 October 2026 owner decision:** the [binding consolidated decision](../../docs/DECISIONS.md#m04-development-acceptance-and-m05-sequencing--28-october-2026) now approves the existing staged HC-01 dev packet with its exact actors/requests/setup/shutdown, amended natural-example and repeat-idempotency rules, and the explicit coverage/rollout deferrals in the [current criteria map](evidence/criteria-mapping-20261027.md). Historical no-live-approval statements above/below retain their original date. Essential development checks and planned five-account validation must actually pass before recording **M04 development accepted; coverage and rollout obligations open** and beginning M05 local development on a separate stacked draft branch/PR from the accepted CI-green head. This is not original full Done, production readiness or merge. The general scheduled selector remains unchanged and incomplete-history production eligibility remains a launch issue. No observed defect is deferred.
+
+> **Actual28October outcome:** **M04 development accepted; coverage and rollout obligations open.** The [actual report](evidence/hc01-dev-results-20261028.md) records hosted18 versions, allfive Instagram accounts twice/20 actors/USD0.2300 with correct settlement/queues/real recent metrics, Vimeo page4/width5→page5/width5, and verified restoration/shutdown. Code948e618 passed all five CI40612074064 jobs; final result-head CI precedes M05 branch creation. Original full outcomes below and exact deferred coverage/rollout obligations remain open; PR13 stays draft/unmerged and M05 is not started by this record.
+
 ## 1. Goal and outcome
 
 Build the first two production collectors on top of the M03 foundation, then backfill the pilot from **1 Jan 2024**:
@@ -21,6 +29,19 @@ No AI yet: items wait in the `ai_extract` queue for M07.
 
 ## 2. Context you need (read before T1)
 
+> **Current integration27October:** the owner's multi-batch/joint-ownership
+> instruction and DECISIONS.md's M04 entry supersede the draft independent
+> secondary-pass and one-run-per-parent examples below. WF-11 claims the exact
+> selected set once for posts+reels; the new fixed product RPC tracks every
+> registration/page/pass and reports only after registration closes and all
+> passes settle. The eight-argument report RPC is preserved; there is no new
+> independently unlocked `p_secondary` path. Both M04 migrations were applied to
+> emr-dev on27October (17 total, original15 fingerprints preserved); production remains untouched. Do not implement the obsolete draft T3 selector/signature change.
+> Representative dev setup snapshots/restores only the four explicitly selected
+> accounts in the single live packet; broad pause-all-account mutation in the
+> draft T2 is not authorized by that packet. The full five-account/backfill and
+> production criteria remain open.
+
 - **Priorities.** Vimeo and Instagram are the top two sources (with websites). Most competitor commercials are posted on Vimeo, often with full credits in the description. Instagram carries the social cut-downs, reels and client tags.
 - **Single writer path.** Collectors never write tables. They normalize every source object to the **normalized item contract** (`reference/n8n/normalized_item.schema.json`, `docs/DATA_SCHEMA.md` §7) and call `ingest.upsert_raw_items(run_id, account_id, items jsonb)` through `SUB · Ingest items`. That RPC does all of this:
   - inserts new rows only (`ON CONFLICT (platform, external_id) DO NOTHING`);
@@ -36,7 +57,7 @@ No AI yet: items wait in the `ai_extract` queue for M07.
     - `backfill_from` (2024-01-01), `backfill_cursor`.
   - Mode `backfill` picks accounts with `backfill_status in ('pending','running')`.
   - Mode `daily` picks only accounts with `backfill_status in ('done','not_applicable')` and `next_due_at <= now()`.
-  - An account therefore enters the daily rotation only after its backfill completes.
+  - The general daily rotation therefore requires completed backfill. HC-01 permits a narrow fixed-selector-only dev exception for the five approved, watermarked Instagram identities; it does not enable recurring rotation or assert completed history. Joint claims/barriers, watermarks, replay safety and incomplete history/cursors must be preserved.
 - **Per-account result.** `ops.report_account_result(run_id, account_id, status, items_seen, items_new, error, backfill_done, backfill_cursor)` unlocks the account and schedules `next_due_at`. It counts failures and sets the account to `failing` after 3 consecutive failures.
 - **Apify pattern (M03).** Every Apify actor runs **asynchronously** with an ad-hoc webhook to **WF-19 · Apify run callback** (`docs/N8N_WORKFLOWS.md` §4, §6 WF-19):
   - The collector starts the run and calls `ops.register_apify_run(...)`.
@@ -186,7 +207,7 @@ Build it exactly as in `docs/N8N_WORKFLOWS.md` §6 WF-10:
 2. **Start the run:** `SUB · Start run` (`WF-10`, `vimeo`, mode), then `ops.get_due_accounts('vimeo', $1, $2::uuid, $3)`.
 3. **Per account (Loop Over Items, batch 1):**
    - **External ID.** If `external_id` is empty, call `GET https://api.vimeo.com/users/{handle}?fields=uri,name,link` → the ID is the last segment of `uri` → `ops.set_account_external_id`.
-     - URLs with `/channels/{x}`, `/showcase/{x}` (API: `/albums/{x}`) or `/groups/{x}` use those endpoints instead. Record `backfill_cursor.endpoint`. If the API refuses → dltik list.
+     - URLs with `/channels/{x}` or `/groups/{x}` use those collections. Showcase listing needs a verified owner-scoped `/users/{owner}/albums/{x}` path; do not guess a global `/albums/{x}`. Record `backfill_cursor.endpoint`. If the API refuses → dltik list.
    - **Cutoff:** daily → `watermark_published_at − 1 day` (or `backfill_from` if null); backfill → `backfill_from` (`2024-01-01`), resuming from `backfill_cursor.page` if set.
    - **List videos:**
      - HTTP Request `GET https://api.vimeo.com/users/{external_id}/videos?sort=date&direction=desc&per_page=100&page={n}&fields=<as T1>`.
@@ -196,9 +217,9 @@ Build it exactly as in `docs/N8N_WORKFLOWS.md` §6 WF-10:
    - **Rate limit:**
      - Read `x-ratelimit-remaining` and `x-ratelimit-reset`. If remaining < 10 → Wait until the reset time (max 10 min, else stop the account with `status='failed'`, `error='vimeo_rate_limited'`).
      - HTTP 429 → Wait 60 s, retry up to 3 times.
-   - **Normalize:** Code "Normalize Vimeo API" (from `n8n/normalizers/vimeoApi.js`). It stops at `watermark_external_id` or the cutoff.
+   - **Normalize:** Code "Normalize Vimeo API" (from `n8n/normalizers/vimeoApi.js`). It includes known IDs through the 30-day metrics horizon (AC5); stop after the older applicable horizon, exhaustion or the explicit page cap. A bounded incomplete cursor is not a finished backfill.
    - **Errors:** HTTP 401/403/404 → group `status='failed'`, `error='vimeo_api_<code>'`; add the account to the fallback list.
-   - **Backfill state:** `backfill_done = true` when the last page reached the cutoff or `paging.next` is null. Otherwise save `backfill_cursor = {endpoint, page: next_page}`, so a timeout or next wave resumes.
+   - **Backfill state:** `backfill_done = true` when verified descending traversal is strictly earlier than the cutoff or `paging.next` is null. Otherwise save `backfill_cursor = {endpoint, resourcePath, page: next_page, page_size}` so a timeout or next wave resumes with the same verified path/width.
 4. **Fallback (daily mode only):** if the fallback list is not empty, start `goat255~vimeo-scraper` async (≤ 50 users per run) with this input:
    ```json
    {"videoUrls": [], "users": ["https://vimeo.com/<handle>", "…"], "maxVideosPerUser": 20, "includeProfile": false, "concurrency": 5}
@@ -246,11 +267,9 @@ Build it exactly as in `docs/N8N_WORKFLOWS.md` §6 WF-10:
    - Error rows:
      - a private profile or `errorDescription` containing private, login, challenge or checkpoint → the account fails with `error='ig_private_or_login'`;
      - after 3 such runs the account goes `invalid` (handled by the consecutive-failures logic plus a check in the branch: on the 3rd, call `ops.set_account_status` if it exists, else log for the owner).
-   - **`backfill_done`:** true when the account returned fewer than `resultsLimit` results, or its oldest item ≤ 2024-01-01. Otherwise:
-     - set `backfill_cursor = {oldest_seen: <iso>}`;
-     - leave `backfill_done=false`;
-     - the next wave sets `onlyPostsNewerThan` = 2024-01-01 again, and only new rows insert.
-     - If 3 waves return a full `resultsLimit` for the same account, raise `resultsLimit` to 3000 for that account and note it.
+   - **`backfill_done` implementation correction (27 October):** the draft short-output/oldest-row heuristic is insufficient source-coverage evidence. Final callback settlement keeps history incomplete until each posts/reels pass has attributable cutoff or public-source-exhaustion proof. Dataset EOF, one out-of-order old row and a higher result limit are not that proof. See [history review](evidence/history-capability-decision-20261027.md). This corrects an unsafe implementation prescription; the full-history target remains. The subsequent HC-01 approval defers only Instagram January2024 completeness in dev AC2 to HC-01-F1, not passed; it does not authorize a false `backfill_done` result.
+     - Keep per-pass `oldest_seen`, raw cap/escalation evidence and `backfill_done=false`; existing 3000-result saturation is a local stop, not a provider-wide prohibition.
+     - Repeating the same lower-date latest query can add new IDs idempotently but does not prove history or authorize another wave. No repeated capture is ordered by this note.
    - Reels pass → `report_account_result(..., p_secondary := true)`.
 7. Settings as in T5.
 
@@ -323,7 +342,7 @@ Build it exactly as in `docs/N8N_WORKFLOWS.md` §6 WF-10:
 Run the SQL in `scripts/assert/m04.sql` and paste the results in PROGRESS.
 
 - **AC1: Contract.** `pnpm test` is green. Every fixture normalizes to schema-valid items, and every item_type rule is covered.
-- **AC2: Dev backfill.** All 5 dev test accounts per platform have `backfill_status='done'`.
+- **AC2: Dev backfill.** Original criterion: all 5 dev test accounts per platform have `backfill_status='done'`. **HC-01 approved27October2026 defers only the Instagram January2024-completeness component to HC-01-F1, not passed.** Keep those histories truthfully incomplete; recent monitoring is not a substitute completion signal. The five-account Vimeo requirement and the original history target remain unchanged. Production AC6 is not deferred. The following aggregate query remains an observation, not proof of per-account source traversal or completion:
   ```sql
   select a.platform, min(i.published_at)::date as oldest, count(*) as items
   from app.items i join app.competitor_accounts a on a.id = i.account_id

@@ -1,0 +1,8 @@
+{
+  "scope": "local rollback-only PostgreSQL; synthetic providers; session authorization role simulation",
+  "command": "EMR_M04_LOCAL_SQL_TEST=true pnpm exec vitest run --project web apps/web/server/n8n-worker/collectors-sql.integration.test.ts",
+  "exit": 0,
+  "tests": 1,
+  "result": "passed; maintained WF-19 code to real HTTP adapter/RPC; duplicate error audit one row with running parent/live claim preserved; both passes complete; callback replay and unknown denial",
+  "hostedRequests": 0
+}

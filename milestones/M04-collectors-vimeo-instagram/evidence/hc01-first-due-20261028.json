@@ -1,0 +1,62 @@
+{
+    "version":  1,
+    "phase":  "Query",
+    "environment":  "dev",
+    "projectRef":  "zmotjsbzhzjvpelxvxlf",
+    "host":  "aws-1-eu-central-1.pooler.supabase.com",
+    "port":  5432,
+    "status":  "reviewed_query_complete",
+    "privateRead":  true,
+    "authenticationAttempted":  true,
+    "authenticationVerified":  true,
+    "databaseCommands":  1,
+    "childrenClosed":  true,
+    "persistentAdminPreserved":  true,
+    "scratchDeleted":  true,
+    "observedAt":  "2026-10-28T01:08:29.6881043Z",
+    "scope":  "hc01",
+    "readOnly":  false,
+    "preparationStage":  "bounded_database_command",
+    "lastNativeExit":  0,
+    "databaseClientClosed":  true,
+    "querySqlState":  null,
+    "queryResult":  [
+                        {
+                            "incremental_operational":  {
+                                                            "accounts":  [
+                                                                             {
+                                                                                 "id":  "962c9c7e-aa0f-46ae-911b-3265859e0577",
+                                                                                 "url":  "https://www.instagram.com/everyone.film/",
+                                                                                 "handle":  "everyone.film",
+                                                                                 "status":  "active",
+                                                                                 "cadence":  "1 day",
+                                                                                 "platform":  "instagram",
+                                                                                 "created_at":  "2026-10-18T01:12:10.339281+00:00",
+                                                                                 "last_error":  null,
+                                                                                 "updated_at":  "2026-10-28T01:08:29.076903+00:00",
+                                                                                 "external_id":  null,
+                                                                                 "handle_norm":  "everyone.film",
+                                                                                 "items_count":  54,
+                                                                                 "last_run_id":  "5191b37f-e7e3-4567-acfe-91d81385d564",
+                                                                                 "next_due_at":  "2026-10-18T01:12:10.339281+00:00",
+                                                                                 "locked_until":  null,
+                                                                                 "backfill_from":  "2024-01-01",
+                                                                                 "competitor_id":  "94928d31-8983-403c-bdbd-f5f44613d631",
+                                                                                 "last_error_at":  null,
+                                                                                 "resolve_status":  "not_needed",
+                                                                                 "backfill_cursor":  null,
+                                                                                 "backfill_status":  "pending",
+                                                                                 "last_success_at":  "2026-10-27T16:06:54.261632+00:00",
+                                                                                 "last_external_id":  "DeZgi_rDHGi",
+                                                                                 "uploads_playlist_id":  null,
+                                                                                 "consecutive_failures":  0,
+                                                                                 "last_item_published_at":  "2026-10-12T15:01:56+00:00"
+                                                                             }
+                                                                         ],
+                                                            "operation":  "hc01-setup-first-instagram",
+                                                            "preservedContentAndWatermarks":  true
+                                                        }
+                        }
+                    ],
+    "querySha256":  "9ddac3d281d6f15cc0cd65491a51da710c1a4bb29f87f36e34f48087889becae"
+}

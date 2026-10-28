@@ -1,0 +1,202 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-27T19:47:52.070Z",
+  "scope": "HC-01 approved local eligibility implementation only",
+  "environment": "existing localhost PostgreSQL17.11 on127.0.0.1:60322; public fixture role/password; not hosted or strict-TLS login proof",
+  "baseHead": "c8454b3b03e9682e69994ef94c7b266a02794bce",
+  "approval": {
+    "id": "HC-01",
+    "status": "approved",
+    "wording": "Approve fixed-selector recent Instagram monitoring for the five identified watermarked dev accounts, keeping history incomplete; explicitly defer only Instagram January2024 completeness in dev AC2 to follow-up HC-01-F1. All other criteria, production boundaries and live-spending gates remain unchanged."
+  },
+  "migration": {
+    "path": "supabase/migrations/20261027192743_m04_recent_instagram_dev_eligibility.sql",
+    "sha256": "635b8303d69ab32560d5acda903fee4c4555a9b3f6f35923d4d7b3655513f61d",
+    "createdWith": "Supabase CLI2.121.0 migration new m04_recent_instagram_dev_eligibility",
+    "deployment": "local validation only; hosted17 unchanged; new18th version pending",
+    "signatureUnchanged": true,
+    "genericSelectorUnchanged": true,
+    "existingMigrationFilesUnchanged": true
+  },
+  "tests": {
+    "redActualSql": {
+      "assertions": 1,
+      "failed": 1,
+      "reason": "55000 exact account selection is not fully eligible before HC-01 change"
+    },
+    "hc01PgTap": {
+      "assertions": 48,
+      "passed": 48,
+      "failed": 0,
+      "skipped": 0,
+      "rollback": true
+    },
+    "existingCollectorPgTap": {
+      "assertions": 132,
+      "passed": 132,
+      "failed": 0,
+      "skipped": 0,
+      "rollback": true
+    },
+    "connectedAppSql": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "rollback": true,
+      "networkProviders": "local fakes; generated code and actual localhost SQL"
+    },
+    "ciSafetyHarness": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "old13SuiteRejected": true
+    },
+    "typescript": "root and all workspace typechecks native0",
+    "targetedEslint": "installed native ESLint CLI native0",
+    "review": "independent read-only migration/claim/CI/criterion review clear",
+    "shellSyntax": "bash -n scripts/db/run-local-ci.sh native0",
+    "formatting": "affected TypeScript/JavaScript/README Prettier native0",
+    "indexedSecretScan": {
+      "exit": 0,
+      "violations": 0
+    }
+  },
+  "advisors": {
+    "cli": "2.121.0",
+    "security": {
+      "target": "local",
+      "level": "warn",
+      "failOn": "warn",
+      "exit": 0,
+      "result": "No issues found"
+    },
+    "performance": {
+      "target": "local",
+      "level": "warn",
+      "failOn": "error",
+      "exit": 0,
+      "result": "No issues found"
+    },
+    "revisedObjectsVisible": true
+  },
+  "types": {
+    "generated": true,
+    "schemas": [
+      "app",
+      "api",
+      "ops",
+      "ingest"
+    ],
+    "collectorExecuteSignatureMatches": true,
+    "sourceSha256": "a123124c87d56c4389fccb7cd9558ea213fc43d29461cd6f4ebc0c0c41b6c32f",
+    "trackedTypeDelta": "none; function signature unchanged",
+    "fullBaselineParityClaimed": false,
+    "knownDifference": "local14 historical versions versus preserved hosted17 before new migration; old known foundation overload gap is not replaced"
+  },
+  "localPreservation": {
+    "before": {
+      "migrations": [
+        "20261017172928",
+        "20261017172931",
+        "20261017172934",
+        "20261017172937",
+        "20261017172940",
+        "20261017172943",
+        "20261017172945",
+        "20261018034220",
+        "20261018035417",
+        "20261018070042",
+        "20261018231756",
+        "20261018232014",
+        "20261018232922",
+        "20261018233338"
+      ],
+      "competitors": "1",
+      "accounts": "3",
+      "items": "10",
+      "raw_items": "0",
+      "runs": "0",
+      "costs": "0"
+    },
+    "after": {
+      "migrations": [
+        "20261017172928",
+        "20261017172931",
+        "20261017172934",
+        "20261017172937",
+        "20261017172940",
+        "20261017172943",
+        "20261017172945",
+        "20261018034220",
+        "20261018035417",
+        "20261018070042",
+        "20261018231756",
+        "20261018232014",
+        "20261018232922",
+        "20261018233338"
+      ],
+      "competitors": "1",
+      "accounts": "3",
+      "items": "10",
+      "raw_items": "0",
+      "runs": "0",
+      "costs": "0"
+    },
+    "ownedFunctionsFingerprints": [
+      {
+        "signature": "ops.collector_execute(uuid,text,jsonb)",
+        "definition_hash": "9d65ad95661ffd77d1d9effc3e52fa83"
+      },
+      {
+        "signature": "ops.collector_finalize(uuid)",
+        "definition_hash": "2f0ed125b3abadc25803b22d56dec9d8"
+      },
+      {
+        "signature": "ops.set_account_external_id(uuid,text,text)",
+        "definition_hash": "759e485b8069c1cea5234c7dc126600a"
+      }
+    ],
+    "ownedTemporaryObjectsAbsent": true,
+    "baselinePreserved": true,
+    "childrenClosed": true,
+    "privateCredentialsRead": false
+  },
+  "preservedHostedEvidence": {
+    "freshReadback": false,
+    "source": "accepted incremental-closeout-20261027.json at6dea884",
+    "migrationsApplied": 17,
+    "selectedSourceRows": 236,
+    "actors": 4,
+    "actorUsd": 0.8395,
+    "management": 193,
+    "control": 775,
+    "combined": 968,
+    "vercel": 73,
+    "nativeActions": 12,
+    "newHostedOperations": 0,
+    "newProviderStarts": 0
+  },
+  "limitations": [
+    "HC-01 defers only dev Instagram AC2 history completeness; HC-01-F1 remains open, not passed",
+    "No hosted migration/application, Preview, provider collection, schedule, production, notification, merge or M05",
+    "Required changed-head hosted CI pending; local commits retained without push",
+    "First short-timeout harness/typecheck/lint runs did not complete; final adequately bounded native runs completed with0",
+    "First local type-generation invocation lacked Docker CLI on sanitized PATH; exact installed public bin added only to that child, successful generation; no global/security setting change",
+    "Initial read-only/CLI tool output timed out; generated empty migration was inspected/reused rather than recreated",
+    "Transient inline type-import/receipt-binding errors occurred before cleanup SQL; corrected native compiler import and captured receipt reused; cleanup verified against unchanged definitions and empty tables"
+  ],
+  "nextLiveScope": {
+    "authorized": false,
+    "fullFiveInstagramDailyTwicePlannedActorStarts": 20,
+    "reason": "five distinct watermark date buckets times posts/reels times two invocations",
+    "completeExecutableEstimateReady": false,
+    "remainingLocalPreparation": "new reviewed packet inputs for existing closed-scope consumers, eighteenth-version readback, exact Everyone page4 width5 cohort, full setup/lifecycle/recovery/shutdown tally; no new helper family",
+    "metricsCandidates": [
+      "DeZgi_rDHGi",
+      "DemKsgZtVk2",
+      "De__YlMobVD"
+    ],
+    "newSpendingAuthority": false
+  },
+  "finalizedAt": "2026-10-27T19:51:44.869Z"
+}

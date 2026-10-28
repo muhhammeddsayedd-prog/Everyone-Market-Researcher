@@ -1,0 +1,59 @@
+{
+  "fixtureProvenance": {
+    "kind": "synthetic_local_contract",
+    "actualActorCapture": false,
+    "sourceDocumentation": "https://apify.com/apify/instagram-scraper",
+    "note": "Constructed output fields with fictional accounts and text; not collected Instagram content or live acceptance."
+  },
+  "rows": [
+    {
+      "id": "1000000000000000001",
+      "shortCode": "SyntheticImage01",
+      "type": "Image",
+      "url": "https://www.instagram.com/p/SyntheticImage01/",
+      "ownerUsername": "Synthetic_Studio",
+      "caption": "Synthetic #Film #FILM #إنتاج with @Synthetic_Agency",
+      "timestamp": "2026-10-24T10:00:00.000Z",
+      "displayUrl": "https://scontent.cdninstagram.com/synthetic-image.jpg",
+      "likesCount": -1,
+      "commentsCount": 0,
+      "taggedUsers": [{ "username": "Synthetic_Client" }],
+      "coauthorProducers": [{ "username": "Synthetic_Agency" }]
+    },
+    {
+      "id": "1000000000000000002",
+      "shortCode": "SyntheticCarousel01",
+      "type": "Sidecar",
+      "ownerUsername": "synthetic_studio",
+      "caption": "Synthetic carousel",
+      "timestamp": "2026-10-24T11:00:00.000Z",
+      "images": ["https://scontent.cdninstagram.com/synthetic-carousel.jpg"],
+      "childPosts": [{ "type": "Video" }, { "type": "Image" }]
+    },
+    {
+      "id": "1000000000000000003",
+      "shortCode": "SyntheticReel01",
+      "type": "Video",
+      "productType": "clips",
+      "ownerUsername": "SYNTHETIC_STUDIO",
+      "caption": "Synthetic reel",
+      "timestamp": "2026-10-24T12:00:00.000Z",
+      "videoDuration": 31.7,
+      "videoPlayCount": 12,
+      "igPlayCount": 15,
+      "reshareCount": 0,
+      "sharesCount": 4
+    },
+    {
+      "id": "1000000000000000004",
+      "shortCode": "SyntheticVideo01",
+      "type": "Video",
+      "ownerUsername": "synthetic_studio",
+      "caption": "Synthetic ordinary video",
+      "timestamp": "2026-10-24T13:00:00.000Z",
+      "videoViewCount": 0,
+      "videoPlayCount": 9,
+      "sharesCount": 2
+    }
+  ]
+}

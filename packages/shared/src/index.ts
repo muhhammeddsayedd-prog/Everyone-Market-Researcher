@@ -43,3 +43,14 @@ export {
 } from './handles';
 export type { LinkedInAccount, VimeoAccount, WebsiteAccount, YouTubeAccount } from './handles';
 export type { Database, Json } from './db.types';
+export {
+  collectorRequest,
+  collectorArgs,
+  collectorActors,
+  collectorPolicy,
+  collectorBuild,
+  collectorAccountIds,
+  collectorExecutionErrorArgs,
+  collectorWorkflowIds,
+} from './n8n-collector-contracts';
+export type { CollectorRequest, CollectorOperation, CollectorPolicy } from './n8n-collector-contracts';

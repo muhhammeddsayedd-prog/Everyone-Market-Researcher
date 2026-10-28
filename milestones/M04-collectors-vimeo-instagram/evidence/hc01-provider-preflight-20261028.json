@@ -1,0 +1,300 @@
+{
+    "status":  "completed",
+    "task":  "ProviderMetadata",
+    "phase":  "default",
+    "observedAt":  "2026-10-28T00:58:18.106Z",
+    "provider":  {
+                     "owner_id":  "nAuPNiU41ZLSsmcVx",
+                     "actorId":  "shu8hvrXbJbY3Eb9W",
+                     "buildId":  "yvA3PQRWe95APBdIh",
+                     "build":  "0.0.831",
+                     "pricing":  [
+                                     {
+                                         "pricingModel":  "PRICE_PER_DATASET_ITEM",
+                                         "pricePerUnitUsd":  0.0023,
+                                         "reasonForChange":  "",
+                                         "unitName":  "results",
+                                         "startedAt":  "2024-08-14T00:00:00.000Z",
+                                         "createdAt":  "2024-07-30T08:21:20.402Z",
+                                         "apifyMarginPercentage":  0.2,
+                                         "notifiedAboutFutureChangeAt":  "2024-07-30T08:22:31.428Z",
+                                         "notifiedAboutChangeAt":  "2024-08-14T00:09:17.258Z"
+                                     },
+                                     {
+                                         "pricingModel":  "PRICE_PER_DATASET_ITEM",
+                                         "reasonForChange":  null,
+                                         "unitName":  "results",
+                                         "pricePerUnitUsd":  0.0007,
+                                         "minimalMaxTotalChargeUsd":  null,
+                                         "createdAt":  "2024-12-12T18:31:59.055Z",
+                                         "startedAt":  "2024-12-12T18:31:59.055Z",
+                                         "apifyMarginPercentage":  0.2,
+                                         "notifiedAboutChangeAt":  "2024-12-12T19:09:18.861Z"
+                                     },
+                                     {
+                                         "pricingModel":  "PRICE_PER_DATASET_ITEM",
+                                         "reasonForChange":  null,
+                                         "unitName":  "results",
+                                         "pricePerUnitUsd":  0.0023,
+                                         "minimalMaxTotalChargeUsd":  null,
+                                         "createdAt":  "2024-12-12T19:57:48.182Z",
+                                         "startedAt":  "2024-12-12T19:57:48.182Z",
+                                         "apifyMarginPercentage":  0.2,
+                                         "notifiedAboutChangeAt":  "2024-12-12T20:09:19.711Z"
+                                     },
+                                     {
+                                         "pricingModel":  "PRICE_PER_DATASET_ITEM",
+                                         "reasonForChange":  "Introducing Apify Store discounts.",
+                                         "unitName":  "result",
+                                         "tieredPricing":  {
+                                                               "FREE":  {
+                                                                            "tieredPricePerUnitUsd":  0.0027
+                                                                        },
+                                                               "BRONZE":  {
+                                                                              "tieredPricePerUnitUsd":  0.0023
+                                                                          },
+                                                               "SILVER":  {
+                                                                              "tieredPricePerUnitUsd":  0.0019
+                                                                          },
+                                                               "GOLD":  {
+                                                                            "tieredPricePerUnitUsd":  0.0015
+                                                                        },
+                                                               "PLATINUM":  {
+                                                                                "tieredPricePerUnitUsd":  0.0009
+                                                                            },
+                                                               "DIAMOND":  {
+                                                                               "tieredPricePerUnitUsd":  0.0005
+                                                                           }
+                                                           },
+                                         "createdAt":  "2025-06-06T08:10:00.000Z",
+                                         "startedAt":  "2025-06-06T08:10:00.000Z",
+                                         "notifiedAboutChangeAt":  "2025-06-06T08:10:00.000Z",
+                                         "apifyMarginPercentage":  0.2,
+                                         "minimalMaxTotalChargeUsd":  0.5
+                                     },
+                                     {
+                                         "minimalMaxTotalChargeUsd":  0.5,
+                                         "pricingModel":  "PAY_PER_EVENT",
+                                         "isPriceChangeNotificationSuppressed":  true,
+                                         "pricingPerEvent":  {
+                                                                 "actorChargeEvents":  {
+                                                                                           "result":  {
+                                                                                                          "eventTitle":  "Result",
+                                                                                                          "eventDescription":  "Each result written to the dataset",
+                                                                                                          "isOneTimeEvent":  false,
+                                                                                                          "eventTieredPricingUsd":  {
+                                                                                                                                        "FREE":  {
+                                                                                                                                                     "tieredEventPriceUsd":  0.002
+                                                                                                                                                 },
+                                                                                                                                        "BRONZE":  {
+                                                                                                                                                       "tieredEventPriceUsd":  0.0023
+                                                                                                                                                   },
+                                                                                                                                        "SILVER":  {
+                                                                                                                                                       "tieredEventPriceUsd":  0.0019
+                                                                                                                                                   },
+                                                                                                                                        "GOLD":  {
+                                                                                                                                                     "tieredEventPriceUsd":  0.0015
+                                                                                                                                                 },
+                                                                                                                                        "PLATINUM":  {
+                                                                                                                                                         "tieredEventPriceUsd":  0.0009
+                                                                                                                                                     },
+                                                                                                                                        "DIAMOND":  {
+                                                                                                                                                        "tieredEventPriceUsd":  0.0005
+                                                                                                                                                    }
+                                                                                                                                    },
+                                                                                                          "isPrimaryEvent":  true
+                                                                                                      }
+                                                                                       }
+                                                             },
+                                         "createdAt":  "2025-12-12T12:58:59.221Z",
+                                         "startedAt":  "2025-12-12T12:58:59.221Z",
+                                         "apifyMarginPercentage":  0.2
+                                     },
+                                     {
+                                         "minimalMaxTotalChargeUsd":  0.5,
+                                         "pricingModel":  "PAY_PER_EVENT",
+                                         "isPriceChangeNotificationSuppressed":  true,
+                                         "pricingPerEvent":  {
+                                                                 "actorChargeEvents":  {
+                                                                                           "result":  {
+                                                                                                          "eventTitle":  "Result",
+                                                                                                          "eventDescription":  "Each result written to the dataset",
+                                                                                                          "isOneTimeEvent":  false,
+                                                                                                          "eventTieredPricingUsd":  {
+                                                                                                                                        "FREE":  {
+                                                                                                                                                     "tieredEventPriceUsd":  0.0027
+                                                                                                                                                 },
+                                                                                                                                        "BRONZE":  {
+                                                                                                                                                       "tieredEventPriceUsd":  0.0023
+                                                                                                                                                   },
+                                                                                                                                        "SILVER":  {
+                                                                                                                                                       "tieredEventPriceUsd":  0.0019
+                                                                                                                                                   },
+                                                                                                                                        "GOLD":  {
+                                                                                                                                                     "tieredEventPriceUsd":  0.0015
+                                                                                                                                                 },
+                                                                                                                                        "PLATINUM":  {
+                                                                                                                                                         "tieredEventPriceUsd":  0.0009
+                                                                                                                                                     },
+                                                                                                                                        "DIAMOND":  {
+                                                                                                                                                        "tieredEventPriceUsd":  0.0005
+                                                                                                                                                    }
+                                                                                                                                    },
+                                                                                                          "isPrimaryEvent":  true
+                                                                                                      }
+                                                                                       }
+                                                             },
+                                         "createdAt":  "2025-12-12T12:59:32.023Z",
+                                         "startedAt":  "2025-12-12T12:59:32.023Z",
+                                         "apifyMarginPercentage":  0.2
+                                     },
+                                     {
+                                         "minimalMaxTotalChargeUsd":  0.0027,
+                                         "pricingModel":  "PAY_PER_EVENT",
+                                         "isPriceChangeNotificationSuppressed":  true,
+                                         "pricingPerEvent":  {
+                                                                 "actorChargeEvents":  {
+                                                                                           "result":  {
+                                                                                                          "eventTitle":  "Result",
+                                                                                                          "eventDescription":  "Each result written to the dataset",
+                                                                                                          "isOneTimeEvent":  false,
+                                                                                                          "eventTieredPricingUsd":  {
+                                                                                                                                        "FREE":  {
+                                                                                                                                                     "tieredEventPriceUsd":  0.0027
+                                                                                                                                                 },
+                                                                                                                                        "BRONZE":  {
+                                                                                                                                                       "tieredEventPriceUsd":  0.0023
+                                                                                                                                                   },
+                                                                                                                                        "SILVER":  {
+                                                                                                                                                       "tieredEventPriceUsd":  0.0019
+                                                                                                                                                   },
+                                                                                                                                        "GOLD":  {
+                                                                                                                                                     "tieredEventPriceUsd":  0.0015
+                                                                                                                                                 },
+                                                                                                                                        "PLATINUM":  {
+                                                                                                                                                         "tieredEventPriceUsd":  0.0009
+                                                                                                                                                     },
+                                                                                                                                        "DIAMOND":  {
+                                                                                                                                                        "tieredEventPriceUsd":  0.0005
+                                                                                                                                                    }
+                                                                                                                                    },
+                                                                                                          "isPrimaryEvent":  true
+                                                                                                      }
+                                                                                       }
+                                                             },
+                                         "createdAt":  "2025-12-12T16:10:43.534Z",
+                                         "startedAt":  "2025-12-12T16:10:43.534Z",
+                                         "apifyMarginPercentage":  0.2
+                                     },
+                                     {
+                                         "minimalMaxTotalChargeUsd":  0.0027,
+                                         "pricingModel":  "PAY_PER_EVENT",
+                                         "isPriceChangeNotificationSuppressed":  true,
+                                         "pricingPerEvent":  {
+                                                                 "actorChargeEvents":  {
+                                                                                           "result":  {
+                                                                                                          "eventTitle":  "Result",
+                                                                                                          "eventDescription":  "Each result written to the dataset",
+                                                                                                          "isOneTimeEvent":  false,
+                                                                                                          "eventTieredPricingUsd":  {
+                                                                                                                                        "FREE":  {
+                                                                                                                                                     "tieredEventPriceUsd":  0.0027
+                                                                                                                                                 },
+                                                                                                                                        "BRONZE":  {
+                                                                                                                                                       "tieredEventPriceUsd":  0.0023
+                                                                                                                                                   },
+                                                                                                                                        "SILVER":  {
+                                                                                                                                                       "tieredEventPriceUsd":  0.0019
+                                                                                                                                                   },
+                                                                                                                                        "GOLD":  {
+                                                                                                                                                     "tieredEventPriceUsd":  0.0015
+                                                                                                                                                 },
+                                                                                                                                        "PLATINUM":  {
+                                                                                                                                                         "tieredEventPriceUsd":  0.0009
+                                                                                                                                                     },
+                                                                                                                                        "DIAMOND":  {
+                                                                                                                                                        "tieredEventPriceUsd":  0.0005
+                                                                                                                                                    }
+                                                                                                                                    },
+                                                                                                          "isPrimaryEvent":  true
+                                                                                                      }
+                                                                                       }
+                                                             },
+                                         "createdAt":  "2026-02-20T12:24:59.754Z",
+                                         "startedAt":  "2026-02-20T12:24:59.754Z",
+                                         "apifyMarginPercentage":  0.2
+                                     }
+                                 ],
+                     "inputSchema":  {
+                                         "type":  "object",
+                                         "properties":  {
+                                                            "resultsType":  {
+                                                                                "title":  "Content to scrape",
+                                                                                "enum":  [
+                                                                                             "posts",
+                                                                                             "details",
+                                                                                             "comments",
+                                                                                             "reels",
+                                                                                             "mentions",
+                                                                                             "stories"
+                                                                                         ],
+                                                                                "type":  "string",
+                                                                                "description":  "**Posts** returns a feed of content. **Profile, hashtag, or place details** returns metadata about the page: follower count, bio, post count, and profile picture.\u003cbr\u003e\u003cbr\u003eComments only work with post URLs, e.g. `instagram.com/p/ABC123xyz/` not `instagram.com/username/`.",
+                                                                                "default":  "posts"
+                                                                            },
+                                                            "directUrls":  {
+                                                                               "title":  "Instagram URLs based on content type",
+                                                                               "uniqueItems":  true,
+                                                                               "type":  "array",
+                                                                               "description":  "Add one or more Instagram URLs to scrape.\u003cbr\u003e\u003cbr\u003eURL format must match your content type:\u003cul\u003e\u003cli\u003e\u003ccode\u003e/p/\u003c/code\u003e for posts and comments\u003c/li\u003e\u003cli\u003e\u003ccode\u003e/reel/\u003c/code\u003e for reels\u003c/li\u003e\u003cli\u003e\u003ccode\u003e/username/\u003c/code\u003e for profile details\u003c/li\u003e\u003c/ul\u003e\u003cbr\u003eLeave blank if using the search query instead.",
+                                                                               "items":  {
+                                                                                             "type":  "string",
+                                                                                             "pattern":  "^(https:\\/\\/)?(www\\.)?instagram\\.com\\/[A-Za-z0-9._-]+(\\/.*)?$"
+                                                                                         }
+                                                                           },
+                                                            "resultsLimit":  {
+                                                                                 "title":  "Results limit per URL",
+                                                                                 "minimum":  1,
+                                                                                 "type":  "integer",
+                                                                                 "description":  "Set how many posts or comments to scrape per Instagram URL. Higher values increase compute usage and cost.\u003cbr\u003e\u003cbr\u003e⚠️ Free usage gets only the top 15 comments, sorted by newest, and around 21 mentions. Upgrade to \u003ca href=\u0027https://console.apify.com/billing/subscription\u0027 target=\u0027_blank\u0027 rel=\u0027noopener\u0027\u003e Starter plan\u003c/a\u003e for full access.\u003cbr\u003e\u003cbr\u003eUse `1` to retrieve a single post per page."
+                                                                             },
+                                                            "onlyPostsNewerThan":  {
+                                                                                       "title":  "Filter by date",
+                                                                                       "pattern":  "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])(T[0-2]\\d:[0-5]\\d(:[0-5]\\d)?(\\.\\d+)?Z?)?$|^(\\d+)\\s*(minute|hour|day|week|month|year)s?$",
+                                                                                       "type":  "string",
+                                                                                       "description":  "Limit how far back to scrape. Enter a date in `YYYY-MM-DD`, ISO format, or as a relative value, e.g. `1 day`, `2 months`, `3 years`.\u003cbr\u003e\u003cbr\u003eTimes are in UTC, not local time. New York is UTC-5 in winter, UTC-4 in summer. Pinned posts may still appear even with this filter set."
+                                                                                   },
+                                                            "search":  {
+                                                                           "title":  "Search query",
+                                                                           "type":  "string",
+                                                                           "description":  "Search for Instagram hashtags, profiles, or places.\u003cbr\u003eUse `#` for hashtags, e.g. `#travel`."
+                                                                       },
+                                                            "searchType":  {
+                                                                               "title":  "Search type",
+                                                                               "enum":  [
+                                                                                            "hashtag",
+                                                                                            "profile",
+                                                                                            "place",
+                                                                                            "user"
+                                                                                        ],
+                                                                               "type":  "string",
+                                                                               "description":  "Hashtag search returns posts tagged with that term. Profile search returns matching accounts. Place search returns matching locations.",
+                                                                               "default":  "hashtag"
+                                                                           },
+                                                            "searchLimit":  {
+                                                                                "title":  "Search results limit",
+                                                                                "minimum":  1,
+                                                                                "maximum":  250,
+                                                                                "type":  "integer",
+                                                                                "description":  "Set how many profiles, places, or hashtags to find.\u003cbr\u003eTo limit posts per result, use Results limit per URL.\u003cbr\u003eHigher values increase compute usage and cost."
+                                                                            },
+                                                            "addParentData":  {
+                                                                                  "title":  "Add metadata",
+                                                                                  "type":  "boolean",
+                                                                                  "description":  "This applies only to feed items. Adds a dataSource field to each result: profile posts are labeled `profile`, and tag posts are labeled `hashtag`.",
+                                                                                  "default":  false
+                                                                              }
+                                                        }
+                                     }
+                 }
+}

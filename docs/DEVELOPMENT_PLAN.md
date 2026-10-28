@@ -4,7 +4,11 @@ End-to-end plan from an empty repo to production. Codex works **one milestone at
 - `MILESTONE.md`: context, scope, tasks, acceptance criteria, the owner's manual actions, and hand-off.
 - `PROGRESS.md`: Codex's live notes, covering status, what's done, blockers, manual actions requested, and the next step.
 
-The board at the repo root (`PROGRESS.md`) shows where the project stands.
+The board at the repo root (`PROGRESS.md`) normally shows where the project stands. Its protected older root/M03 entries are currently stale; use the permitted current milestone records and binding decisions instead. Do not bypass their enforced write restriction.
+
+**28 October 2026 sequencing exception:** [the owner decision](DECISIONS.md#m04-development-acceptance-and-m05-sequencing--28-october-2026) permits M05 development after essential M04 development checks and the approved staged validation pass, with the status **M04 development accepted; coverage and rollout obligations open**. This is not original full Done, production readiness or merge. Branch M05 from the accepted CI-green M04 head and open a separate stacked draft PR targeting the unmerged M04 branch; PR13 remains draft/unmerged. Keep paid M05 capture/AI, hosted migration, activation, recurrence, notifications and production separately gated. The exact deferred M04 obligations stay in its existing criteria map.
+
+The [actual28October result](../milestones/M04-collectors-vimeo-instagram/evidence/hc01-dev-results-20261028.md) now accepts essential M04 development on CI-green application948e618. Verify normal final result/documentation-head CI before creating M05's separate stacked branch; this status is not original full milestone Done or production readiness. The protected root/M03 board remains stale and untouched.
 
 ## 1. Milestones
 
@@ -15,7 +19,7 @@ The board at the repo root (`PROGRESS.md`) shows where the project stands.
 | **M02** | Seed data & account resolution | 284 competitors + baseline + 1,272 accounts loaded; Vimeo/YouTube/LinkedIn IDs resolved; pilot accounts active | M01 | Counts match CSV; ≥ 95% pilot accounts resolved |
 | **M03** | n8n foundation | Credentials, SUB workflows, WF-00 orchestrator, WF-19 Apify callback, WF-90 errors, WF-91 health & cost, run/cost logging | M02 | A dry-run orchestrator run logs a run + cost row; error path emails the owner |
 | **M04** | Collectors I: Vimeo + Instagram | WF-10 Vimeo (API + fallback), WF-11 IG posts/reels; backfill from 2024-01-01 for pilot | M03 | 5-account test, then pilot backfill done with < 2% failed accounts; no duplicates |
-| **M05** | Collectors II: Websites, YouTube, LinkedIn | WF-21 website diff + crawl, WF-13 YouTube, WF-18 LinkedIn posts, WF-18b employees snapshot | M04 | Same as M04 for these sources |
+| **M05** | Collectors II: Websites, YouTube, LinkedIn | WF-21 website diff + crawl, WF-13 YouTube, WF-18 LinkedIn posts, WF-18b employees snapshot | M04 development acceptance under28October exception | Same as M04 for these sources; development and rollout evidence remain distinct |
 | **M06** | Collectors III: Stories + upkeep | WF-12 stories (no login) + 7-day actor bake-off, WF-31 media v1 (thumbnails before CDN URLs expire), WF-40 removal check + weekly metrics refresh for paid sources | M05 | Stories captured for ≥ 90% of pilot accounts that posted; removal check marks test removals |
 | **M07** | AI understanding | WF-30 extractor (structured outputs), entity resolution, review routing, WF-31 media extensions (vision reads, key frames), WF-33 embeddings, eval set + model choice | M04 (M05/M06 data helpful) | Eval: brand ≥ 90%, production house ≥ 95% on 200 labeled items; cost per item known |
 | **M08** | Campaign linker + pilot launch | WF-32 linker, review of merges, daily schedule switched on for the 50 → **14-day pilot clock starts** | M07 | 3 clean daily runs in a row; pilot start date recorded |
@@ -56,7 +60,7 @@ Codex is sequential, but **the pilot runs by itself** once M08 is done. Codex bu
    - fill in "Hand-off to next milestone";
    - update the root `PROGRESS.md` board;
    - open a PR `m{NN}-{slug}` → `main`.
-6. Never start the next milestone while the current one isn't Done, unless the root board marks it **Parallel-OK** (only M09–M11 while M12 waits for pilot days).
+6. Never start the next milestone while the current one isn't Done, unless the owner has explicitly approved a sequencing exception (including the M04-to-M05 development exception above), or the root board marks it **Parallel-OK**. A protected stale board does not independently cancel the owner's current exception.
 
 ## 4. Status values
 

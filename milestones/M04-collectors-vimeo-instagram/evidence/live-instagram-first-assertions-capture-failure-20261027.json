@@ -1,0 +1,8 @@
+{
+  "status": "local_output_capture_incomplete",
+  "nativeCaptureExit": "ERR_CHILD_PROCESS_STDIO_MAXBUFFER",
+  "captureLimitBytes": 16000,
+  "databaseCommandCharged": 1,
+  "queryWasReadOnly": true,
+  "authenticationAndChildClosureNotAssertedFromTruncatedOutput": true
+}

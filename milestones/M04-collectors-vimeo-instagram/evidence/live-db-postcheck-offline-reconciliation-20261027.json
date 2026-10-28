@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "kind": "offline_completion_bookkeeping_reconciliation",
+  "observedAt": "2026-10-27T12:52:26.5684945Z",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "actualReceipt": "milestones/M04-collectors-vimeo-instagram/evidence/live-db-postcheck-20261027.json",
+  "actualReceiptSha256": "82339b91401d5d024c41b7242f0216559e7fbaf483d2e0d123932a158bdc4d2b",
+  "actualReceiptPreserved": true,
+  "originalStatus": "M04_OPERATION_BLOCKED",
+  "actualDatabaseCommands": 4,
+  "actualAuthenticationVerified": true,
+  "actualChildrenClosed": true,
+  "actualScratchDeleted": true,
+  "actualPersistentAdminPreserved": true,
+  "verifiedActualEvidence": {
+    "history": "17 versions including both M04 versions; original 15 fingerprints unchanged",
+    "catalog": "six RLS tables with no direct writer grants, exact columns/types/nullability and three RPC signatures; empty definer search paths; writer restricted to the two public product RPCs; anon/browser/agent execution denied",
+    "securityAdvisors": {
+      "nativeExit": 0,
+      "warnings": 0,
+      "errors": 0
+    },
+    "performanceAdvisors": {
+      "nativeExit": 0,
+      "warnings": 0,
+      "errors": 0
+    }
+  },
+  "bookkeepingDefect": {
+    "boundary": "after schemaCoverage assignment and both successful advisor receipts",
+    "classification": "PowerShell CommandNotFoundException",
+    "cause": "hostedGeneratedTypesCandidate assignment used bare false instead of $false",
+    "fix": "corrected only that Boolean assignment"
+  },
+  "offlineRegression": {
+    "source": "scripts/db/m04-dev-database.test.mjs",
+    "method": "execute the actual Postcheck branch AST with preserved public catalog/history and mock native advisor results",
+    "red": "reproduced the exact bare-false CommandNotFoundException",
+    "green": "postcheck_readbacks_complete with hostedGeneratedTypesCandidate false and explicit unperformed generation boundary",
+    "latestTargetedTests": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "nativeExit": 0,
+    "includes": [
+      "public CheckOnly before private access",
+      "old and both newly observed migration history fingerprints",
+      "actual Postcheck completion bookkeeping"
+    ],
+    "reviewedConsumerSha256": "a4138ff4cccb56e85dd0973a646e0b9e8ce4436f27630e66dc38f7a7b591c944"
+  },
+  "reconciliationOperations": {
+    "hostedRequests": 0,
+    "databaseCommands": 0,
+    "credentialDecryption": false,
+    "nativePostcheckRerun": false
+  },
+  "hostedGeneratedTypesCandidate": false,
+  "hostedTypesGeneration": "not_attempted_native_descendant_contract_unverified",
+  "schemaCoverage": "fixed hosted catalog compared with reviewed locally generated TypeScript contract",
+  "acceptanceBoundary": "Migration, catalog and advisor evidence only; no native collector execution, real provider collection, callback, replay or measured collector cost is proved here."
+}

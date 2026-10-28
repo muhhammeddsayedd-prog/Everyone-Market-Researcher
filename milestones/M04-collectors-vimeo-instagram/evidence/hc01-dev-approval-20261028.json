@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "approval_kind": "hc01",
+  "approval_id": "1cf8406c-1142-445e-a237-6d0fd7a67b22",
+  "recordedAt": "2026-10-28T00:43:24Z",
+  "ownerStatement": "Consolidated owner decision explicitly approves hc01-staged-live-validation-packet-20261027.md with acceptance amendments for absent natural examples and independently attributable new publications; essential M04 development acceptance can precede separately deferred coverage and rollout obligations, then M05 local development on a stacked branch. Merge remains excluded.",
+  "reviewedHead": "bb0cd01d3a6ee239540e73b1d366f86e46b17d42",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "ceilings": {
+    "management": 288,
+    "control": 2376,
+    "combined": 2664,
+    "vercel": 64,
+    "nativeActions": 7,
+    "actorStarts": 22,
+    "perActorUsd": 1,
+    "actorUsd": 22,
+    "resultsPerProfile": 30
+  },
+  "cumulative": {
+    "management": 482,
+    "control": 3151,
+    "combined": 3633,
+    "vercel": 138,
+    "nativeActions": 19,
+    "actorStarts": 26,
+    "actorUsd": 22.8395
+  },
+  "retained": {
+    "management": 194,
+    "control": 775,
+    "combined": 969,
+    "vercel": 74,
+    "nativeActions": 12,
+    "actorStarts": 4,
+    "actorUsd": 0.8395
+  },
+  "categories": {
+    "n8n": 224,
+    "vercel": 64,
+    "gateway": 768,
+    "provider": 1280,
+    "callback": 264,
+    "database": 64
+  },
+  "companyCodes": ["C000", "C001", "C130", "C270", "C226"],
+  "errorPublication": {
+    "onlyOwnedHandler": "AwxhktgJdvLXE0FZ",
+    "temporary": true,
+    "restoreInactive": true,
+    "originalFoundationHandlerUntouched": true
+  },
+  "plannedStarts": {"stage1": 4, "stage2Conditional": 16, "recovery": 2},
+  "acceptanceAmendments": {
+    "absentNaturalExampleAloneStopsStage2": false,
+    "independentlyAttributedNewPublicationsAllowed": true,
+    "capSaturationStops": true,
+    "allSecurityOwnershipCostIntegrityStopsPreserved": true
+  },
+  "excluded": ["production", "recurring schedules", "external notifications", "private R2", "merge", "M05 live operations", "fallback actor", "ambiguous paid replacement", "denied staged-input JSON generation"]
+}

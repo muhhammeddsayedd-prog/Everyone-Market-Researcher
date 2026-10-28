@@ -1,0 +1,29 @@
+-- Read-only owned parent, account, metrics, queue and actual-cost projection.
+with parents as (select r.id run_id,r.n8n_execution_id execution_id from ops.scrape_runs r
+ where r.env='dev' and r.workflow in ('WF-10','WF-11') and r.started_at>='2026-10-28T00:43:24Z'::timestamptz
+ and (exists(select 1 from ops.collector_launches l where l.run_id=r.id and l.approval_id='1cf8406c-1142-445e-a237-6d0fd7a67b22'::uuid)
+ or (r.workflow='WF-10' and exists(select 1 from ops.collector_accounts ca where ca.run_id=r.id)
+ and not exists(select 1 from ops.collector_accounts ca where ca.run_id=r.id and ca.account_id not in
+ (select x::uuid from jsonb_array_elements_text($m04_cb3a133d7a7289a3$["985a57dd-7934-422d-9d18-4e8ca59fc197","8fefa9a1-3637-43db-843d-97caa9afcc79","fda97004-0b26-40aa-baf5-d961277302fe","4cf4fd24-c266-4246-941f-c5f9c4e23c2d","85bc33c7-25b0-44e7-b7e7-037bd8343e84","962c9c7e-aa0f-46ae-911b-3265859e0577","bed82782-753f-4ba9-91ca-691ef36f75c6","46149fb9-8905-4b76-9834-4b38f668a2e2","2d42d451-ac9a-42ac-a879-8760d63c8108","3ca3befa-abe6-4540-a389-0cf16115c581"]$m04_cb3a133d7a7289a3$::jsonb) x))))),
+selected as (select * from app.competitor_accounts where id in (select x::uuid from jsonb_array_elements_text($m04_cb3a133d7a7289a3$["985a57dd-7934-422d-9d18-4e8ca59fc197","8fefa9a1-3637-43db-843d-97caa9afcc79","fda97004-0b26-40aa-baf5-d961277302fe","4cf4fd24-c266-4246-941f-c5f9c4e23c2d","85bc33c7-25b0-44e7-b7e7-037bd8343e84","962c9c7e-aa0f-46ae-911b-3265859e0577","bed82782-753f-4ba9-91ca-691ef36f75c6","46149fb9-8905-4b76-9834-4b38f668a2e2","2d42d451-ac9a-42ac-a879-8760d63c8108","3ca3befa-abe6-4540-a389-0cf16115c581"]$m04_cb3a133d7a7289a3$::jsonb) x)),
+items as (select i.id,i.account_id,i.platform,i.external_id,i.status,i.ai_status,i.duplicate_of,i.published_at,i.metrics,i.metrics_updated_at,i.locked_fields,i.last_extraction_id,i.created_at
+ from app.items i where i.account_id in (select id from selected))
+select jsonb_build_object('accounts',(select jsonb_agg(to_jsonb(a) order by a.id) from selected a),
+ 'runs',(select coalesce(jsonb_agg(to_jsonb(r)||jsonb_build_object('expected_execution_id',p.execution_id) order by r.started_at),'[]'::jsonb) from ops.scrape_runs r join parents p on p.run_id=r.id),
+ 'accountResults',(select coalesce(jsonb_agg(to_jsonb(a) order by a.run_id,a.account_id),'[]'::jsonb) from ops.scrape_run_accounts a where run_id in (select run_id from parents)),
+ 'items',(select coalesce(jsonb_agg(to_jsonb(i) order by i.id),'[]'::jsonb) from items i),
+ 'rawItems',(select coalesce(jsonb_agg(jsonb_build_object('id',r.id,'account_id',r.account_id,'run_id',r.run_id,'actor',r.actor,'external_id',r.external_id,'fetched_at',r.fetched_at) order by r.id),'[]'::jsonb)
+   from ingest.raw_items r where r.account_id in (select id from selected)),
+ 'costs',(select coalesce(jsonb_agg(jsonb_build_object('id',c.id,'provider',c.provider,'quantity',c.quantity,'cost_usd',c.cost_usd,'run_id',c.run_id,'apify_run_id',c.meta->>'apify_run_id') order by c.id),'[]'::jsonb)
+   from ops.cost_ledger c where c.run_id in (select run_id from parents)),
+ 'actorRuns',(select coalesce(jsonb_agg(jsonb_build_object('apify_run_id',a.apify_run_id,'run_id',a.run_id,'actor_id',a.actor_id,'account_ids',a.account_ids,'status',a.status,'usage_usd',a.usage_usd,'processed_at',a.processed_at) order by a.apify_run_id),'[]'::jsonb)
+   from ops.apify_runs a where a.run_id in (select run_id from parents)),
+ 'launches',(select coalesce(jsonb_agg(to_jsonb(l) order by l.created_at),'[]'::jsonb) from ops.collector_launches l where l.approval_id='1cf8406c-1142-445e-a237-6d0fd7a67b22'::uuid),
+ 'passes',(select coalesce(jsonb_agg(to_jsonb(p) order by p.run_id,p.account_id,p.pass),'[]'::jsonb) from ops.collector_passes p where p.run_id in (select run_id from parents)),
+ 'collectorRuns',(select coalesce(jsonb_agg(to_jsonb(r) order by r.run_id),'[]'::jsonb) from ops.collector_runs r where r.run_id in (select run_id from parents)),
+ 'aiQueueCounts',(select coalesce(jsonb_agg(jsonb_build_object('item_id',i.id,'count',(select count(*) from pgmq.q_ai_extract q where q.message->>'item_id'=i.id::text)) order by i.id),'[]'::jsonb) from items i),
+ 'mediaQueueCounts',(select coalesce(jsonb_agg(jsonb_build_object('item_id',i.id,'count',(select count(*) from pgmq.q_media q where q.message->>'item_id'=i.id::text)) order by i.id),'[]'::jsonb) from items i),
+ 'duplicateExternalIds',(select count(*) from (select platform,external_id from items group by platform,external_id having count(*)>1) d),
+ 'selectedLiveClaims',(select count(*) from selected where locked_until is not null),
+ 'selectedRunningParents',(select count(*) from ops.scrape_runs r where r.id in (select run_id from parents) and r.status='running'),
+ 'selectedUnprocessedActors',(select count(*) from ops.apify_runs a where a.processed_at is null and exists(select 1 from selected s where s.id=any(a.account_ids)))) as incremental_assertions;

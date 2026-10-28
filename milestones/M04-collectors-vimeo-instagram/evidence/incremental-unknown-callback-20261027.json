@@ -1,0 +1,13 @@
+{
+  "status": "completed",
+  "task": "Probe",
+  "phase": "unknown",
+  "observedAt": "2026-10-27T16:01:47.588Z",
+  "callback": {
+    "phase": "unknown",
+    "apifyRunId": "M04Unknown46a9110305e94a7e8f82f023121bd012",
+    "status": 403,
+    "replayed": false,
+    "rejected": true
+  }
+}
