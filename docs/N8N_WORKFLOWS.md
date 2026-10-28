@@ -393,6 +393,7 @@ Optional wrapper: the normalizer JS (§7) lives in a Code node **inside** each c
 - **Acceptance:** a forced error writes an audit row; the 3rd failure sends one email (not one per failure after that — throttle 1 email per workflow per 6 h).
 
 ### WF-91 · Health & cost (daily 09:15)
+- **M06 local continuation29October:** the maintained health Code validator and restricted-gateway result contract accept either the exact legacy fields or the complete additive `{zero_item_streaks,story_capture_gap,media_missing_24h}` extension. They preserve null/no-observation semantics and reject partial/unknown extensions. This is local generated-code qualification, not a changed hosted definition, a sent email or activation of the historical M03 dependencies. Cadence switching remains an explicit future MA-16 choice; current schedules remain inactive.
 - **Steps:** Postgres `select ops.accrue_fixed_costs(current_date - 1);` → `select ops.refresh_stats_daily(current_date - 2);` → `select ops.daily_health() as h;` (failing accounts, stale accounts, queue depths, items new per platform yesterday, cost yesterday vs `daily_budget_usd`, month-to-date + forecast) → IF cost > budget → WF-80 `{ kind: "budget" }`; IF failing accounts > 0 → WF-80 `{ kind: "failing_sources" }` → `SUB · Notify` daily health summary to the owner (short) → WF-70 `{ tags: ["stats"] }`.
 - **Acceptance:** the health email lists the exact failing accounts; the forecast matches `app.costs_summary`.
 

@@ -159,6 +159,168 @@ test('WF91 health validation rejects missing/malformed fields and a Cairo-midnig
     assert.throws(() => runCode(n, [{ json: bad }], outputs), /EMR_N8N_HEALTH_INVALID/);
 });
 
+const healthOutputs = {
+  'Validate health guard': { cairo_yesterday: '2026-10-17', execution_id: 'SyntheticHealthExecution' },
+  'Accrue yesterday': { accrued: 0 },
+};
+const extendedHealth = () => ({
+  ...health(),
+  zero_item_streaks: [
+    {
+      account_id: '10000000-0000-4000-8000-000000000002',
+      competitor: 'Synthetic public competitor',
+      platform: 'vimeo',
+      handle: 'synthetic',
+      last_success_at: null,
+    },
+  ],
+  story_capture_gap: null,
+  media_missing_24h: 3,
+});
+const validateHealth = (value) => {
+  const workflow = buildHealthWorkflow(binding()).workflow;
+  return runCode(
+    named(workflow, 'Validate daily health'),
+    [{ json: { h: value, cairo_yesterday: '2026-10-17' } }],
+    healthOutputs,
+  )[0].json;
+};
+
+test('WF91 accepts exact legacy or complete M06 health fields without fabricating missing observations', () => {
+  const legacy = validateHealth(health());
+  for (const key of ['zero_item_streaks', 'story_capture_gap', 'media_missing_24h'])
+    assert.equal(Object.hasOwn(legacy.health, key), false);
+  for (const gap of [null, 0, 0.25, 1]) {
+    const value = { ...extendedHealth(), story_capture_gap: gap },
+      before = structuredClone(value);
+    const actual = validateHealth(value);
+    assert.deepEqual(actual.health, value);
+    assert.deepEqual(value, before, 'health validation never mutates the supplied observation');
+    assert.equal(actual.health.story_capture_gap, gap, 'null stays unknown and observed zero stays zero');
+    assert.equal(actual.health.media_missing_24h, 3);
+    assert.equal(actual.has_failing_sources, false, 'new diagnostic fields do not activate an alert');
+  }
+});
+
+test('WF91 rejects every partial or unknown health extension instead of silently downgrading versions', () => {
+  const keys = ['zero_item_streaks', 'story_capture_gap', 'media_missing_24h'];
+  for (let mask = 1; mask < 7; mask++) {
+    const value = health(),
+      source = extendedHealth();
+    for (let i = 0; i < keys.length; i++) if (mask & (1 << i)) value[keys[i]] = source[keys[i]];
+    assert.throws(() => validateHealth(value), /EMR_N8N_HEALTH_INVALID/);
+  }
+  for (const value of [
+    { ...health(), unknown_health: 0 },
+    { ...extendedHealth(), unknown_health: 0 },
+    { ...extendedHealth(), media_missing_48h: 0 },
+  ])
+    assert.throws(() => validateHealth(value), /EMR_N8N_HEALTH_INVALID/);
+});
+
+test('WF91 validates complete M06 health ranges and exact public account shapes', () => {
+  for (const gap of [undefined, -0.01, 1.01, Infinity, NaN, '0.2', [], {}])
+    assert.throws(
+      () => validateHealth({ ...extendedHealth(), story_capture_gap: gap }),
+      /EMR_N8N_HEALTH_INVALID/,
+    );
+  for (const count of [undefined, null, -1, 1.25, Infinity, NaN, Number.MAX_SAFE_INTEGER + 1, '2'])
+    assert.throws(
+      () => validateHealth({ ...extendedHealth(), media_missing_24h: count }),
+      /EMR_N8N_HEALTH_INVALID/,
+    );
+  const first = extendedHealth().zero_item_streaks[0];
+  const missingTimestamp = { ...first };
+  delete missingTimestamp.last_success_at;
+  const sparseRows = [];
+  sparseRows.length = 1;
+  for (const rows of [
+    null,
+    {},
+    'unknown',
+    [{ ...first, account_id: 'not-a-uuid' }],
+    [{ ...first, platform: 'tiktok' }],
+    [{ ...first, handle: 1 }],
+    [{ ...first, competitor: null }],
+    [{ ...first, last_success_at: false }],
+    [missingTimestamp],
+    [{ ...first, private_profile: 'not allowed' }],
+    Array.from({ length: 2001 }, () => ({ ...first })),
+    sparseRows,
+  ])
+    assert.throws(
+      () => validateHealth({ ...extendedHealth(), zero_item_streaks: rows }),
+      /EMR_N8N_HEALTH_INVALID/,
+    );
+  assert.deepEqual(
+    validateHealth({ ...extendedHealth(), zero_item_streaks: [] }).health.zero_item_streaks,
+    [],
+  );
+});
+
+test('WF91 preserves untrusted health text only as log-mode data, never rendering or dispatching it', () => {
+  const value = extendedHealth(),
+    injection = '<svg onload="globalThis.changed=true">& مرحبا ${process.env.SECRET}';
+  value.zero_item_streaks[0].competitor = injection;
+  value.zero_item_streaks[0].handle = '<script>throw Error("never")</script>';
+  const validated = validateHealth(value),
+    workflow = buildHealthWorkflow(binding()).workflow;
+  const returned = runCode(named(workflow, 'Return health'), [{ json: {} }], {
+    'Validate daily health': validated,
+  })[0].json;
+  assert.equal(returned.health.zero_item_streaks[0].competitor, injection);
+  assert.equal(returned.health.story_capture_gap, null);
+  assert.equal(returned.notification_mode, 'log');
+  assert.equal(returned.sent, false);
+  for (const name of ['Call daily health log', 'Call failing sources log', 'Call budget log']) {
+    const values = named(workflow, name).parameters.workflowInputs.value;
+    assert.equal(values.html, '');
+    assert.equal(values.text, '');
+    assert.ok(!JSON.stringify(values).includes(injection));
+  }
+  for (const n of workflow.nodes.filter((n) => n.type === 'n8n-nodes-base.code'))
+    assert.doesNotMatch(n.parameters.jsCode, /require\s*\(|import\s|process\.env/);
+});
+
+test('WF91 account text and RFC3339 dates agree for legacy stale and M06 zero-item rows', () => {
+  const row = extendedHealth().zero_item_streaks[0];
+  const rejects = [
+    { ...row, competitor: 'x'.repeat(501) },
+    { ...row, handle: 'x'.repeat(501) },
+    ...[
+      'not-a-date',
+      '2026-10-29',
+      '2026-10-29T01:02:03',
+      '2026-02-30T01:02:03Z',
+      '2025-02-29T01:02:03Z',
+      '1900-02-29T01:02:03Z',
+      '2026-04-31T01:02:03Z',
+      '2026-10-29T24:02:03Z',
+      '2026-10-29T01:02:03+99:00',
+    ].map((last_success_at) => ({ ...row, last_success_at })),
+  ];
+  for (const invalid of rejects) {
+    assert.throws(() => validateHealth({ ...health(), stale_accounts: [invalid] }), /EMR_N8N_HEALTH_INVALID/);
+    assert.throws(
+      () => validateHealth({ ...extendedHealth(), zero_item_streaks: [invalid] }),
+      /EMR_N8N_HEALTH_INVALID/,
+    );
+  }
+  for (const last_success_at of [
+    null,
+    '2000-02-29T01:02:03Z',
+    '2024-02-29T01:02:03.123456+02:00',
+    '2026-10-29T01:02:03-05:30',
+  ]) {
+    const valid = { ...row, competitor: 'x'.repeat(500), handle: 'y'.repeat(500), last_success_at };
+    assert.deepEqual(validateHealth({ ...health(), stale_accounts: [valid] }).health.stale_accounts, [valid]);
+    assert.deepEqual(
+      validateHealth({ ...extendedHealth(), zero_item_streaks: [valid] }).health.zero_item_streaks,
+      [valid],
+    );
+  }
+});
+
 test('WF91 local graph dispatches bounded alert stubs and distinct log-only notifications, then publishes stats', () => {
   const b = binding(),
     w = buildHealthWorkflow(b).workflow;

@@ -187,7 +187,7 @@ const stale = z.strictObject({
   handle: z.string().max(500).nullable(),
   last_success_at: z.iso.datetime({ offset: true }).nullable(),
 });
-const health = z.strictObject({
+const legacyHealth = z.strictObject({
   failing_accounts: z.array(account).max(2000),
   stale_accounts: z.array(stale).max(2000),
   queues: z.strictObject({ ai_extract: count, embed: count, media: count }),
@@ -198,6 +198,16 @@ const health = z.strictObject({
   forecast_month_usd: money,
   workflow_errors_24h: z.record(z.string().regex(/^[A-Za-z0-9_-]{1,200}$/), count),
 });
+// Accept the deployed legacy contract or the complete additive M06 contract.
+// Partial upgrades and unknown fields fail closed; absence is not a zero metric.
+const health = z.union([
+  legacyHealth,
+  legacyHealth.extend({
+    zero_item_streaks: z.array(stale).max(2000),
+    story_capture_gap: z.number().min(0).max(1).nullable(),
+    media_missing_24h: count,
+  }),
+]);
 export const gatewayIdentity = z.strictObject({
   currentUser: z.literal('n8n_writer'),
   sessionUser: z.literal('n8n_writer'),

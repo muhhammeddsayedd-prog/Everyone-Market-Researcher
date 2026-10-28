@@ -3538,6 +3538,7 @@ export type Database = {
         Args: { p_account_id: string; p_external_id: string; p_uploads_playlist_id?: string };
         Returns: undefined;
       };
+      set_stories_cadence: { Args: { p_twice_daily: boolean }; Returns: Json };
       start_run: {
         Args: {
           p_env: string;

@@ -56,13 +56,24 @@ const count=x=>Number.isSafeInteger(x)&&x>=0;
 const money=x=>Number.isFinite(x)&&x>=0;
 const uuid=x=>typeof x==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x);
 const nullableString=x=>x===null||typeof x==='string';
+const date=x=>{
+  if(typeof x!=='string') return false;
+  const m=/^([0-9]{4})-([0-9]{2})-([0-9]{2})T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:[.][0-9]+)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])$/.exec(x);
+  if(!m) return false;
+  const year=Number(m[1]),month=Number(m[2]),day=Number(m[3]);
+  const days=[31,year%4===0&&(year%100!==0||year%400===0)?29:28,31,30,31,30,31,31,30,31,30,31];
+  return month>=1&&month<=12&&day>=1&&day<=days[month-1];
+};
 const platforms=['vimeo','instagram','instagram_stories','website','website_work_page','linkedin','linkedin_employees','youtube','news'];
 const providers=['apify','openai','serpapi','firecrawl','vimeo','youtube','n8n','supabase','vercel','email','other'];
 if(rows.length!==1 || rows[0].json.cairo_yesterday!==guard.cairo_yesterday) bad();
 const h=rows[0].json.h;
-if(!exact(h,['failing_accounts','stale_accounts','queues','items_new_yesterday','cost_yesterday','budget',
-  'month_to_date_usd','forecast_month_usd','workflow_errors_24h']) ||
-  !Array.isArray(h.failing_accounts) || !Array.isArray(h.stale_accounts) ||
+const legacyFields=['failing_accounts','stale_accounts','queues','items_new_yesterday','cost_yesterday','budget',
+  'month_to_date_usd','forecast_month_usd','workflow_errors_24h'];
+const m06=exact(h,[...legacyFields,'zero_item_streaks','story_capture_gap','media_missing_24h']);
+if((!exact(h,legacyFields)&&!m06) ||
+  !Array.isArray(h.failing_accounts) || h.failing_accounts.length>2000 ||
+  !Array.isArray(h.stale_accounts) || h.stale_accounts.length>2000 ||
   !exact(h.queues,['ai_extract','embed','media']) || !Object.values(h.queues).every(count) ||
   !object(h.items_new_yesterday) || !Object.entries(h.items_new_yesterday).every(([p,n])=>platforms.includes(p)&&count(n)) ||
   !exact(h.cost_yesterday,['total','by_provider']) || !money(h.cost_yesterday.total) || !object(h.cost_yesterday.by_provider) ||
@@ -73,9 +84,16 @@ if(!exact(h,['failing_accounts','stale_accounts','queues','items_new_yesterday',
 for(const a of h.failing_accounts) if(!exact(a,['account_id','competitor','platform','handle','last_error','consecutive_failures']) ||
   !uuid(a.account_id) || typeof a.competitor!=='string' || !platforms.includes(a.platform) ||
   !nullableString(a.handle) || !nullableString(a.last_error) || !count(a.consecutive_failures)) bad();
-for(const a of h.stale_accounts) if(!exact(a,['account_id','competitor','platform','handle','last_success_at']) ||
-  !uuid(a.account_id) || typeof a.competitor!=='string' || !platforms.includes(a.platform) ||
-  !nullableString(a.handle) || !nullableString(a.last_success_at)) bad();
+const account=a=>exact(a,['account_id','competitor','platform','handle','last_success_at']) &&
+  uuid(a.account_id) && typeof a.competitor==='string' && a.competitor.length<=500 && platforms.includes(a.platform) &&
+  (a.handle===null||(typeof a.handle==='string'&&a.handle.length<=500)) &&
+  (a.last_success_at===null||date(a.last_success_at));
+for(const a of h.stale_accounts) if(!account(a)) bad();
+if(m06) {
+  if(!Array.isArray(h.zero_item_streaks) || h.zero_item_streaks.length>2000 ||
+    ![...h.zero_item_streaks].every(account) || !count(h.media_missing_24h) ||
+    !(h.story_capture_gap===null || (Number.isFinite(h.story_capture_gap) && h.story_capture_gap>=0 && h.story_capture_gap<=1))) bad();
+}
 const accrued=$('Accrue yesterday').first().json.accrued;
 if(!count(accrued)) bad();
 return [{json:{health:h,accrued,cairo_yesterday:guard.cairo_yesterday,execution_id:guard.execution_id,

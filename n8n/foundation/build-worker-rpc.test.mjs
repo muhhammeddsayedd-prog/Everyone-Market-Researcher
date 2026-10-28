@@ -169,6 +169,76 @@ test('partial health-shaped response cannot pass complete typed health verificat
   assert.equal(out.outcome, 'unknown');
 });
 
+test('native health adapter accepts only complete legacy or M06 health contracts', () => {
+  const runtime = createWorkerAdapterRuntime();
+  const prepared = runtime.prepare({ ...input(), operation: 'health.read' });
+  const health = {
+    failing_accounts: [],
+    stale_accounts: [],
+    queues: { ai_extract: 0, embed: 0, media: 1 },
+    items_new_yesterday: {},
+    cost_yesterday: { total: 0, by_provider: {} },
+    budget: { daily_budget_usd: 25, over_budget: false },
+    month_to_date_usd: 0,
+    forecast_month_usd: 0,
+    workflow_errors_24h: {},
+  };
+  const classify = (result) =>
+    runtime.classify(
+      {
+        statusCode: 200,
+        body: {
+          version: 1,
+          requestId: a,
+          outcome: 'completed',
+          result,
+          window: window(),
+        },
+      },
+      prepared,
+    ).outcome;
+  assert.equal(classify(health), 'completed');
+  const extended = {
+    ...health,
+    zero_item_streaks: [
+      {
+        account_id: a,
+        competitor: 'Synthetic local',
+        platform: 'vimeo',
+        handle: null,
+        last_success_at: null,
+      },
+    ],
+    story_capture_gap: null,
+    media_missing_24h: 1,
+  };
+  assert.equal(classify(extended), 'completed');
+  for (const gap of [0, 0.5, 1]) assert.equal(classify({ ...extended, story_capture_gap: gap }), 'completed');
+  for (const key of ['zero_item_streaks', 'story_capture_gap', 'media_missing_24h']) {
+    const partial = { ...extended };
+    delete partial[key];
+    assert.equal(classify(partial), 'unknown', key);
+  }
+  for (const gap of [-1, 1.01, NaN, Infinity, '0'])
+    assert.equal(classify({ ...extended, story_capture_gap: gap }), 'unknown');
+  for (const count of [-1, 0.1, Infinity, Number.MAX_SAFE_INTEGER + 1, null])
+    assert.equal(classify({ ...extended, media_missing_24h: count }), 'unknown');
+  assert.equal(classify({ ...extended, unknown_field: 1 }), 'unknown');
+  assert.equal(classify({ ...extended, zero_item_streaks: [null] }), 'unknown');
+  for (const date of ['2026-02-30T00:00:00Z', '2026-01-01T24:00:00Z', '2025-02-29T00:00:00Z'])
+    assert.equal(
+      classify({
+        ...extended,
+        zero_item_streaks: [{ ...extended.zero_item_streaks[0], last_success_at: date }],
+      }),
+      'unknown',
+    );
+  assert.equal(
+    classify({ ...extended, zero_item_streaks: Array(2001).fill(extended.zero_item_streaks[0]) }),
+    'unknown',
+  );
+});
+
 test('UUID correlations are distinct by identity even when letter case differs', () => {
   const r = createWorkerAdapterRuntime(),
     x = 'e62e7289-28ca-4387-a071-6f327837ea01',

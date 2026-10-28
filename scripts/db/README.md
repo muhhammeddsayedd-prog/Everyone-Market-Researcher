@@ -3,7 +3,7 @@
 `run-local-ci.sh` is for the isolated GitHub-hosted `db-tests` job. It requires
 GitHub Actions, CLI 2.121.0 and the checked-in local Supabase configuration. It
 starts only the services needed by M01, resets only the local CI database, runs
-the required seeded pgTAP suites (now14, including HC-01) and checks local advisors. Raw CLI output stays in a private
+the required seeded pgTAP suites (now17, including M06 media/cadence/health) and checks local advisors. Raw CLI output stays in a private
 temporary file and is never uploaded; the log shows outcome labels and numeric
 TAP totals. A missing suite, zero assertions, test failure, security warning/error
 or performance error fails the job. Non-error performance findings still need

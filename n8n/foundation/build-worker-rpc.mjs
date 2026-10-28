@@ -38,25 +38,67 @@ export function createWorkerAdapterRuntime(expectedAudience = null) {
     'other',
   ];
   const nullableText = (v, max) => v === null || (typeof v === 'string' && v.length <= max);
-  const date = (v) =>
-    typeof v === 'string' &&
-    /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?(?:Z|[+-]\d\d:\d\d)$/.test(v) &&
-    Number.isFinite(Date.parse(v));
+  const date = (v) => {
+    if (typeof v !== 'string') return false;
+    const m =
+      /^([0-9]{4})-([0-9]{2})-([0-9]{2})T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:[.][0-9]+)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])$/.exec(
+        v,
+      );
+    if (!m) return false;
+    const year = Number(m[1]),
+      month = Number(m[2]),
+      day = Number(m[3]);
+    const days = [
+      31,
+      year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 29 : 28,
+      31,
+      30,
+      31,
+      30,
+      31,
+      31,
+      30,
+      31,
+      30,
+      31,
+    ];
+    return month >= 1 && month <= 12 && day >= 1 && day <= days[month - 1];
+  };
   const record = (v, keys, validate) =>
     object(v) && Object.entries(v).every(([k, n]) => keys.includes(k) && validate(n));
   function health(r) {
+    const legacyKeys = [
+      'failing_accounts',
+      'stale_accounts',
+      'queues',
+      'items_new_yesterday',
+      'cost_yesterday',
+      'budget',
+      'month_to_date_usd',
+      'forecast_month_usd',
+      'workflow_errors_24h',
+    ];
+    const extended = exact(r, [...legacyKeys, 'zero_item_streaks', 'story_capture_gap', 'media_missing_24h']);
+    const staleAccount = (v) =>
+      exact(v, ['account_id', 'competitor', 'platform', 'handle', 'last_success_at']) &&
+      uuid(v.account_id) &&
+      typeof v.competitor === 'string' &&
+      v.competitor.length <= 500 &&
+      platforms.includes(v.platform) &&
+      nullableText(v.handle, 500) &&
+      (v.last_success_at === null || date(v.last_success_at));
     return (
-      exact(r, [
-        'failing_accounts',
-        'stale_accounts',
-        'queues',
-        'items_new_yesterday',
-        'cost_yesterday',
-        'budget',
-        'month_to_date_usd',
-        'forecast_month_usd',
-        'workflow_errors_24h',
-      ]) &&
+      (exact(r, legacyKeys) || extended) &&
+      (!extended ||
+        (Array.isArray(r.zero_item_streaks) &&
+          r.zero_item_streaks.length <= 2000 &&
+          r.zero_item_streaks.every(staleAccount) &&
+          (r.story_capture_gap === null ||
+            (typeof r.story_capture_gap === 'number' &&
+              Number.isFinite(r.story_capture_gap) &&
+              r.story_capture_gap >= 0 &&
+              r.story_capture_gap <= 1)) &&
+          count(r.media_missing_24h))) &&
       Array.isArray(r.failing_accounts) &&
       r.failing_accounts.length <= 2000 &&
       r.failing_accounts.every(
@@ -80,16 +122,7 @@ export function createWorkerAdapterRuntime(expectedAudience = null) {
       ) &&
       Array.isArray(r.stale_accounts) &&
       r.stale_accounts.length <= 2000 &&
-      r.stale_accounts.every(
-        (v) =>
-          exact(v, ['account_id', 'competitor', 'platform', 'handle', 'last_success_at']) &&
-          uuid(v.account_id) &&
-          typeof v.competitor === 'string' &&
-          v.competitor.length <= 500 &&
-          platforms.includes(v.platform) &&
-          nullableText(v.handle, 500) &&
-          (v.last_success_at === null || date(v.last_success_at)),
-      ) &&
+      r.stale_accounts.every(staleAccount) &&
       exact(r.queues, ['ai_extract', 'embed', 'media']) &&
       Object.values(r.queues).every(count) &&
       record(r.items_new_yesterday, platforms, count) &&

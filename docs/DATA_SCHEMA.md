@@ -101,7 +101,8 @@ erDiagram
 | `ops.register_apify_run / ops.complete_apify_run` | M03 | Async Apify tracking |
 | `ops.process_apify_run(apify_run_id, status, dataset_id, usage_usd, groups) → jsonb` | M03 | Atomic development-only one-page website callback; persisted `ops.apify_runs.processing_result` receipt, replay-safe ingest/report/cost/complete/finish. Existing M01 signatures unchanged; other branches remain gated. |
 | `ops.log_cost(entries jsonb)` | M03 | Cost ledger rows |
-| `ops.daily_health() → jsonb`, `ops.accrue_fixed_costs(day)` | M03 | WF-91 |
+| `ops.daily_health() → jsonb`, `ops.accrue_fixed_costs(day)` | M03; M06 health local | WF-91. Pending21 adds `zero_item_streaks` (five-field account rows), `story_capture_gap` (fraction or null) and `media_missing_24h` (count), retaining all nine original fields. See [local qualification](../milestones/M06-collectors-stories-upkeep/evidence/local-cadence-health-20261029.md). Fixed-fee behavior is unchanged. |
+| `ops.set_stories_cadence(twice_daily boolean) → jsonb` | M06 local | Pending migration20261028223330; switches only story-account cadence and its setting, with replay-safe audit. Does not change due dates, claims, watermarks or source history. No hosted switch performed. |
 | `ops.worker_gateway_admit(window_id uuid, request_id uuid, operation text, args jsonb, mode text default 'admit') → jsonb` | M03 GW-01 | Restricted dev admission; durable100-call/30-minute,30/minute,500/day counters, request digest/replay checks and two leases. Private control modes bind/inspect/close are not HTTP aliases. |
 | `ops.worker_gateway_execute(window_id uuid, request_id uuid, operation text, args jsonb) → jsonb` | M03 GW-01 | Closed connection-trial CASE; operation and result commit atomically. Parent→request→lease locks coordinate closure, duplicates and expiry. |
 | `ops.worker_gateway_status(window_id uuid, target_request_id uuid) → jsonb` | M03 GW-01 | Read-only original-request reconciliation, after separately counted fresh status correlation; never reserves or executes the target. |
@@ -281,5 +282,7 @@ M01 implementation notes: `competitor_accounts.handle_norm` is generated from lo
 7. Regenerate `packages/shared/src/db.types.ts` after every migration and commit it.
 
 ## M05 pending local schema extension — 28 October 2026
+
+The later current M06 checkpoint preserves the19 applied hosted versions. M06 migrations20/media and21/cadence-health remain local and unapplied; the older M05-local description below is historical implementation context, not the current hosted migration count.
 
 `20261028020745_m05_web_youtube_linkedin.sql` adds the fixed `ops.m05_execute` entrypoint, owned website settlement, a claimed YouTube resolver, projected employee snapshots and private job/quota state reusing the existing collector/cost ledgers. It is not applied to hosted dev or production. `app.employee_snapshots.coverage` records bounded source evidence; partial snapshots leave joined/left_company empty. The snapshot helper accepts an optional fourth coverage argument, rejects caller-invented complete coverage/extra PII, binds date to the owned run and preserves prior same-date observations and existing people. Website page/item linkage uses account/platform/external-ID lookup, never array position. New tables have RLS and no direct writer/agent grants. See the [migration and local evidence](../milestones/M05-collectors-web-youtube-linkedin/evidence/local-implementation-20261028.md); generated types are from the local schema, not a hosted receipt.

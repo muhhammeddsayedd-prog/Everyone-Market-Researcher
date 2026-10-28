@@ -88,7 +88,7 @@ else
       phase=gw-test
       printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_GW_TAP_FILES:-1}" "\${EMR_TEST_GW_TAP_COUNT:-102}"
     else
-      printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_TAP_FILES:-16}" "\${EMR_TEST_TAP_COUNT:-257}"
+      printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_TAP_FILES:-17}" "\${EMR_TEST_TAP_COUNT:-257}"
     fi
   fi
   if [[ "$1 $2" == 'db advisors' ]]; then
@@ -213,7 +213,7 @@ test('CI runner uses only explicit local targets and exposes only safe summaries
   fixture((directory) => {
     const child = execute(directory, 'scripts/db/run-local-ci.sh');
     assert.equal(child.status, 0, child.stderr);
-    assert.match(child.stdout, /pgTAP: 16 files, 257 assertions, PASS/);
+    assert.match(child.stdout, /pgTAP: 17 files, 257 assertions, PASS/);
     const commands = readFileSync(join(directory, 'commands'), 'utf8');
     assert.match(
       commands,
@@ -226,6 +226,7 @@ test('CI runner uses only explicit local targets and exposes only safe summaries
     assert.match(commands, /supabase\/tests\/17_m04_recent_monitoring\.test\.sql/);
     assert.match(commands, /supabase\/tests\/18_m05_collectors\.test\.sql/);
     assert.match(commands, /supabase\/tests\/20_m06_media\.test\.sql/);
+    assert.match(commands, /supabase\/tests\/21_m06_cadence_health\.test\.sql/);
     assert.match(commands, /m05-sql.integration.test.ts/);
     assert.match(commands, /m06-media-sql.integration.test.ts/);
     assert.match(commands, /gen types typescript --local --schema app,ops,ingest,api --output-format text/);
@@ -306,6 +307,7 @@ test('CI runner rejects zero assertions or an incomplete SQL suite set', () =>
       { EMR_TEST_TAP_FILES: '13' },
       { EMR_TEST_TAP_FILES: '14' },
       { EMR_TEST_TAP_FILES: '15' },
+      { EMR_TEST_TAP_FILES: '16' },
     ]) {
       assert.equal(execute(directory, 'scripts/db/run-local-ci.sh', overrides).status, 1);
     }
