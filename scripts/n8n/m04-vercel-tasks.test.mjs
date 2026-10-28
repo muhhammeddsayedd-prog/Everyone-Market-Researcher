@@ -3,6 +3,7 @@ import test from 'node:test';
 import { readFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve, sep, basename } from 'node:path';
 import { tmpdir } from 'node:os';
+import { execFileSync } from 'node:child_process';
 import { runVercelTask } from './m04-vercel-tasks.mjs';
 
 const repo = resolve('.'),
@@ -22,7 +23,7 @@ const secrets = {
 const originalMachine = JSON.parse(
   readFileSync(join(repo, 'scripts/n8n/foundation-delivery-packet.json'), 'utf8'),
 );
-function fixture({ incremental = false, hc01 = false } = {}) {
+function fixture({ incremental = false, hc01 = false, m05 = false } = {}) {
   incremental ||= hc01;
   const local = mkdtempSync(join(tmpdir(), 'emr-m04-vercel-local-'));
   const meta = join(local, 'Everyone-Market-Radar-Private/foundation/df4f29ec-e2dc-4d82-a276-62a4e695e6f9');
@@ -160,6 +161,113 @@ function fixture({ incremental = false, hc01 = false } = {}) {
     ssoProtection: { deploymentType: 'all_except_custom_domains' },
     protectionBypass: {},
   };
+  if (m05) {
+    state.scope = 'm05-subset';
+    state.approvalId = 'ee05f451-d27f-4d03-97b2-6a77cbf21805';
+    state.sourceHead = execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: repo,
+      encoding: 'utf8',
+      windowsHide: true,
+      env: Object.fromEntries(
+        ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP'].flatMap((key) =>
+          process.env[key] ? [[key, process.env[key]]] : [],
+        ),
+      ),
+    }).trim();
+    state.selection = {
+      youtube: ['df405b78-eb07-4347-af97-6b62522bab8f', '3dbf4ea2-3eae-4369-89cb-85df8fcd2e03'],
+      linkedin: ['21e51070-6857-4dbd-873d-3a9feba72831', '22db994a-8b44-4a57-996a-60c80cd7a640'],
+      linkedin_employees: ['258f2013-1ca6-4794-830c-6f49efbea0b2'],
+    };
+    const identities = [
+      ['youtube', 'C173', 'https://www.youtube.com/@aflamproductions'],
+      ['youtube', 'C186', 'https://www.youtube.com/@hekka_sa'],
+      ['linkedin', 'C000', 'https://www.linkedin.com/company/everyonefilms/'],
+      ['linkedin', 'C001', 'https://www.linkedin.com/company/goodpeoplefilms/'],
+      ['linkedin_employees', 'C000', 'https://www.linkedin.com/company/everyonefilms/'],
+    ];
+    state.accountSnapshot = Object.values(state.selection)
+      .flat()
+      .map((id, index) => ({
+        id,
+        platform: identities[index][0],
+        company_code: identities[index][1],
+        url: identities[index][2],
+        status: 'active',
+        competitor_status: 'active',
+        locked_until: null,
+        backfill_status: identities[index][0] === 'linkedin_employees' ? 'not_applicable' : 'pending',
+      }));
+    const properties = {
+      'harvestapi/linkedin-company-posts': [
+        'targetUrls',
+        'postedLimitDate',
+        'maxPosts',
+        'includeReposts',
+        'includeQuotePosts',
+        'scrapeReactions',
+        'scrapeComments',
+      ],
+      'harvestapi/linkedin-company-employees': [
+        'companies',
+        'profileScraperMode',
+        'companyBatchMode',
+        'maxItems',
+        'maxItemsPerCompany',
+        'startPage',
+        'takePages',
+      ],
+    };
+    state.provider = {
+      owner_id: 'SyntheticOwner',
+      actors: Object.fromEntries(
+        Object.entries(properties).map(([actor, inputProperties], index) => [
+          actor,
+          {
+            actorId: 'SyntheticActor' + index,
+            buildId: 'SyntheticBuild' + index,
+            build: '1.2.3',
+            pricing: [{ pricingModel: 'PAY_PER_EVENT' }],
+            inputProperties,
+          },
+        ]),
+      ),
+    };
+    state.livePolicy = {
+      approval_id: state.approvalId,
+      max_actor_starts: 8,
+      max_actor_usd: 1,
+      max_total_usd: 8,
+      max_results_per_profile: 20,
+      actors: Object.fromEntries(
+        Object.entries(state.provider.actors).map(([actor, pin]) => [
+          actor,
+          {
+            owner_id: state.provider.owner_id,
+            actorId: pin.actorId,
+            buildId: pin.buildId,
+            build: pin.build,
+            billingModel: 'PPE',
+          },
+        ]),
+      ),
+    };
+    const machine = {
+      id: 'EmrM03Machine19',
+      name: 'M03 foundation machine [dev]',
+      type: 'httpCustomAuth',
+      createdAt: '2026-10-19T00:25:21.669Z',
+      updatedAt: new Date().toISOString(),
+    };
+    state.native = {
+      inventoryComplete: true,
+      machine: { baseline: machine, current: structuredClone(machine), rebound: false, pending: null },
+    };
+    state.machineBaseline = { audience: originalMachine.audience };
+    state.projectBaseline = structuredClone(projectDto);
+    // M05 must use its current inventory, not re-open this old metadata source.
+    writeFileSync(join(meta, 'pending-runtime.json'), 'not a M05 input');
+  }
   const rows = [],
     calls = [],
     productionBuilds = [];
@@ -218,7 +326,10 @@ function fixture({ incremental = false, hc01 = false } = {}) {
     }
     if (path.startsWith('/v13/deployments?')) {
       assert.equal(value.target, undefined);
-      assert.equal(value.gitSource.ref, 'm04-collectors-vimeo-instagram');
+      assert.equal(
+        value.gitSource.ref,
+        m05 ? 'm05-collectors-web-youtube-linkedin' : 'm04-collectors-vimeo-instagram',
+      );
       assert.equal(value.gitSource.sha, state.sourceHead);
       deployment = {
         id: 'dpl_M04Synthetic',
@@ -226,7 +337,10 @@ function fixture({ incremental = false, hc01 = false } = {}) {
         target: null,
         projectId: project,
         createdAt: Date.now(),
-        meta: { githubCommitSha: state.sourceHead, githubCommitRef: 'm04-collectors-vimeo-instagram' },
+        meta: {
+          githubCommitSha: state.sourceHead,
+          githubCommitRef: m05 ? 'm05-collectors-web-youtube-linkedin' : 'm04-collectors-vimeo-instagram',
+        },
         readyState: 'BUILDING',
       };
       return { status: 200, data: structuredClone(deployment), closed: true };
@@ -245,7 +359,11 @@ function fixture({ incremental = false, hc01 = false } = {}) {
         secrets,
         repo,
         send: transport,
-        ...(incremental ? { readEvidence: (_repo, name) => structuredClone(records[name]) } : {}),
+        ...(m05
+          ? { readEvidence: () => assert.fail('M05 must not read old M04 approval/snapshot files') }
+          : incremental
+            ? { readEvidence: (_repo, name) => structuredClone(records[name]) }
+            : {}),
       });
     } finally {
       if (prior === undefined) delete process.env.LOCALAPPDATA;
@@ -269,6 +387,129 @@ function fixture({ incremental = false, hc01 = false } = {}) {
     },
   };
 }
+test('M05 subset uses current inventory and completes branch-only setup through exact shutdown', async () => {
+  const f = fixture({ m05: true });
+  try {
+    assert.equal((await f.run('prepare')).public.status, 'completed');
+    const bypass = f.state.protectionBypass;
+    assert.equal(f.calls.length, 0);
+    assert.equal((await f.run('prepare')).public.status, 'completed');
+    assert.equal(f.state.protectionBypass, bypass);
+    for (const phase of ['configure', 'poll', 'cleanup']) {
+      const result = await f.run(phase);
+      assert.equal(result.public.status, 'completed', JSON.stringify(result.public));
+      for (const secret of [...Object.values(secrets), bypass])
+        assert.ok(!JSON.stringify(result.public).includes(secret));
+    }
+    const creates = f.calls.filter((call) => call.method === 'POST' && call.path.includes('/env?'));
+    assert.equal(creates.length, 7);
+    for (const call of creates) {
+      assert.equal(call.value.gitBranch, 'm05-collectors-web-youtube-linkedin');
+      assert.deepEqual(call.value.target, ['preview']);
+      assert.equal(call.value.type, 'sensitive');
+    }
+    const selected = JSON.parse(
+      creates.find((call) => call.value.key === 'EMR_COLLECTORS_ACCOUNT_IDS').value.value,
+    );
+    assert.deepEqual(selected, Object.values(f.state.selection).flat());
+    assert.equal(selected.length, 5);
+    assert.deepEqual(f.projectDto.protectionBypass, {});
+    assert.equal(f.rows.length, 0);
+    assert.equal(f.state.vercelSetup.cleanupComplete, true);
+    assert.equal(f.state.deployment.branch, 'm05-collectors-web-youtube-linkedin');
+  } finally {
+    f.close();
+  }
+});
+
+test('M05 subset refuses websites, changed identities, provider pins and Machine drift before requests', async () => {
+  for (const fault of ['website', 'identity', 'pin', 'machine', 'source']) {
+    const f = fixture({ m05: true });
+    try {
+      if (fault === 'website')
+        f.state.livePolicy.actors['apify/website-content-crawler'] = structuredClone(
+          Object.values(f.state.livePolicy.actors)[0],
+        );
+      if (fault === 'identity') f.state.accountSnapshot[0].url = 'https://www.youtube.com/@unapproved';
+      if (fault === 'pin') f.state.provider.actors['harvestapi/linkedin-company-posts'].build = '9.9.9';
+      if (fault === 'machine') f.state.native.machine.current.updatedAt = '2020-01-01T00:00:00Z';
+      if (fault === 'source') f.state.sourceHead = 'a'.repeat(40);
+      assert.equal((await f.run('prepare')).public.status, 'blocked', fault);
+      assert.equal(f.calls.length, 0);
+    } finally {
+      f.close();
+    }
+  }
+});
+
+test('M05 subset accepts adjusted finite operational settings and preserves other branch environment', async () => {
+  const f = fixture({ m05: true });
+  try {
+    Object.assign(f.state.livePolicy, { max_actor_starts: 16, max_actor_usd: 2.5, max_total_usd: 20 });
+    assert.equal((await f.run('prepare')).public.status, 'completed');
+    const foreign = {
+      id: 'unrelated_env',
+      key: 'EMR_COLLECTORS_ENABLED',
+      gitBranch: 'm04-collectors-vimeo-instagram',
+      target: ['preview'],
+      type: 'sensitive',
+      comment: 'preserved historical branch',
+    };
+    f.rows.push(foreign);
+    assert.equal((await f.run('configure')).public.status, 'completed');
+    const policy = JSON.parse(
+      f.calls.find((call) => call.method === 'POST' && call.value?.key === 'EMR_COLLECTORS_LIVE_POLICY').value
+        .value,
+    );
+    assert.equal(policy.max_actor_starts, 16);
+    assert.equal(policy.max_total_usd, 20);
+    assert.equal((await f.run('cleanup')).public.status, 'completed');
+    assert.deepEqual(f.rows, [foreign]);
+    assert.deepEqual(f.projectDto.protectionBypass, {});
+  } finally {
+    f.close();
+  }
+});
+
+test('M05 subset production conflict stops before any mutation and never adopts a lost environment create', async () => {
+  const conflict = fixture({ m05: true });
+  try {
+    await conflict.run('prepare');
+    conflict.productionBuilds.push({
+      uid: 'dpl_OtherProduction',
+      projectId: project,
+      target: 'production',
+      readyState: 'BUILDING',
+    });
+    assert.equal((await conflict.run('configure')).public.code, 'M04_VERCEL_PRODUCTION_BUILD_CONFLICT');
+    assert.ok(conflict.calls.every((call) => call.method === 'GET'));
+  } finally {
+    conflict.close();
+  }
+  const f = fixture({ m05: true });
+  try {
+    await f.run('prepare');
+    assert.equal(
+      (
+        await f.run('configure', async (method, path, value) => {
+          const response = await f.send(method, path, value);
+          if (method === 'POST' && path.includes('/env?')) throw Error('synthetic lost acknowledgement');
+          return response;
+        })
+      ).public.status,
+      'blocked',
+    );
+    const count = f.calls.length;
+    assert.equal((await f.run('configure')).public.status, 'blocked');
+    assert.equal(f.calls.length, count);
+    assert.equal((await f.run('cleanup')).public.code, 'M04_VERCEL_UNRESOLVED_EFFECT');
+    assert.equal(f.rows.length, 1);
+    assert.deepEqual(f.projectDto.protectionBypass, {});
+  } finally {
+    f.close();
+  }
+});
+
 test('local preparation uses accepted snapshots, one persistent bypass and the exact M04 policy without any network call', async () => {
   const f = fixture();
   try {

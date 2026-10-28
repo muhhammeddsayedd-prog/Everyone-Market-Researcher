@@ -3,7 +3,7 @@ param(
   [ValidateSet('Preflight','Apply','Postcheck','Query')][string]$Phase='Preflight',
   [string]$QueryFile='',
   [string]$QuerySha256='',
-  [ValidateSet('Representative','Incremental','HC01')][string]$Scope='Representative',
+  [ValidateSet('Representative','Incremental','HC01','M05')][string]$Scope='Representative',
   [switch]$ReadOnly,
   [switch]$CheckOnly
 )
@@ -26,6 +26,7 @@ $pending=@(
   [pscustomobject]@{version='20261027092832';name='m04_collector_product_contracts';file='supabase/migrations/20261027092832_m04_collector_product_contracts.sql';sha256='19eb07af9446189496cde17d1b9a735b99816c5008c37588d38cddbc41e6a05a';historySha256='7f036a391743189b3e8031070aa4f18fbd893df7619aab92b02f6a5996b4db7f'}
 )
 $hc01Migration=[pscustomobject]@{version='20261027192743';name='m04_recent_instagram_dev_eligibility';file='supabase/migrations/20261027192743_m04_recent_instagram_dev_eligibility.sql';sha256='635b8303d69ab32560d5acda903fee4c4555a9b3f6f35923d4d7b3655513f61d';historySha256=$null}
+$m05Migration=[pscustomobject]@{version='20261028020745';name='m05_web_youtube_linkedin';file='supabase/migrations/20261028020745_m05_web_youtube_linkedin.sql';sha256='f3ff025065106733f7c76aec963e465a045270876c642db69e131df72f6d865e';historySha256=$null}
 
 function M04-File([string]$Path,[bool]$Directory=$false,[bool]$PinnedExecutable=$false) {
   $absolute=[IO.Path]::GetFullPath($Path)
@@ -45,12 +46,13 @@ function M04-OutputDirectory {
 }
 function M04-QueryPath([string]$Path,[string]$Hash) {
   if($Hash -cnotmatch '^[a-f0-9]{64}$' -or [string]::IsNullOrWhiteSpace($Path)){throw 'M04_QUERY_BLOCKED'}
-  $root=[IO.Path]::GetFullPath((Join-Path $repo 'milestones/M04-collectors-vimeo-instagram/evidence')).TrimEnd('\')+'\'
+  $evidence=if($Scope -eq 'M05'){'milestones/M05-collectors-web-youtube-linkedin/evidence'}else{'milestones/M04-collectors-vimeo-instagram/evidence'}
+  $root=[IO.Path]::GetFullPath((Join-Path $repo $evidence)).TrimEnd('\')+'\'
   $absolute=[IO.Path]::GetFullPath($Path)
   if(-not $absolute.StartsWith($root,[StringComparison]::OrdinalIgnoreCase) -or [IO.Path]::GetExtension($absolute) -cne '.sql'){throw 'M04_QUERY_BLOCKED'}
   $null=M04-File $absolute
   if((Get-Item -LiteralPath $absolute).Length -gt 131072 -or (M04-Hash $absolute) -cne $Hash){throw 'M04_QUERY_BLOCKED'}
-  if([IO.File]::ReadAllText($absolute) -cmatch '__M04_[A-Z0-9_]+__'){throw 'M04_QUERY_BLOCKED'}
+  if([IO.File]::ReadAllText($absolute) -cmatch '__(?:M04|M05)_[A-Z0-9_]+__'){throw 'M04_QUERY_BLOCKED'}
   return $absolute
 }
 
@@ -166,7 +168,7 @@ function M04-Catalog($Result) {
   if($rows.Count -ne 1){throw 'M04_CATALOG_BLOCKED'}
   $catalog=$rows[0].catalog
   if($catalog.identity -ne $true -or @($catalog.tables).Count -ne 6 -or @($catalog.functions).Count -ne 3){throw 'M04_CATALOG_BLOCKED'}
-  if($Scope -eq 'HC01' -and $catalog.collectorDefinitionMd5 -cne '9d65ad95661ffd77d1d9effc3e52fa83'){throw 'M04_CATALOG_BLOCKED'}
+  if($Scope -in @('HC01','M05') -and $catalog.collectorDefinitionMd5 -cne '9d65ad95661ffd77d1d9effc3e52fa83'){throw 'M04_CATALOG_BLOCKED'}
   $tableNames=@('collector_runs','collector_accounts','collector_launches','collector_passes','collector_pages','collector_requests')
   if(@(Compare-Object -CaseSensitive @($tableNames|Sort-Object) @($catalog.tables.name|Sort-Object)).Count -ne 0){throw 'M04_CATALOG_BLOCKED'}
   foreach($table in $catalog.tables){if($table.rls -ne $true -or $table.writerTableGrant -ne $false){throw 'M04_CATALOG_BLOCKED'}}
@@ -191,6 +193,7 @@ function M04-Catalog($Result) {
     $actual=@($catalog.columns|Where-Object{$_.table -ceq $table.name}|ForEach-Object{$_.name+':'+$_.type+':'+$_.nullable.ToString().ToLowerInvariant()}|Sort-Object)
     if(@(Compare-Object -CaseSensitive @($expectedColumns[$table.name]|Sort-Object) $actual).Count -ne 0){throw 'M04_CATALOG_BLOCKED'}
   }
+  if($Scope -eq 'M05'){$null=M05-Catalog $catalog.m05}
   return $catalog
 }
 function Get-M04ExpectedColumns {
@@ -206,12 +209,48 @@ function Get-M04ExpectedColumns {
   }
 }
 
+function Get-M05ExpectedColumns {
+  return @{
+    m05_jobs=@('launch_id:uuid:false','actor_input:jsonb:false','urls:text[]:false','crawler_type:text:true','snapshot_date:date:true','retry_of:uuid:true','max_website_urls_per_account:integer:false','settled:boolean:false','retry_pending:boolean:false','result:jsonb:true')
+    m05_quota=@('quota_day:date:false','used_units:integer:false')
+  }
+}
+function M05-Catalog($Catalog) {
+  if($null -eq $Catalog -or @($Catalog.tables).Count -ne 2 -or @($Catalog.functions).Count -ne 6){throw 'M04_CATALOG_BLOCKED'}
+  $mapping=Get-M05ExpectedColumns
+  if(@(Compare-Object -CaseSensitive @($mapping.Keys|Sort-Object) @($Catalog.tables.name|Sort-Object)).Count){throw 'M04_CATALOG_BLOCKED'}
+  foreach($table in $Catalog.tables){
+    if($table.rls -ne $true -or $table.directGrant -ne $false){throw 'M04_CATALOG_BLOCKED'}
+    $actual=@($Catalog.columns|Where-Object{$_.table -ceq $table.name}|ForEach-Object{$_.name+':'+$_.type+':'+$_.nullable.ToString().ToLowerInvariant()}|Sort-Object)
+    if(@(Compare-Object -CaseSensitive @($mapping[$table.name]|Sort-Object) $actual).Count){throw 'M04_CATALOG_BLOCKED'}
+  }
+  $signatures=@{
+    m05_assert_claim=@('p_run_id uuid, p_account_id uuid','app.competitor_accounts',0,$false)
+    mark_website_page=@('p_url text, p_status text, p_item_id uuid','void',1,$true)
+    save_employee_snapshot=@('p_account_id uuid, p_snapshot_date date, p_people jsonb, p_coverage jsonb','jsonb',1,$true)
+    m05_resolve_youtube=@('p_account_id uuid, p_external_id text, p_uploads_playlist_id text','void',0,$false)
+    m05_finalize=@('p_run_id uuid','jsonb',0,$false)
+    m05_execute=@('p_request_id uuid, p_operation text, p_args jsonb','jsonb',0,$true)
+  }
+  if(@(Compare-Object -CaseSensitive @($signatures.Keys|Sort-Object) @($Catalog.functions.name|Sort-Object)).Count){throw 'M04_CATALOG_BLOCKED'}
+  foreach($function in $Catalog.functions){
+    $expected=$signatures[$function.name]
+    if($function.definer -ne $true -or @($function.config) -cnotcontains 'search_path=""' -or
+      $function.publicExecute -ne $false -or $function.browserExecute -ne $false -or $function.anonExecute -ne $false -or $function.agentExecute -ne $false -or
+      $function.writerExecute -ne $expected[3] -or $function.identityArgs -cne $expected[0] -or $function.returns -cne $expected[1] -or $function.defaultsCount -ne $expected[2]){throw 'M04_CATALOG_BLOCKED'}
+  }
+  if($Catalog.coverage.type -cne 'jsonb' -or $Catalog.coverage.nullable -ne $false -or $Catalog.coverage.hasDefault -ne $true -or
+    $Catalog.launchStartsConstraint -cne 'CHECK ((max_actor_starts > 0))'){throw 'M04_CATALOG_BLOCKED'}
+  return $Catalog
+}
+
 $exitCode=1;$historyFile=$null;$catalogFile=$null;$queryCopy=$null
 try{
   $null=M04-File $repo $true
   if(($Scope -eq 'Incremental' -or $ReadOnly) -and $Phase -cne 'Query'){throw 'M04_QUERY_BLOCKED'}
   if($Scope -eq 'Incremental'){$receipt['scope']='incremental';$receipt['readOnly']=$ReadOnly.IsPresent}
   if($Scope -eq 'HC01'){$receipt['scope']='hc01';$receipt['readOnly']=$ReadOnly.IsPresent}
+  if($Scope -eq 'M05'){$receipt['scope']='m05';$receipt['readOnly']=$ReadOnly.IsPresent}
   if(($Phase -ceq 'Query') -ne (-not [string]::IsNullOrEmpty($QueryFile) -and -not [string]::IsNullOrEmpty($QuerySha256))){throw 'M04_QUERY_BLOCKED'}
   if($Phase -cne 'Query' -and ($QueryFile -or $QuerySha256)){throw 'M04_QUERY_BLOCKED'}
   $queryOriginal=if($Phase -ceq 'Query'){M04-QueryPath $QueryFile $QuerySha256}else{$null}
@@ -223,7 +262,7 @@ try{
     if((M04-Hash $pgPackage) -cne 'b1e53333a3d0c2c47c49a5cb919d221135dc03145df740925b899bc2baacc435'){throw 'M04_SOURCE_BLOCKED'}
   }
   $preflightOriginal=$null
-  if($Phase -ceq 'Preflight'){
+  if($Phase -ceq 'Preflight' -and $Scope -ne 'M05'){
     $preflightOriginal=M04-File (Join-Path $repo 'milestones/M04-collectors-vimeo-instagram/evidence/live-preflight.sql')
     if((M04-Hash $preflightOriginal) -cne '9d87a26cb1ae60a1d511794329ef8cbe64153aa6e26fce7c3dad22197e779eed'){throw 'M04_SOURCE_BLOCKED'}
   }
@@ -238,7 +277,9 @@ try{
   $old=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($packetFile));$baseline=@($old.baseline)+@($old.pending)
   if($baseline.Count -ne 15 -or $old.target -cne $project){throw 'M04_BASELINE_BLOCKED'}
   $sourceAll=@($baseline)+@($pending)+@($hc01Migration)
-  if(@(Get-ChildItem -LiteralPath (Join-Path $repo 'supabase/migrations') -Force).Count -ne 18){throw 'M04_SOURCE_BLOCKED'}
+  $sourceCount=@(Get-ChildItem -LiteralPath (Join-Path $repo 'supabase/migrations') -Force).Count
+  if($sourceCount -notin @(18,19) -or ($Scope -eq 'M05' -and $sourceCount -ne 19)){throw 'M04_SOURCE_BLOCKED'}
+  if($sourceCount -eq 19){$sourceAll+=@($m05Migration)}
   foreach($migration in $sourceAll){$file=M04-File (Join-Path $repo $migration.file);if((M04-Hash $file) -cne $migration.sha256){throw 'M04_SOURCE_BLOCKED'}}
   if($Scope -eq 'HC01'){
     $approvalPath=M04-File (Join-Path $repo 'milestones/M04-collectors-vimeo-instagram/evidence/hc01-dev-approval-20261028.json')
@@ -246,9 +287,13 @@ try{
     if($approval.approval_kind -cne 'hc01' -or $approval.approval_id -cne '1cf8406c-1142-445e-a237-6d0fd7a67b22' -or $approval.projectRef -cne $project -or $approval.environment -cne 'dev'){throw 'M04_BASELINE_BLOCKED'}
     $baseline=@($baseline)+@($pending);$pending=@($hc01Migration)
   }
+  if($Scope -eq 'M05'){
+    $hc01Migration.historySha256='4d2d43165f9159354a8ef5c5c34214b9d880b134fec45edbe2a22f63d65c0f72'
+    $baseline=@($baseline)+@($pending)+@($hc01Migration);$pending=@($m05Migration)
+  }
   $all=@($baseline)+@($pending)
   # No private state, decryption, network, native process or copy in CheckOnly.
-  if($CheckOnly){$receipt.status='public_ready';$receipt['pendingVersions']=@($pending.version);$exitCode=0}
+  if($CheckOnly){$receipt.status='public_ready';$receipt['pendingVersions']=@($pending.version);if($Scope -eq 'M05'){$receipt['baselineVersions']=@($baseline.version);$receipt['pendingSourceSha256']=$m05Migration.sha256};$exitCode=0}
   else{
     $receipt['preparationStage']='persistent_admin_metadata'
     . (Join-Path $repo 'scripts/n8n/windows/Dev-CredentialStore.ps1')
@@ -278,7 +323,7 @@ try{
     $dbUri='postgresql://postgres.'+$project+'@'+$hostName+':5432/postgres?sslmode=verify-full&sslrootcert='+[Uri]::EscapeDataString($scratchCa)
     $historyFile=Join-Path $scratch 'history.sql'
     [IO.File]::WriteAllText($historyFile,"select jsonb_build_object('current_user',current_user,'session_user',session_user,'database',current_database(),'migrations',(select coalesce(jsonb_agg(jsonb_build_object('version',version,'name',name,'historySha256',encode(extensions.digest(array_to_string(statements,E'\n'),'sha256'),'hex')) order by version),'[]'::jsonb) from supabase_migrations.schema_migrations)) as receipt;")
-    if($Phase -ceq 'Preflight'){
+    if($Phase -ceq 'Preflight' -and $Scope -ne 'M05'){
       [IO.File]::Copy($preflightOriginal,$historyFile,$true)
       if((M04-Hash $historyFile) -cne '9d87a26cb1ae60a1d511794329ef8cbe64153aa6e26fce7c3dad22197e779eed'){throw 'M04_SOURCE_BLOCKED'}
     }
@@ -293,6 +338,24 @@ select jsonb_build_object('identity',current_user='postgres' and session_user='p
  'columns',(select jsonb_agg(jsonb_build_object('table',c.relname,'name',a.attname,'type',format_type(a.atttypid,null),'nullable',not a.attnotnull) order by c.relname,a.attname)
    from pg_attribute a join pg_class c on c.oid=a.attrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='ops' and c.relname in ('collector_runs','collector_accounts','collector_launches','collector_passes','collector_pages','collector_requests') and a.attnum>0 and not a.attisdropped)) as catalog;
 '@)
+    if($Scope -eq 'M05'){
+      $sidecar=@'
+ || jsonb_build_object('m05',jsonb_build_object(
+ 'tables',(select jsonb_agg(jsonb_build_object('name',c.relname,'rls',c.relrowsecurity,
+   'directGrant',has_table_privilege('n8n_writer',c.oid,'SELECT,INSERT,UPDATE,DELETE') or has_table_privilege('api_agent',c.oid,'SELECT,INSERT,UPDATE,DELETE') or has_table_privilege('authenticated',c.oid,'SELECT,INSERT,UPDATE,DELETE') or has_table_privilege('anon',c.oid,'SELECT,INSERT,UPDATE,DELETE') or exists(select 1 from aclexplode(coalesce(c.relacl,acldefault('r',c.relowner))) acl where acl.grantee=0)) order by c.relname)
+   from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='ops' and c.relname in ('m05_jobs','m05_quota')),
+ 'columns',(select jsonb_agg(jsonb_build_object('table',c.relname,'name',a.attname,'type',format_type(a.atttypid,null),'nullable',not a.attnotnull) order by c.relname,a.attname)
+   from pg_attribute a join pg_class c on c.oid=a.attrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='ops' and c.relname in ('m05_jobs','m05_quota') and a.attnum>0 and not a.attisdropped),
+ 'functions',(select jsonb_agg(jsonb_build_object('name',p.proname,'definer',p.prosecdef,'config',p.proconfig,
+   'publicExecute',exists(select 1 from aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) acl where acl.grantee=0 and acl.privilege_type='EXECUTE'),
+   'writerExecute',has_function_privilege('n8n_writer',p.oid,'EXECUTE'),'browserExecute',has_function_privilege('authenticated',p.oid,'EXECUTE'),'anonExecute',has_function_privilege('anon',p.oid,'EXECUTE'),'agentExecute',has_function_privilege('api_agent',p.oid,'EXECUTE'),
+   'identityArgs',pg_get_function_identity_arguments(p.oid),'returns',pg_get_function_result(p.oid),'defaultsCount',p.pronargdefaults) order by p.proname)
+   from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='ops' and p.proname in ('m05_assert_claim','mark_website_page','save_employee_snapshot','m05_resolve_youtube','m05_finalize','m05_execute')),
+ 'coverage',(select jsonb_build_object('type',format_type(a.atttypid,null),'nullable',not a.attnotnull,'hasDefault',a.atthasdef) from pg_attribute a join pg_class c on c.oid=a.attrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='app' and c.relname='employee_snapshots' and a.attname='coverage' and not a.attisdropped),
+ 'launchStartsConstraint',(select pg_get_constraintdef(oid) from pg_constraint where conrelid='ops.collector_launches'::regclass and conname='collector_launches_max_actor_starts_check'))) as catalog;
+'@
+      [IO.File]::WriteAllText($catalogFile,([IO.File]::ReadAllText($catalogFile)).Replace(' as catalog;',$sidecar))
+    }
     if($Phase -ceq 'Query'){
       $queryCopy=Join-Path $scratch 'reviewed.sql';[IO.File]::Copy($queryOriginal,$queryCopy,$false)
       if((M04-Hash $queryCopy) -cne $QuerySha256){throw 'M04_QUERY_BLOCKED'}
@@ -332,7 +395,7 @@ end $m04_identity$;
       $receipt.status='preflight_verified';$receipt['newHistorySourceParity']=$true
     }
     elseif($Phase -ceq 'Apply'){
-      $intentName=if($Scope -eq 'HC01'){'m04-hc01-dev-migration-intent.json'}else{'m04-dev-migration-intent.json'}
+      $intentName=if($Scope -eq 'M05'){'m05-dev-migration-intent.json'}elseif($Scope -eq 'HC01'){'m04-hc01-dev-migration-intent.json'}else{'m04-dev-migration-intent.json'}
       $intentPath=Join-Path $out $intentName
       # An existing intent means a possibly successful push, never a new permit.
       if(Test-Path -LiteralPath $intentPath){throw 'M04_APPLY_RECONCILIATION_REQUIRED'}

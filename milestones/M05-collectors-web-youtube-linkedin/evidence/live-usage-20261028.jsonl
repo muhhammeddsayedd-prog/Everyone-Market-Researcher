@@ -1,0 +1,15 @@
+{"at":"2026-10-28T16:23:54.548Z","event":"historical_checkpoint","scope":"m05","totals":{"management":2,"control":2,"combined":4,"vercel":0},"actorStarts":0,"actorUsd":0,"notes":"Retains earlier credential-list MCP internal error and exact WF13 details MCP internal error, plus one bounded dev migration-history read and one bounded five-account baseline query. No source calls or paid starts."}
+{"at":"2026-10-28T16:25:50.762Z","event":"request_intent","category":"provider","operation":"GET /v2/users/me","scope":"m05-subset","totals":{"management":2,"control":3,"combined":5,"vercel":0}}
+{"at":"2026-10-28T16:25:51.681Z","event":"request_result","category":"provider","operation":"GET /v2/users/me","status":200}
+{"at":"2026-10-28T16:25:51.686Z","event":"request_intent","category":"provider","operation":"GET /v2/actors/harvestapi~linkedin-company-posts","scope":"m05-subset","totals":{"management":2,"control":4,"combined":6,"vercel":0}}
+{"at":"2026-10-28T16:25:52.392Z","event":"request_result","category":"provider","operation":"GET /v2/actors/harvestapi~linkedin-company-posts","status":200}
+{"at":"2026-10-28T16:25:52.395Z","event":"request_intent","category":"provider","operation":"GET /v2/actors/WI0tj4Ieb5Kq458gB/builds/teA7OSQ7XPti5Jnit","scope":"m05-subset","totals":{"management":2,"control":5,"combined":7,"vercel":0}}
+{"at":"2026-10-28T16:25:53.383Z","event":"request_result","category":"provider","operation":"GET /v2/actors/WI0tj4Ieb5Kq458gB/builds/teA7OSQ7XPti5Jnit","status":200}
+{"at":"2026-10-28T16:25:53.386Z","event":"request_intent","category":"provider","operation":"GET /v2/actors/WI0tj4Ieb5Kq458gB/builds/teA7OSQ7XPti5Jnit/openapi.json","scope":"m05-subset","totals":{"management":2,"control":6,"combined":8,"vercel":0}}
+{"at":"2026-10-28T16:25:54.358Z","event":"request_result","category":"provider","operation":"GET /v2/actors/WI0tj4Ieb5Kq458gB/builds/teA7OSQ7XPti5Jnit/openapi.json","status":200}
+{"at":"2026-10-28T16:25:54.360Z","event":"request_intent","category":"provider","operation":"GET /v2/actors/harvestapi~linkedin-company-employees","scope":"m05-subset","totals":{"management":2,"control":7,"combined":9,"vercel":0}}
+{"at":"2026-10-28T16:25:55.338Z","event":"request_result","category":"provider","operation":"GET /v2/actors/harvestapi~linkedin-company-employees","status":200}
+{"at":"2026-10-28T16:25:55.340Z","event":"request_intent","category":"provider","operation":"GET /v2/actors/Vb6LZkh4EqRlR0Ka9/builds/45FkeNrN7i4AeFKpk","scope":"m05-subset","totals":{"management":2,"control":8,"combined":10,"vercel":0}}
+{"at":"2026-10-28T16:25:56.821Z","event":"request_result","category":"provider","operation":"GET /v2/actors/Vb6LZkh4EqRlR0Ka9/builds/45FkeNrN7i4AeFKpk","status":200}
+{"at":"2026-10-28T16:25:56.823Z","event":"request_intent","category":"provider","operation":"GET /v2/actors/Vb6LZkh4EqRlR0Ka9/builds/45FkeNrN7i4AeFKpk/openapi.json","scope":"m05-subset","totals":{"management":2,"control":9,"combined":11,"vercel":0}}
+{"at":"2026-10-28T16:25:58.181Z","event":"request_result","category":"provider","operation":"GET /v2/actors/Vb6LZkh4EqRlR0Ka9/builds/45FkeNrN7i4AeFKpk/openapi.json","status":200}

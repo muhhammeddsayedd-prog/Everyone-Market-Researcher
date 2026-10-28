@@ -88,3 +88,16 @@ Actual focused checks: 59 source/estimator Vitest tests; 46 serialized native/Yo
 ## Hand-off to next milestone
 <!-- Filled when Done: what exists now, how to run/verify it, known gaps, what the next milestone should start with. See MILESTONE.md §14 for the required items. -->
 - —
+
+## 28 October continuation — independently authorized non-website subset
+
+This new track does not perform the earlier denied website edits. Their original evidence and the older text above remain preserved pending a supported narrow review. No permanent filename restriction has been established.
+
+- Continuing draft PR14 from `e374257`; existing green CI40712613477 is preserved. The bounded native, Preview and database adapters now have an isolated M05 subset scope, separate encrypted state and request ledger. The original M04 scopes, charges, applied versions and evidence remain unchanged.
+- Actual dev preflight:18 matching applied migrations; `20261028020745` still pending, source SHA256 `f3ff025065106733f7c76aec963e465a045270876c642db69e131df72f6d865e`. Exact five catalog accounts verified, zero selected claims/running parents/unfinished actors;242 items/raw preserved. Existing Admin and Apify read credentials worked. Two HarvestAPI metadata/build reads succeeded; no website capability enters the subset policy.
+- Authenticated native Chrome shows WF-13 and its Execute control. Machine allowed host was inspected without reading its JSON or saving. The workflow-details connector's `-32603` is retained; it does not establish missing credentials.
+- Current Vercel native metadata reports actual expiry with zero authentication/network activity. Exact existing-account `vercel.cmd login` instructions have been requested once; other preparation continues. No collection, hosted migration push, workflow mutation, Preview binding or bypass activation has occurred.
+- [Subset execution record](evidence/subset-validation-20261028.md): direct WF-13/WF-18/WF-18b, existing selections, bounded first/repeat observations, cost/ownership reconciliation and exact shutdown. Website and overall M05 acceptance remain open. No production, schedules, notifications, merge or M06.
+- [Draft support report](evidence/review-capability-support-20261028.md) is prepared, not submitted. Observed runtime remains `approval_policy=never`; local saved config/startup flags do not explain its source, managed/cloud origin is unknown, and this client exposes no narrow review endpoint. The owner already found `/approve` unavailable; it is not requested again.
+
+Next: finish changed-head checks/review and push, use the existing exact-version M05 database path once, then execute the selected subset after native/provider/Preview readiness. Keep the website retry validation unperformed until a supported review mechanism permits the revised action. No fresh budget or general development decision is needed.

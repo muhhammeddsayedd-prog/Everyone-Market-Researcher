@@ -1,12 +1,153 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
 import {
   bindOwnedInstagramReplay,
   checkM04IncrementalCharge,
   runTask,
   validOperation,
+  initializeM05Subset,
+  m05SubsetAccounts,
+  chargeM05Request,
 } from './m04-dev-task.mjs';
+
+function subsetBaseline() {
+  return {
+    status: 'reviewed_query_complete',
+    environment: 'dev',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    host: 'aws-1-eu-central-1.pooler.supabase.com',
+    port: 5432,
+    authenticationVerified: true,
+    childrenClosed: true,
+    databaseClientClosed: true,
+    observedAt: new Date().toISOString(),
+    queryResult: [
+      {
+        m05_subset: {
+          current_user: 'postgres',
+          session_user: 'postgres',
+          database: 'postgres',
+          selectedLiveClaims: 0,
+          selectedRunningParents: 0,
+          selectedUnprocessedActors: 0,
+          accounts: m05SubsetAccounts.map((a) => ({
+            ...a,
+            status: 'active',
+            competitor_status: 'active',
+            locked_until: null,
+          })),
+        },
+      },
+    ],
+  };
+}
+test('M05 initializes the five retained identities from an actual bounded DB receipt, never website or M04 state', () => {
+  const s = {};
+  const trailing = subsetBaseline();
+  trailing.queryResult[0].m05_subset.accounts[3].url += '/';
+  initializeM05Subset(s, trailing, 'a'.repeat(40));
+  assert.equal(s.scope, 'm05-subset');
+  assert.equal(s.accountIds.length, 5);
+  assert.deepEqual(Object.keys(s.collectorSelections).sort(), ['WF-13', 'WF-18', 'WF-18b']);
+  assert.equal(s.selection.website, undefined);
+  assert.equal(s.deployment, undefined);
+  assert.match(s.machineBaseline.audience, /^https:\/\/everyone-market-researcher-/);
+  for (const change of [
+    (b) => (b.queryResult[0].m05_subset.accounts[0].id = '00000000-0000-4000-8000-000000000004'),
+    (b) => (b.queryResult[0].m05_subset.selectedUnprocessedActors = 1),
+    (b) => (b.childrenClosed = false),
+    (b) => (b.observedAt = '2020-01-01T00:00:00Z'),
+  ]) {
+    const b = subsetBaseline();
+    change(b);
+    assert.throws(() => initializeM05Subset({}, b, 'a'.repeat(40)), /M05_SUBSET/);
+  }
+  assert.throws(() => initializeM05Subset({ scope: 'hc01' }), /M05_SUBSET_STATE/);
+});
+test('M05 metadata pins only the two selected PPE actors and records no website capability', async () => {
+  const responses = [{ status: 200, body: { data: { id: 'OwnerId123' } } }];
+  for (const [i, name] of ['linkedin-company-posts', 'linkedin-company-employees'].entries())
+    responses.push(
+      {
+        status: 200,
+        body: {
+          data: {
+            username: 'harvestapi',
+            name,
+            id: 'ActorId' + i,
+            taggedBuilds: { latest: { buildId: 'BuildId' + i } },
+            pricingInfos: [{ pricingModel: 'PAY_PER_EVENT' }],
+          },
+        },
+      },
+      { status: 200, body: { data: { status: 'SUCCEEDED', buildNumber: '1.2.3' } } },
+      {
+        status: 200,
+        body: { components: { schemas: { inputSchema: { properties: { targetUrls: { type: 'array' } } } } } },
+      },
+    );
+  const t = transport(responses),
+    s = {};
+  initializeM05Subset(s, subsetBaseline(), 'a'.repeat(40));
+  const r = await runTask(
+    {
+      task: 'ProviderMetadata',
+      scope: 'm05-subset',
+      state: s,
+      secrets: { apifyRead: 'synthetic-private-key' },
+    },
+    t.dependencies,
+  );
+  assert.equal(r.public.status, 'completed');
+  assert.equal(r.public.websiteExcluded, true);
+  assert.equal(t.calls.length, 7);
+  assert.equal(Object.keys(r.private.livePolicy.actors).length, 2);
+  assert.equal(r.private.livePolicy.actors['harvestapi/linkedin-company-posts'].billingModel, 'PPE');
+  assert.equal(
+    t.calls.some((c) => c.path.includes('website')),
+    false,
+  );
+  assert.equal(JSON.stringify(r.public).includes('synthetic-private-key'), false);
+});
+test('M05 charges retain historical counters with Vercel inside Management and no M04 ledger mutation', () => {
+  const d = mkdtempSync(join(tmpdir(), 'emr-m05-ledger-'));
+  try {
+    const p = join(d, 'usage.jsonl');
+    writeFileSync(
+      p,
+      JSON.stringify({ event: 'checkpoint', totals: { management: 2, control: 1, combined: 3, vercel: 0 } }) +
+        '\n',
+    );
+    chargeM05Request('vercel', 'GET exact-owned-project', p);
+    chargeM05Request('provider', 'GET pinned-build', p);
+    const rows = readFileSync(p, 'utf8').trim().split('\n').map(JSON.parse);
+    assert.deepEqual(rows.at(-1).totals, { management: 3, control: 2, combined: 5, vercel: 1 });
+    assert.throws(() => chargeM05Request('unknown', 'invalid', p), /CATEGORY_INVALID/);
+    assert.equal(rows[0].totals.management, 2);
+  } finally {
+    rmSync(d, { recursive: true, force: true });
+  }
+});
+test('a failed read-only M05 metadata lookup leaves no partial pin or poisoned retry state', async () => {
+  const state = {};
+  initializeM05Subset(state, subsetBaseline(), 'a'.repeat(40));
+  const t = transport([
+    { status: 200, body: { data: { id: 'OwnerId123' } } },
+    { status: 503, body: { error: { message: 'not-returned' } } },
+  ]);
+  const r = await runTask(
+    { task: 'ProviderMetadata', scope: 'm05-subset', state, secrets: { apifyRead: 'synthetic-private-key' } },
+    t.dependencies,
+  );
+  assert.equal(r.public.code, 'M05_ACTOR_METADATA_UNAVAILABLE');
+  assert.equal(r.private.provider, undefined);
+  assert.equal(r.private.livePolicy, undefined);
+  assert.equal(t.calls.length, 2);
+  assert.equal(t.closed.length, 2);
+});
 
 test('incremental ceilings retain historical charges and count Vercel inside Management', () => {
   assert.doesNotThrow(() =>

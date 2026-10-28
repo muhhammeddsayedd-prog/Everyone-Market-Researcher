@@ -3,7 +3,7 @@ param(
  [Parameter(Mandatory=$true)][ValidateSet('Inventory','ProviderMetadata','Setup','Stage','Observe','Probe','Restore')][string]$Task,
  [ValidatePattern('\A[a-z][a-z0-9-]{0,40}\z')][string]$Phase='default',
  [switch]$Incremental,
- [ValidateSet('HC01')][string]$Scope,
+ [ValidateSet('HC01','M05Subset')][string]$Scope,
  [ValidateSet('history-pair','cursor','daily-vimeo','daily-instagram','first-instagram','remaining-instagram','recovery-instagram','vimeo-continuation')][string]$Cohort,
  [string[]]$AccountIds=@(),
  [switch]$CheckOnly
@@ -16,7 +16,7 @@ $inputBytes=$null;$stateBytes=$null;$stateCipher=$null;$stdoutBytes=$null;$stder
 $stdoutStream=$null;$stderrStream=$null;$stdoutCopy=$null;$stderrCopy=$null;$selected=@{}
 try {
  if($Incremental -and -not [string]::IsNullOrEmpty($Scope)){throw 'M04_SCOPE_BLOCKED'}
- $hc01=$Scope -eq 'HC01';$expanded=$Incremental -or $hc01
+ $hc01=$Scope -eq 'HC01';$m05=$Scope -eq 'M05Subset';$expanded=$Incremental -or $hc01
  $allowedPhases=switch -CaseSensitive ($Task) {
   'Inventory' {@('default')}
   'ProviderMetadata' {@('default')}
@@ -60,7 +60,7 @@ try {
   if([string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)){throw 'M04_PRIVATE_PATH_BLOCKED'}
   $privateRoot=Join-Path $env:LOCALAPPDATA 'Everyone-Market-Radar-Private'
   $null=Assert-M03DevPlainPath $privateRoot $true
-  $directory=Join-Path $privateRoot 'm04'
+  $directory=Join-Path $privateRoot $(if($m05){'m05'}else{'m04'})
   if(-not (Test-Path -LiteralPath $directory)) {
    $null=[IO.Directory]::CreateDirectory($directory);Set-M03DevPrivateAcl $directory $true
   }
@@ -70,7 +70,7 @@ try {
   $operationLock=[IO.File]::Open($lockPath,[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
   Set-M03DevPrivateAcl $lockPath $false
   Add-Type -AssemblyName System.Security
-  $stateName=if($hc01){'hc01-state.dpapi'}elseif($Incremental){'incremental-state.dpapi'}else{'state.dpapi'}
+  $stateName=if($m05){'subset-state.dpapi'}elseif($hc01){'hc01-state.dpapi'}elseif($Incremental){'incremental-state.dpapi'}else{'state.dpapi'}
   $statePath=Join-Path $directory $stateName;$state=[pscustomobject]@{};$stage='state_decrypt'
   if(Test-Path -LiteralPath $statePath) {
    Assert-M03DevPrivateAcl $statePath $false
@@ -114,7 +114,7 @@ try {
    }
   }
   $privateInput=[ordered]@{task=$Task;phase=$Phase;secrets=$selected;state=$state}
-  if($hc01){$privateInput['scope']='hc01'}elseif($Incremental){$privateInput['scope']='incremental'}
+  if($m05){$privateInput['scope']='m05-subset'}elseif($hc01){$privateInput['scope']='hc01'}elseif($Incremental){$privateInput['scope']='incremental'}
   if($Phase -ceq 'cohort'){$privateInput['cohort']=[ordered]@{key=$Cohort;account_ids=@($AccountIds)}}
   $inputJson=ConvertTo-Json -InputObject $privateInput -Depth 100 -Compress
   $inputBytes=[Text.UTF8Encoding]::new($false).GetBytes($inputJson)
