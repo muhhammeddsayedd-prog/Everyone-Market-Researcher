@@ -61,6 +61,156 @@ test('native PowerShell parses the bounded M04 entrypoint', { skip: !windows }, 
   assert.equal(result.stdout.trim(), 'OK');
 });
 
+test('M05 public preparation pins one migration and never reads persistent Admin', { skip: !windows }, () => {
+  const result = spawnSync(
+    ps,
+    ['-NoProfile', '-NonInteractive', '-File', consumer, '-Scope', 'M05', '-Phase', 'Apply', '-CheckOnly'],
+    { env: publicEnv, encoding: 'utf8', timeout: 30000, windowsHide: true },
+  );
+  assert.equal(result.status, 0, result.stderr);
+  const receipt = JSON.parse(result.stdout);
+  assert.equal(receipt.status, 'public_ready');
+  assert.equal(receipt.scope, 'm05');
+  assert.equal(receipt.privateRead, false);
+  assert.equal(receipt.authenticationAttempted, false);
+  assert.equal(receipt.databaseCommands, 0);
+  assert.deepEqual(receipt.pendingVersions, ['20261028020745']);
+  assert.equal(receipt.baselineVersions.length, 18);
+  assert.equal(receipt.baselineVersions.at(-1), '20261027192743');
+  assert.equal(
+    receipt.pendingSourceSha256,
+    'f3ff025065106733f7c76aec963e465a045270876c642db69e131df72f6d865e',
+  );
+});
+
+test('M05 uses a separate intent and evidence root without reusing HC01 approval', () => {
+  const source = readFileSync(consumer, 'utf8');
+  assert.match(source, /m05-dev-migration-intent\.json/);
+  assert.match(source, /\$Scope -eq 'M05'/);
+  assert.match(source, /milestones\/M05-collectors-web-youtube-linkedin\/evidence/);
+  assert.match(source, /historySha256='4d2d43165f9159354a8ef5c5c34214b9d880b134fec45edbe2a22f63d65c0f72'/);
+});
+
+test('M05 apply writes its own durable intent and refuses a second push', { skip: !windows }, () => {
+  const directory = fixture();
+  const result = run(`${definitions(['M04-History', 'M04-Json', 'M04-PushMatches'])}
+$actual=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText(${q(resolve('milestones/M04-collectors-vimeo-instagram/evidence/hc01-final-readback-20261028.json'))}))
+$baseline=@($actual.queryResult[0].incremental_preflight.migrations);$history=@($baseline)
+$pending=@([pscustomobject]@{version='20261028020745';name='m05_web_youtube_linkedin';file='supabase/migrations/20261028020745_m05_web_youtube_linkedin.sql';historySha256=$null})
+$all=@($baseline)+@($pending);$receipt=[ordered]@{authenticationVerified=$false};$project='zmotjsbzhzjvpelxvxlf';$Scope='M05';$out=${q(directory)};$historyFile='history.sql';$calls=0
+[IO.File]::WriteAllText((Join-Path $out 'm04-hc01-dev-migration-intent.json'),'closed historical intent')
+function Invoke-M04Cli($Arguments,$TimeoutMs){
+ $script:calls++
+ if($Arguments[1] -ceq 'push'){
+  $dry=$Arguments -ccontains '--dry-run'
+  return [pscustomobject]@{text=(@{upToDate=$false;dryRun=$dry;message='Finished supabase db push.';seeds=@();roles=@();migrations=@('20261028020745_m05_web_youtube_linkedin.sql')}|ConvertTo-Json -Depth 8 -Compress)}
+ }
+ if($Arguments[1] -ceq 'query'){
+  $after=@($baseline)+@([pscustomobject]@{version='20261028020745';name='m05_web_youtube_linkedin';historySha256=('a'*64)})
+  return [pscustomobject]@{text=(ConvertTo-Json -InputObject @(@{receipt=@{current_user='postgres';session_user='postgres';database='postgres';migrations=$after}}) -Depth 8 -Compress)}
+ }
+ throw 'UNEXPECTED_COMMAND'
+}
+$branch=$null
+foreach($statement in $ast.FindAll({param($node) $node -is [Management.Automation.Language.IfStatementAst]},$true)){
+ foreach($clause in $statement.Clauses){if($clause.Item1.Extent.Text -ceq '$Phase -ceq ''Apply'''){$branch=$clause.Item2.Extent.Text}}
+}
+if($null -eq $branch){throw 'APPLY_BRANCH_MISSING'}
+$body=[ScriptBlock]::Create($branch.Substring(1,$branch.Length-2));. $body
+if($calls -ne 3 -or $receipt.status -cne 'migrations_applied_verified'){throw 'FIRST_APPLY_FAILED'}
+$intent=ConvertFrom-Json ([IO.File]::ReadAllText((Join-Path $out 'm05-dev-migration-intent.json')))
+if($intent.projectRef -cne $project -or @($intent.historyBefore).Count -ne 18 -or @($intent.pending).Count -ne 1){throw 'INTENT_INCOMPLETE'}
+try{. $body;throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_APPLY_RECONCILIATION_REQUIRED'){throw}}
+if($calls -ne 3 -or [IO.File]::ReadAllText((Join-Path $out 'm04-hc01-dev-migration-intent.json')) -cne 'closed historical intent'){throw 'HISTORICAL_INTENT_CHANGED'}
+'M05_SINGLE_PUSH_VERIFIED'
+`);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), 'M05_SINGLE_PUSH_VERIFIED');
+});
+
+test(
+  'M05 keeps all eighteen observed history fingerprints and only one pending file',
+  { skip: !windows },
+  () => {
+    const result = run(`${definitions(['M04-History', 'M04-Json', 'M04-PushMatches'])}
+$actual=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText(${q(resolve('milestones/M04-collectors-vimeo-instagram/evidence/hc01-final-readback-20261028.json'))}))
+$baseline=@($actual.queryResult[0].incremental_preflight.migrations)
+if($baseline.Count -ne 18){throw 'WRONG_BASELINE'}
+$pending=@([pscustomobject]@{version='20261028020745';name='m05_web_youtube_linkedin';file='supabase/migrations/20261028020745_m05_web_youtube_linkedin.sql';historySha256=$null})
+$receipt=@{authenticationVerified=$false};$history=@($baseline|ForEach-Object{[pscustomobject]@{version=$_.version;name=$_.name;historySha256=$_.historySha256}})
+function Make-Result {return [pscustomobject]@{text=(ConvertTo-Json -InputObject @(@{receipt=@{current_user='postgres';session_user='postgres';database='postgres';migrations=$history}}) -Depth 8 -Compress)}}
+if(@(M04-History (Make-Result)).Count -ne 18){throw 'BEFORE_FAILED'}
+# This is synthetic protocol output, not a claimed hosted migration fingerprint.
+$history+=@([pscustomobject]@{version='20261028020745';name='m05_web_youtube_linkedin';historySha256=('a'*64)})
+if(@(M04-History (Make-Result)).Count -ne 19){throw 'AFTER_FAILED'}
+$saved=$history[17].historySha256;$history[17].historySha256='0'*64
+try{$null=M04-History (Make-Result);throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_HISTORY_BLOCKED'){throw}}
+$history[17].historySha256=$saved;$history[18].historySha256='malformed'
+try{$null=M04-History (Make-Result);throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_HISTORY_BLOCKED'){throw}}
+$push=@{upToDate=$false;dryRun=$true;message='Finished supabase db push.';seeds=@();roles=@();migrations=@('20261028020745_m05_web_youtube_linkedin.sql')}
+$null=M04-PushMatches ([pscustomobject]@{text=($push|ConvertTo-Json -Depth 6 -Compress)}) $true
+$push.migrations+=@('20261027192743_m04_recent_instagram_dev_eligibility.sql')
+try{$null=M04-PushMatches ([pscustomobject]@{text=($push|ConvertTo-Json -Depth 6 -Compress)}) $true;throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_PENDING_BLOCKED'){throw}}
+'M05_HISTORY_AND_DRYRUN_VERIFIED'
+`);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout.trim(), 'M05_HISTORY_AND_DRYRUN_VERIFIED');
+  },
+);
+
+test('M05 query scope rejects old milestone SQL even with its actual hash', { skip: !windows }, () => {
+  const path = resolve('milestones/M04-collectors-vimeo-instagram/evidence/live-preflight.sql');
+  const hash = createHash('sha256').update(readFileSync(path)).digest('hex');
+  const result = run(`${definitions(['M04-QueryPath', 'M04-File', 'M04-Hash'])}
+$Scope='M05';$repo=${q(resolve('.'))}
+try{$null=M04-QueryPath ${q(path)} ${q(hash)};throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_QUERY_BLOCKED'){throw}}
+'M05_QUERY_SCOPE_VERIFIED'
+`);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout.trim(), 'M05_QUERY_SCOPE_VERIFIED');
+});
+
+test(
+  'M05 catalog denies exposed helpers, direct grants and changed data contracts',
+  { skip: !windows },
+  () => {
+    const result = run(`${definitions(['M05-Catalog', 'Get-M05ExpectedColumns'])}
+$mapping=Get-M05ExpectedColumns;$tables=@();$columns=@()
+foreach($name in $mapping.Keys){
+ $tables+=[pscustomobject]@{name=$name;rls=$true;directGrant=$false}
+ foreach($entry in $mapping[$name]){$parts=$entry.Split(':');$columns+=[pscustomobject]@{table=$name;name=$parts[0];type=$parts[1];nullable=($parts[2] -ceq 'true')}}
+}
+$specs=@(
+ @('m05_assert_claim','p_run_id uuid, p_account_id uuid','app.competitor_accounts',0,$false),
+ @('mark_website_page','p_url text, p_status text, p_item_id uuid','void',1,$true),
+ @('save_employee_snapshot','p_account_id uuid, p_snapshot_date date, p_people jsonb, p_coverage jsonb','jsonb',1,$true),
+ @('m05_resolve_youtube','p_account_id uuid, p_external_id text, p_uploads_playlist_id text','void',0,$false),
+ @('m05_finalize','p_run_id uuid','jsonb',0,$false),
+ @('m05_execute','p_request_id uuid, p_operation text, p_args jsonb','jsonb',0,$true)
+)
+$functions=@($specs|ForEach-Object{[pscustomobject]@{name=$_[0];identityArgs=$_[1];returns=$_[2];defaultsCount=$_[3];writerExecute=$_[4];definer=$true;config=@('search_path=""');publicExecute=$false;browserExecute=$false;anonExecute=$false;agentExecute=$false}})
+$catalog=@{tables=$tables;columns=$columns;functions=$functions;coverage=@{type='jsonb';nullable=$false;hasDefault=$true};launchStartsConstraint='CHECK ((max_actor_starts > 0))'}
+$null=M05-Catalog $catalog
+foreach($field in @('publicExecute','anonExecute','browserExecute','agentExecute','writerExecute')){
+ $saved=$functions[0].$field;$functions[0].$field=$true
+ try{$null=M05-Catalog $catalog;throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_CATALOG_BLOCKED'){throw}}
+ $functions[0].$field=$saved
+}
+$tables[0].directGrant=$true
+try{$null=M05-Catalog $catalog;throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_CATALOG_BLOCKED'){throw}}
+$tables[0].directGrant=$false;$saved=$columns[0].type;$columns[0].type='wrong'
+try{$null=M05-Catalog $catalog;throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_CATALOG_BLOCKED'){throw}}
+$columns[0].type=$saved;$catalog.coverage.nullable=$true
+try{$null=M05-Catalog $catalog;throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_CATALOG_BLOCKED'){throw}}
+$catalog.coverage.nullable=$false;$catalog.launchStartsConstraint='CHECK ((max_actor_starts <= 40))'
+try{$null=M05-Catalog $catalog;throw 'EXPECTED_DENIAL'}catch{if($_.Exception.Message -cne 'M04_CATALOG_BLOCKED'){throw}}
+'M05_CATALOG_VERIFIED'
+`);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout.trim(), 'M05_CATALOG_VERIFIED');
+  },
+);
+
 for (const scope of ['Incremental', 'incremental', 'INCREMENTAL', 'iNcReMeNtAl'])
   test(
     `incremental scope ${scope} refuses migration phases before private access or native commands`,
@@ -268,11 +418,13 @@ Write-Output $calls
 });
 
 test(
-  'fixed hosted catalog coverage matches the reviewed local-generated M04 Row types',
+  'fixed hosted catalog coverage matches the reviewed local-generated M04 and M05 Row types',
   { skip: !windows },
   () => {
-    const result = run(`${definitions(['Get-M04ExpectedColumns'])}
-Write-Output ((Get-M04ExpectedColumns)|ConvertTo-Json -Depth 5 -Compress)
+    const result = run(`${definitions(['Get-M04ExpectedColumns', 'Get-M05ExpectedColumns'])}
+$mapping=Get-M04ExpectedColumns;$extra=Get-M05ExpectedColumns
+foreach($key in $extra.Keys){$mapping[$key]=$extra[$key]}
+Write-Output ($mapping|ConvertTo-Json -Depth 5 -Compress)
 `);
     assert.equal(result.status, 0, result.stderr);
     const mapping = JSON.parse(result.stdout);
@@ -296,6 +448,8 @@ Write-Output ((Get-M04ExpectedColumns)|ConvertTo-Json -Depth 5 -Compress)
       text: 'string',
       'timestamp with time zone': 'string',
       'uuid[]': 'string[]',
+      'text[]': 'string[]',
+      date: 'string',
       integer: 'number',
       numeric: 'number',
       boolean: 'boolean',

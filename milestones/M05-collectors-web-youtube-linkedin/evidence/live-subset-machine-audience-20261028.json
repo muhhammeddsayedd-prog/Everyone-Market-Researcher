@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-10-28T17:58:41.580Z",
+  "observationInterval": { "after": "2026-10-28T17:58:41.482Z", "before": "2026-10-28T17:58:41.580Z" },
+  "source": "Authenticated n8n Personal credential UI; exact display name selected; only Allowed Domains input read",
+  "credentialId": "EmrM03Machine19",
+  "name": "M03 foundation machine [dev]",
+  "projectId": "pHvQjDmjxVZ3KQLT",
+  "allowedDomains": "everyone-market-researcher-8f7sa5lox-muhammed-abdelrahman.vercel.app",
+  "secretRead": false,
+  "mutations": 0,
+  "limitation": "The interval brackets the actual allowed-host UI read. It is paired with subsequent exact-ID native metadata and drift checks; credential JSON was not read. The first runtime observation is retained separately."
+}

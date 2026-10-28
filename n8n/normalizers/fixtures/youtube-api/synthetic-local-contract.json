@@ -1,0 +1,23 @@
+{
+  "fixtureProvenance": {
+    "kind": "synthetic_local_contract",
+    "actualProviderCapture": false,
+    "source": "Official YouTube Data API resource schema; fabricated IDs, metadata and counts",
+    "purpose": "Local normalization and native transition tests only"
+  },
+  "account": { "external_id": "UC1234567890123456789012" },
+  "row": {
+    "id": "local000001",
+    "snippet": {
+      "channelId": "UC1234567890123456789012",
+      "publishedAt": "2026-10-27T00:00:00Z",
+      "title": "Synthetic local fixture",
+      "description": "Not a captured competitor video",
+      "tags": ["Film"],
+      "thumbnails": {}
+    },
+    "contentDetails": { "duration": "PT45S" },
+    "statistics": { "viewCount": "12", "likeCount": "3" },
+    "status": { "privacyStatus": "public" }
+  }
+}

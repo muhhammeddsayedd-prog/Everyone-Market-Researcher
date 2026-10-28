@@ -278,3 +278,7 @@ M01 implementation notes: `competitor_accounts.handle_norm` is generated from lo
 5. Human-corrected fields (`locked_fields`, `locked_by_human`) are never overwritten by AI.
 6. Migrations are additive and reversible where practical; destructive changes need an owner-approved entry in `docs/DECISIONS.md`.
 7. Regenerate `packages/shared/src/db.types.ts` after every migration and commit it.
+
+## M05 pending local schema extension — 28 October 2026
+
+`20261028020745_m05_web_youtube_linkedin.sql` adds the fixed `ops.m05_execute` entrypoint, owned website settlement, a claimed YouTube resolver, projected employee snapshots and private job/quota state reusing the existing collector/cost ledgers. It is not applied to hosted dev or production. `app.employee_snapshots.coverage` records bounded source evidence; partial snapshots leave joined/left_company empty. The snapshot helper accepts an optional fourth coverage argument, rejects caller-invented complete coverage/extra PII, binds date to the owned run and preserves prior same-date observations and existing people. Website page/item linkage uses account/platform/external-ID lookup, never array position. New tables have RLS and no direct writer/agent grants. See the [migration and local evidence](../milestones/M05-collectors-web-youtube-linkedin/evidence/local-implementation-20261028.md); generated types are from the local schema, not a hosted receipt.

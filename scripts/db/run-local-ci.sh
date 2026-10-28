@@ -21,7 +21,8 @@ fi
 umask 077
 private_log="$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/emr-db-ci.XXXXXX")"
 private_report="$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/emr-db-ci-report.XXXXXX")"
-trap 'rm -f -- "$private_log" "$private_report"' EXIT
+private_types="$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/emr-db-ci-types.XXXXXX")"
+trap 'rm -f -- "$private_log" "$private_report" "$private_types"' EXIT
 
 run_private() {
   local label="$1"
@@ -78,7 +79,7 @@ for suite in supabase/tests/*.sql; do
     *) old_suites+=("$suite") ;;
   esac
 done
-[[ "${#old_suites[@]}" == 14 ]] || { printf 'Expected fourteen SQL suites including M04 recent-monitoring contracts.\n' >&2; exit 1; }
+[[ "${#old_suites[@]}" == 15 ]] || { printf 'Expected fifteen SQL suites including M05 collector security contracts.\n' >&2; exit 1; }
 run_private 'pgTAP' supabase test db --local "${old_suites[@]}"
 
 # Emit only numeric TAP summaries. An empty/skipped or incomplete suite is not acceptance.
@@ -92,8 +93,8 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     verdict=PASS
   fi
 done <"$private_log"
-if [[ "$files" != 14 || "$assertions" -eq 0 || "$verdict" != PASS ]]; then
-  printf 'pgTAP: FAIL (expected fourteen files, nonzero assertions and PASS).\n' >&2
+if [[ "$files" != 15 || "$assertions" -eq 0 || "$verdict" != PASS ]]; then
+  printf 'pgTAP: FAIL (expected fifteen files, nonzero assertions and PASS).\n' >&2
   exit 1
 fi
 printf 'pgTAP: %s files, %s assertions, PASS\n' "$files" "$assertions"
@@ -138,6 +139,29 @@ if(!r.success || r.numFailedTests!==0 || r.numPendingTests!==0 || !f?.assertionR
   console.error('M04 SQL/app contract: FAIL (missing, skipped or failed assertions).');process.exit(1);
 }
 console.log('M04 SQL/app contract: PASS (generated native code, HTTP and actual rollback-only SQL)');
+NODE
+
+run_private 'M05 SQL/app contract' env EMR_M05_LOCAL_SQL_TEST=true pnpm --filter web exec vitest run server/n8n-worker/m05-sql.integration.test.ts --reporter=json --outputFile "$private_report"
+node --input-type=module - "$private_report" <<'NODE'
+import {readFileSync} from 'node:fs';
+let r;
+try {r=JSON.parse(readFileSync(process.argv[2],'utf8'));} catch {console.error('M05 SQL/app contract: FAIL (invalid report).');process.exit(1);}
+const f=r.testResults?.find(v=>v.name?.replaceAll('\\','/').endsWith('/server/n8n-worker/m05-sql.integration.test.ts'));
+if(!r.success || r.numFailedTests!==0 || r.numPendingTests!==0 || !f?.assertionResults?.length || f.assertionResults.some(v=>v.status!=='passed')) {
+  console.error('M05 SQL/app contract: FAIL (missing, skipped or failed assertions).');process.exit(1);
+}
+console.log('M05 SQL/app contract: PASS (rollback-only dev identity, privacy, replay, cost and barriers)');
+NODE
+
+run_private 'Generated database types' bash -c 'supabase gen types typescript --local --schema app,ops,ingest,api --output-format text > "$1"' _ "$private_types"
+node --input-type=module - "$private_types" <<'NODE'
+import {readFileSync} from 'node:fs';
+import {format,resolveConfig} from 'prettier';
+const options={...(await resolveConfig('packages/shared/src/db.types.ts')),parser:'typescript'};
+const candidate=await format(readFileSync(process.argv[2],'utf8'),options);
+const reference=await format(readFileSync('packages/shared/src/db.types.ts','utf8'),options);
+if(candidate!==reference){console.error('Generated database types: FAIL (checked-in schema differs from full local chain).');process.exit(1);}
+console.log('Generated database types: PASS (full migration-chain parity)');
 NODE
 
 run_private 'Security advisors' supabase db advisors --local --type security --level warn --fail-on warn

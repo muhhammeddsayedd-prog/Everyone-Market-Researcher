@@ -877,6 +877,7 @@ export type Database = {
         Row: {
           account_id: string | null;
           competitor_id: string;
+          coverage: NonNullable<Json>;
           created_at: string;
           headcount_listed: number;
           id: number;
@@ -889,6 +890,7 @@ export type Database = {
         Insert: {
           account_id?: string | null;
           competitor_id: string;
+          coverage?: NonNullable<Json>;
           created_at?: string;
           headcount_listed: number;
           id?: never;
@@ -900,6 +902,7 @@ export type Database = {
         Update: {
           account_id?: string | null;
           competitor_id?: string;
+          coverage?: NonNullable<Json>;
           created_at?: string;
           headcount_listed?: number;
           id?: never;
@@ -2190,247 +2193,6 @@ export type Database = {
   };
   ops: {
     Tables: {
-      collector_accounts: {
-        Row: {
-          account_id: string;
-          context: NonNullable<Json>;
-          run_id: string;
-        };
-        ComputedFields: never;
-        Insert: {
-          account_id: string;
-          context: NonNullable<Json>;
-          run_id: string;
-        };
-        Update: {
-          account_id?: string;
-          context?: NonNullable<Json>;
-          run_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'collector_accounts_run_id_fkey';
-            columns: ['run_id'];
-            isOneToOne: false;
-            referencedRelation: 'collector_runs';
-            referencedColumns: ['run_id'];
-          },
-        ];
-      };
-      collector_launches: {
-        Row: {
-          account_ids: string[];
-          actor_id: string;
-          apify_run_id: string | null;
-          approval_id: string;
-          created_at: string;
-          dataset_complete: boolean;
-          launch_id: string;
-          max_actor_starts: number;
-          max_actor_usd: number;
-          max_total_usd: number;
-          next_offset: number;
-          pass: string;
-          purpose: string;
-          results_limit: number;
-          run_id: string;
-        };
-        ComputedFields: never;
-        Insert: {
-          account_ids: string[];
-          actor_id: string;
-          apify_run_id?: string | null;
-          approval_id: string;
-          created_at?: string;
-          dataset_complete?: boolean;
-          launch_id: string;
-          max_actor_starts: number;
-          max_actor_usd: number;
-          max_total_usd: number;
-          next_offset?: number;
-          pass: string;
-          purpose: string;
-          results_limit: number;
-          run_id: string;
-        };
-        Update: {
-          account_ids?: string[];
-          actor_id?: string;
-          apify_run_id?: string | null;
-          approval_id?: string;
-          created_at?: string;
-          dataset_complete?: boolean;
-          launch_id?: string;
-          max_actor_starts?: number;
-          max_actor_usd?: number;
-          max_total_usd?: number;
-          next_offset?: number;
-          pass?: string;
-          purpose?: string;
-          results_limit?: number;
-          run_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'collector_launches_apify_run_id_fkey';
-            columns: ['apify_run_id'];
-            isOneToOne: true;
-            referencedRelation: 'apify_runs';
-            referencedColumns: ['apify_run_id'];
-          },
-          {
-            foreignKeyName: 'collector_launches_run_id_fkey';
-            columns: ['run_id'];
-            isOneToOne: false;
-            referencedRelation: 'collector_runs';
-            referencedColumns: ['run_id'];
-          },
-        ];
-      };
-      collector_pages: {
-        Row: {
-          args_sha256: string;
-          launch_id: string;
-          page_offset: number;
-          result: NonNullable<Json>;
-        };
-        ComputedFields: never;
-        Insert: {
-          args_sha256: string;
-          launch_id: string;
-          page_offset: number;
-          result: NonNullable<Json>;
-        };
-        Update: {
-          args_sha256?: string;
-          launch_id?: string;
-          page_offset?: number;
-          result?: NonNullable<Json>;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'collector_pages_launch_id_fkey';
-            columns: ['launch_id'];
-            isOneToOne: false;
-            referencedRelation: 'collector_launches';
-            referencedColumns: ['launch_id'];
-          },
-        ];
-      };
-      collector_passes: {
-        Row: {
-          account_id: string;
-          backfill_cursor: Json | null;
-          backfill_done: boolean;
-          error: string | null;
-          items_new: number;
-          items_seen: number;
-          launch_id: string | null;
-          pass: string;
-          run_id: string;
-          source_evidence: boolean;
-          stage_status: string;
-          status: string;
-        };
-        ComputedFields: never;
-        Insert: {
-          account_id: string;
-          backfill_cursor?: Json | null;
-          backfill_done?: boolean;
-          error?: string | null;
-          items_new?: number;
-          items_seen?: number;
-          launch_id?: string | null;
-          pass: string;
-          run_id: string;
-          source_evidence?: boolean;
-          stage_status?: string;
-          status?: string;
-        };
-        Update: {
-          account_id?: string;
-          backfill_cursor?: Json | null;
-          backfill_done?: boolean;
-          error?: string | null;
-          items_new?: number;
-          items_seen?: number;
-          launch_id?: string | null;
-          pass?: string;
-          run_id?: string;
-          source_evidence?: boolean;
-          stage_status?: string;
-          status?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'collector_passes_launch_id_fkey';
-            columns: ['launch_id'];
-            isOneToOne: false;
-            referencedRelation: 'collector_launches';
-            referencedColumns: ['launch_id'];
-          },
-          {
-            foreignKeyName: 'collector_passes_run_id_account_id_fkey';
-            columns: ['run_id', 'account_id'];
-            isOneToOne: false;
-            referencedRelation: 'collector_accounts';
-            referencedColumns: ['run_id', 'account_id'];
-          },
-        ];
-      };
-      collector_requests: {
-        Row: {
-          args_sha256: string;
-          created_at: string;
-          operation: string;
-          request_id: string;
-          result: NonNullable<Json>;
-        };
-        ComputedFields: never;
-        Insert: {
-          args_sha256: string;
-          created_at?: string;
-          operation: string;
-          request_id: string;
-          result: NonNullable<Json>;
-        };
-        Update: {
-          args_sha256?: string;
-          created_at?: string;
-          operation?: string;
-          request_id?: string;
-          result?: NonNullable<Json>;
-        };
-        Relationships: [];
-      };
-      collector_runs: {
-        Row: {
-          created_at: string;
-          registration_closed: boolean;
-          run_id: string;
-        };
-        ComputedFields: never;
-        Insert: {
-          created_at?: string;
-          registration_closed?: boolean;
-          run_id: string;
-        };
-        Update: {
-          created_at?: string;
-          registration_closed?: boolean;
-          run_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'collector_runs_run_id_fkey';
-            columns: ['run_id'];
-            isOneToOne: true;
-            referencedRelation: 'scrape_runs';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-
       ai_extractions: {
         Row: {
           confidence: number | null;
@@ -2758,6 +2520,246 @@ export type Database = {
         };
         Relationships: [];
       };
+      collector_accounts: {
+        Row: {
+          account_id: string;
+          context: NonNullable<Json>;
+          run_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          account_id: string;
+          context: NonNullable<Json>;
+          run_id: string;
+        };
+        Update: {
+          account_id?: string;
+          context?: NonNullable<Json>;
+          run_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'collector_accounts_run_id_fkey';
+            columns: ['run_id'];
+            isOneToOne: false;
+            referencedRelation: 'collector_runs';
+            referencedColumns: ['run_id'];
+          },
+        ];
+      };
+      collector_launches: {
+        Row: {
+          account_ids: string[];
+          actor_id: string;
+          apify_run_id: string | null;
+          approval_id: string;
+          created_at: string;
+          dataset_complete: boolean;
+          launch_id: string;
+          max_actor_starts: number;
+          max_actor_usd: number;
+          max_total_usd: number;
+          next_offset: number;
+          pass: string;
+          purpose: string;
+          results_limit: number;
+          run_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          account_ids: string[];
+          actor_id: string;
+          apify_run_id?: string | null;
+          approval_id: string;
+          created_at?: string;
+          dataset_complete?: boolean;
+          launch_id: string;
+          max_actor_starts: number;
+          max_actor_usd: number;
+          max_total_usd: number;
+          next_offset?: number;
+          pass: string;
+          purpose: string;
+          results_limit: number;
+          run_id: string;
+        };
+        Update: {
+          account_ids?: string[];
+          actor_id?: string;
+          apify_run_id?: string | null;
+          approval_id?: string;
+          created_at?: string;
+          dataset_complete?: boolean;
+          launch_id?: string;
+          max_actor_starts?: number;
+          max_actor_usd?: number;
+          max_total_usd?: number;
+          next_offset?: number;
+          pass?: string;
+          purpose?: string;
+          results_limit?: number;
+          run_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'collector_launches_apify_run_id_fkey';
+            columns: ['apify_run_id'];
+            isOneToOne: true;
+            referencedRelation: 'apify_runs';
+            referencedColumns: ['apify_run_id'];
+          },
+          {
+            foreignKeyName: 'collector_launches_run_id_fkey';
+            columns: ['run_id'];
+            isOneToOne: false;
+            referencedRelation: 'collector_runs';
+            referencedColumns: ['run_id'];
+          },
+        ];
+      };
+      collector_pages: {
+        Row: {
+          args_sha256: string;
+          launch_id: string;
+          page_offset: number;
+          result: NonNullable<Json>;
+        };
+        ComputedFields: never;
+        Insert: {
+          args_sha256: string;
+          launch_id: string;
+          page_offset: number;
+          result: NonNullable<Json>;
+        };
+        Update: {
+          args_sha256?: string;
+          launch_id?: string;
+          page_offset?: number;
+          result?: NonNullable<Json>;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'collector_pages_launch_id_fkey';
+            columns: ['launch_id'];
+            isOneToOne: false;
+            referencedRelation: 'collector_launches';
+            referencedColumns: ['launch_id'];
+          },
+        ];
+      };
+      collector_passes: {
+        Row: {
+          account_id: string;
+          backfill_cursor: Json | null;
+          backfill_done: boolean;
+          error: string | null;
+          items_new: number;
+          items_seen: number;
+          launch_id: string | null;
+          pass: string;
+          run_id: string;
+          source_evidence: boolean;
+          stage_status: string;
+          status: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          account_id: string;
+          backfill_cursor?: Json | null;
+          backfill_done?: boolean;
+          error?: string | null;
+          items_new?: number;
+          items_seen?: number;
+          launch_id?: string | null;
+          pass: string;
+          run_id: string;
+          source_evidence?: boolean;
+          stage_status?: string;
+          status?: string;
+        };
+        Update: {
+          account_id?: string;
+          backfill_cursor?: Json | null;
+          backfill_done?: boolean;
+          error?: string | null;
+          items_new?: number;
+          items_seen?: number;
+          launch_id?: string | null;
+          pass?: string;
+          run_id?: string;
+          source_evidence?: boolean;
+          stage_status?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'collector_passes_launch_id_fkey';
+            columns: ['launch_id'];
+            isOneToOne: false;
+            referencedRelation: 'collector_launches';
+            referencedColumns: ['launch_id'];
+          },
+          {
+            foreignKeyName: 'collector_passes_run_id_account_id_fkey';
+            columns: ['run_id', 'account_id'];
+            isOneToOne: false;
+            referencedRelation: 'collector_accounts';
+            referencedColumns: ['run_id', 'account_id'];
+          },
+        ];
+      };
+      collector_requests: {
+        Row: {
+          args_sha256: string;
+          created_at: string;
+          operation: string;
+          request_id: string;
+          result: NonNullable<Json>;
+        };
+        ComputedFields: never;
+        Insert: {
+          args_sha256: string;
+          created_at?: string;
+          operation: string;
+          request_id: string;
+          result: NonNullable<Json>;
+        };
+        Update: {
+          args_sha256?: string;
+          created_at?: string;
+          operation?: string;
+          request_id?: string;
+          result?: NonNullable<Json>;
+        };
+        Relationships: [];
+      };
+      collector_runs: {
+        Row: {
+          created_at: string;
+          registration_closed: boolean;
+          run_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          registration_closed?: boolean;
+          run_id: string;
+        };
+        Update: {
+          created_at?: string;
+          registration_closed?: boolean;
+          run_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'collector_runs_run_id_fkey';
+            columns: ['run_id'];
+            isOneToOne: true;
+            referencedRelation: 'scrape_runs';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       cost_ledger: {
         Row: {
           category: string;
@@ -2997,6 +2999,77 @@ export type Database = {
             referencedColumns: ['window_id'];
           },
         ];
+      };
+      m05_jobs: {
+        Row: {
+          actor_input: NonNullable<Json>;
+          crawler_type: string | null;
+          launch_id: string;
+          max_website_urls_per_account: number;
+          result: Json | null;
+          retry_of: string | null;
+          retry_pending: boolean;
+          settled: boolean;
+          snapshot_date: string | null;
+          urls: string[];
+        };
+        ComputedFields: never;
+        Insert: {
+          actor_input: NonNullable<Json>;
+          crawler_type?: string | null;
+          launch_id: string;
+          max_website_urls_per_account?: number;
+          result?: Json | null;
+          retry_of?: string | null;
+          retry_pending?: boolean;
+          settled?: boolean;
+          snapshot_date?: string | null;
+          urls?: string[];
+        };
+        Update: {
+          actor_input?: NonNullable<Json>;
+          crawler_type?: string | null;
+          launch_id?: string;
+          max_website_urls_per_account?: number;
+          result?: Json | null;
+          retry_of?: string | null;
+          retry_pending?: boolean;
+          settled?: boolean;
+          snapshot_date?: string | null;
+          urls?: string[];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'm05_jobs_launch_id_fkey';
+            columns: ['launch_id'];
+            isOneToOne: true;
+            referencedRelation: 'collector_launches';
+            referencedColumns: ['launch_id'];
+          },
+          {
+            foreignKeyName: 'm05_jobs_retry_of_fkey';
+            columns: ['retry_of'];
+            isOneToOne: true;
+            referencedRelation: 'm05_jobs';
+            referencedColumns: ['launch_id'];
+          },
+        ];
+      };
+      m05_quota: {
+        Row: {
+          quota_day: string;
+          used_units: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          quota_day: string;
+          used_units?: number;
+        };
+        Update: {
+          quota_day?: string;
+          used_units?: number;
+        };
+        Relationships: [];
       };
       price_book: {
         Row: {
@@ -3287,21 +3360,6 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      collector_execute: {
-        Args: {
-          p_args: Json;
-          p_operation: string;
-          p_request_id: string;
-        };
-        Returns: Json;
-      };
-      collector_finalize: {
-        Args: {
-          p_run_id: string;
-        };
-        Returns: Json;
-      };
-
       accrue_fixed_costs: { Args: { p_day: string }; Returns: number };
       ack_queue: { Args: { p_msg_ids: number[]; p_queue: string }; Returns: undefined };
       apify_runs_pending: { Args: { p_run_id: string }; Returns: number };
@@ -3314,6 +3372,8 @@ export type Database = {
           read_ct: number;
         }[];
       };
+      collector_execute: { Args: { p_args: Json; p_operation: string; p_request_id: string }; Returns: Json };
+      collector_finalize: { Args: { p_run_id: string }; Returns: Json };
       complete_apify_run: {
         Args: { p_apify_run_id: string; p_dataset_id: string; p_status: string; p_usage_usd: number };
         Returns: Json;
@@ -3399,6 +3459,26 @@ export type Database = {
       log_cost: { Args: { p_entries: Json }; Returns: number };
       log_workflow_error: { Args: { p: Json }; Returns: undefined };
       m03_smoke_launch_input: { Args: Record<PropertyKey, never>; Returns: Json };
+      m05_assert_claim: {
+        Args: { p_account_id: string; p_run_id: string };
+        Returns: Database['app']['Tables']['competitor_accounts']['Row'];
+        SetofOptions: {
+          from: '*';
+          to: 'competitor_accounts';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      m05_execute: { Args: { p_args: Json; p_operation: string; p_request_id: string }; Returns: Json };
+      m05_finalize: { Args: { p_run_id: string }; Returns: Json };
+      m05_resolve_youtube: {
+        Args: { p_account_id: string; p_external_id: string; p_uploads_playlist_id: string };
+        Returns: undefined;
+      };
+      mark_website_page: {
+        Args: { p_item_id?: string; p_status: string; p_url: string };
+        Returns: undefined;
+      };
       process_apify_run: {
         Args: {
           p_apify_run_id: string;
@@ -3433,6 +3513,10 @@ export type Database = {
           p_status: string;
         };
         Returns: undefined;
+      };
+      save_employee_snapshot: {
+        Args: { p_account_id: string; p_coverage?: Json; p_people: Json; p_snapshot_date: string };
+        Returns: Json;
       };
       set_account_external_id: {
         Args: { p_account_id: string; p_external_id: string; p_uploads_playlist_id?: string };

@@ -3,6 +3,7 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import {
   collectorRequest,
   collectorPolicy,
+  m05RunPolicy,
   collectorAccountIds,
   type CollectorPolicy,
   type CollectorRequest,
@@ -12,6 +13,7 @@ import { WorkerFailure } from './errors';
 import ingestion from '../../../../n8n/normalizers/prepare_ingest_groups.js';
 
 export interface CollectorConfig {
+  scope?: 'm04' | 'm05';
   audience: string;
   password: string;
   verifier: string;
@@ -22,19 +24,22 @@ export interface CollectorConfig {
   policy: CollectorPolicy | null;
 }
 export function collectorConfig(env: Record<string, string | undefined>): CollectorConfig {
+  const isM05 = env.VERCEL_GIT_COMMIT_REF === 'm05-collectors-web-youtube-linkedin';
   let accountIds: string[],
     policy: CollectorPolicy | null = null;
   try {
     accountIds = collectorAccountIds.parse(JSON.parse(env.EMR_COLLECTORS_ACCOUNT_IDS ?? ''));
     if (env.EMR_COLLECTORS_LIVE_POLICY)
-      policy = collectorPolicy.parse(JSON.parse(env.EMR_COLLECTORS_LIVE_POLICY));
+      policy = (isM05 ? m05RunPolicy : collectorPolicy).parse(JSON.parse(env.EMR_COLLECTORS_LIVE_POLICY));
   } catch {
     throw new WorkerFailure('unavailable', 503);
   }
   if (
     env.EMR_COLLECTORS_ENABLED !== 'true' ||
     env.VERCEL_ENV !== 'preview' ||
-    env.VERCEL_GIT_COMMIT_REF !== 'm04-collectors-vimeo-instagram' ||
+    !['m04-collectors-vimeo-instagram', 'm05-collectors-web-youtube-linkedin'].includes(
+      env.VERCEL_GIT_COMMIT_REF ?? '',
+    ) ||
     env.VERCEL_PROJECT_ID !== 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' ||
     !/^everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(env.VERCEL_URL ?? '') ||
     !env.EMR_COLLECTORS_WRITER_PASSWORD ||
@@ -46,6 +51,7 @@ export function collectorConfig(env: Record<string, string | undefined>): Collec
   )
     throw new WorkerFailure('unavailable', 503);
   return {
+    scope: isM05 ? 'm05' : 'm04',
     audience: 'https://' + env.VERCEL_URL,
     password: env.EMR_COLLECTORS_WRITER_PASSWORD,
     verifier: env.EMR_COLLECTORS_TOKEN_SHA256!,
@@ -110,19 +116,27 @@ export function createCollectorHandler(deps: Dependencies) {
         throw new WorkerFailure('invalid_request', 400);
       }
       requestId = input.requestId;
+      if (input.operation.startsWith('m05.') && config.scope !== 'm05')
+        throw new WorkerFailure('forbidden', 403);
+      if (
+        config.scope === 'm05' &&
+        !input.operation.startsWith('m05.') &&
+        !['callback.classify', 'callback.process', 'request.status'].includes(input.operation)
+      )
+        throw new WorkerFailure('forbidden', 403);
       const selected = input.args.account_ids;
       if (Array.isArray(selected) && selected.some((v) => !config.accountIds.includes(String(v))))
         throw new WorkerFailure('account_not_permitted', 403);
       if (typeof input.args.account_id === 'string' && !config.accountIds.includes(input.args.account_id))
         throw new WorkerFailure('account_not_permitted', 403);
       if (
-        input.operation === 'cost' &&
+        ['cost', 'm05.cost'].includes(input.operation) &&
         (input.args.entries as Array<{ meta: { account_id: string } }>).some(
           (e) => !config.accountIds.includes(e.meta.account_id),
         )
       )
         throw new WorkerFailure('account_not_permitted', 403);
-      if (input.operation === 'ingest') {
+      if (['ingest', 'm05.ingest'].includes(input.operation)) {
         const groups = ingestion.prepareIngestGroups([
           { account_id: input.args.account_id, items: input.args.items },
         ]);
@@ -148,22 +162,59 @@ export function createCollectorHandler(deps: Dependencies) {
       } else {
         const args = { ...input.args };
         let op: string = input.operation;
-        if (op === 'launch') {
+        if (op === 'launch' || op === 'm05.launch') {
           const p = config.policy,
             actor = String(args.actor_id) as keyof NonNullable<CollectorConfig['policy']>['actors'];
           if (!p || !p.actors[actor] || Number(args.results_limit) > p.max_results_per_profile)
             throw new WorkerFailure('actor_start_not_authorized', 403);
+          if (
+            op === 'm05.launch' &&
+            actor === 'apify/website-content-crawler' &&
+            (p.actors[actor]?.billingModel !== 'PPU' || !p.website_urls_per_account)
+          )
+            throw new WorkerFailure('actor_billing_contract_required', 403);
+          if (
+            op === 'm05.launch' &&
+            actor.startsWith('harvestapi/') &&
+            p.actors[actor]?.billingModel === 'PPU'
+          )
+            throw new WorkerFailure('actor_billing_contract_required', 403);
           Object.assign(args, {
             approval_id: p.approval_id,
             max_actor_starts: p.max_actor_starts,
             max_actor_usd: p.max_actor_usd,
             max_total_usd: p.max_total_usd,
+            ...(op === 'm05.launch' && actor === 'apify/website-content-crawler'
+              ? { max_website_urls_per_account: p.website_urls_per_account }
+              : {}),
           });
         }
         if (op === 'request.status') op = 'status';
         if (op === 'callback.classify') op = 'classify';
         receipt = await deps.dispatch(input.requestId, op, args, config, controller.signal);
-        if (input.operation === 'launch' && receipt.result && typeof receipt.result === 'object') {
+        if (input.operation === 'm05.launch') {
+          const launch = receipt.result;
+          if (
+            !launch ||
+            typeof launch !== 'object' ||
+            !('permit' in launch) ||
+            typeof launch.permit !== 'boolean' ||
+            !('launch_id' in launch) ||
+            launch.launch_id !== args.launch_id ||
+            (launch.permit && receipt.replayed !== false) ||
+            (!launch.permit &&
+              (!('apify_run_id' in launch) ||
+                typeof launch.apify_run_id !== 'string' ||
+                !/^[A-Za-z0-9_-]{1,128}$/.test(launch.apify_run_id)))
+          )
+            throw new WorkerFailure('reconciliation_required', 503);
+        }
+        if (
+          ['launch', 'm05.launch'].includes(input.operation) &&
+          receipt.result &&
+          typeof receipt.result === 'object' &&
+          (input.operation !== 'm05.launch' || ('permit' in receipt.result && receipt.result.permit === true))
+        ) {
           const a = String(args.actor_id) as keyof NonNullable<CollectorConfig['policy']>['actors'];
           const build = config.policy!.actors[a]!;
           receipt = {
@@ -171,6 +222,7 @@ export function createCollectorHandler(deps: Dependencies) {
             result: {
               ...receipt.result,
               descriptor: {
+                billingModel: build.billingModel ?? 'PPE',
                 actorPath: a.replace('/', '~'),
                 build: build.build,
                 maxTotalChargeUsd: config.policy!.max_actor_usd,

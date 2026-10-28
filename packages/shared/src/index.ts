@@ -48,9 +48,11 @@ export {
   collectorArgs,
   collectorActors,
   collectorPolicy,
+  m05RunPolicy,
   collectorBuild,
   collectorAccountIds,
   collectorExecutionErrorArgs,
   collectorWorkflowIds,
 } from './n8n-collector-contracts';
 export type { CollectorRequest, CollectorOperation, CollectorPolicy } from './n8n-collector-contracts';
+export { m05Args, m05Actors, m05Platforms, m05WorkflowIds, m05ExecutionErrorArgs } from './n8n-m05-contracts';

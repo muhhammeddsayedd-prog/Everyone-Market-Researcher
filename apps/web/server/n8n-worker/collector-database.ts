@@ -7,8 +7,13 @@ import { collectorExecutionErrorArgs, collectorWorkflowIds } from '@emr/shared';
 import { databaseConfig, type WorkerPool } from './database';
 import type { CollectorConfig, CollectorDispatch } from './collectors';
 import { WorkerFailure } from './errors';
+import { m05Args, m05ExecutionErrorArgs, m05WorkflowIds } from '@emr/shared';
 
 const operations = new Set([
+  ...Object.keys(m05Args),
+  'm05.settle',
+  'm05.classify',
+  'm05.lookup',
   'start',
   'claim',
   'resolve',
@@ -39,13 +44,17 @@ export async function dispatchCollectorDatabase(
 ): Promise<{ replayed: boolean; result: unknown }> {
   if (!operations.has(operation) || signal.aborted) throw new WorkerFailure('outcome_unknown', 503);
   let errorEntry: Record<string, unknown> | undefined;
-  if (operation === 'execution.error') {
-    const parsed = collectorExecutionErrorArgs.safeParse(args);
+  if (operation === 'execution.error' || operation === 'm05.execution.error') {
+    const parsed = (
+      operation === 'm05.execution.error' ? m05ExecutionErrorArgs : collectorExecutionErrorArgs
+    ).safeParse(args);
     if (!parsed.success) throw new WorkerFailure('invalid_request', 400);
     const input = parsed.data;
     errorEntry = {
       kind: 'error',
-      workflow: Object.entries(collectorWorkflowIds).find(([, id]) => id === input.workflow_id)![0],
+      workflow: Object.entries(
+        operation === 'm05.execution.error' ? m05WorkflowIds : collectorWorkflowIds,
+      ).find(([, id]) => id === input.workflow_id)![0],
       execution_id: input.execution_id,
       node: input.execution_id.startsWith('handler-') ? 'Trigger activation' : 'Workflow',
       message: input.error_code,
@@ -107,11 +116,14 @@ export async function dispatchCollectorDatabase(
       return { replayed: false, result: { logged: true, reconciliation_required: true } };
     }
     const result = (
-      await query('select ops.collector_execute($1::uuid,$2::text,$3::jsonb) as receipt', [
-        requestId,
-        operation,
-        JSON.stringify(args),
-      ])
+      await query(
+        operation.startsWith('m05.')
+          ? 'select ops.m05_execute($1::uuid,$2::text,$3::jsonb) as receipt'
+          : operation === 'classify' && _config.scope === 'm05'
+            ? 'select ops.m05_execute($1::uuid,$2::text,$3::jsonb) as receipt'
+            : 'select ops.collector_execute($1::uuid,$2::text,$3::jsonb) as receipt',
+        [requestId, operation, JSON.stringify(args)],
+      )
     ).rows[0]?.receipt;
     if (
       !result ||
@@ -162,7 +174,10 @@ export const dispatchCollectorWorkerDatabase: CollectorDispatch = async (
 ) => {
   if (!pool) {
     const ca = readFileSync(join(process.cwd(), 'server/n8n-worker/certs/supabase-root-2021.crt'));
-    pool = new Pool({ ...databaseConfig(config.password, ca), application_name: 'emr-m04-collectors-dev' });
+    pool = new Pool({
+      ...databaseConfig(config.password, ca),
+      application_name: config.scope === 'm05' ? 'emr-m05-collectors-dev' : 'emr-m04-collectors-dev',
+    });
     pool.on('error', () => {});
     pool.on('connect', (client) => client.on('error', () => {}));
     attachDatabasePool(pool);

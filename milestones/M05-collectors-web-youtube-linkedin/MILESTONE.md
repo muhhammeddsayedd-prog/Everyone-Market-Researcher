@@ -4,6 +4,8 @@
 
 > **28 October 2026 owner sequencing exception:** local M05 development is authorized once the essential M04 development checks and approved staged validation pass at a CI-green accepted head. Original full M04 Done, production rollout and merge are not prerequisites for this bounded development sequence. Use a separate branch and stacked draft PR targeting the unmerged M04 branch; keep PR13 draft. M05 paid captures/AI, hosted migrations, workflow activation, recurrence, notifications and production remain separately gated. See [the binding decision](../../docs/DECISIONS.md#m04-development-acceptance-and-m05-sequencing--28-october-2026) and M04's current criteria map; do not treat a protected stale root board as a new blocker.
 
+> **Later28October owner amendment:** [standing development spending and essential acceptance](../../docs/DECISIONS.md#standing-development-spending-and-essential-acceptance--28-october-2026) authorizes the existing selected M05 representative dev validation, pending migration and temporary protected-Preview setup after corrections, tests, required CI and preflight. Project-owner dollar/start/request estimates are no longer repeated permission gates. Finite execution settings, admitted-run immutability, actual accounting and enforced denials remain binding. Production, recurrence, notifications and merges remain separate. The denied callback-builder/progress/packet edits are still unperformed; the permitted current evidence records that boundary.
+
 ## 1. Goal and outcome
 
 Build four collectors and backfill the pilot from **1 Jan 2024** (websites: all current work pages):
@@ -279,6 +281,27 @@ Build it as in `docs/N8N_WORKFLOWS.md` §6 WF-21:
 ## 9. Acceptance criteria
 
 The SQL is in `scripts/assert/m05.sql`; paste the results.
+
+### Essential development acceptance under the later28October instruction
+
+This maps the original criteria once; it does not mark missing observations
+passed or change stored history. Current live proofs are pending the enforced
+edit boundary and actual integration validation. After these essential checks
+pass with normal CI, the next planned milestone may begin locally in its own
+stacked branch/draft PR. Full M05 Done, production and merge remain separate.
+
+| Original criteria | Essential finite development proof | Open coverage/rollout obligation |
+|---|---|---|
+| AC1–AC3 | Selected public websites complete map/diff/owned async crawl/callback/ingestion; fixed-window repeat starts no crawler for already crawled/ignored URLs, while discovered-but-uncrawled or failed pages remain pending/retryable; page identity and a manual sample are correct | Full-five-site/current-page breadth, full20-page quality sample and unavailable natural JS/thin examples |
+| AC4 | Selected official YouTube resolution, quota, ownership, paging/ingestion and eligible repeat/replay work; exact retained cursor and truthful incomplete state on a bound | January2024/source-exhaustion acquisition and other pilot channels; unproved paid fallback remains disabled |
+| AC5 | Selected real LinkedIn posts pass ownership/source contracts, asynchronous registration, measured cost and replay; do not guess unverified repost/media ownership | Historical breadth and unavailable natural repost/media examples |
+| AC6 | Selected public Short observation stores only the four allowed fields, explicit partial coverage and no fabricated membership changes; same-date exact replay/conflict is safe and costed once | Full test-company breadth, complete roster/headcount and longer weekly observations |
+| AC8–AC9 | Strict dev restricted access, server-issued finite settings/acknowledgment, replay/cost/queue integrity, actual measured usage, sanitized exports, settled claims, restoration and required CI/review | Estimate deviations are explained rather than owner spending gates; infrastructure USD remains separately unknown |
+| AC7 / T10 | No production or recurring operation is implied by development acceptance | Production copies/migration/backfill, daily/weekly qualification and external delivery remain separate decisions |
+
+The original full acceptance criteria below are preserved as open obligations
+where their greater coverage or rollout has not been observed. A concrete
+security, ownership, source-contract or data-integrity failure remains blocking.
 
 - **AC1: Website backfill (dev).** For each of the 5 test sites:
   ```sql
