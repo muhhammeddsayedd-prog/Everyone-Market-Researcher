@@ -8,7 +8,7 @@
 |---|---|
 | Started / last updated | 2026-10-28 |
 | Branch / base | `m06-collectors-stories-upkeep` / M05 `3def97de4ce69169425adf8bcfaf1fe8697e9f60` |
-| PR | Separate stacked draft targeting `m05-collectors-web-youtube-linkedin`; ordinary delivery pending. Keep PR14 unchanged. |
+| PR / delivery | Branch pushed at `5b0926f`; separate stacked draft creation returned GitHub403 `Resource not accessible by integration`. No alternate metadata mutation attempted. Keep PR14 unchanged. |
 | Current task | Deliver local story normalization → restricted ingest/media queue → JPEG conversion → mocked immutable Storage → guarded SQL receipt/ack. |
 | Next step | Required changed-head CI and draft delivery; then continue the local native media adapter. Shared callback/scheduler integration stays pending where it depends on M05 website completion. No live operation is admitted here. |
 
@@ -55,10 +55,12 @@ M06 incremental provider usage: **0 actors,0 collection calls,0 Storage uploads,
 - Route/queue contracts are independent of the denied website edit. Maintained WF-19/WF-00/SUB wiring waits where website correctness is a concrete dependency; do not clone the denied implementation elsewhere.
 - No owner credential action needed locally. Future MA-20 binding/Storage, MA-16 actor choice, seven-day operation and production remain separate; do not request them merely to write/test local code.
 - Record any delivery permission failure exactly; no alternate credentials/tools after denial. Draft PR creation uses the normal integration route.
+- Actual draft-creation403 is a separate permission follow-up. Owner can use [the exact stacked comparison](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/compare/m05-collectors-web-youtube-linkedin...m06-collectors-stories-upkeep?expand=1) → Create pull request dropdown → Create draft pull request, retaining base M05/head M06. Alternatively restore the integration's Pull requests write permission through supported account controls. No repeat provider validation or secret replacement is needed. The exact managed client control was not observed; no permission policy was changed.
 
 ## Session log
 
 - 2026-10-28 · Isolated branch from M05 `3def97d`; implemented stories/media contracts, route, codec, queue worker and two writer RPCs. Earlier migrations/M05 preserved. Focused SQL/contracts and zero-finding native qualification pass; strict test typing and reviewed completed-ACK edge corrected before delivery. Required changed-head CI next.
+- 2026-10-28 · Pushed `5b0926f` using existing authorized native GitHub CLI credentials after closing the owned stalled Credential Manager child; no new login or persistent credential-config change. Draft API creation403 retained. CI40757385375 quality/unit/build/e2e pass and Vercel green; database job stopped before stack creation because the safety fixture still modeled15 suites. Updated its mock for16 suites/M06 app test and added skipped-M06 refusal:18/18 native safety tests pass without weakening actual checks. Normal changed-head CI remains required; query the latest branch run rather than treating the first failure or local tests as a current green receipt.
 
 ## Hand-off
 

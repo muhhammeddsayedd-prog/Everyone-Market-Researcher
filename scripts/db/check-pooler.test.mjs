@@ -42,6 +42,12 @@ if [[ "\${0##*/}" == pnpm ]]; then
     node --input-type=module -e 'console.log(JSON.stringify({success:true,numFailedTests:0,numPendingTests:process.env.EMR_TEST_M05_APP_SKIPPED?1:0,testResults:[{name:"/repo/apps/web/server/n8n-worker/m05-sql.integration.test.ts",assertionResults:[{status:process.env.EMR_TEST_M05_APP_SKIPPED?"pending":"passed"}]}]}));' > "$report"
     exit 0
   fi
+  if [[ "$*" == *'m06-media-sql.integration.test.ts'* ]]; then
+    [[ "\${EMR_TEST_FAIL_PHASE:-}" != m06-app ]] || { printf '${marker}\\n'; exit 1; }
+    report=''; while [[ $# -gt 0 ]]; do if [[ "$1" == --outputFile ]]; then report="$2"; break; fi; shift; done
+    node --input-type=module -e 'console.log(JSON.stringify({success:true,numFailedTests:0,numPendingTests:process.env.EMR_TEST_M06_APP_SKIPPED?1:0,testResults:[{name:"/repo/apps/web/server/m06-media-sql.integration.test.ts",assertionResults:[{status:process.env.EMR_TEST_M06_APP_SKIPPED?"pending":"passed"}]}]}));' > "$report"
+    exit 0
+  fi
   printf '%s\\n' "\${M02_TEST_DATABASE_URL:-}" > "$EMR_TEST_CAPTURE/m02.target"
   [[ "\${EMR_TEST_FAIL_PHASE:-}" != m02 ]] || { printf '${marker}\\n'; exit 1; }
   report=''
@@ -82,7 +88,7 @@ else
       phase=gw-test
       printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_GW_TAP_FILES:-1}" "\${EMR_TEST_GW_TAP_COUNT:-102}"
     else
-      printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_TAP_FILES:-15}" "\${EMR_TEST_TAP_COUNT:-215}"
+      printf 'Files=%s, Tests=%s, 1 wallclock secs\\nResult: PASS\\n' "\${EMR_TEST_TAP_FILES:-16}" "\${EMR_TEST_TAP_COUNT:-257}"
     fi
   fi
   if [[ "$1 $2" == 'db advisors' ]]; then
@@ -207,7 +213,7 @@ test('CI runner uses only explicit local targets and exposes only safe summaries
   fixture((directory) => {
     const child = execute(directory, 'scripts/db/run-local-ci.sh');
     assert.equal(child.status, 0, child.stderr);
-    assert.match(child.stdout, /pgTAP: 15 files, 215 assertions, PASS/);
+    assert.match(child.stdout, /pgTAP: 16 files, 257 assertions, PASS/);
     const commands = readFileSync(join(directory, 'commands'), 'utf8');
     assert.match(
       commands,
@@ -219,9 +225,12 @@ test('CI runner uses only explicit local targets and exposes only safe summaries
     assert.match(commands, /supabase\/tests\/16_m04_collectors\.test\.sql/);
     assert.match(commands, /supabase\/tests\/17_m04_recent_monitoring\.test\.sql/);
     assert.match(commands, /supabase\/tests\/18_m05_collectors\.test\.sql/);
+    assert.match(commands, /supabase\/tests\/20_m06_media\.test\.sql/);
     assert.match(commands, /m05-sql.integration.test.ts/);
+    assert.match(commands, /m06-media-sql.integration.test.ts/);
     assert.match(commands, /gen types typescript --local --schema app,ops,ingest,api --output-format text/);
     assert.match(child.stdout, /M05 SQL\/app contract: PASS/);
+    assert.match(child.stdout, /M06 SQL\/app contract: PASS/);
     assert.match(child.stdout, /Generated database types: PASS/);
     assert.match(commands, /db advisors --local --type security --level warn --fail-on warn/);
     assert.match(commands, /db advisors --local --type performance --level warn --fail-on error/);
@@ -276,6 +285,7 @@ test('CI runner fails closed at each failed phase without leaking captured outpu
       'foundation-app',
       'm04-app',
       'm05-app',
+      'm06-app',
       'types',
       'security',
       'performance',
@@ -295,6 +305,7 @@ test('CI runner rejects zero assertions or an incomplete SQL suite set', () =>
       { EMR_TEST_TAP_FILES: '12' },
       { EMR_TEST_TAP_FILES: '13' },
       { EMR_TEST_TAP_FILES: '14' },
+      { EMR_TEST_TAP_FILES: '15' },
     ]) {
       assert.equal(execute(directory, 'scripts/db/run-local-ci.sh', overrides).status, 1);
     }
@@ -317,6 +328,14 @@ test('CI runner rejects skipped M05 SQL and a generated-type mismatch', () =>
     assert.match(mismatch.stderr, /Generated database types: FAIL/);
     for (const child of [skipped, mismatch])
       assert.ok(!child.stdout.includes(marker) && !child.stderr.includes(marker));
+  }));
+
+test('CI runner rejects skipped M06 connected SQL assertions', () =>
+  fixture((directory) => {
+    const child = execute(directory, 'scripts/db/run-local-ci.sh', { EMR_TEST_M06_APP_SKIPPED: '1' });
+    assert.equal(child.status, 1);
+    assert.match(child.stderr, /M06 SQL\/app contract: FAIL/);
+    assert.ok(!child.stdout.includes(marker) && !child.stderr.includes(marker));
   }));
 
 test('CI runner rejects skipped M02 PostgreSQL assertions', () =>
