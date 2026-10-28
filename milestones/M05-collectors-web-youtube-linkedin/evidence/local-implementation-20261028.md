@@ -127,3 +127,24 @@ permission review. Read back the actual diff and rerun affected checks afterward
 
 No M05 dev credential was read, M05 migration applied, provider capture started,
 workflow activated or production changed. Persistent encrypted originals remain.
+
+### CI qualification repair
+
+The first pushed head `ff9741d` opened stacked draft PR14; its protected Vercel
+Preview, quality/build/e2e checks passed. CI40628554552's database job stopped in
+the existing script-safety fixture before database startup: its hard-coded
+fourteen-suite count and mocked phases did not yet include M05. The normal
+runner/fixture now require fifteen suites, the additional unskipped M05 SQL
+report and generated-type parity; all seventeen affected safety tests pass,
+including failed/skipped/mismatched output rejection. No required check was
+removed or weakened. The complete changed-head run remains a separate result.
+
+Additional meaningful local integration executes the serialized native YouTube
+functions through the actual typed HTTP handler and PostgreSQL operations, with
+documented synthetic API responses. It proves quota/cost-once, known-ID metrics
+refresh, zero duplicate item and actual terminal status, inside the same complete
+rollback. Official Google metadata supplies the uploads playlist as an opaque
+ID; the undocumented prefix/shared-suffix constraint was removed and separately
+regressed. This does not constitute a real Google or native Cloud observation.
+
+Pending migration SHA256: `127daace10ea35aabc29b90970e55188fa801bf4475edbc17ee2e1b199c5f996`.
