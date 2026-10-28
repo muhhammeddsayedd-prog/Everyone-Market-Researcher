@@ -11,6 +11,7 @@ import {
   initializeM05Subset,
   m05SubsetAccounts,
   chargeM05Request,
+  requalifyM05SourceBeforeSetup,
 } from './m04-dev-task.mjs';
 
 function subsetBaseline() {
@@ -147,6 +148,36 @@ test('a failed read-only M05 metadata lookup leaves no partial pin or poisoned r
   assert.equal(r.private.livePolicy, undefined);
   assert.equal(t.calls.length, 2);
   assert.equal(t.closed.length, 2);
+});
+test('a tested source revision can qualify before the first mutation without resetting any scope or charges', () => {
+  const s = {
+    scope: 'm05-subset',
+    sourceHead: 'a'.repeat(40),
+    approvalId: 'unchanged',
+    native: {
+      inventoryComplete: true,
+      scopePin: { sourceHead: 'a'.repeat(40) },
+      machine: { rebound: false },
+      events: [],
+    },
+  };
+  const changed = structuredClone(s);
+  requalifyM05SourceBeforeSetup(changed, 'b'.repeat(40));
+  assert.equal(changed.sourceHead, 'b'.repeat(40));
+  assert.equal(changed.native.scopePin.sourceHead, 'b'.repeat(40));
+  assert.equal(changed.approvalId, s.approvalId);
+  assert.equal(changed.native.events.length, 1);
+  for (const mutation of [
+    (s) => (s.native.pending = {}),
+    (s) => (s.native.machine.rebound = true),
+    (s) => (s.native.stageComplete = true),
+    (s) => (s.vercelSetup = {}),
+    (s) => (s.deployment = {}),
+  ]) {
+    const blocked = structuredClone(s);
+    mutation(blocked);
+    assert.throws(() => requalifyM05SourceBeforeSetup(blocked, 'b'.repeat(40)), /SOURCE_RECONCILIATION/);
+  }
 });
 
 test('incremental ceilings retain historical charges and count Vercel inside Management', () => {

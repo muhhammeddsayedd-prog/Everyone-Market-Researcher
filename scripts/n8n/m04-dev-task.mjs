@@ -164,6 +164,33 @@ export function chargeM05Request(
     }) + '\n',
   );
 }
+export function requalifyM05SourceBeforeSetup(state, head) {
+  if (state.sourceHead === head) return;
+  const n = state.native;
+  if (
+    state.scope !== 'm05-subset' ||
+    !/^[a-f0-9]{40}$/.test(head ?? '') ||
+    !n?.inventoryComplete ||
+    n.scopePin?.sourceHead !== state.sourceHead ||
+    n.pending ||
+    n.machine?.pending ||
+    n.machine?.rebound ||
+    n.errorHandler ||
+    n.stageComplete ||
+    state.deployment ||
+    state.vercelSetup ||
+    !Array.isArray(n.events)
+  )
+    fail('M05_SOURCE_RECONCILIATION_REQUIRED');
+  n.events.push({
+    action: 'source_requalified_before_first_mutation',
+    from: state.sourceHead,
+    to: head,
+    observedAt: new Date().toISOString(),
+  });
+  state.sourceHead = head;
+  n.scopePin.sourceHead = head;
+}
 const fail = (code) => {
   throw Error(code);
 };
@@ -922,6 +949,23 @@ export async function runTask(input, dependencies = {}) {
         };
       }
     } else if (task === 'Setup' && phase === 'prepare') {
+      if (m05) {
+        const env = Object.fromEntries(
+          ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP'].flatMap((key) =>
+            process.env[key] ? [[key, process.env[key]]] : [],
+          ),
+        );
+        const head =
+          dependencies.head ??
+          execFileSync('git', ['rev-parse', 'HEAD'], {
+            cwd: root,
+            env,
+            windowsHide: true,
+            encoding: 'utf8',
+            timeout: 5000,
+          }).trim();
+        requalifyM05SourceBeforeSetup(state, head);
+      }
       const { runVercelTask } = await import('./m04-vercel-tasks.mjs');
       const prepared = await runVercelTask({
         phase,

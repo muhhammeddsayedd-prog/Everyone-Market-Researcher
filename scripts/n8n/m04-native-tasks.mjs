@@ -250,6 +250,12 @@ function m05SubsetPlan(state, bindings, freshObservation = false) {
     (freshObservation && (recordedAt > Date.now() + 30000 || Date.now() - after > 1800000))
   )
     fail('CREDENTIAL_IDENTITY');
+  if (
+    state.native?.machine?.baseline &&
+    (!Number.isFinite(Date.parse(state.native.machine.baseline.updatedAt)) ||
+      Date.parse(state.native.machine.baseline.updatedAt) > after)
+  )
+    fail('CREDENTIAL_IDENTITY');
   // Exercise the actual source guards before any credential metadata request or
   // native mutation, rather than discovering invalid inputs after handler creation.
   // Before Preview exists this is offline source validation at the reviewed
@@ -528,6 +534,9 @@ async function runM05SubsetTask({ phase, state, send, bindings, repo, machineTok
       }
       n.machine.baseline = structuredClone(n.credentials.machine);
       n.machine.current = structuredClone(n.credentials.machine);
+      // The UI host observation must describe this exact unchanged credential
+      // version. Do not adopt a later shared credential edit as our baseline.
+      m05SubsetPlan(state, bindings, true);
       n.inventoryComplete = true;
       checkpoint({ action: 'inventory_verified', workflowIds: m05SubsetKeys.map((k) => ref(k).id) });
     } else if (phase === 'machine') {

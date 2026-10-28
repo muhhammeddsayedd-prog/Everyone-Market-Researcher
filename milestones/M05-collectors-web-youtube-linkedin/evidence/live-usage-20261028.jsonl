@@ -13,3 +13,17 @@
 {"at":"2026-10-28T16:25:56.821Z","event":"request_result","category":"provider","operation":"GET /v2/actors/Vb6LZkh4EqRlR0Ka9/builds/45FkeNrN7i4AeFKpk","status":200}
 {"at":"2026-10-28T16:25:56.823Z","event":"request_intent","category":"provider","operation":"GET /v2/actors/Vb6LZkh4EqRlR0Ka9/builds/45FkeNrN7i4AeFKpk/openapi.json","scope":"m05-subset","totals":{"management":2,"control":9,"combined":11,"vercel":0}}
 {"at":"2026-10-28T16:25:58.181Z","event":"request_result","category":"provider","operation":"GET /v2/actors/Vb6LZkh4EqRlR0Ka9/builds/45FkeNrN7i4AeFKpk/openapi.json","status":200}
+{"at":"2026-10-28T16:37:07.912Z","event":"request_intent","category":"n8n","operation":"GET /api/v1/workflows/F7S8Llr0ZSaSuw4T?excludePinnedData=true","scope":"m05-subset","totals":{"management":3,"control":9,"combined":12,"vercel":0}}
+{"at":"2026-10-28T16:37:08.373Z","event":"request_result","category":"n8n","operation":"GET /api/v1/workflows/F7S8Llr0ZSaSuw4T?excludePinnedData=true","status":200}
+{"at":"2026-10-28T16:37:08.395Z","event":"request_intent","category":"n8n","operation":"GET /api/v1/workflows/VbJn4mLYm0sGy1X2?excludePinnedData=true","scope":"m05-subset","totals":{"management":4,"control":9,"combined":13,"vercel":0}}
+{"at":"2026-10-28T16:37:08.830Z","event":"request_result","category":"n8n","operation":"GET /api/v1/workflows/VbJn4mLYm0sGy1X2?excludePinnedData=true","status":200}
+{"at":"2026-10-28T16:37:08.833Z","event":"request_intent","category":"n8n","operation":"GET /api/v1/workflows/h6lUXSGN5sV2jxuQ?excludePinnedData=true","scope":"m05-subset","totals":{"management":5,"control":9,"combined":14,"vercel":0}}
+{"at":"2026-10-28T16:37:09.470Z","event":"request_result","category":"n8n","operation":"GET /api/v1/workflows/h6lUXSGN5sV2jxuQ?excludePinnedData=true","status":200}
+{"at":"2026-10-28T16:37:09.473Z","event":"request_intent","category":"n8n","operation":"GET /api/v1/workflows/TsqSMa5MlO3QBLkt?excludePinnedData=true","scope":"m05-subset","totals":{"management":6,"control":9,"combined":15,"vercel":0}}
+{"at":"2026-10-28T16:37:09.962Z","event":"request_result","category":"n8n","operation":"GET /api/v1/workflows/TsqSMa5MlO3QBLkt?excludePinnedData=true","status":200}
+{"at":"2026-10-28T16:37:09.968Z","event":"request_intent","category":"n8n","operation":"GET /api/v1/credentials/EmrM03Machine19","scope":"m05-subset","totals":{"management":7,"control":9,"combined":16,"vercel":0}}
+{"at":"2026-10-28T16:37:10.331Z","event":"request_result","category":"n8n","operation":"GET /api/v1/credentials/EmrM03Machine19","status":200}
+{"at":"2026-10-28T16:37:10.335Z","event":"request_intent","category":"n8n","operation":"GET /api/v1/credentials/EYmaOt0rd45ysq0J","scope":"m05-subset","totals":{"management":8,"control":9,"combined":17,"vercel":0}}
+{"at":"2026-10-28T16:37:10.619Z","event":"request_result","category":"n8n","operation":"GET /api/v1/credentials/EYmaOt0rd45ysq0J","status":200}
+{"at":"2026-10-28T16:37:10.622Z","event":"request_intent","category":"n8n","operation":"GET /api/v1/credentials/ltvBSloVLGVeUjqV","scope":"m05-subset","totals":{"management":9,"control":9,"combined":18,"vercel":0}}
+{"at":"2026-10-28T16:37:10.940Z","event":"request_result","category":"n8n","operation":"GET /api/v1/credentials/ltvBSloVLGVeUjqV","status":200}

@@ -21,6 +21,10 @@ The owner separately authorized this subset on 28 October. Website correction an
 
 ## Finite operational plan, not owner spending gates
 
+Native API fallback subsequently completed all seven inventory GETs: the four exact workflow IDs match their reviewed inactive baselines. Existing credentials are `EmrM03Machine19`/`httpCustomAuth`, `EYmaOt0rd45ysq0J`/`apifyApi` and `ltvBSloVLGVeUjqV`/`httpHeaderAuth`. No credential `data` was read. No credential replacement, workflow save, publication or execution occurred. Fresh credential version is fenced against the prior native UI host observation and again checked before mutation; later shared edits are preserved rather than adopted. A tested source revision can qualify before the first hosted mutation without changing the allocation, selected accounts or prior charges.
+
+The actual native Vercel metadata reports `saved_auth_expired`, with zero network/authentication/refresh/config-write operations. Existing-account native login has been requested; other work is independent. This is a real shared protected-Preview dependency for the selected collectors, unrelated to the website edit denial.
+
 Target two logical LinkedIn rounds: posts and employees, retaining natural batching. Conservative bound six starts (two singleton posts plus one employee per round); initially reserve eight starts, USD1/start and USD8 allocation for established-failure recovery. Each admitted allocation remains immutable. Standing development authority permits adjusting later operational settings after actual reconciliation; it does not permit blind replacement of an uncertain paid start.
 
 At the highest currently published result rates, eighty post results are about USD0.160 plus up to USD0.0002 actor-start events; forty Short profiles plus two starts are about USD0.160. These are estimates, with actual tier/usage taken from the provider and ledger. Official YouTube quota and incremental monetary charges are recorded separately. Supabase/n8n/Vercel infrastructure and proxy/storage/transfer components remain unknown until measured; no subscription amounts are invented.

@@ -937,6 +937,19 @@ test('M05 subset stages only the three fixed children and unchanged callback, th
   assert.ok(f.calls.filter((c) => c.method !== 'GET').every((c) => c.pendingBeforeSend !== null));
 });
 
+test('M05 subset refuses a Machine credential edit newer than its native UI observation without any write', async () => {
+  const f = fixture({ m05: true });
+  const result = await f.run('inventory', async (method, path, value) => {
+    const r = await f.send(method, path, value);
+    if (path === '/api/v1/credentials/EmrM03Machine19') r.body.updatedAt = new Date().toISOString();
+    return r;
+  });
+  assert.equal(result.public.status, 'blocked');
+  assert.equal(result.public.code, 'M04_NATIVE_CREDENTIAL_IDENTITY');
+  assert.equal(f.calls.filter((c) => c.method !== 'GET').length, 0);
+  assert.notEqual(f.state.native.inventoryComplete, true);
+});
+
 test('M05 subset rejects website policy, widened identities and foreign snapshot metadata before any network write', async () => {
   for (const mutate of [
     (s) => {
