@@ -261,8 +261,12 @@ function fixture({ incremental = false, hc01 = false, m05 = false } = {}) {
     } else if (method === 'POST' && match[2] === '/unpublish') {
       if (dto.id === createdHandlerId || dto.id === 'AwxhktgJdvLXE0FZ')
         assert.ok(
-          Object.values(workflows).every((w) => w.settings?.errorWorkflow !== dto.id),
-          'consumers must be restored before handler unpublication',
+          Object.values(workflows).every(
+            (w) =>
+              w.settings?.errorWorkflow !== dto.id ||
+              (m05 && w.active === false && w.activeVersionId === null),
+          ),
+          'active consumers must not lose their handler; inactive M05 drift is preserved without adopting its graph',
         );
       dto.active = false;
       dto.activeVersionId = null;
@@ -1116,16 +1120,80 @@ test('M05 subset never repeats an uncertain new handler create', async () => {
   assert.equal(f.calls.filter((c) => c.method === 'POST' && c.path === '/api/v1/workflows').length, 1);
 });
 
-test('M05 subset preserves conflicting graphs while independently restoring its Machine credential', async () => {
+test('M05 subset preserves an inactive employee editor drift but restores other graphs, handler and Machine', async () => {
+  const f = fixture({ m05: true });
+  const originals = structuredClone(f.workflows);
+  for (const p of ['inventory', 'machine', 'stage', 'publish'])
+    assert.equal((await f.run(p)).public.status, 'completed');
+  const employee = f.workflows[bindings.workflowRefs['WF-18b'].id];
+  employee.versionId = 'unrelated-new-editor-version';
+  employee.nodes[0].notes = 'unrecognized owner edit';
+  const unknown = structuredClone(employee),
+    start = f.calls.length;
+  const r = await f.run('restore');
+  assert.equal(r.public.code, 'M04_NATIVE_DRIFT');
+  assert.equal(r.public.status, 'blocked');
+  assert.deepEqual(
+    r.public.restoreDrift.map((x) => ({ key: x.key, versionId: x.versionId })),
+    [{ key: 'WF-18b', versionId: 'unrelated-new-editor-version' }],
+  );
+  assert.deepEqual(employee, unknown);
+  assert.equal(
+    f.calls.slice(start).some((c) => c.method === 'PUT' && c.path.includes(employee.id)),
+    false,
+  );
+  for (const key of ['WF-13', 'WF-18', 'WF-19']) {
+    const actual = f.workflows[bindings.workflowRefs[key].id],
+      before = originals[actual.id];
+    assert.deepEqual(actual.nodes, before.nodes);
+    assert.deepEqual(actual.connections, before.connections);
+    assert.deepEqual(actual.settings, before.settings);
+    assert.equal(actual.active, false);
+    assert.equal(actual.activeVersionId, null);
+  }
+  assert.equal(f.state.native.machine.rebound, false);
+  assert.equal(f.workflows.SyntheticM05Error1.active, false);
+  assert.equal(f.workflows.SyntheticM05Error1.activeVersionId, null);
+  assert.equal(f.state.native.restoreComplete, false);
+  assert.equal(r.public.pendingMutation, false);
+});
+
+test('M05 restoration does not treat an ambiguous pending PUT as harmless graph drift or retry it', async () => {
   const f = fixture({ m05: true });
   for (const p of ['inventory', 'machine', 'stage', 'publish'])
     assert.equal((await f.run(p)).public.status, 'completed');
-  f.workflows[bindings.workflowRefs['WF-13'].id].versionId = 'unrelated-new-version';
-  const r = await f.run('restore');
-  assert.equal(r.public.code, 'M04_NATIVE_DRIFT');
+  const path = '/api/v1/workflows/' + bindings.workflowRefs['WF-13'].id + '?publishIfActive=false';
+  const start = f.calls.length;
+  const r = await f.run('restore', async (m, p, v) => {
+    const response = await f.send(m, p, v);
+    if (m === 'PUT' && p === path) throw Error('lost restoration response');
+    return response;
+  });
+  assert.equal(r.public.status, 'blocked');
+  assert.equal(r.public.pendingMutation, true);
+  assert.deepEqual(r.public.restoreDrift, []);
+  assert.equal(f.state.native.pending.key, 'WF-13');
   assert.equal(f.state.native.machine.rebound, false);
+  assert.equal(f.calls.slice(start).filter((c) => c.method === 'PUT').length, 1);
+  assert.equal((await f.run('restore')).public.status, 'blocked');
+  assert.equal(f.calls.slice(start).filter((c) => c.method === 'PUT').length, 1);
+});
+
+test('M05 restoration preserves an active unknown consumer and keeps its owned log handler available', async () => {
+  const f = fixture({ m05: true });
+  for (const p of ['inventory', 'machine', 'stage', 'publish'])
+    assert.equal((await f.run(p)).public.status, 'completed');
+  const employee = f.workflows[bindings.workflowRefs['WF-18b'].id];
+  employee.versionId = 'unknown-active-version';
+  employee.active = true;
+  employee.activeVersionId = employee.versionId;
+  const r = await f.run('restore');
+  assert.equal(r.public.status, 'blocked');
+  assert.equal(r.public.code, 'M04_NATIVE_DRIFT');
+  assert.equal(employee.active, true);
   assert.equal(f.workflows.SyntheticM05Error1.active, true);
-  assert.equal(f.state.native.restoreComplete, undefined);
+  assert.equal(r.public.pendingMutation, false);
+  assert.equal(f.state.native.machine.rebound, false);
 });
 
 test('M05 subset readback settles a lost handler publication and never repeats a rejected exact version', async (t) => {

@@ -1,0 +1,190 @@
+{
+  "key": "WF-13",
+  "id": "F7S8Llr0ZSaSuw4T",
+  "versionId": "e2504806-fb8f-4343-ae4e-be7c12b4da9d",
+  "active": false,
+  "activeVersionId": null,
+  "graphHash": "a7c22270f87ef11f6c41ea385be6e4dba0c828b1d00546a4236a90627af8248f",
+  "readonlySettings": {
+    "binaryMode": null
+  },
+  "tags": [
+    {
+      "id": "9VKnf3HlzT1qNNfW",
+      "name": "layer:collector"
+    },
+    {
+      "id": "f599CX7WOg9azPEC",
+      "name": "env:dev"
+    },
+    {
+      "id": "IDZNRDEVXu6ifxpJ",
+      "name": "platform:youtube"
+    }
+  ],
+  "sourceHead": "445b60b30854112666e43b141891f3743efdaa90",
+  "evidence": "native_saved_definition_only",
+  "scope": "m05-subset",
+  "websiteExcluded": true,
+  "workflow": {
+    "name": "WF-13 · YouTube collector [dev]",
+    "nodes": [
+      {
+        "id": "00d9b407-1a72-4bce-ab68-d43dc41c417b",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "mode",
+                "type": "string"
+              },
+              {
+                "name": "limit",
+                "type": "number"
+              },
+              {
+                "name": "result_type",
+                "type": "string"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "3d5ef8d4-206d-44c0-af7a-a8306380679d",
+        "name": "Manual test",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          200
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "1977f189-e700-4456-a6a9-7cb849cad95b",
+        "name": "Validate dev input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          240,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const items = $input.all();\nconst invalid = () => { throw new Error('EMR_N8N_INPUT_INVALID'); };\nif (items.length !== 1) invalid();\nconst j = items[0].json;\nif (!j || typeof j !== 'object' || Array.isArray(j) ||\n  Object.keys(j).some(k => ![\"mode\",\"limit\",\"result_type\",\"env\"].includes(k))) invalid();\nif (j.env !== undefined && j.env !== null && j.env !== 'dev') invalid();\nconst mode = j.mode ?? 'manual';\nif (!['daily','backfill','weekly','manual','removal_check'].includes(mode)) invalid();\nconst limit = j.limit ?? null;\nif (limit !== null && (!Number.isInteger(limit) || limit < 1 || limit > 1000)) invalid();\nconst result_type = j.result_type ?? null;\nif (result_type !== null && (typeof result_type !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(result_type))) invalid();\n\n\nreturn [{json:{mode,limit,result_type,env:'dev'}}];"
+        }
+      },
+      {
+        "id": "5dffa16c-4016-474c-a74a-c40d30841ac3",
+        "name": "Return stub",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          480,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "includeOtherFields": false,
+          "assignments": {
+            "assignments": [
+              {
+                "id": "50a4e420-b66c-4a15-a5a9-d619d1947a0d",
+                "name": "stub",
+                "type": "boolean",
+                "value": true
+              },
+              {
+                "id": "072f4891-6305-4ad9-a2fc-d113c0496841",
+                "name": "workflow",
+                "type": "string",
+                "value": "WF-13"
+              },
+              {
+                "id": "336cb8cc-5642-4ea7-ad7a-4b420a395545",
+                "name": "received",
+                "type": "object",
+                "value": "={{ $json }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual test": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate dev input": {
+        "main": [
+          [
+            {
+              "node": "Return stub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "saveExecutionProgress": false,
+      "saveManualExecutions": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "executionTimeout": 900,
+      "timezone": "Africa/Cairo",
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false
+    },
+    "tags": [
+      {
+        "id": "9VKnf3HlzT1qNNfW",
+        "name": "layer:collector"
+      },
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "IDZNRDEVXu6ifxpJ",
+        "name": "platform:youtube"
+      }
+    ],
+    "pinData": {}
+  }
+}

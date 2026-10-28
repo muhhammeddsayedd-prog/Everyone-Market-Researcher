@@ -1,0 +1,49 @@
+{
+  "status": "selected_subset_passed",
+  "observedAt": "2026-10-28T18:38:33.911Z",
+  "applicationHead": "445b60b30854112666e43b141891f3743efdaa90",
+  "applicationCi": "40739636927",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "migrationVersions": 19,
+  "approvedNewMigration": "20261028020745",
+  "newItems": 38,
+  "retainedItems": 280,
+  "actorStarts": 6,
+  "incrementalCorrectedActorUsd": 0.1901,
+  "cumulativeM05ActorUsd": 0.28515,
+  "officialYoutubeUnits": 4,
+  "officialYoutubeUsd": 0,
+  "websiteActorStarts": 0,
+  "employeeSnapshotCount": 1,
+  "employeeObservationCount": 20,
+  "employeeCoverageComplete": false,
+  "allKnownWorkTerminal": true,
+  "originalWorkflowGraphsRestored": true,
+  "ownedWorkflowsInactive": true,
+  "machineRestored": true,
+  "temporaryDueRestored": true,
+  "previewBindingsRemoved": true,
+  "ownedBypassRevoked": true,
+  "persistentCredentialOriginalsRetained": true,
+  "coordinatorRecordedRequests": {
+    "management": 224,
+    "control": 85,
+    "combined": 309,
+    "vercel": 74
+  },
+  "requestLimitations": "Includes charged coordinator API intents and conservative nested callback bounds. Native editor/background and collector-internal traffic is not a complete HTTP census.",
+  "unknownCharges": [
+    "Supabase infrastructure",
+    "n8n infrastructure",
+    "Vercel infrastructure",
+    "unitemized storage/proxy/transfer"
+  ],
+  "remaining": [
+    "website retry finite-positive native guard and website validation require supported narrow review",
+    "full LinkedIn history and unobserved source examples",
+    "original wider pilot, daily observation and production criteria",
+    "YouTube repeat not forced because Aflam lacks watermark"
+  ],
+  "overallM05Accepted": false
+}

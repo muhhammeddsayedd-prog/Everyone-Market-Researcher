@@ -1,0 +1,191 @@
+{
+  "key": "WF-18b",
+  "id": "h6lUXSGN5sV2jxuQ",
+  "versionId": "7bf1be9e-e1ba-4ea5-b2f7-b1896e7ef73b",
+  "active": false,
+  "activeVersionId": null,
+  "graphHash": "acc5861e3d69d7b7ad25fc782fe51916e2eccedf6e725b42d7ea6e9a05598551",
+  "readonlySettings": {
+    "binaryMode": "separate"
+  },
+  "tags": [
+    {
+      "id": "9VKnf3HlzT1qNNfW",
+      "name": "layer:collector"
+    },
+    {
+      "id": "f599CX7WOg9azPEC",
+      "name": "env:dev"
+    },
+    {
+      "id": "QaHjrtRVHOsUIeFI",
+      "name": "platform:li_employees"
+    }
+  ],
+  "sourceHead": "445b60b30854112666e43b141891f3743efdaa90",
+  "evidence": "native_saved_definition_only",
+  "scope": "m05-subset",
+  "websiteExcluded": true,
+  "workflow": {
+    "name": "WF-18b · LinkedIn employees [dev]",
+    "nodes": [
+      {
+        "id": "77c0281d-886d-44ff-a772-d61812ec0d6c",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "mode",
+                "type": "string"
+              },
+              {
+                "name": "limit",
+                "type": "number"
+              },
+              {
+                "name": "result_type",
+                "type": "string"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "58aef6c2-3017-413a-aeb7-5882705967ae",
+        "name": "Manual test",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          200
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "588bf4ad-2e9c-462b-a38a-6768b493b96f",
+        "name": "Validate dev input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          240,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const items = $input.all();\nconst invalid = () => { throw new Error('EMR_N8N_INPUT_INVALID'); };\nif (items.length !== 1) invalid();\nconst j = items[0].json;\nif (!j || typeof j !== 'object' || Array.isArray(j) ||\n  Object.keys(j).some(k => ![\"mode\",\"limit\",\"result_type\",\"env\"].includes(k))) invalid();\nif (j.env !== undefined && j.env !== null && j.env !== 'dev') invalid();\nconst mode = j.mode ?? 'manual';\nif (!['daily','backfill','weekly','manual','removal_check'].includes(mode)) invalid();\nconst limit = j.limit ?? null;\nif (limit !== null && (!Number.isInteger(limit) || limit < 1 || limit > 1000)) invalid();\nconst result_type = j.result_type ?? null;\nif (result_type !== null && (typeof result_type !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(result_type))) invalid();\n\n\nreturn [{json:{mode,limit,result_type,env:'dev'}}];"
+        }
+      },
+      {
+        "id": "53e42f39-1f8d-4d96-a022-0cc9ebb5951c",
+        "name": "Return stub",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          480,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "includeOtherFields": false,
+          "assignments": {
+            "assignments": [
+              {
+                "id": "f6574817-728d-4e63-a693-f5f543ae10b9",
+                "name": "stub",
+                "type": "boolean",
+                "value": true
+              },
+              {
+                "id": "ed63226e-80da-4785-adf9-5e996c5bd476",
+                "name": "workflow",
+                "type": "string",
+                "value": "WF-18b"
+              },
+              {
+                "id": "f51b540b-23cd-4ecf-ad7f-cbea7a95446f",
+                "name": "received",
+                "type": "object",
+                "value": "={{ $json }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual test": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate dev input": {
+        "main": [
+          [
+            {
+              "node": "Return stub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "saveExecutionProgress": false,
+      "saveManualExecutions": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "executionTimeout": 900,
+      "timezone": "Africa/Cairo",
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "binaryMode": "separate"
+    },
+    "tags": [
+      {
+        "id": "9VKnf3HlzT1qNNfW",
+        "name": "layer:collector"
+      },
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "QaHjrtRVHOsUIeFI",
+        "name": "platform:li_employees"
+      }
+    ],
+    "pinData": {}
+  }
+}

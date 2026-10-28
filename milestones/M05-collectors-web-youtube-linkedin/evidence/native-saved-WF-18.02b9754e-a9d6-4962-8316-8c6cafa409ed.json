@@ -1,0 +1,476 @@
+{
+  "key": "WF-18",
+  "id": "VbJn4mLYm0sGy1X2",
+  "versionId": "02b9754e-a9d6-4962-8316-8c6cafa409ed",
+  "active": false,
+  "activeVersionId": null,
+  "graphHash": "4f8e5272627d3fe1b7acb07e022b36f32664c5b7a53b1ba2f759154fe7302264",
+  "readonlySettings": {
+    "binaryMode": null
+  },
+  "tags": [
+    {
+      "id": "9VKnf3HlzT1qNNfW",
+      "name": "layer:collector"
+    },
+    {
+      "id": "f599CX7WOg9azPEC",
+      "name": "env:dev"
+    },
+    {
+      "id": "PccyUXHyUcidOTXA",
+      "name": "platform:linkedin"
+    }
+  ],
+  "sourceHead": "445b60b30854112666e43b141891f3743efdaa90",
+  "evidence": "native_saved_definition_only",
+  "scope": "m05-subset",
+  "websiteExcluded": true,
+  "workflow": {
+    "name": "WF-18 · LinkedIn posts collector [dev]",
+    "nodes": [
+      {
+        "id": "78187c92-697f-47f2-affd-e31d97917440",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "c933cf49-32f2-482f-affb-a6476168d82a",
+        "name": "Initialize fixed LinkedIn selection",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          200,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M05_NATIVE_INPUT_INVALID');const j=rows[0].json;\n// Public harvestapi company-post projection. No I/O or credential handling.\n// Unknown repost ownership/media shapes fail closed rather than borrowing a profile author.\nconst liRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);\nconst liUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;\nfunction linkedinCompany(value) {\n  if (typeof value !== 'string' || /[\\s\\\\\\u0000-\\u001f\\u007f]/u.test(value)) return null;\n  const match = /^https:\\/\\/(?:(?:www|[a-z]{2})\\.)?linkedin\\.com\\/company\\/([^/?#]+)\\/?$/iu.exec(value);\n  if (!match) return null;\n  let slug;\n  try {\n    slug = decodeURIComponent(match[1]).toLowerCase();\n  } catch {\n    return null;\n  }\n  if (!/^[\\p{L}\\p{N}._&+-]{1,160}$/u.test(slug)) return null;\n  return { slug, url: `https://www.linkedin.com/company/${encodeURIComponent(slug)}/` };\n}\nfunction linkedinDate(value) {\n  if (typeof value === 'number') {\n    if (!Number.isSafeInteger(value) || value < 946684800000 || value > 4102444800000) return null;\n    return new Date(value).toISOString();\n  }\n  if (\n    typeof value !== 'string' ||\n    !/^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d+)?(?:Z|[+-]\\d\\d:\\d\\d)$/.test(value)\n  )\n    return null;\n  const [year, month, day] = value.slice(0, 10).split('-').map(Number);\n  const [hour, minute, second] = value.slice(11, 19).split(':').map(Number);\n  const offset = /[+-](\\d\\d):(\\d\\d)$/.exec(value);\n  const calendar = new Date(0);\n  calendar.setUTCFullYear(year, month - 1, day);\n  const parsed = new Date(value);\n  if (\n    year < 1 ||\n    hour > 23 ||\n    minute > 59 ||\n    second > 59 ||\n    calendar.getUTCFullYear() !== year ||\n    calendar.getUTCMonth() !== month - 1 ||\n    calendar.getUTCDate() !== day ||\n    (offset && (+offset[1] > 14 || +offset[2] > 59 || (+offset[1] === 14 && +offset[2] !== 0))) ||\n    !Number.isFinite(parsed.getTime())\n  )\n    return null;\n  return parsed.toISOString();\n}\nfunction linkedinAccounts(accounts, platform = 'linkedin') {\n  if (\n    !Array.isArray(accounts) ||\n    accounts.length > 100 ||\n    !['linkedin', 'linkedin_employees'].includes(platform)\n  )\n    throw Error('linkedin_accounts_invalid');\n  const ids = new Set(),\n    companies = new Set();\n  return accounts.map((account) => {\n    const id = account?.id ?? account?.account_id;\n    const company = linkedinCompany(account?.url);\n    if (\n      !liRecord(account) ||\n      !liUuid.test(id ?? '') ||\n      (account.id && account.account_id && account.id !== account.account_id) ||\n      !liUuid.test(account.competitor_id ?? '') ||\n      account.platform !== platform ||\n      !company ||\n      (account.handle_norm ?? account.handle)?.toLowerCase() !== company.slug ||\n      ids.has(id) ||\n      companies.has(company.slug)\n    )\n      throw Error('linkedin_accounts_invalid');\n    ids.add(id);\n    companies.add(company.slug);\n    return { account: { ...account, id }, ...company };\n  });\n}\nconst linkedinCount = (value) => {\n  if (\n    !['number', 'string'].includes(typeof value) ||\n    value === '' ||\n    (typeof value === 'string' && !/^\\d+(?:\\.\\d+)?$/.test(value))\n  )\n    return null;\n  const count = Number(value);\n  return Number.isFinite(count) && count >= 0 && Number.isSafeInteger(Math.round(count))\n    ? Math.round(count)\n    : null;\n};\nfunction linkedinOwner(row) {\n  if (!liRecord(row?.author) || (row.author.type && row.author.type !== 'company')) return null;\n  const fromUrl = linkedinCompany(row.author.linkedinUrl);\n  const fromName =\n    typeof row.author.universalName === 'string' ? row.author.universalName.toLowerCase() : null;\n  if (fromUrl && fromName && fromUrl.slug !== fromName) return null;\n  return (\n    fromUrl?.slug ??\n    (row.author.type === 'company' && /^[\\p{L}\\p{N}._&+-]{1,160}$/u.test(fromName ?? '') ? fromName : null)\n  );\n}\nfunction linkedinPostUrl(value, id) {\n  if (typeof value !== 'string' || value.length > 4096 || /[\\s\\\\\\u0000-\\u001f\\u007f]/u.test(value))\n    return null;\n  const base = value.split(/[?#]/, 1)[0];\n  if (!/^https:\\/\\/(?:www\\.)?linkedin\\.com\\/(?:posts\\/|feed\\/update\\/)/i.test(base)) return null;\n  const found = /(?:activity-|urn:li:(?:activity|share|ugcPost):)(\\d{8,30})(?:[-/]|$)/.exec(base);\n  return found?.[1] === id ? base.replace('https://linkedin.com/', 'https://www.linkedin.com/') : null;\n}\nfunction linkedinSourceError(row) {\n  if (!liRecord(row) || !Object.hasOwn(row, 'error')) return null;\n  return /login|cookie|private|challenge|captcha/i.test(typeof row.error === 'string' ? row.error : '')\n    ? 'linkedin_private_or_login'\n    : 'linkedin_source_error';\n}\nfunction normalizeLinkedInPosts(rows) {\n  if (!Array.isArray(rows) || rows.length > 50000) throw Error('linkedin_rows_invalid');\n  const items = [],\n    errors = [];\n  for (const row of rows) {\n    const matchKey = linkedinOwner(row);\n    const fail = (error) => errors.push({ error, matchKey });\n    const sourceError = linkedinSourceError(row);\n    if (sourceError) {\n      fail(sourceError);\n      continue;\n    }\n    if (!liRecord(row) || row.type !== 'post' || !matchKey) {\n      fail('linkedin_owner_unverified');\n      continue;\n    }\n    // No public company repost example currently establishes the outer owner/id contract.\n    // Do not guess that the original author's post belongs to a requested company.\n    if (\n      row.isRepost === true ||\n      row.isQuotePost === true ||\n      row.repostedPost ||\n      row.quotedPost ||\n      row.repostedBy ||\n      row.resharedPost ||\n      (row.header != null &&\n        (!liRecord(row.header) ||\n          Object.keys(row.header).some((key) => key !== 'text') ||\n          (row.header.text != null &&\n            (typeof row.header.text !== 'string' || row.header.text.trim() !== ''))))\n    ) {\n      fail('linkedin_repost_shape_unverified');\n      continue;\n    }\n    if (row.query != null) {\n      if (\n        !liRecord(row.query) ||\n        Object.keys(row.query).some((key) => !['targetUrl', 'page', 'sessionId', 'sortBy'].includes(key))\n      ) {\n        fail('linkedin_query_shape_unverified');\n        continue;\n      }\n      // Query metadata is not an ownership fallback. A supplied target must\n      // agree with the verified company author; prepareLinkedInPostResults\n      // separately requires that company to belong to the registered accounts.\n      if (Object.hasOwn(row.query, 'targetUrl') && linkedinCompany(row.query.targetUrl)?.slug !== matchKey) {\n        fail('linkedin_query_owner_mismatch');\n        continue;\n      }\n    }\n    if (\n      Object.keys(row).some(\n        (key) =>\n          ![\n            'type',\n            'id',\n            'linkedinUrl',\n            'author',\n            'postedAt',\n            'content',\n            'engagement',\n            'postImages',\n            'document',\n            'socialContent',\n            // Observed non-authorizing metadata is discarded by the explicit\n            // projection below. postVideo is not a verified media/download path.\n            'entityId',\n            'header',\n            'query',\n            'shareLinkedinUrl',\n            'shareUrn',\n            'contentAttributes',\n            'reactionIds',\n            'commentIds',\n            'postVideo',\n          ].includes(key),\n      )\n    ) {\n      fail('linkedin_post_shape_unverified');\n      continue;\n    }\n    const id = typeof row.id === 'string' && /^\\d{8,30}$/.test(row.id) ? row.id : null;\n    const url = id && linkedinPostUrl(row.linkedinUrl ?? row.socialContent?.shareUrl, id);\n    const date = linkedinDate(row.postedAt?.date) ?? linkedinDate(row.postedAt?.timestamp);\n    if (!id || !url || !date || typeof row.content !== 'string') {\n      fail('linkedin_contract_drift');\n      continue;\n    }\n    const reactions = Array.isArray(row.engagement?.reactions) ? row.engagement.reactions : [];\n    const counts = reactions.map((reaction) => linkedinCount(reaction?.count));\n    const total =\n      counts.length && counts.every((count) => count !== null)\n        ? linkedinCount(counts.reduce((sum, count) => sum + count, 0))\n        : null;\n    const content = row.content.slice(0, 8000);\n    items.push({\n      matchKey,\n      json: {\n        platform: 'linkedin',\n        external_id: id,\n        actor: 'harvestapi/linkedin-company-posts',\n        item_type: 'linkedin_post',\n        url,\n        published_at: date,\n        title: null,\n        caption: content,\n        hashtags: [\n          ...new Set((content.match(/#[\\p{L}\\p{N}_]+/gu) ?? []).map((tag) => tag.slice(1).toLowerCase())),\n        ],\n        mentions: [],\n        tagged_accounts: [],\n        thumbnail_url: null,\n        duration_seconds: null,\n        media_urls: [],\n        metrics: {\n          likes: linkedinCount(row.engagement?.likes) ?? total,\n          comments: linkedinCount(row.engagement?.comments),\n          shares: linkedinCount(row.engagement?.shares),\n        },\n        // Privacy/source projection, not an untouched rich profile/media object.\n        payload: { id, content, company_slug: matchKey },\n      },\n    });\n  }\n  return { items, errors };\n}\nfunction prepareLinkedInPostResults(rows, ctx) {\n  if (\n    !liRecord(ctx) ||\n    !['daily', 'backfill'].includes(ctx.mode) ||\n    !linkedinDate(ctx.now) ||\n    !Number.isSafeInteger(ctx.maxPosts) ||\n    ctx.maxPosts < 1 ||\n    ctx.maxPosts > 1000\n  )\n    throw Error('linkedin_result_context_invalid');\n  const accounts = linkedinAccounts(ctx.accounts);\n  const now = linkedinDate(ctx.now);\n  const result = normalizeLinkedInPosts(rows);\n  const known = new Set(accounts.map((entry) => entry.slug));\n  const unmatched =\n    result.items.filter((item) => !known.has(item.matchKey)).length +\n    result.errors.filter((error) => !known.has(error.matchKey)).length;\n  const groups = accounts.map(({ account, slug }) => {\n    const owned = result.items.filter((item) => item.matchKey === slug);\n    const invalid = result.errors.filter((error) => error.matchKey === slug);\n    const watermark = linkedinDate(account.last_item_published_at ?? account.watermark_published_at);\n    if (ctx.mode === 'daily' && !watermark) throw Error('linkedin_daily_watermark_required');\n    const cutoff =\n      ctx.mode === 'backfill'\n        ? '2024-01-01T00:00:00.000Z'\n        : new Date(\n            Math.max(Date.parse('2024-01-01T00:00:00Z'), Date.parse(watermark) - 86400000),\n          ).toISOString();\n    const saturated = owned.length + invalid.length >= ctx.maxPosts;\n    const error =\n      invalid[0]?.error ??\n      (unmatched\n        ? 'linkedin_unmatched_source_rows'\n        : owned.some((item) => item.json.published_at > now)\n          ? 'linkedin_future_post'\n          : saturated\n            ? 'linkedin_recent_results_cap'\n            : null);\n    return {\n      account_id: account.id,\n      status: error ? 'failed' : 'success',\n      error,\n      items: error\n        ? []\n        : owned\n            .filter((item) => item.json.published_at >= cutoff && item.json.published_at <= now)\n            .map((item) => item.json),\n      backfill_done: false,\n      backfill_cursor:\n        ctx.mode === 'backfill'\n          ? {\n              strategy: 'bounded_latest',\n              source_stop_verified: false,\n              max_posts: ctx.maxPosts,\n              resume_supported: false,\n            }\n          : (account.backfill_cursor ?? null),\n      coverage: {\n        complete: false,\n        capped: saturated,\n        reason: saturated ? 'result_cap' : 'source_exhaustion_unverified',\n      },\n    };\n  });\n  return { groups, errors: result.errors, unmatched_count: unmatched, coverage_complete: false };\n}\n\n\n\nconst object=(value) => value !== null && typeof value === 'object' && !Array.isArray(value);\nconst day=function day(value) {\n  return (\n    typeof value === 'string' &&\n    /^\\d{4}-\\d\\d-\\d\\d$/.test(value) &&\n    linkedinDate(value + 'T00:00:00Z')?.slice(0, 10) === value\n  );\n};\n\nfunction linkedinRegistrationCompletion(receipt, runId) {\n  if (\n    !object(receipt) ||\n    receipt.registration_closed !== true ||\n    typeof receipt.finished_now !== 'boolean' ||\n    !['completed', 'awaiting_callbacks'].includes(receipt.state)\n  )\n    throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n  if (receipt.state === 'awaiting_callbacks') {\n    if (receipt.finished_now || receipt.summary !== null) throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    return { state: 'awaiting_callbacks' };\n  }\n  if (\n    !receipt.finished_now ||\n    !object(receipt.summary) ||\n    receipt.summary.run_id !== runId ||\n    !['success', 'partial', 'failed'].includes(receipt.summary.status)\n  )\n    throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n  return { state: 'completed', status: receipt.summary.status };\n}\n\nfunction buildLinkedInPostBatches(accounts, options) {\n  if (\n    !object(options) ||\n    Object.keys(options).some((key) => !['mode', 'now', 'maxPosts'].includes(key)) ||\n    !['daily', 'backfill'].includes(options.mode) ||\n    !linkedinDate(options.now)\n  )\n    throw Error('linkedin_batch_context_invalid');\n  const maxPosts = options.maxPosts ?? (options.mode === 'daily' ? 50 : 500);\n  const now = linkedinDate(options.now);\n  if (!Number.isSafeInteger(maxPosts) || maxPosts < 1 || maxPosts > 1000)\n    throw Error('linkedin_results_bound_invalid');\n  const rows = linkedinAccounts(accounts)\n    .map((entry) => {\n      const watermark = linkedinDate(\n        entry.account.last_item_published_at ?? entry.account.watermark_published_at,\n      );\n      if (options.mode === 'daily' && (!watermark || watermark > now))\n        throw Error('linkedin_daily_watermark_required');\n      const cutoff =\n        options.mode === 'backfill'\n          ? '2024-01-01T00:00:00.000Z'\n          : new Date(\n              Math.max(Date.parse('2024-01-01T00:00:00Z'), Date.parse(watermark) - 86400000),\n            ).toISOString();\n      return { ...entry, date: cutoff.slice(0, 10) };\n    })\n    .sort((a, b) => a.date.localeCompare(b.date) || a.slug.localeCompare(b.slug));\n  const buckets = new Map();\n  for (const entry of rows) {\n    if (!buckets.has(entry.date)) buckets.set(entry.date, []);\n    buckets.get(entry.date).push(entry);\n  }\n  const maximum = options.mode === 'daily' ? 50 : 10;\n  const result = [];\n  for (const [date, bucket] of buckets) {\n    for (let index = 0; index < bucket.length; index += maximum) {\n      const chunk = bucket.slice(index, index + maximum);\n      result.push({\n        actor: 'harvestapi/linkedin-company-posts',\n        platform: 'linkedin',\n        purpose: options.mode,\n        result_type: 'posts',\n        account_ids: chunk.map((entry) => entry.account.id),\n        resultsLimit: maxPosts,\n        input: {\n          targetUrls: chunk.map((entry) => entry.account.url),\n          postedLimitDate: date,\n          maxPosts,\n          includeReposts: true,\n          includeQuotePosts: true,\n          scrapeReactions: false,\n          scrapeComments: false,\n        },\n        coverage: { complete: false, reason: 'bounded_latest_query', resume_supported: false },\n      });\n    }\n  }\n  return result;\n}\n\nfunction buildLinkedInEmployeeBatches(accounts, options) {\n  if (\n    !object(options) ||\n    Object.keys(options).some((key) => !['snapshotDate', 'maxItemsPerCompany', 'cursors'].includes(key)) ||\n    !day(options.snapshotDate)\n  )\n    throw Error('linkedin_employee_context_invalid');\n  const maximum = options.maxItemsPerCompany ?? 200;\n  if (\n    !Number.isSafeInteger(maximum) ||\n    maximum < 1 ||\n    maximum > 200 ||\n    (options.cursors !== undefined && !object(options.cursors))\n  )\n    throw Error('linkedin_employee_results_bound_invalid');\n  const rows = linkedinAccounts(accounts, 'linkedin_employees').sort((a, b) => a.slug.localeCompare(b.slug));\n  if (\n    options.cursors &&\n    Object.keys(options.cursors).some((id) => !rows.some((entry) => entry.account.id === id))\n  )\n    throw Error('linkedin_employee_cursor_invalid');\n  return rows.map((entry) => {\n    const cursor = options.cursors?.[entry.account.id];\n    const startPage = cursor?.next_page ?? 1;\n    const pages = Math.ceil(maximum / 25);\n    if (\n      cursor !== undefined &&\n      (!object(cursor) ||\n        Object.keys(cursor).sort().join(',') !== 'company_url,next_page,snapshot_date' ||\n        linkedinCompany(cursor.company_url)?.slug !== entry.slug ||\n        cursor.snapshot_date !== options.snapshotDate)\n    )\n      throw Error('linkedin_employee_cursor_invalid');\n    if (!Number.isSafeInteger(startPage) || startPage < 1 || startPage + pages - 1 > 100)\n      throw Error('linkedin_employee_cursor_invalid');\n    return {\n      actor: 'harvestapi/linkedin-company-employees',\n      platform: 'linkedin_employees',\n      purpose: 'weekly',\n      result_type: 'employees',\n      account_ids: [entry.account.id],\n      snapshot_date: options.snapshotDate,\n      resultsLimit: maximum,\n      input: {\n        companies: [entry.account.url],\n        profileScraperMode: 'Short ($4 per 1k)',\n        companyBatchMode: 'one_by_one',\n        maxItems: maximum,\n        maxItemsPerCompany: maximum,\n        startPage,\n        takePages: pages,\n      },\n      coverage: {\n        complete: false,\n        reason: 'bounded_company_query',\n        start_page: startPage,\n        page_limit: pages,\n      },\n    };\n  });\n}\n\nfunction m05RequestId(execution, sequence) {\n  if (\n    !/^\\d{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M05_EXECUTION_INVALID');\n  return `c05c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction m05Gateway(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = {\n    version: 1,\n    requestId: m05RequestId(state.executionId, state.sequence),\n    operation: 'm05.' + operation,\n    args,\n  };\n  return state;\n}\n\nfunction advanceM05LinkedInActor(state, response) {\n  const id = response?.body?.data?.id;\n  if (\n    state.action !== 'apify' ||\n    response?.statusCode !== 201 ||\n    typeof id !== 'string' ||\n    !/^[A-Za-z0-9_-]{1,128}$/.test(id ?? '') ||\n    state.actorIds.includes(id)\n  )\n    throw Error('M05_LINKEDIN_ACTOR_START_RECONCILIATION_REQUIRED');\n  state.startedActorId = id;\n  state.actorCapAcknowledged =\n    liRecord(response.body.data.options) &&\n    response.body.data.options.maxTotalChargeUsd === state.launchDescriptor.maxTotalChargeUsd;\n  const batch = state.batches[state.batchIndex];\n  return m05Gateway(state, 'register', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    apify_run_id: id,\n    actor_id: batch.actor,\n    pass: 'primary',\n    purpose: state.mode,\n    account_ids: batch.account_ids,\n  });\n}\n\nfunction advanceM05LinkedInGateway(state, response) {\n  const body = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    typeof body.replayed !== 'boolean' ||\n    !Object.hasOwn(body, 'result')\n  )\n    throw Error('M05_LINKEDIN_GATEWAY_RECONCILIATION_REQUIRED');\n  const result = body.result,\n    operation = state.request.operation;\n  if (operation === 'm05.start') {\n    if (\n      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result?.run_id ?? '')\n    )\n      throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    state.runId = result.run_id;\n    state.snapshotDate = result.snapshot_date ?? m05LinkedInCaptureDate(state.now);\n    return m05Gateway(state, 'claim', {\n      run_id: state.runId,\n      platform: state.platform,\n      mode: state.mode,\n      limit: state.accountIds.length,\n      account_ids: state.accountIds,\n    });\n  }\n  if (operation === 'm05.claim') {\n    if (\n      !Array.isArray(result) ||\n      result.length !== state.accountIds.length ||\n      new Set(result.map((account) => account?.account_id ?? account?.id)).size !== result.length ||\n      result.some(\n        (account) => !liRecord(account) || !state.accountIds.includes(account.account_id ?? account.id),\n      )\n    )\n      throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    state.batches =\n      state.kind === 'employees'\n        ? buildLinkedInEmployeeBatches(result, {\n            snapshotDate: state.snapshotDate,\n            maxItemsPerCompany: state.resultsLimit,\n          })\n        : buildLinkedInPostBatches(result, {\n            mode: state.mode,\n            now: state.now,\n            maxPosts: state.resultsLimit,\n          });\n    if (state.batches.length > state.maxActorStarts) throw Error('M05_LINKEDIN_ACTOR_LIMIT');\n    return m05LinkedInLaunch(state);\n  }\n  if (operation === 'm05.launch') {\n    const batch = state.batches[state.batchIndex],\n      d = result?.descriptor;\n    if (\n      body.replayed ||\n      result?.replayed !== false ||\n      result.permit !== true ||\n      result.launch_id !== state.launchId ||\n      !liRecord(d) ||\n      Object.keys(d).some(\n        (key) =>\n          ![\n            'billingModel',\n            'actorPath',\n            'build',\n            'maxTotalChargeUsd',\n            'maxItems',\n            'memory',\n            'timeout',\n          ].includes(key),\n      ) ||\n      d.billingModel !== 'PPE' ||\n      d.actorPath !== batch.actor.replace('/', '~') ||\n      !/^[A-Za-z0-9._-]{1,128}$/.test(d.build ?? '') ||\n      d.build === 'latest' ||\n      !Number.isFinite(d.maxTotalChargeUsd) ||\n      d.maxTotalChargeUsd <= 0 ||\n      !Number.isSafeInteger(d.maxItems) ||\n      d.maxItems < 1 ||\n      d.maxItems !== batch.account_ids.length * batch.resultsLimit ||\n      d.memory !== 1024 ||\n      d.timeout !== 600\n    )\n      throw Error('M05_LINKEDIN_LAUNCH_RECONCILIATION_REQUIRED');\n    state.launchDescriptor = d;\n    state.action = 'apify';\n    return state;\n  }\n  if (operation === 'm05.register') {\n    if (\n      result?.registered !== true ||\n      result.run_id !== state.runId ||\n      result.apify_run_id !== state.startedActorId\n    )\n      throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    state.actorIds.push(state.startedActorId);\n    if (state.actorCapAcknowledged !== true) throw Error('M05_LINKEDIN_CAP_ACK_RECONCILIATION_REQUIRED');\n    state.batchIndex++;\n    return m05LinkedInLaunch(state);\n  }\n  if (operation === 'm05.close_registration') {\n    const completion = linkedinRegistrationCompletion(result, state.runId);\n    state.action = 'done';\n    state.result = {\n      ...completion,\n      run_id: state.runId,\n      actor_starts: state.actorIds.length,\n      actor_run_ids: state.actorIds,\n      registration_closed: true,\n    };\n    return state;\n  }\n  throw Error('M05_LINKEDIN_OPERATION_INVALID');\n}\n\nfunction initializeM05LinkedIn(input, kind, executionId, now) {\n  const uuid = (value) =>\n    typeof value === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);\n  if (\n    !liRecord(input) ||\n    Object.keys(input).some(\n      (key) => !['env', 'mode', 'account_ids', 'results_limit', 'max_actor_starts'].includes(key),\n    ) ||\n    input.env !== 'dev' ||\n    !['posts', 'employees'].includes(kind) ||\n    (kind === 'employees' ? input.mode !== 'weekly' : !['daily', 'backfill'].includes(input.mode)) ||\n    !Array.isArray(input.account_ids) ||\n    input.account_ids.length < 1 ||\n    input.account_ids.length > 20 ||\n    input.account_ids.some((id) => !uuid(id)) ||\n    new Set(input.account_ids).size !== input.account_ids.length ||\n    !Number.isSafeInteger(input.results_limit) ||\n    input.results_limit < 1 ||\n    input.results_limit > (kind === 'employees' ? 200 : 1000) ||\n    !Number.isSafeInteger(input.max_actor_starts) ||\n    input.max_actor_starts < 1 ||\n    input.max_actor_starts > 2147483647 ||\n    !linkedinDate(now)\n  )\n    throw Error('M05_LINKEDIN_INPUT_INVALID');\n  const state = {\n    kind,\n    now: linkedinDate(now),\n    executionId,\n    mode: input.mode,\n    platform: kind === 'employees' ? 'linkedin_employees' : 'linkedin',\n    accountIds: input.account_ids,\n    resultsLimit: input.results_limit,\n    maxActorStarts: input.max_actor_starts,\n    sequence: 0,\n    batchIndex: 0,\n    actorIds: [],\n  };\n  return m05Gateway(state, 'start', {\n    workflow: kind === 'employees' ? 'WF-18b' : 'WF-18',\n    platform: state.platform,\n    env: 'dev',\n    mode: state.mode,\n    execution_id: executionId,\n  });\n}\n\nfunction m05LinkedInCaptureDate(now) {\n  if (!linkedinDate(now)) throw Error('M05_LINKEDIN_INPUT_INVALID');\n  const parts = new Intl.DateTimeFormat('en', {\n    timeZone: 'Africa/Cairo',\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit',\n  }).formatToParts(new Date(now));\n  const part = (type) => parts.find((value) => value.type === type)?.value;\n  return `${part('year')}-${part('month')}-${part('day')}`;\n}\n\nfunction m05LinkedInLaunch(state) {\n  if (state.batchIndex >= state.batches.length)\n    return m05Gateway(state, 'close_registration', { run_id: state.runId });\n  const batch = state.batches[state.batchIndex];\n  state.launchId = m05RequestId(state.executionId, state.sequence + 1);\n  return m05Gateway(state, 'launch', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    actor_id: batch.actor,\n    pass: 'primary',\n    purpose: state.mode,\n    account_ids: batch.account_ids,\n    results_limit: batch.resultsLimit,\n    actor_input: batch.input,\n    ...(batch.snapshot_date ? { snapshot_date: batch.snapshot_date } : {}),\n  });\n}\nreturn[{json:initializeM05LinkedIn({\"results_limit\":20,\"env\":\"dev\",\"account_ids\":[\"21e51070-6857-4dbd-873d-3a9feba72831\",\"22db994a-8b44-4a57-996a-60c80cd7a640\"],\"mode\":\"backfill\",\"max_actor_starts\":2},\"posts\",String($execution.id),new Date().toISOString())}];"
+        }
+      },
+      {
+        "id": "b1b02dec-963f-4f70-ab36-f339acaf5fd0",
+        "name": "M05 LinkedIn gateway action?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          400,
+          0
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "aba06138-4c1d-4a2e-ac16-4e478be1834b",
+                "leftValue": "={{ $json.action === 'gateway' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "526f84b8-978a-4bea-a875-1441c6b23926",
+        "name": "Prepare LinkedIn gateway",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          600,
+          -200
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M05_NATIVE_INPUT_INVALID');const j=rows[0].json;\nreturn[{json:{state:j,request:j.request}}];"
+        }
+      },
+      {
+        "id": "32227535-a7fa-4c5c-aca9-58cae76adb3d",
+        "name": "Execute typed LinkedIn gateway",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "retryOnFail": false,
+        "onError": "continueRegularOutput",
+        "position": [
+          800,
+          -200
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://everyone-market-researcher-2fhnaxfj7-muhammed-abdelrahman.vercel.app/api/internal/n8n/collectors",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "EmrM03Machine19",
+            "name": "M03 foundation machine [dev]"
+          }
+        }
+      },
+      {
+        "id": "445fde18-30a2-407f-a467-319eccf78463",
+        "name": "Advance LinkedIn gateway",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1000,
+          -200
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M05_NATIVE_INPUT_INVALID');const j=rows[0].json;\n// Public harvestapi company-post projection. No I/O or credential handling.\n// Unknown repost ownership/media shapes fail closed rather than borrowing a profile author.\nconst liRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);\nconst liUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;\nfunction linkedinCompany(value) {\n  if (typeof value !== 'string' || /[\\s\\\\\\u0000-\\u001f\\u007f]/u.test(value)) return null;\n  const match = /^https:\\/\\/(?:(?:www|[a-z]{2})\\.)?linkedin\\.com\\/company\\/([^/?#]+)\\/?$/iu.exec(value);\n  if (!match) return null;\n  let slug;\n  try {\n    slug = decodeURIComponent(match[1]).toLowerCase();\n  } catch {\n    return null;\n  }\n  if (!/^[\\p{L}\\p{N}._&+-]{1,160}$/u.test(slug)) return null;\n  return { slug, url: `https://www.linkedin.com/company/${encodeURIComponent(slug)}/` };\n}\nfunction linkedinDate(value) {\n  if (typeof value === 'number') {\n    if (!Number.isSafeInteger(value) || value < 946684800000 || value > 4102444800000) return null;\n    return new Date(value).toISOString();\n  }\n  if (\n    typeof value !== 'string' ||\n    !/^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d+)?(?:Z|[+-]\\d\\d:\\d\\d)$/.test(value)\n  )\n    return null;\n  const [year, month, day] = value.slice(0, 10).split('-').map(Number);\n  const [hour, minute, second] = value.slice(11, 19).split(':').map(Number);\n  const offset = /[+-](\\d\\d):(\\d\\d)$/.exec(value);\n  const calendar = new Date(0);\n  calendar.setUTCFullYear(year, month - 1, day);\n  const parsed = new Date(value);\n  if (\n    year < 1 ||\n    hour > 23 ||\n    minute > 59 ||\n    second > 59 ||\n    calendar.getUTCFullYear() !== year ||\n    calendar.getUTCMonth() !== month - 1 ||\n    calendar.getUTCDate() !== day ||\n    (offset && (+offset[1] > 14 || +offset[2] > 59 || (+offset[1] === 14 && +offset[2] !== 0))) ||\n    !Number.isFinite(parsed.getTime())\n  )\n    return null;\n  return parsed.toISOString();\n}\nfunction linkedinAccounts(accounts, platform = 'linkedin') {\n  if (\n    !Array.isArray(accounts) ||\n    accounts.length > 100 ||\n    !['linkedin', 'linkedin_employees'].includes(platform)\n  )\n    throw Error('linkedin_accounts_invalid');\n  const ids = new Set(),\n    companies = new Set();\n  return accounts.map((account) => {\n    const id = account?.id ?? account?.account_id;\n    const company = linkedinCompany(account?.url);\n    if (\n      !liRecord(account) ||\n      !liUuid.test(id ?? '') ||\n      (account.id && account.account_id && account.id !== account.account_id) ||\n      !liUuid.test(account.competitor_id ?? '') ||\n      account.platform !== platform ||\n      !company ||\n      (account.handle_norm ?? account.handle)?.toLowerCase() !== company.slug ||\n      ids.has(id) ||\n      companies.has(company.slug)\n    )\n      throw Error('linkedin_accounts_invalid');\n    ids.add(id);\n    companies.add(company.slug);\n    return { account: { ...account, id }, ...company };\n  });\n}\nconst linkedinCount = (value) => {\n  if (\n    !['number', 'string'].includes(typeof value) ||\n    value === '' ||\n    (typeof value === 'string' && !/^\\d+(?:\\.\\d+)?$/.test(value))\n  )\n    return null;\n  const count = Number(value);\n  return Number.isFinite(count) && count >= 0 && Number.isSafeInteger(Math.round(count))\n    ? Math.round(count)\n    : null;\n};\nfunction linkedinOwner(row) {\n  if (!liRecord(row?.author) || (row.author.type && row.author.type !== 'company')) return null;\n  const fromUrl = linkedinCompany(row.author.linkedinUrl);\n  const fromName =\n    typeof row.author.universalName === 'string' ? row.author.universalName.toLowerCase() : null;\n  if (fromUrl && fromName && fromUrl.slug !== fromName) return null;\n  return (\n    fromUrl?.slug ??\n    (row.author.type === 'company' && /^[\\p{L}\\p{N}._&+-]{1,160}$/u.test(fromName ?? '') ? fromName : null)\n  );\n}\nfunction linkedinPostUrl(value, id) {\n  if (typeof value !== 'string' || value.length > 4096 || /[\\s\\\\\\u0000-\\u001f\\u007f]/u.test(value))\n    return null;\n  const base = value.split(/[?#]/, 1)[0];\n  if (!/^https:\\/\\/(?:www\\.)?linkedin\\.com\\/(?:posts\\/|feed\\/update\\/)/i.test(base)) return null;\n  const found = /(?:activity-|urn:li:(?:activity|share|ugcPost):)(\\d{8,30})(?:[-/]|$)/.exec(base);\n  return found?.[1] === id ? base.replace('https://linkedin.com/', 'https://www.linkedin.com/') : null;\n}\nfunction linkedinSourceError(row) {\n  if (!liRecord(row) || !Object.hasOwn(row, 'error')) return null;\n  return /login|cookie|private|challenge|captcha/i.test(typeof row.error === 'string' ? row.error : '')\n    ? 'linkedin_private_or_login'\n    : 'linkedin_source_error';\n}\nfunction normalizeLinkedInPosts(rows) {\n  if (!Array.isArray(rows) || rows.length > 50000) throw Error('linkedin_rows_invalid');\n  const items = [],\n    errors = [];\n  for (const row of rows) {\n    const matchKey = linkedinOwner(row);\n    const fail = (error) => errors.push({ error, matchKey });\n    const sourceError = linkedinSourceError(row);\n    if (sourceError) {\n      fail(sourceError);\n      continue;\n    }\n    if (!liRecord(row) || row.type !== 'post' || !matchKey) {\n      fail('linkedin_owner_unverified');\n      continue;\n    }\n    // No public company repost example currently establishes the outer owner/id contract.\n    // Do not guess that the original author's post belongs to a requested company.\n    if (\n      row.isRepost === true ||\n      row.isQuotePost === true ||\n      row.repostedPost ||\n      row.quotedPost ||\n      row.repostedBy ||\n      row.resharedPost ||\n      (row.header != null &&\n        (!liRecord(row.header) ||\n          Object.keys(row.header).some((key) => key !== 'text') ||\n          (row.header.text != null &&\n            (typeof row.header.text !== 'string' || row.header.text.trim() !== ''))))\n    ) {\n      fail('linkedin_repost_shape_unverified');\n      continue;\n    }\n    if (row.query != null) {\n      if (\n        !liRecord(row.query) ||\n        Object.keys(row.query).some((key) => !['targetUrl', 'page', 'sessionId', 'sortBy'].includes(key))\n      ) {\n        fail('linkedin_query_shape_unverified');\n        continue;\n      }\n      // Query metadata is not an ownership fallback. A supplied target must\n      // agree with the verified company author; prepareLinkedInPostResults\n      // separately requires that company to belong to the registered accounts.\n      if (Object.hasOwn(row.query, 'targetUrl') && linkedinCompany(row.query.targetUrl)?.slug !== matchKey) {\n        fail('linkedin_query_owner_mismatch');\n        continue;\n      }\n    }\n    if (\n      Object.keys(row).some(\n        (key) =>\n          ![\n            'type',\n            'id',\n            'linkedinUrl',\n            'author',\n            'postedAt',\n            'content',\n            'engagement',\n            'postImages',\n            'document',\n            'socialContent',\n            // Observed non-authorizing metadata is discarded by the explicit\n            // projection below. postVideo is not a verified media/download path.\n            'entityId',\n            'header',\n            'query',\n            'shareLinkedinUrl',\n            'shareUrn',\n            'contentAttributes',\n            'reactionIds',\n            'commentIds',\n            'postVideo',\n          ].includes(key),\n      )\n    ) {\n      fail('linkedin_post_shape_unverified');\n      continue;\n    }\n    const id = typeof row.id === 'string' && /^\\d{8,30}$/.test(row.id) ? row.id : null;\n    const url = id && linkedinPostUrl(row.linkedinUrl ?? row.socialContent?.shareUrl, id);\n    const date = linkedinDate(row.postedAt?.date) ?? linkedinDate(row.postedAt?.timestamp);\n    if (!id || !url || !date || typeof row.content !== 'string') {\n      fail('linkedin_contract_drift');\n      continue;\n    }\n    const reactions = Array.isArray(row.engagement?.reactions) ? row.engagement.reactions : [];\n    const counts = reactions.map((reaction) => linkedinCount(reaction?.count));\n    const total =\n      counts.length && counts.every((count) => count !== null)\n        ? linkedinCount(counts.reduce((sum, count) => sum + count, 0))\n        : null;\n    const content = row.content.slice(0, 8000);\n    items.push({\n      matchKey,\n      json: {\n        platform: 'linkedin',\n        external_id: id,\n        actor: 'harvestapi/linkedin-company-posts',\n        item_type: 'linkedin_post',\n        url,\n        published_at: date,\n        title: null,\n        caption: content,\n        hashtags: [\n          ...new Set((content.match(/#[\\p{L}\\p{N}_]+/gu) ?? []).map((tag) => tag.slice(1).toLowerCase())),\n        ],\n        mentions: [],\n        tagged_accounts: [],\n        thumbnail_url: null,\n        duration_seconds: null,\n        media_urls: [],\n        metrics: {\n          likes: linkedinCount(row.engagement?.likes) ?? total,\n          comments: linkedinCount(row.engagement?.comments),\n          shares: linkedinCount(row.engagement?.shares),\n        },\n        // Privacy/source projection, not an untouched rich profile/media object.\n        payload: { id, content, company_slug: matchKey },\n      },\n    });\n  }\n  return { items, errors };\n}\nfunction prepareLinkedInPostResults(rows, ctx) {\n  if (\n    !liRecord(ctx) ||\n    !['daily', 'backfill'].includes(ctx.mode) ||\n    !linkedinDate(ctx.now) ||\n    !Number.isSafeInteger(ctx.maxPosts) ||\n    ctx.maxPosts < 1 ||\n    ctx.maxPosts > 1000\n  )\n    throw Error('linkedin_result_context_invalid');\n  const accounts = linkedinAccounts(ctx.accounts);\n  const now = linkedinDate(ctx.now);\n  const result = normalizeLinkedInPosts(rows);\n  const known = new Set(accounts.map((entry) => entry.slug));\n  const unmatched =\n    result.items.filter((item) => !known.has(item.matchKey)).length +\n    result.errors.filter((error) => !known.has(error.matchKey)).length;\n  const groups = accounts.map(({ account, slug }) => {\n    const owned = result.items.filter((item) => item.matchKey === slug);\n    const invalid = result.errors.filter((error) => error.matchKey === slug);\n    const watermark = linkedinDate(account.last_item_published_at ?? account.watermark_published_at);\n    if (ctx.mode === 'daily' && !watermark) throw Error('linkedin_daily_watermark_required');\n    const cutoff =\n      ctx.mode === 'backfill'\n        ? '2024-01-01T00:00:00.000Z'\n        : new Date(\n            Math.max(Date.parse('2024-01-01T00:00:00Z'), Date.parse(watermark) - 86400000),\n          ).toISOString();\n    const saturated = owned.length + invalid.length >= ctx.maxPosts;\n    const error =\n      invalid[0]?.error ??\n      (unmatched\n        ? 'linkedin_unmatched_source_rows'\n        : owned.some((item) => item.json.published_at > now)\n          ? 'linkedin_future_post'\n          : saturated\n            ? 'linkedin_recent_results_cap'\n            : null);\n    return {\n      account_id: account.id,\n      status: error ? 'failed' : 'success',\n      error,\n      items: error\n        ? []\n        : owned\n            .filter((item) => item.json.published_at >= cutoff && item.json.published_at <= now)\n            .map((item) => item.json),\n      backfill_done: false,\n      backfill_cursor:\n        ctx.mode === 'backfill'\n          ? {\n              strategy: 'bounded_latest',\n              source_stop_verified: false,\n              max_posts: ctx.maxPosts,\n              resume_supported: false,\n            }\n          : (account.backfill_cursor ?? null),\n      coverage: {\n        complete: false,\n        capped: saturated,\n        reason: saturated ? 'result_cap' : 'source_exhaustion_unverified',\n      },\n    };\n  });\n  return { groups, errors: result.errors, unmatched_count: unmatched, coverage_complete: false };\n}\n\n\n\nconst object=(value) => value !== null && typeof value === 'object' && !Array.isArray(value);\nconst day=function day(value) {\n  return (\n    typeof value === 'string' &&\n    /^\\d{4}-\\d\\d-\\d\\d$/.test(value) &&\n    linkedinDate(value + 'T00:00:00Z')?.slice(0, 10) === value\n  );\n};\n\nfunction linkedinRegistrationCompletion(receipt, runId) {\n  if (\n    !object(receipt) ||\n    receipt.registration_closed !== true ||\n    typeof receipt.finished_now !== 'boolean' ||\n    !['completed', 'awaiting_callbacks'].includes(receipt.state)\n  )\n    throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n  if (receipt.state === 'awaiting_callbacks') {\n    if (receipt.finished_now || receipt.summary !== null) throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    return { state: 'awaiting_callbacks' };\n  }\n  if (\n    !receipt.finished_now ||\n    !object(receipt.summary) ||\n    receipt.summary.run_id !== runId ||\n    !['success', 'partial', 'failed'].includes(receipt.summary.status)\n  )\n    throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n  return { state: 'completed', status: receipt.summary.status };\n}\n\nfunction buildLinkedInPostBatches(accounts, options) {\n  if (\n    !object(options) ||\n    Object.keys(options).some((key) => !['mode', 'now', 'maxPosts'].includes(key)) ||\n    !['daily', 'backfill'].includes(options.mode) ||\n    !linkedinDate(options.now)\n  )\n    throw Error('linkedin_batch_context_invalid');\n  const maxPosts = options.maxPosts ?? (options.mode === 'daily' ? 50 : 500);\n  const now = linkedinDate(options.now);\n  if (!Number.isSafeInteger(maxPosts) || maxPosts < 1 || maxPosts > 1000)\n    throw Error('linkedin_results_bound_invalid');\n  const rows = linkedinAccounts(accounts)\n    .map((entry) => {\n      const watermark = linkedinDate(\n        entry.account.last_item_published_at ?? entry.account.watermark_published_at,\n      );\n      if (options.mode === 'daily' && (!watermark || watermark > now))\n        throw Error('linkedin_daily_watermark_required');\n      const cutoff =\n        options.mode === 'backfill'\n          ? '2024-01-01T00:00:00.000Z'\n          : new Date(\n              Math.max(Date.parse('2024-01-01T00:00:00Z'), Date.parse(watermark) - 86400000),\n            ).toISOString();\n      return { ...entry, date: cutoff.slice(0, 10) };\n    })\n    .sort((a, b) => a.date.localeCompare(b.date) || a.slug.localeCompare(b.slug));\n  const buckets = new Map();\n  for (const entry of rows) {\n    if (!buckets.has(entry.date)) buckets.set(entry.date, []);\n    buckets.get(entry.date).push(entry);\n  }\n  const maximum = options.mode === 'daily' ? 50 : 10;\n  const result = [];\n  for (const [date, bucket] of buckets) {\n    for (let index = 0; index < bucket.length; index += maximum) {\n      const chunk = bucket.slice(index, index + maximum);\n      result.push({\n        actor: 'harvestapi/linkedin-company-posts',\n        platform: 'linkedin',\n        purpose: options.mode,\n        result_type: 'posts',\n        account_ids: chunk.map((entry) => entry.account.id),\n        resultsLimit: maxPosts,\n        input: {\n          targetUrls: chunk.map((entry) => entry.account.url),\n          postedLimitDate: date,\n          maxPosts,\n          includeReposts: true,\n          includeQuotePosts: true,\n          scrapeReactions: false,\n          scrapeComments: false,\n        },\n        coverage: { complete: false, reason: 'bounded_latest_query', resume_supported: false },\n      });\n    }\n  }\n  return result;\n}\n\nfunction buildLinkedInEmployeeBatches(accounts, options) {\n  if (\n    !object(options) ||\n    Object.keys(options).some((key) => !['snapshotDate', 'maxItemsPerCompany', 'cursors'].includes(key)) ||\n    !day(options.snapshotDate)\n  )\n    throw Error('linkedin_employee_context_invalid');\n  const maximum = options.maxItemsPerCompany ?? 200;\n  if (\n    !Number.isSafeInteger(maximum) ||\n    maximum < 1 ||\n    maximum > 200 ||\n    (options.cursors !== undefined && !object(options.cursors))\n  )\n    throw Error('linkedin_employee_results_bound_invalid');\n  const rows = linkedinAccounts(accounts, 'linkedin_employees').sort((a, b) => a.slug.localeCompare(b.slug));\n  if (\n    options.cursors &&\n    Object.keys(options.cursors).some((id) => !rows.some((entry) => entry.account.id === id))\n  )\n    throw Error('linkedin_employee_cursor_invalid');\n  return rows.map((entry) => {\n    const cursor = options.cursors?.[entry.account.id];\n    const startPage = cursor?.next_page ?? 1;\n    const pages = Math.ceil(maximum / 25);\n    if (\n      cursor !== undefined &&\n      (!object(cursor) ||\n        Object.keys(cursor).sort().join(',') !== 'company_url,next_page,snapshot_date' ||\n        linkedinCompany(cursor.company_url)?.slug !== entry.slug ||\n        cursor.snapshot_date !== options.snapshotDate)\n    )\n      throw Error('linkedin_employee_cursor_invalid');\n    if (!Number.isSafeInteger(startPage) || startPage < 1 || startPage + pages - 1 > 100)\n      throw Error('linkedin_employee_cursor_invalid');\n    return {\n      actor: 'harvestapi/linkedin-company-employees',\n      platform: 'linkedin_employees',\n      purpose: 'weekly',\n      result_type: 'employees',\n      account_ids: [entry.account.id],\n      snapshot_date: options.snapshotDate,\n      resultsLimit: maximum,\n      input: {\n        companies: [entry.account.url],\n        profileScraperMode: 'Short ($4 per 1k)',\n        companyBatchMode: 'one_by_one',\n        maxItems: maximum,\n        maxItemsPerCompany: maximum,\n        startPage,\n        takePages: pages,\n      },\n      coverage: {\n        complete: false,\n        reason: 'bounded_company_query',\n        start_page: startPage,\n        page_limit: pages,\n      },\n    };\n  });\n}\n\nfunction m05RequestId(execution, sequence) {\n  if (\n    !/^\\d{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M05_EXECUTION_INVALID');\n  return `c05c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction m05Gateway(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = {\n    version: 1,\n    requestId: m05RequestId(state.executionId, state.sequence),\n    operation: 'm05.' + operation,\n    args,\n  };\n  return state;\n}\n\nfunction advanceM05LinkedInActor(state, response) {\n  const id = response?.body?.data?.id;\n  if (\n    state.action !== 'apify' ||\n    response?.statusCode !== 201 ||\n    typeof id !== 'string' ||\n    !/^[A-Za-z0-9_-]{1,128}$/.test(id ?? '') ||\n    state.actorIds.includes(id)\n  )\n    throw Error('M05_LINKEDIN_ACTOR_START_RECONCILIATION_REQUIRED');\n  state.startedActorId = id;\n  state.actorCapAcknowledged =\n    liRecord(response.body.data.options) &&\n    response.body.data.options.maxTotalChargeUsd === state.launchDescriptor.maxTotalChargeUsd;\n  const batch = state.batches[state.batchIndex];\n  return m05Gateway(state, 'register', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    apify_run_id: id,\n    actor_id: batch.actor,\n    pass: 'primary',\n    purpose: state.mode,\n    account_ids: batch.account_ids,\n  });\n}\n\nfunction advanceM05LinkedInGateway(state, response) {\n  const body = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    typeof body.replayed !== 'boolean' ||\n    !Object.hasOwn(body, 'result')\n  )\n    throw Error('M05_LINKEDIN_GATEWAY_RECONCILIATION_REQUIRED');\n  const result = body.result,\n    operation = state.request.operation;\n  if (operation === 'm05.start') {\n    if (\n      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result?.run_id ?? '')\n    )\n      throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    state.runId = result.run_id;\n    state.snapshotDate = result.snapshot_date ?? m05LinkedInCaptureDate(state.now);\n    return m05Gateway(state, 'claim', {\n      run_id: state.runId,\n      platform: state.platform,\n      mode: state.mode,\n      limit: state.accountIds.length,\n      account_ids: state.accountIds,\n    });\n  }\n  if (operation === 'm05.claim') {\n    if (\n      !Array.isArray(result) ||\n      result.length !== state.accountIds.length ||\n      new Set(result.map((account) => account?.account_id ?? account?.id)).size !== result.length ||\n      result.some(\n        (account) => !liRecord(account) || !state.accountIds.includes(account.account_id ?? account.id),\n      )\n    )\n      throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    state.batches =\n      state.kind === 'employees'\n        ? buildLinkedInEmployeeBatches(result, {\n            snapshotDate: state.snapshotDate,\n            maxItemsPerCompany: state.resultsLimit,\n          })\n        : buildLinkedInPostBatches(result, {\n            mode: state.mode,\n            now: state.now,\n            maxPosts: state.resultsLimit,\n          });\n    if (state.batches.length > state.maxActorStarts) throw Error('M05_LINKEDIN_ACTOR_LIMIT');\n    return m05LinkedInLaunch(state);\n  }\n  if (operation === 'm05.launch') {\n    const batch = state.batches[state.batchIndex],\n      d = result?.descriptor;\n    if (\n      body.replayed ||\n      result?.replayed !== false ||\n      result.permit !== true ||\n      result.launch_id !== state.launchId ||\n      !liRecord(d) ||\n      Object.keys(d).some(\n        (key) =>\n          ![\n            'billingModel',\n            'actorPath',\n            'build',\n            'maxTotalChargeUsd',\n            'maxItems',\n            'memory',\n            'timeout',\n          ].includes(key),\n      ) ||\n      d.billingModel !== 'PPE' ||\n      d.actorPath !== batch.actor.replace('/', '~') ||\n      !/^[A-Za-z0-9._-]{1,128}$/.test(d.build ?? '') ||\n      d.build === 'latest' ||\n      !Number.isFinite(d.maxTotalChargeUsd) ||\n      d.maxTotalChargeUsd <= 0 ||\n      !Number.isSafeInteger(d.maxItems) ||\n      d.maxItems < 1 ||\n      d.maxItems !== batch.account_ids.length * batch.resultsLimit ||\n      d.memory !== 1024 ||\n      d.timeout !== 600\n    )\n      throw Error('M05_LINKEDIN_LAUNCH_RECONCILIATION_REQUIRED');\n    state.launchDescriptor = d;\n    state.action = 'apify';\n    return state;\n  }\n  if (operation === 'm05.register') {\n    if (\n      result?.registered !== true ||\n      result.run_id !== state.runId ||\n      result.apify_run_id !== state.startedActorId\n    )\n      throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    state.actorIds.push(state.startedActorId);\n    if (state.actorCapAcknowledged !== true) throw Error('M05_LINKEDIN_CAP_ACK_RECONCILIATION_REQUIRED');\n    state.batchIndex++;\n    return m05LinkedInLaunch(state);\n  }\n  if (operation === 'm05.close_registration') {\n    const completion = linkedinRegistrationCompletion(result, state.runId);\n    state.action = 'done';\n    state.result = {\n      ...completion,\n      run_id: state.runId,\n      actor_starts: state.actorIds.length,\n      actor_run_ids: state.actorIds,\n      registration_closed: true,\n    };\n    return state;\n  }\n  throw Error('M05_LINKEDIN_OPERATION_INVALID');\n}\n\nfunction initializeM05LinkedIn(input, kind, executionId, now) {\n  const uuid = (value) =>\n    typeof value === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);\n  if (\n    !liRecord(input) ||\n    Object.keys(input).some(\n      (key) => !['env', 'mode', 'account_ids', 'results_limit', 'max_actor_starts'].includes(key),\n    ) ||\n    input.env !== 'dev' ||\n    !['posts', 'employees'].includes(kind) ||\n    (kind === 'employees' ? input.mode !== 'weekly' : !['daily', 'backfill'].includes(input.mode)) ||\n    !Array.isArray(input.account_ids) ||\n    input.account_ids.length < 1 ||\n    input.account_ids.length > 20 ||\n    input.account_ids.some((id) => !uuid(id)) ||\n    new Set(input.account_ids).size !== input.account_ids.length ||\n    !Number.isSafeInteger(input.results_limit) ||\n    input.results_limit < 1 ||\n    input.results_limit > (kind === 'employees' ? 200 : 1000) ||\n    !Number.isSafeInteger(input.max_actor_starts) ||\n    input.max_actor_starts < 1 ||\n    input.max_actor_starts > 2147483647 ||\n    !linkedinDate(now)\n  )\n    throw Error('M05_LINKEDIN_INPUT_INVALID');\n  const state = {\n    kind,\n    now: linkedinDate(now),\n    executionId,\n    mode: input.mode,\n    platform: kind === 'employees' ? 'linkedin_employees' : 'linkedin',\n    accountIds: input.account_ids,\n    resultsLimit: input.results_limit,\n    maxActorStarts: input.max_actor_starts,\n    sequence: 0,\n    batchIndex: 0,\n    actorIds: [],\n  };\n  return m05Gateway(state, 'start', {\n    workflow: kind === 'employees' ? 'WF-18b' : 'WF-18',\n    platform: state.platform,\n    env: 'dev',\n    mode: state.mode,\n    execution_id: executionId,\n  });\n}\n\nfunction m05LinkedInCaptureDate(now) {\n  if (!linkedinDate(now)) throw Error('M05_LINKEDIN_INPUT_INVALID');\n  const parts = new Intl.DateTimeFormat('en', {\n    timeZone: 'Africa/Cairo',\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit',\n  }).formatToParts(new Date(now));\n  const part = (type) => parts.find((value) => value.type === type)?.value;\n  return `${part('year')}-${part('month')}-${part('day')}`;\n}\n\nfunction m05LinkedInLaunch(state) {\n  if (state.batchIndex >= state.batches.length)\n    return m05Gateway(state, 'close_registration', { run_id: state.runId });\n  const batch = state.batches[state.batchIndex];\n  state.launchId = m05RequestId(state.executionId, state.sequence + 1);\n  return m05Gateway(state, 'launch', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    actor_id: batch.actor,\n    pass: 'primary',\n    purpose: state.mode,\n    account_ids: batch.account_ids,\n    results_limit: batch.resultsLimit,\n    actor_input: batch.input,\n    ...(batch.snapshot_date ? { snapshot_date: batch.snapshot_date } : {}),\n  });\n}\nconst prior=$('Prepare LinkedIn gateway').item.json.state;return[{json:advanceM05LinkedInGateway(prior,j)}];"
+        }
+      },
+      {
+        "id": "feebccd1-2b03-4dea-a0c8-7834b229cb86",
+        "name": "LinkedIn actor action?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          600,
+          200
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "64e37cb0-a61f-4d46-a073-16000118b3e5",
+                "leftValue": "={{ $json.action === 'apify' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "0fb957c9-cc69-47c4-a0bc-812fe5eaecd9",
+        "name": "Prepare LinkedIn actor",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          800,
+          200
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M05_NATIVE_INPUT_INVALID');const j=rows[0].json;\nreturn[{json:j}];"
+        }
+      },
+      {
+        "id": "03caec88-a1f0-4b7d-a4fc-952eb74f54b1",
+        "name": "Start asynchronous LinkedIn actor",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "retryOnFail": false,
+        "onError": "continueRegularOutput",
+        "position": [
+          1000,
+          200
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "={{ \"https://api.apify.com/v2/acts/\"+$json.launchDescriptor.actorPath+\"/runs?waitForFinish=0&restartOnError=false&timeout=\"+$json.launchDescriptor.timeout+\"&memory=1024&build=\"+encodeURIComponent($json.launchDescriptor.build)+\"&maxItems=\"+$json.launchDescriptor.maxItems+\"&maxTotalChargeUsd=\"+$json.launchDescriptor.maxTotalChargeUsd+\"&webhooks=W3siZXZlbnRUeXBlcyI6WyJBQ1RPUi5SVU4uU1VDQ0VFREVEIiwiQUNUT1IuUlVOLkZBSUxFRCIsIkFDVE9SLlJVTi5USU1FRF9PVVQiLCJBQ1RPUi5SVU4uQUJPUlRFRCJdLCJyZXF1ZXN0VXJsIjoiaHR0cHM6Ly9tdWhoYW1tZWRzYXllZC5hcHAubjhuLmNsb3VkL3dlYmhvb2svZW1yLWFwaWZ5LWNhbGxiYWNrIn1d\" }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "apifyApi",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.batches[$json.batchIndex].input }}",
+          "options": {
+            "timeout": 25000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "credentials": {
+          "apifyApi": {
+            "id": "EYmaOt0rd45ysq0J",
+            "name": "Apify account"
+          }
+        }
+      },
+      {
+        "id": "127d9ad1-3bff-4a2c-a6b0-9d57aded58d0",
+        "name": "Advance LinkedIn actor response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1200,
+          200
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M05_NATIVE_INPUT_INVALID');const j=rows[0].json;\n// Public harvestapi company-post projection. No I/O or credential handling.\n// Unknown repost ownership/media shapes fail closed rather than borrowing a profile author.\nconst liRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);\nconst liUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;\nfunction linkedinCompany(value) {\n  if (typeof value !== 'string' || /[\\s\\\\\\u0000-\\u001f\\u007f]/u.test(value)) return null;\n  const match = /^https:\\/\\/(?:(?:www|[a-z]{2})\\.)?linkedin\\.com\\/company\\/([^/?#]+)\\/?$/iu.exec(value);\n  if (!match) return null;\n  let slug;\n  try {\n    slug = decodeURIComponent(match[1]).toLowerCase();\n  } catch {\n    return null;\n  }\n  if (!/^[\\p{L}\\p{N}._&+-]{1,160}$/u.test(slug)) return null;\n  return { slug, url: `https://www.linkedin.com/company/${encodeURIComponent(slug)}/` };\n}\nfunction linkedinDate(value) {\n  if (typeof value === 'number') {\n    if (!Number.isSafeInteger(value) || value < 946684800000 || value > 4102444800000) return null;\n    return new Date(value).toISOString();\n  }\n  if (\n    typeof value !== 'string' ||\n    !/^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d+)?(?:Z|[+-]\\d\\d:\\d\\d)$/.test(value)\n  )\n    return null;\n  const [year, month, day] = value.slice(0, 10).split('-').map(Number);\n  const [hour, minute, second] = value.slice(11, 19).split(':').map(Number);\n  const offset = /[+-](\\d\\d):(\\d\\d)$/.exec(value);\n  const calendar = new Date(0);\n  calendar.setUTCFullYear(year, month - 1, day);\n  const parsed = new Date(value);\n  if (\n    year < 1 ||\n    hour > 23 ||\n    minute > 59 ||\n    second > 59 ||\n    calendar.getUTCFullYear() !== year ||\n    calendar.getUTCMonth() !== month - 1 ||\n    calendar.getUTCDate() !== day ||\n    (offset && (+offset[1] > 14 || +offset[2] > 59 || (+offset[1] === 14 && +offset[2] !== 0))) ||\n    !Number.isFinite(parsed.getTime())\n  )\n    return null;\n  return parsed.toISOString();\n}\nfunction linkedinAccounts(accounts, platform = 'linkedin') {\n  if (\n    !Array.isArray(accounts) ||\n    accounts.length > 100 ||\n    !['linkedin', 'linkedin_employees'].includes(platform)\n  )\n    throw Error('linkedin_accounts_invalid');\n  const ids = new Set(),\n    companies = new Set();\n  return accounts.map((account) => {\n    const id = account?.id ?? account?.account_id;\n    const company = linkedinCompany(account?.url);\n    if (\n      !liRecord(account) ||\n      !liUuid.test(id ?? '') ||\n      (account.id && account.account_id && account.id !== account.account_id) ||\n      !liUuid.test(account.competitor_id ?? '') ||\n      account.platform !== platform ||\n      !company ||\n      (account.handle_norm ?? account.handle)?.toLowerCase() !== company.slug ||\n      ids.has(id) ||\n      companies.has(company.slug)\n    )\n      throw Error('linkedin_accounts_invalid');\n    ids.add(id);\n    companies.add(company.slug);\n    return { account: { ...account, id }, ...company };\n  });\n}\nconst linkedinCount = (value) => {\n  if (\n    !['number', 'string'].includes(typeof value) ||\n    value === '' ||\n    (typeof value === 'string' && !/^\\d+(?:\\.\\d+)?$/.test(value))\n  )\n    return null;\n  const count = Number(value);\n  return Number.isFinite(count) && count >= 0 && Number.isSafeInteger(Math.round(count))\n    ? Math.round(count)\n    : null;\n};\nfunction linkedinOwner(row) {\n  if (!liRecord(row?.author) || (row.author.type && row.author.type !== 'company')) return null;\n  const fromUrl = linkedinCompany(row.author.linkedinUrl);\n  const fromName =\n    typeof row.author.universalName === 'string' ? row.author.universalName.toLowerCase() : null;\n  if (fromUrl && fromName && fromUrl.slug !== fromName) return null;\n  return (\n    fromUrl?.slug ??\n    (row.author.type === 'company' && /^[\\p{L}\\p{N}._&+-]{1,160}$/u.test(fromName ?? '') ? fromName : null)\n  );\n}\nfunction linkedinPostUrl(value, id) {\n  if (typeof value !== 'string' || value.length > 4096 || /[\\s\\\\\\u0000-\\u001f\\u007f]/u.test(value))\n    return null;\n  const base = value.split(/[?#]/, 1)[0];\n  if (!/^https:\\/\\/(?:www\\.)?linkedin\\.com\\/(?:posts\\/|feed\\/update\\/)/i.test(base)) return null;\n  const found = /(?:activity-|urn:li:(?:activity|share|ugcPost):)(\\d{8,30})(?:[-/]|$)/.exec(base);\n  return found?.[1] === id ? base.replace('https://linkedin.com/', 'https://www.linkedin.com/') : null;\n}\nfunction linkedinSourceError(row) {\n  if (!liRecord(row) || !Object.hasOwn(row, 'error')) return null;\n  return /login|cookie|private|challenge|captcha/i.test(typeof row.error === 'string' ? row.error : '')\n    ? 'linkedin_private_or_login'\n    : 'linkedin_source_error';\n}\nfunction normalizeLinkedInPosts(rows) {\n  if (!Array.isArray(rows) || rows.length > 50000) throw Error('linkedin_rows_invalid');\n  const items = [],\n    errors = [];\n  for (const row of rows) {\n    const matchKey = linkedinOwner(row);\n    const fail = (error) => errors.push({ error, matchKey });\n    const sourceError = linkedinSourceError(row);\n    if (sourceError) {\n      fail(sourceError);\n      continue;\n    }\n    if (!liRecord(row) || row.type !== 'post' || !matchKey) {\n      fail('linkedin_owner_unverified');\n      continue;\n    }\n    // No public company repost example currently establishes the outer owner/id contract.\n    // Do not guess that the original author's post belongs to a requested company.\n    if (\n      row.isRepost === true ||\n      row.isQuotePost === true ||\n      row.repostedPost ||\n      row.quotedPost ||\n      row.repostedBy ||\n      row.resharedPost ||\n      (row.header != null &&\n        (!liRecord(row.header) ||\n          Object.keys(row.header).some((key) => key !== 'text') ||\n          (row.header.text != null &&\n            (typeof row.header.text !== 'string' || row.header.text.trim() !== ''))))\n    ) {\n      fail('linkedin_repost_shape_unverified');\n      continue;\n    }\n    if (row.query != null) {\n      if (\n        !liRecord(row.query) ||\n        Object.keys(row.query).some((key) => !['targetUrl', 'page', 'sessionId', 'sortBy'].includes(key))\n      ) {\n        fail('linkedin_query_shape_unverified');\n        continue;\n      }\n      // Query metadata is not an ownership fallback. A supplied target must\n      // agree with the verified company author; prepareLinkedInPostResults\n      // separately requires that company to belong to the registered accounts.\n      if (Object.hasOwn(row.query, 'targetUrl') && linkedinCompany(row.query.targetUrl)?.slug !== matchKey) {\n        fail('linkedin_query_owner_mismatch');\n        continue;\n      }\n    }\n    if (\n      Object.keys(row).some(\n        (key) =>\n          ![\n            'type',\n            'id',\n            'linkedinUrl',\n            'author',\n            'postedAt',\n            'content',\n            'engagement',\n            'postImages',\n            'document',\n            'socialContent',\n            // Observed non-authorizing metadata is discarded by the explicit\n            // projection below. postVideo is not a verified media/download path.\n            'entityId',\n            'header',\n            'query',\n            'shareLinkedinUrl',\n            'shareUrn',\n            'contentAttributes',\n            'reactionIds',\n            'commentIds',\n            'postVideo',\n          ].includes(key),\n      )\n    ) {\n      fail('linkedin_post_shape_unverified');\n      continue;\n    }\n    const id = typeof row.id === 'string' && /^\\d{8,30}$/.test(row.id) ? row.id : null;\n    const url = id && linkedinPostUrl(row.linkedinUrl ?? row.socialContent?.shareUrl, id);\n    const date = linkedinDate(row.postedAt?.date) ?? linkedinDate(row.postedAt?.timestamp);\n    if (!id || !url || !date || typeof row.content !== 'string') {\n      fail('linkedin_contract_drift');\n      continue;\n    }\n    const reactions = Array.isArray(row.engagement?.reactions) ? row.engagement.reactions : [];\n    const counts = reactions.map((reaction) => linkedinCount(reaction?.count));\n    const total =\n      counts.length && counts.every((count) => count !== null)\n        ? linkedinCount(counts.reduce((sum, count) => sum + count, 0))\n        : null;\n    const content = row.content.slice(0, 8000);\n    items.push({\n      matchKey,\n      json: {\n        platform: 'linkedin',\n        external_id: id,\n        actor: 'harvestapi/linkedin-company-posts',\n        item_type: 'linkedin_post',\n        url,\n        published_at: date,\n        title: null,\n        caption: content,\n        hashtags: [\n          ...new Set((content.match(/#[\\p{L}\\p{N}_]+/gu) ?? []).map((tag) => tag.slice(1).toLowerCase())),\n        ],\n        mentions: [],\n        tagged_accounts: [],\n        thumbnail_url: null,\n        duration_seconds: null,\n        media_urls: [],\n        metrics: {\n          likes: linkedinCount(row.engagement?.likes) ?? total,\n          comments: linkedinCount(row.engagement?.comments),\n          shares: linkedinCount(row.engagement?.shares),\n        },\n        // Privacy/source projection, not an untouched rich profile/media object.\n        payload: { id, content, company_slug: matchKey },\n      },\n    });\n  }\n  return { items, errors };\n}\nfunction prepareLinkedInPostResults(rows, ctx) {\n  if (\n    !liRecord(ctx) ||\n    !['daily', 'backfill'].includes(ctx.mode) ||\n    !linkedinDate(ctx.now) ||\n    !Number.isSafeInteger(ctx.maxPosts) ||\n    ctx.maxPosts < 1 ||\n    ctx.maxPosts > 1000\n  )\n    throw Error('linkedin_result_context_invalid');\n  const accounts = linkedinAccounts(ctx.accounts);\n  const now = linkedinDate(ctx.now);\n  const result = normalizeLinkedInPosts(rows);\n  const known = new Set(accounts.map((entry) => entry.slug));\n  const unmatched =\n    result.items.filter((item) => !known.has(item.matchKey)).length +\n    result.errors.filter((error) => !known.has(error.matchKey)).length;\n  const groups = accounts.map(({ account, slug }) => {\n    const owned = result.items.filter((item) => item.matchKey === slug);\n    const invalid = result.errors.filter((error) => error.matchKey === slug);\n    const watermark = linkedinDate(account.last_item_published_at ?? account.watermark_published_at);\n    if (ctx.mode === 'daily' && !watermark) throw Error('linkedin_daily_watermark_required');\n    const cutoff =\n      ctx.mode === 'backfill'\n        ? '2024-01-01T00:00:00.000Z'\n        : new Date(\n            Math.max(Date.parse('2024-01-01T00:00:00Z'), Date.parse(watermark) - 86400000),\n          ).toISOString();\n    const saturated = owned.length + invalid.length >= ctx.maxPosts;\n    const error =\n      invalid[0]?.error ??\n      (unmatched\n        ? 'linkedin_unmatched_source_rows'\n        : owned.some((item) => item.json.published_at > now)\n          ? 'linkedin_future_post'\n          : saturated\n            ? 'linkedin_recent_results_cap'\n            : null);\n    return {\n      account_id: account.id,\n      status: error ? 'failed' : 'success',\n      error,\n      items: error\n        ? []\n        : owned\n            .filter((item) => item.json.published_at >= cutoff && item.json.published_at <= now)\n            .map((item) => item.json),\n      backfill_done: false,\n      backfill_cursor:\n        ctx.mode === 'backfill'\n          ? {\n              strategy: 'bounded_latest',\n              source_stop_verified: false,\n              max_posts: ctx.maxPosts,\n              resume_supported: false,\n            }\n          : (account.backfill_cursor ?? null),\n      coverage: {\n        complete: false,\n        capped: saturated,\n        reason: saturated ? 'result_cap' : 'source_exhaustion_unverified',\n      },\n    };\n  });\n  return { groups, errors: result.errors, unmatched_count: unmatched, coverage_complete: false };\n}\n\n\n\nconst object=(value) => value !== null && typeof value === 'object' && !Array.isArray(value);\nconst day=function day(value) {\n  return (\n    typeof value === 'string' &&\n    /^\\d{4}-\\d\\d-\\d\\d$/.test(value) &&\n    linkedinDate(value + 'T00:00:00Z')?.slice(0, 10) === value\n  );\n};\n\nfunction linkedinRegistrationCompletion(receipt, runId) {\n  if (\n    !object(receipt) ||\n    receipt.registration_closed !== true ||\n    typeof receipt.finished_now !== 'boolean' ||\n    !['completed', 'awaiting_callbacks'].includes(receipt.state)\n  )\n    throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n  if (receipt.state === 'awaiting_callbacks') {\n    if (receipt.finished_now || receipt.summary !== null) throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    return { state: 'awaiting_callbacks' };\n  }\n  if (\n    !receipt.finished_now ||\n    !object(receipt.summary) ||\n    receipt.summary.run_id !== runId ||\n    !['success', 'partial', 'failed'].includes(receipt.summary.status)\n  )\n    throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n  return { state: 'completed', status: receipt.summary.status };\n}\n\nfunction buildLinkedInPostBatches(accounts, options) {\n  if (\n    !object(options) ||\n    Object.keys(options).some((key) => !['mode', 'now', 'maxPosts'].includes(key)) ||\n    !['daily', 'backfill'].includes(options.mode) ||\n    !linkedinDate(options.now)\n  )\n    throw Error('linkedin_batch_context_invalid');\n  const maxPosts = options.maxPosts ?? (options.mode === 'daily' ? 50 : 500);\n  const now = linkedinDate(options.now);\n  if (!Number.isSafeInteger(maxPosts) || maxPosts < 1 || maxPosts > 1000)\n    throw Error('linkedin_results_bound_invalid');\n  const rows = linkedinAccounts(accounts)\n    .map((entry) => {\n      const watermark = linkedinDate(\n        entry.account.last_item_published_at ?? entry.account.watermark_published_at,\n      );\n      if (options.mode === 'daily' && (!watermark || watermark > now))\n        throw Error('linkedin_daily_watermark_required');\n      const cutoff =\n        options.mode === 'backfill'\n          ? '2024-01-01T00:00:00.000Z'\n          : new Date(\n              Math.max(Date.parse('2024-01-01T00:00:00Z'), Date.parse(watermark) - 86400000),\n            ).toISOString();\n      return { ...entry, date: cutoff.slice(0, 10) };\n    })\n    .sort((a, b) => a.date.localeCompare(b.date) || a.slug.localeCompare(b.slug));\n  const buckets = new Map();\n  for (const entry of rows) {\n    if (!buckets.has(entry.date)) buckets.set(entry.date, []);\n    buckets.get(entry.date).push(entry);\n  }\n  const maximum = options.mode === 'daily' ? 50 : 10;\n  const result = [];\n  for (const [date, bucket] of buckets) {\n    for (let index = 0; index < bucket.length; index += maximum) {\n      const chunk = bucket.slice(index, index + maximum);\n      result.push({\n        actor: 'harvestapi/linkedin-company-posts',\n        platform: 'linkedin',\n        purpose: options.mode,\n        result_type: 'posts',\n        account_ids: chunk.map((entry) => entry.account.id),\n        resultsLimit: maxPosts,\n        input: {\n          targetUrls: chunk.map((entry) => entry.account.url),\n          postedLimitDate: date,\n          maxPosts,\n          includeReposts: true,\n          includeQuotePosts: true,\n          scrapeReactions: false,\n          scrapeComments: false,\n        },\n        coverage: { complete: false, reason: 'bounded_latest_query', resume_supported: false },\n      });\n    }\n  }\n  return result;\n}\n\nfunction buildLinkedInEmployeeBatches(accounts, options) {\n  if (\n    !object(options) ||\n    Object.keys(options).some((key) => !['snapshotDate', 'maxItemsPerCompany', 'cursors'].includes(key)) ||\n    !day(options.snapshotDate)\n  )\n    throw Error('linkedin_employee_context_invalid');\n  const maximum = options.maxItemsPerCompany ?? 200;\n  if (\n    !Number.isSafeInteger(maximum) ||\n    maximum < 1 ||\n    maximum > 200 ||\n    (options.cursors !== undefined && !object(options.cursors))\n  )\n    throw Error('linkedin_employee_results_bound_invalid');\n  const rows = linkedinAccounts(accounts, 'linkedin_employees').sort((a, b) => a.slug.localeCompare(b.slug));\n  if (\n    options.cursors &&\n    Object.keys(options.cursors).some((id) => !rows.some((entry) => entry.account.id === id))\n  )\n    throw Error('linkedin_employee_cursor_invalid');\n  return rows.map((entry) => {\n    const cursor = options.cursors?.[entry.account.id];\n    const startPage = cursor?.next_page ?? 1;\n    const pages = Math.ceil(maximum / 25);\n    if (\n      cursor !== undefined &&\n      (!object(cursor) ||\n        Object.keys(cursor).sort().join(',') !== 'company_url,next_page,snapshot_date' ||\n        linkedinCompany(cursor.company_url)?.slug !== entry.slug ||\n        cursor.snapshot_date !== options.snapshotDate)\n    )\n      throw Error('linkedin_employee_cursor_invalid');\n    if (!Number.isSafeInteger(startPage) || startPage < 1 || startPage + pages - 1 > 100)\n      throw Error('linkedin_employee_cursor_invalid');\n    return {\n      actor: 'harvestapi/linkedin-company-employees',\n      platform: 'linkedin_employees',\n      purpose: 'weekly',\n      result_type: 'employees',\n      account_ids: [entry.account.id],\n      snapshot_date: options.snapshotDate,\n      resultsLimit: maximum,\n      input: {\n        companies: [entry.account.url],\n        profileScraperMode: 'Short ($4 per 1k)',\n        companyBatchMode: 'one_by_one',\n        maxItems: maximum,\n        maxItemsPerCompany: maximum,\n        startPage,\n        takePages: pages,\n      },\n      coverage: {\n        complete: false,\n        reason: 'bounded_company_query',\n        start_page: startPage,\n        page_limit: pages,\n      },\n    };\n  });\n}\n\nfunction m05RequestId(execution, sequence) {\n  if (\n    !/^\\d{1,15}$/.test(execution) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isSafeInteger(Number(execution)) ||\n    !Number.isInteger(sequence) ||\n    sequence < 1 ||\n    sequence > 4095\n  )\n    throw Error('M05_EXECUTION_INVALID');\n  return `c05c0000-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction m05Gateway(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = {\n    version: 1,\n    requestId: m05RequestId(state.executionId, state.sequence),\n    operation: 'm05.' + operation,\n    args,\n  };\n  return state;\n}\n\nfunction advanceM05LinkedInActor(state, response) {\n  const id = response?.body?.data?.id;\n  if (\n    state.action !== 'apify' ||\n    response?.statusCode !== 201 ||\n    typeof id !== 'string' ||\n    !/^[A-Za-z0-9_-]{1,128}$/.test(id ?? '') ||\n    state.actorIds.includes(id)\n  )\n    throw Error('M05_LINKEDIN_ACTOR_START_RECONCILIATION_REQUIRED');\n  state.startedActorId = id;\n  state.actorCapAcknowledged =\n    liRecord(response.body.data.options) &&\n    response.body.data.options.maxTotalChargeUsd === state.launchDescriptor.maxTotalChargeUsd;\n  const batch = state.batches[state.batchIndex];\n  return m05Gateway(state, 'register', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    apify_run_id: id,\n    actor_id: batch.actor,\n    pass: 'primary',\n    purpose: state.mode,\n    account_ids: batch.account_ids,\n  });\n}\n\nfunction advanceM05LinkedInGateway(state, response) {\n  const body = response?.body;\n  if (\n    response?.statusCode !== 200 ||\n    body?.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    typeof body.replayed !== 'boolean' ||\n    !Object.hasOwn(body, 'result')\n  )\n    throw Error('M05_LINKEDIN_GATEWAY_RECONCILIATION_REQUIRED');\n  const result = body.result,\n    operation = state.request.operation;\n  if (operation === 'm05.start') {\n    if (\n      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result?.run_id ?? '')\n    )\n      throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    state.runId = result.run_id;\n    state.snapshotDate = result.snapshot_date ?? m05LinkedInCaptureDate(state.now);\n    return m05Gateway(state, 'claim', {\n      run_id: state.runId,\n      platform: state.platform,\n      mode: state.mode,\n      limit: state.accountIds.length,\n      account_ids: state.accountIds,\n    });\n  }\n  if (operation === 'm05.claim') {\n    if (\n      !Array.isArray(result) ||\n      result.length !== state.accountIds.length ||\n      new Set(result.map((account) => account?.account_id ?? account?.id)).size !== result.length ||\n      result.some(\n        (account) => !liRecord(account) || !state.accountIds.includes(account.account_id ?? account.id),\n      )\n    )\n      throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    state.batches =\n      state.kind === 'employees'\n        ? buildLinkedInEmployeeBatches(result, {\n            snapshotDate: state.snapshotDate,\n            maxItemsPerCompany: state.resultsLimit,\n          })\n        : buildLinkedInPostBatches(result, {\n            mode: state.mode,\n            now: state.now,\n            maxPosts: state.resultsLimit,\n          });\n    if (state.batches.length > state.maxActorStarts) throw Error('M05_LINKEDIN_ACTOR_LIMIT');\n    return m05LinkedInLaunch(state);\n  }\n  if (operation === 'm05.launch') {\n    const batch = state.batches[state.batchIndex],\n      d = result?.descriptor;\n    if (\n      body.replayed ||\n      result?.replayed !== false ||\n      result.permit !== true ||\n      result.launch_id !== state.launchId ||\n      !liRecord(d) ||\n      Object.keys(d).some(\n        (key) =>\n          ![\n            'billingModel',\n            'actorPath',\n            'build',\n            'maxTotalChargeUsd',\n            'maxItems',\n            'memory',\n            'timeout',\n          ].includes(key),\n      ) ||\n      d.billingModel !== 'PPE' ||\n      d.actorPath !== batch.actor.replace('/', '~') ||\n      !/^[A-Za-z0-9._-]{1,128}$/.test(d.build ?? '') ||\n      d.build === 'latest' ||\n      !Number.isFinite(d.maxTotalChargeUsd) ||\n      d.maxTotalChargeUsd <= 0 ||\n      !Number.isSafeInteger(d.maxItems) ||\n      d.maxItems < 1 ||\n      d.maxItems !== batch.account_ids.length * batch.resultsLimit ||\n      d.memory !== 1024 ||\n      d.timeout !== 600\n    )\n      throw Error('M05_LINKEDIN_LAUNCH_RECONCILIATION_REQUIRED');\n    state.launchDescriptor = d;\n    state.action = 'apify';\n    return state;\n  }\n  if (operation === 'm05.register') {\n    if (\n      result?.registered !== true ||\n      result.run_id !== state.runId ||\n      result.apify_run_id !== state.startedActorId\n    )\n      throw Error('M05_LINKEDIN_RECEIPT_INVALID');\n    state.actorIds.push(state.startedActorId);\n    if (state.actorCapAcknowledged !== true) throw Error('M05_LINKEDIN_CAP_ACK_RECONCILIATION_REQUIRED');\n    state.batchIndex++;\n    return m05LinkedInLaunch(state);\n  }\n  if (operation === 'm05.close_registration') {\n    const completion = linkedinRegistrationCompletion(result, state.runId);\n    state.action = 'done';\n    state.result = {\n      ...completion,\n      run_id: state.runId,\n      actor_starts: state.actorIds.length,\n      actor_run_ids: state.actorIds,\n      registration_closed: true,\n    };\n    return state;\n  }\n  throw Error('M05_LINKEDIN_OPERATION_INVALID');\n}\n\nfunction initializeM05LinkedIn(input, kind, executionId, now) {\n  const uuid = (value) =>\n    typeof value === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);\n  if (\n    !liRecord(input) ||\n    Object.keys(input).some(\n      (key) => !['env', 'mode', 'account_ids', 'results_limit', 'max_actor_starts'].includes(key),\n    ) ||\n    input.env !== 'dev' ||\n    !['posts', 'employees'].includes(kind) ||\n    (kind === 'employees' ? input.mode !== 'weekly' : !['daily', 'backfill'].includes(input.mode)) ||\n    !Array.isArray(input.account_ids) ||\n    input.account_ids.length < 1 ||\n    input.account_ids.length > 20 ||\n    input.account_ids.some((id) => !uuid(id)) ||\n    new Set(input.account_ids).size !== input.account_ids.length ||\n    !Number.isSafeInteger(input.results_limit) ||\n    input.results_limit < 1 ||\n    input.results_limit > (kind === 'employees' ? 200 : 1000) ||\n    !Number.isSafeInteger(input.max_actor_starts) ||\n    input.max_actor_starts < 1 ||\n    input.max_actor_starts > 2147483647 ||\n    !linkedinDate(now)\n  )\n    throw Error('M05_LINKEDIN_INPUT_INVALID');\n  const state = {\n    kind,\n    now: linkedinDate(now),\n    executionId,\n    mode: input.mode,\n    platform: kind === 'employees' ? 'linkedin_employees' : 'linkedin',\n    accountIds: input.account_ids,\n    resultsLimit: input.results_limit,\n    maxActorStarts: input.max_actor_starts,\n    sequence: 0,\n    batchIndex: 0,\n    actorIds: [],\n  };\n  return m05Gateway(state, 'start', {\n    workflow: kind === 'employees' ? 'WF-18b' : 'WF-18',\n    platform: state.platform,\n    env: 'dev',\n    mode: state.mode,\n    execution_id: executionId,\n  });\n}\n\nfunction m05LinkedInCaptureDate(now) {\n  if (!linkedinDate(now)) throw Error('M05_LINKEDIN_INPUT_INVALID');\n  const parts = new Intl.DateTimeFormat('en', {\n    timeZone: 'Africa/Cairo',\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit',\n  }).formatToParts(new Date(now));\n  const part = (type) => parts.find((value) => value.type === type)?.value;\n  return `${part('year')}-${part('month')}-${part('day')}`;\n}\n\nfunction m05LinkedInLaunch(state) {\n  if (state.batchIndex >= state.batches.length)\n    return m05Gateway(state, 'close_registration', { run_id: state.runId });\n  const batch = state.batches[state.batchIndex];\n  state.launchId = m05RequestId(state.executionId, state.sequence + 1);\n  return m05Gateway(state, 'launch', {\n    run_id: state.runId,\n    launch_id: state.launchId,\n    actor_id: batch.actor,\n    pass: 'primary',\n    purpose: state.mode,\n    account_ids: batch.account_ids,\n    results_limit: batch.resultsLimit,\n    actor_input: batch.input,\n    ...(batch.snapshot_date ? { snapshot_date: batch.snapshot_date } : {}),\n  });\n}\nconst prior=$('Prepare LinkedIn actor').item.json;return[{json:advanceM05LinkedInActor(prior,j)}];"
+        }
+      },
+      {
+        "id": "533d161c-66af-43ab-acee-68fbc2bd3e39",
+        "name": "Return LinkedIn dispatch result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          800,
+          400
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M05_NATIVE_INPUT_INVALID');const j=rows[0].json;\nif(j.action!=='done'||!j.result)throw Error('M05_NATIVE_STATE_INVALID');return[{json:j.result}];"
+        }
+      },
+      {
+        "id": "125c1972-0e2e-4853-adc8-9812312633df",
+        "name": "Manual M05 subset collection",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          200
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Initialize fixed LinkedIn selection",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Initialize fixed LinkedIn selection": {
+        "main": [
+          [
+            {
+              "node": "M05 LinkedIn gateway action?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "M05 LinkedIn gateway action?": {
+        "main": [
+          [
+            {
+              "node": "Prepare LinkedIn gateway",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "LinkedIn actor action?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare LinkedIn gateway": {
+        "main": [
+          [
+            {
+              "node": "Execute typed LinkedIn gateway",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute typed LinkedIn gateway": {
+        "main": [
+          [
+            {
+              "node": "Advance LinkedIn gateway",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Advance LinkedIn gateway": {
+        "main": [
+          [
+            {
+              "node": "M05 LinkedIn gateway action?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LinkedIn actor action?": {
+        "main": [
+          [
+            {
+              "node": "Prepare LinkedIn actor",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Return LinkedIn dispatch result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare LinkedIn actor": {
+        "main": [
+          [
+            {
+              "node": "Start asynchronous LinkedIn actor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Start asynchronous LinkedIn actor": {
+        "main": [
+          [
+            {
+              "node": "Advance LinkedIn actor response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Advance LinkedIn actor response": {
+        "main": [
+          [
+            {
+              "node": "M05 LinkedIn gateway action?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual M05 subset collection": {
+        "main": [
+          [
+            {
+              "node": "Initialize fixed LinkedIn selection",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "saveExecutionProgress": false,
+      "saveManualExecutions": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "executionTimeout": 1800,
+      "timezone": "Africa/Cairo",
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "errorWorkflow": "TsnGE7a43UT3ynel"
+    },
+    "tags": [
+      {
+        "id": "9VKnf3HlzT1qNNfW",
+        "name": "layer:collector"
+      },
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "PccyUXHyUcidOTXA",
+        "name": "platform:linkedin"
+      }
+    ],
+    "pinData": {}
+  }
+}

@@ -1,0 +1,190 @@
+{
+  "key": "WF-18",
+  "id": "VbJn4mLYm0sGy1X2",
+  "versionId": "462111af-0abe-43ab-8799-e6ecb1cbd941",
+  "active": false,
+  "activeVersionId": null,
+  "graphHash": "6e32459186e9ab6036a21ac0ba8f28cb67439269c3f8a041fc9005268c331fdd",
+  "readonlySettings": {
+    "binaryMode": null
+  },
+  "tags": [
+    {
+      "id": "9VKnf3HlzT1qNNfW",
+      "name": "layer:collector"
+    },
+    {
+      "id": "f599CX7WOg9azPEC",
+      "name": "env:dev"
+    },
+    {
+      "id": "PccyUXHyUcidOTXA",
+      "name": "platform:linkedin"
+    }
+  ],
+  "sourceHead": "445b60b30854112666e43b141891f3743efdaa90",
+  "evidence": "native_saved_definition_only",
+  "scope": "m05-subset",
+  "websiteExcluded": true,
+  "workflow": {
+    "name": "WF-18 · LinkedIn posts collector [dev]",
+    "nodes": [
+      {
+        "id": "78187c92-697f-47f2-affd-e31d97917440",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "mode",
+                "type": "string"
+              },
+              {
+                "name": "limit",
+                "type": "number"
+              },
+              {
+                "name": "result_type",
+                "type": "string"
+              },
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "04bd80b2-4c29-462c-a9d1-36dd15e320e3",
+        "name": "Manual test",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          200
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "66e8c91c-02d6-4bd0-a69f-5523b488f2f6",
+        "name": "Validate dev input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          240,
+          0
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const items = $input.all();\nconst invalid = () => { throw new Error('EMR_N8N_INPUT_INVALID'); };\nif (items.length !== 1) invalid();\nconst j = items[0].json;\nif (!j || typeof j !== 'object' || Array.isArray(j) ||\n  Object.keys(j).some(k => ![\"mode\",\"limit\",\"result_type\",\"env\"].includes(k))) invalid();\nif (j.env !== undefined && j.env !== null && j.env !== 'dev') invalid();\nconst mode = j.mode ?? 'manual';\nif (!['daily','backfill','weekly','manual','removal_check'].includes(mode)) invalid();\nconst limit = j.limit ?? null;\nif (limit !== null && (!Number.isInteger(limit) || limit < 1 || limit > 1000)) invalid();\nconst result_type = j.result_type ?? null;\nif (result_type !== null && (typeof result_type !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(result_type))) invalid();\n\n\nreturn [{json:{mode,limit,result_type,env:'dev'}}];"
+        }
+      },
+      {
+        "id": "32d5e5ca-b2a6-442e-aca5-f8939ee3ce3b",
+        "name": "Return stub",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.5,
+        "position": [
+          480,
+          0
+        ],
+        "parameters": {
+          "mode": "manual",
+          "includeOtherFields": false,
+          "assignments": {
+            "assignments": [
+              {
+                "id": "86412e6c-b48d-4142-a464-07bca05a76ee",
+                "name": "stub",
+                "type": "boolean",
+                "value": true
+              },
+              {
+                "id": "ae4475ac-fd27-49b8-afcb-be957a182e39",
+                "name": "workflow",
+                "type": "string",
+                "value": "WF-18"
+              },
+              {
+                "id": "3dc34a0f-1873-430a-a12c-239e3bd746e0",
+                "name": "received",
+                "type": "object",
+                "value": "={{ $json }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual test": {
+        "main": [
+          [
+            {
+              "node": "Validate dev input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate dev input": {
+        "main": [
+          [
+            {
+              "node": "Return stub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "saveExecutionProgress": false,
+      "saveManualExecutions": false,
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "none",
+      "executionTimeout": 900,
+      "timezone": "Africa/Cairo",
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false
+    },
+    "tags": [
+      {
+        "id": "9VKnf3HlzT1qNNfW",
+        "name": "layer:collector"
+      },
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "PccyUXHyUcidOTXA",
+        "name": "platform:linkedin"
+      }
+    ],
+    "pinData": {}
+  }
+}

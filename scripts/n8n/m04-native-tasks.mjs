@@ -369,6 +369,11 @@ async function runM05SubsetTask({ phase, state, send, bindings, repo, machineTok
   };
   const save = async (key, target, action) => {
     const before = await read(key);
+    if (action === 'restored' && !isDeepStrictEqual(before.metadata, n.current[key])) {
+      receipt.restoreDrift.push({ key, ...before.metadata });
+      checkpoint({ action: 'restoration_drift_preserved', key, ...before.metadata });
+      fail('DRIFT');
+    }
     unchanged(before.metadata, n.current[key]);
     if (sameBody(before.dto, target)) return;
     if (before.metadata.active || before.metadata.activeVersionId !== null) fail('DRIFT');
@@ -707,11 +712,34 @@ async function runM05SubsetTask({ phase, state, send, bindings, repo, machineTok
       if (!n.inventoryComplete || n.machine.pending) fail();
       if (n.machine.rebound) await changeMachine(true);
     } else if (phase === 'restore') {
+      receipt.restoreDrift = [];
       try {
         if (!n.inventoryComplete || n.pending || n.machine.pending) fail();
         if (n.published) await publish('WF-19', false);
-        for (const key of m05SubsetKeys) await save(key, n.snapshots[key], 'restored');
-        if (n.errorHandler) await publish(handlerKey, false);
+        for (const key of m05SubsetKeys) {
+          try {
+            await save(key, n.snapshots[key], 'restored');
+          } catch (error) {
+            // Only a recorded fresh pre-write drift is skippable. A pending
+            // PUT or failed readback still fences the operation for reconciliation.
+            if (
+              error?.message !== 'M04_NATIVE_DRIFT' ||
+              n.pending ||
+              receipt.restoreDrift.at(-1)?.key !== key
+            )
+              throw error;
+          }
+        }
+        if (
+          n.errorHandler &&
+          receipt.restoreDrift.every((drift) => !drift.active && drift.activeVersionId === null)
+        )
+          await publish(handlerKey, false);
+        else if (n.errorHandler) receipt.handlerRetainedForActiveDrift = true;
+        if (receipt.restoreDrift.length) {
+          n.restoreComplete = false;
+          fail('DRIFT');
+        }
         n.restoreComplete = true;
       } finally {
         if (n.machine.rebound && !n.machine.pending) await changeMachine(true);
