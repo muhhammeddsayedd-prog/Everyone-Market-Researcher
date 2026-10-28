@@ -654,3 +654,9 @@ Handled collector/API/source errors still report through the new product path.
 | `ops.should_publish(tags)` | M09 | WF-70 debounce |
 | `ops.get_news_queries(kind, limit)`, `ops.get_brief_inputs(week_start, scope)`, `ops.get_alert_payload(kind, ctx)`, `ops.log_alert_sent(kind, ctx)` | M13 | WF-22/23/50/80 |
 | `ops.get_onboarding_accounts(competitor_id)`, `ops.set_account_status(account_id, status, reason)` | M15 | WF-60 |
+
+## M05 maintained local definitions — 28 October 2026
+
+M05 source drivers and inactive native builders live in `n8n/collectors/`. WF-21, WF-13, WF-18 and WF-18b use typed `m05.*` operations through the same strict-TLS restricted gateway, exact authored dev selectors and the existing credential types. The WF-19 extension verifies registered provider/build/INPUT/usage and admits at most one owned website thin retry, with no replayable POST permit. The M05 WF-00 layer reports dispatch separately from async completion. The dedicated M05 Error Trigger definition is log-only; no old M03 dependency, notification or schedule is activated. Any required publication/binding is a live-packet gate.
+
+`blueprints/WF-13.json`, `WF-18.json`, `WF-18b.json`, `WF-21.json` and the `*-M05.json` shared blueprints are local artifacts, not saved Cloud exports. Firecrawl's unbound artifact fails before I/O. Existing M04 blueprints and historical `n8n/workflows/` exports are preserved. See [M05 local integration evidence](../milestones/M05-collectors-web-youtube-linkedin/evidence/local-implementation-20261028.md) for the original requirements still lacking real observations.

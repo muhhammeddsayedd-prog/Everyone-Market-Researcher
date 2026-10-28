@@ -1,0 +1,101 @@
+{
+  "key": "WF-21",
+  "id": "02yefa9uEPYwmM3N",
+  "kind": "native-json-blueprint",
+  "hostedAcceptance": false,
+  "liveEnabled": false,
+  "definitionProfile": "inactive_native_staging",
+  "sourceProfile": {
+    "provider": "firecrawl-map-and-apify-website",
+    "publicOnly": true,
+    "discoveryCoverage": "observed_map_only",
+    "thinRetry": "WF19_registered_one_time_adaptive_barrier"
+  },
+  "errorWorkflowBinding": {
+    "state": "unresolved",
+    "reason": "M05_handler_publication_not_authorized"
+  },
+  "requiredRefs": {
+    "workflowKeys": ["WF-21", "WF-19"],
+    "credentialKeys": ["firecrawl", "apify", "foundationGateway"],
+    "tagNames": ["env:dev", "layer:collector", "platform:website_work_page"]
+  },
+  "runnableWorkflow": false,
+  "bindingState": "Firecrawl_metadata_required",
+  "workflow": {
+    "name": "WF-21 · Websites collector [dev]",
+    "active": false,
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 1800,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataSuccessExecution": "none",
+      "saveDataErrorExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "9VKnf3HlzT1qNNfW",
+        "name": "layer:collector"
+      },
+      {
+        "id": "K1Ba9kSABaM0RTzi",
+        "name": "platform:web_work"
+      }
+    ],
+    "pinData": {},
+    "nodes": [
+      {
+        "id": "13317638-667b-4a4f-a8dc-9edcac6cda80",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [0, 0]
+      },
+      {
+        "id": "4208ec59-6701-4ff7-a0e4-64030063cfd8",
+        "name": "Firecrawl binding required",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw Error('M05_FIRECRAWL_BINDING_REQUIRED');"
+        },
+        "position": [200, 0]
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Firecrawl binding required",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "authoringExample": true,
+  "note": "Inert unbound offline blueprint. No Firecrawl credential was observed, no real account selection is admitted, and no live endpoint was tested."
+}

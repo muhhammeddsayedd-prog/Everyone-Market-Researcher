@@ -1,0 +1,40 @@
+{
+  "fixtureProvenance": {
+    "kind": "synthetic-contract",
+    "actualActorCapture": false,
+    "note": "Authored company rows exercise local mapping only. Repost marker is deliberately unverified and must be rejected, not presented as provider evidence."
+  },
+  "rows": [
+    {
+      "type": "post",
+      "id": "7329207003942125568",
+      "linkedinUrl": "https://www.linkedin.com/posts/fixture-films_project-activity-7329207003942125568-example",
+      "author": {
+        "type": "company",
+        "universalName": "fixture-films",
+        "linkedinUrl": "https://www.linkedin.com/company/fixture-films/"
+      },
+      "postedAt": { "date": "2026-10-25T10:00:00Z" },
+      "content": "مشروع جديد #Cinema #سينما",
+      "engagement": { "likes": 0, "comments": 2, "shares": 1, "reactions": [{ "count": 5 }] }
+    },
+    {
+      "type": "post",
+      "id": "7329207003942125569",
+      "linkedinUrl": "https://www.linkedin.com/feed/update/urn:li:activity:7329207003942125569/",
+      "author": { "type": "company", "universalName": "fixture-films" },
+      "postedAt": { "timestamp": 1793008800000 },
+      "content": "Another project",
+      "engagement": { "reactions": [{ "count": 2 }, { "count": 3 }], "comments": 0 }
+    },
+    {
+      "type": "post",
+      "id": "7329207003942125570",
+      "linkedinUrl": "https://www.linkedin.com/feed/update/urn:li:activity:7329207003942125570/",
+      "author": { "type": "profile", "publicIdentifier": "person-n" },
+      "postedAt": { "date": "2026-10-25T10:00:00Z" },
+      "content": "Original third-party post",
+      "isRepost": true
+    }
+  ]
+}

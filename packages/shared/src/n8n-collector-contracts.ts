@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { m05Args, m05Actors } from './n8n-m05-contracts';
 
 const id = z.uuid(),
   count = z.number().int().nonnegative();
@@ -7,6 +8,7 @@ export const collectorActors = [
   'apify/instagram-scraper',
   'goat255/vimeo-scraper',
   'dltik/vimeo-scraper',
+  ...m05Actors,
 ] as const;
 const actor = z.enum(collectorActors),
   mode = z.enum(['daily', 'backfill']);
@@ -75,6 +77,7 @@ const launch = z
           : v.results_limit <= (v.purpose === 'daily' ? 50 : 1000)),
   );
 export const collectorArgs = {
+  ...m05Args,
   start: z
     .strictObject({
       workflow: z.enum(['WF-10', 'WF-11']),
@@ -168,6 +171,7 @@ export function collectorRequest(value: unknown): CollectorRequest {
   return { ...header, args: collectorArgs[header.operation].parse(header.args) };
 }
 export const collectorBuild = z.strictObject({
+  billingModel: z.enum(['PPE', 'PPU']).optional(),
   owner_id: external,
   actorId: external,
   build: z.string().regex(/^\d+\.\d+\.\d+$/),
@@ -177,6 +181,7 @@ export const collectorBuild = z.strictObject({
 export const collectorPolicy = z
   .strictObject({
     approval_id: id,
+    website_urls_per_account: count.min(1).max(2000).optional(),
     max_actor_starts: count.min(1).max(40),
     max_actor_usd: z.number().positive().max(10),
     max_total_usd: z.number().positive().max(100),

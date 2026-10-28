@@ -1,0 +1,27 @@
+{
+  "evidence_kind": "hand_authored_local_contract_example",
+  "provider_capture": false,
+  "observed_at": null,
+  "note": "No provider or competitor request was made. Real ordinary and JS-heavy captures remain an authorized live-validation gate.",
+  "account": {
+    "account_id": "51000000-0000-4000-8000-000000000001",
+    "competitor_id": "51000000-0000-4000-8000-000000000002",
+    "platform": "website_work_page",
+    "url": "https://studio.film/Work/"
+  },
+  "map": {
+    "statusCode": 200,
+    "body": {
+      "success": true,
+      "links": [{ "url": "https://studio.film/Work/A-Film", "title": "Local contract example" }]
+    }
+  },
+  "rows": [
+    {
+      "url": "https://studio.film/Work/A-Film",
+      "crawl": { "loadedUrl": "https://studio.film/Work/A-Film" },
+      "metadata": { "title": "A Film | Studio", "canonicalUrl": "https://studio.film/Work/A-Film" },
+      "markdown": "# A Film\n\nThis hand-authored film production is a local contract example. This public campaign production for a client has no captured provider facts. This hand-authored film production is a local contract example. This public campaign production for a client has no captured provider facts. This hand-authored film production is a local contract example.\n\n## Credits\nDirector: Fixture Person"
+    }
+  ]
+}

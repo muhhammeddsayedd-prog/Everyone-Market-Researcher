@@ -4,16 +4,16 @@
 > The owner reads it to see where we stand, what's blocked, and what they must do.
 
 ## Status
-**Not started — essential M04 development is accepted; create M05's separate stacked branch after normal final M04 result-head CI passes. Production and paid/live M05 work remain separately gated.**
+**In progress — local source contracts, restricted integration and tests. M04 development accepted at CI-green `d7daebe`; coverage and rollout obligations remain open. M05 hosted/live and production work remain separately gated.**
 
 | Field | Value |
 |---|---|
-| Started | — |
+| Started | 2026-10-28 |
 | Last updated | 2026-10-28 |
 | Finished | — |
 | Branch / PR | `m05-collectors-web-youtube-linkedin` / — |
-| Current task | — |
-| Next step | Verify normal final M04 result-head CI, then branch separately from that accepted CI-green head; implement source contracts locally using official examples/retained data/labeled fixtures, test and deliver a stacked draft PR targeting M04. Prepare one complete M05 live packet before new paid captures or hosted work. |
+| Current task | Local collector integration delivered for review; stacked draft PR and changed-head CI qualification |
+| Next step | Verify actual pushed-head CI/ordinary protected Preview; present the single representative dev packet. Do not apply the pending migration, bind secrets, publish workflows or capture providers until that separate approval. |
 
 ## Task checklist
 <!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
@@ -43,27 +43,46 @@
 
 ## Blockers
 <!-- What stops progress, since when, what unblocks it. Remove when resolved (keep in log). -->
-- none
+- Real M05 source/Cloud observations are not authorized yet. Unknown company repost/video and Short current-company shapes remain fail-closed source boundaries; no cookie/full-profile workaround. Firecrawl binding/billing is unverified, not assumed absent. Local development is not blocked by those live gates.
 
 ## Manual actions needed from the owner
 <!-- Exact steps, why, and where to paste results. The owner ticks them; Codex verifies. Steps: docs/MANUAL_ACTIONS.md + MILESTONE.md §11. -->
 | # | Action | Why | Status |
 |---|---|---|---|
-| MA-08 | YouTube Data API key in n8n credential "YouTube Data API key" | WF-13 | Not requested yet |
-| MA-15 | Firecrawl key in n8n (dev + prod); approve websites/YouTube/LinkedIn backfill + weekly employee cost; prod migration push | WF-21; before the prod backfill (T9) | Not requested yet |
+| MA-08 | Reuse the existing YouTube Header Auth credential ID/type; make no new key. Actual metadata/endpoint checks belong to approved dev preflight. | WF-13 | Existing integration reused in code; no new input requested |
+| MA-15 | Review the [single representative dev packet](evidence/live-dev-packet-20261028.md). It includes selected sources, the one dev migration, protected Preview/default bypass, costs/caps, recovery and shutdown. Firecrawl credential/plan metadata is checked before spending; request a private input only if genuinely absent. Production migration/backfill and recurring weekly operation remain separate. | One next live decision, after review-head qualification | Proposed; unapproved; no new credentials requested |
 
 ## Decisions & deviations
 <!-- Anything that differs from the docs. Also add to docs/DECISIONS.md → Changes if it changes a decision. -->
-- Planned: same prod-backfill default as M04 (confirm in MA-15).
+- Original prod-backfill default remains a separate owner gate; no M05 production authority is granted.
 - Actual28October [M04 development acceptance](../M04-collectors-vimeo-instagram/evidence/hc01-dev-results-20261028.md) passed the essential five-account/metrics/ownership/cost/closure checks on application948e618 with all five CI jobs passing. Final M04 result-head CI remains the next branch-delivery gate; M05 implementation is not started by this note.
 - 28 October owner decision separates M04 development acceptance from deferred coverage and rollout. See [binding decision](../../docs/DECISIONS.md#m04-development-acceptance-and-m05-sequencing--28-october-2026); M05 is not started by this record. Once its prerequisite actually passes, M05 local implementation, migrations/tests, documentation, scoped commits, required CI, protected Previews and a separate stacked draft PR are authorized. Keep M05 changes out of PR13. No M04 spending authority transfers to M05.
-- Planned: website `external_id` hash function (sha256 vs FNV fallback) is fixed forever after the first backfill — record which one is used here.
+- Actual M04 final result head `d7daebe` passed all five CI40617832325 jobs and Vercel, satisfying the sequencing prerequisite. The preceding two dated planning notes are preserved history; the separate M05 branch is now implemented.
+- Website identity is the existing SHA256-first32 canonical URL rule, lowercase host/case-preserved path, no query/fragment/trailing slash (root `/` retained), with no FNV fallback. Unknown dates stay null; backfill discovery is not exhaustive site history.
+- YouTube uses source EOF, not undocumented ordering, as completion proof. The duration≤60 classification is explicitly heuristic; fallback execution stays disabled. LinkedIn latest-result bounds stay incomplete; employee observations stay partial with no inferred joins/departures until a supported source-attestation contract exists. These are explicit original acceptance gaps, not waived criteria.
+
+## Local implementation and actual evidence
+
+See [the complete local record](evidence/local-implementation-20261028.md) and source-specific official-contract notes beside it.
+
+| Task | Completed local work | Remaining original gate |
+|---|---|---|
+| T1/T4 | Five normalizers; labelled synthetic/official example fixtures and source regressions | New real fixtures and unverified repost/media/employee shapes |
+| T3 | CLI-created pending migration `20261028020745`; actual rollback-only SQL integration; 15 pgTAP assertions; regenerated local types; security/performance advisors zero findings | Approved hosted dev application/readback; production separate |
+| T5–T8 | All four I/O-injected collector paths and native HTTP builders, typed restricted adapter/callback, truthful paging/coverage, costs and completion | Actual native/source delivery and coverage |
+| T9 | Offline price-book estimator and complete representative dev proposal | Approval, current non-secret provider billing qualification; full pilot/prod estimate later |
+| T11 | Inactive local collector/shared blueprints, maintained docs and focused review | Saved sanitized Cloud exports, full milestone handoff/merge |
+
+Actual focused checks: 59 source/estimator Vitest tests; 46 serialized native/YouTube Node tests; 25 SQL/callback/gateway Vitest tests (includes one actual rollback-only PostgreSQL test with multiple assertions); fifteen pgTAP security assertions. Counts are separate command results, not additive coverage claims. Lint, workspace TypeScript and formatting checks run before delivery. Required changed-head CI is separate; no M05 native/provider result is inferred from it.
 
 ## Risks / notes for the owner
-- none yet
+- PPU website billing cannot use a PPE invoice cap; proxy/storage/transfer and infrastructure USD remain unknown until qualified. Do not claim a guaranteed USD0 or spend through an unresolved billing boundary.
+- Original AC1–AC9 stay unchecked for their missing live, coverage, scope or rollout observations. No production, recurrence, notifications, M06 or PR merge is authorized.
 
 ## Session log
 <!-- Newest first. One line per meaningful step: date · what · files · result. -->
+- 2026-10-28 · Implemented the four source paths, native typed HTTP blueprints and restricted SQL/callback integration with preserved M04 behavior. Targeted review fixed source INPUT privacy/TLS guards, cross-midnight employee capture, costed immutable snapshot conflict, byte envelopes, retry/account barriers and actual terminal summary reporting. The owned schema-only local type/advisor database is disposable; existing local fixtures are verified restored by rollback. No M05 hosted/provider/credential operation occurred. Required CI/Preview qualification is next, not claimed complete by these local results.
+- 2026-10-28 · M04 final `d7daebe75341904fa62d04e911b8ea810992a2bb`: all five CI40617832325 jobs and Vercel passed. Created separate M05 branch/worktree from that exact head; original worktrees and protected root/M03 records untouched. Cached frozen dependency install completed offline, no package additions/lifecycle scripts. Source contracts are being implemented with labeled local examples; no M05 provider request, credential read, hosted migration, activation or production change.
 - 2026-10-17 · milestone file created (handoff pack)
 
 ## Hand-off to next milestone

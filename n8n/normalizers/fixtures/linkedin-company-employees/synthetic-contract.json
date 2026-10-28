@@ -1,0 +1,30 @@
+{
+  "fixtureProvenance": {
+    "kind": "synthetic-contract",
+    "actualActorCapture": false,
+    "note": "Invented Person N observations and forbidden fields test privacy projection. Current-position URL is a synthetic interface example, not an observed Short-mode shape."
+  },
+  "rows": [
+    {
+      "publicIdentifier": "fixture-person-1",
+      "firstName": "Person",
+      "lastName": "1",
+      "headline": "Director",
+      "location": { "linkedinText": "Cairo" },
+      "currentPosition": [{ "companyName": "A name is not identity" }],
+      "photo": "https://example.invalid/photo",
+      "email": "fixture@example.invalid",
+      "about": "Discard",
+      "skills": ["Discard"],
+      "experience": [{ "description": "Discard" }]
+    },
+    {
+      "publicIdentifier": "fixture-person-2",
+      "firstName": "Person",
+      "lastName": "2",
+      "headline": "Producer",
+      "location": { "linkedinText": "Riyadh" },
+      "currentPosition": [{ "companyLinkedinUrl": "https://www.linkedin.com/company/fixture-films/" }]
+    }
+  ]
+}

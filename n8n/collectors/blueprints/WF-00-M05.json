@@ -1,0 +1,91 @@
+{
+  "key": "WF-00",
+  "kind": "native-json-blueprint",
+  "hostedAcceptance": false,
+  "runnableWorkflow": false,
+  "liveEnabled": false,
+  "definitionProfile": "inactive_native_staging",
+  "fixtureProvenance": {
+    "kind": "synthetic_local_contract",
+    "actualProviderCapture": false,
+    "actualNativeSave": false
+  },
+  "requiredRefs": {
+    "workflowKeys": ["WF-21", "WF-13", "WF-18", "WF-18b"],
+    "credentialKeys": [],
+    "tagNames": ["env:dev", "layer:ops"]
+  },
+  "workflow": {
+    "name": "WF-00 · Orchestrator [dev]",
+    "active": false,
+    "nodes": [
+      {
+        "id": "351c0eac-d725-41a1-a156-df303329b656",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "workflowInputs",
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "env",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "position": [0, 0]
+      },
+      {
+        "id": "6b0b3009-a7ba-4693-af18-c8eac11a6862",
+        "name": "M05 binding required",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw Error('M05_CHILD_BINDING_REQUIRED');"
+        },
+        "position": [200, 0]
+      }
+    ],
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "M05 binding required",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 1800,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataSuccessExecution": "none",
+      "saveDataErrorExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "OxnbDrBVAtziiuTk",
+        "name": "layer:ops"
+      }
+    ],
+    "pinData": {}
+  },
+  "limitations": [
+    "Dispatch is not callback/database completion. All four child selectors and the log-only handler need approved dev staging/readback."
+  ]
+}

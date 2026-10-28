@@ -456,3 +456,7 @@ restored database cursor must be verified before any future scoped write.
 | API quota | YouTube quota > 80% or Vimeo `X-RateLimit-Remaining` low | Wait/retry next day; switch to fallback only if > 2 days |
 | Cost anomaly | Run cost > 3× its 7-day average | WF-91 flags; budget alert if daily total > budget |
 | Story capture gap | Stories with `taken_at` > 18 h before capture | Suggest `stories_twice_daily = true` |
+
+## M05 implementation contract note — 28 October 2026
+
+The current local source contracts and primary-source links are in the M05 evidence folder. Firecrawl is v2/map with links objects; its output is not complete site history. Website identity preserves the shipped SHA256-first32/case-preserved path rule. YouTube channels.list supplies the actual uploads playlist; undocumented order means only EOF proves exhaustion, with capped cursors retained. Duration classification is labelled heuristic. The two harvestapi actors use finite public-only inputs; Short mode uses its literal enum, and its embedded price is not the current Scale quote. Employee observations are partial and store only four fields; source-complete employment changes and repost/media ownership remain pending real examples. See [local integration and limits](../milestones/M05-collectors-web-youtube-linkedin/evidence/local-implementation-20261028.md) and the [unapproved live estimate](../milestones/M05-collectors-web-youtube-linkedin/evidence/live-dev-packet-20261028.md). No source was captured by this documentation update.

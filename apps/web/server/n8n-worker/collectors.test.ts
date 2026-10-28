@@ -48,6 +48,37 @@ function setup(env = environment) {
   };
 }
 describe('M04 fixed collector gateway, local HTTP integration', () => {
+  it('isolates M05 operations by exact Preview branch and rejects public registry reads', async () => {
+    const old = setup();
+    expect((await old.handler(req('m05.quota', { quota_day: '2026-10-28', quantity: 0 }))).status).toBe(403);
+    const next = setup({ ...environment, VERCEL_GIT_COMMIT_REF: 'm05-collectors-web-youtube-linkedin' });
+    expect((await next.handler(req('m05.quota', { quota_day: '2026-10-28', quantity: 0 }))).status).toBe(200);
+    expect((await next.handler(req('m05.lookup', { apify_run_id: 'unselectedActor' }))).status).toBe(400);
+    expect((await next.handler(req())).status).toBe(403);
+    expect(
+      (
+        await next.handler(
+          req('m05.execution.error', {
+            workflow_id: 'F7S8Llr0ZSaSuw4T',
+            execution_id: '300',
+            error_code: 'workflow_failed',
+            message: 'private',
+          }),
+        )
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await next.handler(
+          req('m05.execution.error', {
+            workflow_id: 'F7S8Llr0ZSaSuw4T',
+            execution_id: '300',
+            error_code: 'workflow_failed',
+          }),
+        )
+      ).status,
+    ).toBe(200);
+  });
   it('accepts only a fixed classified error envelope for owned workflow identities', async () => {
     const t = setup();
     const args = { workflow_id: 'TsqSMa5MlO3QBLkt', execution_id: '314', error_code: 'callback_retryable' };
