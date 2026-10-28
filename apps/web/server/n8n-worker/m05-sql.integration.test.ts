@@ -24,11 +24,15 @@ describe.skipIf(process.env.EMR_M05_LOCAL_SQL_TEST !== 'true')('M05 local restri
       connectionTimeoutMillis: 3000,
     });
     await c.connect();
-    const before = (
-      await c.query(
-        'select (select count(*) from app.items) items,(select count(*) from app.competitors) companies,(select count(*) from ops.scrape_runs) runs',
-      )
-    ).rows[0];
+    const baselineSql = `select (select count(*) from app.items) items,
+      (select count(*) from ingest.raw_items) raw_items,(select count(*) from app.competitors) companies,
+      (select count(*) from ops.scrape_runs) runs,(select count(*) from ops.cost_ledger) costs,
+      (select md5(string_agg(version::text,',' order by version)) from supabase_migrations.schema_migrations) migration_history,
+      to_regprocedure('ops.collector_execute(uuid,text,jsonb)')::text m04_function,
+      to_regprocedure('ops.m05_execute(uuid,text,jsonb)')::text m05_function,
+      (select md5(string_agg(n.nspname||'.'||c.relname,',' order by n.nspname,c.relname))
+        from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname in ('app','ops','ingest') and c.relkind='r') tables`;
+    const before = (await c.query(baselineSql)).rows[0];
     try {
       await c.query('begin');
       for (const [fn, file] of [
@@ -53,7 +57,8 @@ describe.skipIf(process.env.EMR_M05_LOCAL_SQL_TEST !== 'true')('M05 local restri
         yt = randomUUID(),
         web = randomUUID(),
         employees = randomUUID(),
-        li = randomUUID();
+        li = randomUUID(),
+        legacyIg = randomUUID();
       await c.query(
         "insert into app.competitors(id,company_code,slug,name,priority_tier,status) values($1,'TESTM05','m05-local','M05 local synthetic','pilot','active')",
         [company],
@@ -63,10 +68,21 @@ describe.skipIf(process.env.EMR_M05_LOCAL_SQL_TEST !== 'true')('M05 local restri
         [web, 'website_work_page', 'https://m05.example.com/work'],
         [employees, 'linkedin_employees', 'https://www.linkedin.com/company/m05local'],
         [li, 'linkedin', 'https://www.linkedin.com/company/m05local'],
+        [legacyIg, 'instagram', 'https://www.instagram.com/m05local/'],
       ])
         await c.query(
           "insert into app.competitor_accounts(id,competitor_id,platform,handle,url,status,backfill_status,next_due_at) values($1,$2,$3::app.platform,'m05local',$4,'active',$5::app.backfill_status,'2000-01-01')",
-          [id, company, platform, url, platform === 'linkedin_employees' ? 'not_applicable' : 'pending'],
+          [
+            id,
+            company,
+            platform,
+            url,
+            platform === 'linkedin_employees'
+              ? 'not_applicable'
+              : platform === 'instagram'
+                ? 'done'
+                : 'pending',
+          ],
         );
       const direct = async (op: string, args: Record<string, unknown>, requestId: string = randomUUID()) =>
         (
@@ -334,6 +350,148 @@ describe.skipIf(process.env.EMR_M05_LOCAL_SQL_TEST !== 'true')('M05 local restri
         max_total_usd: 2,
         max_website_urls_per_account: 1,
       };
+      // Numeric storage capacity is a protocol constraint, not an owner USD
+      // approval ceiling. These invalid arguments must create no launch/cost.
+      const allocationBefore = (
+        await c.query(
+          'select (select count(*) from ops.collector_launches) intents,(select count(*) from ops.cost_ledger) costs',
+        )
+      ).rows[0];
+      for (const patch of [
+        { max_actor_usd: 'NaN', max_total_usd: 'NaN' },
+        { max_actor_usd: 'Infinity', max_total_usd: 'Infinity' },
+        { max_actor_usd: '-Infinity' },
+        { max_actor_usd: '1' },
+        { max_actor_usd: null },
+        { max_actor_usd: true },
+        { max_actor_usd: {} },
+        { max_actor_usd: 0 },
+        { max_actor_usd: -1 },
+        { max_actor_usd: 0.00000001 },
+        { max_actor_usd: 0.1234567 },
+        { max_actor_usd: 1_000_000 },
+        { max_total_usd: 'NaN' },
+        { max_total_usd: '2' },
+        { max_total_usd: null },
+        { max_total_usd: 2.0000001 },
+        { max_total_usd: 1_000_000 },
+        { max_total_usd: 0.5 },
+        { max_actor_starts: '2' },
+        { max_actor_starts: null },
+        { max_actor_starts: true },
+        { max_actor_starts: 0 },
+        { max_actor_starts: -1 },
+        { max_actor_starts: 1.5 },
+        { max_actor_starts: 2147483648 },
+      ])
+        await denied(
+          'select ops.m05_execute($1,$2,$3)',
+          [randomUUID(), 'm05.launch', JSON.stringify({ ...launchArgs, ...patch })],
+          '22023',
+        );
+      expect(
+        (
+          await c.query(
+            'select (select count(*) from ops.collector_launches) intents,(select count(*) from ops.cost_ledger) costs',
+          )
+        ).rows[0],
+      ).toEqual(allocationBefore);
+      for (const value of [
+        {
+          max_actor_starts: 41,
+          max_actor_usd: 12.345678,
+          max_total_usd: 2345.678901,
+          per: '12.345678',
+          total: '2345.678901',
+        },
+        {
+          max_actor_starts: 2147483647,
+          max_actor_usd: 0.000001,
+          max_total_usd: 0.000001,
+          per: '0.000001',
+          total: '0.000001',
+        },
+        {
+          max_actor_starts: 1,
+          max_actor_usd: 999999.999999,
+          max_total_usd: 999999.999999,
+          per: '999999.999999',
+          total: '999999.999999',
+        },
+      ]) {
+        await c.query('savepoint allocation_probe');
+        const probe = {
+          ...launchArgs,
+          launch_id: randomUUID(),
+          approval_id: randomUUID(),
+          max_actor_starts: value.max_actor_starts,
+          max_actor_usd: value.max_actor_usd,
+          max_total_usd: value.max_total_usd,
+        };
+        expect((await direct('launch', probe)).result.permit).toBe(true);
+        expect(
+          (
+            await c.query(
+              'select max_actor_starts,max_actor_usd::text per,max_total_usd::text total from ops.collector_launches where launch_id=$1',
+              [probe.launch_id],
+            )
+          ).rows[0],
+        ).toEqual({ max_actor_starts: value.max_actor_starts, per: value.per, total: value.total });
+        await c.query('rollback to allocation_probe');
+        await c.query('release allocation_probe');
+      }
+      expect(
+        (
+          await c.query(
+            'select (select count(*) from ops.collector_launches) intents,(select count(*) from ops.cost_ledger) costs',
+          )
+        ).rows[0],
+      ).toEqual(allocationBefore);
+      const m04Run = (
+        await c.query('select ops.collector_execute($1,$2,$3) receipt', [
+          randomUUID(),
+          'start',
+          JSON.stringify({
+            workflow: 'WF-11',
+            platform: 'instagram',
+            env: 'dev',
+            mode: 'daily',
+            execution_id: 'm05-legacy-bound',
+          }),
+        ])
+      ).rows[0].receipt.result.run_id;
+      await c.query('select ops.collector_execute($1,$2,$3)', [
+        randomUUID(),
+        'claim',
+        JSON.stringify({
+          run_id: m04Run,
+          platform: 'instagram',
+          mode: 'daily',
+          limit: 1,
+          account_ids: [legacyIg],
+        }),
+      ]);
+      await denied(
+        'select ops.collector_execute($1,$2,$3)',
+        [
+          randomUUID(),
+          'launch',
+          JSON.stringify({
+            run_id: m04Run,
+            launch_id: randomUUID(),
+            actor_id: 'apify/instagram-scraper',
+            pass: 'posts',
+            account_ids: [legacyIg],
+            purpose: 'daily',
+            results_limit: 1,
+            approval_id: randomUUID(),
+            max_actor_starts: 41,
+            max_actor_usd: 1,
+            max_total_usd: 41,
+          }),
+        ],
+        '22023',
+      );
       for (const actor_input of [
         {
           ...actorInput,
@@ -426,6 +584,25 @@ describe.skipIf(process.env.EMR_M05_LOCAL_SQL_TEST !== 'true')('M05 local restri
       ).toBe(0.02);
       expect((await direct('launch', launchArgs)).result.permit).toBe(true);
       expect((await direct('launch', launchArgs)).result.permit).toBe(false);
+      for (const patch of [
+        { approval_id: randomUUID() },
+        { max_actor_starts: 3 },
+        { max_actor_usd: 1.000001 },
+        { max_total_usd: 2.000001 },
+      ])
+        await denied(
+          'select ops.m05_execute($1,$2,$3)',
+          [randomUUID(), 'm05.launch', JSON.stringify({ ...launchArgs, ...patch })],
+          '55000',
+        );
+      expect(
+        (
+          await c.query(
+            'select approval_id,max_actor_starts,max_actor_usd::text per,max_total_usd::text total from ops.collector_launches where launch_id=$1',
+            [launch_id],
+          )
+        ).rows[0],
+      ).toEqual({ approval_id, max_actor_starts: 2, per: '1.000000', total: '2.000000' });
       await denied(
         'select ops.m05_execute($1,$2,$3)',
         [randomUUID(), 'm05.close_registration', JSON.stringify({ run_id: wr })],
@@ -695,13 +872,7 @@ describe.skipIf(process.env.EMR_M05_LOCAL_SQL_TEST !== 'true')('M05 local restri
       expect(typeof dispatchCollectorDatabase).toBe('function');
     } finally {
       await c.query('rollback');
-      expect(
-        (
-          await c.query(
-            'select (select count(*) from app.items) items,(select count(*) from app.competitors) companies,(select count(*) from ops.scrape_runs) runs',
-          )
-        ).rows[0],
-      ).toEqual(before);
+      expect((await c.query(baselineSql)).rows[0]).toEqual(before);
       await c.end();
     }
   });

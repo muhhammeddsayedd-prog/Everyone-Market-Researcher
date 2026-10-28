@@ -61,6 +61,8 @@ function drive({
   repeatSubset = false,
   actualStatus,
   capAck = true,
+  chargeUsd = 0.4,
+  numericId = false,
 } = {}) {
   const r = rt(),
     calls = [],
@@ -101,7 +103,7 @@ function drive({
                       timeout: 600,
                       billingModel: 'PPU',
                       maxItems: q.args.results_limit,
-                      maxTotalChargeUsd: 0.4,
+                      maxTotalChargeUsd: chargeUsd,
                     },
                   }
                 : q.operation === 'm05.register'
@@ -144,9 +146,9 @@ function drive({
               statusCode: 201,
               body: {
                 data: {
-                  id: 'localActor',
+                  id: numericId ? 123 : 'localActor',
                   defaultDatasetId: 'localDataset',
-                  options: capAck ? { maxTotalChargeUsd: 0.4, isMaxTotalChargeUsdSetByUser: true } : {},
+                  options: capAck ? { maxTotalChargeUsd: chargeUsd, isMaxTotalChargeUsdSetByUser: true } : {},
                 },
               },
             },
@@ -330,6 +332,26 @@ test('native cap mismatch durably registers the known actor then stops before an
   assert.equal(r.calls.filter((c) => c.operation === 'm05.register').length, 1);
   assert.equal(
     r.calls.some((c) => ['m05.close_registration', 'm05.finish'].includes(c.operation)),
+    false,
+  );
+});
+
+test('native website accepts finite server charge configuration above the former ceiling, never malformed amounts', () => {
+  assert.equal(drive({ chargeUsd: 1.5 }).s.result.state, 'awaiting_callbacks');
+  for (const chargeUsd of [0, -1, NaN, Infinity, '1.5', null])
+    assert.throws(() => drive({ chargeUsd }), /DESCRIPTOR_INVALID/);
+  assert.doesNotThrow(() =>
+    rt().initializeM05Website({ ...selection, max_actor_starts: 41 }, '10', '2026-10-28T12:00:00Z'),
+  );
+});
+
+test('native website keeps a numeric provider ID unconfirmed and does not register or repeat the POST', () => {
+  const r = drive({ numericId: true });
+  assert.equal(r.actors.length, 1);
+  assert.equal(r.s.result.actor_starts, 0);
+  assert.equal(r.s.result.stage, 'actor_start');
+  assert.equal(
+    r.calls.some((c) => ['m05.register', 'm05.close_registration', 'm05.finish'].includes(c.operation)),
     false,
   );
 });

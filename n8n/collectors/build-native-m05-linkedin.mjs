@@ -40,7 +40,7 @@ export const m05LinkedInCloudSource = [
 const one =
   "const rows=$input.all();if(rows.length!==1||!rows[0].json||typeof rows[0].json!=='object')throw Error('M05_NATIVE_INPUT_INVALID');const j=rows[0].json;\n";
 
-/** Offline-only blueprint with authored exact IDs. Saving/publication still needs a live packet. */
+/** Offline-only blueprint with authored exact IDs. Live binding needs verified dev preflight. */
 export function buildNativeLinkedIn(input, transport, kind, selection) {
   const b = parseN8nBindings(input),
     c = parseCollectorTransport(transport),
@@ -144,7 +144,7 @@ export function buildNativeLinkedIn(input, transport, kind, selection) {
       captureEvidence: 'synthetic_local_only',
       ...(kind === 'posts' ? { repostShapeVerified: false } : { employeeCoverageComplete: false }),
     },
-    errorWorkflowBinding: { state: 'unresolved', reason: 'M05_handler_publication_not_authorized' },
+    errorWorkflowBinding: { state: 'unresolved', reason: 'M05_handler_binding_pending' },
     requiredRefs: {
       workflowKeys: [key, 'WF-19'],
       credentialKeys: ['apify', 'foundationGateway'],

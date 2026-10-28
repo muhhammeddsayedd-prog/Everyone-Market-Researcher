@@ -98,6 +98,22 @@ export function createM05Callback(deps: Dependencies) {
       (await deps.dispatch(child(input.requestId, step), operation, args, config, signal)).result;
     const job = registered(await call('lookup', 'm05.lookup', { apify_run_id: runId }), runId, config);
     const retryResult = (result: Row) => {
+      const reviewed = {
+        ...result,
+        requires_review:
+          Array.isArray(result.groups) &&
+          result.groups.some(
+            (g) =>
+              object(g) &&
+              [
+                'm05_actor_cap_unacknowledged',
+                'm05_actor_charge_option_exceeded',
+                'm05_dataset_limit_exceeded',
+                'm05_source_contract_unverified',
+                'employee_snapshot_conflict',
+              ].includes(String(g.error)),
+          ),
+      };
       const urls = result.retry_urls;
       if (Array.isArray(urls) && urls.length) {
         if (
@@ -108,7 +124,7 @@ export function createM05Callback(deps: Dependencies) {
         )
           throw fail();
         return {
-          ...result,
+          ...reviewed,
           state: 'retry_required',
           retry: {
             run_id: job.run_id,
@@ -131,7 +147,7 @@ export function createM05Callback(deps: Dependencies) {
           },
         };
       }
-      return { ...result, state: 'completed' };
+      return { ...reviewed, state: 'completed' };
     };
     if (job.settled) {
       if (!object(job.result)) throw fail();
@@ -197,6 +213,9 @@ export function createM05Callback(deps: Dependencies) {
     )(10000, signal);
     const terminal = await read();
     if (clock() - at < 10000 || canonical(first) !== canonical(terminal)) throw fail();
+    // This is a provider-option contract check, not an owner spending gate.
+    // Preserve its actual cost once, suppress ingestion/retry, and reconcile.
+    const chargeOptionExceeded = terminal.usage_usd > Number(job.max_actor_usd);
     const actualInput = await deps.get(
       '/v2/key-value-stores/' + terminal.kvs_id + '/records/INPUT',
       config.apifyReadToken,
@@ -209,7 +228,7 @@ export function createM05Callback(deps: Dependencies) {
     if (canonical(actualInput) !== canonical(expected)) throw fail();
     const rows: unknown[] = [];
     let overOutput = false;
-    if (terminal.status === 'SUCCEEDED' && terminal.cap_acknowledged) {
+    if (terminal.status === 'SUCCEEDED' && terminal.cap_acknowledged && !chargeOptionExceeded) {
       const bound = job.results_limit * job.account_ids.length;
       for (let offset = 0; offset <= bound; offset += 500) {
         const page = await deps.get(
@@ -234,7 +253,7 @@ export function createM05Callback(deps: Dependencies) {
     }
     const now = (deps.wallTime ?? (() => new Date().toISOString()))();
     let groups: Group[];
-    if (terminal.status !== 'SUCCEEDED' || overOutput || !terminal.cap_acknowledged)
+    if (terminal.status !== 'SUCCEEDED' || overOutput || !terminal.cap_acknowledged || chargeOptionExceeded)
       groups = job.account_ids.map((account_id) => ({
         account_id,
         status: 'failed',
@@ -244,9 +263,11 @@ export function createM05Callback(deps: Dependencies) {
         retry_urls: [],
         error: !terminal.cap_acknowledged
           ? 'm05_actor_cap_unacknowledged'
-          : overOutput
-            ? 'm05_dataset_limit_exceeded'
-            : 'apify_' + terminal.status.toLowerCase(),
+          : chargeOptionExceeded
+            ? 'm05_actor_charge_option_exceeded'
+            : overOutput
+              ? 'm05_dataset_limit_exceeded'
+              : 'apify_' + terminal.status.toLowerCase(),
         backfill_cursor: null,
       }));
     else
@@ -303,10 +324,13 @@ export function createM05Callback(deps: Dependencies) {
       groups,
     });
     if (!object(result) || typeof result.updated !== 'boolean') throw fail();
+    const processed = retryResult(result);
     return {
-      ...retryResult(result),
+      ...processed,
       requires_review:
+        processed.requires_review ||
         !terminal.cap_acknowledged ||
+        chargeOptionExceeded ||
         overOutput ||
         groups.some((g) => g.error === 'm05_source_contract_unverified'),
     };

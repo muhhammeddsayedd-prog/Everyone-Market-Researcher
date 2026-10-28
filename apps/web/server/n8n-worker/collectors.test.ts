@@ -2,7 +2,7 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
-import { createCollectorHandler, collectorConfig } from './collectors';
+import { createCollectorHandler, collectorConfig, type CollectorDispatch } from './collectors';
 import { collectorRequest } from '@emr/shared';
 
 const token = 'synthetic-collector-token-for-local-tests-only';
@@ -39,7 +39,7 @@ function req(
   });
 }
 function setup(env = environment) {
-  const dispatch = vi.fn(async () => ({ replayed: false, result: { run_id: id } }));
+  const dispatch = vi.fn<CollectorDispatch>(async () => ({ replayed: false, result: { run_id: id } }));
   const processCallback = vi.fn(async () => ({ state: 'completed', updated: false }));
   return {
     dispatch,
@@ -215,5 +215,113 @@ describe('M04 fixed collector gateway, local HTTP integration', () => {
     expect(r.status).toBe(503);
     expect(await r.text()).not.toContain('synthetic-private');
     expect(t.dispatch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('M05 server-selected development run policy', () => {
+  const actor = 'harvestapi/linkedin-company-posts';
+  const launchId = '27000000-0000-4000-8000-000000000002';
+  const policy = {
+    approval_id: '27000000-0000-4000-8000-000000000003',
+    max_actor_starts: 64,
+    max_actor_usd: 12.5,
+    max_total_usd: 250,
+    max_results_per_profile: 30,
+    actors: {
+      [actor]: {
+        billingModel: 'PPE',
+        owner_id: 'localOwner',
+        actorId: 'localActor',
+        build: '1.0.0',
+        buildId: 'localBuild',
+      },
+    },
+  };
+  const launch = {
+    run_id: id,
+    launch_id: launchId,
+    actor_id: actor,
+    pass: 'primary',
+    account_ids: [id],
+    purpose: 'backfill',
+    results_limit: 5,
+    actor_input: { companies: ['https://www.linkedin.com/company/local-contract/'] },
+  };
+  const env = (selected = policy) => ({
+    ...environment,
+    VERCEL_GIT_COMMIT_REF: 'm05-collectors-web-youtube-linkedin',
+    EMR_COLLECTORS_LIVE_POLICY: JSON.stringify(selected),
+  });
+  it('accepts standing-authorized finite M05 allocations without widening M04 or production', () => {
+    expect(collectorConfig(env()).policy).toMatchObject(policy);
+    expect(() =>
+      collectorConfig({ ...env(), VERCEL_GIT_COMMIT_REF: 'm04-collectors-vimeo-instagram' }),
+    ).toThrow();
+    expect(() => collectorConfig({ ...env(), VERCEL_ENV: 'production' })).toThrow();
+  });
+  it('requires positive finite amounts, whole start counts and a consistent per-actor allocation', () => {
+    for (const amount of [0, -1, NaN, Infinity, 0.0000001, 1.0000001, 1000000]) {
+      expect(() => collectorConfig(env({ ...policy, max_actor_usd: amount }))).toThrow();
+      expect(() => collectorConfig(env({ ...policy, max_total_usd: amount }))).toThrow();
+    }
+    for (const count of [0, -1, 1.5, NaN, Infinity, 2147483648])
+      expect(() => collectorConfig(env({ ...policy, max_actor_starts: count }))).toThrow();
+    expect(() => collectorConfig(env({ ...policy, max_total_usd: 1 }))).toThrow();
+    expect(collectorConfig(env({ ...policy, max_actor_usd: 1.000001 })).policy?.max_actor_usd).toBe(1.000001);
+    expect(
+      collectorConfig(env({ ...policy, max_actor_usd: 999999.999999, max_total_usd: 999999.999999 })).policy
+        ?.max_actor_usd,
+    ).toBe(999999.999999);
+  });
+  it('issues a descriptor matching only the authentic server allocation and fresh admission', async () => {
+    const t = setup(env());
+    t.dispatch.mockResolvedValue({ replayed: false, result: { permit: true, launch_id: launchId } });
+    const response = await t.handler(req('m05.launch', launch));
+    expect(response.status).toBe(200);
+    const result = (await response.json()).result;
+    expect(t.dispatch.mock.calls[0]?.[2]).toMatchObject({
+      ...launch,
+      approval_id: policy.approval_id,
+      max_actor_starts: policy.max_actor_starts,
+      max_actor_usd: policy.max_actor_usd,
+      max_total_usd: policy.max_total_usd,
+    });
+    expect(result.descriptor).toEqual({
+      billingModel: 'PPE',
+      actorPath: 'harvestapi~linkedin-company-posts',
+      build: policy.actors[actor].build,
+      maxTotalChargeUsd: policy.max_actor_usd,
+      maxItems: launch.results_limit,
+      timeout: 600,
+      memory: 1024,
+    });
+  });
+  it('never relabels an existing launch with a subsequent configuration descriptor', async () => {
+    const t = setup(env());
+    t.dispatch.mockResolvedValue({
+      replayed: true,
+      result: { permit: false, launch_id: launchId, apify_run_id: 'alreadyRegisteredActor' },
+    });
+    const response = await t.handler(req('m05.launch', launch));
+    expect(response.status).toBe(200);
+    const result = (await response.json()).result;
+    expect(result.permit).toBe(false);
+    expect(result.apify_run_id).toBe('alreadyRegisteredActor');
+    expect(result).not.toHaveProperty('descriptor');
+  });
+  it('stops mismatched or unknown admissions and rejects client-supplied financial settings', async () => {
+    for (const receipt of [
+      { replayed: false, result: { permit: true, launch_id: id } },
+      { replayed: true, result: { permit: true, launch_id: launchId } },
+      { replayed: false, result: { permit: false, launch_id: launchId, apify_run_id: null } },
+    ]) {
+      const t = setup(env());
+      t.dispatch.mockResolvedValue(receipt);
+      expect((await t.handler(req('m05.launch', launch))).status).toBe(503);
+      expect(t.dispatch).toHaveBeenCalledTimes(1);
+    }
+    const t = setup(env());
+    expect((await t.handler(req('m05.launch', { ...launch, max_actor_usd: 100 }))).status).toBe(400);
+    expect(t.dispatch).not.toHaveBeenCalled();
   });
 });

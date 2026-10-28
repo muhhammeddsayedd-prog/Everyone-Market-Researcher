@@ -177,7 +177,7 @@ export function buildNativeYoutube(input, transport, selection) {
       actorFallbackEnabled: false,
       shortsClassification: 'duration_heuristic_unverified',
     },
-    errorWorkflowBinding: { state: 'unresolved', reason: 'M05_handler_publication_not_authorized' },
+    errorWorkflowBinding: { state: 'unresolved', reason: 'M05_handler_binding_pending' },
     requiredRefs: {
       workflowKeys: ['WF-13'],
       credentialKeys: ['youtube', 'foundationGateway'],

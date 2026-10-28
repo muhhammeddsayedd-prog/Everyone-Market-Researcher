@@ -94,7 +94,7 @@ export function buildNativeWebsite(input, transport, selection, firecrawl) {
       discoveryCoverage: 'observed_map_only',
       thinRetry: 'WF19_registered_one_time_adaptive_barrier',
     },
-    errorWorkflowBinding: { state: 'unresolved', reason: 'M05_handler_publication_not_authorized' },
+    errorWorkflowBinding: { state: 'unresolved', reason: 'M05_handler_binding_pending' },
     requiredRefs: {
       workflowKeys: ['WF-21', 'WF-19'],
       credentialKeys: ['firecrawl', 'apify', 'foundationGateway'],

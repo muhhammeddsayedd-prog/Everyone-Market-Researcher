@@ -187,3 +187,101 @@ output. An independent AST comparison confirms no other legacy member loss or
 drift, apart from the intended employee `coverage` field. Shared typecheck and
 formatting pass. The full-chain native CI comparison remains required; this
 correction does not claim that the earlier local clone covered all migrations.
+
+## Standing-spending continuation and current handoff —28October2026
+
+The owner's later instruction is recorded once in
+[the binding decision](../../../docs/DECISIONS.md#standing-development-spending-and-essential-acceptance--28-october-2026).
+It authorizes necessary development costs and the existing selected M05 dev
+validation/setup/migration/temporary bypass after corrections, tests, required CI
+and preflight. No financial or actor-count approval is missing. The older
+USD0.40/USD4.95/USD5/twelve-start proposal and the earlier manual-edit instruction
+are superseded as owner gates; do not run that obsolete instruction verbatim.
+Finite operational configuration still applies to each admitted execution.
+
+Permitted code changes now separate M05's server-selected finite settings from
+the unchanged M04 policy. Monetary values must be numeric, positive, finite and
+exactly representable in the existing six-decimal storage; start allocations use
+the positive PostgreSQL integer capacity. These are interface representations,
+not new owner spending limits. A fresh matching SQL permit alone receives the
+current descriptor. Replays cannot acquire a subsequent descriptor; changed
+settings cannot overwrite an admitted intent or its allocation. Rows, counters
+and costs remain preserved. Subsequent operational settings may be selected
+under standing authorization after existing work is reconciled.
+
+The pending migration `20261028020745` now rejects numeric coercion, NaN/Infinity
+strings, nulls, overflow, nonintegral counts and silent precision rounding. Its
+M05 start capacity is extended without changing the M04 RPC's original40-start
+validation. Actual local rollback integration passes1/1 and pgTAP31/31, including
+invalid allocations, exact representation boundaries and allocation identity
+conflicts; M04 still rejects41. Pending SHA256 is now
+`f3ff025065106733f7c76aec963e465a045270876c642db69e131df72f6d865e`.
+It has **not** been applied to hosted development.
+
+Primary website/LinkedIn dispatch accepts the authentic finite server charge
+option rather than the former owner ceiling. LinkedIn now registers a valid
+returned actor ID before stopping on missing/mismatched charge acknowledgment;
+neither a later start nor registration closure follows that stop. Numeric IDs
+are not coerced into confirmed starts. Native descriptors retain exact current
+output/runtime agreement. The callback uses the recorded admitted amount even
+when a subsequent configured amount differs: an actual charge-option violation
+is costed once, receives no ingestion/retry and remains review-required on saved
+replay. This is a provider-contract stop, not another financial approval gate.
+
+The edited native collector blueprints preserve their original synthetic
+selections, audience and provenance, and remain inactive/local-only. WF-21 stays
+inert until genuine Firecrawl metadata is established. WF-19-M05 and its denied
+builder are unchanged; these other changes do **not** implement or substitute
+for its still-missing retry charge-option guard.
+
+Fresh qualification used a separately owned schema-only local database: the
+original14-version schema plus **all five** pending versions, including the older
+fifteenth migration, for19 total. Native type generation exactly matched the
+checked-in types. Both native CLI advisors returned0 with `--fail-on warn`.
+Original baseline counts/history were equal before/after, and the owned schema
+database was removed. The first load hit a pg_dump metacommand rejected by a Node
+SQL client; the supported native psql restore then succeeded. No baseline reset,
+hosted migration or M03 supervisor operation occurred.
+
+### Exact remaining enforced boundary
+
+Official [Auto-review documentation](https://learn.chatgpt.com/docs/sandboxing/auto-review)
+describes `/approve` as a one-exact-action retry in the supported TUI. The owner
+actually checked this conversation and reported **Command unavailable**. The
+current execution surface has `approval_policy=never`, forbids escalation
+arguments and exposes no tool for submitting a revised one-action review. No
+permission setting, policy file, shell/tool/agent route or credential store was
+changed to bypass that boundary. The old denied payload is also obsolete under
+the new financial policy and must not be executed merely to obtain a retry.
+
+The precise remaining action is a revised public edit of the same three files:
+validate the native retry charge option as numeric/finite/positive and consistent
+with the authentic server configuration; update the existing packet's provider
+billing/estimates/authorization; and bring the existing M05 progress pointer
+current. The automatic review's stated reason remains only **blocked by policy**.
+Those edits and the resulting WF-19-M05 regeneration are unperformed. The current
+client/host must expose a supported narrow review of that revised action before
+it can be executed here. This is the live-validation blocker; no new budget,
+actor-count, credential handoff or general development approval is requested.
+
+One independent, non-secret n8n `list_credentials` attempt returned connector
+error`-32603`. It establishes no missing/revoked credential or browser logout;
+no replacement/login loop followed. Conservatively retain one M05 Management
+attempt,0 Control/Vercel/native actions and0 actor starts. No source collection
+charge was incurred by this work; Git/CI/Preview infrastructure USD is separately
+unknown. M04's300/2609/2909/V111/native18/24actors/USD1.0695 record is untouched.
+No M05 runtime secret was read/decrypted, no workflow published/activated, and no
+temporary bypass or hosted configuration was created. M05 remains in progress;
+the essential-development map is in the existing milestone, with live evidence
+pending and production/recurring/merge obligations retained. Required changed-head
+CI and the ordinary protected Preview qualify this permitted code slice only.
+
+Actual affected checks for this continuation pass:47 source/lifecycle Vitest
+tests,32 serialized native-workflow Node tests,33 gateway/callback Vitest tests,
+one actual PostgreSQL integration and31 pgTAP assertions. Full workspace/root
+TypeScript, lint, formatting and the1786-file secret scan also pass. Independent
+targeted review covered the server/SQL allocation contract, native registration
+and callback replay, and the development-acceptance map. These are distinct local
+command results, not native Cloud/provider acceptance. The next push retains
+normal required CI on the actual changed head; no check is disabled and no
+CI-announcement-only commit is needed.

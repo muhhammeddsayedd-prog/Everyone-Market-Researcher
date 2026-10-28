@@ -94,7 +94,12 @@ function drive(
       });
       state = runtime.advanceM05LinkedInActor(state, {
         statusCode: 201,
-        body: { data: { id: `synthetic_native_actor_${++starts}` } },
+        body: {
+          data: {
+            id: `synthetic_native_actor_${++starts}`,
+            options: { maxTotalChargeUsd: state.launchDescriptor.maxTotalChargeUsd },
+          },
+        },
       });
     }
   }
@@ -232,11 +237,55 @@ test('fixed local graph ignores caller account knobs and rejects unsafe authored
   );
   assert.equal(row.json.request.args.env, 'dev');
   assert.deepEqual(row.json.accountIds, ids);
-  for (const changes of [{ env: 'prod' }, { results_limit: 0 }, { max_actor_starts: 41 }, { cookies: [] }])
+  for (const changes of [
+    { env: 'prod' },
+    { results_limit: 0 },
+    { max_actor_starts: 2147483648 },
+    { cookies: [] },
+  ])
     assert.throws(
       () => buildNativeLinkedIn(bindings, transport, 'posts', { ...selection(), ...changes }),
       /INPUT_INVALID/,
     );
+});
+
+test('native LinkedIn preserves selected charge configuration and registers known IDs before an acknowledgment stop', () => {
+  const runtime = rt();
+  const prepared = () => {
+    let s = runtime.initializeM05LinkedIn(
+      { ...selection(), max_actor_starts: 41 },
+      'posts',
+      '701',
+      '2026-10-28T12:00:00Z',
+    );
+    s = runtime.advanceM05LinkedInGateway(s, reply(s, { run_id: runId }));
+    return runtime.advanceM05LinkedInGateway(s, reply(s, accounts('posts')));
+  };
+  for (const value of [0, -1, NaN, Infinity, '25.5', null]) {
+    const s = prepared(),
+      permit = launchResult(s);
+    permit.descriptor.maxTotalChargeUsd = value;
+    assert.throws(() => runtime.advanceM05LinkedInGateway(s, reply(s, permit)), /RECONCILIATION_REQUIRED/);
+  }
+  for (const cap of [undefined, '25.5', 1, 25.5]) {
+    let s = prepared();
+    const permit = launchResult(s);
+    permit.descriptor.maxTotalChargeUsd = 25.5;
+    s = runtime.advanceM05LinkedInGateway(s, reply(s, permit));
+    s = runtime.advanceM05LinkedInActor(s, {
+      statusCode: 201,
+      body: { data: { id: 'knownActor', options: { maxTotalChargeUsd: cap } } },
+    });
+    assert.equal(s.request.operation, 'm05.register');
+    assert.equal(s.request.args.apify_run_id, 'knownActor');
+    const registered = reply(s, { registered: true, run_id: runId, apify_run_id: 'knownActor' });
+    if (cap === 25.5) assert.doesNotThrow(() => runtime.advanceM05LinkedInGateway(s, registered));
+    else
+      assert.throws(
+        () => runtime.advanceM05LinkedInGateway(s, registered),
+        /CAP_ACK_RECONCILIATION_REQUIRED/,
+      );
+  }
 });
 test('native permit replay, credential-bearing transport errors and unknown paid outcomes never authorize a retry or closure', () => {
   const runtime = rt();
@@ -258,6 +307,7 @@ test('native permit replay, credential-bearing transport errors and unknown paid
     { statusCode: 500, body: { token: 'synthetic-private-diagnostic' } },
     { error: 'synthetic-private-diagnostic' },
     { statusCode: 201, body: { data: {} } },
+    { statusCode: 201, body: { data: { id: 123 } } },
   ])
     assert.throws(
       () => runtime.advanceM05LinkedInActor(state, response),

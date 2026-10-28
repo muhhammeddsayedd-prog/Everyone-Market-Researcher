@@ -77,13 +77,61 @@ function setup(kind: 'posts' | 'employees' = 'posts') {
       descriptor: Record<string, unknown>;
     }): Promise<unknown> => {
       record('actor_start', args);
-      return { statusCode: 201, body: { data: { id: `synthetic_actor_${++actor}` } } };
+      return {
+        statusCode: 201,
+        body: {
+          data: {
+            id: `synthetic_actor_${++actor}`,
+            options: { maxTotalChargeUsd: args.descriptor.maxTotalChargeUsd },
+          },
+        },
+      };
     },
   };
   return { calls, gateway, deps };
 }
 
 describe('LinkedIn asynchronous dispatch through fixed ports — local simulation only', () => {
+  it('uses an authentic finite server-selected charge option above former owner ceilings', async () => {
+    const t = setup();
+    const launch = t.gateway.launch;
+    t.gateway.launch = async (args, id) => {
+      const admitted = (await launch(args, id)) as { descriptor: Record<string, unknown> };
+      return { ...admitted, descriptor: { ...admitted.descriptor, maxTotalChargeUsd: 25.5 } };
+    };
+    expect(await runLinkedInCollector({ ...input(), max_actor_starts: 41 }, t.deps)).toMatchObject({
+      state: 'awaiting_callbacks',
+      actor_starts: 2,
+    });
+    expect(
+      t.calls
+        .filter((c) => c.operation === 'actor_start')
+        .every((c) => (c.args.descriptor as Record<string, unknown>).maxTotalChargeUsd === 25.5),
+    ).toBe(true);
+  });
+  it('registers a valid actor ID before stopping on a missing, nonnumeric or changed charge acknowledgment', async () => {
+    for (const cap of [undefined, '1', 2, Number.NaN]) {
+      const t = setup();
+      const original = t.deps.startActor;
+      t.deps.startActor = async (args) => {
+        const response = (await original(args)) as { statusCode: number; body: { data: { id: string } } };
+        return {
+          ...response,
+          body: { data: { ...response.body.data, options: { maxTotalChargeUsd: cap } } },
+        };
+      };
+      expect(await runLinkedInCollector(input(), t.deps)).toMatchObject({
+        state: 'reconciliation_required',
+        stage: 'actor_cap_ack',
+        actor_starts: 1,
+        actor_run_ids: ['synthetic_actor_1'],
+        uncertain_start: false,
+      });
+      expect(t.calls.filter((c) => c.operation === 'actor_start')).toHaveLength(1);
+      expect(t.calls.filter((c) => c.operation === 'register')).toHaveLength(1);
+      expect(t.calls.some((c) => ['close_registration', 'finish'].includes(c.operation))).toBe(false);
+    }
+  });
   it('registers every actual date bucket then closes registration; dispatch never claims callback completion', async () => {
     const t = setup();
     expect(await runLinkedInCollector(input(), t.deps)).toMatchObject({
@@ -253,6 +301,19 @@ describe('LinkedIn asynchronous dispatch through fixed ports — local simulatio
     expect(
       t.calls.some((call) => ['register', 'close_registration', 'finish'].includes(call.operation)),
     ).toBe(false);
+  });
+  it('does not treat a numeric provider ID as a confirmed actor start', async () => {
+    const t = setup();
+    t.deps.startActor = async () => ({ statusCode: 201, body: { data: { id: 123 } } });
+    expect(await runLinkedInCollector(input(), t.deps)).toMatchObject({
+      state: 'reconciliation_required',
+      stage: 'actor_start',
+      actor_starts: 0,
+      uncertain_start: true,
+    });
+    expect(t.calls.some((c) => ['register', 'close_registration', 'finish'].includes(c.operation))).toBe(
+      false,
+    );
   });
   it('does not retry a successful start whose registration receipt was lost, or start the next batch', async () => {
     const t = setup();

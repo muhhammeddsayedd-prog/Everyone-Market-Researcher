@@ -3,6 +3,7 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import {
   collectorRequest,
   collectorPolicy,
+  m05RunPolicy,
   collectorAccountIds,
   type CollectorPolicy,
   type CollectorRequest,
@@ -23,12 +24,13 @@ export interface CollectorConfig {
   policy: CollectorPolicy | null;
 }
 export function collectorConfig(env: Record<string, string | undefined>): CollectorConfig {
+  const isM05 = env.VERCEL_GIT_COMMIT_REF === 'm05-collectors-web-youtube-linkedin';
   let accountIds: string[],
     policy: CollectorPolicy | null = null;
   try {
     accountIds = collectorAccountIds.parse(JSON.parse(env.EMR_COLLECTORS_ACCOUNT_IDS ?? ''));
     if (env.EMR_COLLECTORS_LIVE_POLICY)
-      policy = collectorPolicy.parse(JSON.parse(env.EMR_COLLECTORS_LIVE_POLICY));
+      policy = (isM05 ? m05RunPolicy : collectorPolicy).parse(JSON.parse(env.EMR_COLLECTORS_LIVE_POLICY));
   } catch {
     throw new WorkerFailure('unavailable', 503);
   }
@@ -49,7 +51,7 @@ export function collectorConfig(env: Record<string, string | undefined>): Collec
   )
     throw new WorkerFailure('unavailable', 503);
   return {
-    scope: env.VERCEL_GIT_COMMIT_REF === 'm05-collectors-web-youtube-linkedin' ? 'm05' : 'm04',
+    scope: isM05 ? 'm05' : 'm04',
     audience: 'https://' + env.VERCEL_URL,
     password: env.EMR_COLLECTORS_WRITER_PASSWORD,
     verifier: env.EMR_COLLECTORS_TOKEN_SHA256!,
@@ -190,10 +192,28 @@ export function createCollectorHandler(deps: Dependencies) {
         if (op === 'request.status') op = 'status';
         if (op === 'callback.classify') op = 'classify';
         receipt = await deps.dispatch(input.requestId, op, args, config, controller.signal);
+        if (input.operation === 'm05.launch') {
+          const launch = receipt.result;
+          if (
+            !launch ||
+            typeof launch !== 'object' ||
+            !('permit' in launch) ||
+            typeof launch.permit !== 'boolean' ||
+            !('launch_id' in launch) ||
+            launch.launch_id !== args.launch_id ||
+            (launch.permit && receipt.replayed !== false) ||
+            (!launch.permit &&
+              (!('apify_run_id' in launch) ||
+                typeof launch.apify_run_id !== 'string' ||
+                !/^[A-Za-z0-9_-]{1,128}$/.test(launch.apify_run_id)))
+          )
+            throw new WorkerFailure('reconciliation_required', 503);
+        }
         if (
           ['launch', 'm05.launch'].includes(input.operation) &&
           receipt.result &&
-          typeof receipt.result === 'object'
+          typeof receipt.result === 'object' &&
+          (input.operation !== 'm05.launch' || ('permit' in receipt.result && receipt.result.permit === true))
         ) {
           const a = String(args.actor_id) as keyof NonNullable<CollectorConfig['policy']>['actors'];
           const build = config.policy!.actors[a]!;

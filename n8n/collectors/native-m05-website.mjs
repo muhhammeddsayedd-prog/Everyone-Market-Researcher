@@ -172,7 +172,7 @@ export function initializeM05Website(input, executionId, now) {
     Object.keys(input.account_ids).sort().join(',') !== 'website,website_work_page' ||
     !Number.isInteger(input.max_actor_starts) ||
     input.max_actor_starts < 1 ||
-    input.max_actor_starts > 40 ||
+    input.max_actor_starts > 2147483647 ||
     !Number.isFinite(input.firecrawl_credit_usd) ||
     input.firecrawl_credit_usd <= 0 ||
     input.firecrawl_credit_usd > 1 ||
@@ -460,8 +460,7 @@ export function advanceM05WebsiteGateway(state, response) {
       d.timeout !== 600 ||
       d.maxItems !== plan.urls.length ||
       !Number.isFinite(d.maxTotalChargeUsd) ||
-      d.maxTotalChargeUsd <= 0 ||
-      d.maxTotalChargeUsd > 0.4
+      d.maxTotalChargeUsd <= 0
     )
       throw Error('M05_ACTOR_DESCRIPTOR_INVALID');
     state.actor = { descriptor: d, input: plan.input };
@@ -516,6 +515,7 @@ export function advanceM05WebsiteActor(state, response) {
   if (
     response?.statusCode !== 201 ||
     !actor ||
+    typeof actor.id !== 'string' ||
     !/^[A-Za-z\d_-]{1,128}$/.test(actor.id ?? '') ||
     state.launches.some((l) => l.apify_run_id === actor.id)
   )

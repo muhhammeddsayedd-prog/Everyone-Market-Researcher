@@ -295,4 +295,51 @@ describe('M05 registered async callback, local provider contracts', () => {
       groups: [{ items: [], status: 'failed', error: 'm05_actor_cap_unacknowledged' }],
     });
   });
+  it('reconciles usage beyond the admitted execution option while preserving measured cost and suppressing ingestion', async () => {
+    const t = fixture(),
+      original = t.get.getMockImplementation()!;
+    t.get.mockImplementation(async (path) => {
+      const v = await original(path);
+      return path.startsWith('/v2/actor-runs/')
+        ? { data: { ...(v as { data: object }).data, usageTotalUsd: 1.000001 } }
+        : v;
+    });
+    expect(await t.process(t.input, t.config, new AbortController().signal)).toMatchObject({
+      state: 'completed',
+      requires_review: true,
+    });
+    expect(t.get.mock.calls.some((c) => c[0].startsWith('/v2/datasets/'))).toBe(false);
+    expect(t.dispatch.mock.calls.find((c) => c[1] === 'm05.settle')![2]).toMatchObject({
+      usage_usd: 1.000001,
+      groups: [{ status: 'failed', items: [], error: 'm05_actor_charge_option_exceeded' }],
+    });
+  });
+  it('replays a persisted charge-option violation as requiring review without another provider read or cost', async () => {
+    const t = fixture();
+    Object.assign(t.job, {
+      settled: true,
+      result: {
+        retry_urls: [],
+        groups: [{ account_id: id, status: 'failed', error: 'm05_actor_charge_option_exceeded' }],
+      },
+    });
+    expect(await t.process(t.input, t.config, new AbortController().signal)).toMatchObject({
+      state: 'completed',
+      updated: false,
+      requires_review: true,
+    });
+    expect(t.get).not.toHaveBeenCalled();
+    expect(t.dispatch.mock.calls.map((c) => c[1])).toEqual(['m05.lookup']);
+  });
+  it('uses the recorded admitted option for terminal reconciliation when a subsequent configured amount differs', async () => {
+    const t = fixture();
+    t.config.policy!.max_actor_usd = 25;
+    t.config.policy!.max_total_usd = 100;
+    expect(await t.process(t.input, t.config, new AbortController().signal)).toMatchObject({
+      state: 'completed',
+      requires_review: false,
+    });
+    expect(t.dispatch.mock.calls.find((c) => c[1] === 'm05.settle')![2]).toMatchObject({ usage_usd: 0.012 });
+    expect(t.job.max_actor_usd).toBe(1);
+  });
 });

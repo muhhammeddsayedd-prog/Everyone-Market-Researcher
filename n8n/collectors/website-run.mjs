@@ -56,7 +56,7 @@ export async function runWebsiteCollector(input, deps) {
     !/^[A-Za-z0-9_-]{1,200}$/.test(input.executionId) ||
     !Number.isSafeInteger(input.max_actor_starts) ||
     input.max_actor_starts < 1 ||
-    input.max_actor_starts > 40 ||
+    input.max_actor_starts > 2147483647 ||
     !object(input.account_ids) ||
     Object.keys(input.account_ids).sort().join(',') !== 'website,website_work_page' ||
     !object(deps) ||
@@ -273,8 +273,7 @@ export async function runWebsiteCollector(input, deps) {
         permit.descriptor.timeout !== 600 ||
         permit.descriptor.maxItems !== plan.urls.length ||
         !Number.isFinite(permit.descriptor.maxTotalChargeUsd) ||
-        permit.descriptor.maxTotalChargeUsd <= 0 ||
-        permit.descriptor.maxTotalChargeUsd > 0.4
+        permit.descriptor.maxTotalChargeUsd <= 0
       )
         throw Error('invalid_permit');
       stage = 'actor_start';
@@ -296,6 +295,7 @@ export async function runWebsiteCollector(input, deps) {
       if (
         (response?.statusCode !== undefined && ![200, 201].includes(response.statusCode)) ||
         !object(actor) ||
+        typeof actor.id !== 'string' ||
         !/^[A-Za-z0-9_-]{1,128}$/.test(actor.id ?? '') ||
         launched.some((a) => a.apify_run_id === actor.id)
       )

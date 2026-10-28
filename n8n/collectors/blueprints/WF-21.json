@@ -13,12 +13,23 @@
   },
   "errorWorkflowBinding": {
     "state": "unresolved",
-    "reason": "M05_handler_publication_not_authorized"
+    "reason": "M05_handler_binding_pending"
   },
   "requiredRefs": {
-    "workflowKeys": ["WF-21", "WF-19"],
-    "credentialKeys": ["firecrawl", "apify", "foundationGateway"],
-    "tagNames": ["env:dev", "layer:collector", "platform:website_work_page"]
+    "workflowKeys": [
+      "WF-21",
+      "WF-19"
+    ],
+    "credentialKeys": [
+      "firecrawl",
+      "apify",
+      "foundationGateway"
+    ],
+    "tagNames": [
+      "env:dev",
+      "layer:collector",
+      "platform:website_work_page"
+    ]
   },
   "runnableWorkflow": false,
   "bindingState": "Firecrawl_metadata_required",
@@ -68,7 +79,10 @@
             ]
           }
         },
-        "position": [0, 0]
+        "position": [
+          0,
+          0
+        ]
       },
       {
         "id": "4208ec59-6701-4ff7-a0e4-64030063cfd8",
@@ -79,7 +93,10 @@
           "mode": "runOnceForAllItems",
           "jsCode": "throw Error('M05_FIRECRAWL_BINDING_REQUIRED');"
         },
-        "position": [200, 0]
+        "position": [
+          200,
+          0
+        ]
       }
     ],
     "connections": {

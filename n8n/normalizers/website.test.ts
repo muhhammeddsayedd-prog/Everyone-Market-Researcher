@@ -386,6 +386,31 @@ describe('M05 website injected lifecycle — local contract only', () => {
     max_actor_starts: 2,
     account_ids: { website_work_page: [account.account_id], website: [rootAccount.account_id] },
   };
+  it('uses the finite server-selected charge option rather than a former owner dollar/start ceiling', async () => {
+    const t = ports();
+    const launch = t.deps.gateway.launch!;
+    t.deps.gateway.launch = async (args) => {
+      const admitted = await launch(args);
+      if (!admitted || typeof admitted !== 'object' || !('descriptor' in admitted) || !admitted.descriptor)
+        throw Error('invalid local fixture receipt');
+      return { ...admitted, descriptor: { ...admitted.descriptor, maxTotalChargeUsd: 1.5 } };
+    };
+    expect(await runWebsiteCollector({ ...input, max_actor_starts: 41 }, t.deps)).toMatchObject({
+      state: 'awaiting_callbacks',
+      actor_starts: 1,
+    });
+  });
+  it('keeps a numeric provider ID uncertain instead of registering it as a confirmed start', async () => {
+    const t = ports({ startActor: async () => ({ id: 123 }) });
+    expect(await runWebsiteCollector(input, t.deps)).toMatchObject({
+      state: 'reconciliation_required',
+      stage: 'actor_start',
+      actor_starts: 0,
+    });
+    expect(t.calls.some((c) => ['register', 'close_registration', 'finish'].includes(c.operation))).toBe(
+      false,
+    );
+  });
   it('connects both claim partitions, map/diff/cost and one async registered launch without early finish', async () => {
     const t = ports();
     const result = await runWebsiteCollector(input, t.deps);

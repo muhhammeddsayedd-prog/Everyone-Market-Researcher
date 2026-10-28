@@ -8,6 +8,10 @@ alter table app.employee_snapshots add column coverage jsonb not null
   default '{"complete":false,"reason":"legacy_unattested"}'::jsonb;
 alter table ops.collector_launches drop constraint collector_launches_purpose_check;
 alter table ops.collector_launches add constraint collector_launches_purpose_check check(purpose in ('daily','backfill','weekly'));
+-- M05 allocations use positive PostgreSQL integers as a technical capacity.
+-- The historical M04 RPC still independently enforces its original 1..40 rule.
+alter table ops.collector_launches drop constraint collector_launches_max_actor_starts_check;
+alter table ops.collector_launches add constraint collector_launches_max_actor_starts_check check(max_actor_starts>0);
 create table ops.m05_jobs (
   launch_id uuid primary key references ops.collector_launches(launch_id),
   actor_input jsonb not null,
@@ -224,6 +228,7 @@ declare op text:=replace(p_operation,'m05.',''); digest text; previous ops.colle
   result jsonb; context jsonb; group_row jsonb; row_item jsonb; job ops.m05_jobs%rowtype; launch ops.collector_launches%rowtype;
   counts jsonb; groups jsonb:='[]'; entries jsonb:='[]'; item_id uuid; n int; seen int; inserted int; usage numeric;
   keys text[]; required text[]; expected_platform text; expected_workflow text; quota_date date; units int; price numeric;
+  allocation_starts_number numeric; allocation_starts int; allocation_actor_usd numeric; allocation_total_usd numeric;
 begin
   if p_request_id is null or p_args is null or jsonb_typeof(p_args)<>'object' or octet_length(p_args::text)>4194304
     or op not in ('start','claim','resolve','ingest','report','finish','diff','quota','cost','launch','register',
@@ -253,6 +258,30 @@ begin
   required:=case op when 'launch' then array['run_id','launch_id','actor_id','pass','account_ids','purpose','results_limit','actor_input',
     'approval_id','max_actor_starts','max_actor_usd','max_total_usd'] else keys end;
   if not(p_args ?& required) then raise exception using errcode='22023',message='missing M05 argument'; end if;
+  if op='launch' then
+    -- JSON strings such as "NaN" must never be cast into PostgreSQL numeric:
+    -- numeric NaN can otherwise satisfy an ordinary CHECK(amount>0). Reject
+    -- null/coercion first, then require exact numeric(12,6) storage with no
+    -- silent rounding. These are protocol capacities, not owner USD ceilings.
+    if jsonb_typeof(p_args->'max_actor_starts') is distinct from 'number'
+      or jsonb_typeof(p_args->'max_actor_usd') is distinct from 'number'
+      or jsonb_typeof(p_args->'max_total_usd') is distinct from 'number' then
+      raise exception using errcode='22023',message='finite M05 launch allocation required';
+    end if;
+    allocation_starts_number:=(p_args->>'max_actor_starts')::numeric;
+    allocation_actor_usd:=(p_args->>'max_actor_usd')::numeric;
+    allocation_total_usd:=(p_args->>'max_total_usd')::numeric;
+    if allocation_starts_number not between 1 and 2147483647
+      or allocation_starts_number<>trunc(allocation_starts_number)
+      or allocation_actor_usd not between 0.000001 and 999999.999999
+      or allocation_total_usd not between 0.000001 and 999999.999999
+      or allocation_actor_usd<>trunc(allocation_actor_usd,6)
+      or allocation_total_usd<>trunc(allocation_total_usd,6)
+      or allocation_actor_usd>allocation_total_usd then
+      raise exception using errcode='22023',message='finite M05 launch allocation required';
+    end if;
+    allocation_starts:=allocation_starts_number::int;
+  end if;
   if op='classify' then
     return jsonb_build_object('replayed',false,'result',jsonb_build_object('scope',case when exists
       (select 1 from ops.collector_launches l join ops.m05_jobs m using(launch_id) where l.apify_run_id=p_args->>'apify_run_id')
@@ -407,15 +436,18 @@ begin
       if op='launch' then
         if found then
           select m.* into job from ops.m05_jobs m where m.launch_id=launch.launch_id;
-          if launch.run_id<>r.id or launch.actor_id<>p_args->>'actor_id' or launch.account_ids<>ids or job.actor_input<>p_args->'actor_input' then
+          if launch.run_id<>r.id or launch.actor_id<>p_args->>'actor_id' or launch.account_ids<>ids or job.actor_input<>p_args->'actor_input'
+            or launch.approval_id is distinct from (p_args->>'approval_id')::uuid
+            or launch.max_actor_starts is distinct from allocation_starts
+            or launch.max_actor_usd is distinct from allocation_actor_usd
+            or launch.max_total_usd is distinct from allocation_total_usd then
             raise exception using errcode='55000',message='M05 launch identity conflict'; end if;
       result:=jsonb_build_object('permit',false,'replayed',true,'launch_id',launch.launch_id,'apify_run_id',launch.apify_run_id);
         else
           if (p_args->>'results_limit')::int not between 1 and 1000 or
             (r.platform<>'linkedin' and (p_args->>'results_limit')::int>200) or jsonb_typeof(p_args->'actor_input')<>'object'
-            or (p_args->>'max_actor_starts')::int not between 1 and 40 or (p_args->>'max_actor_usd')::numeric<=0
-            or (p_args->>'max_total_usd')::numeric<(p_args->>'max_actor_usd')::numeric or p_args->>'approval_id' is null then
-            raise exception using errcode='22023',message='bounded M05 approval/input required'; end if;
+            or p_args->>'approval_id' is null then
+            raise exception using errcode='22023',message='bounded M05 source input required'; end if;
           if p_args ? 'retry_of' then
             select m.* into job from ops.m05_jobs m join ops.collector_launches l using(launch_id)
               where m.launch_id=(p_args->>'retry_of')::uuid and l.run_id=r.id and l.account_ids=ids for update of m;
@@ -493,15 +525,15 @@ begin
           end if;
           perform pg_advisory_xact_lock(hashtextextended('m04-approval:'||(p_args->>'approval_id'),0));
           if exists(select 1 from ops.collector_launches l where l.approval_id=(p_args->>'approval_id')::uuid and
-            (l.max_actor_starts<>(p_args->>'max_actor_starts')::int or l.max_actor_usd<>(p_args->>'max_actor_usd')::numeric or l.max_total_usd<>(p_args->>'max_total_usd')::numeric))
-            or (select count(*) from ops.collector_launches l where l.approval_id=(p_args->>'approval_id')::uuid)>=(p_args->>'max_actor_starts')::int
+            (l.max_actor_starts<>allocation_starts or l.max_actor_usd<>allocation_actor_usd or l.max_total_usd<>allocation_total_usd))
+            or (select count(*) from ops.collector_launches l where l.approval_id=(p_args->>'approval_id')::uuid)>=allocation_starts
             or (select coalesce(sum(greatest(l.max_actor_usd,coalesce(x.usage_usd,0))),0) from ops.collector_launches l
               left join ops.apify_runs x on x.apify_run_id=l.apify_run_id where l.approval_id=(p_args->>'approval_id')::uuid)
-              +(p_args->>'max_actor_usd')::numeric>(p_args->>'max_total_usd')::numeric then
+              +allocation_actor_usd>allocation_total_usd then
             raise exception using errcode='55000',message='M05 approved actor allocation exhausted or changed'; end if;
           insert into ops.collector_launches(launch_id,run_id,actor_id,pass,account_ids,purpose,results_limit,approval_id,max_actor_starts,max_actor_usd,max_total_usd)
             values((p_args->>'launch_id')::uuid,r.id,p_args->>'actor_id','primary',ids,r.mode,(p_args->>'results_limit')::int,
-              (p_args->>'approval_id')::uuid,(p_args->>'max_actor_starts')::int,(p_args->>'max_actor_usd')::numeric,(p_args->>'max_total_usd')::numeric);
+              (p_args->>'approval_id')::uuid,allocation_starts,allocation_actor_usd,allocation_total_usd);
           insert into ops.m05_jobs(launch_id,actor_input,urls,crawler_type,snapshot_date,retry_of,max_website_urls_per_account)
             values((p_args->>'launch_id')::uuid,p_args->'actor_input',array(select jsonb_array_elements_text(coalesce(p_args->'urls','[]'))),
               p_args->>'crawler_type',(p_args->>'snapshot_date')::date,(p_args->>'retry_of')::uuid,coalesce((p_args->>'max_website_urls_per_account')::int,0));

@@ -42,7 +42,7 @@ export function initializeM05LinkedIn(input, kind, executionId, now) {
     input.results_limit > (kind === 'employees' ? 200 : 1000) ||
     !Number.isSafeInteger(input.max_actor_starts) ||
     input.max_actor_starts < 1 ||
-    input.max_actor_starts > 40 ||
+    input.max_actor_starts > 2147483647 ||
     !linkedinDate(now)
   )
     throw Error('M05_LINKEDIN_INPUT_INVALID');
@@ -163,14 +163,11 @@ export function advanceM05LinkedInGateway(state, response) {
       d.build === 'latest' ||
       !Number.isFinite(d.maxTotalChargeUsd) ||
       d.maxTotalChargeUsd <= 0 ||
-      d.maxTotalChargeUsd > 10 ||
       !Number.isSafeInteger(d.maxItems) ||
       d.maxItems < 1 ||
-      d.maxItems > batch.account_ids.length * batch.resultsLimit ||
+      d.maxItems !== batch.account_ids.length * batch.resultsLimit ||
       d.memory !== 1024 ||
-      !Number.isInteger(d.timeout) ||
-      d.timeout < 60 ||
-      d.timeout > 900
+      d.timeout !== 600
     )
       throw Error('M05_LINKEDIN_LAUNCH_RECONCILIATION_REQUIRED');
     state.launchDescriptor = d;
@@ -185,6 +182,7 @@ export function advanceM05LinkedInGateway(state, response) {
     )
       throw Error('M05_LINKEDIN_RECEIPT_INVALID');
     state.actorIds.push(state.startedActorId);
+    if (state.actorCapAcknowledged !== true) throw Error('M05_LINKEDIN_CAP_ACK_RECONCILIATION_REQUIRED');
     state.batchIndex++;
     return m05LinkedInLaunch(state);
   }
@@ -207,11 +205,15 @@ export function advanceM05LinkedInActor(state, response) {
   if (
     state.action !== 'apify' ||
     response?.statusCode !== 201 ||
+    typeof id !== 'string' ||
     !/^[A-Za-z0-9_-]{1,128}$/.test(id ?? '') ||
     state.actorIds.includes(id)
   )
     throw Error('M05_LINKEDIN_ACTOR_START_RECONCILIATION_REQUIRED');
   state.startedActorId = id;
+  state.actorCapAcknowledged =
+    liRecord(response.body.data.options) &&
+    response.body.data.options.maxTotalChargeUsd === state.launchDescriptor.maxTotalChargeUsd;
   const batch = state.batches[state.batchIndex];
   return m05Gateway(state, 'register', {
     run_id: state.runId,

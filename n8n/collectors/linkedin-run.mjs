@@ -57,9 +57,9 @@ export async function runLinkedInCollector(input, deps) {
     !Number.isSafeInteger(input.results_limit) ||
     input.results_limit < 1 ||
     input.results_limit > (input.kind === 'employees' ? 200 : 1000) ||
-    !Number.isInteger(input.max_actor_starts) ||
+    !Number.isSafeInteger(input.max_actor_starts) ||
     input.max_actor_starts < 1 ||
-    input.max_actor_starts > 40 ||
+    input.max_actor_starts > 2147483647 ||
     !/^[A-Za-z0-9_-]{1,200}$/.test(input.executionId ?? '') ||
     !object(deps) ||
     typeof deps.now !== 'function' ||
@@ -150,14 +150,11 @@ export async function runLinkedInCollector(input, deps) {
         d.build === 'latest' ||
         !Number.isFinite(d.maxTotalChargeUsd) ||
         d.maxTotalChargeUsd <= 0 ||
-        d.maxTotalChargeUsd > 10 ||
         !Number.isSafeInteger(d.maxItems) ||
         d.maxItems < 1 ||
-        d.maxItems > batch.account_ids.length * batch.resultsLimit ||
+        d.maxItems !== batch.account_ids.length * batch.resultsLimit ||
         d.memory !== 1024 ||
-        !Number.isInteger(d.timeout) ||
-        d.timeout < 60 ||
-        d.timeout > 900
+        d.timeout !== 600
       )
         throw Error('invalid_launch_receipt');
       stage = 'actor_start';
@@ -169,7 +166,11 @@ export async function runLinkedInCollector(input, deps) {
         descriptor: structuredClone(d),
       });
       const actorRun = response?.body?.data;
-      if (response?.statusCode !== 201 || !/^[A-Za-z0-9_-]{1,128}$/.test(actorRun?.id ?? ''))
+      if (
+        response?.statusCode !== 201 ||
+        typeof actorRun?.id !== 'string' ||
+        !/^[A-Za-z0-9_-]{1,128}$/.test(actorRun.id)
+      )
         throw Error('actor_start_unknown');
       confirmedStarts++;
       uncertainStart = false;
@@ -189,6 +190,12 @@ export async function runLinkedInCollector(input, deps) {
       if (receipt?.registered !== true || receipt.run_id !== runId || receipt.apify_run_id !== actorRun.id)
         throw Error('invalid_receipt');
       registered.push(actorRun.id);
+      // A known start is registered before an option mismatch stops later
+      // starts. It remains reconcilable even when native execution data expires.
+      if (!object(actorRun.options) || actorRun.options.maxTotalChargeUsd !== d.maxTotalChargeUsd) {
+        stage = 'actor_cap_ack';
+        throw Error('actor_cap_unverified');
+      }
     }
     stage = 'close_registration';
     const closed = await gateway.close_registration(

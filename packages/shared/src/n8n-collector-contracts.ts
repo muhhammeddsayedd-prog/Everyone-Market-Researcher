@@ -189,4 +189,19 @@ export const collectorPolicy = z
     actors: z.partialRecord(actor, collectorBuild),
   })
   .refine((p) => p.max_actor_usd <= p.max_total_usd);
+// M04's closed approval schema stays unchanged. M05 has standing development
+// authorization; these are finite SQL representation bounds, not owner budgets.
+// Reject excess precision rather than silently rounding the admitted allocation.
+const m05Amount = z
+  .number()
+  .finite()
+  .positive()
+  .max(999999.999999)
+  .refine((value) => /^\d+(?:\.\d{1,6})?$/.test(String(value)));
+export const m05RunPolicy = collectorPolicy.safeExtend({
+  max_actor_starts: count.min(1).max(2147483647),
+  max_actor_usd: m05Amount,
+  max_total_usd: m05Amount,
+  actors: z.partialRecord(z.enum(m05Actors), collectorBuild),
+});
 export type CollectorPolicy = z.infer<typeof collectorPolicy>;

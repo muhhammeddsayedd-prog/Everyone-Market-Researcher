@@ -48,6 +48,7 @@ export {
   collectorArgs,
   collectorActors,
   collectorPolicy,
+  m05RunPolicy,
   collectorBuild,
   collectorAccountIds,
   collectorExecutionErrorArgs,
