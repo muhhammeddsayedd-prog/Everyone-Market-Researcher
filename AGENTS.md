@@ -50,6 +50,8 @@ The [28 October standing development-spending decision](docs/DECISIONS.md#standi
 
 This policy does not override an enforced denial. The denied correction targeting `n8n/collectors/build-native-m05-callback.mjs`, the M05 `PROGRESS.md` and its `evidence/live-dev-packet-20261028.md` remains unperformed; do not recreate it through another file, helper or tool. Use a supported narrow review/permission path for a blocked action and continue independent permitted work.
 
+For the owner's later 28 October exception, M06 independent local stories/media work may proceed before the remaining M05 website checks. Use a separate branch stacked on M05; keep its changes out of PR14. This changes local sequencing only: M05 website and overall development acceptance remain open, the earlier denial stays binding, and M06 hosted migrations, captures, seven-day comparison, Storage uploads, recurrence, external email, production and merges are excluded. Current M06 progress carries the local checkpoint without changing the protected stale root/M03 records.
+
 ## 3. Where the truth lives
 
 | Need | File |

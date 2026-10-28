@@ -1,0 +1,21 @@
+{
+  "fixtureProvenance": {
+    "kind": "synthetic local contract",
+    "actualActorCapture": false,
+    "sources": ["https://apify.com/igview-owner/instagram-story-viewer"],
+    "verifiedAt": "2026-10-28",
+    "limitation": "Adapted fields from the official README with synthetic identity/time. Its displayed epoch/ISO example disagrees; this fixture intentionally uses a consistent timestamp. No-stories row is synthetic, not captured."
+  },
+  "rows": [
+    {
+      "story_id": "3773069825095106469",
+      "username": "synthetic_studio",
+      "taken_at": 1793183400,
+      "taken_at_date": "2026-10-28T10:30:00Z",
+      "image_thumbnail": "https://scontent.cdninstagram.com/story.jpg",
+      "mentions": [{ "username": "synthetic_agency" }],
+      "video_duration": 12.3
+    },
+    { "username": "synthetic_empty", "status": "no_stories", "stories_count": 0 }
+  ]
+}

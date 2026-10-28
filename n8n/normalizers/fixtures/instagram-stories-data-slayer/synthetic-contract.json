@@ -1,0 +1,27 @@
+{
+  "fixtureProvenance": {
+    "kind": "synthetic local contract",
+    "actualActorCapture": false,
+    "sources": [
+      "milestones/M06-collectors-stories-upkeep/MILESTONE.md",
+      "https://apify.com/data-slayer/instagram-stories-scraper"
+    ],
+    "verifiedAt": "2026-10-28",
+    "limitation": "Provider claims and checked-in field research only; exact live output and no-stories shape remain unverified."
+  },
+  "rows": [
+    {
+      "id": "3773069825095106469_25025320",
+      "creator_username": "synthetic_studio",
+      "taken_at_ts": 1793183400,
+      "taken_at_date": "2026-10-28T10:30:00Z",
+      "caption_text": "Synthetic #Film with @synthetic_agency",
+      "thumbnail_url": "https://scontent.cdninstagram.com/story.jpg?oh=public-signature&oe=public-expiry",
+      "video_duration": 12.3,
+      "reel_mentions": [{ "username": "synthetic_agency" }],
+      "story_link_url": "https://everyone.film/work",
+      "story_permalink": "https://www.instagram.com/stories/synthetic_studio/3773069825095106469/"
+    },
+    { "creator_username": "synthetic_empty", "status": "no_stories", "stories_count": 0 }
+  ]
+}

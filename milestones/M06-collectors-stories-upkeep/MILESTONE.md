@@ -4,6 +4,8 @@
 
 ## 1. Goal and outcome
 
+**28 October owner sequencing exception:** implement the independent local stories/media slice before remaining M05 website checks. This does not start T1 live captures or mark M05 accepted. Local synthetic source contracts, thumbnail queue engine, actual codec, authenticated route and media-only migration are in scope. Shared callbacks/schedulers, hosted migrations, captures, comparison, uploads, email, production and merges remain outside this slice; see `PROGRESS.md` and the dated decision. Historical full-milestone tasks/AC below remain required and unverified where not observed.
+
 Finish the collection layer:
 
 1. **WF-12 · Instagram stories collector:** stories without login. Primary actor: `data-slayer/instagram-stories-scraper`.
@@ -125,7 +127,7 @@ When M06 is done, every in-scope source collects on schedule, with thumbnails st
    - *Signature note:* this replaces the sketch's `p_window_days int` with `p_since date`, which is clearer. Update `docs/DATA_SCHEMA.md` §5.
 4. **`ops.get_media_targets(p_item_ids uuid[]) returns jsonb`:** `[{item_id, competitor_slug, platform, external_id, thumbnail_source_url, has_thumbnail}]`, where `has_thumbnail` is true when `thumbnail_path` is already set.
 5. **`ops.save_media_asset(p_item_id uuid, p_kind text, p_path text, p_source_url text, p_w int, p_h int) returns void`:**
-   - Upserts `app.media_assets` on `storage_path`.
+   - Inserts an immutable `app.media_assets` receipt on `storage_path`; exact replay is a no-op and conflicting ownership/source/dimensions stop. Preserve human thumbnail locks and recheck the current stored source.
    - When `p_kind = 'thumbnail'`, sets `app.items.thumbnail_path = p_path`.
 6. **`ops.report_account_result`:** keep the M01 `next_due_at` rule unchanged — `now() + cadence − interval '4 hours'` on success, `now() + 6 hours` on failure (pgTAP `07_report_account_result` from M01 stays as is). It already works for stories: with `cadence = '12 hours'`, a 06:00 success is due at 14:00 and is picked by the 18:00 run. Do **not** switch to a Cairo-midnight anchor.
    - Keep the M04 `p_secondary` behaviour.
@@ -142,8 +144,8 @@ When M06 is done, every in-scope source collects on schedule, with thumbnails st
 ### T3: Media route (`apps/web`)
 1. `apps/web/app/api/internal/media-upload-url/route.ts` (Node runtime):
    - Accepts only `POST`, with header `x-emr-secret` equal to `INTERNAL_WEBHOOK_SECRET`. Use a constant-time compare; any mismatch → 401.
-   - Body: `{ path: string }`, validated with zod. It must match `^[a-z0-9-]+/(vimeo|instagram|instagram_stories|website_work_page|linkedin|youtube)/[A-Za-z0-9_.-]+/(thumb|frame-0[1-3])\.jpg$`. No `..` and no leading `/`.
-   - Creates a Supabase server client with `SUPABASE_SECRET_KEY` (server-only module, never imported by client code) and calls `storage.from('media').createSignedUploadUrl(path, { upsert: true })`.
+   - Body: `{ path: string }`, validated with the shared canonical identity schema; thumb paths only in this slice. No dot segments, leading slash or unsafe identity. Frames remain M07.
+   - Creates a Supabase server client with `SUPABASE_SECRET_KEY` (server-only module, never imported by client code) and calls `storage.from('media').createSignedUploadUrl(path, { upsert: false })`. Immutable collision/uncertain save requires reconciliation; do not overwrite a human-protected object.
    - Returns `{ signedUrl, token, path }`.
    - Logs no secrets.
 2. Vitest:
@@ -165,7 +167,7 @@ When M06 is done, every in-scope source collects on schedule, with thumbnails st
    4. `ops.save_media_asset(item_id, 'thumbnail', path, source_url, w, h)`.
    5. Ack.
 5. **Stories priority:** WF-12 calls WF-31 **directly** right after its WF-19 ingest completes (via `SUB · Finish run`), so story thumbnails are stored within minutes.
-6. **Logging:** run start/finish (`WF-31`, platform null, mode `daily`), and a cost row for Supabase Storage egress (`cost_usd 0`, quantity = bytes, for visibility).
+6. **Logging:** run start/finish (`WF-31`, platform null, mode `daily`), bytes for visibility and actual reconciled Storage charges when available. The local port outcome leaves cost unknown (`null`); do not fabricate USD0 or claim hosted cost persistence.
 
 ### T5: WF-12 · Stories collector + bake-off (dev → prod)
 1. **WF-12:**

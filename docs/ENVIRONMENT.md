@@ -65,6 +65,7 @@ Actual expiry/revocation/MFA and enforced tool policies remain real gates.
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | yes | `sb_publishable_…` | M09 |
 | `NEXT_PUBLIC_SITE_URL` | yes | `https://<domain>` | M09 |
 | `SUPABASE_SECRET_KEY` | **no** | `sb_secret_…`, used **only** by `/api/internal/media-upload-url` (Storage signed upload URLs) | M06 |
+| `EMR_MEDIA_UPLOAD_ENABLED` | no | Default absent/false; explicit `true` enables the M06 local/dev route only with exact emr-dev URL and authenticated server configuration. Production remains denied. No hosted binding made by the local slice. | M06 local |
 | `API_AGENT_DATABASE_URL` | **no** | Supavisor **transaction** pooler URL with user `api_agent.<project-ref>`, port 6543 | M14 (M09 if the shared-reader caching option is chosen) |
 | `API_KEY_PEPPER` | **no** | 32+ random bytes, base64 | M11 (key creation UI) |
 | `OPENAI_API_KEY` | **no** | for search-query embeddings | M11 |

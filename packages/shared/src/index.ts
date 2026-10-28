@@ -44,6 +44,16 @@ export {
 export type { LinkedInAccount, VimeoAccount, WebsiteAccount, YouTubeAccount } from './handles';
 export type { Database, Json } from './db.types';
 export {
+  mediaPlatforms,
+  mediaStoragePath,
+  mediaThumbnailPath,
+  mediaTarget,
+  mediaQueueMessage,
+  mediaUploadRequest,
+  mediaSignedUpload,
+} from './media-contracts';
+export type { MediaTarget, MediaQueueMessage, MediaSignedUpload } from './media-contracts';
+export {
   collectorRequest,
   collectorArgs,
   collectorActors,

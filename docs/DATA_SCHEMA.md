@@ -110,7 +110,7 @@ erDiagram
 | `ops.mark_website_page(...)` | M05 | Website crawl result writer |
 | `ops.save_employee_snapshot(account_id, date, people)` | M05 | LinkedIn employees |
 | `ops.mark_removed(account_id, seen_ids[], p_since date)`, `ops.mark_website_removals(...)`, `ops.get_removal_targets(...)` | M06 | Removal check + weekly metrics refresh for paid sources |
-| `ops.save_media_asset(...)`, `ops.get_media_targets(ids)` | M06 | Media v1 (WF-31) |
+| `ops.save_media_asset(uuid,text,text,text,int,int)`, `ops.get_media_targets(uuid[])` | M06 local | Migration20261028190835; private writer-only thumbnail context/immutable receipt, max50 distinct target IDs, canonical stored owner/path/source and human-lock guards. No hosted application yet. |
 | `ops.save_bakeoff_rows(...)` + table `ops.bakeoff_results`, `ops.set_stories_cadence(...)` | M06 | Stories bake-off |
 | `ops.get_items_for_ai(ids[]) → jsonb` | M01 | AI input, including normalized credits text and media URLs |
 | `ops.apply_extraction(item_id, result, meta) → jsonb` | M07 | AI output writer |

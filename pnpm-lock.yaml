@@ -38,6 +38,9 @@ importers:
       '@emr/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@supabase/supabase-js':
+        specifier: 2.118.0
+        version: 2.118.0
       '@vercel/functions':
         specifier: 3.10.1
         version: 3.10.1
@@ -56,6 +59,9 @@ importers:
       server-only:
         specifier: 0.0.1
         version: 0.0.1
+      sharp:
+        specifier: 0.35.5
+        version: 0.35.5(@types/node@24.19.2)
     devDependencies:
       '@axe-core/playwright':
         specifier: 4.14.0

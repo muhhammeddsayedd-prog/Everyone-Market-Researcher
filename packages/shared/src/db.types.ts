@@ -3454,6 +3454,7 @@ export type Database = {
         }[];
       };
       get_items_for_ai: { Args: { p_item_ids: string[] }; Returns: Json };
+      get_media_targets: { Args: { p_item_ids: string[] }; Returns: Json };
       get_price_book: { Args: Record<PropertyKey, never>; Returns: Json };
       get_setting: { Args: { p_key: string }; Returns: Json };
       log_cost: { Args: { p_entries: Json }; Returns: number };
@@ -3517,6 +3518,17 @@ export type Database = {
       save_employee_snapshot: {
         Args: { p_account_id: string; p_coverage?: Json; p_people: Json; p_snapshot_date: string };
         Returns: Json;
+      };
+      save_media_asset: {
+        Args: {
+          p_h: number;
+          p_item_id: string;
+          p_kind: string;
+          p_path: string;
+          p_source_url: string;
+          p_w: number;
+        };
+        Returns: undefined;
       };
       set_account_external_id: {
         Args: { p_account_id: string; p_external_id: string; p_uploads_playlist_id?: string };

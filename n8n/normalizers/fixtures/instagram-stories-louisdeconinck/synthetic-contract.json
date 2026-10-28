@@ -1,0 +1,25 @@
+{
+  "fixtureProvenance": {
+    "kind": "synthetic local contract",
+    "actualActorCapture": false,
+    "sources": [
+      "milestones/M06-collectors-stories-upkeep/MILESTONE.md",
+      "reference/apify_actor_research_2026-10-17.md",
+      "https://apify.com/louisdeconinck/instagram-story-details-scraper/input-schema"
+    ],
+    "verifiedAt": "2026-10-28",
+    "limitation": "Raw media shape is specification/research-derived. Current public input page claims no login and usernames array, but live output, paid-plan suitability and no-stories shape remain unverified."
+  },
+  "rows": [
+    {
+      "pk": "3773069825095106469",
+      "id": "3773069825095106469_25025320",
+      "user": { "username": "synthetic_studio" },
+      "taken_at": 1793183400,
+      "expiring_at": 1793269800,
+      "caption": { "text": "Synthetic #Film" },
+      "image_versions2": { "candidates": [{ "url": "https://scontent.cdninstagram.com/story.jpg" }] }
+    },
+    { "user": { "username": "synthetic_empty" }, "status": "no_stories", "stories_count": 0 }
+  ]
+}

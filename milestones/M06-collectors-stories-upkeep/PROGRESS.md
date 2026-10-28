@@ -1,69 +1,65 @@
-# M06 — Collectors III: Instagram stories + upkeep · PROGRESS
-
-> Codex keeps this file current. Read it first in every session; update it after every task.
-> The owner reads it to see where we stand, what's blocked, and what they must do.
+﻿# M06 — Collectors III: Instagram stories + upkeep · PROGRESS
 
 ## Status
-**Not started** <!-- Not started · In progress · Blocked: <reason> · In review · Done -->
+
+**In progress — independent local stories/media slice. M05 website and overall development acceptance remain open.**
 
 | Field | Value |
 |---|---|
-| Started | — |
-| Last updated | 2026-10-17 |
-| Finished | — |
-| Branch / PR | `m06-collectors-stories-upkeep` / — |
-| Current task | — |
-| Next step | Start T1: run the three story actors once in dev (no login) and save fixtures, incl. a "no stories" account. |
+| Started / last updated | 2026-10-28 |
+| Branch / base | `m06-collectors-stories-upkeep` / M05 `3def97de4ce69169425adf8bcfaf1fe8697e9f60` |
+| PR | Separate stacked draft targeting `m05-collectors-web-youtube-linkedin`; ordinary delivery pending. Keep PR14 unchanged. |
+| Current task | Deliver local story normalization → restricted ingest/media queue → JPEG conversion → mocked immutable Storage → guarded SQL receipt/ack. |
+| Next step | Required changed-head CI and draft delivery; then continue the local native media adapter. Shared callback/scheduler integration stays pending where it depends on M05 website completion. No live operation is admitted here. |
 
-## Task checklist
-<!-- Mirror of the tasks in MILESTONE.md. Tick when done and committed. -->
-- [ ] T1 — Fixtures (dev)
-- [ ] T2 — Migration
-- [ ] T3 — Media route (`apps/web`)
-- [ ] T4 — WF-31 · Media v1 (dev)
-- [ ] T5 — WF-12 · Stories collector + bake-off (dev → prod)
-- [ ] T6 — WF-40 · Removal check + weekly paid metrics refresh (dev)
-- [ ] T7 — Health surfacing (WF-91)
-- [ ] T8 — Prod copies + verification
-- [ ] T9 — Tests + export + hand-off
+The explicit owner exception authorizes this local slice before M05 closes. It waives no original M06 criterion. Protected root/M03 records remain stale/untouched. The earlier denied M05 website correction remains unperformed; its [prepared support report](../M05-collectors-web-youtube-linkedin/evidence/review-capability-support-20261028.md) remains available. No repeated client-policy investigation or alternate edit route was used.
 
-## Acceptance criteria
-<!-- Mirror of MILESTONE.md §9; paste evidence (command + output summary, counts, screenshot paths). -->
-- [ ] AC1 — Stories captured (dev, 7 days, bake-off accounts) — evidence:
-- [ ] AC2 — Same-day thumbnails — evidence:
-- [ ] AC3 — Bake-off report — evidence:
-- [ ] AC4 — Removal check — evidence:
-- [ ] AC5 — Metrics refresh — evidence:
-- [ ] AC6 — Idempotency — evidence:
-- [ ] AC7 — Health — evidence:
-- [ ] AC8 — Media route security — evidence:
-- [ ] AC9 — Scheduling — evidence:
+## Delivered local sub-tasks
 
-## Blockers
-<!-- What stops progress, since when, what unblocks it. Remove when resolved (keep in log). -->
-- none
+- [x] Three public-only story normalizers, explicit ownership, timestamp/ID reconciliation, source-error rejection and cross-actor comparison projections.
+- [x] Synthetic contracts;53 source tests including serialized Cloud-code execution and existing ingest-schema validation. Live captures/no-stories shape remain unobserved.
+- [x] CLI-created media migration `20261028190835_m06_media_contracts.sql`, two private writer RPCs,42 rollback-only pgTAP checks, full20-schema native types/advisors. **Not applied to hosted dev**;19 applied hosted versions preserved.
+- [x] Authenticated, opt-in exact-dev upload route;52 tests use actual pinned Supabase SDK over mocked HTTP. Production disabled, no secret bound/upload performed.
+- [x] Bounded media queue engine, actual Sharp JPEG conversion, expiry/retry/ownership/immutable-conflict handling, byte accounting with unknown infrastructure charge, cancellation/child closure and completed-ACK replay safety.
+- [x] Actual local SQL integration connects synthetic story → restricted ingest → queue/targets → actual codec → mocked sign/upload → guarded save/ack. Source replay creates no item/AI/media duplicates. Transaction rolls back and verifies the original local baseline.
+- [ ] Normal changed-head five-job CI / ordinary protected build: reported on the separate branch/PR. CI adds M06 pgTAP and mandatory SQL/app integration without weakening earlier suites.
 
-## Manual actions needed from the owner
-<!-- Exact steps, why, and where to paste results. The owner ticks them; Codex verifies. Steps: docs/MANUAL_ACTIONS.md + MILESTONE.md §11. -->
-| # | Action | Why | Status |
-|---|---|---|---|
-| MA-20 (part, early) | Vercel env: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, INTERNAL_WEBHOOK_SECRET (Preview=dev, Production=prod); same secret in n8n credential "EMR internal secret" | Media upload route for WF-31 (T3) | Not requested yet |
-| MA-10 (check) | Confirm a paid Apify plan if louisdeconinck should join the bake-off | Bake-off (T5) | Not requested yet |
-| MA-16 | Pick the stories actor from the bake-off table; answer twice-daily yes/no (Q-08); approve prod migration push | After the 7-day bake-off (T5) | Not requested yet |
+## Full milestone tasks and criteria
 
-## Decisions & deviations
-<!-- Anything that differs from the docs. Also add to docs/DECISIONS.md → Changes if it changes a decision. -->
-- Planned: WF-31 v1, `/api/internal/media-upload-url`, `ops.get_media_targets` and `ops.save_media_asset` move from M07 to M06 (story/IG CDN URLs expire).
-- Planned: paid-source (Instagram, LinkedIn) metrics refresh weekly via the WF-40 30-day listing (`removal_window_days_paid = 30`); free APIs (Vimeo, YouTube) refresh daily over 30 days. Update SCRAPING_SOURCES §0 rule 2 and FR-S4 wording.
-- Planned: `ops.mark_removed` signature uses `p_since date` instead of `p_window_days int`.
+| Task / criterion | State and exact boundary |
+|---|---|
+| T1, AC1 story captures | Pending real public story/no-stories examples. No actor started. |
+| T2 migration | Media RPC portion implemented/tested locally; bake-off, removal, cadence and health functions remain. No hosted application. |
+| T3, AC8 route security | Local/mocked auth, strict paths, exact dev origin, capability integrity, bounded transport and secret isolation tested. Real Preview/Storage proof excluded from this local authorization. |
+| T4, AC2 thumbnails | Queue engine/actual codec/SQL integration pass locally. Native public-DNS/strict-TLS/bounded-image downloader, gateway adapter and WF-31 export pending; no same-day live claim. |
+| T5, AC3 bake-off | Normalizers/comparison projections only; registration, actor inputs/builds, bake-off RPC/report and seven-day comparison remain. |
+| T6, AC4 removal / AC5 metrics | Pending; existing M04/M05 semantics preserved. No removal applied. |
+| AC6 idempotency | Local source/SQL/media replay, immutable conflict, human locks and uncertain-upload behavior pass. Native capture/upload replay unverified. |
+| T7, AC7 health | Pending. No email sent. |
+| AC9 scheduling | Unchanged/inactive; cadence implementation/verification remain. |
+| T8 production | Excluded; no migration/workflow/media backfill. |
+| T9 exports/handoff | Local code/types/tests/docs delivered; native exports wait for connected definitions. No placeholder claimed as Cloud delivery. |
 
-## Risks / notes for the owner
-- none yet
+## Evidence and retained checkpoint
+
+[Local evidence](evidence/local-stories-media-20261028.md) records exact environments, commands, hashes and limitations. No M05 file/workflow/runtime changed.
+
+M05 retained subset: six actors/USD0.28515,19 applied migrations, successful restoration and closed runtime. Older failures, export/publication collision and PR-description403 remain separate. Website and overall M05 acceptance stay open.
+
+M06 incremental provider usage: **0 actors,0 collection calls,0 Storage uploads, USD0 provider spend**. Local compute/shared infrastructure allocation unknown. Persistent encrypted originals were neither opened nor changed. Owned schema-only Docker qualifier stopped/removed; fixture SQL rolled back. No live credential-bearing child created.
+
+## Decisions, dependencies and owner actions
+
+- [Dated decision](../../docs/DECISIONS.md#independent-local-m06-slice--28-october-2026): local sequencing, public payload projection, immutable capabilities/receipts (`upsert:false`), dev-only opt-in, unknown infrastructure cost. No new framework.
+- Completed SQL pointer/ACK replay skips transport even after delivery exhaustion. Existing object without settled SQL receipt,409 or uncertain upload/save remains for reconciliation; automatic orphan adoption not claimed.
+- Route/queue contracts are independent of the denied website edit. Maintained WF-19/WF-00/SUB wiring waits where website correctness is a concrete dependency; do not clone the denied implementation elsewhere.
+- No owner credential action needed locally. Future MA-20 binding/Storage, MA-16 actor choice, seven-day operation and production remain separate; do not request them merely to write/test local code.
+- Record any delivery permission failure exactly; no alternate credentials/tools after denial. Draft PR creation uses the normal integration route.
 
 ## Session log
-<!-- Newest first. One line per meaningful step: date · what · files · result. -->
-- 2026-10-17 · milestone file created (handoff pack)
 
-## Hand-off to next milestone
-<!-- Filled when Done: what exists now, how to run/verify it, known gaps, what the next milestone should start with. See MILESTONE.md §14 for the required items. -->
-- —
+- 2026-10-28 · Isolated branch from M05 `3def97d`; implemented stories/media contracts, route, codec, queue worker and two writer RPCs. Earlier migrations/M05 preserved. Focused SQL/contracts and zero-finding native qualification pass; strict test typing and reviewed completed-ACK edge corrected before delivery. Required changed-head CI next.
+
+## Hand-off
+
+M06 is not Done/development accepted. Next local step: bounded native image/storage adapter and inactive WF-31 integration. Next real validation requires corresponding hosted migration/binding/upload authority and small explicit story/no-stories source samples after exact input/build readback; it must not implicitly start seven-day/recurring capture. M05 website review/correction/repeat/cost/cleanup remains separate. No merge/production authorized.

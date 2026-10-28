@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, m04-collectors-vimeo-instagram]
+    branches: [main, m04-collectors-vimeo-instagram, m05-collectors-web-youtube-linkedin]
   push:
-    branches: [main]
+    branches: [main, m06-collectors-stories-upkeep]
 
 permissions:
   contents: read
