@@ -148,3 +148,31 @@ ID; the undocumented prefix/shared-suffix constraint was removed and separately
 regressed. This does not constitute a real Google or native Cloud observation.
 
 Pending migration SHA256: `127daace10ea35aabc29b90970e55188fa801bf4475edbc17ee2e1b199c5f996`.
+
+### Native CI integration fixes
+
+CI40629547212 identified two further concrete integration boundaries. Native
+Node could not import the new extensionless TypeScript module from the shared
+contract; the import now explicitly ends in `.ts`, supported by the existing
+`noEmit` configuration. All nineteen affected M04 Vercel-task tests and the full
+workspace/root TypeScript check pass. The schema assertion now expects the two
+new private M05 tables:27 ops tables. Its plan and all RLS, grants, foreign-key,
+invoker-view and definer checks remain unchanged.
+
+All fifteen regular SQL suites were then executed against actual local
+PostgreSQL, applying the four pending local migrations inside each rollback-only
+transaction. All605 assertions passed. Existing competitor/item/run counts were
+equal before/after; no hosted migration or local baseline reset occurred. Normal
+changed-head CI still qualifies the entire fresh migration chain separately.
+
+An additional Windows-only run of historical M03 protocol fixtures did not pass:
+their synthetic packet has45 public keys while the closed consumer requires74,
+with29 later technical8–16 evidence pins missing. The failure is at the public
+keyset guard before per-file hashes, private access or native CLI work;
+regenerated M05 database types are not its cause. The closed M03 consumer was not
+repaired, resealed or reopened. This advisory is separate from current M05
+gateway/native/rollback-SQL results and does not claim Windows-wide acceptance.
+
+The enforced three-file edit boundary above remains unchanged. This permitted
+record is the current handoff while the corresponding M05 progress/packet
+corrections are unperformed. The live packet remains unready for approval.

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { m05Args, m05Actors } from './n8n-m05-contracts';
+import { m05Args, m05Actors } from './n8n-m05-contracts.ts';
 
 const id = z.uuid(),
   count = z.number().int().nonnegative();
