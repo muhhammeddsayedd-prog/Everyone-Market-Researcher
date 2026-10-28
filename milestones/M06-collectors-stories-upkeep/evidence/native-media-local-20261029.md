@@ -40,8 +40,14 @@ The former checkpoint migration hash remains historical; it was never applied to
 
 ## Boundaries and next step
 
-No hosted migration, secret binding, live image/actor/DNS request, Storage upload, workflow save/publication/activation, email, production or merge performed. Persistent dev credentials untouched. Incremental provider spend USD0; shared/local/CI/Preview infrastructure allocation unknown. Current website denial was neither edited nor reproduced elsewhere.
+No hosted migration, secret binding, live image/actor/DNS request, Storage upload, workflow save/publication/activation, email, production or merge performed. Persistent dev credentials untouched. Incremental collection-provider spend USD0; shared/local/CI/Preview infrastructure allocation unknown. Current website denial was neither edited nor reproduced elsewhere.
 
 The [single prepared dev-validation plan](native-media-dev-validation-20261029.md) is the next reviewable operation, not execution authority. Real story/no-stories examples and seven-day comparison remain pending. Native adapter work has no website dependency; shared WF-19/SUB/scheduler work waits where M05 is a concrete dependency. M06 stays open.
 
 Primary contracts checked: [Node24 HTTPS](https://nodejs.org/docs/latest-v24.x/api/https.html), [Node24 DNS](https://nodejs.org/docs/latest-v24.x/api/dns.html), [Supabase signed upload](https://supabase.com/docs/reference/javascript/storage-from-uploadtosignedurl), [Vercel Node duration](https://vercel.com/docs/functions/configuring-functions/duration). The installed pinned Storage SDK was also checked for actual PUT/path/binary behavior. Current Supabase changelog has no relevant breaking change identified; no package upgrade was made.
+
+## Delivered application qualification
+
+`9cb14a647c7481bf930a6d9370d524f650dcfd07` is pushed on the existing M06 branch. CI40777101340 passes quality/unit/build/e2e/db-tests and Vercel is green. Actual database job123129118238 prints16 files/708 assertions PASS, M06 SQL/app PASS, full-chain generated-type parity PASS, security advisors no warnings/errors and performance advisors no errors. Local independent advisors had zero findings. The gated local file contains seven actual connected tests; final focused suite217 and native workflow10 pass. A test-only transport annotation was narrowed to match the secret-scoped factory before delivery; no runtime credential broadened.
+
+The original draft-creation403 remains a separate access issue; no restoration reported and no alternate metadata mutation attempted. [Comparison](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/compare/m05-collectors-web-youtube-linkedin...m06-collectors-stories-upkeep). M05 stays at3def97d, its accepted data/cost/runtime preserved. Final packet documentation pins this application proof; normal required checks still apply to the delivered documentation head. No unverified live criterion is closed.

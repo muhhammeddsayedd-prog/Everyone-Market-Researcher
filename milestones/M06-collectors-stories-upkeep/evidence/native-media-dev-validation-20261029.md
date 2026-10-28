@@ -2,6 +2,10 @@
 
 **Prepared only; not executed or authorized by the current local-only instruction.** This is a side-effect/security review, not another development-budget approval. Standing spending authority remains; estimates guide finite execution and reporting, not arbitrary owner ceilings.
 
+## Qualified application revision
+
+Application `9cb14a647c7481bf930a6d9370d524f650dcfd07` passes all five required jobs in [CI40777101340](https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40777101340), with green Vercel Preview. Fresh CI replays20 definitions, passes708 regular SQL assertions and the seven-test M06 SQL/codec composition, and verifies complete generated types/advisors. Final packet/handoff documentation may be a descendant with no application change. At execution, use the exact reviewed delivered head with its own required checks; `EMR_MEDIA_COMMIT_SHA` must be the actual deployed revision, never an ancestor copied from this paragraph. Any code/SQL change requires qualification of that changed revision.
+
 ## Exact target and migration
 
 - emr-dev `zmotjsbzhzjvpelxvxlf` only; intended n8n instance `https://muhhammedsayed.app.n8n.cloud`; Everyone Market Researcher Vercel project `prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu`, M06 branch Preview only.
@@ -38,7 +42,7 @@ The catalog has no recorded WF-31/media combined credential reference. That is *
 
 Protected Preview access requires the **temporary sole/default automation-bypass exception** for this exact Preview. Its shared default can affect future Production builds while present. That consequence requires explicit approval of this complete plan; it is not inferred from spending authority or local delivery. Preserve application authentication, observe Production build activity before/during/after, issue no Production request/deployment, and revoke immediately on conflict. No plan/account upgrade or billing-control change.
 
-Require supported Node24/Sharp and the300s function duration; no Cloud Code imports or unsupported Edit Image dependency. Save/read back only the owned inactive WF-31 with exact supplied Preview/credential references. Preserve unknown existing definitions rather than overwrite drift. Do not touch shared callbacks/schedules or old M03 error handlers.
+Require supported Node24/Sharp and the300s function duration; no Cloud Code imports or unsupported Edit Image dependency. Build with `buildNativeMedia({audience,credential})` in `n8n/media/build-native-media.mjs`, then use its **workflow member**, not the metadata wrapper, for native import/save. Reuse the supported editable save contract (`name`, `nodes`, `connections`, `settings`; canonical tags through the supported tag operation) and verify all privacy/timeouts/credentials on actual readback. Do not silently drop a security setting to satisfy a validator. Save/read back only the owned inactive WF-31 with exact supplied Preview/credential references. Preserve unknown existing definitions rather than overwrite drift. Do not touch shared callbacks/schedules or old M03 error handlers.
 
 ## Sequence and assertions
 
