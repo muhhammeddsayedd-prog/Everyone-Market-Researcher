@@ -1,6 +1,6 @@
-# Proposed M06 upkeep hosted development validation
+# M06 upkeep hosted development validation
 
-**Not executed or authorized by the current local-only continuation.** The implementation and tests are in [connected local evidence](upkeep-connected-local-20261029.md). This packet introduces no financial approval ceiling. Standing development spending authority remains in effect; hosted mutation and temporary security configuration need their separate scoped authorization.
+**Authorized by the owner29October2026 after accepting abcfb95/CI40875921844.** The implementation and tests are in [connected local evidence](upkeep-connected-local-20261029.md). This packet introduces no financial approval ceiling. The owner separately authorized its exact selected dev operations and non-default bypass; the campaign default remains untouched. Actual execution receipts are recorded separately from this plan.
 
 ## Target and one pending migration
 
@@ -24,6 +24,7 @@ Allowed item mutations are only valid observed `metrics`/`metrics_updated_at`, a
 
 - Use a qualified `m06-upkeep-local` Preview pinned to its actual code SHA. The running campaign remains8ba0eb7 with its existing URLs, credentials, five workflow versions, roster, dates and cutoff. Do not repoint or reuse the campaign's origin-bound runtime credential.
 - Create only owned inactive WF-40-M06 and WF-91-M06-health bindings and manually execute them. No Schedule Trigger or email node is enabled. Read back exact graphs, credential types/domains, timeouts and privacy settings before execution.
+- Native manual entry uses the existing builders' fixed validated dev seed into the same initialized subworkflow graph, retaining actual `$execution.id`. Replay uses the original authenticated account request and dates, not a new execution identity. Defaults remain inactive/unbound; no arbitrary execute API is assumed.
 - Bind `EMR_UPKEEP_ENABLED`, `EMR_UPKEEP_COMMIT_SHA`, `EMR_UPKEEP_TOKEN_SHA256`, `EMR_UPKEEP_WRITER_PASSWORD` and `EMR_UPKEEP_ACCOUNT_IDS` only to this isolated Preview. Use the saved dev writer and existing dedicated Machine original; keep administrative credentials confined to the bounded migration child. No Storage key is needed.
 - Free reads require `EMR_UPKEEP_VIMEO_TOKEN` and `EMR_UPKEEP_YOUTUBE_API_KEY`. Reuse suitable authorized originals/integrations; these server bindings have not been freshly verified. Do not extract native credential tokens. If originals are genuinely unavailable, the exact missing action is to supply the existing public-scope Vimeo token and YouTube-restricted key privately into those two fields in Vercel → Everyone Market Researcher → Settings → Environment Variables → Preview → branch `m06-upkeep-local`; never chat or `NEXT_PUBLIC_*`. Do not reset or duplicate a valid credential.
 - Paid snapshot reads use existing Apify READ access plus `EMR_UPKEEP_SOURCE_PINS`: public actor slug to `{actor_id,build_id}` metadata independently verified against the known registered runs. Unknown historical build IDs stay unknown until read back. No actor starts are needed.

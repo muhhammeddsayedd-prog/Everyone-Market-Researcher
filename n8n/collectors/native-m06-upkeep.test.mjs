@@ -204,6 +204,39 @@ test('assembled native Code and HTTP mappings execute target-to-account-to-resul
   assert.equal(http.credentials.httpCustomAuth.id, transport.credential.id);
 });
 
+test('owned manual upkeep enters a fixed dev selector and preserves the actual native execution identity', () => {
+  const spec = buildNativeM06Upkeep(b, transport, { env: 'dev', platform: 'vimeo' }),
+    g = spec.workflow;
+  const manual = g.nodes.find((n) => n.type === 'n8n-nodes-base.manualTrigger');
+  assert.ok(manual);
+  assert.equal(g.active, false);
+  assert.ok(g.nodes.some((n) => n.type === 'n8n-nodes-base.executeWorkflowTrigger'));
+  const fixed = code(g, 'Fixed M06 upkeep input', { env: 'prod', platform: 'youtube', complete: true })[0]
+    .json;
+  assert.equal(fixed.env, 'dev');
+  assert.equal(fixed.platform, 'vimeo');
+  assert.equal(Object.keys(fixed).length, 2);
+  assert.equal(g.connections[manual.name].main[0][0].node, 'Fixed M06 upkeep input');
+  assert.equal(g.connections['Fixed M06 upkeep input'].main[0][0].node, 'Initialize upkeep page');
+  assert.equal(g.connections['When called'].main[0][0].node, 'Initialize upkeep page');
+  let s = code(g, 'Initialize upkeep page', fixed)[0].json;
+  assert.equal(s.executionId, '1000');
+  assert.equal(s.request.requestId, 'c0640000-0001-4000-a000-0000000003e8');
+  s = code(g, 'Advance upkeep receipt', reply(s, { targets: [target()], next_account_id: null }), {
+    'Prepare upkeep HTTP': s,
+  })[0].json;
+  s = code(g, 'Advance upkeep receipt', reply(s, accountResult()), { 'Prepare upkeep HTTP': s })[0].json;
+  assert.equal(code(g, 'Return upkeep page', s)[0].json.processed, 1);
+  assert.equal(spec.manualEntry.input.platform, 'vimeo');
+  for (const invalid of [
+    {},
+    { env: 'prod', platform: 'vimeo' },
+    { env: 'dev', platform: 'website' },
+    { env: 'dev', platform: 'vimeo', complete: true },
+  ])
+    assert.throws(() => buildNativeM06Upkeep(b, transport, invalid), /INPUT_INVALID/);
+});
+
 test('inactive graphs require bindings before I/O and preserve historical guards and no-email boundary', () => {
   for (const [build, guard] of [
     [buildUnboundNativeM06Upkeep, 'Initialize upkeep page'],
@@ -281,4 +314,29 @@ test('health native read accepts maintained projection/rendering without inventi
         ),
       /HEALTH_RECEIPT_INVALID/,
     );
+});
+
+test('owned manual health has a fixed dev seed and still ends at local-only rendered receipt', () => {
+  const spec = buildNativeM06Health(b, transport, { env: 'dev' }),
+    g = spec.workflow;
+  const manual = g.nodes.find((n) => n.type === 'n8n-nodes-base.manualTrigger');
+  assert.ok(manual);
+  const fixed = code(g, 'Fixed M06 health input', { env: 'prod', send: true })[0].json;
+  assert.equal(fixed.env, 'dev');
+  assert.equal(Object.keys(fixed).length, 1);
+  assert.equal(g.connections[manual.name].main[0][0].node, 'Fixed M06 health input');
+  assert.equal(g.connections['Fixed M06 health input'].main[0][0].node, 'Prepare maintained health read');
+  const input = code(g, 'Prepare maintained health read', fixed)[0].json;
+  assert.equal(input.request.requestId, 'c0691000-0001-4000-a000-0000000003e8');
+  const actual = code(g, 'Verify local health delivery', reply(input, healthResult()), {
+    'Prepare maintained health read': input,
+  })[0].json;
+  assert.equal(actual.sent, false);
+  assert.equal(actual.delivery, 'local_only');
+  assert.equal(g.active, false);
+  assert.ok(!g.nodes.some((n) => /schedule|email/.test(n.type)));
+  for (const invalid of [{}, { env: 'prod' }, { env: 'dev', send: true }])
+    assert.throws(() => buildNativeM06Health(b, transport, invalid), /HEALTH_INPUT_INVALID/);
+  assert.ok(!buildNativeM06Upkeep(b, transport).workflow.nodes.some((n) => /manualTrigger$/.test(n.type)));
+  assert.ok(!buildNativeM06Health(b, transport).workflow.nodes.some((n) => /manualTrigger$/.test(n.type)));
 });

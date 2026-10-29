@@ -1,5 +1,14 @@
 import { parseN8nBindings } from '../../packages/shared/src/n8n-bindings.ts';
-import { trigger, code, booleanIf, settings, tags, line, edge } from '../foundation/build-foundation.mjs';
+import {
+  trigger,
+  code,
+  node,
+  booleanIf,
+  settings,
+  tags,
+  line,
+  edge,
+} from '../foundation/build-foundation.mjs';
 import { parseCollectorTransport } from './build-native-collectors.mjs';
 import { nativeM05Http } from './build-native-m05.mjs';
 
@@ -311,7 +320,7 @@ export const m06UpkeepCloudSource = [
 const one =
   "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||Array.isArray(rows[0].json)||rows[0].binary)throw Error('M06_UPKEEP_INPUT_INVALID');const j=rows[0].json;\n";
 
-function nativeDefinition(input, transport, ready, health) {
+function nativeDefinition(input, transport, ready, health, manualInput) {
   const b = parseN8nBindings(input),
     c = ready ? parseCollectorTransport(transport) : transport;
   const key = health ? 'WF-91-M06-HEALTH' : 'WF-40-M06-UPKEEP';
@@ -398,7 +407,7 @@ function nativeDefinition(input, transport, ready, health) {
           [750, 200],
         ),
       ];
-  return {
+  const spec = {
     key,
     kind: 'native-json-blueprint',
     runnableWorkflow: true,
@@ -444,12 +453,35 @@ function nativeDefinition(input, transport, ready, health) {
           },
     },
   };
+  // An owned manual verification may seed only the same validated dev input as
+  // the subworkflow entry. The initializer still uses the actual execution ID;
+  // this adds neither scheduling nor a caller-supplied identity/replay override.
+  if (manualInput !== undefined) {
+    if (health) initializeM06UpkeepHealth(manualInput, '1');
+    else initializeM06Upkeep(manualInput, '1');
+    const triggerNodeName = health ? 'Manual M06 health read' : 'Manual M06 upkeep',
+      inputNodeName = health ? 'Fixed M06 health input' : 'Fixed M06 upkeep input';
+    spec.workflow.nodes.push(
+      node(key, triggerNodeName, 'manualTrigger', {}, [0, 200]),
+      code(key, inputNodeName, 'return [{json:' + JSON.stringify(manualInput) + '}];', [250, 200]),
+    );
+    Object.assign(
+      spec.workflow.connections,
+      line(
+        triggerNodeName,
+        inputNodeName,
+        health ? 'Prepare maintained health read' : 'Initialize upkeep page',
+      ),
+    );
+    spec.manualEntry = { triggerNodeName, inputNodeName, input: structuredClone(manualInput) };
+  }
+  return spec;
 }
-export function buildNativeM06Upkeep(input, transport) {
-  return nativeDefinition(input, transport, true, false);
+export function buildNativeM06Upkeep(input, transport, manualInput) {
+  return nativeDefinition(input, transport, true, false, manualInput);
 }
-export function buildNativeM06Health(input, transport) {
-  return nativeDefinition(input, transport, true, true);
+export function buildNativeM06Health(input, transport, manualInput) {
+  return nativeDefinition(input, transport, true, true, manualInput);
 }
 function unboundTransport() {
   return {
