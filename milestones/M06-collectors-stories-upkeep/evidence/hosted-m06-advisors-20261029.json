@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "observedAt": "2026-10-29T00:07:48.4770831Z",
+  "status": "advisors_verified",
+  "databaseCommands": 2,
+  "childrenClosed": true,
+  "scratchDeleted": true,
+  "persistentAdminPreserved": true,
+  "hostedTypesGenerated": false,
+  "typesLimitation": "native_generator_descendant_contract_unverified",
+  "security": { "nativeExit": 0, "findings": 0, "warnings": 0, "errors": 0 },
+  "performance": { "nativeExit": 0, "findings": 0, "warnings": 0, "errors": 0 }
+}

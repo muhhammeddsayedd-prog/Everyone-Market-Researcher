@@ -1,0 +1,454 @@
+{
+  "phase": "m06_readonly_preflight",
+  "target": "zmotjsbzhzjvpelxvxlf",
+  "privateRead": true,
+  "authenticationAttempted": true,
+  "childrenClosed": true,
+  "scratchDeleted": true,
+  "status": "query_complete",
+  "nativeExit": 0,
+  "databaseClientClosed": true,
+  "sqlstate": null,
+  "queryStatus": "query_complete",
+  "rows": [
+    {
+      "m06_media_runtime": {
+        "queue": {
+          "leased": 0,
+          "visible": 272,
+          "message11": {
+            "msg_id": "11",
+            "item_id": "f7d4467e-a77f-48f3-b3a1-4f2f0fcd2129",
+            "read_ct": 0,
+            "visible": true,
+            "media_audits": 0
+          },
+          "remaining": 272,
+          "messages_1_to_10": [
+            {
+              "msg_id": "1",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "2",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "3",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "4",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "5",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "6",
+              "queued": true,
+              "archived": false,
+              "ack_count": 0
+            },
+            {
+              "msg_id": "7",
+              "queued": true,
+              "archived": false,
+              "ack_count": 0
+            },
+            {
+              "msg_id": "8",
+              "queued": true,
+              "archived": false,
+              "ack_count": 0
+            },
+            {
+              "msg_id": "9",
+              "queued": true,
+              "archived": false,
+              "ack_count": 0
+            },
+            {
+              "msg_id": "10",
+              "queued": true,
+              "archived": false,
+              "ack_count": 0
+            }
+          ],
+          "next_visible_msg_id": "6",
+          "queue_after_10_sha256": "4dc20d3b2563fbdaa5e0c87041564fb23b33f0d5d2ebc1e656f6cba67e12d007",
+          "media_message_audits_after_10": 0
+        },
+        "claims": [
+          {
+            "id": 43,
+            "held": [],
+            "messages": [
+              {
+                "msg_id": "1",
+                "item_id": "9b481702-d5cf-49ad-bb36-a1065e090826",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "2",
+                "item_id": "7f6c37fe-1ef9-484b-bbab-6a5ef8a4d55c",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "3",
+                "item_id": "305865e2-8d81-41b1-9ca3-fe719f8f27f2",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "4",
+                "item_id": "7eac5667-cd5e-4465-bfff-19fe2710886d",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "5",
+                "item_id": "cc0346fd-33af-409b-97c7-b20523e369c4",
+                "read_ct": 1
+              }
+            ],
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "batch_limit": 5,
+            "execution_id": "31261"
+          }
+        ],
+        "target": {
+          "item_id": "6eb65041-b629-4c12-aa06-9899ab22ac60",
+          "platform": "instagram",
+          "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+          "external_id": "DdHVn45MQub",
+          "item_status": "active",
+          "company_code": "C000",
+          "competitor_id": "94928d31-8983-403c-bdbd-f5f44613d631",
+          "locked_fields": [],
+          "source_present": true,
+          "thumbnail_path": null,
+          "competitor_slug": "everyone-films",
+          "competitor_status": "active",
+          "expected_path_matches": null
+        },
+        "version": 1,
+        "finishes": [
+          {
+            "id": 59,
+            "result": {
+              "held": 0,
+              "bytes": 0,
+              "state": "completed",
+              "stored": 0,
+              "claimed": 5,
+              "expired": 0,
+              "skipped": 5,
+              "processed": 5,
+              "retryable": 0,
+              "infrastructure_cost_usd": null,
+              "reconciliation_required": 0
+            },
+            "created_at": "2026-10-29T00:02:53.99086+00:00",
+            "execution_id": "31261"
+          }
+        ],
+        "identity": {
+          "database": "postgres",
+          "current_user": "postgres",
+          "session_user": "postgres"
+        },
+        "quiescence": {
+          "running_parents": 0,
+          "media_lock_count": 0,
+          "unprocessed_actors": 0,
+          "unsettled_m05_jobs": 0,
+          "idle_media_sessions": 0,
+          "live_account_claims": 0,
+          "active_media_sessions": 0,
+          "unfinished_media_batches": 0,
+          "noncompleted_media_batches": 0
+        },
+        "observed_at": "2026-10-29T00:05:01.200447+00:00",
+        "preservation": {
+          "stories_setting": false,
+          "baseline_raw_280": true,
+          "baseline_items_280": true,
+          "raw_contract_sha256": "58ed871fd96029925462022de44cedddabcafedf4dea6b2c362fc65a9293cc54",
+          "story_cadence_sha256": "c5e93dff48c2baf7a5a452ccd2c44eef22611d14ca22934a6da3fad5479c7121",
+          "baseline_ai_queue_277": true,
+          "baseline_cost_rows_58": true,
+          "account_contract_sha256": "75784c5e03202b3270a22cc414d6d0f0d806dc7c4c0b8b8ba60b94355445a287",
+          "baseline_ai_extractions_0": true,
+          "baseline_cost_usd_1_355284": true,
+          "report_account_result_sha256": "ca46f14ba206128686971c71cf69dfa802e45b36270a7dc31c876e4fa76a573f",
+          "items_except_thumbnail_sha256": "71dafeff64434a3952e32ed90d9d9070555eb337d4d6e5e5802be07a5fdb30f3"
+        },
+        "item_outcomes": [
+          {
+            "id": 44,
+            "code": "no_source",
+            "item_id": "9b481702-d5cf-49ad-bb36-a1065e090826",
+            "msg_ids": [
+              "1"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:02:53.822305+00:00",
+            "execution_id": "31261",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 46,
+            "code": "no_source",
+            "item_id": "7f6c37fe-1ef9-484b-bbab-6a5ef8a4d55c",
+            "msg_ids": [
+              "2"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:02:53.83998+00:00",
+            "execution_id": "31261",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 48,
+            "code": "no_source",
+            "item_id": "305865e2-8d81-41b1-9ca3-fe719f8f27f2",
+            "msg_ids": [
+              "3"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:02:53.86658+00:00",
+            "execution_id": "31261",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 50,
+            "code": "no_source",
+            "item_id": "7eac5667-cd5e-4465-bfff-19fe2710886d",
+            "msg_ids": [
+              "4"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:02:53.882073+00:00",
+            "execution_id": "31261",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 52,
+            "code": "no_source",
+            "item_id": "cc0346fd-33af-409b-97c7-b20523e369c4",
+            "msg_ids": [
+              "5"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:02:53.897205+00:00",
+            "execution_id": "31261",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          }
+        ],
+        "asset_receipts": [],
+        "message_events": [
+          {
+            "id": 38,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "1",
+            "item_id": "9b481702-d5cf-49ad-bb36-a1065e090826",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 39,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "2",
+            "item_id": "7f6c37fe-1ef9-484b-bbab-6a5ef8a4d55c",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 40,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "3",
+            "item_id": "305865e2-8d81-41b1-9ca3-fe719f8f27f2",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 41,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "4",
+            "item_id": "7eac5667-cd5e-4465-bfff-19fe2710886d",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 42,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "5",
+            "item_id": "cc0346fd-33af-409b-97c7-b20523e369c4",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 45,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "1",
+            "item_id": "9b481702-d5cf-49ad-bb36-a1065e090826",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.822305+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 47,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "2",
+            "item_id": "7f6c37fe-1ef9-484b-bbab-6a5ef8a4d55c",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.83998+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 49,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "3",
+            "item_id": "305865e2-8d81-41b1-9ca3-fe719f8f27f2",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.86658+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 51,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "4",
+            "item_id": "7eac5667-cd5e-4465-bfff-19fe2710886d",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.882073+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 53,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "5",
+            "item_id": "cc0346fd-33af-409b-97c7-b20523e369c4",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.897205+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 54,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "1",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:02:53.912142+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 55,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "2",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:02:53.929426+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 56,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "3",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:02:53.944631+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 57,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "4",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:02:53.959779+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 58,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "5",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:02:53.975021+00:00",
+            "execution_id": "31261"
+          }
+        ],
+        "storage_object": null,
+        "replay_invariants": {
+          "items": 280,
+          "ai_queue": 277,
+          "cost_usd": 1.355284,
+          "cost_rows": 58,
+          "raw_items": 280,
+          "embed_queue": 0,
+          "media_queue": 272,
+          "media_assets": 257,
+          "ai_extractions": 0,
+          "media_audit_rows": 22,
+          "media_audit_sha256": "1737bbc1fc9ac2e9a992d2f3e03e9544e2b397399b01b6dc06744e5a8bffa259",
+          "media_queue_sha256": "ca48b7f932a4527d6cfd4d2236315e4bbdeea3d8eb78d4d702561d735930b042",
+          "target_asset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        },
+        "batch_execution_ids": [
+          "31261"
+        ]
+      }
+    }
+  ],
+  "observedAt": "2026-10-29T00:05:01.5525183+00:00"
+}

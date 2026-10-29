@@ -1,0 +1,17 @@
+{
+  "status": "catalog_field_coverage_verified",
+  "schemas": 4,
+  "checkedInTypesSha256": "e6102706955ff74f831af4ca60434c762470f39aecc9759dbb890ba481266143",
+  "expectedRelations": 62,
+  "expectedColumns": 701,
+  "expectedFunctions": 62,
+  "hostedFunctions": 63,
+  "missingRelations": [],
+  "columnMismatches": [],
+  "extraRelations": [],
+  "missingFunctions": [],
+  "argumentMismatches": [],
+  "catalogOnlyFunctions": [],
+  "hostedTypesGenerated": false,
+  "limitation": "Field/name coverage only; scalar/nullability/return-type equivalence remains accepted local21 qualification, not new hosted generation."
+}

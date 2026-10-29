@@ -118,6 +118,70 @@ Write-Output 'ORIGINAL_REUSED'
 );
 
 test(
+  'Storage initialization is opt-in, scoped to media, hidden and reusable through the existing interface',
+  { skip: !windows },
+  () =>
+    fixture((directory) => {
+      const output = run(
+        directory,
+        `
+$global:emrStoragePromptCount=0
+function Read-Host {param($Prompt,[switch]$AsSecureString)
+ if(-not $AsSecureString -or $Prompt -cnotmatch 'EXISTING emr-dev Supabase Secret key.*signing only'){throw 'STORAGE_PROMPT_UNSAFE'}
+ $global:emrStoragePromptCount++;return ConvertTo-SecureString 'SYNTHETIC_STORAGE_SIGNING_ONLY' -AsPlainText -Force
+}
+& ${q(entry)} -Action Initialize -Kind Storage
+if($LASTEXITCODE -ne 0 -or $global:emrStoragePromptCount -ne 1){throw 'STORAGE_INTERFACE_FAILED'}
+$spec=Get-M03DevCredentialSpec Storage
+if($spec.Source -cne (Join-Path (Get-M03DevCredentialRoot) 'media\\storage.dpapi') -or $null -ne $spec.Cipher -or $null -ne $spec.Lease){throw 'STORAGE_SCOPE_FAILED'}
+Assert-M03DevPrivateAcl ([IO.Path]::GetDirectoryName($spec.Source)) $true
+Assert-M03DevPrivateAcl $spec.Source $false
+$secure=ConvertTo-SecureString -String ([IO.File]::ReadAllText($spec.Source))
+$pointer=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+try{if([Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer) -cne 'SYNTHETIC_STORAGE_SIGNING_ONLY'){throw 'STORAGE_DPAPI_FAILED'}}finally{[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer);$secure.Dispose()}
+function Read-Host {throw 'STORAGE_REPEATED_PROMPT'}
+Initialize-M03DevCredentials -Action Initialize -Kind Storage
+$status=Get-M03DevCredentialStatus -Kind Storage
+if($status.status -cne 'ready' -or $status.entries.Count -ne 1 -or $status.entries[0].kind -cne 'Storage' -or $status.authenticationTested){throw 'STORAGE_STATUS_FAILED'}
+Write-Output 'STORAGE_SCOPED_PERSISTENT'
+`,
+      );
+      assert.match(output, /M03_DEV_ACCESS_READY/);
+      assert.match(output, /STORAGE_SCOPED_PERSISTENT$/);
+      const status = JSON.parse(run(directory, `& ${q(entry)} -Action Status -Kind Storage`));
+      assert.deepEqual(status.entries, [{ kind: 'Storage', present: true }]);
+      assert.equal(status.authenticationTested, false);
+    }),
+);
+
+test(
+  'All remains four inputs and Storage cannot enter legacy runtime, inspection or lease paths',
+  { skip: !windows },
+  () =>
+    fixture((directory) => {
+      run(
+        directory,
+        `${initialize}
+$storage=Get-M03DevCredentialSpec Storage
+if(Test-Path -LiteralPath $storage.Source){throw 'STORAGE_REQUESTED_BY_ALL'}
+$status=Get-M03DevCredentialStatus
+if($status.entries.Count -ne 4 -or $status.missing.Count -ne 0){throw 'ALL_STATUS_CHANGED'}
+$missing=Get-M03DevCredentialStatus -Kind Storage
+if($missing.status -cne 'missing_inputs' -or $missing.missing.Count -ne 1 -or $missing.missing[0] -cne 'Storage'){throw 'STORAGE_MISSING_STATUS_FAILED'}
+$mixed=Get-M03DevCredentialSpec sToRaGe
+if($mixed.Source -cne $storage.Source -or $mixed.Kind -cne 'Storage' -or $null -ne $mixed.Lease){throw 'STORAGE_CASE_SCOPE_FAILED'}
+foreach($operation in @('runtime','inspect','lease')){
+ $blocked=$false
+ try{switch($operation){'runtime'{Ensure-M03DevRuntimeHandoff -Kind Storage};'inspect'{Ensure-M03DevReadOnlyHandoff -Kind Storage};'lease'{Get-M03DevCredentialLease $storage}}}catch{$blocked=$true}
+ if(-not $blocked){throw 'STORAGE_LEGACY_DELIVERY_ACCEPTED'}
+}
+Write-Output 'FOUR_DEFAULT_INPUTS_STORAGE_ISOLATED'
+`,
+      );
+    }),
+);
+
+test(
   'only an exact purpose-approved temporary pair imports and original is retained',
   { skip: !windows },
   () =>

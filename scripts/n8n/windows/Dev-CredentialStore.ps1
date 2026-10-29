@@ -46,14 +46,17 @@ function Assert-M03DevPrivateAcl([string]$Path,[bool]$Directory) {
  if(@($rules|ForEach-Object{$_.IdentityReference.Value}|Select-Object -Unique).Count -ne 2){throw 'M03_DEV_ACCESS_ACL_BLOCKED'}
 }
 function Get-M03DevCredentialSpec {
- param([ValidateSet('Admin','Management','Writer','ApifyRead')][string]$Kind,[ValidateSet('ProjectVerifiedContinuation','StartupReplacement','PhaseA')][string]$AdminMode='ProjectVerifiedContinuation')
+ param([ValidateSet('Admin','Management','Writer','ApifyRead','Storage')][string]$Kind,[ValidateSet('ProjectVerifiedContinuation','StartupReplacement','PhaseA')][string]$AdminMode='ProjectVerifiedContinuation')
  $root=Get-M03DevCredentialRoot
+ # The dev Storage signing key has no legacy runtime copy or delivery lease.
+ if($Kind -ieq 'Storage'){return [pscustomobject]@{Kind='Storage';Source=(Join-Path $root 'media\storage.dpapi');Cipher=$null;Lease=$null;AdminMode=$null}}
  $relative=if($Kind -ceq 'Admin'){'admin\database.dpapi'}else{'runtime\'+$Kind.ToLowerInvariant()+'.dpapi'}
  $stem=if($Kind -ceq 'Admin'){'emr-m03-foundation-dev-migration-password'}else{'emr-m03-acceptance-'+$Kind.ToLowerInvariant()}
  return [pscustomobject]@{Kind=$Kind;Source=(Join-Path $root $relative);Cipher=(Join-Path $env:LOCALAPPDATA ('Temp\'+$stem+'.dpapi'));Lease=(Join-Path $env:LOCALAPPDATA ('Temp\'+$stem+'.lease.json'));AdminMode=$AdminMode}
 }
 function Get-M03DevCredentialLease {
  param($Spec)
+ if($Spec.Kind -ieq 'Storage'){throw 'M03_DEV_STORAGE_LEGACY_DELIVERY_BLOCKED'}
  $now=[DateTimeOffset]::UtcNow
  if($Spec.Kind -ceq 'Admin'){
   return [ordered]@{version=1;environment='dev';projectRef='zmotjsbzhzjvpelxvxlf';purpose=$(if($Spec.AdminMode -ceq 'ProjectVerifiedContinuation'){'m03-foundation-project-verified-continuation-dev:20275b22-b7fe-4737-a9a4-c50c2feadb74'}else{'m03-foundation-phase-a-dev'});approvalSha='f42930f90c2de43c84f61ad6d966d0ee6074d70e';createdAt=$now.UtcDateTime.ToString('o');expiresAt=$now.UtcDateTime.AddHours(2).ToString('o')}
@@ -87,6 +90,7 @@ function Write-M03DevPrivateFile {
  }finally{if($null -ne $stream){$stream.Dispose()};if($created){[IO.File]::Delete($scratch)}}
 }
 function Initialize-M03DevPrivateDirectory {
+ param([switch]$IncludeMedia)
  $root=Get-M03DevCredentialRoot
  $local=Assert-M03DevPlainPath $env:LOCALAPPDATA $true
  $cursor=$local.FullName
@@ -96,7 +100,8 @@ function Initialize-M03DevPrivateDirectory {
   $null=Assert-M03DevPlainPath $cursor $true
  }
  Set-M03DevPrivateAcl $root $true
- foreach($part in @('admin','runtime')){
+ $parts=@('admin','runtime');if($IncludeMedia){$parts+='media'}
+ foreach($part in $parts){
   $directory=Join-Path $root $part
   if(-not (Test-Path -LiteralPath $directory)){[IO.Directory]::CreateDirectory($directory)|Out-Null}
   Set-M03DevPrivateAcl $directory $true
@@ -104,19 +109,23 @@ function Initialize-M03DevPrivateDirectory {
  return $root
 }
 function Get-M03DevCredentialStatus {
+ param([ValidateSet('Admin','Management','Writer','ApifyRead','Storage','All')][string]$Kind='All')
+ if($Kind -ieq 'Storage'){$Kind='Storage'}
  $root=Get-M03DevCredentialRoot;$entries=@();$missing=@()
  if(Test-Path -LiteralPath $root){Assert-M03DevPrivateAcl $root $true}
- foreach($kind in @('Admin','Management','Writer','ApifyRead')){
-  $spec=Get-M03DevCredentialSpec $kind;$present=Test-Path -LiteralPath $spec.Source
+ $kinds=if($Kind -ceq 'All'){@('Admin','Management','Writer','ApifyRead')}else{@($Kind)}
+ foreach($item in $kinds){
+  $spec=Get-M03DevCredentialSpec $item;$present=Test-Path -LiteralPath $spec.Source
   if($present){Assert-M03DevPrivateAcl ([IO.Path]::GetDirectoryName($spec.Source)) $true;Assert-M03DevPrivateAcl $spec.Source $false}
-  $entries+=,[ordered]@{kind=$kind;present=[bool]$present}
-  if(-not $present){$missing+=$kind}
+  $entries+=,[ordered]@{kind=$item;present=[bool]$present}
+  if(-not $present){$missing+=$item}
  }
  return [ordered]@{status=$(if($missing.Count -eq 0){'ready'}else{'missing_inputs'});persistent=$true;authenticationTested=$false;entries=$entries;missing=@($missing)}
 }
 function Initialize-M03DevCredentials {
- param([ValidateSet('Initialize','Update')][string]$Action='Initialize',[ValidateSet('Admin','Management','Writer','ApifyRead','All')][string]$Kind='All')
- $root=Initialize-M03DevPrivateDirectory
+ param([ValidateSet('Initialize','Update')][string]$Action='Initialize',[ValidateSet('Admin','Management','Writer','ApifyRead','Storage','All')][string]$Kind='All')
+ if($Kind -ieq 'Storage'){$Kind='Storage'}
+ $root=Initialize-M03DevPrivateDirectory -IncludeMedia:($Kind -ceq 'Storage')
  $lockPath=Join-Path $root 'store.operation.lock';$lock=$null;$secret=$null;$bytes=$null;$cipher=$null
  try{
   $lock=[IO.File]::Open($lockPath,[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None);Set-M03DevPrivateAcl $lockPath $false
@@ -124,7 +133,7 @@ function Initialize-M03DevCredentials {
   foreach($item in $kinds){
    $spec=Get-M03DevCredentialSpec $item;$exists=Test-Path -LiteralPath $spec.Source
    if($exists){Assert-M03DevPrivateAcl $spec.Source $false;if($Action -ceq 'Initialize'){continue}}
-   if(-not $exists -and $Action -ceq 'Initialize' -and (Test-Path -LiteralPath $spec.Cipher) -and (Test-Path -LiteralPath $spec.Lease)){
+   if($item -cne 'Storage' -and -not $exists -and $Action -ceq 'Initialize' -and (Test-Path -LiteralPath $spec.Cipher) -and (Test-Path -LiteralPath $spec.Lease)){
     Assert-M03DevApprovedTemporaryPair $spec
     $bytes=[IO.File]::ReadAllBytes($spec.Cipher)
    }else{
@@ -133,6 +142,7 @@ function Initialize-M03DevCredentials {
      'Management' {'EXISTING muhhammedsayed n8n management API key; approved Market Radar dev only'}
      'Writer' {'EXISTING emr-dev n8n_writer password, zmotjsbzhzjvpelxvxlf session5432; restricted runtime only'}
      'ApifyRead' {'EXISTING same-owner Apify READ token: Actor runs, Datasets and Key-value stores; no actor-start token'}
+     'Storage' {'EXISTING emr-dev Supabase Secret key, zmotjsbzhzjvpelxvxlf; media signing only'}
     }
     $secret=Read-Host $prompt -AsSecureString
     if($secret.Length -eq 0 -or $secret.Length -gt 4096){throw 'M03_DEV_ACCESS_INPUT_BLOCKED'}

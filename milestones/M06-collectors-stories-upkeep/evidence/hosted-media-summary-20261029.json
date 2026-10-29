@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-29T00:15:40.459Z",
+  "result": "M06 media component validated in development",
+  "environment": "dev",
+  "projectRef": "zmotjsbzhzjvpelxvxlf",
+  "applicationSha": "47ac405061d126d7561d57e8863b83d3d0db2d42",
+  "qualifiedCI": "40784285978",
+  "deployment": {
+    "id": "dpl_4x7QYfDTsxHbWnwU44iPc12A2uty",
+    "url": "everyone-market-researcher-8p225qz26-muhammed-abdelrahman.vercel.app",
+    "revision": "47ac405061d126d7561d57e8863b83d3d0db2d42",
+    "preview": true,
+    "readyObserved": true,
+    "deletedVerified": true
+  },
+  "workflow": {
+    "id": "drVNLz1NgQq1VeZ8",
+    "name": "WF-31 · Media [dev]",
+    "testedVersionId": "746ef1c1-1b0f-4ee0-aba7-0ca928b844ed",
+    "inactive": true,
+    "unbound": true,
+    "manualExecutionsSaved": false,
+    "executionDataSaved": "none"
+  },
+  "selected": {
+    "queueMessage": 10,
+    "itemId": "6eb65041-b629-4c12-aa06-9899ab22ac60",
+    "platform": "instagram",
+    "externalId": "DdHVn45MQub",
+    "object": "media/everyone-films/instagram/DdHVn45MQub/thumb.jpg",
+    "assetId": 258,
+    "storageObjectId": "8a096fe6-5473-4d88-98ed-b62a2d10f31f"
+  },
+  "executions": [
+    {
+      "id": "31261",
+      "receipt": {
+        "version": 1,
+        "execution_id": "31261",
+        "replayed": false,
+        "state": "completed",
+        "claimed": 5,
+        "processed": 5,
+        "held": 0,
+        "stored": 0,
+        "skipped": 5,
+        "expired": 0,
+        "retryable": 0,
+        "reconciliation_required": 0,
+        "bytes": 0,
+        "infrastructure_cost_usd": null
+      },
+      "nativeNodes": "all success"
+    },
+    {
+      "id": "31262",
+      "receipt": {
+        "version": 1,
+        "execution_id": "31262",
+        "replayed": false,
+        "state": "completed",
+        "claimed": 5,
+        "processed": 5,
+        "held": 0,
+        "stored": 1,
+        "skipped": 4,
+        "expired": 0,
+        "retryable": 0,
+        "reconciliation_required": 0,
+        "bytes": 141184,
+        "infrastructure_cost_usd": null
+      },
+      "nativeNodes": "all success"
+    }
+  ],
+  "replay": {
+    "version": 1,
+    "execution_id": "31262",
+    "replayed": true,
+    "state": "completed",
+    "claimed": 5,
+    "processed": 5,
+    "held": 0,
+    "stored": 1,
+    "skipped": 4,
+    "expired": 0,
+    "retryable": 0,
+    "reconciliation_required": 0,
+    "bytes": 141184,
+    "infrastructure_cost_usd": null
+  },
+  "authentication": {
+    "unauthorized": 401,
+    "authorized": 204,
+    "capability": 200,
+    "unusedCapabilityDiscarded": true
+  },
+  "jpeg": {
+    "bytes": 141184,
+    "width": 1206,
+    "height": 2144,
+    "sha256": "f5fae4489d16e4a841bb7e72efd327b2ccad488e20c4b253b9acf12394ce478e",
+    "publicReadAndActualCodecVerified": true
+  },
+  "cleanup": {
+    "projectEnvironmentRestored": true,
+    "ownedBypassAbsent": true,
+    "protectionUnchanged": true,
+    "productionConflictObserved": false,
+    "workflowInactiveUnbound": true,
+    "credentialDeleted": true,
+    "persistentOriginalsPreserved": true,
+    "previewDeletedVerified": true,
+    "nativeChildrenClosed": true,
+    "scratchCopiesDeleted": true,
+    "credentialAbsentNativeSearch": true
+  },
+  "usage": {
+    "nativeVercelDriverRequests": 40,
+    "additionalVerifiedVercelPreflightGets": 3,
+    "earlierReadOnlyVercelPreflightBound": 3,
+    "failedVercelConnectorAttempts": 2,
+    "nativeN8nApiRequests": 13,
+    "failedN8nConnectorAttempts": 3,
+    "nativeExecutions": 2,
+    "rootAppHttpRequests": 4,
+    "derivedAppHttpIncludingNestedCalls": 10,
+    "derivedStorageRequests": 4,
+    "sourceImageGets": 1,
+    "actorStarts": 0,
+    "collectionProviderUsd": 0,
+    "infrastructureUsd": null,
+    "existingCostRows": 58,
+    "existingCostLedgerUsd": 1.355284,
+    "browserAndPlatformInternalRequestCount": null,
+    "adminCliCommands": 7,
+    "adminPgReadbacks": 9
+  },
+  "remaining": {
+    "fullM06Open": true,
+    "storiesCapturesNotPerformed": true,
+    "sevenDayComparisonNotStarted": true,
+    "cadenceSwitchNotCalled": true,
+    "WF91NotStagedOrRun": true,
+    "productionUnchanged": true,
+    "M05DenialPreserved": true,
+    "mergeNotPerformed": true,
+    "M07NotStarted": true
+  },
+  "schemaCoverage": {
+    "relations": 62,
+    "columns": 701,
+    "generatedRpcNames": 62,
+    "hostedOverloads": 63,
+    "fieldAndArgumentCoveragePassed": true,
+    "hostedTypesGenerated": false
+  }
+}

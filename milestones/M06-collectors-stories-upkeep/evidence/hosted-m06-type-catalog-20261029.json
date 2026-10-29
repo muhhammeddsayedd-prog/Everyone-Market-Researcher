@@ -1,0 +1,4762 @@
+{
+  "phase": "m06_readonly_preflight",
+  "target": "zmotjsbzhzjvpelxvxlf",
+  "privateRead": true,
+  "authenticationAttempted": true,
+  "childrenClosed": true,
+  "scratchDeleted": true,
+  "status": "query_complete",
+  "nativeExit": 0,
+  "databaseClientClosed": true,
+  "sqlstate": null,
+  "queryStatus": "query_complete",
+  "rows": [
+    {
+      "m06_type_coverage": {
+        "schemas": [
+          "api",
+          "app",
+          "ingest",
+          "ops"
+        ],
+        "version": 1,
+        "identity": {
+          "database": "postgres",
+          "current_user": "postgres",
+          "session_user": "postgres"
+        },
+        "functions": [
+          {
+            "name": "me",
+            "schema": "app",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "",
+            "input_argument_names": [],
+            "service_role_execute": false
+          },
+          {
+            "name": "search",
+            "schema": "app",
+            "returns": "record",
+            "returns_set": true,
+            "identity_arguments": "p_query text, p_embedding vector, p_types text[], p_filters jsonb, p_limit integer",
+            "input_argument_names": [
+              "p_embedding",
+              "p_filters",
+              "p_limit",
+              "p_query",
+              "p_types"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "similar",
+            "schema": "app",
+            "returns": "record",
+            "returns_set": true,
+            "identity_arguments": "p_entity_type text, p_entity_id uuid, p_limit integer",
+            "input_argument_names": [
+              "p_entity_id",
+              "p_entity_type",
+              "p_limit"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "upsert_raw_items",
+            "schema": "ingest",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_run_id uuid, p_account_id uuid, p_items jsonb",
+            "input_argument_names": [
+              "p_account_id",
+              "p_items",
+              "p_run_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "accrue_fixed_costs",
+            "schema": "ops",
+            "returns": "integer",
+            "returns_set": false,
+            "identity_arguments": "p_day date",
+            "input_argument_names": [
+              "p_day"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "ack_media_batch",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_execution_id text, p_msg_ids bigint[]",
+            "input_argument_names": [
+              "p_execution_id",
+              "p_msg_ids"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "ack_queue",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_queue text, p_msg_ids bigint[]",
+            "input_argument_names": [
+              "p_msg_ids",
+              "p_queue"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "apify_runs_pending",
+            "schema": "ops",
+            "returns": "integer",
+            "returns_set": false,
+            "identity_arguments": "p_run_id uuid",
+            "input_argument_names": [
+              "p_run_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "authorize_apify_launch",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p jsonb",
+            "input_argument_names": [
+              "p"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "claim_media_batch",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_execution_id text, p_limit integer",
+            "input_argument_names": [
+              "p_execution_id",
+              "p_limit"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "claim_queue_batch",
+            "schema": "ops",
+            "returns": "record",
+            "returns_set": true,
+            "identity_arguments": "p_queue text, p_n integer, p_vt_seconds integer",
+            "input_argument_names": [
+              "p_n",
+              "p_queue",
+              "p_vt_seconds"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "collector_execute",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_request_id uuid, p_operation text, p_args jsonb",
+            "input_argument_names": [
+              "p_args",
+              "p_operation",
+              "p_request_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "collector_finalize",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_run_id uuid",
+            "input_argument_names": [
+              "p_run_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "complete_apify_run",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_apify_run_id text, p_status text, p_dataset_id text, p_usage_usd numeric",
+            "input_argument_names": [
+              "p_apify_run_id",
+              "p_dataset_id",
+              "p_status",
+              "p_usage_usd"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "daily_health",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "",
+            "input_argument_names": [],
+            "service_role_execute": false
+          },
+          {
+            "name": "diff_website_urls",
+            "schema": "ops",
+            "returns": "text[]",
+            "returns_set": false,
+            "identity_arguments": "p_account_id uuid, p_urls text[]",
+            "input_argument_names": [
+              "p_account_id",
+              "p_urls"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "error_count_24h",
+            "schema": "ops",
+            "returns": "integer",
+            "returns_set": false,
+            "identity_arguments": "p_workflow text, p_claim_notify boolean",
+            "input_argument_names": [
+              "p_claim_notify",
+              "p_workflow"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "finish_media_batch",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_execution_id text",
+            "input_argument_names": [
+              "p_execution_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "finish_run",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_run_id uuid, p_status text, p_error text",
+            "input_argument_names": [
+              "p_error",
+              "p_run_id",
+              "p_status"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_admit",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_request_id uuid, p_operation text, p_args jsonb, p_mode text",
+            "input_argument_names": [
+              "p_args",
+              "p_mode",
+              "p_operation",
+              "p_request_id",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_complete_read",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_request_id uuid, p_apify_run_id text, p_result jsonb",
+            "input_argument_names": [
+              "p_apify_run_id",
+              "p_request_id",
+              "p_result",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_execute",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_request_id uuid, p_operation text, p_args jsonb",
+            "input_argument_names": [
+              "p_args",
+              "p_operation",
+              "p_request_id",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_process",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_args jsonb",
+            "input_argument_names": [
+              "p_args",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_provision",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p jsonb",
+            "input_argument_names": [
+              "p"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_provision",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p jsonb",
+            "input_argument_names": [
+              "p",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_read_context",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_request_id uuid, p_apify_run_id text",
+            "input_argument_names": [
+              "p_apify_run_id",
+              "p_request_id",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_registered",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_apify_run_id text",
+            "input_argument_names": [
+              "p_apify_run_id",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_replay_costs",
+            "schema": "ops",
+            "returns": "integer",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_entries jsonb",
+            "input_argument_names": [
+              "p_entries",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_response",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_operation text, p_state text, p_code text, p_result jsonb, p_replayed boolean",
+            "input_argument_names": [
+              "p_code",
+              "p_operation",
+              "p_replayed",
+              "p_result",
+              "p_state",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_status",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_target_request_id uuid",
+            "input_argument_names": [
+              "p_target_request_id",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_validate",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_request_id uuid, p_operation text, p_args jsonb",
+            "input_argument_names": [
+              "p_args",
+              "p_operation",
+              "p_request_id",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "foundation_gateway_workflow",
+            "schema": "ops",
+            "returns": "boolean",
+            "returns_set": false,
+            "identity_arguments": "p text",
+            "input_argument_names": [
+              "p"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "get_apify_launch",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_launch_id uuid",
+            "input_argument_names": [
+              "p_launch_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "get_apify_run",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_apify_run_id text",
+            "input_argument_names": [
+              "p_apify_run_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "get_due_accounts",
+            "schema": "ops",
+            "returns": "record",
+            "returns_set": true,
+            "identity_arguments": "p_platform app.platform, p_limit integer, p_run_id uuid, p_mode text",
+            "input_argument_names": [
+              "p_limit",
+              "p_mode",
+              "p_platform",
+              "p_run_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "get_items_for_ai",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_item_ids uuid[]",
+            "input_argument_names": [
+              "p_item_ids"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "get_media_targets",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_item_ids uuid[]",
+            "input_argument_names": [
+              "p_item_ids"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "get_price_book",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "",
+            "input_argument_names": [],
+            "service_role_execute": false
+          },
+          {
+            "name": "get_setting",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_key text",
+            "input_argument_names": [
+              "p_key"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "log_cost",
+            "schema": "ops",
+            "returns": "integer",
+            "returns_set": false,
+            "identity_arguments": "p_entries jsonb",
+            "input_argument_names": [
+              "p_entries"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "log_workflow_error",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p jsonb",
+            "input_argument_names": [
+              "p"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "m03_smoke_launch_input",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "",
+            "input_argument_names": [],
+            "service_role_execute": false
+          },
+          {
+            "name": "m05_assert_claim",
+            "schema": "ops",
+            "returns": "app.competitor_accounts",
+            "returns_set": false,
+            "identity_arguments": "p_run_id uuid, p_account_id uuid",
+            "input_argument_names": [
+              "p_account_id",
+              "p_run_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "m05_execute",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_request_id uuid, p_operation text, p_args jsonb",
+            "input_argument_names": [
+              "p_args",
+              "p_operation",
+              "p_request_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "m05_finalize",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_run_id uuid",
+            "input_argument_names": [
+              "p_run_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "m05_resolve_youtube",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_account_id uuid, p_external_id text, p_uploads_playlist_id text",
+            "input_argument_names": [
+              "p_account_id",
+              "p_external_id",
+              "p_uploads_playlist_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "mark_website_page",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_url text, p_status text, p_item_id uuid",
+            "input_argument_names": [
+              "p_item_id",
+              "p_status",
+              "p_url"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "process_apify_run",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_apify_run_id text, p_status text, p_dataset_id text, p_usage_usd numeric, p_groups jsonb",
+            "input_argument_names": [
+              "p_apify_run_id",
+              "p_dataset_id",
+              "p_groups",
+              "p_status",
+              "p_usage_usd"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "reconcile_apify_launch",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p jsonb",
+            "input_argument_names": [
+              "p"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "record_media_outcome",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_execution_id text, p_outcome jsonb",
+            "input_argument_names": [
+              "p_execution_id",
+              "p_outcome"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "register_apify_run",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_apify_run_id text, p_actor_id text, p_run_id uuid, p_account_ids uuid[], p_purpose text",
+            "input_argument_names": [
+              "p_account_ids",
+              "p_actor_id",
+              "p_apify_run_id",
+              "p_purpose",
+              "p_run_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "reject_apify_callback",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p jsonb",
+            "input_argument_names": [
+              "p"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "report_account_result",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_run_id uuid, p_account_id uuid, p_status text, p_items_seen integer, p_items_new integer, p_error text, p_backfill_done boolean, p_backfill_cursor jsonb",
+            "input_argument_names": [
+              "p_account_id",
+              "p_backfill_cursor",
+              "p_backfill_done",
+              "p_error",
+              "p_items_new",
+              "p_items_seen",
+              "p_run_id",
+              "p_status"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "save_employee_snapshot",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_account_id uuid, p_snapshot_date date, p_people jsonb, p_coverage jsonb",
+            "input_argument_names": [
+              "p_account_id",
+              "p_coverage",
+              "p_people",
+              "p_snapshot_date"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "save_media_asset",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_item_id uuid, p_kind text, p_path text, p_source_url text, p_w integer, p_h integer",
+            "input_argument_names": [
+              "p_h",
+              "p_item_id",
+              "p_kind",
+              "p_path",
+              "p_source_url",
+              "p_w"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "set_account_external_id",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_account_id uuid, p_external_id text, p_uploads_playlist_id text",
+            "input_argument_names": [
+              "p_account_id",
+              "p_external_id",
+              "p_uploads_playlist_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "set_stories_cadence",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_twice_daily boolean",
+            "input_argument_names": [
+              "p_twice_daily"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "start_run",
+            "schema": "ops",
+            "returns": "uuid",
+            "returns_set": false,
+            "identity_arguments": "p_workflow text, p_platform app.platform, p_mode text, p_env text, p_execution_id text",
+            "input_argument_names": [
+              "p_env",
+              "p_execution_id",
+              "p_mode",
+              "p_platform",
+              "p_workflow"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "worker_gateway_admit",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_request_id uuid, p_operation text, p_args jsonb, p_mode text",
+            "input_argument_names": [
+              "p_args",
+              "p_mode",
+              "p_operation",
+              "p_request_id",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "worker_gateway_execute",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_request_id uuid, p_operation text, p_args jsonb",
+            "input_argument_names": [
+              "p_args",
+              "p_operation",
+              "p_request_id",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "worker_gateway_response",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_state text, p_code text, p_result jsonb",
+            "input_argument_names": [
+              "p_code",
+              "p_result",
+              "p_state",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "worker_gateway_status",
+            "schema": "ops",
+            "returns": "jsonb",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_target_request_id uuid",
+            "input_argument_names": [
+              "p_target_request_id",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          },
+          {
+            "name": "worker_gateway_validate",
+            "schema": "ops",
+            "returns": "void",
+            "returns_set": false,
+            "identity_arguments": "p_window_id uuid, p_request_id uuid, p_operation text, p_args jsonb",
+            "input_argument_names": [
+              "p_args",
+              "p_operation",
+              "p_request_id",
+              "p_window_id"
+            ],
+            "service_role_execute": false
+          }
+        ],
+        "relations": [
+          {
+            "name": "briefs_v",
+            "schema": "api",
+            "columns": [
+              {
+                "name": "body_md",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "highlights",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "model",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "prompt_version",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "scope",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "source_item_ids",
+                "type": "uuid[]",
+                "nullable": true
+              },
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "week_start",
+                "type": "date",
+                "nullable": true
+              }
+            ],
+            "section": "Views"
+          },
+          {
+            "name": "campaigns_v",
+            "schema": "api",
+            "columns": [
+              {
+                "name": "agency_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "agency_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "agency_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "brand_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "brand_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "brand_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_logo_path",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "confidence",
+                "type": "numeric(4,3)",
+                "nullable": true
+              },
+              {
+                "name": "country",
+                "type": "app.country_code",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "first_seen_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "item_count",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "last_seen_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "locked_by_human",
+                "type": "boolean",
+                "nullable": true
+              },
+              {
+                "name": "merged_into",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "occasion",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "platforms",
+                "type": "app.platform[]",
+                "nullable": true
+              },
+              {
+                "name": "production_competitor_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "search_tsv",
+                "type": "tsvector",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "summary_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "summary_en",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              }
+            ],
+            "section": "Views"
+          },
+          {
+            "name": "competitors_v",
+            "schema": "api",
+            "columns": [
+              {
+                "name": "categories",
+                "type": "text[]",
+                "nullable": true
+              },
+              {
+                "name": "company_code",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "hq_country",
+                "type": "app.country_code",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "in_house",
+                "type": "text[]",
+                "nullable": true
+              },
+              {
+                "name": "is_baseline",
+                "type": "boolean",
+                "nullable": true
+              },
+              {
+                "name": "logo_path",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "logo_url",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "markets",
+                "type": "app.country_code[]",
+                "nullable": true
+              },
+              {
+                "name": "name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "name_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "pilot_rank",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "priority_tier",
+                "type": "app.priority_tier",
+                "nullable": true
+              },
+              {
+                "name": "slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "website_url",
+                "type": "text",
+                "nullable": true
+              }
+            ],
+            "section": "Views"
+          },
+          {
+            "name": "items_v",
+            "schema": "api",
+            "columns": [
+              {
+                "name": "agency_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "agency_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "agency_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "ai_status",
+                "type": "app.ai_status",
+                "nullable": true
+              },
+              {
+                "name": "brand_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "brand_industry",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "brand_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "brand_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "campaign_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "caption_en",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "caption_original",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "competitor_logo_path",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "confidence",
+                "type": "numeric(4,3)",
+                "nullable": true
+              },
+              {
+                "name": "content_type",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "country",
+                "type": "app.country_code",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "is_commercial_work",
+                "type": "boolean",
+                "nullable": true
+              },
+              {
+                "name": "item_type",
+                "type": "app.item_type",
+                "nullable": true
+              },
+              {
+                "name": "metrics",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "occasion",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "platform",
+                "type": "app.platform",
+                "nullable": true
+              },
+              {
+                "name": "priority_tier",
+                "type": "app.priority_tier",
+                "nullable": true
+              },
+              {
+                "name": "published_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "app.item_status",
+                "nullable": true
+              },
+              {
+                "name": "summary_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "summary_en",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "thumbnail_path",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "thumbnail_source_url",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "url",
+                "type": "text",
+                "nullable": true
+              }
+            ],
+            "section": "Views"
+          },
+          {
+            "name": "news_v",
+            "schema": "api",
+            "columns": [
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "kind",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "language",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "published_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "query",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "search_tsv",
+                "type": "tsvector",
+                "nullable": true
+              },
+              {
+                "name": "snippet",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "source_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "summary_en",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "url",
+                "type": "text",
+                "nullable": true
+              }
+            ],
+            "section": "Views"
+          },
+          {
+            "name": "organizations_v",
+            "schema": "api",
+            "columns": [
+              {
+                "name": "country",
+                "type": "app.country_code",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "industry",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "kind",
+                "type": "app.org_kind",
+                "nullable": true
+              },
+              {
+                "name": "logo_url",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "name_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "seen_count",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "app.entity_status",
+                "nullable": true
+              },
+              {
+                "name": "website",
+                "type": "text",
+                "nullable": true
+              }
+            ],
+            "section": "Views"
+          },
+          {
+            "name": "people_v",
+            "schema": "api",
+            "columns": [
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "name_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "primary_role",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "app.entity_status",
+                "nullable": true
+              }
+            ],
+            "section": "Views"
+          },
+          {
+            "name": "alert_rules",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "active",
+                "type": "boolean",
+                "nullable": false
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "created_by",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "filters",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "kind",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "name",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "recipients",
+                "type": "text[]",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "allowed_domains",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "domain",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "briefs",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "body_md",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "highlights",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "model",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "prompt_version",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "scope",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "source_item_ids",
+                "type": "uuid[]",
+                "nullable": false
+              },
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "week_start",
+                "type": "date",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "campaign_items",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "added_by",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "campaign_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "item_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "similarity",
+                "type": "numeric(4,3)",
+                "nullable": true
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "campaigns",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "agency_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "brand_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "confidence",
+                "type": "numeric(4,3)",
+                "nullable": true
+              },
+              {
+                "name": "country",
+                "type": "app.country_code",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "first_seen_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "item_count",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "last_seen_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "locked_by_human",
+                "type": "boolean",
+                "nullable": false
+              },
+              {
+                "name": "merged_into",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "occasion",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "platforms",
+                "type": "app.platform[]",
+                "nullable": false
+              },
+              {
+                "name": "production_competitor_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "search_tsv",
+                "type": "tsvector",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "summary_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "summary_en",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "campaigns_v",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "agency_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "agency_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "agency_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "brand_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "brand_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "brand_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_logo_path",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "confidence",
+                "type": "numeric(4,3)",
+                "nullable": true
+              },
+              {
+                "name": "country",
+                "type": "app.country_code",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "first_seen_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "item_count",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "last_seen_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "locked_by_human",
+                "type": "boolean",
+                "nullable": true
+              },
+              {
+                "name": "merged_into",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "occasion",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "platforms",
+                "type": "app.platform[]",
+                "nullable": true
+              },
+              {
+                "name": "production_competitor_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "search_tsv",
+                "type": "tsvector",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "summary_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "summary_en",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              }
+            ],
+            "section": "Views"
+          },
+          {
+            "name": "competitor_accounts",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "backfill_cursor",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "backfill_from",
+                "type": "date",
+                "nullable": false
+              },
+              {
+                "name": "backfill_status",
+                "type": "app.backfill_status",
+                "nullable": false
+              },
+              {
+                "name": "cadence",
+                "type": "interval",
+                "nullable": false
+              },
+              {
+                "name": "competitor_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "consecutive_failures",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "external_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "handle",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "handle_norm",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "items_count",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "last_error",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "last_error_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "last_external_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "last_item_published_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "last_run_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "last_success_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "locked_until",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "next_due_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "platform",
+                "type": "app.platform",
+                "nullable": false
+              },
+              {
+                "name": "resolve_status",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "status",
+                "type": "app.account_status",
+                "nullable": false
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "uploads_playlist_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "url",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "competitors",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "aliases",
+                "type": "text[]",
+                "nullable": false
+              },
+              {
+                "name": "categories",
+                "type": "text[]",
+                "nullable": false
+              },
+              {
+                "name": "company_code",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "hq_country",
+                "type": "app.country_code",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "in_house",
+                "type": "text[]",
+                "nullable": false
+              },
+              {
+                "name": "is_baseline",
+                "type": "boolean",
+                "nullable": false
+              },
+              {
+                "name": "logo_path",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "logo_url",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "markets",
+                "type": "app.country_code[]",
+                "nullable": false
+              },
+              {
+                "name": "name",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "name_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "notes",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "pilot_rank",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "priority_tier",
+                "type": "app.priority_tier",
+                "nullable": false
+              },
+              {
+                "name": "search_tsv",
+                "type": "tsvector",
+                "nullable": true
+              },
+              {
+                "name": "slug",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "source_sheet_row",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "website_url",
+                "type": "text",
+                "nullable": true
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "embeddings",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "content_hash",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "embedding",
+                "type": "vector(1536)",
+                "nullable": false
+              },
+              {
+                "name": "entity_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "entity_type",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "model",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "employee_snapshots",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "account_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "competitor_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "coverage",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "headcount_listed",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "joined",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "left_company",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "people",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "snapshot_date",
+                "type": "date",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "feed_v",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "agency_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "agency_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "agency_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "ai_status",
+                "type": "app.ai_status",
+                "nullable": true
+              },
+              {
+                "name": "brand_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "brand_industry",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "brand_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "brand_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "campaign_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "caption_en",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "caption_original",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "competitor_logo_path",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_slug",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "confidence",
+                "type": "numeric(4,3)",
+                "nullable": true
+              },
+              {
+                "name": "content_type",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "country",
+                "type": "app.country_code",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "is_commercial_work",
+                "type": "boolean",
+                "nullable": true
+              },
+              {
+                "name": "item_type",
+                "type": "app.item_type",
+                "nullable": true
+              },
+              {
+                "name": "metrics",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "occasion",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "platform",
+                "type": "app.platform",
+                "nullable": true
+              },
+              {
+                "name": "priority_tier",
+                "type": "app.priority_tier",
+                "nullable": true
+              },
+              {
+                "name": "published_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "app.item_status",
+                "nullable": true
+              },
+              {
+                "name": "summary_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "summary_en",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "thumbnail_path",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "thumbnail_source_url",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "url",
+                "type": "text",
+                "nullable": true
+              }
+            ],
+            "section": "Views"
+          },
+          {
+            "name": "item_credits",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "competitor_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "confidence",
+                "type": "numeric(4,3)",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "item_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "organization_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "person_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "person_name_raw",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "role",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "source",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "items",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "account_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "agency_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "ai_status",
+                "type": "app.ai_status",
+                "nullable": false
+              },
+              {
+                "name": "brand_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "campaign_title",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "caption_en",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "caption_original",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "competitor_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "confidence",
+                "type": "numeric(4,3)",
+                "nullable": true
+              },
+              {
+                "name": "content_hash",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "content_type",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "country",
+                "type": "app.country_code",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "duplicate_of",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "duration_seconds",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "evidence",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "external_id",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "field_confidence",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "first_seen_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "hashtags",
+                "type": "text[]",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "is_commercial_work",
+                "type": "boolean",
+                "nullable": true
+              },
+              {
+                "name": "item_type",
+                "type": "app.item_type",
+                "nullable": false
+              },
+              {
+                "name": "language",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "last_extraction_id",
+                "type": "bigint",
+                "nullable": true
+              },
+              {
+                "name": "locked_fields",
+                "type": "text[]",
+                "nullable": false
+              },
+              {
+                "name": "mentions",
+                "type": "text[]",
+                "nullable": false
+              },
+              {
+                "name": "metrics",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "metrics_updated_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "occasion",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "platform",
+                "type": "app.platform",
+                "nullable": false
+              },
+              {
+                "name": "production_competitor_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "published_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "removed_detected_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "search_tsv",
+                "type": "tsvector",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "app.item_status",
+                "nullable": false
+              },
+              {
+                "name": "summary_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "summary_en",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "tagged_accounts",
+                "type": "text[]",
+                "nullable": false
+              },
+              {
+                "name": "tags",
+                "type": "text[]",
+                "nullable": false
+              },
+              {
+                "name": "thumbnail_path",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "thumbnail_source_url",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "url",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "media_assets",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "competitor_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "height",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "item_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "kind",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "source_url",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "storage_path",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "width",
+                "type": "integer",
+                "nullable": true
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "member_invites",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "email",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "invited_by",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "role",
+                "type": "app.member_role",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "members",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "email",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "full_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "invited_by",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "last_seen_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "role",
+                "type": "app.member_role",
+                "nullable": false
+              },
+              {
+                "name": "status",
+                "type": "app.member_status",
+                "nullable": false
+              },
+              {
+                "name": "user_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "news_articles",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "kind",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "language",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "published_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "query",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "search_tsv",
+                "type": "tsvector",
+                "nullable": true
+              },
+              {
+                "name": "snippet",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "source_name",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "summary_en",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "title",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "url",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "news_mentions",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "article_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "entity_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "entity_type",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "org_aliases",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "alias",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "alias_normalized",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "org_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "source",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "organizations",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "country",
+                "type": "app.country_code",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "industry",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "kind",
+                "type": "app.org_kind",
+                "nullable": false
+              },
+              {
+                "name": "logo_url",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "merged_into",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "name",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "name_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "search_tsv",
+                "type": "tsvector",
+                "nullable": true
+              },
+              {
+                "name": "seen_count",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "slug",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "status",
+                "type": "app.entity_status",
+                "nullable": false
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "website",
+                "type": "text",
+                "nullable": true
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "people",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "linkedin_public_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "merged_into",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "name",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "name_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "primary_role",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "search_tsv",
+                "type": "tsvector",
+                "nullable": true
+              },
+              {
+                "name": "slug",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "status",
+                "type": "app.entity_status",
+                "nullable": false
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "person_aliases",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "alias",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "alias_normalized",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "person_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "source",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "review_tasks",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "assigned_to",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "entity_id",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "entity_type",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "kind",
+                "type": "app.review_kind",
+                "nullable": false
+              },
+              {
+                "name": "priority",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "reason",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "resolution",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "resolved_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "resolved_by",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "app.review_status",
+                "nullable": false
+              },
+              {
+                "name": "suggestion",
+                "type": "jsonb",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "saved_views",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "filters",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "name",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "path",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "user_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "stats_daily",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "campaigns_new",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "commercial_new",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "competitor_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "country",
+                "type": "app.country_code",
+                "nullable": true
+              },
+              {
+                "name": "day",
+                "type": "date",
+                "nullable": false
+              },
+              {
+                "name": "items_new",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "platform",
+                "type": "app.platform",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "taxonomy_terms",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "active",
+                "type": "boolean",
+                "nullable": false
+              },
+              {
+                "name": "code",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "label_ar",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "label_en",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "sort",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "taxonomy",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "website_pages",
+            "schema": "app",
+            "columns": [
+              {
+                "name": "account_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "competitor_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "crawled_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "first_seen_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "item_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "last_seen_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "status",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "url",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "raw_items",
+            "schema": "ingest",
+            "columns": [
+              {
+                "name": "account_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "actor",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "content_hash",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "external_id",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "fetched_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "normalized",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "payload",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "platform",
+                "type": "app.platform",
+                "nullable": false
+              },
+              {
+                "name": "run_id",
+                "type": "uuid",
+                "nullable": true
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "ai_extractions",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "confidence",
+                "type": "numeric(4,3)",
+                "nullable": true
+              },
+              {
+                "name": "cost_usd",
+                "type": "numeric(12,6)",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "input_tokens",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "item_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "latency_ms",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "model",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "output",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "output_tokens",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "prompt_version",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "schema_version",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "used_vision",
+                "type": "boolean",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "api_calls",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "duration_ms",
+                "type": "integer",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "key_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "status",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "tool",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "transport",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "api_keys",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "created_by",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "key_hash",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "last_used_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "name",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "prefix",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "rate_limit_per_min",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "revoked_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "scopes",
+                "type": "text[]",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "apify_launch_admissions",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "account_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "actor_build",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "actor_id",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "apify_run_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "execution_id",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "input",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "launch_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "max_total_charge_usd",
+                "type": "numeric(12,6)",
+                "nullable": false
+              },
+              {
+                "name": "ordinal",
+                "type": "smallint",
+                "nullable": false
+              },
+              {
+                "name": "post_intent_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "reconciled_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "run_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "window_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "apify_launch_approvals",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "actor_build",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "approval_reference",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "batch_max_usd",
+                "type": "numeric(12,6)",
+                "nullable": false
+              },
+              {
+                "name": "closed_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "expires_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "max_total_charge_usd",
+                "type": "numeric(12,6)",
+                "nullable": false
+              },
+              {
+                "name": "not_before",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "project_ref",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "window_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "apify_runs",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "account_ids",
+                "type": "uuid[]",
+                "nullable": false
+              },
+              {
+                "name": "actor_id",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "apify_run_id",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "dataset_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "finished_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "processed_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "processing_result",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "purpose",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "run_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "started_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "status",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "usage_usd",
+                "type": "numeric(12,6)",
+                "nullable": true
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "audit_log",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "action",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "actor_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "actor_type",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "after",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "before",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "entity_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "entity_type",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "collector_accounts",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "account_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "context",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "run_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "collector_launches",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "account_ids",
+                "type": "uuid[]",
+                "nullable": false
+              },
+              {
+                "name": "actor_id",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "apify_run_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "approval_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "dataset_complete",
+                "type": "boolean",
+                "nullable": false
+              },
+              {
+                "name": "launch_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "max_actor_starts",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "max_actor_usd",
+                "type": "numeric(12,6)",
+                "nullable": false
+              },
+              {
+                "name": "max_total_usd",
+                "type": "numeric(12,6)",
+                "nullable": false
+              },
+              {
+                "name": "next_offset",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "pass",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "purpose",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "results_limit",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "run_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "collector_pages",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "args_sha256",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "launch_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "page_offset",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "result",
+                "type": "jsonb",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "collector_passes",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "account_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "backfill_cursor",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "backfill_done",
+                "type": "boolean",
+                "nullable": false
+              },
+              {
+                "name": "error",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "items_new",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "items_seen",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "launch_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "pass",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "run_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "source_evidence",
+                "type": "boolean",
+                "nullable": false
+              },
+              {
+                "name": "stage_status",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "status",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "collector_requests",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "args_sha256",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "operation",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "request_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "result",
+                "type": "jsonb",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "collector_runs",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "registration_closed",
+                "type": "boolean",
+                "nullable": false
+              },
+              {
+                "name": "run_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "cost_ledger",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "category",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "competitor_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "cost_usd",
+                "type": "numeric(12,6)",
+                "nullable": false
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "day",
+                "type": "date",
+                "nullable": false
+              },
+              {
+                "name": "id",
+                "type": "bigint",
+                "nullable": false
+              },
+              {
+                "name": "item_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "meta",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "platform",
+                "type": "app.platform",
+                "nullable": true
+              },
+              {
+                "name": "provider",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "quantity",
+                "type": "numeric(14,4)",
+                "nullable": false
+              },
+              {
+                "name": "run_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "unit",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "foundation_gateway_leases",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "expires_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "request_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "slot",
+                "type": "smallint",
+                "nullable": false
+              },
+              {
+                "name": "window_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "foundation_gateway_rate_windows",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "admitted_count",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "bound_audience",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "bound_commit_sha",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "bound_deployment_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "close_count",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "closed_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "day_count",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "day_start",
+                "type": "date",
+                "nullable": true
+              },
+              {
+                "name": "environment",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "expires_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "minute_count",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "minute_start",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "namespace",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "project_ref",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "starts_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "window_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "foundation_gateway_requests",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "completed_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "error_code",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "lease_expires_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "operation",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "payload_sha256",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "read_apify_run_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "read_launch_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "read_started",
+                "type": "boolean",
+                "nullable": false
+              },
+              {
+                "name": "request_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "result",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "state",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "window_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "foundation_gateway_run_bindings",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "run_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "window_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "m05_jobs",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "actor_input",
+                "type": "jsonb",
+                "nullable": false
+              },
+              {
+                "name": "crawler_type",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "launch_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "max_website_urls_per_account",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "result",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "retry_of",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "retry_pending",
+                "type": "boolean",
+                "nullable": false
+              },
+              {
+                "name": "settled",
+                "type": "boolean",
+                "nullable": false
+              },
+              {
+                "name": "snapshot_date",
+                "type": "date",
+                "nullable": true
+              },
+              {
+                "name": "urls",
+                "type": "text[]",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "m05_quota",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "quota_day",
+                "type": "date",
+                "nullable": false
+              },
+              {
+                "name": "used_units",
+                "type": "integer",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "price_book",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "provider",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "sku",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "unit",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "usd_per_unit",
+                "type": "numeric(14,8)",
+                "nullable": false
+              },
+              {
+                "name": "valid_from",
+                "type": "date",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "scrape_run_accounts",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "account_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "error",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "finished_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "items_new",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "items_seen",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "run_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "status",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "scrape_runs",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "accounts_failed",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "accounts_ok",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "accounts_total",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "cost_usd",
+                "type": "numeric(12,6)",
+                "nullable": false
+              },
+              {
+                "name": "env",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "error",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "finished_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "items_new",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "items_seen",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "mode",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "n8n_execution_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "platform",
+                "type": "app.platform",
+                "nullable": true
+              },
+              {
+                "name": "started_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "status",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "workflow",
+                "type": "text",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "settings",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "key",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "updated_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "value",
+                "type": "jsonb",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "worker_gateway_leases",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "expires_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "request_id",
+                "type": "uuid",
+                "nullable": true
+              },
+              {
+                "name": "slot",
+                "type": "smallint",
+                "nullable": false
+              },
+              {
+                "name": "window_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "worker_gateway_rate_windows",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "admitted_count",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "bound_audience",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "bound_commit_sha",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "bound_deployment_id",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "close_count",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "closed_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "day_count",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "day_start",
+                "type": "date",
+                "nullable": true
+              },
+              {
+                "name": "environment",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "expires_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "minute_count",
+                "type": "integer",
+                "nullable": false
+              },
+              {
+                "name": "minute_start",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "namespace",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "project_ref",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "starts_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "window_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          },
+          {
+            "name": "worker_gateway_requests",
+            "schema": "ops",
+            "columns": [
+              {
+                "name": "completed_at",
+                "type": "timestamp with time zone",
+                "nullable": true
+              },
+              {
+                "name": "created_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "error_code",
+                "type": "text",
+                "nullable": true
+              },
+              {
+                "name": "lease_expires_at",
+                "type": "timestamp with time zone",
+                "nullable": false
+              },
+              {
+                "name": "operation",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "payload_sha256",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "request_id",
+                "type": "uuid",
+                "nullable": false
+              },
+              {
+                "name": "result",
+                "type": "jsonb",
+                "nullable": true
+              },
+              {
+                "name": "state",
+                "type": "text",
+                "nullable": false
+              },
+              {
+                "name": "window_id",
+                "type": "uuid",
+                "nullable": false
+              }
+            ],
+            "section": "Tables"
+          }
+        ],
+        "observed_at": "2026-10-29T00:16:04.239269+00:00"
+      }
+    }
+  ],
+  "observedAt": "2026-10-29T00:16:04.6424694+00:00"
+}

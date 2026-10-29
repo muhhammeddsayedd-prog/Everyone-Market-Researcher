@@ -1,0 +1,759 @@
+{
+  "phase": "m06_readonly_preflight",
+  "target": "zmotjsbzhzjvpelxvxlf",
+  "privateRead": true,
+  "authenticationAttempted": true,
+  "childrenClosed": true,
+  "scratchDeleted": true,
+  "status": "query_complete",
+  "nativeExit": 0,
+  "databaseClientClosed": true,
+  "sqlstate": null,
+  "queryStatus": "query_complete",
+  "rows": [
+    {
+      "m06_media_runtime": {
+        "queue": {
+          "leased": 0,
+          "visible": 267,
+          "message11": {
+            "msg_id": "11",
+            "item_id": "f7d4467e-a77f-48f3-b3a1-4f2f0fcd2129",
+            "read_ct": 0,
+            "visible": true,
+            "media_audits": 0
+          },
+          "remaining": 267,
+          "messages_1_to_10": [
+            {
+              "msg_id": "1",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "2",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "3",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "4",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "5",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "6",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "7",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "8",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "9",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            },
+            {
+              "msg_id": "10",
+              "queued": false,
+              "archived": true,
+              "ack_count": 1
+            }
+          ],
+          "next_visible_msg_id": "11",
+          "queue_after_10_sha256": "4dc20d3b2563fbdaa5e0c87041564fb23b33f0d5d2ebc1e656f6cba67e12d007",
+          "media_message_audits_after_10": 0
+        },
+        "claims": [
+          {
+            "id": 43,
+            "held": [],
+            "messages": [
+              {
+                "msg_id": "1",
+                "item_id": "9b481702-d5cf-49ad-bb36-a1065e090826",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "2",
+                "item_id": "7f6c37fe-1ef9-484b-bbab-6a5ef8a4d55c",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "3",
+                "item_id": "305865e2-8d81-41b1-9ca3-fe719f8f27f2",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "4",
+                "item_id": "7eac5667-cd5e-4465-bfff-19fe2710886d",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "5",
+                "item_id": "cc0346fd-33af-409b-97c7-b20523e369c4",
+                "read_ct": 1
+              }
+            ],
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "batch_limit": 5,
+            "execution_id": "31261"
+          },
+          {
+            "id": 65,
+            "held": [],
+            "messages": [
+              {
+                "msg_id": "10",
+                "item_id": "6eb65041-b629-4c12-aa06-9899ab22ac60",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "6",
+                "item_id": "a6b0b5d8-5b90-4ea1-8cf1-a198775fe218",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "7",
+                "item_id": "ad656243-fb37-41c8-94da-1bd45cfcd794",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "8",
+                "item_id": "c84883ab-e850-48ad-8345-88142a121c3c",
+                "read_ct": 1
+              },
+              {
+                "msg_id": "9",
+                "item_id": "038e9fc5-4338-4e26-ba52-d0e59cfd2a1a",
+                "read_ct": 1
+              }
+            ],
+            "created_at": "2026-10-29T00:05:17.826218+00:00",
+            "batch_limit": 5,
+            "execution_id": "31262"
+          }
+        ],
+        "target": {
+          "item_id": "6eb65041-b629-4c12-aa06-9899ab22ac60",
+          "platform": "instagram",
+          "account_id": "962c9c7e-aa0f-46ae-911b-3265859e0577",
+          "external_id": "DdHVn45MQub",
+          "item_status": "active",
+          "company_code": "C000",
+          "competitor_id": "94928d31-8983-403c-bdbd-f5f44613d631",
+          "locked_fields": [],
+          "source_present": true,
+          "thumbnail_path": "everyone-films/instagram/DdHVn45MQub/thumb.jpg",
+          "competitor_slug": "everyone-films",
+          "competitor_status": "active",
+          "expected_path_matches": true
+        },
+        "version": 1,
+        "finishes": [
+          {
+            "id": 59,
+            "result": {
+              "held": 0,
+              "bytes": 0,
+              "state": "completed",
+              "stored": 0,
+              "claimed": 5,
+              "expired": 0,
+              "skipped": 5,
+              "processed": 5,
+              "retryable": 0,
+              "infrastructure_cost_usd": null,
+              "reconciliation_required": 0
+            },
+            "created_at": "2026-10-29T00:02:53.99086+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 81,
+            "result": {
+              "held": 0,
+              "bytes": 141184,
+              "state": "completed",
+              "stored": 1,
+              "claimed": 5,
+              "expired": 0,
+              "skipped": 4,
+              "processed": 5,
+              "retryable": 0,
+              "infrastructure_cost_usd": null,
+              "reconciliation_required": 0
+            },
+            "created_at": "2026-10-29T00:05:19.875037+00:00",
+            "execution_id": "31262"
+          }
+        ],
+        "identity": {
+          "database": "postgres",
+          "current_user": "postgres",
+          "session_user": "postgres"
+        },
+        "quiescence": {
+          "running_parents": 0,
+          "media_lock_count": 0,
+          "unprocessed_actors": 0,
+          "unsettled_m05_jobs": 0,
+          "idle_media_sessions": 0,
+          "live_account_claims": 0,
+          "active_media_sessions": 0,
+          "unfinished_media_batches": 0,
+          "noncompleted_media_batches": 0
+        },
+        "observed_at": "2026-10-29T00:05:51.737811+00:00",
+        "preservation": {
+          "stories_setting": false,
+          "baseline_raw_280": true,
+          "baseline_items_280": true,
+          "raw_contract_sha256": "58ed871fd96029925462022de44cedddabcafedf4dea6b2c362fc65a9293cc54",
+          "story_cadence_sha256": "c5e93dff48c2baf7a5a452ccd2c44eef22611d14ca22934a6da3fad5479c7121",
+          "baseline_ai_queue_277": true,
+          "baseline_cost_rows_58": true,
+          "account_contract_sha256": "75784c5e03202b3270a22cc414d6d0f0d806dc7c4c0b8b8ba60b94355445a287",
+          "baseline_ai_extractions_0": true,
+          "baseline_cost_usd_1_355284": true,
+          "report_account_result_sha256": "ca46f14ba206128686971c71cf69dfa802e45b36270a7dc31c876e4fa76a573f",
+          "items_except_thumbnail_sha256": "71dafeff64434a3952e32ed90d9d9070555eb337d4d6e5e5802be07a5fdb30f3"
+        },
+        "item_outcomes": [
+          {
+            "id": 44,
+            "code": "no_source",
+            "item_id": "9b481702-d5cf-49ad-bb36-a1065e090826",
+            "msg_ids": [
+              "1"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:02:53.822305+00:00",
+            "execution_id": "31261",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 46,
+            "code": "no_source",
+            "item_id": "7f6c37fe-1ef9-484b-bbab-6a5ef8a4d55c",
+            "msg_ids": [
+              "2"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:02:53.83998+00:00",
+            "execution_id": "31261",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 48,
+            "code": "no_source",
+            "item_id": "305865e2-8d81-41b1-9ca3-fe719f8f27f2",
+            "msg_ids": [
+              "3"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:02:53.86658+00:00",
+            "execution_id": "31261",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 50,
+            "code": "no_source",
+            "item_id": "7eac5667-cd5e-4465-bfff-19fe2710886d",
+            "msg_ids": [
+              "4"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:02:53.882073+00:00",
+            "execution_id": "31261",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 52,
+            "code": "no_source",
+            "item_id": "cc0346fd-33af-409b-97c7-b20523e369c4",
+            "msg_ids": [
+              "5"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:02:53.897205+00:00",
+            "execution_id": "31261",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 66,
+            "code": "no_source",
+            "item_id": "a6b0b5d8-5b90-4ea1-8cf1-a198775fe218",
+            "msg_ids": [
+              "6"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:05:17.865067+00:00",
+            "execution_id": "31262",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 68,
+            "code": "no_source",
+            "item_id": "ad656243-fb37-41c8-94da-1bd45cfcd794",
+            "msg_ids": [
+              "7"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:05:17.880442+00:00",
+            "execution_id": "31262",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 70,
+            "code": "no_source",
+            "item_id": "c84883ab-e850-48ad-8345-88142a121c3c",
+            "msg_ids": [
+              "8"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:05:17.893681+00:00",
+            "execution_id": "31262",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 72,
+            "code": "no_source",
+            "item_id": "038e9fc5-4338-4e26-ba52-d0e59cfd2a1a",
+            "msg_ids": [
+              "9"
+            ],
+            "outcome": "skipped",
+            "created_at": "2026-10-29T00:05:17.906599+00:00",
+            "execution_id": "31262",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 0
+          },
+          {
+            "id": 78,
+            "code": "thumbnail_saved",
+            "item_id": "6eb65041-b629-4c12-aa06-9899ab22ac60",
+            "msg_ids": [
+              "10"
+            ],
+            "outcome": "stored",
+            "created_at": "2026-10-29T00:05:19.847362+00:00",
+            "execution_id": "31262",
+            "infrastructure_cost_usd": null,
+            "attempted_jpeg_body_bytes": 141184
+          }
+        ],
+        "asset_receipts": [
+          {
+            "kind": "thumbnail",
+            "width": 1206,
+            "height": 2144,
+            "item_id": "6eb65041-b629-4c12-aa06-9899ab22ac60",
+            "asset_id": 258,
+            "created_at": "2026-10-29T00:05:19.823864+00:00",
+            "storage_path": "everyone-films/instagram/DdHVn45MQub/thumb.jpg",
+            "competitor_id": "94928d31-8983-403c-bdbd-f5f44613d631",
+            "owner_matches_item": true,
+            "source_matches_item": true,
+            "path_matches_expected": true
+          }
+        ],
+        "message_events": [
+          {
+            "id": 38,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "1",
+            "item_id": "9b481702-d5cf-49ad-bb36-a1065e090826",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 39,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "2",
+            "item_id": "7f6c37fe-1ef9-484b-bbab-6a5ef8a4d55c",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 40,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "3",
+            "item_id": "305865e2-8d81-41b1-9ca3-fe719f8f27f2",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 41,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "4",
+            "item_id": "7eac5667-cd5e-4465-bfff-19fe2710886d",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 42,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "5",
+            "item_id": "cc0346fd-33af-409b-97c7-b20523e369c4",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.773587+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 45,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "1",
+            "item_id": "9b481702-d5cf-49ad-bb36-a1065e090826",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.822305+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 47,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "2",
+            "item_id": "7f6c37fe-1ef9-484b-bbab-6a5ef8a4d55c",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.83998+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 49,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "3",
+            "item_id": "305865e2-8d81-41b1-9ca3-fe719f8f27f2",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.86658+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 51,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "4",
+            "item_id": "7eac5667-cd5e-4465-bfff-19fe2710886d",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.882073+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 53,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "5",
+            "item_id": "cc0346fd-33af-409b-97c7-b20523e369c4",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:02:53.897205+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 54,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "1",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:02:53.912142+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 55,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "2",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:02:53.929426+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 56,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "3",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:02:53.944631+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 57,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "4",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:02:53.959779+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 58,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "5",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:02:53.975021+00:00",
+            "execution_id": "31261"
+          },
+          {
+            "id": 60,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "6",
+            "item_id": "a6b0b5d8-5b90-4ea1-8cf1-a198775fe218",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:05:17.826218+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 61,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "7",
+            "item_id": "ad656243-fb37-41c8-94da-1bd45cfcd794",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:05:17.826218+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 62,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "8",
+            "item_id": "c84883ab-e850-48ad-8345-88142a121c3c",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:05:17.826218+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 63,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "9",
+            "item_id": "038e9fc5-4338-4e26-ba52-d0e59cfd2a1a",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:05:17.826218+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 64,
+            "code": null,
+            "action": "media_message_claim",
+            "msg_id": "10",
+            "item_id": "6eb65041-b629-4c12-aa06-9899ab22ac60",
+            "outcome": null,
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:05:17.826218+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 67,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "6",
+            "item_id": "a6b0b5d8-5b90-4ea1-8cf1-a198775fe218",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:05:17.865067+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 69,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "7",
+            "item_id": "ad656243-fb37-41c8-94da-1bd45cfcd794",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:05:17.880442+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 71,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "8",
+            "item_id": "c84883ab-e850-48ad-8345-88142a121c3c",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:05:17.893681+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 73,
+            "code": "no_source",
+            "action": "media_message_outcome",
+            "msg_id": "9",
+            "item_id": "038e9fc5-4338-4e26-ba52-d0e59cfd2a1a",
+            "outcome": "skipped",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:05:17.906599+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 74,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "6",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:05:17.919787+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 75,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "7",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:05:17.934445+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 76,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "8",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:05:17.947495+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 77,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "9",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:05:17.960554+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 79,
+            "code": "thumbnail_saved",
+            "action": "media_message_outcome",
+            "msg_id": "10",
+            "item_id": "6eb65041-b629-4c12-aa06-9899ab22ac60",
+            "outcome": "stored",
+            "read_ct": 1,
+            "created_at": "2026-10-29T00:05:19.847362+00:00",
+            "execution_id": "31262"
+          },
+          {
+            "id": 80,
+            "code": null,
+            "action": "media_message_ack",
+            "msg_id": "10",
+            "item_id": null,
+            "outcome": null,
+            "read_ct": null,
+            "created_at": "2026-10-29T00:05:19.86102+00:00",
+            "execution_id": "31262"
+          }
+        ],
+        "storage_object": {
+          "id": "8a096fe6-5473-4d88-98ed-b62a2d10f31f",
+          "name": "everyone-films/instagram/DdHVn45MQub/thumb.jpg",
+          "size": 141184,
+          "mimetype": "image/jpeg",
+          "bucket_id": "media",
+          "created_at": "2026-10-29T00:05:19.798174+00:00",
+          "updated_at": "2026-10-29T00:05:19.798174+00:00"
+        },
+        "replay_invariants": {
+          "items": 280,
+          "ai_queue": 277,
+          "cost_usd": 1.355284,
+          "cost_rows": 58,
+          "raw_items": 280,
+          "embed_queue": 0,
+          "media_queue": 267,
+          "media_assets": 258,
+          "ai_extractions": 0,
+          "media_audit_rows": 44,
+          "media_audit_sha256": "3791a816c35aa4877bbfa1c8e3f4db49879ff575caaffaaadce85b95bdc59e88",
+          "media_queue_sha256": "4dc20d3b2563fbdaa5e0c87041564fb23b33f0d5d2ebc1e656f6cba67e12d007",
+          "target_asset_sha256": "9ca75445e12d4125a0eb85c4dfe4abeb471e7d4c6d7bd2ad19be7f66003171ba"
+        },
+        "batch_execution_ids": [
+          "31261",
+          "31262"
+        ]
+      }
+    }
+  ],
+  "observedAt": "2026-10-29T00:05:52.2449119+00:00"
+}
