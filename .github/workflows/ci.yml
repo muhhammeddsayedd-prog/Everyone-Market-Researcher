@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main, m04-collectors-vimeo-instagram, m05-collectors-web-youtube-linkedin]
   push:
-    branches: [main, m06-collectors-stories-upkeep]
+    branches: [main, m06-collectors-stories-upkeep, m06-stories-campaign, m06-upkeep-local]
 
 permissions:
   contents: read
