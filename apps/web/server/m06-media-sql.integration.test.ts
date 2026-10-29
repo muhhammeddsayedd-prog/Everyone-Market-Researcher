@@ -46,28 +46,20 @@ describe.skipIf(process.env.EMR_M06_LOCAL_SQL_TEST !== 'true')(
       const before = (await c.query(baseline)).rows[0];
       try {
         await c.query('begin');
-        for (const [fn, file] of [
-          ['ops.set_account_external_id(uuid,text,text)', '20261026013910_m04_vimeo_account_resolution.sql'],
-          ['ops.collector_execute(uuid,text,jsonb)', '20261027092832_m04_collector_product_contracts.sql'],
-          [
-            'ops.claim_recent_instagram_accounts(uuid,uuid[],text[])',
-            '20261027192743_m04_recent_instagram_dev_eligibility.sql',
-          ],
-          ['ops.m05_execute(uuid,text,jsonb)', '20261028020745_m05_web_youtube_linkedin.sql'],
-          ['ops.get_media_targets(uuid[])', '20261028190835_m06_media_contracts.sql'],
-        ] as const) {
-          if (file.includes('recent_instagram')) {
-            const found = (
-              await c.query(
-                "select 1 from supabase_migrations.schema_migrations where version='20261027192743'",
-              )
-            ).rowCount;
-            if (found) continue;
-          } else if ((await c.query('select to_regprocedure($1) f', [fn])).rows[0].f) continue;
-          await c.query(
-            readFileSync(new URL('../../../supabase/migrations/' + file, import.meta.url), 'utf8'),
-          );
-        }
+        const applied = new Set(
+          (await c.query('select version from supabase_migrations.schema_migrations')).rows.map(
+            (r) => r.version,
+          ),
+        );
+        const directory = new URL('../../../supabase/migrations/', import.meta.url);
+        // Match the full CI schema and its non-superuser migration owner even
+        // when the developer's preserved local database predates M06.
+        await c.query('set local role postgres');
+        for (const file of readdirSync(directory)
+          .filter((file) => /^\d{14}_.+\.sql$/.test(file))
+          .sort())
+          if (!applied.has(file.slice(0, 14))) await c.query(readFileSync(new URL(file, directory), 'utf8'));
+        await c.query('reset role');
         const competitor = randomUUID(),
           account = randomUUID();
         await c.query(
@@ -114,6 +106,9 @@ describe.skipIf(process.env.EMR_M06_LOCAL_SQL_TEST !== 'true')(
         const initial = (await ingest()).rows[0].r;
         expect(initial.inserted).toBe(1);
         const item = initial.new_item_ids[0];
+        await c.query('reset role');
+        await c.query('select pg_advisory_lock(73106,31)');
+        await c.query('set session authorization n8n_writer');
         const png = await sharp({ create: { width: 2560, height: 720, channels: 3, background: '#abcdef' } })
           .png()
           .toBuffer();
@@ -121,9 +116,7 @@ describe.skipIf(process.env.EMR_M06_LOCAL_SQL_TEST !== 'true')(
         let uploadedBytes = 0;
         const ports: MediaPorts = {
           claim: async () =>
-            (await c.query("select * from ops.claim_queue_batch('media',50,600)")).rows.filter(
-              (r) => r.message.item_id === item,
-            ),
+            (await c.query("select ops.claim_story_media_batch('91001',50) r")).rows[0].r.messages,
           targets: async (ids) =>
             (await c.query('select ops.get_media_targets($1::uuid[]) r', [ids])).rows[0].r,
           download: async () => ({ status: 200, contentType: 'image/png', bytes: png }),
@@ -157,18 +150,22 @@ describe.skipIf(process.env.EMR_M06_LOCAL_SQL_TEST !== 'true')(
           },
           record: async (o) => {
             expect(o.cost_usd).toBeNull();
+            await c.query("select ops.record_story_media_outcome('91001',$1::jsonb)", [JSON.stringify(o)]);
             events.push('record');
           },
           ack: async (ids) => {
-            await c.query("select ops.ack_queue('media',$1::bigint[])", [ids]);
+            await c.query("select ops.ack_story_media_batch('91001',$1::bigint[])", [ids]);
             events.push('actual-ack');
           },
         };
         expect((await runMediaBatch(ports)).outcomes[0]?.outcome).toBe('stored');
         expect(events).toEqual(['mock-upload', 'actual-save', 'record', 'actual-ack']);
+        expect((await c.query("select ops.finish_story_media_batch('91001') r")).rows[0].r.state).toBe(
+          'completed',
+        );
         expect(uploadedBytes).toBeGreaterThan(0);
         expect((await ingest()).rows[0].r.inserted).toBe(0);
-        await c.query('reset role');
+        await c.query('reset session authorization');
         const saved = (
           await c.query(
             'select i.thumbnail_path,i.ai_status,m.width,m.height,(select count(*) from app.media_assets where item_id=i.id)::int assets from app.items i join app.media_assets m on m.item_id=i.id where i.id=$1',
@@ -183,8 +180,11 @@ describe.skipIf(process.env.EMR_M06_LOCAL_SQL_TEST !== 'true')(
           ai_status: 'pending',
         });
         expect(
-          (await c.query("select count(*)::int n from pgmq.q_media where message->>'item_id'=$1", [item]))
-            .rows[0].n,
+          (
+            await c.query("select count(*)::int n from pgmq.q_media_stories where message->>'item_id'=$1", [
+              item,
+            ])
+          ).rows[0].n,
         ).toBe(0);
         expect(
           (
@@ -195,6 +195,8 @@ describe.skipIf(process.env.EMR_M06_LOCAL_SQL_TEST !== 'true')(
         ).toBe(1);
       } finally {
         await c.query('rollback');
+        await c.query('reset session authorization');
+        await c.query('select pg_advisory_unlock(73106,31)');
         try {
           expect((await c.query(baseline)).rows[0]).toEqual(before);
         } finally {
@@ -447,12 +449,14 @@ async function connectedSqlFixture(
       (await c.query('select version from supabase_migrations.schema_migrations')).rows.map((r) => r.version),
     );
     const directory = new URL('../../../supabase/migrations/', import.meta.url);
+    await c.query('set local role postgres');
     for (const file of readdirSync(directory)
       .filter((file) => /^\d{14}_.+\.sql$/.test(file))
       .sort()) {
       if (applied.has(file.slice(0, 14))) continue;
       await c.query(readFileSync(new URL(file, directory), 'utf8'));
     }
+    await c.query('reset role');
     const competitor = randomUUID(),
       account = randomUUID();
     await c.query(
