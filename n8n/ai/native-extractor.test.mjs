@@ -34,7 +34,12 @@ const provider = {
 };
 const receipt = (state, result) => ({
   statusCode: 200,
-  body: { version: 1, requestId: state.request.requestId, operation: state.request.operation, result },
+  body: {
+    version: 1,
+    requestId: state.request.requestId,
+    operation: state.request.operation,
+    result: { request_hash: 'a'.repeat(64), ...result },
+  },
 });
 const claim = (state, extra = {}) =>
   advanceM07Gateway(
@@ -204,4 +209,50 @@ test('uncertain apply checks same attempt once and acknowledges only terminal sa
   s = advanceM07Gateway(s, { statusCode: 503 });
   assert.equal(s.action, 'done');
   assert.equal(s.result.status, 'held');
+});
+
+test('requires exact dev Preview metadata and immutable preparation/dispatch hash', () => {
+  const dev = {
+    ...transport,
+    profile: 'dev',
+    audience: 'https://everyone-market-researcher-controlled.vercel.app',
+    projectRef: 'zmotjsbzhzjvpelxvxlf',
+    projectId: 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu',
+    branch: 'm07-ai-understanding',
+    commitSha: 'a'.repeat(40),
+    deploymentId: 'dpl_controlled',
+  };
+  assert.equal(buildNativeExtractor(bindings, dev).workflow.active, false);
+  for (const change of [
+    { branch: 'main' },
+    { projectRef: 'hkiafqrcxaafdbcvjlzv' },
+    { audience: 'https://unrelated.example.com' },
+    { commitSha: 'invalid' },
+  ])
+    assert.throws(() => buildNativeExtractor(bindings, { ...dev, ...change }));
+  let s = claim(initializeM07Extraction({ env: 'dev' }, '73123'));
+  s = advanceM07Gateway(
+    s,
+    receipt(s, {
+      attempt_id: attempt,
+      owner_id: s.owner_id,
+      item_id: item,
+      state: 'prepared',
+      provider_request: provider,
+    }),
+  );
+  assert.throws(
+    () =>
+      advanceM07Gateway(
+        s,
+        receipt(s, {
+          attempt_id: attempt,
+          state: 'dispatched',
+          admitted: true,
+          request_hash: 'b'.repeat(64),
+          provider_request: provider,
+        }),
+      ),
+    /HASH_MISMATCH/,
+  );
 });

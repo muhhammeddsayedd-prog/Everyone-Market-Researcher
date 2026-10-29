@@ -106,12 +106,12 @@ Captions are truncated to 6,000 characters.
 |---|---|
 | item | title + summary_en + caption_en (or original) + brand + competitor + content_type + occasion + tags |
 | campaign | title + summary_en + brand + competitor + agency + occasion + the titles of its items |
-| competitor | name + categories + in-house + the summaries of its last 20 campaigns (refreshed weekly) |
+| competitor | name + categories + in-house + the summaries of its last 20 items (stable published-at/id ordering; refreshed by an inactive weekly contract) |
 | organization | name + industry + aliases (for resolution) |
 | brief | title + headline + body |
 
 - **Batching:** up to 100 inputs per embeddings request.
-- **Skip unchanged:** skip when `content_hash` hasn't changed (`ops.upsert_embeddings` checks this).
+- **Skip unchanged:** exact bounded text hash, model,1536 dimensions and input-contract version must all match. Current M07 competitor inputs use the last20 item summaries; campaign-summary inputs belong to the later campaign implementation.
 - **Search queries:** the web app and the API embed the user's query at search time with the same model. This is the only OpenAI call outside n8n; it runs server-side.
 
 ## 8. Evaluation (M07 and M12)

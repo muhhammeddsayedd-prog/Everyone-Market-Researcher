@@ -27,7 +27,8 @@ export const m07ExtractionReceipt = z.strictObject({
   result: z.unknown(),
 });
 export type M07ExtractionRequest = z.infer<typeof m07ExtractionRequest>;
-export type M07DbOperation = 'claim' | 'prepare' | 'dispatch' | 'status' | 'apply' | 'fail' | 'ack';
+export type M07DbOperation =
+  'claim' | 'prepare' | 'frozen' | 'freeze' | 'dispatch' | 'status' | 'apply' | 'fail' | 'ack';
 export type M07Dispatch = (
   operation: M07DbOperation,
   args: Record<string, unknown>,

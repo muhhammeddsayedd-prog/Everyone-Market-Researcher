@@ -145,11 +145,17 @@ export function advanceM07Gateway(original, reply) {
         ? m07Finish(state, 'completed', r.result)
         : m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });
     if (r.state === 'failed') return m07Finish(state, 'failed', r.result ?? null, 'known_failed_attempt');
-    if (r.state !== 'prepared' || !m07ProviderRequest(r.provider_request))
+    if (
+      r.state !== 'prepared' ||
+      !m07ProviderRequest(r.provider_request) ||
+      !/^[a-f0-9]{64}$/.test(r.request_hash)
+    )
       return m07Finish(state, 'held', null, 'prepare_not_ready');
+    state.request_hash = r.request_hash;
     return m07Request(state, 'dispatch', { attempt_id: state.attempt_id, owner_id: state.owner_id });
   }
   if (op === 'dispatch') {
+    if (r.request_hash !== state.request_hash) throw Error('M07_REQUEST_HASH_MISMATCH');
     if (r.admitted !== true || r.state !== 'dispatched')
       return m07Finish(state, 'held', null, 'dispatch_not_admitted');
     if (!m07ProviderRequest(r.provider_request)) throw Error('M07_PROVIDER_REQUEST_INVALID');
@@ -222,7 +228,6 @@ const one =
 function localTransport(value) {
   if (
     !m07Object(value) ||
-    Object.keys(value).sort().join(',') !== 'audience,credential' ||
     !m07Object(value.credential) ||
     Object.keys(value.credential).sort().join(',') !== 'id,name,type' ||
     value.credential.type !== 'httpCustomAuth' ||
@@ -231,15 +236,27 @@ function localTransport(value) {
   )
     throw Error('M07_BINDING_REQUIRED');
   const u = new URL(value.audience);
-  if (
+  if (u.pathname !== '/' || u.username || u.password || u.search || u.hash)
+    throw Error('M07_LOCAL_TRANSPORT_REQUIRED');
+  if (value.profile === 'dev') {
+    if (
+      Object.keys(value).sort().join(',') !==
+        'audience,branch,commitSha,credential,deploymentId,profile,projectId,projectRef' ||
+      u.protocol !== 'https:' ||
+      !/^everyone-market-researcher-[a-z0-9-]+\.vercel\.app$/.test(u.hostname) ||
+      u.port ||
+      value.projectRef !== 'zmotjsbzhzjvpelxvxlf' ||
+      value.projectId !== 'prj_O7bYgrXSpOxIysNJTpCunqA7D4Fu' ||
+      value.branch !== 'm07-ai-understanding' ||
+      !/^[a-f0-9]{40}$/.test(value.commitSha) ||
+      !/^dpl_[A-Za-z0-9]{1,80}$/.test(value.deploymentId)
+    )
+      throw Error('M07_DEV_TRANSPORT_REQUIRED');
+  } else if (
+    Object.keys(value).sort().join(',') !== 'audience,credential' ||
     u.protocol !== 'http:' ||
     !['localhost', '127.0.0.1', '[::1]'].includes(u.hostname) ||
-    !u.port ||
-    u.pathname !== '/' ||
-    u.username ||
-    u.password ||
-    u.search ||
-    u.hash
+    !u.port
   )
     throw Error('M07_LOCAL_TRANSPORT_REQUIRED');
   return structuredClone(value);
@@ -328,11 +345,24 @@ function definition(input, transport, ready) {
     runnableWorkflow: ready,
     liveEnabled: false,
     hostedAcceptance: false,
-    definitionProfile: 'inactive_local_only',
-    bindingManifest: { ready, environment: 'local', audience: c.audience },
+    definitionProfile: c.profile === 'dev' ? 'inactive_dev_gateway' : 'inactive_local_only',
+    bindingManifest: {
+      ready,
+      environment: c.profile === 'dev' ? 'dev' : 'local',
+      audience: c.audience,
+      ...(c.profile === 'dev'
+        ? {
+            projectRef: c.projectRef,
+            projectId: c.projectId,
+            branch: c.branch,
+            commitSha: c.commitSha,
+            deploymentId: c.deploymentId,
+          }
+        : {}),
+    },
     boundary: {
-      localOnly: true,
-      accounting: 'simulated_only',
+      localOnly: c.profile !== 'dev',
+      accounting: c.profile === 'dev' ? 'provider_snapshot' : 'simulated_only',
       batchSize: 1,
       automaticPaidRetry: false,
       schedule: false,
@@ -341,7 +371,7 @@ function definition(input, transport, ready) {
       embeddingExecution: false,
     },
     workflow: {
-      name: 'WF-30 · AI extractor [local M07]',
+      name: 'WF-30 Ã‚Â· AI extractor [local M07]',
       active: false,
       nodes,
       settings: s,

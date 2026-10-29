@@ -1,0 +1,172 @@
+{
+  "observed_at": "2026-10-29T16:26:09.030934+00:00",
+  "environment": "local and controlled provider responses only",
+  "accepted_base": "3dff9f477ab72619d425cf955b60e7fd5de13cff",
+  "accepted_ci_carried": 40899862686,
+  "definition_chain": 26,
+  "pending_expected_dev_migrations": [
+    {
+      "version": "20261029143813",
+      "file": "supabase/migrations/20261029143813_m07_ai.sql",
+      "sha256": "66060d4e3078c7ffd822c9719257bfe433ac67b4a5ef23f143c2a04f34ecebb3",
+      "hosted_applied_this_slice": false
+    },
+    {
+      "version": "20261029154649",
+      "file": "supabase/migrations/20261029154649_m07_embeddings.sql",
+      "sha256": "29177e7571a42dfe0da8d2a2d265563436a7e5c1b8476b0c9b40dfc5d83628cf",
+      "hosted_applied_this_slice": false
+    }
+  ],
+  "accepted25_hashes_preserved": [
+    {
+      "file": "supabase/migrations/20261017172928_extensions_schemas_roles.sql",
+      "sha256": "478c9272e785b6bbe76824077fb2c6f574caaa2bd7f58d1941af051ce778080d"
+    },
+    {
+      "file": "supabase/migrations/20261017172931_core_tables.sql",
+      "sha256": "4f1be3f6191885add916b164975ba10a8697069a0373a05df4e03fa53ea7cba3"
+    },
+    {
+      "file": "supabase/migrations/20261017172934_auth_rls_views.sql",
+      "sha256": "8986d801f5a85ea40a620911cd59c88ac44414a1b7fde11fd469b6bff96282f9"
+    },
+    {
+      "file": "supabase/migrations/20261017172937_rpc_pipeline_core.sql",
+      "sha256": "978c144abf780d520f9b7303ba129ee5336f50ce4a81292ce48b5be9a6dd8803"
+    },
+    {
+      "file": "supabase/migrations/20261017172940_rpc_app_search.sql",
+      "sha256": "6111c5291e9c305e3e713180c0441ff5ffbf52b3b88f589d5d16fee55769171c"
+    },
+    {
+      "file": "supabase/migrations/20261017172943_storage_cron.sql",
+      "sha256": "859466fadfd940445ffe4b457e7250a179c93731e1f34736a629fe20df6e9c68"
+    },
+    {
+      "file": "supabase/migrations/20261017172945_seed_taxonomies.sql",
+      "sha256": "af0880dd9f92d0ba05938e55f3c0b48b162b4437a8add8a133ca37b1d7971234"
+    },
+    {
+      "file": "supabase/migrations/20261018034220_rpc_n8n_foundation.sql",
+      "sha256": "457ad4351b08c47b996ae67062ed701efb7d5ef63ea7658d20931f2d5dc5d3fd"
+    },
+    {
+      "file": "supabase/migrations/20261018035417_price_book_plan.sql",
+      "sha256": "779f55b29db698f89d64bab6b099b29b3c7485d8d021d14b0bb2e15488e680cd"
+    },
+    {
+      "file": "supabase/migrations/20261018070042_n8n_worker_gateway_admission.sql",
+      "sha256": "98ebdfad9fffa819773fdbee5e3b9b8374be8a6f58497593084aed4077e9b856"
+    },
+    {
+      "file": "supabase/migrations/20261018231756_m03_actor_launch_admission.sql",
+      "sha256": "fc6955938bba3d08b6a1140258a1db2d0569a5f441c8cc5c934847eb84116600"
+    },
+    {
+      "file": "supabase/migrations/20261018232014_m03_foundation_gateway.sql",
+      "sha256": "ea1385b734e243bed4dea0030f4975a81d38d41338cb8d94d6086dd83916d334"
+    },
+    {
+      "file": "supabase/migrations/20261018232922_m03_foundation_safety_receipts.sql",
+      "sha256": "dffa2c23d0102bb7382106c9800e05b5806a1eee89580794aa87bdd63a7f05a5"
+    },
+    {
+      "file": "supabase/migrations/20261018233338_m03_foundation_boundary_hardening.sql",
+      "sha256": "bf930602b402ef0b4649e9399ed2dcb9d6f2bf576a08d9313f352ccfab4d6c90"
+    },
+    {
+      "file": "supabase/migrations/20261023163755_m03_foundation_window_continuation.sql",
+      "sha256": "08400005da4b595d7d1222ff77c31ba745968c3ab3d9dc1d7353f5531c7c8fde"
+    },
+    {
+      "file": "supabase/migrations/20261026013910_m04_vimeo_account_resolution.sql",
+      "sha256": "e2fa1cbf59b2e010b8b76caff6a34c5a752074e1e843071c36463c5a1a9717c1"
+    },
+    {
+      "file": "supabase/migrations/20261027092832_m04_collector_product_contracts.sql",
+      "sha256": "19eb07af9446189496cde17d1b9a735b99816c5008c37588d38cddbc41e6a05a"
+    },
+    {
+      "file": "supabase/migrations/20261027192743_m04_recent_instagram_dev_eligibility.sql",
+      "sha256": "635b8303d69ab32560d5acda903fee4c4555a9b3f6f35923d4d7b3655513f61d"
+    },
+    {
+      "file": "supabase/migrations/20261028020745_m05_web_youtube_linkedin.sql",
+      "sha256": "f3ff025065106733f7c76aec963e465a045270876c642db69e131df72f6d865e"
+    },
+    {
+      "file": "supabase/migrations/20261028190835_m06_media_contracts.sql",
+      "sha256": "9c175f8bfa82f71b61143a5e5e9e52dee5954a89dfab1723737f6206a9e03108"
+    },
+    {
+      "file": "supabase/migrations/20261028223330_m06_cadence_health.sql",
+      "sha256": "44b404bcf3a307f1ba0b9bf34ff2ffb47777ba837883f245fd2dd323b825d70e"
+    },
+    {
+      "file": "supabase/migrations/20261029005731_m06_story_collection_bakeoff.sql",
+      "sha256": "1811fef97bb381baa928583e4197725d56acc719d36079e54d211afd41fe578f"
+    },
+    {
+      "file": "supabase/migrations/20261029092746_m06_story_campaign.sql",
+      "sha256": "042b463f17a87f6c23e4aaf151ac820b4bc0c2e3aa4a284251d8ef7549b84b84"
+    },
+    {
+      "file": "supabase/migrations/20261029114814_m06_upkeep_contracts.sql",
+      "sha256": "4dfb661015e9a57eca6fcf0bb30a49fa78a6e9dd0a6c6e647edc9e4c9f86e7c2"
+    },
+    {
+      "file": "supabase/migrations/20261029143813_m07_ai.sql",
+      "sha256": "66060d4e3078c7ffd822c9719257bfe433ac67b4a5ef23f143c2a04f34ecebb3"
+    }
+  ],
+  "qualification": {
+    "native_pgtap_files": 4,
+    "native_pgtap_assertions": 245,
+    "new_embedding_assertions": 88,
+    "accepted_extraction_assertions": 101,
+    "legacy_schema_assertions": 21,
+    "legacy_search_assertions": 35,
+    "app_and_actual_sql": {
+      "passed": 25,
+      "failed": 0,
+      "pending": 0
+    },
+    "normalizer": {
+      "passed": 17,
+      "failed": 0
+    },
+    "native_workflow_and_contract_tests": 29,
+    "ci_safety": 22,
+    "typecheck": "passed",
+    "types": "native Supabase CLI2.121.0 app,ops,ingest,api;26-definition schema",
+    "security_advisors_findings": 0,
+    "performance_advisors_findings": 0
+  },
+  "local_fixture_database": {
+    "history_versions": 14,
+    "reset": false,
+    "preservation": "rollback integration verifies original queue/item/embedding/cost/history signatures"
+  },
+  "qualifier": {
+    "name": "emr-m07-embedding-qualifier",
+    "seed": "checked-in synthetic supabase/seed.sql only, no copied hosted/collected data",
+    "cleanup": "owned qualifier stopped and removed with its owned anonymous volume; verified absent;10 synthetic seed items,0raw/0batch rows at close"
+  },
+  "provider_requests": 0,
+  "incremental_provider_usd": 0,
+  "infrastructure_charges": "unknown",
+  "accounting_mode": "simulated controlled responses",
+  "hosted_database_operations": 0,
+  "private_runtime_credential_reads": 0,
+  "campaign_mutations": 0,
+  "remaining_live_facts": [
+    "Actual model/account access",
+    "Exact dev migration history and current target state",
+    "Selected pending item/entity UUIDs",
+    "Preview and native bindings",
+    "Independent same-project OIDC protection access",
+    "Real model output, vectors and usage accounting"
+  ],
+  "next_packet": "live-ai-dev-packet-20261029.md"
+}

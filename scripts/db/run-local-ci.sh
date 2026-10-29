@@ -79,7 +79,7 @@ for suite in supabase/tests/*.sql; do
     *) old_suites+=("$suite") ;;
   esac
 done
-[[ "${#old_suites[@]}" == 21 ]] || { printf 'Expected twenty-one SQL suites including local M07 extraction.\n' >&2; exit 1; }
+[[ "${#old_suites[@]}" == 22 ]] || { printf 'Expected twenty-two SQL suites including local M07 extraction and embeddings.\n' >&2; exit 1; }
 run_private 'pgTAP' supabase test db --local "${old_suites[@]}"
 
 # Emit only numeric TAP summaries. An empty/skipped or incomplete suite is not acceptance.
@@ -93,8 +93,8 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     verdict=PASS
   fi
 done <"$private_log"
-if [[ "$files" != 21 || "$assertions" -eq 0 || "$verdict" != PASS ]]; then
-  printf 'pgTAP: FAIL (expected twenty-one files, nonzero assertions and PASS).\n' >&2
+if [[ "$files" != 22 || "$assertions" -eq 0 || "$verdict" != PASS ]]; then
+  printf 'pgTAP: FAIL (expected twenty-two files, nonzero assertions and PASS).\n' >&2
   exit 1
 fi
 printf 'pgTAP: %s files, %s assertions, PASS\n' "$files" "$assertions"
@@ -199,6 +199,18 @@ if(!r.success || r.numFailedTests!==0 || r.numPendingTests!==0 || !f?.assertionR
   console.error('M07 extraction SQL/app contract: FAIL (missing, skipped or failed assertions).');process.exit(1);
 }
 console.log('M07 extraction SQL/app contract: PASS (generated WF-30, actual restricted SQL, controlled Responses fixtures, replay and uncertainty)');
+NODE
+
+run_private 'M07 embeddings SQL/app contract' env EMR_M07_EMBEDDINGS_LOCAL_SQL_TEST=true pnpm --filter web exec vitest run server/m07-embeddings-sql.integration.test.ts --reporter=json --outputFile "$private_report"
+node --input-type=module - "$private_report" <<'NODE'
+import {readFileSync} from 'node:fs';
+let r;
+try {r=JSON.parse(readFileSync(process.argv[2],'utf8'));} catch {console.error('M07 embeddings SQL/app contract: FAIL (invalid report).');process.exit(1);}
+const f=r.testResults?.find(v=>v.name?.replaceAll('\\','/').endsWith('/server/m07-embeddings-sql.integration.test.ts'));
+if(!r.success || r.numFailedTests!==0 || r.numPendingTests!==0 || !f?.assertionResults?.length || f.assertionResults.some(v=>v.status!=='passed')) {
+  console.error('M07 embeddings SQL/app contract: FAIL (missing, skipped or failed assertions).');process.exit(1);
+}
+console.log('M07 embeddings SQL/app contract: PASS (generated WF-33, actual restricted SQL, controlled embedding HTTP fixtures, replay and uncertainty)');
 NODE
 
 run_private 'Generated database types' bash -c 'supabase gen types typescript --local --schema app,ops,ingest,api --output-format text > "$1"' _ "$private_types"

@@ -449,7 +449,7 @@ function costOf(usage, priceBook, model) {
     1000000;
   return Number.isFinite(cost) && cost >= 0 ? cost : null;
 }
-function parseResponse(resp, tax) {
+function parseResponse(resp, tax, validationSchema = extractionSchema.schema) {
   const usage = normalizedUsage(aiRecord(resp) ? resp.usage : undefined);
   const responseId =
     aiRecord(resp) && typeof resp.id === 'string' && /^[A-Za-z0-9_-]{1,200}$/.test(resp.id) ? resp.id : null;
@@ -497,7 +497,7 @@ function parseResponse(resp, tax) {
   } catch {
     return reject('AI_RESPONSE_JSON_INVALID');
   }
-  if (!aiValidateSchema(result, extractionSchema.schema)) return reject('AI_RESPONSE_SCHEMA_INVALID');
+  if (!aiValidateSchema(result, validationSchema)) return reject('AI_RESPONSE_SCHEMA_INVALID');
   let codes;
   try {
     codes = aiTaxonomy(tax);
@@ -523,7 +523,7 @@ function parseResponse(resp, tax) {
     result.confidence[key] = Math.min(1, Math.max(0, result.confidence[key]));
   result.tags = [...new Set([...result.tags, ...unknown])];
   // Preserve unknown source codes rather than silently truncating them or the existing tags.
-  if (!aiValidateSchema(result, extractionSchema.schema)) return reject('AI_TAXONOMY_TAG_LIMIT');
+  if (!aiValidateSchema(result, validationSchema)) return reject('AI_TAXONOMY_TAG_LIMIT');
   return { ok: true, result, error: null, usage, response_id: responseId };
 }
 if (typeof module !== 'undefined') {

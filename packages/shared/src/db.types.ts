@@ -845,30 +845,42 @@ export type Database = {
       embeddings: {
         Row: {
           content_hash: string;
+          dimensions: number;
           embedding: string;
           entity_id: string;
           entity_type: string;
           id: number;
+          input_contract_version: string;
           model: string;
+          source_batch_id: string | null;
+          source_prepared_at: string | null;
           updated_at: string;
         };
         ComputedFields: never;
         Insert: {
           content_hash: string;
+          dimensions?: number;
           embedding: string;
           entity_id: string;
           entity_type: string;
           id?: never;
+          input_contract_version?: string;
           model: string;
+          source_batch_id?: string | null;
+          source_prepared_at?: string | null;
           updated_at?: string;
         };
         Update: {
           content_hash?: string;
+          dimensions?: number;
           embedding?: string;
           entity_id?: string;
           entity_type?: string;
           id?: never;
+          input_contract_version?: string;
           model?: string;
+          source_batch_id?: string | null;
+          source_prepared_at?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -3418,6 +3430,136 @@ export type Database = {
         };
         Relationships: [];
       };
+      m07_ai_snapshots: {
+        Row: {
+          attempt_id: string;
+          prepared_at: string;
+          request_hash: string;
+          snapshot: NonNullable<Json>;
+        };
+        ComputedFields: never;
+        Insert: {
+          attempt_id: string;
+          prepared_at?: string;
+          request_hash: string;
+          snapshot: NonNullable<Json>;
+        };
+        Update: {
+          attempt_id?: string;
+          prepared_at?: string;
+          request_hash?: string;
+          snapshot?: NonNullable<Json>;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'm07_ai_snapshots_attempt_id_fkey';
+            columns: ['attempt_id'];
+            isOneToOne: true;
+            referencedRelation: 'm07_ai_attempts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      m07_embed_batches: {
+        Row: {
+          accepted_response: Json | null;
+          acked_at: string | null;
+          created_at: string;
+          dispatched_at: string | null;
+          id: string;
+          lease_until: string;
+          owner_id: string;
+          prepared_at: string | null;
+          request_hash: string | null;
+          response_hash: string | null;
+          result: Json | null;
+          settled_at: string | null;
+          snapshot: Json | null;
+          state: string;
+          usage_known: boolean;
+        };
+        ComputedFields: never;
+        Insert: {
+          accepted_response?: Json | null;
+          acked_at?: string | null;
+          created_at?: string;
+          dispatched_at?: string | null;
+          id?: string;
+          lease_until: string;
+          owner_id: string;
+          prepared_at?: string | null;
+          request_hash?: string | null;
+          response_hash?: string | null;
+          result?: Json | null;
+          settled_at?: string | null;
+          snapshot?: Json | null;
+          state?: string;
+          usage_known?: boolean;
+        };
+        Update: {
+          accepted_response?: Json | null;
+          acked_at?: string | null;
+          created_at?: string;
+          dispatched_at?: string | null;
+          id?: string;
+          lease_until?: string;
+          owner_id?: string;
+          prepared_at?: string | null;
+          request_hash?: string | null;
+          response_hash?: string | null;
+          result?: Json | null;
+          settled_at?: string | null;
+          snapshot?: Json | null;
+          state?: string;
+          usage_known?: boolean;
+        };
+        Relationships: [];
+      };
+      m07_embed_members: {
+        Row: {
+          batch_id: string;
+          content_hash: string | null;
+          entity_id: string | null;
+          entity_type: string | null;
+          input_index: number | null;
+          message: NonNullable<Json>;
+          msg_id: number;
+          outcome: string;
+          read_ct: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          batch_id: string;
+          content_hash?: string | null;
+          entity_id?: string | null;
+          entity_type?: string | null;
+          input_index?: number | null;
+          message: NonNullable<Json>;
+          msg_id: number;
+          outcome?: string;
+          read_ct: number;
+        };
+        Update: {
+          batch_id?: string;
+          content_hash?: string | null;
+          entity_id?: string | null;
+          entity_type?: string | null;
+          input_index?: number | null;
+          message?: NonNullable<Json>;
+          msg_id?: number;
+          outcome?: string;
+          read_ct?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'm07_embed_members_batch_id_fkey';
+            columns: ['batch_id'];
+            isOneToOne: false;
+            referencedRelation: 'm07_embed_batches';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       m07_entity_sightings: {
         Row: {
           confidence: number;
@@ -3770,6 +3912,7 @@ export type Database = {
       };
       daily_health: { Args: Record<PropertyKey, never>; Returns: Json };
       diff_website_urls: { Args: { p_account_id: string; p_urls: string[] }; Returns: string[] };
+      enqueue_competitor_embeddings: { Args: Record<PropertyKey, never>; Returns: Json };
       error_count_24h: { Args: { p_claim_notify?: boolean; p_workflow: string }; Returns: number };
       fail_ai_items: { Args: { p_item_ids: string[]; p_msg_ids: number[] }; Returns: Json };
       finish_media_batch: { Args: { p_execution_id: string }; Returns: Json };
@@ -3889,16 +4032,41 @@ export type Database = {
       };
       m06_execute: { Args: { p_args: Json; p_operation: string; p_request_id: string }; Returns: Json };
       m07_ack_ai: { Args: { p_attempt_id: string; p_owner_id: string }; Returns: Json };
+      m07_ack_embed: { Args: { p_batch_id: string; p_owner_id: string }; Returns: Json };
       m07_ai_status: { Args: { p_attempt_id: string; p_owner_id: string }; Returns: Json };
+      m07_apply_frozen_ai: {
+        Args: { p_hash: string; p_item_id: string; p_meta: Json; p_result: Json };
+        Returns: Json;
+      };
       m07_claim_ai: {
         Args: { p_limit?: number; p_owner_id: string; p_visibility_seconds?: number };
         Returns: Json;
       };
+      m07_claim_ai_selected: {
+        Args: { p_item_ids: string[]; p_limit?: number; p_owner_id: string; p_visibility_seconds?: number };
+        Returns: Json;
+      };
+      m07_claim_embed: {
+        Args: { p_entities?: Json; p_limit?: number; p_owner_id: string; p_visibility_seconds?: number };
+        Returns: Json;
+      };
       m07_dispatch_ai: { Args: { p_attempt_id: string; p_owner_id: string }; Returns: Json };
+      m07_dispatch_embed: { Args: { p_batch_id: string; p_hash: string; p_owner_id: string }; Returns: Json };
+      m07_dispatch_frozen_ai: {
+        Args: { p_attempt_id: string; p_hash: string; p_owner_id: string };
+        Returns: Json;
+      };
+      m07_embed_status: { Args: { p_batch_id: string; p_owner_id: string }; Returns: Json };
       m07_fail_ai: {
         Args: { p_attempt_id: string; p_meta: Json; p_outcome: string; p_owner_id: string };
         Returns: Json;
       };
+      m07_fail_frozen_ai: {
+        Args: { p_attempt_id: string; p_hash: string; p_meta: Json; p_outcome: string; p_owner_id: string };
+        Returns: Json;
+      };
+      m07_freeze_ai: { Args: { p_attempt_id: string; p_owner_id: string; p_snapshot: Json }; Returns: Json };
+      m07_frozen_ai: { Args: { p_attempt_id: string; p_owner_id: string }; Returns: Json };
       m07_prepare_ai: {
         Args: {
           p_attempt_id: string;
@@ -3909,6 +4077,28 @@ export type Database = {
         };
         Returns: Json;
       };
+      m07_prepare_embed: {
+        Args: {
+          p_batch_id: string;
+          p_dimensions: number;
+          p_input_version: string;
+          p_model: string;
+          p_owner_id: string;
+          p_settings: Json;
+        };
+        Returns: Json;
+      };
+      m07_settle_embed: {
+        Args: {
+          p_accounting_mode: string;
+          p_batch_id: string;
+          p_hash: string;
+          p_owner_id: string;
+          p_response: Json;
+        };
+        Returns: Json;
+      };
+      m07_unknown_embed: { Args: { p_batch_id: string; p_hash: string; p_owner_id: string }; Returns: Json };
       mark_removed: {
         Args: { p_account_id: string; p_request_id: string; p_seen_external_ids: string[]; p_since: string };
         Returns: Json;

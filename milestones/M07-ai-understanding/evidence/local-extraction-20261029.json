@@ -1,5 +1,5 @@
 {
-  "observed_at": "2026-10-29T15:02:08.215469+00:00",
+  "observed_at": "2026-10-29T15:23:32.286848+00:00",
   "environment": "local controlled responses only",
   "base_commit": "701cd93dafd881280ff246fdcb487b48f2a44f3f",
   "definition_chain": 25,
@@ -96,5 +96,57 @@
       "run": 40898010713,
       "result": "quality/unit/build/e2e passed; db-tests failed at regular pgTAP; corrected exact schema count35 and full FK index"
     }
-  ]
+  ],
+  "initial_recorded_at": "2026-10-29T15:02:08.215469+00:00",
+  "required_ci": {
+    "observed_at": "2026-10-29T15:23:32.286848+00:00",
+    "head": "3dff9f477ab72619d425cf955b60e7fd5de13cff",
+    "run": 40899862686,
+    "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40899862686",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "db-tests",
+        "conclusion": "success",
+        "databaseId": 123539522112,
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40899862686/job/123539522112"
+      },
+      {
+        "name": "unit",
+        "conclusion": "success",
+        "databaseId": 123539522496,
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40899862686/job/123539522496"
+      },
+      {
+        "name": "quality",
+        "conclusion": "success",
+        "databaseId": 123539522804,
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40899862686/job/123539522804"
+      },
+      {
+        "name": "build",
+        "conclusion": "success",
+        "databaseId": 123539523003,
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40899862686/job/123539523003"
+      },
+      {
+        "name": "e2e",
+        "conclusion": "success",
+        "databaseId": 123539877868,
+        "url": "https://github.com/muhhammeddsayedd-prog/Everyone-Market-Researcher/actions/runs/40899862686/job/123539877868"
+      }
+    ],
+    "sql": {
+      "regular_files": 21,
+      "regular_assertions": 1054,
+      "foundation_files": 3,
+      "foundation_assertions": 176,
+      "gateway_assertions": 102,
+      "m07_composed": "passed, zero skipped",
+      "full_migration_type_parity": "passed",
+      "advisors": "security no warnings/errors; performance no errors"
+    },
+    "delivery_note": "Final receipt/progress update intentionally retained locally for the next substantive delivery; no CI-only commit."
+  },
+  "local_final_receipt_uncommitted": true
 }

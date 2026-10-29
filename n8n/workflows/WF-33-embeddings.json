@@ -1,0 +1,403 @@
+{
+  "key": "WF-33-M07",
+  "kind": "native-json-blueprint",
+  "runnableWorkflow": false,
+  "liveEnabled": false,
+  "hostedAcceptance": false,
+  "definitionProfile": "inactive_local_only",
+  "bindingManifest": {
+    "ready": false,
+    "profile": "local",
+    "audience": "http://127.0.0.1:3037"
+  },
+  "boundary": {
+    "developmentOnly": true,
+    "defaultDisabled": true,
+    "batchSizeServerSelected": true,
+    "maxBatchInputs": 20,
+    "dimensions": 1536,
+    "aggregateUsageOnly": true,
+    "automaticPaidRetry": false,
+    "schedule": false
+  },
+  "workflow": {
+    "name": "WF-33 - Embeddings [M07 dev]",
+    "active": false,
+    "nodes": [
+      {
+        "id": "a5bf3350-8608-4676-a417-55b91e3bb2ee",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "88066dc5-a4f2-4802-a91b-af8179f83945",
+        "name": "Initialize embeddings",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw Error('M07_EMBED_BINDING_REQUIRED');\nconst rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_EMBED_INPUT_INVALID');const j=rows[0].json;\nfunction m07EmbeddingObject(v) {\n  return v !== null && typeof v === 'object' && !Array.isArray(v);\n}\n\nfunction m07EmbeddingUuid(v) {\n  return (\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)\n  );\n}\n\nfunction m07EmbeddingId(execution, sequence, owner = false) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    !Number.isSafeInteger(Number(execution)) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isInteger(sequence) ||\n    sequence < 0 ||\n    sequence > 32\n  )\n    throw Error('M07_EMBED_EXECUTION_INVALID');\n  return `${owner ? 'c073aaaa' : 'c0730000'}-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction m07EmbeddingRequest(s, operation, args) {\n  s.sequence++;\n  s.action = 'gateway';\n  s.request = { version: 1, requestId: m07EmbeddingId(s.executionId, s.sequence), operation, args };\n  return s;\n}\n\nfunction initializeM07Embeddings(input, executionId) {\n  if (!m07EmbeddingObject(input) || Object.keys(input).join(',') !== 'env' || input.env !== 'dev')\n    throw Error('M07_EMBED_INPUT_INVALID');\n  const s = {\n    executionId,\n    sequence: 0,\n    owner_id: m07EmbeddingId(executionId, 0, true),\n    batch_id: null,\n    action: 'gateway',\n    result: null,\n    reconciled: false,\n  };\n  return m07EmbeddingRequest(s, 'claim', { owner_id: s.owner_id });\n}\n\nfunction m07EmbeddingFinish(s, status, result = null, reason = null) {\n  s.action = 'done';\n  s.result = { status, owner_id: s.owner_id, batch_id: s.batch_id, result, reason };\n  delete s.provider_request;\n  return s;\n}\n\nfunction m07EmbeddingProviderRequest(r) {\n  if (\n    !m07EmbeddingObject(r) ||\n    Object.keys(r).sort().join(',') !== 'dimensions,encoding_format,input,model' ||\n    typeof r.model !== 'string' ||\n    !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(r.model) ||\n    r.dimensions !== 1536 ||\n    r.encoding_format !== 'float' ||\n    !Array.isArray(r.input) ||\n    r.input.length < 1 ||\n    r.input.length > 20\n  )\n    return false;\n  let total = 0;\n  for (const text of r.input) {\n    if (typeof text !== 'string' || !text.trim()) return false;\n    let size;\n    try {\n      size = (encodeURIComponent(text).match(/%[0-9A-F]{2}|[^%]/g) || []).length;\n    } catch {\n      return false;\n    }\n    if (size > 8192) return false;\n    total += size;\n  }\n  return total <= 300000;\n}\n\nfunction advanceM07EmbeddingGateway(original, reply) {\n  const s = structuredClone(original);\n  if (s.action !== 'gateway' || !m07EmbeddingObject(s.request)) throw Error('M07_EMBED_STATE_INVALID');\n  const body =\n    m07EmbeddingObject(reply) && reply.statusCode === 200 && m07EmbeddingObject(reply.body)\n      ? reply.body\n      : null;\n  if (\n    !body ||\n    body.version !== 1 ||\n    body.requestId !== s.request.requestId ||\n    body.operation !== s.request.operation ||\n    !m07EmbeddingObject(body.result)\n  ) {\n    if (s.batch_id && !s.reconciled && ['settle', 'outcome.unknown', 'ack'].includes(s.request.operation)) {\n      s.reconciled = true;\n      return m07EmbeddingRequest(s, 'status', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    return m07EmbeddingFinish(s, 'held', null, 'gateway_outcome_unknown');\n  }\n  const r = body.result,\n    op = s.request.operation;\n  if (op === 'claim') {\n    if (r.state === 'empty' && r.batch_id === null && Array.isArray(r.messages) && !r.messages.length)\n      return m07EmbeddingFinish(s, 'empty');\n    if (!m07EmbeddingUuid(r.batch_id) || !m07EmbeddingUuid(r.owner_id))\n      throw Error('M07_EMBED_CLAIM_INVALID');\n    s.batch_id = r.batch_id;\n    if (r.state === 'held') return m07EmbeddingFinish(s, 'held', r.result ?? null, 'existing_batch_held');\n    if (r.owner_id !== s.owner_id || !Array.isArray(r.messages) || r.messages.length > 20)\n      throw Error('M07_EMBED_CLAIM_INVALID');\n    if (r.state === 'completed')\n      return r.acked\n        ? m07EmbeddingFinish(s, 'completed', r.result)\n        : m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    if (r.state === 'failed') return m07EmbeddingFinish(s, 'failed', r.result ?? null, 'known_failed_batch');\n    if (['dispatched', 'unknown'].includes(r.state))\n      return m07EmbeddingFinish(s, 'held', r.result ?? null, 'existing_batch_held');\n    if (!['claimed', 'prepared'].includes(r.state)) throw Error('M07_EMBED_CLAIM_INVALID');\n    return m07EmbeddingRequest(s, 'prepare', { batch_id: s.batch_id, owner_id: s.owner_id });\n  }\n  if (r.batch_id !== s.batch_id || r.owner_id !== s.owner_id) throw Error('M07_EMBED_BATCH_INVALID');\n  if (s.request_hash && r.request_hash !== s.request_hash) throw Error('M07_EMBED_SNAPSHOT_MISMATCH');\n  if (op === 'prepare') {\n    if (r.state === 'completed') {\n      s.applied_result = r.result;\n      return r.acked\n        ? m07EmbeddingFinish(s, 'completed', r.result)\n        : m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    if (r.state === 'failed') return m07EmbeddingFinish(s, 'failed', r.result ?? null, 'known_failed_batch');\n    if (r.state !== 'prepared') return m07EmbeddingFinish(s, 'held', r.result ?? null, 'prepare_not_ready');\n    if (\n      typeof r.request_hash !== 'string' ||\n      !/^[a-f0-9]{64}$/.test(r.request_hash) ||\n      !m07EmbeddingObject(r.snapshot) ||\n      !m07EmbeddingProviderRequest(r.snapshot.provider_request)\n    )\n      throw Error('M07_EMBED_PREPARE_INVALID');\n    s.request_hash = r.request_hash;\n    return m07EmbeddingRequest(s, 'dispatch', { batch_id: s.batch_id, owner_id: s.owner_id });\n  }\n  if (op === 'dispatch') {\n    if (r.admitted !== true || r.state !== 'dispatched')\n      return m07EmbeddingFinish(s, 'held', r.result ?? null, 'dispatch_not_admitted');\n    if (!m07EmbeddingObject(r.snapshot) || !m07EmbeddingProviderRequest(r.snapshot.provider_request))\n      throw Error('M07_EMBED_REQUEST_INVALID');\n    s.action = 'provider';\n    s.provider_request = r.snapshot.provider_request;\n    return s;\n  }\n  if (op === 'ack') {\n    if (r.acked !== true) throw Error('M07_EMBED_ACK_INVALID');\n    return m07EmbeddingFinish(s, 'completed', s.applied_result ?? r.result ?? null);\n  }\n  if (op === 'status') {\n    if (r.state === 'completed') {\n      s.applied_result = r.result;\n      return r.acked\n        ? m07EmbeddingFinish(s, 'completed', r.result)\n        : m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    return m07EmbeddingFinish(\n      s,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      'reconciled_without_provider_retry',\n    );\n  }\n  if (op === 'outcome.unknown')\n    return m07EmbeddingFinish(\n      s,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      r.state === 'failed' ? 'known_failed_batch' : 'provider_outcome_unknown',\n    );\n  if (op === 'settle') {\n    if (r.state === 'completed') {\n      s.applied_result = r.result;\n      return m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    return m07EmbeddingFinish(\n      s,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      'provider_response_not_applied',\n    );\n  }\n  throw Error('M07_EMBED_STATE_INVALID');\n}\n\nfunction advanceM07EmbeddingProvider(original, reply) {\n  const s = structuredClone(original);\n  if (s.action !== 'provider' || !m07EmbeddingUuid(s.batch_id)) throw Error('M07_EMBED_STATE_INVALID');\n  delete s.provider_request;\n  if (!m07EmbeddingObject(reply) || reply.statusCode !== 200 || !m07EmbeddingObject(reply.body))\n    return m07EmbeddingRequest(s, 'outcome.unknown', { batch_id: s.batch_id, owner_id: s.owner_id });\n  return m07EmbeddingRequest(s, 'settle', {\n    batch_id: s.batch_id,\n    owner_id: s.owner_id,\n    provider_response: reply.body,\n  });\n}\nreturn[{json:initializeM07Embeddings(j,String($execution.id))}];"
+        },
+        "position": [
+          250,
+          0
+        ]
+      },
+      {
+        "id": "d7e81118-75fe-485d-aaed-482c52791b9f",
+        "name": "Embedding gateway request?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "57501582-a47c-4d50-a831-0b4e83e05560",
+                "leftValue": "={{ $json.action === 'gateway' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          500,
+          0
+        ]
+      },
+      {
+        "id": "a6c55189-826e-46c5-ac62-fed3824e904f",
+        "name": "Prepare embedding gateway",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_EMBED_INPUT_INVALID');const j=rows[0].json;\nreturn[{json:j}];"
+        },
+        "position": [
+          750,
+          -200
+        ]
+      },
+      {
+        "id": "95df1d56-2779-47ee-ab44-62069cea2829",
+        "name": "Restricted embedding gateway",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "http://127.0.0.1:3037/api/internal/m07/embed",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 30000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1000,
+          -200
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "M07_GATEWAY_BINDING_REQUIRED",
+            "name": "M07 gateway binding required"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "432746e4-b8cc-42b0-aae0-f605f66b8cb4",
+        "name": "Advance embedding receipt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_EMBED_INPUT_INVALID');const j=rows[0].json;\nfunction m07EmbeddingObject(v) {\n  return v !== null && typeof v === 'object' && !Array.isArray(v);\n}\n\nfunction m07EmbeddingUuid(v) {\n  return (\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)\n  );\n}\n\nfunction m07EmbeddingId(execution, sequence, owner = false) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    !Number.isSafeInteger(Number(execution)) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isInteger(sequence) ||\n    sequence < 0 ||\n    sequence > 32\n  )\n    throw Error('M07_EMBED_EXECUTION_INVALID');\n  return `${owner ? 'c073aaaa' : 'c0730000'}-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction m07EmbeddingRequest(s, operation, args) {\n  s.sequence++;\n  s.action = 'gateway';\n  s.request = { version: 1, requestId: m07EmbeddingId(s.executionId, s.sequence), operation, args };\n  return s;\n}\n\nfunction initializeM07Embeddings(input, executionId) {\n  if (!m07EmbeddingObject(input) || Object.keys(input).join(',') !== 'env' || input.env !== 'dev')\n    throw Error('M07_EMBED_INPUT_INVALID');\n  const s = {\n    executionId,\n    sequence: 0,\n    owner_id: m07EmbeddingId(executionId, 0, true),\n    batch_id: null,\n    action: 'gateway',\n    result: null,\n    reconciled: false,\n  };\n  return m07EmbeddingRequest(s, 'claim', { owner_id: s.owner_id });\n}\n\nfunction m07EmbeddingFinish(s, status, result = null, reason = null) {\n  s.action = 'done';\n  s.result = { status, owner_id: s.owner_id, batch_id: s.batch_id, result, reason };\n  delete s.provider_request;\n  return s;\n}\n\nfunction m07EmbeddingProviderRequest(r) {\n  if (\n    !m07EmbeddingObject(r) ||\n    Object.keys(r).sort().join(',') !== 'dimensions,encoding_format,input,model' ||\n    typeof r.model !== 'string' ||\n    !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(r.model) ||\n    r.dimensions !== 1536 ||\n    r.encoding_format !== 'float' ||\n    !Array.isArray(r.input) ||\n    r.input.length < 1 ||\n    r.input.length > 20\n  )\n    return false;\n  let total = 0;\n  for (const text of r.input) {\n    if (typeof text !== 'string' || !text.trim()) return false;\n    let size;\n    try {\n      size = (encodeURIComponent(text).match(/%[0-9A-F]{2}|[^%]/g) || []).length;\n    } catch {\n      return false;\n    }\n    if (size > 8192) return false;\n    total += size;\n  }\n  return total <= 300000;\n}\n\nfunction advanceM07EmbeddingGateway(original, reply) {\n  const s = structuredClone(original);\n  if (s.action !== 'gateway' || !m07EmbeddingObject(s.request)) throw Error('M07_EMBED_STATE_INVALID');\n  const body =\n    m07EmbeddingObject(reply) && reply.statusCode === 200 && m07EmbeddingObject(reply.body)\n      ? reply.body\n      : null;\n  if (\n    !body ||\n    body.version !== 1 ||\n    body.requestId !== s.request.requestId ||\n    body.operation !== s.request.operation ||\n    !m07EmbeddingObject(body.result)\n  ) {\n    if (s.batch_id && !s.reconciled && ['settle', 'outcome.unknown', 'ack'].includes(s.request.operation)) {\n      s.reconciled = true;\n      return m07EmbeddingRequest(s, 'status', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    return m07EmbeddingFinish(s, 'held', null, 'gateway_outcome_unknown');\n  }\n  const r = body.result,\n    op = s.request.operation;\n  if (op === 'claim') {\n    if (r.state === 'empty' && r.batch_id === null && Array.isArray(r.messages) && !r.messages.length)\n      return m07EmbeddingFinish(s, 'empty');\n    if (!m07EmbeddingUuid(r.batch_id) || !m07EmbeddingUuid(r.owner_id))\n      throw Error('M07_EMBED_CLAIM_INVALID');\n    s.batch_id = r.batch_id;\n    if (r.state === 'held') return m07EmbeddingFinish(s, 'held', r.result ?? null, 'existing_batch_held');\n    if (r.owner_id !== s.owner_id || !Array.isArray(r.messages) || r.messages.length > 20)\n      throw Error('M07_EMBED_CLAIM_INVALID');\n    if (r.state === 'completed')\n      return r.acked\n        ? m07EmbeddingFinish(s, 'completed', r.result)\n        : m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    if (r.state === 'failed') return m07EmbeddingFinish(s, 'failed', r.result ?? null, 'known_failed_batch');\n    if (['dispatched', 'unknown'].includes(r.state))\n      return m07EmbeddingFinish(s, 'held', r.result ?? null, 'existing_batch_held');\n    if (!['claimed', 'prepared'].includes(r.state)) throw Error('M07_EMBED_CLAIM_INVALID');\n    return m07EmbeddingRequest(s, 'prepare', { batch_id: s.batch_id, owner_id: s.owner_id });\n  }\n  if (r.batch_id !== s.batch_id || r.owner_id !== s.owner_id) throw Error('M07_EMBED_BATCH_INVALID');\n  if (s.request_hash && r.request_hash !== s.request_hash) throw Error('M07_EMBED_SNAPSHOT_MISMATCH');\n  if (op === 'prepare') {\n    if (r.state === 'completed') {\n      s.applied_result = r.result;\n      return r.acked\n        ? m07EmbeddingFinish(s, 'completed', r.result)\n        : m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    if (r.state === 'failed') return m07EmbeddingFinish(s, 'failed', r.result ?? null, 'known_failed_batch');\n    if (r.state !== 'prepared') return m07EmbeddingFinish(s, 'held', r.result ?? null, 'prepare_not_ready');\n    if (\n      typeof r.request_hash !== 'string' ||\n      !/^[a-f0-9]{64}$/.test(r.request_hash) ||\n      !m07EmbeddingObject(r.snapshot) ||\n      !m07EmbeddingProviderRequest(r.snapshot.provider_request)\n    )\n      throw Error('M07_EMBED_PREPARE_INVALID');\n    s.request_hash = r.request_hash;\n    return m07EmbeddingRequest(s, 'dispatch', { batch_id: s.batch_id, owner_id: s.owner_id });\n  }\n  if (op === 'dispatch') {\n    if (r.admitted !== true || r.state !== 'dispatched')\n      return m07EmbeddingFinish(s, 'held', r.result ?? null, 'dispatch_not_admitted');\n    if (!m07EmbeddingObject(r.snapshot) || !m07EmbeddingProviderRequest(r.snapshot.provider_request))\n      throw Error('M07_EMBED_REQUEST_INVALID');\n    s.action = 'provider';\n    s.provider_request = r.snapshot.provider_request;\n    return s;\n  }\n  if (op === 'ack') {\n    if (r.acked !== true) throw Error('M07_EMBED_ACK_INVALID');\n    return m07EmbeddingFinish(s, 'completed', s.applied_result ?? r.result ?? null);\n  }\n  if (op === 'status') {\n    if (r.state === 'completed') {\n      s.applied_result = r.result;\n      return r.acked\n        ? m07EmbeddingFinish(s, 'completed', r.result)\n        : m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    return m07EmbeddingFinish(\n      s,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      'reconciled_without_provider_retry',\n    );\n  }\n  if (op === 'outcome.unknown')\n    return m07EmbeddingFinish(\n      s,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      r.state === 'failed' ? 'known_failed_batch' : 'provider_outcome_unknown',\n    );\n  if (op === 'settle') {\n    if (r.state === 'completed') {\n      s.applied_result = r.result;\n      return m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    return m07EmbeddingFinish(\n      s,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      'provider_response_not_applied',\n    );\n  }\n  throw Error('M07_EMBED_STATE_INVALID');\n}\n\nfunction advanceM07EmbeddingProvider(original, reply) {\n  const s = structuredClone(original);\n  if (s.action !== 'provider' || !m07EmbeddingUuid(s.batch_id)) throw Error('M07_EMBED_STATE_INVALID');\n  delete s.provider_request;\n  if (!m07EmbeddingObject(reply) || reply.statusCode !== 200 || !m07EmbeddingObject(reply.body))\n    return m07EmbeddingRequest(s, 'outcome.unknown', { batch_id: s.batch_id, owner_id: s.owner_id });\n  return m07EmbeddingRequest(s, 'settle', {\n    batch_id: s.batch_id,\n    owner_id: s.owner_id,\n    provider_response: reply.body,\n  });\n}\nreturn[{json:advanceM07EmbeddingGateway($('Prepare embedding gateway').item.json,j)}];"
+        },
+        "position": [
+          1250,
+          -200
+        ]
+      },
+      {
+        "id": "dc49ec42-6e8c-4ffc-aa39-97b42f6d802a",
+        "name": "Embedding provider admitted?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "9325af97-6457-4c7d-af84-47802064b6df",
+                "leftValue": "={{ $json.action === 'provider' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          750,
+          200
+        ]
+      },
+      {
+        "id": "37c18643-e109-439b-a453-e464adc4f296",
+        "name": "Prepare admitted embedding request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_EMBED_INPUT_INVALID');const j=rows[0].json;\nreturn[{json:j}];"
+        },
+        "position": [
+          850,
+          200
+        ]
+      },
+      {
+        "id": "e2087d17-c7eb-415f-ae5b-375395a7e476",
+        "name": "OpenAI embeddings",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.openai.com/v1/embeddings",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "openAiApi",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.provider_request }}",
+          "options": {
+            "timeout": 120000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1000,
+          200
+        ],
+        "credentials": {
+          "openAiApi": {
+            "id": "M07_OPENAI_BINDING_REQUIRED",
+            "name": "OpenAI binding required"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "3f1545e8-5889-4eca-afc5-cbf576cb3586",
+        "name": "Advance embedding model receipt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_EMBED_INPUT_INVALID');const j=rows[0].json;\nfunction m07EmbeddingObject(v) {\n  return v !== null && typeof v === 'object' && !Array.isArray(v);\n}\n\nfunction m07EmbeddingUuid(v) {\n  return (\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)\n  );\n}\n\nfunction m07EmbeddingId(execution, sequence, owner = false) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    !Number.isSafeInteger(Number(execution)) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isInteger(sequence) ||\n    sequence < 0 ||\n    sequence > 32\n  )\n    throw Error('M07_EMBED_EXECUTION_INVALID');\n  return `${owner ? 'c073aaaa' : 'c0730000'}-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction m07EmbeddingRequest(s, operation, args) {\n  s.sequence++;\n  s.action = 'gateway';\n  s.request = { version: 1, requestId: m07EmbeddingId(s.executionId, s.sequence), operation, args };\n  return s;\n}\n\nfunction initializeM07Embeddings(input, executionId) {\n  if (!m07EmbeddingObject(input) || Object.keys(input).join(',') !== 'env' || input.env !== 'dev')\n    throw Error('M07_EMBED_INPUT_INVALID');\n  const s = {\n    executionId,\n    sequence: 0,\n    owner_id: m07EmbeddingId(executionId, 0, true),\n    batch_id: null,\n    action: 'gateway',\n    result: null,\n    reconciled: false,\n  };\n  return m07EmbeddingRequest(s, 'claim', { owner_id: s.owner_id });\n}\n\nfunction m07EmbeddingFinish(s, status, result = null, reason = null) {\n  s.action = 'done';\n  s.result = { status, owner_id: s.owner_id, batch_id: s.batch_id, result, reason };\n  delete s.provider_request;\n  return s;\n}\n\nfunction m07EmbeddingProviderRequest(r) {\n  if (\n    !m07EmbeddingObject(r) ||\n    Object.keys(r).sort().join(',') !== 'dimensions,encoding_format,input,model' ||\n    typeof r.model !== 'string' ||\n    !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(r.model) ||\n    r.dimensions !== 1536 ||\n    r.encoding_format !== 'float' ||\n    !Array.isArray(r.input) ||\n    r.input.length < 1 ||\n    r.input.length > 20\n  )\n    return false;\n  let total = 0;\n  for (const text of r.input) {\n    if (typeof text !== 'string' || !text.trim()) return false;\n    let size;\n    try {\n      size = (encodeURIComponent(text).match(/%[0-9A-F]{2}|[^%]/g) || []).length;\n    } catch {\n      return false;\n    }\n    if (size > 8192) return false;\n    total += size;\n  }\n  return total <= 300000;\n}\n\nfunction advanceM07EmbeddingGateway(original, reply) {\n  const s = structuredClone(original);\n  if (s.action !== 'gateway' || !m07EmbeddingObject(s.request)) throw Error('M07_EMBED_STATE_INVALID');\n  const body =\n    m07EmbeddingObject(reply) && reply.statusCode === 200 && m07EmbeddingObject(reply.body)\n      ? reply.body\n      : null;\n  if (\n    !body ||\n    body.version !== 1 ||\n    body.requestId !== s.request.requestId ||\n    body.operation !== s.request.operation ||\n    !m07EmbeddingObject(body.result)\n  ) {\n    if (s.batch_id && !s.reconciled && ['settle', 'outcome.unknown', 'ack'].includes(s.request.operation)) {\n      s.reconciled = true;\n      return m07EmbeddingRequest(s, 'status', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    return m07EmbeddingFinish(s, 'held', null, 'gateway_outcome_unknown');\n  }\n  const r = body.result,\n    op = s.request.operation;\n  if (op === 'claim') {\n    if (r.state === 'empty' && r.batch_id === null && Array.isArray(r.messages) && !r.messages.length)\n      return m07EmbeddingFinish(s, 'empty');\n    if (!m07EmbeddingUuid(r.batch_id) || !m07EmbeddingUuid(r.owner_id))\n      throw Error('M07_EMBED_CLAIM_INVALID');\n    s.batch_id = r.batch_id;\n    if (r.state === 'held') return m07EmbeddingFinish(s, 'held', r.result ?? null, 'existing_batch_held');\n    if (r.owner_id !== s.owner_id || !Array.isArray(r.messages) || r.messages.length > 20)\n      throw Error('M07_EMBED_CLAIM_INVALID');\n    if (r.state === 'completed')\n      return r.acked\n        ? m07EmbeddingFinish(s, 'completed', r.result)\n        : m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    if (r.state === 'failed') return m07EmbeddingFinish(s, 'failed', r.result ?? null, 'known_failed_batch');\n    if (['dispatched', 'unknown'].includes(r.state))\n      return m07EmbeddingFinish(s, 'held', r.result ?? null, 'existing_batch_held');\n    if (!['claimed', 'prepared'].includes(r.state)) throw Error('M07_EMBED_CLAIM_INVALID');\n    return m07EmbeddingRequest(s, 'prepare', { batch_id: s.batch_id, owner_id: s.owner_id });\n  }\n  if (r.batch_id !== s.batch_id || r.owner_id !== s.owner_id) throw Error('M07_EMBED_BATCH_INVALID');\n  if (s.request_hash && r.request_hash !== s.request_hash) throw Error('M07_EMBED_SNAPSHOT_MISMATCH');\n  if (op === 'prepare') {\n    if (r.state === 'completed') {\n      s.applied_result = r.result;\n      return r.acked\n        ? m07EmbeddingFinish(s, 'completed', r.result)\n        : m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    if (r.state === 'failed') return m07EmbeddingFinish(s, 'failed', r.result ?? null, 'known_failed_batch');\n    if (r.state !== 'prepared') return m07EmbeddingFinish(s, 'held', r.result ?? null, 'prepare_not_ready');\n    if (\n      typeof r.request_hash !== 'string' ||\n      !/^[a-f0-9]{64}$/.test(r.request_hash) ||\n      !m07EmbeddingObject(r.snapshot) ||\n      !m07EmbeddingProviderRequest(r.snapshot.provider_request)\n    )\n      throw Error('M07_EMBED_PREPARE_INVALID');\n    s.request_hash = r.request_hash;\n    return m07EmbeddingRequest(s, 'dispatch', { batch_id: s.batch_id, owner_id: s.owner_id });\n  }\n  if (op === 'dispatch') {\n    if (r.admitted !== true || r.state !== 'dispatched')\n      return m07EmbeddingFinish(s, 'held', r.result ?? null, 'dispatch_not_admitted');\n    if (!m07EmbeddingObject(r.snapshot) || !m07EmbeddingProviderRequest(r.snapshot.provider_request))\n      throw Error('M07_EMBED_REQUEST_INVALID');\n    s.action = 'provider';\n    s.provider_request = r.snapshot.provider_request;\n    return s;\n  }\n  if (op === 'ack') {\n    if (r.acked !== true) throw Error('M07_EMBED_ACK_INVALID');\n    return m07EmbeddingFinish(s, 'completed', s.applied_result ?? r.result ?? null);\n  }\n  if (op === 'status') {\n    if (r.state === 'completed') {\n      s.applied_result = r.result;\n      return r.acked\n        ? m07EmbeddingFinish(s, 'completed', r.result)\n        : m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    return m07EmbeddingFinish(\n      s,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      'reconciled_without_provider_retry',\n    );\n  }\n  if (op === 'outcome.unknown')\n    return m07EmbeddingFinish(\n      s,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      r.state === 'failed' ? 'known_failed_batch' : 'provider_outcome_unknown',\n    );\n  if (op === 'settle') {\n    if (r.state === 'completed') {\n      s.applied_result = r.result;\n      return m07EmbeddingRequest(s, 'ack', { batch_id: s.batch_id, owner_id: s.owner_id });\n    }\n    return m07EmbeddingFinish(\n      s,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      'provider_response_not_applied',\n    );\n  }\n  throw Error('M07_EMBED_STATE_INVALID');\n}\n\nfunction advanceM07EmbeddingProvider(original, reply) {\n  const s = structuredClone(original);\n  if (s.action !== 'provider' || !m07EmbeddingUuid(s.batch_id)) throw Error('M07_EMBED_STATE_INVALID');\n  delete s.provider_request;\n  if (!m07EmbeddingObject(reply) || reply.statusCode !== 200 || !m07EmbeddingObject(reply.body))\n    return m07EmbeddingRequest(s, 'outcome.unknown', { batch_id: s.batch_id, owner_id: s.owner_id });\n  return m07EmbeddingRequest(s, 'settle', {\n    batch_id: s.batch_id,\n    owner_id: s.owner_id,\n    provider_response: reply.body,\n  });\n}\nreturn[{json:advanceM07EmbeddingProvider($('Prepare admitted embedding request').item.json,j)}];"
+        },
+        "position": [
+          1250,
+          200
+        ]
+      },
+      {
+        "id": "6735f1f5-76f3-4bf5-a019-62412ccbacbd",
+        "name": "Return embedding outcome",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_EMBED_INPUT_INVALID');const j=rows[0].json;\nif(j.action!=='done'||!j.result)throw Error('M07_EMBED_RECONCILIATION_REQUIRED');return[{json:j.result}];"
+        },
+        "position": [
+          1000,
+          500
+        ]
+      }
+    ],
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataSuccessExecution": "none",
+      "saveDataErrorExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "xypXIZGL9udCiwND",
+        "name": "layer:ai"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Initialize embeddings",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Initialize embeddings": {
+        "main": [
+          [
+            {
+              "node": "Embedding gateway request?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "node": "Embedding provider admitted?",
+      "type": "main",
+      "index": 0,
+      "Prepare embedding gateway": {
+        "main": [
+          [
+            {
+              "node": "Restricted embedding gateway",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Restricted embedding gateway": {
+        "main": [
+          [
+            {
+              "node": "Advance embedding receipt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Advance embedding receipt": {
+        "main": [
+          [
+            {
+              "node": "Embedding gateway request?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare admitted embedding request": {
+        "main": [
+          [
+            {
+              "node": "OpenAI embeddings",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI embeddings": {
+        "main": [
+          [
+            {
+              "node": "Advance embedding model receipt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Advance embedding model receipt": {
+        "main": [
+          [
+            {
+              "node": "Embedding gateway request?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}

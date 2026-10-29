@@ -51,13 +51,13 @@ select is((select count(*)::int from app.search('ramadan',p_types => array['item
 select is((select count(*)::int from app.search('ramadan',p_limit => 1)),1,'limit honored');
 select is((select count(*)::int from app.search('ramadan',p_limit => 0)),0,'zero limit returns no rows');
 select is((select count(*)::int from app.search('')),0,'empty keyword without embedding returns no rows');
-select is((select count(*)::int from app.search('',('[1,' || repeat('0,',1534) || '0]')::extensions.vector,array['item'])),2,'semantic-only branch excludes removed item');
-select is((select count(*)::int from app.search('',('[1,' || repeat('0,',1534) || '0]')::extensions.vector,array['item'],'{"country":"UAE"}')),0,'semantic branch shares item filters');
-select ok((select score > 1.0/61 from app.search('ramadan',('[1,' || repeat('0,',1534) || '0]')::extensions.vector,array['item']) where entity_id = '99900000-0000-0000-0000-000000000101'),'RRF fuses keyword and semantic ranks');
+select is((select count(*)::int from app.search('',('[1,' || repeat('0,',1534) || '0]')::extensions.vector,array['item'],'{"embedding_model":"local-test","embedding_dimensions":1536,"embedding_input_version":"legacy"}')),2,'semantic-only branch excludes removed item');
+select is((select count(*)::int from app.search('',('[1,' || repeat('0,',1534) || '0]')::extensions.vector,array['item'],'{"country":"UAE","embedding_model":"local-test","embedding_dimensions":1536,"embedding_input_version":"legacy"}')),0,'semantic branch shares item filters');
+select ok((select score > 1.0/61 from app.search('ramadan',('[1,' || repeat('0,',1534) || '0]')::extensions.vector,array['item'],'{"embedding_model":"local-test","embedding_dimensions":1536,"embedding_input_version":"legacy"}') where entity_id = '99900000-0000-0000-0000-000000000101'),'RRF fuses keyword and semantic ranks');
 select is((select count(*)::int from app.similar('item','99900000-0000-0000-0000-000000000101')),1,'similar excludes source and removed targets');
 set local request.jwt.claims = '{"sub":"80000000-0000-0000-0000-000000000002","role":"authenticated"}';
 select is((select count(*)::int from app.search('ramadan')),0,'non-member keyword search sees nothing');
-select is((select count(*)::int from app.search('',('[1,' || repeat('0,',1534) || '0]')::extensions.vector)),0,'non-member semantic search sees nothing');
+select is((select count(*)::int from app.search('',('[1,' || repeat('0,',1534) || '0]')::extensions.vector,p_filters => '{"embedding_model":"local-test","embedding_dimensions":1536,"embedding_input_version":"legacy"}')),0,'non-member semantic search sees nothing');
 select is((select count(*)::int from app.similar('item','99900000-0000-0000-0000-000000000101')),0,'non-member similar sees nothing');
 reset role;
 update app.people set name = 'Updated filmmaker' where slug = 'ramadan-director';

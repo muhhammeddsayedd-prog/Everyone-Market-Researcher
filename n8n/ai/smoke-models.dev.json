@@ -1,0 +1,31 @@
+{
+  "purpose": "Provisional dev smoke configuration only; final model choice still requires evaluation. Does not enable a route or write a hosted price book.",
+  "verified_at": "2026-10-29",
+  "extraction": {
+    "model": "gpt-5.4-mini-2026-03-17",
+    "max_output_tokens": 4096,
+    "prices_per_million_usd": {
+      "input": 0.75,
+      "cached_input": 0.075,
+      "output": 4.5
+    },
+    "source": "https://developers.openai.com/api/docs/models/gpt-5.4-mini"
+  },
+  "embeddings": {
+    "model": "text-embedding-3-small",
+    "dimensions": 1536,
+    "encoding_format": "float",
+    "batch_size": 4,
+    "max_input_bytes": 4096,
+    "max_total_bytes": 16384,
+    "price_per_million_input_usd": 0.02,
+    "source": "https://developers.openai.com/api/docs/models/text-embedding-3-small",
+    "limits_source": "https://developers.openai.com/api/reference/resources/embeddings/methods/create"
+  },
+  "live_preflight_required": [
+    "Account model access and returned model identity",
+    "Current applicable prices including any regional or account variation",
+    "Existing dev item/entity selection and pending queue eligibility",
+    "Exact Preview/native/authenticated protection bindings"
+  ]
+}

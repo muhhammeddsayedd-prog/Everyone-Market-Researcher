@@ -119,6 +119,9 @@ describe.skipIf(process.env.EMR_M07_LOCAL_SQL_TEST !== 'true')('M07 generated ex
       };
       const token = 'controlled-local-extraction-token-00000000',
         origin = 'http://127.0.0.1:3037';
+      let configuredModel = 'controlled-model',
+        outputLimit = '2000',
+        checkFrozenDrift = true;
       const handler = createExtractionHandler({
         environment: () => ({
           NODE_ENV: 'test',
@@ -126,7 +129,8 @@ describe.skipIf(process.env.EMR_M07_LOCAL_SQL_TEST !== 'true')('M07 generated ex
           EMR_M07_LOCAL_AUDIENCE: origin,
           EMR_M07_LOCAL_TOKEN_SHA256: createHash('sha256').update(token).digest('hex'),
           EMR_M07_LOCAL_DATABASE_URL: 'postgresql://n8n_writer@127.0.0.1:60322/postgres',
-          OPENAI_MODEL_EXTRACT: 'controlled-model',
+          OPENAI_MODEL_EXTRACT: configuredModel,
+          EMR_M07_MAX_OUTPUT_TOKENS: outputLimit,
         }),
         database: () => dispatch,
       });
@@ -213,6 +217,39 @@ describe.skipIf(process.env.EMR_M07_LOCAL_SQL_TEST !== 'true')('M07 generated ex
             s = code('Advance extraction receipt', await invoke(s.request), s);
           } else {
             providerCalls++;
+            if (checkFrozenDrift) {
+              checkFrozenDrift = false;
+              const args = { attempt_id: s.attempt_id, owner_id: s.owner_id };
+              const before = (await dispatch('frozen', args, new AbortController().signal)) as {
+                request_hash: string;
+                snapshot: unknown;
+              };
+              expect((before.snapshot as { provider_request: unknown }).provider_request).toEqual(
+                s.provider_request,
+              );
+              await inspect(
+                "update app.items set caption_original='Source edited after admission' where id=$1",
+                [s.item_id],
+              );
+              await inspect(
+                "update app.taxonomy_terms set active=false where taxonomy='content_format' and code='tvc_brand_film'",
+              );
+              await inspect(
+                "update ops.settings set value='0.999'::jsonb where key='auto_publish_threshold'",
+              );
+              await inspect(
+                "update ops.price_book set usd_per_unit=99 where provider='openai' and sku='controlled-model:input'",
+              );
+              configuredModel = 'changed-runtime-model';
+              outputLimit = '100';
+              const again = await invoke({ version: 1, requestId: randomUUID(), operation: 'prepare', args });
+              expect(again.statusCode, JSON.stringify(again.body)).toBe(200);
+              expect(again.body.result.request_hash).toBe(before.request_hash);
+              const after = (await dispatch('frozen', args, new AbortController().signal)) as {
+                snapshot: unknown;
+              };
+              expect(after.snapshot).toEqual(before.snapshot);
+            }
             expect(s.provider_request.text.format.strict).toBe(true);
             expect(s.provider_request.model).toBe('controlled-model');
             if (drop) loseApply = true;
@@ -241,6 +278,15 @@ describe.skipIf(process.env.EMR_M07_LOCAL_SQL_TEST !== 'true')('M07 generated ex
       const item = await enqueue(['campaign_title']);
       const wire = response(example());
       const completed = await execute(wire, true);
+      configuredModel = 'controlled-model';
+      outputLimit = '2000';
+      await inspect(
+        "update app.taxonomy_terms set active=true where taxonomy='content_format' and code='tvc_brand_film'",
+      );
+      await inspect("update ops.settings set value='0.80'::jsonb where key='auto_publish_threshold'");
+      await inspect(
+        "update ops.price_book set usd_per_unit=2 where provider='openai' and sku='controlled-model:input'",
+      );
       expect(completed.state.result.status, JSON.stringify(completed.state.result)).toBe('completed');
       expect(completed.state.reconciled).toBe(true);
       const row = (await inspect('select * from app.items where id=$1', [item])).rows[0];

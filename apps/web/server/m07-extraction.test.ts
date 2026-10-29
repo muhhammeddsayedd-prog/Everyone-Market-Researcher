@@ -7,6 +7,7 @@ import { createExtractionHandler, extractionConfig } from './m07-extraction';
 import { localExtractionDatabaseUrl, dispatchExtractionDatabase } from './m07-extraction-database';
 import type { M07Dispatch } from '@emr/shared';
 import type { WorkerPool } from './n8n-worker/database';
+import ai from '../../../n8n/normalizers/aiResult.js';
 
 const owner = '11111111-1111-4111-a111-111111111111';
 const attempt = '22222222-2222-4222-a222-222222222222';
@@ -99,13 +100,20 @@ const req = (
     body: JSON.stringify({ version: 1, requestId: owner, operation, args }),
   });
 function setup(environment: Record<string, string | undefined> = env, implementation?: M07Dispatch) {
-  const dispatch = vi.fn<M07Dispatch>(
-    implementation ??
-      (async (op) =>
-        op === 'prepare'
-          ? structuredClone(prepared)
-          : { attempt_id: attempt, state: 'completed', result: { ai_status: 'done' }, replayed: false }),
-  );
+  let frozen: Record<string, unknown> | null = null;
+  const dispatch = vi.fn<M07Dispatch>(async (op, args, signal) => {
+    if (op === 'frozen')
+      return { ...structuredClone(prepared), snapshot: frozen, request_hash: frozen ? 'a'.repeat(64) : null };
+    if (op === 'freeze') {
+      frozen = structuredClone(args.snapshot) as Record<string, unknown>;
+      return { ...structuredClone(prepared), snapshot: frozen, request_hash: 'a'.repeat(64) };
+    }
+    return implementation
+      ? implementation(op, args, signal)
+      : op === 'prepare'
+        ? structuredClone(prepared)
+        : { attempt_id: attempt, state: 'completed', result: { ai_status: 'done' }, replayed: false };
+  });
   const database = vi.fn(() => dispatch);
   return {
     dispatch,
@@ -155,7 +163,7 @@ describe('M07 local extraction adapter', () => {
     expect(body.result.provider_request.model).toBe(env.OPENAI_MODEL_EXTRACT);
     expect(body.result.provider_request.store).toBe(false);
     expect(body.result.provider_request.text.format.strict).toBe(true);
-    expect(s.dispatch.mock.calls[0]?.[1]).toEqual({
+    expect(s.dispatch.mock.calls.find((c) => c[0] === 'prepare')?.[1]).toEqual({
       attempt_id: attempt,
       owner_id: owner,
       model: env.OPENAI_MODEL_EXTRACT,
@@ -169,7 +177,7 @@ describe('M07 local extraction adapter', () => {
     );
     const body = await (await s.handler(req('dispatch'))).json();
     expect(body.result.provider_request).toBeNull();
-    expect(s.dispatch.mock.calls.map((c) => c[0])).toEqual(['prepare', 'dispatch']);
+    expect(s.dispatch.mock.calls.map((c) => c[0])).toEqual(['frozen', 'prepare', 'freeze', 'dispatch']);
   });
   it('settles strict output and cached-token partition cost as simulated, not actual provider spend', async () => {
     const s = setup();
@@ -241,6 +249,37 @@ describe('M07 local extraction adapter', () => {
     );
     expect(s.dispatch.mock.calls.find((c) => c[0] === 'fail')![1].outcome).toBe('unknown');
     expect(s.dispatch.mock.calls.some((c) => c[0] === 'apply')).toBe(false);
+  });
+  it('freezes the exact request/context/schema/prices and ignores changed valid runtime settings', async () => {
+    const current = { ...env };
+    const s = setup(current);
+    const first = await (await s.handler(req())).json();
+    const snapshot = s.dispatch.mock.calls.find((c) => c[0] === 'freeze')![1].snapshot as Record<
+      string,
+      unknown
+    >;
+    expect(snapshot).toMatchObject({
+      version: 1,
+      kind: 'extraction',
+      context: prepared.context,
+      taxonomy: tax,
+      prices,
+    });
+    expect((snapshot.schema as Record<string, unknown>).content).toEqual(ai.extractionSchema.schema);
+    expect((snapshot.prompt as Record<string, unknown>).content).toBe(ai.promptTemplate);
+    current.OPENAI_MODEL_EXTRACT = 'different-valid-model';
+    current.EMR_M07_MAX_OUTPUT_TOKENS = '4000';
+    const again = await (await s.handler(req())).json();
+    expect(again.result.provider_request).toEqual(first.result.provider_request);
+    expect(s.dispatch.mock.calls.filter((c) => c[0] === 'prepare')).toHaveLength(1);
+    expect(
+      (await s.handler(req('settle', { attempt_id: attempt, owner_id: owner, provider_response: wire() })))
+        .status,
+    ).toBe(200);
+    expect(s.dispatch.mock.calls.find((c) => c[0] === 'apply')![1].meta).toMatchObject({
+      model: 'controlled-model',
+      cost_usd: 0.003,
+    });
   });
   it('returns fixed redacted reconciliation failure without replaying an uncertain write', async () => {
     const s = setup(env, async (op) => {

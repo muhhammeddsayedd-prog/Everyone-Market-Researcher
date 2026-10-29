@@ -24,6 +24,7 @@ const api = require('./aiResult.js') as {
   parseResponse: (
     resp: unknown,
     tax: unknown,
+    validationSchema?: unknown,
   ) => {
     ok: boolean;
     result: Record<string, unknown> | null;
@@ -292,5 +293,17 @@ describe('M07 pure Responses contract', () => {
     const source = readFileSync(new URL('./aiResult.js', import.meta.url), 'utf8');
     const output = runInNewContext(source + '\nparseResponse(input,tax)', { input: wire(), tax });
     expect(output.ok).toBe(true);
+  });
+});
+
+it('validates against the immutable admitted schema rather than a later module default', () => {
+  const frozen = structuredClone(api.extractionSchema.schema) as {
+    properties: { campaign_title: { enum?: string[] } };
+  };
+  frozen.properties.campaign_title.enum = ['Only this admitted value'];
+  expect(api.parseResponse(wire(), tax).ok).toBe(true);
+  expect(api.parseResponse(wire(), tax, frozen)).toMatchObject({
+    ok: false,
+    error: 'AI_RESPONSE_SCHEMA_INVALID',
   });
 });

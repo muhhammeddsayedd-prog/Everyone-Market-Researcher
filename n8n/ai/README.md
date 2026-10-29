@@ -1,32 +1,37 @@
-# M07 local extractor
+# M07 extraction and embeddings
 
-`build-native-extractor.mjs` generates a supported-node, inactive WF-30 blueprint.
-The checked-in export has missing-binding guards and cannot perform I/O. A bound
-local test uses the actual generated Code transitions and restricted Node route
-with a controlled Responses API fixture. No real model call is claimed.
+WF-30 and WF-33 use supported n8n Code/HTTP nodes. Both checked-in exports are
+inactive and unbound; missing bindings stop before I/O. Local integration tests
+execute their actual generated Code through authenticated handlers and restricted
+SQL against PostgreSQL, with controlled provider responses. No live model or
+hosted native acceptance is claimed.
 
-The first slice is deliberately local: the route and database adapter accept only
-loopback local-development targets and deny every Vercel/production environment.
-An actual n8n Cloud instance cannot reach that loopback route. This is a
-Cloud-compatible graph contract qualified locally, not a hosted runtime or native
-Cloud acceptance receipt. A separately reviewed hosted binding will be required
-before any live extraction observation.
+Preparation freezes the complete provider body and response-validation context:
+item/taxonomy, prompt/schema identity and content, model/output settings, routing
+threshold and prices. The SQL canonical snapshot hash gates dispatch and settlement.
+Later environment, source, taxonomy, threshold or price changes cannot alter that
+attempt. One-shot dispatch, exact replay and unknown-outcome containment apply to
+both paths. Known failures remain attributable; queue expiry is not a paid retry.
 
-The route owns prompt/schema/model and price-book validation. The generated
-workflow claims one message, prepares the versioned request, durably marks a
-one-shot dispatch, sends the provider request, settles a known response through
-atomic SQL and acknowledges only a completed receipt. An uncertain model outcome
-or database commit is held for the same-attempt reconciliation; there is no
-automatic provider retry. Completed replay performs no provider call and produces
-no second cost, entity or queue work.
+WF-33 embeds items, competitors and organizations. Competitors use the last20 item
+summaries with deterministic ordering; campaign summaries wait for the later
+campaign implementation. Bounded UTF8 text is hashed exactly. Unchanged checks
+include model,1536 dimensions and input version. Responses map by unique complete
+indexes, not array order. Storage-compatible finite vectors are required. A delayed
+result cannot overwrite newer content or vectors. One provider batch has one
+aggregate token/cost settlement, without invented per-vector usage. Refresh enqueue
+is explicit and replay-safe; there is no active schedule.
 
-Local accounting is labelled `simulated`, including calculated fixture cost.
-Missing usage or applicable price is unknown, not zero. Vision, batch extraction,
-embedding execution, schedules, email and media dispatch remain outside this slice.
+The existing local profile remains loopback-only and records simulated accounting.
+The separate hosted profile is implemented but default-disabled. It requires the
+exact dev project, Preview branch/commit/deployment/audience, authenticated Machine
+access, restricted writer and server-selected item/entity allowlists. Production
+and wrong bindings are rejected. It uses the existing strict-TLS certificate path;
+no administrator or Supabase secret key enters runtime. No secret is loaded or
+bound by this implementation. Local profile tests do not establish hosted access.
 
-Before any separately authorized live route, bind a verified model snapshot (or
-an explicitly verified alias mapping): this local boundary holds responses whose
-model differs from the configured model. The finite output-token setting is
-server-selected locally; only model and prompt/schema versions are frozen in the
-current SQL attempt. A hosted extension must freeze its complete admitted request
-configuration before provider I/O.
+Before the next separately authorized smoke observation, confirm the pinned model,
+applicable price book, selected existing dev records, supported protection access
+and actual bindings in the single live-validation packet. Evaluation still owns the
+final model decision. Vision/media extensions, Batch, evaluation, production and
+recurrence remain later scope.
