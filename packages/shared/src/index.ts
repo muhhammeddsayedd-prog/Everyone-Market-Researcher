@@ -84,3 +84,4 @@ export {
   m06CampaignConflictEvent,
 } from './n8n-m06-contracts';
 export type { M06StoryActor } from './n8n-m06-contracts';
+export * from './m07-extraction-contracts';

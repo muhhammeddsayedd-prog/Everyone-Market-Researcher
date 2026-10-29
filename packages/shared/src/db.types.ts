@@ -2195,6 +2195,7 @@ export type Database = {
     Tables: {
       ai_extractions: {
         Row: {
+          attempt_id: string | null;
           confidence: number | null;
           cost_usd: number | null;
           created_at: string;
@@ -2211,6 +2212,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          attempt_id?: string | null;
           confidence?: number | null;
           cost_usd?: number | null;
           created_at?: string;
@@ -2226,6 +2228,7 @@ export type Database = {
           used_vision?: boolean;
         };
         Update: {
+          attempt_id?: string | null;
           confidence?: number | null;
           cost_usd?: number | null;
           created_at?: string;
@@ -2240,7 +2243,15 @@ export type Database = {
           schema_version?: string;
           used_vision?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'ai_extractions_attempt_id_fkey';
+            columns: ['attempt_id'];
+            isOneToOne: false;
+            referencedRelation: 'm07_ai_attempts';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       api_calls: {
         Row: {
@@ -3331,6 +3342,107 @@ export type Database = {
           },
         ];
       };
+      m07_ai_attempts: {
+        Row: {
+          acked_at: string | null;
+          created_at: string;
+          dispatched_at: string | null;
+          id: string;
+          item_id: string;
+          lease_until: string;
+          model: string | null;
+          msg_id: number;
+          outcome: string | null;
+          owner_id: string;
+          payload_hash: string | null;
+          previous_ai_status: Database['app']['Enums']['ai_status'] | null;
+          price_snapshot: Json | null;
+          prompt_version: string | null;
+          provider_response_id: string | null;
+          read_ct: number;
+          reextract_nonce: string | null;
+          result: Json | null;
+          schema_version: string | null;
+          settled_at: string | null;
+          state: string;
+          usage_known: boolean;
+        };
+        ComputedFields: never;
+        Insert: {
+          acked_at?: string | null;
+          created_at?: string;
+          dispatched_at?: string | null;
+          id?: string;
+          item_id: string;
+          lease_until: string;
+          model?: string | null;
+          msg_id: number;
+          outcome?: string | null;
+          owner_id: string;
+          payload_hash?: string | null;
+          previous_ai_status?: Database['app']['Enums']['ai_status'] | null;
+          price_snapshot?: Json | null;
+          prompt_version?: string | null;
+          provider_response_id?: string | null;
+          read_ct: number;
+          reextract_nonce?: string | null;
+          result?: Json | null;
+          schema_version?: string | null;
+          settled_at?: string | null;
+          state?: string;
+          usage_known?: boolean;
+        };
+        Update: {
+          acked_at?: string | null;
+          created_at?: string;
+          dispatched_at?: string | null;
+          id?: string;
+          item_id?: string;
+          lease_until?: string;
+          model?: string | null;
+          msg_id?: number;
+          outcome?: string | null;
+          owner_id?: string;
+          payload_hash?: string | null;
+          previous_ai_status?: Database['app']['Enums']['ai_status'] | null;
+          price_snapshot?: Json | null;
+          prompt_version?: string | null;
+          provider_response_id?: string | null;
+          read_ct?: number;
+          reextract_nonce?: string | null;
+          result?: Json | null;
+          schema_version?: string | null;
+          settled_at?: string | null;
+          state?: string;
+          usage_known?: boolean;
+        };
+        Relationships: [];
+      };
+      m07_entity_sightings: {
+        Row: {
+          confidence: number;
+          created_at: string;
+          entity_id: string;
+          entity_type: string;
+          item_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          confidence: number;
+          created_at?: string;
+          entity_id: string;
+          entity_type: string;
+          item_id: string;
+        };
+        Update: {
+          confidence?: number;
+          created_at?: string;
+          entity_id?: string;
+          entity_type?: string;
+          item_id?: string;
+        };
+        Relationships: [];
+      };
       price_book: {
         Row: {
           provider: string;
@@ -3625,6 +3737,7 @@ export type Database = {
       ack_queue: { Args: { p_msg_ids: number[]; p_queue: string }; Returns: undefined };
       ack_story_media_batch: { Args: { p_execution_id: string; p_msg_ids: number[] }; Returns: undefined };
       apify_runs_pending: { Args: { p_run_id: string }; Returns: number };
+      apply_extraction: { Args: { p_item_id: string; p_meta: Json; p_result: Json }; Returns: Json };
       apply_upkeep_observation: {
         Args: {
           p_account_id: string;
@@ -3658,6 +3771,7 @@ export type Database = {
       daily_health: { Args: Record<PropertyKey, never>; Returns: Json };
       diff_website_urls: { Args: { p_account_id: string; p_urls: string[] }; Returns: string[] };
       error_count_24h: { Args: { p_claim_notify?: boolean; p_workflow: string }; Returns: number };
+      fail_ai_items: { Args: { p_item_ids: string[]; p_msg_ids: number[] }; Returns: Json };
       finish_media_batch: { Args: { p_execution_id: string }; Returns: Json };
       finish_run: { Args: { p_error?: string; p_run_id: string; p_status: string }; Returns: Json };
       finish_story_media_batch: { Args: { p_execution_id: string }; Returns: Json };
@@ -3740,6 +3854,7 @@ export type Database = {
         Returns: Json;
       };
       get_setting: { Args: { p_key: string }; Returns: Json };
+      get_taxonomy_snapshot: { Args: Record<PropertyKey, never>; Returns: Json };
       get_upkeep_source_runs: { Args: { p_account_id: string }; Returns: Json };
       log_cost: { Args: { p_entries: Json }; Returns: number };
       log_workflow_error: { Args: { p: Json }; Returns: undefined };
@@ -3773,6 +3888,27 @@ export type Database = {
         Returns: Json;
       };
       m06_execute: { Args: { p_args: Json; p_operation: string; p_request_id: string }; Returns: Json };
+      m07_ack_ai: { Args: { p_attempt_id: string; p_owner_id: string }; Returns: Json };
+      m07_ai_status: { Args: { p_attempt_id: string; p_owner_id: string }; Returns: Json };
+      m07_claim_ai: {
+        Args: { p_limit?: number; p_owner_id: string; p_visibility_seconds?: number };
+        Returns: Json;
+      };
+      m07_dispatch_ai: { Args: { p_attempt_id: string; p_owner_id: string }; Returns: Json };
+      m07_fail_ai: {
+        Args: { p_attempt_id: string; p_meta: Json; p_outcome: string; p_owner_id: string };
+        Returns: Json;
+      };
+      m07_prepare_ai: {
+        Args: {
+          p_attempt_id: string;
+          p_model: string;
+          p_owner_id: string;
+          p_prompt_version: string;
+          p_schema_version: string;
+        };
+        Returns: Json;
+      };
       mark_removed: {
         Args: { p_account_id: string; p_request_id: string; p_seen_external_ids: string[]; p_since: string };
         Returns: Json;

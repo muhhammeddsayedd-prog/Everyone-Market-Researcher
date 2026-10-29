@@ -1,0 +1,51 @@
+{
+  "is_commercial_work": true,
+  "content_type": "tvc_brand_film",
+  "brand": {
+    "name": "Controlled Brand",
+    "handle": "controlledbrand",
+    "industry": "telecom",
+    "country": "EG"
+  },
+  "agency": {
+    "name": "Controlled Agency",
+    "handle": null
+  },
+  "production_house": {
+    "is_posting_competitor": true,
+    "other_name": null
+  },
+  "credits": [
+    {
+      "person_name": "محمود اختبار",
+      "role": "director",
+      "organization": null
+    }
+  ],
+  "campaign_title": "Controlled campaign",
+  "country": "EG",
+  "language": "mixed",
+  "occasion": "ramadan",
+  "summary_en": "A controlled fixture campaign.",
+  "summary_ar": "حملة اختبار اصطناعية.",
+  "caption_en": null,
+  "tags": ["controlled-fixture"],
+  "needs_vision": false,
+  "confidence": {
+    "overall": 0.94,
+    "is_commercial_work": 0.99,
+    "brand": 0.95,
+    "agency": 0.85,
+    "production_house": 0.99,
+    "credits": 0.9,
+    "content_type": 0.95,
+    "country": 0.9,
+    "occasion": 0.9
+  },
+  "evidence": {
+    "brand": "Controlled @controlledbrand mention",
+    "agency": "Controlled Agency in fixture",
+    "credits": "Synthetic director credit",
+    "production_house": "Synthetic posting company"
+  }
+}

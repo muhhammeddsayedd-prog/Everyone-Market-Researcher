@@ -91,6 +91,8 @@ Captions are truncated to 6,000 characters.
 
 **Human locks:** when an analyst corrects a field in the review queue or on an item page, `app.correct_item` adds the field to `locked_fields`. Later runs or re-extractions never change locked fields. Approving a review also teaches aliases (source `human`).
 
+**Attempt identity and replay (29October local M07 clarification):** one extraction attempt has an immutable UUID, item, owner and prepared model/prompt/schema configuration. Repeating application or recovering its original committed receipt is a replay: it creates no extra receipt, cost, sighting, alias, credit, review or embedding message, and never grants another provider dispatch. A deliberate new attempt/version is separately attributable; entity confirmation still counts distinct items, not repeated attempts of one item. Unknown provider usage remains unknown and held for reconciliation. The original phrase “a new extraction row when called again” means a new explicit attempt, not transport replay. The current local slice uses controlled responses and simulated accounting only; hosted queues and actual model behavior remain untested.
+
 ## 6. Vision
 
 - **Text first.** The model sees an image only when the first pass says `needs_vision = true` and a thumbnail exists.

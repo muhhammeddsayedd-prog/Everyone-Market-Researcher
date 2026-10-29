@@ -1,0 +1,84 @@
+{
+  "observed_at": "2026-10-29T15:02:08.215469+00:00",
+  "environment": "local controlled responses only",
+  "base_commit": "701cd93dafd881280ff246fdcb487b48f2a44f3f",
+  "definition_chain": 25,
+  "migration": {
+    "version": "20261029143813",
+    "file": "supabase/migrations/20261029143813_m07_ai.sql",
+    "sha256": "60a69c3be423298cec5cbab3bee000f22b7166dde424882afdd8b26bfba1324a",
+    "created_with": "Supabase CLI2.121.0 migration new m07_ai",
+    "hosted_applied": false
+  },
+  "checks": {
+    "new_pgtap": {
+      "files": 1,
+      "assertions": 94,
+      "passed": 94
+    },
+    "normalizer": {
+      "passed": 16,
+      "skipped": 0
+    },
+    "handler_adapter": {
+      "passed": 12,
+      "skipped": 0
+    },
+    "generated_code_actual_sql": {
+      "passed": 1,
+      "skipped": 0,
+      "method": "actual generated WF-30 Code nodes -> authenticated local route -> restricted SQL adapter -> PostgreSQL, rollback-only"
+    },
+    "native_graph": {
+      "passed": 9,
+      "skipped": 0
+    },
+    "ci_safety": {
+      "passed": 21,
+      "skipped": 0
+    },
+    "typecheck": "passed",
+    "native_cli_types": "all25 definitions, schemas app/ops/ingest/api; canonical project Prettier",
+    "security_advisors": {
+      "tool": "Supabase CLI2.121.0",
+      "findings": 0
+    },
+    "performance_advisors": {
+      "tool": "Supabase CLI2.121.0",
+      "findings": 0
+    }
+  },
+  "local_baseline": {
+    "persistent_versions": 14,
+    "items": 10,
+    "competitors": 1,
+    "reset": false,
+    "verification": "composed integration compares persistent queue/item/cost/extraction/history signatures after ROLLBACK"
+  },
+  "accounting": {
+    "provider_requests": 0,
+    "incremental_provider_usd": 0,
+    "simulated_usage_example": {
+      "input_tokens": 1000,
+      "cached_input_tokens": 400,
+      "output_tokens": 200,
+      "usd": 0.003
+    },
+    "infrastructure_charges": "unknown; no new subscription or plan"
+  },
+  "hosted_database_operations": 0,
+  "live_model_requests": 0,
+  "private_credential_reads": 0,
+  "campaign_mutations": 0,
+  "qualifier": {
+    "name": "emr-m07-local-qualifier",
+    "scope": "owned empty local schema qualifier, loopback60326; schema-only auth/storage infrastructure, exact25 project definitions, no collected data/history copied",
+    "cleanup": "owned qualifier stopped and removed, verified absent; zero items/raw rows; postgres nonsuperuser"
+  },
+  "limitations": [
+    "Local role simulation is not a hosted login receipt.",
+    "Controlled model responses establish implementation, not model accuracy, actual billing or hosted native execution.",
+    "The inactive unbound export blocks before IO; n8n Cloud cannot access the loopback local gateway.",
+    "Vision, embeddings provider, Batch, evaluation and backlog remain open."
+  ]
+}

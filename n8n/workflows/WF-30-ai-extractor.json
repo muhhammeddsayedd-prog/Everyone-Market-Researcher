@@ -1,0 +1,403 @@
+{
+  "key": "WF-30-M07",
+  "kind": "native-json-blueprint",
+  "runnableWorkflow": false,
+  "liveEnabled": false,
+  "hostedAcceptance": false,
+  "definitionProfile": "inactive_local_only",
+  "bindingManifest": {
+    "ready": false,
+    "environment": "local",
+    "audience": "http://127.0.0.1:3037"
+  },
+  "boundary": {
+    "localOnly": true,
+    "accounting": "simulated_only",
+    "batchSize": 1,
+    "automaticPaidRetry": false,
+    "schedule": false,
+    "vision": false,
+    "mediaDispatch": false,
+    "embeddingExecution": false
+  },
+  "workflow": {
+    "name": "WF-30 · AI extractor [local M07]",
+    "active": false,
+    "nodes": [
+      {
+        "id": "5294b052-b619-4573-aeab-56bb3f1401cb",
+        "name": "When called",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.3,
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "dad23973-f6f4-4027-a9d3-da3019e1153a",
+        "name": "Initialize local extraction",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "throw Error('M07_BINDING_REQUIRED');\nconst rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_INPUT_INVALID');const j=rows[0].json;\nfunction m07Object(v) {\n  return v !== null && typeof v === 'object' && !Array.isArray(v);\n}\n\nfunction m07Uuid(v) {\n  return (\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)\n  );\n}\n\nfunction m07NativeId(execution, sequence, owner = false) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    !Number.isSafeInteger(Number(execution)) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isInteger(sequence) ||\n    sequence < 0 ||\n    sequence > 32\n  )\n    throw Error('M07_EXECUTION_INVALID');\n  return `${owner ? 'c070aaaa' : 'c0700000'}-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction m07Request(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = { version: 1, requestId: m07NativeId(state.executionId, state.sequence), operation, args };\n  return state;\n}\n\nfunction initializeM07Extraction(input, executionId) {\n  if (!m07Object(input) || Object.keys(input).join(',') !== 'env' || input.env !== 'dev')\n    throw Error('M07_INPUT_INVALID');\n  const state = {\n    executionId,\n    sequence: 0,\n    owner_id: m07NativeId(executionId, 0, true),\n    attempt_id: null,\n    action: 'gateway',\n    result: null,\n    reconciled: false,\n  };\n  return m07Request(state, 'claim', { owner_id: state.owner_id, limit: 1 });\n}\n\nfunction m07Finish(state, status, result = null, reason = null) {\n  state.action = 'done';\n  state.result = { status, owner_id: state.owner_id, attempt_id: state.attempt_id, result, reason };\n  delete state.provider_request;\n  return state;\n}\n\nfunction m07ProviderRequest(value) {\n  return (\n    m07Object(value) &&\n    Object.keys(value).every((k) =>\n      ['model', 'input', 'text', 'max_output_tokens', 'store', 'stream'].includes(k),\n    ) &&\n    typeof value.model === 'string' &&\n    value.model.length > 0 &&\n    value.store === false &&\n    value.stream === false &&\n    Number.isSafeInteger(value.max_output_tokens) &&\n    value.max_output_tokens > 0 &&\n    value.max_output_tokens <= 8192 &&\n    Array.isArray(value.input) &&\n    value.input.length === 2 &&\n    value.input.every(\n      (m) =>\n        m07Object(m) &&\n        ['system', 'user'].includes(m.role) &&\n        Array.isArray(m.content) &&\n        m.content.every((c) => m07Object(c) && c.type === 'input_text' && typeof c.text === 'string'),\n    ) &&\n    m07Object(value.text) &&\n    m07Object(value.text.format) &&\n    value.text.format.type === 'json_schema' &&\n    value.text.format.strict === true &&\n    m07Object(value.text.format.schema)\n  );\n}\n\nfunction advanceM07Gateway(original, reply) {\n  const state = structuredClone(original);\n  if (state.action !== 'gateway' || !m07Object(state.request)) throw Error('M07_STATE_INVALID');\n  const body = m07Object(reply) && reply.statusCode === 200 && m07Object(reply.body) ? reply.body : null;\n  if (\n    !body ||\n    body.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    !m07Object(body.result)\n  ) {\n    if (\n      state.attempt_id &&\n      !state.reconciled &&\n      ['settle', 'outcome.unknown', 'ack'].includes(state.request.operation)\n    ) {\n      state.reconciled = true;\n      return m07Request(state, 'status', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    }\n    return m07Finish(state, 'held', null, 'gateway_outcome_unknown');\n  }\n  const r = body.result,\n    op = state.request.operation;\n  if (op === 'claim') {\n    if (r.owner_id !== state.owner_id || !Array.isArray(r.messages) || r.messages.length > 1)\n      throw Error('M07_CLAIM_RECEIPT_INVALID');\n    if (!r.messages.length) return m07Finish(state, 'empty');\n    const m = r.messages[0];\n    if (\n      !m07Object(m) ||\n      !m07Uuid(m.attempt_id) ||\n      !m07Uuid(m.owner_id) ||\n      !m07Uuid(m.item_id) ||\n      !Number.isSafeInteger(m.read_ct) ||\n      m.read_ct < 1\n    )\n      throw Error('M07_CLAIM_RECEIPT_INVALID');\n    state.attempt_id = m.attempt_id;\n    state.item_id = m.item_id;\n    state.msg_id = m.msg_id;\n    if (m.state === 'reconciled')\n      return m07Finish(state, 'completed', m.result ?? null, 'delivery_already_reconciled');\n    if (m.state === 'held') return m07Finish(state, 'held', m.result ?? null, 'existing_uncertain_attempt');\n    if (m.owner_id !== state.owner_id) throw Error('M07_CLAIM_RECEIPT_INVALID');\n    if (['held', 'unknown', 'dispatched'].includes(m.state))\n      return m07Finish(state, 'held', m.result ?? null, 'existing_uncertain_attempt');\n    if (m.state === 'failed') return m07Finish(state, 'failed', m.result ?? null, 'known_failed_attempt');\n    if (m.state === 'completed')\n      return m.acked\n        ? m07Finish(state, 'completed', m.result)\n        : m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    if (!['claimed', 'prepared'].includes(m.state)) throw Error('M07_CLAIM_RECEIPT_INVALID');\n    return m07Request(state, 'prepare', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n  }\n  if (r.attempt_id !== state.attempt_id) throw Error('M07_ATTEMPT_RECEIPT_INVALID');\n  if (op === 'prepare') {\n    if (r.owner_id !== state.owner_id || r.item_id !== state.item_id)\n      throw Error('M07_ATTEMPT_RECEIPT_INVALID');\n    if (r.state === 'completed')\n      return r.acked\n        ? m07Finish(state, 'completed', r.result)\n        : m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    if (r.state === 'failed') return m07Finish(state, 'failed', r.result ?? null, 'known_failed_attempt');\n    if (r.state !== 'prepared' || !m07ProviderRequest(r.provider_request))\n      return m07Finish(state, 'held', null, 'prepare_not_ready');\n    return m07Request(state, 'dispatch', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n  }\n  if (op === 'dispatch') {\n    if (r.admitted !== true || r.state !== 'dispatched')\n      return m07Finish(state, 'held', null, 'dispatch_not_admitted');\n    if (!m07ProviderRequest(r.provider_request)) throw Error('M07_PROVIDER_REQUEST_INVALID');\n    state.action = 'provider';\n    state.provider_request = r.provider_request;\n    return state;\n  }\n  if (op === 'ack') {\n    if (r.acked !== true) throw Error('M07_ACK_RECEIPT_INVALID');\n    return m07Finish(state, 'completed', state.applied_result ?? null);\n  }\n  if (op === 'status') {\n    if (r.owner_id !== state.owner_id) throw Error('M07_ATTEMPT_RECEIPT_INVALID');\n    if (r.state === 'completed') {\n      state.applied_result = r.result;\n      return r.acked\n        ? m07Finish(state, 'completed', r.result)\n        : m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    }\n    return m07Finish(\n      state,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      'reconciled_without_provider_retry',\n    );\n  }\n  if (op === 'outcome.unknown') return m07Finish(state, 'held', r.result ?? null, 'provider_outcome_unknown');\n  if (op === 'settle') {\n    if (r.state === 'completed') {\n      state.applied_result = r.result ?? r;\n      return m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    }\n    return m07Finish(\n      state,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? r,\n      'provider_response_not_applied',\n    );\n  }\n  throw Error('M07_STATE_INVALID');\n}\n\nfunction advanceM07Provider(original, reply) {\n  const state = structuredClone(original);\n  if (state.action !== 'provider' || !m07Uuid(state.attempt_id)) throw Error('M07_STATE_INVALID');\n  delete state.provider_request;\n  if (!m07Object(reply) || reply.statusCode !== 200 || !m07Object(reply.body))\n    return m07Request(state, 'outcome.unknown', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n  return m07Request(state, 'settle', {\n    attempt_id: state.attempt_id,\n    owner_id: state.owner_id,\n    provider_response: reply.body,\n  });\n}\nreturn[{json:initializeM07Extraction(j,String($execution.id))}];"
+        },
+        "position": [
+          250,
+          0
+        ]
+      },
+      {
+        "id": "a475f4dc-ec02-401c-ab21-7431c913039c",
+        "name": "Gateway request?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "5f3e8a29-7b5c-4c36-ae84-9a85a42f6e1a",
+                "leftValue": "={{ $json.action === 'gateway' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          500,
+          0
+        ]
+      },
+      {
+        "id": "66dc859d-e4e1-43d9-a6b5-292ad0751e46",
+        "name": "Prepare extraction gateway",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_INPUT_INVALID');const j=rows[0].json;\nreturn[{json:j}];"
+        },
+        "position": [
+          750,
+          -200
+        ]
+      },
+      {
+        "id": "f298aec9-6ca8-4b52-adf7-b7be5afa4f28",
+        "name": "Restricted extraction gateway",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "http://127.0.0.1:3037/api/internal/m07/extract",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpCustomAuth",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.request }}",
+          "options": {
+            "timeout": 30000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1000,
+          -200
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "M07_GATEWAY_BINDING_REQUIRED",
+            "name": "M07 local gateway binding required"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "ee2e5c0f-1e4c-4a9e-ab55-a2b7b10eded9",
+        "name": "Advance extraction receipt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_INPUT_INVALID');const j=rows[0].json;\nfunction m07Object(v) {\n  return v !== null && typeof v === 'object' && !Array.isArray(v);\n}\n\nfunction m07Uuid(v) {\n  return (\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)\n  );\n}\n\nfunction m07NativeId(execution, sequence, owner = false) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    !Number.isSafeInteger(Number(execution)) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isInteger(sequence) ||\n    sequence < 0 ||\n    sequence > 32\n  )\n    throw Error('M07_EXECUTION_INVALID');\n  return `${owner ? 'c070aaaa' : 'c0700000'}-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction m07Request(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = { version: 1, requestId: m07NativeId(state.executionId, state.sequence), operation, args };\n  return state;\n}\n\nfunction initializeM07Extraction(input, executionId) {\n  if (!m07Object(input) || Object.keys(input).join(',') !== 'env' || input.env !== 'dev')\n    throw Error('M07_INPUT_INVALID');\n  const state = {\n    executionId,\n    sequence: 0,\n    owner_id: m07NativeId(executionId, 0, true),\n    attempt_id: null,\n    action: 'gateway',\n    result: null,\n    reconciled: false,\n  };\n  return m07Request(state, 'claim', { owner_id: state.owner_id, limit: 1 });\n}\n\nfunction m07Finish(state, status, result = null, reason = null) {\n  state.action = 'done';\n  state.result = { status, owner_id: state.owner_id, attempt_id: state.attempt_id, result, reason };\n  delete state.provider_request;\n  return state;\n}\n\nfunction m07ProviderRequest(value) {\n  return (\n    m07Object(value) &&\n    Object.keys(value).every((k) =>\n      ['model', 'input', 'text', 'max_output_tokens', 'store', 'stream'].includes(k),\n    ) &&\n    typeof value.model === 'string' &&\n    value.model.length > 0 &&\n    value.store === false &&\n    value.stream === false &&\n    Number.isSafeInteger(value.max_output_tokens) &&\n    value.max_output_tokens > 0 &&\n    value.max_output_tokens <= 8192 &&\n    Array.isArray(value.input) &&\n    value.input.length === 2 &&\n    value.input.every(\n      (m) =>\n        m07Object(m) &&\n        ['system', 'user'].includes(m.role) &&\n        Array.isArray(m.content) &&\n        m.content.every((c) => m07Object(c) && c.type === 'input_text' && typeof c.text === 'string'),\n    ) &&\n    m07Object(value.text) &&\n    m07Object(value.text.format) &&\n    value.text.format.type === 'json_schema' &&\n    value.text.format.strict === true &&\n    m07Object(value.text.format.schema)\n  );\n}\n\nfunction advanceM07Gateway(original, reply) {\n  const state = structuredClone(original);\n  if (state.action !== 'gateway' || !m07Object(state.request)) throw Error('M07_STATE_INVALID');\n  const body = m07Object(reply) && reply.statusCode === 200 && m07Object(reply.body) ? reply.body : null;\n  if (\n    !body ||\n    body.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    !m07Object(body.result)\n  ) {\n    if (\n      state.attempt_id &&\n      !state.reconciled &&\n      ['settle', 'outcome.unknown', 'ack'].includes(state.request.operation)\n    ) {\n      state.reconciled = true;\n      return m07Request(state, 'status', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    }\n    return m07Finish(state, 'held', null, 'gateway_outcome_unknown');\n  }\n  const r = body.result,\n    op = state.request.operation;\n  if (op === 'claim') {\n    if (r.owner_id !== state.owner_id || !Array.isArray(r.messages) || r.messages.length > 1)\n      throw Error('M07_CLAIM_RECEIPT_INVALID');\n    if (!r.messages.length) return m07Finish(state, 'empty');\n    const m = r.messages[0];\n    if (\n      !m07Object(m) ||\n      !m07Uuid(m.attempt_id) ||\n      !m07Uuid(m.owner_id) ||\n      !m07Uuid(m.item_id) ||\n      !Number.isSafeInteger(m.read_ct) ||\n      m.read_ct < 1\n    )\n      throw Error('M07_CLAIM_RECEIPT_INVALID');\n    state.attempt_id = m.attempt_id;\n    state.item_id = m.item_id;\n    state.msg_id = m.msg_id;\n    if (m.state === 'reconciled')\n      return m07Finish(state, 'completed', m.result ?? null, 'delivery_already_reconciled');\n    if (m.state === 'held') return m07Finish(state, 'held', m.result ?? null, 'existing_uncertain_attempt');\n    if (m.owner_id !== state.owner_id) throw Error('M07_CLAIM_RECEIPT_INVALID');\n    if (['held', 'unknown', 'dispatched'].includes(m.state))\n      return m07Finish(state, 'held', m.result ?? null, 'existing_uncertain_attempt');\n    if (m.state === 'failed') return m07Finish(state, 'failed', m.result ?? null, 'known_failed_attempt');\n    if (m.state === 'completed')\n      return m.acked\n        ? m07Finish(state, 'completed', m.result)\n        : m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    if (!['claimed', 'prepared'].includes(m.state)) throw Error('M07_CLAIM_RECEIPT_INVALID');\n    return m07Request(state, 'prepare', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n  }\n  if (r.attempt_id !== state.attempt_id) throw Error('M07_ATTEMPT_RECEIPT_INVALID');\n  if (op === 'prepare') {\n    if (r.owner_id !== state.owner_id || r.item_id !== state.item_id)\n      throw Error('M07_ATTEMPT_RECEIPT_INVALID');\n    if (r.state === 'completed')\n      return r.acked\n        ? m07Finish(state, 'completed', r.result)\n        : m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    if (r.state === 'failed') return m07Finish(state, 'failed', r.result ?? null, 'known_failed_attempt');\n    if (r.state !== 'prepared' || !m07ProviderRequest(r.provider_request))\n      return m07Finish(state, 'held', null, 'prepare_not_ready');\n    return m07Request(state, 'dispatch', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n  }\n  if (op === 'dispatch') {\n    if (r.admitted !== true || r.state !== 'dispatched')\n      return m07Finish(state, 'held', null, 'dispatch_not_admitted');\n    if (!m07ProviderRequest(r.provider_request)) throw Error('M07_PROVIDER_REQUEST_INVALID');\n    state.action = 'provider';\n    state.provider_request = r.provider_request;\n    return state;\n  }\n  if (op === 'ack') {\n    if (r.acked !== true) throw Error('M07_ACK_RECEIPT_INVALID');\n    return m07Finish(state, 'completed', state.applied_result ?? null);\n  }\n  if (op === 'status') {\n    if (r.owner_id !== state.owner_id) throw Error('M07_ATTEMPT_RECEIPT_INVALID');\n    if (r.state === 'completed') {\n      state.applied_result = r.result;\n      return r.acked\n        ? m07Finish(state, 'completed', r.result)\n        : m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    }\n    return m07Finish(\n      state,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      'reconciled_without_provider_retry',\n    );\n  }\n  if (op === 'outcome.unknown') return m07Finish(state, 'held', r.result ?? null, 'provider_outcome_unknown');\n  if (op === 'settle') {\n    if (r.state === 'completed') {\n      state.applied_result = r.result ?? r;\n      return m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    }\n    return m07Finish(\n      state,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? r,\n      'provider_response_not_applied',\n    );\n  }\n  throw Error('M07_STATE_INVALID');\n}\n\nfunction advanceM07Provider(original, reply) {\n  const state = structuredClone(original);\n  if (state.action !== 'provider' || !m07Uuid(state.attempt_id)) throw Error('M07_STATE_INVALID');\n  delete state.provider_request;\n  if (!m07Object(reply) || reply.statusCode !== 200 || !m07Object(reply.body))\n    return m07Request(state, 'outcome.unknown', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n  return m07Request(state, 'settle', {\n    attempt_id: state.attempt_id,\n    owner_id: state.owner_id,\n    provider_response: reply.body,\n  });\n}\nreturn[{json:advanceM07Gateway($('Prepare extraction gateway').item.json,j)}];"
+        },
+        "position": [
+          1250,
+          -200
+        ]
+      },
+      {
+        "id": "91b8d29f-2e25-45d4-a182-6743ba924992",
+        "name": "Provider admitted?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "54cdf7af-c72b-4a41-a5ce-619842fc36b8",
+                "leftValue": "={{ $json.action === 'provider' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "position": [
+          750,
+          200
+        ]
+      },
+      {
+        "id": "6ca5a0bb-5471-49e6-a232-0fe1b6eee021",
+        "name": "Prepare admitted model request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_INPUT_INVALID');const j=rows[0].json;\nreturn[{json:j}];"
+        },
+        "position": [
+          850,
+          200
+        ]
+      },
+      {
+        "id": "b047dd80-97ca-44dd-af1a-17883fb5ead6",
+        "name": "OpenAI Responses text extraction",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.openai.com/v1/responses",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "openAiApi",
+          "sendQuery": false,
+          "sendHeaders": false,
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.provider_request }}",
+          "options": {
+            "timeout": 120000,
+            "allowUnauthorizedCerts": false,
+            "redirect": {
+              "redirect": {
+                "followRedirects": false,
+                "maxRedirects": 0
+              }
+            },
+            "sendCredentialsOnCrossOriginRedirect": false,
+            "response": {
+              "response": {
+                "responseFormat": "json",
+                "fullResponse": true,
+                "neverError": true
+              }
+            }
+          }
+        },
+        "position": [
+          1000,
+          200
+        ],
+        "credentials": {
+          "openAiApi": {
+            "id": "M07_OPENAI_BINDING_REQUIRED",
+            "name": "OpenAI binding required"
+          }
+        },
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "b8ddc2b2-223b-4bd0-ac80-2e9b04c90261",
+        "name": "Advance model receipt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_INPUT_INVALID');const j=rows[0].json;\nfunction m07Object(v) {\n  return v !== null && typeof v === 'object' && !Array.isArray(v);\n}\n\nfunction m07Uuid(v) {\n  return (\n    typeof v === 'string' &&\n    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)\n  );\n}\n\nfunction m07NativeId(execution, sequence, owner = false) {\n  if (\n    !/^[0-9]{1,15}$/.test(execution) ||\n    !Number.isSafeInteger(Number(execution)) ||\n    Number(execution) >= 2 ** 48 ||\n    !Number.isInteger(sequence) ||\n    sequence < 0 ||\n    sequence > 32\n  )\n    throw Error('M07_EXECUTION_INVALID');\n  return `${owner ? 'c070aaaa' : 'c0700000'}-${sequence.toString(16).padStart(4, '0')}-4000-a000-${Number(execution).toString(16).padStart(12, '0')}`;\n}\n\nfunction m07Request(state, operation, args) {\n  state.sequence++;\n  state.action = 'gateway';\n  state.request = { version: 1, requestId: m07NativeId(state.executionId, state.sequence), operation, args };\n  return state;\n}\n\nfunction initializeM07Extraction(input, executionId) {\n  if (!m07Object(input) || Object.keys(input).join(',') !== 'env' || input.env !== 'dev')\n    throw Error('M07_INPUT_INVALID');\n  const state = {\n    executionId,\n    sequence: 0,\n    owner_id: m07NativeId(executionId, 0, true),\n    attempt_id: null,\n    action: 'gateway',\n    result: null,\n    reconciled: false,\n  };\n  return m07Request(state, 'claim', { owner_id: state.owner_id, limit: 1 });\n}\n\nfunction m07Finish(state, status, result = null, reason = null) {\n  state.action = 'done';\n  state.result = { status, owner_id: state.owner_id, attempt_id: state.attempt_id, result, reason };\n  delete state.provider_request;\n  return state;\n}\n\nfunction m07ProviderRequest(value) {\n  return (\n    m07Object(value) &&\n    Object.keys(value).every((k) =>\n      ['model', 'input', 'text', 'max_output_tokens', 'store', 'stream'].includes(k),\n    ) &&\n    typeof value.model === 'string' &&\n    value.model.length > 0 &&\n    value.store === false &&\n    value.stream === false &&\n    Number.isSafeInteger(value.max_output_tokens) &&\n    value.max_output_tokens > 0 &&\n    value.max_output_tokens <= 8192 &&\n    Array.isArray(value.input) &&\n    value.input.length === 2 &&\n    value.input.every(\n      (m) =>\n        m07Object(m) &&\n        ['system', 'user'].includes(m.role) &&\n        Array.isArray(m.content) &&\n        m.content.every((c) => m07Object(c) && c.type === 'input_text' && typeof c.text === 'string'),\n    ) &&\n    m07Object(value.text) &&\n    m07Object(value.text.format) &&\n    value.text.format.type === 'json_schema' &&\n    value.text.format.strict === true &&\n    m07Object(value.text.format.schema)\n  );\n}\n\nfunction advanceM07Gateway(original, reply) {\n  const state = structuredClone(original);\n  if (state.action !== 'gateway' || !m07Object(state.request)) throw Error('M07_STATE_INVALID');\n  const body = m07Object(reply) && reply.statusCode === 200 && m07Object(reply.body) ? reply.body : null;\n  if (\n    !body ||\n    body.version !== 1 ||\n    body.requestId !== state.request.requestId ||\n    body.operation !== state.request.operation ||\n    !m07Object(body.result)\n  ) {\n    if (\n      state.attempt_id &&\n      !state.reconciled &&\n      ['settle', 'outcome.unknown', 'ack'].includes(state.request.operation)\n    ) {\n      state.reconciled = true;\n      return m07Request(state, 'status', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    }\n    return m07Finish(state, 'held', null, 'gateway_outcome_unknown');\n  }\n  const r = body.result,\n    op = state.request.operation;\n  if (op === 'claim') {\n    if (r.owner_id !== state.owner_id || !Array.isArray(r.messages) || r.messages.length > 1)\n      throw Error('M07_CLAIM_RECEIPT_INVALID');\n    if (!r.messages.length) return m07Finish(state, 'empty');\n    const m = r.messages[0];\n    if (\n      !m07Object(m) ||\n      !m07Uuid(m.attempt_id) ||\n      !m07Uuid(m.owner_id) ||\n      !m07Uuid(m.item_id) ||\n      !Number.isSafeInteger(m.read_ct) ||\n      m.read_ct < 1\n    )\n      throw Error('M07_CLAIM_RECEIPT_INVALID');\n    state.attempt_id = m.attempt_id;\n    state.item_id = m.item_id;\n    state.msg_id = m.msg_id;\n    if (m.state === 'reconciled')\n      return m07Finish(state, 'completed', m.result ?? null, 'delivery_already_reconciled');\n    if (m.state === 'held') return m07Finish(state, 'held', m.result ?? null, 'existing_uncertain_attempt');\n    if (m.owner_id !== state.owner_id) throw Error('M07_CLAIM_RECEIPT_INVALID');\n    if (['held', 'unknown', 'dispatched'].includes(m.state))\n      return m07Finish(state, 'held', m.result ?? null, 'existing_uncertain_attempt');\n    if (m.state === 'failed') return m07Finish(state, 'failed', m.result ?? null, 'known_failed_attempt');\n    if (m.state === 'completed')\n      return m.acked\n        ? m07Finish(state, 'completed', m.result)\n        : m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    if (!['claimed', 'prepared'].includes(m.state)) throw Error('M07_CLAIM_RECEIPT_INVALID');\n    return m07Request(state, 'prepare', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n  }\n  if (r.attempt_id !== state.attempt_id) throw Error('M07_ATTEMPT_RECEIPT_INVALID');\n  if (op === 'prepare') {\n    if (r.owner_id !== state.owner_id || r.item_id !== state.item_id)\n      throw Error('M07_ATTEMPT_RECEIPT_INVALID');\n    if (r.state === 'completed')\n      return r.acked\n        ? m07Finish(state, 'completed', r.result)\n        : m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    if (r.state === 'failed') return m07Finish(state, 'failed', r.result ?? null, 'known_failed_attempt');\n    if (r.state !== 'prepared' || !m07ProviderRequest(r.provider_request))\n      return m07Finish(state, 'held', null, 'prepare_not_ready');\n    return m07Request(state, 'dispatch', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n  }\n  if (op === 'dispatch') {\n    if (r.admitted !== true || r.state !== 'dispatched')\n      return m07Finish(state, 'held', null, 'dispatch_not_admitted');\n    if (!m07ProviderRequest(r.provider_request)) throw Error('M07_PROVIDER_REQUEST_INVALID');\n    state.action = 'provider';\n    state.provider_request = r.provider_request;\n    return state;\n  }\n  if (op === 'ack') {\n    if (r.acked !== true) throw Error('M07_ACK_RECEIPT_INVALID');\n    return m07Finish(state, 'completed', state.applied_result ?? null);\n  }\n  if (op === 'status') {\n    if (r.owner_id !== state.owner_id) throw Error('M07_ATTEMPT_RECEIPT_INVALID');\n    if (r.state === 'completed') {\n      state.applied_result = r.result;\n      return r.acked\n        ? m07Finish(state, 'completed', r.result)\n        : m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    }\n    return m07Finish(\n      state,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? null,\n      'reconciled_without_provider_retry',\n    );\n  }\n  if (op === 'outcome.unknown') return m07Finish(state, 'held', r.result ?? null, 'provider_outcome_unknown');\n  if (op === 'settle') {\n    if (r.state === 'completed') {\n      state.applied_result = r.result ?? r;\n      return m07Request(state, 'ack', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n    }\n    return m07Finish(\n      state,\n      r.state === 'failed' ? 'failed' : 'held',\n      r.result ?? r,\n      'provider_response_not_applied',\n    );\n  }\n  throw Error('M07_STATE_INVALID');\n}\n\nfunction advanceM07Provider(original, reply) {\n  const state = structuredClone(original);\n  if (state.action !== 'provider' || !m07Uuid(state.attempt_id)) throw Error('M07_STATE_INVALID');\n  delete state.provider_request;\n  if (!m07Object(reply) || reply.statusCode !== 200 || !m07Object(reply.body))\n    return m07Request(state, 'outcome.unknown', { attempt_id: state.attempt_id, owner_id: state.owner_id });\n  return m07Request(state, 'settle', {\n    attempt_id: state.attempt_id,\n    owner_id: state.owner_id,\n    provider_response: reply.body,\n  });\n}\nreturn[{json:advanceM07Provider($('Prepare admitted model request').item.json,j)}];"
+        },
+        "position": [
+          1250,
+          200
+        ]
+      },
+      {
+        "id": "2c200197-9704-40cb-a832-e56a917f694f",
+        "name": "Return extraction outcome",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const rows=$input.all();if(rows.length!==1||!rows[0]?.json||typeof rows[0].json!=='object'||rows[0].binary)throw Error('M07_INPUT_INVALID');const j=rows[0].json;\nif(j.action!=='done'||!j.result)throw Error('M07_RECONCILIATION_REQUIRED');return[{json:j.result}];"
+        },
+        "position": [
+          1000,
+          500
+        ]
+      }
+    ],
+    "settings": {
+      "executionOrder": "v1",
+      "timezone": "Africa/Cairo",
+      "executionTimeout": 900,
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false,
+      "saveDataSuccessExecution": "none",
+      "saveDataErrorExecution": "none",
+      "saveManualExecutions": false,
+      "saveExecutionProgress": false
+    },
+    "tags": [
+      {
+        "id": "f599CX7WOg9azPEC",
+        "name": "env:dev"
+      },
+      {
+        "id": "xypXIZGL9udCiwND",
+        "name": "layer:ai"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "When called": {
+        "main": [
+          [
+            {
+              "node": "Initialize local extraction",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Initialize local extraction": {
+        "main": [
+          [
+            {
+              "node": "Gateway request?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "node": "Provider admitted?",
+      "type": "main",
+      "index": 0,
+      "Prepare extraction gateway": {
+        "main": [
+          [
+            {
+              "node": "Restricted extraction gateway",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Restricted extraction gateway": {
+        "main": [
+          [
+            {
+              "node": "Advance extraction receipt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Advance extraction receipt": {
+        "main": [
+          [
+            {
+              "node": "Gateway request?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare admitted model request": {
+        "main": [
+          [
+            {
+              "node": "OpenAI Responses text extraction",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Responses text extraction": {
+        "main": [
+          [
+            {
+              "node": "Advance model receipt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Advance model receipt": {
+        "main": [
+          [
+            {
+              "node": "Gateway request?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}
