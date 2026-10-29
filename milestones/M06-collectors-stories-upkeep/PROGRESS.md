@@ -1,5 +1,11 @@
 ﻿# M06 — Collectors III: Instagram stories + upkeep · PROGRESS
 
+## Isolated upkeep workstream —29 October2026
+
+This checkout is `m06-upkeep-local`, forked from accepted `e8dcee8`, and contains no campaign runtime bindings. The coordinator's campaign branch owns actual roster/dates/publication. Do not replace its pinned deployment or merge this work into its runtime while observations accumulate.
+
+Local removal/metrics planning and guarded coordinator now pass21 focused native tests, owned lint/format and diff checks. Account-level Instagram removal requires both complete posts/reels receipts; partial observations can refresh metrics without marking content removed. Maintained M06 health projection uses the shared validator, preserving unknown signals and making no email call. No SQL migration or hosted operation is included. Concrete removal RPC/source adapters and native WF-40 remain pending rather than exported as working ports. [Evidence](evidence/upkeep-local-20261029.md). Normal required isolated changed-head CI remains pending the coordinator's explicit branch-trigger delivery; accepted results below remain preserved.
+
 ## Status
 
 **In progress — the first connected M06 development observation passed:13 Good People stories ingested and13 real thumbnails stored, callback replay/unknown-run checks passed, and temporary runtime was removed. Full M06, seven-day comparison and MA-16 remain open. The accepted media component and M05 evidence are preserved; M05 website and overall acceptance remain open.**
